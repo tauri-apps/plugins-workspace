@@ -1,0 +1,26 @@
+{
+  "gitSiteUrl": "https://www.github.com/tauri-apps/tauri-plugin-websocket/",
+  "pkgManagers": {
+    "rust": {
+      "version": true,
+      "publish": true,
+      "getPublishedVersion": "cargo search ${ pkg.pkg } --limit 1 | sed -nE 's/^[^\"]*\"//; s/\".*//1p' -"
+    },
+    "javascript": {
+      "version": true,
+      "publish": true,
+      "getPublishedVersion": "npm view ${ pkgFile.pkg.name } version"
+    }
+  },
+  "packages": {
+    "tauri-plugin-websocket-api": {
+      "path": "./typescript",
+      "manager": "javascript",
+      "dependencies": ["tauri-plugin-websocket"]
+    },
+    "tauri-plugin-websocket": {
+      "path": ".",
+      "manager": "rust"
+    }
+  }
+}
