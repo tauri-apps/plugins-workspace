@@ -6,6 +6,8 @@
   ],
   "description": "Tauri Plugin for WebSocket connections",
   "browser": "webview-dist/index.js",
+  "main": "webview-dist/index.js",
+  "types": "webview-dist/index.d.ts",
   "private": "true",
   "scripts": {
     "build": "rollup -c ./webview-src/rollup.config.js",
