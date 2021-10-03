@@ -14,7 +14,7 @@
   },
   "packages": {
     "tauri-plugin-websocket-api": {
-      "path": "./typescript",
+      "path": ".",
       "manager": "javascript",
       "dependencies": ["tauri-plugin-websocket"]
     },
