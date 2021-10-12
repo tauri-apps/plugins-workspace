@@ -76,20 +76,19 @@ enum WebSocketMessage {
 }
 
 #[tauri::command]
-async fn connect<R: Runtime>(
+fn connect<R: Runtime>(
     window: Window<R>,
-    manager: State<'_, ConnectionManager>,
     url: String,
     callback_function: String,
     config: Option<ConnectionConfig>,
 ) -> Result<Id> {
-    let (ws_stream, _) = connect_async_with_config(url, config.map(Into::into)).await?;
-    let (write, read) = ws_stream.split();
-
     let id = rand::random();
-    manager.0.lock().await.insert(id, write);
+    let (ws_stream, _) = tauri::async_runtime::block_on(connect_async_with_config(url, config.map(Into::into)))?;
 
     tauri::async_runtime::spawn(async move {
+        let (write, read) = ws_stream.split();
+        let manager = window.state::<ConnectionManager>();
+        manager.0.lock().await.insert(id, write);
         read.for_each(move |message| {
             let window_ = window.clone();
             let callback_function_ = callback_function.clone();
