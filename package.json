@@ -5,8 +5,8 @@
     "Tauri Programme within The Commons Conservancy"
   ],
   "description": "Tauri Plugin for WebSocket connections",
-  "browser": "webview-dist/index.js",
-  "main": "webview-dist/index.js",
+  "browser": "webview-dist/index.min.js",
+  "main": "webview-dist/index.mjs",
   "types": "webview-dist/index.d.ts",
   "private": "true",
   "files": [
