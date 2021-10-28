@@ -6,7 +6,7 @@
   ],
   "description": "Tauri Plugin for WebSocket connections",
   "browser": "webview-dist/index.min.js",
-  "main": "webview-dist/index.mjs",
+  "module": "webview-dist/index.mjs",
   "types": "webview-dist/index.d.ts",
   "private": "true",
   "files": [
