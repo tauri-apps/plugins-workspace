@@ -1,7 +1,11 @@
 use futures_util::{stream::SplitSink, SinkExt, StreamExt};
 use serde::{ser::Serializer, Deserialize, Serialize};
 use serde_json::Value as JsonValue;
-use tauri::{plugin::Plugin, AppHandle, Invoke, Manager, Runtime, State, Window};
+use tauri::{
+    api::ipc::{format_callback, CallbackFn},
+    plugin::Plugin,
+    AppHandle, Invoke, Manager, Runtime, State, Window,
+};
 use tokio::{net::TcpStream, sync::Mutex};
 use tokio_tungstenite::{
     connect_async_with_config,
@@ -79,7 +83,7 @@ enum WebSocketMessage {
 fn connect<R: Runtime>(
     window: Window<R>,
     url: String,
-    callback_function: String,
+    callback_function: CallbackFn,
     config: Option<ConnectionConfig>,
 ) -> Result<Id> {
     let id = rand::random();
@@ -92,7 +96,6 @@ fn connect<R: Runtime>(
         manager.0.lock().await.insert(id, write);
         read.for_each(move |message| {
             let window_ = window.clone();
-            let callback_function_ = callback_function.clone();
             async move {
                 if let Ok(Message::Close(_)) = message {
                     let manager = window_.state::<ConnectionManager>();
@@ -121,7 +124,7 @@ fn connect<R: Runtime>(
                     }
                     Err(e) => serde_json::to_value(Error::from(e)).unwrap(),
                 };
-                let js = tauri::api::rpc::format_callback(callback_function_, &response)
+                let js = format_callback(callback_function, &response)
                     .expect("unable to serialize websocket message");
                 let _ = window_.eval(js.as_str());
             }
