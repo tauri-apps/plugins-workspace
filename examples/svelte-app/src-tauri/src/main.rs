@@ -25,10 +25,9 @@ async fn accept_connection(stream: TcpStream) {
     .expect("Error during the websocket handshake occurred");
 
   let (write, read) = ws_stream.split();
-  read
-    .forward(write)
-    .await
-    .expect("Failed to forward message")
+  if let Err(e) = read.forward(write).await {
+    eprintln!("Error: {}", e);
+  }
 }
 
 fn main() {
