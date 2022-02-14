@@ -52,10 +52,10 @@
     estree-walker "^1.0.1"
     picomatch "^2.2.2"
 
-"@tauri-apps/api@1.0.0-rc.0":
-  version "1.0.0-rc.0"
-  resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-1.0.0-rc.0.tgz#f9fa469923591a6e8294ffe906bf886ace2cb4d0"
-  integrity sha512-BOREst3Nq931RQTqNT5gbBw8E7wpjEr4PhSviAJwIWtKi3KGRxY5TmWyMO4j3kKmsZQQVoZ4dPwI2pQfNJYtKw==
+"@tauri-apps/api@1.0.0-rc.1":
+  version "1.0.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-1.0.0-rc.1.tgz#ce26a0fe30d8980a4682d50015eec28ed4a23c1e"
+  integrity sha512-VBUOmfT8ea02JB/Qr+FHeaLnug5BRA7ro2pX47q0GZCbZsU9b+iPnOXl0ShJwT0melR7B6iamyhDwkHStMVfQA==
   dependencies:
     type-fest "2.11.2"
 
