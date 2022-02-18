@@ -122,6 +122,7 @@ fn connect<R: Runtime>(
                         })))
                         .unwrap()
                     }
+                    Ok(Message::Frame(_)) => serde_json::Value::Null, // This value can't be recieved.
                     Err(e) => serde_json::to_value(Error::from(e)).unwrap(),
                 };
                 let js = format_callback(callback_function, &response)
