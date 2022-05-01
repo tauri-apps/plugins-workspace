@@ -1,8 +1,6 @@
 #![cfg(target_os = "windows")]
 
-use std::{
-    ffi::{CStr},
-};
+use std::{cell::RefCell, ffi::CStr, rc::Rc};
 
 use crate::SingleInstanceCallback;
 use tauri::{
@@ -61,8 +59,10 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback>) -> TauriPlugin<R> {
                             cbData: bytes.len() as _,
                             lpData: bytes.as_ptr() as _,
                         };
-                        SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
-                        std::process::exit(0);
+                        let ret = SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
+                        if ret == CLOSE_NEW_INSTANCE {
+                            std::process::exit(0);
+                        }
                     }
                 }
             }
@@ -151,15 +151,25 @@ unsafe extern "system" fn single_instance_window_proc(
 
     match msg {
         WM_COPYDATA => {
+            let ret = Rc::new(RefCell::new(1));
+
             let cds_ptr = lparam as *const COPYDATASTRUCT;
             if (*cds_ptr).dwData == WMCOPYDATA_SINGLE_INSTANCE_DATA {
                 let data = CStr::from_ptr((*cds_ptr).lpData as _).to_string_lossy();
                 let mut s = data.split("|");
                 let cwd = s.next().unwrap();
                 let args = s.into_iter().map(|s| s.to_string()).collect();
-                (*callback_ptr)(args, cwd.to_string());
+                let ret_c = Rc::clone(&ret);
+                (*callback_ptr)(
+                    args,
+                    cwd.to_string(),
+                    Box::new(move || {
+                        let mut ret = ret_c.borrow_mut();
+                        *ret = CLOSE_NEW_INSTANCE;
+                    }),
+                );
             }
-            1
+            ret.take()
         }
 
         WM_DESTROY => {
@@ -172,8 +182,8 @@ unsafe extern "system" fn single_instance_window_proc(
 
 struct MutexHandle(isize);
 struct TargetWindowHandle(isize);
-/// Sent to the exisiting instance when a new instance is launched.
 const WMCOPYDATA_SINGLE_INSTANCE_DATA: usize = 1542;
+const CLOSE_NEW_INSTANCE: isize = 1542;
 
 pub fn encode_wide(string: impl AsRef<std::ffi::OsStr>) -> Vec<u16> {
     std::os::windows::prelude::OsStrExt::encode_wide(string.as_ref())
