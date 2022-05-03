@@ -22,3 +22,5 @@ features = [
     "Win32_Graphics_Gdi"
 ]
 
+[target.'cfg(target_os = "linux")'.dependencies]
+zbus = "2.2"
