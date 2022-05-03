@@ -1,7 +1,7 @@
 #![cfg(target_os = "windows")]
 
 use crate::SingleInstanceCallback;
-use std::{cell::RefCell, ffi::CStr, rc::Rc};
+use std::ffi::CStr;
 use tauri::{
     plugin::{self, TauriPlugin},
     Manager, RunEvent, Runtime,
@@ -25,7 +25,6 @@ struct MutexHandle(isize);
 struct TargetWindowHandle(isize);
 
 const WMCOPYDATA_SINGLE_INSTANCE_DATA: usize = 1542;
-const CLOSE_NEW_INSTANCE_ID: isize = 1542;
 
 pub fn init<R: Runtime>(f: Box<SingleInstanceCallback>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
@@ -64,10 +63,8 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback>) -> TauriPlugin<R> {
                             cbData: bytes.len() as _,
                             lpData: bytes.as_ptr() as _,
                         };
-                        let ret = SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
-                        if ret == CLOSE_NEW_INSTANCE_ID {
-                            std::process::exit(0);
-                        }
+                        SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
+                        std::process::exit(0);
                     }
                 }
             } else {
@@ -107,25 +104,15 @@ unsafe extern "system" fn single_instance_window_proc(
 
     match msg {
         WM_COPYDATA => {
-            let ret = Rc::new(RefCell::new(1));
-
             let cds_ptr = lparam as *const COPYDATASTRUCT;
             if (*cds_ptr).dwData == WMCOPYDATA_SINGLE_INSTANCE_DATA {
                 let data = CStr::from_ptr((*cds_ptr).lpData as _).to_string_lossy();
                 let mut s = data.split("|");
                 let cwd = s.next().unwrap();
                 let args = s.into_iter().map(|s| s.to_string()).collect();
-                let ret_c = Rc::clone(&ret);
-                (*callback_ptr)(
-                    args,
-                    cwd.to_string(),
-                    Box::new(move || {
-                        let mut ret = ret_c.borrow_mut();
-                        *ret = CLOSE_NEW_INSTANCE_ID;
-                    }),
-                );
+                (*callback_ptr)(args, cwd.to_string());
             }
-            ret.take()
+            1
         }
 
         WM_DESTROY => {
