@@ -4,7 +4,7 @@ use crate::SingleInstanceCallback;
 use std::ffi::CStr;
 use tauri::{
     plugin::{self, TauriPlugin},
-    Manager, RunEvent, Runtime,
+    AppHandle, Manager, RunEvent, Runtime,
 };
 use windows_sys::Win32::{
     Foundation::{CloseHandle, GetLastError, ERROR_ALREADY_EXISTS, HWND, LPARAM, LRESULT, WPARAM},
@@ -26,7 +26,7 @@ struct TargetWindowHandle(isize);
 
 const WMCOPYDATA_SINGLE_INSTANCE_DATA: usize = 1542;
 
-pub fn init<R: Runtime>(f: Box<SingleInstanceCallback>) -> TauriPlugin<R> {
+pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(|app| {
             let app_name = &app.package_info().name;
@@ -70,8 +70,14 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback>) -> TauriPlugin<R> {
             } else {
                 app.manage(MutexHandle(hmutex));
 
-                let hwnd = create_event_target_window(&class_name, &window_name);
-                unsafe { SetWindowLongPtrW(hwnd, GWL_USERDATA, Box::into_raw(Box::new(f)) as _) };
+                let hwnd = create_event_target_window::<R>(&class_name, &window_name);
+                unsafe {
+                    SetWindowLongPtrW(
+                        hwnd,
+                        GWL_USERDATA,
+                        Box::into_raw(Box::new((app.clone(), f))) as _,
+                    )
+                };
 
                 app.manage(TargetWindowHandle(hwnd));
             }
@@ -94,13 +100,15 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback>) -> TauriPlugin<R> {
         .build()
 }
 
-unsafe extern "system" fn single_instance_window_proc(
+unsafe extern "system" fn single_instance_window_proc<R: Runtime>(
     hwnd: HWND,
     msg: u32,
     wparam: WPARAM,
     lparam: LPARAM,
 ) -> LRESULT {
-    let callback_ptr = GetWindowLongPtrW(hwnd, GWL_USERDATA) as *mut Box<SingleInstanceCallback>;
+    let data_ptr = GetWindowLongPtrW(hwnd, GWL_USERDATA)
+        as *mut (AppHandle<R>, Box<SingleInstanceCallback<R>>);
+    let (app_handle, callback) = &mut *data_ptr;
 
     match msg {
         WM_COPYDATA => {
@@ -110,25 +118,25 @@ unsafe extern "system" fn single_instance_window_proc(
                 let mut s = data.split("|");
                 let cwd = s.next().unwrap();
                 let args = s.into_iter().map(|s| s.to_string()).collect();
-                (*callback_ptr)(args, cwd.to_string());
+                callback(&app_handle, args, cwd.to_string());
             }
             1
         }
 
         WM_DESTROY => {
-            let _ = Box::from_raw(callback_ptr);
+            let _ = Box::from_raw(data_ptr);
             0
         }
         _ => DefWindowProcW(hwnd, msg, wparam, lparam),
     }
 }
 
-fn create_event_target_window(class_name: &str, window_name: &str) -> HWND {
+fn create_event_target_window<R: Runtime>(class_name: &str, window_name: &str) -> HWND {
     unsafe {
         let class = WNDCLASSEXW {
             cbSize: std::mem::size_of::<WNDCLASSEXW>() as u32,
             style: 0,
-            lpfnWndProc: Some(single_instance_window_proc),
+            lpfnWndProc: Some(single_instance_window_proc::<R>),
             cbClsExtra: 0,
             cbWndExtra: 0,
             hInstance: GetModuleHandleW(std::ptr::null()),

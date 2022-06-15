@@ -2,6 +2,7 @@
 
 use crate::SingleInstanceCallback;
 use tauri::{
+    AppHandle,
     plugin::{self, TauriPlugin},
     Manager, RunEvent, Runtime,
 };
@@ -12,22 +13,26 @@ use zbus::{
 
 struct ConnectionHandle(Connection);
 
-struct SingleInstanceDBus {
-    callback: Box<SingleInstanceCallback>,
+struct SingleInstanceDBus<R: Runtime> {
+    callback: Box<SingleInstanceCallback<R>>,
+    app_handle: AppHandle<R>,
 }
 
 #[dbus_interface(name = "org.SingleInstance.DBus")]
-impl SingleInstanceDBus {
+impl<R:Runtime> SingleInstanceDBus<R> {
     fn execute_callback(&mut self, argv: Vec<String>, cwd: String) {
-        (self.callback)(argv, cwd);
+        (self.callback)(&self.app_handle, argv, cwd);
     }
 }
 
-pub fn init<R: Runtime>(f: Box<SingleInstanceCallback>) -> TauriPlugin<R> {
+pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(|app| {
             let app_name = app.package_info().name.clone();
-            let single_instance_dbus = SingleInstanceDBus { callback: f };
+            let single_instance_dbus = SingleInstanceDBus {
+                callback: f,
+                app_handle: app.clone(),
+            };
             let dbus_name = format!("org.{}.SingleInstance", app_name);
             let dbus_path = format!("/org/{}/SingleInstance", app_name);
 

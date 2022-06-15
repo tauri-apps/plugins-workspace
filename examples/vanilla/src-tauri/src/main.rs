@@ -5,8 +5,8 @@
 
 fn main() {
   tauri::Builder::default()
-    .plugin(tauri_plugin_single_instance::init(|argv, cwd| {
-      println!("{argv:?}, {cwd}");
+    .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+      println!("{}, {argv:?}, {cwd}", app.package_info().name);
     }))
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
