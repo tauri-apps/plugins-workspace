@@ -64,7 +64,7 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
                             lpData: bytes.as_ptr() as _,
                         };
                         SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
-                        std::process::exit(0);
+                        app.exit(0);
                     }
                 }
             } else {
