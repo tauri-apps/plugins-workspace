@@ -29,15 +29,23 @@ const WMCOPYDATA_SINGLE_INSTANCE_DATA: usize = 1542;
 pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(|app| {
-            let app_name = &app.package_info().name;
-            let class_name = format!("{}-single-instance-class", app_name);
-            let window_name = format!("{}-single-instance-window", app_name);
+            let id: String = app
+                .config()
+                .tauri
+                .bundle
+                .identifier
+                .chars()
+                .take(11)
+                .collect();
+
+            let class_name = format!("{}-sic", id);
+            let window_name = format!("{}-siw", id);
 
             let hmutex = unsafe {
                 CreateMutexW(
                     std::ptr::null(),
                     true.into(),
-                    encode_wide("tauri-plugin-single-instance-mutex").as_ptr(),
+                    encode_wide(format!("{}-sim", id)).as_ptr(),
                 )
             };
 
