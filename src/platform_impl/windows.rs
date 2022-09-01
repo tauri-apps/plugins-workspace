@@ -29,17 +29,10 @@ const WMCOPYDATA_SINGLE_INSTANCE_DATA: usize = 1542;
 pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(|app| {
-            let id: String = app
-                .config()
-                .tauri
-                .bundle
-                .identifier
-                .chars()
-                .take(11)
-                .collect();
+            let id = &app.config().tauri.bundle.identifier;
 
-            let class_name = format!("{}-sic", id);
-            let window_name = format!("{}-siw", id);
+            let class_name = encode_wide(format!("{}-sic", id));
+            let window_name = encode_wide(format!("{}-siw", id));
 
             let hmutex = unsafe {
                 CreateMutexW(
@@ -51,10 +44,7 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
 
             if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
                 unsafe {
-                    let hwnd = FindWindowW(
-                        encode_wide(&class_name).as_ptr(),
-                        encode_wide(&window_name).as_ptr(),
-                    );
+                    let hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
 
                     if hwnd != 0 {
                         let data = format!(
@@ -139,7 +129,7 @@ unsafe extern "system" fn single_instance_window_proc<R: Runtime>(
     }
 }
 
-fn create_event_target_window<R: Runtime>(class_name: &str, window_name: &str) -> HWND {
+fn create_event_target_window<R: Runtime>(class_name: &[u16], window_name: &[u16]) -> HWND {
     unsafe {
         let class = WNDCLASSEXW {
             cbSize: std::mem::size_of::<WNDCLASSEXW>() as u32,
@@ -152,7 +142,7 @@ fn create_event_target_window<R: Runtime>(class_name: &str, window_name: &str) -
             hCursor: 0,
             hbrBackground: 0,
             lpszMenuName: std::ptr::null(),
-            lpszClassName: encode_wide(&class_name).as_ptr(),
+            lpszClassName: class_name.as_ptr(),
             hIconSm: 0,
         };
 
@@ -170,8 +160,8 @@ fn create_event_target_window<R: Runtime>(class_name: &str, window_name: &str) -
             // `explorer.exe` and then starting the process back up.
             // It is unclear why the bug is triggered by waiting for several hours.
             | WS_EX_TOOLWINDOW,
-            encode_wide(&class_name).as_ptr(),
-            encode_wide(&window_name).as_ptr(),
+            class_name.as_ptr(),
+            window_name.as_ptr(),
             WS_OVERLAPPED,
             0,
             0,
