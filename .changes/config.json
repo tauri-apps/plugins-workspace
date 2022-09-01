@@ -1,5 +1,5 @@
 {
-  "gitSiteUrl": "https://www.github.com/your-org/tauri-plugin-single-instance/",
+  "gitSiteUrl": "https://www.github.com/tauri-apps/tauri-plugin-single-instance/",
   "pkgManagers": {
     "rust": {
       "version": true,
@@ -10,7 +10,7 @@
           "dryRunCommand": true
         },
         {
-          "command": "echo \"# Cargo Publish\"",
+          "command": "echo '<details>\n<summary><em><h4>Cargo Publish</h4></em></summary>\n\n```'",
           "dryRunCommand": true,
           "pipe": true
         },
@@ -25,7 +25,7 @@
           "pipe": true
         },
         {
-          "command": "echo \"\\`\\`\\`\"",
+          "command": "echo '```\n\n</details>\n'",
           "dryRunCommand": true,
           "pipe": true
         }
