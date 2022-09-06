@@ -7,7 +7,6 @@ mod platform_impl;
 #[path = "platform_impl/linux.rs"]
 mod platform_impl;
 
-
 pub(crate) type SingleInstanceCallback<R> =
     dyn FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static;
 
