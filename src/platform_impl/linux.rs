@@ -2,9 +2,8 @@
 
 use crate::SingleInstanceCallback;
 use tauri::{
-    AppHandle,
     plugin::{self, TauriPlugin},
-    Manager, RunEvent, Runtime,
+    AppHandle, Manager, RunEvent, Runtime,
 };
 use zbus::{
     blocking::{Connection, ConnectionBuilder},
@@ -19,22 +18,31 @@ struct SingleInstanceDBus<R: Runtime> {
 }
 
 #[dbus_interface(name = "org.SingleInstance.DBus")]
-impl<R:Runtime> SingleInstanceDBus<R> {
+impl<R: Runtime> SingleInstanceDBus<R> {
     fn execute_callback(&mut self, argv: Vec<String>, cwd: String) {
         (self.callback)(&self.app_handle, argv, cwd);
     }
 }
 
+fn dbus_id<R: Runtime>(app: &AppHandle<R>) -> String {
+    app.config()
+        .tauri
+        .bundle
+        .identifier
+        .replace('.', "_")
+        .replace('-', "_")
+}
+
 pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(|app| {
-            let app_name = app.package_info().name.clone();
+            let id = dbus_id(app);
             let single_instance_dbus = SingleInstanceDBus {
                 callback: f,
                 app_handle: app.clone(),
             };
-            let dbus_name = format!("org.{}.SingleInstance", app_name);
-            let dbus_path = format!("/org/{}/SingleInstance", app_name);
+            let dbus_name = format!("org.{}.SingleInstance", id);
+            let dbus_path = format!("/org/{}/SingleInstance", id);
 
             match ConnectionBuilder::session()
                 .unwrap()
@@ -73,8 +81,7 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
         .on_event(|app, event| {
             if let RunEvent::Exit = event {
                 if let Some(connection) = app.try_state::<ConnectionHandle>() {
-                    let app_name = app.package_info().name.clone();
-                    let dbus_name = format!("org.{}.SingleInstance", app_name);
+                    let dbus_name = format!("org.{}.SingleInstance", dbus_id(app));
                     let _ = connection.0.release_name(dbus_name);
                 }
             }
