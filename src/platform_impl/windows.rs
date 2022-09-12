@@ -84,18 +84,22 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
         })
         .on_event(|app, event| {
             if let RunEvent::Exit = event {
-                if let Some(hmutex) = app.try_state::<MutexHandle>() {
-                    unsafe {
-                        ReleaseMutex(hmutex.0);
-                        CloseHandle(hmutex.0);
-                    }
-                }
-                if let Some(hwnd) = app.try_state::<TargetWindowHandle>() {
-                    unsafe { DestroyWindow(hwnd.0) };
-                }
+                destroy(app);
             }
         })
         .build()
+}
+
+pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
+    if let Some(hmutex) = manager.try_state::<MutexHandle>() {
+        unsafe {
+            ReleaseMutex(hmutex.0);
+            CloseHandle(hmutex.0);
+        }
+    }
+    if let Some(hwnd) = manager.try_state::<TargetWindowHandle>() {
+        unsafe { DestroyWindow(hwnd.0) };
+    }
 }
 
 unsafe extern "system" fn single_instance_window_proc<R: Runtime>(

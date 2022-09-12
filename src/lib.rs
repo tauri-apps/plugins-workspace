@@ -1,4 +1,4 @@
-use tauri::{plugin::TauriPlugin, AppHandle, Runtime};
+use tauri::{plugin::TauriPlugin, AppHandle, Manager, Runtime};
 
 #[cfg(target_os = "windows")]
 #[path = "platform_impl/windows.rs"]
@@ -17,4 +17,8 @@ pub fn init<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sy
     f: F,
 ) -> TauriPlugin<R> {
     platform_impl::init(Box::new(f))
+}
+
+pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
+    platform_impl::destroy(manager)
 }

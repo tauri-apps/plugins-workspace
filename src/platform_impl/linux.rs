@@ -1,9 +1,11 @@
 #![cfg(target_os = "linux")]
 
+use std::sync::Arc;
+
 use crate::SingleInstanceCallback;
 use tauri::{
     plugin::{self, TauriPlugin},
-    AppHandle, Manager, RunEvent, Runtime,
+    AppHandle, Config, Manager, RunEvent, Runtime,
 };
 use zbus::{
     blocking::{Connection, ConnectionBuilder},
@@ -24,8 +26,8 @@ impl<R: Runtime> SingleInstanceDBus<R> {
     }
 }
 
-fn dbus_id<R: Runtime>(app: &AppHandle<R>) -> String {
-    app.config()
+fn dbus_id(config: Arc<Config>) -> String {
+    config
         .tauri
         .bundle
         .identifier
@@ -36,7 +38,7 @@ fn dbus_id<R: Runtime>(app: &AppHandle<R>) -> String {
 pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(|app| {
-            let id = dbus_id(app);
+            let id = dbus_id(app.config());
             let single_instance_dbus = SingleInstanceDBus {
                 callback: f,
                 app_handle: app.clone(),
@@ -80,11 +82,15 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
         })
         .on_event(|app, event| {
             if let RunEvent::Exit = event {
-                if let Some(connection) = app.try_state::<ConnectionHandle>() {
-                    let dbus_name = format!("org.{}.SingleInstance", dbus_id(app));
-                    let _ = connection.0.release_name(dbus_name);
-                }
+                destroy(app);
             }
         })
         .build()
+}
+
+pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
+    if let Some(connection) = manager.try_state::<ConnectionHandle>() {
+        let dbus_name = format!("org.{}.SingleInstance", dbus_id(manager.config()));
+        let _ = connection.0.release_name(dbus_name);
+    }
 }
