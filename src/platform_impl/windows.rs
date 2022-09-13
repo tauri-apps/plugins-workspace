@@ -33,12 +33,13 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
 
             let class_name = encode_wide(format!("{}-sic", id));
             let window_name = encode_wide(format!("{}-siw", id));
+            let mutex_name = encode_wide(format!("{}-sim", id));
 
             let hmutex = unsafe {
                 CreateMutexW(
                     std::ptr::null(),
                     true.into(),
-                    encode_wide(format!("{}-sim", id)).as_ptr(),
+                    mutex_name.as_ptr(),
                 )
             };
 
