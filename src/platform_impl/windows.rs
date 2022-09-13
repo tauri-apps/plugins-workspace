@@ -35,13 +35,8 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
             let window_name = encode_wide(format!("{}-siw", id));
             let mutex_name = encode_wide(format!("{}-sim", id));
 
-            let hmutex = unsafe {
-                CreateMutexW(
-                    std::ptr::null(),
-                    true.into(),
-                    mutex_name.as_ptr(),
-                )
-            };
+            let hmutex =
+                unsafe { CreateMutexW(std::ptr::null(), true.into(), mutex_name.as_ptr()) };
 
             if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
                 unsafe {
