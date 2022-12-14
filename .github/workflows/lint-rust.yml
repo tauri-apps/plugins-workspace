@@ -32,6 +32,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y webkit2gtk-4.0
+      - name: install libudev for [authenticator]
+        run: |
+          sudo apt-get install -y libudev-dev
       - name: Install clippy with stable toolchain
         uses: actions-rs/toolchain@v1
         with:
