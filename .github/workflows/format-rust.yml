@@ -3,14 +3,14 @@ name: Format Rust
 on:
   push:
     branches:
-      - main
+      - dev
     paths:
       - '.github/workflows/format-rust.yml'
       - 'plugins/src/**'
       - "**/Cargo.lock"
   pull_request:
     branches:
-      - main
+      - dev
     paths:
       - '.github/workflows/format-rust.yml'
       - 'plugins/src/**'

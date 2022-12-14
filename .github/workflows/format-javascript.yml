@@ -3,14 +3,14 @@ name: Format JavaScript
 on:
   push:
     branches:
-      - main
+      - dev
     paths:
       - '.github/workflows/format-javascript.yml'
       - 'plugins/*/guest-js/**'
       - '.prettierignore'
   pull_request:
     branches:
-      - main
+      - dev
     paths:
       - '.github/workflows/format-javascript.yml'
       - 'plugins/*/guest-js/**'

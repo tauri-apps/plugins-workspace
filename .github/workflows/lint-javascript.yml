@@ -3,7 +3,7 @@ name: Lint JavaScript
 on:
   push:
     branches:
-      - main
+      - dev
     paths:
       - '.github/workflows/lint-javascript.yml'
       - 'plugins/*/guest-js/**'
@@ -11,7 +11,7 @@ on:
       - '.eslintrc.json'
   pull_request:
     branches:
-      - main
+      - dev
     paths:
       - '.github/workflows/lint-javascript.yml'
       - 'plugins/*/guest-js/**'

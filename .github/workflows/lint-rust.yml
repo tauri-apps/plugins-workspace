@@ -3,14 +3,14 @@ name: Lint Rust
 on:
   push:
     branches:
-      - main
+      - dev
     paths:
       - '.github/workflows/lint.yml'
       - 'plugins/src/**'
       - "**/Cargo.lock"
   pull_request:
     branches:
-      - main
+      - dev
     paths:
       - '.github/workflows/lint.yml'
       - 'plugins/src/**'
