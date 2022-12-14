@@ -52,17 +52,17 @@ jobs:
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --workspace --package 'tauri-plugin-sql' --all-targets --feature sqlite -- -D warnings
+          args: --workspace --package 'tauri-plugin-sql' --all-targets --features sqlite -- -D warnings
           name: clippy sql:sqlite
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --workspace --package 'tauri-plugin-sql' --all-targets --feature mysql -- -D warnings
+          args: --workspace --package 'tauri-plugin-sql' --all-targets --features mysql -- -D warnings
           name: clippy sql:mysql
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --workspace --package 'tauri-plugin-sql' --all-targets --feature postgres -- -D warnings
+          args: --workspace --package 'tauri-plugin-sql' --all-targets --features postgres -- -D warnings
           name: clippy sql:postgres
 
   fmt:
