@@ -16,6 +16,10 @@ on:
       - 'plugins/src/**'
       - "**/Cargo.toml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   format:
     runs-on: ubuntu-latest
