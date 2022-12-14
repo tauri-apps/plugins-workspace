@@ -2,6 +2,9 @@
   "name": "tauri-plugin-positioner-api",
   "version": "0.0.0",
   "license": "MIT or APACHE-2.0",
+  "authors": [
+    "Tauri Programme within The Commons Conservancy"
+  ],
   "type": "module",
   "browser": "dist/index.min.js",
   "module": "dist/index.mjs",
