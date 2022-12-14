@@ -6,13 +6,17 @@ on:
       - main
     paths:
       - '.github/workflows/lint-javascript.yml'
-      - "client/**"
+      - 'plugins/*/guest-js/**'
+      - '.eslintignore'
+      - '.eslintrc.json'
   pull_request:
     branches:
       - main
     paths:
       - '.github/workflows/lint-javascript.yml'
-      - "client/**"
+      - 'plugins/*/guest-js/**'
+      - '.eslintignore'
+      - '.eslintrc.json'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

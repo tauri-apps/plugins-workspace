@@ -6,13 +6,15 @@ on:
       - main
     paths:
       - '.github/workflows/format-javascript.yml'
-      - "client/**"
+      - 'plugins/*/guest-js/**'
+      - '.prettierignore'
   pull_request:
     branches:
       - main
     paths:
       - '.github/workflows/format-javascript.yml'
-      - "client/**"
+      - 'plugins/*/guest-js/**''
+      - '.prettierignore'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
