@@ -8,6 +8,7 @@ on:
       - '.github/workflows/format-javascript.yml'
       - 'plugins/*/guest-js/**'
       - '.prettierignore'
+      - "**/package.json"
   pull_request:
     branches:
       - dev
@@ -15,6 +16,7 @@ on:
       - '.github/workflows/format-javascript.yml'
       - 'plugins/*/guest-js/**'
       - '.prettierignore'
+      - "**/package.json"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
