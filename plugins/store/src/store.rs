@@ -172,7 +172,7 @@ impl Store {
     pub fn load<R: Runtime>(&mut self, app: &AppHandle<R>) -> Result<(), Error> {
         let app_dir = app
             .path_resolver()
-            .app_dir()
+            .app_data_dir()
             .expect("failed to resolve app dir");
         let store_path = app_dir.join(&self.path);
 
@@ -187,7 +187,7 @@ impl Store {
     pub fn save<R: Runtime>(&self, app: &AppHandle<R>) -> Result<(), Error> {
         let app_dir = app
             .path_resolver()
-            .app_dir()
+            .app_data_dir()
             .expect("failed to resolve app dir");
         let store_path = app_dir.join(&self.path);
 

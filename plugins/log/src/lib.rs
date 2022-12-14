@@ -252,7 +252,7 @@ impl LoggerBuilder {
                         LogTarget::Stderr => fern::Output::from(std::io::stderr()),
                         LogTarget::Folder(path) => {
                             if !path.exists() {
-                                fs::create_dir_all(&path).unwrap();
+                                fs::create_dir_all(path).unwrap();
                             }
 
                             fern::log_file(get_log_file_path(
@@ -264,7 +264,7 @@ impl LoggerBuilder {
                             .into()
                         }
                         LogTarget::LogDir => {
-                            let path = app_handle.path_resolver().log_dir().unwrap();
+                            let path = app_handle.path_resolver().app_log_dir().unwrap();
                             if !path.exists() {
                                 fs::create_dir_all(&path).unwrap();
                             }

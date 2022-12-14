@@ -4200,6 +4200,7 @@ dependencies = [
  "log 0.4.17",
  "serde",
  "serde_json",
+ "serde_repr",
  "tauri",
  "thiserror",
 ]
