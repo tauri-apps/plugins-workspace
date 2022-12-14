@@ -5,15 +5,15 @@ on:
     branches:
       - dev
     paths:
-      - '.github/workflows/lint-rust.yml'
-      - 'plugins/src/**'
+      - ".github/workflows/lint-rust.yml"
+      - "plugins/src/**"
       - "**/Cargo.toml"
   pull_request:
     branches:
       - dev
     paths:
-      - '.github/workflows/lint-rust.yml'
-      - 'plugins/src/**'
+      - ".github/workflows/lint-rust.yml"
+      - "plugins/src/**"
       - "**/Cargo.toml"
 
 concurrency:
@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v3  
+      - uses: actions/checkout@v3
       - name: install webkit2gtk
         run: |
           sudo apt-get update
@@ -35,10 +35,10 @@ jobs:
       - name: Install clippy with stable toolchain
         uses: actions-rs/toolchain@v1
         with:
-            profile: minimal
-            toolchain: stable
-            override: true
-            components: clippy
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: clippy
       - uses: Swatinem/rust-cache@v1
       - uses: actions-rs/clippy-check@v1
         with:
@@ -51,15 +51,15 @@ jobs:
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Install rustfmt with nightly toolchain
-      uses: actions-rs/toolchain@v1
-      with:
+      - uses: actions/checkout@v3
+      - name: Install rustfmt with nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
           profile: minimal
           toolchain: nightly
           override: true
           components: rustfmt
-    - uses: actions-rs/cargo@v1
-      with:
-        command: fmt
-        args: --all -- --check
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check

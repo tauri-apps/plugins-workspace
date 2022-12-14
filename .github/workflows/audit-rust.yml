@@ -3,19 +3,19 @@ name: Audit Rust
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: "0 0 * * *"
   push:
     branches:
       - dev
     paths:
-      - '.github/workflows/audit-rust.yml'
+      - ".github/workflows/audit-rust.yml"
       - "**/Cargo.lock"
       - "**/Cargo.toml"
   pull_request:
     branches:
       - dev
     paths:
-      - '.github/workflows/audit-rust.yml'
+      - ".github/workflows/audit-rust.yml"
       - "**/Cargo.lock"
       - "**/Cargo.toml"
 
