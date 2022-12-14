@@ -1,0 +1,40 @@
+name: Format JavaScript
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/format-javascript.yml'
+      - "client/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/format-javascript.yml'
+      - "client/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit-js:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cache pnpm modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - uses: pnpm/action-setup@v2.2.4
+        with:
+          run_install: true
+      - name: prettier check
+        run: pnpm format-check

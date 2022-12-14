@@ -1,0 +1,35 @@
+name: Format Rust
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/format-rust.yml'
+      - 'src/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/format-rust.yml'
+      - 'src/**'
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install rustfmt with nightly toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          components: rustfmt
+    - uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: --manifest-path=Cargo.toml --all -- --check
