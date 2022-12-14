@@ -6,7 +6,8 @@
   "scripts": {
     "build": "pnpm run -r --parallel --filter !plugins-workspace build",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "format-check": "prettier --check ."
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.0.1",
