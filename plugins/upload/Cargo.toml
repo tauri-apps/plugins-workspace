@@ -1,0 +1,20 @@
+[package]
+name = "tauri-plugin-upload"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+tauri.workspace = true
+log.workspace = true
+thiserror.workspace = true
+tokio = { version = "1.17", features = [ "fs" ] }
+tokio-util = { version = "0.7", features = [ "codec" ] }
+reqwest = { version = "0.11", features = [ "json", "stream" ] }
+futures = "0.3"
+read-progress-stream = "1.0.0"

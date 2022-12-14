@@ -1,0 +1,27 @@
+{
+  "name": "plugins-workspace",
+  "private": true,
+  "license": "MIT or APACHE-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm run -r --parallel --filter !plugins-workspace build",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-terser": "^0.2.0",
+    "@rollup/plugin-typescript": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.46.1",
+    "eslint": "^8.0.1",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-standard-with-typescript": "^24.0.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "prettier": "^2.8.1",
+    "rollup": "^3.7.4",
+    "typescript": "^4.9.4"
+  }
+}
