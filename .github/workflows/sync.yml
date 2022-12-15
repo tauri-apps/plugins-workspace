@@ -19,4 +19,4 @@ jobs:
         run: .github/sync-to-mirrors.sh
         env:
           BUILD_BASE: ./plugins
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+          API_TOKEN_GITHUB: ${{ secrets.ORG_TAURI_BOT_PAT }}
