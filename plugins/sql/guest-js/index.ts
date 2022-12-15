@@ -14,16 +14,20 @@ export interface QueryResult {
   lastInsertId: number;
 }
 
+export type DbConnection = `${`sqlite` | `postgres` | `mysql`}:${string}`;
+
 /**
  * **Database**
  *
  * The `Database` class serves as the primary interface for
  * communicating with the rust side of the sql plugin.
+ *
+ * @connection  is a DB connection string like `sqlite:test.db`, etc.
  */
 export default class Database {
-  path: string;
-  constructor(path: string) {
-    this.path = path;
+  connection: DbConnection;
+  constructor(connection: DbConnection) {
+    this.connection = connection;
   }
 
   /**
@@ -41,12 +45,12 @@ export default class Database {
    * const db = await Database.load("sqlite:test.db");
    * ```
    */
-  static async load(path: string): Promise<Database> {
-    const _path = await invoke<string>("plugin:sql|load", {
-      db: path,
+  static async load<C extends DbConnection>(connection: C): Promise<Database> {
+    const _conn = await invoke<string>("plugin:sql|load", {
+      db: connection,
     });
 
-    return new Database(_path);
+    return new Database(_conn as DbConnection);
   }
 
   /**
@@ -65,8 +69,8 @@ export default class Database {
    * const db = Database.get("sqlite:test.db");
    * ```
    */
-  static get(path: string): Database {
-    return new Database(path);
+  static get(connection: DbConnection): Database {
+    return new Database(connection);
   }
 
   /**
@@ -82,12 +86,12 @@ export default class Database {
    * );
    * ```
    */
-  async execute(query: string, bindValues?: unknown[]): Promise<QueryResult> {
+  async execute(sql: string, bindValues?: unknown[]): Promise<QueryResult> {
     const [rowsAffected, lastInsertId] = await invoke<[number, number]>(
       "plugin:sql|execute",
       {
-        db: this.path,
-        query,
+        db: this.connection,
+        sql,
         values: bindValues ?? [],
       }
     );
@@ -110,14 +114,12 @@ export default class Database {
    * );
    * ```
    */
-  async select<T>(query: string, bindValues?: unknown[]): Promise<T> {
-    const result = await invoke<T>("plugin:sql|select", {
-      db: this.path,
-      query,
+  async select<T = unknown[]>(sql: string, bindValues?: unknown[]): Promise<T> {
+    return await invoke<T>("plugin:sql|select", {
+      db: this.connection,
+      sql,
       values: bindValues ?? [],
     });
-
-    return result;
   }
 
   /**
@@ -131,10 +133,9 @@ export default class Database {
    * ```
    * @param db - Optionally state the name of a database if you are managing more than one. Otherwise, all database pools will be in scope.
    */
-  async close(db?: string): Promise<boolean> {
-    const success = await invoke<boolean>("plugin:sql|close", {
-      db,
+  async close(): Promise<boolean> {
+    return await invoke<boolean>("plugin:sql|close", {
+      db: this.connection,
     });
-    return success;
   }
 }

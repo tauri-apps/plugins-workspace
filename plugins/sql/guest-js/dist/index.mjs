@@ -5,10 +5,12 @@ import { invoke } from '@tauri-apps/api/tauri';
  *
  * The `Database` class serves as the primary interface for
  * communicating with the rust side of the sql plugin.
+ *
+ * @connection  is a DB connection string like `sqlite:test.db`, etc.
  */
 class Database {
-    constructor(path) {
-        this.path = path;
+    constructor(connection) {
+        this.connection = connection;
     }
     /**
      * **load**
@@ -25,11 +27,11 @@ class Database {
      * const db = await Database.load("sqlite:test.db");
      * ```
      */
-    static async load(path) {
-        const _path = await invoke("plugin:sql|load", {
-            db: path,
+    static async load(connection) {
+        const _conn = await invoke("plugin:sql|load", {
+            db: connection,
         });
-        return new Database(_path);
+        return new Database(_conn);
     }
     /**
      * **get**
@@ -47,8 +49,8 @@ class Database {
      * const db = Database.get("sqlite:test.db");
      * ```
      */
-    static get(path) {
-        return new Database(path);
+    static get(connection) {
+        return new Database(connection);
     }
     /**
      * **execute**
@@ -63,10 +65,10 @@ class Database {
      * );
      * ```
      */
-    async execute(query, bindValues) {
+    async execute(sql, bindValues) {
         const [rowsAffected, lastInsertId] = await invoke("plugin:sql|execute", {
-            db: this.path,
-            query,
+            db: this.connection,
+            sql,
             values: bindValues !== null && bindValues !== void 0 ? bindValues : [],
         });
         return {
@@ -86,13 +88,12 @@ class Database {
      * );
      * ```
      */
-    async select(query, bindValues) {
-        const result = await invoke("plugin:sql|select", {
-            db: this.path,
-            query,
+    async select(sql, bindValues) {
+        return await invoke("plugin:sql|select", {
+            db: this.connection,
+            sql,
             values: bindValues !== null && bindValues !== void 0 ? bindValues : [],
         });
-        return result;
     }
     /**
      * **close**
@@ -105,11 +106,10 @@ class Database {
      * ```
      * @param db - Optionally state the name of a database if you are managing more than one. Otherwise, all database pools will be in scope.
      */
-    async close(db) {
-        const success = await invoke("plugin:sql|close", {
-            db,
+    async close() {
+        return await invoke("plugin:sql|close", {
+            db: this.connection,
         });
-        return success;
     }
 }
 
