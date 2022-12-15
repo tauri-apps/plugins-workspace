@@ -67,7 +67,7 @@ while read -r PLUGIN_NAME; do
 
 	# Initialize the directory as a git repo, and set the remote
 	git init -b "$BRANCH" .
-	git remote add origin "https://github.com/tauri-apps/tauri-plugin-${PLUGIN_NAME}"
+	git remote add origin "git@github.com:tauri-apps/tauri-plugin-${PLUGIN_NAME}.git"
 	if [[ -n "$API_TOKEN_GITHUB" ]]; then
 		git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic $(printf "x-access-token:%s" "$API_TOKEN_GITHUB" | base64)"
 	fi
