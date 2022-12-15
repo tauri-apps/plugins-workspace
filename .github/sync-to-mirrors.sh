@@ -98,7 +98,7 @@ while read -r PLUGIN_NAME; do
 
 	if [[ -n "$FORCE_COMMIT" || -n "$(git status --porcelain)" ]]; then
 		echo "Committing to $PLUGIN_NAME"
-		if git commit --quiet $FORCE_COMMIT --author="${COMMIT_ORIGINAL_AUTHOR}" -m "${COMMIT_MESSAGE}" &&
+		if git commit --quiet $FORCE_COMMIT --author="${COMMIT_ORIGINAL_AUTHOR}" -m "${COMMIT_MESSAGE}" -S &&
 			{ [[ -z "$CI" ]] || git push origin "$BRANCH"; } # Only do the actual push from the GitHub Action
 		then
 			# echo "$BUILD_BASE/changes.diff"
