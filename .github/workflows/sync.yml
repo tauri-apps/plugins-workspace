@@ -1,0 +1,22 @@
+name: Sync
+
+on:
+  push:
+    branches:
+      - dev
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # potentially a build step here
+      - name: Sync
+        run: .github/sync-to-mirrors.sh
+        env:
+          BUILD_BASE: ./plugins
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
