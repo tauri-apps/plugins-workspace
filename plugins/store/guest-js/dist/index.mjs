@@ -17,7 +17,7 @@ class Store {
      * @returns
      */
     async set(key, value) {
-        await invoke("plugin:store|set", {
+        return await invoke("plugin:store|set", {
             path: this.path,
             key,
             value,
@@ -137,8 +137,8 @@ class Store {
     /**
      * Saves the store to disk at the stores `path`.
      *
-     * As the store is only persistet to disk before the apps exit, changes might be lost in a crash.
-     * This method let's you persist the store to disk whenever you deem necessary.
+     * As the store is only persisted to disk before the apps exit, changes might be lost in a crash.
+     * This method lets you persist the store to disk whenever you deem necessary.
      * @returns
      */
     async save() {

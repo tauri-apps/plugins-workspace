@@ -195,10 +195,10 @@ export class Store {
    * @param cb
    * @returns A promise resolving to a function to unlisten to the event.
    */
-  async onChange(
+  async onChange<T>(
     cb: (key: string, value: T | null) => void
   ): Promise<UnlistenFn> {
-    return await appWindow.listen<ChangePayload<unknown>>(
+    return await appWindow.listen<ChangePayload<T>>(
       "store://change",
       (event) => {
         if (event.payload.path === this.path) {
