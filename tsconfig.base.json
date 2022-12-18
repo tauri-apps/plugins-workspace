@@ -12,7 +12,9 @@
     "pretty": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ES2019"
+    "target": "ES2019",
+    "declaration": true,
+    "declarationDir": "dist"
   },
   "exclude": ["dist", "node_modules", "test/types"]
 }
