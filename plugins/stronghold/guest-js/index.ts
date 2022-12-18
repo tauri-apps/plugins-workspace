@@ -78,7 +78,7 @@ export interface NetworkConfig {
 }
 
 export interface Duration {
-  millis: number;
+  secs: number;
   nanos: number;
 }
 

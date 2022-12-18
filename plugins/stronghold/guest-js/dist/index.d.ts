@@ -44,7 +44,7 @@ export interface NetworkConfig {
     permissionsDefault?: Permissions;
 }
 export interface Duration {
-    millis: number;
+    secs: number;
     nanos: number;
 }
 export declare class Location {
