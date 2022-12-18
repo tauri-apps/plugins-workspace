@@ -77,8 +77,11 @@ export interface NetworkConfig {
   permissionsDefault?: Permissions;
 }
 
+/** A duration definition. */
 export interface Duration {
-  millis: number;
+  /** The number of whole seconds contained by this Duration. */
+  secs: number;
+  /** The fractional part of this Duration, in nanoseconds. Must be greater or equal to 0 and smaller than 1e+9 (the max number of nanoseoncds in a second)*/
   nanos: number;
 }
 
@@ -113,6 +116,13 @@ class ProcedureExecutor {
     this.procedureArgs = procedureArgs;
   }
 
+  /**
+   * Generate a SLIP10 seed for the given location.
+   * @param outputLocation Location of the record where the seed will be stored.
+   * @param sizeBytes The size in bytes of the SLIP10 seed.
+   * @param hint The record hint.
+   * @returns
+   */
   async generateSLIP10Seed(
     outputLocation: Location,
     sizeBytes?: number
@@ -129,6 +139,15 @@ class ProcedureExecutor {
     }).then((n) => Uint8Array.from(n));
   }
 
+  /**
+   * Derive a SLIP10 private key using a seed or key.
+   * @param chain The chain path.
+   * @param source The source type, either 'Seed' or 'Key'.
+   * @param sourceLocation The source location, must be the `outputLocation` of a previous call to `generateSLIP10Seed` or `deriveSLIP10`.
+   * @param outputLocation Location of the record where the private key will be stored.
+   * @param hint The record hint.
+   * @returns
+   */
   async deriveSLIP10(
     chain: number[],
     source: "Seed" | "Key",
@@ -151,6 +170,14 @@ class ProcedureExecutor {
     }).then((n) => Uint8Array.from(n));
   }
 
+  /**
+   * Store a BIP39 mnemonic.
+   * @param mnemonic The mnemonic string.
+   * @param outputLocation The location of the record where the BIP39 mnemonic will be stored.
+   * @param passphrase The optional mnemonic passphrase.
+   * @param hint The record hint.
+   * @returns
+   */
   async recoverBIP39(
     mnemonic: string,
     outputLocation: Location,
@@ -169,6 +196,13 @@ class ProcedureExecutor {
     }).then((n) => Uint8Array.from(n));
   }
 
+  /**
+   * Generate a BIP39 seed.
+   * @param outputLocation The location of the record where the BIP39 seed will be stored.
+   * @param passphrase The optional mnemonic passphrase.
+   * @param hint The record hint.
+   * @returns
+   */
   async generateBIP39(
     outputLocation: Location,
     passphrase?: string
@@ -185,6 +219,11 @@ class ProcedureExecutor {
     }).then((n) => Uint8Array.from(n));
   }
 
+  /**
+   * Gets the Ed25519 public key of a SLIP10 private key.
+   * @param privateKeyLocation The location of the private key. Must be the `outputLocation` of a previous call to `deriveSLIP10`.
+   * @returns A promise resolving to the public key hex string.
+   */
   async getEd25519PublicKey(privateKeyLocation: Location): Promise<Uint8Array> {
     return await invoke<number[]>("plugin:stronghold|execute_procedure", {
       ...this.procedureArgs,
@@ -198,6 +237,12 @@ class ProcedureExecutor {
     }).then((n) => Uint8Array.from(n));
   }
 
+  /**
+   * Creates a Ed25519 signature from a private key.
+   * @param privateKeyLocation The location of the record where the private key is stored. Must be the `outputLocation` of a previous call to `deriveSLIP10`.
+   * @param msg The message to sign.
+   * @returns A promise resolving to the signature hex string.
+   */
   async signEd25519(
     privateKeyLocation: Location,
     msg: string
@@ -224,6 +269,12 @@ export class Client {
     this.name = toBytesDto(name);
   }
 
+  /**
+   * Get a vault by name.
+   * @param name
+   * @param flags
+   * @returns
+   */
   getVault(name: VaultPath): Vault {
     return new Vault(this.path, this.name, toBytesDto(name));
   }
@@ -276,9 +327,16 @@ export class Store {
   }
 }
 
+/**
+ * A key-value storage that allows create, update and delete operations.
+ * It does not allow reading the data, so one of the procedures must be used to manipulate
+ * the stored data, allowing secure storage of secrets.
+ */
 export class Vault extends ProcedureExecutor {
+  /** The vault path. */
   path: string;
   client: BytesDto;
+  /** The vault name. */
   name: BytesDto;
 
   constructor(path: string, client: ClientPath, name: VaultPath) {
@@ -292,6 +350,13 @@ export class Vault extends ProcedureExecutor {
     this.name = toBytesDto(name);
   }
 
+  /**
+   * Insert a record to this vault.
+   * @param location The record location.
+   * @param record  The record data.
+   * @param recordHint The record hint.
+   * @returns
+   */
   async insert(recordPath: RecordPath, secret: number[]): Promise<void> {
     return await invoke("plugin:stronghold|save_secret", {
       snapshotPath: this.path,
@@ -302,6 +367,12 @@ export class Vault extends ProcedureExecutor {
     });
   }
 
+  /**
+   * Remove a record from the vault.
+   * @param location The record location.
+   * @param gc Whether to additionally perform the gargage collection or not.
+   * @returns
+   */
   async remove(location: Location): Promise<void> {
     return await invoke("plugin:stronghold|remove_secret", {
       snapshotPath: this.path,
@@ -312,14 +383,28 @@ export class Vault extends ProcedureExecutor {
   }
 }
 
+/**
+ * A representation of an access to a stronghold.
+ */
 export class Stronghold {
   path: string;
 
+  /**
+   * Initializes a stronghold.
+   * If the snapshot path located at `path` exists, the password must match.
+   * @param path
+   * @param password
+   */
   constructor(path: string, password: string) {
     this.path = path;
     void this.reload(password);
   }
 
+  /**
+   * Force a reload of the snapshot. The password must match.
+   * @param password
+   * @returns
+   */
   private async reload(password: string): Promise<void> {
     return await invoke("plugin:stronghold|initialize", {
       snapshotPath: this.path,
@@ -327,6 +412,9 @@ export class Stronghold {
     });
   }
 
+  /**
+   * Remove this instance from the cache.
+   */
   async unload(): Promise<void> {
     return await invoke("plugin:stronghold|destroy", {
       snapshotPath: this.path,
@@ -347,6 +435,10 @@ export class Stronghold {
     }).then(() => new Client(this.path, client));
   }
 
+  /**
+   * Persists the stronghold state to the snapshot.
+   * @returns
+   */
   async save(): Promise<void> {
     return await invoke("plugin:stronghold|save", {
       snapshotPath: this.path,
