@@ -1,52 +1,73 @@
-import { invoke } from "@tauri-apps/api/tauri";
-import { appWindow } from "@tauri-apps/api/window";
+import { invoke } from '@tauri-apps/api/tauri';
+import { appWindow } from '@tauri-apps/api/window';
 
-interface ProgressPayload {
-  id: number;
-  progress: number;
-  total: number;
+interface BaseHandlerData {
+    id: number;
 }
 
-type ProgressHandler = (progress: number, total: number) => void;
-const handlers: Map<number, ProgressHandler> = new Map();
-let listening = false;
+interface ProgressHandlerData extends BaseHandlerData {
+    progress: number;
+    total: number;
+}
 
-async function listenToUploadEventIfNeeded(): Promise<void> {
-  if (listening) {
-    return await Promise.resolve();
-  }
-  return await appWindow
-    .listen<ProgressPayload>("upload://progress", ({ payload }) => {
-      const handler = handlers.get(payload.id);
-      if (handler != null) {
-        handler(payload.progress, payload.total);
-      }
-    })
-    .then(() => {
-      listening = true;
+interface SizeHandlerData extends BaseHandlerData {
+    size: number;
+}
+
+interface ResponseData {
+    text: string;
+    status: number;
+}
+
+enum UploadEvent {
+    progress = 'upload://progress',
+    fileSize = 'upload://file-size',
+}
+
+type EventId = `${UploadEvent}-${number}`;
+
+type ProgressHandler = (data: ProgressHandlerData) => unknown;
+type SizeHandler = (data: SizeHandlerData) => unknown;
+const handlers: Map<EventId, ProgressHandler | SizeHandler> = new Map();
+const listeningMap: Map<UploadEvent, boolean> = new Map();
+
+const getIdForEvent = (event: UploadEvent, id: number): EventId => `${event}-${id}`;
+
+async function listenToEventIfNeeded(event: UploadEvent) {
+    if (listeningMap.get(event)) {
+        return;
+    }
+    return appWindow.listen<SizeHandlerData & ProgressHandlerData>(event, ({ payload }) => {
+        const eventId = getIdForEvent(event, payload.id);
+        const handler = handlers.get(eventId);
+        if (typeof handler === 'function') {
+            handler(payload);
+        }
     });
 }
 
-export default async function upload(
-  url: string,
-  filePath: string,
-  progressHandler?: ProgressHandler,
-  headers?: Map<string, string>
-): Promise<void> {
-  const ids = new Uint32Array(1);
-  window.crypto.getRandomValues(ids);
-  const id = ids[0];
+export default async function upload(url: string, filePath: string, progressHandler?: ProgressHandler, fileSizeHandler?: SizeHandler, headers?: Record<string, string>) {
+    const ids = new Uint32Array(1);
+    window.crypto.getRandomValues(ids);
+    const id = ids[0];
 
-  if (progressHandler != null) {
-    handlers.set(id, progressHandler);
-  }
+    if (progressHandler) {
+        const eventId = getIdForEvent(UploadEvent.progress, id);
+        handlers.set(eventId, progressHandler);
+    }
 
-  await listenToUploadEventIfNeeded();
+    if (fileSizeHandler) {
+        const eventId = getIdForEvent(UploadEvent.fileSize, id);
+        handlers.set(eventId, fileSizeHandler);
+    }
 
-  await invoke("plugin:upload|upload", {
-    id,
-    url,
-    filePath,
-    headers: headers ?? {},
-  });
+    await listenToEventIfNeeded(UploadEvent.progress);
+    await listenToEventIfNeeded(UploadEvent.fileSize);
+
+    return await invoke<ResponseData>('plugin:upload|upload', {
+        id,
+        url,
+        filePath,
+        headers: headers ?? {},
+    });
 }
