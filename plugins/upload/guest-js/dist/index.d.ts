@@ -1,3 +1,5 @@
 type ProgressHandler = (progress: number, total: number) => void;
-export default function upload(url: string, filePath: string, progressHandler?: ProgressHandler, headers?: Map<string, string>): Promise<void>;
-export {};
+declare function upload(url: string, filePath: string, progressHandler?: ProgressHandler, headers?: Map<string, string>): Promise<void>;
+declare function download(url: string, filePath: string, progressHandler?: ProgressHandler, headers?: Map<string, string>): Promise<void>;
+export default upload;
+export { download, upload };
