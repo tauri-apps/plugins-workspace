@@ -42,16 +42,16 @@ jobs:
       - uses: Swatinem/rust-cache@v1
 
       - name: clippy
-        run: --workspace --exclude 'tauri-plugin-sql' --all-targets --all-features -- -D warnings
+        run: cargo clippy --workspace --exclude 'tauri-plugin-sql' --all-targets --all-features -- -D warnings
 
       - name: clippy sql:sqlite
-        run: --workspace --package 'tauri-plugin-sql' --all-targets --features sqlite -- -D warnings
+        run: cargo clippy --workspace --package 'tauri-plugin-sql' --all-targets --features sqlite -- -D warnings
 
       - name: clippy sql:mysql
-        run: --workspace --package 'tauri-plugin-sql' --all-targets --features mysql -- -D warnings
+        run: cargo clippy --workspace --package 'tauri-plugin-sql' --all-targets --features mysql -- -D warnings
 
       - name: clippy sql:postgres
-        run: --workspace --package 'tauri-plugin-sql' --all-targets --features postgres -- -D warnings
+        run: cargo clippy --workspace --package 'tauri-plugin-sql' --all-targets --features postgres -- -D warnings
 
   fmt:
     runs-on: ubuntu-latest
