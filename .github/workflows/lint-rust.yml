@@ -28,42 +28,30 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: install webkit2gtk
+
+      - name: install webkit2gtk and libudev for [authenticator]
         run: |
           sudo apt-get update
-          sudo apt-get install -y webkit2gtk-4.0
-      - name: install libudev for [authenticator]
-        run: |
-          sudo apt-get install -y libudev-dev
+          sudo apt-get install -y webkit2gtk-4.0 libudev-dev
+
       - name: Install clippy with stable toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
           components: clippy
+
       - uses: Swatinem/rust-cache@v1
 
-      - uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --workspace --exclude 'tauri-plugin-sql' --all-targets --all-features -- -D warnings
-          name: clippy
-      - uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --workspace --package 'tauri-plugin-sql' --all-targets --features sqlite -- -D warnings
-          name: clippy sql:sqlite
-      - uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --workspace --package 'tauri-plugin-sql' --all-targets --features mysql -- -D warnings
-          name: clippy sql:mysql
-      - uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --workspace --package 'tauri-plugin-sql' --all-targets --features postgres -- -D warnings
-          name: clippy sql:postgres
+      - name: clippy
+        run: --workspace --exclude 'tauri-plugin-sql' --all-targets --all-features -- -D warnings
+
+      - name: clippy sql:sqlite
+        run: --workspace --package 'tauri-plugin-sql' --all-targets --features sqlite -- -D warnings
+
+      - name: clippy sql:mysql
+        run: --workspace --package 'tauri-plugin-sql' --all-targets --features mysql -- -D warnings
+
+      - name: clippy sql:postgres
+        run: --workspace --package 'tauri-plugin-sql' --all-targets --features postgres -- -D warnings
 
   fmt:
     runs-on: ubuntu-latest
@@ -72,14 +60,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - name: Install rustfmt with nightly toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          profile: minimal
-          toolchain: nightly
-          override: true
           components: rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
