@@ -1,5 +1,5 @@
 {
-  "name": "tauri-plugin-log",
+  "name": "tauri-plugin-log-api",
   "version": "0.0.0",
   "license": "MIT or APACHE-2.0",
   "authors": [
