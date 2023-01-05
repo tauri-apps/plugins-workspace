@@ -124,6 +124,15 @@ importers:
     devDependencies:
       tslib: 2.4.1
 
+  plugins/websocket/guest-js:
+    specifiers:
+      '@tauri-apps/api': ^1.2.0
+      tslib: ^2.4.1
+    dependencies:
+      '@tauri-apps/api': 1.2.0
+    devDependencies:
+      tslib: 2.4.1
+
 packages:
 
   /@eslint/eslintrc/1.3.3:
