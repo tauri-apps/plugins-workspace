@@ -10,10 +10,10 @@ import resolve from "@rollup/plugin-node-resolve";
  * @param {string[]} external Imported package.json
  * @returns {import('rollup').RollupOptions}
  */
-export function createConfig({ pkg, external = [] }) {
+export function createConfig({ input = "index.ts", pkg, external = [] }) {
   return [
     {
-      input: "index.ts",
+      input,
       external: Object.keys(pkg.dependencies || {})
         .concat(Object.keys(pkg.peerDependencies || {}))
         .concat(builtinModules)
@@ -30,7 +30,7 @@ export function createConfig({ pkg, external = [] }) {
       plugins: [typescript({ sourceMap: true })],
     },
     {
-      input: "index.ts",
+      input,
       onwarn: (warning) => {
         throw Object.assign(new Error(), warning);
       },
