@@ -13,6 +13,7 @@ There are three general methods of installation that we can recommend.
 Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 `src-tauri/Cargo.toml`
+
 ```toml
 [dependencies]
 tauri-plugin-authenticator = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
@@ -26,7 +27,7 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 pnpm add https://github.com/tauri-apps/tauri-plugin-authenticator
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-authenticator
-# or 
+# or
 yarn add https://github.com/tauri-apps/tauri-plugin-authenticator
 ```
 
@@ -35,6 +36,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-authenticator
 First you need to register the core plugin with Tauri:
 
 `src-tauri/src/main.rs`
+
 ```rust
 fn main() {
     tauri::Builder::default()
@@ -47,37 +49,49 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Authenticator } from 'tauri-plugin-authenticator-api'
+import { Authenticator } from "tauri-plugin-authenticator-api";
 
-const auth = new Authenticator()
-auth.init() // initialize transports
+const auth = new Authenticator();
+auth.init(); // initialize transports
 
 // generate a 32-bytes long random challenge
-const arr = new Uint32Array(32)
-window.crypto.getRandomValues(arr)
-const b64 = btoa(String.fromCharCode.apply(null, arr))
+const arr = new Uint32Array(32);
+window.crypto.getRandomValues(arr);
+const b64 = btoa(String.fromCharCode.apply(null, arr));
 // web-safe base64
-const challenge = b64.replace(/\+/g, '-').replace(/\//g, '_')
+const challenge = b64.replace(/\+/g, "-").replace(/\//g, "_");
 
-const domain = 'https://tauri.app'
+const domain = "https://tauri.app";
 
 // attempt to register with the security key
-const json = await auth.register(challenge, domain)
-const registerResult = JSON.parse(json)
+const json = await auth.register(challenge, domain);
+const registerResult = JSON.parse(json);
 
 // verify te registration was successfull
-const r2 = await auth.verifyRegistration(challenge, app, registerResult.registerData, registerResult.clientData)
-const j2 = JSON.parse(r2)
+const r2 = await auth.verifyRegistration(
+  challenge,
+  app,
+  registerResult.registerData,
+  registerResult.clientData
+);
+const j2 = JSON.parse(r2);
 
 // sign some data
-const json = await auth.sign(challenge, app, keyHandle)
-const signData = JSON.parse(json)
+const json = await auth.sign(challenge, app, keyHandle);
+const signData = JSON.parse(json);
 
 // verify the signature again
-const counter = await auth.verifySignature(challenge, app, signData.signData, clientData, keyHandle, pubkey)
+const counter = await auth.verifySignature(
+  challenge,
+  app,
+  signData.signData,
+  clientData,
+  keyHandle,
+  pubkey
+);
 
-if(counter && counter>0) {
-    console.log('SUCCESS!')
+if (counter && counter > 0) {
+  console.log("SUCCESS!");
 }
 ```
 

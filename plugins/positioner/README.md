@@ -15,6 +15,7 @@ There are three general methods of installation that we can recommend.
 Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 `src-tauri/Cargo.toml`
+
 ```toml
 [dependencies]
 tauri-plugin-positioner = "1.0"
@@ -30,7 +31,7 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 pnpm add tauri-plugin-positioner
 # or
 npm add tauri-plugin-positioner
-# or 
+# or
 yarn add tauri-plugin-positioner
 ```
 
@@ -40,7 +41,7 @@ Or through git:
 pnpm add https://github.com/tauri-apps/tauri-plugin-positioner
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-positioner
-# or 
+# or
 yarn add https://github.com/tauri-apps/tauri-plugin-positioner
 ```
 
@@ -49,6 +50,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-positioner
 First you need to register the core plugin with Tauri:
 
 `src-tauri/src/main.rs`
+
 ```rust
 fn main() {
     tauri::Builder::default()
@@ -65,9 +67,9 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { move_window, Position } from 'tauri-plugin-positioner-api'
+import { move_window, Position } from "tauri-plugin-positioner-api";
 
-move_window(Position.TopRight)
+move_window(Position.TopRight);
 ```
 
 If you only intend on moving the window from rust code, you can import the Window trait extension instead of registering the plugin:
@@ -88,4 +90,3 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
 Code: (c) 2021 - Jonas Kruckenberg. 2021 - Present - The Tauri Programme within The Commons Conservancy.
 
 MIT or MIT/Apache 2.0 where applicable.
-

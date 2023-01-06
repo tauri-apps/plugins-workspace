@@ -13,6 +13,7 @@ There are three general methods of installation that we can recommend.
 Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 `src-tauri/Cargo.toml`
+
 ```toml
 [dependencies]
 tauri-plugin-stronghold = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
@@ -26,7 +27,7 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 pnpm add https://github.com/tauri-apps/tauri-plugin-stronghold
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-stronghold
-# or 
+# or
 yarn add https://github.com/tauri-apps/tauri-plugin-stronghold
 ```
 
@@ -35,6 +36,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-stronghold
 First you need to register the core plugin with Tauri:
 
 `src-tauri/src/main.rs`
+
 ```rust
 fn main() {
     tauri::Builder::default()
@@ -51,7 +53,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Stronghold, Location } from 'tauri-plugin-stronghold-api'
+import { Stronghold, Location } from "tauri-plugin-stronghold-api";
 
 // TODO
 ```
@@ -65,4 +67,3 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
 Code: (c) 2015 - Present - The Tauri Programme within The Commons Conservancy.
 
 MIT or MIT/Apache 2.0 where applicable.
-

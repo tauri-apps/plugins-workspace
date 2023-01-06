@@ -11,6 +11,7 @@ There are three general methods of installation that we can recommend.
 Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 `src-tauri/Cargo.toml`
+
 ```toml
 [dependencies]
 tauri-plugin-fs-extra = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
@@ -24,7 +25,7 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 pnpm add https://github.com/tauri-apps/tauri-plugin-fs-extra
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-fs-extra
-# or 
+# or
 yarn add https://github.com/tauri-apps/tauri-plugin-fs-extra
 ```
 
@@ -33,6 +34,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-fs-extra
 First you need to register the core plugin with Tauri:
 
 `src-tauri/src/main.rs`
+
 ```rust
 fn main() {
     tauri::Builder::default()
@@ -45,9 +47,9 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { metadata } from 'tauri-plugin-fs-extra-api'
+import { metadata } from "tauri-plugin-fs-extra-api";
 
-await metadata('/path/to/file')
+await metadata("/path/to/file");
 ```
 
 ## Contributing

@@ -13,6 +13,7 @@ There are three general methods of installation that we can recommend.
 Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 `src-tauri/Cargo.toml`
+
 ```toml
 [dependencies]
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
@@ -26,7 +27,7 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 pnpm add https://github.com/tauri-apps/tauri-plugin-store
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-store
-# or 
+# or
 yarn add https://github.com/tauri-apps/tauri-plugin-store
 ```
 
@@ -35,6 +36,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-store
 First you need to register the core plugin with Tauri:
 
 `src-tauri/src/main.rs`
+
 ```rust
 fn main() {
     tauri::Builder::default()
@@ -47,13 +49,13 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Store } from 'tauri-plugin-store-api';
+import { Store } from "tauri-plugin-store-api";
 
-const store = new Store('.settings.dat');
+const store = new Store(".settings.dat");
 
-await store.set('some-key', { value: 5 });
+await store.set("some-key", { value: 5 });
 
-const val = await store.get('some-key');
+const val = await store.get("some-key");
 assert(val, { value: 5 });
 ```
 

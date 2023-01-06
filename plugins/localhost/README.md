@@ -15,6 +15,7 @@ There are three general methods of installation that we can recommend.
 Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 `src-tauri/Cargo.toml`
+
 ```toml
 [dependencies]
 tauri-plugin-localhost = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
@@ -26,6 +27,7 @@ portpicker = "0.1" # used in the example to pick a random free port
 First you need to register the core plugin with Tauri:
 
 `src-tauri/src/main.rs`
+
 ```rust
 use tauri::{utils::config::AppUrl, window::WindowBuilder, WindowUrl};
 
