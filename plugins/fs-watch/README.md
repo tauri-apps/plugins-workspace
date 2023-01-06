@@ -13,6 +13,7 @@ There are three general methods of installation that we can recommend.
 Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 `src-tauri/Cargo.toml`
+
 ```toml
 [dependencies]
 tauri-plugin-fs-watch = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
@@ -26,7 +27,7 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 pnpm add https://github.com/tauri-apps/tauri-plugin-fs-watch
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-fs-watch
-# or 
+# or
 yarn add https://github.com/tauri-apps/tauri-plugin-fs-watch
 ```
 
@@ -35,6 +36,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-fs-watch
 First you need to register the core plugin with Tauri:
 
 `src-tauri/src/main.rs`
+
 ```rust
 fn main() {
     tauri::Builder::default()
@@ -47,16 +49,24 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { watch, watchImmediate } from 'tauri-plugin-fs-watch-api'
+import { watch, watchImmediate } from "tauri-plugin-fs-watch-api";
 
 // can also watch an array of paths
-const stopWatching = await watch('/path/to/something', { recursive: true }, event => {
-  const { type, payload } = event
-})
+const stopWatching = await watch(
+  "/path/to/something",
+  { recursive: true },
+  (event) => {
+    const { type, payload } = event;
+  }
+);
 
-const stopRawWatcher = await watchImmediate(['/path/a', '/path/b'], {}, event => {
-  const { path, operation, cookie } = event
-})
+const stopRawWatcher = await watchImmediate(
+  ["/path/a", "/path/b"],
+  {},
+  (event) => {
+    const { path, operation, cookie } = event;
+  }
+);
 ```
 
 ## Contributing

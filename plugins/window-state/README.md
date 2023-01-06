@@ -13,6 +13,7 @@ There are three general methods of installation that we can recommend.
 Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 `src-tauri/Cargo.toml`
+
 ```toml
 [dependencies]
 tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
@@ -23,6 +24,7 @@ tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-works
 First you need to register the core plugin with Tauri:
 
 `src-tauri/src/main.rs`
+
 ```rust
 fn main() {
     tauri::Builder::default()
@@ -35,6 +37,7 @@ fn main() {
 Afterwards all windows will remember their state when the app is being closed and will restore to their previous state on the next launch.
 
 Optionally you can also tell the plugin to save the state of all open window to disk my using the `save_window_state()` method exposed by the `AppHandleExt` trait:
+
 ```rust
 use tauri_plugin_window_state::AppHandleExt;
 
@@ -43,6 +46,7 @@ app.save_window_state(); // will save the state of all open windows to disk
 ```
 
 To manually restore a windows state from disk you can call the `restore_state()` method exposed by the `WindowExt` trait:
+
 ```rust
 use tauri_plugin_window_state::{WindowExt, ShowMode};
 

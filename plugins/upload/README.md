@@ -13,6 +13,7 @@ There are three general methods of installation that we can recommend.
 Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 `src-tauri/Cargo.toml`
+
 ```toml
 [dependencies]
 tauri-plugin-upload = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
@@ -26,7 +27,7 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 pnpm add https://github.com/tauri-apps/tauri-plugin-upload
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-upload
-# or 
+# or
 yarn add https://github.com/tauri-apps/tauri-plugin-upload
 ```
 
@@ -35,6 +36,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-upload
 First you need to register the core plugin with Tauri:
 
 `src-tauri/src/main.rs`
+
 ```rust
 fn main() {
     tauri::Builder::default()
