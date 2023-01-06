@@ -244,12 +244,12 @@ async fn save<R: Runtime>(
 }
 
 #[derive(Default)]
-pub struct PluginBuilder {
+pub struct Builder {
     stores: HashMap<PathBuf, Store>,
     frozen: bool,
 }
 
-impl PluginBuilder {
+impl Builder {
     /// Registers a store with the plugin.
     ///
     /// # Examples
