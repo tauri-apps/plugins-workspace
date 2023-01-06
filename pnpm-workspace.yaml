@@ -1,2 +1,2 @@
 packages:
-  - plugins/*/guest-js
+  - plugins/*

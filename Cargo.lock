@@ -149,7 +149,7 @@ dependencies = [
  "devd-rs",
  "libc",
  "libudev",
- "log 0.4.17",
+ "log",
  "rand 0.7.3",
  "runloop",
  "winapi 0.3.9",
@@ -993,7 +993,7 @@ version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3bdd7b0849075e79ee9a1836df22c717d1eba30451796fdc631b04565dd11e2a"
 dependencies = [
- "log 0.4.17",
+ "log",
 ]
 
 [[package]]
@@ -1304,7 +1304,7 @@ checksum = "d266041a359dfa931b370ef684cceb84b166beb14f7f0421f4a6a3d0c446d12e"
 dependencies = [
  "cc",
  "libc",
- "log 0.4.17",
+ "log",
  "rustversion",
  "windows",
 ]
@@ -1443,7 +1443,7 @@ dependencies = [
  "aho-corasick",
  "bstr",
  "fnv",
- "log 0.4.17",
+ "log",
  "regex",
 ]
 
@@ -1607,7 +1607,7 @@ version = "0.25.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5c13fb08e5d4dfc151ee5e88bae63f7773d61852f3bdc73c9f4b9e1bde03148"
 dependencies = [
- "log 0.4.17",
+ "log",
  "mac",
  "markup5ever",
  "proc-macro2",
@@ -1751,7 +1751,7 @@ dependencies = [
  "crossbeam-utils",
  "globset",
  "lazy_static",
- "log 0.4.17",
+ "log",
  "memchr",
  "regex",
  "same-file",
@@ -1948,7 +1948,7 @@ dependencies = [
  "cesu8",
  "combine",
  "jni-sys",
- "log 0.4.17",
+ "log",
  "thiserror",
  "walkdir",
 ]
@@ -2026,7 +2026,7 @@ dependencies = [
  "gtk",
  "gtk-sys",
  "libappindicator-sys",
- "log 0.4.17",
+ "log",
 ]
 
 [[package]]
@@ -2135,20 +2135,6 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.1.0"
-dependencies = [
- "byte-unit",
- "fern",
- "log 0.4.17",
- "serde",
- "serde_json",
- "serde_repr",
- "tauri",
- "time 0.3.17",
-]
-
-[[package]]
-name = "log"
 version = "0.4.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "abb12e687cfb44aa40f41fc3978ef76448f9b6038cad6aef4259d3c095a2382e"
@@ -2193,7 +2179,7 @@ version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a24f40fb03852d1cdd84330cddcaf98e9ec08a7b7768e952fad3b4cf048ec8fd"
 dependencies = [
- "log 0.4.17",
+ "log",
  "phf 0.8.0",
  "phf_codegen",
  "string_cache",
@@ -2273,7 +2259,7 @@ dependencies = [
  "iovec",
  "kernel32-sys",
  "libc",
- "log 0.4.17",
+ "log",
  "miow",
  "net2",
  "slab",
@@ -2287,7 +2273,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5d732bc30207a6423068df043e3d02e0735b155ad7ce1a6f76fe2baa5b158de"
 dependencies = [
  "libc",
- "log 0.4.17",
+ "log",
  "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.42.0",
 ]
@@ -2299,7 +2285,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "52403fe290012ce777c4626790c8951324a2b9e3316b3143779c72b029742f19"
 dependencies = [
  "lazycell",
- "log 0.4.17",
+ "log",
  "mio 0.6.23",
  "slab",
 ]
@@ -2324,7 +2310,7 @@ checksum = "07226173c32f2926027b63cce4bcd8076c3552846cbe7925f3aaffeac0a3b92e"
 dependencies = [
  "lazy_static",
  "libc",
- "log 0.4.17",
+ "log",
  "openssl",
  "openssl-probe",
  "openssl-sys",
@@ -3186,7 +3172,7 @@ dependencies = [
  "hyper-tls",
  "ipnet",
  "js-sys",
- "log 0.4.17",
+ "log",
  "mime",
  "native-tls",
  "once_cell",
@@ -3271,7 +3257,7 @@ version = "0.20.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "539a2bfe908f471bfa933876bd1eb6a19cf2176d375f82ef7f99530a40e48c2c"
 dependencies = [
- "log 0.4.17",
+ "log",
  "ring",
  "sct",
  "webpki",
@@ -3396,7 +3382,7 @@ dependencies = [
  "cssparser",
  "derive_more",
  "fxhash",
- "log 0.4.17",
+ "log",
  "matches",
  "phf 0.8.0",
  "phf_codegen",
@@ -3735,7 +3721,7 @@ dependencies = [
  "itoa 1.0.4",
  "libc",
  "libsqlite3-sys",
- "log 0.4.17",
+ "log",
  "md-5",
  "memchr",
  "num-bigint",
@@ -3862,7 +3848,7 @@ checksum = "8b00fbacafc4ef96fb95fac07d86cc3ec5e21c8efa94785374ad7913a4a216ba"
 dependencies = [
  "atom",
  "lazy_static",
- "log 0.4.17",
+ "log",
  "thiserror",
  "zeroize",
 ]
@@ -4000,7 +3986,7 @@ dependencies = [
  "lazy_static",
  "libappindicator",
  "libc",
- "log 0.4.17",
+ "log",
  "ndk",
  "ndk-context",
  "ndk-sys",
@@ -4121,7 +4107,7 @@ dependencies = [
  "authenticator",
  "base64 0.13.1",
  "chrono",
- "log 0.4.17",
+ "log",
  "once_cell",
  "rand 0.8.5",
  "rusty-fork",
@@ -4138,7 +4124,7 @@ name = "tauri-plugin-autostart"
 version = "0.1.0"
 dependencies = [
  "auto-launch",
- "log 0.4.17",
+ "log",
  "serde",
  "serde_json",
  "tauri",
@@ -4149,7 +4135,7 @@ dependencies = [
 name = "tauri-plugin-fs-extra"
 version = "0.1.0"
 dependencies = [
- "log 0.4.17",
+ "log",
  "serde",
  "serde_json",
  "tauri",
@@ -4160,7 +4146,7 @@ dependencies = [
 name = "tauri-plugin-fs-watch"
 version = "0.1.0"
 dependencies = [
- "log 0.4.17",
+ "log",
  "notify",
  "serde",
  "serde_json",
@@ -4173,7 +4159,7 @@ name = "tauri-plugin-localhost"
 version = "0.1.0"
 dependencies = [
  "http",
- "log 0.4.17",
+ "log",
  "serde",
  "serde_json",
  "tauri",
@@ -4182,11 +4168,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-log"
+version = "0.1.0"
+dependencies = [
+ "byte-unit",
+ "fern",
+ "log",
+ "serde",
+ "serde_json",
+ "serde_repr",
+ "tauri",
+ "time 0.3.17",
+]
+
+[[package]]
 name = "tauri-plugin-persisted-scope"
 version = "0.1.0"
 dependencies = [
  "bincode",
- "log 0.4.17",
+ "log",
  "serde",
  "serde_json",
  "tauri",
@@ -4197,7 +4197,7 @@ dependencies = [
 name = "tauri-plugin-positioner"
 version = "0.2.7"
 dependencies = [
- "log 0.4.17",
+ "log",
  "serde",
  "serde_json",
  "serde_repr",
@@ -4210,7 +4210,7 @@ name = "tauri-plugin-sql"
 version = "0.1.0"
 dependencies = [
  "futures",
- "log 0.4.17",
+ "log",
  "serde",
  "serde_json",
  "sqlx",
@@ -4223,7 +4223,7 @@ dependencies = [
 name = "tauri-plugin-store"
 version = "0.1.0"
 dependencies = [
- "log 0.4.17",
+ "log",
  "serde",
  "serde_json",
  "tauri",
@@ -4237,7 +4237,7 @@ dependencies = [
  "hex",
  "iota-crypto 0.14.3",
  "iota_stronghold",
- "log 0.4.17",
+ "log",
  "rand 0.8.5",
  "rusty-fork",
  "serde",
@@ -4252,7 +4252,7 @@ name = "tauri-plugin-upload"
 version = "0.1.0"
 dependencies = [
  "futures",
- "log 0.4.17",
+ "log",
  "read-progress-stream",
  "reqwest",
  "serde",
@@ -4268,7 +4268,7 @@ name = "tauri-plugin-websocket"
 version = "0.1.0"
 dependencies = [
  "futures-util",
- "log 0.4.17",
+ "log",
  "rand 0.8.5",
  "serde",
  "serde_json",
@@ -4283,7 +4283,7 @@ name = "tauri-plugin-window-state"
 version = "0.1.0"
 dependencies = [
  "bincode",
- "log 0.4.17",
+ "log",
  "serde",
  "serde_json",
  "tauri",
@@ -4473,7 +4473,7 @@ checksum = "e0d6ef4e10d23c1efb862eecad25c5054429a71958b4eeef85eb5e7170b477ca"
 dependencies = [
  "ascii",
  "chunked_transfer",
- "log 0.4.17",
+ "log",
  "time 0.3.17",
  "url",
 ]
@@ -4549,7 +4549,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f714dd15bead90401d77e04243611caec13726c2408afd5b31901dfcdcb3b181"
 dependencies = [
  "futures-util",
- "log 0.4.17",
+ "log",
  "native-tls",
  "tokio",
  "tokio-native-tls",
@@ -4625,7 +4625,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ddad33d2d10b1ed7eb9d1f518a5674713876e97e5bb9b7345a7984fbb4f922"
 dependencies = [
  "lazy_static",
- "log 0.4.17",
+ "log",
  "tracing-core",
 ]
 
@@ -4673,7 +4673,7 @@ dependencies = [
  "bytes 1.3.0",
  "http",
  "httparse",
- "log 0.4.17",
+ "log",
  "native-tls",
  "rand 0.8.5",
  "sha-1",
@@ -4877,7 +4877,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ce8a968cb1cd110d136ff8b819a556d6fb6d919363c61534f6860c7eb172ba0"
 dependencies = [
- "log 0.4.17",
+ "log",
  "try-lock",
 ]
 
@@ -4916,7 +4916,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4c8ffb332579b0557b52d268b91feab8df3615f265d5270fec2a8c95b17c1142"
 dependencies = [
  "bumpalo",
- "log 0.4.17",
+ "log",
  "once_cell",
  "proc-macro2",
  "quote",
@@ -5338,7 +5338,7 @@ dependencies = [
  "http",
  "kuchiki",
  "libc",
- "log 0.4.17",
+ "log",
  "objc",
  "objc_id",
  "once_cell",

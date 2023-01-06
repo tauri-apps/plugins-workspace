@@ -33,7 +33,7 @@ importers:
       rollup: 3.7.4
       typescript: 4.9.4
 
-  plugins/authenticator/guest-js:
+  plugins/authenticator:
     specifiers:
       "@tauri-apps/api": ^1.2.0
       tslib: ^2.4.1
@@ -42,7 +42,7 @@ importers:
     devDependencies:
       tslib: 2.4.1
 
-  plugins/autostart/guest-js:
+  plugins/autostart:
     specifiers:
       "@tauri-apps/api": ^1.2.0
       tslib: ^2.4.1
@@ -51,7 +51,7 @@ importers:
     devDependencies:
       tslib: 2.4.1
 
-  plugins/fs-extra/guest-js:
+  plugins/fs-extra:
     specifiers:
       "@tauri-apps/api": ^1.2.0
       tslib: ^2.4.1
@@ -60,7 +60,7 @@ importers:
     devDependencies:
       tslib: 2.4.1
 
-  plugins/fs-watch/guest-js:
+  plugins/fs-watch:
     specifiers:
       "@tauri-apps/api": ^1.2.0
       tslib: ^2.4.1
@@ -69,7 +69,7 @@ importers:
     devDependencies:
       tslib: 2.4.1
 
-  plugins/log/guest-js:
+  plugins/log:
     specifiers:
       "@tauri-apps/api": ^1.2.0
       tslib: ^2.4.1
@@ -78,7 +78,7 @@ importers:
     devDependencies:
       tslib: 2.4.1
 
-  plugins/positioner/guest-js:
+  plugins/positioner:
     specifiers:
       "@tauri-apps/api": ^1.2.0
       tslib: ^2.4.1
@@ -87,7 +87,7 @@ importers:
     devDependencies:
       tslib: 2.4.1
 
-  plugins/sql/guest-js:
+  plugins/sql:
     specifiers:
       "@tauri-apps/api": ^1.2.0
       tslib: ^2.4.1
@@ -96,7 +96,7 @@ importers:
     devDependencies:
       tslib: 2.4.1
 
-  plugins/store/guest-js:
+  plugins/store:
     specifiers:
       "@tauri-apps/api": ^1.2.0
       tslib: ^2.4.1
@@ -105,7 +105,7 @@ importers:
     devDependencies:
       tslib: 2.4.1
 
-  plugins/stronghold/guest-js:
+  plugins/stronghold:
     specifiers:
       "@tauri-apps/api": ^1.2.0
       tslib: ^2.4.1
@@ -114,7 +114,7 @@ importers:
     devDependencies:
       tslib: 2.4.1
 
-  plugins/upload/guest-js:
+  plugins/upload:
     specifiers:
       "@tauri-apps/api": ^1.2.0
       tslib: ^2.4.1
@@ -123,7 +123,7 @@ importers:
     devDependencies:
       tslib: 2.4.1
 
-  plugins/websocket/guest-js:
+  plugins/websocket:
     specifiers:
       "@tauri-apps/api": ^1.2.0
       tslib: ^2.4.1

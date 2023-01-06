@@ -75,8 +75,8 @@ pub fn register(application: String, timeout: u64, challenge: String) -> crate::
 
             let (key_handle, public_key) =
                 _u2f_get_key_handle_and_public_key_from_register_response(&register_data).unwrap();
-            let key_handle_base64 = encode_config(&key_handle, URL_SAFE_NO_PAD);
-            let public_key_base64 = encode_config(&public_key, URL_SAFE_NO_PAD);
+            let key_handle_base64 = encode_config(key_handle, URL_SAFE_NO_PAD);
+            let public_key_base64 = encode_config(public_key, URL_SAFE_NO_PAD);
             let register_data_base64 = encode_config(&register_data, URL_SAFE_NO_PAD);
             println!("Key Handle: {}", &key_handle_base64);
             println!("Public Key: {}", &public_key_base64);
@@ -108,7 +108,7 @@ pub fn sign(
     challenge: String,
     key_handle: String,
 ) -> crate::Result<String> {
-    let credential = match decode_config(&key_handle, URL_SAFE_NO_PAD) {
+    let credential = match decode_config(key_handle, URL_SAFE_NO_PAD) {
         Ok(v) => v,
         Err(e) => {
             return Err(e.into());
@@ -152,7 +152,7 @@ pub fn sign(
 
             let (_, handle_used, sign_data, device_info) = sign_result.unwrap();
 
-            let sig = encode_config(&sign_data, URL_SAFE_NO_PAD);
+            let sig = encode_config(sign_data, URL_SAFE_NO_PAD);
 
             println!("Sign result: {}", sig);
             println!(
