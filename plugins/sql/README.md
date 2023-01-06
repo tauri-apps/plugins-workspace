@@ -14,10 +14,12 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 `src-tauri/Cargo.toml`
 ```toml
-[dependencies.tauri-plugin-sql]
-git = "https://github.com/tauri-apps/plugins-workspace"
-branch = "dev"
-features = ["sqlite"] # or "postgres", or "mysql"
+[dependencies]
+tauri-plugin-sql = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+# or
+tauri-plugin-sql = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev", default-features = false, features = ["postgres"] }
+# or 
+tauri-plugin-sql = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev", default-features = false, features = ["mysql"] } 
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
