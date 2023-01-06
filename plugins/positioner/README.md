@@ -59,7 +59,7 @@ fn main() {
         .on_system_tray_event(|app, event| {
            tauri_plugin_positioner::on_tray_event(app, &event);
         })
-        .run()
+        .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 ```

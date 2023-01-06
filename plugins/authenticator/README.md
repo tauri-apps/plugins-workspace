@@ -16,6 +16,8 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
+tauri-plugin-authenticator = "0.1"
+# or through git
 tauri-plugin-authenticator = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
 ```
 
