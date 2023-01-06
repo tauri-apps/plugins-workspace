@@ -1,6 +1,7 @@
 {
   "name": "tauri-plugin-authenticator-api",
   "version": "0.0.0",
+  "description": "Use hardware security-keys in your Tauri App.",
   "license": "MIT or APACHE-2.0",
   "authors": [
     "Tauri Programme within The Commons Conservancy"

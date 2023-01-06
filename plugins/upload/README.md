@@ -1,6 +1,6 @@
 ![plugin-upload](banner.png)
 
-Upload files from disk to a remote server over http.
+Upload files from disk to a remote server over HTTP.
 
 ## Install
 

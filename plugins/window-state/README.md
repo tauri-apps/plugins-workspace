@@ -2,8 +2,6 @@
 
 Save window positions and sizse and restore them when the app is reopened.
 
-<!-- description -->
-
 ## Install
 
 There are three general methods of installation that we can recommend.

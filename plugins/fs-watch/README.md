@@ -1,6 +1,6 @@
 ![plugin-fs-watch](banner.png)
 
-Watch changes on files and directories through [notify](https://github.com/notify-rs/notify).
+Watch files and directories for changes using [notify](https://github.com/notify-rs/notify).
 
 ## Install
 

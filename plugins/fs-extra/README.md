@@ -1,4 +1,6 @@
-<!-- description -->
+![tauri-plugin-fs-extra](banner.png)
+
+Additional file system methods not included in the core API.
 
 ## Install
 
