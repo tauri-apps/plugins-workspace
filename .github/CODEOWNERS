@@ -1,0 +1,5 @@
+# Order is important; the last matching pattern takes the most precedence.
+* @tauri-apps/plugin-maintainers
+
+# Currently CI/CD for plugins are in heavy flux, and the plugin team manages it themselves.
+# .github @tauri-apps/wg-devops
