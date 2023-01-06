@@ -28,15 +28,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Download cargo-audit
-        run: |
-          set +f
-          curl -s https://api.github.com/repos/rustsec/rustsec/releases/latest | grep "browser_download_url.*cargo-audit-x86_64-unknown-linux-musl.*" | cut -d : -f 2,3 | tr -d \" | wget -qi -
-          tar -xvzf ./cargo-audit*.tgz
-          mv ./cargo-audit*/cargo-audit ./cargo-audit
-          chmod +x ./cargo-audit
-          set -f
-
-      - name: Run cargo-audit
-        run: ./cargo-audit audit -D unmaintained -D yanked
+      - uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
