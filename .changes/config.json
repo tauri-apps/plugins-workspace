@@ -1,0 +1,117 @@
+{
+  "gitSiteUrl": "https://github.com/tauri-apps/plugins-workspace/",
+  "pkgManagers": {
+    "javascript": {
+      "version": true,
+      "getPublishedVersion": "npm view ${ pkgFile.pkg.name } version",
+      "publish": ["npm publish --access public"]
+    },
+    "rust": {
+      "version": true,
+      "getPublishedVersion": "cargo search ${ pkg.pkg } --limit 1 | sed -nE 's/^[^\"]*\"//; s/\".*//1p' -",
+      "publish": ["cargo publish"]
+    }
+  },
+  "packages": {
+    "tauri-plugin-authenticator": {
+      "path": "./plugins/authenticator",
+      "manager": "rust"
+    },
+    "tauri-plugin-authenticator-api": {
+      "path": "./plugins/authenticator",
+      "manager": "javascript"
+    },
+    "tauri-plugin-autostart": {
+      "path": "./plugins/autostart",
+      "manager": "rust"
+    },
+    "tauri-plugin-autostart-api": {
+      "path": "./plugins/autostart",
+      "manager": "javascript"
+    },
+    "tauri-plugin-fs-extra": {
+      "path": "./plugins/fs-extra",
+      "manager": "rust"
+    },
+    "tauri-plugin-fs-extra-api": {
+      "path": "./plugins/fs-extra",
+      "manager": "javascript"
+    },
+    "tauri-plugin-fs-watch": {
+      "path": "./plugins/fs-watch",
+      "manager": "rust"
+    },
+    "tauri-plugin-fs-watch-api": {
+      "path": "./plugins/fs-watch",
+      "manager": "javascript"
+    },
+    "tauri-plugin-log": {
+      "path": "./plugins/log",
+      "manager": "rust"
+    },
+    "tauri-plugin-log-api": {
+      "path": "./plugins/log",
+      "manager": "javascript"
+    },
+    "tauri-plugin-localhost": {
+      "path": "./plugins/localhost",
+      "manager": "rust"
+    },
+    "tauri-plugin-persisted-scope": {
+      "path": "./plugins/persisted-scope",
+      "manager": "rust"
+    },
+    "tauri-plugin-positioner": {
+      "path": "./plugins/positioner",
+      "manager": "rust"
+    },
+    "tauri-plugin-positioner-api": {
+      "path": "./plugins/positioner",
+      "manager": "javascript"
+    },
+    "tauri-plugin-sql": {
+      "path": "./plugins/sql",
+      "manager": "rust"
+    },
+    "tauri-plugin-sql-api": {
+      "path": "./plugins/sql",
+      "manager": "javascript"
+    },
+    "tauri-plugin-store": {
+      "path": "./plugins/store",
+      "manager": "rust"
+    },
+    "tauri-plugin-store-api": {
+      "path": "./plugins/store",
+      "manager": "javascript"
+    },
+    "tauri-plugin-stronghold": {
+      "path": "./plugins/stronghold",
+      "manager": "rust"
+    },
+    "tauri-plugin-stronghold-api": {
+      "path": "./plugins/stronghold",
+      "manager": "javascript"
+    },
+    "tauri-plugin-upload": {
+      "path": "./plugins/upload",
+      "manager": "rust"
+    },
+    "tauri-plugin-upload-api": {
+      "path": "./plugins/upload",
+      "manager": "javascript"
+    },
+    "tauri-plugin-websocket": {
+      "path": "./plugins/websocket",
+      "manager": "rust"
+    },
+    "tauri-plugin-websocket-api": {
+      "path": "./plugins/websocket",
+      "manager": "javascript"
+    },
+    "tauri-plugin-window-state": {
+      "path": "./plugins/window-state",
+      "manager": "rust"
+    }
+  }
+}
