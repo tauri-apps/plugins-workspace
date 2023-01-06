@@ -1,6 +1,6 @@
 ![plugin-sql](banner.png)
 
-Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx). It supports the `sqlite`, `mysql` and `postgres` drivers, enabled by a Cargo feature.
+Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx). By default the `sqlite` driver is enabled, but `mysql` and `postgres` can be enabled by a Cargo feature.
 
 ## Install
 
