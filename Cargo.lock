@@ -1858,9 +1858,12 @@ dependencies = [
 
 [[package]]
 name = "iota-crypto"
-version = "0.14.3"
+version = "0.15.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d53239ace29cccec48af2f3b509090d546bcc52648c6147866d88bc70f4352b3"
+checksum = "4e04d492224bff6e97142f033d0a4383bcbc05918be1ff7b3abd2c1cc85205a2"
+dependencies = [
+ "autocfg",
+]
 
 [[package]]
 name = "iota_stronghold"
@@ -4235,7 +4238,7 @@ name = "tauri-plugin-stronghold"
 version = "0.1.0"
 dependencies = [
  "hex",
- "iota-crypto 0.14.3",
+ "iota-crypto 0.15.3",
  "iota_stronghold",
  "log",
  "rand 0.8.5",
