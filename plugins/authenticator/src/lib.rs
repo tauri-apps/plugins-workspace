@@ -6,13 +6,13 @@ mod auth;
 mod error;
 mod u2f;
 
-use tauri::{plugin::Plugin, Invoke, Runtime};
+use tauri::{plugin::{Builder as PluginBuilder, TauriPlugin}, Runtime};
 
 pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 
 #[tauri::command]
-fn init() {
+fn init_auth() {
     auth::init_usb();
 }
 
@@ -60,30 +60,14 @@ fn verify_signature(
     )
 }
 
-pub struct TauriAuthenticator<R: Runtime> {
-    invoke_handler: Box<dyn Fn(Invoke<R>) + Send + Sync>,
-}
-
-impl<R: Runtime> Default for TauriAuthenticator<R> {
-    fn default() -> Self {
-        Self {
-            invoke_handler: Box::new(tauri::generate_handler![
-                init,
-                register,
-                verify_registration,
-                sign,
-                verify_signature
-            ]),
-        }
-    }
-}
-
-impl<R: Runtime> Plugin<R> for TauriAuthenticator<R> {
-    fn name(&self) -> &'static str {
-        "authenticator"
-    }
-
-    fn extend_api(&mut self, invoke: Invoke<R>) {
-        (self.invoke_handler)(invoke)
-    }
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    PluginBuilder::new("authenticator")
+        .invoke_handler(tauri::generate_handler![
+            init_auth,
+            register,
+            verify_registration,
+            sign,
+            verify_signature
+        ])
+        .build()
 }
