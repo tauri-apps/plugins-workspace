@@ -14,8 +14,8 @@ use sqlx::{
 };
 use tauri::{
     command,
-    plugin::{Plugin, Result as PluginResult},
-    AppHandle, Invoke, Manager, RunEvent, Runtime, State,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
+    AppHandle, Manager, RunEvent, Runtime, State,
 };
 use tokio::sync::Mutex;
 
@@ -92,7 +92,7 @@ struct DbInstances(Mutex<HashMap<String, Pool<Db>>>);
 struct Migrations(Mutex<HashMap<String, MigrationList>>);
 
 #[derive(Default, Deserialize)]
-struct PluginConfig {
+pub struct PluginConfig {
     #[serde(default)]
     preload: Vec<String>,
 }
@@ -300,88 +300,69 @@ async fn select(
     Ok(values)
 }
 
-/// Tauri SQL plugin.
-pub struct TauriSql<R: Runtime> {
+/// Tauri SQL plugin builder.
+pub struct Builder {
     migrations: Option<HashMap<String, MigrationList>>,
-    invoke_handler: Box<dyn Fn(Invoke<R>) + Send + Sync>,
 }
 
-impl<R: Runtime> Default for TauriSql<R> {
-    fn default() -> Self {
-        Self {
-            migrations: Some(Default::default()),
-            invoke_handler: Box::new(tauri::generate_handler![load, execute, select, close]),
-        }
-    }
-}
-
-impl<R: Runtime> TauriSql<R> {
+impl Builder {
     /// Add migrations to a database.
     #[must_use]
     pub fn add_migrations(mut self, db_url: &str, migrations: Vec<Migration>) -> Self {
         self.migrations
-            .as_mut()
-            .unwrap()
+            .get_or_insert(Default::default())
             .insert(db_url.to_string(), MigrationList(migrations));
         self
     }
-}
 
-impl<R: Runtime> Plugin<R> for TauriSql<R> {
-    fn name(&self) -> &'static str {
-        "sql"
-    }
+    pub fn build<R: Runtime>(mut self) -> TauriPlugin<R, Option<PluginConfig>> {
+        PluginBuilder::new("sql")
+            .invoke_handler(tauri::generate_handler![load, execute, select, close])
+            .setup_with_config(|app, config: Option<PluginConfig>| {
+                let config = config.unwrap_or_default();
 
-    fn initialize(&mut self, app: &AppHandle<R>, config: serde_json::Value) -> PluginResult<()> {
-        tauri::async_runtime::block_on(async move {
-            let config: PluginConfig = if config.is_null() {
-                Default::default()
-            } else {
-                serde_json::from_value(config)?
-            };
-
-            #[cfg(feature = "sqlite")]
-            create_dir_all(app_path(app)).expect("problems creating App directory!");
-
-            let instances = DbInstances::default();
-            let mut lock = instances.0.lock().await;
-            for db in config.preload {
                 #[cfg(feature = "sqlite")]
-                let fqdb = path_mapper(app_path(app), &db);
-                #[cfg(not(feature = "sqlite"))]
-                let fqdb = db.clone();
+                create_dir_all(app_path(app)).expect("problems creating App directory!");
 
-                if !Db::database_exists(&fqdb).await.unwrap_or(false) {
-                    Db::create_database(&fqdb).await?;
+                tauri::async_runtime::block_on(async move {
+                    let instances = DbInstances::default();
+                    let mut lock = instances.0.lock().await;
+                    for db in config.preload {
+                        #[cfg(feature = "sqlite")]
+                        let fqdb = path_mapper(app_path(app), &db);
+                        #[cfg(not(feature = "sqlite"))]
+                        let fqdb = db.clone();
+
+                        if !Db::database_exists(&fqdb).await.unwrap_or(false) {
+                            Db::create_database(&fqdb).await?;
+                        }
+                        let pool = Pool::connect(&fqdb).await?;
+
+                        if let Some(migrations) = self.migrations.as_mut().unwrap().remove(&db) {
+                            let migrator = Migrator::new(migrations).await?;
+                            migrator.run(&pool).await?;
+                        }
+                        lock.insert(db, pool);
+                    }
+                    drop(lock);
+
+                    app.manage(instances);
+                    app.manage(Migrations(Mutex::new(self.migrations.take().unwrap())));
+
+                    Ok(())
+                })
+            })
+            .on_event(|app, event| {
+                if let RunEvent::Exit = event {
+                    tauri::async_runtime::block_on(async move {
+                        let instances = &*app.state::<DbInstances>();
+                        let instances = instances.0.lock().await;
+                        for value in instances.values() {
+                            value.close().await;
+                        }
+                    });
                 }
-                let pool = Pool::connect(&fqdb).await?;
-
-                if let Some(migrations) = self.migrations.as_mut().unwrap().remove(&db) {
-                    let migrator = Migrator::new(migrations).await?;
-                    migrator.run(&pool).await?;
-                }
-                lock.insert(db, pool);
-            }
-            drop(lock);
-            app.manage(instances);
-            app.manage(Migrations(Mutex::new(self.migrations.take().unwrap())));
-            Ok(())
-        })
-    }
-
-    fn extend_api(&mut self, message: Invoke<R>) {
-        (self.invoke_handler)(message)
-    }
-
-    fn on_event(&mut self, app: &AppHandle<R>, event: &RunEvent) {
-        if let RunEvent::Exit = event {
-            tauri::async_runtime::block_on(async move {
-                let instances = &*app.state::<DbInstances>();
-                let instances = instances.0.lock().await;
-                for value in instances.values() {
-                    value.close().await;
-                }
-            });
-        }
+            })
+            .build()
     }
 }
