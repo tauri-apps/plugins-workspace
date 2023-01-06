@@ -93,7 +93,6 @@ while read -r PLUGIN_NAME; do
 		echo "Failed to find a branch to branch from, just creating an empty one."
 		FORCE_COMMIT=--allow-empty
 	fi
-	git rm -r --cached .
 	git add -A
 	echo "::endgroup::"
 
