@@ -1,6 +1,6 @@
-![{{plugin name}}](banner.jpg)
+![tauri-plugin-single-instance](banner.jpg)
 
-<!-- description -->
+Ensure a single instance of your tauri app is running.
 
 ## Install
 
@@ -15,19 +15,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 `src-tauri/Cargo.toml`
 ```toml
 [dependencies]
-<!-- plugin here --> = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
-```
-
-You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
-
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
-
-```sh
-pnpm add <!-- plugin here -->
-# or
-npm add <!-- plugin here -->
-# or 
-yarn add <!-- plugin here -->
+tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
 ```
 
 ## Usage
@@ -36,18 +24,24 @@ First you need to register the core plugin with Tauri:
 
 `src-tauri/src/main.rs`
 ```rust
+use tauri::{Manager};
+
+#[derive(Clone, serde::Serialize)]
+struct Payload {
+  args: Vec<String>,
+  cwd: String,
+}
+
 fn main() {
     tauri::Builder::default()
-        .plugin(<!-- plugin here -->)
+        .plugin(auri_plugin_single_instance::init(|app, argv, cwd| {
+            println!("{}, {argv:?}, {cwd}", app.package_info().name);
+
+            app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
+        }))
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-```
-
-Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
-
-```javascript
-
 ```
 
 ## Contributing
