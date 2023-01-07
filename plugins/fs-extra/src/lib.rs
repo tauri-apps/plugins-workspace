@@ -3,7 +3,11 @@
 // SPDX-License-Identifier: MIT
 
 use serde::{ser::Serializer, Serialize};
-use tauri::{command, plugin::{Builder as PluginBuilder, TauriPlugin}, Runtime};
+use tauri::{
+    command,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
+    Runtime,
+};
 
 use std::{
     path::PathBuf,

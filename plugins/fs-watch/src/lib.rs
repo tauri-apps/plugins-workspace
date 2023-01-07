@@ -3,7 +3,11 @@ use notify::{
     Watcher as _,
 };
 use serde::{ser::Serializer, Deserialize, Serialize};
-use tauri::{command, plugin::{Builder as PluginBuilder, TauriPlugin}, Manager, Runtime, State, Window};
+use tauri::{
+    command,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
+    Manager, Runtime, State, Window,
+};
 
 use std::{
     collections::HashMap,

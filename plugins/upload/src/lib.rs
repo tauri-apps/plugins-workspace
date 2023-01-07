@@ -4,7 +4,11 @@
 
 use futures::TryStreamExt;
 use serde::{ser::Serializer, Serialize};
-use tauri::{command, plugin::{Builder as PluginBuilder, TauriPlugin}, Runtime, Window};
+use tauri::{
+    command,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
+    Runtime, Window,
+};
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
 

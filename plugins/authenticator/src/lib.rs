@@ -6,7 +6,10 @@ mod auth;
 mod error;
 mod u2f;
 
-use tauri::{plugin::{Builder as PluginBuilder, TauriPlugin}, Runtime};
+use tauri::{
+    plugin::{Builder as PluginBuilder, TauriPlugin},
+    Runtime,
+};
 
 pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
