@@ -93,12 +93,12 @@ while read -r PLUGIN_NAME; do
 		echo "Failed to find a branch to branch from, just creating an empty one."
 		FORCE_COMMIT=--allow-empty
 	fi
-	git add -Af
+	git add -A
 	echo "::endgroup::"
 
 	if [[ -n "$FORCE_COMMIT" || -n "$(git status --porcelain)" ]]; then
 		echo "Committing to $PLUGIN_NAME"
-		if git commit --quiet $FORCE_COMMIT --author="${COMMIT_ORIGINAL_AUTHOR}" -m "${COMMIT_MESSAGE}" &&
+		if git commit $FORCE_COMMIT --author="${COMMIT_ORIGINAL_AUTHOR}" -m "${COMMIT_MESSAGE}" &&
 			{ [[ -z "$CI" ]] || git push origin "$BRANCH"; } # Only do the actual push from the GitHub Action
 		then
 			# echo "$BUILD_BASE/changes.diff"

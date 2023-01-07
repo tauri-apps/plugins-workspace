@@ -1,6 +1,6 @@
 ![plugin-authenticator](banner.png)
 
-Use Hardware Security-keys in your Tauri App.
+Use hardware security-keys in your Tauri App.
 
 ## Install
 
