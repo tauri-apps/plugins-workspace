@@ -48,7 +48,8 @@ impl Stronghold {
     }
 
     pub fn save(&self) -> Result<()> {
-        self.inner.commit(&self.path, &self.keyprovider)?;
+        self.inner
+            .commit_with_keyprovider(&self.path, &self.keyprovider)?;
         Ok(())
     }
 
