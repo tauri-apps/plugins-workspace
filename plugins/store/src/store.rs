@@ -176,7 +176,7 @@ impl Store {
             .expect("failed to resolve app dir");
         let store_path = app_dir.join(&self.path);
 
-        let bytes = read(&store_path)?;
+        let bytes = read(store_path)?;
 
         self.cache = (self.deserialize)(&bytes).map_err(Error::Deserialize)?;
 

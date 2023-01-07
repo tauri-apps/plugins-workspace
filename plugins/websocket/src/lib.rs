@@ -1,10 +1,9 @@
 use futures_util::{stream::SplitSink, SinkExt, StreamExt};
 use serde::{ser::Serializer, Deserialize, Serialize};
-use serde_json::Value as JsonValue;
 use tauri::{
     api::ipc::{format_callback, CallbackFn},
-    plugin::Plugin,
-    AppHandle, Invoke, Manager, Runtime, State, Window,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
+    Manager, Runtime, State, Window,
 };
 use tokio::{net::TcpStream, sync::Mutex};
 use tokio_tungstenite::{
@@ -161,29 +160,12 @@ async fn send(
     }
 }
 
-pub struct TauriWebsocket<R: Runtime> {
-    invoke_handler: Box<dyn Fn(Invoke<R>) + Send + Sync>,
-}
-
-impl<R: Runtime> Default for TauriWebsocket<R> {
-    fn default() -> Self {
-        Self {
-            invoke_handler: Box::new(tauri::generate_handler![connect, send]),
-        }
-    }
-}
-
-impl<R: Runtime> Plugin<R> for TauriWebsocket<R> {
-    fn name(&self) -> &'static str {
-        "websocket"
-    }
-
-    fn initialize(&mut self, app: &AppHandle<R>, _config: JsonValue) -> tauri::plugin::Result<()> {
-        app.manage(ConnectionManager::default());
-        Ok(())
-    }
-
-    fn extend_api(&mut self, invoke: Invoke<R>) {
-        (self.invoke_handler)(invoke)
-    }
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    PluginBuilder::new("websocket")
+        .invoke_handler(tauri::generate_handler![connect, send])
+        .setup(|app| {
+            app.manage(ConnectionManager::default());
+            Ok(())
+        })
+        .build()
 }

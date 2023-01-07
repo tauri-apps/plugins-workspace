@@ -1,6 +1,7 @@
 {
   "name": "tauri-plugin-positioner-api",
   "version": "0.0.0",
+  "description": "Position your windows at well-known locations.",
   "license": "MIT or APACHE-2.0",
   "authors": [
     "Tauri Programme within The Commons Conservancy"

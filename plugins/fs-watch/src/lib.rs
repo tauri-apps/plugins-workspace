@@ -3,8 +3,11 @@ use notify::{
     Watcher as _,
 };
 use serde::{ser::Serializer, Deserialize, Serialize};
-use serde_json::Value as JsonValue;
-use tauri::{command, plugin::Plugin, AppHandle, Invoke, Manager, Runtime, State, Window};
+use tauri::{
+    command,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
+    Manager, Runtime, State, Window,
+};
 
 use std::{
     collections::HashMap,
@@ -160,30 +163,12 @@ async fn unwatch(watchers: State<'_, WatcherCollection>, id: Id) -> Result<()> {
     Ok(())
 }
 
-/// Tauri plugin.
-pub struct Watcher<R: Runtime> {
-    invoke_handler: Box<dyn Fn(Invoke<R>) + Send + Sync>,
-}
-
-impl<R: Runtime> Default for Watcher<R> {
-    fn default() -> Self {
-        Self {
-            invoke_handler: Box::new(tauri::generate_handler![watch, unwatch]),
-        }
-    }
-}
-
-impl<R: Runtime> Plugin<R> for Watcher<R> {
-    fn name(&self) -> &'static str {
-        "fs-watch"
-    }
-
-    fn initialize(&mut self, app: &AppHandle<R>, _config: JsonValue) -> tauri::plugin::Result<()> {
-        app.manage(WatcherCollection::default());
-        Ok(())
-    }
-
-    fn extend_api(&mut self, message: Invoke<R>) {
-        (self.invoke_handler)(message)
-    }
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    PluginBuilder::new("fs-watch")
+        .invoke_handler(tauri::generate_handler![watch, unwatch])
+        .setup(|app| {
+            app.manage(WatcherCollection::default());
+            Ok(())
+        })
+        .build()
 }

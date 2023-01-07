@@ -4,7 +4,11 @@
 
 use futures::TryStreamExt;
 use serde::{ser::Serializer, Serialize};
-use tauri::{command, plugin::Plugin, Invoke, Runtime, Window};
+use tauri::{
+    command,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
+    Runtime, Window,
+};
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
@@ -82,25 +86,8 @@ fn file_to_body<R: Runtime>(id: u32, window: Window<R>, file: File) -> reqwest::
     ))
 }
 
-/// Tauri plugin.
-pub struct Upload<R: Runtime> {
-    invoke_handler: Box<dyn Fn(Invoke<R>) + Send + Sync>,
-}
-
-impl<R: Runtime> Default for Upload<R> {
-    fn default() -> Self {
-        Self {
-            invoke_handler: Box::new(tauri::generate_handler![upload]),
-        }
-    }
-}
-
-impl<R: Runtime> Plugin<R> for Upload<R> {
-    fn name(&self) -> &'static str {
-        "upload"
-    }
-
-    fn extend_api(&mut self, message: Invoke<R>) {
-        (self.invoke_handler)(message)
-    }
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    PluginBuilder::new("upload")
+        .invoke_handler(tauri::generate_handler![upload])
+        .build()
 }

@@ -1,9 +1,11 @@
 [package]
 name = "tauri-plugin-log"
 version = "0.1.0"
-edition.workspace = true
+description = "Configurable logging for your Tauri app."
 authors.workspace = true
 license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

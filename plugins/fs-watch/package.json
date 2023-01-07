@@ -1,6 +1,7 @@
 {
   "name": "tauri-plugin-fs-watch-api",
   "version": "0.0.0",
+  "description": "Watch files and directories for changes.",
   "license": "MIT or APACHE-2.0",
   "authors": [
     "Tauri Programme within The Commons Conservancy"

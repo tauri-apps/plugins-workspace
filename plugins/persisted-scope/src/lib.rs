@@ -54,15 +54,15 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         .map_err(Error::from)
                         .and_then(|scope| bincode::deserialize(&scope).map_err(Into::into))
                         .unwrap_or_default();
-                    for allowed in scope.allowed_paths {
+                    for allowed in &scope.allowed_paths {
                         // allows the path as is
-                        let _ = fs_scope.allow_file(&allowed);
+                        let _ = fs_scope.allow_file(allowed);
                         #[cfg(feature = "protocol-asset")]
                         let _ = asset_protocol_scope.allow_file(allowed);
                     }
-                    for forbidden in scope.forbidden_patterns {
+                    for forbidden in &scope.forbidden_patterns {
                         // forbid the path as is
-                        let _ = fs_scope.forbid_file(&forbidden);
+                        let _ = fs_scope.forbid_file(forbidden);
                         #[cfg(feature = "protocol-asset")]
                         let _ = asset_protocol_scope.forbid_file(forbidden);
                     }
