@@ -15,4 +15,4 @@ serde_json.workspace = true
 tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
-notify = "4.0"
+notify = "5.0"
