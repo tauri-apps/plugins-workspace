@@ -16,5 +16,5 @@ log.workspace = true
 thiserror.workspace = true
 rand = "0.8"
 futures-util = "0.3"
-tokio = { version = "1.17", features = ["net", "sync"] }
+tokio = { version = "1.24", features = ["net", "sync"] }
 tokio-tungstenite = { version = "0.17", features = ["native-tls"] }
