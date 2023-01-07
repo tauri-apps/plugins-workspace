@@ -6,7 +6,7 @@ importers:
     specifiers:
       '@rollup/plugin-node-resolve': ^15.0.1
       '@rollup/plugin-terser': ^0.3.0
-      '@rollup/plugin-typescript': ^10.0.1
+      '@rollup/plugin-typescript': ^11.0.0
       '@typescript-eslint/eslint-plugin': ^5.0.0
       '@typescript-eslint/parser': ^5.46.1
       eslint: ^8.0.1
@@ -21,7 +21,7 @@ importers:
     devDependencies:
       '@rollup/plugin-node-resolve': 15.0.1_rollup@3.7.4
       '@rollup/plugin-terser': 0.3.0_rollup@3.7.4
-      '@rollup/plugin-typescript': 10.0.1_fhibmf72xnv5tve6nwed265eae
+      '@rollup/plugin-typescript': 11.0.0_fhibmf72xnv5tve6nwed265eae
       '@typescript-eslint/eslint-plugin': 5.46.1_imrg37k3svwu377c6q7gkarwmi
       '@typescript-eslint/parser': 5.46.1_ha6vam6werchizxrnqvarmz2zu
       eslint: 8.29.0
@@ -263,8 +263,8 @@ packages:
       terser: 5.16.1
     dev: true
 
-  /@rollup/plugin-typescript/10.0.1_fhibmf72xnv5tve6nwed265eae:
-    resolution: {integrity: sha512-wBykxRLlX7EzL8BmUqMqk5zpx2onnmRMSw/l9M1sVfkJvdwfxogZQVNUM9gVMJbjRLDR5H6U0OMOrlDGmIV45A==}
+  /@rollup/plugin-typescript/11.0.0_fhibmf72xnv5tve6nwed265eae:
+    resolution: {integrity: sha512-goPyCWBiimk1iJgSTgsehFD5OOFHiAknrRJjqFCudcW8JtWiBlK284Xnn4flqMqg6YAjVG/EE+3aVzrL5qNSzQ==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: ^2.14.0||^3.0.0
