@@ -3,7 +3,11 @@
 // SPDX-License-Identifier: MIT
 
 use serde::{ser::Serializer, Serialize};
-use tauri::{command, plugin::Plugin, Invoke, Runtime};
+use tauri::{
+    command,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
+    Runtime,
+};
 
 use std::{
     path::PathBuf,
@@ -121,25 +125,8 @@ async fn exists(path: PathBuf) -> bool {
     path.exists()
 }
 
-/// Tauri plugin.
-pub struct FsExtra<R: Runtime> {
-    invoke_handler: Box<dyn Fn(Invoke<R>) + Send + Sync>,
-}
-
-impl<R: Runtime> Default for FsExtra<R> {
-    fn default() -> Self {
-        Self {
-            invoke_handler: Box::new(tauri::generate_handler![exists, metadata]),
-        }
-    }
-}
-
-impl<R: Runtime> Plugin<R> for FsExtra<R> {
-    fn name(&self) -> &'static str {
-        "fs-extra"
-    }
-
-    fn extend_api(&mut self, message: Invoke<R>) {
-        (self.invoke_handler)(message)
-    }
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    PluginBuilder::new("fs-extra")
+        .invoke_handler(tauri::generate_handler![exists, metadata])
+        .build()
 }
