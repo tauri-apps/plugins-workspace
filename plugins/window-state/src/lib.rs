@@ -5,7 +5,8 @@
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    LogicalSize, Manager, PhysicalPosition, RunEvent, Runtime, Window, WindowEvent,
+    LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, Window,
+    WindowEvent,
 };
 
 use std::{
@@ -58,7 +59,6 @@ struct WindowMetadata {
     visible: bool,
     decorated: bool,
     fullscreen: bool,
-    monitor: String,
 }
 
 struct WindowStateCache(Arc<Mutex<HashMap<String, WindowMetadata>>>);
@@ -105,12 +105,11 @@ impl<R: Runtime> WindowExt for Window<R> {
             // restore position to saved value if saved monitor exists
             // otherwise, let the OS decide where to place the window
             for m in self.available_monitors()? {
-                if m.name().map(ToString::to_string).unwrap_or_default() == state.monitor {
+                if m.contains((state.x, state.y).into()) {
                     self.set_position(PhysicalPosition {
                         x: state.x,
                         y: state.y,
                     })?;
-                    break;
                 }
             }
 
@@ -131,12 +130,6 @@ impl<R: Runtime> WindowExt for Window<R> {
             let visible = self.is_visible().unwrap_or(true);
             let decorated = self.is_decorated().unwrap_or(true);
             let fullscreen = self.is_fullscreen().unwrap_or(false);
-            let monitor = self
-                .current_monitor()?
-                .unwrap()
-                .name()
-                .map(ToString::to_string)
-                .unwrap_or_default();
             c.insert(
                 self.label().into(),
                 WindowMetadata {
@@ -148,7 +141,6 @@ impl<R: Runtime> WindowExt for Window<R> {
                     visible,
                     decorated,
                     fullscreen,
-                    monitor,
                 },
             );
         }
@@ -235,8 +227,6 @@ impl Builder {
                             state.maximized = is_maximized;
 
                             if let Some(monitor) = window_clone.current_monitor().unwrap() {
-                                state.monitor =
-                                    monitor.name().map(ToString::to_string).unwrap_or_default();
                                 let monitor_position = monitor.position();
                                 // save only window positions that are inside the current monitor
                                 if position.x > monitor_position.x
@@ -286,5 +276,21 @@ impl Builder {
                 }
             })
             .build()
+    }
+}
+
+trait MonitorExt {
+    fn contains(&self, position: PhysicalPosition<i32>) -> bool;
+}
+
+impl MonitorExt for Monitor {
+    fn contains(&self, position: PhysicalPosition<i32>) -> bool {
+        let PhysicalPosition { x, y } = *self.position();
+        let PhysicalSize { width, height } = *self.size();
+
+        x < position.x as _
+            && position.x < (x + width as i32)
+            && y < position.y as _
+            && position.y < (y + height as i32)
     }
 }
