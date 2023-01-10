@@ -24,4 +24,4 @@ features = [
 ]
 
 [target.'cfg(target_os = "linux")'.dependencies]
-zbus = "3.7"
+zbus = "3"
