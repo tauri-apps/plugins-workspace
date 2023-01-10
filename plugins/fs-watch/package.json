@@ -19,8 +19,8 @@
     "build": "rollup -c"
   },
   "files": [
-    "dist",
-    "!dist/**/*.map",
+    "guest-js/dist",
+    "!guest-js/dist/**/*.map",
     "README.md",
     "LICENSE"
   ],
