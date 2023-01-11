@@ -1,4 +1,5 @@
 # Tauri Plugin single-instance
+
 ## Emit Event Example
 
 To build and test in development mode run the following:

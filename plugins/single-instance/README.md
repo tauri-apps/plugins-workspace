@@ -13,6 +13,7 @@ There are three general methods of installation that we can recommend.
 Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 `src-tauri/Cargo.toml`
+
 ```toml
 [dependencies]
 tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
@@ -23,6 +24,7 @@ tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-wo
 First you need to register the core plugin with Tauri:
 
 `src-tauri/src/main.rs`
+
 ```rust
 use tauri::{Manager};
 
