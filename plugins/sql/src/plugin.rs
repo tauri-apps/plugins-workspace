@@ -301,6 +301,7 @@ async fn select(
 }
 
 /// Tauri SQL plugin builder.
+#[derive(Default)]
 pub struct Builder {
     migrations: Option<HashMap<String, MigrationList>>,
 }
