@@ -31,8 +31,7 @@ fn dbus_id(config: Arc<Config>) -> String {
         .tauri
         .bundle
         .identifier
-        .replace('.', "_")
-        .replace('-', "_")
+        .replace(['.', '-'], "_")
 }
 
 pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
