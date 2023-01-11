@@ -88,6 +88,12 @@ importers:
     devDependencies:
       tslib: 2.4.1
 
+  plugins/single-instance/examples/vanilla:
+    specifiers:
+      '@tauri-apps/cli': ^1.0.0
+    dependencies:
+      '@tauri-apps/cli': 1.2.2
+
   plugins/sql:
     specifiers:
       '@tauri-apps/api': ^1.2.0
