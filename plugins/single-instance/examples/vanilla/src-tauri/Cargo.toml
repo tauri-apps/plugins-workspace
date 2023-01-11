@@ -1,7 +1,7 @@
 [workspace]
 
 [package]
-name = "app"
+name = "single-instance-example"
 version = "0.1.0"
 description = "A Tauri App"
 authors = [ "You" ]
