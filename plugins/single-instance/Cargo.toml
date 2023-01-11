@@ -1,15 +1,21 @@
 [package]
 name = "tauri-plugin-single-instance"
+version = "0.1.0"
 description = "Ensure a single instance of your tauri app is running."
-version = "0.0.0"
-authors = ["Tauri Programme within The Commons Conservancy"]
-license = "Apache-2.0 OR MIT"
-edition = "2021"
-rust-version = "1.60"
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
 exclude = ["/examples"]
 
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [dependencies]
-tauri = { version = "1" }
+serde.workspace = true
+serde_json.workspace = true
+tauri.workspace = true
+log.workspace = true
+thiserror.workspace = true
 
 [target.'cfg(target_os = "windows")'.dependencies.windows-sys]
 version = "0.42"
