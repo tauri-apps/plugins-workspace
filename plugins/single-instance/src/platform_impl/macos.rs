@@ -5,7 +5,7 @@ use tauri::{
     plugin::{self, TauriPlugin},
     Manager, Runtime,
 };
-pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
+pub fn init<R: Runtime>(_f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance").build()
 }
 
