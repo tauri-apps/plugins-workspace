@@ -1,5 +1,7 @@
+[workspace]
+
 [package]
-name = "websocket-example"
+name = "app"
 version = "0.1.0"
 description = "A Tauri App"
 edition = "2021"
