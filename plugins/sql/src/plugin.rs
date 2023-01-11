@@ -348,7 +348,7 @@ impl Builder {
                     drop(lock);
 
                     app.manage(instances);
-                    app.manage(Migrations(Mutex::new(self.migrations.take().unwrap())));
+                    app.manage(Migrations(Mutex::new(self.migrations.take().unwrap_or_default())));
 
                     Ok(())
                 })
