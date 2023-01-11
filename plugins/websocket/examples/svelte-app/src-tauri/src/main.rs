@@ -4,7 +4,6 @@
 )]
 
 use futures_util::StreamExt;
-use tauri_plugin_websocket::TauriWebsocket;
 use tokio::net::{TcpListener, TcpStream};
 
 async fn start_server() {
@@ -33,7 +32,7 @@ async fn accept_connection(stream: TcpStream) {
 fn main() {
   tauri::async_runtime::spawn(start_server());
   tauri::Builder::default()
-    .plugin(TauriWebsocket::default())
+    .plugin(tauri_plugin_websocket::init())
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

@@ -1,10 +1,10 @@
 {
   "build": {
-    "distDir": "../public",
-    "devPath": "http://localhost:5000",
-    "beforeDevCommand": "yarn dev",
-    "beforeBuildCommand": "yarn build",
-    "withGlobalTauri": true
+    "distDir": "../dist",
+    "devPath": "http://localhost:5173/",
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build",
+    "withGlobalTauri": false
   },
   "tauri": {
     "bundle": {
@@ -25,18 +25,16 @@
       "shortDescription": "",
       "longDescription": "",
       "deb": {
-        "depends": [],
-        "useBootstrapper": false
+        "depends": []
       },
       "macOS": {
         "frameworks": [],
         "minimumSystemVersion": "",
-        "useBootstrapper": false,
         "exceptionDomain": ""
       }
     },
     "allowlist": {
-      "all": true
+      "all": false
     },
     "windows": [
       {
@@ -48,7 +46,7 @@
       }
     ],
     "security": {
-      "csp": "default-src blob: data: filesystem: ws: http: https: 'unsafe-eval' 'unsafe-inline'"
+      "csp": null
     }
   }
 }
