@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use futures::TryStreamExt;
+use futures_util::TryStreamExt;
 use serde::{ser::Serializer, Serialize};
 use tauri::{
     command,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     Runtime, Window,
 };
-use tokio::fs::File;
+use tokio::{fs::File, io::AsyncWriteExt};
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 use read_progress_stream::ReadProgressStream;
@@ -24,6 +24,8 @@ pub enum Error {
     Io(#[from] std::io::Error),
     #[error(transparent)]
     Request(#[from] reqwest::Error),
+    #[error("{0}")]
+    ContentLength(String),
 }
 
 impl Serialize for Error {
@@ -40,6 +42,46 @@ struct ProgressPayload {
     id: u32,
     progress: u64,
     total: u64,
+}
+
+#[command]
+async fn download<R: Runtime>(
+    window: Window<R>,
+    id: u32,
+    url: &str,
+    file_path: &str,
+    headers: HashMap<String, String>,
+) -> Result<u32> {
+    let client = reqwest::Client::new();
+
+    let mut request = client.get(url);
+    // Loop trought the headers keys and values
+    // and add them to the request object.
+    for (key, value) in headers {
+        request = request.header(&key, value);
+    }
+
+    let response = request.send().await?;
+    let total = response.content_length().ok_or_else(|| {
+        Error::ContentLength(format!("Failed to get content length from '{}'", url))
+    })?;
+
+    let mut file = File::create(file_path).await?;
+    let mut stream = response.bytes_stream();
+
+    while let Some(chunk) = stream.try_next().await? {
+        file.write_all(&chunk).await?;
+        let _ = window.emit(
+            "download://progress",
+            ProgressPayload {
+                id,
+                progress: chunk.len() as u64,
+                total,
+            },
+        );
+    }
+
+    Ok(id)
 }
 
 #[command]
@@ -88,6 +130,6 @@ fn file_to_body<R: Runtime>(id: u32, window: Window<R>, file: File) -> reqwest::
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     PluginBuilder::new("upload")
-        .invoke_handler(tauri::generate_handler![upload])
+        .invoke_handler(tauri::generate_handler![download, upload])
         .build()
 }
