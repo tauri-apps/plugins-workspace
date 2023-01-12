@@ -16,5 +16,5 @@
     "declaration": true,
     "declarationDir": "dist"
   },
-  "exclude": ["guest-js/dist", "node_modules", "test/types"]
+  "exclude": ["dist-js", "node_modules", "test/types"]
 }
