@@ -11,7 +11,7 @@ importers:
       '@typescript-eslint/parser': ^5.46.1
       eslint: ^8.0.1
       eslint-config-prettier: ^8.5.0
-      eslint-config-standard-with-typescript: ^26.0.0
+      eslint-config-standard-with-typescript: ^27.0.0
       eslint-plugin-import: ^2.25.2
       eslint-plugin-n: ^15.0.0
       eslint-plugin-promise: ^6.0.0
@@ -26,7 +26,7 @@ importers:
       '@typescript-eslint/parser': 5.46.1_ha6vam6werchizxrnqvarmz2zu
       eslint: 8.29.0
       eslint-config-prettier: 8.5.0_eslint@8.29.0
-      eslint-config-standard-with-typescript: 26.0.0_f7skxvi3ubnnb5utlsc5vholvm
+      eslint-config-standard-with-typescript: 27.0.1_f7skxvi3ubnnb5utlsc5vholvm
       eslint-plugin-import: 2.26.0_z7hwuz3w5sq2sbhy7d4iqrnsvq
       eslint-plugin-n: 15.6.0_eslint@8.29.0
       eslint-plugin-promise: 6.1.1_eslint@8.29.0
@@ -1218,8 +1218,8 @@ packages:
       eslint: 8.29.0
     dev: true
 
-  /eslint-config-standard-with-typescript/26.0.0_f7skxvi3ubnnb5utlsc5vholvm:
-    resolution: {integrity: sha512-TluIWunQo76qp4MHyYIaTT+sN2q2v/jTeE3Dj4rXsSbx27GOUEOujhJaAL3v9dHVQelAK13gZ5Jy9IWnWCyFrg==}
+  /eslint-config-standard-with-typescript/27.0.1_f7skxvi3ubnnb5utlsc5vholvm:
+    resolution: {integrity: sha512-jJVyJldqqiCu3uSA/FP0x9jCDMG+Bbl73twTSnp0aysumJrz4iaVqLl+tGgmPrv0R829GVs117Nmn47M1DDDXA==}
     peerDependencies:
       '@typescript-eslint/eslint-plugin': ^5.0.0
       eslint: ^8.0.1
@@ -1894,8 +1894,8 @@ packages:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
     dev: true
 
-  /json5/1.0.1:
-    resolution: {integrity: sha512-aKS4WQjPenRxiQsC93MNfjx+nbF4PAdYzmd/1JIj8HYzqfbu86beTuNgXDzPknWk0n0uARlyewZo4s++ES36Ow==}
+  /json5/1.0.2:
+    resolution: {integrity: sha512-g1MWMLBiz8FKi1e4w0UyVL3w+iJceWAFBAaBnnGKOpNa5f8TLktkbre1+s6oICydWAm+HRUGTmI+//xv2hvXYA==}
     hasBin: true
     dependencies:
       minimist: 1.2.7
@@ -2534,7 +2534,7 @@ packages:
     resolution: {integrity: sha512-fxDhWnFSLt3VuTwtvJt5fpwxBHg5AdKWMsgcPOOIilyjymcYVZoCQF8fvFRezCNfblEXmi+PcM1eYHeOAgXCOQ==}
     dependencies:
       '@types/json5': 0.0.29
-      json5: 1.0.1
+      json5: 1.0.2
       minimist: 1.2.7
       strip-bom: 3.0.0
     dev: true
