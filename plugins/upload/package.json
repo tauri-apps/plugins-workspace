@@ -7,20 +7,20 @@
     "Tauri Programme within The Commons Conservancy"
   ],
   "type": "module",
-  "browser": "guest-js/dist/index.min.js",
-  "module": "guest-js/dist/index.mjs",
-  "types": "guest-js/dist/index.d.ts",
+  "browser": "dist-js/index.min.js",
+  "module": "dist-js/index.mjs",
+  "types": "dist-js/index.d.ts",
   "exports": {
-    "import": "./guest-js/dist/index.mjs",
-    "types": "./guest-js/dist/index.d.ts",
-    "browser": "./guest-js/dist/index.min.js"
+    "import": "./dist-js/index.mjs",
+    "types": "./dist-js/index.d.ts",
+    "browser": "./dist-js/index.min.js"
   },
   "scripts": {
     "build": "rollup -c"
   },
   "files": [
-    "guest-js/dist",
-    "!guest-js/dist/**/*.map",
+    "dist-js",
+    "!dist-js/**/*.map",
     "README.md",
     "LICENSE"
   ],
