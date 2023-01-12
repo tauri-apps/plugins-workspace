@@ -301,6 +301,7 @@ async fn select(
 }
 
 /// Tauri SQL plugin builder.
+#[derive(Default)]
 pub struct Builder {
     migrations: Option<HashMap<String, MigrationList>>,
 }
@@ -347,7 +348,9 @@ impl Builder {
                     drop(lock);
 
                     app.manage(instances);
-                    app.manage(Migrations(Mutex::new(self.migrations.take().unwrap())));
+                    app.manage(Migrations(Mutex::new(
+                        self.migrations.take().unwrap_or_default(),
+                    )));
 
                     Ok(())
                 })
