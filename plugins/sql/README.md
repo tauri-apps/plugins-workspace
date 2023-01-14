@@ -42,7 +42,7 @@ First you need to register the core plugin with Tauri:
 ```rust
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_sql::Builder::default())
+        .plugin(tauri_plugin_sql::Builder::default().build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
