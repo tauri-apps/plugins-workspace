@@ -283,14 +283,10 @@ impl Builder {
                 #[cfg(target_os = "ios")]
                 {
                     let mut subsystem = String::new();
-                    for (i, w) in app_handle
-                        .config()
-                        .tauri
-                        .bundle
-                        .identifier
-                        .split('.')
-                        .enumerate()
-                    {
+                    let identifier = &app_handle.config().tauri.bundle.identifier;
+                    let mut s = identifier.split('.');
+                    let last = s.clone().count() - 1;
+                    for (i, w) in s.enumerate() {
                         if i != last {
                             subsystem.push_str(w);
                             subsystem.push('.');
