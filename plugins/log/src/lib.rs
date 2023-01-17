@@ -2,33 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-#[cfg(desktop)]
 use fern::FormatCallback;
-use log::LevelFilter;
 use log::{logger, RecordBuilder};
+use log::{LevelFilter, Record};
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::borrow::Cow;
 use std::collections::HashMap;
-use std::{iter::FromIterator, path::PathBuf};
+use std::{
+    fmt::Arguments,
+    fs::{self, File},
+    iter::FromIterator,
+    path::{Path, PathBuf},
+};
 use tauri::{
     plugin::{self, TauriPlugin},
-    Runtime,
+    Manager, Runtime,
 };
 
-#[cfg(desktop)]
-use desktop::*;
-#[cfg(desktop)]
 pub use fern;
-
-#[cfg(desktop)]
-mod desktop {
-    pub use std::{
-        fs::{self, File},
-        path::Path,
-    };
-    pub use tauri::Manager;
-}
 
 const DEFAULT_MAX_FILE_SIZE: u128 = 40000;
 const DEFAULT_ROTATION_STRATEGY: RotationStrategy = RotationStrategy::KeepOne;
@@ -151,41 +143,31 @@ fn log(
 }
 
 pub struct Builder {
-    #[cfg(desktop)]
     dispatch: fern::Dispatch,
     rotation_strategy: RotationStrategy,
     max_file_size: u128,
     targets: Vec<LogTarget>,
-    level_filter: Option<LevelFilter>,
-    levels: Vec<(Cow<'static, str>, log::LevelFilter)>,
 }
 
 impl Default for Builder {
     fn default() -> Self {
-        #[cfg(desktop)]
-        let dispatch = {
-            let format = time::format_description::parse(
-                "[[[year]-[month]-[day]][[[hour]:[minute]:[second]]",
-            )
-            .unwrap();
-            fern::Dispatch::new().format(move |out, message, record| {
-                out.finish(format_args!(
-                    "{}[{}][{}] {}",
-                    time::OffsetDateTime::now_utc().format(&format).unwrap(),
-                    record.target(),
-                    record.level(),
-                    message
-                ))
-            })
-        };
+        let format =
+            time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
+                .unwrap();
+        let dispatch = fern::Dispatch::new().format(move |out, message, record| {
+            out.finish(format_args!(
+                "{}[{}][{}] {}",
+                time::OffsetDateTime::now_utc().format(&format).unwrap(),
+                record.target(),
+                record.level(),
+                message
+            ))
+        });
         Self {
-            #[cfg(desktop)]
             dispatch,
             rotation_strategy: DEFAULT_ROTATION_STRATEGY,
             max_file_size: DEFAULT_MAX_FILE_SIZE,
             targets: DEFAULT_LOG_TARGETS.into(),
-            level_filter: None,
-            levels: Vec::new(),
         }
     }
 }
@@ -205,37 +187,24 @@ impl Builder {
         self
     }
 
-    #[cfg(desktop)]
     pub fn format<F>(mut self, formatter: F) -> Self
     where
-        F: Fn(FormatCallback, &std::fmt::Arguments, &log::Record) + Sync + Send + 'static,
+        F: Fn(FormatCallback, &Arguments, &Record) + Sync + Send + 'static,
     {
         self.dispatch = self.dispatch.format(formatter);
         self
     }
 
     pub fn level(mut self, level_filter: impl Into<LevelFilter>) -> Self {
-        self.level_filter.replace(level_filter.into());
+        self.dispatch = self.dispatch.level(level_filter.into());
         self
     }
 
     pub fn level_for(mut self, module: impl Into<Cow<'static, str>>, level: LevelFilter) -> Self {
-        let module = module.into();
-
-        if let Some((index, _)) = self
-            .levels
-            .iter()
-            .enumerate()
-            .find(|&(_, &(ref name, _))| name == &module)
-        {
-            self.levels.remove(index);
-        }
-
-        self.levels.push((module, level));
+        self.dispatch = self.dispatch.level_for(module, level);
         self
     }
 
-    #[cfg(desktop)]
     pub fn filter<F>(mut self, filter: F) -> Self
     where
         F: Fn(&log::Metadata) -> bool + Send + Sync + 'static,
@@ -254,7 +223,7 @@ impl Builder {
         self
     }
 
-    #[cfg(all(desktop, feature = "colored"))]
+    #[cfg(feature = "colored")]
     pub fn with_colors(self, colors: fern::colors::ColoredLevelConfig) -> Self {
         let format =
             time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
@@ -270,141 +239,99 @@ impl Builder {
         })
     }
 
-    pub fn build<R: Runtime>(#[allow(unused_mut)] mut self) -> TauriPlugin<R> {
-        #[cfg(desktop)]
-        {
-            if let Some(level) = self.level_filter {
-                self.dispatch = self.dispatch.level(level);
-            }
-            for (module, level) in self.levels {
-                self.dispatch = self.dispatch.level_for(module, level);
-            }
-        }
-
+    pub fn build<R: Runtime>(mut self) -> TauriPlugin<R> {
         plugin::Builder::new("log")
             .invoke_handler(tauri::generate_handler![log])
             .setup(move |app_handle| {
-                #[cfg(target_os = "ios")]
-                {
-                    let mut subsystem = String::new();
-                    let identifier = &app_handle.config().tauri.bundle.identifier;
-                    let s = identifier.split('.');
-                    let last = s.clone().count() - 1;
-                    for (i, w) in s.enumerate() {
-                        if i != last {
-                            subsystem.push_str(w);
-                            subsystem.push('.');
-                        }
-                    }
-                    subsystem.push_str(&app_handle.package_info().crate_name);
+                let app_name = &app_handle.package_info().name;
 
-                    let mut logger = oslog::OsLogger::new(&subsystem);
-                    logger =
-                        logger.level_filter(self.level_filter.unwrap_or(log::LevelFilter::Trace));
-                    for (module, level) in self.levels {
-                        logger = logger.category_level_filter(&module, level);
-                    }
-                    logger.init()?;
-                }
-
-                #[cfg(target_os = "android")]
-                {
-                    let mut logger = android_logger::Config::default();
-                    if let Some(level_filter) = self.level_filter {
-                        if let Some(level) = level_filter.to_level() {
-                            logger = logger.with_min_level(level);
+                // setup targets
+                for target in &self.targets {
+                    let logger = match target {
+                        #[cfg(target_os = "android")]
+                        LogTarget::Stdout | LogTarget::Stderr => {
+                            fern::Output::call(android_logger::log)
                         }
-                    } else {
-                        logger = logger.with_min_level(log::Level::Trace);
-                    }
-                    if !self.levels.is_empty() {
-                        let mut filter = android_logger::FilterBuilder::new();
-                        for (module, level) in self.levels {
-                            filter.filter_module(&module, level);
-                        }
-                        logger = logger.with_filter(filter.build());
-                    }
-                    println!(
-                        "with tag {}",
-                        app_handle
-                            .config()
-                            .tauri
-                            .bundle
-                            .identifier
-                            .split('.')
-                            .rev()
-                            .next()
-                            .unwrap(),
-                    );
-                    android_logger::init_once(
-                        logger.with_tag(
-                            app_handle
-                                .config()
-                                .tauri
-                                .bundle
-                                .identifier
-                                .split('.')
-                                .rev()
-                                .next()
-                                .unwrap(),
-                        ),
-                    );
-                }
-
-                #[cfg(desktop)]
-                {
-                    let app_name = &app_handle.package_info().name;
-                    // setup targets
-                    for target in &self.targets {
-                        self.dispatch = self.dispatch.chain(match target {
-                            LogTarget::Stdout => fern::Output::from(std::io::stdout()),
-                            LogTarget::Stderr => fern::Output::from(std::io::stderr()),
-                            LogTarget::Folder(path) => {
-                                if !path.exists() {
-                                    fs::create_dir_all(path).unwrap();
+                        #[cfg(target_os = "ios")]
+                        LogTarget::Stdout | LogTarget::Stderr => {
+                            use std::{collections::HashMap, sync::Mutex};
+                            let loggers: Mutex<HashMap<String, oslog::OsLog>> = Default::default();
+                            let mut subsystem = String::new();
+                            let identifier = &app_handle.config().tauri.bundle.identifier;
+                            let s = identifier.split('.');
+                            let last = s.clone().count() - 1;
+                            for (i, w) in s.enumerate() {
+                                if i != last {
+                                    subsystem.push_str(w);
+                                    subsystem.push('.');
                                 }
-
-                                fern::log_file(get_log_file_path(
-                                    &path,
-                                    app_name,
-                                    &self.rotation_strategy,
-                                    self.max_file_size,
-                                )?)?
-                                .into()
                             }
-                            LogTarget::LogDir => {
-                                let path = app_handle.path_resolver().app_log_dir().unwrap();
-                                if !path.exists() {
-                                    fs::create_dir_all(&path).unwrap();
-                                }
+                            subsystem.push_str(&app_handle.package_info().crate_name);
 
-                                fern::log_file(get_log_file_path(
-                                    &path,
-                                    app_name,
-                                    &self.rotation_strategy,
-                                    self.max_file_size,
-                                )?)?
-                                .into()
-                            }
-                            LogTarget::Webview => {
-                                let app_handle = app_handle.clone();
-
-                                fern::Output::call(move |record| {
-                                    let payload = RecordPayload {
-                                        message: record.args().to_string(),
-                                        level: record.level().into(),
-                                    };
-                                    let app_handle = app_handle.clone();
-                                    tauri::async_runtime::spawn(async move {
-                                        app_handle.emit_all("log://log", payload).unwrap();
+                            fern::Output::call(move |record| {
+                                let mut loggers = loggers.lock().unwrap();
+                                let pair =
+                                    loggers.entry(record.target().into()).or_insert_with(|| {
+                                        oslog::OsLog::new(&subsystem, record.target())
                                     });
-                                })
-                            }
-                        });
-                    }
 
-                    self.dispatch.apply()?;
+                                let message = format!("{}", record.args());
+                                (*pair).with_level(record.level().into(), &message);
+                            });
+                        }
+                        #[cfg(desktop)]
+                        LogTarget::Stdout => std::io::stdout().into(),
+                        #[cfg(desktop)]
+                        LogTarget::Stderr => std::io::stderr().into(),
+                        LogTarget::Folder(path) => {
+                            if !path.exists() {
+                                fs::create_dir_all(path).unwrap();
+                            }
+
+                            fern::log_file(get_log_file_path(
+                                &path,
+                                app_name,
+                                &self.rotation_strategy,
+                                self.max_file_size,
+                            )?)?
+                            .into()
+                        }
+                        #[cfg(mobile)]
+                        LogTarget::LogDir => continue,
+                        #[cfg(desktop)]
+                        LogTarget::LogDir => {
+                            let path = app_handle.path_resolver().app_log_dir().unwrap();
+                            if !path.exists() {
+                                fs::create_dir_all(&path).unwrap();
+                            }
+
+                            fern::log_file(get_log_file_path(
+                                &path,
+                                app_name,
+                                &self.rotation_strategy,
+                                self.max_file_size,
+                            )?)?
+                            .into()
+                        }
+                        LogTarget::Webview => {
+                            let app_handle = app_handle.clone();
+
+                            fern::Output::call(move |record| {
+                                let payload = RecordPayload {
+                                    message: record.args().to_string(),
+                                    level: record.level().into(),
+                                };
+                                let app_handle = app_handle.clone();
+                                tauri::async_runtime::spawn(async move {
+                                    app_handle.emit_all("log://log", payload).unwrap();
+                                });
+                            })
+                        }
+                    };
+                    self.dispatch = self.dispatch.chain(logger);
                 }
+
+                self.dispatch.apply()?;
 
                 Ok(())
             })
@@ -412,7 +339,6 @@ impl Builder {
     }
 }
 
-#[cfg(desktop)]
 fn get_log_file_path(
     dir: &impl AsRef<Path>,
     app_name: &str,

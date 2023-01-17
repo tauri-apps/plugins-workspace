@@ -18,8 +18,6 @@ serde_repr = "0.1"
 byte-unit = "4.0"
 log = { workspace = true, features = ["kv_unstable"] }
 time = { version = "0.3", features = ["formatting"] }
-
-[target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 fern = "0.6"
 
 [target."cfg(target_os = \"android\")".dependencies]
