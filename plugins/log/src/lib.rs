@@ -155,13 +155,18 @@ impl Default for Builder {
             time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
                 .unwrap();
         let dispatch = fern::Dispatch::new().format(move |out, message, record| {
-            out.finish(format_args!(
-                "{}[{}][{}] {}",
-                time::OffsetDateTime::now_utc().format(&format).unwrap(),
-                record.target(),
-                record.level(),
-                message
-            ))
+            out.finish(
+                #[cfg(mobile)]
+                format_args!("[{}] {}", record.target(), message),
+                #[cfg(desktop)]
+                format_args!(
+                    "{}[{}][{}] {}",
+                    time::OffsetDateTime::now_utc().format(&format).unwrap(),
+                    record.target(),
+                    record.level(),
+                    message
+                ),
+            )
         });
         Self {
             dispatch,
