@@ -151,6 +151,7 @@ pub struct Builder {
 
 impl Default for Builder {
     fn default() -> Self {
+        #[cfg(desktop)]
         let format =
             time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
                 .unwrap();
