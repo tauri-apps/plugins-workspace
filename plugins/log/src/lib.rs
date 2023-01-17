@@ -292,7 +292,6 @@ impl Builder {
                             subsystem.push('.');
                         }
                     }
-                    subsystem.pop();
                     subsystem.push_str(&app_handle.package_info().crate_name);
                     let mut logger = oslog::OsLogger::new(&subsystem);
                     if let Some(level_filter) = self.level_filter {
