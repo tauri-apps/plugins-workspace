@@ -278,13 +278,11 @@ impl Builder {
         plugin::Builder::new("log")
             .invoke_handler(tauri::generate_handler![log])
             .setup(move |app_handle| {
-                let app_name = &app_handle.package_info().name;
-
                 #[cfg(target_os = "ios")]
                 {
                     let mut subsystem = String::new();
                     let identifier = &app_handle.config().tauri.bundle.identifier;
-                    let mut s = identifier.split('.');
+                    let s = identifier.split('.');
                     let last = s.clone().count() - 1;
                     for (i, w) in s.enumerate() {
                         if i != last {
@@ -293,10 +291,10 @@ impl Builder {
                         }
                     }
                     subsystem.push_str(&app_handle.package_info().crate_name);
+
                     let mut logger = oslog::OsLogger::new(&subsystem);
-                    if let Some(level_filter) = self.level_filter {
-                        logger = logger.level_filter(level_filter);
-                    }
+                    logger =
+                        logger.level_filter(self.level_filter.unwrap_or(log::LevelFilter::Trace));
                     for (module, level) in self.levels {
                         logger = logger.category_level_filter(&module, level);
                     }
@@ -349,6 +347,7 @@ impl Builder {
 
                 #[cfg(desktop)]
                 {
+                    let app_name = &app_handle.package_info().name;
                     // setup targets
                     for target in &self.targets {
                         self.dispatch = self.dispatch.chain(match target {
