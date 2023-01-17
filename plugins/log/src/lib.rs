@@ -4,25 +4,31 @@
 
 #[cfg(desktop)]
 use fern::FormatCallback;
+use log::LevelFilter;
 use log::{logger, RecordBuilder};
-use log::{LevelFilter, Record};
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::borrow::Cow;
 use std::collections::HashMap;
-use std::{
-    fmt::Arguments,
-    fs::{self, File},
-    iter::FromIterator,
-    path::{Path, PathBuf},
-};
+use std::{iter::FromIterator, path::PathBuf};
 use tauri::{
     plugin::{self, TauriPlugin},
-    Manager, Runtime,
+    Runtime,
 };
 
 #[cfg(desktop)]
+use desktop::*;
+#[cfg(desktop)]
 pub use fern;
+
+#[cfg(desktop)]
+mod desktop {
+    pub use std::{
+        fs::{self, File},
+        path::Path,
+    };
+    pub use tauri::Manager;
+}
 
 const DEFAULT_MAX_FILE_SIZE: u128 = 40000;
 const DEFAULT_ROTATION_STRATEGY: RotationStrategy = RotationStrategy::KeepOne;
@@ -202,7 +208,7 @@ impl Builder {
     #[cfg(desktop)]
     pub fn format<F>(mut self, formatter: F) -> Self
     where
-        F: Fn(FormatCallback, &Arguments, &Record) + Sync + Send + 'static,
+        F: Fn(FormatCallback, &std::fmt::Arguments, &log::Record) + Sync + Send + 'static,
     {
         self.dispatch = self.dispatch.format(formatter);
         self
@@ -264,7 +270,7 @@ impl Builder {
         })
     }
 
-    pub fn build<R: Runtime>(mut self) -> TauriPlugin<R> {
+    pub fn build<R: Runtime>(#[allow(unused_mut)] mut self) -> TauriPlugin<R> {
         #[cfg(desktop)]
         {
             if let Some(level) = self.level_filter {
@@ -406,6 +412,7 @@ impl Builder {
     }
 }
 
+#[cfg(desktop)]
 fn get_log_file_path(
     dir: &impl AsRef<Path>,
     app_name: &str,
