@@ -254,7 +254,7 @@ impl Builder {
                         }
                         #[cfg(target_os = "ios")]
                         LogTarget::Stdout | LogTarget::Stderr => {
-                            use std::{collections::HashMap, sync::Mutex};
+                            use std::sync::Mutex;
                             let loggers: Mutex<HashMap<String, oslog::OsLog>> = Default::default();
                             let mut subsystem = String::new();
                             let identifier = &app_handle.config().tauri.bundle.identifier;
@@ -277,7 +277,7 @@ impl Builder {
 
                                 let message = format!("{}", record.args());
                                 (*pair).with_level(record.level().into(), &message);
-                            });
+                            })
                         }
                         #[cfg(desktop)]
                         LogTarget::Stdout => std::io::stdout().into(),
