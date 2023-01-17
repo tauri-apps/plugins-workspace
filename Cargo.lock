@@ -4306,53 +4306,6 @@ dependencies = [
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.2"
-dependencies = [
- "anyhow",
- "attohttpc",
- "cocoa",
- "dirs-next",
- "embed_plist",
- "encoding_rs",
- "flate2",
- "futures-util",
- "glib",
- "glob",
- "gtk",
- "heck 0.4.0",
- "http",
- "ignore",
- "libc",
- "log",
- "objc",
- "once_cell",
- "paste",
- "percent-encoding",
- "rand 0.8.5",
- "raw-window-handle",
- "semver 1.0.16",
- "serde",
- "serde_json",
- "serde_repr",
- "serialize-to-javascript",
- "state",
- "tar",
- "tauri-macros 2.0.0-alpha.0",
- "tauri-runtime 0.13.0-alpha.0",
- "tauri-runtime-wry 0.13.0-alpha.0",
- "tauri-utils 2.0.0-alpha.0",
- "tempfile",
- "thiserror",
- "tokio",
- "url",
- "uuid 1.2.2",
- "webkit2gtk",
- "webview2-com",
- "windows 0.39.0",
-]
-
-[[package]]
-name = "tauri"
-version = "2.0.0-alpha.2"
 source = "git+https://github.com/tauri-apps/tauri?branch=next#c36d451bcd9576dd4e0c673078c421dcb83932be"
 dependencies = [
  "android_logger",
@@ -4386,10 +4339,10 @@ dependencies = [
  "serialize-to-javascript",
  "state",
  "tar",
- "tauri-macros 2.0.0-alpha.0 (git+https://github.com/tauri-apps/tauri?branch=next)",
- "tauri-runtime 0.13.0-alpha.0 (git+https://github.com/tauri-apps/tauri?branch=next)",
- "tauri-runtime-wry 0.13.0-alpha.0 (git+https://github.com/tauri-apps/tauri?branch=next)",
- "tauri-utils 2.0.0-alpha.0 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri-macros",
+ "tauri-runtime",
+ "tauri-runtime-wry",
+ "tauri-utils",
  "tempfile",
  "thiserror",
  "tokio",
@@ -4403,30 +4356,6 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.0"
-dependencies = [
- "base64 0.13.1",
- "brotli",
- "ico",
- "json-patch",
- "plist",
- "png",
- "proc-macro2",
- "quote",
- "semver 1.0.16",
- "serde",
- "serde_json",
- "sha2 0.10.6",
- "tauri-utils 2.0.0-alpha.0",
- "thiserror",
- "time 0.3.17",
- "url",
- "uuid 1.2.2",
- "walkdir",
-]
-
-[[package]]
-name = "tauri-codegen"
-version = "2.0.0-alpha.0"
 source = "git+https://github.com/tauri-apps/tauri?branch=next#c36d451bcd9576dd4e0c673078c421dcb83932be"
 dependencies = [
  "base64 0.13.1",
@@ -4441,24 +4370,12 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.6",
- "tauri-utils 2.0.0-alpha.0 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri-utils",
  "thiserror",
  "time 0.3.17",
  "url",
  "uuid 1.2.2",
  "walkdir",
-]
-
-[[package]]
-name = "tauri-macros"
-version = "2.0.0-alpha.0"
-dependencies = [
- "heck 0.4.0",
- "proc-macro2",
- "quote",
- "syn",
- "tauri-codegen 2.0.0-alpha.0",
- "tauri-utils 2.0.0-alpha.0",
 ]
 
 [[package]]
@@ -4470,8 +4387,8 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
- "tauri-codegen 2.0.0-alpha.0 (git+https://github.com/tauri-apps/tauri?branch=next)",
- "tauri-utils 2.0.0-alpha.0 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri-codegen",
+ "tauri-utils",
 ]
 
 [[package]]
@@ -4488,7 +4405,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.6",
- "tauri 2.0.0-alpha.2 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri",
  "thiserror",
  "u2f",
 ]
@@ -4501,7 +4418,7 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
- "tauri 2.0.0-alpha.2 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri",
  "thiserror",
 ]
 
@@ -4512,7 +4429,7 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
- "tauri 2.0.0-alpha.2 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri",
  "thiserror",
 ]
 
@@ -4524,7 +4441,7 @@ dependencies = [
  "notify",
  "serde",
  "serde_json",
- "tauri 2.0.0-alpha.2 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri",
  "thiserror",
 ]
 
@@ -4536,7 +4453,7 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
- "tauri 2.0.0-alpha.2 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri",
  "thiserror",
  "tiny_http",
 ]
@@ -4553,7 +4470,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_repr",
- "tauri 2.0.0-alpha.2",
+ "tauri",
  "time 0.3.17",
 ]
 
@@ -4565,7 +4482,7 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
- "tauri 2.0.0-alpha.2 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri",
  "thiserror",
 ]
 
@@ -4577,7 +4494,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_repr",
- "tauri 2.0.0-alpha.2 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri",
  "thiserror",
 ]
 
@@ -4588,7 +4505,7 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
- "tauri 2.0.0-alpha.2 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri",
  "thiserror",
  "windows-sys",
  "zbus",
@@ -4603,7 +4520,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sqlx",
- "tauri 2.0.0-alpha.2 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri",
  "thiserror",
  "tokio",
 ]
@@ -4615,7 +4532,7 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
- "tauri 2.0.0-alpha.2 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri",
  "thiserror",
 ]
 
@@ -4631,7 +4548,7 @@ dependencies = [
  "rusty-fork",
  "serde",
  "serde_json",
- "tauri 2.0.0-alpha.2 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri",
  "thiserror",
  "zeroize",
 ]
@@ -4646,7 +4563,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
- "tauri 2.0.0-alpha.2 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri",
  "thiserror",
  "tokio",
  "tokio-util",
@@ -4661,7 +4578,7 @@ dependencies = [
  "rand 0.8.5",
  "serde",
  "serde_json",
- "tauri 2.0.0-alpha.2 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri",
  "thiserror",
  "tokio",
  "tokio-tungstenite",
@@ -4675,26 +4592,8 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
- "tauri 2.0.0-alpha.2 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri",
  "thiserror",
-]
-
-[[package]]
-name = "tauri-runtime"
-version = "0.13.0-alpha.0"
-dependencies = [
- "gtk",
- "http",
- "http-range",
- "rand 0.8.5",
- "raw-window-handle",
- "serde",
- "serde_json",
- "tauri-utils 2.0.0-alpha.0",
- "thiserror",
- "uuid 1.2.2",
- "webview2-com",
- "windows 0.39.0",
 ]
 
 [[package]]
@@ -4709,29 +4608,11 @@ dependencies = [
  "raw-window-handle",
  "serde",
  "serde_json",
- "tauri-utils 2.0.0-alpha.0 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri-utils",
  "thiserror",
  "uuid 1.2.2",
  "webview2-com",
  "windows 0.39.0",
-]
-
-[[package]]
-name = "tauri-runtime-wry"
-version = "0.13.0-alpha.0"
-dependencies = [
- "cocoa",
- "gtk",
- "percent-encoding",
- "rand 0.8.5",
- "raw-window-handle",
- "tauri-runtime 0.13.0-alpha.0",
- "tauri-utils 2.0.0-alpha.0",
- "uuid 1.2.2",
- "webkit2gtk",
- "webview2-com",
- "windows 0.39.0",
- "wry",
 ]
 
 [[package]]
@@ -4744,39 +4625,13 @@ dependencies = [
  "percent-encoding",
  "rand 0.8.5",
  "raw-window-handle",
- "tauri-runtime 0.13.0-alpha.0 (git+https://github.com/tauri-apps/tauri?branch=next)",
- "tauri-utils 2.0.0-alpha.0 (git+https://github.com/tauri-apps/tauri?branch=next)",
+ "tauri-runtime",
+ "tauri-utils",
  "uuid 1.2.2",
  "webkit2gtk",
  "webview2-com",
  "windows 0.39.0",
  "wry",
-]
-
-[[package]]
-name = "tauri-utils"
-version = "2.0.0-alpha.0"
-dependencies = [
- "brotli",
- "ctor",
- "glob",
- "heck 0.4.0",
- "html5ever",
- "infer",
- "json-patch",
- "kuchiki",
- "memchr",
- "phf 0.10.1",
- "proc-macro2",
- "quote",
- "semver 1.0.16",
- "serde",
- "serde_json",
- "serde_with",
- "thiserror",
- "url",
- "walkdir",
- "windows 0.39.0",
 ]
 
 [[package]]
