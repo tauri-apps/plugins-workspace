@@ -12,22 +12,31 @@ export interface DebouncedWatchOptions extends WatchOptions {
   delayMs?: number;
 }
 
-export interface RawEvent {
-  path: string | null;
-  operation: number;
-  cookie: number | null;
-}
+export type RawEvent = {
+  type: RawEventKind;
+  paths: string[];
+  attrs: unknown;
+};
+
+type RawEventKind =
+  | "any "
+  | {
+      access?: unknown;
+    }
+  | {
+      create?: unknown;
+    }
+  | {
+      modify?: unknown;
+    }
+  | {
+      remove?: unknown;
+    }
+  | "other";
 
 export type DebouncedEvent =
-  | { type: "NoticeWrite"; payload: string }
-  | { type: "NoticeRemove"; payload: string }
-  | { type: "Create"; payload: string }
-  | { type: "Write"; payload: string }
-  | { type: "Chmod"; payload: string }
-  | { type: "Remove"; payload: string }
-  | { type: "Rename"; payload: string }
-  | { type: "Rescan"; payload: null }
-  | { type: "Error"; payload: { error: string; path: string | null } };
+  | { kind: "any"; path: string }
+  | { kind: "AnyContinous"; path: string };
 
 async function unwatch(id: number): Promise<void> {
   await invoke("plugin:fs-watch|unwatch", { id });
