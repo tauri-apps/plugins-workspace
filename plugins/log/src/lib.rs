@@ -151,17 +151,23 @@ pub struct Builder {
 
 impl Default for Builder {
     fn default() -> Self {
+        #[cfg(desktop)]
         let format =
             time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
                 .unwrap();
         let dispatch = fern::Dispatch::new().format(move |out, message, record| {
-            out.finish(format_args!(
-                "{}[{}][{}] {}",
-                time::OffsetDateTime::now_utc().format(&format).unwrap(),
-                record.target(),
-                record.level(),
-                message
-            ))
+            out.finish(
+                #[cfg(mobile)]
+                format_args!("[{}] {}", record.target(), message),
+                #[cfg(desktop)]
+                format_args!(
+                    "{}[{}][{}] {}",
+                    time::OffsetDateTime::now_utc().format(&format).unwrap(),
+                    record.target(),
+                    record.level(),
+                    message
+                ),
+            )
         });
         Self {
             dispatch,
@@ -247,9 +253,42 @@ impl Builder {
 
                 // setup targets
                 for target in &self.targets {
-                    self.dispatch = self.dispatch.chain(match target {
-                        LogTarget::Stdout => fern::Output::from(std::io::stdout()),
-                        LogTarget::Stderr => fern::Output::from(std::io::stderr()),
+                    let logger = match target {
+                        #[cfg(target_os = "android")]
+                        LogTarget::Stdout | LogTarget::Stderr => {
+                            fern::Output::call(android_logger::log)
+                        }
+                        #[cfg(target_os = "ios")]
+                        LogTarget::Stdout | LogTarget::Stderr => {
+                            use std::sync::Mutex;
+                            let loggers: Mutex<HashMap<String, oslog::OsLog>> = Default::default();
+                            let mut subsystem = String::new();
+                            let identifier = &app_handle.config().tauri.bundle.identifier;
+                            let s = identifier.split('.');
+                            let last = s.clone().count() - 1;
+                            for (i, w) in s.enumerate() {
+                                if i != last {
+                                    subsystem.push_str(w);
+                                    subsystem.push('.');
+                                }
+                            }
+                            subsystem.push_str(&app_handle.package_info().crate_name);
+
+                            fern::Output::call(move |record| {
+                                let mut loggers = loggers.lock().unwrap();
+                                let pair =
+                                    loggers.entry(record.target().into()).or_insert_with(|| {
+                                        oslog::OsLog::new(&subsystem, record.target())
+                                    });
+
+                                let message = format!("{}", record.args());
+                                (*pair).with_level(record.level().into(), &message);
+                            })
+                        }
+                        #[cfg(desktop)]
+                        LogTarget::Stdout => std::io::stdout().into(),
+                        #[cfg(desktop)]
+                        LogTarget::Stderr => std::io::stderr().into(),
                         LogTarget::Folder(path) => {
                             if !path.exists() {
                                 fs::create_dir_all(path).unwrap();
@@ -263,6 +302,9 @@ impl Builder {
                             )?)?
                             .into()
                         }
+                        #[cfg(mobile)]
+                        LogTarget::LogDir => continue,
+                        #[cfg(desktop)]
                         LogTarget::LogDir => {
                             let path = app_handle.path_resolver().app_log_dir().unwrap();
                             if !path.exists() {
@@ -291,7 +333,8 @@ impl Builder {
                                 });
                             })
                         }
-                    });
+                    };
+                    self.dispatch = self.dispatch.chain(logger);
                 }
 
                 self.dispatch.apply()?;

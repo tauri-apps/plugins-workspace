@@ -86,14 +86,14 @@ checksum = "85965b6739a430150bdd138e2374a98af0c3ee0d030b3bb7fc3bddff58d0102e"
 
 [[package]]
 name = "android_logger"
-version = "0.9.2"
+version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ec2333c185d826313162cee39d3fcc6a84ba08114a839bebf53b961e7e75773"
+checksum = "8619b80c242aa7bd638b5c7ddd952addeecb71f69c75e33f1d47b2804f8f883a"
 dependencies = [
  "android_log-sys",
- "env_logger 0.7.1",
- "lazy_static",
+ "env_logger",
  "log",
+ "once_cell",
 ]
 
 [[package]]
@@ -957,6 +957,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "dashmap"
+version = "5.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "907076dfda823b0b36d2a1bb5f90c96660a5bbcd7729e10727f07858f22c4edc"
+dependencies = [
+ "cfg-if 1.0.0",
+ "hashbrown",
+ "lock_api",
+ "once_cell",
+ "parking_lot_core 0.9.6",
+]
+
+[[package]]
 name = "der"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1153,25 +1166,12 @@ dependencies = [
 
 [[package]]
 name = "env_logger"
-version = "0.7.1"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44533bbbb3bb3c1fa17d9f2e4e38bbbaf8396ba82193c4cb1b6445d711445d36"
+checksum = "85cdab6a89accf66733ad5a1693a4dcced6aeff64602b634530dd73c1f3ee9f0"
 dependencies = [
  "log",
  "regex",
-]
-
-[[package]]
-name = "env_logger"
-version = "0.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a12e6657c4c97ebab115a42dcee77225f7f482cdd841cf7088c657a42e9e00e7"
-dependencies = [
- "atty",
- "humantime",
- "log",
- "regex",
- "termcolor",
 ]
 
 [[package]]
@@ -1883,12 +1883,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4a1e36c821dbe04574f602848a19f742f4fb3c98d40449f11bcad18d6b17421"
 
 [[package]]
-name = "humantime"
-version = "2.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
-
-[[package]]
 name = "hyper"
 version = "0.14.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1977,10 +1971,11 @@ dependencies = [
 
 [[package]]
 name = "ignore"
-version = "0.4.19"
+version = "0.4.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a05705bc64e0b66a806c3740bd6578ea66051b157ec42dc219c785cbf185aef3"
+checksum = "713f1b139373f96a2e0ce3ac931cd01ee973c3c5dd7c40c0c2efe96ad2b6751d"
 dependencies = [
+ "crossbeam-utils",
  "globset",
  "lazy_static",
  "log",
@@ -2846,6 +2841,17 @@ checksum = "d4eb9ba3f3e42dbdd3b7b122de5ca169c81e93d561eb900da3a8c99bcfcf381a"
 dependencies = [
  "futures-core",
  "pin-project-lite",
+]
+
+[[package]]
+name = "oslog"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80d2043d1f61d77cb2f4b1f7b7b2295f40507f5f8e9d1c8bf10a1ca5f97a3969"
+dependencies = [
+ "cc",
+ "dashmap",
+ "log",
 ]
 
 [[package]]
@@ -4229,9 +4235,9 @@ dependencies = [
 
 [[package]]
 name = "tao"
-version = "0.15.8"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac8e6399427c8494f9849b58694754d7cc741293348a6836b6c8d2c5aa82d8e6"
+checksum = "704522803dda895767f69198af8351b0a3f4fe2e293c3ca54cce0ecba05a97f2"
 dependencies = [
  "bitflags",
  "cairo-rs",
@@ -4263,16 +4269,27 @@ dependencies = [
  "objc",
  "once_cell",
  "parking_lot 0.12.1",
- "paste",
  "png",
  "raw-window-handle",
  "scopeguard",
  "serde",
+ "tao-macros",
  "unicode-segmentation",
  "uuid 1.2.2",
  "windows 0.39.0",
  "windows-implement",
  "x11-dl",
+]
+
+[[package]]
+name = "tao-macros"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3b6fcd8245d45a39ffc8715183d92ae242750eb57b285eb3bcd63dfd512afd09"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -4289,17 +4306,14 @@ dependencies = [
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8dca2d7a5853ab98d1453bf74078308f175634934e2fd1f427433c56c179da5"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#630a7f4b18cef169bfd48673609306fec434e397"
 dependencies = [
- "android_logger",
  "anyhow",
  "attohttpc",
  "cocoa",
  "dirs-next",
  "embed_plist",
  "encoding_rs",
- "env_logger 0.9.3",
  "flate2",
  "futures-util",
  "glib",
@@ -4308,6 +4322,7 @@ dependencies = [
  "heck 0.4.0",
  "http",
  "ignore",
+ "libc",
  "log",
  "objc",
  "once_cell",
@@ -4339,8 +4354,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e78b01de486c5aefb99d2623d856b3d3afb88499bc9b8514e246762505006c1"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#630a7f4b18cef169bfd48673609306fec434e397"
 dependencies = [
  "base64 0.13.1",
  "brotli",
@@ -4365,8 +4379,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df039672c40713ded0f7991efd1d7d6219e008c73137483d6dd2d9988f39472e"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#630a7f4b18cef169bfd48673609306fec434e397"
 dependencies = [
  "heck 0.4.0",
  "proc-macro2",
@@ -4447,9 +4460,11 @@ dependencies = [
 name = "tauri-plugin-log"
 version = "0.1.0"
 dependencies = [
+ "android_logger",
  "byte-unit",
  "fern",
  "log",
+ "oslog",
  "serde",
  "serde_json",
  "serde_repr",
@@ -4582,8 +4597,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "0.13.0-alpha.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "010bdd6bb6585b647afe262d3e43ec612969f328d32c9ce20f9cfaefccb5e7a9"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#630a7f4b18cef169bfd48673609306fec434e397"
 dependencies = [
  "gtk",
  "http",
@@ -4602,8 +4616,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.13.0-alpha.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2dadf5f22694dbb5a1fd9496fe28f48ba4288ed4cb8c2584911a81cd57e24e90"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#630a7f4b18cef169bfd48673609306fec434e397"
 dependencies = [
  "cocoa",
  "gtk",
@@ -4622,8 +4635,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c7ee9f908d975a116f2fe3db47d65b18e568aa7913aa333b7a5cd990f179e5e"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#630a7f4b18cef169bfd48673609306fec434e397"
 dependencies = [
  "brotli",
  "ctor",
@@ -5632,9 +5644,8 @@ dependencies = [
 
 [[package]]
 name = "wry"
-version = "0.23.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c1ad8e2424f554cc5bdebe8aa374ef5b433feff817aebabca0389961fc7ef98"
+version = "0.24.1"
+source = "git+https://github.com/tauri-apps/wry?branch=dev#bce39e2be195194e547b0021e770e45a3df15fa1"
 dependencies = [
  "base64 0.13.1",
  "block",
