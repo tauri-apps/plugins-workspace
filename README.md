@@ -7,7 +7,7 @@
 | [fs-extra](plugins/fs-extra)               | File system methods that aren't included in the core API. | ✅  | ✅  | ✅  | ?   | ?   |
 | [fs-watch](plugins/fs-watch)               | Watch the filesystem for changes.                         | ✅  | ✅  | ✅  | ?   | ?   |
 | [localhost](plugins/localhost)             | Use a localhost server in production apps.                | ✅  | ✅  | ✅  | ?   | ?   |
-| [log](plugins/log)                         | Configurable logging.                                     | ✅  | ✅  | ✅  | ?   | ?   |
+| [log](plugins/log)                         | Configurable logging.                                     | ✅  | ✅  | ✅  | ✅  | ✅  |
 | [persisted-scope](plugins/persisted-scope) | Persist runtime scope changes on the filesystem.          | ✅  | ✅  | ✅  | ?   | ?   |
 | [positioner](plugins/positioner)           | Move windows to common locations.                         | ✅  | ✅  | ✅  | ?   | ?   |
 | [sql](plugins/sql)                         | Interface with SQL databases.                             | ✅  | ✅  | ✅  | ?   | ?   |
