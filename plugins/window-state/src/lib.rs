@@ -297,14 +297,13 @@ impl Builder {
                 let label = window.label().to_string();
                 let window_clone = window.clone();
                 let flags = self.state_flags;
-                window.on_window_event(move |e| match e {
-                    WindowEvent::CloseRequested { .. } => {
+                window.on_window_event(move |e| {
+                    if let WindowEvent::CloseRequested { .. } = e {
                         let mut c = cache.lock().unwrap();
-                        if let Some(mut state) = c.get_mut(&label) {
-                            let _ = window_clone.update_state(&mut state, flags);
+                        if let Some(state) = c.get_mut(&label) {
+                            let _ = window_clone.update_state(state, flags);
                         }
                     }
-                    _ => {}
                 });
             })
             .on_event(|app, event| {
