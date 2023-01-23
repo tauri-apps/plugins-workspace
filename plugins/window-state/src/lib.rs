@@ -254,7 +254,7 @@ impl Builder {
                 let cache = cache.0.clone();
                 let label = window.label().to_string();
                 let window_clone = window.clone();
-                let flags = self.state_flags.clone();
+                let flags = self.state_flags;
                 window.on_window_event(move |e| match e {
                     WindowEvent::Moved(position) => {
                         let mut c = cache.lock().unwrap();
