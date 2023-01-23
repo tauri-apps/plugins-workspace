@@ -235,7 +235,7 @@ checksum = "d9b39be18770d11421cdb1b9947a45dd3f37e93092cbf377614828a319d5fee8"
 dependencies = [
  "hermit-abi 0.1.19",
  "libc",
- "winapi 0.3.9",
+ "winapi",
 ]
 
 [[package]]
@@ -610,7 +610,7 @@ checksum = "f4ffc801dacf156c5854b9df4f425a626539c3a6ef7893cc0c5084a23f0b6c59"
 dependencies = [
  "atty",
  "lazy_static",
- "winapi 0.3.9",
+ "winapi",
 ]
 
 [[package]]
@@ -2458,7 +2458,7 @@ checksum = "f346ff70e7dbfd675fe90590b92d59ef2de15a8779ae305ebcbfd3f0caf59be4"
 dependencies = [
  "autocfg",
  "bitflags",
- "cfg-if 1.0.0",
+ "cfg-if",
  "libc",
  "memoffset",
  "pin-utils",
@@ -3032,7 +3032,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "22122d5ec4f9fe1b3916419b76be1e80bcb93f618d071d2edf841b137b2a2bd6"
 dependencies = [
  "autocfg",
- "cfg-if 1.0.0",
+ "cfg-if",
  "libc",
  "log",
  "wepoll-ffi",
@@ -4435,6 +4435,7 @@ name = "tauri-plugin-window-state"
 version = "0.1.0"
 dependencies = [
  "bincode",
+ "bitflags",
  "log",
  "serde",
  "serde_json",
@@ -4869,7 +4870,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce65604324d3cce9b966701489fbd0cf318cb1f7bd9dd07ac9a4ee6fb791930d"
 dependencies = [
  "tempfile",
- "winapi 0.3.9",
+ "winapi",
 ]
 
 [[package]]
@@ -5598,7 +5599,7 @@ dependencies = [
  "static_assertions",
  "tracing",
  "uds_windows",
- "winapi 0.3.9",
+ "winapi",
  "zbus_macros",
  "zbus_names",
  "zvariant",
