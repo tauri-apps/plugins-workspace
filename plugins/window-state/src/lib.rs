@@ -51,7 +51,7 @@ impl Default for StateFlags {
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
-struct WindowMetadata {
+struct WindowState {
     width: f64,
     height: f64,
     x: i32,
@@ -62,7 +62,7 @@ struct WindowMetadata {
     fullscreen: bool,
 }
 
-struct WindowStateCache(Arc<Mutex<HashMap<String, WindowMetadata>>>);
+struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
 pub trait AppHandleExt {
     fn save_window_state(&self) -> Result<()>;
 }
@@ -131,60 +131,102 @@ impl<R: Runtime> WindowExt for Window<R> {
 
             should_show = state.visible;
         } else {
-            let LogicalSize { width, height } = match flags.contains(StateFlags::SIZE) {
-                true => {
-                    let scale_factor = self
-                        .current_monitor()?
-                        .map(|m| m.scale_factor())
-                        .unwrap_or(1.);
-                    self.inner_size()?.to_logical(scale_factor)
-                }
-                false => (0, 0).into(),
-            };
+            let mut metadata = WindowState::default();
 
-            let PhysicalPosition { x, y } = match flags.contains(StateFlags::POSITION) {
-                true => self.outer_position()?,
-                false => (0, 0).into(),
-            };
+            if flags.contains(StateFlags::SIZE) {
+                let scale_factor = self
+                    .current_monitor()?
+                    .map(|m| m.scale_factor())
+                    .unwrap_or(1.);
+                let size = self.inner_size()?.to_logical(scale_factor);
+                metadata.width = size.width;
+                metadata.height = size.height;
+            }
 
-            let maximized = match flags.contains(StateFlags::MAXIMIZED) {
-                true => self.is_maximized().unwrap_or(false),
-                false => false,
-            };
+            if flags.contains(StateFlags::POSITION) {
+                let pos = self.outer_position()?;
+                metadata.x = pos.x;
+                metadata.y = pos.y;
+            }
 
-            let visible = match flags.contains(StateFlags::VISIBLE) {
-                true => self.is_visible().unwrap_or(true),
-                false => true,
-            };
+            if flags.contains(StateFlags::MAXIMIZED) {
+                metadata.maximized = self.is_maximized()?;
+            }
 
-            let decorated = match flags.contains(StateFlags::DECORATIONS) {
-                true => self.is_visible().unwrap_or(true),
-                false => true,
-            };
+            if flags.contains(StateFlags::VISIBLE) {
+                metadata.visible = self.is_visible()?;
+            }
 
-            let fullscreen = match flags.contains(StateFlags::FULLSCREEN) {
-                true => self.is_fullscreen().unwrap_or(false),
-                false => false,
-            };
+            if flags.contains(StateFlags::DECORATIONS) {
+                metadata.visible = self.is_visible()?;
+            }
 
-            c.insert(
-                self.label().into(),
-                WindowMetadata {
-                    width,
-                    height,
-                    x,
-                    y,
-                    maximized,
-                    visible,
-                    decorated,
-                    fullscreen,
-                },
-            );
+            if flags.contains(StateFlags::FULLSCREEN) {
+                metadata.fullscreen = self.is_fullscreen()?;
+            }
+
+            c.insert(self.label().into(), metadata);
         }
 
         if flags.contains(StateFlags::VISIBLE) && should_show {
             self.show()?;
             self.set_focus()?;
+        }
+
+        Ok(())
+    }
+}
+
+trait WindowExtInternal {
+    fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()>;
+}
+
+impl<R: Runtime> WindowExtInternal for Window<R> {
+    fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()> {
+        let is_maximized = match flags.intersects(StateFlags::MAXIMIZED | StateFlags::SIZE) {
+            true => self.is_maximized()?,
+            false => false,
+        };
+
+        if flags.contains(StateFlags::MAXIMIZED) {
+            state.maximized = is_maximized;
+        }
+
+        if flags.contains(StateFlags::FULLSCREEN) {
+            state.fullscreen = self.is_fullscreen()?;
+        }
+
+        if flags.contains(StateFlags::DECORATIONS) {
+            state.decorated = self.is_decorated()?;
+        }
+
+        if flags.contains(StateFlags::VISIBLE) {
+            state.visible = self.is_visible()?;
+        }
+
+        if flags.contains(StateFlags::SIZE) {
+            let scale_factor = self
+                .current_monitor()?
+                .map(|m| m.scale_factor())
+                .unwrap_or(1.);
+            let size = self.inner_size()?.to_logical(scale_factor);
+
+            // It doesn't make sense to save a self with 0 height or width
+            if size.width > 0. && size.height > 0. && !is_maximized {
+                state.width = size.width;
+                state.height = size.height;
+            }
+        }
+
+        if flags.contains(StateFlags::POSITION) {
+            let position = self.inner_position()?;
+            if let Ok(Some(monitor)) = self.current_monitor() {
+                // save only window positions that are inside the current monitor
+                if monitor.contains(position) && !is_maximized {
+                    state.x = position.x;
+                    state.y = position.y;
+                }
+            }
         }
 
         Ok(())
@@ -221,7 +263,7 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         PluginBuilder::new("window-state")
             .setup(|app| {
-                let cache: Arc<Mutex<HashMap<String, WindowMetadata>>> = if let Some(app_dir) =
+                let cache: Arc<Mutex<HashMap<String, WindowState>>> = if let Some(app_dir) =
                     app.path_resolver().app_config_dir()
                 {
                     let state_path = app_dir.join(STATE_FILENAME);
@@ -256,75 +298,10 @@ impl Builder {
                 let window_clone = window.clone();
                 let flags = self.state_flags;
                 window.on_window_event(move |e| match e {
-                    WindowEvent::Moved(position) => {
-                        let mut c = cache.lock().unwrap();
-                        if let Some(state) = c.get_mut(&label) {
-                            if flags.intersects(StateFlags::MAXIMIZED | StateFlags::POSITION) {
-                                let is_maximized = window_clone.is_maximized().unwrap_or(false);
-
-                                if flags.contains(StateFlags::MAXIMIZED) {
-                                    state.maximized = is_maximized;
-                                }
-
-                                if flags.contains(StateFlags::POSITION) {
-                                    if let Some(monitor) = window_clone.current_monitor().unwrap() {
-                                        let monitor_position = monitor.position();
-                                        // save only window positions that are inside the current monitor
-                                        if position.x > monitor_position.x
-                                            && position.y > monitor_position.y
-                                            && !is_maximized
-                                        {
-                                            state.x = position.x;
-                                            state.y = position.y;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    WindowEvent::Resized(size) => {
-                        let mut c = cache.lock().unwrap();
-                        if let Some(state) = c.get_mut(&label) {
-                            let is_maximized =
-                                match flags.intersects(StateFlags::MAXIMIZED | StateFlags::SIZE) {
-                                    true => window_clone.is_maximized().unwrap_or(false),
-                                    false => false,
-                                };
-
-                            if flags.contains(StateFlags::MAXIMIZED) {
-                                state.maximized = is_maximized;
-                            }
-
-                            if flags.contains(StateFlags::FULLSCREEN) {
-                                state.fullscreen = window_clone.is_fullscreen().unwrap_or(false);
-                            }
-
-                            if flags.contains(StateFlags::DECORATIONS) {
-                                state.decorated = window_clone.is_decorated().unwrap_or(true);
-                            }
-
-                            if flags.contains(StateFlags::SIZE) {
-                                let scale_factor = window_clone
-                                    .current_monitor()
-                                    .ok()
-                                    .map(|m| m.map(|m| m.scale_factor()).unwrap_or(1.))
-                                    .unwrap_or(1.);
-                                let size = size.to_logical(scale_factor);
-
-                                // It doesn't make sense to save a window with 0 height or width
-                                if size.width > 0. && size.height > 0. && !is_maximized {
-                                    state.width = size.width;
-                                    state.height = size.height;
-                                }
-                            }
-                        }
-                    }
                     WindowEvent::CloseRequested { .. } => {
                         let mut c = cache.lock().unwrap();
-                        if let Some(state) = c.get_mut(&label) {
-                            if flags.contains(StateFlags::VISIBLE) {
-                                state.visible = window_clone.is_visible().unwrap_or(true);
-                            }
+                        if let Some(mut state) = c.get_mut(&label) {
+                            let _ = window_clone.update_state(&mut state, flags);
                         }
                     }
                     _ => {}
