@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
@@ -30,27 +31,27 @@ pub enum Error {
     Bincode(#[from] Box<bincode::ErrorKind>),
 }
 
-/// Defines how the window visibility should be restored.
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum ShowMode {
-    /// The window will always be shown, regardless of what the last stored state was.
-    Always,
-    /// The window will be automatically shown if the last stored state for visibility was `true`.
-    LastSaved,
-    /// The window will not be automatically shown by this plugin.
-    Never,
-}
+pub type Result<T> = std::result::Result<T, Error>;
 
-impl Default for ShowMode {
-    fn default() -> Self {
-        Self::LastSaved
+bitflags! {
+    pub struct StateFlags: u32 {
+        const SIZE        = 1 << 0;
+        const POSITION    = 1 << 1;
+        const MAXIMIZED   = 1 << 2;
+        const VISIBLE     = 1 << 3;
+        const DECORATIONS = 1 << 4;
+        const FULLSCREEN  = 1 << 5;
     }
 }
 
-pub type Result<T> = std::result::Result<T, Error>;
+impl Default for StateFlags {
+    fn default() -> Self {
+        Self::all()
+    }
+}
 
 #[derive(Debug, Default, Deserialize, Serialize)]
-struct WindowMetadata {
+struct WindowState {
     width: f64,
     height: f64,
     x: i32,
@@ -61,7 +62,7 @@ struct WindowMetadata {
     fullscreen: bool,
 }
 
-struct WindowStateCache(Arc<Mutex<HashMap<String, WindowMetadata>>>);
+struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
 pub trait AppHandleExt {
     fn save_window_state(&self) -> Result<()>;
 }
@@ -86,66 +87,88 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
 }
 
 pub trait WindowExt {
-    fn restore_state(&self, show_mode: ShowMode) -> tauri::Result<()>;
+    fn restore_state(&self, flags: StateFlags) -> tauri::Result<()>;
 }
 
 impl<R: Runtime> WindowExt for Window<R> {
-    fn restore_state(&self, show_mode: ShowMode) -> tauri::Result<()> {
+    fn restore_state(&self, flags: StateFlags) -> tauri::Result<()> {
         let cache = self.state::<WindowStateCache>();
         let mut c = cache.0.lock().unwrap();
         let mut should_show = true;
+
         if let Some(state) = c.get(self.label()) {
-            self.set_decorations(state.decorated)?;
+            if flags.contains(StateFlags::DECORATIONS) {
+                self.set_decorations(state.decorated)?;
+            }
 
-            self.set_size(LogicalSize {
-                width: state.width,
-                height: state.height,
-            })?;
+            if flags.contains(StateFlags::SIZE) {
+                self.set_size(LogicalSize {
+                    width: state.width,
+                    height: state.height,
+                })?;
+            }
 
-            // restore position to saved value if saved monitor exists
-            // otherwise, let the OS decide where to place the window
-            for m in self.available_monitors()? {
-                if m.contains((state.x, state.y).into()) {
-                    self.set_position(PhysicalPosition {
-                        x: state.x,
-                        y: state.y,
-                    })?;
+            if flags.contains(StateFlags::POSITION) {
+                // restore position to saved value if saved monitor exists
+                // otherwise, let the OS decide where to place the window
+                for m in self.available_monitors()? {
+                    if m.contains((state.x, state.y).into()) {
+                        self.set_position(PhysicalPosition {
+                            x: state.x,
+                            y: state.y,
+                        })?;
+                    }
                 }
             }
 
-            if state.maximized {
+            if flags.contains(StateFlags::MAXIMIZED) && state.maximized {
                 self.maximize()?;
             }
-            self.set_fullscreen(state.fullscreen)?;
+
+            if flags.contains(StateFlags::FULLSCREEN) {
+                self.set_fullscreen(state.fullscreen)?;
+            }
 
             should_show = state.visible;
         } else {
-            let scale_factor = self
-                .current_monitor()?
-                .map(|m| m.scale_factor())
-                .unwrap_or(1.);
-            let LogicalSize { width, height } = self.inner_size()?.to_logical(scale_factor);
-            let PhysicalPosition { x, y } = self.outer_position()?;
-            let maximized = self.is_maximized().unwrap_or(false);
-            let visible = self.is_visible().unwrap_or(true);
-            let decorated = self.is_decorated().unwrap_or(true);
-            let fullscreen = self.is_fullscreen().unwrap_or(false);
-            c.insert(
-                self.label().into(),
-                WindowMetadata {
-                    width,
-                    height,
-                    x,
-                    y,
-                    maximized,
-                    visible,
-                    decorated,
-                    fullscreen,
-                },
-            );
+            let mut metadata = WindowState::default();
+
+            if flags.contains(StateFlags::SIZE) {
+                let scale_factor = self
+                    .current_monitor()?
+                    .map(|m| m.scale_factor())
+                    .unwrap_or(1.);
+                let size = self.inner_size()?.to_logical(scale_factor);
+                metadata.width = size.width;
+                metadata.height = size.height;
+            }
+
+            if flags.contains(StateFlags::POSITION) {
+                let pos = self.outer_position()?;
+                metadata.x = pos.x;
+                metadata.y = pos.y;
+            }
+
+            if flags.contains(StateFlags::MAXIMIZED) {
+                metadata.maximized = self.is_maximized()?;
+            }
+
+            if flags.contains(StateFlags::VISIBLE) {
+                metadata.visible = self.is_visible()?;
+            }
+
+            if flags.contains(StateFlags::DECORATIONS) {
+                metadata.visible = self.is_visible()?;
+            }
+
+            if flags.contains(StateFlags::FULLSCREEN) {
+                metadata.fullscreen = self.is_fullscreen()?;
+            }
+
+            c.insert(self.label().into(), metadata);
         }
 
-        if show_mode == ShowMode::Always || (show_mode == ShowMode::LastSaved && should_show) {
+        if flags.contains(StateFlags::VISIBLE) && should_show {
             self.show()?;
             self.set_focus()?;
         }
@@ -154,19 +177,73 @@ impl<R: Runtime> WindowExt for Window<R> {
     }
 }
 
+trait WindowExtInternal {
+    fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()>;
+}
+
+impl<R: Runtime> WindowExtInternal for Window<R> {
+    fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()> {
+        let is_maximized = match flags.intersects(StateFlags::MAXIMIZED | StateFlags::SIZE) {
+            true => self.is_maximized()?,
+            false => false,
+        };
+
+        if flags.contains(StateFlags::MAXIMIZED) {
+            state.maximized = is_maximized;
+        }
+
+        if flags.contains(StateFlags::FULLSCREEN) {
+            state.fullscreen = self.is_fullscreen()?;
+        }
+
+        if flags.contains(StateFlags::DECORATIONS) {
+            state.decorated = self.is_decorated()?;
+        }
+
+        if flags.contains(StateFlags::VISIBLE) {
+            state.visible = self.is_visible()?;
+        }
+
+        if flags.contains(StateFlags::SIZE) {
+            let scale_factor = self
+                .current_monitor()?
+                .map(|m| m.scale_factor())
+                .unwrap_or(1.);
+            let size = self.inner_size()?.to_logical(scale_factor);
+
+            // It doesn't make sense to save a self with 0 height or width
+            if size.width > 0. && size.height > 0. && !is_maximized {
+                state.width = size.width;
+                state.height = size.height;
+            }
+        }
+
+        if flags.contains(StateFlags::POSITION) {
+            let position = self.inner_position()?;
+            if let Ok(Some(monitor)) = self.current_monitor() {
+                // save only window positions that are inside the current monitor
+                if monitor.contains(position) && !is_maximized {
+                    state.x = position.x;
+                    state.y = position.y;
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Default)]
 pub struct Builder {
-    show_mode: ShowMode,
     denylist: HashSet<String>,
     skip_initial_state: HashSet<String>,
+    state_flags: StateFlags,
 }
 
 impl Builder {
-    /// Sets how the window visibility should be restored.
-    ///
-    /// The default is [`ShowMode::LastSaved`]
-    pub fn with_show_mode(mut self, show_mode: ShowMode) -> Self {
-        self.show_mode = show_mode;
+    /// Sets the state flags to control what state gets restored and saved.
+    pub fn with_state_flags(mut self, flags: StateFlags) -> Self {
+        self.state_flags = flags;
         self
     }
 
@@ -186,7 +263,7 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         PluginBuilder::new("window-state")
             .setup(|app| {
-                let cache: Arc<Mutex<HashMap<String, WindowMetadata>>> = if let Some(app_dir) =
+                let cache: Arc<Mutex<HashMap<String, WindowState>>> = if let Some(app_dir) =
                     app.path_resolver().app_config_dir()
                 {
                     let state_path = app_dir.join(STATE_FILENAME);
@@ -212,62 +289,21 @@ impl Builder {
                 }
 
                 if !self.skip_initial_state.contains(window.label()) {
-                    let _ = window.restore_state(self.show_mode);
+                    let _ = window.restore_state(self.state_flags);
                 }
 
                 let cache = window.state::<WindowStateCache>();
                 let cache = cache.0.clone();
                 let label = window.label().to_string();
                 let window_clone = window.clone();
-                window.on_window_event(move |e| match e {
-                    WindowEvent::Moved(position) => {
+                let flags = self.state_flags;
+                window.on_window_event(move |e| {
+                    if let WindowEvent::CloseRequested { .. } = e {
                         let mut c = cache.lock().unwrap();
                         if let Some(state) = c.get_mut(&label) {
-                            let is_maximized = window_clone.is_maximized().unwrap_or(false);
-                            state.maximized = is_maximized;
-
-                            if let Some(monitor) = window_clone.current_monitor().unwrap() {
-                                let monitor_position = monitor.position();
-                                // save only window positions that are inside the current monitor
-                                if position.x > monitor_position.x
-                                    && position.y > monitor_position.y
-                                    && !is_maximized
-                                {
-                                    state.x = position.x;
-                                    state.y = position.y;
-                                };
-                            };
+                            let _ = window_clone.update_state(state, flags);
                         }
                     }
-                    WindowEvent::Resized(size) => {
-                        let scale_factor = window_clone
-                            .current_monitor()
-                            .ok()
-                            .map(|m| m.map(|m| m.scale_factor()).unwrap_or(1.))
-                            .unwrap_or(1.);
-                        let size = size.to_logical(scale_factor);
-                        let mut c = cache.lock().unwrap();
-                        if let Some(state) = c.get_mut(&label) {
-                            let is_maximized = window_clone.is_maximized().unwrap_or(false);
-                            let is_fullscreen = window_clone.is_fullscreen().unwrap_or(false);
-                            state.decorated = window_clone.is_decorated().unwrap_or(true);
-                            state.maximized = is_maximized;
-                            state.fullscreen = is_fullscreen;
-
-                            // It doesn't make sense to save a window with 0 height or width
-                            if size.width > 0. && size.height > 0. && !is_maximized {
-                                state.width = size.width;
-                                state.height = size.height;
-                            }
-                        }
-                    }
-                    WindowEvent::CloseRequested { .. } => {
-                        let mut c = cache.lock().unwrap();
-                        if let Some(state) = c.get_mut(&label) {
-                            state.visible = window_clone.is_visible().unwrap_or(true);
-                        }
-                    }
-                    _ => {}
                 });
             })
             .on_event(|app, event| {
