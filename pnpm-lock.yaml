@@ -11,7 +11,7 @@ importers:
       '@typescript-eslint/parser': ^5.46.1
       eslint: ^8.0.1
       eslint-config-prettier: ^8.5.0
-      eslint-config-standard-with-typescript: ^31.0.0
+      eslint-config-standard-with-typescript: ^32.0.0
       eslint-plugin-import: ^2.25.2
       eslint-plugin-n: ^15.0.0
       eslint-plugin-promise: ^6.0.0
@@ -26,7 +26,7 @@ importers:
       '@typescript-eslint/parser': 5.46.1_ha6vam6werchizxrnqvarmz2zu
       eslint: 8.29.0
       eslint-config-prettier: 8.5.0_eslint@8.29.0
-      eslint-config-standard-with-typescript: 31.0.0_f7skxvi3ubnnb5utlsc5vholvm
+      eslint-config-standard-with-typescript: 32.0.0_f7skxvi3ubnnb5utlsc5vholvm
       eslint-plugin-import: 2.26.0_z7hwuz3w5sq2sbhy7d4iqrnsvq
       eslint-plugin-n: 15.6.0_eslint@8.29.0
       eslint-plugin-promise: 6.1.1_eslint@8.29.0
@@ -1218,8 +1218,8 @@ packages:
       eslint: 8.29.0
     dev: true
 
-  /eslint-config-standard-with-typescript/31.0.0_f7skxvi3ubnnb5utlsc5vholvm:
-    resolution: {integrity: sha512-FLTrcJR62gPPPFwwverxwDTcQDb4HOCfDqmELZgNMSbh1M/Ui36X47a9ZANeo3iuPhMOfvrfuShChW9chdasnA==}
+  /eslint-config-standard-with-typescript/32.0.0_f7skxvi3ubnnb5utlsc5vholvm:
+    resolution: {integrity: sha512-SyfzLvyBbPfxr2K/zNphtl5CGIS7FHH7v0TZrpmuyEXe+S1LFgt8hdJcWZHNxFckAGVQqrCxe/8+9T6n8x0gEA==}
     peerDependencies:
       '@typescript-eslint/eslint-plugin': ^5.0.0
       eslint: ^8.0.1
