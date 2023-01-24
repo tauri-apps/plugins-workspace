@@ -206,7 +206,7 @@ impl<R: Runtime> Store<R> {
         Ok(())
     }
 
-    pub fn set(&mut self, key: String, value: JsonValue) -> Result<(), Error> {
+    pub fn insert(&mut self, key: String, value: JsonValue) -> Result<(), Error> {
         self.cache.insert(key.clone(), value.clone());
         self.app.emit_all(
             "store://change",

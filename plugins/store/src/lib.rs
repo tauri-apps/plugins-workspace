@@ -69,7 +69,7 @@ async fn set<R: Runtime>(
     key: String,
     value: JsonValue,
 ) -> Result<(), Error> {
-    with_store(app, stores, path, |store| store.set(key, value))
+    with_store(app, stores, path, |store| store.insert(key, value))
 }
 
 #[tauri::command]
