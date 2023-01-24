@@ -183,10 +183,19 @@ async fn save<R: Runtime>(
     with_store(app, stores, path, |store| store.save())
 }
 
-#[derive(Default)]
+// #[derive(Default)]
 pub struct Builder<R: Runtime> {
     stores: HashMap<PathBuf, Store<R>>,
     frozen: bool,
+}
+
+impl<R: Runtime> Default for Builder<R> {
+    fn default() -> Self {
+        Self {
+            stores: Default::default(),
+            frozen: false,
+        }
+    }
 }
 
 impl<R: Runtime> Builder<R> {
