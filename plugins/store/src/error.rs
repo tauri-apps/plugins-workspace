@@ -22,6 +22,9 @@ pub enum Error {
     /// Store not found
     #[error("Store \"{0}\" not found")]
     NotFound(PathBuf),
+    /// Some Tauri API failed
+    #[error(transparent)]
+    Tauri(#[from] tauri::Error),
 }
 
 impl Serialize for Error {
