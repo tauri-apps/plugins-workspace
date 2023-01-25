@@ -74,9 +74,9 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
             let cache = self.state::<WindowStateCache>();
             let mut state = cache.0.lock().unwrap();
             for (label, s) in state.iter_mut() {
-                self.get_window(label)
-                    .ok_or_else(|| Error::Tauri(tauri::Error::WebviewNotFound))?
-                    .update_state(s, flags)?;
+                if let Some(window) = self.get_window(label) {
+                    window.update_state(s, flags)?;
+                }
             }
 
             create_dir_all(&app_dir)
