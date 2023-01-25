@@ -64,15 +64,21 @@ struct WindowState {
 
 struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
 pub trait AppHandleExt {
-    fn save_window_state(&self) -> Result<()>;
+    fn save_window_state(&self, flags: StateFlags) -> Result<()>;
 }
 
 impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
-    fn save_window_state(&self) -> Result<()> {
+    fn save_window_state(&self, flags: StateFlags) -> Result<()> {
         if let Some(app_dir) = self.path_resolver().app_config_dir() {
             let state_path = app_dir.join(STATE_FILENAME);
             let cache = self.state::<WindowStateCache>();
-            let state = cache.0.lock().unwrap();
+            let mut state = cache.0.lock().unwrap();
+            for (label, s) in state.iter_mut() {
+                if let Some(window) = self.get_window(label) {
+                    window.update_state(s, flags)?;
+                }
+            }
+
             create_dir_all(&app_dir)
                 .map_err(Error::Io)
                 .and_then(|_| File::create(state_path).map_err(Into::into))
@@ -261,6 +267,7 @@ impl Builder {
     }
 
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
+        let flags = self.state_flags;
         PluginBuilder::new("window-state")
             .setup(|app| {
                 let cache: Arc<Mutex<HashMap<String, WindowState>>> = if let Some(app_dir) =
@@ -306,9 +313,9 @@ impl Builder {
                     }
                 });
             })
-            .on_event(|app, event| {
+            .on_event(move |app, event| {
                 if let RunEvent::Exit = event {
-                    let _ = app.save_window_state();
+                    let _ = app.save_window_state(flags);
                 }
             })
             .build()
