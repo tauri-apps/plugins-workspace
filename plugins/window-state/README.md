@@ -1,6 +1,6 @@
 ![plugin-window-state](banner.png)
 
-Save window positions and sizse and restore them when the app is reopened.
+Save window positions and sizes and restore them when the app is reopened.
 
 ## Install
 
