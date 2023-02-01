@@ -154,7 +154,7 @@ pub fn sign(
 
             let sig = encode_config(sign_data, URL_SAFE_NO_PAD);
 
-            println!("Sign result: {}", sig);
+            println!("Sign result: {sig}");
             println!(
                 "Key handle used: {}",
                 encode_config(&handle_used, URL_SAFE_NO_PAD)
@@ -174,8 +174,7 @@ pub fn sign(
 
 fn format_client_data(application: &str, challenge: &str) -> (Vec<u8>, Vec<u8>, String) {
     let d = format!(
-        r#"{{"challenge": "{}", "version": "U2F_V2", "appId": "{}"}}"#,
-        challenge, application
+        r#"{{"challenge": "{challenge}", "version": "U2F_V2", "appId": "{application}"}}"#
     );
     let mut challenge = Sha256::new();
     challenge.update(d.as_bytes());

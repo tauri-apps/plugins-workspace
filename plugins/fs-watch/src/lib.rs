@@ -46,7 +46,7 @@ enum WatcherKind {
 
 fn watch_raw<R: Runtime>(window: Window<R>, rx: Receiver<notify::Result<Event>>, id: Id) {
     spawn(move || {
-        let event_name = format!("watcher://raw-event/{}", id);
+        let event_name = format!("watcher://raw-event/{id}");
         while let Ok(event) = rx.recv() {
             if let Ok(event) = event {
                 // TODO: Should errors be emitted too?
@@ -58,7 +58,7 @@ fn watch_raw<R: Runtime>(window: Window<R>, rx: Receiver<notify::Result<Event>>,
 
 fn watch_debounced<R: Runtime>(window: Window<R>, rx: Receiver<DebounceEventResult>, id: Id) {
     spawn(move || {
-        let event_name = format!("watcher://debounced-event/{}", id);
+        let event_name = format!("watcher://debounced-event/{id}");
         while let Ok(event) = rx.recv() {
             if let Ok(event) = event {
                 // TODO: Should errors be emitted too?

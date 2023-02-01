@@ -308,7 +308,7 @@ fn get_log_file_path(
     rotation_strategy: &RotationStrategy,
     max_file_size: u128,
 ) -> plugin::Result<PathBuf> {
-    let path = dir.as_ref().join(format!("{}.log", app_name));
+    let path = dir.as_ref().join(format!("{app_name}.log"));
 
     if path.exists() {
         let log_size = File::open(&path)?.metadata()?.len() as u128;
