@@ -173,9 +173,8 @@ pub fn sign(
 }
 
 fn format_client_data(application: &str, challenge: &str) -> (Vec<u8>, Vec<u8>, String) {
-    let d = format!(
-        r#"{{"challenge": "{challenge}", "version": "U2F_V2", "appId": "{application}"}}"#
-    );
+    let d =
+        format!(r#"{{"challenge": "{challenge}", "version": "U2F_V2", "appId": "{application}"}}"#);
     let mut challenge = Sha256::new();
     challenge.update(d.as_bytes());
     let chall_bytes = challenge.finalize().to_vec();
