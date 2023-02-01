@@ -31,9 +31,9 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
         .setup(|app| {
             let id = &app.config().tauri.bundle.identifier;
 
-            let class_name = encode_wide(format!("{}-sic", id));
-            let window_name = encode_wide(format!("{}-siw", id));
-            let mutex_name = encode_wide(format!("{}-sim", id));
+            let class_name = encode_wide(format!("{id}-sic"));
+            let window_name = encode_wide(format!("{id}-siw"));
+            let mutex_name = encode_wide(format!("{id}-sim"));
 
             let hmutex =
                 unsafe { CreateMutexW(std::ptr::null(), true.into(), mutex_name.as_ptr()) };

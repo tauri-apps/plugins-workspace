@@ -38,8 +38,8 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
                 callback: f,
                 app_handle: app.clone(),
             };
-            let dbus_name = format!("org.{}.SingleInstance", id);
-            let dbus_path = format!("/org/{}/SingleInstance", id);
+            let dbus_name = format!("org.{id}.SingleInstance");
+            let dbus_path = format!("/org/{id}/SingleInstance");
 
             match ConnectionBuilder::session()
                 .unwrap()
