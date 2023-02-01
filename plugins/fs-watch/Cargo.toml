@@ -15,5 +15,5 @@ serde_json.workspace = true
 tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
-notify = { version = "5.0" , features = ["serde"] }
+notify = { version = "5" , features = ["serde"] }
 notify-debouncer-mini = { version = "0.2.1" , features = ["serde"] }
