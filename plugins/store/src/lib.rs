@@ -5,7 +5,7 @@
 pub use error::Error;
 use log::warn;
 use serde::Serialize;
-use serde_json::Value as JsonValue;
+pub use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
