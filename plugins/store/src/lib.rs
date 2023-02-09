@@ -36,16 +36,17 @@ pub struct StoreCollection<R: Runtime> {
 pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T, Error>>(
     app: AppHandle<R>,
     collection: State<'_, StoreCollection<R>>,
-    path: PathBuf,
+    path: impl AsRef<Path>,
     f: F,
 ) -> Result<T, Error> {
     let mut stores = collection.stores.lock().expect("mutex poisoned");
 
-    if !stores.contains_key(&path) {
+    let path = path.as_ref();
+    if !stores.contains_key(path) {
         if collection.frozen {
-            return Err(Error::NotFound(path));
+            return Err(Error::NotFound(path.to_path_buf()));
         }
-        let mut store = StoreBuilder::new(app, path.clone()).build();
+        let mut store = StoreBuilder::new(app, path.to_path_buf()).build();
         // ignore loading errors, just use the default
         if let Err(err) = store.load() {
             warn!(
@@ -53,11 +54,11 @@ pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T, Error>>(
                 path, err
             );
         }
-        stores.insert(path.clone(), store);
+        stores.insert(path.to_path_buf(), store);
     }
 
     f(stores
-        .get_mut(&path)
+        .get_mut(path)
         .expect("failed to retrieve store. This is a bug!"))
 }
 
