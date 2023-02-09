@@ -12,18 +12,18 @@ use std::{
 };
 use tauri::{AppHandle, Manager, Runtime};
 
-type SerializeFn = fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error>>;
-type DeserializeFn = fn(&[u8]) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error>>;
+type SerializeFn = fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>>;
+type DeserializeFn = fn(&[u8]) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>>;
 
 fn default_serialize(
     cache: &HashMap<String, JsonValue>,
-) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
     Ok(serde_json::to_vec(&cache)?)
 }
 
 fn default_deserialize(
     bytes: &[u8],
-) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error>> {
+) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>> {
     serde_json::from_slice(bytes).map_err(Into::into)
 }
 
