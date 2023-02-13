@@ -111,13 +111,22 @@ pub fn init<R: Runtime>(
             builder.set_app_path(&current_exe.display().to_string());
             #[cfg(target_os = "macos")]
             {
+                // on macOS, current_exe gives path to /Applications/Example.app/MacOS/Example
+                // but this results in seeing a Unix Executable in macOS login items
+                // It must be: /Applications/Example.app
+                // If it didn't find exactly a single occurance of .app, it will default to
+                // exe path to not break it.ß
                 let exe_path = current_exe.canonicalize()?.display().to_string();
                 let parts: Vec<&str> = exe_path.split(".app/").collect();
-                let app_path = format!(
-                    "{}{}",
-                    parts.get(0).expect("to be an app").to_string(),
-                    ".app"
-                );
+                let app_path = if parts.len() == 2 {
+                    format!(
+                        "{}{}",
+                        parts.get(0).expect("to be an app").to_string(),
+                        ".app"
+                    )
+                } else {
+                    exe_path
+                };
                 info!("auto_start path {}", &app_path);
                 builder.set_app_path(&app_path);
             }
