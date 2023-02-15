@@ -16,3 +16,4 @@ tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
 bincode = "1.3"
+bitflags = "1"

@@ -16,7 +16,7 @@ pub fn make_challenge(app_id: &str, challenge_bytes: Vec<u8>) -> Challenge {
     let utc: DateTime<Utc> = Utc::now();
     Challenge {
         challenge: encode_config(challenge_bytes, URL_SAFE_NO_PAD),
-        timestamp: format!("{:?}", utc),
+        timestamp: format!("{utc:?}"),
         app_id: app_id.to_string(),
     }
 }

@@ -4,6 +4,8 @@ Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx)
 
 ## Install
 
+_This plugin requires a Rust version of at least **1.64**_
+
 There are three general methods of installation that we can recommend.
 
 1. Use crates.io and npm (easiest, and requires you to trust that our publishing pipeline worked)
@@ -42,7 +44,7 @@ First you need to register the core plugin with Tauri:
 ```rust
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_sql::Builder::default())
+        .plugin(tauri_plugin_sql::Builder::default().build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

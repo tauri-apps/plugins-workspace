@@ -31,9 +31,9 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
         .setup(|app| {
             let id = &app.config().tauri.bundle.identifier;
 
-            let class_name = encode_wide(format!("{}-sic", id));
-            let window_name = encode_wide(format!("{}-siw", id));
-            let mutex_name = encode_wide(format!("{}-sim", id));
+            let class_name = encode_wide(format!("{id}-sic"));
+            let window_name = encode_wide(format!("{id}-siw"));
+            let mutex_name = encode_wide(format!("{id}-sim"));
 
             let hmutex =
                 unsafe { CreateMutexW(std::ptr::null(), true.into(), mutex_name.as_ptr()) };
@@ -113,10 +113,10 @@ unsafe extern "system" fn single_instance_window_proc<R: Runtime>(
             let cds_ptr = lparam as *const COPYDATASTRUCT;
             if (*cds_ptr).dwData == WMCOPYDATA_SINGLE_INSTANCE_DATA {
                 let data = CStr::from_ptr((*cds_ptr).lpData as _).to_string_lossy();
-                let mut s = data.split("|");
+                let mut s = data.split('|');
                 let cwd = s.next().unwrap();
                 let args = s.into_iter().map(|s| s.to_string()).collect();
-                callback(&app_handle, args, cwd.to_string());
+                callback(app_handle, args, cwd.to_string());
             }
             1
         }

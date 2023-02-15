@@ -1,8 +1,10 @@
 ![plugin-window-state](banner.png)
 
-Save window positions and sizse and restore them when the app is reopened.
+Save window positions and sizes and restore them when the app is reopened.
 
 ## Install
+
+_This plugin requires a Rust version of at least **1.64**_
 
 There are three general methods of installation that we can recommend.
 
@@ -39,19 +41,19 @@ Afterwards all windows will remember their state when the app is being closed an
 Optionally you can also tell the plugin to save the state of all open window to disk my using the `save_window_state()` method exposed by the `AppHandleExt` trait:
 
 ```rust
-use tauri_plugin_window_state::AppHandleExt;
+use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
 // `tauri::AppHandle` now has the following additional method
-app.save_window_state(); // will save the state of all open windows to disk
+app.save_window_state(StateFlags::all()); // will save the state of all open windows to disk
 ```
 
 To manually restore a windows state from disk you can call the `restore_state()` method exposed by the `WindowExt` trait:
 
 ```rust
-use tauri_plugin_window_state::{WindowExt, ShowMode};
+use tauri_plugin_window_state::{WindowExt, StateFlags};
 
 // all `Window` types now have the following additional method
-window.restore_state(ShowMode::LastSaved); // will restore the windows state from disk
+window.restore_state(StateFlags::all()); // will restore the windows state from disk
 ```
 
 ## Contributing
