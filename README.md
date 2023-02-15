@@ -15,7 +15,7 @@
 | [store](plugins/store)                     | Persistent key value storage.                             | ✅  | ✅  | ✅  | ?   | ?   |
 | [stronghold](plugins/stronghold)           | Encrypted, secure database.                               | ✅  | ✅  | ✅  | ?   | ?   |
 | [upload](plugins/upload)                   | Tauri plugin for file uploads through HTTP.               | ✅  | ✅  | ✅  | ?   | ?   |
-| [websocket](plugins/websocket)             | Open a WebSocket connection using a Rust backend          | ✅  | ✅  | ✅  | ?   | ?   |
+| [websocket](plugins/websocket)             | Open a WebSocket connection using a Rust client in JS.    | ✅  | ✅  | ✅  | ?   | ?   |
 | [window-state](plugins/window-state)       | Persist window sizes and positions.                       | ✅  | ✅  | ✅  | ?   | ?   |
 
 _This repo and all plugins require a minimum Rust version of **1.64**_
