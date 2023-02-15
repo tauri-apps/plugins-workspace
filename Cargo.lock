@@ -4422,7 +4422,7 @@ dependencies = [
 name = "tauri-plugin-upload"
 version = "0.1.0"
 dependencies = [
- "futures",
+ "futures-util",
  "log",
  "read-progress-stream",
  "reqwest",
