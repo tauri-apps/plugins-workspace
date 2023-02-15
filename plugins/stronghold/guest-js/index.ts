@@ -298,7 +298,14 @@ export class Store {
       snapshotPath: this.path,
       client: this.client,
       key: toBytesDto(key),
-    }).then((v) => Uint8Array.from(v));
+    }).then((v) => {
+         if (v !== null || undefined) {
+          Uint8Array.from(v);
+         }
+         else {
+          null
+        }
+      })
   }
 
   async insert(
