@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use auto_launch::{AutoLaunch, AutoLaunchBuilder};
+#[cfg(target_os = "macos")]
 use log::info;
 use serde::{ser::Serializer, Serialize};
 use tauri::{
@@ -119,11 +120,7 @@ pub fn init<R: Runtime>(
                 let exe_path = current_exe.canonicalize()?.display().to_string();
                 let parts: Vec<&str> = exe_path.split(".app/").collect();
                 let app_path = if parts.len() == 2 {
-                    format!(
-                        "{}{}",
-                        parts.get(0).unwrap().to_string(),
-                        ".app"
-                    )
+                    format!("{}.app", parts.get(0).unwrap().to_string())
                 } else {
                     exe_path
                 };
