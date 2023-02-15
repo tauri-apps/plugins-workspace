@@ -115,13 +115,13 @@ pub fn init<R: Runtime>(
                 // but this results in seeing a Unix Executable in macOS login items
                 // It must be: /Applications/Example.app
                 // If it didn't find exactly a single occurance of .app, it will default to
-                // exe path to not break it.ß
+                // exe path to not break it.
                 let exe_path = current_exe.canonicalize()?.display().to_string();
                 let parts: Vec<&str> = exe_path.split(".app/").collect();
                 let app_path = if parts.len() == 2 {
                     format!(
                         "{}{}",
-                        parts.get(0).expect("to be an app").to_string(),
+                        parts.get(0).unwrap().to_string(),
                         ".app"
                     )
                 } else {
