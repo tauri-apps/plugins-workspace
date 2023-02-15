@@ -4,6 +4,8 @@ Watch files and directories for changes using [notify](https://github.com/notify
 
 ## Install
 
+_This plugin requires a Rust version of at least **1.64**_
+
 There are three general methods of installation that we can recommend.
 
 1. Use crates.io and npm (easiest, and requires you to trust that our publishing pipeline worked)
