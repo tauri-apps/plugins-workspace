@@ -248,7 +248,7 @@ impl Builder {
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R> {
         plugin::Builder::new("log")
             .invoke_handler(tauri::generate_handler![log])
-            .setup(move |app_handle| {
+            .setup(move |app_handle, _api| {
                 let app_name = &app_handle.package_info().name;
 
                 // setup targets

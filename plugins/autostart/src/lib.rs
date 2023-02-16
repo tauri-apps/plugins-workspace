@@ -98,7 +98,7 @@ pub fn init<R: Runtime>(
 ) -> TauriPlugin<R> {
     Builder::new("autostart")
         .invoke_handler(tauri::generate_handler![enable, disable, is_enabled])
-        .setup(move |app| {
+        .setup(move |app, _api| {
             let mut builder = AutoLaunchBuilder::new();
             builder.set_app_name(&app.package_info().name);
             if let Some(args) = args {

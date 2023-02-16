@@ -269,7 +269,7 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let flags = self.state_flags;
         PluginBuilder::new("window-state")
-            .setup(|app| {
+            .setup(|app, _api| {
                 let cache: Arc<Mutex<HashMap<String, WindowState>>> = if let Some(app_dir) =
                     app.path_resolver().app_config_dir()
                 {

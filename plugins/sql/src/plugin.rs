@@ -93,7 +93,7 @@ struct DbInstances(Mutex<HashMap<String, Pool<Db>>>);
 
 struct Migrations(Mutex<HashMap<String, MigrationList>>);
 
-#[derive(Default, Deserialize)]
+#[derive(Default, Clone, Deserialize)]
 pub struct PluginConfig {
     #[serde(default)]
     preload: Vec<String>,
@@ -329,10 +329,10 @@ impl Builder {
     }
 
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R, Option<PluginConfig>> {
-        PluginBuilder::new("sql")
+        PluginBuilder::<R, Option<PluginConfig>>::new("sql")
             .invoke_handler(tauri::generate_handler![load, execute, select, close])
-            .setup_with_config(|app, config: Option<PluginConfig>| {
-                let config = config.unwrap_or_default();
+            .setup(|app, api| {
+                let config = api.config().clone().unwrap_or_default();
 
                 #[cfg(feature = "sqlite")]
                 create_dir_all(app_path(app)).expect("problems creating App directory!");
