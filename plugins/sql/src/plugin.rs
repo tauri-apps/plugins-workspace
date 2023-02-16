@@ -92,7 +92,7 @@ fn path_mapper<R: Runtime>(
             .replace("?mode=ro", "");
         let path = Path::new(&path);
 
-        create_dir_all(path.parent().unwrap_or(path))?;
+        let _ = create_dir_all(path.parent().unwrap_or(path)); // FIXME: Log this instead of ignoring it
 
         return Ok(connection_string.replace(r"\\?\", "/").replace('\\', "/"));
     }
@@ -103,16 +103,17 @@ fn path_mapper<R: Runtime>(
         .replace("sqlite://", "")
         .replace("sqlite:", "")
         .replace("?mode=ro", "");
-    let path = Path::new(&path);
 
     let path = resolve_path(
         &app.config(),
         app.package_info(),
         &app.env(),
-        path.parent().unwrap_or(path),
+        path,
         #[allow(deprecated)] // FIXME: Use non deprecated variant in tauri v2
         dir.or(Some(BaseDirectory::App)),
     )?;
+
+    let _ = create_dir_all(path.parent().unwrap_or(path)); // FIXME: Log this instead of ignoring it
 
     Ok(format!(
         "sqlite://{}{}",
