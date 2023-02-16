@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
+import { BaseDirectory } from "@tauri-apps/api/path"
 
 export interface QueryResult {
   /** The number of rows affected by the query. */
@@ -34,16 +35,20 @@ export default class Database {
    *
    * # Sqlite
    *
-   * The path is relative to `tauri::api::path::BaseDirectory::App` and must start with `sqlite:`.
+   * The path must be in one of the following formats:
+   * - `sqlite::memory:`: Open an in-memory database.
+   * - `sqlite:///data.db`: Open the file `data.db` from the root directory. `sqlite://\\?\` will be automatically converted to `sqlite:///`
+   * - `sqlite://data.db`: Open the file `data.db` relative to the `dir` argument, or BaseDirectory.App if not provided
    *
    * @example
    * ```ts
    * const db = await Database.load("sqlite:test.db");
    * ```
    */
-  static async load(path: string): Promise<Database> {
+  static async load(path: string, dir?: BaseDirectory): Promise<Database> {
     const _path = await invoke<string>("plugin:sql|load", {
       db: path,
+      dir
     });
 
     return new Database(_path);
@@ -58,7 +63,10 @@ export default class Database {
    *
    * # Sqlite
    *
-   * The path is relative to `tauri::api::path::BaseDirectory::App` and must start with `sqlite:`.
+   * The path must be in one of the following formats:
+   * - `sqlite::memory:`: Open an in-memory database.
+   * - `sqlite:///data.db`: Open the file `data.db` from the root directory. `sqlite://\\?\` will be automatically converted to `sqlite:///`
+   * - `sqlite://data.db`: Open the file `data.db` relative to the `dir` argument, or BaseDirectory.App if not provided
    *
    * @example
    * ```ts

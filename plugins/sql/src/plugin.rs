@@ -22,7 +22,9 @@ use tokio::sync::Mutex;
 use std::collections::HashMap;
 
 #[cfg(feature = "sqlite")]
-use std::{fs::create_dir_all, path::PathBuf};
+use std::fs::create_dir_all;
+#[cfg(feature = "sqlite")]
+use tauri::api::path::BaseDirectory;
 
 #[cfg(feature = "sqlite")]
 type Db = sqlx::sqlite::Sqlite;
@@ -46,6 +48,13 @@ pub enum Error {
     DatabaseNotLoaded(String),
     #[error("unsupported datatype: {0}")]
     UnsupportedDatatype(String),
+
+    #[cfg(feature = "sqlite")]
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+    #[cfg(feature = "sqlite")]
+    #[error(transparent)]
+    Tauri(#[from] tauri::api::Error),
 }
 
 impl Serialize for Error {
@@ -60,32 +69,47 @@ impl Serialize for Error {
 type Result<T> = std::result::Result<T, Error>;
 
 #[cfg(feature = "sqlite")]
-/// Resolves the App's **file path** from the `AppHandle` context
-/// object
-fn app_path<R: Runtime>(app: &AppHandle<R>) -> PathBuf {
-    #[allow(deprecated)] // FIXME: Change to non-deprecated function in Tauri v2
-    app.path_resolver()
-        .app_dir()
-        .expect("No App path was found!")
-}
-
-#[cfg(feature = "sqlite")]
 /// Maps the user supplied DB connection string to a connection string
 /// with a fully qualified file path to the App's designed "app_path"
-fn path_mapper(mut app_path: PathBuf, connection_string: &str) -> String {
-    app_path.push(
-        connection_string
-            .split_once(':')
-            .expect("Couldn't parse the connection string for DB!")
-            .1,
-    );
+fn path_mapper<R: Runtime>(
+    app: &AppHandle<R>,
+    connection_string: &str,
+    dir: Option<BaseDirectory>,
+) -> Result<String> {
+    use tauri::api::path::resolve_path;
 
-    format!(
-        "sqlite:{}",
-        app_path
-            .to_str()
-            .expect("Problem creating fully qualified path to Database file!")
-    )
+    if connection_string.starts_with("sqlite::memory:") {
+        return Ok(connection_string.to_string());
+    }
+    if connection_string.starts_with("sqlite:///")
+        || connection_string.starts_with(r"sqlite://\\?\")
+    {
+        create_dir_all(
+            connection_string
+                .replace("sqlite:///", "/")
+                .replace(r"sqlite://\\?\", "")
+                .replace("?mode=ro", ""),
+        )?;
+        return Ok(connection_string.replace(r"\\?\", "/").replace('\\', "/"));
+    }
+
+    let connection_string = connection_string
+        .replace("sqlite://", "")
+        .replace("sqlite:", "");
+
+    let path = resolve_path(
+        &app.config(),
+        app.package_info(),
+        &app.env(),
+        connection_string,
+        #[allow(deprecated)] // FIXME: Use non deprecated variant in tauri v2
+        dir.or(Some(BaseDirectory::App)),
+    )?;
+
+    Ok(format!(
+        "sqlite://{}",
+        path.display().to_string().replace(r"\\?\", "/")
+    ))
 }
 
 #[derive(Default)]
@@ -151,14 +175,12 @@ async fn load<R: Runtime>(
     db_instances: State<'_, DbInstances>,
     migrations: State<'_, Migrations>,
     db: String,
+    dir: Option<BaseDirectory>,
 ) -> Result<String> {
     #[cfg(feature = "sqlite")]
-    let fqdb = path_mapper(app_path(&app), &db);
+    let fqdb = path_mapper(&app, &db, dir)?;
     #[cfg(not(feature = "sqlite"))]
     let fqdb = db.clone();
-
-    #[cfg(feature = "sqlite")]
-    create_dir_all(app_path(&app)).expect("Problem creating App directory!");
 
     if !Db::database_exists(&fqdb).await.unwrap_or(false) {
         Db::create_database(&fqdb).await?;
@@ -334,15 +356,12 @@ impl Builder {
             .setup_with_config(|app, config: Option<PluginConfig>| {
                 let config = config.unwrap_or_default();
 
-                #[cfg(feature = "sqlite")]
-                create_dir_all(app_path(app)).expect("problems creating App directory!");
-
                 tauri::async_runtime::block_on(async move {
                     let instances = DbInstances::default();
                     let mut lock = instances.0.lock().await;
                     for db in config.preload {
                         #[cfg(feature = "sqlite")]
-                        let fqdb = path_mapper(app_path(app), &db);
+                        let fqdb = path_mapper(app, &db, None)?;
                         #[cfg(not(feature = "sqlite"))]
                         let fqdb = db.clone();
 
