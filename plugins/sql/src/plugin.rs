@@ -76,39 +76,48 @@ fn path_mapper<R: Runtime>(
     connection_string: &str,
     dir: Option<BaseDirectory>,
 ) -> Result<String> {
+    use std::path::Path;
     use tauri::api::path::resolve_path;
 
     if connection_string.starts_with("sqlite::memory:") {
         return Ok(connection_string.to_string());
     }
+
     if connection_string.starts_with("sqlite:///")
         || connection_string.starts_with(r"sqlite://\\?\")
     {
-        create_dir_all(
-            connection_string
-                .replace("sqlite:///", "/")
-                .replace(r"sqlite://\\?\", "")
-                .replace("?mode=ro", ""),
-        )?;
+        let path = connection_string
+            .replace("sqlite:///", "/")
+            .replace(r"sqlite://\\?\", "")
+            .replace("?mode=ro", "");
+        let path = Path::new(&path);
+
+        create_dir_all(path.parent().unwrap_or(path))?;
+
         return Ok(connection_string.replace(r"\\?\", "/").replace('\\', "/"));
     }
 
-    let connection_string = connection_string
+    let ro = connection_string.ends_with("?mode=ro");
+
+    let path = connection_string
         .replace("sqlite://", "")
-        .replace("sqlite:", "");
+        .replace("sqlite:", "")
+        .replace("?mode=ro", "");
+    let path = Path::new(&path);
 
     let path = resolve_path(
         &app.config(),
         app.package_info(),
         &app.env(),
-        connection_string,
+        path.parent().unwrap_or(path),
         #[allow(deprecated)] // FIXME: Use non deprecated variant in tauri v2
         dir.or(Some(BaseDirectory::App)),
     )?;
 
     Ok(format!(
-        "sqlite://{}",
-        path.display().to_string().replace(r"\\?\", "/")
+        "sqlite://{}{}",
+        path.display().to_string().replace(r"\\?\", "/"),
+        if ro { "?mode=ro" } else { "" }
     ))
 }
 
