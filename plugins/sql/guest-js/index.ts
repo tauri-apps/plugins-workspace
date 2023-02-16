@@ -37,8 +37,8 @@ export default class Database {
    *
    * The path must be in one of the following formats:
    * - `sqlite::memory:`: Open an in-memory database.
-   * - `sqlite:///data.db`: Open the file `data.db` from the root directory. `sqlite://\\?\` will be automatically converted to `sqlite:///`
-   * - `sqlite://data.db` or `sqlite:data.db`: Open the file `data.db` relative to the `dir` argument, or BaseDirectory.App if not provided
+   * - `sqlite:///data.db`: Open the file `data.db` from the root directory. `sqlite://\\?\` will be automatically converted to `sqlite:///`.
+   * - `sqlite://data.db` or `sqlite:data.db`: Open the file `data.db` relative to the `dir` argument, or BaseDirectory.App if not provided.
    * Appending `?mode=ro` to the path will open the database in read-only mode.
    *
    * @example
@@ -66,8 +66,8 @@ export default class Database {
    *
    * The path must be in one of the following formats:
    * - `sqlite::memory:`: Open an in-memory database.
-   * - `sqlite:///data.db`: Open the file `data.db` from the root directory. `sqlite://\\?\` will be automatically converted to `sqlite:///`
-   * - `sqlite://data.db` or `sqlite:data.db`: Open the file `data.db` relative to the `dir` argument, or BaseDirectory.App if not provided
+   * - `sqlite:///data.db`: Open the file `data.db` from the root directory. `sqlite://\\?\` will be automatically converted to `sqlite:///`.
+   * - `sqlite://data.db` or `sqlite:data.db`: Open the file `data.db` relative to the `dir` argument, or BaseDirectory.App if not provided.
    * Appending `?mode=ro` to the path will open the database in read-only mode.
    *
    * @example
