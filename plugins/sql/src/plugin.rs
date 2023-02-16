@@ -113,7 +113,7 @@ fn path_mapper<R: Runtime>(
         dir.or(Some(BaseDirectory::App)),
     )?;
 
-    let _ = create_dir_all(path.parent().unwrap_or(path)); // FIXME: Log this instead of ignoring it
+    let _ = create_dir_all(path.parent().unwrap_or(&path)); // FIXME: Log this instead of ignoring it
 
     Ok(format!(
         "sqlite://{}{}",
