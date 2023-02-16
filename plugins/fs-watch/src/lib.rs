@@ -135,7 +135,7 @@ async fn unwatch(watchers: State<'_, WatcherCollection>, id: Id) -> Result<()> {
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     PluginBuilder::new("fs-watch")
         .invoke_handler(tauri::generate_handler![watch, unwatch])
-        .setup(|app| {
+        .setup(|app, _api| {
             app.manage(WatcherCollection::default());
             Ok(())
         })

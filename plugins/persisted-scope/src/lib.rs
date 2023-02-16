@@ -35,7 +35,7 @@ struct Scope {
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("persisted-scope")
-        .setup(|app| {
+        .setup(|app, _api| {
             let fs_scope = app.fs_scope();
             #[cfg(feature = "protocol-asset")]
             let asset_protocol_scope = app.asset_protocol_scope();

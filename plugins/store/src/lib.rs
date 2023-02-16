@@ -336,7 +336,7 @@ impl Builder {
             .invoke_handler(tauri::generate_handler![
                 set, get, has, delete, clear, reset, keys, values, length, entries, load, save
             ])
-            .setup(move |app_handle| {
+            .setup(move |app_handle, _api| {
                 for (path, store) in self.stores.iter_mut() {
                     // ignore loading errors, just use the default
                     if let Err(err) = store.load(app_handle) {

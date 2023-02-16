@@ -32,7 +32,7 @@ fn dbus_id(config: Arc<Config>) -> String {
 
 pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
-        .setup(|app| {
+        .setup(|app, _api| {
             let id = dbus_id(app.config());
             let single_instance_dbus = SingleInstanceDBus {
                 callback: f,

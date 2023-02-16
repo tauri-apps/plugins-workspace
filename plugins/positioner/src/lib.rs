@@ -62,7 +62,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         plugin::Builder::new("positioner").invoke_handler(tauri::generate_handler![move_window]);
 
     #[cfg(feature = "system-tray")]
-    let plugin = plugin.setup(|app_handle| {
+    let plugin = plugin.setup(|app_handle, _api| {
         app_handle.manage(Tray(std::sync::Mutex::new(None)));
         Ok(())
     });

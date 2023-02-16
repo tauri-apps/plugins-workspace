@@ -163,7 +163,7 @@ async fn send(
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     PluginBuilder::new("websocket")
         .invoke_handler(tauri::generate_handler![connect, send])
-        .setup(|app| {
+        .setup(|app, _api| {
             app.manage(ConnectionManager::default());
             Ok(())
         })

@@ -59,7 +59,7 @@ impl Builder {
         let on_request = self.on_request.take();
 
         PluginBuilder::new("localhost")
-            .setup(move |app| {
+            .setup(move |app, _api| {
                 let asset_resolver = app.asset_resolver();
                 std::thread::spawn(move || {
                     let server =
