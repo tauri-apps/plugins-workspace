@@ -1,0 +1,27 @@
+workspace = {}
+
+[package]
+name = "app"
+version = "0.0.0"
+description = "A Tauri App"
+authors = ["you"]
+license = ""
+repository = ""
+edition = "2021"
+rust-version = "1.64"
+
+[lib]
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "next", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next", features = ["api-all"] }
+tauri-plugin-camera = { path = "../../../" }
+
+[features]
+# DO NOT remove this
+custom-protocol = [ "tauri/custom-protocol" ]

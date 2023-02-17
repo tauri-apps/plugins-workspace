@@ -1,0 +1,18 @@
+[package]
+name = "tauri-plugin-camera"
+version = "0.0.0"
+description = "Ask the user take a photo with the camera or select an image from the gallery."
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+exclude.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+tauri.workspace = true
+thiserror.workspace = true
+
+[build-dependencies]
+tauri-build.workspace = true
