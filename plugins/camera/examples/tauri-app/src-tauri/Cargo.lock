@@ -1531,6 +1531,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "num_threads"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2819ce041d2ee131036f4fc9d6ae7ae125a3a40e97ba64d04fe799ad9dabbb44"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "objc"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2546,7 +2555,7 @@ dependencies = [
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.3"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#dffd8eb5a87558afc2fca21870643ff7dad9eb04"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#037d488dee091730c8c01d9d09affcaa2386a463"
 dependencies = [
  "anyhow",
  "attohttpc",
@@ -2603,7 +2612,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#dffd8eb5a87558afc2fca21870643ff7dad9eb04"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#037d488dee091730c8c01d9d09affcaa2386a463"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -2622,7 +2631,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#dffd8eb5a87558afc2fca21870643ff7dad9eb04"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#037d488dee091730c8c01d9d09affcaa2386a463"
 dependencies = [
  "base64 0.21.0",
  "brotli",
@@ -2648,7 +2657,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#dffd8eb5a87558afc2fca21870643ff7dad9eb04"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#037d488dee091730c8c01d9d09affcaa2386a463"
 dependencies = [
  "heck 0.4.1",
  "proc-macro2",
@@ -2672,7 +2681,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "0.13.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#dffd8eb5a87558afc2fca21870643ff7dad9eb04"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#037d488dee091730c8c01d9d09affcaa2386a463"
 dependencies = [
  "gtk",
  "http",
@@ -2693,7 +2702,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.13.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#dffd8eb5a87558afc2fca21870643ff7dad9eb04"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#037d488dee091730c8c01d9d09affcaa2386a463"
 dependencies = [
  "cocoa",
  "gtk",
@@ -2713,7 +2722,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#dffd8eb5a87558afc2fca21870643ff7dad9eb04"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#037d488dee091730c8c01d9d09affcaa2386a463"
 dependencies = [
  "brotli",
  "ctor",
@@ -2821,29 +2830,13 @@ dependencies = [
 
 [[package]]
 name = "time"
-version = "0.3.19"
+version = "0.3.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53250a3b3fed8ff8fd988587d8925d26a83ac3845d9e03b220b37f34c2b8d6c2"
+checksum = "d634a985c4d4238ec39cacaed2e7ae552fbd3c476b552c1deac3021b7d7eaf0c"
 dependencies = [
  "itoa 1.0.5",
- "serde",
- "time-core",
- "time-macros",
-]
-
-[[package]]
-name = "time-core"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e153e1f1acaef8acc537e68b44906d2db6436e2b35ac2c6b42640fff91f00fd"
-
-[[package]]
-name = "time-macros"
-version = "0.2.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a460aeb8de6dcb0f381e1ee05f1cd56fcf5a5f6eb8187ff3d8f0b11078d38b7c"
-dependencies = [
- "time-core",
+ "libc",
+ "num_threads",
 ]
 
 [[package]]
@@ -3450,7 +3443,7 @@ checksum = "447660ad36a13288b1db4d4248e857b510e8c3a225c822ba4fb748c0aafecffd"
 [[package]]
 name = "wry"
 version = "0.27.0"
-source = "git+https://github.com/tauri-apps/wry?branch=dev#9975dda12a122051b375ec6485650546d2d91c26"
+source = "git+https://github.com/tauri-apps/wry?branch=dev#7795356a45b1bd015fad0e9973fc5af58c8c339b"
 dependencies = [
  "base64 0.13.1",
  "block",
