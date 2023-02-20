@@ -26,8 +26,8 @@ open class BuildTask : DefaultTask() {
         val release = release ?: throw GradleException("release cannot be null")
         project.exec {
             workingDir(File(project.projectDir, rootDirRel.path))
-            executable("""pnpm""")
-            args(listOf("run", "tauri", "android", "android-studio-script"))
+            executable("""cargo""")
+            args(listOf("tauri", "android", "android-studio-script"))
             if (project.logger.isEnabled(LogLevel.DEBUG)) {
                 args("-vv")
             } else if (project.logger.isEnabled(LogLevel.INFO)) {
