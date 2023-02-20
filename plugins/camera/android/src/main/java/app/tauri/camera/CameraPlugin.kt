@@ -193,9 +193,7 @@ class CameraPlugin(private val activity: Activity): Plugin(activity) {
    */
   @PermissionCallback
   private fun cameraPermissionsCallback(invoke: Invoke) {
-    // TODO: invoke.methodName()
-    val methodName = "pickImages"
-    if (methodName == "pickImages") {
+    if (invoke.command == "pickImages") {
       openPhotos(invoke, multiple = true, skipPermission = true)
     } else {
       if (settings.source === CameraSource.CAMERA && getPermissionState(CAMERA) !== PermissionState.GRANTED) {
