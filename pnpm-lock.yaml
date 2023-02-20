@@ -79,6 +79,15 @@ importers:
     devDependencies:
       tslib: 2.4.1
 
+  plugins/path:
+    specifiers:
+      '@tauri-apps/api': ^1.2.0
+      tslib: ^2.4.1
+    dependencies:
+      '@tauri-apps/api': 1.2.0
+    devDependencies:
+      tslib: 2.4.1
+
   plugins/positioner:
     specifiers:
       '@tauri-apps/api': ^1.2.0

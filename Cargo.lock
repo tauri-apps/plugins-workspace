@@ -2708,6 +2708,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "num_threads"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2819ce041d2ee131036f4fc9d6ae7ae125a3a40e97ba64d04fe799ad9dabbb44"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "objc"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3108,7 +3117,7 @@ dependencies = [
  "line-wrap",
  "quick-xml",
  "serde",
- "time 0.3.18",
+ "time 0.3.15",
 ]
 
 [[package]]
@@ -4273,7 +4282,7 @@ dependencies = [
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.3"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#6aaba83476339fa413fe34d28877a932cb485117"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#ed879513d37430dc046a18c52579ff56699e70e7"
 dependencies = [
  "anyhow",
  "attohttpc",
@@ -4323,7 +4332,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#6aaba83476339fa413fe34d28877a932cb485117"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#ed879513d37430dc046a18c52579ff56699e70e7"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -4342,7 +4351,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#6aaba83476339fa413fe34d28877a932cb485117"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#ed879513d37430dc046a18c52579ff56699e70e7"
 dependencies = [
  "base64 0.21.0",
  "brotli",
@@ -4358,7 +4367,7 @@ dependencies = [
  "sha2 0.10.6",
  "tauri-utils",
  "thiserror",
- "time 0.3.18",
+ "time 0.3.15",
  "url",
  "uuid",
  "walkdir",
@@ -4367,7 +4376,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#6aaba83476339fa413fe34d28877a932cb485117"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#ed879513d37430dc046a18c52579ff56699e70e7"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -4458,7 +4467,19 @@ dependencies = [
  "serde_json",
  "serde_repr",
  "tauri",
- "time 0.3.18",
+ "time 0.3.15",
+]
+
+[[package]]
+name = "tauri-plugin-path"
+version = "0.0.0"
+dependencies = [
+ "dirs-next",
+ "serde",
+ "serde_repr",
+ "tauri",
+ "tauri-build",
+ "thiserror",
 ]
 
 [[package]]
@@ -4587,7 +4608,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "0.13.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#6aaba83476339fa413fe34d28877a932cb485117"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#ed879513d37430dc046a18c52579ff56699e70e7"
 dependencies = [
  "gtk",
  "http",
@@ -4608,7 +4629,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.13.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#6aaba83476339fa413fe34d28877a932cb485117"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#ed879513d37430dc046a18c52579ff56699e70e7"
 dependencies = [
  "cocoa",
  "gtk",
@@ -4628,7 +4649,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#6aaba83476339fa413fe34d28877a932cb485117"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#ed879513d37430dc046a18c52579ff56699e70e7"
 dependencies = [
  "brotli",
  "ctor",
@@ -4745,29 +4766,13 @@ dependencies = [
 
 [[package]]
 name = "time"
-version = "0.3.18"
+version = "0.3.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af0097eaf301d576d0b2aead7a59facab6d53cc636340f0291fab8446a2e8613"
+checksum = "d634a985c4d4238ec39cacaed2e7ae552fbd3c476b552c1deac3021b7d7eaf0c"
 dependencies = [
  "itoa 1.0.5",
- "serde",
- "time-core",
- "time-macros",
-]
-
-[[package]]
-name = "time-core"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e153e1f1acaef8acc537e68b44906d2db6436e2b35ac2c6b42640fff91f00fd"
-
-[[package]]
-name = "time-macros"
-version = "0.2.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d967f99f534ca7e495c575c62638eebc2898a8c84c119b89e250477bc4ba16b2"
-dependencies = [
- "time-core",
+ "libc",
+ "num_threads",
 ]
 
 [[package]]

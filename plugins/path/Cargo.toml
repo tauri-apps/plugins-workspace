@@ -1,0 +1,21 @@
+[package]
+name = "tauri-plugin-path"
+version = "0.0.0"
+description = "Resolve common file system paths."
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+exclude.workspace = true
+
+[dependencies]
+serde.workspace = true
+tauri.workspace = true
+thiserror.workspace = true
+serde_repr = "0.1"
+
+[target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
+dirs-next = "2"
+
+[build-dependencies]
+tauri-build.workspace = true
