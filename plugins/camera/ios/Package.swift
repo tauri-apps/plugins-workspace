@@ -16,7 +16,7 @@ let package = Package(
             targets: ["tauri-plugin-camera"]),
     ],
     dependencies: [
-        .package(name: "Tauri", path: "../../../../../core/tauri/mobile/ios-api")
+        .package(name: "Tauri", path: "./tauri-api")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
