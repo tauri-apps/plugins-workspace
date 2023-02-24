@@ -4141,7 +4141,7 @@ checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
 [[package]]
 name = "swift-rs"
 version = "0.3.0"
-source = "git+https://github.com/Brendonovich/swift-rs?rev=eb6de914ad57501da5019154d476d45660559999#eb6de914ad57501da5019154d476d45660559999"
+source = "git+https://github.com/Brendonovich/swift-rs?rev=56b14aa4aa61e93d0fddf695d0cad78b6dd392b4#56b14aa4aa61e93d0fddf695d0cad78b6dd392b4"
 dependencies = [
  "base64 0.13.1",
  "serde",
@@ -4258,7 +4258,7 @@ dependencies = [
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.3"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#105fe3fa242df87ad7655b519b0c01c3da9d8ee4"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/update-swiftrs#a0a5eb2170ec829f5951d4aea40c90a4bb732ef4"
 dependencies = [
  "anyhow",
  "attohttpc",
@@ -4308,7 +4308,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#105fe3fa242df87ad7655b519b0c01c3da9d8ee4"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/update-swiftrs#a0a5eb2170ec829f5951d4aea40c90a4bb732ef4"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -4327,7 +4327,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#105fe3fa242df87ad7655b519b0c01c3da9d8ee4"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/update-swiftrs#a0a5eb2170ec829f5951d4aea40c90a4bb732ef4"
 dependencies = [
  "base64 0.21.0",
  "brotli",
@@ -4352,7 +4352,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#105fe3fa242df87ad7655b519b0c01c3da9d8ee4"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/update-swiftrs#a0a5eb2170ec829f5951d4aea40c90a4bb732ef4"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -4573,7 +4573,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "0.13.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#105fe3fa242df87ad7655b519b0c01c3da9d8ee4"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/update-swiftrs#a0a5eb2170ec829f5951d4aea40c90a4bb732ef4"
 dependencies = [
  "gtk",
  "http",
@@ -4594,7 +4594,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.13.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#105fe3fa242df87ad7655b519b0c01c3da9d8ee4"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/update-swiftrs#a0a5eb2170ec829f5951d4aea40c90a4bb732ef4"
 dependencies = [
  "cocoa",
  "gtk",
@@ -4614,7 +4614,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#105fe3fa242df87ad7655b519b0c01c3da9d8ee4"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/update-swiftrs#a0a5eb2170ec829f5951d4aea40c90a4bb732ef4"
 dependencies = [
  "brotli",
  "ctor",
