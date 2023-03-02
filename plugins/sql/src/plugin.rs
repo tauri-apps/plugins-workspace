@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use futures::future::BoxFuture;
+use futures_core::future::BoxFuture;
 use serde::{ser::Serializer, Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use sqlx::{
@@ -10,7 +10,7 @@ use sqlx::{
     migrate::{
         MigrateDatabase, Migration as SqlxMigration, MigrationSource, MigrationType, Migrator,
     },
-    Column, Pool, Row, TypeInfo, ValueRef,
+    Column, Pool, Row,
 };
 use tauri::{
     command,
@@ -250,58 +250,7 @@ async fn select(
         for (i, column) in row.columns().iter().enumerate() {
             let v = row.try_get_raw(i)?;
 
-            let v = if v.is_null() {
-                JsonValue::Null
-            } else {
-                // TODO: postgresql's JSON type
-                match v.type_info().name() {
-                    "VARCHAR" | "STRING" | "TEXT" | "TINYTEXT" | "LONGTEXT" | "NVARCHAR"
-                    | "BIGVARCHAR" | "CHAR" | "BIGCHAR" | "NCHAR" | "DATETIME" | "DATE"
-                    | "TIME" | "YEAR" | "TIMESTAMP" => {
-                        if let Ok(s) = row.try_get(i) {
-                            JsonValue::String(s)
-                        } else {
-                            JsonValue::Null
-                        }
-                    }
-                    "BOOL" | "BOOLEAN" => {
-                        if let Ok(b) = row.try_get(i) {
-                            JsonValue::Bool(b)
-                        } else {
-                            let x: String = row.get(i);
-                            JsonValue::Bool(x.to_lowercase() == "true")
-                        }
-                    }
-                    "INT" | "NUMBER" | "INTEGER" | "BIGINT" | "INT2" | "INT4" | "INT8"
-                    | "NUMERIC" | "TINYINT" | "SMALLINT" | "MEDIUMINT" | "TINYINT UNSINGED"
-                    | "SMALLINT UNSINGED" | "INT UNSINGED" | "MEDIUMINT UNSINGED"
-                    | "BIGINT UNSINGED" => {
-                        if let Ok(n) = row.try_get::<i64, usize>(i) {
-                            JsonValue::Number(n.into())
-                        } else {
-                            JsonValue::Null
-                        }
-                    }
-                    "REAL" | "FLOAT" | "DOUBLE" | "FLOAT4" | "FLOAT8" => {
-                        if let Ok(n) = row.try_get::<f64, usize>(i) {
-                            JsonValue::from(n)
-                        } else {
-                            JsonValue::Null
-                        }
-                    }
-                    "BLOB" | "TINYBLOB" | "MEDIUMBLOB" | "LONGBLOB" | "BINARY" | "VARBINARY"
-                    | "BYTEA" => {
-                        if let Ok(n) = row.try_get::<Vec<u8>, usize>(i) {
-                            JsonValue::Array(
-                                n.into_iter().map(|n| JsonValue::Number(n.into())).collect(),
-                            )
-                        } else {
-                            JsonValue::Null
-                        }
-                    }
-                    _ => return Err(Error::UnsupportedDatatype(v.type_info().name().to_string())),
-                }
-            };
+            let v = crate::decode::to_json(v)?;
 
             value.insert(column.name().to_string(), v);
         }
