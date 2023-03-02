@@ -21,7 +21,6 @@ time = "0.3"
 tokio = { version = "1", features = ["sync"] }
 
 [features]
-default = ["mysql"]
 sqlite = ["sqlx/sqlite"]
 mysql = ["sqlx/mysql"]
 postgres = ["sqlx/postgres"]
