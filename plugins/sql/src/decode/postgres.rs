@@ -17,7 +17,7 @@ pub(crate) fn to_json(v: PgValueRef) -> Result<JsonValue, Error> {
                 JsonValue::Null
             }
         }
-        "FLOAT$" | "FLOAT8" => {
+        "FLOAT4" | "FLOAT8" => {
             if let Ok(v) = ValueRef::to_owned(&v).try_decode::<f64>() {
                 JsonValue::from(v)
             } else {
