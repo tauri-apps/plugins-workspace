@@ -3901,6 +3901,7 @@ dependencies = [
  "sqlx-rt",
  "stringprep",
  "thiserror",
+ "time 0.3.17",
  "tokio-stream",
  "url",
  "webpki-roots",
@@ -4380,13 +4381,14 @@ dependencies = [
 name = "tauri-plugin-sql"
 version = "0.1.0"
 dependencies = [
- "futures",
+ "futures-core",
  "log",
  "serde",
  "serde_json",
  "sqlx",
  "tauri",
  "thiserror",
+ "time 0.3.17",
  "tokio",
 ]
 

@@ -15,9 +15,10 @@ serde_json.workspace = true
 tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
-sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "json"] }
+futures-core = "0.3"
+sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "json", "time"] }
+time = "0.3"
 tokio = { version = "1", features = ["sync"] }
-futures = "0.3"
 
 [features]
 sqlite = ["sqlx/sqlite"]
