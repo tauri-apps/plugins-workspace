@@ -59,7 +59,14 @@ await store.set("some-key", { value: 5 });
 
 const val = await store.get("some-key");
 assert(val, { value: 5 });
+
+await store.save(); // this manually saves the store, otherwise the store is only saved when your app is closed
 ```
+
+### Persisting values
+Values added to the store are not persisted between application loads unless:
+1. The application is closed gracefully (plugin automatically saves)
+2. The store is manually saved (using `store.save()`)
 
 ## Usage from Rust
 
@@ -91,7 +98,7 @@ use tauri_plugin_store::with_store;
 let stores = app.state::<StoreCollection<Wry>>();
 let path = PathBuf::from("path/to/the/storefile");
 
-with_store(app_handle, stores, path, |store| store.set("a".to_string(), json!("b")))
+with_store(app_handle, stores, path, |store| store.insert("a".to_string(), json!("b")))
 ```
 
 ## Contributing
