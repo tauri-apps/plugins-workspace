@@ -71,9 +71,9 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
         .setup(|app| {
-            let mut store = StoreBuilder::new(app.handle(), "path/to/store.bin").build();
+            let mut store = StoreBuilder::new(app.handle(), "path/to/store.bin".parse()?).build();
 
-            store.insert("a", json!("b")) // note that values must be serd_json::Value to be compatible with JS
+            store.insert("a".to_string(), json!("b")) // note that values must be serd_json::Value to be compatible with JS
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -83,12 +83,13 @@ fn main() {
 As you may have noticed, the Store crated above isn't accessible to the frontend. To interoperate with stores created by JS use the exported `with_store` method:
 
 ```rust
+use tauri::Wry;
 use tauri_plugin_store::with_store;
 
-let stores = app.state::<StoreCollection<R>>();
+let stores = app.state::<StoreCollection<Wry>>();
 let path = PathBuf::from("path/to/the/storefile");
 
-with_store(app_handle, stores, path, |store| store.set("a", json!("b")))
+with_store(app_handle, stores, path, |store| store.set("a".to_string(), json!("b")))
 ```
 
 ## Contributing
