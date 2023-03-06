@@ -95,10 +95,9 @@ impl TimezoneStrategy {
     pub fn get_now(&self) -> OffsetDateTime {
         match self {
             TimezoneStrategy::UseUtc => OffsetDateTime::now_utc(),
-            TimezoneStrategy::UseLocal => match OffsetDateTime::now_local() {
-                Ok(v) => v,
-                Err(_) => OffsetDateTime::now_utc() // Fallback to UTC since Rust cannot determine local timezone
-            }
+            TimezoneStrategy::UseLocal => {
+                OffsetDateTime::now_local().unwrap_or_else(|_| OffsetDateTime::now_utc())
+            } // Fallback to UTC since Rust cannot determine local timezone
         }
     }
 }
@@ -361,7 +360,8 @@ fn get_log_file_path(
                     let to = dir.as_ref().join(format!(
                         "{}_{}.log",
                         app_name,
-                        timezone_strategy.get_now()
+                        timezone_strategy
+                            .get_now()
                             .format(
                                 &time::format_description::parse(
                                     "[year]-[month]-[day]_[hour]-[minute]-[second]"
