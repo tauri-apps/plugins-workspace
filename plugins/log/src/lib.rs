@@ -21,9 +21,11 @@ use tauri::{
 };
 
 pub use fern;
+use time::OffsetDateTime;
 
 const DEFAULT_MAX_FILE_SIZE: u128 = 40000;
 const DEFAULT_ROTATION_STRATEGY: RotationStrategy = RotationStrategy::KeepOne;
+const DEFAULT_TIMEZONE_STRATEGY: TimezoneStrategy = TimezoneStrategy::UseUtc;
 const DEFAULT_LOG_TARGETS: [LogTarget; 2] = [LogTarget::Stdout, LogTarget::LogDir];
 
 /// An enum representing the available verbosity levels of the logger.
@@ -81,6 +83,23 @@ impl From<log::Level> for LogLevel {
 pub enum RotationStrategy {
     KeepAll,
     KeepOne,
+}
+
+#[derive(Debug, Clone)]
+pub enum TimezoneStrategy {
+    UseUtc,
+    UseLocal,
+}
+
+impl TimezoneStrategy {
+    pub fn get_now(&self) -> OffsetDateTime {
+        match self {
+            TimezoneStrategy::UseUtc => OffsetDateTime::now_utc(),
+            TimezoneStrategy::UseLocal => {
+                OffsetDateTime::now_local().unwrap_or_else(|_| OffsetDateTime::now_utc())
+            } // Fallback to UTC since Rust cannot determine local timezone
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -145,6 +164,7 @@ fn log(
 pub struct Builder {
     dispatch: fern::Dispatch,
     rotation_strategy: RotationStrategy,
+    timezone_strategy: TimezoneStrategy,
     max_file_size: u128,
     targets: Vec<LogTarget>,
 }
@@ -157,7 +177,7 @@ impl Default for Builder {
         let dispatch = fern::Dispatch::new().format(move |out, message, record| {
             out.finish(format_args!(
                 "{}[{}][{}] {}",
-                time::OffsetDateTime::now_utc().format(&format).unwrap(),
+                DEFAULT_TIMEZONE_STRATEGY.get_now().format(&format).unwrap(),
                 record.target(),
                 record.level(),
                 message
@@ -166,6 +186,7 @@ impl Default for Builder {
         Self {
             dispatch,
             rotation_strategy: DEFAULT_ROTATION_STRATEGY,
+            timezone_strategy: DEFAULT_TIMEZONE_STRATEGY,
             max_file_size: DEFAULT_MAX_FILE_SIZE,
             targets: DEFAULT_LOG_TARGETS.into(),
         }
@@ -179,6 +200,24 @@ impl Builder {
 
     pub fn rotation_strategy(mut self, rotation_strategy: RotationStrategy) -> Self {
         self.rotation_strategy = rotation_strategy;
+        self
+    }
+
+    pub fn timezone_strategy(mut self, timezone_strategy: TimezoneStrategy) -> Self {
+        self.timezone_strategy = timezone_strategy.clone();
+
+        let format =
+            time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
+                .unwrap();
+        self.dispatch = fern::Dispatch::new().format(move |out, message, record| {
+            out.finish(format_args!(
+                "{}[{}][{}] {}",
+                timezone_strategy.get_now().format(&format).unwrap(),
+                record.target(),
+                record.level(),
+                message
+            ))
+        });
         self
     }
 
@@ -228,10 +267,12 @@ impl Builder {
         let format =
             time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
                 .unwrap();
+
+        let timezone_strategy = self.timezone_strategy.clone();
         self.format(move |out, message, record| {
             out.finish(format_args!(
                 "{}[{}][{}] {}",
-                time::OffsetDateTime::now_utc().format(&format).unwrap(),
+                timezone_strategy.get_now().format(&format).unwrap(),
                 record.target(),
                 colors.color(record.level()),
                 message
@@ -259,6 +300,7 @@ impl Builder {
                                 &path,
                                 app_name,
                                 &self.rotation_strategy,
+                                &self.timezone_strategy,
                                 self.max_file_size,
                             )?)?
                             .into()
@@ -273,6 +315,7 @@ impl Builder {
                                 &path,
                                 app_name,
                                 &self.rotation_strategy,
+                                &self.timezone_strategy,
                                 self.max_file_size,
                             )?)?
                             .into()
@@ -306,6 +349,7 @@ fn get_log_file_path(
     dir: &impl AsRef<Path>,
     app_name: &str,
     rotation_strategy: &RotationStrategy,
+    timezone_strategy: &TimezoneStrategy,
     max_file_size: u128,
 ) -> plugin::Result<PathBuf> {
     let path = dir.as_ref().join(format!("{app_name}.log"));
@@ -318,7 +362,8 @@ fn get_log_file_path(
                     let to = dir.as_ref().join(format!(
                         "{}_{}.log",
                         app_name,
-                        time::OffsetDateTime::now_utc()
+                        timezone_strategy
+                            .get_now()
                             .format(
                                 &time::format_description::parse(
                                     "[year]-[month]-[day]_[hour]-[minute]-[second]"

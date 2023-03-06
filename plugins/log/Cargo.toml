@@ -17,7 +17,7 @@ serde_repr = "0.1"
 byte-unit = "4.0"
 fern = "0.6"
 log = { workspace = true, features = ["kv_unstable"] }
-time = { version = "0.3", features = ["formatting"] }
+time = { version = "0.3", features = ["formatting", "local-offset"] }
 
 [features]
 colored = ["fern/colored"]
