@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use crate::Error;
+use crate::{ChangePayload, Error};
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
@@ -10,25 +10,28 @@ use std::{
     io::Write,
     path::PathBuf,
 };
-use tauri::{AppHandle, Runtime};
+use tauri::{AppHandle, Manager, Runtime};
 
-type SerializeFn = fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error>>;
-type DeserializeFn = fn(&[u8]) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error>>;
+type SerializeFn =
+    fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>>;
+type DeserializeFn =
+    fn(&[u8]) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>>;
 
 fn default_serialize(
     cache: &HashMap<String, JsonValue>,
-) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
     Ok(serde_json::to_vec(&cache)?)
 }
 
 fn default_deserialize(
     bytes: &[u8],
-) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error>> {
+) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>> {
     serde_json::from_slice(bytes).map_err(Into::into)
 }
 
 /// Builds a [`Store`]
-pub struct StoreBuilder {
+pub struct StoreBuilder<R: Runtime> {
+    app: AppHandle<R>,
     path: PathBuf,
     defaults: Option<HashMap<String, JsonValue>>,
     cache: HashMap<String, JsonValue>,
@@ -36,7 +39,7 @@ pub struct StoreBuilder {
     deserialize: DeserializeFn,
 }
 
-impl StoreBuilder {
+impl<R: Runtime> StoreBuilder<R> {
     /// Creates a new [`StoreBuilder`].
     ///
     /// # Examples
@@ -49,8 +52,9 @@ impl StoreBuilder {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn new(path: PathBuf) -> Self {
+    pub fn new(app: AppHandle<R>, path: PathBuf) -> Self {
         Self {
+            app,
             path,
             defaults: None,
             cache: Default::default(),
@@ -147,8 +151,9 @@ impl StoreBuilder {
     ///
     /// # Ok(())
     /// # }
-    pub fn build(self) -> Store {
+    pub fn build(self) -> Store<R> {
         Store {
+            app: self.app,
             path: self.path,
             defaults: self.defaults,
             cache: self.cache,
@@ -159,18 +164,20 @@ impl StoreBuilder {
 }
 
 #[derive(Clone)]
-pub struct Store {
+pub struct Store<R: Runtime> {
+    app: AppHandle<R>,
     pub(crate) path: PathBuf,
-    pub(crate) defaults: Option<HashMap<String, JsonValue>>,
-    pub(crate) cache: HashMap<String, JsonValue>,
+    defaults: Option<HashMap<String, JsonValue>>,
+    cache: HashMap<String, JsonValue>,
     serialize: SerializeFn,
     deserialize: DeserializeFn,
 }
 
-impl Store {
+impl<R: Runtime> Store<R> {
     /// Update the store from the on-disk state
-    pub fn load<R: Runtime>(&mut self, app: &AppHandle<R>) -> Result<(), Error> {
-        let app_dir = app
+    pub fn load(&mut self) -> Result<(), Error> {
+        let app_dir = self
+            .app
             .path_resolver()
             .app_data_dir()
             .expect("failed to resolve app dir");
@@ -184,8 +191,9 @@ impl Store {
     }
 
     /// Saves the store to disk
-    pub fn save<R: Runtime>(&self, app: &AppHandle<R>) -> Result<(), Error> {
-        let app_dir = app
+    pub fn save(&self) -> Result<(), Error> {
+        let app_dir = self
+            .app
             .path_resolver()
             .app_data_dir()
             .expect("failed to resolve app dir");
@@ -199,9 +207,107 @@ impl Store {
 
         Ok(())
     }
+
+    pub fn insert(&mut self, key: String, value: JsonValue) -> Result<(), Error> {
+        self.cache.insert(key.clone(), value.clone());
+        self.app.emit_all(
+            "store://change",
+            ChangePayload {
+                path: &self.path,
+                key: &key,
+                value: &value,
+            },
+        )?;
+
+        Ok(())
+    }
+
+    pub fn get(&self, key: impl AsRef<str>) -> Option<&JsonValue> {
+        self.cache.get(key.as_ref())
+    }
+
+    pub fn has(&self, key: impl AsRef<str>) -> bool {
+        self.cache.contains_key(key.as_ref())
+    }
+
+    pub fn delete(&mut self, key: impl AsRef<str>) -> Result<bool, Error> {
+        let flag = self.cache.remove(key.as_ref()).is_some();
+        if flag {
+            self.app.emit_all(
+                "store://change",
+                ChangePayload {
+                    path: &self.path,
+                    key: key.as_ref(),
+                    value: &JsonValue::Null,
+                },
+            )?;
+        }
+        Ok(flag)
+    }
+
+    pub fn clear(&mut self) -> Result<(), Error> {
+        let keys: Vec<String> = self.cache.keys().cloned().collect();
+        self.cache.clear();
+        for key in keys {
+            self.app.emit_all(
+                "store://change",
+                ChangePayload {
+                    path: &self.path,
+                    key: &key,
+                    value: &JsonValue::Null,
+                },
+            )?;
+        }
+        Ok(())
+    }
+
+    pub fn reset(&mut self) -> Result<(), Error> {
+        let has_defaults = self.defaults.is_some();
+
+        if has_defaults {
+            if let Some(defaults) = &self.defaults {
+                for (key, value) in &self.cache {
+                    if defaults.get(key) != Some(value) {
+                        let _ = self.app.emit_all(
+                            "store://change",
+                            ChangePayload {
+                                path: &self.path,
+                                key,
+                                value: defaults.get(key).unwrap_or(&JsonValue::Null),
+                            },
+                        );
+                    }
+                }
+                self.cache = defaults.clone();
+            }
+            Ok(())
+        } else {
+            self.clear()
+        }
+    }
+
+    pub fn keys(&self) -> impl Iterator<Item = &String> {
+        self.cache.keys()
+    }
+
+    pub fn values(&self) -> impl Iterator<Item = &JsonValue> {
+        self.cache.values()
+    }
+
+    pub fn entries(&self) -> impl Iterator<Item = (&String, &JsonValue)> {
+        self.cache.iter()
+    }
+
+    pub fn len(&self) -> usize {
+        self.cache.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.cache.is_empty()
+    }
 }
 
-impl std::fmt::Debug for Store {
+impl<R: Runtime> std::fmt::Debug for Store<R> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Store")
             .field("path", &self.path)

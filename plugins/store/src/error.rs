@@ -10,9 +10,9 @@ use std::path::PathBuf;
 #[non_exhaustive]
 pub enum Error {
     #[error("Failed to serialize store. {0}")]
-    Serialize(Box<dyn std::error::Error>),
+    Serialize(Box<dyn std::error::Error + Send + Sync>),
     #[error("Failed to deserialize store. {0}")]
-    Deserialize(Box<dyn std::error::Error>),
+    Deserialize(Box<dyn std::error::Error + Send + Sync>),
     /// JSON error.
     #[error(transparent)]
     Json(#[from] serde_json::Error),
@@ -22,6 +22,9 @@ pub enum Error {
     /// Store not found
     #[error("Store \"{0}\" not found")]
     NotFound(PathBuf),
+    /// Some Tauri API failed
+    #[error(transparent)]
+    Tauri(#[from] tauri::Error),
 }
 
 impl Serialize for Error {
