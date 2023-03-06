@@ -60,7 +60,7 @@ await store.set("some-key", { value: 5 });
 const val = await store.get("some-key");
 assert(val, { value: 5 });
 
-await store.save(); // this manually saves the store, otherwise the store is saved when your app is closed
+await store.save(); // this manually saves the store, otherwise the store is only saved when your app is closed
 ```
 
 ### Persisting values
