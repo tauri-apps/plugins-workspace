@@ -267,10 +267,12 @@ impl Builder {
         let format =
             time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
                 .unwrap();
+
+        let cloned_timezone_strategy = self.timezone_strategy.clone();
         self.format(move |out, message, record| {
             out.finish(format_args!(
                 "{}[{}][{}] {}",
-                self.timezone_strategy.get_now().format(&format).unwrap(),
+                cloned_timezone_strategy.get_now().format(&format).unwrap(),
                 record.target(),
                 colors.color(record.level()),
                 message
