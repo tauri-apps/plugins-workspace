@@ -1987,6 +1987,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "iota-crypto"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d1d447f89ea13f2cd26d50195378bb2f76a0f9320ae4db3c0811b25fe6ed6c1"
+dependencies = [
+ "autocfg",
+]
+
+[[package]]
 name = "iota_stronghold"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1994,7 +2003,7 @@ checksum = "6c5baaa2460627283f54b968db7a38c9c754dc6059157cae64550ed1b79c91aa"
 dependencies = [
  "bincode",
  "hkdf",
- "iota-crypto",
+ "iota-crypto 0.15.3",
  "rust-argon2",
  "serde",
  "stronghold-derive",
@@ -4023,7 +4032,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d93abb10fbd11335d31c33a70b2523c0caab348215caa2ce6da04a268c30afcb"
 dependencies = [
  "dirs",
- "iota-crypto",
+ "iota-crypto 0.15.3",
  "libc",
  "libsodium-sys",
  "log",
@@ -4054,7 +4063,7 @@ dependencies = [
  "anyhow",
  "dirs-next",
  "hex",
- "iota-crypto",
+ "iota-crypto 0.15.3",
  "once_cell",
  "paste",
  "serde",
@@ -4417,7 +4426,7 @@ name = "tauri-plugin-stronghold"
 version = "0.1.0"
 dependencies = [
  "hex",
- "iota-crypto",
+ "iota-crypto 0.16.0",
  "iota_stronghold",
  "log",
  "rand 0.8.5",
