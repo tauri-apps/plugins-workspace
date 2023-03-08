@@ -4149,6 +4149,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "swift-rs"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc903dccb086f72f6e93a12e149d84aceda2ad4b08647e14e0330a3bfea61e2b"
+dependencies = [
+ "base64 0.21.0",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "syn"
 version = "1.0.107"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4288,7 +4299,7 @@ dependencies = [
  "serde_repr",
  "serialize-to-javascript",
  "state",
- "swift-rs",
+ "swift-rs 0.3.0",
  "tar",
  "tauri-build",
  "tauri-macros",
@@ -4318,7 +4329,7 @@ dependencies = [
  "semver 1.0.16",
  "serde",
  "serde_json",
- "swift-rs",
+ "swift-rs 0.3.0",
  "tauri-utils",
  "tauri-winres",
  "walkdir",
@@ -4441,7 +4452,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_repr",
- "swift-rs",
+ "swift-rs 1.0.0",
  "tauri",
  "tauri-build",
  "time 0.3.15",
