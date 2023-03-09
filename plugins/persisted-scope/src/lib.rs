@@ -6,10 +6,11 @@ use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    FsScopeEvent, Manager, Runtime,
+    FsScopeEvent, GlobPattern, Manager, Runtime,
 };
 
 use std::{
+    collections::HashSet,
     fs::{create_dir_all, File},
     io::Write,
 };
@@ -36,6 +37,10 @@ struct Scope {
     forbidden_patterns: Vec<String>,
 }
 
+fn initial_scope(scope: HashSet<GlobPattern>) -> Vec<String> {
+    scope.into_iter().map(|p| p.to_string()).collect()
+}
+
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("persisted-scope")
         .setup(|app| {
@@ -50,28 +55,14 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
                 // We need to filter out glob pattern paths from the scope configs to not pollute the scope with incorrect paths.
                 // We can't plainly filter for `*` because `*` is valid in paths on unix.
-                let initial_fs_allowed: Vec<String> = fs_scope
-                    .allowed_patterns()
-                    .into_iter()
-                    .map(|p| p.to_string())
-                    .collect();
+                let initial_fs_allowed = initial_scope(fs_scope.allowed_patterns());
+                let initial_fs_forbidden = initial_scope(fs_scope.forbidden_patterns());
+
                 #[cfg(feature = "protocol-asset")]
-                let initial_asset_allowed: Vec<String> = asset_protocol_scope
-                    .allowed_patterns()
-                    .into_iter()
-                    .map(|p| p.to_string())
-                    .collect();
-                let initial_fs_forbidden: Vec<String> = fs_scope
-                    .forbidden_patterns()
-                    .into_iter()
-                    .map(|p| p.to_string())
-                    .collect();
+                let initial_asset_allowed = initial_scope(asset_protocol_scope.allowed_patterns());
                 #[cfg(feature = "protocol-asset")]
-                let initial_asset_forbidden: Vec<String> = asset_protocol_scope
-                    .forbidden_patterns()
-                    .into_iter()
-                    .map(|p| p.to_string())
-                    .collect();
+                let initial_asset_forbidden =
+                    initial_scope(asset_protocol_scope.forbidden_patterns());
 
                 let _ = fs_scope.forbid_file(&scope_state_path);
                 #[cfg(feature = "protocol-asset")]
