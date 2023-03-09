@@ -55,6 +55,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     .into_iter()
                     .map(|p| p.to_string())
                     .collect();
+                #[cfg(feature = "protocol-asset")]
                 let initial_asset_allowed: Vec<String> = asset_protocol_scope
                     .allowed_patterns()
                     .into_iter()
@@ -65,6 +66,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     .into_iter()
                     .map(|p| p.to_string())
                     .collect();
+                #[cfg(feature = "protocol-asset")]
                 let initial_asset_forbidden: Vec<String> = asset_protocol_scope
                     .forbidden_patterns()
                     .into_iter()
