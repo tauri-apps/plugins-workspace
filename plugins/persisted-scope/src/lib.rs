@@ -57,7 +57,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 // We can't plainly filter for `*` because `*` is valid in paths on unix.
                 let initial_fs_allowed = initial_scope(fs_scope.allowed_patterns());
                 let initial_fs_forbidden = initial_scope(fs_scope.forbidden_patterns());
-
                 #[cfg(feature = "protocol-asset")]
                 let initial_asset_allowed = initial_scope(asset_protocol_scope.allowed_patterns());
                 #[cfg(feature = "protocol-asset")]
@@ -68,12 +67,18 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 #[cfg(feature = "protocol-asset")]
                 let _ = asset_protocol_scope.forbid_file(&scope_state_path);
 
+                // Ideally we would unescape the patterns only when saving OR reading,
+                // but we're trying to fix broken .persisted-scope files seemlessly.
+                let ac = AhoCorasick::new_auto_configured(PATTERNS);
+
                 if scope_state_path.exists() {
                     let scope: Scope = tauri::api::file::read_binary(&scope_state_path)
                         .map_err(Error::from)
                         .and_then(|scope| bincode::deserialize(&scope).map_err(Into::into))
                         .unwrap_or_default();
                     for allowed in &scope.allowed_paths {
+                        let allowed = ac.replace_all(allowed, REPLACE_WITH);
+
                         if !initial_fs_allowed.contains(&allowed) {
                             let _ = fs_scope.allow_file(&allowed);
                         }
@@ -83,7 +88,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         }
                     }
                     for forbidden in &scope.forbidden_patterns {
-                        // forbid the path as is
+                        let forbidden = ac.replace_all(forbidden, REPLACE_WITH);
+
                         if !initial_fs_forbidden.contains(&forbidden) {
                             let _ = fs_scope.forbid_file(&forbidden);
                         }
@@ -93,9 +99,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         }
                     }
                 }
-
-                // We could also "fix" the paths on app start if we notice any runtime performance problems.
-                let ac = AhoCorasick::new_auto_configured(PATTERNS);
 
                 fs_scope.listen(move |event| {
                     let fs_scope = app.fs_scope();
