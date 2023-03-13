@@ -34,6 +34,7 @@ pub enum Error {
 pub type Result<T> = std::result::Result<T, Error>;
 
 bitflags! {
+    #[derive(Clone, Copy)]
     pub struct StateFlags: u32 {
         const SIZE        = 1 << 0;
         const POSITION    = 1 << 1;
