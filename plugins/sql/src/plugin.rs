@@ -13,6 +13,7 @@ use sqlx::{
     Column, Pool, Row,
 };
 use tauri::{
+    api::path::BaseDirectory,
     command,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime, State,
@@ -23,8 +24,6 @@ use std::collections::HashMap;
 
 #[cfg(feature = "sqlite")]
 use std::fs::create_dir_all;
-#[cfg(feature = "sqlite")]
-use tauri::api::path::BaseDirectory;
 
 #[cfg(feature = "sqlite")]
 type Db = sqlx::sqlite::Sqlite;
