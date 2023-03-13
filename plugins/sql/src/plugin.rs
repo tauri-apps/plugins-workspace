@@ -239,7 +239,9 @@ async fn select(
     let db = instances.get_mut(&db).ok_or(Error::DatabaseNotLoaded(db))?;
     let mut query = sqlx::query(&query);
     for value in values {
-        if value.is_string() {
+        if value.is_null() {
+            query = query.bind(None::<JsonValue>);
+        } else if value.is_string() {
             query = query.bind(value.as_str().unwrap().to_owned())
         } else {
             query = query.bind(value);
