@@ -5,18 +5,18 @@ on:
     branches:
       - dev
     paths:
-      - '.github/workflows/msrv-check.yml'
-      - 'plugins/*/src/**'
-      - '**/Cargo.toml'
-      - '**/Cargo.lock'
+      - ".github/workflows/msrv-check.yml"
+      - "plugins/*/src/**"
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
   pull_request:
     branches:
       - dev
     paths:
-      - '.github/workflows/msrv-check.yml'
-      - 'plugins/*/src/**'
-      - '**/Cargo.toml'
-      - '**/Cargo.lock'
+      - ".github/workflows/msrv-check.yml"
+      - "plugins/*/src/**"
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

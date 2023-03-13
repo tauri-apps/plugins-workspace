@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { BaseDirectory } from "@tauri-apps/api/path"
+import { BaseDirectory } from "@tauri-apps/api/path";
 
 export interface QueryResult {
   /** The number of rows affected by the query. */
@@ -49,7 +49,7 @@ export default class Database {
   static async load(path: string, dir?: BaseDirectory): Promise<Database> {
     const _path = await invoke<string>("plugin:sql|load", {
       db: path,
-      dir
+      dir,
     });
 
     return new Database(_path);
