@@ -59,6 +59,46 @@ await store.set("some-key", { value: 5 });
 
 const val = await store.get("some-key");
 assert(val, { value: 5 });
+
+await store.save(); // this manually saves the store, otherwise the store is only saved when your app is closed
+```
+
+### Persisting values
+Values added to the store are not persisted between application loads unless:
+1. The application is closed gracefully (plugin automatically saves)
+2. The store is manually saved (using `store.save()`)
+
+## Usage from Rust
+
+You can also access Stores from Rust, you can create new stores:
+
+```rust
+use tauri_plugin_store::store::StoreBuilder;
+use serde_json::json;
+
+fn main() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::default().build())
+        .setup(|app| {
+            let mut store = StoreBuilder::new(app.handle(), "path/to/store.bin".parse()?).build();
+
+            store.insert("a".to_string(), json!("b")) // note that values must be serd_json::Value to be compatible with JS
+        })
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+```
+
+As you may have noticed, the Store crated above isn't accessible to the frontend. To interoperate with stores created by JS use the exported `with_store` method:
+
+```rust
+use tauri::Wry;
+use tauri_plugin_store::with_store;
+
+let stores = app.state::<StoreCollection<Wry>>();
+let path = PathBuf::from("path/to/the/storefile");
+
+with_store(app_handle, stores, path, |store| store.insert("a".to_string(), json!("b")))
 ```
 
 ## Contributing

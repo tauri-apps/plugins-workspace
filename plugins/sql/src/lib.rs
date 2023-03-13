@@ -14,15 +14,6 @@ compile_error!(
     "Database driver not defined. Please set the feature flag for the driver of your choice."
 );
 
-#[cfg(any(
-    all(feature = "sqlite", not(any(feature = "mysql", feature = "postgres"))),
-    all(feature = "mysql", not(any(feature = "sqlite", feature = "postgres"))),
-    all(feature = "postgres", not(any(feature = "sqlite", feature = "mysql"))),
-))]
+mod decode;
 mod plugin;
-#[cfg(any(
-    all(feature = "sqlite", not(any(feature = "mysql", feature = "postgres"))),
-    all(feature = "mysql", not(any(feature = "sqlite", feature = "postgres"))),
-    all(feature = "postgres", not(any(feature = "sqlite", feature = "mysql"))),
-))]
 pub use plugin::*;

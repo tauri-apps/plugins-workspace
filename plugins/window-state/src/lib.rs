@@ -225,7 +225,7 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
         }
 
         if flags.contains(StateFlags::POSITION) {
-            let position = self.inner_position()?;
+            let position = self.outer_position()?;
             if let Ok(Some(monitor)) = self.current_monitor() {
                 // save only window positions that are inside the current monitor
                 if monitor.contains(position) && !is_maximized {

@@ -67,7 +67,7 @@ async function download(
 
   await listenToEventIfNeeded("download://progress");
 
-  await invoke("plugin:upload|upload", {
+  await invoke("plugin:upload|download", {
     id,
     url,
     filePath,
