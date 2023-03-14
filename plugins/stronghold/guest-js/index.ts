@@ -390,14 +390,25 @@ export class Stronghold {
   path: string;
 
   /**
+   * Private constructor.
+   * Use `Stronghold.init` to create a Stronghold instance.
+   * @param path
+   * @param password
+   */
+  private constructor(path: string) {
+    this.path = path;
+  }
+
+  /**
    * Initializes a stronghold.
    * If the snapshot path located at `path` exists, the password must match.
    * @param path
    * @param password
    */
-  constructor(path: string, password: string) {
-    this.path = path;
-    void this.reload(password);
+  static async init(path: string, password: string): Promise<Stronghold> {
+    let stronghold = new Stronghold(path);
+    await stronghold.reload(password);
+    return stronghold;
   }
 
   /**
