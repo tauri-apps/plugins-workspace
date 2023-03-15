@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import { invoke } from "@tauri-apps/api/tauri";
-import { UnlistenFn } from "@tauri-apps/api/event";
-import { appWindow } from "@tauri-apps/api/window";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
 interface ChangePayload<T> {
   path: string;
@@ -180,14 +179,11 @@ export class Store {
     key: string,
     cb: (value: T | null) => void
   ): Promise<UnlistenFn> {
-    return await appWindow.listen<ChangePayload<T>>(
-      "store://change",
-      (event) => {
-        if (event.payload.path === this.path && event.payload.key === key) {
-          cb(event.payload.value);
-        }
+    return await listen<ChangePayload<T>>("store://change", (event) => {
+      if (event.payload.path === this.path && event.payload.key === key) {
+        cb(event.payload.value);
       }
-    );
+    });
   }
 
   /**
@@ -198,13 +194,10 @@ export class Store {
   async onChange<T>(
     cb: (key: string, value: T | null) => void
   ): Promise<UnlistenFn> {
-    return await appWindow.listen<ChangePayload<T>>(
-      "store://change",
-      (event) => {
-        if (event.payload.path === this.path) {
-          cb(event.payload.key, event.payload.value);
-        }
+    return await listen<ChangePayload<T>>("store://change", (event) => {
+      if (event.payload.path === this.path) {
+        cb(event.payload.key, event.payload.value);
       }
-    );
+    });
   }
 }
