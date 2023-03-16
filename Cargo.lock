@@ -4140,10 +4140,11 @@ checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
 
 [[package]]
 name = "swift-rs"
-version = "0.3.0"
-source = "git+https://github.com/Brendonovich/swift-rs?rev=eb6de914ad57501da5019154d476d45660559999#eb6de914ad57501da5019154d476d45660559999"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "806ff0904302a8a91644422fcfeee4828c3a9dbcfd1757ba495f1a755c2ac873"
 dependencies = [
- "base64 0.13.1",
+ "base64 0.21.0",
  "serde",
  "serde_json",
 ]
@@ -4258,7 +4259,7 @@ dependencies = [
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.3"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#105fe3fa242df87ad7655b519b0c01c3da9d8ee4"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#5d94eaa3bc9f1e5cf3e0fa64fba5801d494c2541"
 dependencies = [
  "anyhow",
  "attohttpc",
@@ -4308,7 +4309,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#105fe3fa242df87ad7655b519b0c01c3da9d8ee4"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#5d94eaa3bc9f1e5cf3e0fa64fba5801d494c2541"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -4327,7 +4328,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#105fe3fa242df87ad7655b519b0c01c3da9d8ee4"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#5d94eaa3bc9f1e5cf3e0fa64fba5801d494c2541"
 dependencies = [
  "base64 0.21.0",
  "brotli",
@@ -4352,7 +4353,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#105fe3fa242df87ad7655b519b0c01c3da9d8ee4"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#5d94eaa3bc9f1e5cf3e0fa64fba5801d494c2541"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -4573,7 +4574,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "0.13.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#105fe3fa242df87ad7655b519b0c01c3da9d8ee4"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#5d94eaa3bc9f1e5cf3e0fa64fba5801d494c2541"
 dependencies = [
  "gtk",
  "http",
@@ -4594,7 +4595,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.13.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#105fe3fa242df87ad7655b519b0c01c3da9d8ee4"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#5d94eaa3bc9f1e5cf3e0fa64fba5801d494c2541"
 dependencies = [
  "cocoa",
  "gtk",
@@ -4614,7 +4615,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.1"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#105fe3fa242df87ad7655b519b0c01c3da9d8ee4"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#5d94eaa3bc9f1e5cf3e0fa64fba5801d494c2541"
 dependencies = [
  "brotli",
  "ctor",

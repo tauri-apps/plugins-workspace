@@ -23,9 +23,9 @@ use tauri::{
 pub use fern;
 
 #[cfg(target_os = "ios")]
-extern "C" {
-    fn tauri_log(level: u8, message: &swift_rs::SRString);
-}
+swift_rs::swift!(fn tauri_log(
+  level: u8, message: &swift_rs::SRString
+));
 
 const DEFAULT_MAX_FILE_SIZE: u128 = 40000;
 const DEFAULT_ROTATION_STRATEGY: RotationStrategy = RotationStrategy::KeepOne;
