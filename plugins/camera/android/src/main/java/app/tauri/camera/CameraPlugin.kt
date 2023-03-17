@@ -89,25 +89,25 @@ class CameraPlugin(private val activity: Activity): Plugin(activity) {
 
   private var settings: CameraSettings = CameraSettings()
 
-  @PluginMethod
+  @Command
   fun getPhoto(invoke: Invoke) {
     isEdited = false
     settings = getSettings(invoke)
     doShow(invoke)
   }
 
-  @PluginMethod
+  @Command
   fun pickImages(invoke: Invoke) {
     settings = getSettings(invoke)
     openPhotos(invoke, multiple = true, skipPermission = false)
   }
 
-  @PluginMethod
+  @Command
   fun pickLimitedLibraryPhotos(invoke: Invoke) {
     invoke.reject("not supported on android")
   }
 
-  @PluginMethod
+  @Command
   fun getLimitedLibraryPhotos(invoke: Invoke) {
     invoke.reject("not supported on android")
   }
@@ -729,7 +729,7 @@ class CameraPlugin(private val activity: Activity): Plugin(activity) {
     invoke.resolve(data)
   }
 
-  @PluginMethod
+  @Command
   override fun requestPermissions(invoke: Invoke) {
     // If the camera permission is defined in the manifest, then we have to prompt the user
     // or else we will get a security exception when trying to present the camera. If, however,
