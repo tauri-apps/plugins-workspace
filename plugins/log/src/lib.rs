@@ -22,6 +22,11 @@ use tauri::{
 
 pub use fern;
 
+#[cfg(target_os = "ios")]
+swift_rs::swift!(fn tauri_log(
+  level: u8, message: &swift_rs::SRString
+));
+
 const DEFAULT_MAX_FILE_SIZE: u128 = 40000;
 const DEFAULT_ROTATION_STRATEGY: RotationStrategy = RotationStrategy::KeepOne;
 const DEFAULT_LOG_TARGETS: [LogTarget; 2] = [LogTarget::Stdout, LogTarget::LogDir];
@@ -260,29 +265,18 @@ impl Builder {
                         }
                         #[cfg(target_os = "ios")]
                         LogTarget::Stdout | LogTarget::Stderr => {
-                            use std::sync::Mutex;
-                            let loggers: Mutex<HashMap<String, oslog::OsLog>> = Default::default();
-                            let mut subsystem = String::new();
-                            let identifier = &app_handle.config().tauri.bundle.identifier;
-                            let s = identifier.split('.');
-                            let last = s.clone().count() - 1;
-                            for (i, w) in s.enumerate() {
-                                if i != last {
-                                    subsystem.push_str(w);
-                                    subsystem.push('.');
-                                }
-                            }
-                            subsystem.push_str(&app_handle.package_info().crate_name);
-
                             fern::Output::call(move |record| {
-                                let mut loggers = loggers.lock().unwrap();
-                                let pair =
-                                    loggers.entry(record.target().into()).or_insert_with(|| {
-                                        oslog::OsLog::new(&subsystem, record.target())
-                                    });
-
                                 let message = format!("{}", record.args());
-                                (*pair).with_level(record.level().into(), &message);
+                                unsafe {
+                                    tauri_log(
+                                        match record.level() {
+                                            log::Level::Trace | log::Level::Debug => 1,
+                                            log::Level::Info => 2,
+                                            log::Level::Warn | log::Level::Error => 3,
+                                        },
+                                        &message.as_str().into(),
+                                    );
+                                }
                             })
                         }
                         #[cfg(desktop)]
