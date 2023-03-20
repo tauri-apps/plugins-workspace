@@ -4287,7 +4287,7 @@ name = "tauri-plugin-authenticator"
 version = "0.1.0"
 dependencies = [
  "authenticator",
- "base64 0.13.1",
+ "base64 0.21.0",
  "chrono",
  "log",
  "once_cell",

@@ -6,7 +6,7 @@ use authenticator::{
     authenticatorservice::AuthenticatorService, statecallback::StateCallback,
     AuthenticatorTransports, KeyHandle, RegisterFlags, SignFlags, StatusUpdate,
 };
-use base64::{decode_config, encode_config, URL_SAFE_NO_PAD};
+use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use once_cell::sync::Lazy;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
@@ -75,9 +75,9 @@ pub fn register(application: String, timeout: u64, challenge: String) -> crate::
 
             let (key_handle, public_key) =
                 _u2f_get_key_handle_and_public_key_from_register_response(&register_data).unwrap();
-            let key_handle_base64 = encode_config(key_handle, URL_SAFE_NO_PAD);
-            let public_key_base64 = encode_config(public_key, URL_SAFE_NO_PAD);
-            let register_data_base64 = encode_config(&register_data, URL_SAFE_NO_PAD);
+            let key_handle_base64 = URL_SAFE_NO_PAD.encode(key_handle);
+            let public_key_base64 = URL_SAFE_NO_PAD.encode(public_key);
+            let register_data_base64 = URL_SAFE_NO_PAD.encode(&register_data);
             println!("Key Handle: {}", &key_handle_base64);
             println!("Public Key: {}", &public_key_base64);
 
@@ -108,7 +108,7 @@ pub fn sign(
     challenge: String,
     key_handle: String,
 ) -> crate::Result<String> {
-    let credential = match decode_config(key_handle, URL_SAFE_NO_PAD) {
+    let credential = match URL_SAFE_NO_PAD.decode(key_handle) {
         Ok(v) => v,
         Err(e) => {
             return Err(e.into());
@@ -152,19 +152,16 @@ pub fn sign(
 
             let (_, handle_used, sign_data, device_info) = sign_result.unwrap();
 
-            let sig = encode_config(sign_data, URL_SAFE_NO_PAD);
+            let sig = URL_SAFE_NO_PAD.encode(sign_data);
 
             println!("Sign result: {sig}");
-            println!(
-                "Key handle used: {}",
-                encode_config(&handle_used, URL_SAFE_NO_PAD)
-            );
+            println!("Key handle used: {}", URL_SAFE_NO_PAD.encode(&handle_used));
             println!("Device info: {}", &device_info);
             println!("Done.");
 
             let res = serde_json::to_string(&Signature {
                 sign_data: sig,
-                key_handle: encode_config(&handle_used, URL_SAFE_NO_PAD),
+                key_handle: URL_SAFE_NO_PAD.encode(&handle_used),
             })?;
             Ok(res)
         }
