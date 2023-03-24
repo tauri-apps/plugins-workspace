@@ -75,7 +75,7 @@ Values added to the store are not persisted between application loads unless:
 You can also access Stores from Rust, you can create new stores:
 
 ```rust
-use tauri_plugin_store::store::StoreBuilder;
+use tauri_plugin_store::StoreBuilder;
 use serde_json::json;
 
 fn main() {
