@@ -38,7 +38,7 @@ fn main() {
 
 Afterwards all windows will remember their state when the app is being closed and will restore to their previous state on the next launch.
 
-Optionally you can also tell the plugin to save the state of all open window to disk my using the `save_window_state()` method exposed by the `AppHandleExt` trait:
+Optionally you can also tell the plugin to save the state of all open window to disk by using the `save_window_state()` method exposed by the `AppHandleExt` trait:
 
 ```rust
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
