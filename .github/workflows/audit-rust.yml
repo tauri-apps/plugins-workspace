@@ -28,6 +28,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: rustsec/audit-check@v1
+      - uses: FabianLars/audit-check@new-warning-types
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
