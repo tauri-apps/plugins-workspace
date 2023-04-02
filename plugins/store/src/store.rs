@@ -185,7 +185,8 @@ impl<R: Runtime> Store<R> {
 
         let bytes = read(store_path)?;
 
-        self.cache = (self.deserialize)(&bytes).map_err(Error::Deserialize)?;
+        self.cache
+            .extend((self.deserialize)(&bytes).map_err(Error::Deserialize)?);
 
         Ok(())
     }
