@@ -3,6 +3,5 @@
 val implementation by configurations
 
 dependencies {
-  implementation(project(":tauri-plugin-camera"))
 
 }
