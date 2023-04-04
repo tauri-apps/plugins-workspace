@@ -18,9 +18,7 @@ pub use error::*;
 const PLUGIN_IDENTIFIER: &str = "app.tauri.camera";
 
 #[cfg(target_os = "ios")]
-extern "C" {
-  fn init_plugin_camera(webview: tauri::cocoa::base::id);
-}
+tauri::ios_plugin_binding!(init_plugin_camera);
 
 /// A helper class to access the mobile camera APIs.
 pub struct Camera<R: Runtime>(PluginHandle<R>);
