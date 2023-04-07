@@ -4,6 +4,7 @@
 
 use serde::{Deserialize, Serialize};
 use tauri::{
+    path::PathExt,
     plugin::{Builder, TauriPlugin},
     FsScopeEvent, Manager, Runtime,
 };
@@ -40,9 +41,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             #[cfg(feature = "protocol-asset")]
             let asset_protocol_scope = app.asset_protocol_scope();
             let app = app.clone();
-            let app_dir = app.path_resolver().app_data_dir();
+            let app_dir = app.path().app_data_dir();
 
-            if let Some(app_dir) = app_dir {
+            if let Ok(app_dir) = app_dir {
                 let scope_state_path = app_dir.join(SCOPE_STATE_FILENAME);
 
                 let _ = fs_scope.forbid_file(&scope_state_path);

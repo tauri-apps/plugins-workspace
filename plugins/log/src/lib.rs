@@ -16,6 +16,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use tauri::{
+    path::PathExt,
     plugin::{self, TauriPlugin},
     Manager, Runtime,
 };
@@ -300,7 +301,7 @@ impl Builder {
                         LogTarget::LogDir => continue,
                         #[cfg(desktop)]
                         LogTarget::LogDir => {
-                            let path = app_handle.path_resolver().app_log_dir().unwrap();
+                            let path = app_handle.path().app_log_dir().unwrap();
                             if !path.exists() {
                                 fs::create_dir_all(&path).unwrap();
                             }

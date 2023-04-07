@@ -5,6 +5,7 @@
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
+    path::PathExt,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, Window,
     WindowEvent,
@@ -69,7 +70,7 @@ pub trait AppHandleExt {
 
 impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
     fn save_window_state(&self, flags: StateFlags) -> Result<()> {
-        if let Some(app_dir) = self.path_resolver().app_config_dir() {
+        if let Ok(app_dir) = self.path().app_config_dir() {
             let state_path = app_dir.join(STATE_FILENAME);
             let cache = self.state::<WindowStateCache>();
             let mut state = cache.0.lock().unwrap();
@@ -270,8 +271,8 @@ impl Builder {
         let flags = self.state_flags;
         PluginBuilder::new("window-state")
             .setup(|app, _api| {
-                let cache: Arc<Mutex<HashMap<String, WindowState>>> = if let Some(app_dir) =
-                    app.path_resolver().app_config_dir()
+                let cache: Arc<Mutex<HashMap<String, WindowState>>> = if let Ok(app_dir) =
+                    app.path().app_config_dir()
                 {
                     let state_path = app_dir.join(STATE_FILENAME);
                     if state_path.exists() {

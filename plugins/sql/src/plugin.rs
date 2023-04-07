@@ -14,6 +14,7 @@ use sqlx::{
 };
 use tauri::{
     command,
+    path::PathExt,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime, State,
 };
@@ -63,10 +64,7 @@ type Result<T> = std::result::Result<T, Error>;
 /// Resolves the App's **file path** from the `AppHandle` context
 /// object
 fn app_path<R: Runtime>(app: &AppHandle<R>) -> PathBuf {
-    #[allow(deprecated)] // FIXME: Change to non-deprecated function in Tauri v2
-    app.path_resolver()
-        .app_dir()
-        .expect("No App path was found!")
+    app.path().app_config_dir().expect("No App path was found!")
 }
 
 #[cfg(feature = "sqlite")]
