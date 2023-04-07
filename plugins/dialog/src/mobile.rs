@@ -101,7 +101,7 @@ pub fn save_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
     f(res.unwrap_or_default())
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct ShowMessageDialogResponse {
     cancelled: bool,
     value: bool,

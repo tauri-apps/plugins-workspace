@@ -24,15 +24,10 @@
     svelte-hmr "^0.15.1"
     vitefu "^0.2.2"
 
-"@tauri-apps/api@^1.1.0":
+"@tauri-apps/api@^1.1.0", "@tauri-apps/api@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-1.2.0.tgz#1f196b3e012971227f41b98214c846430a4eb477"
   integrity sha512-lsI54KI6HGf7VImuf/T9pnoejfgkNoXveP14pVV7XarrQ46rOejIVJLFqHI9sRReJMGdh2YuCoI3cc/yCWCsrw==
-
-"@tauri-apps/api@^2.0.0-alpha.0":
-  version "2.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-2.0.0-alpha.0.tgz#901abbaf3b9515ba0437716ac0383de549e4e3bc"
-  integrity sha512-PQdy1Ao6JwKwW2/C11nP+IqnrWHB7+UgbM71zbzA1W3+1yyd9Zg+K7rzZ7f3yhvD7kdxmXUN3KgSfGeiDFzZ2A==
 
 "@tauri-apps/cli-darwin-arm64@2.0.0-alpha.6":
   version "2.0.0-alpha.6"
