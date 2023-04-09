@@ -10,7 +10,7 @@ use std::{
     io::Write,
     path::PathBuf,
 };
-use tauri::{path::PathExt, AppHandle, Runtime};
+use tauri::{AppHandle, Manager, Runtime};
 
 type SerializeFn = fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error>>;
 type DeserializeFn = fn(&[u8]) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error>>;

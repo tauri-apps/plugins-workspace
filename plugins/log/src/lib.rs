@@ -16,7 +16,6 @@ use std::{
     path::{Path, PathBuf},
 };
 use tauri::{
-    path::PathExt,
     plugin::{self, TauriPlugin},
     Manager, Runtime,
 };

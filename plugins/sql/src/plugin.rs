@@ -14,7 +14,6 @@ use sqlx::{
 };
 use tauri::{
     command,
-    path::PathExt,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime, State,
 };

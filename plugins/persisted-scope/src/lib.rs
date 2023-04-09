@@ -4,7 +4,6 @@
 
 use serde::{Deserialize, Serialize};
 use tauri::{
-    path::PathExt,
     plugin::{Builder, TauriPlugin},
     FsScopeEvent, Manager, Runtime,
 };
