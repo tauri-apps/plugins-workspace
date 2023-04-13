@@ -23,9 +23,36 @@ use tauri::{
 pub use fern;
 
 #[cfg(target_os = "ios")]
-swift_rs::swift!(fn tauri_log(
-  level: u8, message: &swift_rs::SRString
-));
+mod ios {
+    use cocoa::base::id;
+    use objc::*;
+
+    const UTF8_ENCODING: usize = 4;
+    pub struct NSString(pub id);
+
+    impl NSString {
+        pub fn new(s: &str) -> Self {
+            // Safety: objc runtime calls are unsafe
+            NSString(unsafe {
+                let ns_string: id = msg_send![class!(NSString), alloc];
+                let ns_string: id = msg_send![ns_string,
+                                            initWithBytes:s.as_ptr()
+                                            length:s.len()
+                                            encoding:UTF8_ENCODING];
+
+                // The thing is allocated in rust, the thing must be set to autorelease in rust to relinquish control
+                // or it can not be released correctly in OC runtime
+                let _: () = msg_send![ns_string, autorelease];
+
+                ns_string
+            })
+        }
+    }
+
+    swift_rs::swift!(pub fn tauri_log(
+      level: u8, message: *const std::ffi::c_void
+    ));
+}
 
 const DEFAULT_MAX_FILE_SIZE: u128 = 40000;
 const DEFAULT_ROTATION_STRATEGY: RotationStrategy = RotationStrategy::KeepOne;
@@ -268,13 +295,13 @@ impl Builder {
                             fern::Output::call(move |record| {
                                 let message = format!("{}", record.args());
                                 unsafe {
-                                    tauri_log(
+                                    ios::tauri_log(
                                         match record.level() {
                                             log::Level::Trace | log::Level::Debug => 1,
                                             log::Level::Info => 2,
                                             log::Level::Warn | log::Level::Error => 3,
                                         },
-                                        &message.as_str().into(),
+                                        ios::NSString::new(message.as_str()).0 as _,
                                     );
                                 }
                             })

@@ -4430,8 +4430,10 @@ version = "0.1.0"
 dependencies = [
  "android_logger",
  "byte-unit",
+ "cocoa",
  "fern",
  "log",
+ "objc",
  "serde",
  "serde_json",
  "serde_repr",
