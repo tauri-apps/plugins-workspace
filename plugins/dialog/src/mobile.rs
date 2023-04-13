@@ -10,7 +10,7 @@ use tauri::{
     AppHandle, Runtime,
 };
 
-use crate::{FileDialogBuilder, MessageDialogBuilder};
+use crate::{FileDialogBuilder, FileResponse, MessageDialogBuilder};
 
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "app.tauri.dialog";
@@ -46,59 +46,43 @@ impl<R: Runtime> Dialog<R> {
     }
 }
 
-pub fn pick_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
-    dialog: FileDialogBuilder<R>,
-    f: F,
-) {
-    let res = dialog
-        .dialog
-        .0
-        .run_mobile_plugin::<Option<PathBuf>>("pickFile", dialog.payload());
-    f(res.unwrap_or_default())
+#[derive(Debug, Deserialize)]
+struct FilePickerResponse {
+    files: Vec<FileResponse>,
 }
 
-pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(
+pub fn pick_file<R: Runtime, F: FnOnce(Option<FileResponse>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
-    let res = dialog
-        .dialog
-        .0
-        .run_mobile_plugin::<Option<Vec<PathBuf>>>("pickFiles", dialog.payload());
-    f(res.unwrap_or_default())
+    std::thread::spawn(move || {
+        let res = dialog
+            .dialog
+            .0
+            .run_mobile_plugin::<FilePickerResponse>("showFilePicker", dialog.payload(false));
+        if let Ok(response) = res {
+            f(Some(response.files.into_iter().next().unwrap()))
+        } else {
+            f(None)
+        }
+    });
 }
 
-pub fn pick_folder<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
+pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<FileResponse>>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
-    let res = dialog
-        .dialog
-        .0
-        .run_mobile_plugin::<Option<PathBuf>>("pickFolder", dialog.payload());
-    f(res.unwrap_or_default())
-}
-
-pub fn pick_folders<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(
-    dialog: FileDialogBuilder<R>,
-    f: F,
-) {
-    let res = dialog
-        .dialog
-        .0
-        .run_mobile_plugin::<Option<Vec<PathBuf>>>("pickFolders", dialog.payload());
-    f(res.unwrap_or_default())
-}
-
-pub fn save_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
-    dialog: FileDialogBuilder<R>,
-    f: F,
-) {
-    let res = dialog
-        .dialog
-        .0
-        .run_mobile_plugin::<Option<PathBuf>>("saveFile", dialog.payload());
-    f(res.unwrap_or_default())
+    std::thread::spawn(move || {
+        let res = dialog
+            .dialog
+            .0
+            .run_mobile_plugin::<FilePickerResponse>("showFilePicker", dialog.payload(true));
+        if let Ok(response) = res {
+            f(Some(response.files))
+        } else {
+            f(None)
+        }
+    });
 }
 
 #[derive(Debug, Deserialize)]

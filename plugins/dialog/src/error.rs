@@ -15,6 +15,12 @@ pub enum Error {
     #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
+    #[cfg(mobile)]
+    #[error("Folder picker is not implemented on mobile")]
+    FolderPickerNotImplemented,
+    #[cfg(mobile)]
+    #[error("File save dialog is not implemented on mobile")]
+    FileSaveDialogNotImplemented,
 }
 
 impl Serialize for Error {

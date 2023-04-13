@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder, TauriPlugin},
     Manager, Runtime,
@@ -191,6 +191,36 @@ impl<R: Runtime> MessageDialogBuilder<R> {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FileResponse {
+    pub base64_data: Option<String>,
+    pub duration: Option<u64>,
+    pub height: Option<usize>,
+    pub width: Option<usize>,
+    pub mime_type: Option<String>,
+    pub modified_at: Option<u64>,
+    pub name: Option<String>,
+    pub path: PathBuf,
+    pub size: u64,
+}
+
+impl FileResponse {
+    fn new(path: PathBuf) -> Self {
+        Self {
+            base64_data: None,
+            duration: None,
+            height: None,
+            width: None,
+            mime_type: None,
+            modified_at: None,
+            name: path.file_name().map(|f| f.to_string_lossy().into_owned()),
+            path,
+            size: 0,
+        }
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub(crate) struct Filter {
     pub name: String,
@@ -217,9 +247,7 @@ pub struct FileDialogBuilder<R: Runtime> {
 #[serde(rename_all = "camelCase")]
 pub struct FileDialogPayload<'a> {
     filters: &'a Vec<Filter>,
-    starting_directory: &'a Option<PathBuf>,
-    file_name: &'a Option<String>,
-    title: &'a Option<String>,
+    multiple: bool,
 }
 
 // raw window handle :(
@@ -240,12 +268,10 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     #[cfg(mobile)]
-    pub(crate) fn payload(&self) -> FileDialogPayload<'_> {
+    pub(crate) fn payload(&self, multiple: bool) -> FileDialogPayload<'_> {
         FileDialogPayload {
             filters: &self.filters,
-            starting_directory: &self.starting_directory,
-            file_name: &self.file_name,
-            title: &self.title,
+            multiple,
         }
     }
 
@@ -308,7 +334,9 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///     })
     ///   })
     /// ```
-    pub fn pick_file<F: FnOnce(Option<PathBuf>) + Send + 'static>(self, f: F) {
+    pub fn pick_file<F: FnOnce(Option<FileResponse>) + Send + 'static>(self, f: F) {
+        #[cfg(desktop)]
+        let f = |path: Option<PathBuf>| f(path.map(FileResponse::new));
         pick_file(self, f)
     }
 
@@ -330,7 +358,15 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///     })
     ///   })
     /// ```
-    pub fn pick_files<F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(self, f: F) {
+    pub fn pick_files<F: FnOnce(Option<Vec<FileResponse>>) + Send + 'static>(self, f: F) {
+        #[cfg(desktop)]
+        let f = |paths: Option<Vec<PathBuf>>| {
+            f(paths.map(|p| {
+                p.into_iter()
+                    .map(FileResponse::new)
+                    .collect::<Vec<FileResponse>>()
+            }))
+        };
         pick_files(self, f)
     }
 
@@ -352,6 +388,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///     })
     ///   })
     /// ```
+    #[cfg(desktop)]
     pub fn pick_folder<F: FnOnce(Option<PathBuf>) + Send + 'static>(self, f: F) {
         pick_folder(self, f)
     }
@@ -374,6 +411,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///     })
     ///   })
     /// ```
+    #[cfg(desktop)]
     pub fn pick_folders<F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(self, f: F) {
         pick_folders(self, f)
     }
@@ -397,6 +435,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///     })
     ///   })
     /// ```
+    #[cfg(desktop)]
     pub fn save_file<F: FnOnce(Option<PathBuf>) + Send + 'static>(self, f: F) {
         save_file(self, f)
     }
@@ -419,7 +458,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   // the file path is `None` if the user closed the dialog
     /// }
     /// ```
-    pub fn blocking_pick_file(self) -> Option<PathBuf> {
+    pub fn blocking_pick_file(self) -> Option<FileResponse> {
         blocking_fn!(self, pick_file)
     }
 
@@ -438,7 +477,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   // the file paths value is `None` if the user closed the dialog
     /// }
     /// ```
-    pub fn blocking_pick_files(self) -> Option<Vec<PathBuf>> {
+    pub fn blocking_pick_files(self) -> Option<Vec<FileResponse>> {
         blocking_fn!(self, pick_files)
     }
 
@@ -457,6 +496,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   // the folder path is `None` if the user closed the dialog
     /// }
     /// ```
+    #[cfg(desktop)]
     pub fn blocking_pick_folder(self) -> Option<PathBuf> {
         blocking_fn!(self, pick_folder)
     }
@@ -476,6 +516,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   // the folder paths value is `None` if the user closed the dialog
     /// }
     /// ```
+    #[cfg(desktop)]
     pub fn blocking_pick_folders(self) -> Option<Vec<PathBuf>> {
         blocking_fn!(self, pick_folders)
     }
@@ -495,6 +536,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   // the file path is `None` if the user closed the dialog
     /// }
     /// ```
+    #[cfg(desktop)]
     pub fn blocking_save_file(self) -> Option<PathBuf> {
         blocking_fn!(self, save_file)
     }

@@ -7,13 +7,15 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use tauri::{command, Manager, Runtime, State, Window};
 
-use crate::{Dialog, FileDialogBuilder, MessageDialogKind, Result};
+use crate::{Dialog, FileDialogBuilder, FileResponse, MessageDialogKind, Result};
 
 #[derive(Serialize)]
 #[serde(untagged)]
 pub enum OpenResponse {
-    Multiple(Option<Vec<PathBuf>>),
-    Path(Option<PathBuf>),
+    Folders(Option<Vec<PathBuf>>),
+    Folder(Option<PathBuf>),
+    Files(Option<Vec<FileResponse>>),
+    File(Option<FileResponse>),
 }
 
 #[allow(dead_code)]
@@ -102,69 +104,80 @@ pub(crate) async fn open<R: Runtime>(
     }
 
     let res = if options.directory {
-        if options.multiple {
-            let folders = dialog_builder.blocking_pick_folders();
-            if let Some(folders) = &folders {
-                for folder in folders {
-                    window
-                        .fs_scope()
-                        .allow_directory(folder, options.recursive)?;
+        #[cfg(desktop)]
+        {
+            if options.multiple {
+                let folders = dialog_builder.blocking_pick_folders();
+                if let Some(folders) = &folders {
+                    for folder in folders {
+                        window
+                            .fs_scope()
+                            .allow_directory(folder, options.recursive)?;
+                    }
                 }
+                OpenResponse::Folders(folders)
+            } else {
+                let folder = dialog_builder.blocking_pick_folder();
+                if let Some(path) = &folder {
+                    window.fs_scope().allow_directory(path, options.recursive)?;
+                }
+                OpenResponse::Folder(folder)
             }
-            OpenResponse::Multiple(folders)
-        } else {
-            let folder = dialog_builder.blocking_pick_folder();
-            if let Some(path) = &folder {
-                window.fs_scope().allow_directory(path, options.recursive)?;
-            }
-            OpenResponse::Path(folder)
         }
+        #[cfg(mobile)]
+        return Err(crate::Error::FolderPickerNotImplemented);
     } else if options.multiple {
         let files = dialog_builder.blocking_pick_files();
         if let Some(files) = &files {
             for file in files {
-                window.fs_scope().allow_file(file)?;
+                window.fs_scope().allow_file(&file.path)?;
             }
         }
-        OpenResponse::Multiple(files)
+        OpenResponse::Files(files)
     } else {
         let file = dialog_builder.blocking_pick_file();
         if let Some(file) = &file {
-            window.fs_scope().allow_file(file)?;
+            window.fs_scope().allow_file(&file.path)?;
         }
-        OpenResponse::Path(file)
+        OpenResponse::File(file)
     };
     Ok(res)
 }
 
+#[allow(unused_variables)]
 #[command]
 pub(crate) async fn save<R: Runtime>(
     window: Window<R>,
     dialog: State<'_, Dialog<R>>,
     options: SaveDialogOptions,
 ) -> Result<Option<PathBuf>> {
-    let mut dialog_builder = dialog.file();
-    #[cfg(any(windows, target_os = "macos"))]
+    #[cfg(mobile)]
+    return Err(crate::Error::FileSaveDialogNotImplemented);
+    #[cfg(desktop)]
     {
-        dialog_builder = dialog_builder.set_parent(&window);
-    }
-    if let Some(title) = options.title {
-        dialog_builder = dialog_builder.set_title(&title);
-    }
-    if let Some(default_path) = options.default_path {
-        dialog_builder = set_default_path(dialog_builder, default_path);
-    }
-    for filter in options.filters {
-        let extensions: Vec<&str> = filter.extensions.iter().map(|s| &**s).collect();
-        dialog_builder = dialog_builder.add_filter(filter.name, &extensions);
-    }
+        let mut dialog_builder = dialog.file();
+        #[cfg(any(windows, target_os = "macos"))]
+        {
+            dialog_builder = dialog_builder.set_parent(&window);
+        }
+        if let Some(title) = options.title {
+            dialog_builder = dialog_builder.set_title(&title);
+        }
+        if let Some(default_path) = options.default_path {
+            dialog_builder = set_default_path(dialog_builder, default_path);
+        }
+        for filter in options.filters {
+            let extensions: Vec<&str> = filter.extensions.iter().map(|s| &**s).collect();
+            dialog_builder = dialog_builder.add_filter(filter.name, &extensions);
+        }
 
-    let path = dialog_builder.blocking_save_file();
-    if let Some(p) = &path {
-        window.fs_scope().allow_file(p)?;
-    }
+        let path = dialog_builder.blocking_save_file();
+        if let Some(p) = &path {
+            window.fs_scope().allow_file(p)?;
+        }
 
-    Ok(path)
+        Ok(path)
+    }
 }
 
 fn message_dialog<R: Runtime>(

@@ -4,6 +4,18 @@
 
 import { invoke } from '@tauri-apps/api/tauri'
 
+interface FileResponse {
+  base64Data?: string
+  duration?: number
+  height?: number
+  width?: number
+  mimeType?: string
+  modifiedAt?: number
+  name?: string
+  path: string
+  size: number
+}
+
 /**
  * Extension filters for the file dialog.
  *
@@ -86,6 +98,18 @@ interface ConfirmDialogOptions {
   cancelLabel?: string
 }
 
+async function open(
+  options?: OpenDialogOptions & { multiple?: false, directory?: false }
+): Promise<null | FileResponse>
+async function open(
+  options?: OpenDialogOptions & { multiple?: true, directory?: false }
+): Promise<null | FileResponse[]>
+async function open(
+  options?: OpenDialogOptions & { multiple?: false, directory?: true }
+): Promise<null | string>
+async function open(
+  options?: OpenDialogOptions & { multiple?: true, directory?: true }
+): Promise<null | string[]>
 /**
  * Open a file/directory selection dialog.
  *
@@ -140,7 +164,7 @@ interface ConfirmDialogOptions {
  */
 async function open(
   options: OpenDialogOptions = {}
-): Promise<null | string | string[]> {
+): Promise<null | string | string[] | FileResponse | FileResponse[]> {
   if (typeof options === 'object') {
     Object.freeze(options)
   }

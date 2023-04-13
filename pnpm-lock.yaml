@@ -79,9 +79,6 @@ importers:
 
   plugins/dialog/examples/tauri-app:
     dependencies:
-      '@tauri-apps/api':
-        specifier: ^1.1.0
-        version: 1.2.0
       tauri-plugin-dialog-api:
         specifier: link:../../
         version: link:../..
