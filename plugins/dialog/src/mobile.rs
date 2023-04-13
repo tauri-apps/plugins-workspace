@@ -87,6 +87,7 @@ pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<FileResponse>>) + Send + 'sta
 
 #[derive(Debug, Deserialize)]
 struct ShowMessageDialogResponse {
+    #[serde(default)]
     cancelled: bool,
     value: bool,
 }
