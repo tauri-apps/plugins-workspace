@@ -17,6 +17,11 @@ use crate::{models::*, FileDialogBuilder, MessageDialogBuilder};
 
 const OK: &str = "Ok";
 
+#[cfg(target_os = "linux")]
+type FileDialog = rfd::FileDialog;
+#[cfg(not(target_os = "linux"))]
+type FileDialog = rfd::AsyncFileDialog;
+
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
     _api: PluginApi<R, C>,
@@ -67,7 +72,7 @@ macro_rules! run_dialog {
 macro_rules! run_file_dialog {
     ($e:expr, $h: ident) => {{
         std::thread::spawn(move || {
-            let response = crate::async_runtime::block_on($e);
+            let response = tauri::async_runtime::block_on($e);
             $h(response);
         });
     }};
@@ -96,9 +101,9 @@ impl From<MessageDialogKind> for rfd::MessageLevel {
     }
 }
 
-impl<R: Runtime> From<FileDialogBuilder<R>> for rfd::FileDialog {
+impl<R: Runtime> From<FileDialogBuilder<R>> for FileDialog {
     fn from(d: FileDialogBuilder<R>) -> Self {
-        let mut builder = rfd::FileDialog::new();
+        let mut builder = FileDialog::new();
 
         if let Some(title) = d.title {
             builder = builder.set_title(&title);
@@ -153,7 +158,7 @@ pub fn pick_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
 ) {
     #[cfg(not(target_os = "linux"))]
     let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf()));
-    run_file_dialog!(rfd::FileDialog::from(dialog).pick_file(), f)
+    run_file_dialog!(FileDialog::from(dialog).pick_file(), f)
 }
 
 pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(
@@ -164,7 +169,7 @@ pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(
     let f = |paths: Option<Vec<rfd::FileHandle>>| {
         f(paths.map(|list| list.into_iter().map(|p| p.path().to_path_buf()).collect()))
     };
-    run_file_dialog!(rfd::FileDialog::from(dialog).pick_files(), f)
+    run_file_dialog!(FileDialog::from(dialog).pick_files(), f)
 }
 
 pub fn pick_folder<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
@@ -173,7 +178,7 @@ pub fn pick_folder<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
 ) {
     #[cfg(not(target_os = "linux"))]
     let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf()));
-    run_file_dialog!(rfd::FileDialog::from(dialog).pick_folder(), f)
+    run_file_dialog!(FileDialog::from(dialog).pick_folder(), f)
 }
 
 pub fn pick_folders<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(
@@ -184,7 +189,7 @@ pub fn pick_folders<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static
     let f = |paths: Option<Vec<rfd::FileHandle>>| {
         f(paths.map(|list| list.into_iter().map(|p| p.path().to_path_buf()).collect()))
     };
-    run_file_dialog!(rfd::FileDialog::from(dialog).pick_folders(), f)
+    run_file_dialog!(FileDialog::from(dialog).pick_folders(), f)
 }
 
 pub fn save_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
@@ -193,7 +198,7 @@ pub fn save_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
 ) {
     #[cfg(not(target_os = "linux"))]
     let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf()));
-    run_file_dialog!(rfd::FileDialog::from(dialog).save_file(), f)
+    run_file_dialog!(FileDialog::from(dialog).save_file(), f)
 }
 
 /// Shows a message dialog
