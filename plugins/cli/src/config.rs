@@ -34,13 +34,6 @@ pub struct Arg {
     /// NOTE: Setting this requires `takes_value` to be set to true.
     #[serde(default)]
     pub multiple: bool,
-    /// Specifies that the argument may appear more than once.
-    /// For flags, this results in the number of occurrences of the flag being recorded. For example -ddd or -d -d -d would count as three occurrences.
-    /// For options or arguments that take a value, this does not affect how many values they can accept. (i.e. only one at a time is allowed)
-    ///
-    /// For example, --opt val1 --opt val2 is allowed, but --opt val1 val2 is not.
-    #[serde(default, alias = "multiple-occurrences")]
-    pub multiple_occurrences: bool,
     /// Specifies how many values are required to satisfy this argument. For example, if you had a
     /// `-f <file>` argument where you wanted exactly 3 'files' you would set
     /// `number_of_values = 3`, and this argument wouldn't be satisfied unless the user provided
@@ -102,11 +95,11 @@ pub struct Arg {
     /// Allows a conditional requirement with the signature [arg, value]
     /// the requirement will only become valid if `arg`'s value equals `${value}`.
     #[serde(alias = "requires-if")]
-    pub requires_if: Option<Vec<String>>,
+    pub requires_if: Option<(String, String)>,
     /// Allows specifying that an argument is required conditionally with the signature [arg, value]
     /// the requirement will only become valid if the `arg`'s value equals `${value}`.
-    #[serde(alias = "requires-if-eq")]
-    pub required_if_eq: Option<Vec<String>>,
+    #[serde(alias = "required-if-eq")]
+    pub required_if_eq: Option<(String, String)>,
     /// Requires that options use the --option=val syntax
     /// i.e. an equals between the option and associated value.
     #[serde(alias = "requires-equals")]

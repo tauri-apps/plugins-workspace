@@ -11,4 +11,4 @@ serde_json.workspace = true
 tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
-clap = "3"
+clap = { version = "4", features = ["string"] }
