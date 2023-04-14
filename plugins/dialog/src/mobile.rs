@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::path::PathBuf;
-
 use serde::{de::DeserializeOwned, Deserialize};
 use tauri::{
     plugin::{PluginApi, PluginHandle},
@@ -87,7 +85,7 @@ pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<FileResponse>>) + Send + 'sta
 
 #[derive(Debug, Deserialize)]
 struct ShowMessageDialogResponse {
-    #[serde(default)]
+    #[allow(dead_code)]
     cancelled: bool,
     value: bool,
 }

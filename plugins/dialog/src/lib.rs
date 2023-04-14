@@ -206,6 +206,7 @@ pub struct FileResponse {
 }
 
 impl FileResponse {
+    #[cfg(desktop)]
     fn new(path: PathBuf) -> Self {
         Self {
             base64_data: None,

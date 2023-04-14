@@ -12,7 +12,9 @@ use crate::{Dialog, FileDialogBuilder, FileResponse, MessageDialogKind, Result};
 #[derive(Serialize)]
 #[serde(untagged)]
 pub enum OpenResponse {
+    #[cfg(desktop)]
     Folders(Option<Vec<PathBuf>>),
+    #[cfg(desktop)]
     Folder(Option<PathBuf>),
     Files(Option<Vec<FileResponse>>),
     File(Option<FileResponse>),
@@ -46,12 +48,14 @@ pub struct OpenDialogOptions {
     /// If [`Self::directory`] is true, indicates that it will be read recursively later.
     /// Defines whether subdirectories will be allowed on the scope or not.
     #[serde(default)]
+    #[cfg_attr(mobile, allow(dead_code))]
     recursive: bool,
 }
 
 /// The options for the save dialog API.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[cfg_attr(mobile, allow(dead_code))]
 pub struct SaveDialogOptions {
     /// The title of the dialog window.
     title: Option<String>,

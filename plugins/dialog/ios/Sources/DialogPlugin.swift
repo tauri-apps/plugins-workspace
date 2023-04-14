@@ -185,12 +185,14 @@ class DialogPlugin: Plugin {
 			let alert = UIAlertController(title: title, message: message, preferredStyle: UIAlertController.Style.alert)
 			alert.addAction(UIAlertAction(title: cancelButtonLabel, style: UIAlertAction.Style.default, handler: { (_) -> Void in
 				invoke.resolve([
-					"value": false
+					"value": false,
+					"cancelled": false
 				])
 			}))
 			alert.addAction(UIAlertAction(title: okButtonLabel, style: UIAlertAction.Style.default, handler: { (_) -> Void in
 				invoke.resolve([
-					"value": true
+					"value": true,
+					"cancelled": false
 				])
 			}))
 
