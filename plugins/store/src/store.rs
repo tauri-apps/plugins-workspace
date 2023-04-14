@@ -10,7 +10,7 @@ use std::{
     io::Write,
     path::PathBuf,
 };
-use tauri::{AppHandle, Runtime};
+use tauri::{AppHandle, Manager, Runtime};
 
 type SerializeFn = fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error>>;
 type DeserializeFn = fn(&[u8]) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error>>;
@@ -171,7 +171,7 @@ impl Store {
     /// Update the store from the on-disk state
     pub fn load<R: Runtime>(&mut self, app: &AppHandle<R>) -> Result<(), Error> {
         let app_dir = app
-            .path_resolver()
+            .path()
             .app_data_dir()
             .expect("failed to resolve app dir");
         let store_path = app_dir.join(&self.path);
@@ -186,7 +186,7 @@ impl Store {
     /// Saves the store to disk
     pub fn save<R: Runtime>(&self, app: &AppHandle<R>) -> Result<(), Error> {
         let app_dir = app
-            .path_resolver()
+            .path()
             .app_data_dir()
             .expect("failed to resolve app dir");
         let store_path = app_dir.join(&self.path);
