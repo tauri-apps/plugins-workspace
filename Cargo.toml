@@ -5,8 +5,8 @@ resolver = "2"
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
 log = "0.4"
-tauri = "2.0.0-alpha.6"
-tauri-build = "2.0.0-alpha.3"
+tauri = "2.0.0-alpha.8"
+tauri-build = "2.0.0-alpha.4"
 serde_json = "1"
 thiserror = "1"
 
@@ -15,7 +15,3 @@ edition = "2021"
 authors = [ "Tauri Programme within The Commons Conservancy" ]
 license = "Apache-2.0 OR MIT"
 rust-version = "1.64"
-
-[patch.crates-io]
-tauri = { path = "../tauri/core/tauri" }
-tauri-build = { path = "../tauri/core/tauri-build" }
