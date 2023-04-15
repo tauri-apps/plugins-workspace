@@ -2,4 +2,3 @@ target
 node_modules
 dist
 dist-js
-!plugins/fs/dist-js
