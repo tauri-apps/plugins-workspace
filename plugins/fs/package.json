@@ -1,7 +1,7 @@
 {
-  "name": "tauri-plugin-fs-extra-api",
+  "name": "tauri-plugin-fs-api",
   "version": "0.0.0",
-  "description": "Additional file system methods not included in the core API.",
+  "description": "Access the file system.",
   "license": "MIT or APACHE-2.0",
   "authors": [
     "Tauri Programme within The Commons Conservancy"

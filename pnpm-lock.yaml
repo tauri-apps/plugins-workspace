@@ -77,7 +77,7 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1
 
-  plugins/fs-extra:
+  plugins/fs:
     dependencies:
       '@tauri-apps/api':
         specifier: ^1.2.0

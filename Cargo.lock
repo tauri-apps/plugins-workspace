@@ -4400,8 +4400,7 @@ dependencies = [
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f25eefe4ca0a396a73fd0309f778eeb22a19953a3169bf316b893abadc2118fb"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/move-fs#5659ca10eb68b8c0a2439ff6c10585b4f38d8cc2"
 dependencies = [
  "anyhow",
  "bytes 1.4.0",
@@ -4452,8 +4451,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c492211c72b95f8866e5c1fbc0a915080a5ebb9f03f9b250a1c936534b680a76"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/move-fs#5659ca10eb68b8c0a2439ff6c10585b4f38d8cc2"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -4472,8 +4470,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "818c570932ebc2ff6d498be89d93494b89ff142131937a7e56d7cfb9c8ef0ad0"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/move-fs#5659ca10eb68b8c0a2439ff6c10585b4f38d8cc2"
 dependencies = [
  "base64 0.21.0",
  "brotli",
@@ -4498,8 +4495,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3b596485d89003d2d7869469b2830e9a846de9ac2eecd69bc7c24890234aefc"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/move-fs#5659ca10eb68b8c0a2439ff6c10585b4f38d8cc2"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -4553,9 +4549,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "tauri-plugin-fs-extra"
+name = "tauri-plugin-fs"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "log",
  "serde",
  "serde_json",
@@ -4734,8 +4731,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "0.13.0-alpha.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "404367cd32a5a8d33368448aab7da54bb2187b6a632526f1019de3fd13591cc2"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/move-fs#5659ca10eb68b8c0a2439ff6c10585b4f38d8cc2"
 dependencies = [
  "gtk",
  "http",
@@ -4756,8 +4752,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.13.0-alpha.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "203764d673b440877dea87b972772be4091ee0ab25141748008646ca774a20dc"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/move-fs#5659ca10eb68b8c0a2439ff6c10585b4f38d8cc2"
 dependencies = [
  "cocoa",
  "gtk",
@@ -4777,8 +4772,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49fa79bc56f04ece491268a64273de945f65627bcda30d9e8ecc8708b89bca26"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/move-fs#5659ca10eb68b8c0a2439ff6c10585b4f38d8cc2"
 dependencies = [
  "brotli",
  "ctor",
