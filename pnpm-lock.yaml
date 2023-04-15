@@ -89,9 +89,18 @@ importers:
       '@rollup/plugin-typescript':
         specifier: ^11.0.0
         version: 11.0.0(rollup@3.7.4)(tslib@2.4.1)(typescript@4.9.4)
+      '@types/node':
+        specifier: ^18.15.11
+        version: 18.15.11
+      rollup:
+        specifier: ^3.7.4
+        version: 3.7.4
       tslib:
         specifier: ^2.4.1
         version: 2.4.1
+      typescript:
+        specifier: ^4.9.4
+        version: 4.9.4
 
   plugins/fs-watch:
     dependencies:
@@ -751,8 +760,8 @@ packages:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
     dev: true
 
-  /@types/node@18.11.18:
-    resolution: {integrity: sha512-DHQpWGjyQKSHj3ebjFI/wRKcqQcdR+MoFBygntYOZytCqNfkd2ZC4ARDJ2DQqhjH5p85Nnd3jhUJIXrszFX/JA==}
+  /@types/node@18.15.11:
+    resolution: {integrity: sha512-E5Kwq2n4SbMzQOn6wnmBjuK9ouqlURrcZDVfbo9ftDDTFt3nk7ZKK4GMOzoYgnpQJKcxwQw+lGaBvvlMo0qN/Q==}
     dev: true
 
   /@types/pug@2.0.6:
@@ -766,7 +775,7 @@ packages:
   /@types/sass@1.43.1:
     resolution: {integrity: sha512-BPdoIt1lfJ6B7rw35ncdwBZrAssjcwzI5LByIrYs+tpXlj/CAkuVdRsgZDdP4lq5EjyWzwxZCqAoFyHKFwp32g==}
     dependencies:
-      '@types/node': 18.11.18
+      '@types/node': 18.15.11
     dev: true
 
   /@types/semver@7.3.13:
