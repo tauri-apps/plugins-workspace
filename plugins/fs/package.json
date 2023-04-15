@@ -25,6 +25,8 @@
     "LICENSE"
   ],
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-typescript": "^11.0.0",
     "tslib": "^2.4.1"
   },
   "dependencies": {
