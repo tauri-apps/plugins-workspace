@@ -25,12 +25,7 @@
     "LICENSE"
   ],
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "@rollup/plugin-typescript": "^11.0.0",
-    "@types/node": "^18.15.11",
-    "rollup": "^3.7.4",
-    "tslib": "^2.4.1",
-    "typescript": "^4.9.4"
+    "tslib": "^2.4.1"
   },
   "dependencies": {
     "@tauri-apps/api": "^1.2.0"
