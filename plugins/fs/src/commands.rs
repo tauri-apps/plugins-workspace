@@ -60,7 +60,7 @@ fn resolve_path<R: Runtime>(
     window: &Window<R>,
     path: SafePathBuf,
     dir: Option<BaseDirectory>,
-) -> Result<SafePathBuf> {
+) -> Result<PathBuf> {
     let path = if let Some(dir) = dir {
         window
             .path()
@@ -70,10 +70,7 @@ fn resolve_path<R: Runtime>(
         path.as_ref().to_path_buf()
     };
     if window.fs_scope().is_allowed(&path) {
-        Ok(
-            // safety: the path is resolved by Tauri so it is safe
-            unsafe { SafePathBuf::new_unchecked(path) },
-        )
+        Ok(path)
     } else {
         Err(Error::PathForbidden(path))
     }
@@ -206,15 +203,21 @@ pub fn copy_file<R: Runtime>(
     destination: SafePathBuf,
     options: Option<FileOperationOptions>,
 ) -> CommandResult<()> {
-    let (src, dest) = match options.and_then(|o| o.dir) {
-        Some(dir) => (
-            resolve_path(&window, source, Some(dir))?,
-            resolve_path(&window, destination, Some(dir))?,
-        ),
-        None => (source, destination),
+    match options.and_then(|o| o.dir) {
+        Some(dir) => {
+            let src = resolve_path(&window, source, Some(dir))?;
+            let dest = resolve_path(&window, destination, Some(dir))?;
+            fs::copy(&src, &dest)
+                .with_context(|| format!("source: {}, dest: {}", src.display(), dest.display()))?
+        }
+        None => fs::copy(&source, &destination).with_context(|| {
+            format!(
+                "source: {}, dest: {}",
+                source.display(),
+                destination.display()
+            )
+        })?,
     };
-    fs::copy(src.clone(), dest.clone())
-        .with_context(|| format!("source: {}, dest: {}", src.display(), dest.display()))?;
     Ok(())
 }
 
@@ -283,16 +286,17 @@ pub fn rename_file<R: Runtime>(
     new_path: SafePathBuf,
     options: Option<FileOperationOptions>,
 ) -> CommandResult<()> {
-    let (old, new) = match options.and_then(|o| o.dir) {
-        Some(dir) => (
-            resolve_path(&window, old_path, Some(dir))?,
-            resolve_path(&window, new_path, Some(dir))?,
-        ),
-        None => (old_path, new_path),
-    };
-    fs::rename(&old, &new)
-        .with_context(|| format!("old: {}, new: {}", old.display(), new.display()))
-        .map_err(Into::into)
+    match options.and_then(|o| o.dir) {
+        Some(dir) => {
+            let old = resolve_path(&window, old_path, Some(dir))?;
+            let new = resolve_path(&window, new_path, Some(dir))?;
+            fs::rename(&old, &new)
+                .with_context(|| format!("old: {}, new: {}", old.display(), new.display()))?
+        }
+        None => fs::rename(&old_path, &new_path)
+            .with_context(|| format!("old: {}, new: {}", old_path.display(), new_path.display()))?,
+    }
+    Ok(())
 }
 
 #[tauri::command]
@@ -302,7 +306,7 @@ pub fn exists<R: Runtime>(
     options: Option<FileOperationOptions>,
 ) -> CommandResult<bool> {
     let resolved_path = resolve_path(&window, path, options.and_then(|o| o.dir))?;
-    Ok(resolved_path.as_ref().exists())
+    Ok(resolved_path.exists())
 }
 
 #[derive(Serialize)]
