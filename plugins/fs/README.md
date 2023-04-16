@@ -1,6 +1,6 @@
-![tauri-plugin-fs-extra](banner.png)
+![tauri-plugin-fs](banner.png)
 
-Additional file system methods not included in the core API.
+Access the file system.
 
 ## Install
 
@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-fs-extra = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-fs = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -26,11 +26,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-fs-extra
+pnpm add https://github.com/tauri-apps/tauri-plugin-fs
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-fs-extra
+npm add https://github.com/tauri-apps/tauri-plugin-fs
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-fs-extra
+yarn add https://github.com/tauri-apps/tauri-plugin-fs
 ```
 
 ## Usage
@@ -42,7 +42,7 @@ First you need to register the core plugin with Tauri:
 ```rust
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_fs_extra::init())
+        .plugin(tauri_plugin_fs::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -51,7 +51,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { metadata } from "tauri-plugin-fs-extra-api";
+import { metadata } from "tauri-plugin-fs-api";
 
 await metadata("/path/to/file");
 ```
