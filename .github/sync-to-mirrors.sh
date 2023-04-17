@@ -41,7 +41,7 @@ COMMIT_AUTHOR=$(cd "${SOURCE_DIR:-.}" &&git show -s --format="%an <%ae>" $GITHUB
 
 if [[ -z "$COMMIT_MESSAGE" ]]; then
 	MONOREPO_COMMIT_MESSAGE=$(cd "${SOURCE_DIR:-.}" && git show -s --format=%B $GITHUB_SHA)
-	COMMIT_MESSAGE=$( printf "%s\n\nCommitted via a GitHub action: https://github.com/%s/actions/runs/%s\nCo-authored-by: %s\n" "$MONOREPO_COMMIT_MESSAGE" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" "$COMMIT_ACTOR" )
+	COMMIT_MESSAGE=$( printf "%s\n\nCommitted via a GitHub action: https://github.com/%s/actions/runs/%s\n" "$MONOREPO_COMMIT_MESSAGE" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" )
 fi
 
 if [[ "$GITHUB_REF" =~ ^refs/heads/ ]]; then
@@ -100,7 +100,7 @@ while read -r PLUGIN_NAME; do
 
 	if [[ -n "$FORCE_COMMIT" || -n "$(git status --porcelain)" ]]; then
 		echo "Committing to $PLUGIN_NAME"
-		if git commit $FORCE_COMMIT --author="${COMMIT_AUTHOR}" -m "${COMMIT_MESSAGE}" &&
+		if git commit $FORCE_COMMIT --author="${COMMIT_AUTHOR}" -m "${COMMIT_MESSAGE}\nCo-authored-by: ${COMMIT_ACTOR}" &&
 			{ [[ -z "$CI" ]] || git push origin "$BRANCH"; } # Only do the actual push from the GitHub Action
 		then
 			# echo "$BUILD_BASE/changes.diff"
