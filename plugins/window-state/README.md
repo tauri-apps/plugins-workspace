@@ -21,6 +21,18 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
 ```
 
+You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
+
+> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
+
+```sh
+pnpm add https://github.com/tauri-apps/tauri-plugin-window-state
+# or
+npm add https://github.com/tauri-apps/tauri-plugin-window-state
+# or
+yarn add https://github.com/tauri-apps/tauri-plugin-window-state
+```
+
 ## Usage
 
 First you need to register the core plugin with Tauri:
@@ -47,6 +59,14 @@ use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 app.save_window_state(StateFlags::all()); // will save the state of all open windows to disk
 ```
 
+or through Javascript
+
+```javascript
+import { saveWindowState, StateFlags } from "tauri-plugin-window-state-api";
+
+saveWindowState(StateFlags.ALL);
+```
+
 To manually restore a windows state from disk you can call the `restore_state()` method exposed by the `WindowExt` trait:
 
 ```rust
@@ -54,6 +74,14 @@ use tauri_plugin_window_state::{WindowExt, StateFlags};
 
 // all `Window` types now have the following additional method
 window.restore_state(StateFlags::all()); // will restore the windows state from disk
+```
+
+or through Javascript
+
+```javascript
+import { restoreStateCurrent, StateFlags } from "tauri-plugin-window-state-api";
+
+restoreStateCurrent(StateFlags.ALL);
 ```
 
 ## Contributing

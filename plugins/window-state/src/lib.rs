@@ -6,8 +6,8 @@ use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, Window,
-    WindowEvent,
+    AppHandle, LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime,
+    Window, WindowEvent,
 };
 
 use std::{
@@ -34,7 +34,7 @@ pub enum Error {
 pub type Result<T> = std::result::Result<T, Error>;
 
 bitflags! {
-    #[derive(Clone, Copy)]
+    #[derive(Clone, Copy, Debug)]
     pub struct StateFlags: u32 {
         const SIZE        = 1 << 0;
         const POSITION    = 1 << 1;
@@ -51,7 +51,7 @@ impl Default for StateFlags {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize, PartialEq)]
 struct WindowState {
     width: f64,
     height: f64,
@@ -65,6 +65,7 @@ struct WindowState {
 
 struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
 pub trait AppHandleExt {
+    /// Saves all open windows state to disk
     fn save_window_state(&self, flags: StateFlags) -> Result<()>;
 }
 
@@ -94,6 +95,7 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
 }
 
 pub trait WindowExt {
+    /// Restores this window state from disk
     fn restore_state(&self, flags: StateFlags) -> tauri::Result<()>;
 }
 
@@ -101,9 +103,15 @@ impl<R: Runtime> WindowExt for Window<R> {
     fn restore_state(&self, flags: StateFlags) -> tauri::Result<()> {
         let cache = self.state::<WindowStateCache>();
         let mut c = cache.0.lock().unwrap();
+
         let mut should_show = true;
 
         if let Some(state) = c.get(self.label()) {
+            // avoid restoring the default zeroed state
+            if *state == WindowState::default() {
+                return Ok(());
+            }
+
             if flags.contains(StateFlags::DECORATIONS) {
                 self.set_decorations(state.decorated)?;
             }
@@ -240,6 +248,32 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
     }
 }
 
+#[tauri::command]
+async fn js_save_window_state<R: Runtime>(
+    app: AppHandle<R>,
+    flags: u32,
+) -> std::result::Result<(), String> {
+    let flags = StateFlags::from_bits(flags)
+        .ok_or_else(|| format!("Invalid state flags bits: {}", flags))?;
+    app.save_window_state(flags).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+async fn js_restore_state<R: Runtime>(
+    app: AppHandle<R>,
+    label: String,
+    flags: u32,
+) -> std::result::Result<(), String> {
+    let flags = StateFlags::from_bits(flags)
+        .ok_or_else(|| format!("Invalid state flags bits: {}", flags))?;
+    app.get_window(&label)
+        .ok_or_else(|| format!("Couldn't find window with label: {}", label))?
+        .restore_state(flags)
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 #[derive(Default)]
 pub struct Builder {
     denylist: HashSet<String>,
@@ -270,6 +304,10 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let flags = self.state_flags;
         PluginBuilder::new("window-state")
+            .invoke_handler(tauri::generate_handler![
+                js_save_window_state,
+                js_restore_state
+            ])
             .setup(|app| {
                 let cache: Arc<Mutex<HashMap<String, WindowState>>> = if let Some(app_dir) =
                     app.path_resolver().app_config_dir()
@@ -305,6 +343,17 @@ impl Builder {
                 let label = window.label().to_string();
                 let window_clone = window.clone();
                 let flags = self.state_flags;
+
+                // insert a default state if this window should be tracked and
+                // the disk cache doesn't have a state for it
+                {
+                    cache
+                        .lock()
+                        .unwrap()
+                        .entry(label.clone())
+                        .or_insert_with(WindowState::default);
+                }
+
                 window.on_window_event(move |e| {
                     if let WindowEvent::CloseRequested { .. } = e {
                         let mut c = cache.lock().unwrap();
