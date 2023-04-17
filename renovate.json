@@ -1,6 +1,7 @@
 {
   "extends": ["config:base"],
   "enabledManagers": ["cargo", "npm"],
+  "semanticCommitType": "chore",
   "ignorePaths": [
     "**/node_modules/**",
     "**/bower_components/**",
