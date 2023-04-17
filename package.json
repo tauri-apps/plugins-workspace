@@ -25,5 +25,7 @@
     "rollup": "^3.7.4",
     "typescript": "^5.0.0"
   },
-  "packageManager": "pnpm@7.18.1"
+  "engines": {
+    "pnpm": ">=7.24.2"
+  }
 }
