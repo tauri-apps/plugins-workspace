@@ -36,7 +36,6 @@ elif [[ ! -d "$BUILD_BASE" ]]; then
 	exit 1
 fi
 
-
 if [[ -z "$COMMIT_MESSAGE" ]]; then
 	MONOREPO_COMMIT_MESSAGE=$(cd "${SOURCE_DIR:-.}" && git show -s --format=%B $GITHUB_SHA)
 	COMMIT_MESSAGE=$( printf "%s\n\nCommitted via a GitHub action: https://github.com/%s/actions/runs/%s\n" "$MONOREPO_COMMIT_MESSAGE" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" )
