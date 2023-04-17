@@ -5,22 +5,22 @@ on:
     branches:
       - dev
     paths:
-      - ".github/workflows/lint-javascript.yml"
-      - "plugins/*/guest-js/**"
-      - ".eslintignore"
-      - ".eslintrc.json"
-      - ".prettierignore"
-      - "**/package.json"
+      - '.github/workflows/lint-javascript.yml'
+      - 'plugins/*/guest-js/**'
+      - '.eslintignore'
+      - '.eslintrc.json'
+      - '.prettierignore'
+      - '**/package.json'
   pull_request:
     branches:
       - dev
     paths:
-      - ".github/workflows/lint-javascript.yml"
-      - "plugins/*/guest-js/**"
-      - ".eslintignore"
-      - ".eslintrc.json"
-      - ".prettierignore"
-      - "**/package.json"
+      - '.github/workflows/lint-javascript.yml'
+      - 'plugins/*/guest-js/**'
+      - '.eslintignore'
+      - '.eslintrc.json'
+      - '.prettierignore'
+      - '**/package.json'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -60,8 +60,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - uses: pnpm/action-setup@v2.2.4
+      - uses: pnpm/action-setup@v2
         with:
+          version: 7.x.x
           run_install: true
       - name: prettier check
         run: pnpm format-check
