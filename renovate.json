@@ -1,6 +1,15 @@
 {
   "extends": ["config:base"],
   "enabledManagers": ["cargo", "npm"],
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/vendor/**",
+    "**/__tests__/**",
+    "**/test/**",
+    "**/tests/**",
+    "**/__fixtures__/**"
+  ],
   "packageRules": [
     {
       "description": "Disable node/pnpm version updates",
