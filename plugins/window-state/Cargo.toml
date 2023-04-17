@@ -1,7 +1,7 @@
 [package]
 name = "tauri-plugin-window-state"
 version = "0.1.0"
-description = "Save window positions and sizse and restore them when the app is reopened."
+description = "Save window positions and sizes and restore them when the app is reopened."
 authors.workspace = true
 license.workspace = true
 edition.workspace = true
