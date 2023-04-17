@@ -3,21 +3,21 @@ name: Audit JavaScript
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: "0 0 * * *"
   push:
     branches:
       - dev
     paths:
-      - '.github/workflows/audit-javascript.yml'
-      - '**/pnpm-lock.yaml'
-      - '**/package.json'
+      - ".github/workflows/audit-javascript.yml"
+      - "**/pnpm-lock.yaml"
+      - "**/package.json"
   pull_request:
     branches:
       - dev
     paths:
-      - '.github/workflows/audit-javascript.yml'
-      - '**/pnpm-lock.yaml'
-      - '**/package.json'
+      - ".github/workflows/audit-javascript.yml"
+      - "**/pnpm-lock.yaml"
+      - "**/package.json"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

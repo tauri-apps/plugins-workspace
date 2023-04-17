@@ -5,22 +5,22 @@ on:
     branches:
       - dev
     paths:
-      - '.github/workflows/lint-javascript.yml'
-      - 'plugins/*/guest-js/**'
-      - '.eslintignore'
-      - '.eslintrc.json'
-      - '.prettierignore'
-      - '**/package.json'
+      - ".github/workflows/lint-javascript.yml"
+      - "plugins/*/guest-js/**"
+      - ".eslintignore"
+      - ".eslintrc.json"
+      - ".prettierignore"
+      - "**/package.json"
   pull_request:
     branches:
       - dev
     paths:
-      - '.github/workflows/lint-javascript.yml'
-      - 'plugins/*/guest-js/**'
-      - '.eslintignore'
-      - '.eslintrc.json'
-      - '.prettierignore'
-      - '**/package.json'
+      - ".github/workflows/lint-javascript.yml"
+      - "plugins/*/guest-js/**"
+      - ".eslintignore"
+      - ".eslintrc.json"
+      - ".prettierignore"
+      - "**/package.json"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
