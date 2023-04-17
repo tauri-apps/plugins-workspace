@@ -141,7 +141,7 @@ importers:
 
   plugins/websocket/examples/svelte-app:
     specifiers:
-      '@sveltejs/adapter-auto': ^1.0.0
+      '@sveltejs/adapter-auto': ^2.0.0
       '@sveltejs/kit': ^1.0.0
       '@tauri-apps/cli': ^1.0.0
       svelte: ^3.54.0
@@ -154,7 +154,7 @@ importers:
       '@tauri-apps/cli': 1.2.2
       tauri-plugin-websocket-api: link:../..
     devDependencies:
-      '@sveltejs/adapter-auto': 1.0.0_@sveltejs+kit@1.0.11
+      '@sveltejs/adapter-auto': 2.0.0_@sveltejs+kit@1.0.11
       '@sveltejs/kit': 1.0.11_svelte@3.55.1+vite@4.0.4
       svelte: 3.55.1
       svelte-check: 2.10.3_svelte@3.55.1
@@ -528,8 +528,8 @@ packages:
       rollup: 3.7.4
     dev: true
 
-  /@sveltejs/adapter-auto/1.0.0_@sveltejs+kit@1.0.11:
-    resolution: {integrity: sha512-yKyPvlLVua1bJ/42FrR3X041mFGdB4GzTZOAEoHUcNBRE5Mhx94+eqHpC3hNvAOiLEDcKfVO0ObyKSu7qldU+w==}
+  /@sveltejs/adapter-auto/2.0.0_@sveltejs+kit@1.0.11:
+    resolution: {integrity: sha512-b+gkHFZgD771kgV3aO4avHFd7y1zhmMYy9i6xOK7m/rwmwaRO8gnF5zBc0Rgca80B2PMU1bKNxyBTHA14OzUAQ==}
     peerDependencies:
       '@sveltejs/kit': ^1.0.0
     dependencies:
