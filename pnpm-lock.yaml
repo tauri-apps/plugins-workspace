@@ -148,7 +148,7 @@ importers:
       svelte-check: ^2.9.2
       tauri-plugin-websocket-api: link:../../
       tslib: ^2.4.1
-      typescript: ^4.9.3
+      typescript: ^5.0.0
       vite: ^4.0.0
     dependencies:
       '@tauri-apps/cli': 1.2.2
@@ -159,7 +159,7 @@ importers:
       svelte: 3.55.1
       svelte-check: 2.10.3_svelte@3.55.1
       tslib: 2.4.1
-      typescript: 4.9.4
+      typescript: 5.0.2
       vite: 4.0.4
 
 packages:
@@ -2416,8 +2416,8 @@ packages:
       picocolors: 1.0.0
       sade: 1.8.1
       svelte: 3.55.1
-      svelte-preprocess: 4.10.7_atrrhq7vg4ekua4nnyrpuardle
-      typescript: 4.9.4
+      svelte-preprocess: 4.10.7_l6gh7invo235md22ird7wlz7xq
+      typescript: 5.0.2
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
@@ -2440,7 +2440,7 @@ packages:
       svelte: 3.55.1
     dev: true
 
-  /svelte-preprocess/4.10.7_atrrhq7vg4ekua4nnyrpuardle:
+  /svelte-preprocess/4.10.7_l6gh7invo235md22ird7wlz7xq:
     resolution: {integrity: sha512-sNPBnqYD6FnmdBrUmBCaqS00RyCsCpj2BG58A1JBswNF7b0OKviwxqVrOL/CKyJrLSClrSeqQv5BXNg2RUbPOw==}
     engines: {node: '>= 9.11.2'}
     requiresBuild: true
@@ -2488,7 +2488,7 @@ packages:
       sorcery: 0.10.0
       strip-indent: 3.0.0
       svelte: 3.55.1
-      typescript: 4.9.4
+      typescript: 5.0.2
     dev: true
 
   /svelte/3.55.1:
@@ -2567,12 +2567,6 @@ packages:
   /type-fest/0.20.2:
     resolution: {integrity: sha512-Ne+eE4r0/iWnpAxD852z3A+N0Bt5RN//NjJwRd2VFHEmrywxf5vsZlh4R6lixl6B+wz/8d+maTSAkN1FIkI3LQ==}
     engines: {node: '>=10'}
-    dev: true
-
-  /typescript/4.9.4:
-    resolution: {integrity: sha512-Uz+dTXYzxXXbsFpM86Wh3dKCxrQqUcVMxwU54orwlJjOpO3ao8L7j5lH+dWfTwgCwIuM9GQ2kvVotzYJMXTBZg==}
-    engines: {node: '>=4.2.0'}
-    hasBin: true
     dev: true
 
   /typescript/5.0.2:
