@@ -12,21 +12,21 @@ export enum StateFlags {
 }
 
 /**
- *  Saves all open windows state to disk
+ *  Save the state of all open windows to disk.
  */
 async function saveWindowState(flags: StateFlags) {
   invoke("plugin:window-state|js_save_window_state", { flags });
 }
 
 /**
- *  Restore the specified window state from disk
+ *  Restore the state for the specified window from disk.
  */
 async function restoreState(label: WindowLabel, flags: StateFlags) {
   invoke("plugin:window-state|js_restore_state", { label, flags });
 }
 
 /**
- *  Restore the current window state from disk
+ *  Restore the state for the current window from disk.
  */
 async function restoreStateCurrent(flags: StateFlags) {
   restoreState(getCurrent().label, flags);
