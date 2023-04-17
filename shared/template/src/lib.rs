@@ -7,8 +7,6 @@ use tauri::{
   Manager, Runtime,
 };
 
-use std::{collections::HashMap, sync::Mutex};
-
 pub use models::*;
 
 #[cfg(desktop)]
@@ -26,9 +24,6 @@ pub use error::{Error, Result};
 use desktop::{{ plugin_name_pascal_case }};
 #[cfg(mobile)]
 use mobile::{{ plugin_name_pascal_case }};
-
-#[derive(Default)]
-struct MyState(Mutex<HashMap<String, String>>);
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the {{ plugin_name }} APIs.
 pub trait {{ plugin_name_pascal_case }}Ext<R: Runtime> {
