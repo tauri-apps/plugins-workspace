@@ -6,8 +6,8 @@ use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    AppHandle, LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime,
-    Window, WindowEvent,
+    LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, Window,
+    WindowEvent,
 };
 
 use std::{
@@ -16,6 +16,8 @@ use std::{
     io::Write,
     sync::{Arc, Mutex},
 };
+
+mod cmd;
 
 pub const STATE_FILENAME: &str = ".window-state";
 
@@ -248,32 +250,6 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
     }
 }
 
-#[tauri::command]
-async fn js_save_window_state<R: Runtime>(
-    app: AppHandle<R>,
-    flags: u32,
-) -> std::result::Result<(), String> {
-    let flags = StateFlags::from_bits(flags)
-        .ok_or_else(|| format!("Invalid state flags bits: {}", flags))?;
-    app.save_window_state(flags).map_err(|e| e.to_string())?;
-    Ok(())
-}
-
-#[tauri::command]
-async fn js_restore_state<R: Runtime>(
-    app: AppHandle<R>,
-    label: String,
-    flags: u32,
-) -> std::result::Result<(), String> {
-    let flags = StateFlags::from_bits(flags)
-        .ok_or_else(|| format!("Invalid state flags bits: {}", flags))?;
-    app.get_window(&label)
-        .ok_or_else(|| format!("Couldn't find window with label: {}", label))?
-        .restore_state(flags)
-        .map_err(|e| e.to_string())?;
-    Ok(())
-}
-
 #[derive(Default)]
 pub struct Builder {
     denylist: HashSet<String>,
@@ -305,8 +281,8 @@ impl Builder {
         let flags = self.state_flags;
         PluginBuilder::new("window-state")
             .invoke_handler(tauri::generate_handler![
-                js_save_window_state,
-                js_restore_state
+                cmd::save_window_state,
+                cmd::restore_state
             ])
             .setup(|app| {
                 let cache: Arc<Mutex<HashMap<String, WindowState>>> = if let Some(app_dir) =
