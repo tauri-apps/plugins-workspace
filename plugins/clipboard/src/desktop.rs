@@ -3,32 +3,45 @@
 // SPDX-License-Identifier: MIT
 
 use serde::de::DeserializeOwned;
-use tauri::{plugin::PluginApi, runtime::RuntimeHandle, AppHandle, ClipboardManager, Runtime};
+use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
 use crate::models::*;
+
+use std::sync::Mutex;
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
     _api: PluginApi<R, C>,
 ) -> crate::Result<Clipboard<R>> {
-    Ok(Clipboard(app.clone()))
+    Ok(Clipboard {
+        app: app.clone(),
+        clipboard: arboard::Clipboard::new().map(Mutex::new),
+    })
 }
 
 /// Access to the clipboard APIs.
-pub struct Clipboard<R: Runtime>(AppHandle<R>);
+pub struct Clipboard<R: Runtime> {
+    #[allow(dead_code)]
+    app: AppHandle<R>,
+    clipboard: Result<Mutex<arboard::Clipboard>, arboard::Error>,
+}
 
 impl<R: Runtime> Clipboard<R> {
     pub fn write(&self, kind: ClipKind) -> crate::Result<()> {
         let ClipKind::PlainText { text, .. } = kind;
-        self.0
-            .runtime_handle()
-            .clipboard_manager()
-            .write_text(text)
-            .map_err(Into::into)
+        match &self.clipboard {
+            Ok(clipboard) => clipboard.lock().unwrap().set_text(text).map_err(Into::into),
+            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
+        }
     }
 
     pub fn read(&self) -> crate::Result<ClipboardContents> {
-        let text = self.0.runtime_handle().clipboard_manager().read_text()?;
-        Ok(ClipboardContents::PlainText(text.unwrap_or_default()))
+        match &self.clipboard {
+            Ok(clipboard) => {
+                let text = clipboard.lock().unwrap().get_text()?;
+                Ok(ClipboardContents::PlainText(text))
+            }
+            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
+        }
     }
 }

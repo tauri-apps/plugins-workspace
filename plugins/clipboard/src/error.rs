@@ -12,8 +12,8 @@ pub enum Error {
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
     #[cfg(not(target_os = "android"))]
-    #[error("failed to access clipboard: {0}")]
-    Clipboard(#[from] tauri::runtime::Error),
+    #[error("{0}")]
+    Clipboard(String),
 }
 
 impl Serialize for Error {
@@ -22,5 +22,12 @@ impl Serialize for Error {
         S: Serializer,
     {
         serializer.serialize_str(self.to_string().as_ref())
+    }
+}
+
+#[cfg(not(target_os = "android"))]
+impl From<arboard::Error> for Error {
+    fn from(error: arboard::Error) -> Self {
+        Self::Clipboard(error.to_string())
     }
 }
