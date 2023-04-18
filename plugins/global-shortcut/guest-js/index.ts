@@ -86,7 +86,7 @@ async function registerAll(
  * const isRegistered = await isRegistered('CommandOrControl+P');
  * ```
  *
- * @param shortcut Array of shortcut definitions, modifiers and key separated by "+" e.g. CmdOrControl+Q
+ * @param shortcut shortcut definition, modifiers and key separated by "+" e.g. CmdOrControl+Q
  *
  * @since 1.0.0
  */

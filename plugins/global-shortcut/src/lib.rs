@@ -153,6 +153,9 @@ impl<R: Runtime> GlobalShortcut<R> {
             .map_err(Into::into)
     }
 
+    /// Determines whether the given shortcut is registered by this application or not.
+    ///
+    /// If the shortcut is registered by another application, it will still return `false`.
     pub fn is_registered<S: TryInto<ShortcutWrapper>>(&self, shortcut: S) -> bool
     where
         S::Error: std::error::Error,
