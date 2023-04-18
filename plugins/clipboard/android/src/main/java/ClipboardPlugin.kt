@@ -21,8 +21,8 @@ class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
   @Command
   @Suppress("MoveVariableDeclarationIntoWhen")
   fun write(invoke: Invoke) {
-    val data = invoke.getObject("options")
-    if (data == null) {
+    val options = invoke.getObject("options")
+    if (options == null) {
       invoke.reject("Missing `options` input")
       return
     }
@@ -30,8 +30,8 @@ class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
 
     val clipData = when (kind) {
       "PlainText" -> {
-        val label = data.getString("label", "")
-        val text = data.getString("text", "")
+        val label = options.getString("label", "")
+        val text = options.getString("text", "")
         ClipData.newPlainText(label, text)
       }
 
@@ -54,10 +54,12 @@ class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
         Pair("PlainText", item.text)
       } else {
         // TODO
+        invoke.reject("Clipboard content reader not implemented")
         return
       }
     } else {
-      Pair("PlainText", "")
+      invoke.reject("Clipboard is empty")
+        return
     }
 
     val response = JSObject()

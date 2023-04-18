@@ -8,10 +8,10 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[cfg(target_os = "android")]
+    #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
-    #[cfg(not(target_os = "android"))]
+    #[cfg(desktop)]
     #[error("{0}")]
     Clipboard(String),
 }
@@ -25,7 +25,7 @@ impl Serialize for Error {
     }
 }
 
-#[cfg(not(target_os = "android"))]
+#[cfg(desktop)]
 impl From<arboard::Error> for Error {
     fn from(error: arboard::Error) -> Self {
         Self::Clipboard(error.to_string())

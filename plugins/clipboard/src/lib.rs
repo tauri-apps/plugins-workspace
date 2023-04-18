@@ -9,9 +9,9 @@ use tauri::{
 
 pub use models::*;
 
-#[cfg(not(target_os = "android"))]
+#[cfg(desktop)]
 mod desktop;
-#[cfg(target_os = "android")]
+#[cfg(mobile)]
 mod mobile;
 
 mod commands;
@@ -20,9 +20,9 @@ mod models;
 
 pub use error::{Error, Result};
 
-#[cfg(not(target_os = "android"))]
+#[cfg(desktop)]
 use desktop::Clipboard;
-#[cfg(target_os = "android")]
+#[cfg(mobile)]
 use mobile::Clipboard;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the clipboard APIs.
@@ -41,9 +41,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("clipboard")
         .invoke_handler(tauri::generate_handler![commands::write, commands::read])
         .setup(|app, api| {
-            #[cfg(target_os = "android")]
+            #[cfg(mobile)]
             let clipboard = mobile::init(app, api)?;
-            #[cfg(not(target_os = "android"))]
+            #[cfg(desktop)]
             let clipboard = desktop::init(app, api)?;
             app.manage(clipboard);
             Ok(())
