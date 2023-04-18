@@ -11,7 +11,7 @@ tauri-build.workspace = true
 [dependencies]
 serde.workspace = true
 serde_json.workspace = true
-tauri = { workspace = true, features = ["clipboard"] }
+tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
 
