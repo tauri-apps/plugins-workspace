@@ -17,6 +17,7 @@ mod error;
 pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 type HotKeyId = u32;
+type HandlerFn = Box<dyn Fn(&Shortcut) + Send + Sync + 'static>;
 
 enum ShortcutSource<R: Runtime> {
     Ipc {
@@ -72,7 +73,7 @@ impl<R: Runtime> GlobalShortcut<R> {
         source: ShortcutSource<R>,
     ) -> Result<()> {
         let id = shortcut.0.id();
-        acquire_manager(&self.manager)?.register(shortcut.0.clone())?;
+        acquire_manager(&self.manager)?.register(shortcut.0)?;
         self.shortcuts
             .lock()
             .unwrap()
@@ -92,7 +93,7 @@ impl<R: Runtime> GlobalShortcut<R> {
         let manager = acquire_manager(&self.manager)?;
         let mut shortcuts = self.shortcuts.lock().unwrap();
         for hotkey in hotkeys {
-            manager.register(hotkey.0.clone())?;
+            manager.register(hotkey.0)?;
 
             shortcuts.insert(
                 hotkey.0.id(),
@@ -256,7 +257,7 @@ fn is_registered<R: Runtime>(
 
 #[derive(Default)]
 pub struct Builder {
-    handler: Option<Box<dyn Fn(&Shortcut) + Send + Sync + 'static>>,
+    handler: Option<HandlerFn>,
 }
 
 impl Builder {
