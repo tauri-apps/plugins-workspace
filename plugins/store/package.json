@@ -9,10 +9,10 @@
   "type": "module",
   "browser": "dist-js/index.min.js",
   "module": "dist-js/index.mjs",
-  "types": "dist-js/index.d.ts",
+  "types": "dist-js/dist/index.d.ts",
   "exports": {
     "import": "./dist-js/index.mjs",
-    "types": "./dist-js/index.d.ts",
+    "types": "./dist-js/dist/index.d.ts",
     "browser": "./dist-js/index.min.js"
   },
   "scripts": {
