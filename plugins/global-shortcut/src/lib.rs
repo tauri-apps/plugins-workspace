@@ -4,7 +4,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-pub use global_hotkey::hotkey::{Code, HotKey, Modifiers};
+pub use global_hotkey::hotkey::{Code, HotKey as Shortcut, Modifiers};
 use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager};
 use tauri::{
     api::ipc::CallbackFn,
@@ -18,7 +18,7 @@ pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 type HotKeyId = u32;
 
-enum HotKeySource<R: Runtime> {
+enum ShortcutSource<R: Runtime> {
     Ipc {
         window: Window<R>,
         handler: CallbackFn,
@@ -26,7 +26,7 @@ enum HotKeySource<R: Runtime> {
     Rust,
 }
 
-impl<R: Runtime> Clone for HotKeySource<R> {
+impl<R: Runtime> Clone for ShortcutSource<R> {
     fn clone(&self) -> Self {
         match self {
             Self::Ipc { window, handler } => Self::Ipc {
@@ -38,24 +38,24 @@ impl<R: Runtime> Clone for HotKeySource<R> {
     }
 }
 
-pub struct Shortcut(HotKey);
+pub struct ShortcutWrapper(Shortcut);
 
-impl From<HotKey> for Shortcut {
-    fn from(value: HotKey) -> Self {
+impl From<Shortcut> for ShortcutWrapper {
+    fn from(value: Shortcut) -> Self {
         Self(value)
     }
 }
 
-impl TryFrom<&str> for Shortcut {
+impl TryFrom<&str> for ShortcutWrapper {
     type Error = global_hotkey::Error;
     fn try_from(value: &str) -> std::result::Result<Self, Self::Error> {
-        HotKey::from_str(value).map(Shortcut)
+        Shortcut::from_str(value).map(ShortcutWrapper)
     }
 }
 
 struct RegisteredShortcut<R: Runtime> {
-    source: HotKeySource<R>,
-    shortcut: (HotKey, Option<String>),
+    source: ShortcutSource<R>,
+    shortcut: (Shortcut, Option<String>),
 }
 
 pub struct GlobalShortcut<R: Runtime> {
@@ -68,8 +68,8 @@ pub struct GlobalShortcut<R: Runtime> {
 impl<R: Runtime> GlobalShortcut<R> {
     fn register_internal(
         &self,
-        shortcut: (HotKey, Option<String>),
-        source: HotKeySource<R>,
+        shortcut: (Shortcut, Option<String>),
+        source: ShortcutSource<R>,
     ) -> Result<()> {
         let id = shortcut.0.id();
         acquire_manager(&self.manager)?.register(shortcut.0.clone())?;
@@ -80,14 +80,14 @@ impl<R: Runtime> GlobalShortcut<R> {
         Ok(())
     }
 
-    fn register_all_internal<S: IntoIterator<Item = (HotKey, Option<String>)>>(
+    fn register_all_internal<S: IntoIterator<Item = (Shortcut, Option<String>)>>(
         &self,
         shortcuts: S,
-        source: HotKeySource<R>,
+        source: ShortcutSource<R>,
     ) -> Result<()> {
         let hotkeys = shortcuts
             .into_iter()
-            .collect::<Vec<(HotKey, Option<String>)>>();
+            .collect::<Vec<(Shortcut, Option<String>)>>();
 
         let manager = acquire_manager(&self.manager)?;
         let mut shortcuts = self.shortcuts.lock().unwrap();
@@ -106,40 +106,61 @@ impl<R: Runtime> GlobalShortcut<R> {
         Ok(())
     }
 
-    pub fn register<S: TryInto<Shortcut>>(&self, shortcut: S) -> Result<()>
+    pub fn register<S: TryInto<ShortcutWrapper>>(&self, shortcut: S) -> Result<()>
     where
         S::Error: std::error::Error,
     {
-        self.register_internal(
-            (
-                shortcut
-                    .try_into()
-                    .map(|s| s.0)
-                    .map_err(|e| Error::GlobalHotkey(e.to_string()))?,
-                None,
-            ),
-            HotKeySource::Rust,
-        )
+        self.register_internal((try_into_shortcut(shortcut)?, None), ShortcutSource::Rust)
     }
 
-    pub fn register_all<S: IntoIterator<Item = HotKey>>(&self, shortcuts: S) -> Result<()> {
-        self.register_all_internal(shortcuts.into_iter().map(|s| (s, None)), HotKeySource::Rust)
+    pub fn register_all<T: TryInto<ShortcutWrapper>, S: IntoIterator<Item = T>>(
+        &self,
+        shortcuts: S,
+    ) -> Result<()>
+    where
+        T::Error: std::error::Error,
+    {
+        let mut s = Vec::new();
+        for shortcut in shortcuts {
+            s.push((try_into_shortcut(shortcut)?, None));
+        }
+        self.register_all_internal(s, ShortcutSource::Rust)
     }
 
-    pub fn unregister(&self, shortcut: HotKey) -> Result<()> {
+    pub fn unregister<S: TryInto<ShortcutWrapper>>(&self, shortcut: S) -> Result<()>
+    where
+        S::Error: std::error::Error,
+    {
         acquire_manager(&self.manager)?
-            .unregister(shortcut)
+            .unregister(try_into_shortcut(shortcut)?)
             .map_err(Into::into)
     }
 
-    pub fn unregister_all<S: IntoIterator<Item = HotKey>>(&self, shortcuts: S) -> Result<()> {
+    pub fn unregister_all<T: TryInto<ShortcutWrapper>, S: IntoIterator<Item = T>>(
+        &self,
+        shortcuts: S,
+    ) -> Result<()>
+    where
+        T::Error: std::error::Error,
+    {
+        let mut s = Vec::new();
+        for shortcut in shortcuts {
+            s.push(try_into_shortcut(shortcut)?);
+        }
         acquire_manager(&self.manager)?
-            .unregister_all(&shortcuts.into_iter().collect::<Vec<HotKey>>())
+            .unregister_all(&s)
             .map_err(Into::into)
     }
 
-    pub fn is_registered(&self, shortcut: HotKey) -> bool {
-        self.shortcuts.lock().unwrap().contains_key(&shortcut.id())
+    pub fn is_registered<S: TryInto<ShortcutWrapper>>(&self, shortcut: S) -> bool
+    where
+        S::Error: std::error::Error,
+    {
+        if let Ok(shortcut) = try_into_shortcut(shortcut) {
+            self.shortcuts.lock().unwrap().contains_key(&shortcut.id())
+        } else {
+            false
+        }
     }
 }
 
@@ -161,8 +182,18 @@ fn acquire_manager(
         .map_err(|e| Error::GlobalHotkey(e.to_string()))
 }
 
-fn parse_shortcut<S: AsRef<str>>(shortcut: S) -> Result<HotKey> {
+fn parse_shortcut<S: AsRef<str>>(shortcut: S) -> Result<Shortcut> {
     shortcut.as_ref().parse().map_err(Into::into)
+}
+
+fn try_into_shortcut<S: TryInto<ShortcutWrapper>>(shortcut: S) -> Result<Shortcut>
+where
+    S::Error: std::error::Error,
+{
+    shortcut
+        .try_into()
+        .map(|s| s.0)
+        .map_err(|e| Error::GlobalHotkey(e.to_string()))
 }
 
 #[tauri::command]
@@ -174,7 +205,7 @@ fn register<R: Runtime>(
 ) -> Result<()> {
     global_shortcut.register_internal(
         (parse_shortcut(&shortcut)?, Some(shortcut)),
-        HotKeySource::Ipc { window, handler },
+        ShortcutSource::Ipc { window, handler },
     )
 }
 
@@ -189,7 +220,7 @@ fn register_all<R: Runtime>(
     for shortcut in shortcuts {
         hotkeys.push((parse_shortcut(&shortcut)?, Some(shortcut)));
     }
-    global_shortcut.register_all_internal(hotkeys, HotKeySource::Ipc { window, handler })
+    global_shortcut.register_all_internal(hotkeys, ShortcutSource::Ipc { window, handler })
 }
 
 #[tauri::command]
@@ -225,7 +256,7 @@ fn is_registered<R: Runtime>(
 
 #[derive(Default)]
 pub struct Builder {
-    handler: Option<Box<dyn Fn(&HotKey) + Send + Sync + 'static>>,
+    handler: Option<Box<dyn Fn(&Shortcut) + Send + Sync + 'static>>,
 }
 
 impl Builder {
@@ -233,7 +264,7 @@ impl Builder {
         Self::default()
     }
 
-    pub fn with_handler<F: Fn(&HotKey) + Send + Sync + 'static>(handler: F) -> Self {
+    pub fn with_handler<F: Fn(&Shortcut) + Send + Sync + 'static>(handler: F) -> Self {
         Self {
             handler: Some(Box::new(handler)),
         }
@@ -257,7 +288,7 @@ impl Builder {
                 GlobalHotKeyEvent::set_event_handler(Some(move |e: GlobalHotKeyEvent| {
                     if let Some(shortcut) = shortcuts_.lock().unwrap().get(&e.id) {
                         match &shortcut.source {
-                            HotKeySource::Ipc { window, handler } => {
+                            ShortcutSource::Ipc { window, handler } => {
                                 let callback_string = tauri::api::ipc::format_callback(
                                     *handler,
                                     &shortcut.shortcut.1,
@@ -265,7 +296,7 @@ impl Builder {
                                 .expect("unable to serialize shortcut string to json");
                                 let _ = window.eval(callback_string.as_str());
                             }
-                            HotKeySource::Rust => {
+                            ShortcutSource::Rust => {
                                 if let Some(handler) = &handler {
                                     handler(&shortcut.shortcut.0);
                                 }
