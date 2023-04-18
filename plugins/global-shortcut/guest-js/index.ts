@@ -77,6 +77,9 @@ async function registerAll(
 
 /**
  * Determines whether the given shortcut is registered by this application or not.
+ * 
+ * If the shortcut is registered by another application, it will still return `false`.
+ *
  * @example
  * ```typescript
  * import { isRegistered } from 'tauri-plugin-global-shortcut-api';
