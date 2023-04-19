@@ -61,9 +61,15 @@ importers:
       tauri-plugin-cli-api:
         specifier: 0.0.0
         version: link:../../plugins/cli
+      tauri-plugin-clipboard-api:
+        specifier: 0.0.0
+        version: link:../../plugins/clipboard
       tauri-plugin-fs-api:
         specifier: 0.0.0
         version: link:../../plugins/fs
+      tauri-plugin-global-shortcut-api:
+        specifier: 0.0.0
+        version: link:../../plugins/global-shortcut
     devDependencies:
       '@iconify-json/codicon':
         specifier: ^1.1.10
@@ -138,6 +144,16 @@ importers:
         version: 2.4.1
 
   plugins/fs-watch:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: ^1.2.0
+        version: 1.2.0
+    devDependencies:
+      tslib:
+        specifier: ^2.4.1
+        version: 2.4.1
+
+  plugins/global-shortcut:
     dependencies:
       '@tauri-apps/api':
         specifier: ^1.2.0

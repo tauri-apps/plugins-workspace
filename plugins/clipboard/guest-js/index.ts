@@ -49,7 +49,7 @@ type ClipResponse = Clip<'Text', string>
 async function writeText(text: string, opts?: { label?: string }): Promise<void> {
   return invoke('plugin:clipboard|write', {
     data: {
-      kind: 'Text',
+      kind: 'PlainText',
       options: {
         label: opts?.label,
         text

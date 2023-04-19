@@ -12,7 +12,9 @@
     "@tauri-apps/cli": "2.0.0-alpha.8",
     "@zerodevx/svelte-json-view": "0.2.1",
     "tauri-plugin-cli-api": "0.0.0",
-    "tauri-plugin-fs-api": "0.0.0"
+    "tauri-plugin-clipboard-api": "0.0.0",
+    "tauri-plugin-fs-api": "0.0.0",
+    "tauri-plugin-global-shortcut-api": "0.0.0"
   },
   "devDependencies": {
     "@iconify-json/codicon": "^1.1.10",

@@ -32,11 +32,14 @@ pub fn run() {
                 .build(),
         )
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_clipboard::init())
         .setup(move |app| {
             #[cfg(desktop)]
             {
                 tray::create_tray(app)?;
                 app.handle().plugin(tauri_plugin_cli::init())?;
+                app.handle()
+                    .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
             }
 
             let mut window_builder = WindowBuilder::new(app, "main", WindowUrl::default());

@@ -18,8 +18,8 @@ serde = { version = "1.0", features = [ "derive" ] }
 tiny_http = "0.11"
 log = "0.4"
 tauri-plugin-log = { path = "../../../plugins/log" }
-tauri-plugin-cli = { path = "../../../plugins/cli" }
 tauri-plugin-fs = { path = "../../../plugins/fs" }
+tauri-plugin-clipboard = { path = "../../../plugins/clipboard" }
 
 [patch.crates-io]
 tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
@@ -39,6 +39,10 @@ features = [
   "system-tray",
   "updater"
 ]
+
+[target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
+tauri-plugin-cli = { path = "../../../plugins/cli" }
+tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut" }
 
 [target."cfg(target_os = \"windows\")".dependencies]
 window-shadows = "0.2"

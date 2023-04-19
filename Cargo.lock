@@ -1780,15 +1780,15 @@ checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
 
 [[package]]
 name = "global-hotkey"
-version = "0.1.2"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9da26790f92f0be4f7a894ca1d079140827a75a9fd25eb9912913c4853696ce2"
+checksum = "92007db5c632751655a4c0ef122832fd283e6651621d34613b17fd1edfbfd2ed"
 dependencies = [
  "crossbeam-channel",
  "keyboard-types",
  "once_cell",
  "thiserror",
- "windows-sys 0.45.0",
+ "windows-sys 0.48.0",
  "x11-dl",
 ]
 
