@@ -1,14 +1,9 @@
 [package]
-name = "tauri-plugin-{{name}}"
+name = "tauri-plugin-global-shortcut"
 version = "0.1.0"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[build-dependencies]
-tauri-build.workspace = true
 
 [dependencies]
 serde.workspace = true
@@ -16,3 +11,4 @@ serde_json.workspace = true
 tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
+global-hotkey = "0.2"

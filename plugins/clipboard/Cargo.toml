@@ -1,11 +1,9 @@
 [package]
-name = "tauri-plugin-{{name}}"
+name = "tauri-plugin-clipboard"
 version = "0.1.0"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
 tauri-build.workspace = true
@@ -16,3 +14,6 @@ serde_json.workspace = true
 tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
+
+[target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
+arboard = "3"
