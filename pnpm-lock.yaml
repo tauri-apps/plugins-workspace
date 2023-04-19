@@ -149,7 +149,27 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1
 
+  plugins/http:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: ^1.2.0
+        version: 1.2.0
+    devDependencies:
+      tslib:
+        specifier: ^2.4.1
+        version: 2.4.1
+
   plugins/log:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: ^1.2.0
+        version: 1.2.0
+    devDependencies:
+      tslib:
+        specifier: ^2.4.1
+        version: 2.4.1
+
+  plugins/notification:
     dependencies:
       '@tauri-apps/api':
         specifier: ^1.2.0
