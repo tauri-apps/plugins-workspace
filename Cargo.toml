@@ -1,6 +1,6 @@
 [workspace]
 members = ["plugins/*"]
-exclude = ["plugins/fs"]
+exclude = ["plugins/fs", "plugins/http"]
 resolver = "2"
 
 [workspace.dependencies]
