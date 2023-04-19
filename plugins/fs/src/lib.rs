@@ -10,7 +10,7 @@ use tauri::{
 mod commands;
 mod error;
 
-use error::Error;
+pub use error::Error;
 
 type Result<T> = std::result::Result<T, Error>;
 

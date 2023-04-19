@@ -8,7 +8,7 @@ mod error;
 mod parser;
 
 use config::{Arg, Config};
-use error::Error;
+pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 
 // TODO: use PluginApi#app when 2.0.0-alpha.9 is released
