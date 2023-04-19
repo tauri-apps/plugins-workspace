@@ -31,7 +31,7 @@ interface Clip<K, T> {
   options: T
 }
 
-type ClipResponse = Clip<'Text', string>
+type ClipResponse = Clip<'PlainText', string>
 
 /**
  * Writes plain text to the clipboard.
