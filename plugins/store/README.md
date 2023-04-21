@@ -64,7 +64,9 @@ await store.save(); // this manually saves the store, otherwise the store is onl
 ```
 
 ### Persisting values
+
 Values added to the store are not persisted between application loads unless:
+
 1. The application is closed gracefully (plugin automatically saves)
 2. The store is manually saved (using `store.save()`)
 
@@ -73,7 +75,7 @@ Values added to the store are not persisted between application loads unless:
 You can also access Stores from Rust, you can create new stores:
 
 ```rust
-use tauri_plugin_store::store::StoreBuilder;
+use tauri_plugin_store::StoreBuilder;
 use serde_json::json;
 
 fn main() {

@@ -41,8 +41,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - uses: pnpm/action-setup@v2.2.4
+      - uses: pnpm/action-setup@v2
         with:
+          version: 7.x.x
           run_install: true
       - name: eslint
         run: pnpm lint
@@ -60,8 +61,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - uses: pnpm/action-setup@v2.2.4
+      - uses: pnpm/action-setup@v2
         with:
+          version: 7.x.x
           run_install: true
       - name: prettier check
         run: pnpm format-check
