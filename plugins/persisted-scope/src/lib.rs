@@ -6,11 +6,10 @@ use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    FsScopeEvent, GlobPattern, Manager, Runtime,
+    FsScopeEvent, Manager, Runtime,
 };
 
 use std::{
-    collections::HashSet,
     fs::{create_dir_all, File},
     io::Write,
 };
