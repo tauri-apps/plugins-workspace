@@ -4284,7 +4284,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-authenticator"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "authenticator",
  "base64 0.21.0",
@@ -4303,7 +4303,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-autostart"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "auto-launch",
  "log",
@@ -4315,7 +4315,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs-extra"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "log",
  "serde",
@@ -4326,7 +4326,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs-watch"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "log",
  "notify",
@@ -4352,7 +4352,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-log"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "byte-unit",
  "fern",
@@ -4378,7 +4378,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-positioner"
-version = "0.2.7"
+version = "1.0.4"
 dependencies = [
  "log",
  "serde",
@@ -4390,7 +4390,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "log",
  "serde",
@@ -4403,7 +4403,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-sql"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "futures-core",
  "log",
@@ -4418,7 +4418,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-store"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "log",
  "serde",
@@ -4429,7 +4429,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-stronghold"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "hex",
  "iota-crypto 0.17.0",
@@ -4446,7 +4446,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-upload"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "futures-util",
  "log",
@@ -4462,7 +4462,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-websocket"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "futures-util",
  "log",

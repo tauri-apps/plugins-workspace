@@ -1,0 +1,177 @@
+{
+  "gitSiteUrl": "https://github.com/tauri-apps/plugins-workspace/",
+  "pkgManagers": {
+    "javascript": {
+      "version": true,
+      "getPublishedVersion": "pnpm view ${ pkgFile.pkg.name } version",
+      "prepublish": ["pnpm build"],
+      "publish": ["pnpm publish --access public --no-git-checks"]
+    },
+    "rust": {
+      "version": true,
+      "getPublishedVersion": "cargo search ${ pkgFile.pkg.package.name } --limit 1 | sed -nE 's/^[^\"]*\"//; s/\".*//1p' -",
+      "publish": [
+        {
+          "command": "cargo package --no-verify",
+          "dryRunCommand": true
+        },
+        {
+          "command": "echo '<details>\n<summary><em><h4>Cargo Publish</h4></em></summary>\n\n```'",
+          "dryRunCommand": true,
+          "pipe": true
+        },
+        {
+          "command": "cargo publish",
+          "dryRunCommand": "cargo publish --dry-run",
+          "pipe": true
+        },
+        {
+          "command": "echo '```\n\n</details>\n'",
+          "dryRunCommand": true,
+          "pipe": true
+        }
+      ],
+      "postpublish": [
+        "git tag ${ pkgFile.pkg.package.name }-v${ pkgFile.versionMajor } -f",
+        "git tag ${ pkgFile.pkg.package.name }-v${ pkgFile.versionMajor }.${ pkgFile.versionMinor } -f",
+        "git push --tags -f"
+      ]
+    }
+  },
+  "packages": {
+    "authenticator": {
+      "path": "./plugins/authenticator",
+      "manager": ""
+    },
+    "authenticator-js": {
+      "path": "./plugins/authenticator",
+      "manager": ""
+    },
+
+    "autostart": {
+      "path": "./plugins/autostart",
+      "manager": ""
+    },
+    "autostart-js": {
+      "path": "./plugins/autostart",
+      "manager": ""
+    },
+
+    "fs-extra": {
+      "path": "./plugins/fs-extra",
+      "manager": ""
+    },
+    "fs-extra-js": {
+      "path": "./plugins/fs-extra",
+      "manager": ""
+    },
+
+    "fs-watch": {
+      "path": "./plugins/fs-watch",
+      "manager": ""
+    },
+    "fs-watch-js": {
+      "path": "./plugins/fs-watch",
+      "manager": ""
+    },
+
+    "localhost": {
+      "path": "./plugins/localhost",
+      "manager": "rust"
+    },
+    "localhost-js": {
+      "path": "./plugins/localhost",
+      "manager": ""
+    },
+
+    "log": {
+      "path": "./plugins/log",
+      "manager": ""
+    },
+    "log-js": {
+      "path": "./plugins/log",
+      "manager": ""
+    },
+
+    "persisted-scope": {
+      "path": "./plugins/persisted-scope",
+      "manager": "rust"
+    },
+    "persisted-scope-js": {
+      "path": "./plugins/persisted-scope",
+      "manager": ""
+    },
+
+    "positioner": {
+      "path": "./plugins/positioner",
+      "manager": "rust"
+    },
+    "positioner-js": {
+      "path": "./plugins/positioner",
+      "manager": ""
+    },
+
+    "single-instance": {
+      "path": "./plugins/single-instance",
+      "manager": ""
+    },
+    "single-instance-js": {
+      "path": "./plugins/single-instance",
+      "manager": ""
+    },
+
+    "sql": {
+      "path": "./plugins/sql",
+      "manager": ""
+    },
+    "sql-js": {
+      "path": "./plugins/sql",
+      "manager": ""
+    },
+
+    "store": {
+      "path": "./plugins/store",
+      "manager": ""
+    },
+    "store-js": {
+      "path": "./plugins/store",
+      "manager": ""
+    },
+
+    "stronghold": {
+      "path": "./plugins/stronghold",
+      "manager": ""
+    },
+    "stronghold-js": {
+      "path": "./plugins/stronghold",
+      "manager": ""
+    },
+
+    "upload": {
+      "path": "./plugins/upload",
+      "manager": ""
+    },
+    "upload-js": {
+      "path": "./plugins/upload",
+      "manager": ""
+    },
+
+    "websocket": {
+      "path": "./plugins/websocket",
+      "manager": ""
+    },
+    "websocket-js": {
+      "path": "./plugins/websocket",
+      "manager": ""
+    },
+
+    "window-state": {
+      "path": "./plugins/window-state",
+      "manager": "rust"
+    },
+    "window-state-js": {
+      "path": "./plugins/window-state",
+      "manager": ""
+    }
+  }
+}
