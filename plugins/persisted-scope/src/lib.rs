@@ -16,8 +16,23 @@ use std::{
 };
 
 const SCOPE_STATE_FILENAME: &str = ".persisted-scope";
-const PATTERNS: &[&str] = &["[?]", "[[]", "[]]", "[*]"];
-const REPLACE_WITH: &[&str] = &["?", "[", "]", "*"];
+
+// Most of these patterns are just added to try to fix broken files in the wild.
+// After a while we can hopefully reduce it to something like [r"[?]", r"[*]", r"\\?\\\?\"]
+const PATTERNS: &[&str] = &[
+    r"[[]",
+    r"[]]",
+    r"[?]",
+    r"[*]",
+    r"\?\?",
+    r"\\?\\?",
+    r"\\?\\\?\",
+    r"\\\\?\\\\?",
+    r"\\\\?\\\\\\?\\",
+];
+const REPLACE_WITH: &[&str] = &[
+    r"[", r"]", r"?", r"*", r"\?", r"\\?", r"\\?\", r"\\\\?", r"\\\\?\\",
+];
 
 #[derive(Debug, thiserror::Error)]
 enum Error {
@@ -37,8 +52,14 @@ struct Scope {
     forbidden_patterns: Vec<String>,
 }
 
-fn initial_scope(scope: HashSet<GlobPattern>) -> Vec<String> {
-    scope.into_iter().map(|p| p.to_string()).collect()
+fn fix_pattern(ac: &AhoCorasick, s: &str) -> String {
+    let s = ac.replace_all(&s, REPLACE_WITH);
+
+    if ac.find(&s).is_some() {
+        return fix_pattern(ac, &s);
+    }
+
+    s.to_string()
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
@@ -53,22 +74,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             if let Some(app_dir) = app_dir {
                 let scope_state_path = app_dir.join(SCOPE_STATE_FILENAME);
 
-                // We need to filter out glob pattern paths from the scope configs to not pollute the scope with incorrect paths.
-                // We can't plainly filter for `*` because `*` is valid in paths on unix.
-                let initial_fs_allowed = initial_scope(fs_scope.allowed_patterns());
-                let initial_fs_forbidden = initial_scope(fs_scope.forbidden_patterns());
-                #[cfg(feature = "protocol-asset")]
-                let initial_asset_allowed = initial_scope(asset_protocol_scope.allowed_patterns());
-                #[cfg(feature = "protocol-asset")]
-                let initial_asset_forbidden =
-                    initial_scope(asset_protocol_scope.forbidden_patterns());
-
                 let _ = fs_scope.forbid_file(&scope_state_path);
                 #[cfg(feature = "protocol-asset")]
                 let _ = asset_protocol_scope.forbid_file(&scope_state_path);
 
-                // Ideally we would unescape the patterns only when saving OR reading,
-                // but we're trying to fix broken .persisted-scope files seemlessly.
+                // We're trying to fix broken .persisted-scope files seemlessly, so we'll be running this on the values read on the saved file.
+                // We will still save some semi-broken values because the scope events are quite spammy and we don't want to reduce runtime performance any further.
                 let ac = AhoCorasick::new_auto_configured(PATTERNS);
 
                 if scope_state_path.exists() {
@@ -77,26 +88,18 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         .and_then(|scope| bincode::deserialize(&scope).map_err(Into::into))
                         .unwrap_or_default();
                     for allowed in &scope.allowed_paths {
-                        let allowed = ac.replace_all(allowed, REPLACE_WITH);
+                        let allowed = fix_pattern(&ac, allowed);
 
-                        if !initial_fs_allowed.contains(&allowed) {
-                            let _ = fs_scope.allow_file(&allowed);
-                        }
+                        let _ = fs_scope.allow_file(&dbg!(allowed));
                         #[cfg(feature = "protocol-asset")]
-                        if !initial_asset_allowed.contains(&allowed) {
-                            let _ = asset_protocol_scope.allow_file(&allowed);
-                        }
+                        let _ = asset_protocol_scope.allow_file(&allowed);
                     }
                     for forbidden in &scope.forbidden_patterns {
-                        let forbidden = ac.replace_all(forbidden, REPLACE_WITH);
+                        let forbidden = fix_pattern(&ac, forbidden);
 
-                        if !initial_fs_forbidden.contains(&forbidden) {
-                            let _ = fs_scope.forbid_file(&forbidden);
-                        }
+                        let _ = fs_scope.forbid_file(&forbidden);
                         #[cfg(feature = "protocol-asset")]
-                        if !initial_asset_forbidden.contains(&forbidden) {
-                            let _ = asset_protocol_scope.forbid_file(&forbidden);
-                        }
+                        let _ = asset_protocol_scope.forbid_file(&forbidden);
                     }
                 }
 
@@ -107,12 +110,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                             allowed_paths: fs_scope
                                 .allowed_patterns()
                                 .into_iter()
-                                .map(|p| ac.replace_all(p.as_str(), REPLACE_WITH))
+                                .map(|p| p.to_string())
                                 .collect(),
                             forbidden_patterns: fs_scope
                                 .forbidden_patterns()
                                 .into_iter()
-                                .map(|p| ac.replace_all(p.as_str(), REPLACE_WITH))
+                                .map(|p| p.to_string())
                                 .collect(),
                         };
 
