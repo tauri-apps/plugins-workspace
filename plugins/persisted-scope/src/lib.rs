@@ -89,7 +89,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     for allowed in &scope.allowed_paths {
                         let allowed = fix_pattern(&ac, allowed);
 
-                        let _ = fs_scope.allow_file(allowed);
+                        let _ = fs_scope.allow_file(&allowed);
                         #[cfg(feature = "protocol-asset")]
                         let _ = asset_protocol_scope.allow_file(&allowed);
                     }
