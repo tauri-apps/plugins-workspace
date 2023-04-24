@@ -4,8 +4,7 @@
     "javascript": {
       "version": true,
       "getPublishedVersion": "pnpm view ${ pkgFile.pkg.name } version",
-      "prepublish": ["pnpm build"],
-      "publish": ["pnpm publish --access public --no-git-checks"]
+      "publish": ["pnpm build", "pnpm publish --access public --no-git-checks"]
     },
     "rust": {
       "version": true,
@@ -30,11 +29,6 @@
           "dryRunCommand": true,
           "pipe": true
         }
-      ],
-      "postpublish": [
-        "git tag ${ pkgFile.pkg.package.name }-v${ pkgFile.versionMajor } -f",
-        "git tag ${ pkgFile.pkg.package.name }-v${ pkgFile.versionMajor }.${ pkgFile.versionMinor } -f",
-        "git push --tags -f"
       ]
     }
   },
