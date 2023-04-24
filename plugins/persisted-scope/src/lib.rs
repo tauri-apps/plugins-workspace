@@ -52,13 +52,13 @@ struct Scope {
 }
 
 fn fix_pattern(ac: &AhoCorasick, s: &str) -> String {
-    let s = ac.replace_all(&s, REPLACE_WITH);
+    let s = ac.replace_all(s, REPLACE_WITH);
 
     if ac.find(&s).is_some() {
         return fix_pattern(ac, &s);
     }
 
-    s.to_string()
+    s
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
