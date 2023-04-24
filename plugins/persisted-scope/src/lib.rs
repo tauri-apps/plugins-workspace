@@ -78,7 +78,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 #[cfg(feature = "protocol-asset")]
                 let _ = asset_protocol_scope.forbid_file(&scope_state_path);
 
-                // We're trying to fix broken .persisted-scope files seemlessly, so we'll be running this on the values read on the saved file.
+                // We're trying to fix broken .persisted-scope files seamlessly, so we'll be running this on the values read on the saved file.
                 // We will still save some semi-broken values because the scope events are quite spammy and we don't want to reduce runtime performance any further.
                 let ac = AhoCorasick::new_auto_configured(PATTERNS);
 
