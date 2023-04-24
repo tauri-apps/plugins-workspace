@@ -62,9 +62,7 @@ async fn download<R: Runtime>(
     }
 
     let response = request.send().await?;
-    let total = response.content_length().ok_or_else(|| {
-        Error::ContentLength(format!("Failed to get content length from '{url}'"))
-    })?;
+    let total = response.content_length().unwrap_or(0);
 
     let mut file = File::create(file_path).await?;
     let mut stream = response.bytes_stream();
