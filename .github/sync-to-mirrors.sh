@@ -60,6 +60,9 @@ fi
 
 # : > "$BUILD_BASE/changes.diff"
 
+# Collect tags of current commit
+readarray -t COMMIT_TAGS < <(git tag --points-at HEAD)
+
 EXIT=0
 while read -r PLUGIN_NAME; do
 	printf "\n\n\e[7m Mirror: %s \e[0m\n" "$PLUGIN_NAME"
@@ -106,6 +109,17 @@ while read -r PLUGIN_NAME; do
 			# echo "$BUILD_BASE/changes.diff"
 			# git show --pretty= --src-prefix="a/$PLUGIN_NAME/" --dst-prefix="b/$PLUGIN_NAME/" >> "$BUILD_BASE/changes.diff"
 			echo "https://github.com/tauri-apps/tauri-plugin-$PLUGIN_NAME/commit/$(git rev-parse HEAD)"
+
+			# Add new tags
+			for FULL_TAG in "${COMMIT_TAGS[@]}"; do
+				if [[ "$FULL_TAG" =~ ^"tauri-plugin-$PLUGIN_NAME-" ]]; then
+					TAG_NAME="${FULL_TAG#"tauri-plugin-$PLUGIN_NAME-"}"
+					echo "Creating tag $TAG_NAME"
+					git tag "${TAG_NAME}" -m "${GIT_CLI_COMMIT_MESSAGE}"
+					git push origin "${TAG_NAME}"
+				fi
+			done
+
 			echo "Completed $PLUGIN_NAME"
 		else
 			echo "::error::Commit of ${PLUGIN_NAME} failed"
