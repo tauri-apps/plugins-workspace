@@ -35,65 +35,57 @@
   "packages": {
     "authenticator": {
       "path": "./plugins/authenticator",
-      "manager": ""
+      "manager": "rust-disabled"
     },
     "authenticator-js": {
       "path": "./plugins/authenticator",
-      "manager": ""
+      "manager": "javascript-disabled"
     },
 
     "autostart": {
       "path": "./plugins/autostart",
-      "manager": ""
+      "manager": "rust-disabled"
     },
     "autostart-js": {
       "path": "./plugins/autostart",
-      "manager": ""
+      "manager": "javascript-disabled"
     },
 
     "fs-extra": {
       "path": "./plugins/fs-extra",
-      "manager": ""
+      "manager": "rust-disabled"
     },
     "fs-extra-js": {
       "path": "./plugins/fs-extra",
-      "manager": ""
+      "manager": "javascript-disabled"
     },
 
     "fs-watch": {
       "path": "./plugins/fs-watch",
-      "manager": ""
+      "manager": "rust-disabled"
     },
     "fs-watch-js": {
       "path": "./plugins/fs-watch",
-      "manager": ""
+      "manager": "javascript-disabled"
     },
 
     "localhost": {
       "path": "./plugins/localhost",
       "manager": "rust"
     },
-    "localhost-js": {
-      "path": "./plugins/localhost",
-      "manager": ""
-    },
 
     "log": {
       "path": "./plugins/log",
-      "manager": ""
+      "manager": "rust-disabled"
     },
     "log-js": {
       "path": "./plugins/log",
-      "manager": ""
+      "manager": "javascript-disabled"
     },
 
     "persisted-scope": {
       "path": "./plugins/persisted-scope",
       "manager": "rust"
-    },
-    "persisted-scope-js": {
-      "path": "./plugins/persisted-scope",
-      "manager": ""
     },
 
     "positioner": {
@@ -102,61 +94,57 @@
     },
     "positioner-js": {
       "path": "./plugins/positioner",
-      "manager": ""
+      "manager": "javascript-disabled"
     },
 
     "single-instance": {
       "path": "./plugins/single-instance",
-      "manager": ""
-    },
-    "single-instance-js": {
-      "path": "./plugins/single-instance",
-      "manager": ""
+      "manager": "rust-disabled"
     },
 
     "sql": {
       "path": "./plugins/sql",
-      "manager": ""
+      "manager": "rust-disabled"
     },
     "sql-js": {
       "path": "./plugins/sql",
-      "manager": ""
+      "manager": "javascript-disabled"
     },
 
     "store": {
       "path": "./plugins/store",
-      "manager": ""
+      "manager": "rust-disabled"
     },
     "store-js": {
       "path": "./plugins/store",
-      "manager": ""
+      "manager": "javascript-disabled"
     },
 
     "stronghold": {
       "path": "./plugins/stronghold",
-      "manager": ""
+      "manager": "rust-disabled"
     },
     "stronghold-js": {
       "path": "./plugins/stronghold",
-      "manager": ""
+      "manager": "javascript-disabled"
     },
 
     "upload": {
       "path": "./plugins/upload",
-      "manager": ""
+      "manager": "rust-disabled"
     },
     "upload-js": {
       "path": "./plugins/upload",
-      "manager": ""
+      "manager": "javascript-disabled"
     },
 
     "websocket": {
       "path": "./plugins/websocket",
-      "manager": ""
+      "manager": "rust-disabled"
     },
     "websocket-js": {
       "path": "./plugins/websocket",
-      "manager": ""
+      "manager": "javascript-disabled"
     },
 
     "window-state": {
@@ -165,7 +153,7 @@
     },
     "window-state-js": {
       "path": "./plugins/window-state",
-      "manager": ""
+      "manager": "javascript-disabled"
     }
   }
 }
