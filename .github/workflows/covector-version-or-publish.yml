@@ -21,8 +21,8 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: "lts/*"
-          registry-url: "https://registry.npmjs.org"
+          node-version: 'lts/*'
+          registry-url: 'https://registry.npmjs.org'
 
       - uses: pnpm/action-setup@v2
         with:
@@ -45,16 +45,16 @@ jobs:
           CARGO_AUDIT_OPTIONS: ${{ secrets.CARGO_AUDIT_OPTIONS }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          command: "version-or-publish"
+          command: 'version-or-publish'
           createRelease: true
 
       - name: Create Pull Request With Versions Bumped
         id: cpr
-        uses: peter-evans/create-pull-request@v3
+        uses: tauri-apps/create-pull-request@v3
         if: steps.covector.outputs.commandRan == 'version'
         with:
-          title: "Publish New Versions"
-          commit-message: "publish new versions"
-          labels: "version updates"
-          branch: "release"
+          title: 'Publish New Versions'
+          commit-message: 'publish new versions'
+          labels: 'version updates'
+          branch: 'release'
           body: ${{ steps.covector.outputs.change }}
