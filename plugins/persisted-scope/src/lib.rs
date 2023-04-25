@@ -24,14 +24,10 @@ const PATTERNS: &[&str] = &[
     r"[?]",
     r"[*]",
     r"\?\?",
-    r"\\?\\?",
+    r"\\?\\?\",
     r"\\?\\\?\",
-    r"\\\\?\\\\?",
-    r"\\\\?\\\\\\?\\",
 ];
-const REPLACE_WITH: &[&str] = &[
-    r"[", r"]", r"?", r"*", r"\?", r"\\?", r"\\?\", r"\\\\?", r"\\\\?\\",
-];
+const REPLACE_WITH: &[&str] = &[r"[", r"]", r"?", r"*", r"\?", r"\\?\", r"\\?\"];
 
 #[derive(Debug, thiserror::Error)]
 enum Error {
