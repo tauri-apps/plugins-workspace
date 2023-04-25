@@ -21,8 +21,8 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: "lts/*"
-          registry-url: "https://registry.npmjs.org"
+          node-version: 'lts/*'
+          registry-url: 'https://registry.npmjs.org'
 
       - uses: pnpm/action-setup@v2
         with:
@@ -30,7 +30,7 @@ jobs:
           run_install: true
 
       - name: cargo login
-        run: cargo login ${{ secrets.crate_token }}
+        run: cargo login ${{ secrets.ORG_CRATES_IO_TOKEN }}
 
       - name: git config
         run: |
@@ -41,11 +41,10 @@ jobs:
         uses: jbolda/covector/packages/action@covector-v0.8
         id: covector
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          CARGO_AUDIT_OPTIONS: ${{ secrets.CARGO_AUDIT_OPTIONS }}
+          NODE_AUTH_TOKEN: ${{ secrets.ORG_NPM_TOKEN }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          command: "version-or-publish"
+          command: 'version-or-publish'
           createRelease: true
 
       - name: Create Pull Request With Versions Bumped
@@ -53,8 +52,8 @@ jobs:
         uses: tauri-apps/create-pull-request@v3
         if: steps.covector.outputs.commandRan == 'version'
         with:
-          title: "Publish New Versions"
-          commit-message: "publish new versions"
-          labels: "version updates"
-          branch: "release"
+          title: 'Publish New Versions'
+          commit-message: 'publish new versions'
+          labels: 'version updates'
+          branch: 'release'
           body: ${{ steps.covector.outputs.change }}
