@@ -6,12 +6,13 @@ use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    FsScopeEvent, Manager, Runtime,
+    AppHandle, FsScopeEvent, Manager, Runtime,
 };
 
 use std::{
     fs::{create_dir_all, File},
     io::Write,
+    path::Path,
 };
 
 const SCOPE_STATE_FILENAME: &str = ".persisted-scope";
@@ -57,6 +58,31 @@ fn fix_pattern(ac: &AhoCorasick, s: &str) -> String {
     s
 }
 
+fn save_scopes<R: Runtime>(app: &AppHandle<R>, app_dir: &Path, scope_state_path: &Path) {
+    let fs_scope = app.fs_scope();
+
+    let scope = Scope {
+        allowed_paths: fs_scope
+            .allowed_patterns()
+            .into_iter()
+            .map(|p| dbg!(p.to_string()))
+            .collect(),
+        forbidden_patterns: fs_scope
+            .forbidden_patterns()
+            .into_iter()
+            .map(|p| p.to_string())
+            .collect(),
+    };
+
+    let _ = create_dir_all(app_dir)
+        .and_then(|_| File::create(scope_state_path))
+        .map_err(Error::Io)
+        .and_then(|mut f| {
+            f.write_all(&bincode::serialize(&scope).map_err(Error::from)?)
+                .map_err(Into::into)
+        });
+}
+
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("persisted-scope")
         .setup(|app| {
@@ -96,31 +122,15 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         #[cfg(feature = "protocol-asset")]
                         let _ = asset_protocol_scope.forbid_file(&forbidden);
                     }
+
+                    // Manually save the fixed scopes to disk once.
+                    // This is needed to fix broken .peristed-scope files in case the app doesn't update the scope itself.
+                    save_scopes(&app, &app_dir, &scope_state_path);
                 }
 
                 fs_scope.listen(move |event| {
-                    let fs_scope = app.fs_scope();
                     if let FsScopeEvent::PathAllowed(_) = event {
-                        let scope = Scope {
-                            allowed_paths: fs_scope
-                                .allowed_patterns()
-                                .into_iter()
-                                .map(|p| p.to_string())
-                                .collect(),
-                            forbidden_patterns: fs_scope
-                                .forbidden_patterns()
-                                .into_iter()
-                                .map(|p| p.to_string())
-                                .collect(),
-                        };
-
-                        let _ = create_dir_all(&app_dir)
-                            .and_then(|_| File::create(&scope_state_path))
-                            .map_err(Error::Io)
-                            .and_then(|mut f| {
-                                f.write_all(&bincode::serialize(&scope).map_err(Error::from)?)
-                                    .map_err(Into::into)
-                            });
+                        save_scopes(&app, &app_dir, &scope_state_path);
                     }
                 });
             }
