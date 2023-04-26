@@ -101,7 +101,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
                 // We're trying to fix broken .persisted-scope files seamlessly, so we'll be running this on the values read on the saved file.
                 // We will still save some semi-broken values because the scope events are quite spammy and we don't want to reduce runtime performance any further.
-                let ac = AhoCorasick::new_auto_configured(PATTERNS);
+                let ac = AhoCorasick::new(PATTERNS).unwrap(/* This should be impossible to fail since we're using a small static input */);
 
                 if scope_state_path.exists() {
                     let scope: Scope = tauri::api::file::read_binary(&scope_state_path)
