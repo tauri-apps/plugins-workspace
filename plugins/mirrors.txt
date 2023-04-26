@@ -1,5 +1,7 @@
 authenticator
 autostart
+cli
+clipboard
 dialog
 fs
 fs-watch
