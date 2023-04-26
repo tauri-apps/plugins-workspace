@@ -65,7 +65,7 @@ fn save_scopes<R: Runtime>(app: &AppHandle<R>, app_dir: &Path, scope_state_path:
         allowed_paths: fs_scope
             .allowed_patterns()
             .into_iter()
-            .map(|p| dbg!(p.to_string()))
+            .map(|p| p.to_string())
             .collect(),
         forbidden_patterns: fs_scope
             .forbidden_patterns()
