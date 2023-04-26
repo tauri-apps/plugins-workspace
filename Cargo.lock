@@ -4368,6 +4368,7 @@ dependencies = [
 name = "tauri-plugin-persisted-scope"
 version = "0.1.0"
 dependencies = [
+ "aho-corasick",
  "bincode",
  "log",
  "serde",
