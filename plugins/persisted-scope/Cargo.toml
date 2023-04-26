@@ -15,7 +15,7 @@ serde_json.workspace = true
 tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
-aho-corasick = "0.7"
+aho-corasick = "1.0"
 bincode = "1"
 
 [features]
