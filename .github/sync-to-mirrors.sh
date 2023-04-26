@@ -112,8 +112,8 @@ while read -r PLUGIN_NAME; do
 
 			# Add new tags
 			for FULL_TAG in "${COMMIT_TAGS[@]}"; do
-				if [[ "$FULL_TAG" =~ ^"tauri-plugin-$PLUGIN_NAME-" ]]; then
-					TAG_NAME="${FULL_TAG#"tauri-plugin-$PLUGIN_NAME-"}"
+				if [[ "$FULL_TAG" =~ ^"$PLUGIN_NAME-js-v" ]]; then
+					TAG_NAME="${FULL_TAG#"$PLUGIN_NAME-js-"}"
 					echo "Creating tag $TAG_NAME"
 					git tag "${TAG_NAME}" -m "${GIT_CLI_COMMIT_MESSAGE}"
 					git push origin "${TAG_NAME}"
