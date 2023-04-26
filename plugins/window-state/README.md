@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "next" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -26,11 +26,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-window-state
+pnpm add https://github.com/tauri-apps/tauri-plugin-window-state#next
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-window-state
+npm add https://github.com/tauri-apps/tauri-plugin-window-state#next
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-window-state
+yarn add https://github.com/tauri-apps/tauri-plugin-window-state#next
 ```
 
 ## Usage
@@ -62,7 +62,7 @@ app.save_window_state(StateFlags::all()); // will save the state of all open win
 or through Javascript
 
 ```javascript
-import { saveWindowState, StateFlags } from "tauri-plugin-window-state-api";
+import { saveWindowState, StateFlags } from 'tauri-plugin-window-state-api';
 
 saveWindowState(StateFlags.ALL);
 ```
@@ -79,7 +79,7 @@ window.restore_state(StateFlags::all()); // will restore the windows state from 
 or through Javascript
 
 ```javascript
-import { restoreStateCurrent, StateFlags } from "tauri-plugin-window-state-api";
+import { restoreStateCurrent, StateFlags } from 'tauri-plugin-window-state-api';
 
 restoreStateCurrent(StateFlags.ALL);
 ```

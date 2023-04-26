@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "next" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -26,11 +26,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-store
+pnpm add https://github.com/tauri-apps/tauri-plugin-store#next
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-store
+npm add https://github.com/tauri-apps/tauri-plugin-store#next
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-store
+yarn add https://github.com/tauri-apps/tauri-plugin-store#next
 ```
 
 ## Usage
@@ -51,13 +51,13 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Store } from "tauri-plugin-store-api";
+import { Store } from 'tauri-plugin-store-api';
 
-const store = new Store(".settings.dat");
+const store = new Store('.settings.dat');
 
-await store.set("some-key", { value: 5 });
+await store.set('some-key', { value: 5 });
 
-const val = await store.get("some-key");
+const val = await store.get('some-key');
 assert(val, { value: 5 });
 
 await store.save(); // this manually saves the store, otherwise the store is only saved when your app is closed

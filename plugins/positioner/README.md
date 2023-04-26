@@ -22,7 +22,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 [dependencies]
 tauri-plugin-positioner = "1.0"
 # or through git
-tauri-plugin-positioner = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-positioner = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "next" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -40,11 +40,11 @@ yarn add tauri-plugin-positioner
 Or through git:
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-positioner
+pnpm add https://github.com/tauri-apps/tauri-plugin-positioner#next
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-positioner
+npm add https://github.com/tauri-apps/tauri-plugin-positioner#next
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-positioner
+yarn add https://github.com/tauri-apps/tauri-plugin-positioner#next
 ```
 
 ## Usage
@@ -69,7 +69,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { move_window, Position } from "tauri-plugin-positioner-api";
+import { move_window, Position } from 'tauri-plugin-positioner-api';
 
 move_window(Position.TopRight);
 ```
