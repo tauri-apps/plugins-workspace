@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - dev
+      - next
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -15,6 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Fetch git tags
+        run: git fetch origin 'refs/tags/*:refs/tags/*'
+
       - name: Cache pnpm modules
         uses: actions/cache@v3
         with:
@@ -22,14 +27,19 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-
+
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - uses: pnpm/action-setup@v2.2.4
+
+      - uses: pnpm/action-setup@v2
         with:
+          version: 7.x.x
           run_install: true
+
       - name: Build packages
         run: pnpm build
+
       - name: Sync
         run: .github/sync-to-mirrors.sh
         env:

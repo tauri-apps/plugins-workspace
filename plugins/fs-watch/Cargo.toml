@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-fs-watch"
-version = "0.1.0"
+version = "0.0.0"
 description = "Watch files and directories for changes."
 authors.workspace = true
 license.workspace = true
