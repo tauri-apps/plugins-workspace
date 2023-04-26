@@ -4,7 +4,7 @@
   "license": "MIT or APACHE-2.0",
   "type": "module",
   "scripts": {
-    "build": "pnpm run -r --parallel --filter !plugins-workspace build",
+    "build": "pnpm run -r --parallel --filter !plugins-workspace --filter !\"./plugins/*/examples/**\" build",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format-check": "prettier --check ."
