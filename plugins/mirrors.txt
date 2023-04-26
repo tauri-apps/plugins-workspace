@@ -1,11 +1,15 @@
 authenticator
 autostart
-fs-extra
+dialog
+fs
 fs-watch
+global-shortcut
+http
 localhost
 log
 persisted-scope
 positioner
+shell
 sql
 store
 stronghold
