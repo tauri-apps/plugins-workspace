@@ -172,16 +172,15 @@ class TauriNotificationManager(
       mBuilder.setStyle(
         NotificationCompat.BigTextStyle()
           .bigText(notification.largeBody)
-          .setSummaryText(notification.summaryText)
+          .setSummaryText(notification.summary)
       )
-    }
-    if (notification.inboxList != null) {
+    } else if (notification.inboxLines != null) {
       val inboxStyle = NotificationCompat.InboxStyle()
-      for (line in notification.inboxList ?: listOf()) {
+      for (line in notification.inboxLines ?: listOf()) {
         inboxStyle.addLine(line)
       }
       inboxStyle.setBigContentTitle(notification.title)
-      inboxStyle.setSummaryText(notification.summaryText)
+      inboxStyle.setSummaryText(notification.summary)
       mBuilder.setStyle(inboxStyle)
     }
     val sound = notification.getSound(context, getDefaultSound(context))
@@ -202,7 +201,7 @@ class TauriNotificationManager(
     if (group != null) {
       mBuilder.setGroup(group)
       if (notification.isGroupSummary) {
-        mBuilder.setSubText(notification.summaryText)
+        mBuilder.setSubText(notification.summary)
       }
     }
     mBuilder.setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
@@ -455,7 +454,7 @@ class TauriNotificationManager(
   private fun getDefaultSmallIcon(context: Context): Int {
     if (defaultSmallIconID != AssetUtils.RESOURCE_ID_ZERO_VALUE) return defaultSmallIconID
     var resId: Int = AssetUtils.RESOURCE_ID_ZERO_VALUE
-    val smallIconConfigResourceName = AssetUtils.getResourceBaseName(config.getString("smallIcon"))
+    val smallIconConfigResourceName = AssetUtils.getResourceBaseName(config.getString("icon"))
     if (smallIconConfigResourceName != null) {
       resId = AssetUtils.getResourceID(context, smallIconConfigResourceName, "drawable")
     }

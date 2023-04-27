@@ -32,12 +32,179 @@ import { invoke } from '@tauri-apps/api/tauri'
  * @since 1.0.0
  */
 interface Options {
-  /** Notification title. */
+  /**
+   * The notification identifier to reference this object later.
+   * 
+   * On Android, it is a 32 bit integer.
+   */
+  id?: number
+  /**
+   * Identifier of the {@link Channel} that deliveres this notification.
+   * 
+   * If the channel does not exist, the notification won't fire.
+   * Make sure the channel exists with {@link listChannels} and {@link createChannel}.
+   */
+  channelId?: string
+  /**
+   * Notification title.
+   */
   title: string
-  /** Optional notification body. */
+  /**
+   * Optional notification body.
+   * */
   body?: string
-  /** Optional notification icon. */
+  /**
+   * Schedule this notification to fire on a later time or a fixed interval.
+   */
+  schedule?: Schedule
+  /**
+   * Multiline text.
+   * Changes the notification style to big text.
+   * Cannot be used with `inboxLines`.
+   */
+  largeBody?: string
+  /**
+   * Detail text for the notification with `largeBody`, `inboxLines` or `groupSummary`.
+   */
+  summary?: string
+  /**
+   * Defines an action type for this notification.
+   */
+  actionTypeId?: string
+  /**
+   * Identifier used to group multiple notifications on Android.
+   */
+  group?: string
+  /**
+   * Instructs the system that this notification is the summary of a group on Android.
+   */
+  groupSummary?: boolean
+  /**
+   * The sound resource name. Only available on mobile.
+   */
+  sound?: string
+  /**
+   * List of lines to add to the notification.
+   * Changes the notification style to inbox.
+   * Cannot be used with `largeBody`.
+   * 
+   * Only supports up to 5 lines.
+   */
+  inboxLines?: string[]
+  /**
+   * Notification icon.
+   * 
+   * On Android the icon must be placed in the app's `res/drawable` folder.
+   */
   icon?: string
+  /**
+   * Notification large icon (Android).
+   * 
+   * The icon must be placed in the app's `res/drawable` folder.
+   */
+  largeIcon?: string
+  /**
+   * Icon color on Android.
+   */
+  iconColor?: string
+  /**
+   * Notification attachments.
+   */
+  attachments?: Attachment[]
+  /**
+   * Extra payload to store in the notification.
+   */
+  extra?: { [key: string]: any }
+  /**
+   * If true, the notification cannot be dismissed by the user on Android.
+   * 
+   * An application service must manage the dismissal of the notification.
+   * It is typically used to indicate a background task that is pending (e.g. a file download)
+   * or the user is engaged with (e.g. playing music).
+   */
+  ongoing?: boolean
+  /**
+   * Automatically cancel the notification when the user clicks on it.
+   */
+  autoCancel?: boolean
+}
+
+type ScheduleInterval = {
+    year?: number
+    month?: number
+    day?: number
+    /**
+     * 1 - Sunday
+     * 2 - Monday
+     * 3 - Tuesday
+     * 4 - Wednesday
+     * 5 - Thursday
+     * 6 - Friday
+     * 7 - Saturday
+     */
+    weekday?: number
+    hour?: number
+    minute?: number
+    second?: number
+  }
+  
+enum ScheduleEvery {
+  Year = 'Year',
+  Month = 'Month',
+  TwoWeeks = 'TwoWeeks',
+  Week = 'Week',
+  Day = 'Day',
+  Hour = 'Hour',
+  Minute = 'Minute',
+  Second = 'Second'
+}
+
+type ScheduleData = {
+  kind: 'at',
+  data: {
+    date: Date
+    repeating: boolean
+  }
+} | {
+  kind: 'interval',
+  data: ScheduleInterval
+} | {
+  kind: 'every',
+  data: {
+    interval: ScheduleEvery
+  }
+}
+
+class Schedule {
+  kind: string
+  data: unknown
+
+  private constructor(schedule: ScheduleData) {
+    this.kind = schedule.kind
+    this.data = schedule.data
+  }
+
+  static at(date: Date, repeating = false) {
+    return new Schedule({ kind: 'at', data: { date, repeating }})
+  }
+
+  static interval(interval: ScheduleInterval) {
+    return new Schedule({ kind: 'interval', data: interval })
+  }
+
+  static every(kind: ScheduleEvery) {
+    return new Schedule({ kind: 'every', data: { interval: kind }})
+  }
+}
+
+/**
+ * Attachment of a notification.
+ */
+interface Attachment {
+  /** Attachment identifier. */
+  id: string
+  /** Attachment URL. Accepts the `asset` and `file` protocols. */
+  url: string
 }
 
 /** Possible permission values. */
@@ -108,6 +275,6 @@ function sendNotification(options: Options | string): void {
   }
 }
 
-export type { Options, Permission }
+export type { Attachment, Options, Permission }
 
 export { sendNotification, requestPermission, isPermissionGranted }

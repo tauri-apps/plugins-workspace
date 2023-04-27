@@ -16,7 +16,7 @@ class Notification {
   var title: String? = null
   var body: String? = null
   var largeBody: String? = null
-  var summaryText: String? = null
+  var summary: String? = null
   var id: Int? = null
   private var sound: String? = null
   private var smallIcon: String? = null
@@ -24,7 +24,7 @@ class Notification {
   var iconColor: String? = null
   var actionTypeId: String? = null
   var group: String? = null
-  var inboxList: List<String>? = null
+  var inboxLines: List<String>? = null
   var isGroupSummary = false
   var isOngoing = false
   var isAutoCancel = false
@@ -145,7 +145,7 @@ class Notification {
     if (if (group != null) group != that.group else that.group != null) return false
     if (if (extra != null) extra != that.extra else that.extra != null) return false
     if (if (attachments != null) attachments != that.attachments else that.attachments != null) return false
-    if (if (inboxList != null) inboxList != that.inboxList else that.inboxList != null) return false
+    if (if (inboxLines != null) inboxLines != that.inboxLines else that.inboxLines != null) return false
     if (isGroupSummary != that.isGroupSummary) return false
     if (isOngoing != that.isOngoing) return false
     if (isAutoCancel != that.isAutoCancel) return false
@@ -226,12 +226,12 @@ class Notification {
       notification.id = jsonObject.getInteger("id")
       notification.body = jsonObject.getString("body")
       notification.largeBody = jsonObject.getString("largeBody")
-      notification.summaryText = jsonObject.getString("summaryText")
+      notification.summary = jsonObject.getString("summary")
       notification.actionTypeId = jsonObject.getString("actionTypeId")
       notification.group = jsonObject.getString("group")
       notification.setSound(jsonObject.getString("sound"))
       notification.title = jsonObject.getString("title")
-      notification.setSmallIcon(jsonObject.getString("smallIcon"))
+      notification.setSmallIcon(jsonObject.getString("icon"))
       notification.setLargeIcon(jsonObject.getString("largeIcon"))
       notification.iconColor = jsonObject.getString("iconColor")
       notification.attachments = NotificationAttachment.getAttachments(jsonObject)
@@ -245,12 +245,12 @@ class Notification {
       notification.isOngoing = jsonObject.getBoolean("ongoing", false)
       notification.isAutoCancel = jsonObject.getBoolean("autoCancel", true)
       try {
-        val inboxList = jsonObject.getJSONArray("inboxList")
+        val inboxLines = jsonObject.getJSONArray("inboxLines")
         val inboxStringList: MutableList<String> = ArrayList()
-        for (i in 0 until inboxList.length()) {
-          inboxStringList.add(inboxList.getString(i))
+        for (i in 0 until inboxLines.length()) {
+          inboxStringList.add(inboxLines.getString(i))
         }
-        notification.inboxList = inboxStringList
+        notification.inboxLines = inboxStringList
       } catch (_: Exception) {
       }
       return notification
