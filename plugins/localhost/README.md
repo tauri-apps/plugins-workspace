@@ -20,7 +20,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-localhost = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-localhost = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "next" }
 portpicker = "0.1" # used in the example to pick a random free port
 ```
 
