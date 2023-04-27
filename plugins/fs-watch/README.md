@@ -56,18 +56,18 @@ import { watch, watchImmediate } from "tauri-plugin-fs-watch-api";
 // can also watch an array of paths
 const stopWatching = await watch(
   "/path/to/something",
-  { recursive: true },
   (event) => {
     const { type, payload } = event;
-  }
+  },
+  { recursive: true }
 );
 
 const stopRawWatcher = await watchImmediate(
   ["/path/a", "/path/b"],
-  {},
   (event) => {
     const { path, operation, cookie } = event;
-  }
+  },
+  {}
 );
 ```
 
