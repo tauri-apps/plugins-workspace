@@ -46,14 +46,14 @@ impl<R: Runtime> Notification<R> {
 
     pub fn request_permission(&self) -> crate::Result<PermissionState> {
         self.0
-            .run_mobile_plugin::<PermissionResponse>("requestPermission", ())
+            .run_mobile_plugin::<PermissionResponse>("requestPermissions", ())
             .map(|r| r.permission_state)
             .map_err(Into::into)
     }
 
     pub fn permission_state(&self) -> crate::Result<PermissionState> {
         self.0
-            .run_mobile_plugin::<PermissionResponse>("permissionState", ())
+            .run_mobile_plugin::<PermissionResponse>("checkPermissions", ())
             .map(|r| r.permission_state)
             .map_err(Into::into)
     }
