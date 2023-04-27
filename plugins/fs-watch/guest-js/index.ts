@@ -44,8 +44,8 @@ async function unwatch(id: number): Promise<void> {
 
 export async function watch(
   paths: string | string[],
-  options: DebouncedWatchOptions,
-  cb: (event: DebouncedEvent) => void
+  cb: (event: DebouncedEvent) => void,
+  options: DebouncedWatchOptions = {}
 ): Promise<UnlistenFn> {
   const opts = {
     recursive: false,
@@ -82,8 +82,8 @@ export async function watch(
 
 export async function watchImmediate(
   paths: string | string[],
-  options: WatchOptions,
-  cb: (event: RawEvent) => void
+  cb: (event: RawEvent) => void,
+  options: WatchOptions = {}
 ): Promise<UnlistenFn> {
   const opts = {
     recursive: false,
