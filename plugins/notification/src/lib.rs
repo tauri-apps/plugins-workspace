@@ -105,6 +105,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::request_permission,
             commands::is_permission_granted
         ])
+        .js_init_script(include_str!("init.js").into())
         .setup(|app, api| {
             #[cfg(mobile)]
             let notification = mobile::init(app, api)?;
