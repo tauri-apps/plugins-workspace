@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 #[cfg(mobile)]
 use tauri::plugin::PluginHandle;
 #[cfg(desktop)]
@@ -30,8 +30,11 @@ use desktop::Notification;
 #[cfg(mobile)]
 use mobile::Notification;
 
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 struct NotificationData {
+    /// Notification id.
+    #[serde(default)]
+    id: usize,
     /// The notification title.
     title: Option<String>,
     /// The notification body.
@@ -47,7 +50,7 @@ pub struct NotificationBuilder<R: Runtime> {
     app: AppHandle<R>,
     #[cfg(mobile)]
     handle: PluginHandle<R>,
-    data: NotificationData,
+    pub(crate) data: NotificationData,
 }
 
 impl<R: Runtime> NotificationBuilder<R> {

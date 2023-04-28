@@ -31,7 +31,7 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 impl<R: Runtime> crate::NotificationBuilder<R> {
     pub fn show(self) -> crate::Result<()> {
         self.handle
-            .run_mobile_plugin("notify", self.data)
+            .run_mobile_plugin("show", self.data)
             .map_err(Into::into)
     }
 }

@@ -13,6 +13,8 @@ pub enum PermissionState {
     Granted,
     /// Permission access has been denied.
     Denied,
+    /// Unknown state. Must request permission.
+    Unknown,
 }
 
 impl Display for PermissionState {
@@ -20,6 +22,7 @@ impl Display for PermissionState {
         match self {
             Self::Granted => write!(f, "granted"),
             Self::Denied => write!(f, "denied"),
+            Self::Unknown => write!(f, "Unknown"),
         }
     }
 }
@@ -42,6 +45,7 @@ impl<'de> Deserialize<'de> for PermissionState {
         match s.to_lowercase().as_str() {
             "granted" => Ok(Self::Granted),
             "denied" => Ok(Self::Denied),
+            "default" => Ok(Self::Unknown),
             _ => Err(DeError::custom(format!("unknown permission state '{s}'"))),
         }
     }

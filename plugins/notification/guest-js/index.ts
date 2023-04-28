@@ -72,7 +72,9 @@ interface Options {
    */
   actionTypeId?: string
   /**
-   * Identifier used to group multiple notifications on Android.
+   * Identifier used to group multiple notifications.
+   * 
+   * https://developer.apple.com/documentation/usernotifications/unmutablenotificationcontent/1649872-threadidentifier
    */
   group?: string
   /**
@@ -156,20 +158,23 @@ enum ScheduleEvery {
   Day = 'Day',
   Hour = 'Hour',
   Minute = 'Minute',
+  /**
+   * Not supported on iOS.
+   */
   Second = 'Second'
 }
 
 type ScheduleData = {
-  kind: 'at',
+  kind: 'At',
   data: {
     date: Date
     repeating: boolean
   }
 } | {
-  kind: 'interval',
+  kind: 'Interval',
   data: ScheduleInterval
 } | {
-  kind: 'every',
+  kind: 'Every',
   data: {
     interval: ScheduleEvery
   }
@@ -185,15 +190,15 @@ class Schedule {
   }
 
   static at(date: Date, repeating = false) {
-    return new Schedule({ kind: 'at', data: { date, repeating }})
+    return new Schedule({ kind: 'At', data: { date, repeating }})
   }
 
   static interval(interval: ScheduleInterval) {
-    return new Schedule({ kind: 'interval', data: interval })
+    return new Schedule({ kind: 'Interval', data: interval })
   }
 
   static every(kind: ScheduleEvery) {
-    return new Schedule({ kind: 'every', data: { interval: kind }})
+    return new Schedule({ kind: 'Every', data: { interval: kind }})
   }
 }
 

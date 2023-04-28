@@ -45,7 +45,7 @@ class NotificationSchedule(val scheduleObj: JSObject) {
     val payload = scheduleObj.getJSObject("data", JSObject())
 
     when (val scheduleKind = scheduleObj.getString("kind", "")) {
-      "at" -> {
+      "At" -> {
         val dateString = payload.getString("date")
         if (dateString.isNotEmpty()) {
           val sdf = SimpleDateFormat(JS_DATE_FORMAT)
@@ -60,11 +60,11 @@ class NotificationSchedule(val scheduleObj: JSObject) {
           throw Exception("`at` date cannot be empty")
         }
       }
-      "interval" -> {
+      "Interval" -> {
         val dateMatch = onFromJson(payload)
         kind = ScheduleKind.Interval(dateMatch)
       }
-      "every" -> {
+      "Every" -> {
         val interval = NotificationInterval.valueOf(payload.getString("interval"))
         kind = ScheduleKind.Every(interval, payload.getInteger("count", 1))
       }

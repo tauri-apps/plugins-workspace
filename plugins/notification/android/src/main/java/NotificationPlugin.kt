@@ -62,12 +62,8 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     }
   }*/
 
-  /**
-   * Schedule a notification invoke from JavaScript
-   * Creates local notification in system.
-   */
   @Command
-  fun schedule(invoke: Invoke) {
+  fun batch(invoke: Invoke) {
     val localNotifications = Notification.buildNotificationList(invoke)
       ?: return
     val ids = manager!!.schedule(invoke, localNotifications)
