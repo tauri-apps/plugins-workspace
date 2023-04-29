@@ -231,7 +231,7 @@ class TauriNotificationManager(
       ) {
         return
       }
-      notificationManager.notify(notification.id ?: 0, buildNotification)
+      notificationManager.notify(notification.id, buildNotification)
     }
   }
 
