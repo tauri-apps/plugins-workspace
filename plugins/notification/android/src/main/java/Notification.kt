@@ -17,7 +17,7 @@ class Notification {
   var body: String? = null
   var largeBody: String? = null
   var summary: String? = null
-  var id: Int? = null
+  var id: Int = 0
   private var sound: String? = null
   private var smallIcon: String? = null
   private var largeIcon: String? = null
@@ -136,7 +136,7 @@ class Notification {
     if (if (title != null) title != that.title else that.title != null) return false
     if (if (body != null) body != that.body else that.body != null) return false
     if (if (largeBody != null) largeBody != that.largeBody else that.largeBody != null) return false
-    if (if (id != null) id != that.id else that.id != null) return false
+    if (id != that.id) return false
     if (if (sound != null) sound != that.sound else that.sound != null) return false
     if (if (smallIcon != null) smallIcon != that.smallIcon else that.smallIcon != null) return false
     if (if (largeIcon != null) largeIcon != that.largeIcon else that.largeIcon != null) return false
@@ -155,7 +155,7 @@ class Notification {
   override fun hashCode(): Int {
     var result = if (title != null) title.hashCode() else 0
     result = 31 * result + if (body != null) body.hashCode() else 0
-    result = 31 * result + if (id != null) id.hashCode() else 0
+    result = 31 * result + id.hashCode()
     result = 31 * result + if (sound != null) sound.hashCode() else 0
     result = 31 * result + if (smallIcon != null) smallIcon.hashCode() else 0
     result = 31 * result + if (iconColor != null) iconColor.hashCode() else 0
@@ -180,50 +180,23 @@ class Notification {
   }
 
   companion object {
-    /**
-     * Build list of the notifications from invoke payload
-     */
-    fun buildNotificationList(invoke: Invoke): List<Notification>? {
-      val notificationArray = invoke.getArray("notifications")
-      if (notificationArray == null) {
-        invoke.reject("Must provide notifications array as notifications option")
-        return null
-      }
-      val resultNotifications: MutableList<Notification> =
-        ArrayList(notificationArray.length())
-      val notificationsJson: List<JSONObject> = try {
-        notificationArray.toList()
+    fun fromJson(jsonNotification: JSONObject): Notification {
+      val notification: JSObject = try {
+        val identifier = jsonNotification.getLong("id")
+        if (identifier > Int.MAX_VALUE || identifier < Int.MIN_VALUE) {
+          throw Exception("The notification identifier should be a 32-bit integer")
+        }
+        JSObject.fromJSONObject(jsonNotification)
       } catch (e: JSONException) {
-        invoke.reject("Provided notification format is invalid")
-        return null
+        throw Exception("Invalid notification JSON object", e)
       }
-      for (jsonNotification in notificationsJson) {
-        val notification: JSObject = try {
-          val identifier = jsonNotification.getLong("id")
-          if (identifier > Int.MAX_VALUE || identifier < Int.MIN_VALUE) {
-            invoke.reject("The identifier should be a Java int")
-            return null
-          }
-          JSObject.fromJSONObject(jsonNotification)
-        } catch (e: JSONException) {
-          invoke.reject("Invalid JSON object sent to Notification plugin", e)
-          return null
-        }
-        try {
-          val activeNotification = buildNotificationFromJSObject(notification)
-          resultNotifications.add(activeNotification)
-        } catch (e: ParseException) {
-          invoke.reject("Invalid date format sent to Notification plugin", e)
-          return null
-        }
-      }
-      return resultNotifications
+      return fromJSObject(notification)
     }
 
-    fun buildNotificationFromJSObject(jsonObject: JSObject): Notification {
+    fun fromJSObject(jsonObject: JSObject): Notification {
       val notification = Notification()
       notification.source = jsonObject.toString()
-      notification.id = jsonObject.getInteger("id")
+      notification.id = jsonObject.getInteger("id") ?: throw Exception("Missing notification identifier")
       notification.body = jsonObject.getString("body")
       notification.largeBody = jsonObject.getString("largeBody")
       notification.summary = jsonObject.getString("summary")

@@ -63,24 +63,50 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   }*/
 
   @Command
+  fun show(invoke: Invoke) {
+    val notification = Notification.fromJSObject(invoke.data)
+    val id = manager!!.schedule(notification)
+
+    val returnVal = JSObject().put("id", id)
+    invoke.resolve(returnVal)
+  }
+
+  @Command
   fun batch(invoke: Invoke) {
-    val localNotifications = Notification.buildNotificationList(invoke)
-      ?: return
-    val ids = manager!!.schedule(invoke, localNotifications)
-    if (ids != null) {
-      notificationStorage?.appendNotifications(localNotifications)
-      val result = JSObject()
-      val jsArray = JSArray()
-      for (i in 0 until ids.length()) {
-        try {
-          val notification = JSObject().put("id", ids.getInt(i))
-          jsArray.put(notification)
-        } catch (_: Exception) {
-        }
-      }
-      result.put("notifications", jsArray)
-      invoke.resolve(result)
+    val notificationArray = invoke.getArray("notifications")
+    if (notificationArray == null) {
+      invoke.reject("Missing `notifications` argument")
+      return
     }
+
+    val notifications: MutableList<Notification> =
+      ArrayList(notificationArray.length())
+    val notificationsInput: List<JSONObject> = try {
+      notificationArray.toList()
+    } catch (e: JSONException) {
+      invoke.reject("Provided notification format is invalid")
+      return
+    }
+
+    for (jsonNotification in notificationsInput) {
+      val notification = Notification.fromJson(jsonNotification)
+      notifications.add(notification)
+    }
+
+    val ids = manager!!.schedule(notifications)
+    notificationStorage?.appendNotifications(notifications)
+
+    val result = JSObject()
+    val jsArray = JSArray()
+    for (id in ids) {
+      try {
+        val notification = JSObject().put("id", id)
+        jsArray.put(notification)
+      } catch (_: Exception) {
+      }
+    }
+    result.put("notifications", jsArray)
+    invoke.resolve(result)
   }
 
   @Command

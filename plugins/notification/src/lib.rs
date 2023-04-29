@@ -33,14 +33,18 @@ use mobile::Notification;
 #[derive(Debug, Default, Serialize, Deserialize)]
 struct NotificationData {
     /// Notification id.
-    #[serde(default)]
-    id: usize,
+    #[serde(default = "default_id")]
+    id: i32,
     /// The notification title.
     title: Option<String>,
     /// The notification body.
     body: Option<String>,
     /// The notification icon.
     icon: Option<String>,
+}
+
+fn default_id() -> i32 {
+    rand::random()
 }
 
 /// The notification builder.

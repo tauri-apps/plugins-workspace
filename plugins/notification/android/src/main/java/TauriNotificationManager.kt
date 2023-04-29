@@ -116,27 +116,28 @@ class TauriNotificationManager(
     }
   }
 
-  fun schedule(invoke: Invoke?, notifications: List<Notification>): JSONArray? {
-    val ids = JSONArray()
-    val notificationManager = NotificationManagerCompat.from(
-      context
-    )
-    val notificationsEnabled = notificationManager.areNotificationsEnabled()
-    if (!notificationsEnabled) {
-      invoke?.reject("Notifications not enabled on this device")
-      return null
-    }
+  private fun trigger(notificationManager: NotificationManagerCompat, notification: Notification): Int {
+    dismissVisibleNotification(notification.id)
+    cancelTimerForNotification(notification.id)
+    buildNotification(notificationManager, notification)
+
+    return notification.id
+  }
+
+  fun schedule(notification: Notification): Int {
+    val notificationManager = NotificationManagerCompat.from(context)
+    return trigger(notificationManager, notification)
+  }
+
+  fun schedule(notifications: List<Notification>): List<Int> {
+    val ids = mutableListOf<Int>()
+    val notificationManager = NotificationManagerCompat.from(context)
+
     for (notification in notifications) {
-      val id = notification.id
-      if (id == null) {
-        invoke?.reject("Notification missing identifier")
-        return null
-      }
-      dismissVisibleNotification(id)
-      cancelTimerForNotification(id)
-      buildNotification(notificationManager, notification, invoke)
-      ids.put(id)
+      val id = trigger(notificationManager, notification)
+      ids.add(id)
     }
+
     return ids
   }
 
@@ -152,12 +153,8 @@ class TauriNotificationManager(
   private fun buildNotification(
     notificationManager: NotificationManagerCompat,
     notification: Notification,
-    invoke: Invoke?
   ) {
-    var channelId = DEFAULT_NOTIFICATION_CHANNEL_ID
-    if (notification.channelId != null) {
-      channelId = notification.channelId!!
-    }
+    val channelId = notification.channelId ?: DEFAULT_NOTIFICATION_CHANNEL_ID
     val mBuilder = NotificationCompat.Builder(
       context, channelId
     )
@@ -213,8 +210,7 @@ class TauriNotificationManager(
       try {
         mBuilder.color = Color.parseColor(iconColor)
       } catch (ex: IllegalArgumentException) {
-        invoke?.reject("Invalid color provided. Must be a hex string (ex: #ff0000")
-        return
+        throw Exception("Invalid color provided. Must be a hex string (ex: #ff0000")
       }
     }
     createActionIntents(notification, mBuilder)
@@ -427,9 +423,7 @@ class TauriNotificationManager(
   }
 
   fun areNotificationsEnabled(): Boolean {
-    val notificationManager = NotificationManagerCompat.from(
-      context
-    )
+    val notificationManager = NotificationManagerCompat.from(context)
     return notificationManager.areNotificationsEnabled()
   }
 

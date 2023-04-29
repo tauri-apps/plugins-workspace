@@ -47,7 +47,7 @@ class NotificationStorage(private val context: Context) {
         if (jsNotification != null) {
           try {
             val notification =
-              Notification.buildNotificationFromJSObject(jsNotification)
+              Notification.fromJSObject(jsNotification)
             notifications.add(notification)
           } catch (_: ParseException) {
           }
@@ -89,7 +89,7 @@ class NotificationStorage(private val context: Context) {
   fun getSavedNotification(key: String?): Notification? {
     val jsNotification = getSavedNotificationAsJSObject(key) ?: return null
     val notification = try {
-      Notification.buildNotificationFromJSObject(jsNotification)
+      Notification.fromJSObject(jsNotification)
     } catch (ex: ParseException) {
       return null
     }

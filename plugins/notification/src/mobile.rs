@@ -31,7 +31,8 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 impl<R: Runtime> crate::NotificationBuilder<R> {
     pub fn show(self) -> crate::Result<()> {
         self.handle
-            .run_mobile_plugin("show", self.data)
+            .run_mobile_plugin::<ShowResponse>("show", self.data)
+            .map(|_| ())
             .map_err(Into::into)
     }
 }
@@ -57,6 +58,12 @@ impl<R: Runtime> Notification<R> {
             .map(|r| r.permission_state)
             .map_err(Into::into)
     }
+}
+
+#[derive(Deserialize)]
+struct ShowResponse {
+    #[allow(dead_code)]
+    id: i32,
 }
 
 #[derive(Deserialize)]
