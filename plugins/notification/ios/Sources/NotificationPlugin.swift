@@ -40,10 +40,6 @@ func showNotification(invoke: Invoke, notification: JSObject)
   do {
     if let schedule = notification["schedule"] as? JSObject {
       try trigger = handleScheduledNotification(invoke, schedule)
-    } else {
-      let match = Calendar.current.dateComponents(
-        [.timeZone, .year, .month, .day, .hour, .minute], from: Date())
-      trigger = UNCalendarNotificationTrigger(dateMatching: match, repeats: false)
     }
   } catch {
     throw ShowNotificationError.create(error)

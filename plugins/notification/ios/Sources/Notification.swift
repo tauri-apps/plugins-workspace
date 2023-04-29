@@ -134,8 +134,11 @@ func handleScheduledNotification(_ invoke: Invoke, _ schedule: JSObject) throws
   let payload = schedule["data"] as? JSObject ?? [:]
   switch kind {
   case "At":
-    let date = payload["at"] as? String ?? ""
-    let dateFormatter = ISO8601DateFormatter()
+    let date = payload["date"] as? String ?? ""
+    let dateFormatter = DateFormatter()
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+
     if let at = dateFormatter.date(from: date) {
       let repeats = payload["repeats"] as? Bool ?? false
 
@@ -157,7 +160,7 @@ func handleScheduledNotification(_ invoke: Invoke, _ schedule: JSObject) throws
         timeInterval: dateInterval.duration, repeats: repeats)
 
     } else {
-      invoke.reject("could not parse `at` date")
+      invoke.reject("could not parse `at` date \(date)")
     }
   case "Interval":
     let dateComponents = getDateComponents(payload)
