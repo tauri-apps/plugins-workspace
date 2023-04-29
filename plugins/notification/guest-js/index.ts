@@ -33,9 +33,7 @@ import { invoke } from '@tauri-apps/api/tauri'
  */
 interface Options {
   /**
-   * The notification identifier to reference this object later.
-   * 
-   * On Android, it is a 32 bit integer.
+   * The notification identifier to reference this object later. Must be a 32-bit integer.
    */
   id?: number
   /**
@@ -132,24 +130,24 @@ interface Options {
 }
 
 type ScheduleInterval = {
-    year?: number
-    month?: number
-    day?: number
-    /**
-     * 1 - Sunday
-     * 2 - Monday
-     * 3 - Tuesday
-     * 4 - Wednesday
-     * 5 - Thursday
-     * 6 - Friday
-     * 7 - Saturday
-     */
-    weekday?: number
-    hour?: number
-    minute?: number
-    second?: number
-  }
-  
+  year?: number
+  month?: number
+  day?: number
+  /**
+   * 1 - Sunday
+   * 2 - Monday
+   * 3 - Tuesday
+   * 4 - Wednesday
+   * 5 - Thursday
+   * 6 - Friday
+   * 7 - Saturday
+   */
+  weekday?: number
+  hour?: number
+  minute?: number
+  second?: number
+}
+
 enum ScheduleEvery {
   Year = 'Year',
   Month = 'Month',
@@ -190,7 +188,7 @@ class Schedule {
   }
 
   static at(date: Date, repeating = false) {
-    return new Schedule({ kind: 'At', data: { date, repeating }})
+    return new Schedule({ kind: 'At', data: { date, repeating } })
   }
 
   static interval(interval: ScheduleInterval) {
@@ -198,7 +196,7 @@ class Schedule {
   }
 
   static every(kind: ScheduleEvery) {
-    return new Schedule({ kind: 'Every', data: { interval: kind }})
+    return new Schedule({ kind: 'Every', data: { interval: kind } })
   }
 }
 

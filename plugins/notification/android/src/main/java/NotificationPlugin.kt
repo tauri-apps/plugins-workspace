@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.webkit.WebView
 import app.tauri.PermissionState
@@ -28,9 +29,9 @@ const val LOCAL_NOTIFICATIONS = "permissionState"
 )
 class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   private var webView: WebView? = null
-  private var manager: TauriNotificationManager? = null
-  var notificationManager: NotificationManager? = null
-  private var notificationStorage: NotificationStorage? = null
+  private lateinit var manager: TauriNotificationManager
+  private lateinit var notificationManager: NotificationManager
+  private lateinit var notificationStorage: NotificationStorage
   private var channelManager = ChannelManager(activity)
   
   override fun load(webView: WebView) {
@@ -39,7 +40,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     notificationStorage = NotificationStorage(activity)
     
     val manager = TauriNotificationManager(
-      notificationStorage!!,
+      notificationStorage,
       activity,
       activity,
       getConfig()
@@ -48,24 +49,24 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     
     this.manager = manager
     
-    notificationManager = activity.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?
+    notificationManager = activity.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
   }
 
-  /*private fun handleOnNewIntent(data: Intent) {
-    super.handleOnNewIntent(data)
-    if (Intent.ACTION_MAIN != data.action) {
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    if (Intent.ACTION_MAIN != intent.action) {
       return
     }
-    val dataJson = manager.handleNotificationActionPerformed(data, notificationStorage)
+    val dataJson = manager.handleNotificationActionPerformed(intent, notificationStorage)
     if (dataJson != null) {
-      // notifyListeners("localNotificationActionPerformed", dataJson, true)
+      // TODO trigger("actionPerformed", dataJson, true)
     }
-  }*/
+  }
 
   @Command
   fun show(invoke: Invoke) {
     val notification = Notification.fromJSObject(invoke.data)
-    val id = manager!!.schedule(notification)
+    val id = manager.schedule(notification)
 
     val returnVal = JSObject().put("id", id)
     invoke.resolve(returnVal)
@@ -93,8 +94,8 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
       notifications.add(notification)
     }
 
-    val ids = manager!!.schedule(notifications)
-    notificationStorage?.appendNotifications(notifications)
+    val ids = manager.schedule(notifications)
+    notificationStorage.appendNotifications(notifications)
 
     val result = JSObject()
     val jsArray = JSArray()
@@ -113,7 +114,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   fun cancel(invoke: Invoke) {
     val notifications = invoke.getArray("notifications")
     if (notifications == null) {
-      manager?.cancel(invoke)
+      manager.cancel(invoke)
     } else {
       try {
         for (o in notifications.toList<Any>()) {
@@ -122,9 +123,9 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
             val tag = notification.getString("tag")
             val id = notification.getInteger("id")
             if (tag.isEmpty()) {
-              notificationManager!!.cancel(id!!)
+              notificationManager.cancel(id!!)
             } else {
-              notificationManager!!.cancel(tag, id!!)
+              notificationManager.cancel(tag, id!!)
             }
           } else {
             invoke.reject("Unexpected notification type")
@@ -139,7 +140,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
 
   @Command
   fun getPending(invoke: Invoke) {
-    val notifications= notificationStorage!!.getSavedNotifications()
+    val notifications= notificationStorage.getSavedNotifications()
     val result = Notification.buildNotificationPendingList(notifications)
     invoke.resolve(result)
   }
@@ -148,7 +149,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   fun registerActionTypes(invoke: Invoke) {
     val types = invoke.getArray("types", JSArray())
     val typesArray = NotificationAction.buildTypes(types)
-    notificationStorage?.writeActionGroup(typesArray)
+    notificationStorage.writeActionGroup(typesArray)
     invoke.resolve()
   }
 
@@ -157,7 +158,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   fun getDeliveredNotifications(invoke: Invoke) {
     val notifications = JSArray()
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      val activeNotifications = notificationManager!!.activeNotifications
+      val activeNotifications = notificationManager.activeNotifications
       for (activeNotification in activeNotifications) {
         val jsNotification = JSObject()
         jsNotification.put("id", activeNotification.id)
@@ -187,7 +188,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
 
   @Command
   fun cancelAll(invoke: Invoke) {
-    notificationManager!!.cancelAll()
+    notificationManager.cancelAll()
     invoke.resolve()
   }
 
@@ -243,7 +244,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   }
 
   private fun getPermissionState(): String {
-    return if (manager!!.areNotificationsEnabled()) {
+    return if (manager.areNotificationsEnabled()) {
       "granted"
     } else {
       "denied"
