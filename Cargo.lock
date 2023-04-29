@@ -4933,6 +4933,8 @@ dependencies = [
  "tauri",
  "tauri-build",
  "thiserror",
+ "time 0.3.20",
+ "url",
  "win7-notifications",
 ]
 
