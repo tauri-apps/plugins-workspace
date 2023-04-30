@@ -52,10 +52,15 @@ async function log(
 
   const { file, line, ...keyValues } = options ?? {};
 
+  let location = filtered?.[0]?.filter((v) => v.length > 0).join("@");
+  if (location === "Error") {
+    location = "webview::unknown";
+  }
+
   await invoke("plugin:log|log", {
     level,
     message,
-    location: filtered?.[0]?.filter((v) => v.length > 0).join("@"),
+    location,
     file,
     line,
     keyValues,

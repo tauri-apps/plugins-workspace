@@ -146,8 +146,8 @@ fn log(
     let location = location.unwrap_or("webview");
     let mut builder = RecordBuilder::new();
     builder
-        .target(location)
         .level(level.into())
+        .target(location)
         .file(file)
         .line(line);
 
@@ -178,8 +178,8 @@ impl Default for Builder {
             out.finish(format_args!(
                 "{}[{}][{}] {}",
                 DEFAULT_TIMEZONE_STRATEGY.get_now().format(&format).unwrap(),
-                record.target(),
                 record.level(),
+                record.target(),
                 message
             ))
         });
@@ -213,8 +213,8 @@ impl Builder {
             out.finish(format_args!(
                 "{}[{}][{}] {}",
                 timezone_strategy.get_now().format(&format).unwrap(),
-                record.target(),
                 record.level(),
+                record.target(),
                 message
             ))
         });
@@ -273,8 +273,8 @@ impl Builder {
             out.finish(format_args!(
                 "{}[{}][{}] {}",
                 timezone_strategy.get_now().format(&format).unwrap(),
-                record.target(),
                 colors.color(record.level()),
+                record.target(),
                 message
             ))
         })
