@@ -10,6 +10,8 @@ use tauri::{
 
 use crate::models::*;
 
+use std::collections::HashMap;
+
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "app.tauri.notification";
 
@@ -58,6 +60,114 @@ impl<R: Runtime> Notification<R> {
             .map(|r| r.permission_state)
             .map_err(Into::into)
     }
+
+    pub fn register_action_types(&self, types: Vec<ActionType>) -> crate::Result<()> {
+        let mut args = HashMap::new();
+        args.insert("types", types);
+        self.0
+            .run_mobile_plugin("registerActionTypes", args)
+            .map_err(Into::into)
+    }
+
+    pub fn remove_active(&self, notifications: Vec<i32>) -> crate::Result<()> {
+        let mut args = HashMap::new();
+        args.insert(
+            "notifications",
+            notifications
+                .into_iter()
+                .map(|id| {
+                    let mut notification = HashMap::new();
+                    notification.insert("id", id);
+                    notification
+                })
+                .collect::<Vec<HashMap<&str, i32>>>(),
+        );
+        self.0
+            .run_mobile_plugin("removeActive", args)
+            .map_err(Into::into)
+    }
+
+    pub fn active(&self) -> crate::Result<Vec<ActiveNotification>> {
+        self.0
+            .run_mobile_plugin::<ActiveResponse>("getActive", ())
+            .map(|r| r.notifications)
+            .map_err(Into::into)
+    }
+
+    pub fn remove_all_active(&self) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin("removeActive", ())
+            .map_err(Into::into)
+    }
+
+    pub fn pending(&self) -> crate::Result<Vec<PendingNotification>> {
+        self.0
+            .run_mobile_plugin::<PendingResponse>("getPending", ())
+            .map(|r| r.notifications)
+            .map_err(Into::into)
+    }
+
+    /// Cancel pending notifications.
+    pub fn cancel(&self, notifications: Vec<i32>) -> crate::Result<()> {
+        let mut args = HashMap::new();
+        args.insert(
+            "notifications",
+            notifications
+                .into_iter()
+                .map(|id| {
+                    let mut notification = HashMap::new();
+                    notification.insert("id", id);
+                    notification
+                })
+                .collect::<Vec<HashMap<&str, i32>>>(),
+        );
+        self.0.run_mobile_plugin("cancel", args).map_err(Into::into)
+    }
+
+    /// Cancel all pending notifications.
+    pub fn cancel_all(&self) -> crate::Result<()> {
+        self.0.run_mobile_plugin("cancel", ()).map_err(Into::into)
+    }
+
+    #[cfg(target_os = "android")]
+    pub fn create_channel(&self, channel: Channel) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin("createChannel", channel)
+            .map_err(Into::into)
+    }
+
+    #[cfg(target_os = "android")]
+    pub fn delete_channel(&self, id: impl Into<String>) -> crate::Result<()> {
+        let mut args = HashMap::new();
+        args.insert("id", id.into());
+        self.0
+            .run_mobile_plugin("deleteChannel", args)
+            .map_err(Into::into)
+    }
+
+    #[cfg(target_os = "android")]
+    pub fn list_channels(&self) -> crate::Result<Vec<Channel>> {
+        self.0
+            .run_mobile_plugin::<ListChannelsResult>("listChannels", ())
+            .map(|r| r.channels)
+            .map_err(Into::into)
+    }
+}
+
+#[cfg(target_os = "android")]
+#[derive(Deserialize)]
+struct ListChannelsResult {
+    channels: Vec<Channel>,
+}
+
+#[derive(Deserialize)]
+struct PendingResponse {
+    notifications: Vec<PendingNotification>,
+}
+
+#[derive(Deserialize)]
+struct ActiveResponse {
+    notifications: Vec<ActiveNotification>,
 }
 
 #[derive(Deserialize)]

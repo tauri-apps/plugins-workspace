@@ -19,6 +19,7 @@ thiserror.workspace = true
 rand = "0.8"
 time = { version = "0.3", features = ["serde", "parsing", "formatting"] }
 url = { version = "2", features = ["serde"] }
+serde_repr = "0.1"
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 notify-rust = "4.5"

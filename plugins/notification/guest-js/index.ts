@@ -210,6 +210,81 @@ interface Attachment {
   url: string
 }
 
+interface Action {
+  id: string
+  title: string
+  requiresAuthentication?: boolean
+  foreground?: boolean
+  destructive?: boolean
+  input?: boolean
+  inputButtonTitle?: string
+  inputPlaceholder?: string
+}
+
+interface ActionType {
+  /**
+   * The identifier of this action type
+   */
+  id: string
+  /**
+   * The list of associated actions
+   */
+  actions: Action[]
+  hiddenPreviewsBodyPlaceholder?: string,
+  customDismissAction?: boolean,
+  allowInCarPlay?: boolean,
+  hiddenPreviewsShowTitle?: boolean,
+  hiddenPreviewsShowSubtitle?: boolean,
+}
+
+interface PendingNotification {
+  id: number
+  title?: string
+  body?: string
+  schedule: Schedule
+}
+
+interface ActiveNotification {
+  id: number
+  tag?: string
+  title?: string
+  body?: string
+  group?: string
+  groupSummary: boolean
+  data: Record<string, string>
+  extra: Record<string, unknown>
+  attachments: Attachment[]
+  actionTypeId?: string
+  schedule?: Schedule
+  sound?: string
+}
+
+enum Importance {
+  None = 0,
+  Min,
+  Low,
+  Default,
+  High
+}
+
+enum Visibility {
+  Secret = -1,
+  Private,
+  Public
+}
+
+interface Channel {
+  id: string
+  name: string
+  description?: string
+  sound?: string
+  lights?: boolean
+  lightColor?: string
+  vibration?: boolean
+  importance?: Importance
+  visibility?: Visibility
+}
+
 /** Possible permission values. */
 type Permission = 'granted' | 'denied' | 'default'
 
@@ -278,6 +353,205 @@ function sendNotification(options: Options | string): void {
   }
 }
 
-export type { Attachment, Options, Permission }
+/**
+ * Register actions that are performed when the user clicks on the notification.
+ * 
+ * @example
+ * ```typescript
+ * import { registerActionTypes } from '@tauri-apps/api/notification';
+ * await registerActionTypes([{
+ *   id: 'tauri',
+ *   actions: [{
+ *     id: 'my-action',
+ *     title: 'Settings'
+ *   }]
+ * }])
+ * ```
+ *
+ * @returns A promise indicating the success or failure of the operation.
+ *
+ * @since 2.0.0
+ */
+async function registerActionTypes(types: ActionType[]): Promise<void> {
+  return invoke('plugin:notification|register_action_types', { types })
+}
 
-export { sendNotification, requestPermission, isPermissionGranted }
+/**
+ * Retrieves the list of pending notifications.
+ * 
+ * @example
+ * ```typescript
+ * import { pending } from '@tauri-apps/api/notification';
+ * const pendingNotifications = await pending();
+ * ```
+ *
+ * @returns A promise resolving to the list of pending notifications.
+ *
+ * @since 2.0.0
+ */
+async function pending(): Promise<PendingNotification[]> {
+  return invoke('plugin:notification|get_pending')
+}
+
+/**
+ * Cancels the pending notifications with the given list of identifiers.
+ * 
+ * @example
+ * ```typescript
+ * import { cancel } from '@tauri-apps/api/notification';
+ * await cancel([-34234, 23432, 4311]);
+ * ```
+ *
+ * @returns A promise indicating the success or failure of the operation.
+ *
+ * @since 2.0.0
+ */
+async function cancel(notifications: number[]): Promise<void> {
+  return invoke('plugin:notification|cancel', { notifications })
+}
+
+/**
+ * Cancels all pending notifications.
+ * 
+ * @example
+ * ```typescript
+ * import { cancelAll } from '@tauri-apps/api/notification';
+ * await cancelAll();
+ * ```
+ *
+ * @returns A promise indicating the success or failure of the operation.
+ *
+ * @since 2.0.0
+ */
+async function cancelAll(): Promise<void> {
+  return invoke('plugin:notification|cancel')
+}
+
+/**
+ * Retrieves the list of active notifications.
+ * 
+ * @example
+ * ```typescript
+ * import { active } from '@tauri-apps/api/notification';
+ * const activeNotifications = await active();
+ * ```
+ *
+ * @returns A promise resolving to the list of active notifications.
+ *
+ * @since 2.0.0
+ */
+async function active(): Promise<ActiveNotification[]> {
+  return invoke('plugin:notification|get_active')
+}
+
+/**
+ * Removes the active notifications with the given list of identifiers.
+ * 
+ * @example
+ * ```typescript
+ * import { cancel } from '@tauri-apps/api/notification';
+ * await cancel([-34234, 23432, 4311])
+ * ```
+ *
+ * @returns A promise indicating the success or failure of the operation.
+ *
+ * @since 2.0.0
+ */
+async function removeActive(notifications: number[]): Promise<void> {
+  return invoke('plugin:notification|remove_active', { notifications })
+}
+
+/**
+ * Removes all active notifications.
+ * 
+ * @example
+ * ```typescript
+ * import { removeAllActive } from '@tauri-apps/api/notification';
+ * await removeAllActive()
+ * ```
+ *
+ * @returns A promise indicating the success or failure of the operation.
+ *
+ * @since 2.0.0
+ */
+async function removeAllActive(): Promise<void> {
+  return invoke('plugin:notification|remove_active')
+}
+
+/**
+ * Removes all active notifications.
+ * 
+ * @example
+ * ```typescript
+ * import { createChannel, Importance, Visibility } from '@tauri-apps/api/notification';
+ * await createChannel({
+ *   id: 'new-messages',
+ *   name: 'New Messages',
+ *   lights: true,
+ *   vibration: true,
+ *   importance: Importance.Default,
+ *   visibility: Visibility.Private
+ * });
+ * ```
+ *
+ * @returns A promise indicating the success or failure of the operation.
+ *
+ * @since 2.0.0
+ */
+async function createChannel(channel: Channel): Promise<void> {
+  return invoke('plugin:notification|create_channel', { ...channel })
+}
+
+/**
+ * Removes the channel with the given identifier.
+ * 
+ * @example
+ * ```typescript
+ * import { removeChannel } from '@tauri-apps/api/notification';
+ * await removeChannel();
+ * ```
+ *
+ * @returns A promise indicating the success or failure of the operation.
+ *
+ * @since 2.0.0
+ */
+async function removeChannel(id: string): Promise<void> {
+  return invoke('plugin:notification|delete_channel', { id })
+}
+
+/**
+ * Retrieves the list of notification channels.
+ * 
+ * @example
+ * ```typescript
+ * import { channels } from '@tauri-apps/api/notification';
+ * const notificationChannels = await channels();
+ * ```
+ *
+ * @returns A promise resolving to the list of notification channels.
+ *
+ * @since 2.0.0
+ */
+async function channels(): Promise<Channel[]> {
+  return invoke('plugin:notification|getActive')
+}
+
+export type { Attachment, Options, Permission, Action, ActionType, PendingNotification, ActiveNotification, Channel }
+
+export {
+  Importance,
+  Visibility,
+  sendNotification,
+  requestPermission,
+  isPermissionGranted,
+  registerActionTypes,
+  pending,
+  cancel,
+  cancelAll,
+  active,
+  removeActive,
+  removeAllActive,
+  createChannel,
+  removeChannel,
+  channels
+}

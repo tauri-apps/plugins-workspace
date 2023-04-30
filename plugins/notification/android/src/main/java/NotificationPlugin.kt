@@ -111,24 +111,31 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   }
 
   @Command
-  fun cancel(invoke: Invoke) {
+  void cancel(invoke: Invoke) {
+    manager.cancel(invoke)
+  }
+
+  @Command
+  fun removeActive(invoke: Invoke) {
     val notifications = invoke.getArray("notifications")
     if (notifications == null) {
-      manager.cancel(invoke)
+      notificationManager.cancelAll()
+      invoke.resolve()
     } else {
       try {
         for (o in notifications.toList<Any>()) {
           if (o is JSONObject) {
             val notification = JSObject.fromJSONObject((o))
-            val tag = notification.getString("tag")
-            val id = notification.getInteger("id")
-            if (tag.isEmpty()) {
-              notificationManager.cancel(id!!)
+            val tag = notification.getString("tag", null)
+            val id = notification.getInteger("id", 0)
+            if (tag == null) {
+              notificationManager.cancel(id)
             } else {
-              notificationManager.cancel(tag, id!!)
+              notificationManager.cancel(tag, id)
             }
           } else {
             invoke.reject("Unexpected notification type")
+            return
           }
         }
       } catch (e: JSONException) {
@@ -155,7 +162,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
 
   @SuppressLint("ObsoleteSdkInt")
   @Command
-  fun getDeliveredNotifications(invoke: Invoke) {
+  fun getActive(invoke: Invoke) {
     val notifications = JSArray()
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       val activeNotifications = notificationManager.activeNotifications
@@ -184,12 +191,6 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     val result = JSObject()
     result.put("notifications", notifications)
     invoke.resolve(result)
-  }
-
-  @Command
-  fun cancelAll(invoke: Invoke) {
-    notificationManager.cancelAll()
-    invoke.resolve()
   }
 
   @Command

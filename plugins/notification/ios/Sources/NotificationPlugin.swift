@@ -172,26 +172,21 @@ class NotificationPlugin: Plugin {
     invoke.resolve()
   }
 
-  @objc func removeDeliveredNotifications(_ invoke: Invoke) {
-    guard let notifications = invoke.getArray("notifications", JSObject.self) else {
-      invoke.reject("`notifications` input is required")
-      return
+  @objc func removeActive(_ invoke: Invoke) {
+    if let notifications = invoke.getArray("notifications", JSObject.self) {
+      let ids = notifications.map { "\($0["id"] ?? "")" }
+      UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ids)
+      invoke.resolve()
+    } else {
+      UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+      DispatchQueue.main.async(execute: {
+        UIApplication.shared.applicationIconBadgeNumber = 0
+      })
+      invoke.resolve()
     }
-
-    let ids = notifications.map { "\($0["id"] ?? "")" }
-    UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ids)
-    invoke.resolve()
   }
 
-  @objc func removeAllDeliveredNotifications(_ invoke: Invoke) {
-    UNUserNotificationCenter.current().removeAllDeliveredNotifications()
-    DispatchQueue.main.async(execute: {
-      UIApplication.shared.applicationIconBadgeNumber = 0
-    })
-    invoke.resolve()
-  }
-
-  @objc func getDeliveredNotifications(_ invoke: Invoke) {
+  @objc func getActive(_ invoke: Invoke) {
     UNUserNotificationCenter.current().getDeliveredNotifications(completionHandler: {
       (notifications) in
       let ret = notifications.map({ (notification) -> [String: Any] in

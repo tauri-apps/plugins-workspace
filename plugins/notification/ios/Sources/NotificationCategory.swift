@@ -16,7 +16,7 @@ public func makeCategories(_ actionTypes: [JSObject]) {
       Logger.error("Action type must have an id field")
       continue
     }
-    let hiddenBodyPlaceholder = type["iosHiddenPreviewsBodyPlaceholder"] as? String ?? ""
+    let hiddenBodyPlaceholder = type["hiddenPreviewsBodyPlaceholder"] as? String ?? ""
     let actions = type["actions"] as? [JSObject] ?? []
 
     let newActions = makeActions(actions)
@@ -96,10 +96,10 @@ func makeActionOptions(_ action: JSObject) -> UNNotificationActionOptions {
 }
 
 func makeCategoryOptions(_ type: JSObject) -> UNNotificationCategoryOptions {
-  let customDismiss = type["iosCustomDismissAction"] as? Bool ?? false
-  let carPlay = type["iosAllowInCarPlay"] as? Bool ?? false
-  let hiddenPreviewsShowTitle = type["iosHiddenPreviewsShowTitle"] as? Bool ?? false
-  let hiddenPreviewsShowSubtitle = type["iosHiddenPreviewsShowSubtitle"] as? Bool ?? false
+  let customDismiss = type["customDismissAction"] as? Bool ?? false
+  let carPlay = type["allowInCarPlay"] as? Bool ?? false
+  let hiddenPreviewsShowTitle = type["hiddenPreviewsShowTitle"] as? Bool ?? false
+  let hiddenPreviewsShowSubtitle = type["hiddenPreviewsShowSubtitle"] as? Bool ?? false
 
   if customDismiss {
     return .customDismissAction
