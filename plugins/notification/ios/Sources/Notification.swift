@@ -5,19 +5,36 @@ enum NotificationError: LocalizedError {
   case contentNoId
   case contentNoTitle
   case contentNoBody
-  case triggerConstructionFailed
   case triggerRepeatIntervalTooShort
   case attachmentNoId
   case attachmentNoUrl
   case attachmentFileNotFound(path: String)
   case attachmentUnableToCreate(String)
+  case pastScheduledTime
+  case invalidDate(String)
 
   var errorDescription: String? {
     switch self {
+    case .contentNoId:
+      return "Missing notification identifier"
+    case .contentNoTitle:
+      return "Missing notification title"
+    case .contentNoBody:
+      return "Missing notification body"
+    case .triggerRepeatIntervalTooShort:
+      return "Schedule interval too short, must be a least 1 minute"
+    case .attachmentNoId:
+      return "Missing attachment identifier"
+    case .attachmentNoUrl:
+      return "Missing attachment URL"
     case .attachmentFileNotFound(let path):
       return "Unable to find file \(path) for attachment"
-    default:
-      return ""
+    case .attachmentUnableToCreate(let error):
+      return "Failed to create attachment: \(error)"
+    case .pastScheduledTime:
+      return "Scheduled time must be *after* current time"
+    case .invalidDate(let date):
+      return "Could not parse date \(date)"
     }
   }
 }
@@ -127,7 +144,7 @@ func makeAttachmentOptions(_ options: JSObject) -> JSObject {
   return opts
 }
 
-func handleScheduledNotification(_ invoke: Invoke, _ schedule: JSObject) throws
+func handleScheduledNotification(_ schedule: JSObject) throws
   -> UNNotificationTrigger?
 {
   let kind = schedule["kind"] as? String ?? ""
@@ -145,8 +162,7 @@ func handleScheduledNotification(_ invoke: Invoke, _ schedule: JSObject) throws
       let dateInfo = Calendar.current.dateComponents(in: TimeZone.current, from: at)
 
       if dateInfo.date! < Date() {
-        invoke.reject("Scheduled time must be *after* current time")
-        return nil
+        throw NotificationError.pastScheduledTime
       }
 
       let dateInterval = DateInterval(start: Date(), end: dateInfo.date!)
@@ -160,7 +176,7 @@ func handleScheduledNotification(_ invoke: Invoke, _ schedule: JSObject) throws
         timeInterval: dateInterval.duration, repeats: repeats)
 
     } else {
-      invoke.reject("could not parse `at` date \(date)")
+      throw NotificationError.invalidDate(date)
     }
   case "Interval":
     let dateComponents = getDateComponents(payload)

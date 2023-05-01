@@ -39,7 +39,7 @@ func showNotification(invoke: Invoke, notification: JSObject)
 
   do {
     if let schedule = notification["schedule"] as? JSObject {
-      try trigger = handleScheduledNotification(invoke, schedule)
+      try trigger = handleScheduledNotification(schedule)
     }
   } catch {
     throw ShowNotificationError.create(error)
@@ -154,11 +154,11 @@ class NotificationPlugin: Plugin {
     })
   }
 
-  @objc func registerActionTypes(_ invoke: Invoke) {
+  @objc func registerActionTypes(_ invoke: Invoke) throws {
     guard let types = invoke.getArray("types", JSObject.self) else {
       return
     }
-    makeCategories(types)
+    try makeCategories(types)
     invoke.resolve()
   }
 

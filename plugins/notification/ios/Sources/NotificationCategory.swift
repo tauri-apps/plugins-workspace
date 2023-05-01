@@ -1,7 +1,21 @@
 import Tauri
 import UserNotifications
 
-public func makeCategories(_ actionTypes: [JSObject]) {
+enum CategoryError: LocalizedError {
+  case noId
+  case noActionId
+
+  var errorDescription: String? {
+    switch self {
+    case .noId:
+      return "Action type `id` missing"
+    case .noActionId:
+      return "Action `id` missing"
+    }
+  }
+}
+
+public func makeCategories(_ actionTypes: [JSObject]) throws {
   var createdCategories = [UNNotificationCategory]()
 
   let generalCategory = UNNotificationCategory(
@@ -13,13 +27,12 @@ public func makeCategories(_ actionTypes: [JSObject]) {
   createdCategories.append(generalCategory)
   for type in actionTypes {
     guard let id = type["id"] as? String else {
-      Logger.error("Action type must have an id field")
-      continue
+      throw CategoryError.noId
     }
     let hiddenBodyPlaceholder = type["hiddenPreviewsBodyPlaceholder"] as? String ?? ""
     let actions = type["actions"] as? [JSObject] ?? []
 
-    let newActions = makeActions(actions)
+    let newActions = try makeActions(actions)
 
     // Create the custom actions for the TIMER_EXPIRED category.
     var newCategory: UNNotificationCategory?
@@ -38,13 +51,12 @@ public func makeCategories(_ actionTypes: [JSObject]) {
   center.setNotificationCategories(Set(createdCategories))
 }
 
-func makeActions(_ actions: [JSObject]) -> [UNNotificationAction] {
+func makeActions(_ actions: [JSObject]) throws -> [UNNotificationAction] {
   var createdActions = [UNNotificationAction]()
 
   for action in actions {
     guard let id = action["id"] as? String else {
-      Logger.error("Action must have an id field")
-      continue
+      throw CategoryError.noActionId
     }
     let title = action["title"] as? String ?? ""
     let input = action["input"] as? Bool ?? false
