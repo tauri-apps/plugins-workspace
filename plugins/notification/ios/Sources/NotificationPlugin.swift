@@ -61,7 +61,7 @@ func showNotification(invoke: Invoke, notification: JSObject)
 }
 
 class NotificationPlugin: Plugin {
-  var notificationHandler = NotificationHandler()
+  let notificationHandler = NotificationHandler()
   let notificationManager = NotificationManager()
 
   override init() {
