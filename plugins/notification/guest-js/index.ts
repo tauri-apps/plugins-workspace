@@ -114,7 +114,7 @@ interface Options {
   /**
    * Extra payload to store in the notification.
    */
-  extra?: { [key: string]: any }
+  extra?: { [key: string]: unknown }
   /**
    * If true, the notification cannot be dismissed by the user on Android.
    * 
@@ -127,6 +127,10 @@ interface Options {
    * Automatically cancel the notification when the user clicks on it.
    */
   autoCancel?: boolean
+  /**
+   * Changes the notification presentation to be silent on iOS (no badge, no sound, not listed).
+   */
+  silent?: boolean
 }
 
 type ScheduleInterval = {

@@ -191,6 +191,12 @@ impl<R: Runtime> NotificationBuilder<R> {
         self.data.auto_cancel = true;
         self
     }
+
+    /// Changes the notification presentation to be silent on iOS (no badge, no sound, not listed).
+    pub fn silent(mut self) -> Self {
+        self.data.silent = true;
+        self
+    }
 }
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the notification APIs.
