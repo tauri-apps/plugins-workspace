@@ -30,6 +30,8 @@ class Notification {
   var schedule: NotificationSchedule? = null
   var channelId: String? = null
   var source: String? = null
+  var visibility: Int? = null
+  var number: Int? = null
 
   fun getSound(context: Context, defaultSound: Int): String? {
     var soundPath: String? = null
@@ -86,87 +88,6 @@ class Notification {
 
   val isScheduled = schedule != null
 
-  override fun toString(): String {
-    return "Notification{" +
-      "title='" +
-      title +
-      '\'' +
-      ", body='" +
-      body +
-      '\'' +
-      ", id=" +
-      id +
-      ", sound='" +
-      sound +
-      '\'' +
-      ", smallIcon='" +
-      smallIcon +
-      '\'' +
-      ", iconColor='" +
-      iconColor +
-      '\'' +
-      ", actionTypeId='" +
-      actionTypeId +
-      '\'' +
-      ", group='" +
-      group +
-      '\'' +
-      ", extra=" +
-      extra +
-      ", attachments=" +
-      attachments +
-      ", schedule=" +
-      schedule +
-      ", groupSummary=" +
-      isGroupSummary +
-      ", ongoing=" +
-      isOngoing +
-      ", autoCancel=" +
-      isAutoCancel +
-      '}'
-  }
-
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other == null || javaClass != other.javaClass) return false
-    val that = other as Notification
-    if (if (title != null) title != that.title else that.title != null) return false
-    if (if (body != null) body != that.body else that.body != null) return false
-    if (if (largeBody != null) largeBody != that.largeBody else that.largeBody != null) return false
-    if (id != that.id) return false
-    if (if (sound != null) sound != that.sound else that.sound != null) return false
-    if (if (smallIcon != null) smallIcon != that.smallIcon else that.smallIcon != null) return false
-    if (if (largeIcon != null) largeIcon != that.largeIcon else that.largeIcon != null) return false
-    if (if (iconColor != null) iconColor != that.iconColor else that.iconColor != null) return false
-    if (if (actionTypeId != null) actionTypeId != that.actionTypeId else that.actionTypeId != null) return false
-    if (if (group != null) group != that.group else that.group != null) return false
-    if (if (extra != null) extra != that.extra else that.extra != null) return false
-    if (if (attachments != null) attachments != that.attachments else that.attachments != null) return false
-    if (if (inboxLines != null) inboxLines != that.inboxLines else that.inboxLines != null) return false
-    if (isGroupSummary != that.isGroupSummary) return false
-    if (isOngoing != that.isOngoing) return false
-    if (isAutoCancel != that.isAutoCancel) return false
-    return if (schedule != null) schedule?.equals(that.schedule) ?: false else that.schedule == null
-  }
-
-  override fun hashCode(): Int {
-    var result = if (title != null) title.hashCode() else 0
-    result = 31 * result + if (body != null) body.hashCode() else 0
-    result = 31 * result + id.hashCode()
-    result = 31 * result + if (sound != null) sound.hashCode() else 0
-    result = 31 * result + if (smallIcon != null) smallIcon.hashCode() else 0
-    result = 31 * result + if (iconColor != null) iconColor.hashCode() else 0
-    result = 31 * result + if (actionTypeId != null) actionTypeId.hashCode() else 0
-    result = 31 * result + if (group != null) group.hashCode() else 0
-    result = 31 * result + java.lang.Boolean.hashCode(isGroupSummary)
-    result = 31 * result + java.lang.Boolean.hashCode(isOngoing)
-    result = 31 * result + java.lang.Boolean.hashCode(isAutoCancel)
-    result = 31 * result + if (extra != null) extra.hashCode() else 0
-    result = 31 * result + if (attachments != null) attachments.hashCode() else 0
-    result = 31 * result + if (schedule != null) schedule.hashCode() else 0
-    return result
-  }
-
   companion object {
     fun fromJson(jsonNotification: JSONObject): Notification {
       val notification: JSObject = try {
@@ -205,6 +126,8 @@ class Notification {
       notification.extra = jsonObject.getJSObject("extra")
       notification.isOngoing = jsonObject.getBoolean("ongoing", false)
       notification.isAutoCancel = jsonObject.getBoolean("autoCancel", true)
+      notification.visibility = jsonObject.getInteger("visibility")
+      notification.number = jsonObject.getInteger("number")
       try {
         val inboxLines = jsonObject.getJSONArray("inboxLines")
         val inboxStringList: MutableList<String> = ArrayList()

@@ -31,7 +31,7 @@ fun getIntervalTime(interval: NotificationInterval, count: Int): Long {
 
 sealed class ScheduleKind {
   // At specific moment of time (with repeating option)
-  class At(val date: Date, val repeating: Boolean): ScheduleKind()
+  class At(var date: Date, val repeating: Boolean): ScheduleKind()
   class Interval(val interval: DateMatch): ScheduleKind()
   class Every(val interval: NotificationInterval, val count: Int): ScheduleKind()
 }

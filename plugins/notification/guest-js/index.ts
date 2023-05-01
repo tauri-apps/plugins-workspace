@@ -131,6 +131,14 @@ interface Options {
    * Changes the notification presentation to be silent on iOS (no badge, no sound, not listed).
    */
   silent?: boolean
+  /**
+   * Notification visibility.
+   */
+  visibility?: Visibility
+  /**
+   * Sets the number of items this notification represents on Android.
+   */
+  number?: number
 }
 
 type ScheduleInterval = {

@@ -1,6 +1,5 @@
 package app.tauri.notification
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlarmManager
@@ -11,12 +10,12 @@ import android.content.BroadcastReceiver
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
-import androidx.core.app.ActivityCompat
+import android.os.Build.VERSION.SDK_INT
+import android.os.UserManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
@@ -38,7 +37,7 @@ const val DEFAULT_PRESS_ACTION = "tap"
 
 class TauriNotificationManager(
   private val storage: NotificationStorage,
-  private val activity: Activity,
+  private val activity: Activity?,
   private val context: Context,
   private val config: JSObject
 ) {
@@ -140,12 +139,9 @@ class TauriNotificationManager(
 
   // TODO Progressbar support
   // TODO System categories (DO_NOT_DISTURB etc.)
-  // TODO control visibility by flag Notification.VISIBILITY_PRIVATE
-  // TODO Group notifications (setGroup, setGroupSummary, setNumber)
   // TODO use NotificationCompat.MessagingStyle for latest API
   // TODO expandable notification NotificationCompat.MessagingStyle
   // TODO media style notification support NotificationCompat.MediaStyle
-  // TODO custom small/large icons
   @SuppressLint("MissingPermission")
   private fun buildNotification(
     notificationManager: NotificationManagerCompat,
@@ -198,7 +194,7 @@ class TauriNotificationManager(
         mBuilder.setSubText(notification.summary)
       }
     }
-    mBuilder.setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+    mBuilder.setVisibility(notification.visibility ?: NotificationCompat.VISIBILITY_PRIVATE)
     mBuilder.setOnlyAlertOnce(true)
     mBuilder.setSmallIcon(notification.getSmallIcon(context, getDefaultSmallIcon(context)))
     mBuilder.setLargeIcon(notification.getLargeIcon(context))
@@ -220,13 +216,6 @@ class TauriNotificationManager(
         // TODO notify
         // val notificationJson = JSObject(notification.source ?: "")
       } catch (_: JSONException) {
-      }
-      if (ActivityCompat.checkSelfPermission(
-          activity,
-          Manifest.permission.POST_NOTIFICATIONS
-        ) != PackageManager.PERMISSION_GRANTED
-      ) {
-        return
       }
       notificationManager.notify(notification.id, buildNotification)
     }
@@ -297,7 +286,12 @@ class TauriNotificationManager(
   }
 
   private fun buildIntent(notification: Notification, action: String?): Intent {
-    val intent = Intent(context, activity.javaClass)
+    val intent = if (activity != null) {
+      Intent(context, activity.javaClass)
+    } else {
+      val packageName = context.packageName
+      context.packageManager.getLaunchIntentForPackage(packageName)!!
+    }
     intent.action = Intent.ACTION_MAIN
     intent.addCategory(Intent.CATEGORY_LAUNCHER)
     intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -536,5 +530,42 @@ class TimedNotificationPublisher : BroadcastReceiver() {
   companion object {
     var NOTIFICATION_KEY = "NotificationPublisher.notification"
     var CRON_KEY = "NotificationPublisher.cron"
+  }
+}
+
+class LocalNotificationRestoreReceiver : BroadcastReceiver() {
+  @SuppressLint("ObsoleteSdkInt")
+  override fun onReceive(context: Context, intent: Intent) {
+    if (SDK_INT >= Build.VERSION_CODES.N) {
+      val um = context.getSystemService(
+        UserManager::class.java
+      )
+      if (um == null || !um.isUserUnlocked) return
+    }
+    val storage = NotificationStorage(context)
+    val ids = storage.getSavedNotificationIds()
+    val notifications = mutableListOf<Notification>()
+    val updatedNotifications = mutableListOf<Notification>()
+    for (id in ids) {
+      val notification = storage.getSavedNotification(id) ?: continue
+      val schedule = notification.schedule
+      if (schedule != null && schedule.kind is ScheduleKind.At) {
+        val at: Date = schedule.kind.date
+        if (at.before(Date())) {
+          // modify the scheduled date in order to show notifications that would have been delivered while device was off.
+          val newDateTime = Date().time + 15 * 1000
+          schedule.kind.date = Date(newDateTime)
+          updatedNotifications.add(notification)
+        }
+      }
+      notifications.add(notification)
+    }
+    if (updatedNotifications.size > 0) {
+      storage.appendNotifications(updatedNotifications)
+    }
+
+    // TODO: deserialize configuration
+    val notificationManager = TauriNotificationManager(storage, null, context, JSObject())
+    notificationManager.schedule(notifications)
   }
 }
