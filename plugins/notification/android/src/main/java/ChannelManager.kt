@@ -138,14 +138,6 @@ class ChannelManager(private var context: Context) {
             0xFFFFFF and notificationChannel.lightColor
           )
         )
-        Logger.debug(
-          Logger.tags("NotificationChannel"),
-          "visibility " + notificationChannel.lockscreenVisibility
-        )
-        Logger.debug(
-          Logger.tags("NotificationChannel"),
-          "importance " + notificationChannel.importance
-        )
         channels.put(channel)
       }
       val result = JSObject()

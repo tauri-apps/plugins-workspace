@@ -4,13 +4,10 @@ import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import app.tauri.Logger
-import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSArray
 import app.tauri.plugin.JSObject
 import org.json.JSONException
 import org.json.JSONObject
-import java.text.ParseException
 
 class Notification {
   var title: String? = null
@@ -170,15 +167,6 @@ class Notification {
     return result
   }
 
-  fun setExtraFromString(extraFromString: String) {
-    try {
-      val jsonObject = JSONObject(extraFromString)
-      extra = JSObject.fromJSONObject(jsonObject)
-    } catch (e: JSONException) {
-      Logger.error(Logger.tags("Notification"), "Cannot rebuild extra data", e)
-    }
-  }
-
   companion object {
     fun fromJson(jsonNotification: JSONObject): Notification {
       val notification: JSObject = try {
@@ -227,26 +215,6 @@ class Notification {
       } catch (_: Exception) {
       }
       return notification
-    }
-
-    fun getNotificationPendingList(invoke: Invoke): List<Int>? {
-      var notifications: List<JSONObject>? = null
-      try {
-        notifications = invoke.getArray("notifications", JSArray()).toList()
-      } catch (_: JSONException) {
-      }
-      if (notifications.isNullOrEmpty()) {
-        invoke.reject("Must provide notifications array as notifications option")
-        return null
-      }
-      val notificationsList: MutableList<Int> = ArrayList(notifications.size)
-      for (notificationToCancel in notifications) {
-        try {
-          notificationsList.add(notificationToCancel.getInt("id"))
-        } catch (_: JSONException) {
-        }
-      }
-      return notificationsList
     }
 
     fun buildNotificationPendingList(notifications: List<Notification>): JSObject {

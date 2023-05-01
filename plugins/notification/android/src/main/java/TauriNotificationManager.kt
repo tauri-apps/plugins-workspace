@@ -21,14 +21,11 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
 import app.tauri.Logger
-import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSObject
-import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
-
 
 // Action constants
 const val NOTIFICATION_INTENT_KEY = "NotificationId"
@@ -246,7 +243,7 @@ class TauriNotificationManager(
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
       flags = flags or PendingIntent.FLAG_MUTABLE
     }
-    val pendingIntent = PendingIntent.getActivity(context, notification.id ?: 0, intent, flags)
+    val pendingIntent = PendingIntent.getActivity(context, notification.id, intent, flags)
     mBuilder.setContentIntent(pendingIntent)
 
     // Build action types
@@ -258,7 +255,7 @@ class TauriNotificationManager(
         val actionIntent = buildIntent(notification, notificationAction!!.id)
         val actionPendingIntent = PendingIntent.getActivity(
           context,
-          (notification.id ?: 0) + notificationAction.id.hashCode(),
+          (notification.id) + notificationAction.id.hashCode(),
           actionIntent,
           flags
         )
@@ -295,7 +292,7 @@ class TauriNotificationManager(
       flags = PendingIntent.FLAG_MUTABLE
     }
     val deleteIntent =
-      PendingIntent.getBroadcast(context, notification.id ?: 0, dissmissIntent, flags)
+      PendingIntent.getBroadcast(context, notification.id, dissmissIntent, flags)
     mBuilder.setDeleteIntent(deleteIntent)
   }
 
@@ -317,6 +314,7 @@ class TauriNotificationManager(
    * on a certain date "shape" (such as every first of the month)
    */
   // TODO support different AlarmManager.RTC modes depending on priority
+  @SuppressLint("SimpleDateFormat")
   private fun triggerScheduledNotification(notification: android.app.Notification, request: Notification) {
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     val schedule = request.schedule
@@ -331,7 +329,7 @@ class TauriNotificationManager(
       flags = flags or PendingIntent.FLAG_MUTABLE
     }
     var pendingIntent =
-      PendingIntent.getBroadcast(context, request.id ?: 0, notificationIntent, flags)
+      PendingIntent.getBroadcast(context, request.id, notificationIntent, flags)
 
     when (val scheduleKind = schedule?.kind) {
       is ScheduleKind.At -> {
@@ -351,7 +349,7 @@ class TauriNotificationManager(
         val trigger = scheduleKind.interval.nextTrigger(Date())
         notificationIntent.putExtra(TimedNotificationPublisher.CRON_KEY, scheduleKind.interval.toMatchString())
         pendingIntent =
-          PendingIntent.getBroadcast(context, request.id ?: 0, notificationIntent, flags)
+          PendingIntent.getBroadcast(context, request.id, notificationIntent, flags)
         setExactIfPossible(alarmManager, schedule, trigger, pendingIntent)
         val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
         Logger.debug(
@@ -376,13 +374,13 @@ class TauriNotificationManager(
     pendingIntent: PendingIntent
   ) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && schedule.whileIdle == true) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && schedule.whileIdle) {
         alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pendingIntent)
       } else {
         alarmManager[AlarmManager.RTC, trigger] = pendingIntent
       }
     } else {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && schedule.whileIdle == true) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && schedule.whileIdle) {
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pendingIntent)
       } else {
         alarmManager.setExact(AlarmManager.RTC, trigger, pendingIntent)
@@ -390,16 +388,12 @@ class TauriNotificationManager(
     }
   }
 
-  fun cancel(invoke: Invoke) {
-    val notificationsToCancel = Notification.getNotificationPendingList(invoke)
-    if (notificationsToCancel != null) {
-      for (id in notificationsToCancel) {
-        dismissVisibleNotification(id)
-        cancelTimerForNotification(id)
-        storage.deleteNotification(id.toString())
-      }
+  fun cancel(notifications: List<Int>) {
+    for (id in notifications) {
+      dismissVisibleNotification(id)
+      cancelTimerForNotification(id)
+      storage.deleteNotification(id.toString())
     }
-    invoke.resolve()
   }
 
   private fun cancelTimerForNotification(notificationId: Int) {
@@ -511,7 +505,7 @@ class TimedNotificationPublisher : BroadcastReceiver() {
     return intent.getParcelableExtra(string)
   }
 
-  @SuppressLint("MissingPermission")
+  @SuppressLint("MissingPermission", "SimpleDateFormat")
   private fun rescheduleNotificationIfNeeded(context: Context, intent: Intent, id: Int): Boolean {
     val dateString = intent.getStringExtra(CRON_KEY)
     if (dateString != null) {

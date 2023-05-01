@@ -110,17 +110,7 @@ impl<R: Runtime> Notification<R> {
     /// Cancel pending notifications.
     pub fn cancel(&self, notifications: Vec<i32>) -> crate::Result<()> {
         let mut args = HashMap::new();
-        args.insert(
-            "notifications",
-            notifications
-                .into_iter()
-                .map(|id| {
-                    let mut notification = HashMap::new();
-                    notification.insert("id", id);
-                    notification
-                })
-                .collect::<Vec<HashMap<&str, i32>>>(),
-        );
+        args.insert("notifications", notifications);
         self.0.run_mobile_plugin("cancel", args).map_err(Into::into)
     }
 

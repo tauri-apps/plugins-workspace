@@ -83,21 +83,16 @@ class NotificationPlugin: Plugin {
       invoke.reject("`notifications` array is required")
       return
     }
-    var ids = [String]()
+    var ids = [Int]()
 
     for notification in notifications {
       let request = try showNotification(invoke: invoke, notification: notification)
       // TODO self.notificationHandler.notificationsMap[request.identifier] = notification
-      ids.append(request.identifier)
+      ids.append(Int(request.identifier) ?? -1)
     }
 
-    let ret = ids.map({ (id) -> JSObject in
-      return [
-        "id": Int(id) ?? -1
-      ]
-    })
     invoke.resolve([
-      "notifications": ret
+      "notifications": ids
     ])
   }
 
@@ -131,23 +126,18 @@ class NotificationPlugin: Plugin {
   }
 
   @objc func cancel(_ invoke: Invoke) {
-    guard let notifications = invoke.getArray("notifications", JSObject.self),
+    guard let notifications = invoke.getArray("notifications", NSNumber.self),
       notifications.count > 0
     else {
       invoke.reject("`notifications` input is required")
       return
     }
 
-    let ids = notifications.map({ (value: JSObject) -> String in
-      if let idString = value["id"] as? String {
-        return idString
-      } else if let idNum = value["id"] as? NSNumber {
-        return idNum.stringValue
-      }
-      return ""
-    })
-
-    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
+    UNUserNotificationCenter.current().removePendingNotificationRequests(
+      withIdentifiers: notifications.map({ (id) -> String in
+        return id.stringValue
+      })
+    )
     invoke.resolve()
   }
 

@@ -98,21 +98,20 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     notificationStorage.appendNotifications(notifications)
 
     val result = JSObject()
-    val jsArray = JSArray()
-    for (id in ids) {
-      try {
-        val notification = JSObject().put("id", id)
-        jsArray.put(notification)
-      } catch (_: Exception) {
-      }
-    }
-    result.put("notifications", jsArray)
+    result.put("notifications", ids)
     invoke.resolve(result)
   }
 
   @Command
-  void cancel(invoke: Invoke) {
-    manager.cancel(invoke)
+  fun cancel(invoke: Invoke) {
+    val notifications: List<Int> = invoke.getArray("notifications", JSArray()).toList()
+    if (notifications.isEmpty()) {
+      invoke.reject("Must provide notifications array as notifications option")
+      return
+    }
+
+    manager.cancel(notifications)
+    invoke.resolve()
   }
 
   @Command
