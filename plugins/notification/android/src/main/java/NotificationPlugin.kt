@@ -33,8 +33,18 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   private lateinit var notificationManager: NotificationManager
   private lateinit var notificationStorage: NotificationStorage
   private var channelManager = ChannelManager(activity)
-  
+
+  companion object {
+    var instance: NotificationPlugin? = null
+
+    fun triggerNotification(notification: JSObject) {
+      instance?.trigger("notification", notification)
+    }
+  }
+
   override fun load(webView: WebView) {
+    instance = this
+
     super.load(webView)
     this.webView = webView
     notificationStorage = NotificationStorage(activity)
@@ -59,7 +69,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     }
     val dataJson = manager.handleNotificationActionPerformed(intent, notificationStorage)
     if (dataJson != null) {
-      // TODO trigger("actionPerformed", dataJson, true)
+      trigger("actionPerformed", dataJson)
     }
   }
 

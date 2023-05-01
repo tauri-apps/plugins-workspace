@@ -24,7 +24,7 @@
  * @module
  */
 
-import { invoke } from '@tauri-apps/api/tauri'
+import { invoke, transformCallback } from '@tauri-apps/api/tauri'
 
 /**
  * Options to send a notification.
@@ -548,6 +548,39 @@ async function channels(): Promise<Channel[]> {
   return invoke('plugin:notification|getActive')
 }
 
+class EventChannel {
+  id: number
+  unregisterFn: (channel: EventChannel) => Promise<void>
+
+  constructor(id: number, unregisterFn: (channel: EventChannel) => Promise<void>) {
+    this.id = id
+    this.unregisterFn = unregisterFn
+  }
+
+  toJSON(): string {
+    return `__CHANNEL__:${this.id}`
+  }
+
+  async unregister(): Promise<void> {
+    return this.unregisterFn(this)
+  }
+}
+
+// TODO: use addPluginListener API on @tauri-apps/api/tauri 2.0.0-alpha.4
+async function onNotificationReceived(cb: (notification: Options) => void): Promise<EventChannel> {
+  const channelId = transformCallback(cb)
+  const handler = new EventChannel(channelId, (channel) => invoke('plugin:notification|remove_listener', { event: 'notification', channelId: channel.id }))
+  return invoke('plugin:notification|register_listener', { event: 'notification', handler }).then(() => handler)
+}
+
+// TODO: use addPluginListener API on @tauri-apps/api/tauri 2.0.0-alpha.4
+async function onAction(cb: (notification: Options) => void): Promise<EventChannel> {
+  const channelId = transformCallback(cb)
+  const handler = new EventChannel(channelId, (channel) => invoke('plugin:notification|remove_listener', { event: 'actionPerformed', channelId: channel.id }))
+  return invoke('plugin:notification|register_listener', { event: 'actionPerformed', handler }).then(() => handler)
+}
+
+
 export type { Attachment, Options, Permission, Action, ActionType, PendingNotification, ActiveNotification, Channel }
 
 export {
@@ -565,5 +598,8 @@ export {
   removeAllActive,
   createChannel,
   removeChannel,
-  channels
+  channels,
+
+  onNotificationReceived,
+  onAction
 }

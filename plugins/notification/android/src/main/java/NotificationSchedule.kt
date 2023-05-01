@@ -1,8 +1,8 @@
 package app.tauri.notification
 
+import android.annotation.SuppressLint
 import android.text.format.DateUtils
 import app.tauri.plugin.JSObject
-import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -36,6 +36,7 @@ sealed class ScheduleKind {
   class Every(val interval: NotificationInterval, val count: Int): ScheduleKind()
 }
 
+@SuppressLint("SimpleDateFormat")
 class NotificationSchedule(val scheduleObj: JSObject) {
   val kind: ScheduleKind
   // Schedule this notification to fire even if app is idled (Doze)

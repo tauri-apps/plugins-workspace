@@ -29,7 +29,7 @@ class Notification {
   var attachments: List<NotificationAttachment>? = null
   var schedule: NotificationSchedule? = null
   var channelId: String? = null
-  var source: String? = null
+  var source: JSObject? = null
   var visibility: Int? = null
   var number: Int? = null
 
@@ -104,7 +104,7 @@ class Notification {
 
     fun fromJSObject(jsonObject: JSObject): Notification {
       val notification = Notification()
-      notification.source = jsonObject.toString()
+      notification.source = jsonObject
       notification.id = jsonObject.getInteger("id") ?: throw Exception("Missing notification identifier")
       notification.body = jsonObject.getString("body", null)
       notification.largeBody = jsonObject.getString("largeBody", null)

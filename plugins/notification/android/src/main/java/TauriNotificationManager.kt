@@ -44,9 +44,6 @@ class TauriNotificationManager(
   private var defaultSoundID: Int = AssetUtils.RESOURCE_ID_ZERO_VALUE
   private var defaultSmallIconID: Int = AssetUtils.RESOURCE_ID_ZERO_VALUE
 
-  /**
-   * Method extecuted when notification is launched by user from the notification bar.
-   */
   fun handleNotificationActionPerformed(
     data: Intent,
     notificationStorage: NotificationStorage
@@ -89,7 +86,7 @@ class TauriNotificationManager(
   fun createNotificationChannel() {
     // Create the NotificationChannel, but only on API 26+ because
     // the NotificationChannel class is new and not in the support library
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    if (SDK_INT >= Build.VERSION_CODES.O) {
       val name: CharSequence = "Default"
       val description = "Default"
       val importance = NotificationManager.IMPORTANCE_DEFAULT
@@ -212,16 +209,15 @@ class TauriNotificationManager(
     if (notification.isScheduled) {
       triggerScheduledNotification(buildNotification, notification)
     } else {
+      notificationManager.notify(notification.id, buildNotification)
       try {
-        // TODO notify
-        // val notificationJson = JSObject(notification.source ?: "")
+        NotificationPlugin.triggerNotification(notification.source ?: JSObject())
       } catch (_: JSONException) {
       }
-      notificationManager.notify(notification.id, buildNotification)
     }
   }
 
-  // Create intents for open/dissmis actions
+  // Create intents for open/dismiss actions
   private fun createActionIntents(
     notification: Notification,
     mBuilder: NotificationCompat.Builder
@@ -229,7 +225,7 @@ class TauriNotificationManager(
     // Open intent
     val intent = buildIntent(notification, DEFAULT_PRESS_ACTION)
     var flags = PendingIntent.FLAG_CANCEL_CURRENT
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    if (SDK_INT >= Build.VERSION_CODES.S) {
       flags = flags or PendingIntent.FLAG_MUTABLE
     }
     val pendingIntent = PendingIntent.getActivity(context, notification.id, intent, flags)
@@ -297,7 +293,7 @@ class TauriNotificationManager(
     intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
     intent.putExtra(NOTIFICATION_INTENT_KEY, notification.id)
     intent.putExtra(ACTION_INTENT_KEY, action)
-    intent.putExtra(NOTIFICATION_OBJ_INTENT_KEY, notification.source)
+    intent.putExtra(NOTIFICATION_OBJ_INTENT_KEY, notification.source.toString())
     val schedule = notification.schedule
     intent.putExtra(NOTIFICATION_IS_REMOVABLE_KEY, schedule == null || schedule.isRemovable())
     return intent
@@ -486,8 +482,10 @@ class TimedNotificationPublisher : BroadcastReceiver() {
       Logger.error(Logger.tags("Notification"), "No valid id supplied", null)
     }
     val storage = NotificationStorage(context)
-    // TODO notify
-    // val notificationJson = storage.getSavedNotificationAsJSObject(id.toString())
+    val notificationJson = storage.getSavedNotificationAsJSObject(id.toString())
+    if (notificationJson != null) {
+      NotificationPlugin.triggerNotification(notificationJson)
+    }
     notificationManager.notify(id, notification)
     if (!rescheduleNotificationIfNeeded(context, intent, id)) {
       storage.deleteNotification(id.toString())
@@ -508,11 +506,11 @@ class TimedNotificationPublisher : BroadcastReceiver() {
       val trigger = date.nextTrigger(Date())
       val clone = intent.clone() as Intent
       var flags = PendingIntent.FLAG_CANCEL_CURRENT
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+      if (SDK_INT >= Build.VERSION_CODES.S) {
         flags = flags or PendingIntent.FLAG_MUTABLE
       }
       val pendingIntent = PendingIntent.getBroadcast(context, id, clone, flags)
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+      if (SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
         alarmManager[AlarmManager.RTC, trigger] = pendingIntent
       } else {
         alarmManager.setExact(AlarmManager.RTC, trigger, pendingIntent)

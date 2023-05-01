@@ -10,19 +10,15 @@ import java.text.ParseException
 private const val NOTIFICATION_STORE_ID = "NOTIFICATION_STORE"
 // Key used to save action types
 private const val ACTION_TYPES_ID = "ACTION_TYPE_STORE"
-private const val ID_KEY = "notificationIds"
 
 class NotificationStorage(private val context: Context) {
-  /**
-   * Persist the id of currently scheduled notification
-   */
   fun appendNotifications(localNotifications: List<Notification>) {
     val storage = getStorage(NOTIFICATION_STORE_ID)
     val editor = storage.edit()
     for (request in localNotifications) {
       if (request.isScheduled) {
         val key: String = request.id.toString()
-        editor.putString(key, request.source)
+        editor.putString(key, request.source.toString())
       }
     }
     editor.apply()
@@ -96,28 +92,16 @@ class NotificationStorage(private val context: Context) {
     return notification
   }
 
-  /**
-   * Remove the stored notifications
-   */
   fun deleteNotification(id: String?) {
     val editor = getStorage(NOTIFICATION_STORE_ID).edit()
     editor.remove(id)
     editor.apply()
   }
 
-  /**
-   * Shared private preferences for the application.
-   */
   private fun getStorage(key: String): SharedPreferences {
     return context.getSharedPreferences(key, Context.MODE_PRIVATE)
   }
 
-  /**
-   * Writes new action types (actions that being displayed in notification) to storage.
-   * Write will override previous data.
-   *
-   * @param typesMap - map with groupId and actionArray assigned to group
-   */
   fun writeActionGroup(typesMap: Map<String, List<NotificationAction>>) {
     for ((id, notificationActions) in typesMap) {
       val editor = getStorage(ACTION_TYPES_ID + id).edit()
@@ -132,15 +116,10 @@ class NotificationStorage(private val context: Context) {
     }
   }
 
-  /**
-   * Retrieve array of notification actions per ActionTypeId
-   *
-   * @param forId - id of the group
-   */
   fun getActionGroup(forId: String): Array<NotificationAction?> {
     val storage = getStorage(ACTION_TYPES_ID + forId)
     val count = storage.getInt("count", 0)
-    val actions: Array<NotificationAction?> = arrayOfNulls<NotificationAction>(count)
+    val actions: Array<NotificationAction?> = arrayOfNulls(count)
     for (i in 0 until count) {
       val id = storage.getString("id$i", "")
       val title = storage.getString("title$i", "")
