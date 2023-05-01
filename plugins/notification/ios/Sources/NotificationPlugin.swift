@@ -61,18 +61,18 @@ func showNotification(invoke: Invoke, notification: JSObject)
 }
 
 class NotificationPlugin: Plugin {
-  let notificationHandler = NotificationHandler()
+  var notificationHandler = NotificationHandler()
   let notificationManager = NotificationManager()
 
   override init() {
     super.init()
-    notificationHandler.plugin = self
     notificationManager.notificationHandler = notificationHandler
+    notificationHandler.plugin = self
   }
 
   @objc public func show(_ invoke: Invoke) throws {
     let request = try showNotification(invoke: invoke, notification: invoke.data)
-    // TODO self.notificationHandler.notificationsMap[request.identifier] = invoke.data
+    notificationHandler.saveNotification(request.identifier, invoke.data)
     invoke.resolve([
       "id": Int(request.identifier) ?? -1
     ])
@@ -87,7 +87,7 @@ class NotificationPlugin: Plugin {
 
     for notification in notifications {
       let request = try showNotification(invoke: invoke, notification: notification)
-      // TODO self.notificationHandler.notificationsMap[request.identifier] = notification
+      notificationHandler.saveNotification(request.identifier, notification)
       ids.append(Int(request.identifier) ?? -1)
     }
 

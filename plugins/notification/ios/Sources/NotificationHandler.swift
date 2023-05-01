@@ -5,7 +5,11 @@ public class NotificationHandler: NSObject, NotificationHandlerProtocol {
 
   public weak var plugin: Plugin?
 
-  var notificationsMap = [String: JSObject]()
+  private var notificationsMap = [String: JSObject]()
+
+  public func saveNotification(_ key: String, _ notification: JSObject) {
+    notificationsMap.updateValue(notification, forKey: key)
+  }
 
   public func requestPermissions(with completion: ((Bool, Error?) -> Void)? = nil) {
     let center = UNUserNotificationCenter.current()
@@ -72,7 +76,7 @@ public class NotificationHandler: NSObject, NotificationHandlerProtocol {
     var notification = makePendingNotificationRequestJSObject(request)
     notification["sound"] = notificationRequest["sound"] ?? ""
     notification["actionTypeId"] = request.content.categoryIdentifier
-    notification["attachments"] = notificationRequest["attachments"] ?? []
+    notification["attachments"] = notificationRequest["attachments"] ?? [JSObject]()
     return notification
   }
 
