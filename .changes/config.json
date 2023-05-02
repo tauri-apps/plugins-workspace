@@ -51,12 +51,39 @@
       "manager": "javascript-disabled"
     },
 
-    "fs-extra": {
-      "path": "./plugins/fs-extra",
+    "cli": {
+      "path": "./plugins/cli",
       "manager": "rust-disabled"
     },
-    "fs-extra-js": {
-      "path": "./plugins/fs-extra",
+    "cli-js": {
+      "path": "./plugins/cli",
+      "manager": "javascript-disabled"
+    },
+
+    "clipboard": {
+      "path": "./plugins/clipboard",
+      "manager": "rust-disabled"
+    },
+    "clipboard-js": {
+      "path": "./plugins/clipboard",
+      "manager": "javascript-disabled"
+    },
+
+    "dialog": {
+      "path": "./plugins/dialog",
+      "manager": "rust-disabled"
+    },
+    "dialog-js": {
+      "path": "./plugins/dialog",
+      "manager": "javascript-disabled"
+    },
+
+    "fs": {
+      "path": "./plugins/fs",
+      "manager": "rust-disabled"
+    },
+    "fs-js": {
+      "path": "./plugins/fs",
       "manager": "javascript-disabled"
     },
 
@@ -66,6 +93,24 @@
     },
     "fs-watch-js": {
       "path": "./plugins/fs-watch",
+      "manager": "javascript-disabled"
+    },
+
+    "global-shortcut": {
+      "path": "./plugins/global-shortcut",
+      "manager": "rust-disabled"
+    },
+    "global-shortcut-js": {
+      "path": "./plugins/global-shortcut",
+      "manager": "javascript-disabled"
+    },
+
+    "http": {
+      "path": "./plugins/http",
+      "manager": "rust-disabled"
+    },
+    "http-js": {
+      "path": "./plugins/http",
       "manager": "javascript-disabled"
     },
 
@@ -94,6 +139,15 @@
     },
     "positioner-js": {
       "path": "./plugins/positioner",
+      "manager": "javascript-disabled"
+    },
+
+    "shell": {
+      "path": "./plugins/shell",
+      "manager": "rust-disabled"
+    },
+    "shell-js": {
+      "path": "./plugins/shell",
       "manager": "javascript-disabled"
     },
 
