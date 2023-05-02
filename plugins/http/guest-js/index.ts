@@ -338,7 +338,7 @@ class Client {
       options.responseType = ResponseType.Text
     }
     return invoke<IResponse<T>>('plugin:http|request', {
-      client: this.id,
+      clientId: this.id,
       options
     }).then((res) => {
       const response = new Response(res)
