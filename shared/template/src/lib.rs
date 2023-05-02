@@ -46,9 +46,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
       #[cfg(desktop)]
       let {{ plugin_name_snake_case }} = desktop::init(app, api)?;
       app.manage({{ plugin_name_snake_case }});
-
-      // manage state so it is accessible by the commands
-      app.manage(MyState::default());
       Ok(())
     })
     .build()

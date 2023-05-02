@@ -38,9 +38,10 @@ fi
 
 if [[ -z "$COMMIT_MESSAGE" ]]; then
 	MONOREPO_COMMIT_MESSAGE=$(cd "${SOURCE_DIR:-.}" && git show -s --format=%B $GITHUB_SHA)
-	COMMIT_MESSAGE=$( printf "%s\n\nCommitted via a GitHub action: https://github.com/%s/actions/runs/%s\n" "$MONOREPO_COMMIT_MESSAGE" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" )
+	COMMIT_MESSAGE=$( printf "%s\n\nCommitted via a GitHub action: https://github.com/%s/actions/runs/%s" "$MONOREPO_COMMIT_MESSAGE" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" )
 fi
-COMMIT_ORIGINAL_AUTHOR="${GITHUB_ACTOR} <${GITHUB_ACTOR}@users.noreply.github.com>"
+COMMIT_ACTOR="${GITHUB_ACTOR} <${GITHUB_ACTOR}@users.noreply.github.com>"
+COMMIT_AUTHOR=$(cd "${SOURCE_DIR:-.}" &&git show -s --format="%an <%ae>" $GITHUB_SHA)
 
 if [[ "$GITHUB_REF" =~ ^refs/heads/ ]]; then
 	BRANCH=${GITHUB_REF#refs/heads/}
@@ -58,6 +59,9 @@ elif [[ ! -s "$BUILD_BASE/mirrors.txt" ]]; then
 fi
 
 # : > "$BUILD_BASE/changes.diff"
+
+# Collect tags of current commit
+readarray -t COMMIT_TAGS < <(git tag --points-at HEAD)
 
 EXIT=0
 while read -r PLUGIN_NAME; do
@@ -98,12 +102,24 @@ while read -r PLUGIN_NAME; do
 
 	if [[ -n "$FORCE_COMMIT" || -n "$(git status --porcelain)" ]]; then
 		echo "Committing to $PLUGIN_NAME"
-		if git commit $FORCE_COMMIT --author="${COMMIT_ORIGINAL_AUTHOR}" -m "${COMMIT_MESSAGE}" &&
+		GIT_CLI_COMMIT_MESSAGE=$( printf "%s \n\nCo-authored-by: %s" "$COMMIT_MESSAGE" "$COMMIT_ACTOR" )
+		if git commit $FORCE_COMMIT --author="${COMMIT_AUTHOR}" -m "${GIT_CLI_COMMIT_MESSAGE}" &&
 			{ [[ -z "$CI" ]] || git push origin "$BRANCH"; } # Only do the actual push from the GitHub Action
 		then
 			# echo "$BUILD_BASE/changes.diff"
 			# git show --pretty= --src-prefix="a/$PLUGIN_NAME/" --dst-prefix="b/$PLUGIN_NAME/" >> "$BUILD_BASE/changes.diff"
 			echo "https://github.com/tauri-apps/tauri-plugin-$PLUGIN_NAME/commit/$(git rev-parse HEAD)"
+
+			# Add new tags
+			for FULL_TAG in "${COMMIT_TAGS[@]}"; do
+				if [[ "$FULL_TAG" =~ ^"$PLUGIN_NAME-js-v" ]]; then
+					TAG_NAME="${FULL_TAG#"$PLUGIN_NAME-js-"}"
+					echo "Creating tag $TAG_NAME"
+					git tag "${TAG_NAME}" -m "${GIT_CLI_COMMIT_MESSAGE}"
+					git push origin "${TAG_NAME}"
+				fi
+			done
+
 			echo "Completed $PLUGIN_NAME"
 		else
 			echo "::error::Commit of ${PLUGIN_NAME} failed"

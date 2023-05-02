@@ -19,7 +19,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 [dependencies.tauri-plugin-sql]
 git = "https://github.com/tauri-apps/plugins-workspace"
-branch = "dev"
+branch = "next"
 features = ["sqlite"] # or "postgres", or "mysql"
 ```
 
@@ -28,11 +28,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-sql
+pnpm add https://github.com/tauri-apps/tauri-plugin-sql#next
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-sql
+npm add https://github.com/tauri-apps/tauri-plugin-sql#next
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-sql
+yarn add https://github.com/tauri-apps/tauri-plugin-sql#next
 ```
 
 ## Usage
@@ -53,16 +53,16 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import Database from "tauri-plugin-sql-api";
+import Database from 'tauri-plugin-sql-api';
 
 // sqlite. The path is relative to `tauri::api::path::BaseDirectory::App`.
-const db = await Database.load("sqlite:test.db");
+const db = await Database.load('sqlite:test.db');
 // mysql
-const db = await Database.load("mysql://user:pass@host/database");
+const db = await Database.load('mysql://user:pass@host/database');
 // postgres
-const db = await Database.load("postgres://postgres:password@localhost/test");
+const db = await Database.load('postgres://postgres:password@localhost/test');
 
-await db.execute("INSERT INTO ...");
+await db.execute('INSERT INTO ...');
 ```
 
 ## Contributing

@@ -51,6 +51,10 @@ async function upload(
   });
 }
 
+/// Download file from given url.
+///
+/// Note that `filePath` currently must include the file name.
+/// Furthermore the progress events will report a total length of 0 if the server did not sent a `Content-Length` header or if the file is compressed.
 async function download(
   url: string,
   filePath: string,
@@ -67,7 +71,7 @@ async function download(
 
   await listenToEventIfNeeded("download://progress");
 
-  await invoke("plugin:upload|upload", {
+  await invoke("plugin:upload|download", {
     id,
     url,
     filePath,
