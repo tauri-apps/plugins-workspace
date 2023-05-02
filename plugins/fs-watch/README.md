@@ -54,13 +54,21 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 import { watch, watchImmediate } from 'tauri-plugin-fs-watch-api';
 
 // can also watch an array of paths
-const stopWatching = await watch('/path/to/something', { recursive: true }, (event) => {
+const stopWatching = await watch(
+  "/path/to/something",
+  (event) => {
     const { type, payload } = event;
-});
+  },
+  { recursive: true }
+);
 
-const stopRawWatcher = await watchImmediate(['/path/a', '/path/b'], {}, (event) => {
+const stopRawWatcher = await watchImmediate(
+  ["/path/a", "/path/b"],
+  (event) => {
     const { path, operation, cookie } = event;
-});
+  },
+  {}
+);
 ```
 
 ## Contributing
