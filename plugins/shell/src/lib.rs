@@ -46,8 +46,8 @@ impl<R: Runtime> Shell<R> {
     /// Open a (url) path with a default or specific browser opening program.
     ///
     /// See [`crate::api::shell::open`] for how it handles security-related measures.
-    pub fn open(&self, path: String, with: Option<open::Program>) -> Result<()> {
-        open::open(&self.scope, path, with).map_err(Into::into)
+    pub fn open(&self, path: impl Into<String>, with: Option<open::Program>) -> Result<()> {
+        open::open(&self.scope, path.into(), with).map_err(Into::into)
     }
 }
 

@@ -64,12 +64,24 @@ importers:
       tauri-plugin-clipboard-api:
         specifier: 0.0.0
         version: link:../../plugins/clipboard
+      tauri-plugin-dialog-api:
+        specifier: 0.0.0
+        version: link:../../plugins/dialog
       tauri-plugin-fs-api:
         specifier: 0.0.0
         version: link:../../plugins/fs
       tauri-plugin-global-shortcut-api:
         specifier: 0.0.0
         version: link:../../plugins/global-shortcut
+      tauri-plugin-http-api:
+        specifier: 0.0.0
+        version: link:../../plugins/http
+      tauri-plugin-notification-api:
+        specifier: 0.0.0
+        version: link:../../plugins/notification
+      tauri-plugin-shell-api:
+        specifier: 0.0.0
+        version: link:../../plugins/shell
     devDependencies:
       '@iconify-json/codicon':
         specifier: ^1.1.10

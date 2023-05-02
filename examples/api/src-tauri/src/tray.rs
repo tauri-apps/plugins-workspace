@@ -4,12 +4,10 @@
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{
-    api::{
-        dialog::{MessageDialogBuilder, MessageDialogButtons},
-        shell,
-    },
     CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowBuilder, WindowUrl,
 };
+use tauri_plugin_dialog::DialogExt;
+use tauri_plugin_shell::ShellExt;
 
 pub fn create_tray(app: &tauri::App) -> tauri::Result<()> {
     let mut tray_menu1 = SystemTrayMenu::new()
@@ -121,20 +119,16 @@ pub fn create_tray(app: &tauri::App) -> tauri::Result<()> {
                         }
                         "about" => {
                             let window = handle.get_window("main").unwrap();
-                            MessageDialogBuilder::new("About app", "Tauri demo app")
+                            window
+                                .dialog()
+                                .message("Tauri demo app")
+                                .title("About app")
                                 .parent(&window)
-                                .buttons(MessageDialogButtons::OkCancelWithLabels(
-                                    "Homepage".into(),
-                                    "know it".into(),
-                                ))
+                                .ok_button_label("Homepage")
+                                .cancel_button_label("Cancel")
                                 .show(move |ok| {
                                     if ok {
-                                        shell::open(
-                                            &window.shell_scope(),
-                                            "https://tauri.app/",
-                                            None,
-                                        )
-                                        .unwrap();
+                                        window.shell().open("https://tauri.app/", None).unwrap();
                                     }
                                 });
                         }

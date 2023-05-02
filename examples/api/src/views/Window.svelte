@@ -7,8 +7,8 @@
     PhysicalSize,
     PhysicalPosition
   } from '@tauri-apps/api/window'
-  import { open as openDialog } from '@tauri-apps/api/dialog'
-  import { open } from '@tauri-apps/api/shell'
+  import { open as openDialog } from 'tauri-plugin-dialog-api'
+  import { open } from 'tauri-plugin-shell-api'
 
   let selectedWindow = appWindow.label
   const windowMap = {

@@ -1,5 +1,5 @@
 <script>
-  import { open, save } from '@tauri-apps/api/dialog'
+  import { open, save } from 'tauri-plugin-dialog-api'
   import { readBinaryFile } from 'tauri-plugin-fs-api'
 
   export let onMessage
@@ -40,7 +40,7 @@
         if (Array.isArray(res)) {
           onMessage(res)
         } else {
-          var pathToRead = res
+          var pathToRead = typeof res === 'string' ? res : res.path
           var isFile = pathToRead.match(/\S+\.\S+$/g)
           readBinaryFile(pathToRead)
             .then(function (response) {
