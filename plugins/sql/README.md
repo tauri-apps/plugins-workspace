@@ -19,7 +19,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 [dependencies.tauri-plugin-sql]
 git = "https://github.com/tauri-apps/plugins-workspace"
-branch = "dev"
+branch = "v1"
 features = ["sqlite"] # or "postgres", or "mysql"
 ```
 
