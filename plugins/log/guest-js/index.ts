@@ -189,7 +189,8 @@ export async function attachConsole(): Promise<UnlistenFn> {
 
     // Strip ANSI escape codes
     const message = payload.message.replace(
-      // eslint-disable-next-line no-control-regex
+      // TODO: Investigate security/detect-unsafe-regex
+      // eslint-disable-next-line no-control-regex, security/detect-unsafe-regex
       /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
       ""
     );
