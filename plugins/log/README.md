@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "next" }
+tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -26,11 +26,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-log#next
+pnpm add https://github.com/tauri-apps/tauri-plugin-log#v2
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-log#next
+npm add https://github.com/tauri-apps/tauri-plugin-log#v2
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-log#next
+yarn add https://github.com/tauri-apps/tauri-plugin-log#v2
 ```
 
 ## Usage
@@ -57,14 +57,14 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { trace, info, error, attachConsole } from 'tauri-plugin-log-api';
+import { trace, info, error, attachConsole } from "tauri-plugin-log-api";
 
 // with LogTarget::Webview enabled this function will print logs to the browser console
 const detach = await attachConsole();
 
-trace('Trace');
-info('Info');
-error('Error');
+trace("Trace");
+info("Info");
+error("Error");
 
 // detach the browser console from the log stream
 detach();
