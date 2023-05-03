@@ -6,7 +6,7 @@
     if (window.Notification.permission !== "default") {
       return Promise.resolve(window.Notification.permission === "granted");
     }
-    return __TAURI__.invoke("plugin:notification|is_permission_granted");
+    return window.__TAURI__.invoke("plugin:notification|is_permission_granted");
   }
 
   function setNotificationPermission(value) {
@@ -17,7 +17,7 @@
   }
 
   function requestPermission() {
-    return __TAURI__
+    return window.__TAURI__
       .invoke("plugin:notification|request_permission")
       .then(function (permission) {
         setNotificationPermission(permission);
@@ -30,7 +30,7 @@
       Object.freeze(options);
     }
 
-    return __TAURI__.invoke("plugin:notification|notify", {
+    return window.__TAURI__.invoke("plugin:notification|notify", {
       options:
         typeof options === "string"
           ? {

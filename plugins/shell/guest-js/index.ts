@@ -143,9 +143,10 @@ async function execute<O extends IOPayload>(
 /**
  * @since 1.0.0
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 class EventEmitter<E extends Record<string, any>> {
   /** @ignore */
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
   private eventListeners: Record<keyof E, Array<(arg: any) => void>> =
     Object.create(null);
 
@@ -320,6 +321,7 @@ class EventEmitter<E extends Record<string, any>> {
     eventName: N,
     listener: (arg: E[typeof eventName]) => void
   ): this {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapper = (arg: any): void => {
       this.removeListener(eventName, wrapper);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
