@@ -21,6 +21,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
 import app.tauri.Logger
 import app.tauri.plugin.JSObject
+import app.tauri.plugin.PluginManager
 import org.json.JSONException
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -273,7 +274,7 @@ class TauriNotificationManager(
       schedule == null || schedule.isRemovable()
     )
     flags = 0
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    if (SDK_INT >= Build.VERSION_CODES.S) {
       flags = PendingIntent.FLAG_MUTABLE
     }
     val deleteIntent =
@@ -315,7 +316,7 @@ class TauriNotificationManager(
     notificationIntent.putExtra(NOTIFICATION_INTENT_KEY, request.id)
     notificationIntent.putExtra(TimedNotificationPublisher.NOTIFICATION_KEY, notification)
     var flags = PendingIntent.FLAG_CANCEL_CURRENT
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    if (SDK_INT >= Build.VERSION_CODES.S) {
       flags = flags or PendingIntent.FLAG_MUTABLE
     }
     var pendingIntent =
@@ -363,14 +364,14 @@ class TauriNotificationManager(
     trigger: Long,
     pendingIntent: PendingIntent
   ) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && schedule.whileIdle) {
+    if (SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+      if (SDK_INT >= Build.VERSION_CODES.M && schedule.whileIdle) {
         alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pendingIntent)
       } else {
         alarmManager[AlarmManager.RTC, trigger] = pendingIntent
       }
     } else {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && schedule.whileIdle) {
+      if (SDK_INT >= Build.VERSION_CODES.M && schedule.whileIdle) {
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pendingIntent)
       } else {
         alarmManager.setExact(AlarmManager.RTC, trigger, pendingIntent)
@@ -389,7 +390,7 @@ class TauriNotificationManager(
   private fun cancelTimerForNotification(notificationId: Int) {
     val intent = Intent(context, TimedNotificationPublisher::class.java)
     var flags = 0
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    if (SDK_INT >= Build.VERSION_CODES.S) {
       flags = PendingIntent.FLAG_MUTABLE
     }
     val pi = PendingIntent.getBroadcast(context, notificationId, intent, flags)
@@ -562,8 +563,7 @@ class LocalNotificationRestoreReceiver : BroadcastReceiver() {
       storage.appendNotifications(updatedNotifications)
     }
 
-    // TODO: deserialize configuration
-    val notificationManager = TauriNotificationManager(storage, null, context, JSObject())
+    val notificationManager = TauriNotificationManager(storage, null, context, PluginManager.loadConfig(context, "notification"))
     notificationManager.schedule(notifications)
   }
 }
