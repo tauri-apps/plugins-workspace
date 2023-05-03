@@ -21,9 +21,9 @@
  * @module
  */
 
-import { invoke, transformCallback } from '@tauri-apps/api/tauri'
+import { invoke, transformCallback } from "@tauri-apps/api/tauri";
 
-export type ShortcutHandler = (shortcut: string) => void
+export type ShortcutHandler = (shortcut: string) => void;
 
 /**
  * Register a global shortcut.
@@ -44,10 +44,10 @@ async function register(
   shortcut: string,
   handler: ShortcutHandler
 ): Promise<void> {
-  return await invoke('plugin:globalShortcut|register', {
+  return await invoke("plugin:globalShortcut|register", {
     shortcut,
-    handler: transformCallback(handler)
-  })
+    handler: transformCallback(handler),
+  });
 }
 
 /**
@@ -69,15 +69,15 @@ async function registerAll(
   shortcuts: string[],
   handler: ShortcutHandler
 ): Promise<void> {
-  return await invoke('plugin:globalShortcut|register_all', {
+  return await invoke("plugin:globalShortcut|register_all", {
     shortcuts,
-    handler: transformCallback(handler)
-  })
+    handler: transformCallback(handler),
+  });
 }
 
 /**
  * Determines whether the given shortcut is registered by this application or not.
- * 
+ *
  * If the shortcut is registered by another application, it will still return `false`.
  *
  * @example
@@ -91,9 +91,9 @@ async function registerAll(
  * @since 1.0.0
  */
 async function isRegistered(shortcut: string): Promise<boolean> {
-  return await invoke('plugin:globalShortcut|is_registered', {
-    shortcut
-  })
+  return await invoke("plugin:globalShortcut|is_registered", {
+    shortcut,
+  });
 }
 
 /**
@@ -109,9 +109,9 @@ async function isRegistered(shortcut: string): Promise<boolean> {
  * @since 1.0.0
  */
 async function unregister(shortcut: string): Promise<void> {
-  return await invoke('plugin:globalShortcut|unregister', {
-    shortcut
-  })
+  return await invoke("plugin:globalShortcut|unregister", {
+    shortcut,
+  });
 }
 
 /**
@@ -125,7 +125,7 @@ async function unregister(shortcut: string): Promise<void> {
  * @since 1.0.0
  */
 async function unregisterAll(): Promise<void> {
-  return await invoke('plugin:globalShortcut|unregister_all')
+  return await invoke("plugin:globalShortcut|unregister_all");
 }
 
-export { register, registerAll, isRegistered, unregister, unregisterAll }
+export { register, registerAll, isRegistered, unregister, unregisterAll };

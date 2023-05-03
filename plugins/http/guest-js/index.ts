@@ -41,14 +41,14 @@
  * @module
  */
 
-import { invoke } from '@tauri-apps/api/tauri'
+import { invoke } from "@tauri-apps/api/tauri";
 
 /**
  * @since 1.0.0
  */
 interface Duration {
-  secs: number
-  nanos: number
+  secs: number;
+  nanos: number;
 }
 
 /**
@@ -59,8 +59,8 @@ interface ClientOptions {
    * Defines the maximum number of redirects the client should follow.
    * If set to 0, no redirects will be followed.
    */
-  maxRedirections?: number
-  connectTimeout?: number | Duration
+  maxRedirections?: number;
+  connectTimeout?: number | Duration;
 }
 
 /**
@@ -69,19 +69,19 @@ interface ClientOptions {
 enum ResponseType {
   JSON = 1,
   Text = 2,
-  Binary = 3
+  Binary = 3,
 }
 
 /**
  * @since 1.0.0
  */
 interface FilePart<T> {
-  file: string | T
-  mime?: string
-  fileName?: string
+  file: string | T;
+  mime?: string;
+  fileName?: string;
 }
 
-type Part = string | Uint8Array | FilePart<Uint8Array>
+type Part = string | Uint8Array | FilePart<Uint8Array>;
 
 /**
  * The body object to be used on POST and PUT requests.
@@ -89,13 +89,13 @@ type Part = string | Uint8Array | FilePart<Uint8Array>
  * @since 1.0.0
  */
 class Body {
-  type: string
-  payload: unknown
+  type: string;
+  payload: unknown;
 
   /** @ignore */
   private constructor(type: string, payload: unknown) {
-    this.type = type
-    this.payload = payload
+    this.type = type;
+    this.payload = payload;
   }
 
   /**
@@ -130,39 +130,39 @@ class Body {
    * @returns The body object ready to be used on the POST and PUT requests.
    */
   static form(data: Record<string, Part> | FormData): Body {
-    const form: Record<string, string | number[] | FilePart<number[]>> = {}
+    const form: Record<string, string | number[] | FilePart<number[]>> = {};
 
     const append = (
       key: string,
       v: string | Uint8Array | FilePart<Uint8Array> | File
     ): void => {
       if (v !== null) {
-        let r
-        if (typeof v === 'string') {
-          r = v
+        let r;
+        if (typeof v === "string") {
+          r = v;
         } else if (v instanceof Uint8Array || Array.isArray(v)) {
-          r = Array.from(v)
+          r = Array.from(v);
         } else if (v instanceof File) {
-          r = { file: v.name, mime: v.type, fileName: v.name }
-        } else if (typeof v.file === 'string') {
-          r = { file: v.file, mime: v.mime, fileName: v.fileName }
+          r = { file: v.name, mime: v.type, fileName: v.name };
+        } else if (typeof v.file === "string") {
+          r = { file: v.file, mime: v.mime, fileName: v.fileName };
         } else {
-          r = { file: Array.from(v.file), mime: v.mime, fileName: v.fileName }
+          r = { file: Array.from(v.file), mime: v.mime, fileName: v.fileName };
         }
-        form[String(key)] = r
+        form[String(key)] = r;
       }
-    }
+    };
 
     if (data instanceof FormData) {
       for (const [key, value] of data) {
-        append(key, value)
+        append(key, value);
       }
     } else {
       for (const [key, value] of Object.entries(data)) {
-        append(key, value)
+        append(key, value);
       }
     }
-    return new Body('Form', form)
+    return new Body("Form", form);
   }
 
   /**
@@ -181,7 +181,7 @@ class Body {
    * @returns The body object ready to be used on the POST and PUT requests.
    */
   static json<K extends string | number | symbol, V>(data: Record<K, V>): Body {
-    return new Body('Json', data)
+    return new Body("Json", data);
   }
 
   /**
@@ -197,7 +197,7 @@ class Body {
    * @returns The body object ready to be used on the POST and PUT requests.
    */
   static text(value: string): Body {
-    return new Body('Text', value)
+    return new Body("Text", value);
   }
 
   /**
@@ -217,23 +217,23 @@ class Body {
   ): Body {
     // stringifying Uint8Array doesn't return an array of numbers, so we create one here
     return new Body(
-      'Bytes',
+      "Bytes",
       Array.from(bytes instanceof ArrayBuffer ? new Uint8Array(bytes) : bytes)
-    )
+    );
   }
 }
 
 /** The request HTTP verb. */
 type HttpVerb =
-  | 'GET'
-  | 'POST'
-  | 'PUT'
-  | 'DELETE'
-  | 'PATCH'
-  | 'HEAD'
-  | 'OPTIONS'
-  | 'CONNECT'
-  | 'TRACE'
+  | "GET"
+  | "POST"
+  | "PUT"
+  | "DELETE"
+  | "PATCH"
+  | "HEAD"
+  | "OPTIONS"
+  | "CONNECT"
+  | "TRACE";
 
 /**
  * Options object sent to the backend.
@@ -241,27 +241,27 @@ type HttpVerb =
  * @since 1.0.0
  */
 interface HttpOptions {
-  method: HttpVerb
-  url: string
-  headers?: Record<string, unknown>
-  query?: Record<string, unknown>
-  body?: Body
-  timeout?: number | Duration
-  responseType?: ResponseType
+  method: HttpVerb;
+  url: string;
+  headers?: Record<string, unknown>;
+  query?: Record<string, unknown>;
+  body?: Body;
+  timeout?: number | Duration;
+  responseType?: ResponseType;
 }
 
 /** Request options. */
-type RequestOptions = Omit<HttpOptions, 'method' | 'url'>
+type RequestOptions = Omit<HttpOptions, "method" | "url">;
 /** Options for the `fetch` API. */
-type FetchOptions = Omit<HttpOptions, 'url'>
+type FetchOptions = Omit<HttpOptions, "url">;
 
 /** @ignore */
 interface IResponse<T> {
-  url: string
-  status: number
-  headers: Record<string, string>
-  rawHeaders: Record<string, string[]>
-  data: T
+  url: string;
+  status: number;
+  headers: Record<string, string>;
+  rawHeaders: Record<string, string[]>;
+  data: T;
 }
 
 /**
@@ -271,26 +271,26 @@ interface IResponse<T> {
  * */
 class Response<T> {
   /** The request URL. */
-  url: string
+  url: string;
   /** The response status code. */
-  status: number
+  status: number;
   /** A boolean indicating whether the response was successful (status in the range 200–299) or not. */
-  ok: boolean
+  ok: boolean;
   /** The response headers. */
-  headers: Record<string, string>
+  headers: Record<string, string>;
   /** The response raw headers. */
-  rawHeaders: Record<string, string[]>
+  rawHeaders: Record<string, string[]>;
   /** The response data. */
-  data: T
+  data: T;
 
   /** @ignore */
   constructor(response: IResponse<T>) {
-    this.url = response.url
-    this.status = response.status
-    this.ok = this.status >= 200 && this.status < 300
-    this.headers = response.headers
-    this.rawHeaders = response.rawHeaders
-    this.data = response.data
+    this.url = response.url;
+    this.status = response.status;
+    this.ok = this.status >= 200 && this.status < 300;
+    this.headers = response.headers;
+    this.rawHeaders = response.rawHeaders;
+    this.data = response.data;
   }
 }
 
@@ -298,10 +298,10 @@ class Response<T> {
  * @since 1.0.0
  */
 class Client {
-  id: number
+  id: number;
   /** @ignore */
   constructor(id: number) {
-    this.id = id
+    this.id = id;
   }
 
   /**
@@ -314,9 +314,9 @@ class Client {
    * ```
    */
   async drop(): Promise<void> {
-    return invoke('plugin:http|drop_client', {
-      client: this.id
-    })
+    return invoke("plugin:http|drop_client", {
+      client: this.id,
+    });
   }
 
   /**
@@ -333,34 +333,34 @@ class Client {
    */
   async request<T>(options: HttpOptions): Promise<Response<T>> {
     const jsonResponse =
-      !options.responseType || options.responseType === ResponseType.JSON
+      !options.responseType || options.responseType === ResponseType.JSON;
     if (jsonResponse) {
-      options.responseType = ResponseType.Text
+      options.responseType = ResponseType.Text;
     }
-    return invoke<IResponse<T>>('plugin:http|request', {
+    return invoke<IResponse<T>>("plugin:http|request", {
       clientId: this.id,
-      options
+      options,
     }).then((res) => {
-      const response = new Response(res)
+      const response = new Response(res);
       if (jsonResponse) {
         /* eslint-disable */
         try {
-          response.data = JSON.parse(response.data as string)
+          response.data = JSON.parse(response.data as string);
         } catch (e) {
-          if (response.ok && (response.data as unknown as string) === '') {
-            response.data = {} as T
+          if (response.ok && (response.data as unknown as string) === "") {
+            response.data = {} as T;
           } else if (response.ok) {
             throw Error(
               `Failed to parse response \`${response.data}\` as JSON: ${e};
               try setting the \`responseType\` option to \`ResponseType.Text\` or \`ResponseType.Binary\` if the API does not return a JSON response.`
-            )
+            );
           }
         }
         /* eslint-enable */
-        return response
+        return response;
       }
-      return response
-    })
+      return response;
+    });
   }
 
   /**
@@ -378,10 +378,10 @@ class Client {
    */
   async get<T>(url: string, options?: RequestOptions): Promise<Response<T>> {
     return this.request({
-      method: 'GET',
+      method: "GET",
       url,
-      ...options
-    })
+      ...options,
+    });
   }
 
   /**
@@ -406,11 +406,11 @@ class Client {
     options?: RequestOptions
   ): Promise<Response<T>> {
     return this.request({
-      method: 'POST',
+      method: "POST",
       url,
       body,
-      ...options
-    })
+      ...options,
+    });
   }
 
   /**
@@ -436,11 +436,11 @@ class Client {
     options?: RequestOptions
   ): Promise<Response<T>> {
     return this.request({
-      method: 'PUT',
+      method: "PUT",
       url,
       body,
-      ...options
-    })
+      ...options,
+    });
   }
 
   /**
@@ -456,10 +456,10 @@ class Client {
    */
   async patch<T>(url: string, options?: RequestOptions): Promise<Response<T>> {
     return this.request({
-      method: 'PATCH',
+      method: "PATCH",
       url,
-      ...options
-    })
+      ...options,
+    });
   }
 
   /**
@@ -473,10 +473,10 @@ class Client {
    */
   async delete<T>(url: string, options?: RequestOptions): Promise<Response<T>> {
     return this.request({
-      method: 'DELETE',
+      method: "DELETE",
       url,
-      ...options
-    })
+      ...options,
+    });
   }
 }
 
@@ -495,13 +495,13 @@ class Client {
  * @since 1.0.0
  */
 async function getClient(options?: ClientOptions): Promise<Client> {
-  return invoke<number>('plugin:http|create_client', {
-    options
-  }).then((id) => new Client(id))
+  return invoke<number>("plugin:http|create_client", {
+    options,
+  }).then((id) => new Client(id));
 }
 
 /** @internal */
-let defaultClient: Client | null = null
+let defaultClient: Client | null = null;
 
 /**
  * Perform an HTTP request using the default client.
@@ -519,13 +519,13 @@ async function fetch<T>(
   options?: FetchOptions
 ): Promise<Response<T>> {
   if (defaultClient === null) {
-    defaultClient = await getClient()
+    defaultClient = await getClient();
   }
   return defaultClient.request({
     url,
-    method: options?.method ?? 'GET',
-    ...options
-  })
+    method: options?.method ?? "GET",
+    ...options,
+  });
 }
 
 export type {
@@ -535,7 +535,15 @@ export type {
   HttpVerb,
   HttpOptions,
   RequestOptions,
-  FetchOptions
-}
+  FetchOptions,
+};
 
-export { getClient, fetch, Body, Client, Response, ResponseType, type FilePart }
+export {
+  getClient,
+  fetch,
+  Body,
+  Client,
+  Response,
+  ResponseType,
+  type FilePart,
+};

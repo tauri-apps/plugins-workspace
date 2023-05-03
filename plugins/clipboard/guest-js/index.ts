@@ -24,14 +24,14 @@
  * @module
  */
 
-import { invoke } from '@tauri-apps/api/tauri'
+import { invoke } from "@tauri-apps/api/tauri";
 
 interface Clip<K, T> {
-  kind: K
-  options: T
+  kind: K;
+  options: T;
 }
 
-type ClipResponse = Clip<'PlainText', string>
+type ClipResponse = Clip<"PlainText", string>;
 
 /**
  * Writes plain text to the clipboard.
@@ -46,16 +46,19 @@ type ClipResponse = Clip<'PlainText', string>
  *
  * @since 1.0.0.
  */
-async function writeText(text: string, opts?: { label?: string }): Promise<void> {
-  return invoke('plugin:clipboard|write', {
+async function writeText(
+  text: string,
+  opts?: { label?: string }
+): Promise<void> {
+  return invoke("plugin:clipboard|write", {
     data: {
-      kind: 'PlainText',
+      kind: "PlainText",
       options: {
         label: opts?.label,
-        text
-      }
-    }
-  })
+        text,
+      },
+    },
+  });
 }
 
 /**
@@ -68,8 +71,8 @@ async function writeText(text: string, opts?: { label?: string }): Promise<void>
  * @since 1.0.0.
  */
 async function readText(): Promise<string> {
-  const kind: ClipResponse = await invoke('plugin:clipboard|read')
-  return kind.options
+  const kind: ClipResponse = await invoke("plugin:clipboard|read");
+  return kind.options;
 }
 
-export { writeText, readText }
+export { writeText, readText };

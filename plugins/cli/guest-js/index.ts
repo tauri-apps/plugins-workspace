@@ -8,7 +8,7 @@
  * @module
  */
 
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from "@tauri-apps/api/tauri";
 
 /**
  * @since 1.0.0
@@ -19,32 +19,32 @@ interface ArgMatch {
    * boolean if flag
    * string[] or null if takes multiple values
    */
-  value: string | boolean | string[] | null
+  value: string | boolean | string[] | null;
   /**
    * Number of occurrences
    */
-  occurrences: number
+  occurrences: number;
 }
 
 /**
  * @since 1.0.0
  */
 interface SubcommandMatch {
-  name: string
-  matches: CliMatches
+  name: string;
+  matches: CliMatches;
 }
 
 /**
  * @since 1.0.0
  */
 interface CliMatches {
-  args: Record<string, ArgMatch>
-  subcommand: SubcommandMatch | null
+  args: Record<string, ArgMatch>;
+  subcommand: SubcommandMatch | null;
 }
 
 /**
  * Parse the arguments provided to the current process and get the matches using the configuration defined [`tauri.cli`](https://tauri.app/v1/api/config/#tauriconfig.cli) in `tauri.conf.json`
- * 
+ *
  * @example
  * ```typescript
  * import { getMatches } from 'tauri-plugin-cli-api';
@@ -64,9 +64,9 @@ interface CliMatches {
  * @since 1.0.0
  */
 async function getMatches(): Promise<CliMatches> {
-  return await invoke('plugin:cli|cli_matches');
+  return await invoke("plugin:cli|cli_matches");
 }
 
-export type { ArgMatch, SubcommandMatch, CliMatches }
+export type { ArgMatch, SubcommandMatch, CliMatches };
 
-export { getMatches }
+export { getMatches };

@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from '@tauri-apps/api/tauri'
+import { invoke } from "@tauri-apps/api/tauri";
 
 interface FileResponse {
-  base64Data?: string
-  duration?: number
-  height?: number
-  width?: number
-  mimeType?: string
-  modifiedAt?: number
-  name?: string
-  path: string
-  size: number
+  base64Data?: string;
+  duration?: number;
+  height?: number;
+  width?: number;
+  mimeType?: string;
+  modifiedAt?: number;
+  name?: string;
+  path: string;
+  size: number;
 }
 
 /**
@@ -23,7 +23,7 @@ interface FileResponse {
  */
 interface DialogFilter {
   /** Filter name. */
-  name: string
+  name: string;
   /**
    * Extensions to filter, without a `.` prefix.
    * @example
@@ -31,7 +31,7 @@ interface DialogFilter {
    * extensions: ['svg', 'png']
    * ```
    */
-  extensions: string[]
+  extensions: string[];
 }
 
 /**
@@ -41,20 +41,20 @@ interface DialogFilter {
  */
 interface OpenDialogOptions {
   /** The title of the dialog window. */
-  title?: string
+  title?: string;
   /** The filters of the dialog. */
-  filters?: DialogFilter[]
+  filters?: DialogFilter[];
   /** Initial directory or file path. */
-  defaultPath?: string
+  defaultPath?: string;
   /** Whether the dialog allows multiple selection or not. */
-  multiple?: boolean
+  multiple?: boolean;
   /** Whether the dialog is a directory selection or not. */
-  directory?: boolean
+  directory?: boolean;
   /**
    * If `directory` is true, indicates that it will be read recursively later.
    * Defines whether subdirectories will be allowed on the scope or not.
    */
-  recursive?: boolean
+  recursive?: boolean;
 }
 
 /**
@@ -64,15 +64,15 @@ interface OpenDialogOptions {
  */
 interface SaveDialogOptions {
   /** The title of the dialog window. */
-  title?: string
+  title?: string;
   /** The filters of the dialog. */
-  filters?: DialogFilter[]
+  filters?: DialogFilter[];
   /**
    * Initial directory or file path.
    * If it's a directory path, the dialog interface will change to that folder.
    * If it's not an existing directory, the file name will be set to the dialog's file name input and the dialog will be set to the parent folder.
    */
-  defaultPath?: string
+  defaultPath?: string;
 }
 
 /**
@@ -80,36 +80,36 @@ interface SaveDialogOptions {
  */
 interface MessageDialogOptions {
   /** The title of the dialog. Defaults to the app name. */
-  title?: string
+  title?: string;
   /** The type of the dialog. Defaults to `info`. */
-  type?: 'info' | 'warning' | 'error'
+  type?: "info" | "warning" | "error";
   /** The label of the confirm button. */
-  okLabel?: string
+  okLabel?: string;
 }
 
 interface ConfirmDialogOptions {
   /** The title of the dialog. Defaults to the app name. */
-  title?: string
+  title?: string;
   /** The type of the dialog. Defaults to `info`. */
-  type?: 'info' | 'warning' | 'error'
+  type?: "info" | "warning" | "error";
   /** The label of the confirm button. */
-  okLabel?: string
+  okLabel?: string;
   /** The label of the cancel button. */
-  cancelLabel?: string
+  cancelLabel?: string;
 }
 
 async function open(
-  options?: OpenDialogOptions & { multiple?: false, directory?: false }
-): Promise<null | FileResponse>
+  options?: OpenDialogOptions & { multiple?: false; directory?: false }
+): Promise<null | FileResponse>;
 async function open(
-  options?: OpenDialogOptions & { multiple?: true, directory?: false }
-): Promise<null | FileResponse[]>
+  options?: OpenDialogOptions & { multiple?: true; directory?: false }
+): Promise<null | FileResponse[]>;
 async function open(
-  options?: OpenDialogOptions & { multiple?: false, directory?: true }
-): Promise<null | string>
+  options?: OpenDialogOptions & { multiple?: false; directory?: true }
+): Promise<null | string>;
 async function open(
-  options?: OpenDialogOptions & { multiple?: true, directory?: true }
-): Promise<null | string[]>
+  options?: OpenDialogOptions & { multiple?: true; directory?: true }
+): Promise<null | string[]>;
 /**
  * Open a file/directory selection dialog.
  *
@@ -165,11 +165,11 @@ async function open(
 async function open(
   options: OpenDialogOptions = {}
 ): Promise<null | string | string[] | FileResponse | FileResponse[]> {
-  if (typeof options === 'object') {
-    Object.freeze(options)
+  if (typeof options === "object") {
+    Object.freeze(options);
   }
 
-  return invoke('plugin:dialog|open', { options })
+  return invoke("plugin:dialog|open", { options });
 }
 
 /**
@@ -197,11 +197,11 @@ async function open(
  * @since 1.0.0
  */
 async function save(options: SaveDialogOptions = {}): Promise<string | null> {
-  if (typeof options === 'object') {
-    Object.freeze(options)
+  if (typeof options === "object") {
+    Object.freeze(options);
   }
 
-  return invoke('plugin:dialog|save', { options })
+  return invoke("plugin:dialog|save", { options });
 }
 
 /**
@@ -225,13 +225,13 @@ async function message(
   message: string,
   options?: string | MessageDialogOptions
 ): Promise<void> {
-  const opts = typeof options === 'string' ? { title: options } : options
-  return invoke('plugin:dialog|message', {
+  const opts = typeof options === "string" ? { title: options } : options;
+  return invoke("plugin:dialog|message", {
     message: message.toString(),
     title: opts?.title?.toString(),
     type_: opts?.type,
-    okButtonLabel: opts?.okLabel?.toString()
-  })
+    okButtonLabel: opts?.okLabel?.toString(),
+  });
 }
 
 /**
@@ -254,14 +254,14 @@ async function ask(
   message: string,
   options?: string | ConfirmDialogOptions
 ): Promise<boolean> {
-  const opts = typeof options === 'string' ? { title: options } : options
-  return invoke('plugin:dialog|ask', {
+  const opts = typeof options === "string" ? { title: options } : options;
+  return invoke("plugin:dialog|ask", {
     message: message.toString(),
     title: opts?.title?.toString(),
     type_: opts?.type,
-    okButtonLabel: opts?.okLabel?.toString() ?? 'Yes',
-    cancelButtonLabel: opts?.cancelLabel?.toString() ?? 'No',
-  })
+    okButtonLabel: opts?.okLabel?.toString() ?? "Yes",
+    cancelButtonLabel: opts?.cancelLabel?.toString() ?? "No",
+  });
 }
 
 /**
@@ -284,14 +284,14 @@ async function confirm(
   message: string,
   options?: string | ConfirmDialogOptions
 ): Promise<boolean> {
-  const opts = typeof options === 'string' ? { title: options } : options
-  return invoke('plugin:dialog|confirm', {
+  const opts = typeof options === "string" ? { title: options } : options;
+  return invoke("plugin:dialog|confirm", {
     message: message.toString(),
     title: opts?.title?.toString(),
     type_: opts?.type,
-    okButtonLabel: opts?.okLabel?.toString() ?? 'Ok',
-    cancelButtonLabel: opts?.cancelLabel?.toString() ?? 'Cancel',
-  })
+    okButtonLabel: opts?.okLabel?.toString() ?? "Ok",
+    cancelButtonLabel: opts?.cancelLabel?.toString() ?? "Cancel",
+  });
 }
 
 export type {
@@ -299,7 +299,7 @@ export type {
   OpenDialogOptions,
   SaveDialogOptions,
   MessageDialogOptions,
-  ConfirmDialogOptions
-}
+  ConfirmDialogOptions,
+};
 
-export { open, save, message, ask, confirm }
+export { open, save, message, ask, confirm };
