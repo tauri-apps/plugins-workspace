@@ -8,17 +8,20 @@ In the future, this app will be used on Tauri's integration tests.
 ## Running the example
 
 - Install dependencies and build packages (Run inside of the repository root)
+
 ```bash
 $ pnpm install
 $ pnpm build
 ```
 
 - Run the app in development mode (Run inside of this folder `examples/api/`)
+
 ```bash
 $ pnpm tauri dev
 ```
 
 - Build an run the release app (Run inside of this folder `examples/api/`)
+
 ```bash
 $ pnpm tauri build
 $ ./src-tauri/target/release/app

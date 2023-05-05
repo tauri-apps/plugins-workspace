@@ -2,14 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { defineConfig } from 'vite'
-import Unocss from 'unocss/vite'
-import { svelte } from '@sveltejs/vite-plugin-svelte'
-import { internalIpV4 } from 'internal-ip'
+import { defineConfig } from "vite";
+import Unocss from "unocss/vite";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+import { internalIpV4 } from "internal-ip";
 
 // https://vitejs.dev/config/
 export default defineConfig(async ({ command, mode }) => {
-  const host = process.env.TAURI_PLATFORM === 'android' || process.env.TAURI_PLATFORM === 'ios' ? (await internalIpV4()) : 'localhost'
+  const host =
+    process.env.TAURI_PLATFORM === "android" ||
+    process.env.TAURI_PLATFORM === "ios"
+      ? await internalIpV4()
+      : "localhost";
   return {
     plugins: [Unocss(), svelte()],
     build: {
@@ -17,22 +21,22 @@ export default defineConfig(async ({ command, mode }) => {
         output: {
           entryFileNames: `assets/[name].js`,
           chunkFileNames: `assets/[name].js`,
-          assetFileNames: `assets/[name].[ext]`
-        }
-      }
+          assetFileNames: `assets/[name].[ext]`,
+        },
+      },
     },
     server: {
-      host: '0.0.0.0',
+      host: "0.0.0.0",
       port: 5173,
       strictPort: true,
       hmr: {
-        protocol: 'ws',
+        protocol: "ws",
         host,
-        port: 5183
+        port: 5183,
       },
       fs: {
-        allow: ['.', '../../tooling/api/dist']
-      }
-    }
-  }
-})
+        allow: [".", "../../tooling/api/dist"],
+      },
+    },
+  };
+});
