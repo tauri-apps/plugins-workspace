@@ -480,7 +480,7 @@ mod tests {
     #[test]
     fn test_cmd_output_output() {
         let cmd = Command::new("cat").args(["test/api/test.txt"]);
-        let output = cmd.output().unwrap();
+        let output = tauri::async_runtime::block_on(cmd.output()).unwrap();
 
         assert_eq!(String::from_utf8(output.stderr).unwrap(), "");
         assert_eq!(
@@ -493,7 +493,7 @@ mod tests {
     #[test]
     fn test_cmd_output_output_fail() {
         let cmd = Command::new("cat").args(["test/api/"]);
-        let output = cmd.output().unwrap();
+        let output = tauri::async_runtime::block_on(cmd.output()).unwrap();
 
         assert_eq!(String::from_utf8(output.stdout).unwrap(), "");
         assert_eq!(

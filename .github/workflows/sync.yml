@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - dev
-      - next
+      - v1
+      - v2
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
