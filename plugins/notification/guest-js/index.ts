@@ -24,7 +24,7 @@
  * @module
  */
 
-import { invoke, transformCallback } from '@tauri-apps/api/tauri'
+import { invoke, transformCallback } from "@tauri-apps/api/tauri";
 
 /**
  * Options to send a notification.
@@ -35,116 +35,116 @@ interface Options {
   /**
    * The notification identifier to reference this object later. Must be a 32-bit integer.
    */
-  id?: number
+  id?: number;
   /**
    * Identifier of the {@link Channel} that deliveres this notification.
-   * 
+   *
    * If the channel does not exist, the notification won't fire.
    * Make sure the channel exists with {@link listChannels} and {@link createChannel}.
    */
-  channelId?: string
+  channelId?: string;
   /**
    * Notification title.
    */
-  title: string
+  title: string;
   /**
    * Optional notification body.
    * */
-  body?: string
+  body?: string;
   /**
    * Schedule this notification to fire on a later time or a fixed interval.
    */
-  schedule?: Schedule
+  schedule?: Schedule;
   /**
    * Multiline text.
    * Changes the notification style to big text.
    * Cannot be used with `inboxLines`.
    */
-  largeBody?: string
+  largeBody?: string;
   /**
    * Detail text for the notification with `largeBody`, `inboxLines` or `groupSummary`.
    */
-  summary?: string
+  summary?: string;
   /**
    * Defines an action type for this notification.
    */
-  actionTypeId?: string
+  actionTypeId?: string;
   /**
    * Identifier used to group multiple notifications.
-   * 
+   *
    * https://developer.apple.com/documentation/usernotifications/unmutablenotificationcontent/1649872-threadidentifier
    */
-  group?: string
+  group?: string;
   /**
    * Instructs the system that this notification is the summary of a group on Android.
    */
-  groupSummary?: boolean
+  groupSummary?: boolean;
   /**
    * The sound resource name. Only available on mobile.
    */
-  sound?: string
+  sound?: string;
   /**
    * List of lines to add to the notification.
    * Changes the notification style to inbox.
    * Cannot be used with `largeBody`.
-   * 
+   *
    * Only supports up to 5 lines.
    */
-  inboxLines?: string[]
+  inboxLines?: string[];
   /**
    * Notification icon.
-   * 
+   *
    * On Android the icon must be placed in the app's `res/drawable` folder.
    */
-  icon?: string
+  icon?: string;
   /**
    * Notification large icon (Android).
-   * 
+   *
    * The icon must be placed in the app's `res/drawable` folder.
    */
-  largeIcon?: string
+  largeIcon?: string;
   /**
    * Icon color on Android.
    */
-  iconColor?: string
+  iconColor?: string;
   /**
    * Notification attachments.
    */
-  attachments?: Attachment[]
+  attachments?: Attachment[];
   /**
    * Extra payload to store in the notification.
    */
-  extra?: { [key: string]: unknown }
+  extra?: { [key: string]: unknown };
   /**
    * If true, the notification cannot be dismissed by the user on Android.
-   * 
+   *
    * An application service must manage the dismissal of the notification.
    * It is typically used to indicate a background task that is pending (e.g. a file download)
    * or the user is engaged with (e.g. playing music).
    */
-  ongoing?: boolean
+  ongoing?: boolean;
   /**
    * Automatically cancel the notification when the user clicks on it.
    */
-  autoCancel?: boolean
+  autoCancel?: boolean;
   /**
    * Changes the notification presentation to be silent on iOS (no badge, no sound, not listed).
    */
-  silent?: boolean
+  silent?: boolean;
   /**
    * Notification visibility.
    */
-  visibility?: Visibility
+  visibility?: Visibility;
   /**
    * Sets the number of items this notification represents on Android.
    */
-  number?: number
+  number?: number;
 }
 
 type ScheduleInterval = {
-  year?: number
-  month?: number
-  day?: number
+  year?: number;
+  month?: number;
+  day?: number;
   /**
    * 1 - Sunday
    * 2 - Monday
@@ -154,61 +154,64 @@ type ScheduleInterval = {
    * 6 - Friday
    * 7 - Saturday
    */
-  weekday?: number
-  hour?: number
-  minute?: number
-  second?: number
-}
+  weekday?: number;
+  hour?: number;
+  minute?: number;
+  second?: number;
+};
 
 enum ScheduleEvery {
-  Year = 'Year',
-  Month = 'Month',
-  TwoWeeks = 'TwoWeeks',
-  Week = 'Week',
-  Day = 'Day',
-  Hour = 'Hour',
-  Minute = 'Minute',
+  Year = "Year",
+  Month = "Month",
+  TwoWeeks = "TwoWeeks",
+  Week = "Week",
+  Day = "Day",
+  Hour = "Hour",
+  Minute = "Minute",
   /**
    * Not supported on iOS.
    */
-  Second = 'Second'
+  Second = "Second",
 }
 
-type ScheduleData = {
-  kind: 'At',
-  data: {
-    date: Date
-    repeating: boolean
-  }
-} | {
-  kind: 'Interval',
-  data: ScheduleInterval
-} | {
-  kind: 'Every',
-  data: {
-    interval: ScheduleEvery
-  }
-}
+type ScheduleData =
+  | {
+      kind: "At";
+      data: {
+        date: Date;
+        repeating: boolean;
+      };
+    }
+  | {
+      kind: "Interval";
+      data: ScheduleInterval;
+    }
+  | {
+      kind: "Every";
+      data: {
+        interval: ScheduleEvery;
+      };
+    };
 
 class Schedule {
-  kind: string
-  data: unknown
+  kind: string;
+  data: unknown;
 
   private constructor(schedule: ScheduleData) {
-    this.kind = schedule.kind
-    this.data = schedule.data
+    this.kind = schedule.kind;
+    this.data = schedule.data;
   }
 
   static at(date: Date, repeating = false) {
-    return new Schedule({ kind: 'At', data: { date, repeating } })
+    return new Schedule({ kind: "At", data: { date, repeating } });
   }
 
   static interval(interval: ScheduleInterval) {
-    return new Schedule({ kind: 'Interval', data: interval })
+    return new Schedule({ kind: "Interval", data: interval });
   }
 
   static every(kind: ScheduleEvery) {
-    return new Schedule({ kind: 'Every', data: { interval: kind } })
+    return new Schedule({ kind: "Every", data: { interval: kind } });
   }
 }
 
@@ -217,58 +220,58 @@ class Schedule {
  */
 interface Attachment {
   /** Attachment identifier. */
-  id: string
+  id: string;
   /** Attachment URL. Accepts the `asset` and `file` protocols. */
-  url: string
+  url: string;
 }
 
 interface Action {
-  id: string
-  title: string
-  requiresAuthentication?: boolean
-  foreground?: boolean
-  destructive?: boolean
-  input?: boolean
-  inputButtonTitle?: string
-  inputPlaceholder?: string
+  id: string;
+  title: string;
+  requiresAuthentication?: boolean;
+  foreground?: boolean;
+  destructive?: boolean;
+  input?: boolean;
+  inputButtonTitle?: string;
+  inputPlaceholder?: string;
 }
 
 interface ActionType {
   /**
    * The identifier of this action type
    */
-  id: string
+  id: string;
   /**
    * The list of associated actions
    */
-  actions: Action[]
-  hiddenPreviewsBodyPlaceholder?: string,
-  customDismissAction?: boolean,
-  allowInCarPlay?: boolean,
-  hiddenPreviewsShowTitle?: boolean,
-  hiddenPreviewsShowSubtitle?: boolean,
+  actions: Action[];
+  hiddenPreviewsBodyPlaceholder?: string;
+  customDismissAction?: boolean;
+  allowInCarPlay?: boolean;
+  hiddenPreviewsShowTitle?: boolean;
+  hiddenPreviewsShowSubtitle?: boolean;
 }
 
 interface PendingNotification {
-  id: number
-  title?: string
-  body?: string
-  schedule: Schedule
+  id: number;
+  title?: string;
+  body?: string;
+  schedule: Schedule;
 }
 
 interface ActiveNotification {
-  id: number
-  tag?: string
-  title?: string
-  body?: string
-  group?: string
-  groupSummary: boolean
-  data: Record<string, string>
-  extra: Record<string, unknown>
-  attachments: Attachment[]
-  actionTypeId?: string
-  schedule?: Schedule
-  sound?: string
+  id: number;
+  tag?: string;
+  title?: string;
+  body?: string;
+  group?: string;
+  groupSummary: boolean;
+  data: Record<string, string>;
+  extra: Record<string, unknown>;
+  attachments: Attachment[];
+  actionTypeId?: string;
+  schedule?: Schedule;
+  sound?: string;
 }
 
 enum Importance {
@@ -276,25 +279,25 @@ enum Importance {
   Min,
   Low,
   Default,
-  High
+  High,
 }
 
 enum Visibility {
   Secret = -1,
   Private,
-  Public
+  Public,
 }
 
 interface Channel {
-  id: string
-  name: string
-  description?: string
-  sound?: string
-  lights?: boolean
-  lightColor?: string
-  vibration?: boolean
-  importance?: Importance
-  visibility?: Visibility
+  id: string;
+  name: string;
+  description?: string;
+  sound?: string;
+  lights?: boolean;
+  lightColor?: string;
+  vibration?: boolean;
+  importance?: Importance;
+  visibility?: Visibility;
 }
 
 /** Possible permission values. */
@@ -367,7 +370,7 @@ function sendNotification(options: Options | string): void {
 
 /**
  * Register actions that are performed when the user clicks on the notification.
- * 
+ *
  * @example
  * ```typescript
  * import { registerActionTypes } from '@tauri-apps/api/notification';
@@ -385,12 +388,12 @@ function sendNotification(options: Options | string): void {
  * @since 2.0.0
  */
 async function registerActionTypes(types: ActionType[]): Promise<void> {
-  return invoke('plugin:notification|register_action_types', { types })
+  return invoke("plugin:notification|register_action_types", { types });
 }
 
 /**
  * Retrieves the list of pending notifications.
- * 
+ *
  * @example
  * ```typescript
  * import { pending } from '@tauri-apps/api/notification';
@@ -402,12 +405,12 @@ async function registerActionTypes(types: ActionType[]): Promise<void> {
  * @since 2.0.0
  */
 async function pending(): Promise<PendingNotification[]> {
-  return invoke('plugin:notification|get_pending')
+  return invoke("plugin:notification|get_pending");
 }
 
 /**
  * Cancels the pending notifications with the given list of identifiers.
- * 
+ *
  * @example
  * ```typescript
  * import { cancel } from '@tauri-apps/api/notification';
@@ -419,12 +422,12 @@ async function pending(): Promise<PendingNotification[]> {
  * @since 2.0.0
  */
 async function cancel(notifications: number[]): Promise<void> {
-  return invoke('plugin:notification|cancel', { notifications })
+  return invoke("plugin:notification|cancel", { notifications });
 }
 
 /**
  * Cancels all pending notifications.
- * 
+ *
  * @example
  * ```typescript
  * import { cancelAll } from '@tauri-apps/api/notification';
@@ -436,12 +439,12 @@ async function cancel(notifications: number[]): Promise<void> {
  * @since 2.0.0
  */
 async function cancelAll(): Promise<void> {
-  return invoke('plugin:notification|cancel')
+  return invoke("plugin:notification|cancel");
 }
 
 /**
  * Retrieves the list of active notifications.
- * 
+ *
  * @example
  * ```typescript
  * import { active } from '@tauri-apps/api/notification';
@@ -453,12 +456,12 @@ async function cancelAll(): Promise<void> {
  * @since 2.0.0
  */
 async function active(): Promise<ActiveNotification[]> {
-  return invoke('plugin:notification|get_active')
+  return invoke("plugin:notification|get_active");
 }
 
 /**
  * Removes the active notifications with the given list of identifiers.
- * 
+ *
  * @example
  * ```typescript
  * import { cancel } from '@tauri-apps/api/notification';
@@ -470,12 +473,12 @@ async function active(): Promise<ActiveNotification[]> {
  * @since 2.0.0
  */
 async function removeActive(notifications: number[]): Promise<void> {
-  return invoke('plugin:notification|remove_active', { notifications })
+  return invoke("plugin:notification|remove_active", { notifications });
 }
 
 /**
  * Removes all active notifications.
- * 
+ *
  * @example
  * ```typescript
  * import { removeAllActive } from '@tauri-apps/api/notification';
@@ -487,12 +490,12 @@ async function removeActive(notifications: number[]): Promise<void> {
  * @since 2.0.0
  */
 async function removeAllActive(): Promise<void> {
-  return invoke('plugin:notification|remove_active')
+  return invoke("plugin:notification|remove_active");
 }
 
 /**
  * Removes all active notifications.
- * 
+ *
  * @example
  * ```typescript
  * import { createChannel, Importance, Visibility } from '@tauri-apps/api/notification';
@@ -511,12 +514,12 @@ async function removeAllActive(): Promise<void> {
  * @since 2.0.0
  */
 async function createChannel(channel: Channel): Promise<void> {
-  return invoke('plugin:notification|create_channel', { ...channel })
+  return invoke("plugin:notification|create_channel", { ...channel });
 }
 
 /**
  * Removes the channel with the given identifier.
- * 
+ *
  * @example
  * ```typescript
  * import { removeChannel } from '@tauri-apps/api/notification';
@@ -528,12 +531,12 @@ async function createChannel(channel: Channel): Promise<void> {
  * @since 2.0.0
  */
 async function removeChannel(id: string): Promise<void> {
-  return invoke('plugin:notification|delete_channel', { id })
+  return invoke("plugin:notification|delete_channel", { id });
 }
 
 /**
  * Retrieves the list of notification channels.
- * 
+ *
  * @example
  * ```typescript
  * import { channels } from '@tauri-apps/api/notification';
@@ -545,43 +548,74 @@ async function removeChannel(id: string): Promise<void> {
  * @since 2.0.0
  */
 async function channels(): Promise<Channel[]> {
-  return invoke('plugin:notification|getActive')
+  return invoke("plugin:notification|getActive");
 }
 
 class EventChannel {
-  id: number
-  unregisterFn: (channel: EventChannel) => Promise<void>
+  id: number;
+  unregisterFn: (channel: EventChannel) => Promise<void>;
 
-  constructor(id: number, unregisterFn: (channel: EventChannel) => Promise<void>) {
-    this.id = id
-    this.unregisterFn = unregisterFn
+  constructor(
+    id: number,
+    unregisterFn: (channel: EventChannel) => Promise<void>
+  ) {
+    this.id = id;
+    this.unregisterFn = unregisterFn;
   }
 
   toJSON(): string {
-    return `__CHANNEL__:${this.id}`
+    return `__CHANNEL__:${this.id}`;
   }
 
   async unregister(): Promise<void> {
-    return this.unregisterFn(this)
+    return this.unregisterFn(this);
   }
 }
 
 // TODO: use addPluginListener API on @tauri-apps/api/tauri 2.0.0-alpha.4
-async function onNotificationReceived(cb: (notification: Options) => void): Promise<EventChannel> {
-  const channelId = transformCallback(cb)
-  const handler = new EventChannel(channelId, (channel) => invoke('plugin:notification|remove_listener', { event: 'notification', channelId: channel.id }))
-  return invoke('plugin:notification|register_listener', { event: 'notification', handler }).then(() => handler)
+async function onNotificationReceived(
+  cb: (notification: Options) => void
+): Promise<EventChannel> {
+  const channelId = transformCallback(cb);
+  const handler = new EventChannel(channelId, (channel) =>
+    invoke("plugin:notification|remove_listener", {
+      event: "notification",
+      channelId: channel.id,
+    })
+  );
+  return invoke("plugin:notification|register_listener", {
+    event: "notification",
+    handler,
+  }).then(() => handler);
 }
 
 // TODO: use addPluginListener API on @tauri-apps/api/tauri 2.0.0-alpha.4
-async function onAction(cb: (notification: Options) => void): Promise<EventChannel> {
-  const channelId = transformCallback(cb)
-  const handler = new EventChannel(channelId, (channel) => invoke('plugin:notification|remove_listener', { event: 'actionPerformed', channelId: channel.id }))
-  return invoke('plugin:notification|register_listener', { event: 'actionPerformed', handler }).then(() => handler)
+async function onAction(
+  cb: (notification: Options) => void
+): Promise<EventChannel> {
+  const channelId = transformCallback(cb);
+  const handler = new EventChannel(channelId, (channel) =>
+    invoke("plugin:notification|remove_listener", {
+      event: "actionPerformed",
+      channelId: channel.id,
+    })
+  );
+  return invoke("plugin:notification|register_listener", {
+    event: "actionPerformed",
+    handler,
+  }).then(() => handler);
 }
 
-
-export type { Attachment, Options, Permission, Action, ActionType, PendingNotification, ActiveNotification, Channel }
+export type {
+  Attachment,
+  Options,
+  Permission,
+  Action,
+  ActionType,
+  PendingNotification,
+  ActiveNotification,
+  Channel,
+};
 
 export {
   Importance,
@@ -599,7 +633,6 @@ export {
   createChannel,
   removeChannel,
   channels,
-
   onNotificationReceived,
-  onAction
-}
+  onAction,
+};
