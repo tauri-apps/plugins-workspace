@@ -210,14 +210,14 @@ enum BaseDirectory {
   Font,
   Home,
   Runtime,
-  Template
+  Template,
 }
 
 /**
  * @since 1.0.0
  */
 interface FsOptions {
-  dir?: BaseDirectory
+  dir?: BaseDirectory;
   // note that adding fields here needs a change in the writeBinaryFile check
 }
 
@@ -225,8 +225,8 @@ interface FsOptions {
  * @since 1.0.0
  */
 interface FsDirOptions {
-  dir?: BaseDirectory
-  recursive?: boolean
+  dir?: BaseDirectory;
+  recursive?: boolean;
 }
 
 /**
@@ -236,12 +236,12 @@ interface FsDirOptions {
  */
 interface FsTextFileOption {
   /** Path to the file to write. */
-  path: string
+  path: string;
   /** The UTF-8 string to write to the file. */
-  contents: string
+  contents: string;
 }
 
-type BinaryFileContents = Iterable<number> | ArrayLike<number> | ArrayBuffer
+type BinaryFileContents = Iterable<number> | ArrayLike<number> | ArrayBuffer;
 
 /**
  * Options object used to write a binary data to a file.
@@ -250,23 +250,23 @@ type BinaryFileContents = Iterable<number> | ArrayLike<number> | ArrayBuffer
  */
 interface FsBinaryFileOption {
   /** Path to the file to write. */
-  path: string
+  path: string;
   /** The byte array contents. */
-  contents: BinaryFileContents
+  contents: BinaryFileContents;
 }
 
 /**
  * @since 1.0.0
  */
 interface FileEntry {
-  path: string
+  path: string;
   /**
    * Name of the directory/file
    * can be null if the path terminates with `..`
    */
-  name?: string
+  name?: string;
   /** Children of this entry if it's a directory; null otherwise */
-  children?: FileEntry[]
+  children?: FileEntry[];
 }
 
 /**
@@ -286,8 +286,8 @@ async function readTextFile(
 ): Promise<string> {
   return await invoke("plugin:fs|read_text_file", {
     path: filePath,
-    options
-  })
+    options,
+  });
 }
 
 /**
@@ -307,10 +307,10 @@ async function readBinaryFile(
 ): Promise<Uint8Array> {
   const arr = await invoke<number[]>("plugin:fs|read_file", {
     path: filePath,
-    options
-  })
+    options,
+  });
 
-  return Uint8Array.from(arr)
+  return Uint8Array.from(arr);
 }
 
 /**
@@ -328,7 +328,7 @@ async function writeTextFile(
   path: string,
   contents: string,
   options?: FsOptions
-): Promise<void>
+): Promise<void>;
 
 /**
  * Writes a UTF-8 text file.
@@ -345,7 +345,7 @@ async function writeTextFile(
 async function writeTextFile(
   file: FsTextFileOption,
   options?: FsOptions
-): Promise<void>
+): Promise<void>;
 
 /**
  * Writes a UTF-8 text file.
@@ -359,33 +359,33 @@ async function writeTextFile(
   contents?: string | FsOptions,
   options?: FsOptions
 ): Promise<void> {
-  if (typeof options === 'object') {
-    Object.freeze(options)
+  if (typeof options === "object") {
+    Object.freeze(options);
   }
-  if (typeof path === 'object') {
-    Object.freeze(path)
-  }
-
-  const file: FsTextFileOption = { path: '', contents: '' }
-  let fileOptions: FsOptions | undefined = options
-  if (typeof path === 'string') {
-    file.path = path
-  } else {
-    file.path = path.path
-    file.contents = path.contents
+  if (typeof path === "object") {
+    Object.freeze(path);
   }
 
-  if (typeof contents === 'string') {
-    file.contents = contents ?? ''
+  const file: FsTextFileOption = { path: "", contents: "" };
+  let fileOptions: FsOptions | undefined = options;
+  if (typeof path === "string") {
+    file.path = path;
   } else {
-    fileOptions = contents
+    file.path = path.path;
+    file.contents = path.contents;
+  }
+
+  if (typeof contents === "string") {
+    file.contents = contents ?? "";
+  } else {
+    fileOptions = contents;
   }
 
   return await invoke("plugin:fs|write_file", {
     path: file.path,
     contents: Array.from(new TextEncoder().encode(file.contents)),
-    options: fileOptions
-  })
+    options: fileOptions,
+  });
 }
 
 /**
@@ -406,7 +406,7 @@ async function writeBinaryFile(
   path: string,
   contents: BinaryFileContents,
   options?: FsOptions
-): Promise<void>
+): Promise<void>;
 
 /**
  * Writes a byte array content to a file.
@@ -426,7 +426,7 @@ async function writeBinaryFile(
 async function writeBinaryFile(
   file: FsBinaryFileOption,
   options?: FsOptions
-): Promise<void>
+): Promise<void>;
 
 /**
  * Writes a byte array content to a file.
@@ -440,27 +440,27 @@ async function writeBinaryFile(
   contents?: BinaryFileContents | FsOptions,
   options?: FsOptions
 ): Promise<void> {
-  if (typeof options === 'object') {
-    Object.freeze(options)
+  if (typeof options === "object") {
+    Object.freeze(options);
   }
-  if (typeof path === 'object') {
-    Object.freeze(path)
+  if (typeof path === "object") {
+    Object.freeze(path);
   }
 
-  const file: FsBinaryFileOption = { path: '', contents: [] }
-  let fileOptions: FsOptions | undefined = options
-  if (typeof path === 'string') {
-    file.path = path
+  const file: FsBinaryFileOption = { path: "", contents: [] };
+  let fileOptions: FsOptions | undefined = options;
+  if (typeof path === "string") {
+    file.path = path;
   } else {
-    file.path = path.path
-    file.contents = path.contents
+    file.path = path.path;
+    file.contents = path.contents;
   }
 
-  if (contents && 'dir' in contents) {
-    fileOptions = contents
-  } else if (typeof path === 'string') {
+  if (contents && "dir" in contents) {
+    fileOptions = contents;
+  } else if (typeof path === "string") {
     // @ts-expect-error in this case `contents` is always a BinaryFileContents
-    file.contents = contents ?? []
+    file.contents = contents ?? [];
   }
 
   return await invoke("plugin:fs|write_binary_file", {
@@ -470,8 +470,8 @@ async function writeBinaryFile(
         ? new Uint8Array(file.contents)
         : file.contents
     ),
-    options: fileOptions
-  })
+    options: fileOptions,
+  });
 }
 
 /**
@@ -500,8 +500,8 @@ async function readDir(
 ): Promise<FileEntry[]> {
   return await invoke("plugin:fs|read_dir", {
     path: dir,
-    options
-  })
+    options,
+  });
 }
 
 /**
@@ -525,8 +525,8 @@ async function createDir(
 ): Promise<void> {
   return await invoke("plugin:fs|create_dir", {
     path: dir,
-    options
-  })
+    options,
+  });
 }
 
 /**
@@ -549,8 +549,8 @@ async function removeDir(
 ): Promise<void> {
   return await invoke("plugin:fs|remove_dir", {
     path: dir,
-    options
-  })
+    options,
+  });
 }
 
 /**
@@ -574,8 +574,8 @@ async function copyFile(
   return await invoke("plugin:fs|copy_file", {
     source,
     destination,
-    options
-  })
+    options,
+  });
 }
 
 /**
@@ -597,8 +597,8 @@ async function removeFile(
 ): Promise<void> {
   return await invoke("plugin:fs|remove_file", {
     path: file,
-    options
-  })
+    options,
+  });
 }
 
 /**
@@ -622,9 +622,8 @@ async function renameFile(
   return await invoke("plugin:fs|rename_file", {
     oldPath,
     newPath,
-    options
-
-  })
+    options,
+  });
 }
 
 /**
@@ -644,7 +643,7 @@ async function exists(path: string): Promise<boolean> {
 
 /**
  * Returns the metadata for the given path.
- * 
+ *
  * @since 1.0.0
  */
 async function metadata(path: string): Promise<Metadata> {
@@ -670,7 +669,7 @@ export type {
   FileEntry,
   Permissions,
   Metadata,
-}
+};
 
 export {
   BaseDirectory,
@@ -687,5 +686,5 @@ export {
   removeFile,
   renameFile,
   exists,
-  metadata
-}
+  metadata,
+};

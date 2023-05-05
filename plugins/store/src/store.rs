@@ -175,8 +175,9 @@ pub struct Store<R: Runtime> {
 
 impl<R: Runtime> Store<R> {
     /// Update the store from the on-disk state
-    pub fn load<R: Runtime>(&mut self, app: &AppHandle<R>) -> Result<(), Error> {
-        let app_dir = app
+    pub fn load(&mut self) -> Result<(), Error> {
+        let app_dir = self
+            .app
             .path()
             .app_data_dir()
             .expect("failed to resolve app dir");
@@ -191,8 +192,9 @@ impl<R: Runtime> Store<R> {
     }
 
     /// Saves the store to disk
-    pub fn save<R: Runtime>(&self, app: &AppHandle<R>) -> Result<(), Error> {
-        let app_dir = app
+    pub fn save(&self) -> Result<(), Error> {
+        let app_dir = self
+            .app
             .path()
             .app_data_dir()
             .expect("failed to resolve app dir");

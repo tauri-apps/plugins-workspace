@@ -298,7 +298,7 @@ interface Channel {
 }
 
 /** Possible permission values. */
-type Permission = 'granted' | 'denied' | 'default'
+type Permission = "granted" | "denied" | "default";
 
 /**
  * Checks if the permission to send notifications is granted.
@@ -311,10 +311,10 @@ type Permission = 'granted' | 'denied' | 'default'
  * @since 1.0.0
  */
 async function isPermissionGranted(): Promise<boolean> {
-  if (window.Notification.permission !== 'default') {
-    return Promise.resolve(window.Notification.permission === 'granted')
+  if (window.Notification.permission !== "default") {
+    return Promise.resolve(window.Notification.permission === "granted");
   }
-  return invoke('plugin:notification|is_permission_granted')
+  return invoke("plugin:notification|is_permission_granted");
 }
 
 /**
@@ -334,7 +334,7 @@ async function isPermissionGranted(): Promise<boolean> {
  * @since 1.0.0
  */
 async function requestPermission(): Promise<Permission> {
-  return window.Notification.requestPermission()
+  return window.Notification.requestPermission();
 }
 
 /**
@@ -356,12 +356,12 @@ async function requestPermission(): Promise<Permission> {
  * @since 1.0.0
  */
 function sendNotification(options: Options | string): void {
-  if (typeof options === 'string') {
+  if (typeof options === "string") {
     // eslint-disable-next-line no-new
-    new window.Notification(options)
+    new window.Notification(options);
   } else {
     // eslint-disable-next-line no-new
-    new window.Notification(options.title, options)
+    new window.Notification(options.title, options);
   }
 }
 

@@ -75,27 +75,27 @@
  * @module
  */
 
-import { invoke, transformCallback } from '@tauri-apps/api/tauri'
+import { invoke, transformCallback } from "@tauri-apps/api/tauri";
 
 /**
  * @since 1.0.0
  */
 interface SpawnOptions {
   /** Current working directory. */
-  cwd?: string
+  cwd?: string;
   /** Environment variables. set to `null` to clear the process env. */
-  env?: Record<string, string>
+  env?: Record<string, string>;
   /**
    * Character encoding for stdout/stderr
    *
    * @since 1.1.0
    *  */
-  encoding?: string
+  encoding?: string;
 }
 
 /** @ignore */
 interface InternalSpawnOptions extends SpawnOptions {
-  sidecar?: boolean
+  sidecar?: boolean;
 }
 
 /**
@@ -103,13 +103,13 @@ interface InternalSpawnOptions extends SpawnOptions {
  */
 interface ChildProcess<O extends IOPayload> {
   /** Exit code of the process. `null` if the process was terminated by a signal on Unix. */
-  code: number | null
+  code: number | null;
   /** If the process was terminated by a signal, represents that signal. */
-  signal: number | null
+  signal: number | null;
   /** The data that the process wrote to `stdout`. */
-  stdout: O
+  stdout: O;
   /** The data that the process wrote to `stderr`. */
-  stderr: O
+  stderr: O;
 }
 
 /**
@@ -128,26 +128,27 @@ async function execute<O extends IOPayload>(
   args: string | string[] = [],
   options?: InternalSpawnOptions
 ): Promise<number> {
-  if (typeof args === 'object') {
-    Object.freeze(args)
+  if (typeof args === "object") {
+    Object.freeze(args);
   }
 
-  return invoke<number>('plugin:shell|execute', {
+  return invoke<number>("plugin:shell|execute", {
     program,
     args,
     options,
-    onEventFn: transformCallback(onEvent)
-  })
+    onEventFn: transformCallback(onEvent),
+  });
 }
 
 /**
  * @since 1.0.0
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 class EventEmitter<E extends Record<string, any>> {
   /** @ignore */
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
   private eventListeners: Record<keyof E, Array<(arg: any) => void>> =
-    Object.create(null)
+    Object.create(null);
 
   /**
    * Alias for `emitter.on(eventName, listener)`.
@@ -158,7 +159,7 @@ class EventEmitter<E extends Record<string, any>> {
     eventName: N,
     listener: (arg: E[typeof eventName]) => void
   ): this {
-    return this.on(eventName, listener)
+    return this.on(eventName, listener);
   }
 
   /**
@@ -170,7 +171,7 @@ class EventEmitter<E extends Record<string, any>> {
     eventName: N,
     listener: (arg: E[typeof eventName]) => void
   ): this {
-    return this.off(eventName, listener)
+    return this.off(eventName, listener);
   }
 
   /**
@@ -189,12 +190,12 @@ class EventEmitter<E extends Record<string, any>> {
   ): this {
     if (eventName in this.eventListeners) {
       // eslint-disable-next-line security/detect-object-injection
-      this.eventListeners[eventName].push(listener)
+      this.eventListeners[eventName].push(listener);
     } else {
       // eslint-disable-next-line security/detect-object-injection
-      this.eventListeners[eventName] = [listener]
+      this.eventListeners[eventName] = [listener];
     }
-    return this
+    return this;
   }
 
   /**
@@ -210,11 +211,11 @@ class EventEmitter<E extends Record<string, any>> {
     listener: (arg: E[typeof eventName]) => void
   ): this {
     const wrapper = (arg: E[typeof eventName]): void => {
-      this.removeListener(eventName, wrapper)
+      this.removeListener(eventName, wrapper);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      listener(arg)
-    }
-    return this.addListener(eventName, wrapper)
+      listener(arg);
+    };
+    return this.addListener(eventName, wrapper);
   }
 
   /**
@@ -231,9 +232,9 @@ class EventEmitter<E extends Record<string, any>> {
       // eslint-disable-next-line security/detect-object-injection
       this.eventListeners[eventName] = this.eventListeners[eventName].filter(
         (l) => l !== listener
-      )
+      );
     }
-    return this
+    return this;
   }
 
   /**
@@ -246,12 +247,12 @@ class EventEmitter<E extends Record<string, any>> {
   removeAllListeners<N extends keyof E>(event?: N): this {
     if (event) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete,security/detect-object-injection
-      delete this.eventListeners[event]
+      delete this.eventListeners[event];
     } else {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      this.eventListeners = Object.create(null)
+      this.eventListeners = Object.create(null);
     }
-    return this
+    return this;
   }
 
   /**
@@ -264,12 +265,12 @@ class EventEmitter<E extends Record<string, any>> {
   emit<N extends keyof E>(eventName: N, arg: E[typeof eventName]): boolean {
     if (eventName in this.eventListeners) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,security/detect-object-injection
-      const listeners = this.eventListeners[eventName]
+      const listeners = this.eventListeners[eventName];
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      for (const listener of listeners) listener(arg)
-      return true
+      for (const listener of listeners) listener(arg);
+      return true;
     }
-    return false
+    return false;
   }
 
   /**
@@ -280,8 +281,8 @@ class EventEmitter<E extends Record<string, any>> {
   listenerCount<N extends keyof E>(eventName: N): number {
     if (eventName in this.eventListeners)
       // eslint-disable-next-line security/detect-object-injection
-      return this.eventListeners[eventName].length
-    return 0
+      return this.eventListeners[eventName].length;
+    return 0;
   }
 
   /**
@@ -300,12 +301,12 @@ class EventEmitter<E extends Record<string, any>> {
   ): this {
     if (eventName in this.eventListeners) {
       // eslint-disable-next-line security/detect-object-injection
-      this.eventListeners[eventName].unshift(listener)
+      this.eventListeners[eventName].unshift(listener);
     } else {
       // eslint-disable-next-line security/detect-object-injection
-      this.eventListeners[eventName] = [listener]
+      this.eventListeners[eventName] = [listener];
     }
-    return this
+    return this;
   }
 
   /**
@@ -320,12 +321,13 @@ class EventEmitter<E extends Record<string, any>> {
     eventName: N,
     listener: (arg: E[typeof eventName]) => void
   ): this {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapper = (arg: any): void => {
-      this.removeListener(eventName, wrapper)
+      this.removeListener(eventName, wrapper);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      listener(arg)
-    }
-    return this.prependListener(eventName, wrapper)
+      listener(arg);
+    };
+    return this.prependListener(eventName, wrapper);
   }
 }
 
@@ -334,10 +336,10 @@ class EventEmitter<E extends Record<string, any>> {
  */
 class Child {
   /** The child process `pid`. */
-  pid: number
+  pid: number;
 
   constructor(pid: number) {
-    this.pid = pid
+    this.pid = pid;
   }
 
   /**
@@ -356,11 +358,11 @@ class Child {
    * @returns A promise indicating the success or failure of the operation.
    */
   async write(data: IOPayload): Promise<void> {
-    return invoke('plugin:shell|stdin_write', {
+    return invoke("plugin:shell|stdin_write", {
       pid: this.pid,
       // correctly serialize Uint8Arrays
-      buffer: typeof data === 'string' ? data : Array.from(data)
-    })
+      buffer: typeof data === "string" ? data : Array.from(data),
+    });
   }
 
   /**
@@ -369,20 +371,20 @@ class Child {
    * @returns A promise indicating the success or failure of the operation.
    */
   async kill(): Promise<void> {
-    return invoke('plugin:shell|kill', {
-      cmd: 'killChild',
-      pid: this.pid
-    })
+    return invoke("plugin:shell|kill", {
+      cmd: "killChild",
+      pid: this.pid,
+    });
   }
 }
 
 interface CommandEvents {
-  close: TerminatedPayload
-  error: string
+  close: TerminatedPayload;
+  error: string;
 }
 
 interface OutputEvents<O extends IOPayload> {
-  data: O
+  data: O;
 }
 
 /**
@@ -408,15 +410,15 @@ interface OutputEvents<O extends IOPayload> {
  */
 class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   /** @ignore Program to execute. */
-  private readonly program: string
+  private readonly program: string;
   /** @ignore Program arguments */
-  private readonly args: string[]
+  private readonly args: string[];
   /** @ignore Spawn options. */
-  private readonly options: InternalSpawnOptions
+  private readonly options: InternalSpawnOptions;
   /** Event emitter for the `stdout`. Emits the `data` event. */
-  readonly stdout = new EventEmitter<OutputEvents<O>>()
+  readonly stdout = new EventEmitter<OutputEvents<O>>();
   /** Event emitter for the `stderr`. Emits the `data` event. */
-  readonly stderr = new EventEmitter<OutputEvents<O>>()
+  readonly stderr = new EventEmitter<OutputEvents<O>>();
 
   /**
    * @ignore
@@ -432,23 +434,23 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
     args: string | string[] = [],
     options?: SpawnOptions
   ) {
-    super()
-    this.program = program
-    this.args = typeof args === 'string' ? [args] : args
-    this.options = options ?? {}
+    super();
+    this.program = program;
+    this.args = typeof args === "string" ? [args] : args;
+    this.options = options ?? {};
   }
 
-  static create(program: string, args?: string | string[]): Command<string>
+  static create(program: string, args?: string | string[]): Command<string>;
   static create(
     program: string,
     args?: string | string[],
-    options?: SpawnOptions & { encoding: 'raw' }
-  ): Command<Uint8Array>
+    options?: SpawnOptions & { encoding: "raw" }
+  ): Command<Uint8Array>;
   static create(
     program: string,
     args?: string | string[],
     options?: SpawnOptions
-  ): Command<string>
+  ): Command<string>;
 
   /**
    * Creates a command to execute the given program.
@@ -467,20 +469,20 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
     args: string | string[] = [],
     options?: SpawnOptions
   ): Command<O> {
-    return new Command(program, args, options)
+    return new Command(program, args, options);
   }
 
-  static sidecar(program: string, args?: string | string[]): Command<string>
+  static sidecar(program: string, args?: string | string[]): Command<string>;
   static sidecar(
     program: string,
     args?: string | string[],
-    options?: SpawnOptions & { encoding: 'raw' }
-  ): Command<Uint8Array>
+    options?: SpawnOptions & { encoding: "raw" }
+  ): Command<Uint8Array>;
   static sidecar(
     program: string,
     args?: string | string[],
     options?: SpawnOptions
-  ): Command<string>
+  ): Command<string>;
 
   /**
    * Creates a command to execute the given sidecar program.
@@ -499,9 +501,9 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
     args: string | string[] = [],
     options?: SpawnOptions
   ): Command<O> {
-    const instance = new Command<O>(program, args, options)
-    instance.options.sidecar = true
-    return instance
+    const instance = new Command<O>(program, args, options);
+    instance.options.sidecar = true;
+    return instance;
   }
 
   /**
@@ -513,24 +515,24 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
     return execute<O>(
       (event) => {
         switch (event.event) {
-          case 'Error':
-            this.emit('error', event.payload)
-            break
-          case 'Terminated':
-            this.emit('close', event.payload)
-            break
-          case 'Stdout':
-            this.stdout.emit('data', event.payload)
-            break
-          case 'Stderr':
-            this.stderr.emit('data', event.payload)
-            break
+          case "Error":
+            this.emit("error", event.payload);
+            break;
+          case "Terminated":
+            this.emit("close", event.payload);
+            break;
+          case "Stdout":
+            this.stdout.emit("data", event.payload);
+            break;
+          case "Stderr":
+            this.stderr.emit("data", event.payload);
+            break;
         }
       },
       this.program,
       this.args,
       this.options
-    ).then((pid) => new Child(pid))
+    ).then((pid) => new Child(pid));
   }
 
   /**
@@ -549,38 +551,38 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    */
   async execute(): Promise<ChildProcess<O>> {
     return new Promise((resolve, reject) => {
-      this.on('error', reject)
+      this.on("error", reject);
 
-      const stdout: O[] = []
-      const stderr: O[] = []
-      this.stdout.on('data', (line: O) => {
-        stdout.push(line)
-      })
-      this.stderr.on('data', (line: O) => {
-        stderr.push(line)
-      })
+      const stdout: O[] = [];
+      const stderr: O[] = [];
+      this.stdout.on("data", (line: O) => {
+        stdout.push(line);
+      });
+      this.stderr.on("data", (line: O) => {
+        stderr.push(line);
+      });
 
-      this.on('close', (payload: TerminatedPayload) => {
+      this.on("close", (payload: TerminatedPayload) => {
         resolve({
           code: payload.code,
           signal: payload.signal,
           stdout: this.collectOutput(stdout) as O,
-          stderr: this.collectOutput(stderr) as O
-        })
-      })
+          stderr: this.collectOutput(stderr) as O,
+        });
+      });
 
-      this.spawn().catch(reject)
-    })
+      this.spawn().catch(reject);
+    });
   }
 
   /** @ignore */
   private collectOutput(events: O[]): string | Uint8Array {
-    if (this.options.encoding === 'raw') {
+    if (this.options.encoding === "raw") {
       return events.reduce<Uint8Array>((p, c) => {
-        return new Uint8Array([...p, ...(c as Uint8Array), 10])
-      }, new Uint8Array())
+        return new Uint8Array([...p, ...(c as Uint8Array), 10]);
+      }, new Uint8Array());
     } else {
-      return events.join('\n')
+      return events.join("\n");
     }
   }
 }
@@ -589,8 +591,8 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
  * Describes the event message received from the command.
  */
 interface Event<T, V> {
-  event: T
-  payload: V
+  event: T;
+  payload: V;
 }
 
 /**
@@ -598,20 +600,20 @@ interface Event<T, V> {
  */
 interface TerminatedPayload {
   /** Exit code of the process. `null` if the process was terminated by a signal on Unix. */
-  code: number | null
+  code: number | null;
   /** If the process was terminated by a signal, represents that signal. */
-  signal: number | null
+  signal: number | null;
 }
 
 /** Event payload type */
-type IOPayload = string | Uint8Array
+type IOPayload = string | Uint8Array;
 
 /** Events emitted by the child process. */
 type CommandEvent<O extends IOPayload> =
-  | Event<'Stdout', O>
-  | Event<'Stderr', O>
-  | Event<'Terminated', TerminatedPayload>
-  | Event<'Error', string>
+  | Event<"Stdout", O>
+  | Event<"Stderr", O>
+  | Event<"Terminated", TerminatedPayload>
+  | Event<"Error", string>;
 
 /**
  * Opens a path or URL with the system's default app,
@@ -640,18 +642,18 @@ type CommandEvent<O extends IOPayload> =
  * @since 1.0.0
  */
 async function open(path: string, openWith?: string): Promise<void> {
-  return invoke('plugin:shell|open', {
+  return invoke("plugin:shell|open", {
     path,
-    with: openWith
-  })
+    with: openWith,
+  });
 }
 
-export { Command, Child, EventEmitter, open }
+export { Command, Child, EventEmitter, open };
 export type {
   IOPayload,
   CommandEvents,
   TerminatedPayload,
   OutputEvents,
   ChildProcess,
-  SpawnOptions
-}
+  SpawnOptions,
+};

@@ -4,7 +4,11 @@ import { internalIpV4 } from "internal-ip";
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => {
-  const host = process.env.TAURI_PLATFORM === 'android' || process.env.TAURI_PLATFORM === 'ios' ? (await internalIpV4()) : 'localhost'
+  const host =
+    process.env.TAURI_PLATFORM === "android" ||
+    process.env.TAURI_PLATFORM === "ios"
+      ? await internalIpV4()
+      : "localhost";
   return {
     plugins: [svelte()],
 
@@ -13,17 +17,17 @@ export default defineConfig(async () => {
     clearScreen: false,
     // tauri expects a fixed port, fail if that port is not available
     server: {
-      host: '0.0.0.0',
+      host: "0.0.0.0",
       port: 5173,
       strictPort: true,
       hmr: {
-        protocol: 'ws',
+        protocol: "ws",
         host,
-        port: 5183
+        port: 5183,
       },
       fs: {
-        allow: ['.', '../../tooling/api/dist']
-      }
+        allow: [".", "../../tooling/api/dist"],
+      },
     },
     // to make use of `TAURI_DEBUG` and other env variables
     // https://tauri.studio/v1/api/config#buildconfig.beforedevcommand
@@ -36,5 +40,5 @@ export default defineConfig(async () => {
       // produce sourcemaps for debug builds
       sourcemap: !!process.env.TAURI_DEBUG,
     },
-  }
+  };
 });

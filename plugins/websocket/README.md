@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-websocket = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "next" }
+tauri-plugin-websocket = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -26,11 +26,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-websocket#next
+pnpm add https://github.com/tauri-apps/tauri-plugin-websocket#v2
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-websocket#next
+npm add https://github.com/tauri-apps/tauri-plugin-websocket#v2
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-websocket#next
+yarn add https://github.com/tauri-apps/tauri-plugin-websocket#v2
 ```
 
 ## Usage
@@ -51,11 +51,11 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { WebSocket } from 'tauri-plugin-websocket-api';
+import { WebSocket } from "tauri-plugin-websocket-api";
 
-const ws = await WebSocket.connect('wss://example.com');
+const ws = await WebSocket.connect("wss://example.com");
 
-await ws.send('Hello World');
+await ws.send("Hello World");
 
 await ws.disconnect();
 ```
