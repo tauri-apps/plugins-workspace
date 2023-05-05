@@ -6,9 +6,10 @@ import { defineConfig } from "vite";
 import Unocss from "unocss/vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { internalIpV4 } from "internal-ip";
+import process from "process";
 
 // https://vitejs.dev/config/
-export default defineConfig(async ({ command, mode }) => {
+export default defineConfig(async () => {
   const host =
     process.env.TAURI_PLATFORM === "android" ||
     process.env.TAURI_PLATFORM === "ios"
