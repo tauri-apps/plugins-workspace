@@ -11,6 +11,7 @@
     "@tauri-apps/api": "2.0.0-alpha.3",
     "@tauri-apps/cli": "2.0.0-alpha.8",
     "@zerodevx/svelte-json-view": "0.2.1",
+    "tauri-plugin-camera-api": "0.0.0",
     "tauri-plugin-cli-api": "0.0.0",
     "tauri-plugin-clipboard-api": "0.0.0",
     "tauri-plugin-dialog-api": "0.0.0",

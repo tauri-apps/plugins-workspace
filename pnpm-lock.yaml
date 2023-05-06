@@ -61,6 +61,9 @@ importers:
       '@zerodevx/svelte-json-view':
         specifier: 0.2.1
         version: 0.2.1
+      tauri-plugin-camera-api:
+        specifier: 0.0.0
+        version: link:../../plugins/camera
       tauri-plugin-cli-api:
         specifier: 0.0.0
         version: link:../../plugins/cli

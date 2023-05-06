@@ -17,6 +17,7 @@
   import Updater from './views/Updater.svelte'
   import Clipboard from './views/Clipboard.svelte'
   import WebRTC from './views/WebRTC.svelte'
+  import Camera from './views/Camera.svelte'
   import App from './views/App.svelte'
 
   import { onMount } from 'svelte'
@@ -110,7 +111,12 @@
       label: 'WebRTC',
       component: WebRTC,
       icon: 'i-ph-broadcast'
-    }
+    },
+    isMobile && {
+      label: 'Camera',
+      component: Camera,
+      icon: 'i-codicon-clippy'
+    },
   ]
 
   let selected = views[0]

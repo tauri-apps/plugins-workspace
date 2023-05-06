@@ -28,6 +28,7 @@ yarn add 'https://gitpkg.now.sh/tauri-apps/plugins-workspace/plugins/camera?feat
 ```
 
 **NOT AVAILABLE YET, WILL BE READY WHEN WE MERGE THE BRANCH:**
+
 ```sh
 pnpm add https://github.com/tauri-apps/tauri-plugin-camera
 # or
@@ -81,4 +82,3 @@ Configure the following properties on `src-tauri/gen/apple/$(APPNAME)_iOS/Info.p
 <key>NSPhotoLibraryUsageDescription</key>
 <string>Description for the library usage here</string>
 ```
-

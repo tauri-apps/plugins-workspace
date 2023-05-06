@@ -53,6 +53,21 @@ class CameraSettings {
   }
 }
 
+private const val CAMERA = "camera"
+private const val PHOTOS = "photos"
+
+private const val INVALID_RESULT_TYPE_ERROR = "Invalid resultType option"
+private const val PERMISSION_DENIED_ERROR_CAMERA = "User denied access to camera"
+private const val PERMISSION_DENIED_ERROR_PHOTOS = "User denied access to photos"
+private const val NO_CAMERA_ERROR = "Device doesn't have a camera available"
+private const val NO_CAMERA_ACTIVITY_ERROR = "Unable to resolve camera activity"
+private const val NO_PHOTO_ACTIVITY_ERROR = "Unable to resolve photo activity"
+private const val IMAGE_FILE_SAVE_ERROR = "Unable to create photo on disk"
+private const val IMAGE_PROCESS_NO_FILE_ERROR = "Unable to process image, file not found on disk"
+private const val UNABLE_TO_PROCESS_IMAGE = "Unable to process image"
+private const val IMAGE_EDIT_ERROR = "Unable to edit image"
+private const val IMAGE_GALLERY_SAVE_ERROR = "Unable to save the image in the gallery"
+
 @TauriPlugin(
   permissions = [
     Permission(strings = [Manifest.permission.CAMERA], alias = "camera"),
@@ -62,23 +77,6 @@ class CameraSettings {
   )]
 )
 class CameraPlugin(private val activity: Activity): Plugin(activity) {
-  // Permission alias constants
-  val CAMERA = "camera"
-  val PHOTOS = "photos"
-
-  // Message constants
-  private val INVALID_RESULT_TYPE_ERROR = "Invalid resultType option"
-  private val PERMISSION_DENIED_ERROR_CAMERA = "User denied access to camera"
-  private val PERMISSION_DENIED_ERROR_PHOTOS = "User denied access to photos"
-  private val NO_CAMERA_ERROR = "Device doesn't have a camera available"
-  private val NO_CAMERA_ACTIVITY_ERROR = "Unable to resolve camera activity"
-  private val NO_PHOTO_ACTIVITY_ERROR = "Unable to resolve photo activity"
-  private val IMAGE_FILE_SAVE_ERROR = "Unable to create photo on disk"
-  private val IMAGE_PROCESS_NO_FILE_ERROR = "Unable to process image, file not found on disk"
-  private val UNABLE_TO_PROCESS_IMAGE = "Unable to process image"
-  private val IMAGE_EDIT_ERROR = "Unable to edit image"
-  private val IMAGE_GALLERY_SAVE_ERROR = "Unable to save the image in the gallery"
-
   private var imageFileSavePath: String? = null
   private var imageEditedFileSavePath: String? = null
   private var imageFileUri: Uri? = null
@@ -297,10 +295,10 @@ class CameraPlugin(private val activity: Activity): Plugin(activity) {
     if (skipPermission || checkPhotosPermissions(invoke)) {
       val intent = Intent(Intent.ACTION_PICK)
       intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, multiple)
-      intent.setType("image/*")
+      intent.type = "image/*"
       try {
         if (multiple) {
-          intent.putExtra("multi-pick", multiple)
+          intent.putExtra("multi-pick", true)
           intent.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*"))
           startActivityForResult(invoke, intent, "processPickedImages")
         } else {
@@ -323,8 +321,12 @@ class CameraPlugin(private val activity: Activity): Plugin(activity) {
     val f = File(imageFileSavePath!!)
     val bmOptions: BitmapFactory.Options = BitmapFactory.Options()
     val contentUri: Uri = Uri.fromFile(f)
-    val bitmap: Bitmap = BitmapFactory.decodeFile(imageFileSavePath, bmOptions)
-    returnResult(invoke, bitmap, contentUri)
+    val bitmap = BitmapFactory.decodeFile(imageFileSavePath, bmOptions)
+    if (bitmap == null) {
+      invoke.reject("cancelled")
+    } else {
+      returnResult(invoke, bitmap, contentUri)
+    }
   }
 
   @ActivityCallback
@@ -494,14 +496,6 @@ class CameraPlugin(private val activity: Activity): Plugin(activity) {
     }
   }
 
-  /**
-   * Save the modified image on the same path,
-   * or on a temporary location if it's a content url
-   * @param uri
-   * @param is
-   * @return
-   * @throws IOException
-   */
   @Throws(IOException::class)
   private fun saveImage(uri: Uri, input: InputStream): Uri? {
     var outFile = if (uri.scheme.equals("content")) {
@@ -535,7 +529,7 @@ class CameraPlugin(private val activity: Activity): Plugin(activity) {
     if (!filename.contains(".jpg") && !filename.contains(".jpeg")) {
       filename += "." + Date().time + ".jpeg"
     }
-    val cacheDir: File = activity.getCacheDir()
+    val cacheDir = activity.cacheDir
     return File(cacheDir, filename)
   }
 

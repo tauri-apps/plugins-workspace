@@ -149,6 +149,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin-camera",
  "tauri-plugin-cli",
  "tauri-plugin-clipboard",
  "tauri-plugin-dialog",
@@ -3572,6 +3573,17 @@ dependencies = [
  "syn",
  "tauri-codegen",
  "tauri-utils",
+]
+
+[[package]]
+name = "tauri-plugin-camera"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "thiserror",
 ]
 
 [[package]]

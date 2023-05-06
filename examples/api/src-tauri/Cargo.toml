@@ -25,6 +25,9 @@ tauri-plugin-http = { path = "../../../plugins/http", features = [ "http-multipa
 tauri-plugin-notification = { path = "../../../plugins/notification", features = [ "windows7-compat" ] }
 tauri-plugin-shell = { path = "../../../plugins/shell" }
 
+[target."cfg(any(target_os = \"android\", target_os = \"ios\"))".dependencies]
+tauri-plugin-camera = { path = "../../../plugins/camera" }
+
 [patch.crates-io]
 tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
 tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
