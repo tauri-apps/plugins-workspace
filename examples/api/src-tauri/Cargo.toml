@@ -45,6 +45,9 @@ features = [
 tauri-plugin-cli = { path = "../../../plugins/cli" }
 tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut" }
 
+[target."cfg(any(target_os = \"android\", target_os = \"ios\"))".dependencies]
+tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner" }
+
 [target."cfg(target_os = \"windows\")".dependencies]
 window-shadows = "0.2"
 

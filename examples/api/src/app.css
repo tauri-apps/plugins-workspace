@@ -39,3 +39,7 @@ code.code-block {
     transform: translateX(var(--translate-x));
   }
 }
+
+.transparent {
+  background-color: transparent;
+}

@@ -46,6 +46,11 @@ pub fn run() {
                     .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
             }
 
+            #[cfg(mobile)]
+            {
+                app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
+            }
+
             let mut window_builder = WindowBuilder::new(app, "main", WindowUrl::default());
             #[cfg(desktop)]
             {
@@ -65,7 +70,7 @@ pub fn run() {
                     .decorations(false);
             }
 
-            let window = window_builder.build().unwrap();
+            let window = window_builder.build()?;
 
             #[cfg(debug_assertions)]
             window.open_devtools();

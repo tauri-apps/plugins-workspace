@@ -8,6 +8,8 @@ import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.VibrationEffect
@@ -71,11 +73,13 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
 
     private var requestPermissionResponse: JSObject? = null
     private var cameraReady = false
+    private var windowed = false
 
     // declare a map constant for allowed barcode formats
     private val supportedFormats = supportedFormats()
 
     private var savedInvoke: Invoke? = null
+    private var webViewBackground: Drawable? = null
 
     override fun load(webView: WebView) {
         super.load(webView)
@@ -105,10 +109,9 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
             .hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
     }
 
-    private fun setupCamera(cameraDirection: String) {
+    private fun setupCamera(cameraDirection: String, windowed: Boolean) {
         activity
             .runOnUiThread {
-
                 val previewView = PreviewView(activity)
                 previewView.layoutParams = FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -126,6 +129,13 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
                 val parent = webView.parent as ViewGroup
                 parent.addView(previewView)
                 parent.addView(graphicOverlay)
+
+                this.windowed = windowed
+                if (windowed) {
+                    webView.bringToFront()
+                    webViewBackground = webView.background
+                    webView.setBackgroundColor(Color.TRANSPARENT)
+                }
 
                 val cameraProviderFuture = ProcessCameraProvider.getInstance(activity)
                 cameraProviderFuture.addListener(
@@ -174,7 +184,6 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
     }
 
     private fun dismantleCamera() {
-        // opposite of setupCamera
         activity
             .runOnUiThread {
                 if (cameraProvider != null) {
@@ -207,14 +216,22 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
         return formats
     }
 
-    private fun prepareInternal(direction: String) {
+    private fun prepareInternal(direction: String, windowed: Boolean) {
         dismantleCamera()
-        setupCamera(direction)
+        setupCamera(direction, windowed)
     }
 
     private fun destroy() {
         dismantleCamera()
         savedInvoke = null
+        if (windowed) {
+            if (webViewBackground != null) {
+                webView.background = webViewBackground
+                webViewBackground = null
+            } else {
+                webView.setBackgroundColor(Color.WHITE)
+            }
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -260,7 +277,8 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
             scanner
                 ?.process(inputImage)
                 ?.addOnSuccessListener { barcodes ->
-                    for (barcode in barcodes) {
+                    if (barcodes.isNotEmpty())  {
+                        val barcode = barcodes[0]
                         val bounds = barcode.boundingBox
                         val rawValue = barcode.rawValue ?: ""
 
@@ -299,7 +317,7 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
 
     @Command
     fun prepare(invoke: Invoke) {
-        prepareInternal(invoke.getString("cameraDirection", "back"))
+        prepareInternal(invoke.getString("cameraDirection", "back"), invoke.getBoolean("windowed", false))
         cameraReady = true
         invoke.resolve()
     }
@@ -307,7 +325,6 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
     @Command
     fun cancel(invoke: Invoke) {
         savedInvoke?.reject("cancelled")
-        destroy()
         invoke.resolve()
     }
 
@@ -319,7 +336,8 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
                 throw Exception("No permission to use camera. Did you request it yet?")
             } else {
                 if (!cameraReady) {
-                    prepareInternal(invoke.getString("cameraDirection", "back"))
+                    webViewBackground = null
+                    prepareInternal(invoke.getString("cameraDirection", "back"), invoke.getBoolean("windowed", false))
                 }
                 cameraReady = false
                 configureCamera(getFormats(invoke))

@@ -149,6 +149,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin-barcode-scanner",
  "tauri-plugin-cli",
  "tauri-plugin-clipboard",
  "tauri-plugin-dialog",
@@ -3459,7 +3460,7 @@ dependencies = [
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.8"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#bb2a8ccf1356e59b98947d827d61e4e99533f2bc"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#256c30c72b737e49ced0d6a6483910dc779fc185"
 dependencies = [
  "anyhow",
  "base64 0.21.0",
@@ -3518,7 +3519,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#bb2a8ccf1356e59b98947d827d61e4e99533f2bc"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#256c30c72b737e49ced0d6a6483910dc779fc185"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -3539,7 +3540,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#bb2a8ccf1356e59b98947d827d61e4e99533f2bc"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#256c30c72b737e49ced0d6a6483910dc779fc185"
 dependencies = [
  "base64 0.21.0",
  "brotli",
@@ -3564,7 +3565,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#bb2a8ccf1356e59b98947d827d61e4e99533f2bc"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#256c30c72b737e49ced0d6a6483910dc779fc185"
 dependencies = [
  "heck 0.4.1",
  "proc-macro2",
@@ -3572,6 +3573,18 @@ dependencies = [
  "syn",
  "tauri-codegen",
  "tauri-utils",
+]
+
+[[package]]
+name = "tauri-plugin-barcode-scanner"
+version = "0.0.0"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "thiserror",
 ]
 
 [[package]]
@@ -3677,11 +3690,15 @@ version = "0.1.0"
 dependencies = [
  "log",
  "notify-rust",
+ "rand 0.8.5",
  "serde",
  "serde_json",
+ "serde_repr",
  "tauri",
  "tauri-build",
  "thiserror",
+ "time",
+ "url",
  "win7-notifications",
 ]
 
@@ -3704,7 +3721,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "0.13.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#bb2a8ccf1356e59b98947d827d61e4e99533f2bc"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#256c30c72b737e49ced0d6a6483910dc779fc185"
 dependencies = [
  "gtk",
  "http",
@@ -3725,7 +3742,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.13.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#bb2a8ccf1356e59b98947d827d61e4e99533f2bc"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#256c30c72b737e49ced0d6a6483910dc779fc185"
 dependencies = [
  "cocoa",
  "gtk",
@@ -3745,7 +3762,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#bb2a8ccf1356e59b98947d827d61e4e99533f2bc"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#256c30c72b737e49ced0d6a6483910dc779fc185"
 dependencies = [
  "aes-gcm",
  "brotli",
