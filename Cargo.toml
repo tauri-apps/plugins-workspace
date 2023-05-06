@@ -1,5 +1,6 @@
 [workspace]
-members = ["plugins/*"]
+members = ["plugins/*", "examples/*/src-tauri"]
+exclude = ["plugins/fs", "plugins/http", "examples/api/src-tauri"]
 resolver = "2"
 
 [workspace.dependencies]

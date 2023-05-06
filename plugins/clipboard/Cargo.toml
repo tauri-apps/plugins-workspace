@@ -1,0 +1,19 @@
+[package]
+name = "tauri-plugin-clipboard"
+version = "0.0.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[build-dependencies]
+tauri-build.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+tauri.workspace = true
+log.workspace = true
+thiserror.workspace = true
+
+[target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
+arboard = "3"

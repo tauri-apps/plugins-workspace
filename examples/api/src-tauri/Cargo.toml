@@ -1,0 +1,60 @@
+[package]
+name = "api"
+version = "0.1.0"
+description = "An example Tauri Application showcasing the api"
+edition = "2021"
+rust-version = "1.64"
+license = "Apache-2.0 OR MIT"
+
+[lib]
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.0.0-alpha.4", features = ["codegen", "isolation"] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = [ "derive" ] }
+tiny_http = "0.11"
+log = "0.4"
+tauri-plugin-log = { path = "../../../plugins/log" }
+tauri-plugin-fs = { path = "../../../plugins/fs" }
+tauri-plugin-clipboard = { path = "../../../plugins/clipboard" }
+tauri-plugin-dialog = { path = "../../../plugins/dialog" }
+tauri-plugin-http = { path = "../../../plugins/http", features = [ "http-multipart" ] }
+tauri-plugin-notification = { path = "../../../plugins/notification", features = [ "windows7-compat" ] }
+tauri-plugin-shell = { path = "../../../plugins/shell" }
+
+[patch.crates-io]
+tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
+tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
+
+[dependencies.tauri]
+version = "2.0.0-alpha.8"
+features = [
+  "api-all",
+  "icon-ico",
+  "icon-png",
+  "isolation",
+  "macos-private-api",
+  "system-tray",
+  "updater"
+]
+
+[target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
+tauri-plugin-cli = { path = "../../../plugins/cli" }
+tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut" }
+
+[target."cfg(target_os = \"windows\")".dependencies]
+window-shadows = "0.2"
+
+[features]
+custom-protocol = [ "tauri/custom-protocol" ]
+
+# default to small, optimized release binaries
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+incremental = false
+opt-level = "s"

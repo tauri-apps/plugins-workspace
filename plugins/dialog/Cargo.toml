@@ -1,0 +1,25 @@
+[package]
+name = "tauri-plugin-dialog"
+version = "0.0.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+tauri.workspace = true
+log.workspace = true
+thiserror.workspace = true
+
+[target."cfg(any(target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
+glib = "0.16"
+
+[target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
+rfd = { version = "0.11", features = [ "gtk3", "common-controls-v6" ] }
+raw-window-handle = "0.5"
+
+[build-dependencies]
+tauri-build.workspace = true

@@ -18,7 +18,19 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
+```
+
+You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
+
+> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
+
+```sh
+pnpm add https://github.com/tauri-apps/tauri-plugin-window-state#v2
+# or
+npm add https://github.com/tauri-apps/tauri-plugin-window-state#v2
+# or
+yarn add https://github.com/tauri-apps/tauri-plugin-window-state#v2
 ```
 
 ## Usage
@@ -38,13 +50,21 @@ fn main() {
 
 Afterwards all windows will remember their state when the app is being closed and will restore to their previous state on the next launch.
 
-Optionally you can also tell the plugin to save the state of all open window to disk my using the `save_window_state()` method exposed by the `AppHandleExt` trait:
+Optionally you can also tell the plugin to save the state of all open window to disk by using the `save_window_state()` method exposed by the `AppHandleExt` trait:
 
 ```rust
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
 // `tauri::AppHandle` now has the following additional method
 app.save_window_state(StateFlags::all()); // will save the state of all open windows to disk
+```
+
+or through Javascript
+
+```javascript
+import { saveWindowState, StateFlags } from "tauri-plugin-window-state-api";
+
+saveWindowState(StateFlags.ALL);
 ```
 
 To manually restore a windows state from disk you can call the `restore_state()` method exposed by the `WindowExt` trait:
@@ -54,6 +74,14 @@ use tauri_plugin_window_state::{WindowExt, StateFlags};
 
 // all `Window` types now have the following additional method
 window.restore_state(StateFlags::all()); // will restore the windows state from disk
+```
+
+or through Javascript
+
+```javascript
+import { restoreStateCurrent, StateFlags } from "tauri-plugin-window-state-api";
+
+restoreStateCurrent(StateFlags.ALL);
 ```
 
 ## Contributing
