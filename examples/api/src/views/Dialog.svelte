@@ -1,5 +1,5 @@
 <script>
-  import { open, save } from 'tauri-plugin-dialog-api'
+  import { open, save, confirm } from 'tauri-plugin-dialog-api'
   import { readBinaryFile } from 'tauri-plugin-fs-api'
 
   export let onMessage
@@ -19,6 +19,16 @@
       callback(dataurl.substr(dataurl.indexOf(',') + 1))
     }
     reader.readAsDataURL(blob)
+  }
+
+  async function prompt() {
+    confirm('Is Tauri awesome?', {
+      okLabel: 'Absolutely',
+      cancelLabel: 'Totally',
+    }).then(res => onMessage(res
+      ? "Tauri is absolutely awesome"
+      : "Tauri is totally awesome"
+    )).catch(onMessage)
   }
 
   function openDialog() {
@@ -116,3 +126,4 @@
 <button class="btn" id="save-dialog" on:click={saveDialog}
   >Open save dialog</button
 >
+<button class="btn" id="prompt-dialog" on:click={prompt}>Prompt</button>
