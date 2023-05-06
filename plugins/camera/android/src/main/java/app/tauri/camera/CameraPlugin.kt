@@ -801,19 +801,4 @@ class CameraPlugin(private val activity: Activity): Plugin(activity) {
       null
     }
   }
-
-  /*protected fun saveInstanceState(): Bundle? {
-    val bundle: Bundle = super.saveInstanceState()
-    if (bundle != null) {
-      bundle.putString("cameraImageFileSavePath", imageFileSavePath)
-    }
-    return bundle
-  }
-
-  protected fun restoreState(state: Bundle) {
-    val storedImageFileSavePath: String = state.getString("cameraImageFileSavePath")
-    if (storedImageFileSavePath != null) {
-      imageFileSavePath = storedImageFileSavePath
-    }
-  }*/
 }
