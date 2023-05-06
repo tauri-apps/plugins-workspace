@@ -56,7 +56,7 @@
       component: Cli,
       icon: 'i-codicon-terminal'
     },
-    !isMobile && {
+    {
       label: 'Dialog',
       component: Dialog,
       icon: 'i-codicon-multiple-windows'
