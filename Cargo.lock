@@ -4794,6 +4794,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-app"
+version = "0.0.0"
+dependencies = [
+ "tauri",
+]
+
+[[package]]
 name = "tauri-plugin-authenticator"
 version = "0.0.0"
 dependencies = [

@@ -1,24 +1,24 @@
 <script>
-  import { show, hide } from '@tauri-apps/api/app'
+  import { show, hide } from "tauri-plugin-app-api";
 
-  export let onMessage
+  export let onMessage;
 
   function showApp() {
     hideApp()
       .then(() => {
         setTimeout(() => {
           show()
-            .then(() => onMessage('Shown app'))
-            .catch(onMessage)
-        }, 2000)
+            .then(() => onMessage("Shown app"))
+            .catch(onMessage);
+        }, 2000);
       })
-      .catch(onMessage)
+      .catch(onMessage);
   }
 
   function hideApp() {
     return hide()
-      .then(() => onMessage('Hide app'))
-      .catch(onMessage)
+      .then(() => onMessage("Hide app"))
+      .catch(onMessage);
   }
 </script>
 

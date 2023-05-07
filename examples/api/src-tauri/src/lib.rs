@@ -31,6 +31,7 @@ pub fn run() {
                 .level(log::LevelFilter::Info)
                 .build(),
         )
+        .plugin(tauri_plugin_app::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_clipboard::init())
         .plugin(tauri_plugin_dialog::init())
