@@ -1,6 +1,6 @@
-![plugin-os](banner.jpg)
+# Operating system plugin
 
-<!-- description -->
+Read information about the operating system.
 
 ## Install
 
