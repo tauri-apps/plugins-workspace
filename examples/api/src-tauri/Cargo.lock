@@ -149,6 +149,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin-app",
  "tauri-plugin-cli",
  "tauri-plugin-clipboard",
  "tauri-plugin-dialog",
@@ -3572,6 +3573,13 @@ dependencies = [
  "syn",
  "tauri-codegen",
  "tauri-utils",
+]
+
+[[package]]
+name = "tauri-plugin-app"
+version = "0.0.0"
+dependencies = [
+ "tauri",
 ]
 
 [[package]]
