@@ -1,185 +1,186 @@
 <script>
-  import { writable } from 'svelte/store'
-  import { open } from 'tauri-plugin-shell-api'
-  import { appWindow, getCurrent } from '@tauri-apps/api/window'
-  import * as os from '@tauri-apps/api/os'
+  import { writable } from "svelte/store";
+  import { open } from "tauri-plugin-shell-api";
+  import { appWindow, getCurrent } from "@tauri-apps/api/window";
+  import * as os from "tauri-plugin-os-api";
 
-  import Welcome from './views/Welcome.svelte'
-  import Cli from './views/Cli.svelte'
-  import Communication from './views/Communication.svelte'
-  import Dialog from './views/Dialog.svelte'
-  import FileSystem from './views/FileSystem.svelte'
-  import Http from './views/Http.svelte'
-  import Notifications from './views/Notifications.svelte'
-  import Window from './views/Window.svelte'
-  import Shortcuts from './views/Shortcuts.svelte'
-  import Shell from './views/Shell.svelte'
-  import Updater from './views/Updater.svelte'
-  import Clipboard from './views/Clipboard.svelte'
-  import WebRTC from './views/WebRTC.svelte'
-  import App from './views/App.svelte'
+  import Welcome from "./views/Welcome.svelte";
+  import Cli from "./views/Cli.svelte";
+  import Communication from "./views/Communication.svelte";
+  import Dialog from "./views/Dialog.svelte";
+  import FileSystem from "./views/FileSystem.svelte";
+  import Http from "./views/Http.svelte";
+  import Notifications from "./views/Notifications.svelte";
+  import Window from "./views/Window.svelte";
+  import Shortcuts from "./views/Shortcuts.svelte";
+  import Shell from "./views/Shell.svelte";
+  import Updater from "./views/Updater.svelte";
+  import Clipboard from "./views/Clipboard.svelte";
+  import WebRTC from "./views/WebRTC.svelte";
+  import App from "./views/App.svelte";
 
-  import { onMount } from 'svelte'
-  import { listen } from '@tauri-apps/api/event'
-  import { ask } from 'tauri-plugin-dialog-api'
+  import { onMount } from "svelte";
+  import { listen } from "@tauri-apps/api/event";
+  import { ask } from "tauri-plugin-dialog-api";
 
-  if (appWindow.label !== 'main') {
+  if (appWindow.label !== "main") {
     appWindow.onCloseRequested(async (event) => {
-      const confirmed = await confirm('Are you sure?')
+      const confirmed = await confirm("Are you sure?");
       if (!confirmed) {
         // user did not confirm closing the window; let's prevent it
-        event.preventDefault()
+        event.preventDefault();
       }
-    })
+    });
   }
 
   appWindow.onFileDropEvent((event) => {
-    onMessage(`File drop: ${JSON.stringify(event.payload)}`)
-  })
+    onMessage(`File drop: ${JSON.stringify(event.payload)}`);
+  });
 
-  const userAgent = navigator.userAgent.toLowerCase()
-  const isMobile = userAgent.includes('android') || userAgent.includes('iphone')
+  const userAgent = navigator.userAgent.toLowerCase();
+  const isMobile =
+    userAgent.includes("android") || userAgent.includes("iphone");
 
   const views = [
     {
-      label: 'Welcome',
+      label: "Welcome",
       component: Welcome,
-      icon: 'i-ph-hand-waving'
+      icon: "i-ph-hand-waving",
     },
     {
-      label: 'Communication',
+      label: "Communication",
       component: Communication,
-      icon: 'i-codicon-radio-tower'
+      icon: "i-codicon-radio-tower",
     },
     !isMobile && {
-      label: 'CLI',
+      label: "CLI",
       component: Cli,
-      icon: 'i-codicon-terminal'
+      icon: "i-codicon-terminal",
     },
     {
-      label: 'Dialog',
+      label: "Dialog",
       component: Dialog,
-      icon: 'i-codicon-multiple-windows'
+      icon: "i-codicon-multiple-windows",
     },
     {
-      label: 'File system',
+      label: "File system",
       component: FileSystem,
-      icon: 'i-codicon-files'
+      icon: "i-codicon-files",
     },
     {
-      label: 'HTTP',
+      label: "HTTP",
       component: Http,
-      icon: 'i-ph-globe-hemisphere-west'
+      icon: "i-ph-globe-hemisphere-west",
     },
     !isMobile && {
-      label: 'Notifications',
+      label: "Notifications",
       component: Notifications,
-      icon: 'i-codicon-bell-dot'
+      icon: "i-codicon-bell-dot",
     },
     !isMobile && {
-      label: 'App',
+      label: "App",
       component: App,
-      icon: 'i-codicon-hubot'
+      icon: "i-codicon-hubot",
     },
     !isMobile && {
-      label: 'Window',
+      label: "Window",
       component: Window,
-      icon: 'i-codicon-window'
+      icon: "i-codicon-window",
     },
     !isMobile && {
-      label: 'Shortcuts',
+      label: "Shortcuts",
       component: Shortcuts,
-      icon: 'i-codicon-record-keys'
+      icon: "i-codicon-record-keys",
     },
     {
-      label: 'Shell',
+      label: "Shell",
       component: Shell,
-      icon: 'i-codicon-terminal-bash'
+      icon: "i-codicon-terminal-bash",
     },
     !isMobile && {
-      label: 'Updater',
+      label: "Updater",
       component: Updater,
-      icon: 'i-codicon-cloud-download'
+      icon: "i-codicon-cloud-download",
     },
     !isMobile && {
-      label: 'Clipboard',
+      label: "Clipboard",
       component: Clipboard,
-      icon: 'i-codicon-clippy'
+      icon: "i-codicon-clippy",
     },
     {
-      label: 'WebRTC',
+      label: "WebRTC",
       component: WebRTC,
-      icon: 'i-ph-broadcast'
-    }
-  ]
+      icon: "i-ph-broadcast",
+    },
+  ];
 
-  let selected = views[0]
+  let selected = views[0];
   function select(view) {
-    selected = view
+    selected = view;
   }
 
   // Window controls
-  let isWindowMaximized
+  let isWindowMaximized;
   onMount(async () => {
-    const window = getCurrent()
-    isWindowMaximized = await window.isMaximized()
-    listen('tauri://resize', async () => {
-      isWindowMaximized = await window.isMaximized()
-    })
-  })
+    const window = getCurrent();
+    isWindowMaximized = await window.isMaximized();
+    listen("tauri://resize", async () => {
+      isWindowMaximized = await window.isMaximized();
+    });
+  });
 
   function minimize() {
-    getCurrent().minimize()
+    getCurrent().minimize();
   }
 
   async function toggleMaximize() {
-    const window = getCurrent()
-    ;(await window.isMaximized()) ? window.unmaximize() : window.maximize()
+    const window = getCurrent();
+    (await window.isMaximized()) ? window.unmaximize() : window.maximize();
   }
 
-  let confirmed_close = false
+  let confirmed_close = false;
   async function close() {
     if (!confirmed_close) {
       confirmed_close = await ask(
-        'Are you sure that you want to close this window?',
+        "Are you sure that you want to close this window?",
         {
-          title: 'Tauri API'
+          title: "Tauri API",
         }
-      )
+      );
       if (confirmed_close) {
-        getCurrent().close()
+        getCurrent().close();
       }
     }
   }
 
   // dark/light
-  let isDark
+  let isDark;
   onMount(() => {
-    isDark = localStorage && localStorage.getItem('theme') == 'dark'
-    applyTheme(isDark)
-  })
+    isDark = localStorage && localStorage.getItem("theme") == "dark";
+    applyTheme(isDark);
+  });
   function applyTheme(isDark) {
-    const html = document.querySelector('html')
-    isDark ? html.classList.add('dark') : html.classList.remove('dark')
-    localStorage && localStorage.setItem('theme', isDark ? 'dark' : '')
+    const html = document.querySelector("html");
+    isDark ? html.classList.add("dark") : html.classList.remove("dark");
+    localStorage && localStorage.setItem("theme", isDark ? "dark" : "");
   }
   function toggleDark() {
-    isDark = !isDark
-    applyTheme(isDark)
+    isDark = !isDark;
+    applyTheme(isDark);
   }
 
   // Console
-  let messages = writable([])
+  let messages = writable([]);
   function onMessage(value) {
     messages.update((r) => [
       {
         html:
           `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> ` +
-          (typeof value === 'string' ? value : JSON.stringify(value, null, 1)) +
-          '</pre>'
+          (typeof value === "string" ? value : JSON.stringify(value, null, 1)) +
+          "</pre>",
       },
-      ...r
-    ])
+      ...r,
+    ]);
   }
 
   // this function is renders HTML without sanitizing it so it's insecure
@@ -190,108 +191,110 @@
         html:
           `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> ` +
           html +
-          '</pre>'
+          "</pre>",
       },
-      ...r
-    ])
+      ...r,
+    ]);
   }
 
   function clear() {
-    messages.update(() => [])
+    messages.update(() => []);
   }
 
-  let consoleEl, consoleH, cStartY
-  let minConsoleHeight = 50
+  let consoleEl, consoleH, cStartY;
+  let minConsoleHeight = 50;
   function startResizingConsole(e) {
-    cStartY = e.clientY
+    cStartY = e.clientY;
 
-    const styles = window.getComputedStyle(consoleEl)
-    consoleH = parseInt(styles.height, 10)
+    const styles = window.getComputedStyle(consoleEl);
+    consoleH = parseInt(styles.height, 10);
 
     const moveHandler = (e) => {
-      const dy = e.clientY - cStartY
-      const newH = consoleH - dy
+      const dy = e.clientY - cStartY;
+      const newH = consoleH - dy;
       consoleEl.style.height = `${
         newH < minConsoleHeight ? minConsoleHeight : newH
-      }px`
-    }
+      }px`;
+    };
     const upHandler = () => {
-      document.removeEventListener('mouseup', upHandler)
-      document.removeEventListener('mousemove', moveHandler)
-    }
-    document.addEventListener('mouseup', upHandler)
-    document.addEventListener('mousemove', moveHandler)
+      document.removeEventListener("mouseup", upHandler);
+      document.removeEventListener("mousemove", moveHandler);
+    };
+    document.addEventListener("mouseup", upHandler);
+    document.addEventListener("mousemove", moveHandler);
   }
 
-  let isWindows
+  let isWindows;
   onMount(async () => {
-    isWindows = (await os.platform()) === 'win32'
-  })
+    isWindows = (await os.platform()) === "win32";
+  });
 
   // mobile
-  let isSideBarOpen = false
-  let sidebar
-  let sidebarToggle
-  let isDraggingSideBar = false
-  let draggingStartPosX = 0
-  let draggingEndPosX = 0
-  const clamp = (min, num, max) => Math.min(Math.max(num, min), max)
+  let isSideBarOpen = false;
+  let sidebar;
+  let sidebarToggle;
+  let isDraggingSideBar = false;
+  let draggingStartPosX = 0;
+  let draggingEndPosX = 0;
+  const clamp = (min, num, max) => Math.min(Math.max(num, min), max);
 
   function toggleSidebar(sidebar, isSideBarOpen) {
     sidebar.style.setProperty(
-      '--translate-x',
-      `${isSideBarOpen ? '0' : '-18.75'}rem`
-    )
+      "--translate-x",
+      `${isSideBarOpen ? "0" : "-18.75"}rem`
+    );
   }
 
   onMount(() => {
-    sidebar = document.querySelector('#sidebar')
-    sidebarToggle = document.querySelector('#sidebarToggle')
+    sidebar = document.querySelector("#sidebar");
+    sidebarToggle = document.querySelector("#sidebarToggle");
 
-    document.addEventListener('click', (e) => {
+    document.addEventListener("click", (e) => {
       if (sidebarToggle.contains(e.target)) {
-        isSideBarOpen = !isSideBarOpen
+        isSideBarOpen = !isSideBarOpen;
       } else if (isSideBarOpen && !sidebar.contains(e.target)) {
-        isSideBarOpen = false
+        isSideBarOpen = false;
       }
-    })
+    });
 
-    document.addEventListener('touchstart', (e) => {
-      if (sidebarToggle.contains(e.target)) return
+    document.addEventListener("touchstart", (e) => {
+      if (sidebarToggle.contains(e.target)) return;
 
-      const x = e.touches[0].clientX
+      const x = e.touches[0].clientX;
       if ((0 < x && x < 20 && !isSideBarOpen) || isSideBarOpen) {
-        isDraggingSideBar = true
-        draggingStartPosX = x
+        isDraggingSideBar = true;
+        draggingStartPosX = x;
       }
-    })
+    });
 
-    document.addEventListener('touchmove', (e) => {
+    document.addEventListener("touchmove", (e) => {
       if (isDraggingSideBar) {
-        const x = e.touches[0].clientX
-        draggingEndPosX = x
-        const delta = (x - draggingStartPosX) / 10
+        const x = e.touches[0].clientX;
+        draggingEndPosX = x;
+        const delta = (x - draggingStartPosX) / 10;
         sidebar.style.setProperty(
-          '--translate-x',
+          "--translate-x",
           `-${clamp(0, isSideBarOpen ? 0 - delta : 18.75 - delta, 18.75)}rem`
-        )
+        );
       }
-    })
+    });
 
-    document.addEventListener('touchend', () => {
+    document.addEventListener("touchend", () => {
       if (isDraggingSideBar) {
-        const delta = (draggingEndPosX - draggingStartPosX) / 10
-        isSideBarOpen = isSideBarOpen ? delta > -(18.75 / 2) : delta > 18.75 / 2
+        const delta = (draggingEndPosX - draggingStartPosX) / 10;
+        isSideBarOpen = isSideBarOpen
+          ? delta > -(18.75 / 2)
+          : delta > 18.75 / 2;
       }
 
-      isDraggingSideBar = false
-    })
-  })
+      isDraggingSideBar = false;
+    });
+  });
 
   $: {
-    const sidebar = document.querySelector('#sidebar')
+    const sidebar = document.querySelector("#sidebar");
     if (sidebar) {
-      toggleSidebar(sidebar, isSideBarOpen)
+      toggleSidebar(sidebar, isSideBarOpen);
     }
   }
 </script>
@@ -310,7 +313,7 @@
       children:items-center children:justify-center"
     >
       <span
-        title={isDark ? 'Switch to Light mode' : 'Switch to Dark mode'}
+        title={isDark ? "Switch to Light mode" : "Switch to Dark mode"}
         class="hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
         on:click={toggleDark}
       >
@@ -328,7 +331,7 @@
         <div class="i-codicon-chrome-minimize" />
       </span>
       <span
-        title={isWindowMaximized ? 'Restore' : 'Maximize'}
+        title={isWindowMaximized ? "Restore" : "Maximize"}
         class="hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
         on:click={toggleMaximize}
       >
@@ -340,7 +343,7 @@
       </span>
       <span
         title="Close"
-        class="hover:bg-red-700 dark:hover:bg-red-700 hover:text-darkPrimaryText active:bg-red-700/90 dark:active:bg-red-700/90 active:text-darkPrimaryText  "
+        class="hover:bg-red-700 dark:hover:bg-red-700 hover:text-darkPrimaryText active:bg-red-700/90 dark:active:bg-red-700/90 active:text-darkPrimaryText"
         on:click={close}
       >
         <div class="i-codicon-chrome-close" />
@@ -371,7 +374,7 @@
       bg-darkPrimaryLighter transition-colors-250 overflow-hidden grid select-none px-2"
   >
     <img
-      on:click={() => open('https://tauri.app/')}
+      on:click={() => open("https://tauri.app/")}
       class="self-center p-7 cursor-pointer"
       src="tauri_logo.png"
       alt="Tauri logo"
@@ -427,8 +430,8 @@
             href="##"
             class="nv {selected === view ? 'nv_selected' : ''}"
             on:click={() => {
-              select(view)
-              isSideBarOpen = false
+              select(view);
+              isSideBarOpen = false;
             }}
           >
             <div class="{view.icon} mr-2" />

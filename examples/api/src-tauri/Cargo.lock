@@ -157,6 +157,7 @@ dependencies = [
  "tauri-plugin-http",
  "tauri-plugin-log",
  "tauri-plugin-notification",
+ "tauri-plugin-os",
  "tauri-plugin-shell",
  "tiny_http",
  "window-shadows",
@@ -3687,6 +3688,18 @@ dependencies = [
  "time",
  "url",
  "win7-notifications",
+]
+
+[[package]]
+name = "tauri-plugin-os"
+version = "0.0.0"
+dependencies = [
+ "log",
+ "os_info",
+ "serde",
+ "serde_json",
+ "tauri",
+ "thiserror",
 ]
 
 [[package]]
