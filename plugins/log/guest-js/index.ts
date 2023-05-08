@@ -4,7 +4,8 @@ import { listen, UnlistenFn } from "@tauri-apps/api/event";
 export type LogOptions = {
   file?: string;
   line?: number;
-} & Record<string, string | undefined>;
+  extras: Record<string, string | undefined>;
+};
 
 enum LogLevel {
   /**
@@ -36,7 +37,7 @@ enum LogLevel {
    *
    * Designates very serious errors.
    */
-  Error,
+  Error
 }
 
 async function log(
@@ -50,7 +51,7 @@ async function log(
     return name.length > 0 && location !== "[native code]";
   });
 
-  const { file, line, ...keyValues } = options ?? {};
+  const { file, line, extras = {} } = options ?? {};
 
   let location = filtered?.[0]?.filter((v) => v.length > 0).join("@");
   if (location === "Error") {
@@ -63,7 +64,7 @@ async function log(
     location,
     file,
     line,
-    keyValues,
+    keyValues: extras
   });
 }
 
