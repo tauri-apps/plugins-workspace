@@ -21,37 +21,37 @@
  * @module
  */
 
-import { invoke } from '@tauri-apps/api/tauri'
+import { invoke } from "@tauri-apps/api/tauri";
 
 type Platform =
-  | 'linux'
-  | 'darwin'
-  | 'ios'
-  | 'freebsd'
-  | 'dragonfly'
-  | 'netbsd'
-  | 'openbsd'
-  | 'solaris'
-  | 'android'
-  | 'win32'
+  | "linux"
+  | "darwin"
+  | "ios"
+  | "freebsd"
+  | "dragonfly"
+  | "netbsd"
+  | "openbsd"
+  | "solaris"
+  | "android"
+  | "win32";
 
-type OsType = 'Linux' | 'Darwin' | 'Windows_NT'
+type OsType = "Linux" | "Darwin" | "Windows_NT";
 
 type Arch =
-  | 'x86'
-  | 'x86_64'
-  | 'arm'
-  | 'aarch64'
-  | 'mips'
-  | 'mips64'
-  | 'powerpc'
-  | 'powerpc64'
-  | 'riscv64'
-  | 's390x'
-  | 'sparc64'
+  | "x86"
+  | "x86_64"
+  | "arm"
+  | "aarch64"
+  | "mips"
+  | "mips64"
+  | "powerpc"
+  | "powerpc64"
+  | "riscv64"
+  | "s390x"
+  | "sparc64";
 
 function isWindows(): boolean {
-  return navigator.appVersion.includes('Win')
+  return navigator.appVersion.includes("Win");
 }
 
 /**
@@ -61,7 +61,7 @@ function isWindows(): boolean {
  *
  * @since 1.0.0
  * */
-const EOL = isWindows() ? '\r\n' : '\n'
+const EOL = isWindows() ? "\r\n" : "\n";
 
 /**
  * Returns a string identifying the operating system platform.
@@ -76,7 +76,7 @@ const EOL = isWindows() ? '\r\n' : '\n'
  *
  */
 async function platform(): Promise<Platform> {
-  return invoke('plugin:os|platform')
+  return invoke("plugin:os|platform");
 }
 
 /**
@@ -90,7 +90,7 @@ async function platform(): Promise<Platform> {
  * @since 1.0.0
  */
 async function version(): Promise<string> {
-  return invoke('plugin:os|version')
+  return invoke("plugin:os|version");
 }
 
 /**
@@ -104,7 +104,7 @@ async function version(): Promise<string> {
  * @since 1.0.0
  */
 async function type(): Promise<OsType> {
-  return invoke('plugin:os|kind')
+  return invoke("plugin:os|kind");
 }
 
 /**
@@ -119,7 +119,7 @@ async function type(): Promise<OsType> {
  * @since 1.0.0
  */
 async function arch(): Promise<Arch> {
-  return invoke('plugin:os|arch')
+  return invoke("plugin:os|arch");
 }
 
 /**
@@ -133,8 +133,8 @@ async function arch(): Promise<Arch> {
  * @since 1.0.0
  */
 async function tempdir(): Promise<string> {
-  return invoke('plugin:os|tempdir')
+  return invoke("plugin:os|tempdir");
 }
 
-export { EOL, platform, version, type, arch, tempdir }
-export type { Platform, OsType, Arch }
+export { EOL, platform, version, type, arch, tempdir };
+export type { Platform, OsType, Arch };
