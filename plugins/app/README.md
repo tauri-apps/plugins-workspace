@@ -1,6 +1,6 @@
-![plugin-app](banner.jpg)
+# App plugin
 
-<!-- description -->
+This plugin provides APIs to read application metadata and macOS app visibility functions.
 
 ## Install
 
