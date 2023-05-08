@@ -1,42 +1,26 @@
 use std::path::PathBuf;
 
-use tauri::{AppHandle, Runtime, State};
-
-use crate::{OperatingSystem, Result};
-
 #[tauri::command]
-pub fn platform<R: Runtime>(
-    _app: AppHandle<R>,
-    os: State<'_, OperatingSystem<R>>,
-) -> Result<&'static str> {
-    Ok(os.platform())
+pub fn platform() -> &'static str {
+    crate::platform()
 }
 
 #[tauri::command]
-pub fn version<R: Runtime>(
-    _app: AppHandle<R>,
-    os: State<'_, OperatingSystem<R>>,
-) -> Result<String> {
-    Ok(os.version().to_string())
+pub fn version() -> String {
+    crate::version().to_string()
 }
 
 #[tauri::command]
-pub fn kind<R: Runtime>(_app: AppHandle<R>, os: State<'_, OperatingSystem<R>>) -> Result<String> {
-    Ok(os.kind().to_string())
+pub fn kind() -> String {
+    crate::kind().to_string()
 }
 
 #[tauri::command]
-pub fn arch<R: Runtime>(
-    _app: AppHandle<R>,
-    os: State<'_, OperatingSystem<R>>,
-) -> Result<&'static str> {
-    Ok(os.arch())
+pub fn arch() -> &'static str {
+    crate::arch()
 }
 
 #[tauri::command]
-pub fn tempdir<R: Runtime>(
-    _app: AppHandle<R>,
-    os: State<'_, OperatingSystem<R>>,
-) -> Result<PathBuf> {
-    Ok(os.tempdir())
+pub fn tempdir() -> PathBuf {
+    crate::tempdir()
 }

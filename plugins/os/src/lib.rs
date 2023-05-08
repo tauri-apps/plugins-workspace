@@ -3,14 +3,13 @@ use std::{fmt::Display, path::PathBuf};
 pub use os_info::Version;
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    AppHandle, Manager, Runtime,
+    Runtime,
 };
 
 mod commands;
 mod error;
 
 pub use error::Error;
-type Result<T> = std::result::Result<T, Error>;
 
 pub enum Kind {
     Linux,
