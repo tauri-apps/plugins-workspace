@@ -51,7 +51,7 @@ async function log(
     return name.length > 0 && location !== "[native code]";
   });
 
-  const { file, line, keyValues = {} } = options ?? {};
+  const { file, line, keyValues } = options ?? {};
 
   let location = filtered?.[0]?.filter((v) => v.length > 0).join("@");
   if (location === "Error") {
