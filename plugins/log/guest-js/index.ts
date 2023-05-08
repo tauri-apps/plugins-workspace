@@ -37,7 +37,7 @@ enum LogLevel {
    *
    * Designates very serious errors.
    */
-  Error
+  Error,
 }
 
 async function log(
@@ -64,7 +64,7 @@ async function log(
     location,
     file,
     line,
-    keyValues: extras
+    keyValues: extras,
   });
 }
 
