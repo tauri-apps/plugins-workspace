@@ -24,6 +24,7 @@ tauri-plugin-clipboard = { path = "../../../plugins/clipboard" }
 tauri-plugin-dialog = { path = "../../../plugins/dialog" }
 tauri-plugin-http = { path = "../../../plugins/http", features = [ "http-multipart" ] }
 tauri-plugin-notification = { path = "../../../plugins/notification", features = [ "windows7-compat" ] }
+tauri-plugin-os = { path = "../../../plugins/os" }
 tauri-plugin-shell = { path = "../../../plugins/shell" }
 
 [patch.crates-io]

@@ -85,6 +85,9 @@ importers:
       tauri-plugin-notification-api:
         specifier: 0.0.0
         version: link:../../plugins/notification
+      tauri-plugin-os-api:
+        specifier: 0.0.0
+        version: link:../../plugins/os
       tauri-plugin-shell-api:
         specifier: 0.0.0
         version: link:../../plugins/shell
@@ -230,6 +233,16 @@ importers:
       tslib:
         specifier: ^2.4.1
         version: 2.4.1
+
+  plugins/os:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: ^1.2.0
+        version: 1.2.0
+    devDependencies:
+      tslib:
+        specifier: ^2.5.0
+        version: 2.5.0
 
   plugins/positioner:
     dependencies:
