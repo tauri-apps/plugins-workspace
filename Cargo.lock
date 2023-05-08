@@ -4995,6 +4995,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-process"
+version = "0.0.0"
+dependencies = [
+ "tauri",
+]
+
+[[package]]
 name = "tauri-plugin-shell"
 version = "0.0.0"
 dependencies = [
