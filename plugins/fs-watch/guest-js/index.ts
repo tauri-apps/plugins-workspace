@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { UnlistenFn } from "@tauri-apps/api/event";
-import { appWindow, WebviewWindow } from "@tauri-apps/api/window";
+import { appWindow, WebviewWindow } from "tauri-plugin-window-api";
 
 const w: WebviewWindow = appWindow;
 
@@ -21,17 +21,17 @@ export type RawEvent = {
 type RawEventKind =
   | "any "
   | {
-      access?: unknown;
-    }
+    access?: unknown;
+  }
   | {
-      create?: unknown;
-    }
+    create?: unknown;
+  }
   | {
-      modify?: unknown;
-    }
+    modify?: unknown;
+  }
   | {
-      remove?: unknown;
-    }
+    remove?: unknown;
+  }
   | "other";
 
 export type DebouncedEvent =

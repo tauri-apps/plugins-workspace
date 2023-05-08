@@ -91,6 +91,9 @@ importers:
       tauri-plugin-shell-api:
         specifier: 0.0.0
         version: link:../../plugins/shell
+      tauri-plugin-window-api:
+        specifier: 0.0.0
+        version: link:../../plugins/window
     devDependencies:
       '@iconify-json/codicon':
         specifier: ^1.1.10
@@ -189,6 +192,9 @@ importers:
       '@tauri-apps/api':
         specifier: ^1.2.0
         version: 1.2.0
+      tauri-plugin-window-api:
+        specifier: 0.0.0
+        version: link:../window
     devDependencies:
       tslib:
         specifier: ^2.5.0
@@ -305,6 +311,9 @@ importers:
       '@tauri-apps/api':
         specifier: ^1.2.0
         version: 1.2.0
+      tauri-plugin-window-api:
+        specifier: 0.0.0
+        version: link:../window
     devDependencies:
       tslib:
         specifier: ^2.5.0
@@ -351,11 +360,24 @@ importers:
         specifier: ^4.2.1
         version: 4.3.3
 
+  plugins/window:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: ^1.2.0
+        version: 1.2.0
+    devDependencies:
+      tslib:
+        specifier: ^2.5.0
+        version: 2.5.0
+
   plugins/window-state:
     dependencies:
       '@tauri-apps/api':
         specifier: ^1.2.0
         version: 1.2.0
+      tauri-plugin-window-api:
+        specifier: 0.0.0
+        version: link:../window
     devDependencies:
       tslib:
         specifier: ^2.5.0

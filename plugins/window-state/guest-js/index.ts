@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { WindowLabel, getCurrent } from "@tauri-apps/api/window";
+import { WindowLabel, getCurrent } from "tauri-plugin-window-api";
 
 export enum StateFlags {
   SIZE = 1 << 0,

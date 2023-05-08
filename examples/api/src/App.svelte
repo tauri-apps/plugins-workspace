@@ -1,7 +1,7 @@
 <script>
   import { writable } from "svelte/store";
   import { open } from "tauri-plugin-shell-api";
-  import { appWindow, getCurrent } from "@tauri-apps/api/window";
+  import { appWindow, getCurrent } from "tauri-plugin-window-api";
   import * as os from "tauri-plugin-os-api";
 
   import Welcome from "./views/Welcome.svelte";

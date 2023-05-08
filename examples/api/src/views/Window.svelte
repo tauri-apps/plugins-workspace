@@ -5,217 +5,217 @@
     LogicalSize,
     UserAttentionType,
     PhysicalSize,
-    PhysicalPosition
-  } from '@tauri-apps/api/window'
-  import { open as openDialog } from 'tauri-plugin-dialog-api'
-  import { open } from 'tauri-plugin-shell-api'
+    PhysicalPosition,
+  } from "tauri-plugin-window-api";
+  import { open as openDialog } from "tauri-plugin-dialog-api";
+  import { open } from "tauri-plugin-shell-api";
 
-  let selectedWindow = appWindow.label
+  let selectedWindow = appWindow.label;
   const windowMap = {
-    [appWindow.label]: appWindow
-  }
+    [appWindow.label]: appWindow,
+  };
 
   const cursorIconOptions = [
-    'default',
-    'crosshair',
-    'hand',
-    'arrow',
-    'move',
-    'text',
-    'wait',
-    'help',
-    'progress',
+    "default",
+    "crosshair",
+    "hand",
+    "arrow",
+    "move",
+    "text",
+    "wait",
+    "help",
+    "progress",
     // something cannot be done
-    'notAllowed',
-    'contextMenu',
-    'cell',
-    'verticalText',
-    'alias',
-    'copy',
-    'noDrop',
+    "notAllowed",
+    "contextMenu",
+    "cell",
+    "verticalText",
+    "alias",
+    "copy",
+    "noDrop",
     // something can be grabbed
-    'grab',
+    "grab",
     /// something is grabbed
-    'grabbing',
-    'allScroll',
-    'zoomIn',
-    'zoomOut',
+    "grabbing",
+    "allScroll",
+    "zoomIn",
+    "zoomOut",
     // edge is to be moved
-    'eResize',
-    'nResize',
-    'neResize',
-    'nwResize',
-    'sResize',
-    'seResize',
-    'swResize',
-    'wResize',
-    'ewResize',
-    'nsResize',
-    'neswResize',
-    'nwseResize',
-    'colResize',
-    'rowResize'
-  ]
+    "eResize",
+    "nResize",
+    "neResize",
+    "nwResize",
+    "sResize",
+    "seResize",
+    "swResize",
+    "wResize",
+    "ewResize",
+    "nsResize",
+    "neswResize",
+    "nwseResize",
+    "colResize",
+    "rowResize",
+  ];
 
-  export let onMessage
+  export let onMessage;
 
-  let newWindowLabel
+  let newWindowLabel;
 
-  let urlValue = 'https://tauri.app'
-  let resizable = true
-  let maximized = false
-  let decorations = true
-  let alwaysOnTop = false
-  let contentProtected = true
-  let fullscreen = false
-  let width = null
-  let height = null
-  let minWidth = null
-  let minHeight = null
-  let maxWidth = null
-  let maxHeight = null
-  let x = null
-  let y = null
-  let scaleFactor = 1
-  let innerPosition = new PhysicalPosition(x, y)
-  let outerPosition = new PhysicalPosition(x, y)
-  let innerSize = new PhysicalSize(width, height)
-  let outerSize = new PhysicalSize(width, height)
-  let resizeEventUnlisten
-  let moveEventUnlisten
-  let cursorGrab = false
-  let cursorVisible = true
-  let cursorX = null
-  let cursorY = null
-  let cursorIcon = 'default'
-  let cursorIgnoreEvents = false
-  let windowTitle = 'Awesome Tauri Example!'
+  let urlValue = "https://tauri.app";
+  let resizable = true;
+  let maximized = false;
+  let decorations = true;
+  let alwaysOnTop = false;
+  let contentProtected = true;
+  let fullscreen = false;
+  let width = null;
+  let height = null;
+  let minWidth = null;
+  let minHeight = null;
+  let maxWidth = null;
+  let maxHeight = null;
+  let x = null;
+  let y = null;
+  let scaleFactor = 1;
+  let innerPosition = new PhysicalPosition(x, y);
+  let outerPosition = new PhysicalPosition(x, y);
+  let innerSize = new PhysicalSize(width, height);
+  let outerSize = new PhysicalSize(width, height);
+  let resizeEventUnlisten;
+  let moveEventUnlisten;
+  let cursorGrab = false;
+  let cursorVisible = true;
+  let cursorX = null;
+  let cursorY = null;
+  let cursorIcon = "default";
+  let cursorIgnoreEvents = false;
+  let windowTitle = "Awesome Tauri Example!";
 
   function openUrl() {
-    open(urlValue)
+    open(urlValue);
   }
 
   function setTitle_() {
-    windowMap[selectedWindow].setTitle(windowTitle)
+    windowMap[selectedWindow].setTitle(windowTitle);
   }
 
   function hide_() {
-    windowMap[selectedWindow].hide()
-    setTimeout(windowMap[selectedWindow].show, 2000)
+    windowMap[selectedWindow].hide();
+    setTimeout(windowMap[selectedWindow].show, 2000);
   }
 
   function minimize_() {
-    windowMap[selectedWindow].minimize()
-    setTimeout(windowMap[selectedWindow].unminimize, 2000)
+    windowMap[selectedWindow].minimize();
+    setTimeout(windowMap[selectedWindow].unminimize, 2000);
   }
 
   function getIcon() {
     openDialog({
-      multiple: false
+      multiple: false,
     }).then((path) => {
-      if (typeof path === 'string') {
-        windowMap[selectedWindow].setIcon(path)
+      if (typeof path === "string") {
+        windowMap[selectedWindow].setIcon(path);
       }
-    })
+    });
   }
 
   function createWindow() {
-    if (!newWindowLabel) return
+    if (!newWindowLabel) return;
 
-    const webview = new WebviewWindow(newWindowLabel)
-    windowMap[newWindowLabel] = webview
-    webview.once('tauri://error', function () {
-      onMessage('Error creating new webview')
-    })
+    const webview = new WebviewWindow(newWindowLabel);
+    windowMap[newWindowLabel] = webview;
+    webview.once("tauri://error", function () {
+      onMessage("Error creating new webview");
+    });
   }
 
   function loadWindowSize() {
     windowMap[selectedWindow].innerSize().then((response) => {
-      innerSize = response
-      width = innerSize.width
-      height = innerSize.height
-    })
+      innerSize = response;
+      width = innerSize.width;
+      height = innerSize.height;
+    });
     windowMap[selectedWindow].outerSize().then((response) => {
-      outerSize = response
-    })
+      outerSize = response;
+    });
   }
 
   function loadWindowPosition() {
     windowMap[selectedWindow].innerPosition().then((response) => {
-      innerPosition = response
-    })
+      innerPosition = response;
+    });
     windowMap[selectedWindow].outerPosition().then((response) => {
-      outerPosition = response
-      x = outerPosition.x
-      y = outerPosition.y
-    })
+      outerPosition = response;
+      x = outerPosition.x;
+      y = outerPosition.y;
+    });
   }
 
   async function addWindowEventListeners(window) {
-    if (!window) return
+    if (!window) return;
     if (resizeEventUnlisten) {
-      resizeEventUnlisten()
+      resizeEventUnlisten();
     }
     if (moveEventUnlisten) {
-      moveEventUnlisten()
+      moveEventUnlisten();
     }
-    moveEventUnlisten = await window.listen('tauri://move', loadWindowPosition)
-    resizeEventUnlisten = await window.listen('tauri://resize', loadWindowSize)
+    moveEventUnlisten = await window.listen("tauri://move", loadWindowPosition);
+    resizeEventUnlisten = await window.listen("tauri://resize", loadWindowSize);
   }
 
   async function requestUserAttention_() {
-    await windowMap[selectedWindow].minimize()
+    await windowMap[selectedWindow].minimize();
     await windowMap[selectedWindow].requestUserAttention(
       UserAttentionType.Critical
-    )
-    await new Promise((resolve) => setTimeout(resolve, 3000))
-    await windowMap[selectedWindow].requestUserAttention(null)
+    );
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await windowMap[selectedWindow].requestUserAttention(null);
   }
 
   $: {
-    windowMap[selectedWindow]
-    loadWindowPosition()
-    loadWindowSize()
+    windowMap[selectedWindow];
+    loadWindowPosition();
+    loadWindowSize();
   }
-  $: windowMap[selectedWindow]?.setResizable(resizable)
+  $: windowMap[selectedWindow]?.setResizable(resizable);
   $: maximized
     ? windowMap[selectedWindow]?.maximize()
-    : windowMap[selectedWindow]?.unmaximize()
-  $: windowMap[selectedWindow]?.setDecorations(decorations)
-  $: windowMap[selectedWindow]?.setAlwaysOnTop(alwaysOnTop)
-  $: windowMap[selectedWindow]?.setContentProtected(contentProtected)
-  $: windowMap[selectedWindow]?.setFullscreen(fullscreen)
+    : windowMap[selectedWindow]?.unmaximize();
+  $: windowMap[selectedWindow]?.setDecorations(decorations);
+  $: windowMap[selectedWindow]?.setAlwaysOnTop(alwaysOnTop);
+  $: windowMap[selectedWindow]?.setContentProtected(contentProtected);
+  $: windowMap[selectedWindow]?.setFullscreen(fullscreen);
 
   $: width &&
     height &&
-    windowMap[selectedWindow]?.setSize(new PhysicalSize(width, height))
+    windowMap[selectedWindow]?.setSize(new PhysicalSize(width, height));
   $: minWidth && minHeight
     ? windowMap[selectedWindow]?.setMinSize(
         new LogicalSize(minWidth, minHeight)
       )
-    : windowMap[selectedWindow]?.setMinSize(null)
+    : windowMap[selectedWindow]?.setMinSize(null);
   $: maxWidth > 800 && maxHeight > 400
     ? windowMap[selectedWindow]?.setMaxSize(
         new LogicalSize(maxWidth, maxHeight)
       )
-    : windowMap[selectedWindow]?.setMaxSize(null)
+    : windowMap[selectedWindow]?.setMaxSize(null);
   $: x !== null &&
     y !== null &&
-    windowMap[selectedWindow]?.setPosition(new PhysicalPosition(x, y))
+    windowMap[selectedWindow]?.setPosition(new PhysicalPosition(x, y));
   $: windowMap[selectedWindow]
     ?.scaleFactor()
-    .then((factor) => (scaleFactor = factor))
-  $: addWindowEventListeners(windowMap[selectedWindow])
+    .then((factor) => (scaleFactor = factor));
+  $: addWindowEventListeners(windowMap[selectedWindow]);
 
-  $: windowMap[selectedWindow]?.setCursorGrab(cursorGrab)
-  $: windowMap[selectedWindow]?.setCursorVisible(cursorVisible)
-  $: windowMap[selectedWindow]?.setCursorIcon(cursorIcon)
+  $: windowMap[selectedWindow]?.setCursorGrab(cursorGrab);
+  $: windowMap[selectedWindow]?.setCursorVisible(cursorVisible);
+  $: windowMap[selectedWindow]?.setCursorIcon(cursorIcon);
   $: cursorX !== null &&
     cursorY !== null &&
     windowMap[selectedWindow]?.setCursorPosition(
       new PhysicalPosition(cursorX, cursorY)
-    )
-  $: windowMap[selectedWindow]?.setIgnoreCursorEvents(cursorIgnoreEvents)
+    );
+  $: windowMap[selectedWindow]?.setIgnoreCursorEvents(cursorIgnoreEvents);
 </script>
 
 <div class="flex flex-col children:grow gap-2">

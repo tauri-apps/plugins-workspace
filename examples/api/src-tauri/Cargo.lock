@@ -160,6 +160,7 @@ dependencies = [
  "tauri-plugin-notification",
  "tauri-plugin-os",
  "tauri-plugin-shell",
+ "tauri-plugin-window",
  "tiny_http",
  "window-shadows",
 ]
@@ -3722,6 +3723,15 @@ dependencies = [
  "serde",
  "serde_json",
  "shared_child",
+ "tauri",
+ "thiserror",
+]
+
+[[package]]
+name = "tauri-plugin-window"
+version = "0.0.0"
+dependencies = [
+ "serde",
  "tauri",
  "thiserror",
 ]
