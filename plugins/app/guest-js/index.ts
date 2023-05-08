@@ -24,7 +24,7 @@
  * @module
  */
 
-import { invoke } from '@tauri-apps/api/tauri'
+import { invoke } from "@tauri-apps/api/tauri";
 
 /**
  * Gets the application version.
@@ -37,7 +37,7 @@ import { invoke } from '@tauri-apps/api/tauri'
  * @since 1.0.0
  */
 async function getVersion(): Promise<string> {
-  return invoke('plugin:app|version')
+  return invoke("plugin:app|version");
 }
 
 /**
@@ -51,7 +51,7 @@ async function getVersion(): Promise<string> {
  * @since 1.0.0
  */
 async function getName(): Promise<string> {
-  return invoke('plugin:app|name')
+  return invoke("plugin:app|name");
 }
 
 /**
@@ -66,7 +66,7 @@ async function getName(): Promise<string> {
  * @since 1.0.0
  */
 async function getTauriVersion(): Promise<string> {
-  return invoke('plugin:app|tauri_version')
+  return invoke("plugin:app|tauri_version");
 }
 
 /**
@@ -81,7 +81,7 @@ async function getTauriVersion(): Promise<string> {
  * @since 1.2.0
  */
 async function show(): Promise<void> {
-  return invoke('plugin:app|show')
+  return invoke("plugin:app|show");
 }
 
 /**
@@ -96,7 +96,7 @@ async function show(): Promise<void> {
  * @since 1.2.0
  */
 async function hide(): Promise<void> {
-  return invoke('plugin:app|hide')
+  return invoke("plugin:app|hide");
 }
 
-export { getName, getVersion, getTauriVersion, show, hide }
+export { getName, getVersion, getTauriVersion, show, hide };
