@@ -1,0 +1,23 @@
+[package]
+name = "app-updater"
+version = "0.1.0"
+edition = "2021"
+#edition.workspace = true
+
+[build-dependencies]
+tauri-build = { path = "../../../../../tauri/core/tauri-build", features = [] }
+
+[dependencies]
+tauri = { path = "../../../../../tauri/core/tauri", features = [] }
+tauri-plugin-updater = { path = "../.." }
+tiny_http = "0.11"
+serde = "1"
+serde_json = "1"
+time = { version = "0.3", features = ["formatting"] }
+
+[patch.crates-io]
+tauri-runtime = { path = "../../../../../tauri/core/tauri-runtime/" }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

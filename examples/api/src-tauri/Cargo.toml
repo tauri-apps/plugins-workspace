@@ -26,6 +26,7 @@ tauri-plugin-http = { path = "../../../plugins/http", features = [ "http-multipa
 tauri-plugin-notification = { path = "../../../plugins/notification", features = [ "windows7-compat" ] }
 tauri-plugin-os = { path = "../../../plugins/os" }
 tauri-plugin-shell = { path = "../../../plugins/shell" }
+tauri-plugin-updater = { path = "../../../plugins/updater" }
 
 [patch.crates-io]
 tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
