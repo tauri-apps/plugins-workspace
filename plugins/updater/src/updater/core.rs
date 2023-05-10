@@ -507,14 +507,27 @@ impl<R: Runtime> Clone for Update<R> {
     }
 }
 
+#[derive(Serialize)]
+#[serde(tag = "event", content = "data")]
+pub enum DownloadEvent {
+    #[serde(rename_all = "camelCase")]
+    Started {
+        content_length: Option<u64>,
+    },
+    #[serde(rename_all = "camelCase")]
+    Progress {
+        chunk_length: usize,
+    },
+    Finished,
+}
+
 impl<R: Runtime> Update<R> {
     // Download and install our update
     // @todo(lemarier): Split into download and install (two step) but need to be thread safe
-    pub(crate) async fn download_and_install<C: Fn(usize, Option<u64>), D: FnOnce()>(
+    pub(crate) async fn download_and_install<F: Fn(DownloadEvent)>(
         &self,
         pub_key: String,
-        on_chunk: C,
-        on_download_finish: D,
+        on_event: F,
     ) -> Result<()> {
         // make sure we can install the update on linux
         // We fail here because later we can add more linux support
@@ -559,17 +572,21 @@ impl<R: Runtime> Update<R> {
             .and_then(|value| value.to_str().ok())
             .and_then(|value| value.parse().ok());
 
+        on_event(DownloadEvent::Started { content_length });
+
         let mut buffer = Vec::new();
 
         let mut stream = response.bytes_stream();
         while let Some(chunk) = stream.next().await {
             let chunk = chunk?;
             let bytes = chunk.as_ref().to_vec();
-            on_chunk(bytes.len(), content_length);
+            on_event(DownloadEvent::Progress {
+                chunk_length: bytes.len(),
+            });
             buffer.extend(bytes);
         }
 
-        on_download_finish();
+        on_event(DownloadEvent::Finished);
 
         // create memory buffer from our archive (Seek + Read)
         let mut archive_buffer = Cursor::new(buffer);

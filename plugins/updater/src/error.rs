@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use http::StatusCode;
+use serde::{Serialize, Serializer};
 
 /// All errors that can occur while running the updater.
 #[derive(Debug, thiserror::Error)]
@@ -77,4 +78,13 @@ pub enum Error {
     #[cfg(target_os = "linux")]
     #[error("temp directory is not on the same mount point as the AppImage")]
     TempDirNotOnSameMountPoint,
+}
+
+impl Serialize for Error {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.to_string().as_ref())
+    }
 }

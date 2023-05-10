@@ -1,60 +1,44 @@
 <script>
-  import { onMount, onDestroy } from 'svelte'
+  import { Update, check } from "tauri-plugin-updater-api";
+  import { relaunch } from "tauri-plugin-process-api";
 
-  // This example show how updater events work when dialog is disabled.
-  // This allow you to use custom dialog for the updater.
-  // This is your responsibility to restart the application after you receive the STATUS: DONE.
+  export let onMessage;
 
-  import { checkUpdate, installUpdate } from '@tauri-apps/api/updater'
-  import { listen } from '@tauri-apps/api/event'
-  import { relaunch } from 'tauri-plugin-process-api'
+  let isChecking, isInstalling, newUpdate;
 
-  export let onMessage
-  let unlisten
-
-  onMount(async () => {
-    unlisten = await listen('tauri://update-status', onMessage)
-  })
-  onDestroy(() => {
-    if (unlisten) {
-      unlisten()
-    }
-  })
-
-  let isChecking, isInstalling, newUpdate
-
-  async function check() {
-    isChecking = true
+  async function checkUpdate() {
+    isChecking = true;
     try {
-      const { shouldUpdate, manifest } = await checkUpdate()
-      onMessage(`Should update: ${shouldUpdate}`)
-      onMessage(manifest)
+      const update = await check();
+      onMessage(`Should update: ${update.response.available}`);
+      onMessage(update.response);
 
-      newUpdate = shouldUpdate
+      newUpdate = update;
     } catch (e) {
-      onMessage(e)
+      onMessage(e);
     } finally {
-      isChecking = false
+      isChecking = false;
     }
   }
 
   async function install() {
-    isInstalling = true
+    isInstalling = true;
     try {
-      await installUpdate()
-      onMessage('Installation complete, restart required.')
-      await relaunch()
+      await newUpdate.downloadAndInstall(onMessage);
+      onMessage("Installation complete, restarting...");
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await relaunch();
     } catch (e) {
-      onMessage(e)
+      onMessage(e);
     } finally {
-      isInstalling = false
+      isInstalling = false;
     }
   }
 </script>
 
 <div class="flex children:grow children:h10">
   {#if !isChecking && !newUpdate}
-    <button class="btn" on:click={check}>Check update</button>
+    <button class="btn" on:click={checkUpdate}>Check update</button>
   {:else if !isInstalling && newUpdate}
     <button class="btn" on:click={install}>Install update</button>
   {:else}

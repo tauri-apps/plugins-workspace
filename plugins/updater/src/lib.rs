@@ -3,6 +3,8 @@ use tauri::{
     Manager, Runtime,
 };
 
+use tokio::sync::Mutex;
+
 mod commands;
 mod error;
 mod updater;
@@ -14,6 +16,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 struct UpdaterState {
     target: Option<String>,
 }
+
+struct PendingUpdate<R: Runtime>(Mutex<Option<UpdateResponse<R>>>);
 
 #[derive(Default)]
 pub struct Builder {
@@ -61,9 +65,13 @@ impl Builder {
         PluginBuilder::<R>::new("updater")
             .setup(move |app, _api| {
                 app.manage(UpdaterState { target });
+                app.manage(PendingUpdate::<R>(Default::default()));
                 Ok(())
             })
-            .invoke_handler(tauri::generate_handler![commands::version,])
+            .invoke_handler(tauri::generate_handler![
+                commands::check,
+                commands::download_and_install
+            ])
             .build()
     }
 }

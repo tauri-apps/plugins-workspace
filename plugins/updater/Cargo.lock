@@ -2919,10 +2919,10 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-runtime",
  "tempfile",
  "thiserror",
  "time",
+ "tokio",
  "tokio-test",
  "url",
 ]
