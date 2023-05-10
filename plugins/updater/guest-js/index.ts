@@ -1,41 +1,41 @@
-import { invoke, transformCallback } from '@tauri-apps/api/tauri'
+import { invoke, transformCallback } from "@tauri-apps/api/tauri";
 
 interface CheckOptions {
   /**
    * Request headers
    */
-  headers?: Record<string, unknown>
+  headers?: Record<string, unknown>;
   /**
    * Timeout in seconds
    */
-  timeout?: number
+  timeout?: number;
   /**
    * Target identifier for the running application. This is sent to the backend.
    */
-  target?: string
+  target?: string;
 }
 
 interface UpdateResponse {
-  available: boolean
-  currentVersion: string
-  latestVersion: string
-  date?: string
-  body?: string
+  available: boolean;
+  currentVersion: string;
+  latestVersion: string;
+  date?: string;
+  body?: string;
 }
 
 // TODO: use channel from @tauri-apps/api on v2
 class Channel<T = unknown> {
-  id: number
+  id: number;
   // @ts-expect-error field used by the IPC serializer
-  private readonly __TAURI_CHANNEL_MARKER__ = true
+  private readonly __TAURI_CHANNEL_MARKER__ = true;
   #onmessage: (response: T) => void = () => {
     // no-op
-  }
+  };
 
   constructor() {
     this.id = transformCallback((response: T) => {
-      this.#onmessage(response)
-    })
+      this.#onmessage(response);
+    });
   }
 
   set onmessage(handler: (response: T) => void) {
@@ -43,38 +43,42 @@ class Channel<T = unknown> {
   }
 
   get onmessage(): (response: T) => void {
-    return this.#onmessage
+    return this.#onmessage;
   }
 
   toJSON(): string {
-    return `__CHANNEL__:${this.id}`
+    return `__CHANNEL__:${this.id}`;
   }
 }
 
 type DownloadEvent =
-  { event: 'Started', data: { contentLength?: number } } |
-  { event: 'Progress', data: { chunkLength: number } } |
-  { event: 'Finished' }
+  | { event: "Started"; data: { contentLength?: number } }
+  | { event: "Progress"; data: { chunkLength: number } }
+  | { event: "Finished" };
 
 class Update {
-  response: UpdateResponse
+  response: UpdateResponse;
 
   constructor(response: UpdateResponse) {
-    this.response = response
+    this.response = response;
   }
 
-  async downloadAndInstall(onEvent?: (progress: DownloadEvent) => void): Promise<void> {
-    const channel = new Channel<DownloadEvent>()
+  async downloadAndInstall(
+    onEvent?: (progress: DownloadEvent) => void
+  ): Promise<void> {
+    const channel = new Channel<DownloadEvent>();
     if (onEvent != null) {
-      channel.onmessage = onEvent
+      channel.onmessage = onEvent;
     }
-    return invoke('plugin:updater|download_and_install', { onEvent: channel })
+    return invoke("plugin:updater|download_and_install", { onEvent: channel });
   }
 }
 
 async function check(options?: CheckOptions): Promise<Update> {
-  return invoke<UpdateResponse>('plugin:updater|check', { ...options }).then(response => new Update(response))
+  return invoke<UpdateResponse>("plugin:updater|check", { ...options }).then(
+    (response) => new Update(response)
+  );
 }
 
-export type { CheckOptions, UpdateResponse, DownloadEvent }
-export { check, Update }
+export type { CheckOptions, UpdateResponse, DownloadEvent };
+export { check, Update };
