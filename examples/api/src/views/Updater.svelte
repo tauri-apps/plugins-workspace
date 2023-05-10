@@ -1,10 +1,12 @@
 <script>
-  import { Update, check } from "tauri-plugin-updater-api";
+  import { check } from "tauri-plugin-updater-api";
   import { relaunch } from "tauri-plugin-process-api";
 
   export let onMessage;
 
   let isChecking, isInstalling, newUpdate;
+  let totalSize = 0,
+    downloadedSize = 0;
 
   async function checkUpdate() {
     isChecking = true;
@@ -23,9 +25,19 @@
 
   async function install() {
     isInstalling = true;
+    downloadedSize = 0;
     try {
-      await newUpdate.downloadAndInstall((res) => {
-        console.log("event", res);
+      await newUpdate.downloadAndInstall((downloadProgress) => {
+        switch (downloadProgress.event) {
+          case "Started":
+            totalSize = downloadProgress.data.contentLength;
+            break;
+          case "Progress":
+            downloadedSize += downloadProgress.data.chunkLength;
+            break;
+          case "Finished":
+            break;
+        }
       });
       onMessage("Installation complete, restarting...");
       await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -37,6 +49,8 @@
       isInstalling = false;
     }
   }
+
+  $: progress = totalSize ? Math.round((downloadedSize / totalSize) * 100) : 0;
 </script>
 
 <div class="flex children:grow children:h10">
@@ -45,19 +59,28 @@
   {:else if !isInstalling && newUpdate}
     <button class="btn" on:click={install}>Install update</button>
   {:else}
-    <button
-      class="btn text-accentText dark:text-darkAccentText flex items-center justify-center"
-      ><div class="spinner animate-spin" /></button
-    >
+    <div class="progress">
+      <span>{progress}%</span>
+      <div class="progress-bar" style="width: {progress}%" />
+    </div>
   {/if}
 </div>
 
 <style>
-  .spinner {
-    height: 1.2rem;
-    width: 1.2rem;
-    border-radius: 50rem;
-    color: currentColor;
-    border: 2px dashed currentColor;
+  .progress {
+    width: 100%;
+    height: 50px;
+    position: relative;
+    margin-top: 5%;
+  }
+
+  .progress > span {
+    font-size: 1.2rem;
+  }
+
+  .progress-bar {
+    height: 30px;
+    background-color: hsl(32, 94%, 46%);
+    border: 1px solid #333;
   }
 </style>
