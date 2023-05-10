@@ -24,11 +24,14 @@
   async function install() {
     isInstalling = true;
     try {
-      await newUpdate.downloadAndInstall(onMessage);
+      await newUpdate.downloadAndInstall((res) => {
+        console.log("event", res);
+      });
       onMessage("Installation complete, restarting...");
       await new Promise((resolve) => setTimeout(resolve, 2000));
       await relaunch();
     } catch (e) {
+      console.error(e);
       onMessage(e);
     } finally {
       isInstalling = false;

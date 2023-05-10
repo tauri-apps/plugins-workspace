@@ -26,14 +26,24 @@ interface UpdateResponse {
 // TODO: use channel from @tauri-apps/api on v2
 class Channel<T = unknown> {
   id: number
-  onmessage: (response: T) => void = () => {
-    // do nothing
+  // @ts-expect-error field used by the IPC serializer
+  private readonly __TAURI_CHANNEL_MARKER__ = true
+  #onmessage: (response: T) => void = () => {
+    // no-op
   }
 
   constructor() {
     this.id = transformCallback((response: T) => {
-      this.onmessage(response)
+      this.#onmessage(response)
     })
+  }
+
+  set onmessage(handler: (response: T) => void) {
+    this.#onmessage = handler;
+  }
+
+  get onmessage(): (response: T) => void {
+    return this.#onmessage
   }
 
   toJSON(): string {
@@ -49,7 +59,7 @@ type DownloadEvent =
 class Update {
   response: UpdateResponse
 
-  private constructor(response: UpdateResponse) {
+  constructor(response: UpdateResponse) {
     this.response = response
   }
 
@@ -63,7 +73,7 @@ class Update {
 }
 
 async function check(options?: CheckOptions): Promise<Update> {
-  return invoke('plugin:updater|check', { ...options })
+  return invoke<UpdateResponse>('plugin:updater|check', { ...options }).then(response => new Update(response))
 }
 
 export type { CheckOptions, UpdateResponse, DownloadEvent }

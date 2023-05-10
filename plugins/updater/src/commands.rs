@@ -91,10 +91,10 @@ pub(crate) async fn download_and_install<R: Runtime>(
     pending: State<'_, PendingUpdate<R>>,
     on_event: Channel<R>,
 ) -> Result<()> {
-    if let Some(pending) = pending.0.lock().await.take() {
+    if let Some(pending) = &*pending.0.lock().await {
         pending
             .download_and_install(move |event| {
-                let _ = on_event.send(&event);
+                on_event.send(&event).unwrap();
             })
             .await?;
     }

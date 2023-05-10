@@ -18,5 +18,5 @@ edition = "2021"
 #thiserror.workspace = true
 serde = "1"
 thiserror = "1"
-tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
+tauri = { git = "https://github.com/tauri-apps/tauri", branch = "feat/channel" }
 anyhow = "1"

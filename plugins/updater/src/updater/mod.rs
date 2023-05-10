@@ -269,7 +269,7 @@ impl<R: Runtime> UpdateResponse<R> {
     }
 
     /// Downloads and installs the update.
-    pub async fn download_and_install<F: Fn(DownloadEvent)>(self, on_event: F) -> Result<()> {
+    pub async fn download_and_install<F: Fn(DownloadEvent)>(&self, on_event: F) -> Result<()> {
         // Launch updater download process
         // macOS we display the `Ready to restart dialog` asking to restart
         // Windows is closing the current App and launch the downloaded MSI when ready (the process stop here)
