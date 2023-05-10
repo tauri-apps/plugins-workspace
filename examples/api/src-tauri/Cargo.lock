@@ -159,6 +159,7 @@ dependencies = [
  "tauri-plugin-log",
  "tauri-plugin-notification",
  "tauri-plugin-os",
+ "tauri-plugin-process",
  "tauri-plugin-shell",
  "tiny_http",
  "window-shadows",
@@ -3708,6 +3709,13 @@ dependencies = [
  "serde_json",
  "tauri",
  "thiserror",
+]
+
+[[package]]
+name = "tauri-plugin-process"
+version = "0.0.0"
+dependencies = [
+ "tauri",
 ]
 
 [[package]]
