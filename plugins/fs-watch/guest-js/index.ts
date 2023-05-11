@@ -21,17 +21,17 @@ export type RawEvent = {
 type RawEventKind =
   | "any "
   | {
-    access?: unknown;
-  }
+      access?: unknown;
+    }
   | {
-    create?: unknown;
-  }
+      create?: unknown;
+    }
   | {
-    modify?: unknown;
-  }
+      modify?: unknown;
+    }
   | {
-    remove?: unknown;
-  }
+      remove?: unknown;
+    }
   | "other";
 
 export type DebouncedEvent =

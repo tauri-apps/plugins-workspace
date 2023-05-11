@@ -61,12 +61,18 @@
  * @module
  */
 
-import { invoke } from '@tauri-apps/api/tauri'
-import type { Event, EventName, EventCallback, UnlistenFn } from '@tauri-apps/api/event'
-import { emit, listen, once, TauriEvent } from '@tauri-apps/api/event'
+import { invoke } from "@tauri-apps/api/tauri";
+import type {
+  Event,
+  EventName,
+  EventCallback,
+  UnlistenFn,
+} from "@tauri-apps/api/event";
+import { TauriEvent } from "@tauri-apps/api/event";
+import { emit, listen, once } from "./event";
 
-type Theme = 'light' | 'dark'
-type TitleBarStyle = 'visible' | 'transparent' | 'overlay'
+type Theme = "light" | "dark";
+type TitleBarStyle = "visible" | "transparent" | "overlay";
 
 /**
  * Allows you to retrieve information about a given monitor.
@@ -75,13 +81,13 @@ type TitleBarStyle = 'visible' | 'transparent' | 'overlay'
  */
 interface Monitor {
   /** Human-readable name of the monitor */
-  name: string | null
+  name: string | null;
   /** The monitor's resolution. */
-  size: PhysicalSize
+  size: PhysicalSize;
   /** the Top-left corner position of the monitor relative to the larger full screen area. */
-  position: PhysicalPosition
+  position: PhysicalPosition;
   /** The scale factor that can be used to map physical pixels to logical pixels. */
-  scaleFactor: number
+  scaleFactor: number;
 }
 
 /**
@@ -91,16 +97,16 @@ interface Monitor {
  */
 interface ScaleFactorChanged {
   /** The new window scale factor. */
-  scaleFactor: number
+  scaleFactor: number;
   /** The new window size */
-  size: PhysicalSize
+  size: PhysicalSize;
 }
 
 /** The file drop event types. */
 type FileDropEvent =
-  | { type: 'hover'; paths: string[] }
-  | { type: 'drop'; paths: string[] }
-  | { type: 'cancel' }
+  | { type: "hover"; paths: string[] }
+  | { type: "drop"; paths: string[] }
+  | { type: "cancel" };
 
 /**
  * A size represented in logical pixels.
@@ -108,13 +114,13 @@ type FileDropEvent =
  * @since 1.0.0
  */
 class LogicalSize {
-  type = 'Logical'
-  width: number
-  height: number
+  type = "Logical";
+  width: number;
+  height: number;
 
   constructor(width: number, height: number) {
-    this.width = width
-    this.height = height
+    this.width = width;
+    this.height = height;
   }
 }
 
@@ -124,13 +130,13 @@ class LogicalSize {
  * @since 1.0.0
  */
 class PhysicalSize {
-  type = 'Physical'
-  width: number
-  height: number
+  type = "Physical";
+  width: number;
+  height: number;
 
   constructor(width: number, height: number) {
-    this.width = width
-    this.height = height
+    this.width = width;
+    this.height = height;
   }
 
   /**
@@ -144,7 +150,7 @@ class PhysicalSize {
    * ```
    *  */
   toLogical(scaleFactor: number): LogicalSize {
-    return new LogicalSize(this.width / scaleFactor, this.height / scaleFactor)
+    return new LogicalSize(this.width / scaleFactor, this.height / scaleFactor);
   }
 }
 
@@ -154,13 +160,13 @@ class PhysicalSize {
  * @since 1.0.0
  */
 class LogicalPosition {
-  type = 'Logical'
-  x: number
-  y: number
+  type = "Logical";
+  x: number;
+  y: number;
 
   constructor(x: number, y: number) {
-    this.x = x
-    this.y = y
+    this.x = x;
+    this.y = y;
   }
 }
 
@@ -170,13 +176,13 @@ class LogicalPosition {
  * @since 1.0.0
  */
 class PhysicalPosition {
-  type = 'Physical'
-  x: number
-  y: number
+  type = "Physical";
+  x: number;
+  y: number;
 
   constructor(x: number, y: number) {
-    this.x = x
-    this.y = y
+    this.x = x;
+    this.y = y;
   }
 
   /**
@@ -190,22 +196,22 @@ class PhysicalPosition {
    * ```
    * */
   toLogical(scaleFactor: number): LogicalPosition {
-    return new LogicalPosition(this.x / scaleFactor, this.y / scaleFactor)
+    return new LogicalPosition(this.x / scaleFactor, this.y / scaleFactor);
   }
 }
 
 /** @ignore */
 interface WindowDef {
-  label: string
+  label: string;
 }
 
 /** @ignore */
 declare global {
   interface Window {
     __TAURI_METADATA__: {
-      __windows: WindowDef[]
-      __currentWindow: WindowDef
-    }
+      __windows: WindowDef[];
+      __currentWindow: WindowDef;
+    };
   }
 }
 
@@ -226,49 +232,49 @@ enum UserAttentionType {
    * - **macOS:** Bounces the dock icon once.
    * - **Windows:** Flashes the taskbar button until the application is in focus.
    */
-  Informational
+  Informational,
 }
 
 export type CursorIcon =
-  | 'default'
-  | 'crosshair'
-  | 'hand'
-  | 'arrow'
-  | 'move'
-  | 'text'
-  | 'wait'
-  | 'help'
-  | 'progress'
+  | "default"
+  | "crosshair"
+  | "hand"
+  | "arrow"
+  | "move"
+  | "text"
+  | "wait"
+  | "help"
+  | "progress"
   // something cannot be done
-  | 'notAllowed'
-  | 'contextMenu'
-  | 'cell'
-  | 'verticalText'
-  | 'alias'
-  | 'copy'
-  | 'noDrop'
+  | "notAllowed"
+  | "contextMenu"
+  | "cell"
+  | "verticalText"
+  | "alias"
+  | "copy"
+  | "noDrop"
   // something can be grabbed
-  | 'grab'
+  | "grab"
   /// something is grabbed
-  | 'grabbing'
-  | 'allScroll'
-  | 'zoomIn'
-  | 'zoomOut'
+  | "grabbing"
+  | "allScroll"
+  | "zoomIn"
+  | "zoomOut"
   // edge is to be moved
-  | 'eResize'
-  | 'nResize'
-  | 'neResize'
-  | 'nwResize'
-  | 'sResize'
-  | 'seResize'
-  | 'swResize'
-  | 'wResize'
-  | 'ewResize'
-  | 'nsResize'
-  | 'neswResize'
-  | 'nwseResize'
-  | 'colResize'
-  | 'rowResize'
+  | "eResize"
+  | "nResize"
+  | "neResize"
+  | "nwResize"
+  | "sResize"
+  | "seResize"
+  | "swResize"
+  | "wResize"
+  | "ewResize"
+  | "nsResize"
+  | "neswResize"
+  | "nwseResize"
+  | "colResize"
+  | "rowResize";
 
 /**
  * Get an instance of `WebviewWindow` for the current webview window.
@@ -278,8 +284,8 @@ export type CursorIcon =
 function getCurrent(): WebviewWindow {
   return new WebviewWindow(window.__TAURI_METADATA__.__currentWindow.label, {
     // @ts-expect-error `skip` is not defined in the public API but it is handled by the constructor
-    skip: true
-  })
+    skip: true,
+  });
 }
 
 /**
@@ -292,16 +298,16 @@ function getAll(): WebviewWindow[] {
     (w) =>
       new WebviewWindow(w.label, {
         // @ts-expect-error `skip` is not defined in the public API but it is handled by the constructor
-        skip: true
+        skip: true,
       })
-  )
+  );
 }
 
 /** @ignore */
 // events that are emitted right here instead of by the created webview
-const localTauriEvents = ['tauri://created', 'tauri://error']
+const localTauriEvents = ["tauri://created", "tauri://error"];
 /** @ignore */
-export type WindowLabel = string
+export type WindowLabel = string;
 /**
  * A webview window handle allows emitting and listening to events from the backend that are tied to the window.
  *
@@ -310,14 +316,14 @@ export type WindowLabel = string
  */
 class WebviewWindowHandle {
   /** The window label. It is a unique identifier for the window, can be used to reference it later. */
-  label: WindowLabel
+  label: WindowLabel;
   /** Local event listeners. */
-  listeners: Record<string, Array<EventCallback<any>>>
+  listeners: Record<string, Array<EventCallback<any>>>;
 
   constructor(label: WindowLabel) {
-    this.label = label
+    this.label = label;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    this.listeners = Object.create(null)
+    this.listeners = Object.create(null);
   }
 
   /**
@@ -346,12 +352,11 @@ class WebviewWindowHandle {
     if (this._handleTauriEvent(event, handler)) {
       return Promise.resolve(() => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, security/detect-object-injection
-        const listeners = this.listeners[event]
-        listeners.splice(listeners.indexOf(handler), 1)
-      })
+        const listeners = this.listeners[event];
+        listeners.splice(listeners.indexOf(handler), 1);
+      });
     }
-    // @ts-expect-error event will be added later // TODO
-    return listen(event, this.label, handler)
+    return listen(event, this.label, handler);
   }
 
   /**
@@ -377,12 +382,11 @@ class WebviewWindowHandle {
     if (this._handleTauriEvent(event, handler)) {
       return Promise.resolve(() => {
         // eslint-disable-next-line security/detect-object-injection
-        const listeners = this.listeners[event]
-        listeners.splice(listeners.indexOf(handler), 1)
-      })
+        const listeners = this.listeners[event];
+        listeners.splice(listeners.indexOf(handler), 1);
+      });
     }
-    // @ts-expect-error event will be added later // TODO
-    return once(event, this.label, handler)
+    return once(event, this.label, handler);
   }
 
   /**
@@ -400,12 +404,11 @@ class WebviewWindowHandle {
     if (localTauriEvents.includes(event)) {
       // eslint-disable-next-line
       for (const handler of this.listeners[event] || []) {
-        handler({ event, id: -1, windowLabel: this.label, payload })
+        handler({ event, id: -1, windowLabel: this.label, payload });
       }
-      return Promise.resolve()
+      return Promise.resolve();
     }
-    // @ts-expect-error event will be added later // TODO
-    return emit(event, this.label, payload)
+    return emit(event, this.label, payload);
   }
 
   /** @ignore */
@@ -413,14 +416,14 @@ class WebviewWindowHandle {
     if (localTauriEvents.includes(event)) {
       if (!(event in this.listeners)) {
         // eslint-disable-next-line
-        this.listeners[event] = [handler]
+        this.listeners[event] = [handler];
       } else {
         // eslint-disable-next-line
-        this.listeners[event].push(handler)
+        this.listeners[event].push(handler);
       }
-      return true
+      return true;
     }
-    return false
+    return false;
   }
 }
 
@@ -443,9 +446,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns The window's monitor scale factor.
    * */
   async scaleFactor(): Promise<number> {
-    return invoke('plugin:window|scale_factor', {
-      label: this.label
-    })
+    return invoke("plugin:window|scale_factor", {
+      label: this.label,
+    });
   }
 
   /**
@@ -459,9 +462,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns The window's inner position.
    *  */
   async innerPosition(): Promise<PhysicalPosition> {
-    return invoke<{ x: number; y: number }>('plugin:window|inner_position', {
-      label: this.label
-    }).then(({ x, y }) => new PhysicalPosition(x, y))
+    return invoke<{ x: number; y: number }>("plugin:window|inner_position", {
+      label: this.label,
+    }).then(({ x, y }) => new PhysicalPosition(x, y));
   }
 
   /**
@@ -475,9 +478,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns The window's outer position.
    *  */
   async outerPosition(): Promise<PhysicalPosition> {
-    return invoke<{ x: number; y: number }>('plugin:window|outer_position', {
+    return invoke<{ x: number; y: number }>("plugin:window|outer_position", {
       label: this.label,
-    }).then(({ x, y }) => new PhysicalPosition(x, y))
+    }).then(({ x, y }) => new PhysicalPosition(x, y));
   }
 
   /**
@@ -492,9 +495,12 @@ class WindowManager extends WebviewWindowHandle {
    * @returns The window's inner size.
    */
   async innerSize(): Promise<PhysicalSize> {
-    return invoke<{ width: number; height: number }>('plugin:window|inner_size', {
-      label: this.label,
-    }).then(({ width, height }) => new PhysicalSize(width, height))
+    return invoke<{ width: number; height: number }>(
+      "plugin:window|inner_size",
+      {
+        label: this.label,
+      }
+    ).then(({ width, height }) => new PhysicalSize(width, height));
   }
 
   /**
@@ -509,9 +515,12 @@ class WindowManager extends WebviewWindowHandle {
    * @returns The window's outer size.
    */
   async outerSize(): Promise<PhysicalSize> {
-    return invoke<{ width: number; height: number }>('plugin:window|outer_size', {
-      label: this.label,
-    }).then(({ width, height }) => new PhysicalSize(width, height))
+    return invoke<{ width: number; height: number }>(
+      "plugin:window|outer_size",
+      {
+        label: this.label,
+      }
+    ).then(({ width, height }) => new PhysicalSize(width, height));
   }
 
   /**
@@ -525,9 +534,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns Whether the window is in fullscreen mode or not.
    *  */
   async isFullscreen(): Promise<boolean> {
-    return invoke('plugin:window|is_fullscreen', {
-      label: this.label
-    })
+    return invoke("plugin:window|is_fullscreen", {
+      label: this.label,
+    });
   }
 
   /**
@@ -541,9 +550,9 @@ class WindowManager extends WebviewWindowHandle {
    * @since 1.3.0
    * */
   async isMinimized(): Promise<boolean> {
-    return invoke('plugin:window|is_minimized', {
-      label: this.label
-    })
+    return invoke("plugin:window|is_minimized", {
+      label: this.label,
+    });
   }
 
   /**
@@ -557,9 +566,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns Whether the window is maximized or not.
    * */
   async isMaximized(): Promise<boolean> {
-    return invoke('plugin:window|is_maximized', {
-      label: this.label
-    })
+    return invoke("plugin:window|is_maximized", {
+      label: this.label,
+    });
   }
 
   /**
@@ -573,9 +582,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns Whether the window is decorated or not.
    *  */
   async isDecorated(): Promise<boolean> {
-    return invoke('plugin:window|is_decorated', {
-      label: this.label
-    })
+    return invoke("plugin:window|is_decorated", {
+      label: this.label,
+    });
   }
 
   /**
@@ -589,9 +598,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns Whether the window is resizable or not.
    *  */
   async isResizable(): Promise<boolean> {
-    return invoke('plugin:window|is_resizable', {
-      label: this.label
-    })
+    return invoke("plugin:window|is_resizable", {
+      label: this.label,
+    });
   }
 
   /**
@@ -605,9 +614,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns Whether the window is visible or not.
    *  */
   async isVisible(): Promise<boolean> {
-    return invoke('plugin:window|is_visible', {
-      label: this.label
-    })
+    return invoke("plugin:window|is_visible", {
+      label: this.label,
+    });
   }
 
   /**
@@ -621,9 +630,9 @@ class WindowManager extends WebviewWindowHandle {
    * @since 1.3.0
    * */
   async title(): Promise<string> {
-    return invoke('plugin:window|title', {
-      label: this.label
-    })
+    return invoke("plugin:window|title", {
+      label: this.label,
+    });
   }
 
   /**
@@ -642,9 +651,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns The window theme.
    * */
   async theme(): Promise<Theme | null> {
-    return invoke('plugin:window|theme', {
-      label: this.label
-    })
+    return invoke("plugin:window|theme", {
+      label: this.label,
+    });
   }
 
   // Setters
@@ -661,9 +670,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async center(): Promise<void> {
-    return invoke('plugin:window|center', {
-      label: this.label
-    })
+    return invoke("plugin:window|center", {
+      label: this.label,
+    });
   }
 
   /**
@@ -690,19 +699,19 @@ class WindowManager extends WebviewWindowHandle {
   async requestUserAttention(
     requestType: UserAttentionType | null
   ): Promise<void> {
-    let requestType_ = null
+    let requestType_ = null;
     if (requestType) {
       if (requestType === UserAttentionType.Critical) {
-        requestType_ = { type: 'Critical' }
+        requestType_ = { type: "Critical" };
       } else {
-        requestType_ = { type: 'Informational' }
+        requestType_ = { type: "Informational" };
       }
     }
 
-    return invoke('plugin:window|request_user_attention', {
+    return invoke("plugin:window|request_user_attention", {
       label: this.label,
-      value: requestType_
-    })
+      value: requestType_,
+    });
   }
 
   /**
@@ -717,10 +726,10 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setResizable(resizable: boolean): Promise<void> {
-    return invoke('plugin:window|set_resizable', {
+    return invoke("plugin:window|set_resizable", {
       label: this.label,
-      value: resizable
-    })
+      value: resizable,
+    });
   }
 
   /**
@@ -735,10 +744,10 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setTitle(title: string): Promise<void> {
-    return invoke('plugin:window|set_title', {
+    return invoke("plugin:window|set_title", {
       label: this.label,
-      value: title
-    })
+      value: title,
+    });
   }
 
   /**
@@ -752,9 +761,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async maximize(): Promise<void> {
-    return invoke('plugin:window|maximize', {
-      label: this.label
-    })
+    return invoke("plugin:window|maximize", {
+      label: this.label,
+    });
   }
 
   /**
@@ -768,9 +777,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async unmaximize(): Promise<void> {
-    return invoke('plugin:window|unmaximize', {
+    return invoke("plugin:window|unmaximize", {
       label: this.label,
-    })
+    });
   }
 
   /**
@@ -784,9 +793,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async toggleMaximize(): Promise<void> {
-    return invoke('plugin:window|toggle_maximize', {
-      label: this.label
-    })
+    return invoke("plugin:window|toggle_maximize", {
+      label: this.label,
+    });
   }
 
   /**
@@ -800,9 +809,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async minimize(): Promise<void> {
-    return invoke('plugin:window|minimize', {
-      label: this.label
-    })
+    return invoke("plugin:window|minimize", {
+      label: this.label,
+    });
   }
 
   /**
@@ -816,9 +825,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async unminimize(): Promise<void> {
-    return invoke('plugin:window|unminimize', {
-      label: this.label
-    })
+    return invoke("plugin:window|unminimize", {
+      label: this.label,
+    });
   }
 
   /**
@@ -832,9 +841,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async show(): Promise<void> {
-    return invoke('plugin:window|show', {
-      label: this.label
-    })
+    return invoke("plugin:window|show", {
+      label: this.label,
+    });
   }
 
   /**
@@ -848,9 +857,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async hide(): Promise<void> {
-    return invoke('plugin:window|hide', {
-      label: this.label
-    })
+    return invoke("plugin:window|hide", {
+      label: this.label,
+    });
   }
 
   /**
@@ -864,9 +873,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async close(): Promise<void> {
-    return invoke('plugin:window|close', {
-      label: this.label
-    })
+    return invoke("plugin:window|close", {
+      label: this.label,
+    });
   }
 
   /**
@@ -881,10 +890,10 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setDecorations(decorations: boolean): Promise<void> {
-    return invoke('plugin:window|set_decorations', {
+    return invoke("plugin:window|set_decorations", {
       label: this.label,
-      value: decorations
-    })
+      value: decorations,
+    });
   }
 
   /**
@@ -909,10 +918,10 @@ class WindowManager extends WebviewWindowHandle {
    * @since 2.0
    */
   async setShadow(enable: boolean): Promise<void> {
-    return invoke('plugin:window|set_shadow', {
+    return invoke("plugin:window|set_shadow", {
       label: this.label,
-      value: enable
-    })
+      value: enable,
+    });
   }
 
   /**
@@ -927,10 +936,10 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setAlwaysOnTop(alwaysOnTop: boolean): Promise<void> {
-    return invoke('plugin:window|set_always_on_top', {
+    return invoke("plugin:window|set_always_on_top", {
       label: this.label,
-      value: alwaysOnTop
-    })
+      value: alwaysOnTop,
+    });
   }
 
   /**
@@ -946,10 +955,10 @@ class WindowManager extends WebviewWindowHandle {
    * @since 1.2.0
    */
   async setContentProtected(protected_: boolean): Promise<void> {
-    return invoke('plugin:window|set_content_protected', {
+    return invoke("plugin:window|set_content_protected", {
       label: this.label,
-      value: protected_
-    })
+      value: protected_,
+    });
   }
 
   /**
@@ -964,22 +973,22 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setSize(size: LogicalSize | PhysicalSize): Promise<void> {
-    if (!size || (size.type !== 'Logical' && size.type !== 'Physical')) {
+    if (!size || (size.type !== "Logical" && size.type !== "Physical")) {
       throw new Error(
-        'the `size` argument must be either a LogicalSize or a PhysicalSize instance'
-      )
+        "the `size` argument must be either a LogicalSize or a PhysicalSize instance"
+      );
     }
 
-    return invoke('plugin:window|set_size', {
+    return invoke("plugin:window|set_size", {
       label: this.label,
       value: {
         type: size.type,
         data: {
           width: size.width,
-          height: size.height
-        }
-      }
-    })
+          height: size.height,
+        },
+      },
+    });
   }
 
   /**
@@ -996,24 +1005,24 @@ class WindowManager extends WebviewWindowHandle {
   async setMinSize(
     size: LogicalSize | PhysicalSize | null | undefined
   ): Promise<void> {
-    if (size && size.type !== 'Logical' && size.type !== 'Physical') {
+    if (size && size.type !== "Logical" && size.type !== "Physical") {
       throw new Error(
-        'the `size` argument must be either a LogicalSize or a PhysicalSize instance'
-      )
+        "the `size` argument must be either a LogicalSize or a PhysicalSize instance"
+      );
     }
 
-    return invoke('plugin:window|set_min_size', {
+    return invoke("plugin:window|set_min_size", {
       label: this.label,
       value: size
         ? {
-          type: size.type,
-          data: {
-            width: size.width,
-            height: size.height
+            type: size.type,
+            data: {
+              width: size.width,
+              height: size.height,
+            },
           }
-        }
-        : null
-    })
+        : null,
+    });
   }
 
   /**
@@ -1030,24 +1039,24 @@ class WindowManager extends WebviewWindowHandle {
   async setMaxSize(
     size: LogicalSize | PhysicalSize | null | undefined
   ): Promise<void> {
-    if (size && size.type !== 'Logical' && size.type !== 'Physical') {
+    if (size && size.type !== "Logical" && size.type !== "Physical") {
       throw new Error(
-        'the `size` argument must be either a LogicalSize or a PhysicalSize instance'
-      )
+        "the `size` argument must be either a LogicalSize or a PhysicalSize instance"
+      );
     }
 
-    return invoke('plugin:window|set_max_size', {
+    return invoke("plugin:window|set_max_size", {
       label: this.label,
       value: size
         ? {
-          type: size.type,
-          data: {
-            width: size.width,
-            height: size.height
+            type: size.type,
+            data: {
+              width: size.width,
+              height: size.height,
+            },
           }
-        }
-        : null
-    })
+        : null,
+    });
   }
 
   /**
@@ -1066,23 +1075,23 @@ class WindowManager extends WebviewWindowHandle {
   ): Promise<void> {
     if (
       !position ||
-      (position.type !== 'Logical' && position.type !== 'Physical')
+      (position.type !== "Logical" && position.type !== "Physical")
     ) {
       throw new Error(
-        'the `position` argument must be either a LogicalPosition or a PhysicalPosition instance'
-      )
+        "the `position` argument must be either a LogicalPosition or a PhysicalPosition instance"
+      );
     }
 
-    return invoke('plugin:window|set_position', {
+    return invoke("plugin:window|set_position", {
       label: this.label,
       value: {
         type: position.type,
         data: {
           x: position.x,
-          y: position.y
-        }
-      }
-    })
+          y: position.y,
+        },
+      },
+    });
   }
 
   /**
@@ -1097,10 +1106,10 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setFullscreen(fullscreen: boolean): Promise<void> {
-    return invoke('plugin:window|set_fullscreen', {
+    return invoke("plugin:window|set_fullscreen", {
       label: this.label,
-      value: fullscreen
-    })
+      value: fullscreen,
+    });
   }
 
   /**
@@ -1114,9 +1123,9 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setFocus(): Promise<void> {
-    return invoke('plugin:window|set_focus', {
+    return invoke("plugin:window|set_focus", {
       label: this.label,
-    })
+    });
   }
 
   /**
@@ -1138,10 +1147,10 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setIcon(icon: string | Uint8Array): Promise<void> {
-    return invoke('plugin:window|set_icon', {
+    return invoke("plugin:window|set_icon", {
       label: this.label,
-      value: typeof icon === 'string' ? icon : Array.from(icon)
-    })
+      value: typeof icon === "string" ? icon : Array.from(icon),
+    });
   }
 
   /**
@@ -1160,10 +1169,10 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setSkipTaskbar(skip: boolean): Promise<void> {
-    return invoke('plugin:window|set_skip_taskbar', {
+    return invoke("plugin:window|set_skip_taskbar", {
       label: this.label,
-      value: skip
-    })
+      value: skip,
+    });
   }
 
   /**
@@ -1186,10 +1195,10 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setCursorGrab(grab: boolean): Promise<void> {
-    return invoke('plugin:window|set_cursor_grab', {
+    return invoke("plugin:window|set_cursor_grab", {
       label: this.label,
-      value: grab
-    })
+      value: grab,
+    });
   }
 
   /**
@@ -1210,10 +1219,10 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setCursorVisible(visible: boolean): Promise<void> {
-    return invoke('plugin:window|set_cursor_visible', {
+    return invoke("plugin:window|set_cursor_visible", {
       label: this.label,
-      value: visible
-    })
+      value: visible,
+    });
   }
 
   /**
@@ -1228,10 +1237,10 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setCursorIcon(icon: CursorIcon): Promise<void> {
-    return invoke('plugin:window|set_cursor_icon', {
+    return invoke("plugin:window|set_cursor_icon", {
       label: this.label,
-      value: icon
-    })
+      value: icon,
+    });
   }
 
   /**
@@ -1250,23 +1259,23 @@ class WindowManager extends WebviewWindowHandle {
   ): Promise<void> {
     if (
       !position ||
-      (position.type !== 'Logical' && position.type !== 'Physical')
+      (position.type !== "Logical" && position.type !== "Physical")
     ) {
       throw new Error(
-        'the `position` argument must be either a LogicalPosition or a PhysicalPosition instance'
-      )
+        "the `position` argument must be either a LogicalPosition or a PhysicalPosition instance"
+      );
     }
 
-    return invoke('plugin:window|set_cursor_position', {
+    return invoke("plugin:window|set_cursor_position", {
       label: this.label,
       value: {
         type: position.type,
         data: {
           x: position.x,
-          y: position.y
-        }
-      }
-    })
+          y: position.y,
+        },
+      },
+    });
   }
 
   /**
@@ -1282,10 +1291,10 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setIgnoreCursorEvents(ignore: boolean): Promise<void> {
-    return invoke('plugin:window|set_ignore_cursor_events', {
+    return invoke("plugin:window|set_ignore_cursor_events", {
       label: this.label,
-      value: ignore
-    })
+      value: ignore,
+    });
   }
 
   /**
@@ -1299,9 +1308,9 @@ class WindowManager extends WebviewWindowHandle {
    * @return A promise indicating the success or failure of the operation.
    */
   async startDragging(): Promise<void> {
-    return invoke('plugin:window|start_dragging', {
-      label: this.label
-    })
+    return invoke("plugin:window|start_dragging", {
+      label: this.label,
+    });
   }
 
   // Listeners
@@ -1327,9 +1336,9 @@ class WindowManager extends WebviewWindowHandle {
    */
   async onResized(handler: EventCallback<PhysicalSize>): Promise<UnlistenFn> {
     return this.listen<PhysicalSize>(TauriEvent.WINDOW_RESIZED, (e) => {
-      e.payload = mapPhysicalSize(e.payload)
-      handler(e)
-    })
+      e.payload = mapPhysicalSize(e.payload);
+      handler(e);
+    });
   }
 
   /**
@@ -1353,9 +1362,9 @@ class WindowManager extends WebviewWindowHandle {
    */
   async onMoved(handler: EventCallback<PhysicalPosition>): Promise<UnlistenFn> {
     return this.listen<PhysicalPosition>(TauriEvent.WINDOW_MOVED, (e) => {
-      e.payload = mapPhysicalPosition(e.payload)
-      handler(e)
-    })
+      e.payload = mapPhysicalPosition(e.payload);
+      handler(e);
+    });
   }
 
   /**
@@ -1387,13 +1396,13 @@ class WindowManager extends WebviewWindowHandle {
     handler: (event: CloseRequestedEvent) => void | Promise<void>
   ): Promise<UnlistenFn> {
     return this.listen<null>(TauriEvent.WINDOW_CLOSE_REQUESTED, (event) => {
-      const evt = new CloseRequestedEvent(event)
+      const evt = new CloseRequestedEvent(event);
       void Promise.resolve(handler(evt)).then(() => {
         if (!evt.isPreventDefault()) {
-          return this.close()
+          return this.close();
         }
-      })
-    })
+      });
+    });
   }
   /* eslint-enable */
 
@@ -1420,19 +1429,19 @@ class WindowManager extends WebviewWindowHandle {
     const unlistenFocus = await this.listen<PhysicalPosition>(
       TauriEvent.WINDOW_FOCUS,
       (event) => {
-        handler({ ...event, payload: true })
+        handler({ ...event, payload: true });
       }
-    )
+    );
     const unlistenBlur = await this.listen<PhysicalPosition>(
       TauriEvent.WINDOW_BLUR,
       (event) => {
-        handler({ ...event, payload: false })
+        handler({ ...event, payload: false });
       }
-    )
+    );
     return () => {
-      unlistenFocus()
-      unlistenBlur()
-    }
+      unlistenFocus();
+      unlistenBlur();
+    };
   }
 
   /**
@@ -1464,7 +1473,7 @@ class WindowManager extends WebviewWindowHandle {
     return this.listen<ScaleFactorChanged>(
       TauriEvent.WINDOW_SCALE_FACTOR_CHANGED,
       handler
-    )
+    );
   }
 
   /**
@@ -1487,7 +1496,7 @@ class WindowManager extends WebviewWindowHandle {
    * @since 1.0.2
    */
   async onMenuClicked(handler: EventCallback<string>): Promise<UnlistenFn> {
-    return this.listen<string>(TauriEvent.MENU, handler)
+    return this.listen<string>(TauriEvent.MENU, handler);
   }
 
   /**
@@ -1523,29 +1532,29 @@ class WindowManager extends WebviewWindowHandle {
     const unlistenFileDrop = await this.listen<string[]>(
       TauriEvent.WINDOW_FILE_DROP,
       (event) => {
-        handler({ ...event, payload: { type: 'drop', paths: event.payload } })
+        handler({ ...event, payload: { type: "drop", paths: event.payload } });
       }
-    )
+    );
 
     const unlistenFileHover = await this.listen<string[]>(
       TauriEvent.WINDOW_FILE_DROP_HOVER,
       (event) => {
-        handler({ ...event, payload: { type: 'hover', paths: event.payload } })
+        handler({ ...event, payload: { type: "hover", paths: event.payload } });
       }
-    )
+    );
 
     const unlistenCancel = await this.listen<null>(
       TauriEvent.WINDOW_FILE_DROP_CANCELLED,
       (event) => {
-        handler({ ...event, payload: { type: 'cancel' } })
+        handler({ ...event, payload: { type: "cancel" } });
       }
-    )
+    );
 
     return () => {
-      unlistenFileDrop()
-      unlistenFileHover()
-      unlistenCancel()
-    }
+      unlistenFileDrop();
+      unlistenFileHover();
+      unlistenCancel();
+    };
   }
 
   /**
@@ -1568,7 +1577,7 @@ class WindowManager extends WebviewWindowHandle {
    * @since 1.0.2
    */
   async onThemeChanged(handler: EventCallback<Theme>): Promise<UnlistenFn> {
-    return this.listen<Theme>(TauriEvent.WINDOW_THEME_CHANGED, handler)
+    return this.listen<Theme>(TauriEvent.WINDOW_THEME_CHANGED, handler);
   }
 }
 
@@ -1577,25 +1586,25 @@ class WindowManager extends WebviewWindowHandle {
  */
 class CloseRequestedEvent {
   /** Event name */
-  event: EventName
+  event: EventName;
   /** The label of the window that emitted this event. */
-  windowLabel: string
+  windowLabel: string;
   /** Event identifier used to unlisten */
-  id: number
-  private _preventDefault = false
+  id: number;
+  private _preventDefault = false;
 
   constructor(event: Event<null>) {
-    this.event = event.event
-    this.windowLabel = event.windowLabel
-    this.id = event.id
+    this.event = event.event;
+    this.windowLabel = event.windowLabel;
+    this.id = event.id;
   }
 
   preventDefault(): void {
-    this._preventDefault = true
+    this._preventDefault = true;
   }
 
   isPreventDefault(): boolean {
-    return this._preventDefault
+    return this._preventDefault;
   }
 }
 
@@ -1653,17 +1662,17 @@ class WebviewWindow extends WindowManager {
    * @returns The WebviewWindow instance to communicate with the webview.
    */
   constructor(label: WindowLabel, options: WindowOptions = {}) {
-    super(label)
+    super(label);
     // @ts-expect-error `skip` is not a public API so it is not defined in WindowOptions
     if (!options?.skip) {
-      invoke('plugin:window|create', {
+      invoke("plugin:window|create", {
         options: {
           ...options,
           label,
-        }
+        },
       })
-        .then(async () => this.emit('tauri://created'))
-        .catch(async (e: string) => this.emit('tauri://error', e))
+        .then(async () => this.emit("tauri://created"))
+        .catch(async (e: string) => this.emit("tauri://error", e));
     }
   }
 
@@ -1681,30 +1690,30 @@ class WebviewWindow extends WindowManager {
   static getByLabel(label: string): WebviewWindow | null {
     if (getAll().some((w) => w.label === label)) {
       // @ts-expect-error `skip` is not defined in the public API but it is handled by the constructor
-      return new WebviewWindow(label, { skip: true })
+      return new WebviewWindow(label, { skip: true });
     }
-    return null
+    return null;
   }
 }
 
 /** The WebviewWindow for the current window. */
-let appWindow: WebviewWindow
-if ('__TAURI_METADATA__' in window) {
+let appWindow: WebviewWindow;
+if ("__TAURI_METADATA__" in window) {
   appWindow = new WebviewWindow(
     window.__TAURI_METADATA__.__currentWindow.label,
     {
       // @ts-expect-error `skip` is not defined in the public API but it is handled by the constructor
-      skip: true
+      skip: true,
     }
-  )
+  );
 } else {
   console.warn(
     `Could not find "window.__TAURI_METADATA__". The "appWindow" value will reference the "main" window label.\nNote that this is not an issue if running this frontend on a browser instead of a Tauri window.`
-  )
-  appWindow = new WebviewWindow('main', {
+  );
+  appWindow = new WebviewWindow("main", {
     // @ts-expect-error `skip` is not defined in the public API but it is handled by the constructor
-    skip: true
-  })
+    skip: true,
+  });
 }
 
 /**
@@ -1720,51 +1729,51 @@ interface WindowOptions {
    * - data: URL such as `data:text/html,<html>...` is only supported with the `window-data-url` Cargo feature for the `tauri` dependency.
    * - local file path or route such as `/path/to/page.html` or `/users` is appended to the application URL (the devServer URL on development, or `tauri://localhost/` and `https://tauri.localhost/` on production).
    */
-  url?: string
+  url?: string;
   /** Show window in the center of the screen.. */
-  center?: boolean
+  center?: boolean;
   /** The initial vertical position. Only applies if `y` is also set. */
-  x?: number
+  x?: number;
   /** The initial horizontal position. Only applies if `x` is also set. */
-  y?: number
+  y?: number;
   /** The initial width. */
-  width?: number
+  width?: number;
   /** The initial height. */
-  height?: number
+  height?: number;
   /** The minimum width. Only applies if `minHeight` is also set. */
-  minWidth?: number
+  minWidth?: number;
   /** The minimum height. Only applies if `minWidth` is also set. */
-  minHeight?: number
+  minHeight?: number;
   /** The maximum width. Only applies if `maxHeight` is also set. */
-  maxWidth?: number
+  maxWidth?: number;
   /** The maximum height. Only applies if `maxWidth` is also set. */
-  maxHeight?: number
+  maxHeight?: number;
   /** Whether the window is resizable or not. */
-  resizable?: boolean
+  resizable?: boolean;
   /** Window title. */
-  title?: string
+  title?: string;
   /** Whether the window is in fullscreen mode or not. */
-  fullscreen?: boolean
+  fullscreen?: boolean;
   /** Whether the window will be initially focused or not. */
-  focus?: boolean
+  focus?: boolean;
   /**
    * Whether the window is transparent or not.
    * Note that on `macOS` this requires the `macos-private-api` feature flag, enabled under `tauri.conf.json > tauri > macOSPrivateApi`.
    * WARNING: Using private APIs on `macOS` prevents your application from being accepted to the `App Store`.
    */
-  transparent?: boolean
+  transparent?: boolean;
   /** Whether the window should be maximized upon creation or not. */
-  maximized?: boolean
+  maximized?: boolean;
   /** Whether the window should be immediately visible upon creation or not. */
-  visible?: boolean
+  visible?: boolean;
   /** Whether the window should have borders and bars or not. */
-  decorations?: boolean
+  decorations?: boolean;
   /** Whether the window should always be on top of other windows or not. */
-  alwaysOnTop?: boolean
+  alwaysOnTop?: boolean;
   /** Prevents the window contents from being captured by other apps. */
-  contentProtected?: boolean
+  contentProtected?: boolean;
   /** Whether or not the window icon should be added to the taskbar. */
-  skipTaskbar?: boolean
+  skipTaskbar?: boolean;
   /**
    *  Whether or not the window has shadow.
    *
@@ -1778,61 +1787,61 @@ interface WindowOptions {
    *
    * @since 2.0
    */
-  shadow?: boolean
+  shadow?: boolean;
   /**
    * Whether the file drop is enabled or not on the webview. By default it is enabled.
    *
    * Disabling it is required to use drag and drop on the frontend on Windows.
    */
-  fileDropEnabled?: boolean
+  fileDropEnabled?: boolean;
   /**
    * The initial window theme. Defaults to the system theme.
    *
    * Only implemented on Windows and macOS 10.14+.
    */
-  theme?: Theme
+  theme?: Theme;
   /**
    * The style of the macOS title bar.
    */
-  titleBarStyle?: TitleBarStyle
+  titleBarStyle?: TitleBarStyle;
   /**
    * If `true`, sets the window title to be hidden on macOS.
    */
-  hiddenTitle?: boolean
+  hiddenTitle?: boolean;
   /**
    * Whether clicking an inactive window also clicks through to the webview on macOS.
    */
-  acceptFirstMouse?: boolean
+  acceptFirstMouse?: boolean;
   /**
    * Defines the window [tabbing identifier](https://developer.apple.com/documentation/appkit/nswindow/1644704-tabbingidentifier) on macOS.
    *
    * Windows with the same tabbing identifier will be grouped together.
    * If the tabbing identifier is not set, automatic tabbing will be disabled.
    */
-  tabbingIdentifier?: string
+  tabbingIdentifier?: string;
   /**
    * The user agent for the webview.
    */
-  userAgent?: string
+  userAgent?: string;
 }
 
 function mapMonitor(m: Monitor | null): Monitor | null {
   return m === null
     ? null
     : {
-      name: m.name,
-      scaleFactor: m.scaleFactor,
-      position: mapPhysicalPosition(m.position),
-      size: mapPhysicalSize(m.size)
-    }
+        name: m.name,
+        scaleFactor: m.scaleFactor,
+        position: mapPhysicalPosition(m.position),
+        size: mapPhysicalSize(m.size),
+      };
 }
 
 function mapPhysicalPosition(m: PhysicalPosition): PhysicalPosition {
-  return new PhysicalPosition(m.x, m.y)
+  return new PhysicalPosition(m.x, m.y);
 }
 
 function mapPhysicalSize(m: PhysicalSize): PhysicalSize {
-  return new PhysicalSize(m.width, m.height)
+  return new PhysicalSize(m.width, m.height);
 }
 
 /**
@@ -1847,7 +1856,9 @@ function mapPhysicalSize(m: PhysicalSize): PhysicalSize {
  * @since 1.0.0
  */
 async function currentMonitor(): Promise<Monitor | null> {
-  return invoke<Monitor | null>('plugin:window|current_monitor').then(mapMonitor)
+  return invoke<Monitor | null>("plugin:window|current_monitor").then(
+    mapMonitor
+  );
 }
 
 /**
@@ -1862,7 +1873,9 @@ async function currentMonitor(): Promise<Monitor | null> {
  * @since 1.0.0
  */
 async function primaryMonitor(): Promise<Monitor | null> {
-  return invoke<Monitor | null>('plugin:window|primary_monitor').then(mapMonitor)
+  return invoke<Monitor | null>("plugin:window|primary_monitor").then(
+    mapMonitor
+  );
 }
 
 /**
@@ -1876,7 +1889,9 @@ async function primaryMonitor(): Promise<Monitor | null> {
  * @since 1.0.0
  */
 async function availableMonitors(): Promise<Monitor[]> {
-  return invoke<Monitor[]>('plugin:window|available_monitors').then((ms) => ms.map(mapMonitor) as Monitor[])
+  return invoke<Monitor[]>("plugin:window|available_monitors").then(
+    (ms) => ms.map(mapMonitor) as Monitor[]
+  );
 }
 
 export {
@@ -1894,8 +1909,8 @@ export {
   UserAttentionType,
   currentMonitor,
   primaryMonitor,
-  availableMonitors
-}
+  availableMonitors,
+};
 
 export type {
   Theme,
@@ -1903,5 +1918,5 @@ export type {
   Monitor,
   ScaleFactorChanged,
   FileDropEvent,
-  WindowOptions
-}
+  WindowOptions,
+};
