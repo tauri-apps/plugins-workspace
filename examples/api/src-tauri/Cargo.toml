@@ -30,8 +30,8 @@ tauri-plugin-shell = { path = "../../../plugins/shell" }
 tauri-plugin-updater = { path = "../../../plugins/updater" }
 
 [patch.crates-io]
-tauri = { git = "https://github.com/tauri-apps/tauri", branch = "feat/channel" }
-tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "feat/channel" }
+tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
+tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
 
 [dependencies.tauri]
 version = "2.0.0-alpha.8"

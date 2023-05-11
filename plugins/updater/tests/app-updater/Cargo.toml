@@ -8,7 +8,7 @@ edition = "2021"
 tauri-build = { path = "../../../../../tauri/core/tauri-build", features = [] }
 
 [dependencies]
-tauri = { path = "../../../../../tauri/core/tauri", features = [] }
+tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
 tauri-plugin-updater = { path = "../.." }
 tiny_http = "0.11"
 serde = "1"

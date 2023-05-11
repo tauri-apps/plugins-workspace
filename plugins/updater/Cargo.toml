@@ -11,7 +11,7 @@ edition = "2021"
 #serde.workspace = true
 #serde_json.workspace = true
 #thiserror.workspace = true
-tauri = { git = "https://github.com/tauri-apps/tauri", branch = "feat/channel", features = ["updater", "fs-extract-api"] }
+tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next", features = ["updater", "fs-extract-api"] }
 serde = "1"
 serde_json = "1"
 thiserror = "1"
@@ -37,6 +37,3 @@ tokio-test = "0.4.2"
 native-tls = [ "reqwest/native-tls" ]
 native-tls-vendored = [ "reqwest/native-tls-vendored" ]
 rustls-tls = [ "reqwest/rustls-tls" ]
-
-[patch.'https://github.com/tauri-apps/tauri']
-tauri = { path = "../../../tauri/core/tauri" }
