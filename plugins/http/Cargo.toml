@@ -12,7 +12,7 @@ edition = "2021"
 #tauri.workspace = true
 #log.workspace = true
 #thiserror.workspace = true
-tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
+tauri = { git = "https://github.com/tauri-apps/tauri", branch = "refactor/event" }
 serde = "1"
 serde_json = "1"
 thiserror = "1"

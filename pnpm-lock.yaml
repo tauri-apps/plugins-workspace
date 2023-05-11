@@ -73,6 +73,9 @@ importers:
       tauri-plugin-dialog-api:
         specifier: 0.0.0
         version: link:../../plugins/dialog
+      tauri-plugin-event-api:
+        specifier: 0.0.0
+        version: link:../../plugins/event
       tauri-plugin-fs-api:
         specifier: 0.0.0
         version: link:../../plugins/fs
@@ -179,6 +182,16 @@ importers:
       tslib:
         specifier: ^2.4.1
         version: 2.4.1
+
+  plugins/event:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: ^1.2.0
+        version: 1.2.0
+    devDependencies:
+      tslib:
+        specifier: ^2.5.0
+        version: 2.5.0
 
   plugins/fs:
     dependencies:

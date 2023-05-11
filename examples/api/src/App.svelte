@@ -20,7 +20,7 @@
   import App from "./views/App.svelte";
 
   import { onMount } from "svelte";
-  import { listen } from "@tauri-apps/api/event";
+  import { listen } from "tauri-plugin-event-api";
   import { ask } from "tauri-plugin-dialog-api";
 
   if (appWindow.label !== "main") {

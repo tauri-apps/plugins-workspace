@@ -15,6 +15,7 @@
     "tauri-plugin-cli-api": "0.0.0",
     "tauri-plugin-clipboard-api": "0.0.0",
     "tauri-plugin-dialog-api": "0.0.0",
+    "tauri-plugin-event-api": "0.0.0",
     "tauri-plugin-fs-api": "0.0.0",
     "tauri-plugin-global-shortcut-api": "0.0.0",
     "tauri-plugin-http-api": "0.0.0",

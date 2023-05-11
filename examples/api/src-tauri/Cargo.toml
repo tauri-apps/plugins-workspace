@@ -22,6 +22,7 @@ tauri-plugin-log = { path = "../../../plugins/log" }
 tauri-plugin-fs = { path = "../../../plugins/fs" }
 tauri-plugin-clipboard = { path = "../../../plugins/clipboard" }
 tauri-plugin-dialog = { path = "../../../plugins/dialog" }
+tauri-plugin-event = { path = "../../../plugins/event" }
 tauri-plugin-http = { path = "../../../plugins/http", features = [ "http-multipart" ] }
 tauri-plugin-notification = { path = "../../../plugins/notification", features = [ "windows7-compat" ] }
 tauri-plugin-os = { path = "../../../plugins/os" }
@@ -30,8 +31,8 @@ tauri-plugin-shell = { path = "../../../plugins/shell" }
 tauri-plugin-updater = { path = "../../../plugins/updater" }
 
 [patch.crates-io]
-tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
-tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
+tauri = { git = "https://github.com/tauri-apps/tauri", branch = "refactor/event" }
+tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "refactor/event" }
 
 [dependencies.tauri]
 version = "2.0.0-alpha.8"

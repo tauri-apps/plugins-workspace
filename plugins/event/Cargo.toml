@@ -1,0 +1,15 @@
+[package]
+name = "tauri-plugin-event"
+version = "0.0.0"
+#edition.workspace = true
+#authors.workspace = true
+#license.workspace = true
+edition = "2021"
+
+[dependencies]
+#tauri.workspace = true
+#serde.workspace = true
+#serde_json.workspace = true
+tauri = { git = "https://github.com/tauri-apps/tauri", branch = "refactor/event" }
+serde = "1"
+serde_json = "1"
