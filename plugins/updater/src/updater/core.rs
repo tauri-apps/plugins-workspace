@@ -705,7 +705,7 @@ fn copy_files_and_run<R: Read + Seek>(
     archive_buffer: R,
     _extract_path: &Path,
     with_elevated_task: bool,
-    config: &crate::Config,
+    config: &tauri::Config,
 ) -> Result<()> {
     // FIXME: We need to create a memory buffer with the MSI and then run it.
     //        (instead of extracting the MSI to a temp path)
