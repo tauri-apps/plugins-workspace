@@ -88,9 +88,15 @@ importers:
       tauri-plugin-os-api:
         specifier: 0.0.0
         version: link:../../plugins/os
+      tauri-plugin-process-api:
+        specifier: 0.0.0
+        version: link:../../plugins/process
       tauri-plugin-shell-api:
         specifier: 0.0.0
         version: link:../../plugins/shell
+      tauri-plugin-updater-api:
+        specifier: 0.0.0
+        version: link:../../plugins/updater
       tauri-plugin-window-api:
         specifier: 0.0.0
         version: link:../../plugins/window
@@ -260,6 +266,16 @@ importers:
         specifier: ^2.5.0
         version: 2.5.0
 
+  plugins/process:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: ^1.2.0
+        version: 1.2.0
+    devDependencies:
+      tslib:
+        specifier: ^2.5.0
+        version: 2.5.0
+
   plugins/shell:
     dependencies:
       '@tauri-apps/api':
@@ -297,6 +313,16 @@ importers:
         version: 2.5.0
 
   plugins/stronghold:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: ^1.2.0
+        version: 1.2.0
+    devDependencies:
+      tslib:
+        specifier: ^2.5.0
+        version: 2.5.0
+
+  plugins/updater:
     dependencies:
       '@tauri-apps/api':
         specifier: ^1.2.0

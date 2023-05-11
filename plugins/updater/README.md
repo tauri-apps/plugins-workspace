@@ -1,6 +1,6 @@
-![plugin-cli](banner.jpg)
+# Updater plugin
 
-<!-- description -->
+In-app updates for Tauri applications.
 
 ## Install
 
@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-cli = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
+tauri-plugin-updater = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -26,11 +26,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-cli#v2
+pnpm add https://github.com/tauri-apps/tauri-plugin-updater#v2
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-cli#v2
+npm add https://github.com/tauri-apps/tauri-plugin-updater#v2
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-cli#v2
+yarn add https://github.com/tauri-apps/tauri-plugin-updater#v2
 ```
 
 ## Usage
@@ -42,7 +42,7 @@ First you need to register the core plugin with Tauri:
 ```rust
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_cli::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -51,7 +51,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-
+import * as updater from "tauri-plugin-updater-api";
 ```
 
 ## Contributing
