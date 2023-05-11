@@ -69,6 +69,7 @@ import type {
   UnlistenFn,
 } from "@tauri-apps/api/event";
 import { TauriEvent } from "@tauri-apps/api/event";
+// TODO: use from @tauri-apps/api v2
 import { emit, listen, once } from "./event";
 
 type Theme = "light" | "dark";
