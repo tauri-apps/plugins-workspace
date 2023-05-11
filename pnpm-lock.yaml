@@ -94,6 +94,9 @@ importers:
       tauri-plugin-shell-api:
         specifier: 0.0.0
         version: link:../../plugins/shell
+      tauri-plugin-updater-api:
+        specifier: 0.0.0
+        version: link:../../plugins/updater
     devDependencies:
       '@iconify-json/codicon':
         specifier: ^1.1.10
@@ -304,6 +307,16 @@ importers:
         version: 2.5.0
 
   plugins/stronghold:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: ^1.2.0
+        version: 1.2.0
+    devDependencies:
+      tslib:
+        specifier: ^2.5.0
+        version: 2.5.0
+
+  plugins/updater:
     dependencies:
       '@tauri-apps/api':
         specifier: ^1.2.0

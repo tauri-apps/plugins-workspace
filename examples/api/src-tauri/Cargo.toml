@@ -27,6 +27,7 @@ tauri-plugin-notification = { path = "../../../plugins/notification", features =
 tauri-plugin-os = { path = "../../../plugins/os" }
 tauri-plugin-process = { path = "../../../plugins/process" }
 tauri-plugin-shell = { path = "../../../plugins/shell" }
+tauri-plugin-updater = { path = "../../../plugins/updater" }
 
 [patch.crates-io]
 tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next" }

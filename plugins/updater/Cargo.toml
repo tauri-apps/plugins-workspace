@@ -1,0 +1,39 @@
+[package]
+name = "tauri-plugin-updater"
+version = "0.0.0"
+edition = "2021"
+#edition.workspace = true
+#authors.workspace = true
+#license.workspace = true
+
+[dependencies]
+#tauri = { workspace = true, features = ["updater"] }
+#serde.workspace = true
+#serde_json.workspace = true
+#thiserror.workspace = true
+tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next", features = ["updater", "fs-extract-api"] }
+serde = "1"
+serde_json = "1"
+thiserror = "1"
+
+tokio = "1"
+reqwest = { version = "0.11", default-features = false, features = [ "json", "stream" ] }
+url = "2"
+http = "0.2"
+dirs-next = "2"
+minisign-verify = "0.2"
+time = { version = "0.3", features = [ "parsing", "formatting" ] }
+base64 = "0.21"
+percent-encoding = "2"
+semver = { version = "1", features = [ "serde" ] }
+futures-util = "0.3"
+tempfile = "3"
+
+[dev-dependencies]
+mockito = "0.31"
+tokio-test = "0.4.2"
+
+[features]
+native-tls = [ "reqwest/native-tls" ]
+native-tls-vendored = [ "reqwest/native-tls-vendored" ]
+rustls-tls = [ "reqwest/rustls-tls" ]
