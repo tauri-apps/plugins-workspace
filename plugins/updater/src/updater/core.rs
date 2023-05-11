@@ -732,7 +732,7 @@ fn copy_files_and_run<R: Read + Seek>(
         if found_path.extension() == Some(OsStr::new("exe")) {
             // Run the EXE
             let mut installer = Command::new(found_path);
-            if crate::utils::config::WindowsUpdateInstallMode::Quiet
+            if tauri::utils::config::WindowsUpdateInstallMode::Quiet
                 == config.tauri.updater.windows.install_mode
             {
                 installer.arg("/S");
