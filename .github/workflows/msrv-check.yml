@@ -42,6 +42,10 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - name: create dummy dist
+        working-directory: examples/api
+        run: mkdir dist
+
       - name: build
         run: cargo build --workspace --exclude 'tauri-plugin-sql' --all-targets --all-features
 
