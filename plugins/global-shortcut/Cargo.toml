@@ -11,4 +11,4 @@ serde_json.workspace = true
 tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
-global-hotkey = "0.2"
+global-hotkey = "0.2.1"
