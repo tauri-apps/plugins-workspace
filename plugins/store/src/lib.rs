@@ -46,7 +46,7 @@ pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T, Error>>(
         if collection.frozen {
             return Err(Error::NotFound(path.to_path_buf()));
         }
-        let mut store = StoreBuilder::new(path.to_path_buf()).build(app);
+        let mut store = StoreBuilder::new(path).build(app);
         // ignore loading errors, just use the default
         if let Err(err) = store.load() {
             warn!(
