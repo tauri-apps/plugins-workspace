@@ -3,20 +3,20 @@ name = "api"
 version = "0.1.0"
 description = "An example Tauri Application showcasing the api"
 edition = "2021"
-rust-version = "1.64"
+rust-version = "1.65"
 license = "Apache-2.0 OR MIT"
 
 [lib]
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-alpha.4", features = ["codegen", "isolation"] }
+tauri-build = { workspace = true, features = ["codegen", "isolation"] }
 
 [dependencies]
-serde_json = "1.0"
-serde = { version = "1.0", features = [ "derive" ] }
+serde_json.workspace = true
+serde.workspace = true
 tiny_http = "0.11"
-log = "0.4"
+log.workspace = true
 tauri-plugin-app = { path = "../../../plugins/app" }
 tauri-plugin-log = { path = "../../../plugins/log" }
 tauri-plugin-fs = { path = "../../../plugins/fs" }
@@ -30,12 +30,8 @@ tauri-plugin-shell = { path = "../../../plugins/shell" }
 tauri-plugin-updater = { path = "../../../plugins/updater" }
 tauri-plugin-window = { path = "../../../plugins/window" }
 
-[patch.crates-io]
-tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
-tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
-
 [dependencies.tauri]
-version = "2.0.0-alpha.8"
+workspace = true
 features = [
   "api-all",
   "icon-ico",
@@ -55,11 +51,3 @@ window-shadows = "0.2"
 
 [features]
 custom-protocol = [ "tauri/custom-protocol" ]
-
-# default to small, optimized release binaries
-[profile.release]
-panic = "abort"
-codegen-units = 1
-lto = true
-incremental = false
-opt-level = "s"

@@ -1,20 +1,15 @@
 [package]
 name = "tauri-plugin-updater"
 version = "0.0.0"
-edition = "2021"
-#edition.workspace = true
-#authors.workspace = true
-#license.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
 
 [dependencies]
-#tauri = { workspace = true, features = ["updater"] }
-#serde.workspace = true
-#serde_json.workspace = true
-#thiserror.workspace = true
-tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next", features = ["updater", "fs-extract-api"] }
-serde = "1"
-serde_json = "1"
-thiserror = "1"
+tauri = { workspace = true, features = ["updater", "fs-extract-api"] }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
 
 tokio = "1"
 reqwest = { version = "0.11", default-features = false, features = [ "json", "stream" ] }

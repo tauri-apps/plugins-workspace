@@ -46,7 +46,7 @@ pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T, Error>>(
         if collection.frozen {
             return Err(Error::NotFound(path.to_path_buf()));
         }
-        let mut store = StoreBuilder::new(app, path.to_path_buf()).build();
+        let mut store = StoreBuilder::new(path).build(app);
         // ignore loading errors, just use the default
         if let Err(err) = store.load() {
             warn!(
@@ -205,15 +205,14 @@ impl<R: Runtime> Builder<R> {
     /// # Examples
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::{StoreBuilder,PluginBuilder};
+    /// use tauri_plugin_store::{StoreBuilder, Builder};
     ///
-    /// let store = StoreBuilder::new("store.bin".parse()?).build();
-    ///
-    /// let builder = PluginBuilder::default().store(store);
-    ///
-    /// # Ok(())
-    /// # }
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let store = StoreBuilder::new("store.bin").build(app.handle());
+    ///     let builder = Builder::default().store(store);
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn store(mut self, store: Store<R>) -> Self {
         self.stores.insert(store.path.clone(), store);
@@ -225,15 +224,14 @@ impl<R: Runtime> Builder<R> {
     /// # Examples
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::{StoreBuilder,PluginBuilder};
+    /// use tauri_plugin_store::{StoreBuilder, Builder};
     ///
-    /// let store = StoreBuilder::new("store.bin".parse()?).build();
-    ///
-    /// let builder = PluginBuilder::default().stores([store]);
-    ///
-    /// # Ok(())
-    /// # }
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let store = StoreBuilder::new("store.bin").build(app.handle());
+    ///     let builder = Builder::default().stores([store]);
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn stores<T: IntoIterator<Item = Store<R>>>(mut self, stores: T) -> Self {
         self.stores = stores
@@ -250,15 +248,14 @@ impl<R: Runtime> Builder<R> {
     /// # Examples
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::{StoreBuilder,PluginBuilder};
+    /// use tauri_plugin_store::{StoreBuilder, Builder};
     ///
-    /// let store = StoreBuilder::new("store.bin".parse()?).build();
-    ///
-    /// let builder = PluginBuilder::default().freeze();
-    ///
-    /// # Ok(())
-    /// # }
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let store = StoreBuilder::new("store.bin").build(app.handle());
+    ///     app.handle().plugin(Builder::default().freeze().build());
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn freeze(mut self) -> Self {
         self.frozen = true;
@@ -270,16 +267,14 @@ impl<R: Runtime> Builder<R> {
     /// # Examples
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::{StoreBuilder,PluginBuilder};
-    /// use tauri::Wry;
+    /// use tauri_plugin_store::{StoreBuilder, Builder};
     ///
-    /// let store = StoreBuilder::new("store.bin".parse()?).build();
-    ///
-    /// let plugin = PluginBuilder::default().build::<Wry>();
-    ///
-    /// # Ok(())
-    /// # }
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let store = StoreBuilder::new("store.bin").build(app.handle());
+    ///     app.handle().plugin(Builder::default().build());
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn build(mut self) -> TauriPlugin<R> {
         plugin::Builder::new("store")

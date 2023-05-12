@@ -1,8 +1,4 @@
-import { invoke } from "@tauri-apps/api/tauri";
-import { UnlistenFn } from "@tauri-apps/api/event";
-import { appWindow, WebviewWindow } from "tauri-plugin-window-api";
-
-const w: WebviewWindow = appWindow;
+import { invoke, transformCallback } from "@tauri-apps/api/tauri";
 
 export interface WatchOptions {
   recursive?: boolean;
@@ -42,11 +38,39 @@ async function unwatch(id: number): Promise<void> {
   await invoke("plugin:fs-watch|unwatch", { id });
 }
 
+// TODO: use channel from @tauri-apps/api on v2
+class Channel<T = unknown> {
+  id: number;
+  // @ts-expect-error field used by the IPC serializer
+  private readonly __TAURI_CHANNEL_MARKER__ = true;
+  #onmessage: (response: T) => void = () => {
+    // no-op
+  };
+
+  constructor() {
+    this.id = transformCallback((response: T) => {
+      this.#onmessage(response);
+    });
+  }
+
+  set onmessage(handler: (response: T) => void) {
+    this.#onmessage = handler;
+  }
+
+  get onmessage(): (response: T) => void {
+    return this.#onmessage;
+  }
+
+  toJSON(): string {
+    return `__CHANNEL__:${this.id}`;
+  }
+}
+
 export async function watch(
   paths: string | string[],
   cb: (event: DebouncedEvent) => void,
   options: DebouncedWatchOptions = {}
-): Promise<UnlistenFn> {
+): Promise<() => void> {
   const opts = {
     recursive: false,
     delayMs: 2000,
@@ -61,22 +85,18 @@ export async function watch(
 
   const id = window.crypto.getRandomValues(new Uint32Array(1))[0];
 
+  const onEvent = new Channel<DebouncedEvent>();
+  onEvent.onmessage = cb;
+
   await invoke("plugin:fs-watch|watch", {
     id,
     paths: watchPaths,
     options: opts,
+    onEvent,
   });
-
-  const unlisten = await w.listen<DebouncedEvent>(
-    `watcher://debounced-event/${id}`,
-    (event) => {
-      cb(event.payload);
-    }
-  );
 
   return () => {
     void unwatch(id);
-    unlisten();
   };
 }
 
@@ -84,7 +104,7 @@ export async function watchImmediate(
   paths: string | string[],
   cb: (event: RawEvent) => void,
   options: WatchOptions = {}
-): Promise<UnlistenFn> {
+): Promise<() => void> {
   const opts = {
     recursive: false,
     ...options,
@@ -99,21 +119,17 @@ export async function watchImmediate(
 
   const id = window.crypto.getRandomValues(new Uint32Array(1))[0];
 
+  const onEvent = new Channel<RawEvent>();
+  onEvent.onmessage = cb;
+
   await invoke("plugin:fs-watch|watch", {
     id,
     paths: watchPaths,
     options: opts,
+    onEvent,
   });
-
-  const unlisten = await w.listen<RawEvent>(
-    `watcher://raw-event/${id}`,
-    (event) => {
-      cb(event.payload);
-    }
-  );
 
   return () => {
     void unwatch(id);
-    unlisten();
   };
 }

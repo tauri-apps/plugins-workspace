@@ -72,15 +72,16 @@ mod imp {
     ///
     /// # Examples
     /// ```rust,no_run
-    /// use tauri::api::notification::Notification;
+    /// use tauri_plugin_notification::NotificationExt;
     /// // first we build the application to access the Tauri configuration
     /// let app = tauri::Builder::default()
     ///   // on an actual app, remove the string argument
-    ///   .build(tauri::generate_context!("test/fixture/src-tauri/tauri.conf.json"))
+    ///   .build(tauri::generate_context!("test/tauri.conf.json"))
     ///   .expect("error while building tauri application");
     ///
     /// // shows a notification with the given title and body
-    /// Notification::new(&app.config().tauri.bundle.identifier)
+    /// app.notification()
+    ///   .builder()
     ///   .title("New message")
     ///   .body("You've got a new message.")
     ///   .show();
@@ -136,15 +137,20 @@ mod imp {
         /// # Examples
         ///
         /// ```no_run
-        /// use tauri::api::notification::Notification;
+        /// use tauri_plugin_notification::NotificationExt;
         ///
-        /// // on an actual app, remove the string argument
-        /// let context = tauri::generate_context!("test/fixture/src-tauri/tauri.conf.json");
-        /// Notification::new(&context.config().tauri.bundle.identifier)
-        ///   .title("Tauri")
-        ///   .body("Tauri is awesome!")
-        ///   .show()
-        ///   .unwrap();
+        /// tauri::Builder::default()
+        ///   .setup(|app| {
+        ///     app.notification()
+        ///       .builder()
+        ///       .title("Tauri")
+        ///       .body("Tauri is awesome!")
+        ///       .show()
+        ///       .unwrap();
+        ///     Ok(())
+        ///   })
+        ///   .run(tauri::generate_context!("test/tauri.conf.json"))
+        ///   .expect("error while running tauri application");
         /// ```
         ///
         /// ## Platform-specific
@@ -200,22 +206,18 @@ mod imp {
         /// # Examples
         ///
         /// ```no_run
-        /// use tauri::api::notification::Notification;
-        ///
-        /// // on an actual app, remove the string argument
-        /// let context = tauri::generate_context!("test/fixture/src-tauri/tauri.conf.json");
-        /// let identifier = context.config().tauri.bundle.identifier.clone();
+        /// use tauri_plugin_notification::NotificationExt;
         ///
         /// tauri::Builder::default()
         ///   .setup(move |app| {
-        ///     Notification::new(&identifier)
+        ///     app.notification().builder()
         ///       .title("Tauri")
         ///       .body("Tauri is awesome!")
-        ///       .notify(&app.handle())
+        ///       .show()
         ///       .unwrap();
         ///     Ok(())
         ///   })
-        ///   .run(context)
+        ///   .run(tauri::generate_context!("test/tauri.conf.json"))
         ///   .expect("error while running tauri application");
         /// ```
         #[cfg(feature = "windows7-compat")]

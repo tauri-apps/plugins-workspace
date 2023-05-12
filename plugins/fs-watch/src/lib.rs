@@ -2,9 +2,10 @@ use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
 use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
 use serde::{ser::Serializer, Deserialize, Serialize};
 use tauri::{
+    api::ipc::Channel,
     command,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Manager, Runtime, State, Window,
+    Manager, Runtime, State,
 };
 
 use std::{
@@ -44,25 +45,23 @@ enum WatcherKind {
     Watcher(RecommendedWatcher),
 }
 
-fn watch_raw<R: Runtime>(window: Window<R>, rx: Receiver<notify::Result<Event>>, id: Id) {
+fn watch_raw<R: Runtime>(on_event: Channel<R>, rx: Receiver<notify::Result<Event>>) {
     spawn(move || {
-        let event_name = format!("watcher://raw-event/{id}");
         while let Ok(event) = rx.recv() {
             if let Ok(event) = event {
                 // TODO: Should errors be emitted too?
-                let _ = window.emit(&event_name, event);
+                let _ = on_event.send(&event);
             }
         }
     });
 }
 
-fn watch_debounced<R: Runtime>(window: Window<R>, rx: Receiver<DebounceEventResult>, id: Id) {
+fn watch_debounced<R: Runtime>(on_event: Channel<R>, rx: Receiver<DebounceEventResult>) {
     spawn(move || {
-        let event_name = format!("watcher://debounced-event/{id}");
         while let Ok(event) = rx.recv() {
             if let Ok(event) = event {
                 // TODO: Should errors be emitted too?
-                let _ = window.emit(&event_name, event);
+                let _ = on_event.send(&event);
             }
         }
     });
@@ -77,11 +76,11 @@ struct WatchOptions {
 
 #[command]
 async fn watch<R: Runtime>(
-    window: Window<R>,
     watchers: State<'_, WatcherCollection>,
     id: Id,
     paths: Vec<PathBuf>,
     options: WatchOptions,
+    on_event: Channel<R>,
 ) -> Result<()> {
     let mode = if options.recursive {
         RecursiveMode::Recursive
@@ -96,7 +95,7 @@ async fn watch<R: Runtime>(
         for path in &paths {
             watcher.watch(path, mode)?;
         }
-        watch_debounced(window, rx, id);
+        watch_debounced(on_event, rx);
         WatcherKind::Debouncer(debouncer)
     } else {
         let (tx, rx) = channel();
@@ -104,7 +103,7 @@ async fn watch<R: Runtime>(
         for path in &paths {
             watcher.watch(path, mode)?;
         }
-        watch_raw(window, rx, id);
+        watch_raw(on_event, rx);
         WatcherKind::Watcher(watcher)
     };
 

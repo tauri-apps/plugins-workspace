@@ -120,7 +120,7 @@ pub fn init<R: Runtime>(
                 let exe_path = current_exe.canonicalize()?.display().to_string();
                 let parts: Vec<&str> = exe_path.split(".app/").collect();
                 let app_path = if parts.len() == 2 {
-                    format!("{}.app", parts.get(0).unwrap().to_string())
+                    format!("{}.app", parts.first().unwrap())
                 } else {
                     exe_path
                 };

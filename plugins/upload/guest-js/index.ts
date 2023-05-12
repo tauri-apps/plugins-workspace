@@ -1,30 +1,38 @@
-import { invoke } from "@tauri-apps/api/tauri";
-import { appWindow } from "tauri-plugin-window-api";
+import { invoke, transformCallback } from "@tauri-apps/api/tauri";
 
 interface ProgressPayload {
-  id: number;
   progress: number;
   total: number;
 }
 
-type ProgressHandler = (progress: number, total: number) => void;
-const handlers: Map<number, ProgressHandler> = new Map();
-let listening = false;
+type ProgressHandler = (progress: ProgressPayload) => void;
 
-async function listenToEventIfNeeded(event: string): Promise<void> {
-  if (listening) {
-    return await Promise.resolve();
-  }
-  return await appWindow
-    .listen<ProgressPayload>(event, ({ payload }) => {
-      const handler = handlers.get(payload.id);
-      if (handler != null) {
-        handler(payload.progress, payload.total);
-      }
-    })
-    .then(() => {
-      listening = true;
+// TODO: use channel from @tauri-apps/api on v2
+class Channel<T = unknown> {
+  id: number;
+  // @ts-expect-error field used by the IPC serializer
+  private readonly __TAURI_CHANNEL_MARKER__ = true;
+  #onmessage: (response: T) => void = () => {
+    // no-op
+  };
+
+  constructor() {
+    this.id = transformCallback((response: T) => {
+      this.#onmessage(response);
     });
+  }
+
+  set onmessage(handler: (response: T) => void) {
+    this.#onmessage = handler;
+  }
+
+  get onmessage(): (response: T) => void {
+    return this.#onmessage;
+  }
+
+  toJSON(): string {
+    return `__CHANNEL__:${this.id}`;
+  }
 }
 
 async function upload(
@@ -37,17 +45,17 @@ async function upload(
   window.crypto.getRandomValues(ids);
   const id = ids[0];
 
+  const onProgress = new Channel<ProgressPayload>();
   if (progressHandler != null) {
-    handlers.set(id, progressHandler);
+    onProgress.onmessage = progressHandler;
   }
-
-  await listenToEventIfNeeded("upload://progress");
 
   await invoke("plugin:upload|upload", {
     id,
     url,
     filePath,
     headers: headers ?? {},
+    onProgress,
   });
 }
 
@@ -65,17 +73,17 @@ async function download(
   window.crypto.getRandomValues(ids);
   const id = ids[0];
 
+  const onProgress = new Channel<ProgressPayload>();
   if (progressHandler != null) {
-    handlers.set(id, progressHandler);
+    onProgress.onmessage = progressHandler;
   }
-
-  await listenToEventIfNeeded("download://progress");
 
   await invoke("plugin:upload|download", {
     id,
     url,
     filePath,
     headers: headers ?? {},
+    onProgress,
   });
 }
 

@@ -176,7 +176,7 @@ fn update_app() {
     let target =
         tauri_plugin_updater::target().expect("running updater test in an unsupported platform");
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let root_dir = manifest_dir.clone();
+    let root_dir = manifest_dir.join("../../../..");
 
     let mut config = Config {
         package: PackageConfig { version: "1.0.0" },

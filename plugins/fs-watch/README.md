@@ -4,7 +4,7 @@ Watch files and directories for changes using [notify](https://github.com/notify
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.64**_
+_This plugin requires a Rust version of at least **1.65**_
 
 There are three general methods of installation that we can recommend.
 
