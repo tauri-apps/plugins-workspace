@@ -198,9 +198,6 @@ importers:
       '@tauri-apps/api':
         specifier: ^1.2.0
         version: 1.2.0
-      tauri-plugin-window-api:
-        specifier: 0.0.0
-        version: link:../window
     devDependencies:
       tslib:
         specifier: ^2.5.0
@@ -337,9 +334,6 @@ importers:
       '@tauri-apps/api':
         specifier: ^1.2.0
         version: 1.2.0
-      tauri-plugin-window-api:
-        specifier: 0.0.0
-        version: link:../window
     devDependencies:
       tslib:
         specifier: ^2.5.0
@@ -401,9 +395,6 @@ importers:
       '@tauri-apps/api':
         specifier: ^1.2.0
         version: 1.2.0
-      tauri-plugin-window-api:
-        specifier: 0.0.0
-        version: link:../window
     devDependencies:
       tslib:
         specifier: ^2.5.0

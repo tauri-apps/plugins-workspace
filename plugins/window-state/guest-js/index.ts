@@ -1,5 +1,17 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { WindowLabel, getCurrent } from "tauri-plugin-window-api";
+
+interface WindowDef {
+  label: string;
+}
+
+declare global {
+  interface Window {
+    __TAURI_METADATA__: {
+      __windows: WindowDef[];
+      __currentWindow: WindowDef;
+    };
+  }
+}
 
 export enum StateFlags {
   SIZE = 1 << 0,
@@ -21,7 +33,7 @@ async function saveWindowState(flags: StateFlags) {
 /**
  *  Restore the state for the specified window from disk.
  */
-async function restoreState(label: WindowLabel, flags: StateFlags) {
+async function restoreState(label: string, flags: StateFlags) {
   invoke("plugin:window-state|restore_state", { label, flags });
 }
 
@@ -29,7 +41,7 @@ async function restoreState(label: WindowLabel, flags: StateFlags) {
  *  Restore the state for the current window from disk.
  */
 async function restoreStateCurrent(flags: StateFlags) {
-  restoreState(getCurrent().label, flags);
+  restoreState(window.__TAURI_METADATA__.__currentWindow.label, flags);
 }
 
 export { restoreState, restoreStateCurrent, saveWindowState };
