@@ -43,6 +43,10 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - name: create dummy dist
+        working-directory: examples/api
+        run: mkdir dist
+
       - name: clippy
         run: cargo clippy --workspace --exclude 'tauri-plugin-sql' --all-targets --all-features -- -D warnings
 
