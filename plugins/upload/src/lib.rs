@@ -5,16 +5,17 @@
 use futures_util::TryStreamExt;
 use serde::{ser::Serializer, Serialize};
 use tauri::{
+    api::ipc::Channel,
     command,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Runtime, Window,
+    Runtime,
 };
 use tokio::{fs::File, io::AsyncWriteExt};
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 use read_progress_stream::ReadProgressStream;
 
-use std::{collections::HashMap, sync::Mutex};
+use std::collections::HashMap;
 
 type Result<T> = std::result::Result<T, Error>;
 
@@ -39,19 +40,17 @@ impl Serialize for Error {
 
 #[derive(Clone, Serialize)]
 struct ProgressPayload {
-    id: u32,
     progress: u64,
     total: u64,
 }
 
 #[command]
 async fn download<R: Runtime>(
-    window: Window<R>,
-    id: u32,
     url: &str,
     file_path: &str,
     headers: HashMap<String, String>,
-) -> Result<u32> {
+    on_progress: Channel<R>,
+) -> Result<()> {
     let client = reqwest::Client::new();
 
     let mut request = client.get(url);
@@ -69,33 +68,28 @@ async fn download<R: Runtime>(
 
     while let Some(chunk) = stream.try_next().await? {
         file.write_all(&chunk).await?;
-        let _ = window.emit(
-            "download://progress",
-            ProgressPayload {
-                id,
-                progress: chunk.len() as u64,
-                total,
-            },
-        );
+        let _ = on_progress.send(&ProgressPayload {
+            progress: chunk.len() as u64,
+            total,
+        });
     }
 
-    Ok(id)
+    Ok(())
 }
 
 #[command]
 async fn upload<R: Runtime>(
-    window: Window<R>,
-    id: u32,
     url: &str,
     file_path: &str,
     headers: HashMap<String, String>,
+    on_progress: Channel<R>,
 ) -> Result<serde_json::Value> {
     // Read the file
     let file = File::open(file_path).await?;
 
     // Create the request and attach the file to the body
     let client = reqwest::Client::new();
-    let mut request = client.post(url).body(file_to_body(id, window, file));
+    let mut request = client.post(url).body(file_to_body(on_progress, file));
 
     // Loop trought the headers keys and values
     // and add them to the request object.
@@ -108,20 +102,13 @@ async fn upload<R: Runtime>(
     response.json().await.map_err(Into::into)
 }
 
-fn file_to_body<R: Runtime>(id: u32, window: Window<R>, file: File) -> reqwest::Body {
+fn file_to_body<R: Runtime>(channel: Channel<R>, file: File) -> reqwest::Body {
     let stream = FramedRead::new(file, BytesCodec::new()).map_ok(|r| r.freeze());
-    let window = Mutex::new(window);
+
     reqwest::Body::wrap_stream(ReadProgressStream::new(
         stream,
         Box::new(move |progress, total| {
-            let _ = window.lock().unwrap().emit(
-                "upload://progress",
-                ProgressPayload {
-                    id,
-                    progress,
-                    total,
-                },
-            );
+            let _ = channel.send(&ProgressPayload { progress, total });
         }),
     ))
 }
