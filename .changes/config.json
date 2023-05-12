@@ -71,7 +71,8 @@
 
     "dialog": {
       "path": "./plugins/dialog",
-      "manager": "rust-disabled"
+      "manager": "rust-disabled",
+      "dependencies": ["fs"]
     },
     "dialog-js": {
       "path": "./plugins/dialog",
@@ -107,7 +108,8 @@
 
     "http": {
       "path": "./plugins/http",
-      "manager": "rust-disabled"
+      "manager": "rust-disabled",
+      "dependencies": ["fs"]
     },
     "http-js": {
       "path": "./plugins/http",
@@ -139,7 +141,8 @@
 
     "persisted-scope": {
       "path": "./plugins/persisted-scope",
-      "manager": "rust"
+      "manager": "rust",
+      "dependencies": ["fs"]
     },
 
     "positioner": {

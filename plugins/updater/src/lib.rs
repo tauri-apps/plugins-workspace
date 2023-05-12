@@ -6,15 +6,18 @@ use tauri::{
 use tokio::sync::Mutex;
 
 mod commands;
+mod config;
 mod error;
 mod updater;
 
+pub use config::Config;
 pub use error::Error;
 pub use updater::*;
 pub type Result<T> = std::result::Result<T, Error>;
 
 struct UpdaterState {
     target: Option<String>,
+    config: Config,
 }
 
 struct PendingUpdate<R: Runtime>(Mutex<Option<UpdateResponse<R>>>);
@@ -60,11 +63,14 @@ impl Builder {
         self
     }
 
-    pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
+    pub fn build<R: Runtime>(self) -> TauriPlugin<R, Config> {
         let target = self.target;
-        PluginBuilder::<R>::new("updater")
-            .setup(move |app, _api| {
-                app.manage(UpdaterState { target });
+        PluginBuilder::<R, Config>::new("updater")
+            .setup(move |app, api| {
+                app.manage(UpdaterState {
+                    target,
+                    config: api.config().clone(),
+                });
                 app.manage(PendingUpdate::<R>(Default::default()));
                 Ok(())
             })

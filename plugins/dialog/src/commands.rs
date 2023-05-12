@@ -5,7 +5,8 @@
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
-use tauri::{command, Manager, Runtime, State, Window};
+use tauri::{command, Runtime, State, Window};
+use tauri_plugin_fs::FsExt;
 
 use crate::{Dialog, FileDialogBuilder, FileResponse, MessageDialogKind, Result};
 
@@ -177,7 +178,9 @@ pub(crate) async fn save<R: Runtime>(
 
         let path = dialog_builder.blocking_save_file();
         if let Some(p) = &path {
-            window.fs_scope().allow_file(p)?;
+            if let Some(s) = window.try_fs_scope() {
+                s.allow_file(p)?;
+            }
         }
 
         Ok(path)

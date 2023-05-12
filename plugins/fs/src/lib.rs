@@ -4,18 +4,38 @@
 
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Runtime,
+    utils::config::FsAllowlistScope,
+    Manager, Runtime,
 };
 
 mod commands;
+mod config;
 mod error;
+mod scope;
 
+pub use config::Config;
 pub use error::Error;
+pub use scope::{Event as ScopeEvent, Scope};
 
 type Result<T> = std::result::Result<T, Error>;
 
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    PluginBuilder::new("fs")
+pub trait FsExt<R: Runtime> {
+    fn fs_scope(&self) -> &Scope;
+    fn try_fs_scope(&self) -> Option<&Scope>;
+}
+
+impl<R: Runtime, T: Manager<R>> FsExt<R> for T {
+    fn fs_scope(&self) -> &Scope {
+        self.state::<Scope>().inner()
+    }
+
+    fn try_fs_scope(&self) -> Option<&Scope> {
+        self.try_state::<Scope>().map(|s| s.inner())
+    }
+}
+
+pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
+    PluginBuilder::<R, Option<Config>>::new("fs")
         .invoke_handler(tauri::generate_handler![
             commands::read_file,
             commands::read_text_file,
@@ -29,5 +49,16 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::exists,
             commands::metadata
         ])
+        .setup(|app: &tauri::AppHandle<R>, api| {
+            let default_scope = FsAllowlistScope::default();
+            app.manage(Scope::new(
+                app,
+                api.config()
+                    .as_ref()
+                    .map(|c| &c.scope)
+                    .unwrap_or(&default_scope),
+            ));
+            Ok(())
+        })
         .build()
 }

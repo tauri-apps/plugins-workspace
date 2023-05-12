@@ -1,4 +1,5 @@
 use tauri::{path::SafePathBuf, AppHandle, Runtime, State};
+use tauri_plugin_fs::FsExt;
 
 use crate::{ClientId, Http};
 
@@ -38,7 +39,6 @@ pub async fn request<R: Runtime>(
     client_id: ClientId,
     options: Box<HttpRequestBuilder>,
 ) -> super::Result<ResponseData> {
-    use crate::Manager;
     if http.scope.is_allowed(&options.url) {
         let client = http
             .clients
@@ -55,7 +55,12 @@ pub async fn request<R: Runtime>(
                     ..
                 } = value
                 {
-                    if SafePathBuf::new(path.clone()).is_err() || !app.fs_scope().is_allowed(path) {
+                    if SafePathBuf::new(path.clone()).is_err()
+                        || !app
+                            .try_fs_scope()
+                            .map(|s| s.is_allowed(path))
+                            .unwrap_or_default()
+                    {
                         return Err(crate::Error::PathNotAllowed(path.clone()));
                     }
                 }

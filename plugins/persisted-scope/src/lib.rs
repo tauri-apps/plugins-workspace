@@ -6,8 +6,9 @@ use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    AppHandle, FsScopeEvent, Manager, Runtime,
+    AppHandle, Manager, Runtime,
 };
+use tauri_plugin_fs::{FsExt, ScopeEvent as FsScopeEvent};
 
 use std::{
     fs::{create_dir_all, File},
@@ -59,28 +60,28 @@ fn fix_pattern(ac: &AhoCorasick, s: &str) -> String {
 }
 
 fn save_scopes<R: Runtime>(app: &AppHandle<R>, app_dir: &Path, scope_state_path: &Path) {
-    let fs_scope = app.fs_scope();
+    if let Some(fs_scope) = app.try_fs_scope() {
+        let scope = Scope {
+            allowed_paths: fs_scope
+                .allowed_patterns()
+                .into_iter()
+                .map(|p| p.to_string())
+                .collect(),
+            forbidden_patterns: fs_scope
+                .forbidden_patterns()
+                .into_iter()
+                .map(|p| p.to_string())
+                .collect(),
+        };
 
-    let scope = Scope {
-        allowed_paths: fs_scope
-            .allowed_patterns()
-            .into_iter()
-            .map(|p| p.to_string())
-            .collect(),
-        forbidden_patterns: fs_scope
-            .forbidden_patterns()
-            .into_iter()
-            .map(|p| p.to_string())
-            .collect(),
-    };
-
-    let _ = create_dir_all(app_dir)
-        .and_then(|_| File::create(scope_state_path))
-        .map_err(Error::Io)
-        .and_then(|mut f| {
-            f.write_all(&bincode::serialize(&scope).map_err(Error::from)?)
-                .map_err(Into::into)
-        });
+        let _ = create_dir_all(app_dir)
+            .and_then(|_| File::create(scope_state_path))
+            .map_err(Error::Io)
+            .and_then(|mut f| {
+                f.write_all(&bincode::serialize(&scope).map_err(Error::from)?)
+                    .map_err(Into::into)
+            });
+    }
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {

@@ -33,13 +33,12 @@ tauri-plugin-window = { path = "../../../plugins/window" }
 [dependencies.tauri]
 workspace = true
 features = [
-  "api-all",
   "icon-ico",
   "icon-png",
   "isolation",
   "macos-private-api",
   "system-tray",
-  "updater"
+  "protocol-asset"
 ]
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
