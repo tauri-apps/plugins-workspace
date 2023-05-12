@@ -8,7 +8,7 @@ use std::{
     collections::HashMap,
     fs::{create_dir_all, read, File},
     io::Write,
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 use tauri::{AppHandle, Manager, Runtime};
 
@@ -30,8 +30,7 @@ fn default_deserialize(
 }
 
 /// Builds a [`Store`]
-pub struct StoreBuilder<R: Runtime> {
-    app: AppHandle<R>,
+pub struct StoreBuilder {
     path: PathBuf,
     defaults: Option<HashMap<String, JsonValue>>,
     cache: HashMap<String, JsonValue>,
@@ -39,7 +38,7 @@ pub struct StoreBuilder<R: Runtime> {
     deserialize: DeserializeFn,
 }
 
-impl<R: Runtime> StoreBuilder<R> {
+impl StoreBuilder {
     /// Creates a new [`StoreBuilder`].
     ///
     /// # Examples
@@ -47,15 +46,14 @@ impl<R: Runtime> StoreBuilder<R> {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use tauri_plugin_store::StoreBuilder;
     ///
-    /// let builder = StoreBuilder::new("store.bin".parse()?);
+    /// let builder = StoreBuilder::new("store.bin");
     ///
     /// # Ok(())
     /// # }
     /// ```
-    pub fn new(app: AppHandle<R>, path: PathBuf) -> Self {
+    pub fn new<P: AsRef<Path>>(path: P) -> Self {
         Self {
-            app,
-            path,
+            path: path.as_ref().to_path_buf(),
             defaults: None,
             cache: Default::default(),
             serialize: default_serialize,
@@ -75,7 +73,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///
     /// defaults.insert("foo".to_string(), "bar".into());
     ///
-    /// let builder = StoreBuilder::new("store.bin".parse()?)
+    /// let builder = StoreBuilder::new("store.bin")
     ///   .defaults(defaults);
     ///
     /// # Ok(())
@@ -93,7 +91,7 @@ impl<R: Runtime> StoreBuilder<R> {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use tauri_plugin_store::StoreBuilder;
     ///
-    /// let builder = StoreBuilder::new("store.bin".parse()?)
+    /// let builder = StoreBuilder::new("store.bin")
     ///   .default("foo".to_string(), "bar".into());
     ///
     /// # Ok(())
@@ -113,7 +111,7 @@ impl<R: Runtime> StoreBuilder<R> {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use tauri_plugin_store::StoreBuilder;
     ///
-    /// let builder = StoreBuilder::new("store.json".parse()?)
+    /// let builder = StoreBuilder::new("store.json")
     ///   .serialize(|cache| serde_json::to_vec(&cache).map_err(Into::into));
     ///
     /// # Ok(())
@@ -130,7 +128,7 @@ impl<R: Runtime> StoreBuilder<R> {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use tauri_plugin_store::StoreBuilder;
     ///
-    /// let builder = StoreBuilder::new("store.json".parse()?)
+    /// let builder = StoreBuilder::new("store.json")
     ///   .deserialize(|bytes| serde_json::from_slice(&bytes).map_err(Into::into));
     ///
     /// # Ok(())
@@ -144,16 +142,15 @@ impl<R: Runtime> StoreBuilder<R> {
     ///
     /// # Examples
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::StoreBuilder;
-    ///
-    /// let store = StoreBuilder::new("store.bin".parse()?).build();
-    ///
-    /// # Ok(())
-    /// # }
-    pub fn build(self) -> Store<R> {
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let store = tauri_plugin_store::StoreBuilder::new("store.json").build(app.handle());
+    ///     Ok(())
+    ///   });
+    /// ```
+    pub fn build<R: Runtime>(self, app: AppHandle<R>) -> Store<R> {
         Store {
-            app: self.app,
+            app,
             path: self.path,
             defaults: self.defaults,
             cache: self.cache,

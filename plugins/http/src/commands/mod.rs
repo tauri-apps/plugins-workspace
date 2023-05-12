@@ -1,9 +1,6 @@
 use tauri::{path::SafePathBuf, AppHandle, Runtime, State};
 
-use crate::{
-    
-    ClientId, Http,
-};
+use crate::{ClientId, Http};
 
 mod client;
 use client::{Body, ClientBuilder, FilePart, FormPart, HttpRequestBuilder, ResponseData};

@@ -200,24 +200,29 @@ impl Command {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri::api::process::{Command, CommandEvent};
-    /// tauri::async_runtime::spawn(async move {
-    ///   let (mut rx, mut child) = Command::new("cargo")
-    ///     .args(["tauri", "dev"])
-    ///     .spawn()
-    ///     .expect("Failed to spawn cargo");
+    /// use tauri_plugin_shell::{process::CommandEvent, ShellExt};
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let handle = app.handle();
+    ///     tauri::async_runtime::spawn(async move {
+    ///       let (mut rx, mut child) = handle.shell().command("cargo")
+    ///         .args(["tauri", "dev"])
+    ///         .spawn()
+    ///         .expect("Failed to spawn cargo");
     ///
-    ///   let mut i = 0;
-    ///   while let Some(event) = rx.recv().await {
-    ///     if let CommandEvent::Stdout(line) = event {
-    ///       println!("got: {}", String::from_utf8(line).unwrap());
-    ///       i += 1;
-    ///       if i == 4 {
-    ///         child.write("message from Rust\n".as_bytes()).unwrap();
-    ///         i = 0;
+    ///       let mut i = 0;
+    ///       while let Some(event) = rx.recv().await {
+    ///         if let CommandEvent::Stdout(line) = event {
+    ///           println!("got: {}", String::from_utf8(line).unwrap());
+    ///           i += 1;
+    ///           if i == 4 {
+    ///             child.write("message from Rust\n".as_bytes()).unwrap();
+    ///             i = 0;
+    ///           }
+    ///         }
     ///       }
-    ///     }
-    ///   }
+    ///     });
+    ///     Ok(())
     /// });
     /// ```
     pub fn spawn(self) -> crate::Result<(Receiver<CommandEvent>, CommandChild)> {
@@ -288,9 +293,13 @@ impl Command {
     ///
     /// # Examples
     /// ```rust,no_run
-    /// use tauri::api::process::Command;
-    /// let status = Command::new("which").args(["ls"]).status().unwrap();
-    /// println!("`which` finished with status: {:?}", status.code());
+    /// use tauri_plugin_shell::ShellExt;
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let status = tauri::async_runtime::block_on(async move { app.shell().command("which").args(["ls"]).status().await.unwrap() });
+    ///     println!("`which` finished with status: {:?}", status.code());
+    ///     Ok(())
+    ///   });
     /// ```
     pub async fn status(self) -> crate::Result<ExitStatus> {
         let (mut rx, _child) = self.spawn()?;
@@ -310,10 +319,14 @@ impl Command {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri::api::process::Command;
-    /// let output = Command::new("echo").args(["TAURI"]).output().unwrap();
-    /// assert!(output.status.success());
-    /// assert_eq!(String::from_utf8(output.stdout).unwrap(), "TAURI");
+    /// use tauri_plugin_shell::ShellExt;
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let output = tauri::async_runtime::block_on(async move { app.shell().command("echo").args(["TAURI"]).output().await.unwrap() });
+    ///     assert!(output.status.success());
+    ///     assert_eq!(String::from_utf8(output.stdout).unwrap(), "TAURI");
+    ///     Ok(())
+    ///   });
     /// ```
     pub async fn output(self) -> crate::Result<Output> {
         let (mut rx, _child) = self.spawn()?;
@@ -387,7 +400,7 @@ mod tests {
     #[cfg(not(windows))]
     #[test]
     fn test_cmd_spawn_output() {
-        let cmd = Command::new("cat").args(["test/api/test.txt"]);
+        let cmd = Command::new("cat").args(["test/test.txt"]);
         let (mut rx, _) = cmd.spawn().unwrap();
 
         tauri::async_runtime::block_on(async move {
@@ -408,7 +421,7 @@ mod tests {
     #[cfg(not(windows))]
     #[test]
     fn test_cmd_spawn_raw_output() {
-        let cmd = Command::new("cat").args(["test/api/test.txt"]);
+        let cmd = Command::new("cat").args(["test/test.txt"]);
         let (mut rx, _) = cmd.spawn().unwrap();
 
         tauri::async_runtime::block_on(async move {
@@ -430,7 +443,7 @@ mod tests {
     #[test]
     // test the failure case
     fn test_cmd_spawn_fail() {
-        let cmd = Command::new("cat").args(["test/api/"]);
+        let cmd = Command::new("cat").args(["test/"]);
         let (mut rx, _) = cmd.spawn().unwrap();
 
         tauri::async_runtime::block_on(async move {
@@ -442,7 +455,7 @@ mod tests {
                     CommandEvent::Stderr(line) => {
                         assert_eq!(
                             String::from_utf8(line).unwrap(),
-                            "cat: test/api/: Is a directory"
+                            "cat: test/: Is a directory"
                         );
                     }
                     _ => {}
@@ -455,7 +468,7 @@ mod tests {
     #[test]
     // test the failure case (raw encoding)
     fn test_cmd_spawn_raw_fail() {
-        let cmd = Command::new("cat").args(["test/api/"]);
+        let cmd = Command::new("cat").args(["test/"]);
         let (mut rx, _) = cmd.spawn().unwrap();
 
         tauri::async_runtime::block_on(async move {
@@ -467,7 +480,7 @@ mod tests {
                     CommandEvent::Stderr(line) => {
                         assert_eq!(
                             String::from_utf8(line).unwrap(),
-                            "cat: test/api/: Is a directory"
+                            "cat: test/: Is a directory"
                         );
                     }
                     _ => {}
@@ -479,7 +492,7 @@ mod tests {
     #[cfg(not(windows))]
     #[test]
     fn test_cmd_output_output() {
-        let cmd = Command::new("cat").args(["test/api/test.txt"]);
+        let cmd = Command::new("cat").args(["test/test.txt"]);
         let output = tauri::async_runtime::block_on(cmd.output()).unwrap();
 
         assert_eq!(String::from_utf8(output.stderr).unwrap(), "");
@@ -492,13 +505,13 @@ mod tests {
     #[cfg(not(windows))]
     #[test]
     fn test_cmd_output_output_fail() {
-        let cmd = Command::new("cat").args(["test/api/"]);
+        let cmd = Command::new("cat").args(["test/"]);
         let output = tauri::async_runtime::block_on(cmd.output()).unwrap();
 
         assert_eq!(String::from_utf8(output.stdout).unwrap(), "");
         assert_eq!(
             String::from_utf8(output.stderr).unwrap(),
-            "cat: test/api/: Is a directory\n"
+            "cat: test/: Is a directory\n"
         );
     }
 }

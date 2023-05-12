@@ -38,12 +38,12 @@ impl Scope {
 
 #[cfg(test)]
 mod tests {
-    use tauri_utils::config::HttpAllowlistScope;
+    use tauri::utils::config::HttpAllowlistScope;
 
     #[test]
     fn is_allowed() {
         // plain URL
-        let scope = super::Scope::for_http_api(&HttpAllowlistScope(vec!["http://localhost:8080"
+        let scope = super::Scope::new(&HttpAllowlistScope(vec!["http://localhost:8080"
             .parse()
             .unwrap()]));
         assert!(scope.is_allowed(&"http://localhost:8080".parse().unwrap()));
@@ -56,10 +56,9 @@ mod tests {
         assert!(!scope.is_allowed(&"http://local:8080".parse().unwrap()));
 
         // URL with fixed path
-        let scope =
-            super::Scope::for_http_api(&HttpAllowlistScope(vec!["http://localhost:8080/file.png"
-                .parse()
-                .unwrap()]));
+        let scope = super::Scope::new(&HttpAllowlistScope(vec!["http://localhost:8080/file.png"
+            .parse()
+            .unwrap()]));
 
         assert!(scope.is_allowed(&"http://localhost:8080/file.png".parse().unwrap()));
 
@@ -68,25 +67,22 @@ mod tests {
         assert!(!scope.is_allowed(&"http://localhost:8080/file.png/other.jpg".parse().unwrap()));
 
         // URL with glob pattern
-        let scope =
-            super::Scope::for_http_api(&HttpAllowlistScope(vec!["http://localhost:8080/*.png"
-                .parse()
-                .unwrap()]));
+        let scope = super::Scope::new(&HttpAllowlistScope(vec!["http://localhost:8080/*.png"
+            .parse()
+            .unwrap()]));
 
         assert!(scope.is_allowed(&"http://localhost:8080/file.png".parse().unwrap()));
         assert!(scope.is_allowed(&"http://localhost:8080/assets/file.png".parse().unwrap()));
 
         assert!(!scope.is_allowed(&"http://localhost:8080/file.jpeg".parse().unwrap()));
 
-        let scope =
-            super::Scope::for_http_api(&HttpAllowlistScope(vec!["http://*".parse().unwrap()]));
+        let scope = super::Scope::new(&HttpAllowlistScope(vec!["http://*".parse().unwrap()]));
 
         assert!(scope.is_allowed(&"http://something.else".parse().unwrap()));
         assert!(!scope.is_allowed(&"http://something.else/path/to/file".parse().unwrap()));
         assert!(!scope.is_allowed(&"https://something.else".parse().unwrap()));
 
-        let scope =
-            super::Scope::for_http_api(&HttpAllowlistScope(vec!["http://**".parse().unwrap()]));
+        let scope = super::Scope::new(&HttpAllowlistScope(vec!["http://**".parse().unwrap()]));
 
         assert!(scope.is_allowed(&"http://something.else".parse().unwrap()));
         assert!(scope.is_allowed(&"http://something.else/path/to/file".parse().unwrap()));
