@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { appWindow } from "@tauri-apps/api/window";
+import { appWindow } from "tauri-plugin-window-api";
 
 interface ProgressPayload {
   id: number;

@@ -22,7 +22,8 @@
     "tauri-plugin-os-api": "0.0.0",
     "tauri-plugin-process-api": "0.0.0",
     "tauri-plugin-shell-api": "0.0.0",
-    "tauri-plugin-updater-api": "0.0.0"
+    "tauri-plugin-updater-api": "0.0.0",
+    "tauri-plugin-window-api": "0.0.0"
   },
   "devDependencies": {
     "@iconify-json/codicon": "^1.1.10",
