@@ -9,8 +9,8 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+use crate::config::FsScope;
 pub use glob::Pattern;
-use tauri::utils::config::FsAllowlistScope;
 use uuid::Uuid;
 
 use crate::{Manager, Runtime};
@@ -83,7 +83,7 @@ impl Scope {
     /// Creates a new scope from a `FsAllowlistScope` configuration.
     pub(crate) fn new<R: Runtime, M: Manager<R>>(
         manager: &M,
-        scope: &FsAllowlistScope,
+        scope: &FsScope,
     ) -> crate::Result<Self> {
         let mut allowed_patterns = HashSet::new();
         for path in scope.allowed_paths() {

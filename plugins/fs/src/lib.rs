@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use config::FsScope;
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    utils::config::FsAllowlistScope,
     Manager, Runtime,
 };
 
@@ -50,7 +50,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
             commands::metadata
         ])
         .setup(|app: &tauri::AppHandle<R>, api| {
-            let default_scope = FsAllowlistScope::default();
+            let default_scope = FsScope::default();
             app.manage(Scope::new(
                 app,
                 api.config()
