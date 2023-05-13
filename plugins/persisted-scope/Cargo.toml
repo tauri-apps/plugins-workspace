@@ -17,6 +17,4 @@ log.workspace = true
 thiserror.workspace = true
 aho-corasick = "1.0"
 bincode = "1"
-
-[features]
-protocol-asset = [ "tauri/protocol-asset" ]
+tauri-plugin-fs = { path = "../fs", version = "0.0.0" }

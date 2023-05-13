@@ -10,6 +10,9 @@ pub enum Error {
     PathForbidden(PathBuf),
     #[error("failed to resolve path: {0}")]
     CannotResolvePath(tauri::path::Error),
+    /// Invalid glob pattern.
+    #[error("invalid glob pattern: {0}")]
+    GlobPattern(#[from] glob::PatternError),
 }
 
 impl Serialize for Error {

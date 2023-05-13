@@ -11,12 +11,11 @@ use config::{Arg, Config};
 pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 
-// TODO: use PluginApi#app when 2.0.0-alpha.9 is released
-pub struct Cli<R: Runtime>(PluginApi<R, Config>, AppHandle<R>);
+pub struct Cli<R: Runtime>(PluginApi<R, Config>);
 
 impl<R: Runtime> Cli<R> {
     pub fn matches(&self) -> Result<parser::Matches> {
-        parser::get_matches(self.0.config(), self.1.package_info())
+        parser::get_matches(self.0.config(), self.0.app().package_info())
     }
 }
 
@@ -39,7 +38,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Config> {
     Builder::new("cli")
         .invoke_handler(tauri::generate_handler![cli_matches])
         .setup(|app, api| {
-            app.manage(Cli(api, app.clone()));
+            app.manage(Cli(api));
             Ok(())
         })
         .build()

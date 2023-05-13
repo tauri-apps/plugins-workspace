@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-tauri = { workspace = true, features = ["updater", "fs-extract-api"] }
+tauri.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
@@ -23,6 +23,10 @@ percent-encoding = "2"
 semver = { version = "1", features = [ "serde" ] }
 futures-util = "0.3"
 tempfile = "3"
+flate2 = "1"
+tar = "0.4"
+ignore = "0.4"
+zip = { version = "0.6", default-features = false }
 
 [dev-dependencies]
 mockito = "0.31"

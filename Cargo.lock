@@ -4960,15 +4960,13 @@ dependencies = [
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.8"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#9a79dc085870e0c1a5df13481ff271b8c6cc3b78"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#6d25c4d07fcf18c2a19ac4faa7d9bedd96d1a75f"
 dependencies = [
  "anyhow",
  "bytes 1.4.0",
  "cocoa",
  "dirs-next",
  "embed_plist",
- "encoding_rs",
- "flate2",
  "futures-util",
  "glib",
  "glob",
@@ -4976,7 +4974,6 @@ dependencies = [
  "heck 0.4.1",
  "http",
  "ico 0.2.0",
- "ignore",
  "infer 0.9.0",
  "jni",
  "libc",
@@ -4995,7 +4992,6 @@ dependencies = [
  "serialize-to-javascript",
  "state",
  "swift-rs",
- "tar",
  "tauri-build",
  "tauri-macros",
  "tauri-runtime",
@@ -5003,24 +4999,21 @@ dependencies = [
  "tauri-utils",
  "tempfile",
  "thiserror",
- "time 0.3.20",
  "tokio",
  "url",
  "uuid",
  "webkit2gtk",
  "webview2-com",
  "windows 0.44.0",
- "zip",
 ]
 
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#9a79dc085870e0c1a5df13481ff271b8c6cc3b78"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#6d25c4d07fcf18c2a19ac4faa7d9bedd96d1a75f"
 dependencies = [
  "anyhow",
  "cargo_toml",
- "filetime",
  "heck 0.4.1",
  "json-patch",
  "quote",
@@ -5037,7 +5030,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#9a79dc085870e0c1a5df13481ff271b8c6cc3b78"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#6d25c4d07fcf18c2a19ac4faa7d9bedd96d1a75f"
 dependencies = [
  "base64 0.21.0",
  "brotli",
@@ -5062,7 +5055,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#9a79dc085870e0c1a5df13481ff271b8c6cc3b78"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#6d25c4d07fcf18c2a19ac4faa7d9bedd96d1a75f"
 dependencies = [
  "heck 0.4.1",
  "proc-macro2",
@@ -5147,6 +5140,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin-fs",
  "thiserror",
 ]
 
@@ -5155,9 +5149,11 @@ name = "tauri-plugin-fs"
 version = "0.0.0"
 dependencies = [
  "anyhow",
+ "glob",
  "serde",
  "tauri",
  "thiserror",
+ "uuid",
 ]
 
 [[package]]
@@ -5198,6 +5194,7 @@ dependencies = [
  "serde_json",
  "serde_repr",
  "tauri",
+ "tauri-plugin-fs",
  "thiserror",
 ]
 
@@ -5273,6 +5270,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "tauri-plugin-fs",
  "thiserror",
 ]
 
@@ -5373,8 +5371,10 @@ version = "0.0.0"
 dependencies = [
  "base64 0.21.0",
  "dirs-next",
+ "flate2",
  "futures-util",
  "http",
+ "ignore",
  "minisign-verify",
  "mockito",
  "percent-encoding",
@@ -5382,6 +5382,7 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
+ "tar",
  "tauri",
  "tempfile",
  "thiserror",
@@ -5389,6 +5390,7 @@ dependencies = [
  "tokio",
  "tokio-test",
  "url",
+ "zip",
 ]
 
 [[package]]
@@ -5447,7 +5449,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "0.13.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#9a79dc085870e0c1a5df13481ff271b8c6cc3b78"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#6d25c4d07fcf18c2a19ac4faa7d9bedd96d1a75f"
 dependencies = [
  "gtk",
  "http",
@@ -5461,14 +5463,13 @@ dependencies = [
  "thiserror",
  "url",
  "uuid",
- "webview2-com",
  "windows 0.44.0",
 ]
 
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.13.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#9a79dc085870e0c1a5df13481ff271b8c6cc3b78"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#6d25c4d07fcf18c2a19ac4faa7d9bedd96d1a75f"
 dependencies = [
  "cocoa",
  "gtk",
@@ -5488,7 +5489,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=next#9a79dc085870e0c1a5df13481ff271b8c6cc3b78"
+source = "git+https://github.com/tauri-apps/tauri?branch=next#6d25c4d07fcf18c2a19ac4faa7d9bedd96d1a75f"
 dependencies = [
  "aes-gcm 0.10.1",
  "brotli",

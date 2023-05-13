@@ -7,24 +7,29 @@
 use tauri_plugin_updater::UpdaterExt;
 
 fn main() {
+    #[allow(unused_mut)]
     let mut context = tauri::generate_context!();
+
+    let mut updater = tauri_plugin_updater::Builder::new();
     if std::env::var("TARGET").unwrap_or_default() == "nsis" {
         // /D sets the default installation directory ($INSTDIR),
         // overriding InstallDir and InstallDirRegKey.
         // It must be the last parameter used in the command line and must not contain any quotes, even if the path contains spaces.
         // Only absolute paths are supported.
         // NOTE: we only need this because this is an integration test and we don't want to install the app in the programs folder
-        context.config_mut().tauri.updater.windows.installer_args = vec![format!(
+        // TODO mutate plugin config
+        updater = updater.installer_args(vec![format!(
             "/D={}",
             tauri::utils::platform::current_exe()
                 .unwrap()
                 .parent()
                 .unwrap()
                 .display()
-        )];
+        )]);
     }
+
     tauri::Builder::default()
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(updater.build())
         .setup(|app| {
             let handle = app.handle();
             tauri::async_runtime::spawn(async move {

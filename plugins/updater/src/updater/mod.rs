@@ -12,6 +12,8 @@
 //! ```
 
 mod core;
+mod extract;
+mod move_file;
 
 use std::time::Duration;
 
@@ -23,7 +25,7 @@ pub use self::core::{DownloadEvent, RemoteRelease};
 
 use tauri::{AppHandle, Manager, Runtime};
 
-use crate::Result;
+use crate::{Result, UpdaterState};
 
 /// Gets the target string used on the updater.
 pub fn target() -> Option<String> {
@@ -276,7 +278,7 @@ impl<R: Runtime> UpdateResponse<R> {
         // Linux we replace the AppImage by launching a new install, it start a new AppImage instance, so we're closing the previous. (the process stop here)
         self.update
             .download_and_install(
-                self.update.app.config().tauri.updater.pubkey.clone(),
+                self.update.app.config().tauri.bundle.updater.pubkey.clone(),
                 on_event,
             )
             .await
@@ -285,14 +287,13 @@ impl<R: Runtime> UpdateResponse<R> {
 
 /// Initializes the [`UpdateBuilder`] using the app configuration.
 pub fn builder<R: Runtime>(handle: AppHandle<R>) -> UpdateBuilder<R> {
-    let updater_config = &handle.config().tauri.updater;
     let package_info = handle.package_info().clone();
 
     // prepare our endpoints
-    let endpoints = updater_config
+    let endpoints = handle
+        .state::<UpdaterState>()
+        .config
         .endpoints
-        .as_ref()
-        .expect("Something wrong with endpoints")
         .iter()
         .map(|e| e.to_string())
         .collect::<Vec<String>>();

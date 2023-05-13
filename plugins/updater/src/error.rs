@@ -78,6 +78,12 @@ pub enum Error {
     #[cfg(target_os = "linux")]
     #[error("temp directory is not on the same mount point as the AppImage")]
     TempDirNotOnSameMountPoint,
+    /// The path StripPrefixError error.
+    #[error("Path Error: {0}")]
+    PathPrefix(#[from] std::path::StripPrefixError),
+    /// Ignore error.
+    #[error("failed to walkdir: {0}")]
+    Ignore(#[from] ignore::Error),
 }
 
 impl Serialize for Error {

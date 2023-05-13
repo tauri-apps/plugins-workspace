@@ -21,18 +21,19 @@
         "wix": {
           "skipWebviewInstall": true
         }
+      },
+      "updater": {
+        "active": true,
+        "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE5QzMxNjYwNTM5OEUwNTgKUldSWTRKaFRZQmJER1h4d1ZMYVA3dnluSjdpN2RmMldJR09hUFFlZDY0SlFqckkvRUJhZDJVZXAK",
+        "windows": {
+          "installMode": "quiet"
+        }
       }
-    },
-    "allowlist": {
-      "all": false
-    },
+    }
+  },
+  "plugins": {
     "updater": {
-      "active": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE5QzMxNjYwNTM5OEUwNTgKUldSWTRKaFRZQmJER1h4d1ZMYVA3dnluSjdpN2RmMldJR09hUFFlZDY0SlFqckkvRUJhZDJVZXAK",
-      "endpoints": ["http://localhost:3007"],
-      "windows": {
-        "installMode": "quiet"
-      }
+      "endpoints": ["http://localhost:3007"]
     }
   }
 }

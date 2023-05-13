@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use crate::config::HttpAllowlistScope;
 use glob::Pattern;
 use reqwest::Url;
-use tauri::utils::config::HttpAllowlistScope;
 
 /// Scope for filesystem access.
 #[derive(Debug, Clone)]
@@ -38,7 +38,7 @@ impl Scope {
 
 #[cfg(test)]
 mod tests {
-    use tauri::utils::config::HttpAllowlistScope;
+    use crate::config::HttpAllowlistScope;
 
     #[test]
     fn is_allowed() {

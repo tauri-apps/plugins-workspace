@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+#[cfg(desktop)]
+use super::{
+    extract::{ArchiveFormat, Extract},
+    move_file::Move,
+};
 use crate::{Error, Result};
 use base64::Engine;
 use futures_util::StreamExt;
@@ -13,8 +18,6 @@ use minisign_verify::{PublicKey, Signature};
 use reqwest::ClientBuilder;
 use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
-#[cfg(desktop)]
-use tauri::api::file::{ArchiveFormat, Extract, Move};
 use tauri::utils::{platform::current_exe, Env};
 use tauri::{AppHandle, Manager, Runtime};
 use time::OffsetDateTime;
@@ -36,7 +39,7 @@ use std::{
 use std::ffi::OsStr;
 
 #[cfg(all(desktop, not(target_os = "windows")))]
-use tauri::api::file::Compression;
+use super::extract::Compression;
 
 #[cfg(target_os = "windows")]
 use std::{
@@ -607,6 +610,7 @@ impl<R: Runtime> Update<R> {
                 &self.extract_path,
                 self.with_elevated_task,
                 &self.app.config(),
+                &self.app.state::<UpdaterState>().config,
             )?;
             #[cfg(not(target_os = "windows"))]
             copy_files_and_run(archive_buffer, &self.extract_path)?;
@@ -668,7 +672,7 @@ fn copy_files_and_run<R: Read + Seek>(archive_buffer: R, extract_path: &Path) ->
                             // if something went wrong during the extraction, we should restore previous app
                             if let Err(err) = entry.extract(extract_path) {
                                 Move::from_source(tmp_app_image).to_dest(extract_path)?;
-                                return Err(tauri::api::Error::Extract(err.to_string()));
+                                return Err(err);
                             }
                             // early finish we have everything we need here
                             return Ok(true);
@@ -706,6 +710,7 @@ fn copy_files_and_run<R: Read + Seek>(
     _extract_path: &Path,
     with_elevated_task: bool,
     config: &tauri::Config,
+    updater_config: &crate::Config,
 ) -> Result<()> {
     // FIXME: We need to create a memory buffer with the MSI and then run it.
     //        (instead of extracting the MSI to a temp path)
@@ -733,11 +738,11 @@ fn copy_files_and_run<R: Read + Seek>(
             // Run the EXE
             let mut installer = Command::new(found_path);
             if tauri::utils::config::WindowsUpdateInstallMode::Quiet
-                == config.tauri.updater.windows.install_mode
+                == config.tauri.bundle.updater.install_mode
             {
                 installer.arg("/S");
             }
-            installer.args(&config.tauri.updater.windows.installer_args);
+            installer.args(&updater_config.installer_args);
 
             installer.spawn().expect("installer failed to start");
 
@@ -793,17 +798,17 @@ fn copy_files_and_run<R: Read + Seek>(
             msi_path_arg.push(&found_path);
             msi_path_arg.push("\"\"\"");
 
-            let mut msiexec_args = config
+            let mut msiexec_args = updater_config
                 .tauri
+                .bundle
                 .updater
-                .windows
                 .install_mode
                 .clone()
                 .msiexec_args()
                 .iter()
                 .map(|p| p.to_string())
                 .collect::<Vec<String>>();
-            msiexec_args.extend(config.tauri.updater.windows.installer_args.clone());
+            msiexec_args.extend(updater_config.installer_args.clone());
 
             // run the installer and relaunch the application
             let system_root = std::env::var("SYSTEMROOT");
@@ -890,7 +895,7 @@ fn copy_files_and_run<R: Read + Seek>(archive_buffer: R, extract_path: &Path) ->
                 }
             }
             Move::from_source(tmp_dir.path()).to_dest(extract_path)?;
-            return Err(tauri::api::Error::Extract(err.to_string()));
+            return Err(err);
         }
 
         extracted_files.push(extraction_path);

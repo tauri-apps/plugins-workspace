@@ -10,6 +10,7 @@ serde.workspace = true
 serde_json.workspace = true
 tauri.workspace = true
 thiserror.workspace = true
+tauri-plugin-fs = { path = "../fs", version = "0.0.0" }
 glob = "0.3"
 rand = "0.8"
 bytes = { version = "1", features = [ "serde" ] }

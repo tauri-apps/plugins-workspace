@@ -1,8 +1,9 @@
+use crate::Scope;
 use anyhow::Context;
 use serde::{Deserialize, Serialize, Serializer};
 use tauri::{
     path::{BaseDirectory, SafePathBuf},
-    FsScope, Manager, Runtime, Window,
+    Manager, Runtime, Window,
 };
 
 #[cfg(unix)]
@@ -16,7 +17,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{Error, Result};
+use crate::{Error, FsExt, Result};
 
 #[derive(Debug, thiserror::Error)]
 pub enum CommandError {
@@ -120,7 +121,7 @@ pub fn write_file<R: Runtime>(
 
 #[derive(Clone, Copy)]
 struct ReadDirOptions<'a> {
-    pub scope: Option<&'a FsScope>,
+    pub scope: Option<&'a Scope>,
 }
 
 #[derive(Debug, Serialize)]
@@ -189,7 +190,7 @@ pub fn read_dir<R: Runtime>(
         &resolved_path,
         recursive,
         ReadDirOptions {
-            scope: Some(&window.fs_scope()),
+            scope: Some(window.fs_scope()),
         },
     )
     .with_context(|| format!("path: {}", resolved_path.display()))

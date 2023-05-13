@@ -6,6 +6,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 use tauri::{command, Manager, Runtime, State, Window};
+use tauri_plugin_fs::FsExt;
 
 use crate::{Dialog, FileDialogBuilder, FileResponse, MessageDialogKind, Result};
 
@@ -114,16 +115,18 @@ pub(crate) async fn open<R: Runtime>(
                 let folders = dialog_builder.blocking_pick_folders();
                 if let Some(folders) = &folders {
                     for folder in folders {
-                        window
-                            .fs_scope()
-                            .allow_directory(folder, options.recursive)?;
+                        if let Some(s) = window.try_fs_scope() {
+                            s.allow_directory(folder, options.recursive)?;
+                        }
                     }
                 }
                 OpenResponse::Folders(folders)
             } else {
                 let folder = dialog_builder.blocking_pick_folder();
                 if let Some(path) = &folder {
-                    window.fs_scope().allow_directory(path, options.recursive)?;
+                    if let Some(s) = window.try_fs_scope() {
+                        s.allow_directory(path, options.recursive)?;
+                    }
                 }
                 OpenResponse::Folder(folder)
             }
@@ -134,14 +137,24 @@ pub(crate) async fn open<R: Runtime>(
         let files = dialog_builder.blocking_pick_files();
         if let Some(files) = &files {
             for file in files {
-                window.fs_scope().allow_file(&file.path)?;
+                if let Some(s) = window.try_fs_scope() {
+                    s.allow_file(&file.path)?;
+                }
+                window
+                    .state::<tauri::scope::Scopes>()
+                    .allow_file(&file.path)?;
             }
         }
         OpenResponse::Files(files)
     } else {
         let file = dialog_builder.blocking_pick_file();
         if let Some(file) = &file {
-            window.fs_scope().allow_file(&file.path)?;
+            if let Some(s) = window.try_fs_scope() {
+                s.allow_file(&file.path)?;
+            }
+            window
+                .state::<tauri::scope::Scopes>()
+                .allow_file(&file.path)?;
         }
         OpenResponse::File(file)
     };
@@ -177,7 +190,10 @@ pub(crate) async fn save<R: Runtime>(
 
         let path = dialog_builder.blocking_save_file();
         if let Some(p) = &path {
-            window.fs_scope().allow_file(p)?;
+            if let Some(s) = window.try_fs_scope() {
+                s.allow_file(p)?;
+            }
+            window.state::<tauri::scope::Scopes>().allow_file(p)?;
         }
 
         Ok(path)

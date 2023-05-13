@@ -6,15 +6,18 @@ use tauri::{
 use tokio::sync::Mutex;
 
 mod commands;
+mod config;
 mod error;
 mod updater;
 
+pub use config::Config;
 pub use error::Error;
 pub use updater::*;
 pub type Result<T> = std::result::Result<T, Error>;
 
 struct UpdaterState {
     target: Option<String>,
+    config: Config,
 }
 
 struct PendingUpdate<R: Runtime>(Mutex<Option<UpdateResponse<R>>>);
@@ -22,6 +25,7 @@ struct PendingUpdate<R: Runtime>(Mutex<Option<UpdateResponse<R>>>);
 #[derive(Default)]
 pub struct Builder {
     target: Option<String>,
+    installer_args: Option<Vec<String>>,
 }
 
 /// Extension trait to use the updater on [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`].
@@ -60,11 +64,26 @@ impl Builder {
         self
     }
 
-    pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
+    pub fn installer_args<I, S>(mut self, args: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        self.installer_args
+            .replace(args.into_iter().map(Into::into).collect());
+        self
+    }
+
+    pub fn build<R: Runtime>(self) -> TauriPlugin<R, Config> {
         let target = self.target;
-        PluginBuilder::<R>::new("updater")
-            .setup(move |app, _api| {
-                app.manage(UpdaterState { target });
+        let installer_args = self.installer_args;
+        PluginBuilder::<R, Config>::new("updater")
+            .setup(move |app, api| {
+                let mut config = api.config().clone();
+                if let Some(installer_args) = installer_args {
+                    config.installer_args = installer_args;
+                }
+                app.manage(UpdaterState { target, config });
                 app.manage(PendingUpdate::<R>(Default::default()));
                 Ok(())
             })
