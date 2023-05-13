@@ -51,44 +51,44 @@
       }
     },
     "fs": {
-        "scope": {
-          "allow": ["$APPDATA/db/**", "$DOWNLOAD/**", "$RESOURCE/**"],
-          "deny": ["$APPDATA/db/*.stronghold"]
-        }
-      },
-      "shell": {
-        "open": true,
-        "scope": [
-          {
-            "name": "sh",
-            "cmd": "sh",
-            "args": [
-              "-c",
-              {
-                "validator": "\\S+"
-              }
-            ]
-          },
-          {
-            "name": "cmd",
-            "cmd": "cmd",
-            "args": [
-              "/C",
-              {
-                "validator": "\\S+"
-              }
-            ]
-          }
-        ]
-      },
-      "http": {
-        "scope": ["http://localhost:3003"]
-      },
-      "updater": {
-        "endpoints": [
-          "https://tauri-update-server.vercel.app/update/{{target}}/{{current_version}}"
-        ]
+      "scope": {
+        "allow": ["$APPDATA/db/**", "$DOWNLOAD/**", "$RESOURCE/**"],
+        "deny": ["$APPDATA/db/*.stronghold"]
       }
+    },
+    "shell": {
+      "open": true,
+      "scope": [
+        {
+          "name": "sh",
+          "cmd": "sh",
+          "args": [
+            "-c",
+            {
+              "validator": "\\S+"
+            }
+          ]
+        },
+        {
+          "name": "cmd",
+          "cmd": "cmd",
+          "args": [
+            "/C",
+            {
+              "validator": "\\S+"
+            }
+          ]
+        }
+      ]
+    },
+    "http": {
+      "scope": ["http://localhost:3003"]
+    },
+    "updater": {
+      "endpoints": [
+        "https://tauri-update-server.vercel.app/update/{{target}}/{{current_version}}"
+      ]
+    }
   },
   "tauri": {
     "pattern": {
