@@ -12,8 +12,7 @@ pub fn name<R: Runtime>(app: AppHandle<R>) -> String {
 
 #[tauri::command]
 pub fn tauri_version() -> &'static str {
-    // TODO: return actual tauri version with `tauri::VERSION`
-    env!("CARGO_PKG_VERSION")
+    tauri::VERSION
 }
 
 #[tauri::command]
