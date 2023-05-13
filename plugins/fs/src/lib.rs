@@ -57,7 +57,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
                     .as_ref()
                     .map(|c| &c.scope)
                     .unwrap_or(&default_scope),
-            ));
+            )?);
             Ok(())
         })
         .on_event(|app, event| {
