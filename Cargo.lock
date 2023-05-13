@@ -4960,7 +4960,7 @@ dependencies = [
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.8"
-source = "git+https://github.com/tauri-apps/tauri?branch=refactor/cleanup#04735516d5b459421e49755d4821a0773afb6969"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/cleanup#cbfbff9c0f53035b6adea57788d2b8c0425377f1"
 dependencies = [
  "anyhow",
  "bytes 1.4.0",
@@ -5010,7 +5010,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=refactor/cleanup#04735516d5b459421e49755d4821a0773afb6969"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/cleanup#cbfbff9c0f53035b6adea57788d2b8c0425377f1"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -5030,7 +5030,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=refactor/cleanup#04735516d5b459421e49755d4821a0773afb6969"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/cleanup#cbfbff9c0f53035b6adea57788d2b8c0425377f1"
 dependencies = [
  "base64 0.21.0",
  "brotli",
@@ -5055,7 +5055,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=refactor/cleanup#04735516d5b459421e49755d4821a0773afb6969"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/cleanup#cbfbff9c0f53035b6adea57788d2b8c0425377f1"
 dependencies = [
  "heck 0.4.1",
  "proc-macro2",
@@ -5449,7 +5449,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "0.13.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=refactor/cleanup#04735516d5b459421e49755d4821a0773afb6969"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/cleanup#cbfbff9c0f53035b6adea57788d2b8c0425377f1"
 dependencies = [
  "gtk",
  "http",
@@ -5469,7 +5469,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.13.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=refactor/cleanup#04735516d5b459421e49755d4821a0773afb6969"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/cleanup#cbfbff9c0f53035b6adea57788d2b8c0425377f1"
 dependencies = [
  "cocoa",
  "gtk",
@@ -5489,7 +5489,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=refactor/cleanup#04735516d5b459421e49755d4821a0773afb6969"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/cleanup#cbfbff9c0f53035b6adea57788d2b8c0425377f1"
 dependencies = [
  "aes-gcm 0.10.1",
  "brotli",

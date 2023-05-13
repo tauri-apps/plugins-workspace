@@ -672,7 +672,7 @@ fn copy_files_and_run<R: Read + Seek>(archive_buffer: R, extract_path: &Path) ->
                             // if something went wrong during the extraction, we should restore previous app
                             if let Err(err) = entry.extract(extract_path) {
                                 Move::from_source(tmp_app_image).to_dest(extract_path)?;
-                                return Err(tauri::api::Error::Extract(err.to_string()));
+                                return Err(err);
                             }
                             // early finish we have everything we need here
                             return Ok(true);
