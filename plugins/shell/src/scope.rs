@@ -159,6 +159,7 @@ impl Scope {
     }
 
     /// Validates argument inputs and creates a Tauri sidecar [`Command`].
+    #[allow(dead_code)]
     pub fn prepare_sidecar(
         &self,
         command_name: &str,
@@ -169,11 +170,13 @@ impl Scope {
     }
 
     /// Validates argument inputs and creates a Tauri [`Command`].
+    #[allow(dead_code)]
     pub fn prepare(&self, command_name: &str, args: ExecuteArgs) -> Result<Command, Error> {
         self._prepare(command_name, args, None)
     }
 
     /// Validates argument inputs and creates a Tauri [`Command`].
+    #[allow(dead_code)]
     pub fn _prepare(
         &self,
         command_name: &str,

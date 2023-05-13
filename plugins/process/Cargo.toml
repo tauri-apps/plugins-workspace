@@ -7,3 +7,7 @@ license.workspace = true
 
 [dependencies]
 tauri.workspace = true
+
+[features]
+allow-exit = []
+allow-restart = []

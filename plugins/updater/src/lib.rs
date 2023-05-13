@@ -88,7 +88,9 @@ impl Builder {
                 Ok(())
             })
             .invoke_handler(tauri::generate_handler![
+                #[cfg(feature = "allow-check")]
                 commands::check,
+                #[cfg(feature = "allow-download-and-install")]
                 commands::download_and_install
             ])
             .build()

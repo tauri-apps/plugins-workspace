@@ -12,3 +12,6 @@ tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
 clap = { version = "4", features = ["string"] }
+
+[features]
+allow-get-matches = []

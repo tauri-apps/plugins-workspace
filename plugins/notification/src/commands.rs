@@ -4,7 +4,7 @@
 
 use tauri::{command, AppHandle, Runtime, State};
 
-use crate::{Notification, NotificationData, PermissionState, Result};
+use crate::{Notification, PermissionState, Result};
 
 #[command]
 pub(crate) async fn is_permission_granted<R: Runtime>(
@@ -19,6 +19,7 @@ pub(crate) async fn is_permission_granted<R: Runtime>(
     }
 }
 
+#[cfg(feature = "allow-request-permission")]
 #[command]
 pub(crate) async fn request_permission<R: Runtime>(
     _app: AppHandle<R>,
@@ -27,11 +28,12 @@ pub(crate) async fn request_permission<R: Runtime>(
     notification.request_permission()
 }
 
+#[cfg(feature = "allow-notify")]
 #[command]
 pub(crate) async fn notify<R: Runtime>(
     _app: AppHandle<R>,
     notification: State<'_, Notification<R>>,
-    options: NotificationData,
+    options: crate::NotificationData,
 ) -> Result<()> {
     let mut builder = notification.builder();
     builder.data = options;

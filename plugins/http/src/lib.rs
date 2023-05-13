@@ -16,8 +16,8 @@ pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 type ClientId = u32;
 
+#[allow(dead_code)]
 pub struct Http<R: Runtime> {
-    #[allow(dead_code)]
     app: AppHandle<R>,
     pub(crate) clients: Mutex<HashMap<ClientId, commands::Client>>,
     pub(crate) scope: scope::Scope,
@@ -38,8 +38,11 @@ impl<R: Runtime, T: Manager<R>> HttpExt<R> for T {
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
     Builder::<R, Option<Config>>::new("http")
         .invoke_handler(tauri::generate_handler![
+            #[cfg(feature = "allow-request")]
             commands::create_client,
+            #[cfg(feature = "allow-request")]
             commands::drop_client,
+            #[cfg(feature = "allow-request")]
             commands::request
         ])
         .setup(|app, api| {

@@ -36,3 +36,5 @@ tokio-test = "0.4.2"
 native-tls = [ "reqwest/native-tls" ]
 native-tls-vendored = [ "reqwest/native-tls-vendored" ]
 rustls-tls = [ "reqwest/rustls-tls" ]
+allow-check = []
+allow-download-and-install = []

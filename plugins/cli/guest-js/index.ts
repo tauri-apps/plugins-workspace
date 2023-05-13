@@ -64,7 +64,7 @@ interface CliMatches {
  * @since 1.0.0
  */
 async function getMatches(): Promise<CliMatches> {
-  return await invoke("plugin:cli|cli_matches");
+  return await invoke("plugin:cli|get_matches");
 }
 
 export type { ArgMatch, SubcommandMatch, CliMatches };

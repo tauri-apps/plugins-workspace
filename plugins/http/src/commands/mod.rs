@@ -1,3 +1,5 @@
+#![allow(unused_imports, dead_code)]
+
 use tauri::{path::SafePathBuf, AppHandle, Runtime, State};
 use tauri_plugin_fs::FsExt;
 
@@ -8,6 +10,7 @@ use client::{Body, ClientBuilder, FilePart, FormPart, HttpRequestBuilder, Respon
 
 pub use client::Client;
 
+#[cfg(feature = "allow-request")]
 #[tauri::command]
 pub async fn create_client<R: Runtime>(
     _app: AppHandle<R>,
@@ -21,6 +24,7 @@ pub async fn create_client<R: Runtime>(
     Ok(id)
 }
 
+#[cfg(feature = "allow-request")]
 #[tauri::command]
 pub async fn drop_client<R: Runtime>(
     _app: AppHandle<R>,
@@ -32,6 +36,7 @@ pub async fn drop_client<R: Runtime>(
     Ok(())
 }
 
+#[cfg(feature = "allow-request")]
 #[tauri::command]
 pub async fn request<R: Runtime>(
     app: AppHandle<R>,

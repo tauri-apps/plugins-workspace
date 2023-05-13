@@ -214,7 +214,9 @@ impl<R: Runtime, T: Manager<R>> crate::NotificationExt<R> for T {
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("notification")
         .invoke_handler(tauri::generate_handler![
+            #[cfg(feature = "allow-notify")]
             commands::notify,
+            #[cfg(feature = "allow-request-permission")]
             commands::request_permission,
             commands::is_permission_granted
         ])

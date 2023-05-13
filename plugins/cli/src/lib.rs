@@ -1,6 +1,6 @@
 use tauri::{
     plugin::{Builder, PluginApi, TauriPlugin},
-    AppHandle, Manager, Runtime, State,
+    Manager, Runtime,
 };
 
 mod config;
@@ -29,14 +29,21 @@ impl<R: Runtime, T: Manager<R>> CliExt<R> for T {
     }
 }
 
+#[cfg(feature = "allow-get-matches")]
 #[tauri::command]
-fn cli_matches<R: Runtime>(_app: AppHandle<R>, cli: State<'_, Cli<R>>) -> Result<parser::Matches> {
+fn get_matches<R: tauri::Runtime>(
+    _app: tauri::AppHandle<R>,
+    cli: tauri::State<'_, Cli<R>>,
+) -> Result<parser::Matches> {
     cli.matches()
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R, Config> {
     Builder::new("cli")
-        .invoke_handler(tauri::generate_handler![cli_matches])
+        .invoke_handler(tauri::generate_handler![
+            #[cfg(feature = "allow-get-matches")]
+            get_matches
+        ])
         .setup(|app, api| {
             app.manage(Cli(api));
             Ok(())

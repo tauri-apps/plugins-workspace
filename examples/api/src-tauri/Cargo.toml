@@ -19,15 +19,15 @@ tiny_http = "0.11"
 log.workspace = true
 tauri-plugin-app = { path = "../../../plugins/app" }
 tauri-plugin-log = { path = "../../../plugins/log" }
-tauri-plugin-fs = { path = "../../../plugins/fs" }
+tauri-plugin-fs = { path = "../../../plugins/fs", features = [] }
 tauri-plugin-clipboard = { path = "../../../plugins/clipboard" }
 tauri-plugin-dialog = { path = "../../../plugins/dialog" }
-tauri-plugin-http = { path = "../../../plugins/http", features = [ "http-multipart" ] }
+tauri-plugin-http = { path = "../../../plugins/http", features = ["http-multipart"] }
 tauri-plugin-notification = { path = "../../../plugins/notification", features = [ "windows7-compat" ] }
 tauri-plugin-os = { path = "../../../plugins/os" }
 tauri-plugin-process = { path = "../../../plugins/process" }
-tauri-plugin-shell = { path = "../../../plugins/shell" }
-tauri-plugin-updater = { path = "../../../plugins/updater" }
+tauri-plugin-shell = { path = "../../../plugins/shell", features = [] }
+tauri-plugin-updater = { path = "../../../plugins/updater", features = [] }
 tauri-plugin-window = { path = "../../../plugins/window" }
 
 [dependencies.tauri]
@@ -42,7 +42,7 @@ features = [
 ]
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
-tauri-plugin-cli = { path = "../../../plugins/cli" }
+tauri-plugin-cli = { path = "../../../plugins/cli", features = ["allow-get-matches"] }
 tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut" }
 
 [target."cfg(target_os = \"windows\")".dependencies]

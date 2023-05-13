@@ -1,3 +1,5 @@
+#![allow(unused_imports, dead_code)]
+
 use crate::{PendingUpdate, Result, UpdaterExt};
 
 use http::header;
@@ -42,6 +44,7 @@ impl<'de> Deserialize<'de> for HeaderMap {
     }
 }
 
+#[cfg(feature = "allow-check")]
 #[tauri::command]
 pub(crate) async fn check<R: Runtime>(
     app: AppHandle<R>,
@@ -85,6 +88,7 @@ pub(crate) struct DownloadProgress {
     content_length: Option<u64>,
 }
 
+#[cfg(feature = "allow-download-and-install")]
 #[tauri::command]
 pub(crate) async fn download_and_install<R: Runtime>(
     _app: AppHandle<R>,

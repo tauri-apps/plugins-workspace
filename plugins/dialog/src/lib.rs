@@ -71,10 +71,15 @@ impl<R: Runtime> Dialog<R> {
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("dialog")
         .invoke_handler(tauri::generate_handler![
+            #[cfg(feature = "allow-open")]
             commands::open,
+            #[cfg(feature = "allow-save")]
             commands::save,
+            #[cfg(feature = "allow-message")]
             commands::message,
+            #[cfg(feature = "allow-ask")]
             commands::ask,
+            #[cfg(feature = "allow-confirm")]
             commands::confirm
         ])
         .setup(|app, api| {

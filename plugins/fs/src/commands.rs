@@ -1,3 +1,5 @@
+#![allow(unused_imports)]
+
 use crate::Scope;
 use anyhow::Context;
 use serde::{Deserialize, Serialize, Serializer};
@@ -6,15 +8,10 @@ use tauri::{
     Manager, Runtime, Window,
 };
 
-#[cfg(unix)]
-use std::os::unix::fs::{MetadataExt, PermissionsExt};
-#[cfg(windows)]
-use std::os::windows::fs::MetadataExt;
 use std::{
-    fs::{self, symlink_metadata, File},
+    fs::{self, File},
     io::Write,
     path::{Path, PathBuf},
-    time::{SystemTime, UNIX_EPOCH},
 };
 
 use crate::{Error, FsExt, Result};
@@ -36,6 +33,7 @@ impl Serialize for CommandError {
     }
 }
 
+#[allow(dead_code)]
 type CommandResult<T> = std::result::Result<T, CommandError>;
 
 /// The options for the directory functions on the file system API.
@@ -57,6 +55,7 @@ pub struct FileOperationOptions {
     pub dir: Option<BaseDirectory>,
 }
 
+#[allow(dead_code)]
 fn resolve_path<R: Runtime>(
     window: &Window<R>,
     path: SafePathBuf,
@@ -77,6 +76,7 @@ fn resolve_path<R: Runtime>(
     }
 }
 
+#[cfg(feature = "allow-read-file")]
 #[tauri::command]
 pub fn read_file<R: Runtime>(
     window: Window<R>,
@@ -89,6 +89,7 @@ pub fn read_file<R: Runtime>(
         .map_err(Into::into)
 }
 
+#[cfg(feature = "allow-read-file")]
 #[tauri::command]
 pub fn read_text_file<R: Runtime>(
     window: Window<R>,
@@ -101,6 +102,7 @@ pub fn read_text_file<R: Runtime>(
         .map_err(Into::into)
 }
 
+#[cfg(feature = "allow-write-file")]
 #[tauri::command]
 pub fn write_file<R: Runtime>(
     window: Window<R>,
@@ -119,84 +121,104 @@ pub fn write_file<R: Runtime>(
         })
 }
 
-#[derive(Clone, Copy)]
-struct ReadDirOptions<'a> {
-    pub scope: Option<&'a Scope>,
-}
+#[cfg(feature = "allow-read-dir")]
+pub use read_dir::*;
 
-#[derive(Debug, Serialize)]
-#[non_exhaustive]
-pub struct DiskEntry {
-    /// The path to the entry.
-    pub path: PathBuf,
-    /// The name of the entry (file name with extension or directory name).
-    pub name: Option<String>,
-    /// The children of this entry if it's a directory.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub children: Option<Vec<DiskEntry>>,
-}
-
-fn read_dir_with_options<P: AsRef<Path>>(
-    path: P,
-    recursive: bool,
-    options: ReadDirOptions<'_>,
-) -> Result<Vec<DiskEntry>> {
-    let mut files_and_dirs: Vec<DiskEntry> = vec![];
-    for entry in fs::read_dir(path)? {
-        let path = entry?.path();
-        let path_as_string = path.display().to_string();
-
-        if let Ok(flag) = path.metadata().map(|m| m.is_dir()) {
-            let is_symlink = symlink_metadata(&path).map(|md| md.is_symlink())?;
-            files_and_dirs.push(DiskEntry {
-                path: path.clone(),
-                children: if flag {
-                    Some(
-                        if recursive
-                            && (!is_symlink
-                                || options.scope.map(|s| s.is_allowed(&path)).unwrap_or(true))
-                        {
-                            read_dir_with_options(&path_as_string, true, options)?
-                        } else {
-                            vec![]
-                        },
-                    )
-                } else {
-                    None
-                },
-                name: path
-                    .file_name()
-                    .map(|name| name.to_string_lossy())
-                    .map(|name| name.to_string()),
-            });
-        }
-    }
-    Result::Ok(files_and_dirs)
-}
-
-#[tauri::command]
-pub fn read_dir<R: Runtime>(
-    window: Window<R>,
-    path: SafePathBuf,
-    options: Option<DirOperationOptions>,
-) -> CommandResult<Vec<DiskEntry>> {
-    let (recursive, dir) = if let Some(options_value) = options {
-        (options_value.recursive, options_value.dir)
-    } else {
-        (false, None)
+#[cfg(feature = "allow-read-dir")]
+mod read_dir {
+    use std::{
+        fs::{self, symlink_metadata},
+        path::{Path, PathBuf},
     };
-    let resolved_path = resolve_path(&window, path, dir)?;
-    read_dir_with_options(
-        &resolved_path,
-        recursive,
-        ReadDirOptions {
-            scope: Some(window.fs_scope()),
-        },
-    )
-    .with_context(|| format!("path: {}", resolved_path.display()))
-    .map_err(Into::into)
+
+    use anyhow::Context;
+    use serde::Serialize;
+    use tauri::{path::SafePathBuf, Runtime, Window};
+
+    use crate::{FsExt, Result, Scope};
+
+    use super::{resolve_path, CommandResult, DirOperationOptions};
+
+    #[derive(Clone, Copy)]
+    struct ReadDirOptions<'a> {
+        pub scope: Option<&'a Scope>,
+    }
+
+    #[derive(Debug, Serialize)]
+    #[non_exhaustive]
+    pub struct DiskEntry {
+        /// The path to the entry.
+        pub path: PathBuf,
+        /// The name of the entry (file name with extension or directory name).
+        pub name: Option<String>,
+        /// The children of this entry if it's a directory.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub children: Option<Vec<DiskEntry>>,
+    }
+
+    fn read_dir_with_options<P: AsRef<Path>>(
+        path: P,
+        recursive: bool,
+        options: ReadDirOptions<'_>,
+    ) -> Result<Vec<DiskEntry>> {
+        let mut files_and_dirs: Vec<DiskEntry> = vec![];
+        for entry in fs::read_dir(path)? {
+            let path = entry?.path();
+            let path_as_string = path.display().to_string();
+
+            if let Ok(flag) = path.metadata().map(|m| m.is_dir()) {
+                let is_symlink = symlink_metadata(&path).map(|md| md.is_symlink())?;
+                files_and_dirs.push(DiskEntry {
+                    path: path.clone(),
+                    children: if flag {
+                        Some(
+                            if recursive
+                                && (!is_symlink
+                                    || options.scope.map(|s| s.is_allowed(&path)).unwrap_or(true))
+                            {
+                                read_dir_with_options(&path_as_string, true, options)?
+                            } else {
+                                vec![]
+                            },
+                        )
+                    } else {
+                        None
+                    },
+                    name: path
+                        .file_name()
+                        .map(|name| name.to_string_lossy())
+                        .map(|name| name.to_string()),
+                });
+            }
+        }
+        Result::Ok(files_and_dirs)
+    }
+
+    #[tauri::command]
+    pub fn read_dir<R: Runtime>(
+        window: Window<R>,
+        path: SafePathBuf,
+        options: Option<DirOperationOptions>,
+    ) -> CommandResult<Vec<DiskEntry>> {
+        let (recursive, dir) = if let Some(options_value) = options {
+            (options_value.recursive, options_value.dir)
+        } else {
+            (false, None)
+        };
+        let resolved_path = resolve_path(&window, path, dir)?;
+        read_dir_with_options(
+            &resolved_path,
+            recursive,
+            ReadDirOptions {
+                scope: Some(window.fs_scope()),
+            },
+        )
+        .with_context(|| format!("path: {}", resolved_path.display()))
+        .map_err(Into::into)
+    }
 }
 
+#[cfg(feature = "allow-copy-file")]
 #[tauri::command]
 pub fn copy_file<R: Runtime>(
     window: Window<R>,
@@ -222,6 +244,7 @@ pub fn copy_file<R: Runtime>(
     Ok(())
 }
 
+#[cfg(feature = "allow-create-dir")]
 #[tauri::command]
 pub fn create_dir<R: Runtime>(
     window: Window<R>,
@@ -245,6 +268,7 @@ pub fn create_dir<R: Runtime>(
     Ok(())
 }
 
+#[cfg(feature = "allow-remove-dir")]
 #[tauri::command]
 pub fn remove_dir<R: Runtime>(
     window: Window<R>,
@@ -268,6 +292,7 @@ pub fn remove_dir<R: Runtime>(
     Ok(())
 }
 
+#[cfg(feature = "allow-remove-file")]
 #[tauri::command]
 pub fn remove_file<R: Runtime>(
     window: Window<R>,
@@ -280,6 +305,7 @@ pub fn remove_file<R: Runtime>(
     Ok(())
 }
 
+#[cfg(feature = "allow-rename-file")]
 #[tauri::command]
 pub fn rename_file<R: Runtime>(
     window: Window<R>,
@@ -300,6 +326,7 @@ pub fn rename_file<R: Runtime>(
     Ok(())
 }
 
+#[cfg(feature = "allow-exists")]
 #[tauri::command]
 pub fn exists<R: Runtime>(
     window: Window<R>,
@@ -310,86 +337,106 @@ pub fn exists<R: Runtime>(
     Ok(resolved_path.exists())
 }
 
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Permissions {
-    readonly: bool,
-    #[cfg(unix)]
-    mode: u32,
-}
+#[cfg(feature = "allow-metadata")]
+pub use metadata::*;
 
-#[cfg(unix)]
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UnixMetadata {
-    dev: u64,
-    ino: u64,
-    mode: u32,
-    nlink: u64,
-    uid: u32,
-    gid: u32,
-    rdev: u64,
-    blksize: u64,
-    blocks: u64,
-}
+#[cfg(feature = "allow-metadata")]
+mod metadata {
+    use std::{
+        path::PathBuf,
+        time::{SystemTime, UNIX_EPOCH},
+    };
 
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Metadata {
-    accessed_at_ms: u64,
-    created_at_ms: u64,
-    modified_at_ms: u64,
-    is_dir: bool,
-    is_file: bool,
-    is_symlink: bool,
-    size: u64,
-    permissions: Permissions,
+    use serde::Serialize;
+
     #[cfg(unix)]
-    #[serde(flatten)]
-    unix: UnixMetadata,
+    use std::os::unix::fs::{MetadataExt, PermissionsExt};
     #[cfg(windows)]
-    file_attributes: u32,
-}
+    use std::os::windows::fs::MetadataExt;
 
-fn system_time_to_ms(time: std::io::Result<SystemTime>) -> u64 {
-    time.map(|t| {
-        let duration_since_epoch = t.duration_since(UNIX_EPOCH).unwrap();
-        duration_since_epoch.as_millis() as u64
-    })
-    .unwrap_or_default()
-}
+    use crate::Result;
 
-#[tauri::command]
-pub async fn metadata(path: PathBuf) -> Result<Metadata> {
-    let metadata = std::fs::metadata(path)?;
-    let file_type = metadata.file_type();
-    let permissions = metadata.permissions();
-    Ok(Metadata {
-        accessed_at_ms: system_time_to_ms(metadata.accessed()),
-        created_at_ms: system_time_to_ms(metadata.created()),
-        modified_at_ms: system_time_to_ms(metadata.modified()),
-        is_dir: file_type.is_dir(),
-        is_file: file_type.is_file(),
-        is_symlink: file_type.is_symlink(),
-        size: metadata.len(),
-        permissions: Permissions {
-            readonly: permissions.readonly(),
-            #[cfg(unix)]
-            mode: permissions.mode(),
-        },
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct Permissions {
+        readonly: bool,
         #[cfg(unix)]
-        unix: UnixMetadata {
-            dev: metadata.dev(),
-            ino: metadata.ino(),
-            mode: metadata.mode(),
-            nlink: metadata.nlink(),
-            uid: metadata.uid(),
-            gid: metadata.gid(),
-            rdev: metadata.rdev(),
-            blksize: metadata.blksize(),
-            blocks: metadata.blocks(),
-        },
+        mode: u32,
+    }
+
+    #[cfg(unix)]
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct UnixMetadata {
+        dev: u64,
+        ino: u64,
+        mode: u32,
+        nlink: u64,
+        uid: u32,
+        gid: u32,
+        rdev: u64,
+        blksize: u64,
+        blocks: u64,
+    }
+
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct Metadata {
+        accessed_at_ms: u64,
+        created_at_ms: u64,
+        modified_at_ms: u64,
+        is_dir: bool,
+        is_file: bool,
+        is_symlink: bool,
+        size: u64,
+        permissions: Permissions,
+        #[cfg(unix)]
+        #[serde(flatten)]
+        unix: UnixMetadata,
         #[cfg(windows)]
-        file_attributes: metadata.file_attributes(),
-    })
+        file_attributes: u32,
+    }
+
+    fn system_time_to_ms(time: std::io::Result<SystemTime>) -> u64 {
+        time.map(|t| {
+            let duration_since_epoch = t.duration_since(UNIX_EPOCH).unwrap();
+            duration_since_epoch.as_millis() as u64
+        })
+        .unwrap_or_default()
+    }
+
+    #[tauri::command]
+    pub async fn metadata(path: PathBuf) -> Result<Metadata> {
+        let metadata = std::fs::metadata(path)?;
+        let file_type = metadata.file_type();
+        let permissions = metadata.permissions();
+        Ok(Metadata {
+            accessed_at_ms: system_time_to_ms(metadata.accessed()),
+            created_at_ms: system_time_to_ms(metadata.created()),
+            modified_at_ms: system_time_to_ms(metadata.modified()),
+            is_dir: file_type.is_dir(),
+            is_file: file_type.is_file(),
+            is_symlink: file_type.is_symlink(),
+            size: metadata.len(),
+            permissions: Permissions {
+                readonly: permissions.readonly(),
+                #[cfg(unix)]
+                mode: permissions.mode(),
+            },
+            #[cfg(unix)]
+            unix: UnixMetadata {
+                dev: metadata.dev(),
+                ino: metadata.ino(),
+                mode: metadata.mode(),
+                nlink: metadata.nlink(),
+                uid: metadata.uid(),
+                gid: metadata.gid(),
+                rdev: metadata.rdev(),
+                blksize: metadata.blksize(),
+                blocks: metadata.blocks(),
+            },
+            #[cfg(windows)]
+            file_attributes: metadata.file_attributes(),
+        })
+    }
 }

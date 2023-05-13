@@ -9,6 +9,7 @@ use reqwest::Url;
 /// Scope for filesystem access.
 #[derive(Debug, Clone)]
 pub struct Scope {
+    #[allow(dead_code)]
     allowed_urls: Vec<Pattern>,
 }
 
@@ -29,6 +30,7 @@ impl Scope {
     }
 
     /// Determines if the given URL is allowed on this scope.
+    #[allow(dead_code)]
     pub fn is_allowed(&self, url: &Url) -> bool {
         self.allowed_urls
             .iter()

@@ -16,3 +16,9 @@ regex = "1"
 open = "4"
 encoding_rs = "0.8"
 os_pipe = "1"
+
+[features]
+allow-execute = []
+allow-stdin-write = []
+allow-kill = []
+allow-open = []

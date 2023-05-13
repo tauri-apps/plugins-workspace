@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+#![allow(unused_imports)]
+
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
@@ -86,6 +88,7 @@ fn set_default_path<R: Runtime>(
     }
 }
 
+#[cfg(feature = "allow-open")]
 #[command]
 pub(crate) async fn open<R: Runtime>(
     window: Window<R>,
@@ -161,6 +164,7 @@ pub(crate) async fn open<R: Runtime>(
     Ok(res)
 }
 
+#[cfg(feature = "allow-save")]
 #[allow(unused_variables)]
 #[command]
 pub(crate) async fn save<R: Runtime>(
@@ -235,6 +239,7 @@ fn message_dialog<R: Runtime>(
     builder.blocking_show()
 }
 
+#[cfg(feature = "allow-message")]
 #[command]
 pub(crate) async fn message<R: Runtime>(
     window: Window<R>,
@@ -255,6 +260,7 @@ pub(crate) async fn message<R: Runtime>(
     ))
 }
 
+#[cfg(feature = "allow-ask")]
 #[command]
 pub(crate) async fn ask<R: Runtime>(
     window: Window<R>,
@@ -276,6 +282,7 @@ pub(crate) async fn ask<R: Runtime>(
     ))
 }
 
+#[cfg(feature = "allow-confirm")]
 #[command]
 pub(crate) async fn confirm<R: Runtime>(
     window: Window<R>,

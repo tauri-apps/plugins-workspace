@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+#![allow(unused_imports)]
+
 use tauri::{command, AppHandle, Runtime, State};
 
 use crate::{ClipKind, Clipboard, ClipboardContents, Result};
 
+#[cfg(feature = "allow-write")]
 #[command]
 pub(crate) async fn write<R: Runtime>(
     _app: AppHandle<R>,
@@ -15,6 +18,7 @@ pub(crate) async fn write<R: Runtime>(
     clipboard.write(data)
 }
 
+#[cfg(feature = "allow-read")]
 #[command]
 pub(crate) async fn read<R: Runtime>(
     _app: AppHandle<R>,

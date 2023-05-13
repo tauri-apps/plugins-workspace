@@ -1,3 +1,5 @@
+#![allow(unused_imports, dead_code)]
+
 use serde::{Deserialize, Serialize, Serializer};
 use tauri::{
     utils::config::WindowConfig, AppHandle, CursorIcon, Icon, Manager, Monitor, PhysicalPosition,
@@ -57,6 +59,7 @@ impl From<IconDto> for Icon {
     }
 }
 
+#[cfg(feature = "allow-create")]
 #[tauri::command]
 pub fn create<R: Runtime>(app: AppHandle<R>, options: WindowConfig) -> Result<()> {
     tauri::window::WindowBuilder::from_config(&app, options).build()?;
@@ -70,6 +73,7 @@ fn get_window<R: Runtime>(window: Window<R>, label: Option<String>) -> Result<Wi
     }
 }
 
+#[allow(unused_macros)]
 macro_rules! getter {
     ($cmd: ident, $ret: ty) => {
         #[tauri::command]
@@ -79,6 +83,7 @@ macro_rules! getter {
     };
 }
 
+#[allow(unused_macros)]
 macro_rules! setter {
     ($cmd: ident) => {
         #[tauri::command]
@@ -99,53 +104,99 @@ macro_rules! setter {
     };
 }
 
+#[cfg(feature = "allow-scale-factor")]
 getter!(scale_factor, f64);
+#[cfg(feature = "allow-inner-position")]
 getter!(inner_position, PhysicalPosition<i32>);
+#[cfg(feature = "allow-outer-position")]
 getter!(outer_position, PhysicalPosition<i32>);
+#[cfg(feature = "allow-inner-size")]
 getter!(inner_size, PhysicalSize<u32>);
+#[cfg(feature = "allow-outer-size")]
 getter!(outer_size, PhysicalSize<u32>);
+#[cfg(feature = "allow-is-fullscreen")]
 getter!(is_fullscreen, bool);
+#[cfg(feature = "allow-is-minimized")]
 getter!(is_minimized, bool);
+#[cfg(feature = "allow-is-maximized")]
 getter!(is_maximized, bool);
+#[cfg(feature = "allow-is-decorated")]
 getter!(is_decorated, bool);
+#[cfg(feature = "allow-is-resizable")]
 getter!(is_resizable, bool);
+#[cfg(feature = "allow-is-visible")]
 getter!(is_visible, bool);
+#[cfg(feature = "allow-title")]
 getter!(title, String);
+#[cfg(feature = "allow-current-monitor")]
 getter!(current_monitor, Option<Monitor>);
+#[cfg(feature = "allow-primary-monitor")]
 getter!(primary_monitor, Option<Monitor>);
+#[cfg(feature = "allow-available-monitors")]
 getter!(available_monitors, Vec<Monitor>);
+#[cfg(feature = "allow-theme")]
 getter!(theme, Theme);
 
+#[cfg(feature = "allow-center")]
 setter!(center);
+#[cfg(feature = "allow-request-user-attention")]
 setter!(request_user_attention, Option<UserAttentionType>);
+#[cfg(feature = "allow-set-resizable")]
 setter!(set_resizable, bool);
+#[cfg(feature = "allow-set-title")]
 setter!(set_title, &str);
+#[cfg(feature = "allow-maximize")]
 setter!(maximize);
+#[cfg(feature = "allow-unmaximize")]
 setter!(unmaximize);
+#[cfg(feature = "allow-minimize")]
 setter!(minimize);
+#[cfg(feature = "allow-unminimize")]
 setter!(unminimize);
+#[cfg(feature = "allow-show")]
 setter!(show);
+#[cfg(feature = "allow-hide")]
 setter!(hide);
+#[cfg(feature = "allow-close")]
 setter!(close);
+#[cfg(feature = "allow-set-decorations")]
 setter!(set_decorations, bool);
+#[cfg(feature = "allow-set-shadow")]
 setter!(set_shadow, bool);
+#[cfg(feature = "allow-set-always-on-top")]
 setter!(set_always_on_top, bool);
+#[cfg(feature = "allow-set-content-protected")]
 setter!(set_content_protected, bool);
+#[cfg(feature = "allow-set-size")]
 setter!(set_size, Size);
+#[cfg(feature = "allow-set-min-size")]
 setter!(set_min_size, Option<Size>);
+#[cfg(feature = "allow-set-max-size")]
 setter!(set_max_size, Option<Size>);
+#[cfg(feature = "allow-set-position")]
 setter!(set_position, Position);
+#[cfg(feature = "allow-set-fullscreen")]
 setter!(set_fullscreen, bool);
+#[cfg(feature = "allow-set-focus")]
 setter!(set_focus);
+#[cfg(feature = "allow-set-skip-taskbar")]
 setter!(set_skip_taskbar, bool);
+#[cfg(feature = "allow-set-cursor-grab")]
 setter!(set_cursor_grab, bool);
+#[cfg(feature = "allow-set-cursor-visible")]
 setter!(set_cursor_visible, bool);
+#[cfg(feature = "allow-set-cursor-icon")]
 setter!(set_cursor_icon, CursorIcon);
+#[cfg(feature = "allow-set-cursor-position")]
 setter!(set_cursor_position, Position);
+#[cfg(feature = "allow-set-ignore-cursor-events")]
 setter!(set_ignore_cursor_events, bool);
+#[cfg(feature = "allow-start-dragging")]
 setter!(start_dragging);
+#[cfg(feature = "allow-print")]
 setter!(print);
 
+#[cfg(feature = "allow-set-icon")]
 #[tauri::command]
 pub fn set_icon<R: Runtime>(
     window: Window<R>,
@@ -157,6 +208,7 @@ pub fn set_icon<R: Runtime>(
         .map_err(Into::into)
 }
 
+#[cfg(feature = "allow-toggle-maximize")]
 #[tauri::command]
 pub fn toggle_maximize<R: Runtime>(window: Window<R>, label: Option<String>) -> Result<()> {
     let window = get_window(window, label)?;
@@ -167,6 +219,7 @@ pub fn toggle_maximize<R: Runtime>(window: Window<R>, label: Option<String>) -> 
     Ok(())
 }
 
+#[cfg(feature = "allow-toggle-maximize")]
 #[tauri::command]
 pub fn internal_toggle_maximize<R: Runtime>(
     window: Window<R>,
@@ -182,6 +235,7 @@ pub fn internal_toggle_maximize<R: Runtime>(
     Ok(())
 }
 
+#[cfg(debug_assertions)]
 #[tauri::command]
 pub fn internal_toggle_devtools<R: Runtime>(
     window: Window<R>,

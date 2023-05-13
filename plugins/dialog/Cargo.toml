@@ -24,3 +24,10 @@ raw-window-handle = "0.5"
 
 [build-dependencies]
 tauri-build.workspace = true
+
+[features]
+allow-open = []
+allow-save = []
+allow-message = []
+allow-ask = []
+allow-confirm = []

@@ -13,6 +13,9 @@
   },
   "plugins": {
     "cli": {
+      "allowlist": {
+        "getMatches": true
+      },
       "description": "Tauri API example",
       "args": [
         {

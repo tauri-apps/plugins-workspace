@@ -65,9 +65,13 @@ impl<R: Runtime, T: Manager<R>> ShellExt<R> for T {
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
     Builder::<R, Option<Config>>::new("shell")
         .invoke_handler(tauri::generate_handler![
+            #[cfg(feature = "allow-execute")]
             commands::execute,
+            #[cfg(feature = "allow-stdin-write")]
             commands::stdin_write,
+            #[cfg(feature = "allow-kill")]
             commands::kill,
+            #[cfg(feature = "allow-open")]
             commands::open
         ])
         .setup(|app, api| {

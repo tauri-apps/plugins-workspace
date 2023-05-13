@@ -37,16 +37,27 @@ impl<R: Runtime, T: Manager<R>> FsExt<R> for T {
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
     PluginBuilder::<R, Option<Config>>::new("fs")
         .invoke_handler(tauri::generate_handler![
+            #[cfg(feature = "allow-read-file")]
             commands::read_file,
+            #[cfg(feature = "allow-read-file")]
             commands::read_text_file,
+            #[cfg(feature = "allow-write-file")]
             commands::write_file,
+            #[cfg(feature = "allow-read-dir")]
             commands::read_dir,
+            #[cfg(feature = "allow-copy-file")]
             commands::copy_file,
+            #[cfg(feature = "allow-create-dir")]
             commands::create_dir,
+            #[cfg(feature = "allow-remove-dir")]
             commands::remove_dir,
+            #[cfg(feature = "allow-remove-file")]
             commands::remove_file,
+            #[cfg(feature = "allow-rename-file")]
             commands::rename_file,
+            #[cfg(feature = "allow-exists")]
             commands::exists,
+            #[cfg(feature = "allow-metadata")]
             commands::metadata
         ])
         .setup(|app: &tauri::AppHandle<R>, api| {

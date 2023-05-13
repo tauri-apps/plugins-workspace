@@ -12,3 +12,8 @@ tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
 global-hotkey = "0.2.1"
+
+[features]
+allow-register = []
+allow-unregister = []
+allow-is-registered = []

@@ -9,7 +9,7 @@ use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager};
 use tauri::{
     api::ipc::CallbackFn,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    AppHandle, Manager, Runtime, State, Window,
+    AppHandle, Manager, Runtime, Window,
 };
 
 mod error;
@@ -186,6 +186,7 @@ fn acquire_manager(
         .map_err(|e| Error::GlobalHotkey(e.to_string()))
 }
 
+#[allow(dead_code)]
 fn parse_shortcut<S: AsRef<str>>(shortcut: S) -> Result<Shortcut> {
     shortcut.as_ref().parse().map_err(Into::into)
 }
@@ -200,10 +201,11 @@ where
         .map_err(|e| Error::GlobalHotkey(e.to_string()))
 }
 
+#[cfg(feature = "allow-register")]
 #[tauri::command]
 fn register<R: Runtime>(
     window: Window<R>,
-    global_shortcut: State<'_, GlobalShortcut<R>>,
+    global_shortcut: tauri::State<'_, GlobalShortcut<R>>,
     shortcut: String,
     handler: CallbackFn,
 ) -> Result<()> {
@@ -213,10 +215,11 @@ fn register<R: Runtime>(
     )
 }
 
+#[cfg(feature = "allow-register")]
 #[tauri::command]
 fn register_all<R: Runtime>(
     window: Window<R>,
-    global_shortcut: State<'_, GlobalShortcut<R>>,
+    global_shortcut: tauri::State<'_, GlobalShortcut<R>>,
     shortcuts: Vec<String>,
     handler: CallbackFn,
 ) -> Result<()> {
@@ -227,19 +230,21 @@ fn register_all<R: Runtime>(
     global_shortcut.register_all_internal(hotkeys, ShortcutSource::Ipc { window, handler })
 }
 
+#[cfg(feature = "allow-unregister")]
 #[tauri::command]
 fn unregister<R: Runtime>(
     _app: AppHandle<R>,
-    global_shortcut: State<'_, GlobalShortcut<R>>,
+    global_shortcut: tauri::State<'_, GlobalShortcut<R>>,
     shortcut: String,
 ) -> Result<()> {
     global_shortcut.unregister(parse_shortcut(shortcut)?)
 }
 
+#[cfg(feature = "allow-unregister")]
 #[tauri::command]
 fn unregister_all<R: Runtime>(
     _app: AppHandle<R>,
-    global_shortcut: State<'_, GlobalShortcut<R>>,
+    global_shortcut: tauri::State<'_, GlobalShortcut<R>>,
     shortcuts: Vec<String>,
 ) -> Result<()> {
     let mut hotkeys = Vec::new();
@@ -249,10 +254,11 @@ fn unregister_all<R: Runtime>(
     global_shortcut.unregister_all(hotkeys)
 }
 
+#[cfg(feature = "allow-is-registered")]
 #[tauri::command]
 fn is_registered<R: Runtime>(
     _app: AppHandle<R>,
-    global_shortcut: State<'_, GlobalShortcut<R>>,
+    global_shortcut: tauri::State<'_, GlobalShortcut<R>>,
     shortcut: String,
 ) -> Result<bool> {
     Ok(global_shortcut.is_registered(parse_shortcut(shortcut)?))
@@ -278,10 +284,15 @@ impl Builder {
         let handler = self.handler;
         PluginBuilder::new("globalShortcut")
             .invoke_handler(tauri::generate_handler![
+                #[cfg(feature = "allow-register")]
                 register,
+                #[cfg(feature = "allow-register")]
                 register_all,
+                #[cfg(feature = "allow-unregister")]
                 unregister,
+                #[cfg(feature = "allow-unregister")]
                 unregister_all,
+                #[cfg(feature = "allow-is-registered")]
                 is_registered
             ])
             .setup(move |app, _api| {
