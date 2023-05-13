@@ -5,7 +5,7 @@
 use config::FsScope;
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Manager, Runtime,
+    FileDropEvent, Manager, RunEvent, Runtime, WindowEvent,
 };
 
 mod commands;
@@ -59,6 +59,23 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
                     .unwrap_or(&default_scope),
             ));
             Ok(())
+        })
+        .on_event(|app, event| {
+            if let RunEvent::WindowEvent {
+                label: _,
+                event: WindowEvent::FileDrop(FileDropEvent::Dropped(paths)),
+                ..
+            } = event
+            {
+                let scope = app.fs_scope();
+                for path in paths {
+                    if path.is_file() {
+                        let _ = scope.allow_file(path);
+                    } else {
+                        let _ = scope.allow_directory(path, false);
+                    }
+                }
+            }
         })
         .build()
 }
