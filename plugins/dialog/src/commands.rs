@@ -5,7 +5,7 @@
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
-use tauri::{command, Runtime, State, Window};
+use tauri::{command, Manager, Runtime, State, Window};
 use tauri_plugin_fs::FsExt;
 
 use crate::{Dialog, FileDialogBuilder, FileResponse, MessageDialogKind, Result};
@@ -136,6 +136,9 @@ pub(crate) async fn open<R: Runtime>(
         if let Some(files) = &files {
             for file in files {
                 window.fs_scope().allow_file(&file.path)?;
+                window
+                    .state::<tauri::scope::Scopes>()
+                    .allow_file(&file.path)?;
             }
         }
         OpenResponse::Files(files)
@@ -143,6 +146,9 @@ pub(crate) async fn open<R: Runtime>(
         let file = dialog_builder.blocking_pick_file();
         if let Some(file) = &file {
             window.fs_scope().allow_file(&file.path)?;
+            window
+                .state::<tauri::scope::Scopes>()
+                .allow_file(&file.path)?;
         }
         OpenResponse::File(file)
     };
@@ -181,6 +187,7 @@ pub(crate) async fn save<R: Runtime>(
             if let Some(s) = window.try_fs_scope() {
                 s.allow_file(p)?;
             }
+            window.state::<tauri::scope::Scopes>().allow_file(p)?;
         }
 
         Ok(path)

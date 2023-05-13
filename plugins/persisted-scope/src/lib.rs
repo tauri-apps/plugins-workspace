@@ -87,18 +87,18 @@ fn save_scopes<R: Runtime>(app: &AppHandle<R>, app_dir: &Path, scope_state_path:
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("persisted-scope")
         .setup(|app, _api| {
-            let fs_scope = app.fs_scope();
-            #[cfg(feature = "protocol-asset")]
-            let asset_protocol_scope = app.asset_protocol_scope();
+            let fs_scope = app.try_fs_scope();
+            let core_scopes = app.state::<tauri::scope::Scopes>();
             let app = app.clone();
             let app_dir = app.path().app_data_dir();
 
             if let Ok(app_dir) = app_dir {
                 let scope_state_path = app_dir.join(SCOPE_STATE_FILENAME);
 
-                let _ = fs_scope.forbid_file(&scope_state_path);
-                #[cfg(feature = "protocol-asset")]
-                let _ = asset_protocol_scope.forbid_file(&scope_state_path);
+                if let Some(s) = fs_scope {
+                let _ = s.forbid_file(&scope_state_path);
+                }
+                let _ = core_scopes.forbid_file(&scope_state_path);
 
                 // We're trying to fix broken .persisted-scope files seamlessly, so we'll be running this on the values read on the saved file.
                 // We will still save some semi-broken values because the scope events are quite spammy and we don't want to reduce runtime performance any further.
@@ -112,16 +112,18 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     for allowed in &scope.allowed_paths {
                         let allowed = fix_pattern(&ac, allowed);
 
-                        let _ = fs_scope.allow_file(&allowed);
-                        #[cfg(feature = "protocol-asset")]
-                        let _ = asset_protocol_scope.allow_file(&allowed);
+                        if let Some(s) = fs_scope {
+                            let _ = s.allow_file(&allowed);
+                        }
+                        let _ = core_scopes.allow_file(&allowed);
                     }
                     for forbidden in &scope.forbidden_patterns {
                         let forbidden = fix_pattern(&ac, forbidden);
 
-                        let _ = fs_scope.forbid_file(&forbidden);
-                        #[cfg(feature = "protocol-asset")]
-                        let _ = asset_protocol_scope.forbid_file(&forbidden);
+                        if let Some(s) = fs_scope {
+                            let _ = s.forbid_file(&forbidden);
+                        }
+                        let _ = core_scopes.forbid_file(&forbidden);
                     }
 
                     // Manually save the fixed scopes to disk once.
@@ -129,11 +131,13 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     save_scopes(&app, &app_dir, &scope_state_path);
                 }
 
-                fs_scope.listen(move |event| {
-                    if let FsScopeEvent::PathAllowed(_) = event {
-                        save_scopes(&app, &app_dir, &scope_state_path);
-                    }
-                });
+                if let Some(s) = fs_scope {
+                    s.listen(move |event| {
+                        if let FsScopeEvent::PathAllowed(_) = event {
+                            save_scopes(&app, &app_dir, &scope_state_path);
+                        }
+                    });
+                }
             }
             Ok(())
         })
