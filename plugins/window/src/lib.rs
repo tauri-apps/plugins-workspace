@@ -3,63 +3,76 @@ use tauri::{
     Runtime,
 };
 
-mod commands;
+#[cfg(desktop)]
+mod desktop_commands;
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("window")
-        .invoke_handler(tauri::generate_handler![
-            commands::create,
-            // getters
-            commands::scale_factor,
-            commands::inner_position,
-            commands::outer_position,
-            commands::inner_size,
-            commands::outer_size,
-            commands::is_fullscreen,
-            commands::is_minimized,
-            commands::is_maximized,
-            commands::is_decorated,
-            commands::is_resizable,
-            commands::is_visible,
-            commands::title,
-            commands::current_monitor,
-            commands::primary_monitor,
-            commands::available_monitors,
-            commands::theme,
-            // setters
-            commands::center,
-            commands::request_user_attention,
-            commands::set_resizable,
-            commands::set_title,
-            commands::maximize,
-            commands::unmaximize,
-            commands::minimize,
-            commands::unminimize,
-            commands::show,
-            commands::hide,
-            commands::close,
-            commands::set_decorations,
-            commands::set_shadow,
-            commands::set_always_on_top,
-            commands::set_content_protected,
-            commands::set_size,
-            commands::set_min_size,
-            commands::set_max_size,
-            commands::set_position,
-            commands::set_fullscreen,
-            commands::set_focus,
-            commands::set_skip_taskbar,
-            commands::set_cursor_grab,
-            commands::set_cursor_visible,
-            commands::set_cursor_icon,
-            commands::set_cursor_position,
-            commands::set_ignore_cursor_events,
-            commands::start_dragging,
-            commands::print,
-            commands::set_icon,
-            commands::toggle_maximize,
-            commands::internal_toggle_maximize,
-            commands::internal_toggle_devtools,
-        ])
+        .invoke_handler(|invoke| {
+            #[cfg(desktop)]
+            {
+                let handler: Box<dyn Fn(tauri::Invoke<R>) -> bool> =
+                    Box::new(tauri::generate_handler![
+                        desktop_commands::create,
+                        // getters
+                        desktop_commands::scale_factor,
+                        desktop_commands::inner_position,
+                        desktop_commands::outer_position,
+                        desktop_commands::inner_size,
+                        desktop_commands::outer_size,
+                        desktop_commands::is_fullscreen,
+                        desktop_commands::is_minimized,
+                        desktop_commands::is_maximized,
+                        desktop_commands::is_decorated,
+                        desktop_commands::is_resizable,
+                        desktop_commands::is_visible,
+                        desktop_commands::title,
+                        desktop_commands::current_monitor,
+                        desktop_commands::primary_monitor,
+                        desktop_commands::available_monitors,
+                        desktop_commands::theme,
+                        // setters
+                        desktop_commands::center,
+                        desktop_commands::request_user_attention,
+                        desktop_commands::set_resizable,
+                        desktop_commands::set_title,
+                        desktop_commands::maximize,
+                        desktop_commands::unmaximize,
+                        desktop_commands::minimize,
+                        desktop_commands::unminimize,
+                        desktop_commands::show,
+                        desktop_commands::hide,
+                        desktop_commands::close,
+                        desktop_commands::set_decorations,
+                        desktop_commands::set_shadow,
+                        desktop_commands::set_always_on_top,
+                        desktop_commands::set_content_protected,
+                        desktop_commands::set_size,
+                        desktop_commands::set_min_size,
+                        desktop_commands::set_max_size,
+                        desktop_commands::set_position,
+                        desktop_commands::set_fullscreen,
+                        desktop_commands::set_focus,
+                        desktop_commands::set_skip_taskbar,
+                        desktop_commands::set_cursor_grab,
+                        desktop_commands::set_cursor_visible,
+                        desktop_commands::set_cursor_icon,
+                        desktop_commands::set_cursor_position,
+                        desktop_commands::set_ignore_cursor_events,
+                        desktop_commands::start_dragging,
+                        desktop_commands::print,
+                        desktop_commands::set_icon,
+                        desktop_commands::toggle_maximize,
+                        desktop_commands::internal_toggle_maximize,
+                        desktop_commands::internal_toggle_devtools,
+                    ]);
+                return handler(invoke);
+            }
+            #[cfg(mobile)]
+            {
+                invoke.resolver.reject("Window API not available on mobile");
+                return true;
+            }
+        })
         .build()
 }

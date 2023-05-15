@@ -1,4 +1,0 @@
-/src/main/java/com/tauri/api/generated
-/src/main/jniLibs/**/*.so
-/tauri.build.gradle.kts
-/proguard-tauri.pro
