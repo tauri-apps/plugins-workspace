@@ -15,7 +15,7 @@ open class BuildTask : DefaultTask() {
     var release: Boolean? = null
 
     @TaskAction
-    fun build() {
+    fun assemble() {
         val executable = """pnpm""";
         try {
             runTauriCli(executable)
