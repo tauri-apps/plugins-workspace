@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="app.tauri.notification">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application>
         <receiver android:name="app.tauri.notification.TimedNotificationPublisher" />

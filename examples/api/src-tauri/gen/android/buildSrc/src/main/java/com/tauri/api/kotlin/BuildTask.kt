@@ -1,28 +1,22 @@
-package com.tauri
-
 import java.io.File
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
 open class BuildTask : DefaultTask() {
-    @InputDirectory
-    @PathSensitive(PathSensitivity.RELATIVE)
-    var rootDirRel: File? = null
+    @Input
+    var rootDirRel: String? = null
     @Input
     var target: String? = null
     @Input
     var release: Boolean? = null
 
     @TaskAction
-    fun build() {
-        val executable = """yarn""";
+    fun assemble() {
+        val executable = """pnpm""";
         try {
             runTauriCli(executable)
         } catch (e: Exception) {
@@ -41,7 +35,7 @@ open class BuildTask : DefaultTask() {
         val args = listOf("tauri", "android", "android-studio-script");
 
         project.exec {
-            workingDir(File(project.projectDir, rootDirRel.path))
+            workingDir(File(project.projectDir, rootDirRel))
             executable(executable)
             args(args)
             if (project.logger.isEnabled(LogLevel.DEBUG)) {

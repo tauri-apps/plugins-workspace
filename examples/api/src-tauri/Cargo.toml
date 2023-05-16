@@ -27,7 +27,6 @@ tauri-plugin-notification = { path = "../../../plugins/notification", features =
 tauri-plugin-os = { path = "../../../plugins/os" }
 tauri-plugin-process = { path = "../../../plugins/process" }
 tauri-plugin-shell = { path = "../../../plugins/shell" }
-tauri-plugin-updater = { path = "../../../plugins/updater" }
 tauri-plugin-window = { path = "../../../plugins/window", features = ["devtools", "icon-ico", "icon-png"] }
 
 [dependencies.tauri]
@@ -44,6 +43,7 @@ features = [
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 tauri-plugin-cli = { path = "../../../plugins/cli" }
 tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut" }
+tauri-plugin-updater = { path = "../../../plugins/updater" }
 
 [target."cfg(target_os = \"windows\")".dependencies]
 window-shadows = "0.2"
