@@ -13,3 +13,4 @@ thiserror.workspace = true
 [features]
 icon-png = ["tauri/icon-png"]
 icon-ico = ["tauri/icon-ico"]
+devtools = []

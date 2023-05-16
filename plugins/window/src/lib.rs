@@ -6,7 +6,28 @@ use tauri::{
 mod commands;
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    let mut init_js = String::new();
+    // window.print works on Linux/Windows; need to use the API on macOS
+    #[cfg(any(target_os = "macos", target_os = "ios"))]
+    {
+        init_js.push_str(include_str!("./scripts/print.js"));
+    }
+    init_js.push_str(include_str!("./scripts/drag.js"));
+    #[cfg(any(debug_assertions, feature = "devtools"))]
+    {
+        let shortcut = if cfg!(target_os = "macos") {
+            "command+option+i"
+        } else {
+            "ctrl+shift+i"
+        };
+        init_js.push_str(include_str!("./scripts/hotkey.js"));
+        init_js.push_str(
+            &include_str!("./scripts/toggle-devtools.js").replace("__SHORTCUT__", shortcut),
+        );
+    }
+
     Builder::new("window")
+        .js_init_script(init_js)
         .invoke_handler(tauri::generate_handler![
             commands::create,
             // getters
@@ -59,6 +80,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::set_icon,
             commands::toggle_maximize,
             commands::internal_toggle_maximize,
+            #[cfg(any(debug_assertions, feature = "devtools"))]
             commands::internal_toggle_devtools,
         ])
         .build()
