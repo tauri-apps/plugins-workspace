@@ -15,10 +15,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     }
     init_js.push_str(include_str!("./scripts/drag.js"));
     #[cfg(any(debug_assertions, feature = "devtools"))]
-    {
-        init_js.push_str(include_str!("./scripts/hotkey.js"));
-        init_js.push_str(include_str!("./scripts/toggle-devtools.js"));
-    }
+    init_js.push_str(include_str!("./scripts/toggle-devtools.js"));
 
     Builder::new("window")
         .js_init_script(init_js)

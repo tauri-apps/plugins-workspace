@@ -2,43 +2,39 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-// open <a href="..."> links with the API
-function __openLinks() {
-  document.querySelector('body').addEventListener(
-    'click',
-    function (e) {
-      var target = e.target
-      while (target != null) {
-        if (target.matches('a')) {
-          if (
-            target.href &&
-            (['http://', 'https://', 'mailto:', 'tel:'].some(v => target.href.startsWith(v))) &&
-            target.target === '_blank'
-          ) {
-            window.__TAURI_INVOKE__('plugin:shell|open', {
-              path: target.href
-            })
-            e.preventDefault()
+;(function () {
+  // open <a href="..."> links with the API
+  function openLinks() {
+    document.querySelector('body').addEventListener(
+      'click',
+      function (e) {
+        var target = e.target
+        while (target != null) {
+          if (target.matches('a')) {
+            if (
+              target.href &&
+              (['http://', 'https://', 'mailto:', 'tel:'].some(v => target.href.startsWith(v))) &&
+              target.target === '_blank'
+            ) {
+              window.__TAURI_INVOKE__('plugin:shell|open', {
+                path: target.href
+              })
+              e.preventDefault()
+            }
+            break
           }
-          break
+          target = target.parentElement
         }
-        target = target.parentElement
       }
-    }
-  )
-}
+    )
+  }
 
-if (
-  document.readyState === 'complete' ||
-  document.readyState === 'interactive'
-) {
-  __openLinks()
-} else {
-  window.addEventListener(
-    'DOMContentLoaded',
-    function () {
-      __openLinks()
-    },
-    true
-  )
-}
+  if (
+    document.readyState === 'complete' ||
+    document.readyState === 'interactive'
+  ) {
+    openLinks()
+  } else {
+    window.addEventListener('DOMContentLoaded', openLinks, true)
+  }
+})()
