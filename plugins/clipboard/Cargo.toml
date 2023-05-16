@@ -4,6 +4,7 @@ version = "0.0.0"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+links = "tauri-plugin-clipboard"
 
 [build-dependencies]
 tauri-build.workspace = true

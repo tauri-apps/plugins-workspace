@@ -40,7 +40,6 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_shell::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_window::init())
         .setup(move |app| {
             #[cfg(desktop)]
@@ -49,6 +48,8 @@ pub fn run() {
                 app.handle().plugin(tauri_plugin_cli::init())?;
                 app.handle()
                     .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
+                app.handle()
+                    .plugin(tauri_plugin_updater::Builder::new().build())?;
             }
 
             let mut window_builder = WindowBuilder::new(app, "main", WindowUrl::default());
