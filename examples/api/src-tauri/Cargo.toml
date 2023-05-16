@@ -28,7 +28,7 @@ tauri-plugin-os = { path = "../../../plugins/os" }
 tauri-plugin-process = { path = "../../../plugins/process" }
 tauri-plugin-shell = { path = "../../../plugins/shell" }
 tauri-plugin-updater = { path = "../../../plugins/updater" }
-tauri-plugin-window = { path = "../../../plugins/window" }
+tauri-plugin-window = { path = "../../../plugins/window", features = ["devtools", "icon-ico", "icon-png"] }
 
 [dependencies.tauri]
 workspace = true

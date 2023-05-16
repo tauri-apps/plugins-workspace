@@ -1,3 +1,3 @@
 window.hotkeys('__SHORTCUT__', () => {
-  window.__TAURI_INVOKE__('plugin:tauri|internal_toggle_devtools');
+  window.__TAURI_INVOKE__('plugin:window|internal_toggle_devtools');
 });
