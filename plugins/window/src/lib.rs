@@ -66,6 +66,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         desktop_commands::internal_toggle_maximize,
                         desktop_commands::internal_toggle_devtools,
                     ]);
+                #[allow(clippy::needless_return)]
                 return handler(invoke);
             }
             #[cfg(mobile)]
