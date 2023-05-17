@@ -55,7 +55,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Stronghold, Location } from "tauri-plugin-stronghold-api";
+import { Stronghold, Location } from "@tauri-plugins/stronghold";
 
 // TODO
 ```

@@ -30,7 +30,7 @@ import { invoke } from "@tauri-apps/api/tauri";
  * Gets the application version.
  * @example
  * ```typescript
- * import { getVersion } from 'tauri-plugin-app-api';
+ * import { getVersion } from '@tauri-plugins/app';
  * const appVersion = await getVersion();
  * ```
  *
@@ -44,7 +44,7 @@ async function getVersion(): Promise<string> {
  * Gets the application name.
  * @example
  * ```typescript
- * import { getName } from 'tauri-plugin-app-api';
+ * import { getName } from '@tauri-plugins/app';
  * const appName = await getName();
  * ```
  *
@@ -59,7 +59,7 @@ async function getName(): Promise<string> {
  *
  * @example
  * ```typescript
- * import { getTauriVersion } from 'tauri-plugin-app-api';
+ * import { getTauriVersion } from '@tauri-plugins/app';
  * const tauriVersion = await getTauriVersion();
  * ```
  *
@@ -74,7 +74,7 @@ async function getTauriVersion(): Promise<string> {
  *
  * @example
  * ```typescript
- * import { show } from 'tauri-plugin-app-api';
+ * import { show } from '@tauri-plugins/app';
  * await show();
  * ```
  *
@@ -89,7 +89,7 @@ async function show(): Promise<void> {
  *
  * @example
  * ```typescript
- * import { hide } from 'tauri-plugin-app-api';
+ * import { hide } from '@tauri-plugins/app';
  * await hide();
  * ```
  *

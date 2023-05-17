@@ -51,7 +51,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Store } from "tauri-plugin-store-api";
+import { Store } from "@tauri-plugins/store";
 
 const store = new Store(".settings.dat");
 

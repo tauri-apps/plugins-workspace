@@ -30,11 +30,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add tauri-plugin-positioner-api
+pnpm add @tauri-plugins/positioner
 # or
-npm add tauri-plugin-positioner-api
+npm add @tauri-plugins/positioner
 # or
-yarn add tauri-plugin-positioner-api
+yarn add @tauri-plugins/positioner
 ```
 
 Or through git:
@@ -69,7 +69,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { move_window, Position } from "tauri-plugin-positioner-api";
+import { move_window, Position } from "@tauri-plugins/positioner";
 
 move_window(Position.TopRight);
 ```

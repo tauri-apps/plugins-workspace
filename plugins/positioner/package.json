@@ -1,5 +1,5 @@
 {
-  "name": "tauri-plugin-positioner-api",
+  "name": "@tauri-plugins/positioner",
   "version": "0.2.7",
   "description": "Position your windows at well-known locations.",
   "license": "MIT or APACHE-2.0",

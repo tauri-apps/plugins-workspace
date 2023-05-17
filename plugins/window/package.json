@@ -1,5 +1,5 @@
 {
-  "name": "tauri-plugin-window-api",
+  "name": "@tauri-plugins/window",
   "version": "0.0.0",
   "license": "MIT or APACHE-2.0",
   "authors": [

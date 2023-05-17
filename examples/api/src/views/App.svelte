@@ -1,5 +1,5 @@
 <script>
-  import { show, hide } from "tauri-plugin-app-api";
+  import { show, hide } from "@tauri-plugins/app";
 
   export let onMessage;
 

@@ -1,5 +1,5 @@
 {
-  "name": "tauri-plugin-autostart-api",
+  "name": "@tauri-plugins/autostart",
   "version": "0.0.0",
   "license": "MIT or APACHE-2.0",
   "authors": [

@@ -1,60 +1,60 @@
 <script>
-  import { getClient, Body, ResponseType } from 'tauri-plugin-http-api'
-  import { JsonView } from '@zerodevx/svelte-json-view'
+  import { getClient, Body, ResponseType } from "@tauri-plugins/http";
+  import { JsonView } from "@zerodevx/svelte-json-view";
 
-  let httpMethod = 'GET'
-  let httpBody = ''
+  let httpMethod = "GET";
+  let httpBody = "";
 
-  export let onMessage
+  export let onMessage;
 
   async function makeHttpRequest() {
     const client = await getClient().catch((e) => {
-      onMessage(e)
-      throw e
-    })
-    let method = httpMethod || 'GET'
+      onMessage(e);
+      throw e;
+    });
+    let method = httpMethod || "GET";
 
     const options = {
-      url: 'http://localhost:3003',
-      method: method || 'GET'
-    }
+      url: "http://localhost:3003",
+      method: method || "GET",
+    };
 
     if (
-      (httpBody.startsWith('{') && httpBody.endsWith('}')) ||
-      (httpBody.startsWith('[') && httpBody.endsWith(']'))
+      (httpBody.startsWith("{") && httpBody.endsWith("}")) ||
+      (httpBody.startsWith("[") && httpBody.endsWith("]"))
     ) {
-      options.body = Body.json(JSON.parse(httpBody))
-    } else if (httpBody !== '') {
-      options.body = Body.text(httpBody)
+      options.body = Body.json(JSON.parse(httpBody));
+    } else if (httpBody !== "") {
+      options.body = Body.text(httpBody);
     }
 
-    client.request(options).then(onMessage).catch(onMessage)
+    client.request(options).then(onMessage).catch(onMessage);
   }
 
   /// http form
-  let foo = 'baz'
-  let bar = 'qux'
-  let result = null
-  let multipart = true
+  let foo = "baz";
+  let bar = "qux";
+  let result = null;
+  let multipart = true;
 
   async function doPost() {
     const client = await getClient().catch((e) => {
-      onMessage(e)
-      throw e
-    })
+      onMessage(e);
+      throw e;
+    });
 
     result = await client.request({
-      url: 'http://localhost:3003',
-      method: 'POST',
+      url: "http://localhost:3003",
+      method: "POST",
       body: Body.form({
         foo,
-        bar
+        bar,
       }),
       headers: multipart
-        ? { 'Content-Type': 'multipart/form-data' }
+        ? { "Content-Type": "multipart/form-data" }
         : undefined,
-      responseType: ResponseType.Text
-    })
+      responseType: ResponseType.Text,
+    });
   }
 </script>
 

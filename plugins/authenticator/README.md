@@ -53,7 +53,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Authenticator } from "tauri-plugin-authenticator-api";
+import { Authenticator } from "@tauri-plugins/authenticator";
 
 const auth = new Authenticator();
 auth.init(); // initialize transports

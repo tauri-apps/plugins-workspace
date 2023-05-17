@@ -68,7 +68,7 @@ const EOL = isWindows() ? "\r\n" : "\n";
  * The value is set at compile time. Possible values are `'linux'`, `'darwin'`, `'ios'`, `'freebsd'`, `'dragonfly'`, `'netbsd'`, `'openbsd'`, `'solaris'`, `'android'`, `'win32'`
  * @example
  * ```typescript
- * import { platform } from 'tauri-plugin-os-api';
+ * import { platform } from '@tauri-plugins/os';
  * const platformName = await platform();
  * ```
  *
@@ -83,7 +83,7 @@ async function platform(): Promise<Platform> {
  * Returns a string identifying the kernel version.
  * @example
  * ```typescript
- * import { version } from 'tauri-plugin-os-api';
+ * import { version } from '@tauri-plugins/os';
  * const osVersion = await version();
  * ```
  *
@@ -97,7 +97,7 @@ async function version(): Promise<string> {
  * Returns `'Linux'` on Linux, `'Darwin'` on macOS, and `'Windows_NT'` on Windows.
  * @example
  * ```typescript
- * import { type } from 'tauri-plugin-os-api';
+ * import { type } from '@tauri-plugins/os';
  * const osType = await type();
  * ```
  *
@@ -112,7 +112,7 @@ async function type(): Promise<OsType> {
  * Possible values are `'x86'`, `'x86_64'`, `'arm'`, `'aarch64'`, `'mips'`, `'mips64'`, `'powerpc'`, `'powerpc64'`, `'riscv64'`, `'s390x'`, `'sparc64'`.
  * @example
  * ```typescript
- * import { arch } from 'tauri-plugin-os-api';
+ * import { arch } from '@tauri-plugins/os';
  * const archName = await arch();
  * ```
  *
@@ -126,7 +126,7 @@ async function arch(): Promise<Arch> {
  * Returns the operating system's default directory for temporary files as a string.
  * @example
  * ```typescript
- * import { tempdir } from 'tauri-plugin-os-api';
+ * import { tempdir } from '@tauri-plugins/os';
  * const tempdirPath = await tempdir();
  * ```
  *

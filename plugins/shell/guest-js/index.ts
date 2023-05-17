@@ -66,7 +66,7 @@
  * ```
  * Usage:
  * ```typescript
- * import { Command } from 'tauri-plugin-shell-api'
+ * import { Command } from '@tauri-plugins/shell'
  * Command.create('run-git-commit', ['commit', '-m', 'the commit message'])
  * ```
  *
@@ -348,7 +348,7 @@ class Child {
    * @param data The message to write, either a string or a byte array.
    * @example
    * ```typescript
-   * import { Command } from 'tauri-plugin-shell-api';
+   * import { Command } from '@tauri-plugins/shell';
    * const command = Command.create('node');
    * const child = await command.spawn();
    * await child.write('message');
@@ -392,7 +392,7 @@ interface OutputEvents<O extends IOPayload> {
  * It emits the `close` and `error` events.
  * @example
  * ```typescript
- * import { Command } from 'tauri-plugin-shell-api';
+ * import { Command } from '@tauri-plugins/shell';
  * const command = Command.create('node');
  * command.on('close', data => {
  *   console.log(`command finished with code ${data.code} and signal ${data.signal}`)
@@ -456,7 +456,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * Creates a command to execute the given program.
    * @example
    * ```typescript
-   * import { Command } from 'tauri-plugin-shell-api';
+   * import { Command } from '@tauri-plugins/shell';
    * const command = Command.create('my-app', ['run', 'tauri']);
    * const output = await command.execute();
    * ```
@@ -488,7 +488,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * Creates a command to execute the given sidecar program.
    * @example
    * ```typescript
-   * import { Command } from 'tauri-plugin-shell-api';
+   * import { Command } from '@tauri-plugins/shell';
    * const command = Command.sidecar('my-sidecar');
    * const output = await command.execute();
    * ```
@@ -539,7 +539,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * Executes the command as a child process, waiting for it to finish and collecting all of its output.
    * @example
    * ```typescript
-   * import { Command } from 'tauri-plugin-shell-api';
+   * import { Command } from '@tauri-plugins/shell';
    * const output = await Command.create('echo', 'message').execute();
    * assert(output.code === 0);
    * assert(output.signal === null);
@@ -624,7 +624,7 @@ type CommandEvent<O extends IOPayload> =
  *
  * @example
  * ```typescript
- * import { open } from 'tauri-plugin-shell-api';
+ * import { open } from '@tauri-plugins/shell';
  * // opens the given URL on the default browser:
  * await open('https://github.com/tauri-apps/tauri');
  * // opens the given URL using `firefox`:

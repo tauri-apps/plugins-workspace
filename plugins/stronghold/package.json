@@ -1,5 +1,5 @@
 {
-  "name": "tauri-plugin-stronghold-api",
+  "name": "@tauri-plugins/stronghold",
   "version": "0.0.0",
   "description": "Store secrets and keys using the IOTA Stronghold encrypted database.",
   "license": "MIT or APACHE-2.0",

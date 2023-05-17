@@ -1,5 +1,5 @@
 {
-  "name": "tauri-plugin-fs-api",
+  "name": "@tauri-plugins/fs",
   "version": "0.0.0",
   "description": "Access the file system.",
   "license": "MIT or APACHE-2.0",

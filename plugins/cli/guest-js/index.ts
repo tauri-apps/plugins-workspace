@@ -47,7 +47,7 @@ interface CliMatches {
  *
  * @example
  * ```typescript
- * import { getMatches } from 'tauri-plugin-cli-api';
+ * import { getMatches } from '@tauri-plugins/cli';
  * const matches = await getMatches();
  * if (matches.subcommand?.name === 'run') {
  *   // `./your-app run $ARGS` was executed

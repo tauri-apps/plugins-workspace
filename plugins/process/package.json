@@ -1,5 +1,5 @@
 {
-  "name": "tauri-plugin-process-api",
+  "name": "@tauri-plugins/process",
   "version": "0.0.0",
   "license": "MIT or APACHE-2.0",
   "authors": [

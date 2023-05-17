@@ -1,65 +1,65 @@
 <script>
-  import { Command } from 'tauri-plugin-shell-api'
+  import { Command } from "@tauri-plugins/shell";
 
-  const windows = navigator.userAgent.includes('Windows')
-  let cmd = windows ? 'cmd' : 'sh'
-  let args = windows ? ['/C'] : ['-c']
+  const windows = navigator.userAgent.includes("Windows");
+  let cmd = windows ? "cmd" : "sh";
+  let args = windows ? ["/C"] : ["-c"];
 
-  export let onMessage
+  export let onMessage;
 
-  let script = 'echo "hello world"'
-  let cwd = null
-  let env = 'SOMETHING=value ANOTHER=2'
-  let encoding = ''
-  let stdin = ''
-  let child
+  let script = 'echo "hello world"';
+  let cwd = null;
+  let env = "SOMETHING=value ANOTHER=2";
+  let encoding = "";
+  let stdin = "";
+  let child;
 
   function _getEnv() {
-    return env.split(' ').reduce((env, clause) => {
-      let [key, value] = clause.split('=')
+    return env.split(" ").reduce((env, clause) => {
+      let [key, value] = clause.split("=");
       return {
         ...env,
-        [key]: value
-      }
-    }, {})
+        [key]: value,
+      };
+    }, {});
   }
 
   function spawn() {
-    child = null
+    child = null;
     const command = Command.create(cmd, [...args, script], {
       cwd: cwd || null,
       env: _getEnv(),
       encoding: encoding || undefined,
-    })
+    });
 
-    command.on('close', (data) => {
+    command.on("close", (data) => {
       onMessage(
         `command finished with code ${data.code} and signal ${data.signal}`
-      )
-      child = null
-    })
-    command.on('error', (error) => onMessage(`command error: "${error}"`))
+      );
+      child = null;
+    });
+    command.on("error", (error) => onMessage(`command error: "${error}"`));
 
-    command.stdout.on('data', (line) => onMessage(`command stdout: "${line}"`))
-    command.stderr.on('data', (line) => onMessage(`command stderr: "${line}"`))
+    command.stdout.on("data", (line) => onMessage(`command stdout: "${line}"`));
+    command.stderr.on("data", (line) => onMessage(`command stderr: "${line}"`));
 
     command
       .spawn()
       .then((c) => {
-        child = c
+        child = c;
       })
-      .catch(onMessage)
+      .catch(onMessage);
   }
 
   function kill() {
     child
       .kill()
-      .then(() => onMessage('killed child process'))
-      .catch(onMessage)
+      .then(() => onMessage("killed child process"))
+      .catch(onMessage);
   }
 
   function writeToStdin() {
-    child.write(stdin).catch(onMessage)
+    child.write(stdin).catch(onMessage);
   }
 </script>
 

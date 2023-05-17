@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@tauri-apps/cli": "^2.0.0-alpha.8",
-    "tauri-plugin-websocket-api": "link:../../"
+    "@tauri-plugins/websocket": "link:../../"
   },
   "type": "module"
 }
