@@ -182,6 +182,7 @@ pub fn internal_toggle_maximize<R: Runtime>(
     Ok(())
 }
 
+#[cfg(any(debug_assertions, feature = "devtools"))]
 #[tauri::command]
 pub fn internal_toggle_devtools<R: Runtime>(
     window: Window<R>,

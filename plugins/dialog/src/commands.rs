@@ -271,8 +271,8 @@ pub(crate) async fn ask<R: Runtime>(
         title,
         message,
         type_,
-        ok_button_label,
-        cancel_button_label,
+        Some(ok_button_label.unwrap_or_else(|| "Yes".into())),
+        Some(cancel_button_label.unwrap_or_else(|| "No".into())),
     ))
 }
 
@@ -292,7 +292,7 @@ pub(crate) async fn confirm<R: Runtime>(
         title,
         message,
         type_,
-        ok_button_label,
-        cancel_button_label,
+        Some(ok_button_label.unwrap_or_else(|| "Ok".into())),
+        Some(cancel_button_label.unwrap_or_else(|| "Cancel".into())),
     ))
 }

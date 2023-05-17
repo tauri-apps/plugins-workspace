@@ -69,7 +69,15 @@ impl<R: Runtime> Dialog<R> {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("dialog")
+    let mut builder = Builder::new("dialog");
+
+    // Dialogs are implemented natively on Android
+    #[cfg(not(target_os = "android"))]
+    {
+        builder = builder.js_init_script(include_str!("init.js").to_string());
+    }
+
+    builder
         .invoke_handler(tauri::generate_handler![
             commands::open,
             commands::save,
