@@ -61,43 +61,43 @@ importers:
       '@zerodevx/svelte-json-view':
         specifier: 0.2.1
         version: 0.2.1
-      '@tauri-plugins/app':
+      '@tauri-apps/plugin-app':
         specifier: 0.0.0
         version: link:../../plugins/app
-      '@tauri-plugins/cli':
+      '@tauri-apps/plugin-cli':
         specifier: 0.0.0
         version: link:../../plugins/cli
-      '@tauri-plugins/clipboard':
+      '@tauri-apps/plugin-clipboard':
         specifier: 0.0.0
         version: link:../../plugins/clipboard
-      '@tauri-plugins/dialog':
+      '@tauri-apps/plugin-dialog':
         specifier: 0.0.0
         version: link:../../plugins/dialog
-      '@tauri-plugins/fs':
+      '@tauri-apps/plugin-fs':
         specifier: 0.0.0
         version: link:../../plugins/fs
-      '@tauri-plugins/global-shortcut':
+      '@tauri-apps/plugin-global-shortcut':
         specifier: 0.0.0
         version: link:../../plugins/global-shortcut
-      '@tauri-plugins/http':
+      '@tauri-apps/plugin-http':
         specifier: 0.0.0
         version: link:../../plugins/http
-      '@tauri-plugins/notification':
+      '@tauri-apps/plugin-notification':
         specifier: 0.0.0
         version: link:../../plugins/notification
-      '@tauri-plugins/os':
+      '@tauri-apps/plugin-os':
         specifier: 0.0.0
         version: link:../../plugins/os
-      '@tauri-plugins/process':
+      '@tauri-apps/plugin-process':
         specifier: 0.0.0
         version: link:../../plugins/process
-      '@tauri-plugins/shell':
+      '@tauri-apps/plugin-shell':
         specifier: 0.0.0
         version: link:../../plugins/shell
-      '@tauri-plugins/updater':
+      '@tauri-apps/plugin-updater':
         specifier: 0.0.0
         version: link:../../plugins/updater
-      '@tauri-plugins/window':
+      '@tauri-apps/plugin-window':
         specifier: 0.0.0
         version: link:../../plugins/window
     devDependencies:
@@ -354,7 +354,7 @@ importers:
       '@tauri-apps/cli':
         specifier: ^2.0.0-alpha.8
         version: 2.0.0-alpha.8
-      '@tauri-plugins/websocket':
+      '@tauri-apps/plugin-websocket':
         specifier: link:../../
         version: link:../..
     devDependencies:

@@ -75,7 +75,7 @@ async function log(
  * # Examples
  *
  * ```js
- * import { error } from '@tauri-plugins/log';
+ * import { error } from '@tauri-apps/plugin-log';
  *
  * const err_info = "No connection";
  * const port = 22;
@@ -98,7 +98,7 @@ export async function error(
  * # Examples
  *
  * ```js
- * import { warn } from '@tauri-plugins/log';
+ * import { warn } from '@tauri-apps/plugin-log';
  *
  * const warn_description = "Invalid Input";
  *
@@ -120,7 +120,7 @@ export async function warn(
  * # Examples
  *
  * ```js
- * import { info } from '@tauri-plugins/log';
+ * import { info } from '@tauri-apps/plugin-log';
  *
  * const conn_info = { port: 40, speed: 3.20 };
  *
@@ -142,7 +142,7 @@ export async function info(
  * # Examples
  *
  * ```js
- * import { debug } from '@tauri-plugins/log';
+ * import { debug } from '@tauri-apps/plugin-log';
  *
  * const pos = { x: 3.234, y: -1.223 };
  *
@@ -164,7 +164,7 @@ export async function debug(
  * # Examples
  *
  * ```js
- * import { trace } from '@tauri-plugins/log';
+ * import { trace } from '@tauri-apps/plugin-log';
  *
  * let pos = { x: 3.234, y: -1.223 };
  *

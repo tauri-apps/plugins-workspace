@@ -1,6 +1,6 @@
 <script>
-  import { check } from "@tauri-plugins/updater";
-  import { relaunch } from "@tauri-plugins/process";
+  import { check } from "@tauri-apps/plugin-updater";
+  import { relaunch } from "@tauri-apps/plugin-process";
 
   export let onMessage;
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import WebSocket from "@tauri-plugins/websocket";
+  import WebSocket from "@tauri-apps/plugin-websocket";
   import { onMount } from "svelte";
 
   let ws;

@@ -1,5 +1,5 @@
 <script>
-  import { Command } from "@tauri-plugins/shell";
+  import { Command } from "@tauri-apps/plugin-shell";
 
   const windows = navigator.userAgent.includes("Windows");
   let cmd = windows ? "cmd" : "sh";

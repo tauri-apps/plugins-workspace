@@ -40,7 +40,7 @@ npm manifest:
     "dependencies": {
       "@tauri-apps/api": "../../tooling/api/dist",
       "@zerodevx/svelte-json-view": "0.2.1",
-      "@tauri-plugins/fs": "https://gitpkg.now.sh/tauri-apps/plugins-workspace/plugins/fs?feat/fs-plugin&scripts.build=build"
+      "@tauri-apps/plugin-fs": "https://gitpkg.now.sh/tauri-apps/plugins-workspace/plugins/fs?feat/fs-plugin&scripts.build=build"
     },
     "devDependencies": {
       "@iconify-json/codicon": "^1.1.10",
@@ -1009,7 +1009,7 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/svelte/-/svelte-3.49.0.tgz#5baee3c672306de1070c3b7888fc2204e36a4029"
     integrity sha512-+lmjic1pApJWDfPCpUUTc1m8azDqYCG1JN9YEngrx/hUyIcFJo6VZhj0A1Ai0wqoHcEIuQy+e9tk+4uDgdtsFA==
   
-  "@tauri-plugins/fs@https://gitpkg.now.sh/tauri-apps/plugins-workspace/plugins/fs?feat/fs-plugin":
+  "@tauri-apps/plugin-fs@https://gitpkg.now.sh/tauri-apps/plugins-workspace/plugins/fs?feat/fs-plugin":
     version "0.0.0"
     resolved "https://gitpkg.now.sh/tauri-apps/plugins-workspace/plugins/fs?feat/fs-plugin#a4b37d92c5fd3e638ad21d4ccf0132e07acc0136"
     dependencies:

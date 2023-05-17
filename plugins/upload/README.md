@@ -51,7 +51,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { upload } from '@tauri-plugins/upload'
+import { upload } from '@tauri-apps/plugin-upload'
 
 upload(
     'https://example.com/file-upload'

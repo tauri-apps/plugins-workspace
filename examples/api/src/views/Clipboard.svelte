@@ -1,5 +1,5 @@
 <script>
-  import { writeText, readText } from "@tauri-plugins/clipboard";
+  import { writeText, readText } from "@tauri-apps/plugin-clipboard";
 
   export let onMessage;
   let text = "clipboard message";

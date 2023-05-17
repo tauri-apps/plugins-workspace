@@ -1,5 +1,5 @@
 <script>
-  import { appWindow } from "@tauri-plugins/window";
+  import { appWindow } from "@tauri-apps/plugin-window";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
 

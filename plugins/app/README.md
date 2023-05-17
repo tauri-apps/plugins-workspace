@@ -51,7 +51,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import * as app from "@tauri-plugins/app";
+import * as app from "@tauri-apps/plugin-app";
 ```
 
 ## Contributing

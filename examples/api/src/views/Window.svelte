@@ -6,9 +6,9 @@
     UserAttentionType,
     PhysicalSize,
     PhysicalPosition,
-  } from "@tauri-plugins/window";
-  import { open as openDialog } from "@tauri-plugins/dialog";
-  import { open } from "@tauri-plugins/shell";
+  } from "@tauri-apps/plugin-window";
+  import { open as openDialog } from "@tauri-apps/plugin-dialog";
+  import { open } from "@tauri-apps/plugin-shell";
 
   let selectedWindow = appWindow.label;
   const windowMap = {

@@ -1,8 +1,8 @@
 <script>
   import { writable } from "svelte/store";
-  import { open } from "@tauri-plugins/shell";
-  import { appWindow, getCurrent } from "@tauri-plugins/window";
-  import * as os from "@tauri-plugins/os";
+  import { open } from "@tauri-apps/plugin-shell";
+  import { appWindow, getCurrent } from "@tauri-apps/plugin-window";
+  import * as os from "@tauri-apps/plugin-os";
 
   import Welcome from "./views/Welcome.svelte";
   import Cli from "./views/Cli.svelte";
@@ -20,7 +20,7 @@
   import App from "./views/App.svelte";
 
   import { onMount } from "svelte";
-  import { ask } from "@tauri-plugins/dialog";
+  import { ask } from "@tauri-apps/plugin-dialog";
 
   if (appWindow.label !== "main") {
     appWindow.onCloseRequested(async (event) => {

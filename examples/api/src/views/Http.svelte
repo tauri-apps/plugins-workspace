@@ -1,5 +1,5 @@
 <script>
-  import { getClient, Body, ResponseType } from "@tauri-plugins/http";
+  import { getClient, Body, ResponseType } from "@tauri-apps/plugin-http";
   import { JsonView } from "@zerodevx/svelte-json-view";
 
   let httpMethod = "GET";

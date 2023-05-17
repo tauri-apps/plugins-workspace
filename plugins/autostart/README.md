@@ -53,7 +53,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { enable, isEnabled, disable } from "@tauri-plugins/autostart";
+import { enable, isEnabled, disable } from "@tauri-apps/plugin-autostart";
 
 await enable();
 

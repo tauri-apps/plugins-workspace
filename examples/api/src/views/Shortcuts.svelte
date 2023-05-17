@@ -4,7 +4,7 @@
     register as registerShortcut,
     unregister as unregisterShortcut,
     unregisterAll as unregisterAllShortcuts,
-  } from "@tauri-plugins/global-shortcut";
+  } from "@tauri-apps/plugin-global-shortcut";
 
   export let onMessage;
   const shortcuts = writable([]);

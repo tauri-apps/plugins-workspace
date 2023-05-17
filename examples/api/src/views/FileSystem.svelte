@@ -4,7 +4,7 @@
     writeTextFile,
     readDir,
     Dir,
-  } from "@tauri-plugins/fs";
+  } from "@tauri-apps/plugin-fs";
   import { convertFileSrc } from "@tauri-apps/api/tauri";
 
   export let onMessage;
