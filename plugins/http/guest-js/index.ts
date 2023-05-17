@@ -103,7 +103,7 @@ class Body {
    * and the value is either a string or a file object.
    *
    * By default it sets the `application/x-www-form-urlencoded` Content-Type header,
-   * but you can set it to `multipart/form-data` if the Cargo feature `http-multipart` is enabled.
+   * but you can set it to `multipart/form-data` if the Cargo feature `multipart` is enabled.
    *
    * Note that a file path must be allowed in the `fs` allowlist scope.
    * @example

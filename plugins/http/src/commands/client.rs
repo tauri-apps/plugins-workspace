@@ -91,7 +91,7 @@ impl Client {
                         headers: &mut Option<HeaderMap>,
                         form_body: FormBody,
                     ) -> crate::Result<reqwest::RequestBuilder> {
-                        #[cfg(feature = "http-multipart")]
+                        #[cfg(feature = "multipart")]
                         if matches!(
                             headers
                                 .as_ref()
