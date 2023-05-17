@@ -84,6 +84,10 @@ pub enum Error {
     /// Ignore error.
     #[error("failed to walkdir: {0}")]
     Ignore(#[from] ignore::Error),
+    /// Zip error.
+    #[cfg(windows)]
+    #[error(transparent)]
+    ZipError(#[from] zip::result::ZipError),
 }
 
 impl Serialize for Error {
