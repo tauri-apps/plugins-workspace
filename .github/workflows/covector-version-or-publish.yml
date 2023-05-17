@@ -29,6 +29,11 @@ jobs:
           version: 7.x.x
           run_install: true
 
+      - name: install webkit2gtk and libudev for [authenticator]
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libudev-dev
+
       - name: cargo login
         run: cargo login ${{ secrets.ORG_CRATES_IO_TOKEN }}
 
