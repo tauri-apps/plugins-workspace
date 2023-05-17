@@ -610,7 +610,7 @@ impl<R: Runtime> Update<R> {
                 &self.extract_path,
                 self.with_elevated_task,
                 &self.app.config(),
-                &self.app.state::<UpdaterState>().config,
+                &self.app.state::<crate::UpdaterState>().config,
             )?;
             #[cfg(not(target_os = "windows"))]
             copy_files_and_run(archive_buffer, &self.extract_path)?;
@@ -738,7 +738,7 @@ fn copy_files_and_run<R: Read + Seek>(
             // Run the EXE
             let mut installer = Command::new(found_path);
             if tauri::utils::config::WindowsUpdateInstallMode::Quiet
-                == config.tauri.bundle.updater.install_mode
+                == config.tauri.bundle.updater.windows.install_mode
             {
                 installer.arg("/S");
             }
