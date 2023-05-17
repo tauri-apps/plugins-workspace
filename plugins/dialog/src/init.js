@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: MIT
 
 window.alert = function (message) {
-  window.__TAURI_INVOKE__('plugin:dialog|message', {
-    message: message.toString()
-  })
-}
+  window.__TAURI_INVOKE__("plugin:dialog|message", {
+    message: message.toString(),
+  });
+};
 
 window.confirm = function (message) {
-  return window.__TAURI_INVOKE__('plugin:dialog|confirm', {
-    message: message.toString()
-  })
-}
+  return window.__TAURI_INVOKE__("plugin:dialog|confirm", {
+    message: message.toString(),
+  });
+};
