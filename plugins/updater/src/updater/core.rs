@@ -798,10 +798,11 @@ fn copy_files_and_run<R: Read + Seek>(
             msi_path_arg.push(&found_path);
             msi_path_arg.push("\"\"\"");
 
-            let mut msiexec_args = updater_config
+            let mut msiexec_args = config
                 .tauri
                 .bundle
                 .updater
+                .windows
                 .install_mode
                 .clone()
                 .msiexec_args()
