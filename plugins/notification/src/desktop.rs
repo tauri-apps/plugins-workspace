@@ -243,7 +243,7 @@ mod imp {
         #[cfg(all(windows, feature = "windows7-compat"))]
         fn notify_win7<R: tauri::Runtime>(self, app: &tauri::AppHandle<R>) -> crate::Result<()> {
             let app = app.clone();
-            let default_window_icon = app.default_window_icon().clone();
+            let default_window_icon = app.default_window_icon().cloned();
             let _ = app.run_on_main_thread(move || {
                 let mut notification = win7_notifications::Notification::new();
                 if let Some(body) = self.body {
