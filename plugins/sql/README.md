@@ -53,7 +53,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import Database from "tauri-plugin-sql-api";
+import Database from "@tauri-apps/plugin-sql";
 
 // sqlite. The path is relative to `tauri::api::path::BaseDirectory::App`.
 const db = await Database.load("sqlite:test.db");

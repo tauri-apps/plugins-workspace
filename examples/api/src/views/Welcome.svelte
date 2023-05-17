@@ -1,27 +1,27 @@
 <script>
-  import { getName, getVersion, getTauriVersion } from 'tauri-plugin-app-api'
-  import { relaunch, exit } from 'tauri-plugin-process-api'
+  import { getName, getVersion, getTauriVersion } from "@tauri-apps/plugin-app";
+  import { relaunch, exit } from "@tauri-apps/plugin-process";
 
-  let version = '0.0.0'
-  let tauriVersion = '0.0.0'
-  let appName = 'Unknown'
+  let version = "0.0.0";
+  let tauriVersion = "0.0.0";
+  let appName = "Unknown";
 
   getName().then((n) => {
-    appName = n
-  })
+    appName = n;
+  });
   getVersion().then((v) => {
-    version = v
-  })
+    version = v;
+  });
   getTauriVersion().then((v) => {
-    tauriVersion = v
-  })
+    tauriVersion = v;
+  });
 
   async function closeApp() {
-    await exit()
+    await exit();
   }
 
   async function relaunchApp() {
-    await relaunch()
+    await relaunch();
   }
 </script>
 

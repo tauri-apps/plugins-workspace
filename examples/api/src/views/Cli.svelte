@@ -1,5 +1,5 @@
 <script>
-  import { getMatches } from "tauri-plugin-cli-api";
+  import { getMatches } from "@tauri-apps/plugin-cli";
 
   export let onMessage;
 

@@ -1,5 +1,5 @@
 {
-  "name": "tauri-plugin-clipboard-api",
+  "name": "@tauri-apps/plugin-clipboard",
   "version": "0.0.0",
   "license": "MIT or APACHE-2.0",
   "authors": [

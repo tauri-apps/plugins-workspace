@@ -1,5 +1,5 @@
 {
-  "name": "tauri-plugin-fs-watch-api",
+  "name": "@tauri-apps/plugin-fs-watch",
   "version": "0.0.0",
   "description": "Watch files and directories for changes.",
   "license": "MIT or APACHE-2.0",

@@ -1,23 +1,23 @@
 <script>
-  import { writeText, readText } from 'tauri-plugin-clipboard-api'
+  import { writeText, readText } from "@tauri-apps/plugin-clipboard";
 
-  export let onMessage
-  let text = 'clipboard message'
+  export let onMessage;
+  let text = "clipboard message";
 
   function write() {
     writeText(text)
       .then(() => {
-        onMessage('Wrote to the clipboard')
+        onMessage("Wrote to the clipboard");
       })
-      .catch(onMessage)
+      .catch(onMessage);
   }
 
   function read() {
     readText()
       .then((contents) => {
-        onMessage(`Clipboard contents: ${contents}`)
+        onMessage(`Clipboard contents: ${contents}`);
       })
-      .catch(onMessage)
+      .catch(onMessage);
   }
 </script>
 

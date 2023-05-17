@@ -1,5 +1,5 @@
 {
-  "name": "tauri-plugin-cli-api",
+  "name": "@tauri-apps/plugin-cli",
   "version": "0.0.0",
   "license": "MIT or APACHE-2.0",
   "authors": [

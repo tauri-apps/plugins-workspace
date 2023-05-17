@@ -51,7 +51,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { watch, watchImmediate } from "tauri-plugin-fs-watch-api";
+import { watch, watchImmediate } from "@tauri-apps/plugin-fs-watch";
 
 // can also watch an array of paths
 const stopWatching = await watch(

@@ -51,7 +51,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import * as tauriWindow from "tauri-plugin-window-api";
+import * as tauriWindow from "@tauri-apps/plugin-window";
 ```
 
 ## Contributing

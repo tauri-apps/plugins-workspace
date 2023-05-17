@@ -1,5 +1,5 @@
 {
-  "name": "tauri-plugin-global-shortcut-api",
+  "name": "@tauri-apps/plugin-global-shortcut",
   "version": "0.0.0",
   "license": "MIT or APACHE-2.0",
   "authors": [

@@ -62,7 +62,7 @@ app.save_window_state(StateFlags::all()); // will save the state of all open win
 or through Javascript
 
 ```javascript
-import { saveWindowState, StateFlags } from "tauri-plugin-window-state-api";
+import { saveWindowState, StateFlags } from "@tauri-apps/plugin-window-state";
 
 saveWindowState(StateFlags.ALL);
 ```
@@ -79,7 +79,10 @@ window.restore_state(StateFlags::all()); // will restore the windows state from 
 or through Javascript
 
 ```javascript
-import { restoreStateCurrent, StateFlags } from "tauri-plugin-window-state-api";
+import {
+  restoreStateCurrent,
+  StateFlags,
+} from "@tauri-apps/plugin-window-state";
 
 restoreStateCurrent(StateFlags.ALL);
 ```

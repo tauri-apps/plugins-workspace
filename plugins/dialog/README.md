@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-dialog-api = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
+tauri-plugin-dialog = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -26,11 +26,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add tauri-plugin-dialog-api
+pnpm add @tauri-apps/plugin-dialog
 # or
-npm add tauri-plugin-dialog-api
+npm add @tauri-apps/plugin-dialog
 # or
-yarn add tauri-plugin-dialog-api
+yarn add @tauri-apps/plugin-dialog
 ```
 
 ## Usage

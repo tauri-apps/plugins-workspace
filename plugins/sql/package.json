@@ -1,5 +1,5 @@
 {
-  "name": "tauri-plugin-sql-api",
+  "name": "@tauri-apps/plugin-sql",
   "version": "0.0.0",
   "description": "Interface with SQL databases",
   "license": "MIT or APACHE-2.0",
