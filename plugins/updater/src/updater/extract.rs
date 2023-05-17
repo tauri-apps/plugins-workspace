@@ -5,8 +5,8 @@
 use std::{
     borrow::Cow,
     fs,
-    io::{self, Cursor, Read, Seek},
-    path::{self, Path, PathBuf},
+    io::{self, Read, Seek},
+    path::{self, Path},
 };
 
 use crate::{Error, Result};
@@ -46,8 +46,18 @@ pub enum ArchiveFormat {
     /// Tar archive.
     Tar(Option<Compression>),
     /// Zip archive.
-    #[allow(dead_code)]
+    #[cfg(windows)]
     Zip,
+}
+
+impl ArchiveFormat {
+    fn compression(self) -> Option<Compression> {
+        match self {
+            Self::Tar(c) => c,
+            #[allow(unreachable_patterns)]
+            _ => None,
+        }
+    }
 }
 
 /// The supported compression types.
@@ -59,8 +69,9 @@ pub enum Compression {
 }
 
 /// The zip entry.
+#[cfg(windows)]
 pub struct ZipEntry {
-    path: PathBuf,
+    path: std::path::PathBuf,
     is_dir: bool,
     file_contents: Vec<u8>,
 }
@@ -73,7 +84,7 @@ pub enum Entry<'a, R: Read> {
     Tar(Box<tar::Entry<'a, R>>),
     /// An entry of a zip archive.
     #[non_exhaustive]
-    #[allow(dead_code)]
+    #[cfg(windows)]
     Zip(ZipEntry),
 }
 
@@ -82,6 +93,7 @@ impl<'a, R: Read> Entry<'a, R> {
     pub fn path(&self) -> Result<Cow<'_, Path>> {
         match self {
             Self::Tar(e) => e.path().map_err(Into::into),
+            #[cfg(windows)]
             Self::Zip(e) => Ok(Cow::Borrowed(&e.path)),
         }
     }
@@ -113,6 +125,7 @@ impl<'a, R: Read> Entry<'a, R> {
                     }
                 }
             }
+            #[cfg(windows)]
             Self::Zip(entry) => {
                 if entry.is_dir {
                     // this is a directory, lets create it
@@ -126,7 +139,10 @@ impl<'a, R: Read> Entry<'a, R> {
                     }
                 } else {
                     let mut out_file = fs::File::create(into_path)?;
-                    io::copy(&mut Cursor::new(entry.file_contents), &mut out_file)?;
+                    io::copy(
+                        &mut std::io::Cursor::new(entry.file_contents),
+                        &mut out_file,
+                    )?;
                 }
             }
         }
@@ -158,11 +174,7 @@ impl<'a, R: Read + Seek> Extract<'a, R> {
             #[cfg(debug_assertions)]
             eprintln!("Could not seek to start of the file");
         }
-        let compression = if let ArchiveFormat::Tar(compression) = archive_format {
-            compression
-        } else {
-            None
-        };
+        let compression = archive_format.compression();
         Extract {
             reader: match compression {
                 Some(Compression::Gz) => {
@@ -198,28 +210,26 @@ impl<'a, R: Read + Seek> Extract<'a, R> {
                 }
             }
 
+            #[cfg(windows)]
             ArchiveFormat::Zip => {
-                #[cfg(feature = "fs-extract-api")]
-                {
-                    let mut archive = zip::ZipArchive::new(self.reader.get_mut())?;
-                    let file_names = archive
-                        .file_names()
-                        .map(|f| f.to_string())
-                        .collect::<Vec<String>>();
-                    for path in file_names {
-                        let mut zip_file = archive.by_name(&path)?;
-                        let is_dir = zip_file.is_dir();
-                        let mut file_contents = Vec::new();
-                        zip_file.read_to_end(&mut file_contents)?;
-                        let stop = f(Entry::Zip(ZipEntry {
-                            path: path.into(),
-                            is_dir,
-                            file_contents,
-                        }))
-                        .map_err(Into::into)?;
-                        if stop {
-                            break;
-                        }
+                let mut archive = zip::ZipArchive::new(self.reader.get_mut())?;
+                let file_names = archive
+                    .file_names()
+                    .map(|f| f.to_string())
+                    .collect::<Vec<String>>();
+                for path in file_names {
+                    let mut zip_file = archive.by_name(&path)?;
+                    let is_dir = zip_file.is_dir();
+                    let mut file_contents = Vec::new();
+                    zip_file.read_to_end(&mut file_contents)?;
+                    let stop = f(Entry::Zip(ZipEntry {
+                        path: path.into(),
+                        is_dir,
+                        file_contents,
+                    }))
+                    .map_err(Into::into)?;
+                    if stop {
+                        break;
                     }
                 }
             }
@@ -239,34 +249,32 @@ impl<'a, R: Read + Seek> Extract<'a, R> {
                 archive.unpack(into_dir)?;
             }
 
+            #[cfg(windows)]
             ArchiveFormat::Zip => {
-                #[cfg(feature = "fs-extract-api")]
-                {
-                    let mut archive = zip::ZipArchive::new(self.reader.get_mut())?;
-                    for i in 0..archive.len() {
-                        let mut file = archive.by_index(i)?;
-                        // Decode the file name from raw bytes instead of using file.name() directly.
-                        // file.name() uses String::from_utf8_lossy() which may return messy characters
-                        // such as: τê▒Σ║ñµÿô.app/, that does not work as expected.
-                        // Here we require the file name must be a valid UTF-8.
-                        let file_name = String::from_utf8(file.name_raw().to_vec())?;
-                        let out_path = into_dir.join(file_name);
-                        if file.is_dir() {
-                            fs::create_dir_all(&out_path)?;
-                        } else {
-                            if let Some(out_path_parent) = out_path.parent() {
-                                fs::create_dir_all(out_path_parent)?;
-                            }
-                            let mut out_file = fs::File::create(&out_path)?;
-                            io::copy(&mut file, &mut out_file)?;
+                let mut archive = zip::ZipArchive::new(self.reader.get_mut())?;
+                for i in 0..archive.len() {
+                    let mut file = archive.by_index(i)?;
+                    // Decode the file name from raw bytes instead of using file.name() directly.
+                    // file.name() uses String::from_utf8_lossy() which may return messy characters
+                    // such as: τê▒Σ║ñµÿô.app/, that does not work as expected.
+                    // Here we require the file name must be a valid UTF-8.
+                    let file_name = String::from_utf8(file.name_raw().to_vec())?;
+                    let out_path = into_dir.join(file_name);
+                    if file.is_dir() {
+                        fs::create_dir_all(&out_path)?;
+                    } else {
+                        if let Some(out_path_parent) = out_path.parent() {
+                            fs::create_dir_all(out_path_parent)?;
                         }
-                        // Get and Set permissions
-                        #[cfg(unix)]
-                        {
-                            use std::os::unix::fs::PermissionsExt;
-                            if let Some(mode) = file.unix_mode() {
-                                fs::set_permissions(&out_path, fs::Permissions::from_mode(mode))?;
-                            }
+                        let mut out_file = fs::File::create(&out_path)?;
+                        io::copy(&mut file, &mut out_file)?;
+                    }
+                    // Get and Set permissions
+                    #[cfg(unix)]
+                    {
+                        use std::os::unix::fs::PermissionsExt;
+                        if let Some(mode) = file.unix_mode() {
+                            fs::set_permissions(&out_path, fs::Permissions::from_mode(mode))?;
                         }
                     }
                 }
