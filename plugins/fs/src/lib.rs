@@ -12,6 +12,8 @@ mod commands;
 mod config;
 mod error;
 mod scope;
+#[cfg(feature = "watch")]
+mod watcher;
 
 pub use config::Config;
 pub use error::Error;
@@ -47,7 +49,11 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
             commands::remove_file,
             commands::rename_file,
             commands::exists,
-            commands::metadata
+            commands::metadata,
+            #[cfg(feature = "watch")]
+            watcher::watch,
+            #[cfg(feature = "watch")]
+            watcher::unwatch
         ])
         .setup(|app: &tauri::AppHandle<R>, api| {
             let default_scope = FsScope::default();
@@ -58,6 +64,10 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
                     .map(|c| &c.scope)
                     .unwrap_or(&default_scope),
             )?);
+
+            #[cfg(feature = "watch")]
+            app.manage(watcher::WatcherCollection::default());
+
             Ok(())
         })
         .on_event(|app, event| {

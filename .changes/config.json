@@ -88,15 +88,6 @@
       "manager": "javascript-disabled"
     },
 
-    "fs-watch": {
-      "path": "./plugins/fs-watch",
-      "manager": "rust-disabled"
-    },
-    "fs-watch-js": {
-      "path": "./plugins/fs-watch",
-      "manager": "javascript-disabled"
-    },
-
     "global-shortcut": {
       "path": "./plugins/global-shortcut",
       "manager": "rust-disabled"

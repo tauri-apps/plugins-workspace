@@ -4,7 +4,6 @@ cli
 clipboard
 dialog
 fs
-fs-watch
 global-shortcut
 http
 localhost

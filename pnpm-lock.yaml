@@ -58,9 +58,6 @@ importers:
       '@tauri-apps/cli':
         specifier: 2.0.0-alpha.8
         version: 2.0.0-alpha.8
-      '@zerodevx/svelte-json-view':
-        specifier: 0.2.1
-        version: 0.2.1
       '@tauri-apps/plugin-app':
         specifier: 0.0.0
         version: link:../../plugins/app
@@ -100,6 +97,9 @@ importers:
       '@tauri-apps/plugin-window':
         specifier: 0.0.0
         version: link:../../plugins/window
+      '@zerodevx/svelte-json-view':
+        specifier: 0.2.1
+        version: 0.2.1
     devDependencies:
       '@iconify-json/codicon':
         specifier: ^1.1.10
@@ -192,16 +192,6 @@ importers:
       tslib:
         specifier: ^2.4.1
         version: 2.4.1
-
-  plugins/fs-watch:
-    dependencies:
-      '@tauri-apps/api':
-        specifier: ^1.2.0
-        version: 1.2.0
-    devDependencies:
-      tslib:
-        specifier: ^2.5.0
-        version: 2.5.0
 
   plugins/global-shortcut:
     dependencies:
