@@ -1,21 +1,21 @@
 [package]
 name = "tauri-plugin-log"
-version = "0.0.0"
+version = "1.0.0"
 description = "Configurable logging for your Tauri app."
-authors.workspace = true
-license.workspace = true
-edition.workspace = true
-rust-version.workspace = true
+authors = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build.workspace = true
+tauri-build = { workspace = true }
 
 [dependencies]
-serde.workspace = true
-serde_json.workspace = true
-tauri.workspace = true
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
 serde_repr = "0.1"
 byte-unit = "4.0"
 log = { workspace = true, features = ["kv_unstable"] }

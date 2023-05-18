@@ -1,18 +1,18 @@
 [package]
 name = "tauri-plugin-fs"
-version = "0.0.0"
+version = "1.0.0"
 description = "Access the file system."
-authors.workspace = true
-license.workspace = true
-edition.workspace = true
-rust-version.workspace = true
+authors = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde.workspace = true
-tauri.workspace = true
-thiserror.workspace = true
+serde = { workspace = true }
+tauri = { workspace = true }
+thiserror = { workspace = true }
 anyhow = "1"
 uuid = { version = "1", features = ["v4"] }
 glob = "0.3"

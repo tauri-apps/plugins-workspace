@@ -1,0 +1,53 @@
+---
+"app": major
+"app-js": major
+"authenticator": major
+"authenticator-js": major
+"autostart": major
+"autostart-js": major
+"cli": major
+"cli-js": major
+"clipboard": major
+"clipboard-js": major
+"dialog": major
+"dialog-js": major
+"fs": major
+"fs-js": major
+"global-shortcut": major
+"global-shortcut-js": major
+"http": major
+"http-js": major
+"localhost": major
+"log-plugin": major
+"log-js": major
+"notification": major
+"notification-js": major
+"os": major
+"os-js": major
+"persisted-scope": major
+"positioner": major
+"positioner-js": major
+"process": major
+"process-js": major
+"shell": major
+"shell-js": major
+"single-instance": major
+"sql": major
+"sql-js": major
+"store": major
+"store-js": major
+"stronghold": major
+"stronghold-js": major
+"updater": major
+"updater-js": major
+"upload": major
+"upload-js": major
+"websocket": major
+"websocket-js": major
+"window": major
+"window-js": major
+"window-state": major
+"window-state-js": major
+---
+
+First v2 alpha release!

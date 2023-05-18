@@ -1,20 +1,20 @@
 [package]
 name = "tauri-plugin-persisted-scope"
-version = "0.1.0"
+version = "1.0.0"
 description = "Save filesystem and asset scopes and restore them when the app is reopened."
-authors.workspace = true
-license.workspace = true
-edition.workspace = true
-rust-version.workspace = true
+authors = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde.workspace = true
-serde_json.workspace = true
-tauri.workspace = true
-log.workspace = true
-thiserror.workspace = true
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
 aho-corasick = "1.0"
 bincode = "1"
-tauri-plugin-fs = { path = "../fs", version = "0.0.0" }
+tauri-plugin-fs = { path = "../fs", version = "1.0.0" }
