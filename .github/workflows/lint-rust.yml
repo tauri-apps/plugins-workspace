@@ -23,10 +23,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      packages: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: .github/filters.yml
+
   clippy:
+    needs: changes
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
 
     steps:
       - uses: actions/checkout@v3
@@ -47,17 +62,21 @@ jobs:
         working-directory: examples/api
         run: mkdir dist
 
-      - name: clippy
-        run: cargo clippy --workspace --exclude 'tauri-plugin-sql' --all-targets --all-features -- -D warnings
+      - name: clippy ${{ matrix.package }}
+        if: matrix.package != 'tauri-plugin-sql'
+        run: cargo clippy --package ${{ matrix.package }} --all-targets -- -D warnings
 
-      - name: clippy sql:sqlite
-        run: cargo clippy --package 'tauri-plugin-sql' --all-targets --features sqlite -- -D warnings
+      - name: clippy ${{ matrix.package }} --all-features
+        if: ${{ !contains(fromJSON('["tauri-plugin-http", "tauri-plugin-upload", "tauri-plugin-updater", "tauri-plugin-webspcket", "tauri-plugin-sql"]'), matrix.package) }}
+        run: cargo clippy --package ${{ matrix.package }} --all-targets --all-features -- -D warnings
 
-      - name: clippy sql:mysql
-        run: cargo clippy --package 'tauri-plugin-sql' --all-targets --features mysql -- -D warnings
+      - name: clippy ${{ matrix.package }} mysql
+        if: matrix.package == 'tauri-plugin-sql'
+        run: cargo clippy --package ${{ matrix.package }} --all-targets  --features mysql -- -D warnings
 
-      - name: clippy sql:postgres
-        run: cargo clippy --package 'tauri-plugin-sql' --all-targets --features postgres -- -D warnings
+      - name: clippy ${{ matrix.package }} postgres
+        if: matrix.package == 'tauri-plugin-sql'
+        run: cargo clippy --package ${{ matrix.package }} --all-targets  --features postgres -- -D warnings
 
   fmt:
     runs-on: ubuntu-latest
