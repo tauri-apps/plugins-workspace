@@ -32,93 +32,94 @@ jobs:
     outputs:
       packages: ${{ steps.filter.outputs.changes }}
     steps:
+      - uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
         id: changes
         with:
           filters: |
             tauri-plugin-app:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/app/**
             tauri-plugin-authenticator:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/authenticator/**
             tauri-plugin-autostart:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/autostart/**
             tauri-plugin-cli:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/cli/**
             tauri-plugin-clipboard:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/clipboard/**
             tauri-plugin-dialog:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/dialog/**
               - plugins/fs/**
             tauri-plugin-fs:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/fs/**
             tauri-plugin-fs-wtach:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/fs-wtach/**
             tauri-plugin-global-shortcut:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/global-shortcut/**
             tauri-plugin-http:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/http/**
               - plugins/fs/**
             tauri-plugin-localhost:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/localhost/**
             tauri-plugin-log:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/log/**
             tauri-plugin-notification:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/notification/**
             tauri-plugin-os:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/os/**
             tauri-plugin-persisted-scope:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/persisted-scope/**
               - plugins/fs/**
             tauri-plugin-positioner:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/positioner/**
             tauri-plugin-process:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/process/**
             tauri-plugin-shell:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/shell/**
             tauri-plugin-single-instance:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/single-instance/**
             tauri-plugin-sql:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/sql/**
             tauri-plugin-store:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/store/**
             tauri-plugin-stronghold:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/stronghold/**
             tauri-plugin-updater:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/updater/**
             tauri-plugin-upload:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/upload/**
             tauri-plugin-websocket:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/websocket/**
             tauri-plugin-window:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/window/**
             tauri-plugin-window-state:
-              - .github/test-rust.yml
+              - .github/workflows/test-rust.yml
               - plugins/window-state/**
 
   test:
@@ -153,7 +154,7 @@ jobs:
         run: cargo test --package ${{ matrix.package }} --all-targets
 
       - name: test ${{ matrix.package }} --all-features
-        if: ${{ !contains(fromJSON('["tauri-plugin-http", "tauri-plugin-upload", "tauri-plugin-updater", "tauri-plugin-webspcket", "tauri-plugin-sql"]'), matrix.package) }}
+        if: ${{ !contains(fromJSON('["tauri-plugin-http", "tauri-plugin-upload", "tauri-plugin-updater", "tauri-plugin-websocket", "tauri-plugin-sql"]'), matrix.package) }}
         run: cargo test --package ${{ matrix.package }} --all-targets --all-features
 
       - name: test ${{ matrix.package }} mysql
