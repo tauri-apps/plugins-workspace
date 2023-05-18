@@ -155,11 +155,11 @@ jobs:
 
       - name: clippy ${{ matrix.package }} mysql
         if: matrix.package == 'tauri-plugin-sql'
-        run: cargo clippy --package ${{ matrix.package }} --all-targets  --features mysql -- -D warnings
+        run: cargo clippy --package ${{ matrix.package }} --all-targets --no-default-features --features mysql -- -D warnings
 
       - name: clippy ${{ matrix.package }} postgres
         if: matrix.package == 'tauri-plugin-sql'
-        run: cargo clippy --package ${{ matrix.package }} --all-targets  --features postgres -- -D warnings
+        run: cargo clippy --package ${{ matrix.package }} --all-targets --no-default-features --features postgres -- -D warnings
 
   fmt:
     runs-on: ubuntu-latest
