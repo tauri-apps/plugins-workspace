@@ -69,6 +69,7 @@ impl<R: Runtime> Dialog<R> {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    #[allow(unused_mut)]
     let mut builder = Builder::new("dialog");
 
     // Dialogs are implemented natively on Android
