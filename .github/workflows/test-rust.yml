@@ -35,7 +35,6 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: changes
         with:
-          base: v2
           filters: |
             tauri-plugin-app:
               - .github/test-rust.yml
