@@ -300,7 +300,7 @@ export class Store {
       key: toBytesDto(key),
     }).then((v) => {
          if (v !== null || undefined) {
-          Uint8Array.from(v);
+          Uint8Array.from(v)
          }
          else {
           null
