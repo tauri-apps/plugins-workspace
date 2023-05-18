@@ -17,17 +17,17 @@ serde_json.workspace = true
 serde.workspace = true
 tiny_http = "0.11"
 log.workspace = true
-tauri-plugin-app = { path = "../../../plugins/app" }
-tauri-plugin-log = { path = "../../../plugins/log" }
-tauri-plugin-fs = { path = "../../../plugins/fs" }
-tauri-plugin-clipboard = { path = "../../../plugins/clipboard" }
-tauri-plugin-dialog = { path = "../../../plugins/dialog" }
-tauri-plugin-http = { path = "../../../plugins/http", features = [ "multipart" ] }
-tauri-plugin-notification = { path = "../../../plugins/notification", features = [ "windows7-compat" ] }
-tauri-plugin-os = { path = "../../../plugins/os" }
-tauri-plugin-process = { path = "../../../plugins/process" }
-tauri-plugin-shell = { path = "../../../plugins/shell" }
-tauri-plugin-window = { path = "../../../plugins/window", features = ["devtools", "icon-ico", "icon-png"] }
+tauri-plugin-app = { path = "../../../plugins/app", version = "1.0.0" }
+tauri-plugin-log = { path = "../../../plugins/log", version = "1.0.0" }
+tauri-plugin-fs = { path = "../../../plugins/fs", version = "1.0.0" }
+tauri-plugin-clipboard = { path = "../../../plugins/clipboard", version = "1.0.0" }
+tauri-plugin-dialog = { path = "../../../plugins/dialog", version = "1.0.0" }
+tauri-plugin-http = { path = "../../../plugins/http", version = "1.0.0", features = [ "multipart" ] }
+tauri-plugin-notification = { path = "../../../plugins/notification", version = "1.0.0", features = [ "windows7-compat" ] }
+tauri-plugin-os = { path = "../../../plugins/os", version = "1.0.0" }
+tauri-plugin-process = { path = "../../../plugins/process", version = "1.0.0" }
+tauri-plugin-shell = { path = "../../../plugins/shell", version = "1.0.0" }
+tauri-plugin-window = { path = "../../../plugins/window", version = "1.0.0", features = ["devtools", "icon-ico", "icon-png"] }
 
 [dependencies.tauri]
 workspace = true
@@ -41,9 +41,9 @@ features = [
 ]
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
-tauri-plugin-cli = { path = "../../../plugins/cli" }
-tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut" }
-tauri-plugin-updater = { path = "../../../plugins/updater" }
+tauri-plugin-cli = { path = "../../../plugins/cli", version = "1.0.0" }
+tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", version = "1.0.0" }
+tauri-plugin-updater = { path = "../../../plugins/updater", version = "1.0.0" }
 
 [target."cfg(target_os = \"windows\")".dependencies]
 window-shadows = "0.2"

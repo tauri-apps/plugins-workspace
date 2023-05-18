@@ -2,8 +2,8 @@
   import { getName, getVersion, getTauriVersion } from "@tauri-apps/plugin-app";
   import { relaunch, exit } from "@tauri-apps/plugin-process";
 
-  let version = "0.0.0";
-  let tauriVersion = "0.0.0";
+  let version = "1.0.0";
+  let tauriversion = "1.0.0";
   let appName = "Unknown";
 
   getName().then((n) => {
