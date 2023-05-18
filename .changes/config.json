@@ -39,7 +39,7 @@
       "publish": false,
       "dependencies": [
         "app",
-        "log",
+        "log-plugin",
         "cli",
         "clipboard",
         "dialog",
@@ -164,7 +164,7 @@
       "manager": "rust"
     },
 
-    "log": {
+    "log-plugin": {
       "path": "./plugins/log",
       "manager": "rust"
     },

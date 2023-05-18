@@ -18,7 +18,7 @@
 "http": major
 "http-js": major
 "localhost": major
-"log": major
+"log-plugin": major
 "log-js": major
 "notification": major
 "notification-js": major
