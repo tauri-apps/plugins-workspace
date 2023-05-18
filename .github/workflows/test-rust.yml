@@ -59,9 +59,9 @@ jobs:
             tauri-plugin-fs:
               - .github/workflows/test-rust.yml
               - plugins/fs/**
-            tauri-plugin-fs-wtach:
+            tauri-plugin-fs-watch:
               - .github/workflows/test-rust.yml
-              - plugins/fs-wtach/**
+              - plugins/fs-watch/**
             tauri-plugin-global-shortcut:
               - .github/workflows/test-rust.yml
               - plugins/global-shortcut/**
@@ -160,8 +160,8 @@ jobs:
 
       - name: test ${{ matrix.package }} mysql
         if: matrix.package == 'tauri-plugin-sql'
-        run: cargo test --package ${{ matrix.package }} --all-targets  --features mysql
+        run: cargo test --package ${{ matrix.package }} --all-targets --no-default-features --features mysql
 
       - name: test ${{ matrix.package }} postgres
         if: matrix.package == 'tauri-plugin-sql'
-        run: cargo test --package ${{ matrix.package }} --all-targets  --features postgres
+        run: cargo test --package ${{ matrix.package }} --all-targets --no-default-features  --features postgres
