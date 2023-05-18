@@ -1,0 +1,84 @@
+tauri-plugin-app:
+  - .github/test-rust.yml
+  - plugins/app/**
+tauri-plugin-authenticator:
+  - .github/test-rust.yml
+  - plugins/authenticator/**
+tauri-plugin-autostart:
+  - .github/test-rust.yml
+  - plugins/autostart/**
+tauri-plugin-cli:
+  - .github/test-rust.yml
+  - plugins/cli/**
+tauri-plugin-clipboard:
+  - .github/test-rust.yml
+  - plugins/clipboard/**
+tauri-plugin-dialog:
+  - .github/test-rust.yml
+  - plugins/dialog/**
+tauri-plugin-fs:
+  - .github/test-rust.yml
+  - plugins/fs/**
+tauri-plugin-fs-wtach:
+  - .github/test-rust.yml
+  - plugins/fs-wtach/**
+tauri-plugin-global-shortcut:
+  - .github/test-rust.yml
+  - plugins/global-shortcut/**
+tauri-plugin-http:
+  - .github/test-rust.yml
+  - plugins/http/**
+tauri-plugin-localhost:
+  - .github/test-rust.yml
+  - plugins/localhost/**
+tauri-plugin-log:
+  - .github/test-rust.yml
+  - plugins/log/**
+tauri-plugin-notification:
+  - .github/test-rust.yml
+  - plugins/notification/**
+tauri-plugin-os:
+  - .github/test-rust.yml
+  - plugins/os/**
+tauri-plugin-persisted-scope:
+  - .github/test-rust.yml
+  - plugins/persisted-scope/**
+tauri-plugin-positioner:
+  - .github/test-rust.yml
+  - plugins/positioner/**
+tauri-plugin-process:
+  - .github/test-rust.yml
+  - plugins/process/**
+tauri-plugin-shell:
+  - .github/test-rust.yml
+  - plugins/shell/**
+tauri-plugin-single-instance:
+  - .github/test-rust.yml
+  - plugins/single-instance/**
+tauri-plugin-sql:
+  - .github/test-rust.yml
+  - plugins/sql/**
+tauri-plugin-store:
+  - .github/test-rust.yml
+  - plugins/store/**
+tauri-plugin-store:
+  - .github/test-rust.yml
+  - plugins/store/**
+tauri-plugin-stronghold:
+  - .github/test-rust.yml
+  - plugins/stronghold/**
+tauri-plugin-updater:
+  - .github/test-rust.yml
+  - plugins/updater/**
+tauri-plugin-upload:
+  - .github/test-rust.yml
+  - plugins/upload/**
+tauri-plugin-websocket:
+  - .github/test-rust.yml
+  - plugins/websocket/**
+tauri-plugin-window:
+  - .github/test-rust.yml
+  - plugins/window/**
+tauri-plugin-window-state:
+  - .github/test-rust.yml
+  - plugins/window-state/**

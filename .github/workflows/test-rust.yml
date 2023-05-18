@@ -25,13 +25,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    runs-on: ${{ matrix.platform }}
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      packages: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: .github/filters.yaml
 
+  test:
+    needs: changes
     strategy:
       fail-fast: false
       matrix:
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
         platform: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.platform }}
 
     steps:
       - uses: actions/checkout@v3
@@ -42,12 +56,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libudev-dev
 
-      - name: install openssl
-        if: matrix.platform == 'windows-latest'
-        run: |
-          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-          vcpkg install openssl:x64-windows-static-md
-
       - uses: dtolnay/rust-toolchain@1.65.0
 
       - uses: Swatinem/rust-cache@v2
@@ -56,14 +64,18 @@ jobs:
         working-directory: examples/api
         run: mkdir dist
 
-      - name: build
-        run: cargo build --workspace --exclude 'tauri-plugin-sql' --all-targets --all-features
+      - name: test ${{ package }}
+        if: matrix.package != 'tauri-plugin-sql'
+        run: cargo test --package ${{ matrix.package }} --all-targets
 
-      - name: build sql:sqlite
-        run: cargo build --package 'tauri-plugin-sql' --all-targets --features sqlite
+      - name: test ${{ package }} --all-features
+        if: ${{ !contains(fromJSON('["tauri-plugin-http", "tauri-plugin-upload", "tauri-plugin-updater", "tauri-plugin-webspcket", "tauri-plugin-sql"]', matrix.package)) }}
+        run: cargo test --package ${{ matrix.package }} --all-targets --all-features
 
-      - name: build sql:mysql
-        run: cargo build --package 'tauri-plugin-sql' --all-targets --features mysql
+      - name: test ${{ package }} mysql
+        if: matrix.package == 'tauri-plugin-sql'
+        run: cargo test --package ${{ matrix.package }} --all-targets  --features mysql
 
-      - name: build sql:postgres
-        run: cargo build --package 'tauri-plugin-sql' --all-targets --features postgres
+      - name: test ${{ package }} postgres
+        if: matrix.package == 'tauri-plugin-sql'
+        run: cargo test --package ${{ matrix.package }} --all-targets  --features postgres

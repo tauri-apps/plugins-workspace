@@ -5767,9 +5767,13 @@ dependencies = [
  "futures-util",
  "log",
  "native-tls",
+ "rustls",
  "tokio",
  "tokio-native-tls",
+ "tokio-rustls",
  "tungstenite",
+ "webpki",
+ "webpki-roots",
 ]
 
 [[package]]
@@ -5926,10 +5930,12 @@ dependencies = [
  "log",
  "native-tls",
  "rand 0.8.5",
+ "rustls",
  "sha1",
  "thiserror",
  "url",
  "utf-8",
+ "webpki",
 ]
 
 [[package]]
