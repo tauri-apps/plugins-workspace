@@ -22,7 +22,7 @@ futures-util = "0.3"
 read-progress-stream = "1.0.0"
 
 [features]
-default = [ "native-tls-vendored" ]
+default = [ "native-tls" ]
 native-tls = [ "reqwest/native-tls" ]
 native-tls-vendored = [ "reqwest/native-tls-vendored" ]
 rustls-tls = [ "reqwest/rustls-tls" ]

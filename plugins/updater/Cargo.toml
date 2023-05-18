@@ -35,7 +35,7 @@ mockito = "0.31"
 tokio-test = "0.4.2"
 
 [features]
-default = [ "native-tls-vendored" ]
+default = [ "native-tls" ]
 native-tls = [ "reqwest/native-tls" ]
 native-tls-vendored = [ "reqwest/native-tls-vendored" ]
 rustls-tls = [ "reqwest/rustls-tls" ]
