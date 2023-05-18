@@ -4,6 +4,8 @@ Save filesystem and asset scopes and restore them when the app is reopened.
 
 ## Install
 
+_This plugin requires a Rust version of at least **1.64**_
+
 There are three general methods of installation that we can recommend.
 
 1. Use crates.io and npm (easiest, and requires you to trust that our publishing pipeline worked)
@@ -16,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-persisted-scope = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-persisted-scope = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 ```
 
 ## Usage

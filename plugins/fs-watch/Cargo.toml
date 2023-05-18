@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-fs-watch"
-version = "0.1.0"
+version = "0.0.0"
 description = "Watch files and directories for changes."
 authors.workspace = true
 license.workspace = true
@@ -15,5 +15,5 @@ serde_json.workspace = true
 tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
-notify = { version = "5" , features = ["serde"] }
-notify-debouncer-mini = { version = "0.2.1" , features = ["serde"] }
+notify = { version = "6" , features = ["serde"] }
+notify-debouncer-mini = { version = "0.3" , features = ["serde"] }

@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-upload"
-version = "0.1.0"
+version = "0.0.0"
 description = "Upload files from disk to a remote server over HTTP."
 authors.workspace = true
 license.workspace = true
@@ -18,5 +18,5 @@ thiserror.workspace = true
 tokio = { version = "1", features = [ "fs" ] }
 tokio-util = { version = "0.7", features = [ "codec" ] }
 reqwest = { version = "0.11", features = [ "json", "stream" ] }
-futures = "0.3"
+futures-util = "0.3"
 read-progress-stream = "1.0.0"

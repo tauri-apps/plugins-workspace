@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use base64::{decode_config, encode_config, URL_SAFE_NO_PAD};
+use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use chrono::prelude::*;
 use serde::Serialize;
 use std::convert::Into;
@@ -15,7 +15,7 @@ static VERSION: &str = "U2F_V2";
 pub fn make_challenge(app_id: &str, challenge_bytes: Vec<u8>) -> Challenge {
     let utc: DateTime<Utc> = Utc::now();
     Challenge {
-        challenge: encode_config(challenge_bytes, URL_SAFE_NO_PAD),
+        challenge: URL_SAFE_NO_PAD.encode(challenge_bytes),
         timestamp: format!("{utc:?}"),
         app_id: app_id.to_string(),
     }
@@ -35,10 +35,10 @@ pub fn verify_registration(
     register_data: String,
     client_data: String,
 ) -> crate::Result<String> {
-    let challenge_bytes = decode_config(challenge, URL_SAFE_NO_PAD)?;
+    let challenge_bytes = URL_SAFE_NO_PAD.decode(challenge)?;
     let challenge = make_challenge(&app_id, challenge_bytes);
     let client_data_bytes: Vec<u8> = client_data.as_bytes().into();
-    let client_data_base64 = encode_config(client_data_bytes, URL_SAFE_NO_PAD);
+    let client_data_base64 = URL_SAFE_NO_PAD.encode(client_data_bytes);
     let client = U2f::new(app_id);
     match client.register_response(
         challenge,
@@ -50,8 +50,8 @@ pub fn verify_registration(
     ) {
         Ok(v) => {
             let rv = RegistrationVerification {
-                key_handle: encode_config(&v.key_handle, URL_SAFE_NO_PAD),
-                pubkey: encode_config(&v.pub_key, URL_SAFE_NO_PAD),
+                key_handle: URL_SAFE_NO_PAD.encode(&v.key_handle),
+                pubkey: URL_SAFE_NO_PAD.encode(&v.pub_key),
                 device_name: v.device_name,
             };
             Ok(serde_json::to_string(&rv)?)
@@ -74,12 +74,12 @@ pub fn verify_signature(
     key_handle: String,
     pub_key: String,
 ) -> crate::Result<u32> {
-    let challenge_bytes = decode_config(challenge, URL_SAFE_NO_PAD)?;
+    let challenge_bytes = URL_SAFE_NO_PAD.decode(challenge)?;
     let chal = make_challenge(&app_id, challenge_bytes);
     let client_data_bytes: Vec<u8> = client_data.as_bytes().into();
-    let client_data_base64 = encode_config(client_data_bytes, URL_SAFE_NO_PAD);
-    let key_handle_bytes = decode_config(&key_handle, URL_SAFE_NO_PAD)?;
-    let pubkey_bytes = decode_config(pub_key, URL_SAFE_NO_PAD)?;
+    let client_data_base64 = URL_SAFE_NO_PAD.encode(client_data_bytes);
+    let key_handle_bytes = URL_SAFE_NO_PAD.decode(&key_handle)?;
+    let pubkey_bytes = URL_SAFE_NO_PAD.decode(pub_key)?;
     let client = U2f::new(app_id);
     let mut _counter: u32 = 0;
     match client.sign_response(

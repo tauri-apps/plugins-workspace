@@ -6,6 +6,8 @@ Expose your apps assets through a localhost server instead of the default custom
 
 ## Install
 
+_This plugin requires a Rust version of at least **1.64**_
+
 There are three general methods of installation that we can recommend.
 
 1. Use crates.io and npm (easiest, and requires you to trust that our publishing pipeline worked)
@@ -18,7 +20,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-localhost = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-localhost = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 portpicker = "0.1" # used in the example to pick a random free port
 ```
 

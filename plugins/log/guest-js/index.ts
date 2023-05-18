@@ -4,7 +4,8 @@ import { listen, UnlistenFn } from "@tauri-apps/api/event";
 export type LogOptions = {
   file?: string;
   line?: number;
-} & Record<string, string | undefined>;
+  keyValues?: Record<string, string | undefined>;
+};
 
 enum LogLevel {
   /**
@@ -50,12 +51,17 @@ async function log(
     return name.length > 0 && location !== "[native code]";
   });
 
-  const { file, line, ...keyValues } = options ?? {};
+  const { file, line, keyValues } = options ?? {};
+
+  let location = filtered?.[0]?.filter((v) => v.length > 0).join("@");
+  if (location === "Error") {
+    location = "webview::unknown";
+  }
 
   await invoke("plugin:log|log", {
     level,
     message,
-    location: filtered?.[0]?.filter((v) => v.length > 0).join("@"),
+    location,
     file,
     line,
     keyValues,
@@ -184,7 +190,8 @@ export async function attachConsole(): Promise<UnlistenFn> {
 
     // Strip ANSI escape codes
     const message = payload.message.replace(
-      // eslint-disable-next-line no-control-regex
+      // TODO: Investigate security/detect-unsafe-regex
+      // eslint-disable-next-line no-control-regex, security/detect-unsafe-regex
       /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
       ""
     );

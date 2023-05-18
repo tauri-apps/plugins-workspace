@@ -14,7 +14,7 @@
     "strict": true,
     "target": "ES2019",
     "declaration": true,
-    "declarationDir": "dist"
+    "declarationDir": "./"
   },
   "exclude": ["dist-js", "node_modules", "test/types"]
 }

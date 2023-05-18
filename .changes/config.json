@@ -1,0 +1,159 @@
+{
+  "gitSiteUrl": "https://github.com/tauri-apps/plugins-workspace/",
+  "pkgManagers": {
+    "javascript": {
+      "version": true,
+      "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.cjs npm ${ pkgFile.pkg.name } ${ pkgFile.pkg.version }",
+      "publish": ["pnpm build", "pnpm publish --access public --no-git-checks"]
+    },
+    "rust": {
+      "version": true,
+      "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.cjs cargo ${ pkgFile.pkg.package.name } ${ pkgFile.pkg.package.version }",
+      "publish": [
+        {
+          "command": "cargo package --no-verify",
+          "dryRunCommand": true
+        },
+        {
+          "command": "echo '<details>\n<summary><em><h4>Cargo Publish</h4></em></summary>\n\n```'",
+          "dryRunCommand": true,
+          "pipe": true
+        },
+        {
+          "command": "cargo publish",
+          "dryRunCommand": "cargo publish --dry-run",
+          "pipe": true
+        },
+        {
+          "command": "echo '```\n\n</details>\n'",
+          "dryRunCommand": true,
+          "pipe": true
+        }
+      ]
+    }
+  },
+  "packages": {
+    "authenticator": {
+      "path": "./plugins/authenticator",
+      "manager": "rust-disabled"
+    },
+    "authenticator-js": {
+      "path": "./plugins/authenticator",
+      "manager": "javascript-disabled"
+    },
+
+    "autostart": {
+      "path": "./plugins/autostart",
+      "manager": "rust-disabled"
+    },
+    "autostart-js": {
+      "path": "./plugins/autostart",
+      "manager": "javascript-disabled"
+    },
+
+    "fs-extra": {
+      "path": "./plugins/fs-extra",
+      "manager": "rust-disabled"
+    },
+    "fs-extra-js": {
+      "path": "./plugins/fs-extra",
+      "manager": "javascript-disabled"
+    },
+
+    "fs-watch": {
+      "path": "./plugins/fs-watch",
+      "manager": "rust-disabled"
+    },
+    "fs-watch-js": {
+      "path": "./plugins/fs-watch",
+      "manager": "javascript-disabled"
+    },
+
+    "localhost": {
+      "path": "./plugins/localhost",
+      "manager": "rust"
+    },
+
+    "log": {
+      "path": "./plugins/log",
+      "manager": "rust-disabled"
+    },
+    "log-js": {
+      "path": "./plugins/log",
+      "manager": "javascript-disabled"
+    },
+
+    "persisted-scope": {
+      "path": "./plugins/persisted-scope",
+      "manager": "rust"
+    },
+
+    "positioner": {
+      "path": "./plugins/positioner",
+      "manager": "rust"
+    },
+    "positioner-js": {
+      "path": "./plugins/positioner",
+      "manager": "javascript-disabled"
+    },
+
+    "single-instance": {
+      "path": "./plugins/single-instance",
+      "manager": "rust-disabled"
+    },
+
+    "sql": {
+      "path": "./plugins/sql",
+      "manager": "rust-disabled"
+    },
+    "sql-js": {
+      "path": "./plugins/sql",
+      "manager": "javascript-disabled"
+    },
+
+    "store": {
+      "path": "./plugins/store",
+      "manager": "rust-disabled"
+    },
+    "store-js": {
+      "path": "./plugins/store",
+      "manager": "javascript-disabled"
+    },
+
+    "stronghold": {
+      "path": "./plugins/stronghold",
+      "manager": "rust-disabled"
+    },
+    "stronghold-js": {
+      "path": "./plugins/stronghold",
+      "manager": "javascript-disabled"
+    },
+
+    "upload": {
+      "path": "./plugins/upload",
+      "manager": "rust-disabled"
+    },
+    "upload-js": {
+      "path": "./plugins/upload",
+      "manager": "javascript-disabled"
+    },
+
+    "websocket": {
+      "path": "./plugins/websocket",
+      "manager": "rust-disabled"
+    },
+    "websocket-js": {
+      "path": "./plugins/websocket",
+      "manager": "javascript-disabled"
+    },
+
+    "window-state": {
+      "path": "./plugins/window-state",
+      "manager": "rust"
+    },
+    "window-state-js": {
+      "path": "./plugins/window-state",
+      "manager": "javascript-disabled"
+    }
+  }
+}

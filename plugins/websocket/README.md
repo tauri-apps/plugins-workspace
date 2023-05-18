@@ -4,6 +4,8 @@
 
 ## Install
 
+_This plugin requires a Rust version of at least **1.64**_
+
 There are three general methods of installation that we can recommend.
 
 1. Use crates.io and npm (easiest, and requires you to trust that our publishing pipeline worked)
@@ -16,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-websocket = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-websocket = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:

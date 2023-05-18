@@ -4,6 +4,8 @@ Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx)
 
 ## Install
 
+_This plugin requires a Rust version of at least **1.64**_
+
 There are three general methods of installation that we can recommend.
 
 1. Use crates.io and npm (easiest, and requires you to trust that our publishing pipeline worked)
@@ -17,7 +19,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 [dependencies.tauri-plugin-sql]
 git = "https://github.com/tauri-apps/plugins-workspace"
-branch = "dev"
+branch = "v1"
 features = ["sqlite"] # or "postgres", or "mysql"
 ```
 

@@ -1,8 +1,10 @@
-![tauri-plugin-single-instance](banner.jpg)
+![tauri-plugin-single-instance](banner.png)
 
 Ensure a single instance of your tauri app is running.
 
 ## Install
+
+_This plugin requires a Rust version of at least **1.64**_
 
 There are three general methods of installation that we can recommend.
 
@@ -16,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 ```
 
 ## Usage
@@ -36,7 +38,7 @@ struct Payload {
 
 fn main() {
     tauri::Builder::default()
-        .plugin(auri_plugin_single_instance::init(|app, argv, cwd| {
+        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
             println!("{}, {argv:?}, {cwd}", app.package_info().name);
 
             app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
