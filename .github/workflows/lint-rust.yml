@@ -57,9 +57,6 @@ jobs:
             tauri-plugin-fs:
               - .github/workflows/lint-rust.yml
               - plugins/fs/**
-            tauri-plugin-fs-watch:
-              - .github/workflows/lint-rust.yml
-              - plugins/fs-watch/**
             tauri-plugin-global-shortcut:
               - .github/workflows/lint-rust.yml
               - plugins/global-shortcut/**

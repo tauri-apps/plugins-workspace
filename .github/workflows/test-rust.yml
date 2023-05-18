@@ -59,9 +59,6 @@ jobs:
             tauri-plugin-fs:
               - .github/workflows/test-rust.yml
               - plugins/fs/**
-            tauri-plugin-fs-watch:
-              - .github/workflows/test-rust.yml
-              - plugins/fs-watch/**
             tauri-plugin-global-shortcut:
               - .github/workflows/test-rust.yml
               - plugins/global-shortcut/**
