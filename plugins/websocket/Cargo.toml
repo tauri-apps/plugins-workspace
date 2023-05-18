@@ -19,3 +19,9 @@ rand = "0.8"
 futures-util = "0.3"
 tokio = { version = "1", features = ["net", "sync"] }
 tokio-tungstenite = { version = "0.18", features = ["native-tls"] }
+
+[features]
+default = [ "native-tls-vendored" ]
+native-tls = [ "tokio-tungstenite/native-tls" ]
+native-tls-vendored = [ "tokio-tungstenite/native-tls-vendored" ]
+rustls-tls-webpki-roots = [ "tokio-tungstenite/rustls-tls-webpki-roots" ]

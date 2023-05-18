@@ -25,13 +25,110 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    runs-on: ${{ matrix.platform }}
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      packages: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            tauri-plugin-app:
+              - .github/workflows/test-rust.yml
+              - plugins/app/**
+            tauri-plugin-authenticator:
+              - .github/workflows/test-rust.yml
+              - plugins/authenticator/**
+            tauri-plugin-autostart:
+              - .github/workflows/test-rust.yml
+              - plugins/autostart/**
+            tauri-plugin-cli:
+              - .github/workflows/test-rust.yml
+              - plugins/cli/**
+            tauri-plugin-clipboard:
+              - .github/workflows/test-rust.yml
+              - plugins/clipboard/**
+            tauri-plugin-dialog:
+              - .github/workflows/test-rust.yml
+              - plugins/dialog/**
+              - plugins/fs/**
+            tauri-plugin-fs:
+              - .github/workflows/test-rust.yml
+              - plugins/fs/**
+            tauri-plugin-global-shortcut:
+              - .github/workflows/test-rust.yml
+              - plugins/global-shortcut/**
+            tauri-plugin-http:
+              - .github/workflows/test-rust.yml
+              - plugins/http/**
+              - plugins/fs/**
+            tauri-plugin-localhost:
+              - .github/workflows/test-rust.yml
+              - plugins/localhost/**
+            tauri-plugin-log:
+              - .github/workflows/test-rust.yml
+              - plugins/log/**
+            tauri-plugin-notification:
+              - .github/workflows/test-rust.yml
+              - plugins/notification/**
+            tauri-plugin-os:
+              - .github/workflows/test-rust.yml
+              - plugins/os/**
+            tauri-plugin-persisted-scope:
+              - .github/workflows/test-rust.yml
+              - plugins/persisted-scope/**
+              - plugins/fs/**
+            tauri-plugin-positioner:
+              - .github/workflows/test-rust.yml
+              - plugins/positioner/**
+            tauri-plugin-process:
+              - .github/workflows/test-rust.yml
+              - plugins/process/**
+            tauri-plugin-shell:
+              - .github/workflows/test-rust.yml
+              - plugins/shell/**
+            tauri-plugin-single-instance:
+              - .github/workflows/test-rust.yml
+              - plugins/single-instance/**
+            tauri-plugin-sql:
+              - .github/workflows/test-rust.yml
+              - plugins/sql/**
+            tauri-plugin-store:
+              - .github/workflows/test-rust.yml
+              - plugins/store/**
+            tauri-plugin-stronghold:
+              - .github/workflows/test-rust.yml
+              - plugins/stronghold/**
+            tauri-plugin-updater:
+              - .github/workflows/test-rust.yml
+              - plugins/updater/**
+            tauri-plugin-upload:
+              - .github/workflows/test-rust.yml
+              - plugins/upload/**
+            tauri-plugin-websocket:
+              - .github/workflows/test-rust.yml
+              - plugins/websocket/**
+            tauri-plugin-window:
+              - .github/workflows/test-rust.yml
+              - plugins/window/**
+            tauri-plugin-window-state:
+              - .github/workflows/test-rust.yml
+              - plugins/window-state/**
 
+  test:
+    needs: changes
+    if: ${{ needs.changes.outputs.packages != '[]' && needs.changes.outputs.packages != '' }}
     strategy:
       fail-fast: false
       matrix:
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
         platform: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.platform }}
 
     steps:
       - uses: actions/checkout@v3
@@ -43,7 +140,7 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libudev-dev
 
       - name: install openssl
-        if: matrix.platform == 'windows-latest'
+        if: ${{ matrix.platform == 'windows-latest' && matrix.package == 'tauri-plugin-authenticator' }}
         run: |
           echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
           vcpkg install openssl:x64-windows-static-md
@@ -56,14 +153,18 @@ jobs:
         working-directory: examples/api
         run: mkdir dist
 
-      - name: build
-        run: cargo build --workspace --exclude 'tauri-plugin-sql' --all-targets --all-features
+      - name: test ${{ matrix.package }}
+        if: matrix.package != 'tauri-plugin-sql'
+        run: cargo test --package ${{ matrix.package }} --all-targets
 
-      - name: build sql:sqlite
-        run: cargo build --package 'tauri-plugin-sql' --all-targets --features sqlite
+      - name: test ${{ matrix.package }} --all-features
+        if: ${{ !contains(fromJSON('["tauri-plugin-http", "tauri-plugin-upload", "tauri-plugin-updater", "tauri-plugin-websocket", "tauri-plugin-sql"]'), matrix.package) }}
+        run: cargo test --package ${{ matrix.package }} --all-targets --all-features
 
-      - name: build sql:mysql
-        run: cargo build --package 'tauri-plugin-sql' --all-targets --features mysql
+      - name: test ${{ matrix.package }} mysql
+        if: matrix.package == 'tauri-plugin-sql'
+        run: cargo test --package ${{ matrix.package }} --all-targets --no-default-features --features mysql
 
-      - name: build sql:postgres
-        run: cargo build --package 'tauri-plugin-sql' --all-targets --features postgres
+      - name: test ${{ matrix.package }} postgres
+        if: matrix.package == 'tauri-plugin-sql'
+        run: cargo test --package ${{ matrix.package }} --all-targets --no-default-features  --features postgres

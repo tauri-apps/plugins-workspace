@@ -20,3 +20,9 @@ tokio-util = { version = "0.7", features = [ "codec" ] }
 reqwest = { version = "0.11", features = [ "json", "stream" ] }
 futures-util = "0.3"
 read-progress-stream = "1.0.0"
+
+[features]
+default = [ "native-tls-vendored" ]
+native-tls = [ "reqwest/native-tls" ]
+native-tls-vendored = [ "reqwest/native-tls-vendored" ]
+rustls-tls = [ "reqwest/rustls-tls" ]
