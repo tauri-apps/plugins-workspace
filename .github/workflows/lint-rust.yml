@@ -33,7 +33,7 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: changes
         with:
-          base: ${{ github.ref }}
+          base: v2
           filters: .github/filters.yaml
 
   clippy:
