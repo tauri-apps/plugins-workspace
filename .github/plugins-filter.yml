@@ -1,0 +1,81 @@
+tauri-plugin-app:
+  - .github/workflows/lint-rust.yml
+  - plugins/app/**
+tauri-plugin-authenticator:
+  - .github/workflows/lint-rust.yml
+  - plugins/authenticator/**
+tauri-plugin-autostart:
+  - .github/workflows/lint-rust.yml
+  - plugins/autostart/**
+tauri-plugin-cli:
+  - .github/workflows/lint-rust.yml
+  - plugins/cli/**
+tauri-plugin-clipboard:
+  - .github/workflows/lint-rust.yml
+  - plugins/clipboard/**
+tauri-plugin-dialog:
+  - .github/workflows/lint-rust.yml
+  - plugins/dialog/**
+  - plugins/fs/**
+tauri-plugin-fs:
+  - .github/workflows/lint-rust.yml
+  - plugins/fs/**
+tauri-plugin-global-shortcut:
+  - .github/workflows/lint-rust.yml
+  - plugins/global-shortcut/**
+tauri-plugin-http:
+  - .github/workflows/lint-rust.yml
+  - plugins/http/**
+  - plugins/fs/**
+tauri-plugin-localhost:
+  - .github/workflows/lint-rust.yml
+  - plugins/localhost/**
+tauri-plugin-log:
+  - .github/workflows/lint-rust.yml
+  - plugins/log/**
+tauri-plugin-notification:
+  - .github/workflows/lint-rust.yml
+  - plugins/notification/**
+tauri-plugin-os:
+  - .github/workflows/lint-rust.yml
+  - plugins/os/**
+tauri-plugin-persisted-scope:
+  - .github/workflows/lint-rust.yml
+  - plugins/persisted-scope/**
+  - plugins/fs/**
+tauri-plugin-positioner:
+  - .github/workflows/lint-rust.yml
+  - plugins/positioner/**
+tauri-plugin-process:
+  - .github/workflows/lint-rust.yml
+  - plugins/process/**
+tauri-plugin-shell:
+  - .github/workflows/lint-rust.yml
+  - plugins/shell/**
+tauri-plugin-single-instance:
+  - .github/workflows/lint-rust.yml
+  - plugins/single-instance/**
+tauri-plugin-sql:
+  - .github/workflows/lint-rust.yml
+  - plugins/sql/**
+tauri-plugin-store:
+  - .github/workflows/lint-rust.yml
+  - plugins/store/**
+tauri-plugin-stronghold:
+  - .github/workflows/lint-rust.yml
+  - plugins/stronghold/**
+tauri-plugin-updater:
+  - .github/workflows/lint-rust.yml
+  - plugins/updater/**
+tauri-plugin-upload:
+  - .github/workflows/lint-rust.yml
+  - plugins/upload/**
+tauri-plugin-websocket:
+  - .github/workflows/lint-rust.yml
+  - plugins/websocket/**
+tauri-plugin-window:
+  - .github/workflows/lint-rust.yml
+  - plugins/window/**
+tauri-plugin-window-state:
+  - .github/workflows/lint-rust.yml
+  - plugins/window-state/**
