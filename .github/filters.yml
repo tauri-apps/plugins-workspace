@@ -16,6 +16,7 @@ tauri-plugin-clipboard:
 tauri-plugin-dialog:
   - .github/test-rust.yml
   - plugins/dialog/**
+  - plugins/fs/**
 tauri-plugin-fs:
   - .github/test-rust.yml
   - plugins/fs/**
@@ -28,6 +29,7 @@ tauri-plugin-global-shortcut:
 tauri-plugin-http:
   - .github/test-rust.yml
   - plugins/http/**
+  - plugins/fs/**
 tauri-plugin-localhost:
   - .github/test-rust.yml
   - plugins/localhost/**
@@ -43,6 +45,7 @@ tauri-plugin-os:
 tauri-plugin-persisted-scope:
   - .github/test-rust.yml
   - plugins/persisted-scope/**
+  - plugins/fs/**
 tauri-plugin-positioner:
   - .github/test-rust.yml
   - plugins/positioner/**
