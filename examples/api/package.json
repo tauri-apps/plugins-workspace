@@ -8,8 +8,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-alpha.3",
-    "@tauri-apps/cli": "2.0.0-alpha.8",
+    "@tauri-apps/api": "2.0.0-alpha.4",
     "@zerodevx/svelte-json-view": "0.2.1",
     "@tauri-apps/plugin-app": "1.0.0",
     "@tauri-apps/plugin-cli": "1.0.0",
@@ -29,6 +28,7 @@
     "@iconify-json/codicon": "^1.1.10",
     "@iconify-json/ph": "^1.1.1",
     "@sveltejs/vite-plugin-svelte": "^1.0.1",
+    "@tauri-apps/cli": "2.0.0-alpha.9",
     "internal-ip": "^7.0.0",
     "svelte": "^3.49.0",
     "unocss": "^0.39.3",

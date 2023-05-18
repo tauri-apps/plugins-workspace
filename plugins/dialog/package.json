@@ -27,6 +27,6 @@
     "tslib": "^2.4.1"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.2.0"
+    "@tauri-apps/api": "2.0.0-alpha.4"
   }
 }

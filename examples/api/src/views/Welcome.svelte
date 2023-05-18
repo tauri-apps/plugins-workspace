@@ -3,7 +3,7 @@
   import { relaunch, exit } from "@tauri-apps/plugin-process";
 
   let version = "1.0.0";
-  let tauriversion = "1.0.0";
+  let tauriVersion = "1.0.0";
   let appName = "Unknown";
 
   getName().then((n) => {
