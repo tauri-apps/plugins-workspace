@@ -74,6 +74,7 @@
  */
 
 import { invoke } from "@tauri-apps/api/tauri";
+import { BaseDirectory } from "@tauri-apps/api/path";
 
 interface Permissions {
   /**
@@ -180,37 +181,6 @@ interface BackendMetadata {
   rdev: number | undefined;
   blksize: number | undefined;
   blocks: number | undefined;
-}
-
-// TODO: pull BaseDirectory from @tauri-apps/api/path
-/**
- * @since 1.0.0
- */
-enum BaseDirectory {
-  Audio = 1,
-  Cache,
-  Config,
-  Data,
-  LocalData,
-  Document,
-  Download,
-  Picture,
-  Public,
-  Video,
-  Resource,
-  Temp,
-  AppConfig,
-  AppData,
-  AppLocalData,
-  AppCache,
-  AppLog,
-
-  Desktop,
-  Executable,
-  Font,
-  Home,
-  Runtime,
-  Template,
 }
 
 /**

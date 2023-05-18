@@ -1,4 +1,4 @@
-import { invoke, transformCallback } from "@tauri-apps/api/tauri";
+import { invoke, Channel } from "@tauri-apps/api/tauri";
 
 interface ProgressPayload {
   progress: number;
@@ -6,34 +6,6 @@ interface ProgressPayload {
 }
 
 type ProgressHandler = (progress: ProgressPayload) => void;
-
-// TODO: use channel from @tauri-apps/api on v2
-class Channel<T = unknown> {
-  id: number;
-  // @ts-expect-error field used by the IPC serializer
-  private readonly __TAURI_CHANNEL_MARKER__ = true;
-  #onmessage: (response: T) => void = () => {
-    // no-op
-  };
-
-  constructor() {
-    this.id = transformCallback((response: T) => {
-      this.#onmessage(response);
-    });
-  }
-
-  set onmessage(handler: (response: T) => void) {
-    this.#onmessage = handler;
-  }
-
-  get onmessage(): (response: T) => void {
-    return this.#onmessage;
-  }
-
-  toJSON(): string {
-    return `__CHANNEL__:${this.id}`;
-  }
-}
 
 async function upload(
   url: string,

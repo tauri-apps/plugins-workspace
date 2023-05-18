@@ -17,7 +17,6 @@ fn main() {
         // It must be the last parameter used in the command line and must not contain any quotes, even if the path contains spaces.
         // Only absolute paths are supported.
         // NOTE: we only need this because this is an integration test and we don't want to install the app in the programs folder
-        // TODO mutate plugin config
         updater = updater.installer_args(vec![format!(
             "/D={}",
             tauri::utils::platform::current_exe()
