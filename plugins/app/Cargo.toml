@@ -1,9 +1,9 @@
 [package]
 name = "tauri-plugin-app"
 version = "1.0.0"
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
 
 [dependencies]
-tauri.workspace = true
+tauri = { workspace = true }
