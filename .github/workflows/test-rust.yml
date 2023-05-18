@@ -103,9 +103,6 @@ jobs:
             tauri-plugin-store:
               - .github/test-rust.yml
               - plugins/store/**
-            tauri-plugin-store:
-              - .github/test-rust.yml
-              - plugins/store/**
             tauri-plugin-stronghold:
               - .github/test-rust.yml
               - plugins/stronghold/**
