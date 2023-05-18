@@ -13,6 +13,10 @@ pub enum Error {
     /// Invalid glob pattern.
     #[error("invalid glob pattern: {0}")]
     GlobPattern(#[from] glob::PatternError),
+    /// Watcher error.
+    #[cfg(feature = "watch")]
+    #[error(transparent)]
+    Watch(#[from] notify::Error),
 }
 
 impl Serialize for Error {

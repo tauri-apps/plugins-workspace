@@ -1,12 +1,9 @@
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
 use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
-use serde::{ser::Serializer, Deserialize, Serialize};
-use tauri::{
-    api::ipc::Channel,
-    command,
-    plugin::{Builder as PluginBuilder, TauriPlugin},
-    Manager, Runtime, State,
-};
+use serde::Deserialize;
+use tauri::{api::ipc::Channel, command, Runtime, State};
+
+use crate::Result;
 
 use std::{
     collections::HashMap,
@@ -19,26 +16,10 @@ use std::{
     time::Duration,
 };
 
-type Result<T> = std::result::Result<T, Error>;
 type Id = u32;
 
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    #[error(transparent)]
-    Watch(#[from] notify::Error),
-}
-
-impl Serialize for Error {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(self.to_string().as_ref())
-    }
-}
-
 #[derive(Default)]
-struct WatcherCollection(Mutex<HashMap<Id, (WatcherKind, Vec<PathBuf>)>>);
+pub struct WatcherCollection(Mutex<HashMap<Id, (WatcherKind, Vec<PathBuf>)>>);
 
 enum WatcherKind {
     Debouncer(Debouncer<RecommendedWatcher>),
@@ -69,13 +50,13 @@ fn watch_debounced<R: Runtime>(on_event: Channel<R>, rx: Receiver<DebounceEventR
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct WatchOptions {
+pub struct WatchOptions {
     delay_ms: Option<u64>,
     recursive: bool,
 }
 
 #[command]
-async fn watch<R: Runtime>(
+pub async fn watch<R: Runtime>(
     watchers: State<'_, WatcherCollection>,
     id: Id,
     paths: Vec<PathBuf>,
@@ -113,7 +94,7 @@ async fn watch<R: Runtime>(
 }
 
 #[command]
-async fn unwatch(watchers: State<'_, WatcherCollection>, id: Id) -> Result<()> {
+pub async fn unwatch(watchers: State<'_, WatcherCollection>, id: Id) -> Result<()> {
     if let Some((watcher, paths)) = watchers.0.lock().unwrap().remove(&id) {
         match watcher {
             WatcherKind::Debouncer(mut debouncer) => {
@@ -129,14 +110,4 @@ async fn unwatch(watchers: State<'_, WatcherCollection>, id: Id) -> Result<()> {
         };
     }
     Ok(())
-}
-
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    PluginBuilder::new("fs-watch")
-        .invoke_handler(tauri::generate_handler![watch, unwatch])
-        .setup(|app, _api| {
-            app.manage(WatcherCollection::default());
-            Ok(())
-        })
-        .build()
 }
