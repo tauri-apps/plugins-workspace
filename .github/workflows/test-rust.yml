@@ -195,7 +195,7 @@ jobs:
           command: ${{ matrix.platform.command }}
           args: --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets
 
-      - name: test ${{ matrix.package }}
+      - name: test ${{ matrix.package }} --all-features
         if: ${{ !contains(fromJSON('["tauri-plugin-http", "tauri-plugin-upload", "tauri-plugin-updater", "tauri-plugin-websocket", "tauri-plugin-sql"]'), matrix.package) }}
         uses: actions-rs/cargo@v1
         with:
