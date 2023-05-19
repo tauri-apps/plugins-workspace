@@ -1,4 +1,4 @@
-![HTTP](banner.jpg)
+# HTTP
 
 Access the HTTP client written in Rust.
 

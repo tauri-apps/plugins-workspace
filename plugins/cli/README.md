@@ -1,4 +1,4 @@
-![CLI](banner.jpg)
+# CLI
 
 Parse arguments from your Command Line Interface.
 

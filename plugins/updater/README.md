@@ -1,4 +1,4 @@
-# Updater plugin
+# Updater
 
 In-app updates for Tauri applications.
 

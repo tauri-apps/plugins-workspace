@@ -1,4 +1,4 @@
-![tauri-plugin-fs](banner.png)
+# File System
 
 Access the file system.
 

@@ -1,4 +1,4 @@
-# Operating system plugin
+# Operating System
 
 Read information about the operating system.
 

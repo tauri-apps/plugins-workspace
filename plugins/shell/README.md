@@ -1,4 +1,4 @@
-![Shell](banner.jpg)
+# Shell
 
 Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application.
 

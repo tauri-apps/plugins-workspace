@@ -1,4 +1,4 @@
-![plugin-clipboard](banner.jpg)
+# Clipboard
 
 Read and write to the system clipboard.
 

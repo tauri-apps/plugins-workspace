@@ -1,4 +1,4 @@
-![{{plugin-name}}](banner.jpg)
+![{{plugin-name}}](banner.png)
 
 <!-- description -->
 

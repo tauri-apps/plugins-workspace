@@ -1,4 +1,4 @@
-# Process plugin
+# Process
 
 This plugin provides APIs to access the current process. To spawn child processes, see the [`shell`](https://github.com/tauri-apps/tauri-plugin-shell) plugin.
 

@@ -1,4 +1,4 @@
-# Window plugin
+# Window
 
 Interact with the Tauri window.
 

@@ -1,4 +1,4 @@
-![Dialog](banner.jpg)
+# Dialog
 
 Native system dialogs for opening and saving files along with message dialogs.
 

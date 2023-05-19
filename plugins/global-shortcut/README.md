@@ -1,4 +1,4 @@
-![plugin-shortcut](banner.jpg)
+# Global Shortcut
 
 Register global shortcuts.
 
