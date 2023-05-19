@@ -21,7 +21,7 @@ open class RustPlugin : Plugin<Project> {
         val abiList = (findProperty("abiList") as? String)?.split(',') ?: defaultAbiList
 
         val defaultArchList = listOf("arm64", "arm", "x86", "x86_64");
-        val archList = (findProperty("archList") as? String)?.split(',') ?: listOf("arm64", "arm", "x86", "x86_64")
+        val archList = (findProperty("archList") as? String)?.split(',') ?: defaultArchList
 
         val targetsList = (findProperty("targetList") as? String)?.split(',') ?: listOf("aarch64", "armv7", "i686", "x86_64")
 
