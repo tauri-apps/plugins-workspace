@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+#![cfg(not(any(target_os = "android", target_os = "ios")))]
+
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
