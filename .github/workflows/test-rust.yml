@@ -159,6 +159,8 @@ jobs:
           targets: ${{ matrix.platform.target }}
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.package }}
 
       - name: create dummy dist
         working-directory: examples/api
