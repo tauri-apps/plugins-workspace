@@ -45,7 +45,7 @@ fn main() {
         RemoteDomainAccessScope::new(format!("localhost:{}", port))
           .add_window("main")
       );
-  
+
       let url = format!("http://localhost:{}", port).parse().unwrap();
       WindowBuilder::new(app, "main".to_string(), WindowUrl::External(url))
         .title("Localhost Example")

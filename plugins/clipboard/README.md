@@ -60,9 +60,9 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { writeText, readText } from '@tauri-apps/plugin-clipboard';
-await writeText('Tauri is awesome!');
-assert(await readText(), 'Tauri is awesome!');
+import { writeText, readText } from "@tauri-apps/plugin-clipboard";
+await writeText("Tauri is awesome!");
+assert(await readText(), "Tauri is awesome!");
 ```
 
 ## Contributing

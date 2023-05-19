@@ -67,12 +67,12 @@ await appWindow.setResizable(false);
 
 // Creating new windows:
 // loading embedded asset:
-const webview = new WebviewWindow('theUniqueLabel', {
-  url: 'path/to/page.html'
+const webview = new WebviewWindow("theUniqueLabel", {
+  url: "path/to/page.html",
 });
 // alternatively, load a remote URL:
-const webview = new WebviewWindow('theUniqueLabel', {
-  url: 'https://github.com/tauri-apps/tauri'
+const webview = new WebviewWindow("theUniqueLabel", {
+  url: "https://github.com/tauri-apps/tauri",
 });
 ```
 

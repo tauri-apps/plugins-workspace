@@ -60,8 +60,8 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Command } from '@tauri-apps/plugin-shell'
-Command.create('git', ['commit', '-m', 'the commit message'])
+import { Command } from "@tauri-apps/plugin-shell";
+Command.create("git", ["commit", "-m", "the commit message"]);
 ```
 
 ## Contributing
