@@ -126,28 +126,62 @@ jobs:
       fail-fast: false
       matrix:
         package: ${{ fromJSON(needs.changes.outputs.packages) }}
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        platform:
+          - {
+              target: x86_64-pc-windows-msvc,
+              os: windows-latest,
+              cross: false,
+              command: "test",
+            }
+          - {
+              target: x86_64-unknown-linux-gnu,
+              os: ubuntu-latest,
+              cross: false,
+              command: "test",
+            }
+          - {
+              target: x86_64-apple-darwin,
+              os: macos-latest,
+              cross: false,
+              command: "test",
+            }
+          - {
+              target: aarch64-apple-ios,
+              os: macos-latest,
+              cross: false,
+              command: "build",
+            }
+          - {
+              target: aarch64-linux-android,
+              os: ubuntu-latest,
+              cross: true,
+              command: "build",
+            }
 
-    runs-on: ${{ matrix.platform }}
+    runs-on: ${{ matrix.platform.os }}
 
     steps:
       - uses: actions/checkout@v3
 
       - name: install webkit2gtk and libudev for [authenticator]
-        if: matrix.platform == 'ubuntu-latest'
+        if: contains(matrix.platform.target, 'unknown-linux')
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libudev-dev
 
       - name: install openssl
-        if: ${{ matrix.platform == 'windows-latest' && contains(fromJSON('["tauri-plugin-http", "tauri-plugin-upload", "tauri-plugin-updater", "tauri-plugin-websocket", "tauri-plugin-authenticator"]'), matrix.package) }}
+        if: ${{ matrix.platform.os == 'windows-latest' && matrix.package == 'tauri-plugin-authenticator' }}
         run: |
           echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
           vcpkg install openssl:x64-windows-static-md
 
       - uses: dtolnay/rust-toolchain@1.65.0
+        with:
+          targets: ${{ matrix.platform.target }}
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.package }}
 
       - name: create dummy dist
         working-directory: examples/api
@@ -155,16 +189,32 @@ jobs:
 
       - name: test ${{ matrix.package }}
         if: matrix.package != 'tauri-plugin-sql'
-        run: cargo test --package ${{ matrix.package }} --all-targets
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.platform.cross }}
+          command: ${{ matrix.platform.command }}
+          args: --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets
 
       - name: test ${{ matrix.package }} --all-features
         if: ${{ !contains(fromJSON('["tauri-plugin-http", "tauri-plugin-upload", "tauri-plugin-updater", "tauri-plugin-websocket", "tauri-plugin-sql"]'), matrix.package) }}
-        run: cargo test --package ${{ matrix.package }} --all-targets --all-features
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.platform.cross }}
+          command: ${{ matrix.platform.command }}
+          args: --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features
 
       - name: test ${{ matrix.package }} mysql
         if: matrix.package == 'tauri-plugin-sql'
-        run: cargo test --package ${{ matrix.package }} --all-targets --no-default-features --features mysql
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.platform.cross }}
+          command: ${{ matrix.platform.command }}
+          args: --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --features mysql
 
       - name: test ${{ matrix.package }} postgres
         if: matrix.package == 'tauri-plugin-sql'
-        run: cargo test --package ${{ matrix.package }} --all-targets --no-default-features  --features postgres
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.platform.cross }}
+          command: ${{ matrix.platform.command }}
+          args: --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --features postgres

@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+#![cfg(not(any(target_os = "android", target_os = "ios")))]
+
 mod auth;
 mod error;
 mod u2f;

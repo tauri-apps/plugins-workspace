@@ -202,6 +202,6 @@ class DialogPlugin: Plugin {
 }
 
 @_cdecl("init_plugin_dialog")
-func initPlugin(name: SRString, webview: WKWebView?) {
-  Tauri.registerPlugin(webview: webview, name: name.toString(), plugin: DialogPlugin())
+func initPlugin() -> Plugin {
+  return DialogPlugin()
 }

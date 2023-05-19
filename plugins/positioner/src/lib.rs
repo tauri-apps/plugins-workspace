@@ -9,6 +9,8 @@
 //!   
 //!   Note: This requires attaching the Tauri plugin, *even* when using the trait extension only.
 
+#![cfg(not(any(target_os = "android", target_os = "ios")))]
+
 mod ext;
 
 pub use ext::*;

@@ -37,6 +37,6 @@ class ClipboardPlugin: Plugin {
 }
 
 @_cdecl("init_plugin_clipboard")
-func initPlugin(name: SRString, webview: WKWebView?) {
-	Tauri.registerPlugin(webview: webview, name: name.toString(), plugin: ClipboardPlugin())
+func initPlugin() -> Plugin {
+  return ClipboardPlugin()
 }

@@ -11,4 +11,6 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
+
+[target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
 global-hotkey = "0.2.1"
