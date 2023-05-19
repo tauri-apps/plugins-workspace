@@ -1,3 +1,5 @@
+#![cfg(not(any(target_os = "android", target_os = "ios")))]
+
 use tauri::{plugin::TauriPlugin, AppHandle, Manager, Runtime};
 
 #[cfg(target_os = "windows")]
