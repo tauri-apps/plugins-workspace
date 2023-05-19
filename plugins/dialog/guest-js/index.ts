@@ -113,11 +113,11 @@ async function open(
 /**
  * Open a file/directory selection dialog.
  *
- * The selected paths are added to the filesystem and asset protocol allowlist scopes.
+ * The selected paths are added to the filesystem and asset protocol scopes.
  * When security is more important than the easy of use of this API,
  * prefer writing a dedicated command instead.
  *
- * Note that the allowlist scope change is not persisted, so the values are cleared when the application is restarted.
+ * Note that the scope change is not persisted, so the values are cleared when the application is restarted.
  * You can save it to the filesystem using [tauri-plugin-persisted-scope](https://github.com/tauri-apps/tauri-plugin-persisted-scope).
  * @example
  * ```typescript
@@ -175,11 +175,11 @@ async function open(
 /**
  * Open a file/directory save dialog.
  *
- * The selected path is added to the filesystem and asset protocol allowlist scopes.
+ * The selected path is added to the filesystem and asset protocol scopes.
  * When security is more important than the easy of use of this API,
  * prefer writing a dedicated command instead.
  *
- * Note that the allowlist scope change is not persisted, so the values are cleared when the application is restarted.
+ * Note that the scope change is not persisted, so the values are cleared when the application is restarted.
  * You can save it to the filesystem using [tauri-plugin-persisted-scope](https://github.com/tauri-apps/tauri-plugin-persisted-scope).
  * @example
  * ```typescript

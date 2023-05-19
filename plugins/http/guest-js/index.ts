@@ -5,21 +5,6 @@
 /**
  * Access the HTTP client written in Rust.
  *
- * The APIs must be allowlisted on `tauri.conf.json`:
- * ```json
- * {
- *   "tauri": {
- *     "allowlist": {
- *       "http": {
- *         "all": true, // enable all http APIs
- *         "request": true // enable HTTP request API
- *       }
- *     }
- *   }
- * }
- * ```
- * It is recommended to allowlist only the APIs you use for optimal bundle size and security.
- *
  * ## Security
  *
  * This API has a scope configuration that forces you to restrict the URLs and paths that can be accessed using glob patterns.
@@ -27,11 +12,9 @@
  * For instance, this scope configuration only allows making HTTP requests to the GitHub API for the `tauri-apps` organization:
  * ```json
  * {
- *   "tauri": {
- *     "allowlist": {
- *       "http": {
- *         "scope": ["https://api.github.com/repos/tauri-apps/*"]
- *       }
+ *   "plugins": {
+ *     "http": {
+ *       "scope": ["https://api.github.com/repos/tauri-apps/*"]
  *     }
  *   }
  * }
@@ -105,7 +88,7 @@ class Body {
    * By default it sets the `application/x-www-form-urlencoded` Content-Type header,
    * but you can set it to `multipart/form-data` if the Cargo feature `multipart` is enabled.
    *
-   * Note that a file path must be allowed in the `fs` allowlist scope.
+   * Note that a file path must be allowed in the `fs` scope.
    * @example
    * ```typescript
    * import { Body } from "@tauri-apps/plugin-http"

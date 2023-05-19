@@ -6,36 +6,19 @@
  * Access the system shell.
  * Allows you to spawn child processes and manage files and URLs using their default application.
  *
- * The APIs must be added to [`tauri.allowlist.shell`](https://tauri.app/v1/api/config/#allowlistconfig.shell) in `tauri.conf.json`:
- * ```json
- * {
- *   "tauri": {
- *     "allowlist": {
- *       "shell": {
- *         "all": true, // enable all shell APIs
- *         "execute": true, // enable process spawn APIs
- *         "sidecar": true, // enable spawning sidecars
- *         "open": true // enable opening files/URLs using the default program
- *       }
- *     }
- *   }
- * }
- * ```
- * It is recommended to allowlist only the APIs you use for optimal bundle size and security.
- *
  * ## Security
  *
  * This API has a scope configuration that forces you to restrict the programs and arguments that can be used.
  *
  * ### Restricting access to the {@link open | `open`} API
  *
- * On the allowlist, `open: true` means that the {@link open} API can be used with any URL,
+ * On the configuration object, `open: true` means that the {@link open} API can be used with any URL,
  * as the argument is validated with the `^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+` regex.
  * You can change that regex by changing the boolean value to a string, e.g. `open: ^https://github.com/`.
  *
  * ### Restricting access to the {@link Command | `Command`} APIs
  *
- * The `shell` allowlist object has a `scope` field that defines an array of CLIs that can be used.
+ * The plugin configuration object has a `scope` field that defines an array of CLIs that can be used.
  * Each CLI is a configuration object `{ name: string, cmd: string, sidecar?: bool, args?: boolean | Arg[] }`.
  *
  * - `name`: the unique identifier of the command, passed to the {@link Command.create | Command.create function}.
@@ -55,13 +38,17 @@
  * Configuration:
  * ```json
  * {
- *   "scope": [
- *     {
- *       "name": "run-git-commit",
- *       "cmd": "git",
- *       "args": ["commit", "-m", { "validator": "\\S+" }]
+ *   "plugins": {
+ *     "shell": {
+ *       "scope": [
+ *         {
+ *           "name": "run-git-commit",
+ *           "cmd": "git",
+ *           "args": ["commit", "-m", { "validator": "\\S+" }]
+ *         }
+ *       ]
  *     }
- *   ]
+ *   }
  * }
  * ```
  * Usage:
@@ -425,7 +412,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * Creates a new `Command` instance.
    *
    * @param program The program name to execute.
-   * It must be configured on `tauri.conf.json > tauri > allowlist > shell > scope`.
+   * It must be configured on `tauri.conf.json > plugins > shell > scope`.
    * @param args Program arguments.
    * @param options Spawn options.
    */
@@ -462,7 +449,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * ```
    *
    * @param program The program to execute.
-   * It must be configured on `tauri.conf.json > tauri > allowlist > shell > scope`.
+   * It must be configured on `tauri.conf.json > plugins > shell > scope`.
    */
   static create<O extends IOPayload>(
     program: string,
@@ -494,7 +481,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * ```
    *
    * @param program The program to execute.
-   * It must be configured on `tauri.conf.json > tauri > allowlist > shell > scope`.
+   * It must be configured on `tauri.conf.json > plugins > shell > scope`.
    */
   static sidecar<O extends IOPayload>(
     program: string,
@@ -634,7 +621,7 @@ type CommandEvent<O extends IOPayload> =
  * ```
  *
  * @param path The path or URL to open.
- * This value is matched against the string regex defined on `tauri.conf.json > tauri > allowlist > shell > open`,
+ * This value is matched against the string regex defined on `tauri.conf.json > plugins > shell > open`,
  * which defaults to `^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+`.
  * @param openWith The app to open the file or URL with.
  * Defaults to the system default application for the specified path type.

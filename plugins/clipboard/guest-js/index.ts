@@ -5,22 +5,6 @@
 /**
  * Read and write to the system clipboard.
  *
- * The APIs must be added to [`tauri.allowlist.clipboard`](https://tauri.app/v1/api/config/#allowlistconfig.clipboard) in `tauri.conf.json`:
- * ```json
- * {
- *   "tauri": {
- *     "allowlist": {
- *       "clipboard": {
- *         "all": true, // enable all Clipboard APIs
- *         "writeText": true,
- *         "readText": true
- *       }
- *     }
- *   }
- * }
- * ```
- * It is recommended to allowlist only the APIs you use for optimal bundle size and security.
- *
  * @module
  */
 

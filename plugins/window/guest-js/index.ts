@@ -5,51 +5,6 @@
 /**
  * Provides APIs to create windows, communicate with other windows and manipulate the current window.
  *
- * The APIs must be added to [`tauri.allowlist.window`](https://tauri.app/v1/api/config/#allowlistconfig.window) in `tauri.conf.json`:
- * ```json
- * {
- *   "tauri": {
- *     "allowlist": {
- *       "window": {
- *         "all": true, // enable all window APIs
- *         "create": true, // enable window creation
- *         "center": true,
- *         "requestUserAttention": true,
- *         "setResizable": true,
- *         "setTitle": true,
- *         "maximize": true,
- *         "unmaximize": true,
- *         "minimize": true,
- *         "unminimize": true,
- *         "show": true,
- *         "hide": true,
- *         "close": true,
- *         "setDecorations": true,
- *         "setShadow": true,
- *         "setAlwaysOnTop": true,
- *         "setContentProtected": true,
- *         "setSize": true,
- *         "setMinSize": true,
- *         "setMaxSize": true,
- *         "setPosition": true,
- *         "setFullscreen": true,
- *         "setFocus": true,
- *         "setIcon": true,
- *         "setSkipTaskbar": true,
- *         "setCursorGrab": true,
- *         "setCursorVisible": true,
- *         "setCursorIcon": true,
- *         "setCursorPosition": true,
- *         "setIgnoreCursorEvents": true,
- *         "startDragging": true,
- *         "print": true
- *       }
- *     }
- *   }
- * }
- * ```
- * It is recommended to allowlist only the APIs you use for optimal bundle size and security.
- *
  * ## Window events
  *
  * Events can be listened to using `appWindow.listen`:
@@ -1017,12 +972,12 @@ class WindowManager extends WebviewWindowHandle {
       label: this.label,
       value: size
         ? {
-            type: size.type,
-            data: {
-              width: size.width,
-              height: size.height,
-            },
-          }
+          type: size.type,
+          data: {
+            width: size.width,
+            height: size.height,
+          },
+        }
         : null,
     });
   }
@@ -1051,12 +1006,12 @@ class WindowManager extends WebviewWindowHandle {
       label: this.label,
       value: size
         ? {
-            type: size.type,
-            data: {
-              width: size.width,
-              height: size.height,
-            },
-          }
+          type: size.type,
+          data: {
+            width: size.width,
+            height: size.height,
+          },
+        }
         : null,
     });
   }
@@ -1831,11 +1786,11 @@ function mapMonitor(m: Monitor | null): Monitor | null {
   return m === null
     ? null
     : {
-        name: m.name,
-        scaleFactor: m.scaleFactor,
-        position: mapPhysicalPosition(m.position),
-        size: mapPhysicalSize(m.size),
-      };
+      name: m.name,
+      scaleFactor: m.scaleFactor,
+      position: mapPhysicalPosition(m.position),
+      size: mapPhysicalSize(m.size),
+    };
 }
 
 function mapPhysicalPosition(m: PhysicalPosition): PhysicalPosition {

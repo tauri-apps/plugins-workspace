@@ -5,19 +5,6 @@
 /**
  * Provides operating system-related utility methods and properties.
  *
- * The APIs must be added to [`tauri.allowlist.os`](https://tauri.app/v1/api/config/#allowlistconfig.os) in `tauri.conf.json`:
- * ```json
- * {
- *   "tauri": {
- *     "allowlist": {
- *       "os": {
- *         "all": true, // enable all Os APIs
- *       }
- *     }
- *   }
- * }
- * ```
- * It is recommended to allowlist only the APIs you use for optimal bundle size and security.
  * @module
  */
 
