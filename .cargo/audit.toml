@@ -1,0 +1,11 @@
+[advisories]
+ignore = [
+  # time 0.1
+  "RUSTSEC-2020-0071",
+  # needs sqlx 0.7 (still in alpha)
+  "RUSTSEC-2022-0090",
+  # wry needs kuchiki on Android
+  "RUSTSEC-2023-0019",
+  # atty is only used when the `colored` feature is enabled on tauri-plugin-log
+  "RUSTSEC-2021-0145"
+]
