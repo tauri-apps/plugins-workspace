@@ -127,15 +127,36 @@ jobs:
       matrix:
         package: ${{ fromJSON(needs.changes.outputs.packages) }}
         platform:
-          - { target: x86_64-pc-windows-msvc, os: windows-latest, cross: false }
+          - {
+              target: x86_64-pc-windows-msvc,
+              os: windows-latest,
+              cross: false,
+              command: "test",
+            }
           - {
               target: x86_64-unknown-linux-gnu,
               os: ubuntu-latest,
               cross: false,
+              command: "test",
             }
-          - { target: x86_64-apple-darwin, os: macos-latest, cross: false }
-          - { target: aarch64-apple-ios, os: macos-latest, cross: false }
-          - { target: aarch64-linux-android, os: ubuntu-latest, cross: true }
+          - {
+              target: x86_64-apple-darwin,
+              os: macos-latest,
+              cross: false,
+              command: "test",
+            }
+          - {
+              target: aarch64-apple-ios,
+              os: macos-latest,
+              cross: false,
+              command: "build",
+            }
+          - {
+              target: aarch64-linux-android,
+              os: ubuntu-latest,
+              cross: true,
+              command: "build",
+            }
 
     runs-on: ${{ matrix.platform.os }}
 
@@ -171,7 +192,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           use-cross: ${{ matrix.platform.cross }}
-          command: test
+          command: ${{ matrix.platform.command }}
           args: --package ${{ matrix.package }} --all-targets
 
       - name: test ${{ matrix.package }}
@@ -179,7 +200,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           use-cross: ${{ matrix.platform.cross }}
-          command: test
+          command: ${{ matrix.platform.command }}
           args: --package ${{ matrix.package }} --all-targets --all-features
 
       - name: test ${{ matrix.package }} mysql
@@ -187,7 +208,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           use-cross: ${{ matrix.platform.cross }}
-          command: test
+          command: ${{ matrix.platform.command }}
           args: --package ${{ matrix.package }} --all-targets --all-features --features mysql
 
       - name: test ${{ matrix.package }} postgres
@@ -195,5 +216,5 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           use-cross: ${{ matrix.platform.cross }}
-          command: test
+          command: ${{ matrix.platform.command }}
           args: --package ${{ matrix.package }} --all-targets --all-features --features postgres
