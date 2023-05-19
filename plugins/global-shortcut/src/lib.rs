@@ -1,3 +1,5 @@
+#![cfg(not(any(target_os = "android", target_os = "ios")))]
+
 use std::{
     collections::HashMap,
     str::FromStr,
