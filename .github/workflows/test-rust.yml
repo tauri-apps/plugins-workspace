@@ -193,7 +193,7 @@ jobs:
         with:
           use-cross: ${{ matrix.platform.cross }}
           command: ${{ matrix.platform.command }}
-          args: --package ${{ matrix.package }} --all-targets
+          args: --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets
 
       - name: test ${{ matrix.package }}
         if: ${{ !contains(fromJSON('["tauri-plugin-http", "tauri-plugin-upload", "tauri-plugin-updater", "tauri-plugin-websocket", "tauri-plugin-sql"]'), matrix.package) }}
@@ -201,7 +201,7 @@ jobs:
         with:
           use-cross: ${{ matrix.platform.cross }}
           command: ${{ matrix.platform.command }}
-          args: --package ${{ matrix.package }} --all-targets --all-features
+          args: --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features
 
       - name: test ${{ matrix.package }} mysql
         if: matrix.package == 'tauri-plugin-sql'
@@ -209,7 +209,7 @@ jobs:
         with:
           use-cross: ${{ matrix.platform.cross }}
           command: ${{ matrix.platform.command }}
-          args: --package ${{ matrix.package }} --all-targets --all-features --features mysql
+          args: --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features --features mysql
 
       - name: test ${{ matrix.package }} postgres
         if: matrix.package == 'tauri-plugin-sql'
@@ -217,4 +217,4 @@ jobs:
         with:
           use-cross: ${{ matrix.platform.cross }}
           command: ${{ matrix.platform.command }}
-          args: --package ${{ matrix.package }} --all-targets --all-features --features postgres
+          args: --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features --features postgres
