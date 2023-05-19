@@ -209,7 +209,7 @@ jobs:
         with:
           use-cross: ${{ matrix.platform.cross }}
           command: ${{ matrix.platform.command }}
-          args: --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features --features mysql
+          args: --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --features mysql
 
       - name: test ${{ matrix.package }} postgres
         if: matrix.package == 'tauri-plugin-sql'
@@ -217,4 +217,4 @@ jobs:
         with:
           use-cross: ${{ matrix.platform.cross }}
           command: ${{ matrix.platform.command }}
-          args: --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features --features postgres
+          args: --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --features postgres
