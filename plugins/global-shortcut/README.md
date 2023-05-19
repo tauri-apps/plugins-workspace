@@ -1,6 +1,6 @@
 ![plugin-shortcut](banner.jpg)
 
-<!-- description -->
+Register global shortcuts.
 
 ## Install
 
@@ -18,6 +18,8 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
+tauri-plugin-global-shortcut = "2.0.0-alpha"
+# alternatively with Git:
 tauri-plugin-shortcut = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
@@ -26,11 +28,18 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-shortcut#v2
+pnpm add @tauri-apps/plugin-global-shortcut
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-shortcut#v2
+npm add @tauri-apps/plugin-global-shortcut
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-shortcut#v2
+yarn add @tauri-apps/plugin-global-shortcut
+
+# alternatively with Git:
+pnpm add https://github.com/tauri-apps/tauri-plugin-global-shortcut#v2
+# or
+npm add https://github.com/tauri-apps/tauri-plugin-global-shortcut#v2
+# or
+yarn add https://github.com/tauri-apps/tauri-plugin-global-shortcut#v2
 ```
 
 ## Usage

@@ -18,6 +18,8 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
+tauri-plugin-updater = "2.0.0-alpha"
+# alternatively with Git:
 tauri-plugin-updater = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
@@ -26,6 +28,13 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
+pnpm add @tauri-apps/plugin-updater
+# or
+npm add @tauri-apps/plugin-updater
+# or
+yarn add @tauri-apps/plugin-updater
+
+# alternatively with Git:
 pnpm add https://github.com/tauri-apps/tauri-plugin-updater#v2
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-updater#v2
@@ -51,7 +60,13 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import * as updater from "@tauri-apps/plugin-updater";
+import { check } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
+const update = await check();
+if (update.response.available) {
+    await update.downloadAndInstall();
+    await relaunch();
+}
 ```
 
 ## Contributing
