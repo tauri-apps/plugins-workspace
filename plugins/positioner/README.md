@@ -20,8 +20,8 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-positioner = "1.0"
-# or through git
+tauri-plugin-positioner = "2.0.0-alpha"
+# alternatively with Git:
 tauri-plugin-positioner = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
@@ -35,11 +35,8 @@ pnpm add @tauri-apps/plugin-positioner
 npm add @tauri-apps/plugin-positioner
 # or
 yarn add @tauri-apps/plugin-positioner
-```
 
-Or through git:
-
-```sh
+# alternatively with Git:
 pnpm add https://github.com/tauri-apps/tauri-plugin-positioner#v2
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-positioner#v2

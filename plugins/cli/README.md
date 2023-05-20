@@ -1,6 +1,8 @@
-![plugin-cli](banner.jpg)
+# CLI
 
-<!-- description -->
+Parse arguments from your Command Line Interface.
+
+- Supported platforms: Windows, Linux and macOS.
 
 ## Install
 
@@ -17,7 +19,10 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 `src-tauri/Cargo.toml`
 
 ```toml
-[dependencies]
+# you can add the dependencies on the `[dependencies]` section if you do not target mobile
+[target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
+tauri-plugin-cli = "2.0.0-alpha"
+# alternatively with Git:
 tauri-plugin-cli = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
@@ -26,6 +31,13 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
+pnpm add @tauri-apps/plugin-cli
+# or
+npm add @tauri-apps/plugin-cli
+# or
+yarn add @tauri-apps/plugin-cli
+
+# alternatively with Git:
 pnpm add https://github.com/tauri-apps/tauri-plugin-cli#v2
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-cli#v2
@@ -42,7 +54,11 @@ First you need to register the core plugin with Tauri:
 ```rust
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_cli::init())
+        .setup(|app| {
+            #[cfg(desktop)]
+            app.handle().plugin(tauri_plugin_cli::init())?;
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -51,7 +67,18 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-
+import { getMatches } from "@tauri-apps/plugin-cli";
+const matches = await getMatches();
+if (matches.subcommand?.name === "run") {
+  // `./your-app run $ARGS` was executed
+  const args = matches.subcommand?.matches.args;
+  if ("debug" in args) {
+    // `./your-app run --debug` was executed
+  }
+} else {
+  const args = matches.args;
+  // `./your-app $ARGS` was executed
+}
 ```
 
 ## Contributing

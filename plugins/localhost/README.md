@@ -20,8 +20,10 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-localhost = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 portpicker = "0.1" # used in the example to pick a random free port
+tauri-plugin-localhost = "2.0.0-alpha"
+# alternatively with Git:
+tauri-plugin-localhost = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
 ## Usage
@@ -31,27 +33,26 @@ First you need to register the core plugin with Tauri:
 `src-tauri/src/main.rs`
 
 ```rust
-use tauri::{utils::config::AppUrl, window::WindowBuilder, WindowUrl};
+use tauri::{Manager, window::WindowBuilder, WindowUrl};
 
 fn main() {
   let port = portpicker::pick_unused_port().expect("failed to find unused port");
 
-  let mut context = tauri::generate_context!();
-  let url = format!("http://localhost:{}", port).parse().unwrap();
-  let window_url = WindowUrl::External(url);
-  // rewrite the config so the IPC is enabled on this URL
-  context.config_mut().build.dist_dir = AppUrl::Url(window_url.clone());
-  context.config_mut().build.dev_path = AppUrl::Url(window_url.clone());
-
   tauri::Builder::default()
     .plugin(tauri_plugin_localhost::Builder::new(port).build())
     .setup(move |app| {
-      WindowBuilder::new(app, "main".to_string(), window_url)
+      app.ipc_scope().configure_remote_access(
+        RemoteDomainAccessScope::new(format!("localhost:{}", port))
+          .add_window("main")
+      );
+
+      let url = format!("http://localhost:{}", port).parse().unwrap();
+      WindowBuilder::new(app, "main".to_string(), WindowUrl::External(url))
         .title("Localhost Example")
         .build()?;
       Ok(())
     })
-    .run(context)
+    .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
 ```

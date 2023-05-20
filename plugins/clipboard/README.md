@@ -1,6 +1,6 @@
-![plugin-clipboard](banner.jpg)
+# Clipboard
 
-<!-- description -->
+Read and write to the system clipboard.
 
 ## Install
 
@@ -18,6 +18,8 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
+tauri-plugin-clipboard = "2.0.0-alpha"
+# alternatively with Git:
 tauri-plugin-clipboard = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
@@ -26,6 +28,13 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
+pnpm add @tauri-apps/plugin-clipboard
+# or
+npm add @tauri-apps/plugin-clipboard
+# or
+yarn add @tauri-apps/plugin-clipboard
+
+# alternatively with Git:
 pnpm add https://github.com/tauri-apps/tauri-plugin-clipboard#v2
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-clipboard#v2
@@ -51,7 +60,9 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-
+import { writeText, readText } from "@tauri-apps/plugin-clipboard";
+await writeText("Tauri is awesome!");
+assert(await readText(), "Tauri is awesome!");
 ```
 
 ## Contributing

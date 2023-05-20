@@ -1,6 +1,6 @@
-![Dialog](banner.jpg)
+# Dialog
 
-<!-- description -->
+Native system dialogs for opening and saving files along with message dialogs.
 
 ## Install
 
@@ -18,6 +18,8 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
+tauri-plugin-dialog = "2.0.0-alpha"
+# alternatively with Git:
 tauri-plugin-dialog = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
@@ -31,6 +33,13 @@ pnpm add @tauri-apps/plugin-dialog
 npm add @tauri-apps/plugin-dialog
 # or
 yarn add @tauri-apps/plugin-dialog
+
+# alternatively with Git:
+pnpm add https://github.com/tauri-apps/tauri-plugin-dialog#v2
+# or
+npm add https://github.com/tauri-apps/tauri-plugin-dialog#v2
+# or
+yarn add https://github.com/tauri-apps/tauri-plugin-dialog#v2
 ```
 
 ## Usage

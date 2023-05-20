@@ -1,4 +1,4 @@
-# Window plugin
+# Window
 
 Interact with the Tauri window.
 
@@ -18,6 +18,8 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
+tauri-plugin-window = "2.0.0-alpha"
+# alternatively with Git:
 tauri-plugin-window = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
@@ -26,6 +28,13 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
+pnpm add @tauri-apps/plugin-window
+# or
+npm add @tauri-apps/plugin-window
+# or
+yarn add @tauri-apps/plugin-window
+
+# alternatively with Git:
 pnpm add https://github.com/tauri-apps/tauri-plugin-window#v2
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-window#v2
@@ -51,7 +60,20 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import * as tauriWindow from "@tauri-apps/plugin-window";
+import { appWindow, WebviewWindow } from "@tauri-apps/plugin-window";
+
+// manipulating this window
+await appWindow.setResizable(false);
+
+// Creating new windows:
+// loading embedded asset:
+const webview = new WebviewWindow("theUniqueLabel", {
+  url: "path/to/page.html",
+});
+// alternatively, load a remote URL:
+const webview = new WebviewWindow("theUniqueLabel", {
+  url: "https://github.com/tauri-apps/tauri",
+});
 ```
 
 ## Contributing

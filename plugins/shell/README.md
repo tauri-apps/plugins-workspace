@@ -1,6 +1,6 @@
-![plugin-shell](banner.jpg)
+# Shell
 
-<!-- description -->
+Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application.
 
 ## Install
 
@@ -18,6 +18,8 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
+tauri-plugin-shell = "2.0.0-alpha"
+# alternatively with Git:
 tauri-plugin-shell = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
@@ -26,6 +28,13 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
+pnpm add @tauri-apps/plugin-shell
+# or
+npm add @tauri-apps/plugin-shell
+# or
+yarn add @tauri-apps/plugin-shell
+
+# alternatively with Git:
 pnpm add https://github.com/tauri-apps/tauri-plugin-shell#v2
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-shell#v2
@@ -51,7 +60,8 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-
+import { Command } from "@tauri-apps/plugin-shell";
+Command.create("git", ["commit", "-m", "the commit message"]);
 ```
 
 ## Contributing

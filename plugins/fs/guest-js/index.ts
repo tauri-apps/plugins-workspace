@@ -5,32 +5,6 @@
 /**
  * Access the file system.
  *
- * This package is also accessible with `window.__TAURI__.fs` when [`build.withGlobalTauri`](https://tauri.app/v1/api/config/#buildconfig.withglobaltauri) in `tauri.conf.json` is set to `true`.
- *
- * The APIs must be added to [`tauri.allowlist.fs`](https://tauri.app/v1/api/config/#allowlistconfig.fs) in `tauri.conf.json`:
- * ```json
- * {
- *   "tauri": {
- *     "allowlist": {
- *       "fs": {
- *         "all": true, // enable all FS APIs
- *         "readFile": true,
- *         "writeFile": true,
- *         "readDir": true,
- *         "copyFile": true,
- *         "createDir": true,
- *         "removeDir": true,
- *         "removeFile": true,
- *         "renameFile": true,
- *         "metadata": true,
- *         "exists": true
- *       }
- *     }
- *   }
- * }
- * ```
- * It is recommended to allowlist only the APIs you use for optimal bundle size and security.
- *
  * ## Security
  *
  * This module prevents path traversal, not allowing absolute paths or parent dir components
@@ -45,11 +19,9 @@
  * *databases* folder of the {@link path.appDataDir | $APPDATA directory}:
  * ```json
  * {
- *   "tauri": {
- *     "allowlist": {
- *       "fs": {
- *         "scope": ["$APPDATA/databases/*"]
- *       }
+ *   "plugins": {
+ *     "fs": {
+ *       "scope": ["$APPDATA/databases/*"]
  *     }
  *   }
  * }

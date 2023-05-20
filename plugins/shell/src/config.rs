@@ -2,9 +2,7 @@ use std::path::PathBuf;
 
 use serde::{de::Error as DeError, Deserialize, Deserializer};
 
-/// Allowlist for the shell APIs.
-///
-/// See more: https://tauri.app/v1/api/config#shellallowlistconfig
+/// Configuration for the shell plugin.
 #[derive(Debug, Default, PartialEq, Eq, Clone, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Config {

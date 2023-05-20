@@ -13,7 +13,7 @@ pub struct Scope {
 }
 
 impl Scope {
-    /// Creates a new scope from the allowlist's `http` scope configuration.
+    /// Creates a new scope from the scope configuration.
     pub(crate) fn new(scope: &HttpAllowlistScope) -> Self {
         Self {
             allowed_urls: scope

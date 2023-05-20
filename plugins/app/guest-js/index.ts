@@ -5,22 +5,6 @@
 /**
  * Get application metadata.
  *
- * The APIs must be added to [`tauri.allowlist.app`](https://tauri.app/v1/api/config/#allowlistconfig.app) in `tauri.conf.json`:
- * ```json
- * {
- *   "tauri": {
- *     "allowlist": {
- *       "app": {
- *         "all": true, // enable all app APIs
- *         "show": true,
- *         "hide": true
- *       }
- *     }
- *   }
- * }
- * ```
- * It is recommended to allowlist only the APIs you use for optimal bundle size and security.
- *
  * @module
  */
 
