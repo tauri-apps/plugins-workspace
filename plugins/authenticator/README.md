@@ -2,6 +2,8 @@
 
 Use hardware security-keys in your Tauri App.
 
+- Supported platforms: Windows, Linux, FreeBSD, NetBSD, OpenBSD, and macOS.
+
 ## Install
 
 _This plugin requires a Rust version of at least **1.65**_
@@ -17,7 +19,8 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 `src-tauri/Cargo.toml`
 
 ```toml
-[dependencies]
+# you can add the dependencies on the `[dependencies]` section if you do not target mobile
+[target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
 tauri-plugin-authenticator = "2.0.0-alpha"
 # alternatively with Git:
 tauri-plugin-authenticator = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
@@ -54,7 +57,11 @@ First you need to register the core plugin with Tauri:
 ```rust
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_authenticator::init())
+        .setup(|app| {
+            #[cfg(desktop)]
+            app.handle().plugin(tauri_plugin_authenticator::init())?;
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
