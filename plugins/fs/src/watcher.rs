@@ -1,3 +1,7 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
 use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
 use serde::Deserialize;
