@@ -20,3 +20,4 @@ updater
 upload
 websocket
 window
+window-state
