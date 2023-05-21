@@ -1,3 +1,4 @@
+app
 authenticator
 autostart
 cli
@@ -6,14 +7,19 @@ dialog
 fs
 global-shortcut
 http
-localhost
 log
+localhost
+os
 persisted-scope
 positioner
+process
 shell
+single-instance
 sql
 store
 stronghold
+updater
 upload
 websocket
+window
 window-state
