@@ -357,6 +357,7 @@ impl Builder {
     /// ```rust
     /// use tauri_plugin_log::{Target, TargetKind, WEBVIEW_TARGET};
     /// tauri_plugin_log::Builder::new()
+    ///     .clear_targets()
     ///     .targets([
     ///         Target::new(TargetKind::Webview),
     ///         Target::new(TargetKind::LogDir { file_name: Some("webview".into()) }).filter(|metadata| metadata.target() == WEBVIEW_TARGET),
