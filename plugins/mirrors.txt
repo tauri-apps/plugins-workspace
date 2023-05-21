@@ -8,7 +8,6 @@ fs
 global-shortcut
 http
 log
-localhost
 os
 persisted-scope
 positioner
@@ -21,4 +20,3 @@ updater
 upload
 websocket
 window
-window-state
