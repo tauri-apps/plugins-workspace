@@ -2,17 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-const fs = require('fs')
-const path = require('path')
-const readline = require('readline')
+import fs from 'fs'
+import path from 'path'
+import readline from 'readline'
 
 const header = `Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 SPDX-License-Identifier: Apache-2.0
 SPDX-License-Identifier: MIT`
-const bundlerLicense = '// Copyright 2016-2019 Cargo-Bundle developers <https://github.com/burtonageo/cargo-bundle>'
+const ignoredLicense = '// Copyright 2021 Jonas Kruckenberg'
 
 const extensions = ['.rs', '.js', '.ts', '.yml', '.swift', '.kt']
-const ignore = ['target', 'templates', 'node_modules', 'gen', 'dist', 'bundle.js', 'bundle.global.js']
+const ignore = ['target', 'templates', 'node_modules', 'gen', 'dist', 'dist-js', '.svelte-kit', 'api-iife.js']
 
 async function checkFile(file) {
   if (extensions.some(e => file.endsWith(e))) {
@@ -26,7 +26,7 @@ async function checkFile(file) {
     let i = 0
     for await (let line of rl) {
       // ignore empty lines, allow shebang, swift-tools-version and bundler license
-      if (line.length === 0 || line.startsWith("#!") || line.startsWith('// swift-tools-version:') || line === bundlerLicense) {
+      if (line.length === 0 || line.startsWith("#!") || line.startsWith('// swift-tools-version:') || line === ignoredLicense) {
         continue
       }
 
@@ -93,7 +93,7 @@ if (files.length > 0) {
 
   run()
 } else {
-  check(path.resolve(__dirname, '../..')).then(missing => {
+  check(path.resolve(new URL(import.meta.url).pathname, '../../..')).then(missing => {
     if (missing.length > 0) {
       console.log(missing.join('\n'))
       process.exit(1)
