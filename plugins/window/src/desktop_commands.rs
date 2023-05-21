@@ -58,7 +58,7 @@ impl From<IconDto> for Icon {
 }
 
 #[tauri::command]
-pub fn create<R: Runtime>(app: AppHandle<R>, options: WindowConfig) -> Result<()> {
+pub async fn create<R: Runtime>(app: AppHandle<R>, options: WindowConfig) -> Result<()> {
     tauri::window::WindowBuilder::from_config(&app, options).build()?;
     Ok(())
 }
@@ -73,7 +73,7 @@ fn get_window<R: Runtime>(window: Window<R>, label: Option<String>) -> Result<Wi
 macro_rules! getter {
     ($cmd: ident, $ret: ty) => {
         #[tauri::command]
-        pub fn $cmd<R: Runtime>(window: Window<R>, label: Option<String>) -> Result<$ret> {
+        pub async fn $cmd<R: Runtime>(window: Window<R>, label: Option<String>) -> Result<$ret> {
             get_window(window, label)?.$cmd().map_err(Into::into)
         }
     };
@@ -82,14 +82,14 @@ macro_rules! getter {
 macro_rules! setter {
     ($cmd: ident) => {
         #[tauri::command]
-        pub fn $cmd<R: Runtime>(window: Window<R>, label: Option<String>) -> Result<()> {
+        pub async fn $cmd<R: Runtime>(window: Window<R>, label: Option<String>) -> Result<()> {
             get_window(window, label)?.$cmd().map_err(Into::into)
         }
     };
 
     ($cmd: ident, $input: ty) => {
         #[tauri::command]
-        pub fn $cmd<R: Runtime>(
+        pub async fn $cmd<R: Runtime>(
             window: Window<R>,
             label: Option<String>,
             value: $input,
@@ -147,7 +147,7 @@ setter!(start_dragging);
 setter!(print);
 
 #[tauri::command]
-pub fn set_icon<R: Runtime>(
+pub async fn set_icon<R: Runtime>(
     window: Window<R>,
     label: Option<String>,
     value: IconDto,
@@ -158,7 +158,7 @@ pub fn set_icon<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn toggle_maximize<R: Runtime>(window: Window<R>, label: Option<String>) -> Result<()> {
+pub async fn toggle_maximize<R: Runtime>(window: Window<R>, label: Option<String>) -> Result<()> {
     let window = get_window(window, label)?;
     match window.is_maximized()? {
         true => window.unmaximize()?,
@@ -168,7 +168,7 @@ pub fn toggle_maximize<R: Runtime>(window: Window<R>, label: Option<String>) -> 
 }
 
 #[tauri::command]
-pub fn internal_toggle_maximize<R: Runtime>(
+pub async fn internal_toggle_maximize<R: Runtime>(
     window: Window<R>,
     label: Option<String>,
 ) -> Result<()> {
@@ -184,7 +184,7 @@ pub fn internal_toggle_maximize<R: Runtime>(
 
 #[cfg(any(debug_assertions, feature = "devtools"))]
 #[tauri::command]
-pub fn internal_toggle_devtools<R: Runtime>(
+pub async fn internal_toggle_devtools<R: Runtime>(
     window: Window<R>,
     label: Option<String>,
 ) -> Result<()> {
