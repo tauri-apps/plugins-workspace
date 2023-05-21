@@ -24,7 +24,11 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 /**
  * @since 1.0.0
@@ -297,7 +301,7 @@ class Client {
    * ```
    */
   async drop(): Promise<void> {
-    return invoke("plugin:http|drop_client", {
+    return window.__TAURI_INVOKE__("plugin:http|drop_client", {
       client: this.id,
     });
   }
@@ -320,30 +324,32 @@ class Client {
     if (jsonResponse) {
       options.responseType = ResponseType.Text;
     }
-    return invoke<IResponse<T>>("plugin:http|request", {
-      clientId: this.id,
-      options,
-    }).then((res) => {
-      const response = new Response(res);
-      if (jsonResponse) {
-        /* eslint-disable */
-        try {
-          response.data = JSON.parse(response.data as string);
-        } catch (e) {
-          if (response.ok && (response.data as unknown as string) === "") {
-            response.data = {} as T;
-          } else if (response.ok) {
-            throw Error(
-              `Failed to parse response \`${response.data}\` as JSON: ${e};
+    return window
+      .__TAURI_INVOKE__<IResponse<T>>("plugin:http|request", {
+        clientId: this.id,
+        options,
+      })
+      .then((res) => {
+        const response = new Response(res);
+        if (jsonResponse) {
+          /* eslint-disable */
+          try {
+            response.data = JSON.parse(response.data as string);
+          } catch (e) {
+            if (response.ok && (response.data as unknown as string) === "") {
+              response.data = {} as T;
+            } else if (response.ok) {
+              throw Error(
+                `Failed to parse response \`${response.data}\` as JSON: ${e};
               try setting the \`responseType\` option to \`ResponseType.Text\` or \`ResponseType.Binary\` if the API does not return a JSON response.`
-            );
+              );
+            }
           }
+          /* eslint-enable */
+          return response;
         }
-        /* eslint-enable */
         return response;
-      }
-      return response;
-    });
+      });
   }
 
   /**
@@ -478,9 +484,11 @@ class Client {
  * @since 1.0.0
  */
 async function getClient(options?: ClientOptions): Promise<Client> {
-  return invoke<number>("plugin:http|create_client", {
-    options,
-  }).then((id) => new Client(id));
+  return window
+    .__TAURI_INVOKE__<number>("plugin:http|create_client", {
+      options,
+    })
+    .then((id) => new Client(id));
 }
 
 /** @internal */

@@ -11,8 +11,10 @@ import terser from "@rollup/plugin-terser";
  * @returns {import('rollup').RollupOptions}
  */
 export function createConfig({ input = "index.ts", pkg, external = [] }) {
-  const pluginJsName = pkg.name.replace("@tauri-apps/plugin-", "").replace(/-./g, x => x[1].toUpperCase())
-  const iifeVarName = `__TAURI_${pluginJsName.toUpperCase()}__`
+  const pluginJsName = pkg.name
+    .replace("@tauri-apps/plugin-", "")
+    .replace(/-./g, (x) => x[1].toUpperCase());
+  const iifeVarName = `__TAURI_${pluginJsName.toUpperCase()}__`;
   return [
     {
       input,
@@ -64,8 +66,12 @@ export function createConfig({ input = "index.ts", pkg, external = [] }) {
       // and var is not guaranteed to assign to the global `window` object so we make sure to assign it
       plugins: [
         resolve(),
+        typescript({
+          sourceMap: false,
+          declaration: false,
+          declarationDir: undefined,
+        }),
         terser(),
-        typescript({ declaration: false }),
       ],
     },
   ];

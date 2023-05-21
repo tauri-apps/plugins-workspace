@@ -8,7 +8,11 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 /**
  * Gets the application version.
@@ -21,7 +25,7 @@ import { invoke } from "@tauri-apps/api/tauri";
  * @since 1.0.0
  */
 async function getVersion(): Promise<string> {
-  return invoke("plugin:app|version");
+  return window.__TAURI_INVOKE__("plugin:app|version");
 }
 
 /**
@@ -35,7 +39,7 @@ async function getVersion(): Promise<string> {
  * @since 1.0.0
  */
 async function getName(): Promise<string> {
-  return invoke("plugin:app|name");
+  return window.__TAURI_INVOKE__("plugin:app|name");
 }
 
 /**
@@ -50,7 +54,7 @@ async function getName(): Promise<string> {
  * @since 1.0.0
  */
 async function getTauriVersion(): Promise<string> {
-  return invoke("plugin:app|tauri_version");
+  return window.__TAURI_INVOKE__("plugin:app|tauri_version");
 }
 
 /**
@@ -65,7 +69,7 @@ async function getTauriVersion(): Promise<string> {
  * @since 1.2.0
  */
 async function show(): Promise<void> {
-  return invoke("plugin:app|show");
+  return window.__TAURI_INVOKE__("plugin:app|show");
 }
 
 /**
@@ -80,7 +84,7 @@ async function show(): Promise<void> {
  * @since 1.2.0
  */
 async function hide(): Promise<void> {
-  return invoke("plugin:app|hide");
+  return window.__TAURI_INVOKE__("plugin:app|hide");
 }
 
 export { getName, getVersion, getTauriVersion, show, hide };

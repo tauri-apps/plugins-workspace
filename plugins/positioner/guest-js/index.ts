@@ -1,7 +1,11 @@
 // Copyright 2021 Jonas Kruckenberg
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 /**
  * Well known window positions.
@@ -31,7 +35,7 @@ export enum Position {
  * @param to The {@link Position} to move to.
  */
 export async function moveWindow(to: Position): Promise<void> {
-  await invoke("plugin:positioner|move_window", {
+  await window.__TAURI_INVOKE__("plugin:positioner|move_window", {
     position: to,
   });
 }
