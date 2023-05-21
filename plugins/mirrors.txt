@@ -9,7 +9,6 @@ global-shortcut
 http
 log
 os
-persisted-scope
 positioner
 process
 shell
