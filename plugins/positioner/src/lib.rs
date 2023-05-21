@@ -60,8 +60,9 @@ async fn move_window<R: Runtime>(window: tauri::Window<R>, position: Position) -
 
 /// The Tauri plugin that exposes [`WindowExt::move_window`] to the webview.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    let plugin =
-        plugin::Builder::new("positioner").invoke_handler(tauri::generate_handler![move_window]);
+    let plugin = plugin::Builder::new("positioner")
+        .js_init_script(include_str!("api-iife.js").to_string())
+        .invoke_handler(tauri::generate_handler![move_window]);
 
     #[cfg(feature = "system-tray")]
     let plugin = plugin.setup(|app_handle, _api| {

@@ -280,6 +280,7 @@ impl Builder {
 
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R, Option<PluginConfig>> {
         PluginBuilder::<R, Option<PluginConfig>>::new("sql")
+            .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![load, execute, select, close])
             .setup(|app, api| {
                 let config = api.config().clone().unwrap_or_default();
