@@ -79,6 +79,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         desktop_commands::set_icon,
                         desktop_commands::toggle_maximize,
                         desktop_commands::internal_toggle_maximize,
+                        #[cfg(any(debug_assertions, feature = "devtools"))]
                         desktop_commands::internal_toggle_devtools,
                     ]);
                 #[allow(clippy::needless_return)]
