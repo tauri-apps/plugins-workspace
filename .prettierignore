@@ -1,6 +1,8 @@
 target
 node_modules
 dist
+dist-js
 pnpm-lock.yaml
 Cargo.lock
 .build
+api-iife.js
