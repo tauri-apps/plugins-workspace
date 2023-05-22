@@ -68,6 +68,11 @@ pub fn tempdir() -> PathBuf {
     std::env::temp_dir()
 }
 
+/// Returns the locale with the `BCP-47` language tag. If the locale couldn’t be obtained, `None` is returned instead.
+pub fn locale() -> Option<String> {
+    sys_locale::get_locale()
+}
+
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("os")
         .invoke_handler(tauri::generate_handler![
@@ -75,7 +80,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::version,
             commands::kind,
             commands::arch,
-            commands::tempdir
+            commands::tempdir,
+            commands::locale
         ])
         .build()
 }

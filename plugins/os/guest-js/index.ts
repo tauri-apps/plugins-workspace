@@ -123,5 +123,22 @@ async function tempdir(): Promise<string> {
   return invoke("plugin:os|tempdir");
 }
 
-export { EOL, platform, version, type, arch, tempdir };
+/**
+ * Returns a String with a `BCP-47` language tag inside. If the locale couldn’t be obtained, `null` is returned instead.
+ * @example
+ * ```typescript
+ * import { locale } from '@tauri-apps/plugin-os';
+ * const locale = await locale();
+ * if (locale) {
+ *    // use the locale string here
+ * }
+ * ```
+ *
+ * @since 1.3.0
+ */
+async function locale(): Promise<string | null> {
+  return invoke("plugin:os|locale");
+}
+
+export { EOL, platform, version, type, arch, tempdir, locale };
 export type { Platform, OsType, Arch };
