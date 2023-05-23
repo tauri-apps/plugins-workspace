@@ -141,7 +141,7 @@ async function tempdir(): Promise<string> {
  * @since 1.3.0
  */
 async function locale(): Promise<string | null> {
-  return invoke("plugin:os|locale");
+  return window.__TAURI_INVOKE__("plugin:os|locale");
 }
 
 export { EOL, platform, version, type, arch, tempdir, locale };
