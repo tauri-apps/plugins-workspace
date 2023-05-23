@@ -60,8 +60,8 @@
   ];
 
   const windowsEffects = ["mica", "blur", "acrylic"];
-  const isWindows = navigator.appVersion.includes("Win");
-  const isMacOS = navigator.appVersion.includes("Mac");
+  const isWindows = navigator.appVersion.includes("windows");
+  const isMacOS = navigator.appVersion.includes("macos");
   let effectOptions = isWindows
     ? windowsEffects
     : Object.keys(Effect)
@@ -72,6 +72,7 @@
   );
 
   export let onMessage;
+  const mainEl = document.querySelector("main");
 
   let newWindowLabel;
 
@@ -210,12 +211,18 @@
     ) {
       payload.color = [effectR, effectG, effectB, effectA];
     }
+
+    mainEl.classList.remove("bg-primary");
+    mainEl.classList.remove("dark:bg-darkPrimary");
+    await windowMap[selectedWindow].clearEffects();
     await windowMap[selectedWindow].setEffects(payload);
   }
 
   async function clearEffects() {
     effects = [];
     await windowMap[selectedWindow].clearEffects();
+    mainEl.classList.add("bg-primary");
+    mainEl.classList.add("dark:bg-darkPrimary");
   }
 
   $: {
