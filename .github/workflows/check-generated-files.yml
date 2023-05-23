@@ -61,10 +61,6 @@ jobs:
               - .github/workflows/check-generated-files.yml
               - plugins/http/guest-js/**
               - plugins/http/src/api-iife.js
-            localhost:
-              - .github/workflows/check-generated-files.yml
-              - plugins/localhost/guest-js/**
-              - plugins/localhost/src/api-iife.js
             log:
               - .github/workflows/check-generated-files.yml
               - plugins/log/guest-js/**
@@ -77,10 +73,6 @@ jobs:
               - .github/workflows/check-generated-files.yml
               - plugins/os/guest-js/**
               - plugins/os/src/api-iife.js
-            persisted-scope:
-              - .github/workflows/check-generated-files.yml
-              - plugins/persisted-scope/guest-js/**
-              - plugins/persisted-scope/src/api-iife.js
             positioner:
               - .github/workflows/check-generated-files.yml
               - plugins/positioner/guest-js/**
@@ -93,10 +85,6 @@ jobs:
               - .github/workflows/check-generated-files.yml
               - plugins/shell/guest-js/**
               - plugins/shell/src/api-iife.js
-            single-instance:
-              - .github/workflows/check-generated-files.yml
-              - plugins/single-instance/guest-js/**
-              - plugins/single-instance/src/api-iife.js
             sql:
               - .github/workflows/check-generated-files.yml
               - plugins/sql/guest-js/**
