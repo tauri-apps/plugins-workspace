@@ -512,75 +512,83 @@
     <br />
 
     {#if isWindows || isMacOS}
-      <div class="flex gap-1">
-        <label>
-          Effect
-          <select class="input" bind:value={selectedEffect}>
-            {#each effectOptions as effect}
-              <option value={effect}>{effect}</option>
-            {/each}
-          </select>
-        </label>
+      <div class="flex flex-col gap-1">
+        <div class="flex">
+          <label>
+            Effect
+            <select class="input" bind:value={selectedEffect}>
+              {#each effectOptions as effect}
+                <option value={effect}>{effect}</option>
+              {/each}
+            </select>
+          </label>
 
-        <label>
-          State
-          <select class="input" bind:value={effectState}>
-            {#each effectStateOptions as state}
-              <option value={state}>{state}</option>
-            {/each}
-          </select>
-        </label>
+          <label>
+            State
+            <select class="input" bind:value={effectState}>
+              {#each effectStateOptions as state}
+                <option value={state}>{state}</option>
+              {/each}
+            </select>
+          </label>
 
-        <label>
-          Radius
-          <input class="input" type="number" bind:value={effectRadius} />
-        </label>
-
-        <label>
-          Color
-          <div class="flex">
-            <input
-              style="max-width: 120px;"
-              class="input"
-              type="number"
-              placeholder="R"
-              bind:value={effectR}
-            />
-            <input
-              style="max-width: 120px;"
-              class="input"
-              type="number"
-              placeholder="G"
-              bind:value={effectG}
-            />
-            <input
-              style="max-width: 120px;"
-              class="input"
-              type="number"
-              placeholder="B"
-              bind:value={effectB}
-            />
-            <input
-              style="max-width: 120px;"
-              class="input"
-              type="number"
-              placeholder="A"
-              bind:value={effectA}
-            />
-          </div>
-        </label>
-
-        <button class="btn" style="width: 80px;" on:click={addEffect}
-          >Add</button
-        >
-
-        <div>
-          Applied effects: {effects.length ? effects.join(",") : "None"}
+          <label>
+            Radius
+            <input class="input" type="number" bind:value={effectRadius} />
+          </label>
         </div>
 
-        <button class="btn" style="width: 80px;" on:click={clearEffects}
-          >Clear</button
-        >
+        <div class="flex">
+          <label>
+            Color
+            <div class="flex">
+              <input
+                style="max-width: 120px;"
+                class="input"
+                type="number"
+                placeholder="R"
+                bind:value={effectR}
+              />
+              <input
+                style="max-width: 120px;"
+                class="input"
+                type="number"
+                placeholder="G"
+                bind:value={effectG}
+              />
+              <input
+                style="max-width: 120px;"
+                class="input"
+                type="number"
+                placeholder="B"
+                bind:value={effectB}
+              />
+              <input
+                style="max-width: 120px;"
+                class="input"
+                type="number"
+                placeholder="A"
+                bind:value={effectA}
+              />
+            </div>
+          </label>
+        </div>
+
+        <div class="flex">
+          <button class="btn" style="width: 80px;" on:click={addEffect}
+            >Add</button
+          >
+        </div>
+
+        <div class="flex">
+          <div>
+            Applied effects: {effects.length ? effects.join(",") : "None"}
+          </div>
+
+          <button class="btn" style="width: 80px;" on:click={clearEffects}
+            >Clear</button
+          >
+        </div>
       </div>
     {/if}
   {/if}
