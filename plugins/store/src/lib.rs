@@ -278,6 +278,7 @@ impl<R: Runtime> Builder<R> {
     /// ```
     pub fn build(mut self) -> TauriPlugin<R> {
         plugin::Builder::new("store")
+            .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![
                 set, get, has, delete, clear, reset, keys, values, length, entries, load, save
             ])

@@ -8,7 +8,14 @@
  * @module
  */
 
-import { invoke, transformCallback } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+    __TAURI__: {
+      transformCallback: <T>(cb: (payload: T) => void) => number;
+    };
+  }
+}
 
 export type ShortcutHandler = (shortcut: string) => void;
 
@@ -31,9 +38,9 @@ async function register(
   shortcut: string,
   handler: ShortcutHandler
 ): Promise<void> {
-  return await invoke("plugin:globalShortcut|register", {
+  return await window.__TAURI_INVOKE__("plugin:globalShortcut|register", {
     shortcut,
-    handler: transformCallback(handler),
+    handler: window.__TAURI__.transformCallback(handler),
   });
 }
 
@@ -56,9 +63,9 @@ async function registerAll(
   shortcuts: string[],
   handler: ShortcutHandler
 ): Promise<void> {
-  return await invoke("plugin:globalShortcut|register_all", {
+  return await window.__TAURI_INVOKE__("plugin:globalShortcut|register_all", {
     shortcuts,
-    handler: transformCallback(handler),
+    handler: window.__TAURI__.transformCallback(handler),
   });
 }
 
@@ -78,7 +85,7 @@ async function registerAll(
  * @since 1.0.0
  */
 async function isRegistered(shortcut: string): Promise<boolean> {
-  return await invoke("plugin:globalShortcut|is_registered", {
+  return await window.__TAURI_INVOKE__("plugin:globalShortcut|is_registered", {
     shortcut,
   });
 }
@@ -96,7 +103,7 @@ async function isRegistered(shortcut: string): Promise<boolean> {
  * @since 1.0.0
  */
 async function unregister(shortcut: string): Promise<void> {
-  return await invoke("plugin:globalShortcut|unregister", {
+  return await window.__TAURI_INVOKE__("plugin:globalShortcut|unregister", {
     shortcut,
   });
 }
@@ -112,7 +119,7 @@ async function unregister(shortcut: string): Promise<void> {
  * @since 1.0.0
  */
 async function unregisterAll(): Promise<void> {
-  return await invoke("plugin:globalShortcut|unregister_all");
+  return await window.__TAURI_INVOKE__("plugin:globalShortcut|unregister_all");
 }
 
 export { register, registerAll, isRegistered, unregister, unregisterAll };

@@ -11,18 +11,20 @@ use tauri::{
 mod desktop_commands;
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    let mut init_js = String::new();
+    let mut init_script = String::new();
     // window.print works on Linux/Windows; need to use the API on macOS
     #[cfg(any(target_os = "macos", target_os = "ios"))]
     {
-        init_js.push_str(include_str!("./scripts/print.js"));
+        init_script.push_str(include_str!("./scripts/print.js"));
     }
-    init_js.push_str(include_str!("./scripts/drag.js"));
+    init_script.push_str(include_str!("./scripts/drag.js"));
     #[cfg(any(debug_assertions, feature = "devtools"))]
-    init_js.push_str(include_str!("./scripts/toggle-devtools.js"));
+    init_script.push_str(include_str!("./scripts/toggle-devtools.js"));
+
+    init_script.push_str(include_str!("api-iife.js"));
 
     Builder::new("window")
-        .js_init_script(init_js)
+        .js_init_script(init_script)
         .invoke_handler(|invoke| {
             #[cfg(desktop)]
             {
@@ -79,6 +81,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         desktop_commands::set_icon,
                         desktop_commands::toggle_maximize,
                         desktop_commands::internal_toggle_maximize,
+                        #[cfg(any(debug_assertions, feature = "devtools"))]
                         desktop_commands::internal_toggle_devtools,
                     ]);
                 #[allow(clippy::needless_return)]

@@ -40,6 +40,7 @@ fn cli_matches<R: Runtime>(_app: AppHandle<R>, cli: State<'_, Cli<R>>) -> Result
 
 pub fn init<R: Runtime>() -> TauriPlugin<R, Config> {
     Builder::new("cli")
+        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![cli_matches])
         .setup(|app, api| {
             app.manage(Cli(api));

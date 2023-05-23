@@ -212,13 +212,15 @@ impl<R: Runtime, T: Manager<R>> crate::NotificationExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    let mut init_script = include_str!("init.js").to_string();
+    init_script.push_str(include_str!("api-iife.js"));
     Builder::new("notification")
         .invoke_handler(tauri::generate_handler![
             commands::notify,
             commands::request_permission,
             commands::is_permission_granted
         ])
-        .js_init_script(include_str!("init.js").into())
+        .js_init_script(init_script)
         .setup(|app, api| {
             #[cfg(mobile)]
             let notification = mobile::init(app, api)?;

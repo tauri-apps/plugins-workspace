@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke, transformCallback } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+    __TAURI__: {
+      transformCallback: <T>(cb: (payload: T) => void) => number;
+    };
+  }
+}
 
 export interface Event<T> {
   /** Event name */
@@ -28,7 +35,7 @@ export type UnlistenFn = () => void;
  * @returns
  */
 async function _unlisten(event: string, eventId: number): Promise<void> {
-  await invoke("plugin:event|unlisten", {
+  await window.__TAURI_INVOKE__("plugin:event|unlisten", {
     event,
     eventId,
   });
@@ -47,7 +54,7 @@ async function emit(
   windowLabel?: string,
   payload?: unknown
 ): Promise<void> {
-  await invoke("plugin:event|emit", {
+  await window.__TAURI_INVOKE__("plugin:event|emit", {
     event,
     windowLabel,
     payload,
@@ -66,13 +73,15 @@ async function listen<T>(
   windowLabel: string | null,
   handler: EventCallback<T>
 ): Promise<UnlistenFn> {
-  return invoke<number>("plugin:event|listen", {
-    event,
-    windowLabel,
-    handler: transformCallback(handler),
-  }).then((eventId) => {
-    return async () => _unlisten(event, eventId);
-  });
+  return window
+    .__TAURI_INVOKE__<number>("plugin:event|listen", {
+      event,
+      windowLabel,
+      handler: window.__TAURI__.transformCallback(handler),
+    })
+    .then((eventId) => {
+      return async () => _unlisten(event, eventId);
+    });
 }
 
 /**

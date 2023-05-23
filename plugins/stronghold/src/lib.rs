@@ -413,6 +413,7 @@ impl Builder {
         let password_hash_function = self.password_hash_function;
 
         PluginBuilder::new("stronghold")
+            .js_init_script(include_str!("api-iife.js").to_string())
             .setup(move |app, _api| {
                 app.manage(StrongholdCollection::default());
                 app.manage(PasswordHashFunction(password_hash_function));
