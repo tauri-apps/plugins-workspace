@@ -1,0 +1,129 @@
+# Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT
+
+name: check generated files
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/check-generated-files.yml"
+      - "**/guest-js/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            app:
+              .github/workflows/check-generated-files.yml
+              - plugins/app/guest-js/**
+            authenticator:
+              .github/workflows/check-generated-files.yml
+              - plugins/authenticator/guest-js/**
+            autostart:
+              .github/workflows/check-generated-files.yml
+              - plugins/autostart/guest-js/**
+            cli:
+              .github/workflows/check-generated-files.yml
+              - plugins/cli/guest-js/**
+            clipboard:
+              .github/workflows/check-generated-files.yml
+              - plugins/clipboard/guest-js/**
+            dialog:
+              .github/workflows/check-generated-files.yml
+              - plugins/dialog/guest-js/**
+              - plugins/fs/guest-js/**
+            fs:
+              .github/workflows/check-generated-files.yml
+              - plugins/fs/guest-js/**
+            global-shortcut:
+              .github/workflows/check-generated-files.yml
+              - plugins/global-shortcut/guest-js/**
+            http:
+              .github/workflows/check-generated-files.yml
+              - plugins/http/guest-js/**
+              - plugins/fs/guest-js/**
+            localhost:
+              .github/workflows/check-generated-files.yml
+              - plugins/localhost/guest-js/**
+            log:
+              .github/workflows/check-generated-files.yml
+              - plugins/log/guest-js/**
+            notification:
+              .github/workflows/check-generated-files.yml
+              - plugins/notification/guest-js/**
+            os:
+              .github/workflows/check-generated-files.yml
+              - plugins/os/guest-js/**
+            persisted-scope:
+              .github/workflows/check-generated-files.yml
+              - plugins/persisted-scope/guest-js/**
+              - plugins/fs/guest-js/**
+            positioner:
+              .github/workflows/check-generated-files.yml
+              - plugins/positioner/guest-js/**
+            process:
+              .github/workflows/check-generated-files.yml
+              - plugins/process/guest-js/**
+            shell:
+              .github/workflows/check-generated-files.yml
+              - plugins/shell/guest-js/**
+            single-instance:
+              .github/workflows/check-generated-files.yml
+              - plugins/single-instance/guest-js/**
+            sql:
+              .github/workflows/check-generated-files.yml
+              - plugins/sql/guest-js/**
+            store:
+              .github/workflows/check-generated-files.yml
+              - plugins/store/guest-js/**
+            stronghold:
+              .github/workflows/check-generated-files.yml
+              - plugins/stronghold/guest-js/**
+            updater:
+              .github/workflows/check-generated-files.yml
+              - plugins/updater/guest-js/**
+            upload:
+              .github/workflows/check-generated-files.yml
+              - plugins/upload/guest-js/**
+            websocket:
+              .github/workflows/check-generated-files.yml
+              - plugins/websocket/guest-js/**
+            window:
+              .github/workflows/check-generated-files.yml
+              - plugins/window/guest-js/**
+            window-state:
+              .github/workflows/check-generated-files.yml
+              - plugins/window-state/guest-js/**
+
+  test:
+    needs: changes
+    if: ${{ needs.changes.outputs.packages != '[]' && needs.changes.outputs.packages != '' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: build api
+        working-directory: plugins/${{ matrix.package }}
+        run: pnpm install && pnpm build
+
+      - name: check diff
+        run: |
+          ./.scripts/ci/has-diff.sh
