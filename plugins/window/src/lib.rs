@@ -62,6 +62,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         desktop_commands::close,
                         desktop_commands::set_decorations,
                         desktop_commands::set_shadow,
+                        desktop_commands::set_effects,
                         desktop_commands::set_always_on_top,
                         desktop_commands::set_content_protected,
                         desktop_commands::set_size,

@@ -71,6 +71,11 @@ pub fn run() {
                     .decorations(false);
             }
 
+            #[cfg(target_os = "macos")]
+            {
+                window_builder = window_builder.transparent(true);
+            }
+
             let window = window_builder.build().unwrap();
 
             #[cfg(debug_assertions)]
