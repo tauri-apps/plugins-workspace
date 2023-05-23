@@ -38,6 +38,7 @@ impl<R: Runtime, T: Manager<R>> FsExt<R> for T {
 
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
     PluginBuilder::<R, Option<Config>>::new("fs")
+        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
             commands::read_file,
             commands::read_text_file,

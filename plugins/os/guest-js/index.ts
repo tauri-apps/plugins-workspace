@@ -8,7 +8,11 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 type Platform =
   | "linux"
@@ -63,7 +67,7 @@ const EOL = isWindows() ? "\r\n" : "\n";
  *
  */
 async function platform(): Promise<Platform> {
-  return invoke("plugin:os|platform");
+  return window.__TAURI_INVOKE__("plugin:os|platform");
 }
 
 /**
@@ -77,7 +81,7 @@ async function platform(): Promise<Platform> {
  * @since 1.0.0
  */
 async function version(): Promise<string> {
-  return invoke("plugin:os|version");
+  return window.__TAURI_INVOKE__("plugin:os|version");
 }
 
 /**
@@ -91,7 +95,7 @@ async function version(): Promise<string> {
  * @since 1.0.0
  */
 async function type(): Promise<OsType> {
-  return invoke("plugin:os|kind");
+  return window.__TAURI_INVOKE__("plugin:os|kind");
 }
 
 /**
@@ -106,7 +110,7 @@ async function type(): Promise<OsType> {
  * @since 1.0.0
  */
 async function arch(): Promise<Arch> {
-  return invoke("plugin:os|arch");
+  return window.__TAURI_INVOKE__("plugin:os|arch");
 }
 
 /**
@@ -120,7 +124,7 @@ async function arch(): Promise<Arch> {
  * @since 1.0.0
  */
 async function tempdir(): Promise<string> {
-  return invoke("plugin:os|tempdir");
+  return window.__TAURI_INVOKE__("plugin:os|tempdir");
 }
 
 export { EOL, platform, version, type, arch, tempdir };

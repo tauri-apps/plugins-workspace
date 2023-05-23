@@ -62,7 +62,14 @@
  * @module
  */
 
-import { invoke, transformCallback } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+    __TAURI__: {
+      transformCallback: <T>(cb: (payload: T) => void) => number;
+    };
+  }
+}
 
 /**
  * @since 1.0.0
@@ -119,11 +126,11 @@ async function execute<O extends IOPayload>(
     Object.freeze(args);
   }
 
-  return invoke<number>("plugin:shell|execute", {
+  return window.__TAURI_INVOKE__<number>("plugin:shell|execute", {
     program,
     args,
     options,
-    onEventFn: transformCallback(onEvent),
+    onEventFn: window.__TAURI__.transformCallback(onEvent),
   });
 }
 
@@ -345,7 +352,7 @@ class Child {
    * @returns A promise indicating the success or failure of the operation.
    */
   async write(data: IOPayload): Promise<void> {
-    return invoke("plugin:shell|stdin_write", {
+    return window.__TAURI_INVOKE__("plugin:shell|stdin_write", {
       pid: this.pid,
       // correctly serialize Uint8Arrays
       buffer: typeof data === "string" ? data : Array.from(data),
@@ -358,7 +365,7 @@ class Child {
    * @returns A promise indicating the success or failure of the operation.
    */
   async kill(): Promise<void> {
-    return invoke("plugin:shell|kill", {
+    return window.__TAURI_INVOKE__("plugin:shell|kill", {
       cmd: "killChild",
       pid: this.pid,
     });
@@ -629,7 +636,7 @@ type CommandEvent<O extends IOPayload> =
  * @since 1.0.0
  */
 async function open(path: string, openWith?: string): Promise<void> {
-  return invoke("plugin:shell|open", {
+  return window.__TAURI_INVOKE__("plugin:shell|open", {
     path,
     with: openWith,
   });

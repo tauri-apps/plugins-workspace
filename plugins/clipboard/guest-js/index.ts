@@ -8,7 +8,11 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 interface Clip<K, T> {
   kind: K;
@@ -34,7 +38,7 @@ async function writeText(
   text: string,
   opts?: { label?: string }
 ): Promise<void> {
-  return invoke("plugin:clipboard|write", {
+  return window.__TAURI_INVOKE__("plugin:clipboard|write", {
     data: {
       kind: "PlainText",
       options: {
@@ -55,7 +59,9 @@ async function writeText(
  * @since 1.0.0.
  */
 async function readText(): Promise<string> {
-  const kind: ClipResponse = await invoke("plugin:clipboard|read");
+  const kind: ClipResponse = await window.__TAURI_INVOKE__(
+    "plugin:clipboard|read"
+  );
   return kind.options;
 }
 

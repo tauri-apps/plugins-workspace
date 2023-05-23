@@ -1,0 +1,1 @@
+if("__TAURI__"in window){var __TAURI_CLI__=function(_){"use strict";return _.getMatches=async function(){return await window.__TAURI_INVOKE__("plugin:cli|cli_matches")},_}({});Object.defineProperty(window.__TAURI__,"cli",{value:__TAURI_CLI__})}

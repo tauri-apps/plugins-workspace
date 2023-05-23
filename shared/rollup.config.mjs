@@ -6,7 +6,7 @@ import { builtinModules } from "module";
 
 import typescript from "@rollup/plugin-typescript";
 import resolve from "@rollup/plugin-node-resolve";
-// import terser from "@rollup/plugin-terser";
+import terser from "@rollup/plugin-terser";
 
 /**
  * Create a base rollup config
@@ -15,6 +15,10 @@ import resolve from "@rollup/plugin-node-resolve";
  * @returns {import('rollup').RollupOptions}
  */
 export function createConfig({ input = "index.ts", pkg, external = [] }) {
+  const pluginJsName = pkg.name
+    .replace("@tauri-apps/plugin-", "")
+    .replace(/-./g, (x) => x[1].toUpperCase());
+  const iifeVarName = `__TAURI_${pluginJsName.toUpperCase()}__`;
   return [
     {
       input,
@@ -49,6 +53,29 @@ export function createConfig({ input = "index.ts", pkg, external = [] }) {
         resolve(),
         // terser(),
         typescript({ sourceMap: true }),
+      ],
+    },
+    {
+      input,
+      output: {
+        file: "src/api-iife.js",
+        format: "iife",
+        name: iifeVarName,
+        // IIFE is in the format `var ${iifeVarName} = (() => {})()`
+        // we check if __TAURI__ exists and inject the API object
+        banner: "if ('__TAURI__' in window) {",
+        // the last `}` closes the if in the banner
+        footer: `Object.defineProperty(window.__TAURI__, '${pluginJsName}', { value: ${iifeVarName} }) }`,
+      },
+      // and var is not guaranteed to assign to the global `window` object so we make sure to assign it
+      plugins: [
+        resolve(),
+        typescript({
+          sourceMap: false,
+          declaration: false,
+          declarationDir: undefined,
+        }),
+        terser(),
       ],
     },
   ];

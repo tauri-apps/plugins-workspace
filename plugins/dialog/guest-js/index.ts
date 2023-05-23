@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 interface FileResponse {
   base64Data?: string;
@@ -169,7 +173,7 @@ async function open(
     Object.freeze(options);
   }
 
-  return invoke("plugin:dialog|open", { options });
+  return window.__TAURI_INVOKE__("plugin:dialog|open", { options });
 }
 
 /**
@@ -201,7 +205,7 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
     Object.freeze(options);
   }
 
-  return invoke("plugin:dialog|save", { options });
+  return window.__TAURI_INVOKE__("plugin:dialog|save", { options });
 }
 
 /**
@@ -226,7 +230,7 @@ async function message(
   options?: string | MessageDialogOptions
 ): Promise<void> {
   const opts = typeof options === "string" ? { title: options } : options;
-  return invoke("plugin:dialog|message", {
+  return window.__TAURI_INVOKE__("plugin:dialog|message", {
     message: message.toString(),
     title: opts?.title?.toString(),
     type_: opts?.type,
@@ -255,7 +259,7 @@ async function ask(
   options?: string | ConfirmDialogOptions
 ): Promise<boolean> {
   const opts = typeof options === "string" ? { title: options } : options;
-  return invoke("plugin:dialog|ask", {
+  return window.__TAURI_INVOKE__("plugin:dialog|ask", {
     message: message.toString(),
     title: opts?.title?.toString(),
     type_: opts?.type,
@@ -285,7 +289,7 @@ async function confirm(
   options?: string | ConfirmDialogOptions
 ): Promise<boolean> {
   const opts = typeof options === "string" ? { title: options } : options;
-  return invoke("plugin:dialog|confirm", {
+  return window.__TAURI_INVOKE__("plugin:dialog|confirm", {
     message: message.toString(),
     title: opts?.title?.toString(),
     type_: opts?.type,

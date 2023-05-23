@@ -16,7 +16,6 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/tauri";
 import type {
   Event,
   EventName,
@@ -26,6 +25,12 @@ import type {
 import { TauriEvent } from "@tauri-apps/api/event";
 // TODO: use from @tauri-apps/api v2
 import { emit, listen, once } from "./event";
+
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 type Theme = "light" | "dark";
 type TitleBarStyle = "visible" | "transparent" | "overlay";
@@ -403,7 +408,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns The window's monitor scale factor.
    * */
   async scaleFactor(): Promise<number> {
-    return invoke("plugin:window|scale_factor", {
+    return window.__TAURI_INVOKE__("plugin:window|scale_factor", {
       label: this.label,
     });
   }
@@ -419,9 +424,14 @@ class WindowManager extends WebviewWindowHandle {
    * @returns The window's inner position.
    *  */
   async innerPosition(): Promise<PhysicalPosition> {
-    return invoke<{ x: number; y: number }>("plugin:window|inner_position", {
-      label: this.label,
-    }).then(({ x, y }) => new PhysicalPosition(x, y));
+    return window
+      .__TAURI_INVOKE__<{ x: number; y: number }>(
+        "plugin:window|inner_position",
+        {
+          label: this.label,
+        }
+      )
+      .then(({ x, y }) => new PhysicalPosition(x, y));
   }
 
   /**
@@ -435,9 +445,14 @@ class WindowManager extends WebviewWindowHandle {
    * @returns The window's outer position.
    *  */
   async outerPosition(): Promise<PhysicalPosition> {
-    return invoke<{ x: number; y: number }>("plugin:window|outer_position", {
-      label: this.label,
-    }).then(({ x, y }) => new PhysicalPosition(x, y));
+    return window
+      .__TAURI_INVOKE__<{ x: number; y: number }>(
+        "plugin:window|outer_position",
+        {
+          label: this.label,
+        }
+      )
+      .then(({ x, y }) => new PhysicalPosition(x, y));
   }
 
   /**
@@ -452,12 +467,14 @@ class WindowManager extends WebviewWindowHandle {
    * @returns The window's inner size.
    */
   async innerSize(): Promise<PhysicalSize> {
-    return invoke<{ width: number; height: number }>(
-      "plugin:window|inner_size",
-      {
-        label: this.label,
-      }
-    ).then(({ width, height }) => new PhysicalSize(width, height));
+    return window
+      .__TAURI_INVOKE__<{ width: number; height: number }>(
+        "plugin:window|inner_size",
+        {
+          label: this.label,
+        }
+      )
+      .then(({ width, height }) => new PhysicalSize(width, height));
   }
 
   /**
@@ -472,12 +489,14 @@ class WindowManager extends WebviewWindowHandle {
    * @returns The window's outer size.
    */
   async outerSize(): Promise<PhysicalSize> {
-    return invoke<{ width: number; height: number }>(
-      "plugin:window|outer_size",
-      {
-        label: this.label,
-      }
-    ).then(({ width, height }) => new PhysicalSize(width, height));
+    return window
+      .__TAURI_INVOKE__<{ width: number; height: number }>(
+        "plugin:window|outer_size",
+        {
+          label: this.label,
+        }
+      )
+      .then(({ width, height }) => new PhysicalSize(width, height));
   }
 
   /**
@@ -491,7 +510,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns Whether the window is in fullscreen mode or not.
    *  */
   async isFullscreen(): Promise<boolean> {
-    return invoke("plugin:window|is_fullscreen", {
+    return window.__TAURI_INVOKE__("plugin:window|is_fullscreen", {
       label: this.label,
     });
   }
@@ -507,7 +526,7 @@ class WindowManager extends WebviewWindowHandle {
    * @since 1.3.0
    * */
   async isMinimized(): Promise<boolean> {
-    return invoke("plugin:window|is_minimized", {
+    return window.__TAURI_INVOKE__("plugin:window|is_minimized", {
       label: this.label,
     });
   }
@@ -523,7 +542,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns Whether the window is maximized or not.
    * */
   async isMaximized(): Promise<boolean> {
-    return invoke("plugin:window|is_maximized", {
+    return window.__TAURI_INVOKE__("plugin:window|is_maximized", {
       label: this.label,
     });
   }
@@ -539,7 +558,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns Whether the window is decorated or not.
    *  */
   async isDecorated(): Promise<boolean> {
-    return invoke("plugin:window|is_decorated", {
+    return window.__TAURI_INVOKE__("plugin:window|is_decorated", {
       label: this.label,
     });
   }
@@ -555,7 +574,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns Whether the window is resizable or not.
    *  */
   async isResizable(): Promise<boolean> {
-    return invoke("plugin:window|is_resizable", {
+    return window.__TAURI_INVOKE__("plugin:window|is_resizable", {
       label: this.label,
     });
   }
@@ -571,7 +590,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns Whether the window is visible or not.
    *  */
   async isVisible(): Promise<boolean> {
-    return invoke("plugin:window|is_visible", {
+    return window.__TAURI_INVOKE__("plugin:window|is_visible", {
       label: this.label,
     });
   }
@@ -587,7 +606,7 @@ class WindowManager extends WebviewWindowHandle {
    * @since 1.3.0
    * */
   async title(): Promise<string> {
-    return invoke("plugin:window|title", {
+    return window.__TAURI_INVOKE__("plugin:window|title", {
       label: this.label,
     });
   }
@@ -608,7 +627,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns The window theme.
    * */
   async theme(): Promise<Theme | null> {
-    return invoke("plugin:window|theme", {
+    return window.__TAURI_INVOKE__("plugin:window|theme", {
       label: this.label,
     });
   }
@@ -627,7 +646,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async center(): Promise<void> {
-    return invoke("plugin:window|center", {
+    return window.__TAURI_INVOKE__("plugin:window|center", {
       label: this.label,
     });
   }
@@ -665,7 +684,7 @@ class WindowManager extends WebviewWindowHandle {
       }
     }
 
-    return invoke("plugin:window|request_user_attention", {
+    return window.__TAURI_INVOKE__("plugin:window|request_user_attention", {
       label: this.label,
       value: requestType_,
     });
@@ -683,7 +702,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setResizable(resizable: boolean): Promise<void> {
-    return invoke("plugin:window|set_resizable", {
+    return window.__TAURI_INVOKE__("plugin:window|set_resizable", {
       label: this.label,
       value: resizable,
     });
@@ -701,7 +720,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setTitle(title: string): Promise<void> {
-    return invoke("plugin:window|set_title", {
+    return window.__TAURI_INVOKE__("plugin:window|set_title", {
       label: this.label,
       value: title,
     });
@@ -718,7 +737,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async maximize(): Promise<void> {
-    return invoke("plugin:window|maximize", {
+    return window.__TAURI_INVOKE__("plugin:window|maximize", {
       label: this.label,
     });
   }
@@ -734,7 +753,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async unmaximize(): Promise<void> {
-    return invoke("plugin:window|unmaximize", {
+    return window.__TAURI_INVOKE__("plugin:window|unmaximize", {
       label: this.label,
     });
   }
@@ -750,7 +769,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async toggleMaximize(): Promise<void> {
-    return invoke("plugin:window|toggle_maximize", {
+    return window.__TAURI_INVOKE__("plugin:window|toggle_maximize", {
       label: this.label,
     });
   }
@@ -766,7 +785,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async minimize(): Promise<void> {
-    return invoke("plugin:window|minimize", {
+    return window.__TAURI_INVOKE__("plugin:window|minimize", {
       label: this.label,
     });
   }
@@ -782,7 +801,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async unminimize(): Promise<void> {
-    return invoke("plugin:window|unminimize", {
+    return window.__TAURI_INVOKE__("plugin:window|unminimize", {
       label: this.label,
     });
   }
@@ -798,7 +817,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async show(): Promise<void> {
-    return invoke("plugin:window|show", {
+    return window.__TAURI_INVOKE__("plugin:window|show", {
       label: this.label,
     });
   }
@@ -814,7 +833,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async hide(): Promise<void> {
-    return invoke("plugin:window|hide", {
+    return window.__TAURI_INVOKE__("plugin:window|hide", {
       label: this.label,
     });
   }
@@ -830,7 +849,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async close(): Promise<void> {
-    return invoke("plugin:window|close", {
+    return window.__TAURI_INVOKE__("plugin:window|close", {
       label: this.label,
     });
   }
@@ -847,7 +866,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setDecorations(decorations: boolean): Promise<void> {
-    return invoke("plugin:window|set_decorations", {
+    return window.__TAURI_INVOKE__("plugin:window|set_decorations", {
       label: this.label,
       value: decorations,
     });
@@ -875,7 +894,7 @@ class WindowManager extends WebviewWindowHandle {
    * @since 2.0
    */
   async setShadow(enable: boolean): Promise<void> {
-    return invoke("plugin:window|set_shadow", {
+    return window.__TAURI_INVOKE__("plugin:window|set_shadow", {
       label: this.label,
       value: enable,
     });
@@ -893,7 +912,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setAlwaysOnTop(alwaysOnTop: boolean): Promise<void> {
-    return invoke("plugin:window|set_always_on_top", {
+    return window.__TAURI_INVOKE__("plugin:window|set_always_on_top", {
       label: this.label,
       value: alwaysOnTop,
     });
@@ -912,7 +931,7 @@ class WindowManager extends WebviewWindowHandle {
    * @since 1.2.0
    */
   async setContentProtected(protected_: boolean): Promise<void> {
-    return invoke("plugin:window|set_content_protected", {
+    return window.__TAURI_INVOKE__("plugin:window|set_content_protected", {
       label: this.label,
       value: protected_,
     });
@@ -936,7 +955,7 @@ class WindowManager extends WebviewWindowHandle {
       );
     }
 
-    return invoke("plugin:window|set_size", {
+    return window.__TAURI_INVOKE__("plugin:window|set_size", {
       label: this.label,
       value: {
         type: size.type,
@@ -968,7 +987,7 @@ class WindowManager extends WebviewWindowHandle {
       );
     }
 
-    return invoke("plugin:window|set_min_size", {
+    return window.__TAURI_INVOKE__("plugin:window|set_min_size", {
       label: this.label,
       value: size
         ? {
@@ -1002,7 +1021,7 @@ class WindowManager extends WebviewWindowHandle {
       );
     }
 
-    return invoke("plugin:window|set_max_size", {
+    return window.__TAURI_INVOKE__("plugin:window|set_max_size", {
       label: this.label,
       value: size
         ? {
@@ -1039,7 +1058,7 @@ class WindowManager extends WebviewWindowHandle {
       );
     }
 
-    return invoke("plugin:window|set_position", {
+    return window.__TAURI_INVOKE__("plugin:window|set_position", {
       label: this.label,
       value: {
         type: position.type,
@@ -1063,7 +1082,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setFullscreen(fullscreen: boolean): Promise<void> {
-    return invoke("plugin:window|set_fullscreen", {
+    return window.__TAURI_INVOKE__("plugin:window|set_fullscreen", {
       label: this.label,
       value: fullscreen,
     });
@@ -1080,7 +1099,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setFocus(): Promise<void> {
-    return invoke("plugin:window|set_focus", {
+    return window.__TAURI_INVOKE__("plugin:window|set_focus", {
       label: this.label,
     });
   }
@@ -1104,7 +1123,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setIcon(icon: string | Uint8Array): Promise<void> {
-    return invoke("plugin:window|set_icon", {
+    return window.__TAURI_INVOKE__("plugin:window|set_icon", {
       label: this.label,
       value: typeof icon === "string" ? icon : Array.from(icon),
     });
@@ -1126,7 +1145,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setSkipTaskbar(skip: boolean): Promise<void> {
-    return invoke("plugin:window|set_skip_taskbar", {
+    return window.__TAURI_INVOKE__("plugin:window|set_skip_taskbar", {
       label: this.label,
       value: skip,
     });
@@ -1152,7 +1171,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setCursorGrab(grab: boolean): Promise<void> {
-    return invoke("plugin:window|set_cursor_grab", {
+    return window.__TAURI_INVOKE__("plugin:window|set_cursor_grab", {
       label: this.label,
       value: grab,
     });
@@ -1176,7 +1195,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setCursorVisible(visible: boolean): Promise<void> {
-    return invoke("plugin:window|set_cursor_visible", {
+    return window.__TAURI_INVOKE__("plugin:window|set_cursor_visible", {
       label: this.label,
       value: visible,
     });
@@ -1194,7 +1213,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setCursorIcon(icon: CursorIcon): Promise<void> {
-    return invoke("plugin:window|set_cursor_icon", {
+    return window.__TAURI_INVOKE__("plugin:window|set_cursor_icon", {
       label: this.label,
       value: icon,
     });
@@ -1223,7 +1242,7 @@ class WindowManager extends WebviewWindowHandle {
       );
     }
 
-    return invoke("plugin:window|set_cursor_position", {
+    return window.__TAURI_INVOKE__("plugin:window|set_cursor_position", {
       label: this.label,
       value: {
         type: position.type,
@@ -1248,7 +1267,7 @@ class WindowManager extends WebviewWindowHandle {
    * @returns A promise indicating the success or failure of the operation.
    */
   async setIgnoreCursorEvents(ignore: boolean): Promise<void> {
-    return invoke("plugin:window|set_ignore_cursor_events", {
+    return window.__TAURI_INVOKE__("plugin:window|set_ignore_cursor_events", {
       label: this.label,
       value: ignore,
     });
@@ -1265,7 +1284,7 @@ class WindowManager extends WebviewWindowHandle {
    * @return A promise indicating the success or failure of the operation.
    */
   async startDragging(): Promise<void> {
-    return invoke("plugin:window|start_dragging", {
+    return window.__TAURI_INVOKE__("plugin:window|start_dragging", {
       label: this.label,
     });
   }
@@ -1622,12 +1641,13 @@ class WebviewWindow extends WindowManager {
     super(label);
     // @ts-expect-error `skip` is not a public API so it is not defined in WindowOptions
     if (!options?.skip) {
-      invoke("plugin:window|create", {
-        options: {
-          ...options,
-          label,
-        },
-      })
+      window
+        .__TAURI_INVOKE__("plugin:window|create", {
+          options: {
+            ...options,
+            label,
+          },
+        })
         .then(async () => this.emit("tauri://created"))
         .catch(async (e: string) => this.emit("tauri://error", e));
     }
@@ -1813,9 +1833,9 @@ function mapPhysicalSize(m: PhysicalSize): PhysicalSize {
  * @since 1.0.0
  */
 async function currentMonitor(): Promise<Monitor | null> {
-  return invoke<Monitor | null>("plugin:window|current_monitor").then(
-    mapMonitor
-  );
+  return window
+    .__TAURI_INVOKE__<Monitor | null>("plugin:window|current_monitor")
+    .then(mapMonitor);
 }
 
 /**
@@ -1830,9 +1850,9 @@ async function currentMonitor(): Promise<Monitor | null> {
  * @since 1.0.0
  */
 async function primaryMonitor(): Promise<Monitor | null> {
-  return invoke<Monitor | null>("plugin:window|primary_monitor").then(
-    mapMonitor
-  );
+  return window
+    .__TAURI_INVOKE__<Monitor | null>("plugin:window|primary_monitor")
+    .then(mapMonitor);
 }
 
 /**
@@ -1846,9 +1866,9 @@ async function primaryMonitor(): Promise<Monitor | null> {
  * @since 1.0.0
  */
 async function availableMonitors(): Promise<Monitor[]> {
-  return invoke<Monitor[]>("plugin:window|available_monitors").then(
-    (ms) => ms.map(mapMonitor) as Monitor[]
-  );
+  return window
+    .__TAURI_INVOKE__<Monitor[]>("plugin:window|available_monitors")
+    .then((ms) => ms.map(mapMonitor) as Monitor[]);
 }
 
 export {

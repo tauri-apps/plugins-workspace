@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke, transformCallback } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+    __TAURI__: {
+      transformCallback: <T>(cb: (payload: T) => void) => number;
+    };
+  }
+}
 
 export interface MessageKind<T, D> {
   type: T;
@@ -36,11 +43,13 @@ export default class WebSocket {
       listeners.forEach((l) => l(message));
     };
 
-    return await invoke<number>("plugin:websocket|connect", {
-      url,
-      callbackFunction: transformCallback(handler),
-      options,
-    }).then((id) => new WebSocket(id, listeners));
+    return await window
+      .__TAURI_INVOKE__<number>("plugin:websocket|connect", {
+        url,
+        callbackFunction: window.__TAURI__.transformCallback(handler),
+        options,
+      })
+      .then((id) => new WebSocket(id, listeners));
   }
 
   addListener(cb: (arg: Message) => void): void {
@@ -60,7 +69,7 @@ export default class WebSocket {
         "invalid `message` type, expected a `{ type: string, data: any }` object, a string or a numeric array"
       );
     }
-    return await invoke("plugin:websocket|send", {
+    return await window.__TAURI_INVOKE__("plugin:websocket|send", {
       id: this.id,
       message: m,
     });

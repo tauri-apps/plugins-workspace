@@ -41,6 +41,7 @@ impl<R: Runtime, T: Manager<R>> HttpExt<R> for T {
 
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
     Builder::<R, Option<Config>>::new("http")
+        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
             commands::create_client,
             commands::drop_client,

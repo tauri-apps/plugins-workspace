@@ -70,6 +70,7 @@ pub fn tempdir() -> PathBuf {
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("os")
+        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
             commands::platform,
             commands::version,
