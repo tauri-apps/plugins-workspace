@@ -12,6 +12,7 @@ on:
     paths:
       - ".github/workflows/test-rust.yml"
       - "plugins/*/src/**"
+      - "!plugins/*/src/api-iife.js"
       - "**/Cargo.toml"
       - "**/Cargo.lock"
   pull_request:
@@ -21,6 +22,7 @@ on:
     paths:
       - ".github/workflows/test-rust.yml"
       - "plugins/*/src/**"
+      - "!plugins/*/src/api-iife.js"
       - "**/Cargo.toml"
       - "**/Cargo.lock"
 

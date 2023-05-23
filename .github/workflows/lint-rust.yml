@@ -12,6 +12,7 @@ on:
     paths:
       - ".github/workflows/lint-rust.yml"
       - "plugins/*/src/**"
+      - "!plugins/*/src/api-iife.js"
       - "**/Cargo.toml"
   pull_request:
     branches:
@@ -20,6 +21,7 @@ on:
     paths:
       - ".github/workflows/lint-rust.yml"
       - "plugins/*/src/**"
+      - "!plugins/*/src/api-iife.js"
       - "**/Cargo.toml"
 
 concurrency:
