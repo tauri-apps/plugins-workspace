@@ -117,6 +117,21 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Cache pnpm modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7.x.x
+          run_install: true
+
       - name: build api
         working-directory: plugins/${{ matrix.package }}
         run: pnpm install && pnpm build
