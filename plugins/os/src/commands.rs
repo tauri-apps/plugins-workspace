@@ -28,3 +28,8 @@ pub fn arch() -> &'static str {
 pub fn tempdir() -> PathBuf {
     crate::tempdir()
 }
+
+#[tauri::command]
+pub fn locale() -> Option<String> {
+    crate::locale()
+}
