@@ -59,43 +59,43 @@ importers:
         specifier: 2.0.0-alpha.4
         version: 2.0.0-alpha.4
       '@tauri-apps/plugin-app':
-        specifier: 1.0.0
+        specifier: 2.0.0-alpha.0
         version: link:../../plugins/app
       '@tauri-apps/plugin-cli':
-        specifier: 1.0.0
+        specifier: 2.0.0-alpha.0
         version: link:../../plugins/cli
       '@tauri-apps/plugin-clipboard':
-        specifier: 1.0.0
+        specifier: 2.0.0-alpha.0
         version: link:../../plugins/clipboard
       '@tauri-apps/plugin-dialog':
-        specifier: 1.0.0
+        specifier: 2.0.0-alpha.0
         version: link:../../plugins/dialog
       '@tauri-apps/plugin-fs':
-        specifier: 1.0.0
+        specifier: 2.0.0-alpha.0
         version: link:../../plugins/fs
       '@tauri-apps/plugin-global-shortcut':
-        specifier: 1.0.0
+        specifier: 2.0.0-alpha.0
         version: link:../../plugins/global-shortcut
       '@tauri-apps/plugin-http':
-        specifier: 1.0.0
+        specifier: 2.0.0-alpha.0
         version: link:../../plugins/http
       '@tauri-apps/plugin-notification':
-        specifier: 1.0.0
+        specifier: 2.0.0-alpha.0
         version: link:../../plugins/notification
       '@tauri-apps/plugin-os':
-        specifier: 1.0.0
+        specifier: 2.0.0-alpha.0
         version: link:../../plugins/os
       '@tauri-apps/plugin-process':
-        specifier: 1.0.0
+        specifier: 2.0.0-alpha.0
         version: link:../../plugins/process
       '@tauri-apps/plugin-shell':
-        specifier: 1.0.0
+        specifier: 2.0.0-alpha.0
         version: link:../../plugins/shell
       '@tauri-apps/plugin-updater':
-        specifier: 1.0.0
+        specifier: 2.0.0-alpha.0
         version: link:../../plugins/updater
       '@tauri-apps/plugin-window':
-        specifier: 1.0.0
+        specifier: 2.0.0-alpha.0
         version: link:../../plugins/window
       '@zerodevx/svelte-json-view':
         specifier: 0.2.1

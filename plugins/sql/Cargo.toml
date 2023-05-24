@@ -1,13 +1,11 @@
 [package]
 name = "tauri-plugin-sql"
-version = "1.0.0"
+version = "2.0.0-alpha.0"
 description = "Interface with SQL databases."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 serde = { workspace = true }
@@ -16,11 +14,11 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 futures-core = "0.3"
-sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "json", "time"] }
+sqlx = { version = "0.6", features = [ "runtime-tokio-rustls", "json", "time" ] }
 time = "0.3"
-tokio = { version = "1", features = ["sync"] }
+tokio = { version = "1", features = [ "sync" ] }
 
 [features]
-sqlite = ["sqlx/sqlite"]
-mysql = ["sqlx/mysql"]
-postgres = ["sqlx/postgres"]
+sqlite = [ "sqlx/sqlite" ]
+mysql = [ "sqlx/mysql" ]
+postgres = [ "sqlx/postgres" ]

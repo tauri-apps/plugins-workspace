@@ -1,12 +1,10 @@
 [package]
 name = "tauri-plugin-notification"
-version = "1.0.0"
+version = "2.0.0-alpha.0"
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 links = "tauri-plugin-notification"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
 tauri-build = { workspace = true }
@@ -18,8 +16,8 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 rand = "0.8"
-time = { version = "0.3", features = ["serde", "parsing", "formatting"] }
-url = { version = "2", features = ["serde"] }
+time = { version = "0.3", features = [ "serde", "parsing", "formatting" ] }
+url = { version = "2", features = [ "serde" ] }
 serde_repr = "0.1"
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]

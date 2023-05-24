@@ -1,12 +1,10 @@
 [package]
 name = "tauri-plugin-dialog"
-version = "1.0.0"
+version = "2.0.0-alpha.0"
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 links = "tauri-plugin-dialog"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 serde = { workspace = true }
@@ -14,7 +12,7 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
-tauri-plugin-fs = { path = "../fs", version = "1.0.0" }
+tauri-plugin-fs = { path = "../fs", version = "2.0.0-alpha.0" }
 
 [target."cfg(any(target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 glib = "0.16"

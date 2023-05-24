@@ -1,13 +1,11 @@
 [package]
 name = "tauri-plugin-localhost"
-version = "1.0.0"
+version = "2.0.0-alpha.0"
 description = "Expose your apps assets through a localhost server instead of the default custom protocol."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 serde = { workspace = true }
