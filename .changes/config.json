@@ -121,6 +121,15 @@
       "manager": "javascript"
     },
 
+    "fs": {
+      "path": "./plugins/fs",
+      "manager": "rust"
+    },
+    "fs-js": {
+      "path": "./plugins/fs",
+      "manager": "javascript"
+    },
+
     "dialog": {
       "path": "./plugins/dialog",
       "manager": "rust",
@@ -128,15 +137,6 @@
     },
     "dialog-js": {
       "path": "./plugins/dialog",
-      "manager": "javascript"
-    },
-
-    "fs": {
-      "path": "./plugins/fs",
-      "manager": "rust"
-    },
-    "fs-js": {
-      "path": "./plugins/fs",
       "manager": "javascript"
     },
 
