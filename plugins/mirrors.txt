@@ -2,7 +2,7 @@ app
 authenticator
 autostart
 cli
-clipboard
+clipboard-manager
 dialog
 fs
 global-shortcut

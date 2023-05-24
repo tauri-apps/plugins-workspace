@@ -215,7 +215,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-app",
  "tauri-plugin-cli",
- "tauri-plugin-clipboard",
+ "tauri-plugin-clipboard-manager",
  "tauri-plugin-dialog",
  "tauri-plugin-fs",
  "tauri-plugin-global-shortcut",
@@ -5158,7 +5158,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tauri-plugin-clipboard"
+name = "tauri-plugin-clipboard-manager"
 version = "2.0.0-alpha.0"
 dependencies = [
  "arboard",

@@ -112,12 +112,12 @@
       "manager": "javascript"
     },
 
-    "clipboard": {
-      "path": "./plugins/clipboard",
+    "clipboard-manager": {
+      "path": "./plugins/clipboard-manager",
       "manager": "rust"
     },
-    "clipboard-js": {
-      "path": "./plugins/clipboard",
+    "clipboard-manager-js": {
+      "path": "./plugins/clipboard-manager",
       "manager": "javascript"
     },
 

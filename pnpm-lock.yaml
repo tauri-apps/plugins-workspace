@@ -64,9 +64,9 @@ importers:
       '@tauri-apps/plugin-cli':
         specifier: 2.0.0-alpha.0
         version: link:../../plugins/cli
-      '@tauri-apps/plugin-clipboard':
+      '@tauri-apps/plugin-clipboard-manager':
         specifier: 2.0.0-alpha.0
-        version: link:../../plugins/clipboard
+        version: link:../../plugins/clipboard-manager
       '@tauri-apps/plugin-dialog':
         specifier: 2.0.0-alpha.0
         version: link:../../plugins/dialog
@@ -166,7 +166,7 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1
 
-  plugins/clipboard:
+  plugins/clipboard-manager:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.4

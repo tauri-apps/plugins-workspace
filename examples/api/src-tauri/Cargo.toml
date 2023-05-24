@@ -21,7 +21,7 @@ log = { workspace = true }
 tauri-plugin-app = { path = "../../../plugins/app", version = "2.0.0-alpha.0" }
 tauri-plugin-log = { path = "../../../plugins/log", version = "2.0.0-alpha.0" }
 tauri-plugin-fs = { path = "../../../plugins/fs", version = "2.0.0-alpha.0" }
-tauri-plugin-clipboard = { path = "../../../plugins/clipboard", version = "2.0.0-alpha.0" }
+tauri-plugin-clipboard-manager = { path = "../../../plugins/clipboard-manager", version = "2.0.0-alpha.0" }
 tauri-plugin-dialog = { path = "../../../plugins/dialog", version = "2.0.0-alpha.0" }
 tauri-plugin-http = { path = "../../../plugins/http", features = [ "multipart" ], version = "2.0.0-alpha.0" }
 tauri-plugin-notification = { path = "../../../plugins/notification", version = "2.0.0-alpha.0", features = [ "windows7-compat" ] }

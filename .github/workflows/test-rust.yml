@@ -55,9 +55,9 @@ jobs:
             tauri-plugin-cli:
               - .github/workflows/test-rust.yml
               - plugins/cli/**
-            tauri-plugin-clipboard:
+            tauri-plugin-clipboard-manager:
               - .github/workflows/test-rust.yml
-              - plugins/clipboard/**
+              - plugins/clipboard-manager/**
             tauri-plugin-dialog:
               - .github/workflows/test-rust.yml
               - plugins/dialog/**

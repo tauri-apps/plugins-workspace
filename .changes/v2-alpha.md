@@ -7,8 +7,8 @@
 "autostart-js": major
 "cli": major
 "cli-js": major
-"clipboard": major
-"clipboard-js": major
+"clipboard-manager": major
+"clipboard-manager-js": major
 "dialog": major
 "dialog-js": major
 "fs": major
