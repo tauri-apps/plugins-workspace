@@ -41,10 +41,10 @@ jobs:
               - .github/workflows/check-generated-files.yml
               - plugins/cli/guest-js/**
               - plugins/cli/src/api-iife.js
-            clipboard:
+            clipboard-manager:
               - .github/workflows/check-generated-files.yml
-              - plugins/clipboard/guest-js/**
-              - plugins/clipboard/src/api-iife.js
+              - plugins/clipboard-manager/guest-js/**
+              - plugins/clipboard-manager/src/api-iife.js
             dialog:
               - .github/workflows/check-generated-files.yml
               - plugins/dialog/guest-js/**

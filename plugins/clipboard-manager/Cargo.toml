@@ -1,11 +1,11 @@
 [package]
-name = "tauri-plugin-clipboard"
+name = "tauri-plugin-clipboard-manager"
 version = "2.0.0-alpha.0"
 description = "Read and write to the system clipboard."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
-links = "tauri-plugin-clipboard"
+links = "tauri-plugin-clipboard-manager"
 
 [build-dependencies]
 tauri-build = { workspace = true }

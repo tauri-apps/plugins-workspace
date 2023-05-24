@@ -1,4 +1,4 @@
-# Clipboard
+# Clipboard Manager
 
 Read and write to the system clipboard.
 
@@ -18,9 +18,9 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-clipboard = "2.0.0-alpha"
+tauri-plugin-clipboard-manager = "2.0.0-alpha"
 # alternatively with Git:
-tauri-plugin-clipboard = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
+tauri-plugin-clipboard-manager = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -28,18 +28,18 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add @tauri-apps/plugin-clipboard
+pnpm add @tauri-apps/plugin-clipboard-manager
 # or
-npm add @tauri-apps/plugin-clipboard
+npm add @tauri-apps/plugin-clipboard-manager
 # or
-yarn add @tauri-apps/plugin-clipboard
+yarn add @tauri-apps/plugin-clipboard-manager
 
 # alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-clipboard#v2
+pnpm add https://github.com/tauri-apps/tauri-plugin-clipboard-manager#v2
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-clipboard#v2
+npm add https://github.com/tauri-apps/tauri-plugin-clipboard-manager#v2
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-clipboard#v2
+yarn add https://github.com/tauri-apps/tauri-plugin-clipboard-manager#v2
 ```
 
 ## Usage
@@ -51,7 +51,7 @@ First you need to register the core plugin with Tauri:
 ```rust
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_clipboard::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -60,7 +60,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { writeText, readText } from "@tauri-apps/plugin-clipboard";
+import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
 await writeText("Tauri is awesome!");
 assert(await readText(), "Tauri is awesome!");
 ```

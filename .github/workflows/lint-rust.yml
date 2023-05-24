@@ -53,9 +53,9 @@ jobs:
             tauri-plugin-cli:
               - .github/workflows/lint-rust.yml
               - plugins/cli/**
-            tauri-plugin-clipboard:
+            tauri-plugin-clipboard-manager:
               - .github/workflows/lint-rust.yml
-              - plugins/clipboard/**
+              - plugins/clipboard-manager/**
             tauri-plugin-dialog:
               - .github/workflows/lint-rust.yml
               - plugins/dialog/**
