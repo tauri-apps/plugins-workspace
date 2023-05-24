@@ -44,10 +44,14 @@ https.get(url, options, (response) => {
   response.on("end", function () {
     const data = JSON.parse(chunks.join(""));
     if (kind === "cargo") {
-      const versions = data.versions.filter((v) => v.num.startsWith(target));
-      console.log(versions.length ? versions[0].num : "0.0.0");
+      if (data.versions) {
+        const versions = data.versions.filter((v) => v.num.startsWith(target));
+        console.log(versions.length ? versions[0].num : "0.0.0");
+      } else {
+        console.log("0.0.0");
+      }
     } else if (kind === "npm") {
-      const versions = Object.keys(data.versions).filter((v) =>
+      const versions = Object.keys(data.versions || {}).filter((v) =>
         v.startsWith(target)
       );
       console.log(versions[versions.length - 1] || "0.0.0");
