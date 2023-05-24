@@ -306,7 +306,7 @@ class WebviewWindowHandle {
    * @param handler Event handler.
    * @returns A promise resolving to a function to unlisten to the event.
    * Note that removing the listener is required if your listener goes out of scope e.g. the component is unmounted.
-   * 
+   *
    * @since 2.0.0
    */
   async listen<T>(
@@ -341,7 +341,7 @@ class WebviewWindowHandle {
    * @param handler Event handler.
    * @returns A promise resolving to a function to unlisten to the event.
    * Note that removing the listener is required if your listener goes out of scope e.g. the component is unmounted.
-   * 
+   *
    * @since 2.0.0
    */
   async once<T>(event: string, handler: EventCallback<T>): Promise<UnlistenFn> {
@@ -410,7 +410,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns The window's monitor scale factor.
-   * 
+   *
    * @since 2.0.0
    * */
   async scaleFactor(): Promise<number> {
@@ -428,7 +428,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns The window's inner position.
-   * 
+   *
    * @since 2.0.0
    *  */
   async innerPosition(): Promise<PhysicalPosition> {
@@ -451,7 +451,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns The window's outer position.
-   * 
+   *
    * @since 2.0.0
    *  */
   async outerPosition(): Promise<PhysicalPosition> {
@@ -475,7 +475,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns The window's inner size.
-   * 
+   *
    * @since 2.0.0
    */
   async innerSize(): Promise<PhysicalSize> {
@@ -499,7 +499,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns The window's outer size.
-   * 
+   *
    * @since 2.0.0
    */
   async outerSize(): Promise<PhysicalSize> {
@@ -522,7 +522,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns Whether the window is in fullscreen mode or not.
-   * 
+   *
    * @since 2.0.0
    *  */
   async isFullscreen(): Promise<boolean> {
@@ -556,7 +556,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns Whether the window is maximized or not.
-   * 
+   *
    * @since 2.0.0
    * */
   async isMaximized(): Promise<boolean> {
@@ -574,7 +574,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns Whether the window is decorated or not.
-   * 
+   *
    * @since 2.0.0
    *  */
   async isDecorated(): Promise<boolean> {
@@ -592,7 +592,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns Whether the window is resizable or not.
-   * 
+   *
    * @since 2.0.0
    *  */
   async isResizable(): Promise<boolean> {
@@ -610,7 +610,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns Whether the window is visible or not.
-   * 
+   *
    * @since 2.0.0
    *  */
   async isVisible(): Promise<boolean> {
@@ -649,7 +649,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns The window theme.
-   * 
+   *
    * @since 2.0.0
    * */
   async theme(): Promise<Theme | null> {
@@ -670,7 +670,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param resizable
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async center(): Promise<void> {
@@ -699,7 +699,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param resizable
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async requestUserAttention(
@@ -730,7 +730,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param resizable
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setResizable(resizable: boolean): Promise<void> {
@@ -750,7 +750,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param title The new title
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setTitle(title: string): Promise<void> {
@@ -769,7 +769,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async maximize(): Promise<void> {
@@ -787,7 +787,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async unmaximize(): Promise<void> {
@@ -805,7 +805,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async toggleMaximize(): Promise<void> {
@@ -823,7 +823,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async minimize(): Promise<void> {
@@ -841,7 +841,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async unminimize(): Promise<void> {
@@ -859,7 +859,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async show(): Promise<void> {
@@ -877,7 +877,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async hide(): Promise<void> {
@@ -895,7 +895,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async close(): Promise<void> {
@@ -914,7 +914,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param decorations Whether the window should have borders and bars.
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setDecorations(decorations: boolean): Promise<void> {
@@ -962,7 +962,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param alwaysOnTop Whether the window should always be on top of other windows or not.
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setAlwaysOnTop(alwaysOnTop: boolean): Promise<void> {
@@ -1001,7 +1001,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param size The logical or physical inner size.
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setSize(size: LogicalSize | PhysicalSize): Promise<void> {
@@ -1033,7 +1033,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param size The logical or physical inner size, or `null` to unset the constraint.
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setMinSize(
@@ -1049,12 +1049,12 @@ class WindowManager extends WebviewWindowHandle {
       label: this.label,
       value: size
         ? {
-          type: size.type,
-          data: {
-            width: size.width,
-            height: size.height,
-          },
-        }
+            type: size.type,
+            data: {
+              width: size.width,
+              height: size.height,
+            },
+          }
         : null,
     });
   }
@@ -1069,7 +1069,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param size The logical or physical inner size, or `null` to unset the constraint.
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setMaxSize(
@@ -1085,12 +1085,12 @@ class WindowManager extends WebviewWindowHandle {
       label: this.label,
       value: size
         ? {
-          type: size.type,
-          data: {
-            width: size.width,
-            height: size.height,
-          },
-        }
+            type: size.type,
+            data: {
+              width: size.width,
+              height: size.height,
+            },
+          }
         : null,
     });
   }
@@ -1105,7 +1105,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param position The new position, in logical or physical pixels.
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setPosition(
@@ -1142,7 +1142,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param fullscreen Whether the window should go to fullscreen or not.
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setFullscreen(fullscreen: boolean): Promise<void> {
@@ -1161,7 +1161,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setFocus(): Promise<void> {
@@ -1187,7 +1187,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param icon Icon bytes or path to the icon file.
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setIcon(icon: string | Uint8Array): Promise<void> {
@@ -1211,7 +1211,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param skip true to hide window icon, false to show it.
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setSkipTaskbar(skip: boolean): Promise<void> {
@@ -1239,7 +1239,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param grab `true` to grab the cursor icon, `false` to release it.
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setCursorGrab(grab: boolean): Promise<void> {
@@ -1265,7 +1265,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param visible If `false`, this will hide the cursor. If `true`, this will show the cursor.
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setCursorVisible(visible: boolean): Promise<void> {
@@ -1285,7 +1285,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param icon The new cursor icon.
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setCursorIcon(icon: CursorIcon): Promise<void> {
@@ -1305,7 +1305,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param position The new cursor position.
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setCursorPosition(
@@ -1343,7 +1343,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @param ignore `true` to ignore the cursor events; `false` to process them as usual.
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async setIgnoreCursorEvents(ignore: boolean): Promise<void> {
@@ -1362,7 +1362,7 @@ class WindowManager extends WebviewWindowHandle {
    * ```
    *
    * @return A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async startDragging(): Promise<void> {
@@ -1718,7 +1718,7 @@ class WebviewWindow extends WindowManager {
    *
    * * @param label The unique webview window label. Must be alphanumeric: `a-zA-Z-/:_`.
    * @returns The WebviewWindow instance to communicate with the webview.
-   * 
+   *
    * @since 2.0.0
    */
   constructor(label: WindowLabel, options: WindowOptions = {}) {
@@ -1747,7 +1747,7 @@ class WebviewWindow extends WindowManager {
    *
    * @param label The webview window label.
    * @returns The WebviewWindow instance to communicate with the webview or null if the webview doesn't exist.
-   * 
+   *
    * @since 2.0.0
    */
   static getByLabel(label: string): WebviewWindow | null {
@@ -1892,11 +1892,11 @@ function mapMonitor(m: Monitor | null): Monitor | null {
   return m === null
     ? null
     : {
-      name: m.name,
-      scaleFactor: m.scaleFactor,
-      position: mapPhysicalPosition(m.position),
-      size: mapPhysicalSize(m.size),
-    };
+        name: m.name,
+        scaleFactor: m.scaleFactor,
+        position: mapPhysicalPosition(m.position),
+        size: mapPhysicalSize(m.size),
+      };
 }
 
 function mapPhysicalPosition(m: PhysicalPosition): PhysicalPosition {

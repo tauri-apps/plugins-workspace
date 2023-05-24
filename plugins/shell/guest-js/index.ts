@@ -115,7 +115,7 @@ interface ChildProcess<O extends IOPayload> {
  * @param args Program arguments.
  * @param options Configuration for the process spawn.
  * @returns A promise resolving to the process id.
- * 
+ *
  * @since 2.0.0
  */
 async function execute<O extends IOPayload>(
@@ -257,7 +257,7 @@ class EventEmitter<E extends Record<string, any>> {
    * to each.
    *
    * @returns `true` if the event had listeners, `false` otherwise.
-   * 
+   *
    * @since 2.0.0
    */
   emit<N extends keyof E>(eventName: N, arg: E[typeof eventName]): boolean {
@@ -354,7 +354,7 @@ class Child {
    * ```
    *
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async write(data: IOPayload): Promise<void> {
@@ -369,7 +369,7 @@ class Child {
    * Kills the child process.
    *
    * @returns A promise indicating the success or failure of the operation.
-   * 
+   *
    * @since 2.0.0
    */
   async kill(): Promise<void> {
@@ -512,7 +512,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * Executes the command as a child process, returning a handle to it.
    *
    * @returns A promise resolving to the child process handle.
-   * 
+   *
    * @since 2.0.0
    */
   async spawn(): Promise<Child> {
@@ -552,7 +552,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * ```
    *
    * @returns A promise resolving to the child process output.
-   * 
+   *
    * @since 2.0.0
    */
   async execute(): Promise<ChildProcess<O>> {

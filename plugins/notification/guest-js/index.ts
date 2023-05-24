@@ -165,22 +165,22 @@ enum ScheduleEvery {
 
 type ScheduleData =
   | {
-    kind: "At";
-    data: {
-      date: Date;
-      repeating: boolean;
-    };
-  }
+      kind: "At";
+      data: {
+        date: Date;
+        repeating: boolean;
+      };
+    }
   | {
-    kind: "Interval";
-    data: ScheduleInterval;
-  }
+      kind: "Interval";
+      data: ScheduleInterval;
+    }
   | {
-    kind: "Every";
-    data: {
-      interval: ScheduleEvery;
+      kind: "Every";
+      data: {
+        interval: ScheduleEvery;
+      };
     };
-  };
 
 class Schedule {
   kind: string;

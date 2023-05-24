@@ -115,7 +115,7 @@ class Body {
    * @param data The body data.
    *
    * @returns The body object ready to be used on the POST and PUT requests.
-   * 
+   *
    * @since 2.0.0
    */
   static form(data: Record<string, Part> | FormData): Body {
@@ -168,7 +168,7 @@ class Body {
    * @param data The body JSON object.
    *
    * @returns The body object ready to be used on the POST and PUT requests.
-   * 
+   *
    * @since 2.0.0
    */
   static json<K extends string | number | symbol, V>(data: Record<K, V>): Body {
@@ -186,7 +186,7 @@ class Body {
    * @param value The body string.
    *
    * @returns The body object ready to be used on the POST and PUT requests.
-   * 
+   *
    * @since 2.0.0
    */
   static text(value: string): Body {
@@ -204,7 +204,7 @@ class Body {
    * @param bytes The body byte array.
    *
    * @returns The body object ready to be used on the POST and PUT requests.
-   * 
+   *
    * @since 2.0.0
    */
   static bytes(
