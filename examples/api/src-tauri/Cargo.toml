@@ -1,16 +1,16 @@
 [package]
 name = "api"
-version = "0.1.0"
+version = "0.1.1-alpha.0"
 description = "An example Tauri Application showcasing the api"
 edition = "2021"
 rust-version = "1.65"
 license = "Apache-2.0 OR MIT"
 
 [lib]
-crate-type = ["staticlib", "cdylib", "rlib"]
+crate-type = [ "staticlib", "cdylib", "rlib" ]
 
 [build-dependencies]
-tauri-build = { workspace = true, features = ["codegen", "isolation"] }
+tauri-build = { workspace = true, features = [ "codegen", "isolation" ] }
 
 [dependencies]
 serde_json = { workspace = true }
@@ -27,17 +27,17 @@ tauri-plugin-notification = { path = "../../../plugins/notification", version = 
 tauri-plugin-os = { path = "../../../plugins/os", version = "1.0.0" }
 tauri-plugin-process = { path = "../../../plugins/process", version = "1.0.0" }
 tauri-plugin-shell = { path = "../../../plugins/shell", version = "1.0.0" }
-tauri-plugin-window = { path = "../../../plugins/window", version = "1.0.0", features = ["devtools", "icon-ico", "icon-png"] }
+tauri-plugin-window = { path = "../../../plugins/window", version = "1.0.0", features = [ "devtools", "icon-ico", "icon-png" ] }
 
-[dependencies.tauri]
-workspace = true
-features = [
+  [dependencies.tauri]
+  workspace = true
+  features = [
   "icon-ico",
   "icon-png",
   "isolation",
   "macos-private-api",
   "system-tray",
-  "protocol-asset",
+  "protocol-asset"
 ]
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]

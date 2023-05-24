@@ -1,4 +1,7 @@
 {
   "tag": "alpha",
-  "changes": []
+  "changes": [
+    ".changes/persisted-scope-fix-oom.md",
+    ".changes/v2-alpha.md"
+  ]
 }
