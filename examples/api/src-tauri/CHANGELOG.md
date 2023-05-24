@@ -1,7 +1,7 @@
 # Changelog
 
-## \[0.1.1-alpha.0]
+## \[2.0.0-alpha.0]
 
 ### Dependencies
 
-- Updated to latest `app`
+- Plugins v2 alpha.
