@@ -179,6 +179,8 @@ export class Store {
    * @param key
    * @param cb
    * @returns A promise resolving to a function to unlisten to the event.
+   * 
+   * @since 2.0.0
    */
   async onKeyChange<T>(
     key: string,
@@ -195,6 +197,8 @@ export class Store {
    * Listen to changes on the store.
    * @param cb
    * @returns A promise resolving to a function to unlisten to the event.
+   * 
+   * @since 2.0.0
    */
   async onChange<T>(
     cb: (key: string, value: T | null) => void

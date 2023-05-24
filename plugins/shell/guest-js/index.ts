@@ -72,7 +72,7 @@ declare global {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface SpawnOptions {
   /** Current working directory. */
@@ -82,7 +82,7 @@ interface SpawnOptions {
   /**
    * Character encoding for stdout/stderr
    *
-   * @since 1.1.0
+   * @since 2.0.0
    *  */
   encoding?: string;
 }
@@ -93,7 +93,7 @@ interface InternalSpawnOptions extends SpawnOptions {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface ChildProcess<O extends IOPayload> {
   /** Exit code of the process. `null` if the process was terminated by a signal on Unix. */
@@ -115,6 +115,8 @@ interface ChildProcess<O extends IOPayload> {
  * @param args Program arguments.
  * @param options Configuration for the process spawn.
  * @returns A promise resolving to the process id.
+ * 
+ * @since 2.0.0
  */
 async function execute<O extends IOPayload>(
   onEvent: (event: CommandEvent<O>) => void,
@@ -135,7 +137,7 @@ async function execute<O extends IOPayload>(
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 class EventEmitter<E extends Record<string, any>> {
@@ -147,7 +149,7 @@ class EventEmitter<E extends Record<string, any>> {
   /**
    * Alias for `emitter.on(eventName, listener)`.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   addListener<N extends keyof E>(
     eventName: N,
@@ -159,7 +161,7 @@ class EventEmitter<E extends Record<string, any>> {
   /**
    * Alias for `emitter.off(eventName, listener)`.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   removeListener<N extends keyof E>(
     eventName: N,
@@ -176,7 +178,7 @@ class EventEmitter<E extends Record<string, any>> {
    *
    * Returns a reference to the `EventEmitter`, so that calls can be chained.
    *
-   * @since 1.0.0
+   * @since 2.0.0
    */
   on<N extends keyof E>(
     eventName: N,
@@ -198,7 +200,7 @@ class EventEmitter<E extends Record<string, any>> {
    *
    * Returns a reference to the `EventEmitter`, so that calls can be chained.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   once<N extends keyof E>(
     eventName: N,
@@ -216,7 +218,7 @@ class EventEmitter<E extends Record<string, any>> {
    * Removes the all specified listener from the listener array for the event eventName
    * Returns a reference to the `EventEmitter`, so that calls can be chained.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   off<N extends keyof E>(
     eventName: N,
@@ -236,7 +238,7 @@ class EventEmitter<E extends Record<string, any>> {
    *
    * Returns a reference to the `EventEmitter`, so that calls can be chained.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   removeAllListeners<N extends keyof E>(event?: N): this {
     if (event) {
@@ -255,6 +257,8 @@ class EventEmitter<E extends Record<string, any>> {
    * to each.
    *
    * @returns `true` if the event had listeners, `false` otherwise.
+   * 
+   * @since 2.0.0
    */
   emit<N extends keyof E>(eventName: N, arg: E[typeof eventName]): boolean {
     if (eventName in this.eventListeners) {
@@ -270,7 +274,7 @@ class EventEmitter<E extends Record<string, any>> {
   /**
    * Returns the number of listeners listening to the event named `eventName`.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   listenerCount<N extends keyof E>(eventName: N): number {
     if (eventName in this.eventListeners)
@@ -287,7 +291,7 @@ class EventEmitter<E extends Record<string, any>> {
    *
    * Returns a reference to the `EventEmitter`, so that calls can be chained.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   prependListener<N extends keyof E>(
     eventName: N,
@@ -309,7 +313,7 @@ class EventEmitter<E extends Record<string, any>> {
    *
    * Returns a reference to the `EventEmitter`, so that calls can be chained.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   prependOnceListener<N extends keyof E>(
     eventName: N,
@@ -326,7 +330,7 @@ class EventEmitter<E extends Record<string, any>> {
 }
 
 /**
- * @since 1.1.0
+ * @since 2.0.0
  */
 class Child {
   /** The child process `pid`. */
@@ -350,6 +354,8 @@ class Child {
    * ```
    *
    * @returns A promise indicating the success or failure of the operation.
+   * 
+   * @since 2.0.0
    */
   async write(data: IOPayload): Promise<void> {
     return window.__TAURI_INVOKE__("plugin:shell|stdin_write", {
@@ -363,6 +369,8 @@ class Child {
    * Kills the child process.
    *
    * @returns A promise indicating the success or failure of the operation.
+   * 
+   * @since 2.0.0
    */
   async kill(): Promise<void> {
     return window.__TAURI_INVOKE__("plugin:shell|kill", {
@@ -399,7 +407,7 @@ interface OutputEvents<O extends IOPayload> {
  * console.log('pid:', child.pid);
  * ```
  *
- * @since 1.1.0
+ * @since 2.0.0
  *
  */
 class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
@@ -504,6 +512,8 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * Executes the command as a child process, returning a handle to it.
    *
    * @returns A promise resolving to the child process handle.
+   * 
+   * @since 2.0.0
    */
   async spawn(): Promise<Child> {
     return execute<O>(
@@ -542,6 +552,8 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * ```
    *
    * @returns A promise resolving to the child process output.
+   * 
+   * @since 2.0.0
    */
   async execute(): Promise<ChildProcess<O>> {
     return new Promise((resolve, reject) => {
@@ -633,7 +645,7 @@ type CommandEvent<O extends IOPayload> =
  * @param openWith The app to open the file or URL with.
  * Defaults to the system default application for the specified path type.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function open(path: string, openWith?: string): Promise<void> {
   return window.__TAURI_INVOKE__("plugin:shell|open", {

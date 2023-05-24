@@ -161,7 +161,7 @@ interface BackendMetadata {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface FsOptions {
   dir?: BaseDirectory;
@@ -169,7 +169,7 @@ interface FsOptions {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface FsDirOptions {
   dir?: BaseDirectory;
@@ -179,7 +179,7 @@ interface FsDirOptions {
 /**
  * Options object used to write a UTF-8 string to a file.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface FsTextFileOption {
   /** Path to the file to write. */
@@ -193,7 +193,7 @@ type BinaryFileContents = Iterable<number> | ArrayLike<number> | ArrayBuffer;
 /**
  * Options object used to write a binary data to a file.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface FsBinaryFileOption {
   /** Path to the file to write. */
@@ -203,7 +203,7 @@ interface FsBinaryFileOption {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface FileEntry {
   path: string;
@@ -225,7 +225,7 @@ interface FileEntry {
  * const contents = await readTextFile('app.conf', { dir: BaseDirectory.AppConfig });
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function readTextFile(
   filePath: string,
@@ -246,7 +246,7 @@ async function readTextFile(
  * const contents = await readBinaryFile('avatar.png', { dir: BaseDirectory.Resource });
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function readBinaryFile(
   filePath: string,
@@ -269,7 +269,7 @@ async function readBinaryFile(
  * await writeTextFile('app.conf', 'file contents', { dir: BaseDirectory.AppConfig });
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function writeTextFile(
   path: string,
@@ -287,7 +287,7 @@ async function writeTextFile(
  * ```
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function writeTextFile(
   file: FsTextFileOption,
@@ -299,7 +299,7 @@ async function writeTextFile(
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function writeTextFile(
   path: string | FsTextFileOption,
@@ -347,7 +347,7 @@ async function writeTextFile(
  * @param options Configuration object.
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function writeBinaryFile(
   path: string,
@@ -368,7 +368,7 @@ async function writeBinaryFile(
  * @param options Configuration object.
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function writeBinaryFile(
   file: FsBinaryFileOption,
@@ -380,7 +380,7 @@ async function writeBinaryFile(
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function writeBinaryFile(
   path: string | FsBinaryFileOption,
@@ -439,7 +439,7 @@ async function writeBinaryFile(
  * }
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function readDir(
   dir: string,
@@ -464,7 +464,7 @@ async function readDir(
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function createDir(
   dir: string,
@@ -488,7 +488,7 @@ async function createDir(
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function removeDir(
   dir: string,
@@ -511,7 +511,7 @@ async function removeDir(
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function copyFile(
   source: string,
@@ -536,7 +536,7 @@ async function copyFile(
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function removeFile(
   file: string,
@@ -559,7 +559,7 @@ async function removeFile(
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function renameFile(
   oldPath: string,
@@ -582,7 +582,7 @@ async function renameFile(
  * await exists('avatar.png', { dir: BaseDirectory.AppData });
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function exists(path: string): Promise<boolean> {
   return await window.__TAURI_INVOKE__("plugin:fs|exists", { path });
@@ -591,7 +591,7 @@ async function exists(path: string): Promise<boolean> {
 /**
  * Returns the metadata for the given path.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function metadata(path: string): Promise<Metadata> {
   return await window

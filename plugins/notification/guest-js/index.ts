@@ -18,7 +18,7 @@ import {
 /**
  * Options to send a notification.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface Options {
   /**
@@ -165,22 +165,22 @@ enum ScheduleEvery {
 
 type ScheduleData =
   | {
-      kind: "At";
-      data: {
-        date: Date;
-        repeating: boolean;
-      };
-    }
-  | {
-      kind: "Interval";
-      data: ScheduleInterval;
-    }
-  | {
-      kind: "Every";
-      data: {
-        interval: ScheduleEvery;
-      };
+    kind: "At";
+    data: {
+      date: Date;
+      repeating: boolean;
     };
+  }
+  | {
+    kind: "Interval";
+    data: ScheduleInterval;
+  }
+  | {
+    kind: "Every";
+    data: {
+      interval: ScheduleEvery;
+    };
+  };
 
 class Schedule {
   kind: string;
@@ -300,7 +300,7 @@ type Permission = "granted" | "denied" | "default";
  * const permissionGranted = await isPermissionGranted();
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function isPermissionGranted(): Promise<boolean> {
   if (window.Notification.permission !== "default") {
@@ -323,7 +323,7 @@ async function isPermissionGranted(): Promise<boolean> {
  *
  * @returns A promise resolving to whether the user granted the permission or not.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function requestPermission(): Promise<Permission> {
   return window.Notification.requestPermission();
@@ -345,7 +345,7 @@ async function requestPermission(): Promise<Permission> {
  * }
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 function sendNotification(options: Options | string): void {
   if (typeof options === "string") {

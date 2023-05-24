@@ -24,7 +24,7 @@ declare global {
  * @param code The exit code to use.
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function exit(code = 0): Promise<void> {
   return window.__TAURI_INVOKE__("plugin:process|exit", { code });
@@ -40,7 +40,7 @@ async function exit(code = 0): Promise<void> {
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function relaunch(): Promise<void> {
   return window.__TAURI_INVOKE__("plugin:process|restart");

@@ -32,7 +32,7 @@ type ClipResponse = Clip<"PlainText", string>;
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0.
+ * @since 2.0.0
  */
 async function writeText(
   text: string,
@@ -56,7 +56,7 @@ async function writeText(
  * import { readText } from '@tauri-apps/plugin-clipboard';
  * const clipboardText = await readText();
  * ```
- * @since 1.0.0.
+ * @since 2.0.0
  */
 async function readText(): Promise<string> {
   const kind: ClipResponse = await window.__TAURI_INVOKE__(
