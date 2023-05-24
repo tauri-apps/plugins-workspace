@@ -1,6 +1,7 @@
 [package]
 name = "tauri-plugin-process"
 version = "2.0.0-alpha.0"
+description = "Access the current process of your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }

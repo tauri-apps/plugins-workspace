@@ -1,6 +1,7 @@
 [package]
 name = "tauri-plugin-notification"
 version = "2.0.0-alpha.0"
+description = "Send desktop and mobile notifications on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }

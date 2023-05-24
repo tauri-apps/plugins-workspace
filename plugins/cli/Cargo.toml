@@ -1,6 +1,7 @@
 [package]
 name = "tauri-plugin-cli"
 version = "2.0.0-alpha.0"
+description = "Parse arguments from your Tauri application's command line interface."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
