@@ -22,7 +22,7 @@ declare global {
  * const appVersion = await getVersion();
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function getVersion(): Promise<string> {
   return window.__TAURI_INVOKE__("plugin:app|version");
@@ -36,7 +36,7 @@ async function getVersion(): Promise<string> {
  * const appName = await getName();
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function getName(): Promise<string> {
   return window.__TAURI_INVOKE__("plugin:app|name");
@@ -51,7 +51,7 @@ async function getName(): Promise<string> {
  * const tauriVersion = await getTauriVersion();
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function getTauriVersion(): Promise<string> {
   return window.__TAURI_INVOKE__("plugin:app|tauri_version");
@@ -66,7 +66,7 @@ async function getTauriVersion(): Promise<string> {
  * await show();
  * ```
  *
- * @since 1.2.0
+ * @since 2.0.0
  */
 async function show(): Promise<void> {
   return window.__TAURI_INVOKE__("plugin:app|show");
@@ -81,7 +81,7 @@ async function show(): Promise<void> {
  * await hide();
  * ```
  *
- * @since 1.2.0
+ * @since 2.0.0
  */
 async function hide(): Promise<void> {
   return window.__TAURI_INVOKE__("plugin:app|hide");

@@ -50,7 +50,7 @@ function isWindows(): boolean {
  * - `\n` on POSIX
  * - `\r\n` on Windows
  *
- * @since 1.0.0
+ * @since 2.0.0
  * */
 const EOL = isWindows() ? "\r\n" : "\n";
 
@@ -63,7 +63,7 @@ const EOL = isWindows() ? "\r\n" : "\n";
  * const platformName = await platform();
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  *
  */
 async function platform(): Promise<Platform> {
@@ -78,7 +78,7 @@ async function platform(): Promise<Platform> {
  * const osVersion = await version();
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function version(): Promise<string> {
   return window.__TAURI_INVOKE__("plugin:os|version");
@@ -92,7 +92,7 @@ async function version(): Promise<string> {
  * const osType = await type();
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function type(): Promise<OsType> {
   return window.__TAURI_INVOKE__("plugin:os|kind");
@@ -107,7 +107,7 @@ async function type(): Promise<OsType> {
  * const archName = await arch();
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function arch(): Promise<Arch> {
   return window.__TAURI_INVOKE__("plugin:os|arch");
@@ -121,7 +121,7 @@ async function arch(): Promise<Arch> {
  * const tempdirPath = await tempdir();
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function tempdir(): Promise<string> {
   return window.__TAURI_INVOKE__("plugin:os|tempdir");

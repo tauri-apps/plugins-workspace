@@ -15,7 +15,7 @@ declare global {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface ArgMatch {
   /**
@@ -31,7 +31,7 @@ interface ArgMatch {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface SubcommandMatch {
   name: string;
@@ -39,7 +39,7 @@ interface SubcommandMatch {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface CliMatches {
   args: Record<string, ArgMatch>;
@@ -65,7 +65,7 @@ interface CliMatches {
  * }
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function getMatches(): Promise<CliMatches> {
   return await window.__TAURI_INVOKE__("plugin:cli|cli_matches");

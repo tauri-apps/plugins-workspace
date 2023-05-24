@@ -31,7 +31,7 @@ declare global {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface Duration {
   secs: number;
@@ -39,7 +39,7 @@ interface Duration {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface ClientOptions {
   /**
@@ -51,7 +51,7 @@ interface ClientOptions {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 enum ResponseType {
   JSON = 1,
@@ -60,7 +60,7 @@ enum ResponseType {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface FilePart<T> {
   file: string | T;
@@ -73,7 +73,7 @@ type Part = string | Uint8Array | FilePart<Uint8Array>;
 /**
  * The body object to be used on POST and PUT requests.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 class Body {
   type: string;
@@ -115,6 +115,8 @@ class Body {
    * @param data The body data.
    *
    * @returns The body object ready to be used on the POST and PUT requests.
+   *
+   * @since 2.0.0
    */
   static form(data: Record<string, Part> | FormData): Body {
     const form: Record<string, string | number[] | FilePart<number[]>> = {};
@@ -166,6 +168,8 @@ class Body {
    * @param data The body JSON object.
    *
    * @returns The body object ready to be used on the POST and PUT requests.
+   *
+   * @since 2.0.0
    */
   static json<K extends string | number | symbol, V>(data: Record<K, V>): Body {
     return new Body("Json", data);
@@ -182,6 +186,8 @@ class Body {
    * @param value The body string.
    *
    * @returns The body object ready to be used on the POST and PUT requests.
+   *
+   * @since 2.0.0
    */
   static text(value: string): Body {
     return new Body("Text", value);
@@ -198,6 +204,8 @@ class Body {
    * @param bytes The body byte array.
    *
    * @returns The body object ready to be used on the POST and PUT requests.
+   *
+   * @since 2.0.0
    */
   static bytes(
     bytes: Iterable<number> | ArrayLike<number> | ArrayBuffer
@@ -225,7 +233,7 @@ type HttpVerb =
 /**
  * Options object sent to the backend.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface HttpOptions {
   method: HttpVerb;
@@ -254,7 +262,7 @@ interface IResponse<T> {
 /**
  * Response object.
  *
- * @since 1.0.0
+ * @since 2.0.0
  * */
 class Response<T> {
   /** The request URL. */
@@ -282,7 +290,7 @@ class Response<T> {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 class Client {
   id: number;
@@ -481,7 +489,7 @@ class Client {
  *
  * @returns A promise resolving to the client instance.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function getClient(options?: ClientOptions): Promise<Client> {
   return window
