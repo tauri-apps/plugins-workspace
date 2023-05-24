@@ -8,6 +8,7 @@ fs
 global-shortcut
 http
 log
+notification
 os
 positioner
 process
