@@ -1184,12 +1184,12 @@ class WindowManager extends WebviewWindowHandle {
       label: this.label,
       value: size
         ? {
-          type: size.type,
-          data: {
-            width: size.width,
-            height: size.height,
-          },
-        }
+            type: size.type,
+            data: {
+              width: size.width,
+              height: size.height,
+            },
+          }
         : null,
     });
   }
@@ -1220,12 +1220,12 @@ class WindowManager extends WebviewWindowHandle {
       label: this.label,
       value: size
         ? {
-          type: size.type,
-          data: {
-            width: size.width,
-            height: size.height,
-          },
-        }
+            type: size.type,
+            data: {
+              width: size.width,
+              height: size.height,
+            },
+          }
         : null,
     });
   }
@@ -2024,26 +2024,26 @@ interface WindowOptions {
   /**
    * Whether the window's native maximize button is enabled or not. Defaults to `true`.
    */
-  maximizable?: boolean
+  maximizable?: boolean;
   /**
    * Whether the window's native minimize button is enabled or not. Defaults to `true`.
    */
-  minimizable?: boolean
+  minimizable?: boolean;
   /**
    * Whether the window's native close button is enabled or not. Defaults to `true`.
    */
-  closable?: boolean
+  closable?: boolean;
 }
 
 function mapMonitor(m: Monitor | null): Monitor | null {
   return m === null
     ? null
     : {
-      name: m.name,
-      scaleFactor: m.scaleFactor,
-      position: mapPhysicalPosition(m.position),
-      size: mapPhysicalSize(m.size),
-    };
+        name: m.name,
+        scaleFactor: m.scaleFactor,
+        position: mapPhysicalPosition(m.position),
+        size: mapPhysicalSize(m.size),
+      };
 }
 
 function mapPhysicalPosition(m: PhysicalPosition): PhysicalPosition {
