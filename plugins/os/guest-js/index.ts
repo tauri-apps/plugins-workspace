@@ -16,7 +16,7 @@ declare global {
 
 type Platform =
   | "linux"
-  | "darwin"
+  | "macos"
   | "ios"
   | "freebsd"
   | "dragonfly"
@@ -24,9 +24,9 @@ type Platform =
   | "openbsd"
   | "solaris"
   | "android"
-  | "win32";
+  | "windows";
 
-type OsType = "Linux" | "Darwin" | "Windows_NT";
+type OsType = "linux" | "windows" | "macss" | "ios" | "android";
 
 type Arch =
   | "x86"
@@ -55,8 +55,9 @@ function isWindows(): boolean {
 const EOL = isWindows() ? "\r\n" : "\n";
 
 /**
- * Returns a string identifying the operating system platform.
- * The value is set at compile time. Possible values are `'linux'`, `'darwin'`, `'ios'`, `'freebsd'`, `'dragonfly'`, `'netbsd'`, `'openbsd'`, `'solaris'`, `'android'`, `'win32'`
+ * Returns a string describing the specific operating system in use.
+ * The value is set at compile time. Possible values are `'linux'`, `'macos'`, `'ios'`, `'freebsd'`, `'dragonfly'`, `'netbsd'`, `'openbsd'`, `'solaris'`, `'android'`, `'windows'`
+ *
  * @example
  * ```typescript
  * import { platform } from '@tauri-apps/plugin-os';
@@ -71,7 +72,7 @@ async function platform(): Promise<Platform> {
 }
 
 /**
- * Returns a string identifying the kernel version.
+ * Returns the current operating system version.
  * @example
  * ```typescript
  * import { version } from '@tauri-apps/plugin-os';
@@ -85,7 +86,7 @@ async function version(): Promise<string> {
 }
 
 /**
- * Returns `'Linux'` on Linux, `'Darwin'` on macOS, and `'Windows_NT'` on Windows.
+ * Returns the current operating system type. Returns `'linux'` on Linux, `'macos'` on macOS, `'windows'` on Windows, `'ios'` on iOS and `'android'` on Android.
  * @example
  * ```typescript
  * import { type } from '@tauri-apps/plugin-os';
@@ -95,11 +96,11 @@ async function version(): Promise<string> {
  * @since 2.0.0
  */
 async function type(): Promise<OsType> {
-  return window.__TAURI_INVOKE__("plugin:os|kind");
+  return window.__TAURI_INVOKE__("plugin:os|os_type");
 }
 
 /**
- * Returns the operating system CPU architecture for which the tauri app was compiled.
+ * Returns the current operating system architecture.
  * Possible values are `'x86'`, `'x86_64'`, `'arm'`, `'aarch64'`, `'mips'`, `'mips64'`, `'powerpc'`, `'powerpc64'`, `'riscv64'`, `'s390x'`, `'sparc64'`.
  * @example
  * ```typescript
@@ -111,20 +112,6 @@ async function type(): Promise<OsType> {
  */
 async function arch(): Promise<Arch> {
   return window.__TAURI_INVOKE__("plugin:os|arch");
-}
-
-/**
- * Returns the operating system's default directory for temporary files as a string.
- * @example
- * ```typescript
- * import { tempdir } from '@tauri-apps/plugin-os';
- * const tempdirPath = await tempdir();
- * ```
- *
- * @since 2.0.0
- */
-async function tempdir(): Promise<string> {
-  return window.__TAURI_INVOKE__("plugin:os|tempdir");
 }
 
 /**
@@ -144,5 +131,31 @@ async function locale(): Promise<string | null> {
   return window.__TAURI_INVOKE__("plugin:os|locale");
 }
 
-export { EOL, platform, version, type, arch, tempdir, locale };
+/**
+ * Returns the file extension, if any, used for executable binaries on this platform. Possible values are `'exe'` and `''` (empty string).
+ * @example
+ * ```typescript
+ * import { exeExtension } from '@tauri-apps/plugin-os';
+ * const exeExt = await exeExtension();
+ * ```
+ *
+ * @since 2.0.0
+ */
+async function exeExtension(): Promise<string | null> {
+  return window.__TAURI_INVOKE__("plugin:os|exe_extension");
+}
+
+/**
+ * Returns the host name of the operating system.
+ * @example
+ * ```typescript
+ * import { hostname } from '@tauri-apps/api/os';
+ * const hostname = await hostname();
+ * ```
+ */
+async function hostname(): Promise<string | null> {
+  return window.__TAURI_INVOKE__("plugin:os|hostname");
+}
+
+export { EOL, platform, version, type, arch, locale, exeExtension, hostname };
 export type { Platform, OsType, Arch };
