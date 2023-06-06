@@ -436,10 +436,12 @@ export class Stronghold {
    * @returns
    */
   static async load(path: string, password: string): Promise<Stronghold> {
-    return await window.__TAURI_INVOKE__("plugin:stronghold|initialize", {
-      snapshotPath: path,
-      password,
-    }).then(() => new Stronghold(path));
+    return await window
+      .__TAURI_INVOKE__("plugin:stronghold|initialize", {
+        snapshotPath: path,
+        password,
+      })
+      .then(() => new Stronghold(path));
   }
 
   /**
