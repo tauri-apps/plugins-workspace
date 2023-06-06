@@ -18,7 +18,7 @@
     "covector": "^0.9.0",
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^8.8.0",
-    "eslint-config-standard-with-typescript": "^34.0.1",
+    "eslint-config-standard-with-typescript": "^35.0.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^16.0.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -28,6 +28,6 @@
     "typescript": "^5.0.4"
   },
   "engines": {
-    "pnpm": ">=7.24.2"
+    "pnpm": ">=7.33.0"
   }
 }
