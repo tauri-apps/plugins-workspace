@@ -1886,6 +1886,14 @@ interface WindowOptions {
    * The user agent for the webview.
    */
   userAgent?: string;
+  /**
+   * Whether or not the webview should be launched in incognito mode.
+   *
+   * #### Platform-specific
+   *
+   * - **Android:** Unsupported.
+   */
+  incognito?: boolean;
 }
 
 function mapMonitor(m: Monitor | null): Monitor | null {
