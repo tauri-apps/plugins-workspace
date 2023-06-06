@@ -2,4 +2,4 @@
 "window-js": "minor"
 ---
 
-Add `incognito` window configuration option 
+Add `incognito` window configuration option
