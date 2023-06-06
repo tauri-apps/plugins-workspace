@@ -85,6 +85,22 @@ async function version(): Promise<string> {
   return window.__TAURI_INVOKE__("plugin:os|version");
 }
 
+type Family = "unix" | "windows";
+
+/**
+ * Returns the current operating system family. Possible values are `'unix'`, `'windows'`.
+ * @example
+ * ```typescript
+ * import { family } from '@tauri-apps/plugin-os';
+ * const family = await family();
+ * ```
+ *
+ * @since 2.0.0
+ */
+async function family(): Promise<Family> {
+  return window.__TAURI_INVOKE__("plugin:os|family");
+}
+
 /**
  * Returns the current operating system type. Returns `'linux'` on Linux, `'macos'` on macOS, `'windows'` on Windows, `'ios'` on iOS and `'android'` on Android.
  * @example
@@ -157,5 +173,15 @@ async function hostname(): Promise<string | null> {
   return window.__TAURI_INVOKE__("plugin:os|hostname");
 }
 
-export { EOL, platform, version, type, arch, locale, exeExtension, hostname };
-export type { Platform, OsType, Arch };
+export {
+  EOL,
+  platform,
+  family,
+  version,
+  type,
+  arch,
+  locale,
+  exeExtension,
+  hostname,
+};
+export type { Platform, OsType, Arch, Family };
