@@ -190,7 +190,7 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
 
             if flags.contains(StateFlags::DECORATIONS) {
-                metadata.visible = self.is_visible()?;
+                metadata.decorated = self.is_decorated()?;
             }
 
             if flags.contains(StateFlags::FULLSCREEN) {
