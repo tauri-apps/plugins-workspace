@@ -11,6 +11,9 @@
 declare global {
   interface Window {
     __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+    __TAURI_OS__: {
+      EOL: string;
+    };
   }
 }
 
@@ -41,18 +44,16 @@ type Arch =
   | "s390x"
   | "sparc64";
 
-function isWindows(): boolean {
-  return navigator.appVersion.includes("Win");
-}
-
 /**
- * The operating system-specific end-of-line marker.
+ * Returns the operating system-specific end-of-line marker.
  * - `\n` on POSIX
  * - `\r\n` on Windows
  *
  * @since 2.0.0
  * */
-const EOL = isWindows() ? "\r\n" : "\n";
+function eol() {
+  return window.__TAURI_OS__.EOL;
+}
 
 /**
  * Returns a string describing the specific operating system in use.
@@ -174,7 +175,7 @@ async function hostname(): Promise<string | null> {
 }
 
 export {
-  EOL,
+  eol,
   platform,
   family,
   version,

@@ -91,8 +91,16 @@ pub fn hostname() -> String {
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    let mut init_script = String::new();
+    init_script.push_str(include_str!("api-iife.js"));
+    #[cfg(windows)]
+    let eol = "\r\n";
+    #[cfg(not(windows))]
+    let eol = "\n";
+    init_script.push_str(&format!("window.__TAURI_OS__.EOL = {eol}"));
+
     Builder::new("os")
-        .js_init_script(include_str!("api-iife.js").to_string())
+        .js_init_script(init_script)
         .invoke_handler(tauri::generate_handler![
             commands::platform,
             commands::version,
