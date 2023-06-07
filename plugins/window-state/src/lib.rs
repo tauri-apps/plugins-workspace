@@ -125,9 +125,7 @@ impl<R: Runtime> WindowExt for Window<R> {
 
         if let Some(state) = c.get(self.label()) {
             // avoid restoring the default zeroed state
-            dbg!(&*state);
             if *state == WindowState::default() {
-                dbg!("asdasd");
                 return Ok(());
             }
 
