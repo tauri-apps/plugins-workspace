@@ -378,7 +378,7 @@ export class Vault extends ProcedureExecutor {
       snapshotPath: this.path,
       client: this.client,
       vault: this.name,
-      location,
+      recordPath: location.payload.record,
     });
   }
 }
