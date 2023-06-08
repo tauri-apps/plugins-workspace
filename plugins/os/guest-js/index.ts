@@ -11,8 +11,8 @@
 declare global {
   interface Window {
     __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-    __TAURI_OS__: {
-      EOL: string;
+    __TAURI__: {
+      os: { __eol: string };
     };
   }
 }
@@ -52,7 +52,7 @@ type Arch =
  * @since 2.0.0
  * */
 function eol() {
-  return window.__TAURI_OS__.EOL;
+  return window.__TAURI__.os.__eol;
 }
 
 /**

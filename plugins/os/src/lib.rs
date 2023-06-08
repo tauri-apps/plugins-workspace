@@ -97,7 +97,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     let eol = "\r\n";
     #[cfg(not(windows))]
     let eol = "\n";
-    init_script.push_str(&format!("window.__TAURI_OS__.EOL = '{eol}';"));
+    init_script.push_str(&include_str!("init.js").replace("__TEMPLATE_eol__", eol));
 
     Builder::new("os")
         .js_init_script(init_script)
