@@ -1,5 +1,5 @@
 <script>
-  import { getClient, Body, ResponseType } from "@tauri-apps/plugin-http";
+  import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
   import { JsonView } from "@zerodevx/svelte-json-view";
 
   let httpMethod = "GET";
@@ -8,14 +8,9 @@
   export let onMessage;
 
   async function makeHttpRequest() {
-    const client = await getClient().catch((e) => {
-      onMessage(e);
-      throw e;
-    });
     let method = httpMethod || "GET";
 
     const options = {
-      url: "http://localhost:3003",
       method: method || "GET",
     };
 
@@ -23,12 +18,12 @@
       (httpBody.startsWith("{") && httpBody.endsWith("}")) ||
       (httpBody.startsWith("[") && httpBody.endsWith("]"))
     ) {
-      options.body = Body.json(JSON.parse(httpBody));
+      options.body = JSON.parse(httpBody)
     } else if (httpBody !== "") {
-      options.body = Body.text(httpBody);
+      options.body = httpBody
     }
 
-    client.request(options).then(onMessage).catch(onMessage);
+    tauriFetch("http://localhost:3003", options).then(onMessage).catch(onMessage);
   }
 
   /// http form
@@ -38,22 +33,15 @@
   let multipart = true;
 
   async function doPost() {
-    const client = await getClient().catch((e) => {
-      onMessage(e);
-      throw e;
-    });
-
-    result = await client.request({
-      url: "http://localhost:3003",
+    result = await tauriFetch("http://localhost:3003", {
       method: "POST",
-      body: Body.form({
+      body: {
         foo,
         bar,
-      }),
+      },
       headers: multipart
         ? { "Content-Type": "multipart/form-data" }
         : undefined,
-      responseType: ResponseType.Text,
     });
   }
 </script>
