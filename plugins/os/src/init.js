@@ -6,4 +6,5 @@ if (!("os" in window.__TAURI__)) {
   window.__TAURI__.os = {};
 }
 
+// eslint-disable-next-line
 window.__TAURI__.os.__eol = __TEMPLATE_eol__;
