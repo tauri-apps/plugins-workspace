@@ -293,7 +293,7 @@ export class Store {
     this.client = client;
   }
 
-  async get(key: StoreKey): Promise<Uint8Array> {
+  async get(key: StoreKey): Promise<Uint8Array | null> {
     return await invoke<number[]>("plugin:stronghold|get_store_record", {
       snapshotPath: this.path,
       client: this.client,
