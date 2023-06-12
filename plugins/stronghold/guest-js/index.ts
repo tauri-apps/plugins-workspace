@@ -299,13 +299,12 @@ export class Store {
       client: this.client,
       key: toBytesDto(key),
     }).then((v) => {
-         if (v !== null || undefined) {
-          return Uint8Array.from(v);
-         }
-         else {
-          return null;
-        }
-      })
+      if (v !== null || undefined) {
+        return Uint8Array.from(v);
+      } else {
+        return null;
+      }
+    });
   }
 
   async insert(
