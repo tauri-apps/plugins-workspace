@@ -299,7 +299,7 @@ export class Store {
       client: this.client,
       key: toBytesDto(key),
     }).then((v) => {
-      if (v !== null && v !== undefined) {
+      if (v) {
         return Uint8Array.from(v);
       } else {
         return null;
