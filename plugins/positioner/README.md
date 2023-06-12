@@ -40,11 +40,11 @@ yarn add tauri-plugin-positioner-api
 Or through git:
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-positioner
+pnpm add https://github.com/tauri-apps/tauri-plugin-positioner#v1
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-positioner
+npm add https://github.com/tauri-apps/tauri-plugin-positioner#v1
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-positioner
+yarn add https://github.com/tauri-apps/tauri-plugin-positioner#v1
 ```
 
 ## Usage

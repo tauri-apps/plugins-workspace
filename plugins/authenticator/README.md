@@ -28,11 +28,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-authenticator
+pnpm add https://github.com/tauri-apps/tauri-plugin-authenticator#v1
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-authenticator
+npm add https://github.com/tauri-apps/tauri-plugin-authenticator#v1
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-authenticator
+yarn add https://github.com/tauri-apps/tauri-plugin-authenticator#v1
 ```
 
 ## Usage
