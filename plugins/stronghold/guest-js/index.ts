@@ -385,7 +385,7 @@ export class Vault extends ProcedureExecutor {
       snapshotPath: this.path,
       client: this.client,
       vault: this.name,
-      location,
+      recordPath: location.payload.record,
     });
   }
 }
@@ -402,21 +402,20 @@ export class Stronghold {
    * @param path
    * @param password
    */
-  constructor(path: string, password: string) {
+  private constructor(path: string) {
     this.path = path;
-    void this.reload(password);
   }
 
   /**
-   * Force a reload of the snapshot. The password must match.
+   * Load the snapshot if it exists (password must match), or start a fresh stronghold instance otherwise.
    * @param password
    * @returns
    */
-  private async reload(password: string): Promise<void> {
+  static async load(path: string, password: string): Promise<Stronghold> {
     return await invoke("plugin:stronghold|initialize", {
-      snapshotPath: this.path,
+      snapshotPath: path,
       password,
-    });
+    }).then(() => new Stronghold(path));
   }
 
   /**

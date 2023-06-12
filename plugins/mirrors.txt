@@ -2,9 +2,7 @@ authenticator
 autostart
 fs-extra
 fs-watch
-localhost
 log
-persisted-scope
 positioner
 sql
 store

@@ -28,11 +28,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-sql
+pnpm add https://github.com/tauri-apps/tauri-plugin-sql#v1
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-sql
+npm add https://github.com/tauri-apps/tauri-plugin-sql#v1
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-sql
+yarn add https://github.com/tauri-apps/tauri-plugin-sql#v1
 ```
 
 ## Usage
