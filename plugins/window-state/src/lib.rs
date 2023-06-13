@@ -53,7 +53,7 @@ impl Default for StateFlags {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 struct WindowState {
     width: f64,
     height: f64,
@@ -63,6 +63,21 @@ struct WindowState {
     visible: bool,
     decorated: bool,
     fullscreen: bool,
+}
+
+impl Default for WindowState {
+    fn default() -> Self {
+        Self {
+            width: Default::default(),
+            height: Default::default(),
+            x: Default::default(),
+            y: Default::default(),
+            maximized: Default::default(),
+            visible: true,
+            decorated: true,
+            fullscreen: Default::default(),
+        }
+    }
 }
 
 struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
