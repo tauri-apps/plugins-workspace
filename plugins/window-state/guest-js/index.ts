@@ -14,22 +14,25 @@ export enum StateFlags {
 /**
  *  Save the state of all open windows to disk.
  */
-async function saveWindowState(flags: StateFlags) {
-  invoke("plugin:window-state|save_window_state", { flags });
+async function saveWindowState(flags: StateFlags): Promise<void> {
+  return invoke("plugin:window-state|save_window_state", { flags });
 }
 
 /**
  *  Restore the state for the specified window from disk.
  */
-async function restoreState(label: WindowLabel, flags: StateFlags) {
-  invoke("plugin:window-state|restore_state", { label, flags });
+async function restoreState(
+  label: WindowLabel,
+  flags: StateFlags
+): Promise<void> {
+  return invoke("plugin:window-state|restore_state", { label, flags });
 }
 
 /**
  *  Restore the state for the current window from disk.
  */
-async function restoreStateCurrent(flags: StateFlags) {
-  restoreState(getCurrent().label, flags);
+async function restoreStateCurrent(flags: StateFlags): Promise<void> {
+  return restoreState(getCurrent().label, flags);
 }
 
 export { restoreState, restoreStateCurrent, saveWindowState };
