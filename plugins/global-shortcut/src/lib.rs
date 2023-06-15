@@ -1,3 +1,9 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
+#![cfg(not(any(target_os = "android", target_os = "ios")))]
+
 use std::{
     collections::HashMap,
     str::FromStr,
@@ -277,6 +283,7 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let handler = self.handler;
         PluginBuilder::new("globalShortcut")
+            .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![
                 register,
                 register_all,

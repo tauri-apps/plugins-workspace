@@ -1,5 +1,5 @@
 {
-  "name": "tauri-plugin-barcode-scanner-api",
+  "name": "@tauri-apps/plugin-barcode-scanner",
   "version": "0.0.0",
   "license": "MIT or APACHE-2.0",
   "authors": [
@@ -27,6 +27,6 @@
     "tslib": "^2.4.1"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.2.0"
+    "@tauri-apps/api": "2.0.0-alpha.4"
   }
 }

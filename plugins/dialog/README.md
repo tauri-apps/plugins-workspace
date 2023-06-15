@@ -1,10 +1,10 @@
-![Dialog](banner.jpg)
+# Dialog
 
-<!-- description -->
+Native system dialogs for opening and saving files along with message dialogs.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.64**_
+_This plugin requires a Rust version of at least **1.65**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,7 +18,9 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-dialog-api = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
+tauri-plugin-dialog = "2.0.0-alpha"
+# alternatively with Git:
+tauri-plugin-dialog = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -26,11 +28,18 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add tauri-plugin-dialog-api
+pnpm add @tauri-apps/plugin-dialog
 # or
-npm add tauri-plugin-dialog-api
+npm add @tauri-apps/plugin-dialog
 # or
-yarn add tauri-plugin-dialog-api
+yarn add @tauri-apps/plugin-dialog
+
+# alternatively with Git:
+pnpm add https://github.com/tauri-apps/tauri-plugin-dialog#v2
+# or
+npm add https://github.com/tauri-apps/tauri-plugin-dialog#v2
+# or
+yarn add https://github.com/tauri-apps/tauri-plugin-dialog#v2
 ```
 
 ## Usage

@@ -1,3 +1,9 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
+#![cfg(not(any(target_os = "android", target_os = "ios")))]
+
 use tauri::{plugin::TauriPlugin, AppHandle, Manager, Runtime};
 
 #[cfg(target_os = "windows")]

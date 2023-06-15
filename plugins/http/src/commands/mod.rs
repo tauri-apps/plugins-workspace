@@ -1,9 +1,11 @@
-use tauri::{path::SafePathBuf, AppHandle, Runtime, State};
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 
-use crate::{
-    
-    ClientId, Http,
-};
+use tauri::{path::SafePathBuf, AppHandle, Runtime, State};
+use tauri_plugin_fs::FsExt;
+
+use crate::{ClientId, Http};
 
 mod client;
 use client::{Body, ClientBuilder, FilePart, FormPart, HttpRequestBuilder, ResponseData};
@@ -41,7 +43,6 @@ pub async fn request<R: Runtime>(
     client_id: ClientId,
     options: Box<HttpRequestBuilder>,
 ) -> super::Result<ResponseData> {
-    use crate::Manager;
     if http.scope.is_allowed(&options.url) {
         let client = http
             .clients
@@ -58,7 +59,12 @@ pub async fn request<R: Runtime>(
                     ..
                 } = value
                 {
-                    if SafePathBuf::new(path.clone()).is_err() || !app.fs_scope().is_allowed(path) {
+                    if SafePathBuf::new(path.clone()).is_err()
+                        || !app
+                            .try_fs_scope()
+                            .map(|s| s.is_allowed(path))
+                            .unwrap_or_default()
+                    {
                         return Err(crate::Error::PathNotAllowed(path.clone()));
                     }
                 }

@@ -6,36 +6,19 @@
  * Access the system shell.
  * Allows you to spawn child processes and manage files and URLs using their default application.
  *
- * The APIs must be added to [`tauri.allowlist.shell`](https://tauri.app/v1/api/config/#allowlistconfig.shell) in `tauri.conf.json`:
- * ```json
- * {
- *   "tauri": {
- *     "allowlist": {
- *       "shell": {
- *         "all": true, // enable all shell APIs
- *         "execute": true, // enable process spawn APIs
- *         "sidecar": true, // enable spawning sidecars
- *         "open": true // enable opening files/URLs using the default program
- *       }
- *     }
- *   }
- * }
- * ```
- * It is recommended to allowlist only the APIs you use for optimal bundle size and security.
- *
  * ## Security
  *
  * This API has a scope configuration that forces you to restrict the programs and arguments that can be used.
  *
  * ### Restricting access to the {@link open | `open`} API
  *
- * On the allowlist, `open: true` means that the {@link open} API can be used with any URL,
+ * On the configuration object, `open: true` means that the {@link open} API can be used with any URL,
  * as the argument is validated with the `^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+` regex.
  * You can change that regex by changing the boolean value to a string, e.g. `open: ^https://github.com/`.
  *
  * ### Restricting access to the {@link Command | `Command`} APIs
  *
- * The `shell` allowlist object has a `scope` field that defines an array of CLIs that can be used.
+ * The plugin configuration object has a `scope` field that defines an array of CLIs that can be used.
  * Each CLI is a configuration object `{ name: string, cmd: string, sidecar?: bool, args?: boolean | Arg[] }`.
  *
  * - `name`: the unique identifier of the command, passed to the {@link Command.create | Command.create function}.
@@ -55,18 +38,22 @@
  * Configuration:
  * ```json
  * {
- *   "scope": [
- *     {
- *       "name": "run-git-commit",
- *       "cmd": "git",
- *       "args": ["commit", "-m", { "validator": "\\S+" }]
+ *   "plugins": {
+ *     "shell": {
+ *       "scope": [
+ *         {
+ *           "name": "run-git-commit",
+ *           "cmd": "git",
+ *           "args": ["commit", "-m", { "validator": "\\S+" }]
+ *         }
+ *       ]
  *     }
- *   ]
+ *   }
  * }
  * ```
  * Usage:
  * ```typescript
- * import { Command } from 'tauri-plugin-shell-api'
+ * import { Command } from '@tauri-apps/plugin-shell'
  * Command.create('run-git-commit', ['commit', '-m', 'the commit message'])
  * ```
  *
@@ -75,10 +62,17 @@
  * @module
  */
 
-import { invoke, transformCallback } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+    __TAURI__: {
+      transformCallback: <T>(cb: (payload: T) => void) => number;
+    };
+  }
+}
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface SpawnOptions {
   /** Current working directory. */
@@ -88,7 +82,7 @@ interface SpawnOptions {
   /**
    * Character encoding for stdout/stderr
    *
-   * @since 1.1.0
+   * @since 2.0.0
    *  */
   encoding?: string;
 }
@@ -99,7 +93,7 @@ interface InternalSpawnOptions extends SpawnOptions {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface ChildProcess<O extends IOPayload> {
   /** Exit code of the process. `null` if the process was terminated by a signal on Unix. */
@@ -121,6 +115,8 @@ interface ChildProcess<O extends IOPayload> {
  * @param args Program arguments.
  * @param options Configuration for the process spawn.
  * @returns A promise resolving to the process id.
+ *
+ * @since 2.0.0
  */
 async function execute<O extends IOPayload>(
   onEvent: (event: CommandEvent<O>) => void,
@@ -132,16 +128,16 @@ async function execute<O extends IOPayload>(
     Object.freeze(args);
   }
 
-  return invoke<number>("plugin:shell|execute", {
+  return window.__TAURI_INVOKE__<number>("plugin:shell|execute", {
     program,
     args,
     options,
-    onEventFn: transformCallback(onEvent),
+    onEventFn: window.__TAURI__.transformCallback(onEvent),
   });
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 class EventEmitter<E extends Record<string, any>> {
@@ -153,7 +149,7 @@ class EventEmitter<E extends Record<string, any>> {
   /**
    * Alias for `emitter.on(eventName, listener)`.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   addListener<N extends keyof E>(
     eventName: N,
@@ -165,7 +161,7 @@ class EventEmitter<E extends Record<string, any>> {
   /**
    * Alias for `emitter.off(eventName, listener)`.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   removeListener<N extends keyof E>(
     eventName: N,
@@ -182,7 +178,7 @@ class EventEmitter<E extends Record<string, any>> {
    *
    * Returns a reference to the `EventEmitter`, so that calls can be chained.
    *
-   * @since 1.0.0
+   * @since 2.0.0
    */
   on<N extends keyof E>(
     eventName: N,
@@ -204,7 +200,7 @@ class EventEmitter<E extends Record<string, any>> {
    *
    * Returns a reference to the `EventEmitter`, so that calls can be chained.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   once<N extends keyof E>(
     eventName: N,
@@ -222,7 +218,7 @@ class EventEmitter<E extends Record<string, any>> {
    * Removes the all specified listener from the listener array for the event eventName
    * Returns a reference to the `EventEmitter`, so that calls can be chained.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   off<N extends keyof E>(
     eventName: N,
@@ -242,7 +238,7 @@ class EventEmitter<E extends Record<string, any>> {
    *
    * Returns a reference to the `EventEmitter`, so that calls can be chained.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   removeAllListeners<N extends keyof E>(event?: N): this {
     if (event) {
@@ -261,6 +257,8 @@ class EventEmitter<E extends Record<string, any>> {
    * to each.
    *
    * @returns `true` if the event had listeners, `false` otherwise.
+   *
+   * @since 2.0.0
    */
   emit<N extends keyof E>(eventName: N, arg: E[typeof eventName]): boolean {
     if (eventName in this.eventListeners) {
@@ -276,7 +274,7 @@ class EventEmitter<E extends Record<string, any>> {
   /**
    * Returns the number of listeners listening to the event named `eventName`.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   listenerCount<N extends keyof E>(eventName: N): number {
     if (eventName in this.eventListeners)
@@ -293,7 +291,7 @@ class EventEmitter<E extends Record<string, any>> {
    *
    * Returns a reference to the `EventEmitter`, so that calls can be chained.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   prependListener<N extends keyof E>(
     eventName: N,
@@ -315,7 +313,7 @@ class EventEmitter<E extends Record<string, any>> {
    *
    * Returns a reference to the `EventEmitter`, so that calls can be chained.
    *
-   * @since 1.1.0
+   * @since 2.0.0
    */
   prependOnceListener<N extends keyof E>(
     eventName: N,
@@ -332,7 +330,7 @@ class EventEmitter<E extends Record<string, any>> {
 }
 
 /**
- * @since 1.1.0
+ * @since 2.0.0
  */
 class Child {
   /** The child process `pid`. */
@@ -348,7 +346,7 @@ class Child {
    * @param data The message to write, either a string or a byte array.
    * @example
    * ```typescript
-   * import { Command } from 'tauri-plugin-shell-api';
+   * import { Command } from '@tauri-apps/plugin-shell';
    * const command = Command.create('node');
    * const child = await command.spawn();
    * await child.write('message');
@@ -356,9 +354,11 @@ class Child {
    * ```
    *
    * @returns A promise indicating the success or failure of the operation.
+   *
+   * @since 2.0.0
    */
   async write(data: IOPayload): Promise<void> {
-    return invoke("plugin:shell|stdin_write", {
+    return window.__TAURI_INVOKE__("plugin:shell|stdin_write", {
       pid: this.pid,
       // correctly serialize Uint8Arrays
       buffer: typeof data === "string" ? data : Array.from(data),
@@ -369,9 +369,11 @@ class Child {
    * Kills the child process.
    *
    * @returns A promise indicating the success or failure of the operation.
+   *
+   * @since 2.0.0
    */
   async kill(): Promise<void> {
-    return invoke("plugin:shell|kill", {
+    return window.__TAURI_INVOKE__("plugin:shell|kill", {
       cmd: "killChild",
       pid: this.pid,
     });
@@ -392,7 +394,7 @@ interface OutputEvents<O extends IOPayload> {
  * It emits the `close` and `error` events.
  * @example
  * ```typescript
- * import { Command } from 'tauri-plugin-shell-api';
+ * import { Command } from '@tauri-apps/plugin-shell';
  * const command = Command.create('node');
  * command.on('close', data => {
  *   console.log(`command finished with code ${data.code} and signal ${data.signal}`)
@@ -405,7 +407,7 @@ interface OutputEvents<O extends IOPayload> {
  * console.log('pid:', child.pid);
  * ```
  *
- * @since 1.1.0
+ * @since 2.0.0
  *
  */
 class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
@@ -425,7 +427,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * Creates a new `Command` instance.
    *
    * @param program The program name to execute.
-   * It must be configured on `tauri.conf.json > tauri > allowlist > shell > scope`.
+   * It must be configured on `tauri.conf.json > plugins > shell > scope`.
    * @param args Program arguments.
    * @param options Spawn options.
    */
@@ -456,13 +458,13 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * Creates a command to execute the given program.
    * @example
    * ```typescript
-   * import { Command } from 'tauri-plugin-shell-api';
+   * import { Command } from '@tauri-apps/plugin-shell';
    * const command = Command.create('my-app', ['run', 'tauri']);
    * const output = await command.execute();
    * ```
    *
    * @param program The program to execute.
-   * It must be configured on `tauri.conf.json > tauri > allowlist > shell > scope`.
+   * It must be configured on `tauri.conf.json > plugins > shell > scope`.
    */
   static create<O extends IOPayload>(
     program: string,
@@ -488,13 +490,13 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * Creates a command to execute the given sidecar program.
    * @example
    * ```typescript
-   * import { Command } from 'tauri-plugin-shell-api';
+   * import { Command } from '@tauri-apps/plugin-shell';
    * const command = Command.sidecar('my-sidecar');
    * const output = await command.execute();
    * ```
    *
    * @param program The program to execute.
-   * It must be configured on `tauri.conf.json > tauri > allowlist > shell > scope`.
+   * It must be configured on `tauri.conf.json > plugins > shell > scope`.
    */
   static sidecar<O extends IOPayload>(
     program: string,
@@ -510,6 +512,8 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * Executes the command as a child process, returning a handle to it.
    *
    * @returns A promise resolving to the child process handle.
+   *
+   * @since 2.0.0
    */
   async spawn(): Promise<Child> {
     return execute<O>(
@@ -539,7 +543,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * Executes the command as a child process, waiting for it to finish and collecting all of its output.
    * @example
    * ```typescript
-   * import { Command } from 'tauri-plugin-shell-api';
+   * import { Command } from '@tauri-apps/plugin-shell';
    * const output = await Command.create('echo', 'message').execute();
    * assert(output.code === 0);
    * assert(output.signal === null);
@@ -548,6 +552,8 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * ```
    *
    * @returns A promise resolving to the child process output.
+   *
+   * @since 2.0.0
    */
   async execute(): Promise<ChildProcess<O>> {
     return new Promise((resolve, reject) => {
@@ -624,7 +630,7 @@ type CommandEvent<O extends IOPayload> =
  *
  * @example
  * ```typescript
- * import { open } from 'tauri-plugin-shell-api';
+ * import { open } from '@tauri-apps/plugin-shell';
  * // opens the given URL on the default browser:
  * await open('https://github.com/tauri-apps/tauri');
  * // opens the given URL using `firefox`:
@@ -634,15 +640,15 @@ type CommandEvent<O extends IOPayload> =
  * ```
  *
  * @param path The path or URL to open.
- * This value is matched against the string regex defined on `tauri.conf.json > tauri > allowlist > shell > open`,
+ * This value is matched against the string regex defined on `tauri.conf.json > plugins > shell > open`,
  * which defaults to `^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+`.
  * @param openWith The app to open the file or URL with.
  * Defaults to the system default application for the specified path type.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function open(path: string, openWith?: string): Promise<void> {
-  return invoke("plugin:shell|open", {
+  return window.__TAURI_INVOKE__("plugin:shell|open", {
     path,
     with: openWith,
   });

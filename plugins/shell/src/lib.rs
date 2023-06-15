@@ -1,3 +1,7 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
@@ -8,16 +12,17 @@ use regex::Regex;
 use scope::{Scope, ScopeAllowedCommand, ScopeConfig};
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    utils::config::{ShellAllowedArg, ShellAllowedArgs, ShellAllowlistOpen, ShellAllowlistScope},
     AppHandle, Manager, RunEvent, Runtime,
 };
 
 mod commands;
+mod config;
 mod error;
 mod open;
 pub mod process;
 mod scope;
 
+use config::{Config, ShellAllowedArg, ShellAllowedArgs, ShellAllowlistOpen, ShellAllowlistScope};
 pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 type ChildStore = Arc<Mutex<HashMap<u32, CommandChild>>>;
@@ -61,25 +66,25 @@ impl<R: Runtime, T: Manager<R>> ShellExt<R> for T {
     }
 }
 
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("shell")
+pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
+    let mut init_script = include_str!("init.js").to_string();
+    init_script.push_str(include_str!("api-iife.js"));
+
+    Builder::<R, Option<Config>>::new("shell")
+        .js_init_script(init_script)
         .invoke_handler(tauri::generate_handler![
             commands::execute,
             commands::stdin_write,
             commands::kill,
             commands::open
         ])
-        .setup(|app, _api| {
+        .setup(|app, api| {
+            let default_config = Config::default();
+            let config = api.config().as_ref().unwrap_or(&default_config);
             app.manage(Shell {
                 app: app.clone(),
                 children: Default::default(),
-                scope: Scope::new(
-                    app,
-                    shell_scope(
-                        app.config().tauri.allowlist.shell.scope.clone(),
-                        &app.config().tauri.allowlist.shell.open,
-                    ),
-                ),
+                scope: Scope::new(app, shell_scope(config.scope.clone(), &config.open)),
             });
             Ok(())
         })
@@ -111,7 +116,6 @@ fn shell_scope(scope: ShellAllowlistScope, open: &ShellAllowlistOpen) -> ScopeCo
                 Regex::new(validator).unwrap_or_else(|e| panic!("invalid regex {validator}: {e}"));
             Some(validator)
         }
-        _ => panic!("unknown shell open format, unable to prepare"),
     };
 
     ScopeConfig {
@@ -136,11 +140,9 @@ fn get_allowed_clis(scope: ShellAllowlistScope) -> HashMap<String, ScopeAllowedC
                                 .unwrap_or_else(|e| panic!("invalid regex {validator}: {e}"));
                             scope::ScopeAllowedArg::Var { validator }
                         }
-                        _ => panic!("unknown shell scope arg, unable to prepare"),
                     });
                     Some(list.collect())
                 }
-                _ => panic!("unknown shell scope command, unable to prepare"),
             };
 
             (

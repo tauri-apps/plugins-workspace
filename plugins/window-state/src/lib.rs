@@ -1,6 +1,8 @@
-// Copyright 2021 Tauri Programme within The Commons Conservancy
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
+
+#![cfg(not(any(target_os = "android", target_os = "ios")))]
 
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
@@ -53,7 +55,7 @@ impl Default for StateFlags {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 struct WindowState {
     width: f64,
     height: f64,
@@ -63,6 +65,21 @@ struct WindowState {
     visible: bool,
     decorated: bool,
     fullscreen: bool,
+}
+
+impl Default for WindowState {
+    fn default() -> Self {
+        Self {
+            width: Default::default(),
+            height: Default::default(),
+            x: Default::default(),
+            y: Default::default(),
+            maximized: Default::default(),
+            visible: true,
+            decorated: true,
+            fullscreen: Default::default(),
+        }
+    }
 }
 
 struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
@@ -175,7 +192,7 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
 
             if flags.contains(StateFlags::DECORATIONS) {
-                metadata.visible = self.is_visible()?;
+                metadata.decorated = self.is_decorated()?;
             }
 
             if flags.contains(StateFlags::FULLSCREEN) {
@@ -280,6 +297,7 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let flags = self.state_flags;
         PluginBuilder::new("window-state")
+            .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![
                 cmd::save_window_state,
                 cmd::restore_state

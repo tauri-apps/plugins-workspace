@@ -6,30 +6,19 @@
  * Send toast notifications (brief auto-expiring OS window element) to your user.
  * Can also be used with the Notification Web API.
  *
- * This package is also accessible with `window.__TAURI__.notification` when [`build.withGlobalTauri`](https://tauri.app/v1/api/config/#buildconfig.withglobaltauri) in `tauri.conf.json` is set to `true`.
- *
- * The APIs must be added to [`tauri.allowlist.notification`](https://tauri.app/v1/api/config/#allowlistconfig.notification) in `tauri.conf.json`:
- * ```json
- * {
- *   "tauri": {
- *     "allowlist": {
- *       "notification": {
- *         "all": true // enable all notification APIs
- *       }
- *     }
- *   }
- * }
- * ```
- * It is recommended to allowlist only the APIs you use for optimal bundle size and security.
  * @module
  */
 
-import { invoke, transformCallback } from "@tauri-apps/api/tauri";
+import {
+  invoke,
+  PluginListener,
+  addPluginListener,
+} from "@tauri-apps/api/tauri";
 
 /**
  * Options to send a notification.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface Options {
   /**
@@ -311,7 +300,7 @@ type Permission = "granted" | "denied" | "default";
  * const permissionGranted = await isPermissionGranted();
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function isPermissionGranted(): Promise<boolean> {
   if (window.Notification.permission !== "default") {
@@ -334,7 +323,7 @@ async function isPermissionGranted(): Promise<boolean> {
  *
  * @returns A promise resolving to whether the user granted the permission or not.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function requestPermission(): Promise<Permission> {
   return window.Notification.requestPermission();
@@ -356,7 +345,7 @@ async function requestPermission(): Promise<Permission> {
  * }
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 function sendNotification(options: Options | string): void {
   if (typeof options === "string") {
@@ -551,59 +540,16 @@ async function channels(): Promise<Channel[]> {
   return invoke("plugin:notification|getActive");
 }
 
-class EventChannel {
-  id: number;
-  unregisterFn: (channel: EventChannel) => Promise<void>;
-
-  constructor(
-    id: number,
-    unregisterFn: (channel: EventChannel) => Promise<void>
-  ) {
-    this.id = id;
-    this.unregisterFn = unregisterFn;
-  }
-
-  toJSON(): string {
-    return `__CHANNEL__:${this.id}`;
-  }
-
-  async unregister(): Promise<void> {
-    return this.unregisterFn(this);
-  }
-}
-
-// TODO: use addPluginListener API on @tauri-apps/api/tauri 2.0.0-alpha.4
 async function onNotificationReceived(
   cb: (notification: Options) => void
-): Promise<EventChannel> {
-  const channelId = transformCallback(cb);
-  const handler = new EventChannel(channelId, (channel) =>
-    invoke("plugin:notification|remove_listener", {
-      event: "notification",
-      channelId: channel.id,
-    })
-  );
-  return invoke("plugin:notification|register_listener", {
-    event: "notification",
-    handler,
-  }).then(() => handler);
+): Promise<PluginListener> {
+  return addPluginListener("notification", "notification", cb);
 }
 
-// TODO: use addPluginListener API on @tauri-apps/api/tauri 2.0.0-alpha.4
 async function onAction(
   cb: (notification: Options) => void
-): Promise<EventChannel> {
-  const channelId = transformCallback(cb);
-  const handler = new EventChannel(channelId, (channel) =>
-    invoke("plugin:notification|remove_listener", {
-      event: "actionPerformed",
-      channelId: channel.id,
-    })
-  );
-  return invoke("plugin:notification|register_listener", {
-    event: "actionPerformed",
-    handler,
-  }).then(() => handler);
+): Promise<PluginListener> {
+  return addPluginListener("notification", "actionPerformed", cb);
 }
 
 export type {

@@ -1,0 +1,17 @@
+[package]
+name = "tauri-plugin-os"
+version = "2.0.0-alpha.0"
+description = "Read information about the operating system."
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+os_info = "3"
+sys-locale = "0.3"
+gethostname = "0.4"

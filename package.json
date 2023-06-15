@@ -4,7 +4,7 @@
   "license": "MIT or APACHE-2.0",
   "type": "module",
   "scripts": {
-    "build": "pnpm run -r --parallel --filter !plugins-workspace --filter !\"./plugins/*/examples/**\" build",
+    "build": "pnpm run -r --parallel --filter !plugins-workspace --filter !\"./plugins/*/examples/**\" --filter !\"./examples/*\" build",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format-check": "prettier --check ."
@@ -15,11 +15,12 @@
     "@rollup/plugin-typescript": "^11.1.0",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.58.0",
+    "covector": "^0.9.0",
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^8.8.0",
-    "eslint-config-standard-with-typescript": "^34.0.1",
+    "eslint-config-standard-with-typescript": "^35.0.0",
     "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-n": "^16.0.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-security": "^1.7.1",
     "prettier": "^2.8.7",
@@ -27,6 +28,6 @@
     "typescript": "^5.0.4"
   },
   "engines": {
-    "pnpm": ">=7.24.2"
+    "pnpm": ">=7.33.0"
   }
 }

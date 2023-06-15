@@ -3,12 +3,12 @@
   "pkgManagers": {
     "javascript": {
       "version": true,
-      "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.js npm ${ pkgFile.pkg.name } ${ pkgFile.pkg.version }",
+      "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.cjs npm ${ pkgFile.pkg.name } ${ pkgFile.pkg.version }",
       "publish": ["pnpm build", "pnpm publish --access public --no-git-checks"]
     },
     "rust": {
       "version": true,
-      "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.js cargo ${ pkgFile.pkg.package.name } ${ pkgFile.pkg.package.version }",
+      "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.cjs cargo ${ pkgFile.pkg.package.name } ${ pkgFile.pkg.package.version }",
       "publish": [
         {
           "command": "cargo package --no-verify",
@@ -33,85 +33,130 @@
     }
   },
   "packages": {
+    "api-example": {
+      "path": "./examples/api/src-tauri",
+      "manager": "rust",
+      "publish": false,
+      "dependencies": [
+        "app",
+        "log-plugin",
+        "cli",
+        "clipboard",
+        "dialog",
+        "fs",
+        "global-shortcut",
+        "http",
+        "notification",
+        "os",
+        "process",
+        "shell",
+        "updater",
+        "window"
+      ]
+    },
+    "api-example-js": {
+      "path": "./examples/api",
+      "manager": "javascript",
+      "publish": false,
+      "dependencies": [
+        "app-js",
+        "log-js",
+        "cli-js",
+        "clipboard-js",
+        "dialog-js",
+        "fs-js",
+        "global-shortcut-js",
+        "http-js",
+        "notification-js",
+        "os-js",
+        "process-js",
+        "shell-js",
+        "updater-js",
+        "window-js"
+      ]
+    },
+
+    "app": {
+      "path": "./plugins/app",
+      "manager": "rust"
+    },
+    "app-js": {
+      "path": "./plugins/app",
+      "manager": "javascript"
+    },
+
     "authenticator": {
       "path": "./plugins/authenticator",
-      "manager": "rust-disabled"
+      "manager": "rust"
     },
     "authenticator-js": {
       "path": "./plugins/authenticator",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
     },
 
     "autostart": {
       "path": "./plugins/autostart",
-      "manager": "rust-disabled"
+      "manager": "rust"
     },
     "autostart-js": {
       "path": "./plugins/autostart",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
     },
 
     "cli": {
       "path": "./plugins/cli",
-      "manager": "rust-disabled"
+      "manager": "rust"
     },
     "cli-js": {
       "path": "./plugins/cli",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
     },
 
-    "clipboard": {
-      "path": "./plugins/clipboard",
-      "manager": "rust-disabled"
+    "clipboard-manager": {
+      "path": "./plugins/clipboard-manager",
+      "manager": "rust"
     },
-    "clipboard-js": {
-      "path": "./plugins/clipboard",
-      "manager": "javascript-disabled"
-    },
-
-    "dialog": {
-      "path": "./plugins/dialog",
-      "manager": "rust-disabled"
-    },
-    "dialog-js": {
-      "path": "./plugins/dialog",
-      "manager": "javascript-disabled"
+    "clipboard-manager-js": {
+      "path": "./plugins/clipboard-manager",
+      "manager": "javascript"
     },
 
     "fs": {
       "path": "./plugins/fs",
-      "manager": "rust-disabled"
+      "manager": "rust"
     },
     "fs-js": {
       "path": "./plugins/fs",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
     },
 
-    "fs-watch": {
-      "path": "./plugins/fs-watch",
-      "manager": "rust-disabled"
+    "dialog": {
+      "path": "./plugins/dialog",
+      "manager": "rust",
+      "dependencies": ["fs"]
     },
-    "fs-watch-js": {
-      "path": "./plugins/fs-watch",
-      "manager": "javascript-disabled"
+    "dialog-js": {
+      "path": "./plugins/dialog",
+      "manager": "javascript"
     },
 
     "global-shortcut": {
       "path": "./plugins/global-shortcut",
-      "manager": "rust-disabled"
+      "manager": "rust"
     },
     "global-shortcut-js": {
       "path": "./plugins/global-shortcut",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
     },
 
     "http": {
       "path": "./plugins/http",
-      "manager": "rust-disabled"
+      "manager": "rust",
+      "dependencies": ["fs"]
     },
     "http-js": {
       "path": "./plugins/http",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
     },
 
     "localhost": {
@@ -119,27 +164,37 @@
       "manager": "rust"
     },
 
-    "log": {
+    "log-plugin": {
       "path": "./plugins/log",
-      "manager": "rust-disabled"
+      "manager": "rust"
     },
     "log-js": {
       "path": "./plugins/log",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
     },
 
     "notification": {
       "path": "./plugins/notification",
-      "manager": "rust-disabled"
+      "manager": "rust"
     },
     "notification-js": {
       "path": "./plugins/notification",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
+    },
+
+    "os": {
+      "path": "./plugins/os",
+      "manager": "rust"
+    },
+    "os-js": {
+      "path": "./plugins/os",
+      "manager": "javascript"
     },
 
     "persisted-scope": {
       "path": "./plugins/persisted-scope",
-      "manager": "rust"
+      "manager": "rust",
+      "dependencies": ["fs"]
     },
 
     "positioner": {
@@ -148,66 +203,114 @@
     },
     "positioner-js": {
       "path": "./plugins/positioner",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
+    },
+
+    "process": {
+      "path": "./plugins/process",
+      "manager": "rust"
+    },
+    "process-js": {
+      "path": "./plugins/process",
+      "manager": "javascript"
     },
 
     "shell": {
       "path": "./plugins/shell",
-      "manager": "rust-disabled"
+      "manager": "rust"
     },
     "shell-js": {
       "path": "./plugins/shell",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
     },
 
     "single-instance": {
       "path": "./plugins/single-instance",
-      "manager": "rust-disabled"
+      "manager": "rust"
     },
 
     "sql": {
       "path": "./plugins/sql",
-      "manager": "rust-disabled"
+      "manager": "rust",
+      "publish": [
+        {
+          "command": "cargo package --no-verify",
+          "dryRunCommand": true
+        },
+        {
+          "command": "echo '<details>\n<summary><em><h4>Cargo Publish</h4></em></summary>\n\n```'",
+          "dryRunCommand": true,
+          "pipe": true
+        },
+        {
+          "command": "cargo publish --features sqlite",
+          "dryRunCommand": "cargo publish --features sqlite --dry-run",
+          "pipe": true
+        },
+        {
+          "command": "echo '```\n\n</details>\n'",
+          "dryRunCommand": true,
+          "pipe": true
+        }
+      ]
     },
     "sql-js": {
       "path": "./plugins/sql",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
     },
 
     "store": {
       "path": "./plugins/store",
-      "manager": "rust-disabled"
+      "manager": "rust"
     },
     "store-js": {
       "path": "./plugins/store",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
     },
 
     "stronghold": {
       "path": "./plugins/stronghold",
-      "manager": "rust-disabled"
+      "manager": "rust"
     },
     "stronghold-js": {
       "path": "./plugins/stronghold",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
+    },
+
+    "updater": {
+      "path": "./plugins/updater",
+      "manager": "rust"
+    },
+    "updater-js": {
+      "path": "./plugins/updater",
+      "manager": "javascript"
     },
 
     "upload": {
       "path": "./plugins/upload",
-      "manager": "rust-disabled"
+      "manager": "rust"
     },
     "upload-js": {
       "path": "./plugins/upload",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
     },
 
     "websocket": {
       "path": "./plugins/websocket",
-      "manager": "rust-disabled"
+      "manager": "rust"
     },
     "websocket-js": {
       "path": "./plugins/websocket",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
+    },
+
+    "window": {
+      "path": "./plugins/window",
+      "manager": "rust"
+    },
+    "window-js": {
+      "path": "./plugins/window",
+      "manager": "javascript"
     },
 
     "window-state": {
@@ -216,7 +319,7 @@
     },
     "window-state-js": {
       "path": "./plugins/window-state",
-      "manager": "javascript-disabled"
+      "manager": "javascript"
     }
   }
 }

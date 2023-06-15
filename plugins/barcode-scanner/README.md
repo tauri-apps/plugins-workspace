@@ -26,11 +26,18 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add tauri-plugin-barcode-scanner-api
+pnpm add @tauri-apps/plugin-barcode-scanner
 # or
-npm add tauri-plugin-barcode-scanner-api
+npm add @tauri-apps/plugin-barcode-scanner
 # or
-yarn add tauri-plugin-barcode-scanner-api
+yarn add @tauri-apps/plugin-barcode-scanner
+
+# alternatively with Git:
+pnpm add https://github.com/tauri-apps/tauri-plugin-barcode-scanner#v2
+# or
+npm add https://github.com/tauri-apps/tauri-plugin-barcode-scanner#v2
+# or
+yarn add https://github.com/tauri-apps/tauri-plugin-barcode-scanner#v2
 ```
 
 ## Usage

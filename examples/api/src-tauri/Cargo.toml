@@ -1,49 +1,50 @@
 [package]
 name = "api"
-version = "0.1.0"
+publish = false
+version = "2.0.0-alpha.1"
 description = "An example Tauri Application showcasing the api"
 edition = "2021"
-rust-version = "1.64"
+rust-version = "1.65"
 license = "Apache-2.0 OR MIT"
 
 [lib]
-crate-type = ["staticlib", "cdylib", "rlib"]
+crate-type = [ "staticlib", "cdylib", "rlib" ]
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-alpha.4", features = ["codegen", "isolation"] }
+tauri-build = { workspace = true, features = [ "codegen", "isolation" ] }
 
 [dependencies]
-serde_json = "1.0"
-serde = { version = "1.0", features = [ "derive" ] }
+serde_json = { workspace = true }
+serde = { workspace = true }
 tiny_http = "0.11"
-log = "0.4"
-tauri-plugin-log = { path = "../../../plugins/log" }
-tauri-plugin-fs = { path = "../../../plugins/fs" }
-tauri-plugin-clipboard = { path = "../../../plugins/clipboard" }
-tauri-plugin-dialog = { path = "../../../plugins/dialog" }
-tauri-plugin-http = { path = "../../../plugins/http", features = [ "http-multipart" ] }
-tauri-plugin-notification = { path = "../../../plugins/notification", features = [ "windows7-compat" ] }
-tauri-plugin-shell = { path = "../../../plugins/shell" }
+log = { workspace = true }
+tauri-plugin-app = { path = "../../../plugins/app", version = "2.0.0-alpha.0" }
+tauri-plugin-log = { path = "../../../plugins/log", version = "2.0.0-alpha.0" }
+tauri-plugin-fs = { path = "../../../plugins/fs", version = "2.0.0-alpha.0" }
+tauri-plugin-clipboard-manager = { path = "../../../plugins/clipboard-manager", version = "2.0.0-alpha.0" }
+tauri-plugin-dialog = { path = "../../../plugins/dialog", version = "2.0.0-alpha.0" }
+tauri-plugin-http = { path = "../../../plugins/http", features = [ "multipart" ], version = "2.0.0-alpha.0" }
+tauri-plugin-notification = { path = "../../../plugins/notification", version = "2.0.0-alpha.0", features = [ "windows7-compat" ] }
+tauri-plugin-os = { path = "../../../plugins/os", version = "2.0.0-alpha.0" }
+tauri-plugin-process = { path = "../../../plugins/process", version = "2.0.0-alpha.0" }
+tauri-plugin-shell = { path = "../../../plugins/shell", version = "2.0.0-alpha.0" }
+tauri-plugin-window = { path = "../../../plugins/window", version = "2.0.0-alpha.0", features = [ "devtools", "icon-ico", "icon-png" ] }
 
-[patch.crates-io]
-tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
-tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
-
-[dependencies.tauri]
-version = "2.0.0-alpha.8"
-features = [
-  "api-all",
+  [dependencies.tauri]
+  workspace = true
+  features = [
   "icon-ico",
   "icon-png",
   "isolation",
   "macos-private-api",
   "system-tray",
-  "updater"
+  "protocol-asset"
 ]
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
-tauri-plugin-cli = { path = "../../../plugins/cli" }
-tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut" }
+tauri-plugin-cli = { path = "../../../plugins/cli", version = "2.0.0-alpha.0" }
+tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", version = "2.0.0-alpha.0" }
+tauri-plugin-updater = { path = "../../../plugins/updater", version = "2.0.0-alpha.0" }
 
 [target."cfg(any(target_os = \"android\", target_os = \"ios\"))".dependencies]
 tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner" }
@@ -53,11 +54,3 @@ window-shadows = "0.2"
 
 [features]
 custom-protocol = [ "tauri/custom-protocol" ]
-
-# default to small, optimized release binaries
-[profile.release]
-panic = "abort"
-codegen-units = 1
-lto = true
-incremental = false
-opt-level = "s"

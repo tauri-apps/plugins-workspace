@@ -5,21 +5,6 @@
 /**
  * Access the HTTP client written in Rust.
  *
- * The APIs must be allowlisted on `tauri.conf.json`:
- * ```json
- * {
- *   "tauri": {
- *     "allowlist": {
- *       "http": {
- *         "all": true, // enable all http APIs
- *         "request": true // enable HTTP request API
- *       }
- *     }
- *   }
- * }
- * ```
- * It is recommended to allowlist only the APIs you use for optimal bundle size and security.
- *
  * ## Security
  *
  * This API has a scope configuration that forces you to restrict the URLs and paths that can be accessed using glob patterns.
@@ -27,11 +12,9 @@
  * For instance, this scope configuration only allows making HTTP requests to the GitHub API for the `tauri-apps` organization:
  * ```json
  * {
- *   "tauri": {
- *     "allowlist": {
- *       "http": {
- *         "scope": ["https://api.github.com/repos/tauri-apps/*"]
- *       }
+ *   "plugins": {
+ *     "http": {
+ *       "scope": ["https://api.github.com/repos/tauri-apps/*"]
  *     }
  *   }
  * }
@@ -41,10 +24,14 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface Duration {
   secs: number;
@@ -52,7 +39,7 @@ interface Duration {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface ClientOptions {
   /**
@@ -64,7 +51,7 @@ interface ClientOptions {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 enum ResponseType {
   JSON = 1,
@@ -73,7 +60,7 @@ enum ResponseType {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface FilePart<T> {
   file: string | T;
@@ -86,7 +73,7 @@ type Part = string | Uint8Array | FilePart<Uint8Array>;
 /**
  * The body object to be used on POST and PUT requests.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 class Body {
   type: string;
@@ -103,12 +90,12 @@ class Body {
    * and the value is either a string or a file object.
    *
    * By default it sets the `application/x-www-form-urlencoded` Content-Type header,
-   * but you can set it to `multipart/form-data` if the Cargo feature `http-multipart` is enabled.
+   * but you can set it to `multipart/form-data` if the Cargo feature `multipart` is enabled.
    *
-   * Note that a file path must be allowed in the `fs` allowlist scope.
+   * Note that a file path must be allowed in the `fs` scope.
    * @example
    * ```typescript
-   * import { Body } from "tauri-plugin-http-api"
+   * import { Body } from "@tauri-apps/plugin-http"
    * const body = Body.form({
    *   key: 'value',
    *   image: {
@@ -128,6 +115,8 @@ class Body {
    * @param data The body data.
    *
    * @returns The body object ready to be used on the POST and PUT requests.
+   *
+   * @since 2.0.0
    */
   static form(data: Record<string, Part> | FormData): Body {
     const form: Record<string, string | number[] | FilePart<number[]>> = {};
@@ -169,7 +158,7 @@ class Body {
    * Creates a new JSON body.
    * @example
    * ```typescript
-   * import { Body } from "tauri-plugin-http-api"
+   * import { Body } from "@tauri-apps/plugin-http"
    * Body.json({
    *   registered: true,
    *   name: 'tauri'
@@ -179,6 +168,8 @@ class Body {
    * @param data The body JSON object.
    *
    * @returns The body object ready to be used on the POST and PUT requests.
+   *
+   * @since 2.0.0
    */
   static json<K extends string | number | symbol, V>(data: Record<K, V>): Body {
     return new Body("Json", data);
@@ -188,13 +179,15 @@ class Body {
    * Creates a new UTF-8 string body.
    * @example
    * ```typescript
-   * import { Body } from "tauri-plugin-http-api"
+   * import { Body } from "@tauri-apps/plugin-http"
    * Body.text('The body content as a string');
    * ```
    *
    * @param value The body string.
    *
    * @returns The body object ready to be used on the POST and PUT requests.
+   *
+   * @since 2.0.0
    */
   static text(value: string): Body {
     return new Body("Text", value);
@@ -204,13 +197,15 @@ class Body {
    * Creates a new byte array body.
    * @example
    * ```typescript
-   * import { Body } from "tauri-plugin-http-api"
+   * import { Body } from "@tauri-apps/plugin-http"
    * Body.bytes(new Uint8Array([1, 2, 3]));
    * ```
    *
    * @param bytes The body byte array.
    *
    * @returns The body object ready to be used on the POST and PUT requests.
+   *
+   * @since 2.0.0
    */
   static bytes(
     bytes: Iterable<number> | ArrayLike<number> | ArrayBuffer
@@ -238,7 +233,7 @@ type HttpVerb =
 /**
  * Options object sent to the backend.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface HttpOptions {
   method: HttpVerb;
@@ -267,7 +262,7 @@ interface IResponse<T> {
 /**
  * Response object.
  *
- * @since 1.0.0
+ * @since 2.0.0
  * */
 class Response<T> {
   /** The request URL. */
@@ -295,7 +290,7 @@ class Response<T> {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 class Client {
   id: number;
@@ -308,13 +303,13 @@ class Client {
    * Drops the client instance.
    * @example
    * ```typescript
-   * import { getClient } from 'tauri-plugin-http-api';
+   * import { getClient } from '@tauri-apps/plugin-http';
    * const client = await getClient();
    * await client.drop();
    * ```
    */
   async drop(): Promise<void> {
-    return invoke("plugin:http|drop_client", {
+    return window.__TAURI_INVOKE__("plugin:http|drop_client", {
       client: this.id,
     });
   }
@@ -323,7 +318,7 @@ class Client {
    * Makes an HTTP request.
    * @example
    * ```typescript
-   * import { getClient } from 'tauri-plugin-http-api';
+   * import { getClient } from '@tauri-apps/plugin-http';
    * const client = await getClient();
    * const response = await client.request({
    *   method: 'GET',
@@ -337,37 +332,39 @@ class Client {
     if (jsonResponse) {
       options.responseType = ResponseType.Text;
     }
-    return invoke<IResponse<T>>("plugin:http|request", {
-      clientId: this.id,
-      options,
-    }).then((res) => {
-      const response = new Response(res);
-      if (jsonResponse) {
-        /* eslint-disable */
-        try {
-          response.data = JSON.parse(response.data as string);
-        } catch (e) {
-          if (response.ok && (response.data as unknown as string) === "") {
-            response.data = {} as T;
-          } else if (response.ok) {
-            throw Error(
-              `Failed to parse response \`${response.data}\` as JSON: ${e};
+    return window
+      .__TAURI_INVOKE__<IResponse<T>>("plugin:http|request", {
+        clientId: this.id,
+        options,
+      })
+      .then((res) => {
+        const response = new Response(res);
+        if (jsonResponse) {
+          /* eslint-disable */
+          try {
+            response.data = JSON.parse(response.data as string);
+          } catch (e) {
+            if (response.ok && (response.data as unknown as string) === "") {
+              response.data = {} as T;
+            } else if (response.ok) {
+              throw Error(
+                `Failed to parse response \`${response.data}\` as JSON: ${e};
               try setting the \`responseType\` option to \`ResponseType.Text\` or \`ResponseType.Binary\` if the API does not return a JSON response.`
-            );
+              );
+            }
           }
+          /* eslint-enable */
+          return response;
         }
-        /* eslint-enable */
         return response;
-      }
-      return response;
-    });
+      });
   }
 
   /**
    * Makes a GET request.
    * @example
    * ```typescript
-   * import { getClient, ResponseType } from 'tauri-plugin-http-api';
+   * import { getClient, ResponseType } from '@tauri-apps/plugin-http';
    * const client = await getClient();
    * const response = await client.get('http://localhost:3003/users', {
    *   timeout: 30,
@@ -388,7 +385,7 @@ class Client {
    * Makes a POST request.
    * @example
    * ```typescript
-   * import { getClient, Body, ResponseType } from 'tauri-plugin-http-api';
+   * import { getClient, Body, ResponseType } from '@tauri-apps/plugin-http';
    * const client = await getClient();
    * const response = await client.post('http://localhost:3003/users', {
    *   body: Body.json({
@@ -417,7 +414,7 @@ class Client {
    * Makes a PUT request.
    * @example
    * ```typescript
-   * import { getClient, Body } from 'tauri-plugin-http-api';
+   * import { getClient, Body } from '@tauri-apps/plugin-http';
    * const client = await getClient();
    * const response = await client.put('http://localhost:3003/users/1', {
    *   body: Body.form({
@@ -447,7 +444,7 @@ class Client {
    * Makes a PATCH request.
    * @example
    * ```typescript
-   * import { getClient, Body } from 'tauri-plugin-http-api';
+   * import { getClient, Body } from '@tauri-apps/plugin-http';
    * const client = await getClient();
    * const response = await client.patch('http://localhost:3003/users/1', {
    *   body: Body.json({ email: 'contact@tauri.app' })
@@ -466,7 +463,7 @@ class Client {
    * Makes a DELETE request.
    * @example
    * ```typescript
-   * import { getClient } from 'tauri-plugin-http-api';
+   * import { getClient } from '@tauri-apps/plugin-http';
    * const client = await getClient();
    * const response = await client.delete('http://localhost:3003/users/1');
    * ```
@@ -484,7 +481,7 @@ class Client {
  * Creates a new client using the specified options.
  * @example
  * ```typescript
- * import { getClient } from 'tauri-plugin-http-api';
+ * import { getClient } from '@tauri-apps/plugin-http';
  * const client = await getClient();
  * ```
  *
@@ -492,12 +489,14 @@ class Client {
  *
  * @returns A promise resolving to the client instance.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function getClient(options?: ClientOptions): Promise<Client> {
-  return invoke<number>("plugin:http|create_client", {
-    options,
-  }).then((id) => new Client(id));
+  return window
+    .__TAURI_INVOKE__<number>("plugin:http|create_client", {
+      options,
+    })
+    .then((id) => new Client(id));
 }
 
 /** @internal */
@@ -507,7 +506,7 @@ let defaultClient: Client | null = null;
  * Perform an HTTP request using the default client.
  * @example
  * ```typescript
- * import { fetch } from 'tauri-plugin-http-api';
+ * import { fetch } from '@tauri-apps/plugin-http';
  * const response = await fetch('http://localhost:3003/users/2', {
  *   method: 'GET',
  *   timeout: 30,

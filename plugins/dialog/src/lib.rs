@@ -69,7 +69,22 @@ impl<R: Runtime> Dialog<R> {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("dialog")
+    #[allow(unused_mut)]
+    let mut builder = Builder::new("dialog");
+
+    // Dialogs are implemented natively on Android
+    #[cfg(not(target_os = "android"))]
+    {
+        let mut init_script = include_str!("init.js").to_string();
+        init_script.push_str(include_str!("api-iife.js"));
+        builder = builder.js_init_script(init_script);
+    }
+    #[cfg(target_os = "android")]
+    {
+        builder = builder.js_init_script(include_str!("api-iife.js").to_string());
+    }
+
+    builder
         .invoke_handler(tauri::generate_handler![
             commands::open,
             commands::save,
@@ -324,12 +339,12 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri::api::dialog::FileDialogBuilder;
+    /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
-    ///   .build(tauri::generate_context!("test/fixture/src-tauri/tauri.conf.json"))
+    ///   .build(tauri::generate_context!("test/tauri.conf.json"))
     ///   .expect("failed to build tauri app")
-    ///   .run(|_app, _event| {
-    ///     FileDialogBuilder::new().pick_file(|file_path| {
+    ///   .run(|app, _event| {
+    ///     app.dialog().file().pick_file(|file_path| {
     ///       // do something with the optional file path here
     ///       // the file path is `None` if the user closed the dialog
     ///     })
@@ -348,12 +363,12 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri::api::dialog::FileDialogBuilder;
+    /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
-    ///   .build(tauri::generate_context!("test/fixture/src-tauri/tauri.conf.json"))
+    ///   .build(tauri::generate_context!("test/tauri.conf.json"))
     ///   .expect("failed to build tauri app")
-    ///   .run(|_app, _event| {
-    ///     FileDialogBuilder::new().pick_files(|file_paths| {
+    ///   .run(|app, _event| {
+    ///     app.dialog().file().pick_files(|file_paths| {
     ///       // do something with the optional file paths here
     ///       // the file paths value is `None` if the user closed the dialog
     ///     })
@@ -378,12 +393,12 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri::api::dialog::FileDialogBuilder;
+    /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
-    ///   .build(tauri::generate_context!("test/fixture/src-tauri/tauri.conf.json"))
+    ///   .build(tauri::generate_context!("test/tauri.conf.json"))
     ///   .expect("failed to build tauri app")
-    ///   .run(|_app, _event| {
-    ///     FileDialogBuilder::new().pick_folder(|folder_path| {
+    ///   .run(|app, _event| {
+    ///     app.dialog().file().pick_folder(|folder_path| {
     ///       // do something with the optional folder path here
     ///       // the folder path is `None` if the user closed the dialog
     ///     })
@@ -401,12 +416,12 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri::api::dialog::FileDialogBuilder;
+    /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
-    ///   .build(tauri::generate_context!("test/fixture/src-tauri/tauri.conf.json"))
+    ///   .build(tauri::generate_context!("test/tauri.conf.json"))
     ///   .expect("failed to build tauri app")
-    ///   .run(|_app, _event| {
-    ///     FileDialogBuilder::new().pick_folders(|file_paths| {
+    ///   .run(|app, _event| {
+    ///     app.dialog().file().pick_folders(|file_paths| {
     ///       // do something with the optional folder paths here
     ///       // the folder paths value is `None` if the user closed the dialog
     ///     })
@@ -425,12 +440,12 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri::api::dialog::FileDialogBuilder;
+    /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
-    ///   .build(tauri::generate_context!("test/fixture/src-tauri/tauri.conf.json"))
+    ///   .build(tauri::generate_context!("test/tauri.conf.json"))
     ///   .expect("failed to build tauri app")
-    ///   .run(|_app, _event| {
-    ///     FileDialogBuilder::new().save_file(|file_path| {
+    ///   .run(|app, _event| {
+    ///     app.dialog().file().save_file(|file_path| {
     ///       // do something with the optional file path here
     ///       // the file path is `None` if the user closed the dialog
     ///     })
@@ -451,10 +466,10 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri::api::dialog::blocking::FileDialogBuilder;
+    /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
-    /// async fn my_command() {
-    ///   let file_path = FileDialogBuilder::new().pick_file();
+    /// async fn my_command(app: tauri::AppHandle) {
+    ///   let file_path = app.dialog().file().blocking_pick_file();
     ///   // do something with the optional file path here
     ///   // the file path is `None` if the user closed the dialog
     /// }
@@ -470,10 +485,10 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri::api::dialog::blocking::FileDialogBuilder;
+    /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
-    /// async fn my_command() {
-    ///   let file_path = FileDialogBuilder::new().pick_files();
+    /// async fn my_command(app: tauri::AppHandle) {
+    ///   let file_path = app.dialog().file().blocking_pick_files();
     ///   // do something with the optional file paths here
     ///   // the file paths value is `None` if the user closed the dialog
     /// }
@@ -489,10 +504,10 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri::api::dialog::blocking::FileDialogBuilder;
+    /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
-    /// async fn my_command() {
-    ///   let folder_path = FileDialogBuilder::new().pick_folder();
+    /// async fn my_command(app: tauri::AppHandle) {
+    ///   let folder_path = app.dialog().file().blocking_pick_folder();
     ///   // do something with the optional folder path here
     ///   // the folder path is `None` if the user closed the dialog
     /// }
@@ -509,10 +524,10 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri::api::dialog::blocking::FileDialogBuilder;
+    /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
-    /// async fn my_command() {
-    ///   let folder_paths = FileDialogBuilder::new().pick_folders();
+    /// async fn my_command(app: tauri::AppHandle) {
+    ///   let folder_paths = app.dialog().file().blocking_pick_folders();
     ///   // do something with the optional folder paths here
     ///   // the folder paths value is `None` if the user closed the dialog
     /// }
@@ -529,10 +544,10 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri::api::dialog::blocking::FileDialogBuilder;
+    /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
-    /// async fn my_command() {
-    ///   let file_path = FileDialogBuilder::new().save_file();
+    /// async fn my_command(app: tauri::AppHandle) {
+    ///   let file_path = app.dialog().file().blocking_save_file();
     ///   // do something with the optional file path here
     ///   // the file path is `None` if the user closed the dialog
     /// }

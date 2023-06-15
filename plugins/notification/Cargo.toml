@@ -1,24 +1,24 @@
 [package]
 name = "tauri-plugin-notification"
-version = "0.1.0"
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+version = "2.0.0-alpha.1"
+description = "Send desktop and mobile notifications on your Tauri application."
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+links = "tauri-plugin-notification"
 
 [build-dependencies]
-tauri-build.workspace = true
+tauri-build = { workspace = true }
 
 [dependencies]
-serde.workspace = true
-serde_json.workspace = true
-tauri.workspace = true
-log.workspace = true
-thiserror.workspace = true
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
 rand = "0.8"
-time = { version = "0.3", features = ["serde", "parsing", "formatting"] }
-url = { version = "2", features = ["serde"] }
+time = { version = "0.3", features = [ "serde", "parsing", "formatting" ] }
+url = { version = "2", features = [ "serde" ] }
 serde_repr = "0.1"
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]

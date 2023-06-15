@@ -4,7 +4,7 @@ Save window positions and sizes and restore them when the app is reopened.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.64**_
+_This plugin requires a Rust version of at least **1.65**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,6 +18,8 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
+tauri-plugin-window-state = "2.0.0-alpha"
+# alternatively with Git:
 tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
@@ -26,6 +28,13 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
+pnpm add @tauri-apps/plugin-window-state
+# or
+npm add @tauri-apps/plugin-window-state
+# or
+yarn add @tauri-apps/plugin-window-state
+
+# alternatively with Git:
 pnpm add https://github.com/tauri-apps/tauri-plugin-window-state#v2
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-window-state#v2
@@ -62,7 +71,7 @@ app.save_window_state(StateFlags::all()); // will save the state of all open win
 or through Javascript
 
 ```javascript
-import { saveWindowState, StateFlags } from "tauri-plugin-window-state-api";
+import { saveWindowState, StateFlags } from "@tauri-apps/plugin-window-state";
 
 saveWindowState(StateFlags.ALL);
 ```
@@ -79,7 +88,10 @@ window.restore_state(StateFlags::all()); // will restore the windows state from 
 or through Javascript
 
 ```javascript
-import { restoreStateCurrent, StateFlags } from "tauri-plugin-window-state-api";
+import {
+  restoreStateCurrent,
+  StateFlags,
+} from "@tauri-apps/plugin-window-state";
 
 restoreStateCurrent(StateFlags.ALL);
 ```

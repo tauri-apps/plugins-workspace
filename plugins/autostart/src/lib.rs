@@ -1,6 +1,8 @@
-// Copyright 2019-2021 Tauri Programme within The Commons Conservancy
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
+
+#![cfg(not(any(target_os = "android", target_os = "ios")))]
 
 use auto_launch::{AutoLaunch, AutoLaunchBuilder};
 #[cfg(target_os = "macos")]
@@ -97,6 +99,7 @@ pub fn init<R: Runtime>(
     args: Option<Vec<&'static str>>,
 ) -> TauriPlugin<R> {
     Builder::new("autostart")
+        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![enable, disable, is_enabled])
         .setup(move |app, _api| {
             let mut builder = AutoLaunchBuilder::new();
@@ -120,7 +123,7 @@ pub fn init<R: Runtime>(
                 let exe_path = current_exe.canonicalize()?.display().to_string();
                 let parts: Vec<&str> = exe_path.split(".app/").collect();
                 let app_path = if parts.len() == 2 {
-                    format!("{}.app", parts.get(0).unwrap().to_string())
+                    format!("{}.app", parts.first().unwrap())
                 } else {
                     exe_path
                 };

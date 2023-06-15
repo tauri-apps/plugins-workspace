@@ -21,6 +21,8 @@ pub enum Error {
     #[cfg(mobile)]
     #[error("File save dialog is not implemented on mobile")]
     FileSaveDialogNotImplemented,
+    #[error(transparent)]
+    Fs(#[from] tauri_plugin_fs::Error),
 }
 
 impl Serialize for Error {

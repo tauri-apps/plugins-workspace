@@ -1,5 +1,5 @@
 <script>
-  import { scan } from "tauri-plugin-barcode-scanner-api";
+  import { scan } from "@tauri-apps/plugin-barcode-scanner";
 
   export let onMessage;
 

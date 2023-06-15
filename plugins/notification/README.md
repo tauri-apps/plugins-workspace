@@ -1,10 +1,10 @@
-![{{plugin name}}](banner.jpg)
+# Notification
 
-<!-- description -->
+Send message notifications (brief auto-expiring OS window element) to your user. Can also be used with the Notification Web API.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.64**_
+_This plugin requires a Rust version of at least **1.65**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,7 +18,9 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-<!-- plugin here --> = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-notification = "2.0.0-alpha"
+# alternatively with Git:
+tauri-plugin-notification = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -26,11 +28,18 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add <!-- plugin here -->
+pnpm add @tauri-apps/plugin-notification
 # or
-npm add <!-- plugin here -->
+npm add @tauri-apps/plugin-notification
 # or
-yarn add <!-- plugin here -->
+yarn add @tauri-apps/plugin-notification
+
+# alternatively with Git:
+pnpm add https://github.com/tauri-apps/tauri-plugin-notification#v2
+# or
+npm add https://github.com/tauri-apps/tauri-plugin-notification#v2
+# or
+yarn add https://github.com/tauri-apps/tauri-plugin-notification#v2
 ```
 
 ## Usage
@@ -42,7 +51,7 @@ First you need to register the core plugin with Tauri:
 ```rust
 fn main() {
     tauri::Builder::default()
-        .plugin(<!-- plugin here -->)
+        .plugin(tauri_plugin_notification::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

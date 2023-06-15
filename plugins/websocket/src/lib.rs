@@ -1,3 +1,7 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
 use futures_util::{stream::SplitSink, SinkExt, StreamExt};
 use serde::{ser::Serializer, Deserialize, Serialize};
 use tauri::{
@@ -86,7 +90,7 @@ async fn connect<R: Runtime>(
     config: Option<ConnectionConfig>,
 ) -> Result<Id> {
     let id = rand::random();
-    let (ws_stream, _) = connect_async_with_config(url, config.map(Into::into)).await?;
+    let (ws_stream, _) = connect_async_with_config(url, config.map(Into::into), false).await?;
 
     tauri::async_runtime::spawn(async move {
         let (write, read) = ws_stream.split();
@@ -161,6 +165,7 @@ async fn send(
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     PluginBuilder::new("websocket")
+        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![connect, send])
         .setup(|app, _api| {
             app.manage(ConnectionManager::default());

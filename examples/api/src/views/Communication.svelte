@@ -1,41 +1,41 @@
 <script>
-  import { listen, emit } from '@tauri-apps/api/event'
-  import { invoke } from '@tauri-apps/api/tauri'
-  import { onMount, onDestroy } from 'svelte'
+  import { appWindow } from "@tauri-apps/plugin-window";
+  import { invoke } from "@tauri-apps/api/tauri";
+  import { onMount, onDestroy } from "svelte";
 
-  export let onMessage
-  let unlisten
+  export let onMessage;
+  let unlisten;
 
   onMount(async () => {
-    unlisten = await listen('rust-event', onMessage)
-  })
+    unlisten = await appWindow.listen("rust-event", onMessage);
+  });
   onDestroy(() => {
     if (unlisten) {
-      unlisten()
+      unlisten();
     }
-  })
+  });
 
   function log() {
-    invoke('log_operation', {
-      event: 'tauri-click',
-      payload: 'this payload is optional because we used Option in Rust'
-    })
+    invoke("log_operation", {
+      event: "tauri-click",
+      payload: "this payload is optional because we used Option in Rust",
+    });
   }
 
   function performRequest() {
-    invoke('perform_request', {
-      endpoint: 'dummy endpoint arg',
+    invoke("perform_request", {
+      endpoint: "dummy endpoint arg",
       body: {
         id: 5,
-        name: 'test'
-      }
+        name: "test",
+      },
     })
       .then(onMessage)
-      .catch(onMessage)
+      .catch(onMessage);
   }
 
   function emitEvent() {
-    emit('js-event', 'this is the payload string')
+    appWindow.emit("js-event", "this is the payload string");
   }
 </script>
 

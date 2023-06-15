@@ -1,6 +1,6 @@
 {
-  "name": "tauri-plugin-positioner-api",
-  "version": "0.2.7",
+  "name": "@tauri-apps/plugin-positioner",
+  "version": "2.0.0-alpha.0",
   "description": "Position your windows at well-known locations.",
   "license": "MIT or APACHE-2.0",
   "authors": [
@@ -28,6 +28,6 @@
     "tslib": "^2.5.0"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.2.0"
+    "@tauri-apps/api": "2.0.0-alpha.4"
   }
 }

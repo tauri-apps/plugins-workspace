@@ -1,3 +1,7 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
 use std::{collections::HashMap, path::PathBuf, time::Duration};
 
 use reqwest::{header, Method, Url};
@@ -91,7 +95,7 @@ impl Client {
                         headers: &mut Option<HeaderMap>,
                         form_body: FormBody,
                     ) -> crate::Result<reqwest::RequestBuilder> {
-                        #[cfg(feature = "http-multipart")]
+                        #[cfg(feature = "multipart")]
                         if matches!(
                             headers
                                 .as_ref()

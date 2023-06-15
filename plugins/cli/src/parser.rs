@@ -72,10 +72,10 @@ impl Matches {
 /// # Examples
 ///
 /// ```rust,no_run
-/// use tauri_plugin_cli::get_matches;
+/// use tauri_plugin_cli::CliExt;
 /// tauri::Builder::default()
 ///   .setup(|app| {
-///     let matches = get_matches(app.config().tauri.cli.as_ref().unwrap(), app.package_info())?;
+///     let matches = app.cli().matches()?;
 ///     Ok(())
 ///   });
 /// ```

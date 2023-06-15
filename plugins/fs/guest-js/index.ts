@@ -5,32 +5,6 @@
 /**
  * Access the file system.
  *
- * This package is also accessible with `window.__TAURI__.fs` when [`build.withGlobalTauri`](https://tauri.app/v1/api/config/#buildconfig.withglobaltauri) in `tauri.conf.json` is set to `true`.
- *
- * The APIs must be added to [`tauri.allowlist.fs`](https://tauri.app/v1/api/config/#allowlistconfig.fs) in `tauri.conf.json`:
- * ```json
- * {
- *   "tauri": {
- *     "allowlist": {
- *       "fs": {
- *         "all": true, // enable all FS APIs
- *         "readFile": true,
- *         "writeFile": true,
- *         "readDir": true,
- *         "copyFile": true,
- *         "createDir": true,
- *         "removeDir": true,
- *         "removeFile": true,
- *         "renameFile": true,
- *         "metadata": true,
- *         "exists": true
- *       }
- *     }
- *   }
- * }
- * ```
- * It is recommended to allowlist only the APIs you use for optimal bundle size and security.
- *
  * ## Security
  *
  * This module prevents path traversal, not allowing absolute paths or parent dir components
@@ -45,11 +19,9 @@
  * *databases* folder of the {@link path.appDataDir | $APPDATA directory}:
  * ```json
  * {
- *   "tauri": {
- *     "allowlist": {
- *       "fs": {
- *         "scope": ["$APPDATA/databases/*"]
- *       }
+ *   "plugins": {
+ *     "fs": {
+ *       "scope": ["$APPDATA/databases/*"]
  *     }
  *   }
  * }
@@ -73,7 +45,13 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/tauri";
+import { BaseDirectory } from "@tauri-apps/api/path";
+
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 interface Permissions {
   /**
@@ -182,39 +160,8 @@ interface BackendMetadata {
   blocks: number | undefined;
 }
 
-// TODO: pull BaseDirectory from @tauri-apps/api/path
 /**
- * @since 1.0.0
- */
-enum BaseDirectory {
-  Audio = 1,
-  Cache,
-  Config,
-  Data,
-  LocalData,
-  Document,
-  Download,
-  Picture,
-  Public,
-  Video,
-  Resource,
-  Temp,
-  AppConfig,
-  AppData,
-  AppLocalData,
-  AppCache,
-  AppLog,
-
-  Desktop,
-  Executable,
-  Font,
-  Home,
-  Runtime,
-  Template,
-}
-
-/**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface FsOptions {
   dir?: BaseDirectory;
@@ -222,7 +169,7 @@ interface FsOptions {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface FsDirOptions {
   dir?: BaseDirectory;
@@ -232,7 +179,7 @@ interface FsDirOptions {
 /**
  * Options object used to write a UTF-8 string to a file.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface FsTextFileOption {
   /** Path to the file to write. */
@@ -246,7 +193,7 @@ type BinaryFileContents = Iterable<number> | ArrayLike<number> | ArrayBuffer;
 /**
  * Options object used to write a binary data to a file.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface FsBinaryFileOption {
   /** Path to the file to write. */
@@ -256,7 +203,7 @@ interface FsBinaryFileOption {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface FileEntry {
   path: string;
@@ -273,18 +220,18 @@ interface FileEntry {
  * Reads a file as an UTF-8 encoded string.
  * @example
  * ```typescript
- * import { readTextFile, BaseDirectory } from 'tauri-plugin-fs-api';
+ * import { readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // Read the text file in the `$APPCONFIG/app.conf` path
  * const contents = await readTextFile('app.conf', { dir: BaseDirectory.AppConfig });
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function readTextFile(
   filePath: string,
   options: FsOptions = {}
 ): Promise<string> {
-  return await invoke("plugin:fs|read_text_file", {
+  return await window.__TAURI_INVOKE__("plugin:fs|read_text_file", {
     path: filePath,
     options,
   });
@@ -294,18 +241,18 @@ async function readTextFile(
  * Reads a file as byte array.
  * @example
  * ```typescript
- * import { readBinaryFile, BaseDirectory } from 'tauri-plugin-fs-api';
+ * import { readBinaryFile, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // Read the image file in the `$RESOURCEDIR/avatar.png` path
  * const contents = await readBinaryFile('avatar.png', { dir: BaseDirectory.Resource });
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function readBinaryFile(
   filePath: string,
   options: FsOptions = {}
 ): Promise<Uint8Array> {
-  const arr = await invoke<number[]>("plugin:fs|read_file", {
+  const arr = await window.__TAURI_INVOKE__<number[]>("plugin:fs|read_file", {
     path: filePath,
     options,
   });
@@ -317,12 +264,12 @@ async function readBinaryFile(
  * Writes a UTF-8 text file.
  * @example
  * ```typescript
- * import { writeTextFile, BaseDirectory } from 'tauri-plugin-fs-api';
+ * import { writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // Write a text file to the `$APPCONFIG/app.conf` path
  * await writeTextFile('app.conf', 'file contents', { dir: BaseDirectory.AppConfig });
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function writeTextFile(
   path: string,
@@ -334,13 +281,13 @@ async function writeTextFile(
  * Writes a UTF-8 text file.
  * @example
  * ```typescript
- * import { writeTextFile, BaseDirectory } from 'tauri-plugin-fs-api';
+ * import { writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // Write a text file to the `$APPCONFIG/app.conf` path
  * await writeTextFile({ path: 'app.conf', contents: 'file contents' }, { dir: BaseDirectory.AppConfig });
  * ```
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function writeTextFile(
   file: FsTextFileOption,
@@ -352,7 +299,7 @@ async function writeTextFile(
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function writeTextFile(
   path: string | FsTextFileOption,
@@ -381,7 +328,7 @@ async function writeTextFile(
     fileOptions = contents;
   }
 
-  return await invoke("plugin:fs|write_file", {
+  return await window.__TAURI_INVOKE__("plugin:fs|write_file", {
     path: file.path,
     contents: Array.from(new TextEncoder().encode(file.contents)),
     options: fileOptions,
@@ -392,7 +339,7 @@ async function writeTextFile(
  * Writes a byte array content to a file.
  * @example
  * ```typescript
- * import { writeBinaryFile, BaseDirectory } from 'tauri-plugin-fs-api';
+ * import { writeBinaryFile, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // Write a binary file to the `$APPDATA/avatar.png` path
  * await writeBinaryFile('avatar.png', new Uint8Array([]), { dir: BaseDirectory.AppData });
  * ```
@@ -400,7 +347,7 @@ async function writeTextFile(
  * @param options Configuration object.
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function writeBinaryFile(
   path: string,
@@ -412,7 +359,7 @@ async function writeBinaryFile(
  * Writes a byte array content to a file.
  * @example
  * ```typescript
- * import { writeBinaryFile, BaseDirectory } from 'tauri-plugin-fs-api';
+ * import { writeBinaryFile, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // Write a binary file to the `$APPDATA/avatar.png` path
  * await writeBinaryFile({ path: 'avatar.png', contents: new Uint8Array([]) }, { dir: BaseDirectory.AppData });
  * ```
@@ -421,7 +368,7 @@ async function writeBinaryFile(
  * @param options Configuration object.
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function writeBinaryFile(
   file: FsBinaryFileOption,
@@ -433,7 +380,7 @@ async function writeBinaryFile(
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function writeBinaryFile(
   path: string | FsBinaryFileOption,
@@ -463,7 +410,7 @@ async function writeBinaryFile(
     file.contents = contents ?? [];
   }
 
-  return await invoke("plugin:fs|write_binary_file", {
+  return await window.__TAURI_INVOKE__("plugin:fs|write_binary_file", {
     path: file.path,
     contents: Array.from(
       file.contents instanceof ArrayBuffer
@@ -478,7 +425,7 @@ async function writeBinaryFile(
  * List directory files.
  * @example
  * ```typescript
- * import { readDir, BaseDirectory } from 'tauri-plugin-fs-api';
+ * import { readDir, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // Reads the `$APPDATA/users` directory recursively
  * const entries = await readDir('users', { dir: BaseDirectory.AppData, recursive: true });
  *
@@ -492,13 +439,13 @@ async function writeBinaryFile(
  * }
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function readDir(
   dir: string,
   options: FsDirOptions = {}
 ): Promise<FileEntry[]> {
-  return await invoke("plugin:fs|read_dir", {
+  return await window.__TAURI_INVOKE__("plugin:fs|read_dir", {
     path: dir,
     options,
   });
@@ -510,20 +457,20 @@ async function readDir(
  * and the `recursive` option isn't set to true, the promise will be rejected.
  * @example
  * ```typescript
- * import { createDir, BaseDirectory } from 'tauri-plugin-fs-api';
+ * import { createDir, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // Create the `$APPDATA/users` directory
  * await createDir('users', { dir: BaseDirectory.AppData, recursive: true });
  * ```
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function createDir(
   dir: string,
   options: FsDirOptions = {}
 ): Promise<void> {
-  return await invoke("plugin:fs|create_dir", {
+  return await window.__TAURI_INVOKE__("plugin:fs|create_dir", {
     path: dir,
     options,
   });
@@ -534,20 +481,20 @@ async function createDir(
  * If the directory is not empty and the `recursive` option isn't set to true, the promise will be rejected.
  * @example
  * ```typescript
- * import { removeDir, BaseDirectory } from 'tauri-plugin-fs-api';
+ * import { removeDir, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // Remove the directory `$APPDATA/users`
  * await removeDir('users', { dir: BaseDirectory.AppData });
  * ```
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function removeDir(
   dir: string,
   options: FsDirOptions = {}
 ): Promise<void> {
-  return await invoke("plugin:fs|remove_dir", {
+  return await window.__TAURI_INVOKE__("plugin:fs|remove_dir", {
     path: dir,
     options,
   });
@@ -557,21 +504,21 @@ async function removeDir(
  * Copies a file to a destination.
  * @example
  * ```typescript
- * import { copyFile, BaseDirectory } from 'tauri-plugin-fs-api';
+ * import { copyFile, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // Copy the `$APPCONFIG/app.conf` file to `$APPCONFIG/app.conf.bk`
  * await copyFile('app.conf', 'app.conf.bk', { dir: BaseDirectory.AppConfig });
  * ```
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function copyFile(
   source: string,
   destination: string,
   options: FsOptions = {}
 ): Promise<void> {
-  return await invoke("plugin:fs|copy_file", {
+  return await window.__TAURI_INVOKE__("plugin:fs|copy_file", {
     source,
     destination,
     options,
@@ -582,20 +529,20 @@ async function copyFile(
  * Removes a file.
  * @example
  * ```typescript
- * import { removeFile, BaseDirectory } from 'tauri-plugin-fs-api';
+ * import { removeFile, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // Remove the `$APPConfig/app.conf` file
  * await removeFile('app.conf', { dir: BaseDirectory.AppConfig });
  * ```
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function removeFile(
   file: string,
   options: FsOptions = {}
 ): Promise<void> {
-  return await invoke("plugin:fs|remove_file", {
+  return await window.__TAURI_INVOKE__("plugin:fs|remove_file", {
     path: file,
     options,
   });
@@ -605,21 +552,21 @@ async function removeFile(
  * Renames a file.
  * @example
  * ```typescript
- * import { renameFile, BaseDirectory } from 'tauri-plugin-fs-api';
+ * import { renameFile, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // Rename the `$APPDATA/avatar.png` file
  * await renameFile('avatar.png', 'deleted.png', { dir: BaseDirectory.AppData });
  * ```
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function renameFile(
   oldPath: string,
   newPath: string,
   options: FsOptions = {}
 ): Promise<void> {
-  return await invoke("plugin:fs|rename_file", {
+  return await window.__TAURI_INVOKE__("plugin:fs|rename_file", {
     oldPath,
     newPath,
     options,
@@ -630,34 +577,36 @@ async function renameFile(
  * Check if a path exists.
  * @example
  * ```typescript
- * import { exists, BaseDirectory } from 'tauri-plugin-fs-api';
+ * import { exists, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // Check if the `$APPDATA/avatar.png` file exists
  * await exists('avatar.png', { dir: BaseDirectory.AppData });
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function exists(path: string): Promise<boolean> {
-  return await invoke("plugin:fs|exists", { path });
+  return await window.__TAURI_INVOKE__("plugin:fs|exists", { path });
 }
 
 /**
  * Returns the metadata for the given path.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function metadata(path: string): Promise<Metadata> {
-  return await invoke<BackendMetadata>("plugin:fs|metadata", {
-    path,
-  }).then((metadata) => {
-    const { accessedAtMs, createdAtMs, modifiedAtMs, ...data } = metadata;
-    return {
-      accessedAt: new Date(accessedAtMs),
-      createdAt: new Date(createdAtMs),
-      modifiedAt: new Date(modifiedAtMs),
-      ...data,
-    };
-  });
+  return await window
+    .__TAURI_INVOKE__<BackendMetadata>("plugin:fs|metadata", {
+      path,
+    })
+    .then((metadata) => {
+      const { accessedAtMs, createdAtMs, modifiedAtMs, ...data } = metadata;
+      return {
+        accessedAt: new Date(accessedAtMs),
+        createdAt: new Date(createdAtMs),
+        modifiedAt: new Date(modifiedAtMs),
+        ...data,
+      };
+    });
 }
 
 export type {

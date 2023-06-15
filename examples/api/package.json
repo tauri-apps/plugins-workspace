@@ -1,6 +1,7 @@
 {
   "name": "svelte-app",
-  "version": "1.0.0",
+  "private": true,
+  "version": "2.0.0-alpha.0",
   "type": "module",
   "scripts": {
     "dev": "vite --clearScreen false",
@@ -8,23 +9,28 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-alpha.3",
-    "@tauri-apps/cli": "2.0.0-alpha.8",
+    "@tauri-apps/api": "2.0.0-alpha.4",
     "@zerodevx/svelte-json-view": "0.2.1",
-    "tauri-plugin-barcode-scanner-api": "0.0.0",
-    "tauri-plugin-cli-api": "0.0.0",
-    "tauri-plugin-clipboard-api": "0.0.0",
-    "tauri-plugin-dialog-api": "0.0.0",
-    "tauri-plugin-fs-api": "0.0.0",
-    "tauri-plugin-global-shortcut-api": "0.0.0",
-    "tauri-plugin-http-api": "0.0.0",
-    "tauri-plugin-notification-api": "0.0.0",
-    "tauri-plugin-shell-api": "0.0.0"
+    "@tauri-apps/plugin-app": "2.0.0-alpha.0",
+    "@tauri-apps/plugin-barcode-scanner": "0.0.0",
+    "@tauri-apps/plugin-cli": "2.0.0-alpha.0",
+    "@tauri-apps/plugin-clipboard-manager": "2.0.0-alpha.0",
+    "@tauri-apps/plugin-dialog": "2.0.0-alpha.0",
+    "@tauri-apps/plugin-fs": "2.0.0-alpha.0",
+    "@tauri-apps/plugin-global-shortcut": "2.0.0-alpha.0",
+    "@tauri-apps/plugin-http": "2.0.0-alpha.0",
+    "@tauri-apps/plugin-notification": "2.0.0-alpha.0",
+    "@tauri-apps/plugin-os": "2.0.0-alpha.0",
+    "@tauri-apps/plugin-process": "2.0.0-alpha.0",
+    "@tauri-apps/plugin-shell": "2.0.0-alpha.0",
+    "@tauri-apps/plugin-updater": "2.0.0-alpha.0",
+    "@tauri-apps/plugin-window": "2.0.0-alpha.0"
   },
   "devDependencies": {
     "@iconify-json/codicon": "^1.1.10",
     "@iconify-json/ph": "^1.1.1",
     "@sveltejs/vite-plugin-svelte": "^1.0.1",
+    "@tauri-apps/cli": "2.0.0-alpha.9",
     "internal-ip": "^7.0.0",
     "svelte": "^3.49.0",
     "unocss": "^0.39.3",

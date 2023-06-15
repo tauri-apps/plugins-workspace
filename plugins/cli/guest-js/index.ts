@@ -8,10 +8,14 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface ArgMatch {
   /**
@@ -27,7 +31,7 @@ interface ArgMatch {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface SubcommandMatch {
   name: string;
@@ -35,7 +39,7 @@ interface SubcommandMatch {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface CliMatches {
   args: Record<string, ArgMatch>;
@@ -47,7 +51,7 @@ interface CliMatches {
  *
  * @example
  * ```typescript
- * import { getMatches } from 'tauri-plugin-cli-api';
+ * import { getMatches } from '@tauri-apps/plugin-cli';
  * const matches = await getMatches();
  * if (matches.subcommand?.name === 'run') {
  *   // `./your-app run $ARGS` was executed
@@ -61,10 +65,10 @@ interface CliMatches {
  * }
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function getMatches(): Promise<CliMatches> {
-  return await invoke("plugin:cli|cli_matches");
+  return await window.__TAURI_INVOKE__("plugin:cli|cli_matches");
 }
 
 export type { ArgMatch, SubcommandMatch, CliMatches };

@@ -1,6 +1,8 @@
-// Copyright 2021 Tauri Programme within The Commons Conservancy
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
+
+#![cfg(not(any(target_os = "android", target_os = "ios")))]
 
 mod auth;
 mod error;
@@ -65,6 +67,7 @@ fn verify_signature(
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     PluginBuilder::new("authenticator")
+        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
             init_auth,
             register,

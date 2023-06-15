@@ -1,3 +1,8 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
+use config::{Config, HttpAllowlistScope};
 pub use reqwest as client;
 use tauri::{
     plugin::{Builder, TauriPlugin},
@@ -7,6 +12,7 @@ use tauri::{
 use std::{collections::HashMap, sync::Mutex};
 
 mod commands;
+mod config;
 mod error;
 mod scope;
 
@@ -33,18 +39,25 @@ impl<R: Runtime, T: Manager<R>> HttpExt<R> for T {
     }
 }
 
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("http")
+pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
+    Builder::<R, Option<Config>>::new("http")
+        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
             commands::create_client,
             commands::drop_client,
             commands::request
         ])
-        .setup(|app, _api| {
+        .setup(|app, api| {
+            let default_scope = HttpAllowlistScope::default();
             app.manage(Http {
                 app: app.clone(),
                 clients: Default::default(),
-                scope: scope::Scope::new(&app.config().tauri.allowlist.http.scope),
+                scope: scope::Scope::new(
+                    api.config()
+                        .as_ref()
+                        .map(|c| &c.scope)
+                        .unwrap_or(&default_scope),
+                ),
             });
             Ok(())
         })

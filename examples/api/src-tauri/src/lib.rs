@@ -31,12 +31,16 @@ pub fn run() {
                 .level(log::LevelFilter::Info)
                 .build(),
         )
+        .plugin(tauri_plugin_app::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_clipboard::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_window::init())
         .setup(move |app| {
             #[cfg(desktop)]
             {
@@ -44,6 +48,8 @@ pub fn run() {
                 app.handle().plugin(tauri_plugin_cli::init())?;
                 app.handle()
                     .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
+                app.handle()
+                    .plugin(tauri_plugin_updater::Builder::new().build())?;
             }
 
             #[cfg(mobile)]

@@ -1,17 +1,21 @@
-// Copyright 2019-2021 Tauri Programme within The Commons Conservancy
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 export async function isEnabled(): Promise<boolean> {
-  return await invoke("plugin:autostart|is_enabled");
+  return await window.__TAURI_INVOKE__("plugin:autostart|is_enabled");
 }
 
 export async function enable(): Promise<void> {
-  await invoke("plugin:autostart|enable");
+  await window.__TAURI_INVOKE__("plugin:autostart|enable");
 }
 
 export async function disable(): Promise<void> {
-  await invoke("plugin:autostart|disable");
+  await window.__TAURI_INVOKE__("plugin:autostart|disable");
 }

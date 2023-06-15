@@ -1,4 +1,4 @@
-// Copyright 2021 Tauri Programme within The Commons Conservancy
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
@@ -7,7 +7,9 @@
     all(feature = "sqlite", feature = "postgres"),
     all(feature = "mysql", feature = "postgres")
 ))]
-compile_error!("Only one database driver can be enabled. Use `default-features = false` and set the feature flag for the driver of your choice.");
+compile_error!(
+    "Only one database driver can be enabled. Set the feature flag for the driver of your choice."
+);
 
 #[cfg(not(any(feature = "sqlite", feature = "mysql", feature = "postgres")))]
 compile_error!(
