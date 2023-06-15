@@ -5,10 +5,12 @@
 
   let scanning = false;
   let windowed = true;
+  let formats = ["QR_CODE"];
+  const supportedFormats = ["QR_CODE", "EAN_13"];
 
   function startScan() {
     scanning = true;
-    scan({ windowed })
+    scan({ windowed, formats })
       .then((res) => {
         scanning = false;
         onMessage(res);
@@ -25,6 +27,13 @@
     <div>
       <input type="checkbox" id="scanner-windowed" bind:checked={windowed} />
       <label for="scanner-windowed">Windowed</label>
+    </div>
+    <div>
+      <select class="input" id="format" multiple bind:value={formats}>
+        {#each supportedFormats as f}
+          <option value={f}>{f}</option>
+        {/each}
+      </select>
     </div>
     <button class="btn" type="button" on:click={startScan}>Scan</button>
   </div>

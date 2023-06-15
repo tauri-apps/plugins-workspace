@@ -174,12 +174,17 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
                     ContextCompat.getMainExecutor(activity),
                     this
                 )
-                camera = cameraProvider.bindToLifecycle(
-                    activity as LifecycleOwner,
-                    cameraSelector,
-                    preview,
-                    imageAnalysis
-                )
+
+                try {
+                    camera = cameraProvider.bindToLifecycle(
+                        activity as LifecycleOwner,
+                        cameraSelector,
+                        preview,
+                        imageAnalysis
+                    )
+                } catch (e: Exception) {
+                    // TODO
+                }
             }
     }
 
@@ -281,11 +286,20 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
                         val barcode = barcodes[0]
                         val bounds = barcode.boundingBox
                         val rawValue = barcode.rawValue ?: ""
+                        val rawFormat = barcode.format
+                        var format: String? = null
 
-                        // add vibration logic here
+                        for (entry in supportedFormats.entries) {
+                            if (entry.value == rawFormat) {
+                                format = entry.key
+                                break
+                            }
+                        }
+
                         val s = bounds?.flattenToString()
                         val jsObject = JSObject()
                         jsObject.put("content", rawValue)
+                        jsObject.put("format", format)
                         jsObject.put("bounds", s)
 
                         savedInvoke?.resolve(jsObject)

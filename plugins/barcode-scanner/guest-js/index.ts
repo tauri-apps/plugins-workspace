@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/tauri";
 
-type PermissionState = "granted" | "denied";
+type PermissionState = "granted" | "denied" | "default";
 
 type Format =
   | "QR_CODE"
@@ -30,6 +30,7 @@ interface PrepareOptions {
 
 interface Scanned {
   content: string;
+  format: Format;
   bounds: unknown;
 }
 
