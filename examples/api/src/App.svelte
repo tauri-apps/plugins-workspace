@@ -354,7 +354,7 @@
 <!-- Sidebar toggle, only visible on small screens -->
 <div
   id="sidebarToggle"
-  class="z-2000 display-none lt-sm:flex justify-center items-center absolute top-2 left-2 w-8 h-8 rd-8
+  class="z-2000 sidebar-toggle display-none lt-sm:flex justify-center absolute items-center w-8 h-8 rd-8
             bg-accent dark:bg-darkAccent active:bg-accentDark dark:active:bg-darkAccentDark"
 >
   {#if isSideBarOpen}
