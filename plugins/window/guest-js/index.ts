@@ -22,9 +22,7 @@ import type {
   EventCallback,
   UnlistenFn,
 } from "@tauri-apps/api/event";
-import { TauriEvent } from "@tauri-apps/api/event";
-// TODO: use from @tauri-apps/api v2
-import { emit, listen, once } from "./event";
+import { TauriEvent, emit, listen, once } from "@tauri-apps/api/event";
 
 declare global {
   interface Window {
@@ -320,7 +318,7 @@ class WebviewWindowHandle {
         listeners.splice(listeners.indexOf(handler), 1);
       });
     }
-    return listen(event, this.label, handler);
+    return listen(event, handler, { target: this.label });
   }
 
   /**
@@ -352,7 +350,7 @@ class WebviewWindowHandle {
         listeners.splice(listeners.indexOf(handler), 1);
       });
     }
-    return once(event, this.label, handler);
+    return once(event, handler, { target: this.label });
   }
 
   /**
@@ -374,7 +372,7 @@ class WebviewWindowHandle {
       }
       return Promise.resolve();
     }
-    return emit(event, this.label, payload);
+    return emit(event, payload, { target: this.label });
   }
 
   /** @ignore */
