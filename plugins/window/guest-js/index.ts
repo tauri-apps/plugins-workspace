@@ -9,7 +9,7 @@
  *
  * Events can be listened to using `appWindow.listen`:
  * ```typescript
- * import { appWindow } from "@tauri-apps/window";
+ * import { appWindow } from "@tauri-apps/plugin-window";
  * appWindow.listen("my-window-event", ({ event, payload }) => { });
  * ```
  *
@@ -22,9 +22,7 @@ import type {
   EventCallback,
   UnlistenFn,
 } from "@tauri-apps/api/event";
-import { TauriEvent } from "@tauri-apps/api/event";
-// TODO: use from @tauri-apps/api v2
-import { emit, listen, once } from "./event";
+import { TauriEvent, emit, listen, once } from "@tauri-apps/api/event";
 
 declare global {
   interface Window {
@@ -320,7 +318,7 @@ class WebviewWindowHandle {
         listeners.splice(listeners.indexOf(handler), 1);
       });
     }
-    return listen(event, this.label, handler);
+    return listen(event, handler, { target: this.label });
   }
 
   /**
@@ -352,7 +350,7 @@ class WebviewWindowHandle {
         listeners.splice(listeners.indexOf(handler), 1);
       });
     }
-    return once(event, this.label, handler);
+    return once(event, handler, { target: this.label });
   }
 
   /**
@@ -374,7 +372,7 @@ class WebviewWindowHandle {
       }
       return Promise.resolve();
     }
-    return emit(event, this.label, payload);
+    return emit(event, payload, { target: this.label });
   }
 
   /** @ignore */
@@ -1396,7 +1394,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @example
    * ```typescript
-   * import { appWindow } from "@tauri-apps/window";
+   * import { appWindow } from "@tauri-apps/plugin-window";
    * const unlisten = await appWindow.onResized(({ payload: size }) => {
    *  console.log('Window resized', size);
    * });
@@ -1422,7 +1420,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @example
    * ```typescript
-   * import { appWindow } from "@tauri-apps/window";
+   * import { appWindow } from "@tauri-apps/plugin-window";
    * const unlisten = await appWindow.onMoved(({ payload: position }) => {
    *  console.log('Window moved', position);
    * });
@@ -1448,7 +1446,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @example
    * ```typescript
-   * import { appWindow } from "@tauri-apps/window";
+   * import { appWindow } from "@tauri-apps/plugin-window";
    * import { confirm } from '@tauri-apps/api/dialog';
    * const unlisten = await appWindow.onCloseRequested(async (event) => {
    *   const confirmed = await confirm('Are you sure?');
@@ -1487,7 +1485,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @example
    * ```typescript
-   * import { appWindow } from "@tauri-apps/window";
+   * import { appWindow } from "@tauri-apps/plugin-window";
    * const unlisten = await appWindow.onFocusChanged(({ payload: focused }) => {
    *  console.log('Focus changed, window is focused? ' + focused);
    * });
@@ -1529,7 +1527,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @example
    * ```typescript
-   * import { appWindow } from "@tauri-apps/window";
+   * import { appWindow } from "@tauri-apps/plugin-window";
    * const unlisten = await appWindow.onScaleChanged(({ payload }) => {
    *  console.log('Scale changed', payload.scaleFactor, payload.size);
    * });
@@ -1557,7 +1555,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @example
    * ```typescript
-   * import { appWindow } from "@tauri-apps/window";
+   * import { appWindow } from "@tauri-apps/plugin-window";
    * const unlisten = await appWindow.onMenuClicked(({ payload: menuId }) => {
    *  console.log('Menu clicked: ' + menuId);
    * });
@@ -1582,7 +1580,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @example
    * ```typescript
-   * import { appWindow } from "@tauri-apps/window";
+   * import { appWindow } from "@tauri-apps/plugin-window";
    * const unlisten = await appWindow.onFileDropEvent((event) => {
    *  if (event.payload.type === 'hover') {
    *    console.log('User hovering', event.payload.paths);
@@ -1638,7 +1636,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * @example
    * ```typescript
-   * import { appWindow } from "@tauri-apps/window";
+   * import { appWindow } from "@tauri-apps/plugin-window";
    * const unlisten = await appWindow.onThemeChanged(({ payload: theme }) => {
    *  console.log('New theme: ' + theme);
    * });
