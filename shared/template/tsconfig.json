@@ -1,1 +1,4 @@
-../tsconfig.json
+{
+  "extends": "../../tsconfig.base.json",
+  "include": ["guest-js/*.ts"]
+}
