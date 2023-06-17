@@ -9,8 +9,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-alpha.4",
-    "@zerodevx/svelte-json-view": "0.2.1",
+    "@tauri-apps/api": "2.0.0-alpha.5",
     "@tauri-apps/plugin-app": "2.0.0-alpha.0",
     "@tauri-apps/plugin-cli": "2.0.0-alpha.0",
     "@tauri-apps/plugin-clipboard-manager": "2.0.0-alpha.0",
@@ -23,16 +22,18 @@
     "@tauri-apps/plugin-process": "2.0.0-alpha.0",
     "@tauri-apps/plugin-shell": "2.0.0-alpha.0",
     "@tauri-apps/plugin-updater": "2.0.0-alpha.0",
-    "@tauri-apps/plugin-window": "2.0.0-alpha.0"
+    "@tauri-apps/plugin-window": "2.0.0-alpha.0",
+    "@zerodevx/svelte-json-view": "1.0.5"
   },
   "devDependencies": {
-    "@iconify-json/codicon": "^1.1.10",
-    "@iconify-json/ph": "^1.1.1",
-    "@sveltejs/vite-plugin-svelte": "^1.0.1",
-    "@tauri-apps/cli": "2.0.0-alpha.9",
-    "internal-ip": "^7.0.0",
-    "svelte": "^3.49.0",
-    "unocss": "^0.39.3",
-    "vite": "^3.0.9"
+    "@iconify-json/codicon": "^1.1.26",
+    "@iconify-json/ph": "^1.1.5",
+    "@sveltejs/vite-plugin-svelte": "^2.4.1",
+    "@tauri-apps/cli": "2.0.0-alpha.10",
+    "@unocss/extractor-svelte": "^0.53.1",
+    "internal-ip": "^8.0.0",
+    "svelte": "^3.59.1",
+    "unocss": "^0.53.1",
+    "vite": "^4.3.9"
   }
 }
