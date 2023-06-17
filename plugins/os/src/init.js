@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-if (!("os" in window.__TAURI__)) {
-  window.__TAURI__.os = {};
-}
+__RAW_global_os_api__
 
 // eslint-disable-next-line
 window.__TAURI__.os.__eol = __TEMPLATE_eol__;

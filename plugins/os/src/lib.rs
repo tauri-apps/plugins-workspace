@@ -5,6 +5,7 @@
 use std::fmt::Display;
 
 pub use os_info::Version;
+use serialize_to_javascript::{default_template, DefaultTemplate, Template};
 use tauri::{
     plugin::{Builder, TauriPlugin},
     Runtime,
@@ -90,17 +91,28 @@ pub fn hostname() -> String {
     gethostname::gethostname().to_string_lossy().to_string()
 }
 
+#[derive(Template)]
+#[default_template("./init.js")]
+struct InitJavascript {
+    #[raw]
+    global_os_api: &'static str,
+    eol: &'static str,
+}
+
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    let mut init_script = String::new();
-    init_script.push_str(include_str!("api-iife.js"));
-    #[cfg(windows)]
-    let eol = "\r\n";
-    #[cfg(not(windows))]
-    let eol = "\n";
-    init_script.push_str(&include_str!("init.js").replace("__TEMPLATE_eol__", eol));
+    let init_js = InitJavascript {
+        global_os_api: include_str!("api-iife.js"),
+        #[cfg(windows)]
+        eol: "\r\n",
+        #[cfg(not(windows))]
+        eol: "\n",
+    }
+    .render_default(&Default::default())
+    // this will never fail with the above global_os_api eol values
+    .unwrap();
 
     Builder::new("os")
-        .js_init_script(init_script)
+        .js_init_script(init_js.to_string())
         .invoke_handler(tauri::generate_handler![
             commands::platform,
             commands::version,
