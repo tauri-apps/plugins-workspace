@@ -55,7 +55,7 @@ impl Default for StateFlags {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 struct WindowState {
     width: f64,
     height: f64,
@@ -65,6 +65,21 @@ struct WindowState {
     visible: bool,
     decorated: bool,
     fullscreen: bool,
+}
+
+impl Default for WindowState {
+    fn default() -> Self {
+        Self {
+            width: Default::default(),
+            height: Default::default(),
+            x: Default::default(),
+            y: Default::default(),
+            maximized: Default::default(),
+            visible: true,
+            decorated: true,
+            fullscreen: Default::default(),
+        }
+    }
 }
 
 struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
@@ -177,7 +192,7 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
 
             if flags.contains(StateFlags::DECORATIONS) {
-                metadata.visible = self.is_visible()?;
+                metadata.decorated = self.is_decorated()?;
             }
 
             if flags.contains(StateFlags::FULLSCREEN) {
