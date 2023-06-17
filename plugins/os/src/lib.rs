@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{fmt::Display, path::PathBuf};
+use std::fmt::Display;
 
 pub use os_info::Version;
 use tauri::{
@@ -15,62 +15,79 @@ mod error;
 
 pub use error::Error;
 
-pub enum Kind {
+pub enum OsType {
     Linux,
     Windows,
-    Darwin,
+    Macos,
     IOS,
     Android,
 }
 
-impl Display for Kind {
+impl Display for OsType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Linux => write!(f, "Linux"),
-            Self::Windows => write!(f, "Linux_NT"),
-            Self::Darwin => write!(f, "Darwin"),
-            Self::IOS => write!(f, "iOS"),
-            Self::Android => write!(f, "Android"),
+            Self::Linux => write!(f, "linux"),
+            Self::Windows => write!(f, "windows"),
+            Self::Macos => write!(f, "macos"),
+            Self::IOS => write!(f, "ios"),
+            Self::Android => write!(f, "android"),
         }
     }
 }
 
+/// Returns a string describing the specific operating system in use, see [std::env::consts::OS].
 pub fn platform() -> &'static str {
-    match std::env::consts::OS {
-        "windows" => "win32",
-        "macos" => "darwin",
-        _ => std::env::consts::OS,
-    }
+    std::env::consts::OS
 }
 
+/// Returns the current operating system version.
 pub fn version() -> Version {
     os_info::get().version().clone()
 }
 
-pub fn kind() -> Kind {
-    #[cfg(target_os = "linux")]
-    return Kind::Linux;
+/// Returns the current operating system type.
+pub fn type_() -> OsType {
+    #[cfg(any(
+        target_os = "linux",
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "openbsd"
+    ))]
+    return OsType::Linux;
     #[cfg(target_os = "windows")]
-    return Kind::Windows;
+    return OsType::Windows;
     #[cfg(target_os = "macos")]
-    return Kind::Darwin;
+    return OsType::Macos;
     #[cfg(target_os = "ios")]
-    return Kind::IOS;
+    return OsType::IOS;
     #[cfg(target_os = "android")]
-    return Kind::Android;
+    return OsType::Android;
 }
 
+/// Returns the current operating system family, see [std::env::consts::FAMILY].
+pub fn family() -> &'static str {
+    std::env::consts::FAMILY
+}
+
+/// Returns the current operating system architecture, see [std::env::consts::ARCH].
 pub fn arch() -> &'static str {
     std::env::consts::ARCH
 }
 
-pub fn tempdir() -> PathBuf {
-    std::env::temp_dir()
+/// Returns the file extension, if any, used for executable binaries on this platform. Example value is `exe`, see [std::env::consts::EXE_EXTENSION].
+pub fn exe_extension() -> &'static str {
+    std::env::consts::EXE_EXTENSION
 }
 
-/// Returns the locale with the `BCP-47` language tag. If the locale couldn’t be obtained, `None` is returned instead.
+/// Returns the current operating system locale with the `BCP-47` language tag. If the locale couldn’t be obtained, `None` is returned instead.
 pub fn locale() -> Option<String> {
     sys_locale::get_locale()
+}
+
+/// Returns the current operating system hostname.
+pub fn hostname() -> String {
+    gethostname::gethostname().to_string_lossy().to_string()
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
@@ -79,10 +96,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .invoke_handler(tauri::generate_handler![
             commands::platform,
             commands::version,
-            commands::kind,
+            commands::os_type,
+            commands::family,
             commands::arch,
-            commands::tempdir,
-            commands::locale
+            commands::exe_extension,
+            commands::locale,
+            commands::hostname
         ])
         .build()
 }
