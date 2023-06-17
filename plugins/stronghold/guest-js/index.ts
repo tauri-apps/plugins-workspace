@@ -239,6 +239,8 @@ class ProcedureExecutor {
    * Gets the Ed25519 public key of a SLIP10 private key.
    * @param privateKeyLocation The location of the private key. Must be the `outputLocation` of a previous call to `deriveSLIP10`.
    * @returns A promise resolving to the public key hex string.
+   *
+   * @since 2.0.0
    */
   async getEd25519PublicKey(privateKeyLocation: Location): Promise<Uint8Array> {
     return await window
@@ -260,6 +262,8 @@ class ProcedureExecutor {
    * @param privateKeyLocation The location of the record where the private key is stored. Must be the `outputLocation` of a previous call to `deriveSLIP10`.
    * @param msg The message to sign.
    * @returns A promise resolving to the signature hex string.
+   *
+   * @since 2.0.0
    */
   async signEd25519(
     privateKeyLocation: Location,
@@ -422,21 +426,22 @@ export class Stronghold {
    * @param path
    * @param password
    */
-  constructor(path: string, password: string) {
+  private constructor(path: string) {
     this.path = path;
-    void this.reload(password);
   }
 
   /**
-   * Force a reload of the snapshot. The password must match.
+   * Load the snapshot if it exists (password must match), or start a fresh stronghold instance otherwise.
    * @param password
    * @returns
    */
-  private async reload(password: string): Promise<void> {
-    return await window.__TAURI_INVOKE__("plugin:stronghold|initialize", {
-      snapshotPath: this.path,
-      password,
-    });
+  static async load(path: string, password: string): Promise<Stronghold> {
+    return await window
+      .__TAURI_INVOKE__("plugin:stronghold|initialize", {
+        snapshotPath: path,
+        password,
+      })
+      .then(() => new Stronghold(path));
   }
 
   /**

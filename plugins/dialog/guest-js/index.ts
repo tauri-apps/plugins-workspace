@@ -23,7 +23,7 @@ interface FileResponse {
 /**
  * Extension filters for the file dialog.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface DialogFilter {
   /** Filter name. */
@@ -41,7 +41,7 @@ interface DialogFilter {
 /**
  * Options for the open dialog.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface OpenDialogOptions {
   /** The title of the dialog window. */
@@ -64,7 +64,7 @@ interface OpenDialogOptions {
 /**
  * Options for the save dialog.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface SaveDialogOptions {
   /** The title of the dialog window. */
@@ -80,7 +80,7 @@ interface SaveDialogOptions {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface MessageDialogOptions {
   /** The title of the dialog. Defaults to the app name. */
@@ -164,7 +164,7 @@ async function open(
  *
  * @returns A promise resolving to the selected path(s)
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function open(
   options: OpenDialogOptions = {}
@@ -198,7 +198,7 @@ async function open(
  *
  * @returns A promise resolving to the selected path.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function save(options: SaveDialogOptions = {}): Promise<string | null> {
   if (typeof options === "object") {
@@ -222,7 +222,7 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  *
  */
 async function message(
@@ -252,7 +252,7 @@ async function message(
  *
  * @returns A promise resolving to a boolean indicating whether `Yes` was clicked or not.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function ask(
   message: string,
@@ -282,7 +282,7 @@ async function ask(
  *
  * @returns A promise resolving to a boolean indicating whether `Ok` was clicked or not.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function confirm(
   message: string,

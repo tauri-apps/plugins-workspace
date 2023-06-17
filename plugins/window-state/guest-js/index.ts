@@ -34,15 +34,17 @@ export enum StateFlags {
 /**
  *  Save the state of all open windows to disk.
  */
-async function saveWindowState(flags: StateFlags) {
-  window.__TAURI_INVOKE__("plugin:window-state|save_window_state", { flags });
+async function saveWindowState(flags: StateFlags): Promise<void> {
+  return window.__TAURI_INVOKE__("plugin:window-state|save_window_state", {
+    flags,
+  });
 }
 
 /**
  *  Restore the state for the specified window from disk.
  */
-async function restoreState(label: string, flags: StateFlags) {
-  window.__TAURI_INVOKE__("plugin:window-state|restore_state", {
+async function restoreState(label: string, flags: StateFlags): Promise<void> {
+  return window.__TAURI_INVOKE__("plugin:window-state|restore_state", {
     label,
     flags,
   });
@@ -51,8 +53,8 @@ async function restoreState(label: string, flags: StateFlags) {
 /**
  *  Restore the state for the current window from disk.
  */
-async function restoreStateCurrent(flags: StateFlags) {
-  restoreState(window.__TAURI_METADATA__.__currentWindow.label, flags);
+async function restoreStateCurrent(flags: StateFlags): Promise<void> {
+  return restoreState(window.__TAURI_METADATA__.__currentWindow.label, flags);
 }
 
 export { restoreState, restoreStateCurrent, saveWindowState };

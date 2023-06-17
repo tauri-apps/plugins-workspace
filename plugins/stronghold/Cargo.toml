@@ -1,13 +1,11 @@
 [package]
 name = "tauri-plugin-stronghold"
-version = "1.0.0"
+version = "2.0.0-alpha.0"
 description = "Store secrets and keys using the IOTA Stronghold encrypted database."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 serde = { workspace = true }
@@ -16,9 +14,9 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 iota_stronghold = "1"
-iota-crypto = "0.17"
+iota-crypto = "0.20"
 hex = "0.4"
-zeroize = { version = "1", features = ["zeroize_derive"] }
+zeroize = { version = "1", features = [ "zeroize_derive" ] }
 
 [dev-dependencies]
 rand = "0.8"

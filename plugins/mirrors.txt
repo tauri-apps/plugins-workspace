@@ -2,12 +2,13 @@ app
 authenticator
 autostart
 cli
-clipboard
+clipboard-manager
 dialog
 fs
 global-shortcut
 http
 log
+notification
 os
 positioner
 process

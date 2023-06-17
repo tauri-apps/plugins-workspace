@@ -1,4 +1,9 @@
 {
   "tag": "alpha",
-  "changes": []
+  "changes": [
+    ".changes/notification-init-script.md",
+    ".changes/notification-sound.md",
+    ".changes/stronghold-constructor.md",
+    ".changes/v2-alpha.md"
+  ]
 }

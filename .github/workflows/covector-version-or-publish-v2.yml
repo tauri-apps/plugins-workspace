@@ -33,6 +33,11 @@ jobs:
           version: 7.x.x
           run_install: true
 
+      - name: install webkit2gtk and libudev for [authenticator]
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libudev-dev
+
       - name: cargo login
         run: cargo login ${{ secrets.ORG_CRATES_IO_TOKEN }}
 
@@ -42,7 +47,7 @@ jobs:
           git config --global user.email "${{ github.event.pusher.email }}"
 
       - name: covector version or publish (publish when no change files present)
-        uses: jbolda/covector/packages/action@covector-v0.8
+        uses: jbolda/covector/packages/action@covector-v0
         id: covector
         env:
           NODE_AUTH_TOKEN: ${{ secrets.ORG_NPM_TOKEN }}
@@ -59,5 +64,5 @@ jobs:
           title: "Publish New Versions (v2)"
           commit-message: "publish new versions"
           labels: "version updates"
-          branch: "release"
+          branch: "release-v2"
           body: ${{ steps.covector.outputs.change }}

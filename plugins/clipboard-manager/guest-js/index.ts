@@ -25,14 +25,14 @@ type ClipResponse = Clip<"PlainText", string>;
  * Writes plain text to the clipboard.
  * @example
  * ```typescript
- * import { writeText, readText } from '@tauri-apps/plugin-clipboard';
+ * import { writeText, readText } from '@tauri-apps/plugin-clipboard-manager';
  * await writeText('Tauri is awesome!');
  * assert(await readText(), 'Tauri is awesome!');
  * ```
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0.
+ * @since 2.0.0
  */
 async function writeText(
   text: string,
@@ -53,10 +53,10 @@ async function writeText(
  * Gets the clipboard content as plain text.
  * @example
  * ```typescript
- * import { readText } from '@tauri-apps/plugin-clipboard';
+ * import { readText } from '@tauri-apps/plugin-clipboard-manager';
  * const clipboardText = await readText();
  * ```
- * @since 1.0.0.
+ * @since 2.0.0
  */
 async function readText(): Promise<string> {
   const kind: ClipResponse = await window.__TAURI_INVOKE__(

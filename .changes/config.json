@@ -3,12 +3,12 @@
   "pkgManagers": {
     "javascript": {
       "version": true,
-      "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.js npm ${ pkgFile.pkg.name } ${ pkgFile.pkg.version }",
+      "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.cjs npm ${ pkgFile.pkg.name } ${ pkgFile.pkg.version }",
       "publish": ["pnpm build", "pnpm publish --access public --no-git-checks"]
     },
     "rust": {
       "version": true,
-      "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.js cargo ${ pkgFile.pkg.package.name } ${ pkgFile.pkg.package.version }",
+      "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.cjs cargo ${ pkgFile.pkg.package.name } ${ pkgFile.pkg.package.version }",
       "publish": [
         {
           "command": "cargo package --no-verify",
@@ -112,12 +112,21 @@
       "manager": "javascript"
     },
 
-    "clipboard": {
-      "path": "./plugins/clipboard",
+    "clipboard-manager": {
+      "path": "./plugins/clipboard-manager",
       "manager": "rust"
     },
-    "clipboard-js": {
-      "path": "./plugins/clipboard",
+    "clipboard-manager-js": {
+      "path": "./plugins/clipboard-manager",
+      "manager": "javascript"
+    },
+
+    "fs": {
+      "path": "./plugins/fs",
+      "manager": "rust"
+    },
+    "fs-js": {
+      "path": "./plugins/fs",
       "manager": "javascript"
     },
 
@@ -128,15 +137,6 @@
     },
     "dialog-js": {
       "path": "./plugins/dialog",
-      "manager": "javascript"
-    },
-
-    "fs": {
-      "path": "./plugins/fs",
-      "manager": "rust"
-    },
-    "fs-js": {
-      "path": "./plugins/fs",
       "manager": "javascript"
     },
 
@@ -231,7 +231,28 @@
 
     "sql": {
       "path": "./plugins/sql",
-      "manager": "rust"
+      "manager": "rust",
+      "publish": [
+        {
+          "command": "cargo package --no-verify",
+          "dryRunCommand": true
+        },
+        {
+          "command": "echo '<details>\n<summary><em><h4>Cargo Publish</h4></em></summary>\n\n```'",
+          "dryRunCommand": true,
+          "pipe": true
+        },
+        {
+          "command": "cargo publish --features sqlite",
+          "dryRunCommand": "cargo publish --features sqlite --dry-run",
+          "pipe": true
+        },
+        {
+          "command": "echo '```\n\n</details>\n'",
+          "dryRunCommand": true,
+          "pipe": true
+        }
+      ]
     },
     "sql-js": {
       "path": "./plugins/sql",

@@ -1,6 +1,7 @@
 [package]
 name = "tauri-plugin-shell"
-version = "1.0.0"
+version = "2.0.0-alpha.0"
+description = "Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }

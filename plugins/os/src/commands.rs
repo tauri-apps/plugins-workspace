@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::path::PathBuf;
-
 #[tauri::command]
 pub fn platform() -> &'static str {
     crate::platform()
@@ -15,8 +13,13 @@ pub fn version() -> String {
 }
 
 #[tauri::command]
-pub fn kind() -> String {
-    crate::kind().to_string()
+pub fn os_type() -> String {
+    crate::type_().to_string()
+}
+
+#[tauri::command]
+pub fn family() -> &'static str {
+    crate::family()
 }
 
 #[tauri::command]
@@ -25,6 +28,16 @@ pub fn arch() -> &'static str {
 }
 
 #[tauri::command]
-pub fn tempdir() -> PathBuf {
-    crate::tempdir()
+pub fn exe_extension() -> &'static str {
+    crate::exe_extension()
+}
+
+#[tauri::command]
+pub fn locale() -> Option<String> {
+    crate::locale()
+}
+
+#[tauri::command]
+pub fn hostname() -> String {
+    crate::hostname()
 }
