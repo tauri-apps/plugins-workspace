@@ -1,4 +1,4 @@
-# Operating System
+![plugin-os](banner.png)
 
 Read information about the operating system.
 
