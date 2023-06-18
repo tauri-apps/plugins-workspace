@@ -5298,6 +5298,7 @@ dependencies = [
  "os_info",
  "serde",
  "serde_json",
+ "serialize-to-javascript",
  "sys-locale",
  "tauri",
  "thiserror",
