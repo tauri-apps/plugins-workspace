@@ -969,6 +969,30 @@ class WindowManager extends WebviewWindowHandle {
   }
 
   /**
+   * Set window effects.
+   *
+   * @since 2.0
+   */
+  async setEffects(effects: Effects): Promise<void> {
+    return window.__TAURI_INVOKE__("plugin:window|set_effects", {
+      label: this.label,
+      value: effects,
+    });
+  }
+
+  /**
+   * Clear any applied effects if possible.
+   *
+   * @since 2.0
+   */
+  async clearEffects(): Promise<void> {
+    return window.__TAURI_INVOKE__("plugin:window|set_effects", {
+      label: this.label,
+      value: null,
+    });
+  }
+
+  /**
    * Whether the window should always be on top of other windows.
    * @example
    * ```typescript
@@ -1817,6 +1841,174 @@ if ("__TAURI_METADATA__" in window) {
 }
 
 /**
+ * an array RGBA colors. Each value has minimum of 0 and maximum of 255.
+ *
+ * @since 2.0
+ */
+type Color = [number, number, number, number];
+
+/**
+ * Platform-specific window effects
+ *
+ * @since 2.0
+ */
+enum Effect {
+  /**
+   * A default material appropriate for the view's effectiveAppearance.  **macOS 10.14-**
+   *
+   * @deprecated since macOS 10.14. You should instead choose an appropriate semantic material.
+   */
+  AppearanceBased = "appearanceBased",
+  /**
+   *  **macOS 10.14-**
+   *
+   * @deprecated since macOS 10.14. Use a semantic material instead.
+   */
+  Light = "light",
+  /**
+   *  **macOS 10.14-**
+   *
+   * @deprecated since macOS 10.14. Use a semantic material instead.
+   */
+  Dark = "dark",
+  /**
+   *  **macOS 10.14-**
+   *
+   * @deprecated since macOS 10.14. Use a semantic material instead.
+   */
+  MediumLight = "mediumLight",
+  /**
+   *  **macOS 10.14-**
+   *
+   * @deprecated since macOS 10.14. Use a semantic material instead.
+   */
+  UltraDark = "ultraDark",
+  /**
+   *  **macOS 10.10+**
+   */
+  Titlebar = "titlebar",
+  /**
+   *  **macOS 10.10+**
+   */
+  Selection = "selection",
+  /**
+   *  **macOS 10.11+**
+   */
+  Menu = "menu",
+  /**
+   *  **macOS 10.11+**
+   */
+  Popover = "popover",
+  /**
+   *  **macOS 10.11+**
+   */
+  Sidebar = "sidebar",
+  /**
+   *  **macOS 10.14+**
+   */
+  HeaderView = "headerView",
+  /**
+   *  **macOS 10.14+**
+   */
+  Sheet = "sheet",
+  /**
+   *  **macOS 10.14+**
+   */
+  WindowBackground = "windowBackground",
+  /**
+   *  **macOS 10.14+**
+   */
+  HudWindow = "hudWindow",
+  /**
+   *  **macOS 10.14+**
+   */
+  FullScreenUI = "fullScreenUI",
+  /**
+   *  **macOS 10.14+**
+   */
+  Tooltip = "tooltip",
+  /**
+   *  **macOS 10.14+**
+   */
+  ContentBackground = "contentBackground",
+  /**
+   *  **macOS 10.14+**
+   */
+  UnderWindowBackground = "underWindowBackground",
+  /**
+   *  **macOS 10.14+**
+   */
+  UnderPageBackground = "underPageBackground",
+  /**
+   *  **Windows 11 Only**
+   */
+  Mica = "mica",
+  /**
+   * **Windows 7/10/11(22H1) Only**
+   *
+   * ## Notes
+   *
+   * This effect has bad performance when resizing/dragging the window on Windows 11 build 22621.
+   */
+  Blur = "blur",
+  /**
+   * **Windows 10/11**
+   *
+   * ## Notes
+   *
+   * This effect has bad performance when resizing/dragging the window on Windows 10 v1903+ and Windows 11 build 22000.
+   */
+  Acrylic = "acrylic",
+}
+
+/**
+ * Window effect state **macOS only**
+ *
+ * @see https://developer.apple.com/documentation/appkit/nsvisualeffectview/state
+ *
+ * @since 2.0
+ */
+enum EffectState {
+  /**
+   *  Make window effect state follow the window's active state **macOS only**
+   */
+  FollowsWindowActiveState = "followsWindowActiveState",
+  /**
+   *  Make window effect state always active **macOS only**
+   */
+  Active = "active",
+  /**
+   *  Make window effect state always inactive **macOS only**
+   */
+  Inactive = "inactive",
+}
+
+/** The window effects configuration object
+ *
+ * @since 2.0
+ */
+interface Effects {
+  /**
+   *  List of Window effects to apply to the Window.
+   * Conflicting effects will apply the first one and ignore the rest.
+   */
+  effects: Effect[];
+  /**
+   * Window effect state **macOS Only**
+   */
+  state?: EffectState;
+  /**
+   * Window effect corner radius **macOS Only**
+   */
+  radius?: number;
+  /**
+   *  Window effect color. Affects {@link Effects.Blur} and {@link Effects.Acrylic} only
+   * on Windows 10 v1903+. Doesn't have any effect on Windows 7 or Windows 11.
+   */
+  color?: Color;
+}
+
+/**
  * Configuration for the window to create.
  *
  * @since 2.0.0
@@ -1923,6 +2115,14 @@ interface WindowOptions {
    * The user agent for the webview.
    */
   userAgent?: string;
+  /**
+   * Whether or not the webview should be launched in incognito mode.
+   *
+   * #### Platform-specific
+   *
+   * - **Android:** Unsupported.
+   */
+  incognito?: boolean;
 }
 
 function mapMonitor(m: Monitor | null): Monitor | null {
@@ -2007,6 +2207,8 @@ export {
   LogicalPosition,
   PhysicalPosition,
   UserAttentionType,
+  Effect,
+  EffectState,
   currentMonitor,
   primaryMonitor,
   availableMonitors,
@@ -2019,4 +2221,5 @@ export type {
   ScaleFactorChanged,
   FileDropEvent,
   WindowOptions,
+  Color,
 };

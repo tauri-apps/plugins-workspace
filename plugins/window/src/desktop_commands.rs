@@ -4,8 +4,9 @@
 
 use serde::{Deserialize, Serialize, Serializer};
 use tauri::{
-    utils::config::WindowConfig, AppHandle, CursorIcon, Icon, Manager, Monitor, PhysicalPosition,
-    PhysicalSize, Position, Runtime, Size, Theme, UserAttentionType, Window,
+    utils::config::{WindowConfig, WindowEffectsConfig},
+    AppHandle, CursorIcon, Icon, Manager, Monitor, PhysicalPosition, PhysicalSize, Position,
+    Runtime, Size, Theme, UserAttentionType, Window,
 };
 
 #[derive(Debug, thiserror::Error)]
@@ -134,6 +135,7 @@ setter!(hide);
 setter!(close);
 setter!(set_decorations, bool);
 setter!(set_shadow, bool);
+setter!(set_effects, Option<WindowEffectsConfig>);
 setter!(set_always_on_top, bool);
 setter!(set_content_protected, bool);
 setter!(set_size, Size);
