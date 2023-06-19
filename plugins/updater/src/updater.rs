@@ -172,7 +172,7 @@ impl UpdaterBuilder {
         // `target` is the `{{target}}` variable we replace in the endpoint
         // `json_target` is the value we search if the updater server returns a JSON with the `platforms` object
         (self.updater.target, self.updater.json_target) = match self.target {
-            Some(target) => (target.clone(), target.clone()),
+            Some(target) => (target.clone(), target),
             None => {
                 let target = get_updater_target().ok_or(Error::UnsupportedOs)?;
                 (target.to_string(), format!("{target}-{arch}"))
@@ -288,7 +288,7 @@ impl Updater {
         // Extracted remote metadata
         let release = remote_release.ok_or(Error::ReleaseNotFound)?;
 
-        let should_update = match self.version_comparator.as_ref().take() {
+        let should_update = match self.version_comparator.as_ref() {
             Some(comparator) => comparator(self.current_version.clone(), release.clone()),
             None => release.version > self.current_version,
         };
@@ -301,7 +301,7 @@ impl Updater {
                 target: self.target.clone(),
                 extract_path: self.extract_path.clone(),
                 version: release.version.to_string(),
-                date: release.pub_date.clone(),
+                date: release.pub_date,
                 download_url: release.download_url(&self.json_target)?.to_owned(),
                 body: release.notes.clone(),
                 signature: release.signature(&self.json_target)?.to_owned(),
@@ -421,6 +421,11 @@ impl Update {
     ) -> Result<()> {
         let bytes = self.download(on_chunk, on_download_finish).await?;
         self.install(bytes)
+    }
+
+    #[cfg(any(target_os = "android", target_os = "ios"))]
+    fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
+        Ok(())
     }
 
     // Windows
@@ -654,7 +659,7 @@ impl Update {
                     return Err(err.into());
                 }
 
-                extracted_files.push(extraction_path);
+                extracted_files.push(extraction_path.to_path_buf());
             }
         }
 
@@ -736,7 +741,7 @@ pub fn extract_path_from_executable(
     // This is where our APPIMAGE should sit and should be replaced
     #[cfg(target_os = "linux")]
     if let Some(app_image_path) = _app_image_path {
-        return Ok(PathBuf::from(app_image_path));
+        return Ok(app_image_path);
     }
 
     Ok(extract_path)
