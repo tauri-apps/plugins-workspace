@@ -1,4 +1,4 @@
-# App
+![plugin-app](banner.png)
 
 This plugin provides APIs to read application metadata and macOS app visibility functions.
 
