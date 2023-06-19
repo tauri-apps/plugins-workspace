@@ -1,4 +1,4 @@
-# Window
+![plugin-window](banner.png)
 
 Interact with the Tauri window.
 

@@ -9,3 +9,4 @@ The os plugin is recieving a few changes to improve consistency and add new feat
 - Added `family()`,`exe_extension()`, and `hostname()` functions and their equivalents for JS.
 - Removed `tempdir()` function and its equivalent on JS, use `std::env::temp_dir` instead of `temp_dir` from `tauri::path::PathResolver::temp_dir` and `path.tempDir` on JS.
 - Modified `platform()` implementation to return `windows` instead of `win32` and `macos` instead of `darwin` to align with Rust's `std::env::consts::OS`
+- `EOL` const in JS has been modified into a function `eol()` fix import issues in frameworks like `next.js`
