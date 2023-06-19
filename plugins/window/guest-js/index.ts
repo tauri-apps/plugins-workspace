@@ -664,7 +664,7 @@ class WindowManager extends WebviewWindowHandle {
    *
    * #### Platform-specific
    *
-   * - **Linux / iOS / Android:** Unsupported.
+   * - **iOS / Android:** Unsupported.
    *
    * @example
    * ```typescript
