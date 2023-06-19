@@ -311,6 +311,7 @@ impl Updater {
                 config: self.config.clone(),
                 target: self.target.clone(),
                 extract_path: self.extract_path.clone(),
+                installer_args: self.installer_args.clone(),
                 version: release.version.to_string(),
                 date: release.pub_date,
                 download_url: release.download_url(&self.json_target)?.to_owned(),
@@ -343,6 +344,8 @@ pub struct Update {
     /// Extract path
     #[allow(unused)]
     extract_path: PathBuf,
+    #[allow(unused)]
+    installer_args: Vec<String>,
     /// Download URL announced
     pub download_url: Url,
     /// Signature announced
