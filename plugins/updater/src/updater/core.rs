@@ -756,11 +756,7 @@ fn copy_files_and_run<R: Read + Seek>(
                 .arg(
                     [
                         config.tauri.bundle.updater.windows.install_mode.nsis_args(),
-                        config
-                            .tauri
-                            .bundle
-                            .updater
-                            .windows
+                        updater_config
                             .installer_args
                             .iter()
                             .map(AsRef::as_ref)
@@ -770,6 +766,7 @@ fn copy_files_and_run<R: Read + Seek>(
                     .concat()
                     .join(", "),
                 )
+                .spawn()
                 .expect("installer failed to start");
 
             exit(0);
