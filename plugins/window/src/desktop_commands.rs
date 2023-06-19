@@ -112,6 +112,7 @@ getter!(outer_size, PhysicalSize<u32>);
 getter!(is_fullscreen, bool);
 getter!(is_minimized, bool);
 getter!(is_maximized, bool);
+getter!(is_focused, bool);
 getter!(is_decorated, bool);
 getter!(is_resizable, bool);
 getter!(is_maximizable, bool);

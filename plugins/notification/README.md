@@ -1,4 +1,4 @@
-# Notification
+![plugin-notification](banner.png)
 
 Send message notifications (brief auto-expiring OS window element) to your user. Can also be used with the Notification Web API.
 

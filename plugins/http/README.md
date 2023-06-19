@@ -1,4 +1,4 @@
-# HTTP
+![plugin-http](banner.png)
 
 Access the HTTP client written in Rust.
 

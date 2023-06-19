@@ -1,4 +1,4 @@
-# File System
+![plugin-fs](banner.png)
 
 Access the file system.
 
