@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 use http::{header, HeaderName, HeaderValue, Method, StatusCode};
+use reqwest::redirect::Policy;
 use tauri::{command, AppHandle, Runtime};
 
 use crate::{Error, FetchRequest, FetchResponse, HttpExt, RequestId};
@@ -16,6 +17,8 @@ pub(crate) async fn fetch<R: Runtime>(
     url: String,
     headers: Vec<(String, String)>,
     data: Option<Vec<u8>>,
+    connect_timeout: u64,
+    max_redirections: usize,
 ) -> crate::Result<RequestId> {
     let url = url::Url::parse(&url)?;
     let scheme = url.scheme();
@@ -25,7 +28,11 @@ pub(crate) async fn fetch<R: Runtime>(
     match scheme {
         "http" | "https" => {
             if app.http().scope.is_allowed(&url) {
-                let mut request = reqwest::Client::new().request(method.clone(), url);
+                let mut request = reqwest::ClientBuilder::new()
+                    .connect_timeout(Duration::from_millis(connect_timeout))
+                    .redirect(Policy::limited(max_redirections))
+                    .build()?
+                    .request(method.clone(), url);
 
                 for (key, value) in &headers {
                     let name = HeaderName::from_bytes(key.as_bytes())?;

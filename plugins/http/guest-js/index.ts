@@ -31,6 +31,21 @@ declare global {
 }
 
 /**
+ * Options to configure the Rust client used to make fetch requests
+ *
+ * @since 2.0.0
+ */
+export interface ClientOptions {
+  /**
+   * Defines the maximum number of redirects the client should follow.
+   * If set to 0, no redirects will be followed.
+   */
+  maxRedirections?: number;
+  /** Timeout in milliseconds */
+  connectTimeout?: number;
+}
+
+/**
  * Fetch a resource from the network. It returns a `Promise` that resolves to the
  * `Response` to that `Request`, whether it is successful or not.
  *
@@ -41,11 +56,22 @@ declare global {
  * console.log(response.statusText); // e.g. "OK"
  * const jsonData = await response.json();
  * ```
+ *
+ * @since 2.0.0
  */
-async function fetch(
+export async function fetch(
   input: URL | Request | string,
-  init?: RequestInit
+  init?: RequestInit & ClientOptions
 ): Promise<Response> {
+  const maxRedirections = init?.maxRedirections;
+  const connectTimeout = init?.maxRedirections;
+
+  // Remove these fields before creating the request
+  if (init) {
+    init.maxRedirections = undefined;
+    init.connectTimeout = undefined;
+  }
+
   const req = new Request(input, init);
   const buffer = await req.arrayBuffer();
   const reqData = buffer.byteLength ? Array.from(new Uint8Array(buffer)) : null;
@@ -56,6 +82,8 @@ async function fetch(
     url: req.url,
     headers: Array.from(req.headers.entries()),
     data: reqData,
+    maxRedirections,
+    connectTimeout,
   });
 
   req.signal.addEventListener("abort", () => {
@@ -87,5 +115,3 @@ async function fetch(
 
   return res;
 }
-
-export { fetch };
