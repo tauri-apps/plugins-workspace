@@ -653,7 +653,7 @@ impl Update {
                 let extraction_path = &self.extract_path.join(collected_path);
 
                 // if something went wrong during the extraction, we should restore previous app
-                if let Err(err) = entry.unpack(&extraction_path) {
+                if let Err(err) = entry.unpack(extraction_path) {
                     for file in &extracted_files {
                         // delete all the files we extracted
                         if file.is_dir() {
