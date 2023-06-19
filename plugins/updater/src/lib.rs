@@ -63,11 +63,13 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
         let version = app.package_info().version.clone();
         let updater_config = app.config().tauri.bundle.updater.clone();
         let UpdaterState { config, target } = self.state::<UpdaterState>().inner();
-        #[allow(unused_mut)]
+
         let mut builder = UpdaterBuilder::new(version, config.clone(), updater_config);
+
         if let Some(target) = target {
             builder = builder.target(target);
         }
+
         #[cfg(any(
             target_os = "linux",
             target_os = "dragonfly",
@@ -78,9 +80,10 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
         {
             let env = app.env();
             if let Some(appimage) = env.appimage {
-                builder = builder.app_image_path(appimage);
+                builder = builder.executable_path(appimage);
             }
         }
+
         builder
     }
 

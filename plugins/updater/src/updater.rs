@@ -85,10 +85,16 @@ impl RemoteRelease {
 }
 
 pub struct UpdaterBuilder {
-    updater: Updater,
-    target: Option<String>,
+    current_version: Version,
+    config: crate::Config,
+    updater_config: UpdaterConfig,
+    version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
     executable_path: Option<PathBuf>,
-    app_image_path: Option<PathBuf>,
+    target: Option<String>,
+    endpoints: Option<Vec<Url>>,
+    headers: HeaderMap,
+    timeout: Option<Duration>,
+    installer_args: Option<Vec<String>>,
 }
 
 impl UpdaterBuilder {
@@ -98,10 +104,16 @@ impl UpdaterBuilder {
         updater_config: UpdaterConfig,
     ) -> Self {
         Self {
-            updater: Updater::new(current_version, config, updater_config),
-            target: Default::default(),
-            executable_path: Default::default(),
-            app_image_path: Default::default(),
+            current_version,
+            config,
+            updater_config,
+            version_comparator: None,
+            executable_path: None,
+            target: None,
+            endpoints: None,
+            headers: Default::default(),
+            timeout: None,
+            installer_args: None,
         }
     }
 
@@ -109,24 +121,25 @@ impl UpdaterBuilder {
         mut self,
         f: F,
     ) -> Self {
-        self.updater.version_comparator = Some(Box::new(f));
+        self.version_comparator = Some(Box::new(f));
         self
     }
 
     pub fn target(mut self, target: impl Into<String>) -> Self {
-        self.target = Some(target.into());
+        self.target.replace(target.into());
         self
     }
 
     pub fn endpoints(mut self, endpoints: Vec<Url>) -> Self {
-        self.updater.endpoints = endpoints;
+        self.endpoints.replace(endpoints);
         self
     }
 
     pub fn executable_path<P: AsRef<Path>>(mut self, p: P) -> Self {
-        self.executable_path = Some(PathBuf::from(p.as_ref()));
+        self.executable_path.replace(p.as_ref().into());
         self
     }
+
     pub fn header<K, V>(mut self, key: K, value: V) -> Result<Self>
     where
         HeaderName: TryFrom<K>,
@@ -137,17 +150,13 @@ impl UpdaterBuilder {
         let key: std::result::Result<HeaderName, http::Error> = key.try_into().map_err(Into::into);
         let value: std::result::Result<HeaderValue, http::Error> =
             value.try_into().map_err(Into::into);
-        self.updater.headers_map.insert(key?, value?);
+        self.headers.insert(key?, value?);
+
         Ok(self)
     }
 
     pub fn timeout(mut self, timeout: Duration) -> Self {
-        self.updater.timeout = Some(timeout);
-        self
-    }
-
-    pub fn app_image_path<P: AsRef<Path>>(mut self, p: P) -> Self {
-        self.app_image_path = Some(PathBuf::from(p.as_ref()));
+        self.timeout = Some(timeout);
         self
     }
 
@@ -156,71 +165,74 @@ impl UpdaterBuilder {
         I: IntoIterator<Item = S>,
         S: Into<String>,
     {
-        self.updater.config.installer_args = args.into_iter().map(Into::into).collect();
+        self.installer_args
+            .replace(args.into_iter().map(Into::into).collect());
         self
     }
 
-    pub fn build(mut self) -> Result<Updater> {
-        if self.updater.endpoints.is_empty() {
+    pub fn build(self) -> Result<Updater> {
+        let endpoints = self
+            .endpoints
+            .unwrap_or_else(|| self.config.endpoints.into_iter().map(|e| e.0).collect());
+
+        if endpoints.is_empty() {
             return Err(Error::EmptyEndpoints);
+        };
+
+        let arch = get_updater_arch().ok_or(Error::UnsupportedArch)?;
+        let (target, json_target) = if let Some(target) = self.target {
+            (target.clone(), target)
+        } else {
+            let target = get_updater_target().ok_or(Error::UnsupportedOs)?;
+            (target.to_string(), format!("{target}-{arch}"))
         };
 
         let executable_path = self.executable_path.clone().unwrap_or(current_exe()?);
 
-        let arch = get_updater_arch().ok_or(Error::UnsupportedArch)?;
-
-        // `target` is the `{{target}}` variable we replace in the endpoint
-        // `json_target` is the value we search if the updater server returns a JSON with the `platforms` object
-        (self.updater.target, self.updater.json_target) = match self.target {
-            Some(target) => (target.clone(), target),
-            None => {
-                let target = get_updater_target().ok_or(Error::UnsupportedOs)?;
-                (target.to_string(), format!("{target}-{arch}"))
-            }
+        // Get the extract_path from the provided executable_path
+        let extract_path = if cfg!(target_os = "linux") {
+            executable_path
+        } else {
+            extract_path_from_executable(&executable_path)?
         };
 
-        // Get the extract_path from the provided executable_path
-        self.updater.extract_path =
-            extract_path_from_executable(&executable_path, self.app_image_path)?;
-
-        Ok(self.updater)
+        Ok(Updater {
+            config: self.updater_config,
+            current_version: self.current_version,
+            version_comparator: self.version_comparator,
+            timeout: self.timeout,
+            endpoints,
+            installer_args: self.installer_args.unwrap_or(self.config.installer_args),
+            arch,
+            target,
+            json_target,
+            headers: self.headers,
+            extract_path,
+        })
     }
 }
 
 pub struct Updater {
+    config: UpdaterConfig,
     current_version: Version,
     version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
     timeout: Option<Duration>,
     endpoints: Vec<Url>,
-    arch: String,
+    #[allow(dead_code)]
+    installer_args: Vec<String>,
+    arch: &'static str,
+    // The `{{target}}` variable we replace in the endpoint
     target: String,
+    // The value we search if the updater server returns a JSON with the `platforms` object
     json_target: String,
-    headers_map: HeaderMap,
+    headers: HeaderMap,
     extract_path: PathBuf,
-    config: crate::Config,
-    updater_config: UpdaterConfig,
 }
 
 impl Updater {
-    fn new(current_version: Version, config: crate::Config, updater_config: UpdaterConfig) -> Self {
-        Self {
-            current_version,
-            version_comparator: Default::default(),
-            timeout: Default::default(),
-            endpoints: Default::default(),
-            arch: Default::default(),
-            target: Default::default(),
-            headers_map: Default::default(),
-            extract_path: Default::default(),
-            json_target: Default::default(),
-            config,
-            updater_config,
-        }
-    }
-
     pub async fn check(&self) -> Result<Option<Update>> {
         // we want JSON only
-        let mut headers = self.headers_map.clone();
+        let mut headers = self.headers.clone();
         headers.insert("Accept", HeaderValue::from_str("application/json").unwrap());
 
         // Set SSL certs for linux if they aren't available.
@@ -248,7 +260,7 @@ impl Updater {
                 .to_string()
                 .replace("{{current_version}}", &self.current_version.to_string())
                 .replace("{{target}}", &self.target)
-                .replace("{{arch}}", &self.arch)
+                .replace("{{arch}}", self.arch)
                 .parse()?;
 
             let mut request = Client::new().get(url).headers(headers.clone());
@@ -295,9 +307,8 @@ impl Updater {
 
         let update = if should_update {
             Some(Update {
-                config: self.config.clone(),
                 current_version: self.current_version.to_string(),
-                updater_config: self.updater_config.clone(),
+                config: self.config.clone(),
                 target: self.target.clone(),
                 extract_path: self.extract_path.clone(),
                 version: release.version.to_string(),
@@ -306,7 +317,7 @@ impl Updater {
                 body: release.notes.clone(),
                 signature: release.signature(&self.json_target)?.to_owned(),
                 timeout: self.timeout,
-                headers: self.headers_map.clone(),
+                headers: self.headers.clone(),
             })
         } else {
             None
@@ -318,9 +329,7 @@ impl Updater {
 
 #[derive(Debug, Clone)]
 pub struct Update {
-    #[allow(unused)]
-    config: crate::Config,
-    updater_config: UpdaterConfig,
+    config: UpdaterConfig,
     /// Update description
     pub body: Option<String>,
     /// Version used to check for update
@@ -399,11 +408,7 @@ impl Update {
 
         let mut update_buffer = Cursor::new(&buffer);
 
-        verify_signature(
-            &mut update_buffer,
-            &self.signature,
-            &self.updater_config.pubkey,
-        )?;
+        verify_signature(&mut update_buffer, &self.signature, &self.config.pubkey)?;
 
         Ok(buffer)
     }
@@ -475,8 +480,8 @@ impl Update {
             if found_path.extension() == Some(OsStr::new("exe")) {
                 // Run the EXE
                 Command::new(found_path)
-                    .args(self.updater_config.windows.install_mode.nsis_args())
-                    .args(&self.config.installer_args)
+                    .args(self.config.windows.install_mode.nsis_args())
+                    .args(&self.installer_args)
                     .spawn()
                     .expect("installer failed to start");
 
@@ -494,7 +499,7 @@ impl Update {
                 msi_path_arg.push("\"\"\"");
 
                 let msiexec_args = self
-                    .updater_config
+                    .config
                     .windows
                     .install_mode
                     .msiexec_args()
@@ -595,7 +600,7 @@ impl Update {
 
                     // extract the buffer to the tmp_dir
                     // we extract our signed archive into our final directory without any temp file
-                    let mut archive = tar::Archive::new(archive.clone());
+                    let mut archive = tar::Archive::new(archive);
                     for mut entry in archive.entries()?.flatten() {
                         if let Ok(path) = entry.path() {
                             if path.extension() == Some(OsStr::new("AppImage")) {
@@ -609,6 +614,8 @@ impl Update {
                             }
                         }
                     }
+
+                    return Ok(());
                 }
             }
         }
@@ -707,10 +714,7 @@ pub(crate) fn get_updater_arch() -> Option<&'static str> {
     }
 }
 
-pub fn extract_path_from_executable(
-    executable_path: &Path,
-    _app_image_path: Option<PathBuf>,
-) -> Result<PathBuf> {
+pub fn extract_path_from_executable(executable_path: &Path) -> Result<PathBuf> {
     // Return the path of the current executable by default
     // Example C:\Program Files\My App\
     let extract_path = executable_path
@@ -735,13 +739,6 @@ pub fn extract_path_from_executable(
             .parent()
             .map(PathBuf::from)
             .ok_or(Error::FailedToDetermineExtractPath);
-    }
-
-    // We should use APPIMAGE exposed env variable
-    // This is where our APPIMAGE should sit and should be replaced
-    #[cfg(target_os = "linux")]
-    if let Some(app_image_path) = _app_image_path {
-        return Ok(app_image_path);
     }
 
     Ok(extract_path)
