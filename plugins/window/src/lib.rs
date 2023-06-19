@@ -40,6 +40,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         desktop_commands::is_fullscreen,
                         desktop_commands::is_minimized,
                         desktop_commands::is_maximized,
+                        desktop_commands::is_focused,
                         desktop_commands::is_decorated,
                         desktop_commands::is_resizable,
                         desktop_commands::is_visible,
