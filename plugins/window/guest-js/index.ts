@@ -706,8 +706,8 @@ class Window {
    * Gets the window's current focus state.
    * @example
    * ```typescript
-   * import { appWindow } from '@tauri-apps/plugin-window';
-   * const focused = await appWindow.isFocused();
+   * import { getCurrent } from '@tauri-apps/plugin-window';
+   * const focused = await getCurrent().isFocused();
    * ```
    *
    * @returns Whether the window is focused or not.
@@ -765,8 +765,8 @@ class Window {
    *
    * @example
    * ```typescript
-   * import { appWindow } from '@tauri-apps/plugin-window';
-   * const maximizable = await appWindow.isMaximizable();
+   * import { getCurrent } from '@tauri-apps/plugin-window';
+   * const maximizable = await getCurrent().isMaximizable();
    * ```
    *
    * @returns Whether the window's native maximize button is enabled or not.
@@ -786,8 +786,8 @@ class Window {
    *
    * @example
    * ```typescript
-   * import { appWindow } from '@tauri-apps/plugin-window';
-   * const minimizable = await appWindow.isMinimizable();
+   * import { getCurrent } from '@tauri-apps/plugin-window';
+   * const minimizable = await getCurrent().isMinimizable();
    * ```
    *
    * @returns Whether the window's native minimize button is enabled or not.
@@ -807,8 +807,8 @@ class Window {
    *
    * @example
    * ```typescript
-   * import { appWindow } from '@tauri-apps/plugin-window';
-   * const closable = await appWindow.isClosable();
+   * import { getCurrent } from '@tauri-apps/plugin-window';
+   * const closable = await getCurrent().isClosable();
    * ```
    *
    * @returns Whether the window's native close button is enabled or not.
@@ -969,8 +969,8 @@ class Window {
    *
    * @example
    * ```typescript
-   * import { appWindow } from '@tauri-apps/plugin-window';
-   * await appWindow.setMaximizable(false);
+   * import { getCurrent } from '@tauri-apps/plugin-window';
+   * await getCurrent().setMaximizable(false);
    * ```
    *
    * @param maximizable
@@ -992,8 +992,8 @@ class Window {
    *
    * @example
    * ```typescript
-   * import { appWindow } from '@tauri-apps/plugin-window';
-   * await appWindow.setMinimizable(false);
+   * import { getCurrent } from '@tauri-apps/plugin-window';
+   * await getCurrent().setMinimizable(false);
    * ```
    *
    * @param minimizable
@@ -1016,8 +1016,8 @@ class Window {
    *
    * @example
    * ```typescript
-   * import { appWindow } from '@tauri-apps/plugin-window';
-   * await appWindow.setClosable(false);
+   * import { getCurrent } from '@tauri-apps/plugin-window';
+   * await getCurrent().setClosable(false);
    * ```
    *
    * @param closable
