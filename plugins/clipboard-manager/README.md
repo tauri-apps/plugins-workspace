@@ -1,4 +1,4 @@
-# Clipboard Manager
+![plugin-clipboard-manager](banner.png)
 
 Read and write to the system clipboard.
 

@@ -39,3 +39,19 @@ code.code-block {
     transform: translateX(var(--translate-x));
   }
 }
+
+.sidebar-toggle {
+  margin-top: 0.5rem;
+  margin-left: 0.5rem;
+}
+
+body {
+  overflow: hidden;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+#sidebar,
+#console {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 24px);
+}
