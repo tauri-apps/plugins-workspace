@@ -755,9 +755,10 @@ fn copy_files_and_run<R: Read + Seek>(
                 .arg("-ArgumentList")
                 .arg(
                     [
-                        config.tauri.updater.windows.install_mode.nsis_args(),
+                        config.tauri.bundle.updater.windows.install_mode.nsis_args(),
                         config
                             .tauri
+                            .bundle
                             .updater
                             .windows
                             .installer_args
