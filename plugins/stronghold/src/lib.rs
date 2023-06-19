@@ -22,6 +22,9 @@ use tauri::{
 };
 use zeroize::Zeroize;
 
+#[cfg(feature = "kdf")]
+pub mod kdf;
+
 pub mod stronghold;
 
 type PasswordHashFn = dyn Fn(&str) -> Vec<u8> + Send + Sync;
