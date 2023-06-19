@@ -2,6 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/shell/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/shell)
+//! 
+//! Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application.
+
+#![doc(
+    html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
+    html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
+)]
+
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},

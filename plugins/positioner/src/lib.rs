@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/positioner/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/positioner)
+//! 
 //! A plugin for Tauri that helps position your windows at well-known locations.
 //!
 //! # Cargo features
@@ -10,6 +12,11 @@
 //! - **system-tray**: Enables system-tray-relative positions.
 //!   
 //!   Note: This requires attaching the Tauri plugin, *even* when using the trait extension only.
+
+#![doc(
+    html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
+    html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
+)]
 
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 

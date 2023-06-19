@@ -2,6 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/notification/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/notification)
+//! 
+//! Send message notifications (brief auto-expiring OS window element) to your user. Can also be used with the Notification Web API.
+
+#![doc(
+    html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
+    html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
+)]
+
 use serde::Serialize;
 #[cfg(mobile)]
 use tauri::plugin::PluginHandle;
