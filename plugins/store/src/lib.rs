@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 //! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/store/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/store)
-//! 
+//!
 //! Simple, persistent key-value store.
 
 #![doc(

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 //! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/sql/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/sql)
-//! 
+//!
 //! Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx). It supports the `sqlite`, `mysql` and `postgres` drivers, enabled by a Cargo feature.
 
 #![doc(

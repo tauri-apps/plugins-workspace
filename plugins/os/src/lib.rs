@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 //! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/os/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/os)
-//! 
+//!
 //! Read information about the operating system.
 
 #![doc(

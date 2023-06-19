@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 //! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/log/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/log)
-//! 
+//!
 //! Logging for Tauri applications.
 
 #![doc(

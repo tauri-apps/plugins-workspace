@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 //! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/shell/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/shell)
-//! 
+//!
 //! Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application.
 
 #![doc(

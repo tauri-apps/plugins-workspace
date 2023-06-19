@@ -10,7 +10,6 @@
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
-
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 
 use auto_launch::{AutoLaunch, AutoLaunchBuilder};

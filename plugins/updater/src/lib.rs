@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: MIT
 
 //! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/updater/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/updater)
-//! 
+//!
 //! In-app updates for Tauri applications.
-//! 
+//!
 //! - Supported platforms: Windows, Linux and macOS.crypted database and secure runtime.
 
 #![doc(

@@ -5,7 +5,7 @@
 //! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/cli/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/cli)
 //!
 //! Parse arguments from your Command Line Interface.
-//! 
+//!
 //! - Supported platforms: Windows, Linux and macOS.
 
 #![doc(

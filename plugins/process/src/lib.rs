@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 //! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/process/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/process)
-//! 
+//!
 //! This plugin provides APIs to access the current process. To spawn child processes, see the [`shell`](https://github.com/tauri-apps/tauri-plugin-shell) plugin.
 
 #![doc(

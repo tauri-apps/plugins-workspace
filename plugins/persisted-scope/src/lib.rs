@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 //! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/persisted-scope/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/persisted-scope)
-//! 
+//!
 //! Save filesystem and asset scopes and restore them when the app is reopened.
 
 #![doc(
