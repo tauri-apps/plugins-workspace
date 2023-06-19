@@ -22,6 +22,9 @@ use tauri::{
 };
 use zeroize::Zeroize;
 
+#[cfg(feature = "kdf")]
+pub mod kdf;
+
 pub mod stronghold;
 
 type PasswordHashFn = dyn Fn(&str) -> Vec<u8> + Send + Sync;
@@ -405,15 +408,35 @@ impl Builder {
         }
     }
 
+    /// Initializes a stronghold plugin with argon2 as a default kdf
+    pub fn init_and_build_with_argon2<R: Runtime>() -> TauriPlugin<R> {
+        let plugin_builder = PluginBuilder::new("stronghold").setup(move |app| {
+            let app2 = app.clone();
+            app.manage(StrongholdCollection::default());
+            app.manage(PasswordHashFunction(Box::new(move |pwd: &str| {
+                kdf::KeyDerivation::argon2_with_config(pwd, &app2.config())
+            })));
+            Ok(())
+        });
+        Builder::invoke_stronghold_handlers_and_build(plugin_builder)
+    }
+
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let password_hash_function = self.password_hash_function;
 
-        PluginBuilder::new("stronghold")
-            .setup(move |app| {
-                app.manage(StrongholdCollection::default());
-                app.manage(PasswordHashFunction(password_hash_function));
-                Ok(())
-            })
+        let plugin_builder = PluginBuilder::new("stronghold").setup(move |app| {
+            app.manage(StrongholdCollection::default());
+            app.manage(PasswordHashFunction(password_hash_function));
+            Ok(())
+        });
+
+        Builder::invoke_stronghold_handlers_and_build(plugin_builder)
+    }
+
+    fn invoke_stronghold_handlers_and_build<R: Runtime>(
+        builder: PluginBuilder<R>,
+    ) -> TauriPlugin<R> {
+        builder
             .invoke_handler(tauri::generate_handler![
                 initialize,
                 destroy,
