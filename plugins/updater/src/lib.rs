@@ -4,7 +4,7 @@
 
 use tauri::{
     async_runtime::Mutex,
-    plugin::{Builder, TauriPlugin},
+    plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, Runtime,
 };
 
@@ -62,9 +62,12 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
         let app = self.app_handle();
         let version = app.package_info().version.clone();
         let updater_config = app.config().tauri.bundle.updater.clone();
-        let config = self.state::<Config>().inner();
+        let UpdaterState { config, target } = self.state::<UpdaterState>().inner();
         #[allow(unused_mut)]
         let mut builder = UpdaterBuilder::new(version, config.clone(), updater_config);
+        if let Some(target) = target {
+            builder = builder.target(target);
+        }
         #[cfg(any(
             target_os = "linux",
             target_os = "dragonfly",
@@ -86,17 +89,59 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
     }
 }
 
-pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
-    Builder::<R, Option<Config>>::new("updater")
-        .js_init_script(include_str!("api-iife.js").to_string())
-        .setup(move |app, api| {
-            app.manage(api.config().clone());
-            app.manage(PendingUpdate(Default::default()));
-            Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![
-            commands::check,
-            commands::download_and_install,
-        ])
-        .build()
+struct UpdaterState {
+    target: Option<String>,
+    config: Config,
+}
+
+#[derive(Default)]
+pub struct Builder {
+    target: Option<String>,
+    installer_args: Option<Vec<String>>,
+}
+
+impl Builder {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn target(mut self, target: impl Into<String>) -> Self {
+        self.target.replace(target.into());
+        self
+    }
+
+    pub fn installer_args<I, S>(mut self, args: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        self.installer_args
+            .replace(args.into_iter().map(Into::into).collect());
+        self
+    }
+
+    pub fn build<R: Runtime>(self) -> TauriPlugin<R, Config> {
+        let target = self.target;
+        let installer_args = self.installer_args;
+        PluginBuilder::<R, Config>::new("updater")
+            .js_init_script(include_str!("api-iife.js").to_string())
+            .setup(move |app, api| {
+                let mut config = api.config().clone();
+                if let Some(installer_args) = installer_args {
+                    config.installer_args = installer_args;
+                }
+                app.manage(UpdaterState { target, config });
+                app.manage(PendingUpdate(Default::default()));
+                Ok(())
+            })
+            .invoke_handler(tauri::generate_handler![
+                commands::check,
+                commands::download_and_install
+            ])
+            .build()
+    }
+}
+
+pub fn init<R: Runtime>() -> TauriPlugin<R, Config> {
+    Builder::new().build()
 }
