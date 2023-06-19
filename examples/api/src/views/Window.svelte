@@ -78,6 +78,9 @@
 
   let urlValue = "https://tauri.app";
   let resizable = true;
+  let maximizable = true;
+  let minimizable = true;
+  let closable = true;
   let maximized = false;
   let decorations = true;
   let alwaysOnTop = false;
@@ -231,6 +234,9 @@
     loadWindowSize();
   }
   $: windowMap[selectedWindow]?.setResizable(resizable);
+  $: windowMap[selectedWindow]?.setMaximizable(maximizable);
+  $: windowMap[selectedWindow]?.setMinimizable(minimizable);
+  $: windowMap[selectedWindow]?.setClosable(closable);
   $: maximized
     ? windowMap[selectedWindow]?.maximize()
     : windowMap[selectedWindow]?.unmaximize();
@@ -332,6 +338,18 @@
       <label>
         Resizable
         <input type="checkbox" bind:checked={resizable} />
+      </label>
+      <label>
+        Maximizable
+        <input type="checkbox" bind:checked={maximizable} />
+      </label>
+      <label>
+        Minimizable
+        <input type="checkbox" bind:checked={minimizable} />
+      </label>
+      <label>
+        Closable
+        <input type="checkbox" bind:checked={closable} />
       </label>
       <label>
         Has decorations
