@@ -2,6 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/cli/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/cli)
+//!
+//! Parse arguments from your Command Line Interface.
+//!
+//! - Supported platforms: Windows, Linux and macOS.
+
+#![doc(
+    html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
+    html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
+)]
+
 use tauri::{
     plugin::{Builder, PluginApi, TauriPlugin},
     AppHandle, Manager, Runtime, State,
