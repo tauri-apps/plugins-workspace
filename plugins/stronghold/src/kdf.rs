@@ -45,7 +45,7 @@ impl KeyDerivation {
 fn create_or_get_salt(salt: &mut [u8], salt_path: &PathBuf) {
     if salt_path.is_file() {
         // Get existing salt
-        let tmp = std::fs::read(&salt_path).unwrap();
+        let tmp = std::fs::read(salt_path).unwrap();
         salt.clone_from_slice(&tmp);
     } else {
         // Generate new salt
