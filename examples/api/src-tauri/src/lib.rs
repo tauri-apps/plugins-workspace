@@ -48,7 +48,8 @@ pub fn run() {
                 app.handle().plugin(tauri_plugin_cli::init())?;
                 app.handle()
                     .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
-                app.handle().plugin(tauri_plugin_updater::init())?;
+                app.handle()
+                    .plugin(tauri_plugin_updater::Builder::new().build())?;
             }
 
             let mut window_builder = WindowBuilder::new(app, "main", WindowUrl::default());

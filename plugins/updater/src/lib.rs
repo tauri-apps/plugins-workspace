@@ -144,7 +144,3 @@ impl Builder {
             .build()
     }
 }
-
-pub fn init<R: Runtime>() -> TauriPlugin<R, Config> {
-    Builder::new().build()
-}

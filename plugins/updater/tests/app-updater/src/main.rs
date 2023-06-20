@@ -11,7 +11,7 @@ fn main() {
     let mut context = tauri::generate_context!();
 
     tauri::Builder::default()
-        .plugin(tauri_plugin_updater::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             let handle = app.handle();
             tauri::async_runtime::spawn(async move {
