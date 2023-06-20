@@ -1,4 +1,4 @@
-# Updater
+![plugin-updater](banner.png)
 
 In-app updates for Tauri applications.
 

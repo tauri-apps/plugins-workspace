@@ -6,6 +6,8 @@
     UserAttentionType,
     PhysicalSize,
     PhysicalPosition,
+    Effect,
+    EffectState,
   } from "@tauri-apps/plugin-window";
   import { open as openDialog } from "@tauri-apps/plugin-dialog";
   import { open } from "@tauri-apps/plugin-shell";
@@ -57,12 +59,28 @@
     "rowResize",
   ];
 
+  const windowsEffects = ["mica", "blur", "acrylic"];
+  const isWindows = navigator.appVersion.includes("windows");
+  const isMacOS = navigator.appVersion.includes("macos");
+  let effectOptions = isWindows
+    ? windowsEffects
+    : Object.keys(Effect)
+        .map((effect) => Effect[effect])
+        .filter((e) => !windowsEffects.includes(e));
+  const effectStateOptions = Object.keys(EffectState).map(
+    (state) => EffectState[state]
+  );
+
   export let onMessage;
+  const mainEl = document.querySelector("main");
 
   let newWindowLabel;
 
   let urlValue = "https://tauri.app";
   let resizable = true;
+  let maximizable = true;
+  let minimizable = true;
+  let closable = true;
   let maximized = false;
   let decorations = true;
   let alwaysOnTop = false;
@@ -90,6 +108,12 @@
   let cursorIcon = "default";
   let cursorIgnoreEvents = false;
   let windowTitle = "Awesome Tauri Example!";
+
+  let effects = [];
+  let selectedEffect;
+  let effectState;
+  let effectRadius;
+  let effectR, effectG, effectB, effectA;
 
   function openUrl() {
     open(urlValue);
@@ -172,12 +196,47 @@
     await windowMap[selectedWindow].requestUserAttention(null);
   }
 
+  async function addEffect() {
+    if (!effects.includes(selectedEffect)) {
+      effects = [...effects, selectedEffect];
+    }
+
+    const payload = {
+      effects,
+      state: effectState,
+      radius: effectRadius,
+    };
+    if (
+      Number.isInteger(effectR) &&
+      Number.isInteger(effectG) &&
+      Number.isInteger(effectB) &&
+      Number.isInteger(effectA)
+    ) {
+      payload.color = [effectR, effectG, effectB, effectA];
+    }
+
+    mainEl.classList.remove("bg-primary");
+    mainEl.classList.remove("dark:bg-darkPrimary");
+    await windowMap[selectedWindow].clearEffects();
+    await windowMap[selectedWindow].setEffects(payload);
+  }
+
+  async function clearEffects() {
+    effects = [];
+    await windowMap[selectedWindow].clearEffects();
+    mainEl.classList.add("bg-primary");
+    mainEl.classList.add("dark:bg-darkPrimary");
+  }
+
   $: {
     windowMap[selectedWindow];
     loadWindowPosition();
     loadWindowSize();
   }
   $: windowMap[selectedWindow]?.setResizable(resizable);
+  $: windowMap[selectedWindow]?.setMaximizable(maximizable);
+  $: windowMap[selectedWindow]?.setMinimizable(minimizable);
+  $: windowMap[selectedWindow]?.setClosable(closable);
   $: maximized
     ? windowMap[selectedWindow]?.maximize()
     : windowMap[selectedWindow]?.unmaximize();
@@ -279,6 +338,18 @@
       <label>
         Resizable
         <input type="checkbox" bind:checked={resizable} />
+      </label>
+      <label>
+        Maximizable
+        <input type="checkbox" bind:checked={maximizable} />
+      </label>
+      <label>
+        Minimizable
+        <input type="checkbox" bind:checked={minimizable} />
+      </label>
+      <label>
+        Closable
+        <input type="checkbox" bind:checked={closable} />
       </label>
       <label>
         Has decorations
@@ -455,5 +526,88 @@
         <button class="btn" id="open-url"> Open URL </button>
       </form>
     </div>
+
+    <br />
+
+    {#if isWindows || isMacOS}
+      <div class="flex flex-col gap-1">
+        <div class="flex">
+          <label>
+            Effect
+            <select class="input" bind:value={selectedEffect}>
+              {#each effectOptions as effect}
+                <option value={effect}>{effect}</option>
+              {/each}
+            </select>
+          </label>
+
+          <label>
+            State
+            <select class="input" bind:value={effectState}>
+              {#each effectStateOptions as state}
+                <option value={state}>{state}</option>
+              {/each}
+            </select>
+          </label>
+
+          <label>
+            Radius
+            <input class="input" type="number" bind:value={effectRadius} />
+          </label>
+        </div>
+
+        <div class="flex">
+          <label>
+            Color
+            <div class="flex">
+              <input
+                style="max-width: 120px;"
+                class="input"
+                type="number"
+                placeholder="R"
+                bind:value={effectR}
+              />
+              <input
+                style="max-width: 120px;"
+                class="input"
+                type="number"
+                placeholder="G"
+                bind:value={effectG}
+              />
+              <input
+                style="max-width: 120px;"
+                class="input"
+                type="number"
+                placeholder="B"
+                bind:value={effectB}
+              />
+              <input
+                style="max-width: 120px;"
+                class="input"
+                type="number"
+                placeholder="A"
+                bind:value={effectA}
+              />
+            </div>
+          </label>
+        </div>
+
+        <div class="flex">
+          <button class="btn" style="width: 80px;" on:click={addEffect}
+            >Add</button
+          >
+        </div>
+
+        <div class="flex">
+          <div>
+            Applied effects: {effects.length ? effects.join(",") : "None"}
+          </div>
+
+          <button class="btn" style="width: 80px;" on:click={clearEffects}
+            >Clear</button
+          >
+        </div>
+      </div>
+    {/if}
   {/if}
 </div>

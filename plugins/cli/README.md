@@ -1,4 +1,4 @@
-# CLI
+![plugin-cli](banner.png)
 
 Parse arguments from your Command Line Interface.
 

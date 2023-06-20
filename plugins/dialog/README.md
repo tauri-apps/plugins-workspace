@@ -1,4 +1,4 @@
-# Dialog
+![plugin-dialog](banner.png)
 
 Native system dialogs for opening and saving files along with message dialogs.
 

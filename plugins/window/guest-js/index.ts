@@ -22,9 +22,7 @@ import type {
   EventCallback,
   UnlistenFn,
 } from "@tauri-apps/api/event";
-import { TauriEvent } from "@tauri-apps/api/event";
-// TODO: use from @tauri-apps/api v2
-import { emit, listen, once } from "./event";
+import { TauriEvent, emit, listen, once } from "@tauri-apps/api/event";
 
 declare global {
   interface Window {
@@ -320,7 +318,7 @@ class WebviewWindowHandle {
         listeners.splice(listeners.indexOf(handler), 1);
       });
     }
-    return listen(event, this.label, handler);
+    return listen(event, handler, { target: this.label });
   }
 
   /**
@@ -352,7 +350,7 @@ class WebviewWindowHandle {
         listeners.splice(listeners.indexOf(handler), 1);
       });
     }
-    return once(event, this.label, handler);
+    return once(event, handler, { target: this.label });
   }
 
   /**
@@ -374,7 +372,7 @@ class WebviewWindowHandle {
       }
       return Promise.resolve();
     }
-    return emit(event, this.label, payload);
+    return emit(event, payload, { target: this.label });
   }
 
   /** @ignore */
@@ -566,6 +564,24 @@ class WindowManager extends WebviewWindowHandle {
   }
 
   /**
+   * Gets the window's current focus state.
+   * @example
+   * ```typescript
+   * import { appWindow } from '@tauri-apps/plugin-window';
+   * const focused = await appWindow.isFocused();
+   * ```
+   *
+   * @returns Whether the window is focused or not.
+   *
+   * @since 2.0.0
+   * */
+  async isFocused(): Promise<boolean> {
+    return window.__TAURI_INVOKE__("plugin:window|is_focused", {
+      label: this.label,
+    });
+  }
+
+  /**
    * Gets the window's current decorated state.
    * @example
    * ```typescript
@@ -597,6 +613,69 @@ class WindowManager extends WebviewWindowHandle {
    *  */
   async isResizable(): Promise<boolean> {
     return window.__TAURI_INVOKE__("plugin:window|is_resizable", {
+      label: this.label,
+    });
+  }
+
+  /**
+   * Gets the window’s native maximize button state.
+   *
+   * #### Platform-specific
+   *
+   * - **Linux / iOS / Android:** Unsupported.
+   *
+   * @example
+   * ```typescript
+   * import { appWindow } from '@tauri-apps/plugin-window';
+   * const maximizable = await appWindow.isMaximizable();
+   * ```
+   *
+   * @returns Whether the window's native maximize button is enabled or not.
+   *  */
+  async isMaximizable(): Promise<boolean> {
+    return window.__TAURI_INVOKE__("plugin:window|is_maximizable", {
+      label: this.label,
+    });
+  }
+
+  /**
+   * Gets the window’s native minimize button state.
+   *
+   * #### Platform-specific
+   *
+   * - **Linux / iOS / Android:** Unsupported.
+   *
+   * @example
+   * ```typescript
+   * import { appWindow } from '@tauri-apps/plugin-window';
+   * const minimizable = await appWindow.isMinimizable();
+   * ```
+   *
+   * @returns Whether the window's native minimize button is enabled or not.
+   *  */
+  async isMinimizable(): Promise<boolean> {
+    return window.__TAURI_INVOKE__("plugin:window|is_minimizable", {
+      label: this.label,
+    });
+  }
+
+  /**
+   * Gets the window’s native close button state.
+   *
+   * #### Platform-specific
+   *
+   * - **iOS / Android:** Unsupported.
+   *
+   * @example
+   * ```typescript
+   * import { appWindow } from '@tauri-apps/plugin-window';
+   * const closable = await appWindow.isClosable();
+   * ```
+   *
+   * @returns Whether the window's native close button is enabled or not.
+   *  */
+  async isClosable(): Promise<boolean> {
+    return window.__TAURI_INVOKE__("plugin:window|is_closable", {
       label: this.label,
     });
   }
@@ -697,7 +776,7 @@ class WindowManager extends WebviewWindowHandle {
    * await appWindow.requestUserAttention();
    * ```
    *
-   * @param resizable
+   * @param requestType
    * @returns A promise indicating the success or failure of the operation.
    *
    * @since 2.0.0
@@ -737,6 +816,78 @@ class WindowManager extends WebviewWindowHandle {
     return window.__TAURI_INVOKE__("plugin:window|set_resizable", {
       label: this.label,
       value: resizable,
+    });
+  }
+
+  /**
+   * Sets whether the window's native maximize button is enabled or not.
+   * If resizable is set to false, this setting is ignored.
+   *
+   * #### Platform-specific
+   *
+   * - **macOS:** Disables the "zoom" button in the window titlebar, which is also used to enter fullscreen mode.
+   * - **Linux / iOS / Android:** Unsupported.
+   *
+   * @example
+   * ```typescript
+   * import { appWindow } from '@tauri-apps/plugin-window';
+   * await appWindow.setMaximizable(false);
+   * ```
+   *
+   * @param maximizable
+   * @returns A promise indicating the success or failure of the operation.
+   */
+  async setMaximizable(maximizable: boolean): Promise<void> {
+    return window.__TAURI_INVOKE__("plugin:window|set_maximizable", {
+      label: this.label,
+      value: maximizable,
+    });
+  }
+
+  /**
+   * Sets whether the window's native minimize button is enabled or not.
+   *
+   * #### Platform-specific
+   *
+   * - **Linux / iOS / Android:** Unsupported.
+   *
+   * @example
+   * ```typescript
+   * import { appWindow } from '@tauri-apps/plugin-window';
+   * await appWindow.setMinimizable(false);
+   * ```
+   *
+   * @param minimizable
+   * @returns A promise indicating the success or failure of the operation.
+   */
+  async setMinimizable(minimizable: boolean): Promise<void> {
+    return window.__TAURI_INVOKE__("plugin:window|set_minimizable", {
+      label: this.label,
+      value: minimizable,
+    });
+  }
+
+  /**
+   * Sets whether the window's native close button is enabled or not.
+   *
+   * #### Platform-specific
+   *
+   * - **Linux:** GTK+ will do its best to convince the window manager not to show a close button. Depending on the system, this function may not have any effect when called on a window that is already visible
+   * - **iOS / Android:** Unsupported.
+   *
+   * @example
+   * ```typescript
+   * import { appWindow } from '@tauri-apps/plugin-window';
+   * await appWindow.setClosable(false);
+   * ```
+   *
+   * @param closable
+   * @returns A promise indicating the success or failure of the operation.
+   */
+  async setClosable(closable: boolean): Promise<void> {
+    return window.__TAURI_INVOKE__("plugin:window|set_closable", {
+      label: this.label,
+      value: closable,
     });
   }
 
@@ -949,6 +1100,30 @@ class WindowManager extends WebviewWindowHandle {
     return window.__TAURI_INVOKE__("plugin:window|set_shadow", {
       label: this.label,
       value: enable,
+    });
+  }
+
+  /**
+   * Set window effects.
+   *
+   * @since 2.0
+   */
+  async setEffects(effects: Effects): Promise<void> {
+    return window.__TAURI_INVOKE__("plugin:window|set_effects", {
+      label: this.label,
+      value: effects,
+    });
+  }
+
+  /**
+   * Clear any applied effects if possible.
+   *
+   * @since 2.0
+   */
+  async clearEffects(): Promise<void> {
+    return window.__TAURI_INVOKE__("plugin:window|set_effects", {
+      label: this.label,
+      value: null,
     });
   }
 
@@ -1757,6 +1932,27 @@ class WebviewWindow extends WindowManager {
     }
     return null;
   }
+
+  /**
+   *  Gets the focused window.
+   * @example
+   * ```typescript
+   * import { WebviewWindow } from '@tauri-apps/plugin-window';
+   * const focusedWindow = WebviewWindow.getFocusedWindow();
+   * ```
+   *
+   * @returns The WebviewWindow instance to communicate with the webview or `undefined` if there is not any focused window.
+   *
+   * @since 1.4
+   */
+  static async getFocusedWindow(): Promise<WebviewWindow | null> {
+    for (const w of getAll()) {
+      if (await w.isFocused()) {
+        return w;
+      }
+    }
+    return null;
+  }
 }
 
 /** The WebviewWindow for the current window. */
@@ -1777,6 +1973,174 @@ if ("__TAURI_METADATA__" in window) {
     // @ts-expect-error `skip` is not defined in the public API but it is handled by the constructor
     skip: true,
   });
+}
+
+/**
+ * an array RGBA colors. Each value has minimum of 0 and maximum of 255.
+ *
+ * @since 2.0
+ */
+type Color = [number, number, number, number];
+
+/**
+ * Platform-specific window effects
+ *
+ * @since 2.0
+ */
+enum Effect {
+  /**
+   * A default material appropriate for the view's effectiveAppearance.  **macOS 10.14-**
+   *
+   * @deprecated since macOS 10.14. You should instead choose an appropriate semantic material.
+   */
+  AppearanceBased = "appearanceBased",
+  /**
+   *  **macOS 10.14-**
+   *
+   * @deprecated since macOS 10.14. Use a semantic material instead.
+   */
+  Light = "light",
+  /**
+   *  **macOS 10.14-**
+   *
+   * @deprecated since macOS 10.14. Use a semantic material instead.
+   */
+  Dark = "dark",
+  /**
+   *  **macOS 10.14-**
+   *
+   * @deprecated since macOS 10.14. Use a semantic material instead.
+   */
+  MediumLight = "mediumLight",
+  /**
+   *  **macOS 10.14-**
+   *
+   * @deprecated since macOS 10.14. Use a semantic material instead.
+   */
+  UltraDark = "ultraDark",
+  /**
+   *  **macOS 10.10+**
+   */
+  Titlebar = "titlebar",
+  /**
+   *  **macOS 10.10+**
+   */
+  Selection = "selection",
+  /**
+   *  **macOS 10.11+**
+   */
+  Menu = "menu",
+  /**
+   *  **macOS 10.11+**
+   */
+  Popover = "popover",
+  /**
+   *  **macOS 10.11+**
+   */
+  Sidebar = "sidebar",
+  /**
+   *  **macOS 10.14+**
+   */
+  HeaderView = "headerView",
+  /**
+   *  **macOS 10.14+**
+   */
+  Sheet = "sheet",
+  /**
+   *  **macOS 10.14+**
+   */
+  WindowBackground = "windowBackground",
+  /**
+   *  **macOS 10.14+**
+   */
+  HudWindow = "hudWindow",
+  /**
+   *  **macOS 10.14+**
+   */
+  FullScreenUI = "fullScreenUI",
+  /**
+   *  **macOS 10.14+**
+   */
+  Tooltip = "tooltip",
+  /**
+   *  **macOS 10.14+**
+   */
+  ContentBackground = "contentBackground",
+  /**
+   *  **macOS 10.14+**
+   */
+  UnderWindowBackground = "underWindowBackground",
+  /**
+   *  **macOS 10.14+**
+   */
+  UnderPageBackground = "underPageBackground",
+  /**
+   *  **Windows 11 Only**
+   */
+  Mica = "mica",
+  /**
+   * **Windows 7/10/11(22H1) Only**
+   *
+   * ## Notes
+   *
+   * This effect has bad performance when resizing/dragging the window on Windows 11 build 22621.
+   */
+  Blur = "blur",
+  /**
+   * **Windows 10/11**
+   *
+   * ## Notes
+   *
+   * This effect has bad performance when resizing/dragging the window on Windows 10 v1903+ and Windows 11 build 22000.
+   */
+  Acrylic = "acrylic",
+}
+
+/**
+ * Window effect state **macOS only**
+ *
+ * @see https://developer.apple.com/documentation/appkit/nsvisualeffectview/state
+ *
+ * @since 2.0
+ */
+enum EffectState {
+  /**
+   *  Make window effect state follow the window's active state **macOS only**
+   */
+  FollowsWindowActiveState = "followsWindowActiveState",
+  /**
+   *  Make window effect state always active **macOS only**
+   */
+  Active = "active",
+  /**
+   *  Make window effect state always inactive **macOS only**
+   */
+  Inactive = "inactive",
+}
+
+/** The window effects configuration object
+ *
+ * @since 2.0
+ */
+interface Effects {
+  /**
+   *  List of Window effects to apply to the Window.
+   * Conflicting effects will apply the first one and ignore the rest.
+   */
+  effects: Effect[];
+  /**
+   * Window effect state **macOS Only**
+   */
+  state?: EffectState;
+  /**
+   * Window effect corner radius **macOS Only**
+   */
+  radius?: number;
+  /**
+   *  Window effect color. Affects {@link Effects.Blur} and {@link Effects.Acrylic} only
+   * on Windows 10 v1903+. Doesn't have any effect on Windows 7 or Windows 11.
+   */
+  color?: Color;
 }
 
 /**
@@ -1886,6 +2250,26 @@ interface WindowOptions {
    * The user agent for the webview.
    */
   userAgent?: string;
+  /**
+   * Whether or not the webview should be launched in incognito mode.
+   *
+   * #### Platform-specific
+   *
+   * - **Android:** Unsupported.
+   */
+  incognito?: boolean;
+  /**
+   * Whether the window's native maximize button is enabled or not. Defaults to `true`.
+   */
+  maximizable?: boolean;
+  /**
+   * Whether the window's native minimize button is enabled or not. Defaults to `true`.
+   */
+  minimizable?: boolean;
+  /**
+   * Whether the window's native close button is enabled or not. Defaults to `true`.
+   */
+  closable?: boolean;
 }
 
 function mapMonitor(m: Monitor | null): Monitor | null {
@@ -1970,6 +2354,8 @@ export {
   LogicalPosition,
   PhysicalPosition,
   UserAttentionType,
+  Effect,
+  EffectState,
   currentMonitor,
   primaryMonitor,
   availableMonitors,
@@ -1982,4 +2368,5 @@ export type {
   ScaleFactorChanged,
   FileDropEvent,
   WindowOptions,
+  Color,
 };

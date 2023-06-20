@@ -2,6 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/window-state/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/window-state)
+//!
+//! Save window positions and sizes and restore them when the app is reopened.
+
+#![doc(
+    html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
+    html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
+)]
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 
 use bitflags::bitflags;
@@ -55,7 +63,7 @@ impl Default for StateFlags {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 struct WindowState {
     width: f64,
     height: f64,
@@ -65,6 +73,21 @@ struct WindowState {
     visible: bool,
     decorated: bool,
     fullscreen: bool,
+}
+
+impl Default for WindowState {
+    fn default() -> Self {
+        Self {
+            width: Default::default(),
+            height: Default::default(),
+            x: Default::default(),
+            y: Default::default(),
+            maximized: Default::default(),
+            visible: true,
+            decorated: true,
+            fullscreen: Default::default(),
+        }
+    }
 }
 
 struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
@@ -177,7 +200,7 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
 
             if flags.contains(StateFlags::DECORATIONS) {
-                metadata.visible = self.is_visible()?;
+                metadata.decorated = self.is_decorated()?;
             }
 
             if flags.contains(StateFlags::FULLSCREEN) {
