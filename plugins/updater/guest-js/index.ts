@@ -61,7 +61,7 @@ class Update {
   }
 }
 
-/** Check for updates, returns `null` if no updates are available */
+/** Check for updates, resolves to `null` if no updates are available */
 async function check(options?: CheckOptions): Promise<Update | null> {
   return invoke<UpdateMetadata>("plugin:updater|check", { ...options }).then(
     (meta) => (meta.available ? new Update(meta) : null)
