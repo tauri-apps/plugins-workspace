@@ -501,9 +501,8 @@ impl Update {
                     .arg("-ArgumentList")
                     .arg(
                         [
-                            config.tauri.bundle.updater.windows.install_mode.nsis_args(),
-                            updater_config
-                                .installer_args
+                            self.config.windows.install_mode.nsis_args(),
+                            self.installer_args
                                 .iter()
                                 .map(AsRef::as_ref)
                                 .collect::<Vec<_>>()
