@@ -618,6 +618,69 @@ class WindowManager extends WebviewWindowHandle {
   }
 
   /**
+   * Gets the window’s native maximize button state.
+   *
+   * #### Platform-specific
+   *
+   * - **Linux / iOS / Android:** Unsupported.
+   *
+   * @example
+   * ```typescript
+   * import { appWindow } from '@tauri-apps/plugin-window';
+   * const maximizable = await appWindow.isMaximizable();
+   * ```
+   *
+   * @returns Whether the window's native maximize button is enabled or not.
+   *  */
+  async isMaximizable(): Promise<boolean> {
+    return window.__TAURI_INVOKE__("plugin:window|is_maximizable", {
+      label: this.label,
+    });
+  }
+
+  /**
+   * Gets the window’s native minimize button state.
+   *
+   * #### Platform-specific
+   *
+   * - **Linux / iOS / Android:** Unsupported.
+   *
+   * @example
+   * ```typescript
+   * import { appWindow } from '@tauri-apps/plugin-window';
+   * const minimizable = await appWindow.isMinimizable();
+   * ```
+   *
+   * @returns Whether the window's native minimize button is enabled or not.
+   *  */
+  async isMinimizable(): Promise<boolean> {
+    return window.__TAURI_INVOKE__("plugin:window|is_minimizable", {
+      label: this.label,
+    });
+  }
+
+  /**
+   * Gets the window’s native close button state.
+   *
+   * #### Platform-specific
+   *
+   * - **iOS / Android:** Unsupported.
+   *
+   * @example
+   * ```typescript
+   * import { appWindow } from '@tauri-apps/plugin-window';
+   * const closable = await appWindow.isClosable();
+   * ```
+   *
+   * @returns Whether the window's native close button is enabled or not.
+   *  */
+  async isClosable(): Promise<boolean> {
+    return window.__TAURI_INVOKE__("plugin:window|is_closable", {
+      label: this.label,
+    });
+  }
+
+  /**
    * Gets the window's current visible state.
    * @example
    * ```typescript
@@ -713,7 +776,7 @@ class WindowManager extends WebviewWindowHandle {
    * await appWindow.requestUserAttention();
    * ```
    *
-   * @param resizable
+   * @param requestType
    * @returns A promise indicating the success or failure of the operation.
    *
    * @since 2.0.0
@@ -753,6 +816,78 @@ class WindowManager extends WebviewWindowHandle {
     return window.__TAURI_INVOKE__("plugin:window|set_resizable", {
       label: this.label,
       value: resizable,
+    });
+  }
+
+  /**
+   * Sets whether the window's native maximize button is enabled or not.
+   * If resizable is set to false, this setting is ignored.
+   *
+   * #### Platform-specific
+   *
+   * - **macOS:** Disables the "zoom" button in the window titlebar, which is also used to enter fullscreen mode.
+   * - **Linux / iOS / Android:** Unsupported.
+   *
+   * @example
+   * ```typescript
+   * import { appWindow } from '@tauri-apps/plugin-window';
+   * await appWindow.setMaximizable(false);
+   * ```
+   *
+   * @param maximizable
+   * @returns A promise indicating the success or failure of the operation.
+   */
+  async setMaximizable(maximizable: boolean): Promise<void> {
+    return window.__TAURI_INVOKE__("plugin:window|set_maximizable", {
+      label: this.label,
+      value: maximizable,
+    });
+  }
+
+  /**
+   * Sets whether the window's native minimize button is enabled or not.
+   *
+   * #### Platform-specific
+   *
+   * - **Linux / iOS / Android:** Unsupported.
+   *
+   * @example
+   * ```typescript
+   * import { appWindow } from '@tauri-apps/plugin-window';
+   * await appWindow.setMinimizable(false);
+   * ```
+   *
+   * @param minimizable
+   * @returns A promise indicating the success or failure of the operation.
+   */
+  async setMinimizable(minimizable: boolean): Promise<void> {
+    return window.__TAURI_INVOKE__("plugin:window|set_minimizable", {
+      label: this.label,
+      value: minimizable,
+    });
+  }
+
+  /**
+   * Sets whether the window's native close button is enabled or not.
+   *
+   * #### Platform-specific
+   *
+   * - **Linux:** GTK+ will do its best to convince the window manager not to show a close button. Depending on the system, this function may not have any effect when called on a window that is already visible
+   * - **iOS / Android:** Unsupported.
+   *
+   * @example
+   * ```typescript
+   * import { appWindow } from '@tauri-apps/plugin-window';
+   * await appWindow.setClosable(false);
+   * ```
+   *
+   * @param closable
+   * @returns A promise indicating the success or failure of the operation.
+   */
+  async setClosable(closable: boolean): Promise<void> {
+    return window.__TAURI_INVOKE__("plugin:window|set_closable", {
+      label: this.label,
+      value: closable,
     });
   }
 
@@ -2123,6 +2258,18 @@ interface WindowOptions {
    * - **Android:** Unsupported.
    */
   incognito?: boolean;
+  /**
+   * Whether the window's native maximize button is enabled or not. Defaults to `true`.
+   */
+  maximizable?: boolean;
+  /**
+   * Whether the window's native minimize button is enabled or not. Defaults to `true`.
+   */
+  minimizable?: boolean;
+  /**
+   * Whether the window's native close button is enabled or not. Defaults to `true`.
+   */
+  closable?: boolean;
 }
 
 function mapMonitor(m: Monitor | null): Monitor | null {
