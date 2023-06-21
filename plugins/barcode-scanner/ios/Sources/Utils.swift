@@ -28,11 +28,6 @@ func createCaptureDeviceInput(
   return captureDeviceInput
 }
 
-@available(
-  swift, deprecated: 5.6,
-  message:
-    "New Xcode? Check if `AVCaptureDevice.DeviceType` has new types and add them accordingly."
-)
 func discoverCaptureDevices() -> [AVCaptureDevice] {
   if #available(iOS 13.0, *) {
     return AVCaptureDevice.DiscoverySession(

@@ -72,7 +72,6 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
     private var scanner: com.google.mlkit.vision.barcode.BarcodeScanner? = null
 
     private var requestPermissionResponse: JSObject? = null
-    private var cameraReady = false
     private var windowed = false
 
     // declare a map constant for allowed barcode formats
@@ -221,7 +220,7 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
         return formats
     }
 
-    private fun prepareInternal(direction: String, windowed: Boolean) {
+    private fun prepare(direction: String, windowed: Boolean) {
         dismantleCamera()
         setupCamera(direction, windowed)
     }
@@ -330,13 +329,6 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
     }
 
     @Command
-    fun prepare(invoke: Invoke) {
-        prepareInternal(invoke.getString("cameraDirection", "back"), invoke.getBoolean("windowed", false))
-        cameraReady = true
-        invoke.resolve()
-    }
-
-    @Command
     fun cancel(invoke: Invoke) {
         savedInvoke?.reject("cancelled")
         invoke.resolve()
@@ -349,11 +341,8 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
             if (getPermissionState("camera") != PermissionState.GRANTED) {
                 throw Exception("No permission to use camera. Did you request it yet?")
             } else {
-                if (!cameraReady) {
-                    webViewBackground = null
-                    prepareInternal(invoke.getString("cameraDirection", "back"), invoke.getBoolean("windowed", false))
-                }
-                cameraReady = false
+                webViewBackground = null
+                prepare(invoke.getString("cameraDirection", "back"), invoke.getBoolean("windowed", false))
                 configureCamera(getFormats(invoke))
             }
         }

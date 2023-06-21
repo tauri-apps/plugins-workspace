@@ -53,7 +53,6 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
   var backCamera: AVCaptureDevice?
 
   var isScanning = false
-  var cameraReady = false
 
   var windowed = false
   var previousBackgroundColor: UIColor? = UIColor.white
@@ -64,10 +63,14 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
 
   public override func load(webview: WKWebView) {
     self.webView = webview
-    self.cameraView = CameraView(
+    loadCamera()
+  }
+
+  private func loadCamera() {
+    cameraView = CameraView(
       frame: CGRect(
         x: 0, y: 0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height))
-    self.cameraView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    cameraView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
   }
 
   public func metadataOutput(
@@ -142,8 +145,6 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
         self.webView.backgroundColor = UIColor.clear
         self.webView.scrollView.backgroundColor = UIColor.clear
       }
-
-      self.cameraReady = true
     } catch CaptureError.backCameraUnavailable {
       //
     } catch CaptureError.frontCameraUnavailable {
@@ -169,7 +170,6 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
     }
 
     self.isScanning = false
-    self.cameraReady = false
   }
 
   private func destroy() {
@@ -183,7 +183,7 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
     }
   }
 
-  private func prepareInternal(_ direction: String, _ windowed: Bool) {
+  private func prepare(_ direction: String, _ windowed: Bool) {
     dismantleCamera()
 
     DispatchQueue.main.async { [self] in
@@ -239,15 +239,7 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
     }
   }
 
-  @objc private func prepare(_ invoke: Invoke) {
-    prepareInternal(
-      invoke.getString("cameraDirection") ?? "back", invoke.getBool("windowed") ?? false)
-    invoke.resolve()
-  }
-
   private func runScanner(_ invoke: Invoke) {
-    self.cameraReady = false
-
     scanFormats = [AVMetadataObject.ObjectType]()
 
     if (invoke.data["formats"]) != nil {
@@ -279,28 +271,24 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
   @objc private func scan(_ invoke: Invoke) {
     self.invoke = invoke
 
-    if self.cameraReady {
-      runScanner(invoke)
-    } else {
-      var iOS14min: Bool = false
-      if #available(iOS 14.0, *) { iOS14min = true }
-      if !iOS14min && self.getPermissionState() != "granted" {
-        var authorized = false
-        AVCaptureDevice.requestAccess(for: .video) { (isAuthorized) in
-          authorized = isAuthorized
-        }
-        if !authorized {
-          invoke.reject("denied by the user")
-          return
-        }
+    var iOS14min: Bool = false
+    if #available(iOS 14.0, *) { iOS14min = true }
+    if !iOS14min && self.getPermissionState() != "granted" {
+      var authorized = false
+      AVCaptureDevice.requestAccess(for: .video) { (isAuthorized) in
+        authorized = isAuthorized
       }
+      if !authorized {
+        invoke.reject("denied by the user")
+        return
+      }
+    }
 
-      DispatchQueue.main.async {
-        self.load(webview: self.webView)
-        self.prepareInternal(
-          invoke.getString("cameraDirection") ?? "back", invoke.getBool("windowed") ?? false)
-        self.runScanner(invoke)
-      }
+    DispatchQueue.main.async {
+      self.loadCamera()
+      self.prepare(
+        invoke.getString("cameraDirection") ?? "back", invoke.getBool("windowed") ?? false)
+      self.runScanner(invoke)
     }
   }
 

@@ -23,24 +23,10 @@ interface ScanOptions {
   windowed?: boolean;
 }
 
-interface PrepareOptions {
-  cameraDirection?: "back" | "front";
-  windowed?: boolean;
-}
-
 interface Scanned {
   content: string;
   format: Format;
   bounds: unknown;
-}
-
-/**
- * Prepare the camera before starting scanning.
- * This is optional, only use it if you need a small performance improvement when preparing a scan in advance.
- * @param options
- */
-export async function prepare(options?: PrepareOptions): Promise<void> {
-  return await invoke("plugin:barcodeScanner|prepare", { ...options });
 }
 
 /**
