@@ -1,6 +1,6 @@
 ![Barcode Scanner](banner.jpg)
 
-<!-- description -->
+Allows your mobile application to use the camera to scan QR codes, EAN-13 and other kinds of barcodes.
 
 ## Install
 
@@ -49,7 +49,7 @@ First you need to register the core plugin with Tauri:
 ```rust
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_barcode_scanner)
+        .plugin(tauri_plugin_barcode_scanner::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -58,7 +58,12 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
+import { scan } from "@tauri-apps/plugin-barcode-scanner";
 
+// `windowed: true` actually sets the webview to transparent
+// instead of opening a separate view for the camera
+// make sure your user interface is ready to show what is underneath with a transparent element
+scan({ windowed: true, formats: [""] })
 ```
 
 ## Contributing

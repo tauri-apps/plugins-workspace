@@ -1,12 +1,12 @@
 <script>
-  import { scan } from "@tauri-apps/plugin-barcode-scanner";
+  import { scan, Format } from "@tauri-apps/plugin-barcode-scanner";
 
   export let onMessage;
 
   let scanning = false;
   let windowed = true;
-  let formats = ["QR_CODE"];
-  const supportedFormats = ["QR_CODE", "EAN_13"];
+  let formats = [Format.QRCode];
+  const supportedFormats = [Format.QRCode, Format.EAN13];
 
   function startScan() {
     scanning = true;
