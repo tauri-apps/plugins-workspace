@@ -2,6 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/window/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/window)
+//!
+//! Interact with the Tauri window.
+
+#![doc(
+    html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
+    html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
+)]
+
 use tauri::{
     plugin::{Builder, TauriPlugin},
     Runtime,
@@ -40,8 +49,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         desktop_commands::is_fullscreen,
                         desktop_commands::is_minimized,
                         desktop_commands::is_maximized,
+                        desktop_commands::is_focused,
                         desktop_commands::is_decorated,
                         desktop_commands::is_resizable,
+                        desktop_commands::is_maximizable,
+                        desktop_commands::is_minimizable,
+                        desktop_commands::is_closable,
                         desktop_commands::is_visible,
                         desktop_commands::title,
                         desktop_commands::current_monitor,
@@ -52,6 +65,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         desktop_commands::center,
                         desktop_commands::request_user_attention,
                         desktop_commands::set_resizable,
+                        desktop_commands::set_maximizable,
+                        desktop_commands::set_minimizable,
+                        desktop_commands::set_closable,
                         desktop_commands::set_title,
                         desktop_commands::maximize,
                         desktop_commands::unmaximize,
@@ -62,6 +78,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         desktop_commands::close,
                         desktop_commands::set_decorations,
                         desktop_commands::set_shadow,
+                        desktop_commands::set_effects,
                         desktop_commands::set_always_on_top,
                         desktop_commands::set_content_protected,
                         desktop_commands::set_size,

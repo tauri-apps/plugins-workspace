@@ -60,7 +60,7 @@ pub fn run() {
             #[cfg(desktop)]
             {
                 window_builder = window_builder
-                    .user_agent("Tauri API")
+                    .user_agent(&format!("Tauri API - {}", std::env::consts::OS))
                     .title("Tauri API Validation")
                     .inner_size(1000., 800.)
                     .min_inner_size(600., 400.)
@@ -75,7 +75,12 @@ pub fn run() {
                     .decorations(false);
             }
 
-            let window = window_builder.build()?;
+            #[cfg(target_os = "macos")]
+            {
+                window_builder = window_builder.transparent(true);
+            }
+
+            let window = window_builder.build().unwrap();
 
             #[cfg(debug_assertions)]
             window.open_devtools();

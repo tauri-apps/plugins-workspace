@@ -2,9 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/os/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/os)
+//!
+//! Read information about the operating system.
+
+#![doc(
+    html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
+    html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
+)]
+
 use std::fmt::Display;
 
 pub use os_info::Version;
+use serialize_to_javascript::{default_template, DefaultTemplate, Template};
 use tauri::{
     plugin::{Builder, TauriPlugin},
     Runtime,
@@ -90,9 +100,28 @@ pub fn hostname() -> String {
     gethostname::gethostname().to_string_lossy().to_string()
 }
 
+#[derive(Template)]
+#[default_template("./init.js")]
+struct InitJavascript {
+    #[raw]
+    global_os_api: &'static str,
+    eol: &'static str,
+}
+
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    let init_js = InitJavascript {
+        global_os_api: include_str!("api-iife.js"),
+        #[cfg(windows)]
+        eol: "\r\n",
+        #[cfg(not(windows))]
+        eol: "\n",
+    }
+    .render_default(&Default::default())
+    // this will never fail with the above global_os_api eol values
+    .unwrap();
+
     Builder::new("os")
-        .js_init_script(include_str!("api-iife.js").to_string())
+        .js_init_script(init_js.to_string())
         .invoke_handler(tauri::generate_handler![
             commands::platform,
             commands::version,
