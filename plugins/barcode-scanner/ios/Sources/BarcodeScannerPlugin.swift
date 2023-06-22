@@ -157,16 +157,14 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
   }
 
   private func dismantleCamera() {
-    DispatchQueue.main.async {
-      if self.captureSession != nil {
-        self.captureSession!.stopRunning()
-        self.cameraView.removePreviewLayer()
-        self.captureVideoPreviewLayer = nil
-        self.metaOutput = nil
-        self.captureSession = nil
-        self.frontCamera = nil
-        self.backCamera = nil
-      }
+    if self.captureSession != nil {
+      self.captureSession!.stopRunning()
+      self.cameraView.removePreviewLayer()
+      self.captureVideoPreviewLayer = nil
+      self.metaOutput = nil
+      self.captureSession = nil
+      self.frontCamera = nil
+      self.backCamera = nil
     }
 
     self.isScanning = false
@@ -180,15 +178,6 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
       webView.isOpaque = true
       webView.backgroundColor = backgroundColor
       webView.scrollView.backgroundColor = backgroundColor
-    }
-  }
-
-  private func prepare(_ direction: String, _ windowed: Bool) {
-    dismantleCamera()
-
-    DispatchQueue.main.async { [self] in
-      // setup camera with new config
-      self.setupCamera(direction: direction, windowed: windowed)
     }
   }
 
@@ -260,10 +249,8 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
       }
     }
 
-    DispatchQueue.main.async {
-      self.metaOutput!.metadataObjectTypes = self.scanFormats
-      self.captureSession!.startRunning()
-    }
+    self.metaOutput!.metadataObjectTypes = self.scanFormats
+    self.captureSession!.startRunning()
 
     self.isScanning = true
   }
@@ -284,10 +271,13 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
       }
     }
 
-    DispatchQueue.main.async {
+    DispatchQueue.main.async { [self] in
       self.loadCamera()
-      self.prepare(
-        invoke.getString("cameraDirection") ?? "back", invoke.getBool("windowed") ?? false)
+      self.dismantleCamera()
+      self.setupCamera(
+        direction: invoke.getString("cameraDirection") ?? "back",
+        windowed: invoke.getBool("windowed") ?? false
+      )
       self.runScanner(invoke)
     }
   }
