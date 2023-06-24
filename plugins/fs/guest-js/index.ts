@@ -410,7 +410,7 @@ async function writeBinaryFile(
     file.contents = contents ?? [];
   }
 
-  return await window.__TAURI_INVOKE__("plugin:fs|write_binary_file", {
+  return await window.__TAURI_INVOKE__("plugin:fs|write_file", {
     path: file.path,
     contents: Array.from(
       file.contents instanceof ArrayBuffer
