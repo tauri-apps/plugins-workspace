@@ -160,18 +160,18 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         .unwrap_or_default();
 
                     for allowed in &scope.allowed_paths {
-                        let allowed = fix_pattern(&ac, allowed);
+                        let allowed = fix_pattern(&ac, &allowed);
 
                         allow_path(&fs_scope, &allowed);
                         #[cfg(feature = "protocol-asset")]
-                        allow_path(&asset_protocol_scope, allowed);
+                        allow_path(&asset_protocol_scope, &allowed);
                     }
                     for forbidden in &scope.forbidden_patterns {
-                        let forbidden = fix_pattern(&ac, forbidden);
+                        let forbidden = fix_pattern(&ac, &forbidden);
 
                         forbid_path(&fs_scope, &forbidden);
                         #[cfg(feature = "protocol-asset")]
-                        forbid_path(&asset_protocol_scope, forbidden);
+                        forbid_path(&asset_protocol_scope, &forbidden);
                     }
 
                     // Manually save the fixed scopes to disk once.
