@@ -5,8 +5,8 @@
 use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
 use tauri::{
-    plugin::{Builder, TauriPlugin}, FsScope,
-    AppHandle, FsScopeEvent, Manager, Runtime,
+    plugin::{Builder, TauriPlugin},
+    AppHandle, FsScope, FsScopeEvent, Manager, Runtime,
 };
 
 use std::{
