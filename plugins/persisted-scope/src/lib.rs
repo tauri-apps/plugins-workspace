@@ -81,13 +81,14 @@ fn allow_path(scope: &FsScope, path: &str) {
 
     match target_type {
         TargetType::File => {
-            let _ = scope.allow_file(&path);
+            let _ = scope.allow_file(path);
         }
         TargetType::Directory => {
             let _ = scope.allow_directory(path, false);
         }
         TargetType::RecursiveDirectory => {
-            let _ = scope.allow_directory(&path, true);
+            // We remove the '**' at the end of it, else it will be escaped by the pattern.
+            let _ = scope.allow_directory(&path[..path.len() - 2], true);
         }
     }
 }
@@ -97,13 +98,13 @@ fn forbid_path(scope: &FsScope, path: &str) {
 
     match target_type {
         TargetType::File => {
-            let _ = scope.forbid_file(&path);
+            let _ = scope.forbid_file(path);
         }
         TargetType::Directory => {
             let _ = scope.forbid_directory(path, false);
         }
         TargetType::RecursiveDirectory => {
-            let _ = scope.forbid_directory(&path, true);
+            let _ = scope.forbid_directory(path, true);
         }
     }
 }
@@ -160,15 +161,13 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         .unwrap_or_default();
 
                     for allowed in &scope.allowed_paths {
-                        let allowed = fix_pattern(&ac, &allowed);
-
+                        let allowed = fix_pattern(&ac, allowed);
                         allow_path(&fs_scope, &allowed);
                         #[cfg(feature = "protocol-asset")]
                         allow_path(&asset_protocol_scope, &allowed);
                     }
                     for forbidden in &scope.forbidden_patterns {
-                        let forbidden = fix_pattern(&ac, &forbidden);
-
+                        let forbidden = fix_pattern(&ac, forbidden);
                         forbid_path(&fs_scope, &forbidden);
                         #[cfg(feature = "protocol-asset")]
                         forbid_path(&asset_protocol_scope, &forbidden);
