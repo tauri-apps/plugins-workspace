@@ -5,14 +5,14 @@
 use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
 use tauri::{
-    plugin::{Builder, TauriPlugin},
+    plugin::{Builder, TauriPlugin}, FsScope,
     AppHandle, FsScopeEvent, Manager, Runtime,
 };
 
 use std::{
     fs::{create_dir_all, File},
     io::Write,
-    path::Path,
+    path::{Path, MAIN_SEPARATOR},
 };
 
 const SCOPE_STATE_FILENAME: &str = ".persisted-scope";
@@ -42,6 +42,14 @@ enum Error {
     Bincode(#[from] Box<bincode::ErrorKind>),
 }
 
+#[derive(Debug, Default, Deserialize, Serialize, Eq, PartialEq, Hash)]
+enum TargetType {
+    #[default]
+    File,
+    Directory,
+    RecursiveDirectory,
+}
+
 #[derive(Debug, Default, Deserialize, Serialize)]
 struct Scope {
     allowed_paths: Vec<String>,
@@ -56,6 +64,48 @@ fn fix_pattern(ac: &AhoCorasick, s: &str) -> String {
     }
 
     s
+}
+
+fn detect_scope_type(scope_state_path: &str) -> TargetType {
+    if scope_state_path.ends_with(format!("{}{}", MAIN_SEPARATOR, "**").as_str()) {
+        TargetType::RecursiveDirectory
+    } else if scope_state_path.ends_with(format!("{}{}", MAIN_SEPARATOR, "*").as_str()) {
+        TargetType::Directory
+    } else {
+        TargetType::File
+    }
+}
+
+fn allow_path(scope: &FsScope, path: &str) {
+    let target_type = detect_scope_type(path);
+
+    match target_type {
+        TargetType::File => {
+            let _ = scope.allow_file(&path);
+        }
+        TargetType::Directory => {
+            let _ = scope.allow_directory(path, false);
+        }
+        TargetType::RecursiveDirectory => {
+            let _ = scope.allow_directory(&path, true);
+        }
+    }
+}
+
+fn forbid_path(scope: &FsScope, path: &str) {
+    let target_type = detect_scope_type(path);
+
+    match target_type {
+        TargetType::File => {
+            let _ = scope.forbid_file(&path);
+        }
+        TargetType::Directory => {
+            let _ = scope.forbid_directory(path, false);
+        }
+        TargetType::RecursiveDirectory => {
+            let _ = scope.forbid_directory(&path, true);
+        }
+    }
 }
 
 fn save_scopes<R: Runtime>(app: &AppHandle<R>, app_dir: &Path, scope_state_path: &Path) {
@@ -108,19 +158,20 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         .map_err(Error::from)
                         .and_then(|scope| bincode::deserialize(&scope).map_err(Into::into))
                         .unwrap_or_default();
+
                     for allowed in &scope.allowed_paths {
                         let allowed = fix_pattern(&ac, allowed);
 
-                        let _ = fs_scope.allow_file(&allowed);
+                        allow_path(&fs_scope, &allowed);
                         #[cfg(feature = "protocol-asset")]
-                        let _ = asset_protocol_scope.allow_file(&allowed);
+                        allow_path(&asset_protocol_scope, allowed);
                     }
                     for forbidden in &scope.forbidden_patterns {
                         let forbidden = fix_pattern(&ac, forbidden);
 
-                        let _ = fs_scope.forbid_file(&forbidden);
+                        forbid_path(&fs_scope, &forbidden);
                         #[cfg(feature = "protocol-asset")]
-                        let _ = asset_protocol_scope.forbid_file(&forbidden);
+                        forbid_path(&asset_protocol_scope, forbidden);
                     }
 
                     // Manually save the fixed scopes to disk once.
