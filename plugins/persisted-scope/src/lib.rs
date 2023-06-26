@@ -84,7 +84,8 @@ fn allow_path(scope: &FsScope, path: &str) {
             let _ = scope.allow_file(path);
         }
         TargetType::Directory => {
-            let _ = scope.allow_directory(path, false);
+            // We remove the '*' at the end of it, else it will be escaped by the pattern.
+            let _ = scope.allow_directory(&path[..path.len() - 1], false);
         }
         TargetType::RecursiveDirectory => {
             // We remove the '**' at the end of it, else it will be escaped by the pattern.
