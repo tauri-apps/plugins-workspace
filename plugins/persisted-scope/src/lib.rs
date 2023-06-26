@@ -76,6 +76,26 @@ fn detect_scope_type(scope_state_path: &str) -> TargetType {
     }
 }
 
+fn fix_directory(path: &str) -> &str {
+    if let Some(path) = path.strip_suffix(format!("{}{}", MAIN_SEPARATOR, "*").as_str()) {
+        return fix_directory(path);
+    } else if let Some(path) = path.strip_suffix(format!("{}{}", "*", MAIN_SEPARATOR).as_str()) {
+        return fix_directory(path);
+    }
+
+    path
+}
+
+fn fix_recursive_directory(path: &str) -> &str {
+    if let Some(path) = path.strip_suffix(format!("{}{}", MAIN_SEPARATOR, "**").as_str()) {
+        return fix_recursive_directory(path);
+    } else if let Some(path) = path.strip_suffix(format!("{}{}", "**", MAIN_SEPARATOR).as_str()) {
+        return fix_recursive_directory(path);
+    }
+
+    path
+}
+
 fn allow_path(scope: &FsScope, path: &str) {
     let target_type = detect_scope_type(path);
 
@@ -85,11 +105,11 @@ fn allow_path(scope: &FsScope, path: &str) {
         }
         TargetType::Directory => {
             // We remove the '*' at the end of it, else it will be escaped by the pattern.
-            let _ = scope.allow_directory(&path[..path.len() - 1], false);
+            let _ = scope.allow_directory(fix_directory(path), false);
         }
         TargetType::RecursiveDirectory => {
             // We remove the '**' at the end of it, else it will be escaped by the pattern.
-            let _ = scope.allow_directory(&path[..path.len() - 2], true);
+            let _ = scope.allow_directory(fix_recursive_directory(path), true);
         }
     }
 }
