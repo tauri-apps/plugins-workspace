@@ -12,7 +12,7 @@ use tauri::{
 use std::{
     fs::{create_dir_all, File},
     io::Write,
-    path::{Path, MAIN_SEPARATOR},
+    path::Path,
 };
 
 const SCOPE_STATE_FILENAME: &str = ".persisted-scope";
@@ -66,34 +66,30 @@ fn fix_pattern(ac: &AhoCorasick, s: &str) -> String {
     s
 }
 
+const RESURSIVE_DIRECTORY_SUFFIX: &str = "**";
+const DIRECTORY_SUFFIX: &str = "*";
+
 fn detect_scope_type(scope_state_path: &str) -> TargetType {
-    if scope_state_path.ends_with(format!("{}{}", MAIN_SEPARATOR, "**").as_str()) {
+    if scope_state_path.ends_with(RESURSIVE_DIRECTORY_SUFFIX) {
         TargetType::RecursiveDirectory
-    } else if scope_state_path.ends_with(format!("{}{}", MAIN_SEPARATOR, "*").as_str()) {
+    } else if scope_state_path.ends_with(DIRECTORY_SUFFIX) {
         TargetType::Directory
     } else {
         TargetType::File
     }
 }
 
-fn fix_directory(path: &str) -> &str {
-    if let Some(path) = path.strip_suffix(format!("{}{}", MAIN_SEPARATOR, "*").as_str()) {
-        return fix_directory(path);
-    } else if let Some(path) = path.strip_suffix(format!("{}{}", "*", MAIN_SEPARATOR).as_str()) {
-        return fix_directory(path);
+fn fix_directory(path_str: &str) -> &str {
+    let mut path = Path::new(path_str);
+
+    if path.ends_with(DIRECTORY_SUFFIX) || path.ends_with(RESURSIVE_DIRECTORY_SUFFIX) {
+        path = match path.parent() {
+            Some(value) => value,
+            None => return path_str,
+        };
     }
 
-    path
-}
-
-fn fix_recursive_directory(path: &str) -> &str {
-    if let Some(path) = path.strip_suffix(format!("{}{}", MAIN_SEPARATOR, "**").as_str()) {
-        return fix_recursive_directory(path);
-    } else if let Some(path) = path.strip_suffix(format!("{}{}", "**", MAIN_SEPARATOR).as_str()) {
-        return fix_recursive_directory(path);
-    }
-
-    path
+    path.as_os_str().to_str().unwrap_or(path_str)
 }
 
 fn allow_path(scope: &FsScope, path: &str) {
@@ -109,7 +105,7 @@ fn allow_path(scope: &FsScope, path: &str) {
         }
         TargetType::RecursiveDirectory => {
             // We remove the '**' at the end of it, else it will be escaped by the pattern.
-            let _ = scope.allow_directory(fix_recursive_directory(path), true);
+            let _ = scope.allow_directory(fix_directory(path), true);
         }
     }
 }
@@ -122,10 +118,10 @@ fn forbid_path(scope: &FsScope, path: &str) {
             let _ = scope.forbid_file(path);
         }
         TargetType::Directory => {
-            let _ = scope.forbid_directory(path, false);
+            let _ = scope.forbid_directory(fix_directory(path), false);
         }
         TargetType::RecursiveDirectory => {
-            let _ = scope.forbid_directory(path, true);
+            let _ = scope.forbid_directory(fix_directory(path), true);
         }
     }
 }
