@@ -89,7 +89,7 @@ fn fix_directory(path_str: &str) -> &str {
         };
     }
 
-    path.as_os_str().to_str().unwrap_or(path_str)
+    path.to_str().unwrap_or(path_str)
 }
 
 fn allow_path(scope: &FsScope, path: &str) {
