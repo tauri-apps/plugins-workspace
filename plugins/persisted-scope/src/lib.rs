@@ -79,17 +79,17 @@ fn detect_scope_type(scope_state_path: &str) -> TargetType {
     }
 }
 
-fn fix_directory(path_str: &str) -> &str {
+fn fix_directory(path_str: &str) -> &Path {
     let mut path = Path::new(path_str);
 
     if path.ends_with(DIRECTORY_SUFFIX) || path.ends_with(RESURSIVE_DIRECTORY_SUFFIX) {
         path = match path.parent() {
             Some(value) => value,
-            None => return path_str,
+            None => return path,
         };
     }
 
-    path.to_str().unwrap_or(path_str)
+    path
 }
 
 fn allow_path(scope: &FsScope, path: &str) {
