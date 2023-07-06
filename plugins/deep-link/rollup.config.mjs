@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 
-import { createConfig } from "../rollup.config.mjs";
+import { createConfig } from "../../shared/rollup.config.mjs";
 
 export default createConfig({
   input: "guest-js/index.ts",

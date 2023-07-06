@@ -11,7 +11,7 @@ use tauri::{
 use crate::models::*;
 
 #[cfg(target_os = "android")]
-const PLUGIN_IDENTIFIER: &str = "{{ android_package_id }}";
+const PLUGIN_IDENTIFIER: &str = "app.tauri.deep_link";
 
 #[cfg(target_os = "ios")]
 tauri::ios_plugin_binding!(init_plugin_deep_link);
@@ -22,7 +22,7 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
     api: PluginApi<R, C>,
 ) -> crate::Result<DeepLink<R>> {
     #[cfg(target_os = "android")]
-    let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "ExamplePlugin")?;
+    let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "DeepLinkPlugin")?;
     #[cfg(target_os = "ios")]
     let handle = api.register_ios_plugin(init_plugin_deep_link)?;
     Ok(DeepLink(handle))
@@ -35,6 +35,14 @@ impl<R: Runtime> DeepLink<R> {
     pub fn ping(&self, payload: PingRequest) -> crate::Result<PingResponse> {
         self.0
             .run_mobile_plugin("ping", payload)
+            .map_err(Into::into)
+    }
+
+    // TODO: URI instead of String?
+    /// Get the last saved URL that triggered the deep link.
+    pub fn get_last_link(&self) -> crate::Result<Option<String>> {
+        self.0
+            .run_mobile_plugin("getLastLink", ())
             .map_err(Into::into)
     }
 }
