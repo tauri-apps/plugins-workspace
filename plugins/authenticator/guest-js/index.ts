@@ -25,7 +25,7 @@ export class Authenticator {
     challenge: string,
     application: string,
     registerData: string,
-    clientData: string
+    clientData: string,
   ): Promise<string> {
     return await window.__TAURI_INVOKE__(
       "plugin:authenticator|verify_registration",
@@ -41,7 +41,7 @@ export class Authenticator {
   async sign(
     challenge: string,
     application: string,
-    keyHandle: string
+    keyHandle: string,
   ): Promise<string> {
     return await window.__TAURI_INVOKE__("plugin:authenticator|sign", {
       timeout: 10000,
@@ -57,7 +57,7 @@ export class Authenticator {
     signData: string,
     clientData: string,
     keyHandle: string,
-    pubkey: string
+    pubkey: string,
   ): Promise<number> {
     return await window.__TAURI_INVOKE__(
       "plugin:authenticator|verify_signature",

@@ -317,14 +317,14 @@ export class Store {
     this.client = client;
   }
 
-  async get(key: StoreKey): Promise<Uint8Array> {
+  async get(key: StoreKey): Promise<Uint8Array | null> {
     return await window
       .__TAURI_INVOKE__<number[]>("plugin:stronghold|get_store_record", {
         snapshotPath: this.path,
         client: this.client,
         key: toBytesDto(key),
       })
-      .then((v) => Uint8Array.from(v));
+      .then((v) => (v != null ? Uint8Array.from(v) : null));
   }
 
   async insert(
@@ -409,7 +409,7 @@ export class Vault extends ProcedureExecutor {
       snapshotPath: this.path,
       client: this.client,
       vault: this.name,
-      location,
+      recordPath: location.payload.record,
     });
   }
 }

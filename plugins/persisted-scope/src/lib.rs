@@ -15,7 +15,7 @@ use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    AppHandle, Manager, Runtime,
+    AppHandle, FsScope, FsScopeEvent, Manager, Runtime,
 };
 use tauri_plugin_fs::{FsExt, ScopeEvent as FsScopeEvent};
 
@@ -52,6 +52,14 @@ enum Error {
     Bincode(#[from] Box<bincode::ErrorKind>),
 }
 
+#[derive(Debug, Default, Deserialize, Serialize, Eq, PartialEq, Hash)]
+enum TargetType {
+    #[default]
+    File,
+    Directory,
+    RecursiveDirectory,
+}
+
 #[derive(Debug, Default, Deserialize, Serialize)]
 struct Scope {
     allowed_paths: Vec<String>,
@@ -66,6 +74,66 @@ fn fix_pattern(ac: &AhoCorasick, s: &str) -> String {
     }
 
     s
+}
+
+const RESURSIVE_DIRECTORY_SUFFIX: &str = "**";
+const DIRECTORY_SUFFIX: &str = "*";
+
+fn detect_scope_type(scope_state_path: &str) -> TargetType {
+    if scope_state_path.ends_with(RESURSIVE_DIRECTORY_SUFFIX) {
+        TargetType::RecursiveDirectory
+    } else if scope_state_path.ends_with(DIRECTORY_SUFFIX) {
+        TargetType::Directory
+    } else {
+        TargetType::File
+    }
+}
+
+fn fix_directory(path_str: &str) -> &Path {
+    let mut path = Path::new(path_str);
+
+    if path.ends_with(DIRECTORY_SUFFIX) || path.ends_with(RESURSIVE_DIRECTORY_SUFFIX) {
+        path = match path.parent() {
+            Some(value) => value,
+            None => return path,
+        };
+    }
+
+    path
+}
+
+fn allow_path(scope: &FsScope, path: &str) {
+    let target_type = detect_scope_type(path);
+
+    match target_type {
+        TargetType::File => {
+            let _ = scope.allow_file(path);
+        }
+        TargetType::Directory => {
+            // We remove the '*' at the end of it, else it will be escaped by the pattern.
+            let _ = scope.allow_directory(fix_directory(path), false);
+        }
+        TargetType::RecursiveDirectory => {
+            // We remove the '**' at the end of it, else it will be escaped by the pattern.
+            let _ = scope.allow_directory(fix_directory(path), true);
+        }
+    }
+}
+
+fn forbid_path(scope: &FsScope, path: &str) {
+    let target_type = detect_scope_type(path);
+
+    match target_type {
+        TargetType::File => {
+            let _ = scope.forbid_file(path);
+        }
+        TargetType::Directory => {
+            let _ = scope.forbid_directory(fix_directory(path), false);
+        }
+        TargetType::RecursiveDirectory => {
+            let _ = scope.forbid_directory(fix_directory(path), true);
+        }
+    }
 }
 
 fn save_scopes<R: Runtime>(app: &AppHandle<R>, app_dir: &Path, scope_state_path: &Path) {
@@ -118,21 +186,18 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         .map_err(Error::from)
                         .and_then(|scope| bincode::deserialize(&scope).map_err(Into::into))
                         .unwrap_or_default();
+
                     for allowed in &scope.allowed_paths {
                         let allowed = fix_pattern(&ac, allowed);
-
-                        if let Some(s) = fs_scope {
-                            let _ = s.allow_file(&allowed);
-                        }
-                        let _ = core_scopes.allow_file(&allowed);
+                        allow_path(&fs_scope, &allowed);
+                        #[cfg(feature = "protocol-asset")]
+                        allow_path(&asset_protocol_scope, &allowed);
                     }
                     for forbidden in &scope.forbidden_patterns {
                         let forbidden = fix_pattern(&ac, forbidden);
-
-                        if let Some(s) = fs_scope {
-                            let _ = s.forbid_file(&forbidden);
-                        }
-                        let _ = core_scopes.forbid_file(&forbidden);
+                        forbid_path(&fs_scope, &forbidden);
+                        #[cfg(feature = "protocol-asset")]
+                        forbid_path(&asset_protocol_scope, &forbidden);
                     }
 
                     // Manually save the fixed scopes to disk once.
