@@ -23,7 +23,7 @@ export type StoreKey =
   | ArrayBuffer;
 
 function toBytesDto(
-  v: ClientPath | VaultPath | RecordPath | StoreKey
+  v: ClientPath | VaultPath | RecordPath | StoreKey,
 ): string | number[] {
   if (typeof v === "string") {
     return v;
@@ -125,7 +125,7 @@ class ProcedureExecutor {
    */
   async generateSLIP10Seed(
     outputLocation: Location,
-    sizeBytes?: number
+    sizeBytes?: number,
   ): Promise<Uint8Array> {
     return await invoke<number[]>("plugin:stronghold|execute_procedure", {
       ...this.procedureArgs,
@@ -152,7 +152,7 @@ class ProcedureExecutor {
     chain: number[],
     source: "Seed" | "Key",
     sourceLocation: Location,
-    outputLocation: Location
+    outputLocation: Location,
   ): Promise<Uint8Array> {
     return await invoke<number[]>("plugin:stronghold|execute_procedure", {
       ...this.procedureArgs,
@@ -181,7 +181,7 @@ class ProcedureExecutor {
   async recoverBIP39(
     mnemonic: string,
     outputLocation: Location,
-    passphrase?: string
+    passphrase?: string,
   ): Promise<Uint8Array> {
     return await invoke<number[]>("plugin:stronghold|execute_procedure", {
       ...this.procedureArgs,
@@ -205,7 +205,7 @@ class ProcedureExecutor {
    */
   async generateBIP39(
     outputLocation: Location,
-    passphrase?: string
+    passphrase?: string,
   ): Promise<Uint8Array> {
     return await invoke<number[]>("plugin:stronghold|execute_procedure", {
       ...this.procedureArgs,
@@ -245,7 +245,7 @@ class ProcedureExecutor {
    */
   async signEd25519(
     privateKeyLocation: Location,
-    msg: string
+    msg: string,
   ): Promise<Uint8Array> {
     return await invoke<number[]>("plugin:stronghold|execute_procedure", {
       ...this.procedureArgs,
@@ -310,7 +310,7 @@ export class Store {
   async insert(
     key: StoreKey,
     value: number[],
-    lifetime?: Duration
+    lifetime?: Duration,
   ): Promise<void> {
     return await invoke("plugin:stronghold|save_store_record", {
       snapshotPath: this.path,
@@ -328,7 +328,7 @@ export class Store {
         snapshotPath: this.path,
         client: this.client,
         key: toBytesDto(key),
-      }
+      },
     ).then((v) => (v != null ? Uint8Array.from(v) : null));
   }
 }

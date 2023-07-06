@@ -53,7 +53,7 @@ export default class WebSocket {
       m = { type: "Binary", data: message };
     } else {
       throw new Error(
-        "invalid `message` type, expected a `{ type: string, data: any }` object, a string or a numeric array"
+        "invalid `message` type, expected a `{ type: string, data: any }` object, a string or a numeric array",
       );
     }
     return await invoke("plugin:websocket|send", {

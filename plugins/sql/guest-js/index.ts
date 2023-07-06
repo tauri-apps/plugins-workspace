@@ -89,7 +89,7 @@ export default class Database {
         db: this.path,
         query,
         values: bindValues ?? [],
-      }
+      },
     );
 
     return {

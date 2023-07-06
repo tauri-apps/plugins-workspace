@@ -76,7 +76,7 @@ const r2 = await auth.verifyRegistration(
   challenge,
   app,
   registerResult.registerData,
-  registerResult.clientData
+  registerResult.clientData,
 );
 const j2 = JSON.parse(r2);
 
@@ -91,7 +91,7 @@ const counter = await auth.verifySignature(
   signData.signData,
   clientData,
   keyHandle,
-  pubkey
+  pubkey,
 );
 
 if (counter && counter > 0) {
