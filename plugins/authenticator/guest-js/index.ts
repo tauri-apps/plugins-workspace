@@ -34,7 +34,7 @@ export class Authenticator {
         application,
         registerData,
         clientData,
-      }
+      },
     );
   }
 
@@ -68,7 +68,7 @@ export class Authenticator {
         clientData,
         keyHandle,
         pubkey,
-      }
+      },
     );
   }
 }

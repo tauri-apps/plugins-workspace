@@ -123,7 +123,7 @@ class Body {
 
     const append = (
       key: string,
-      v: string | Uint8Array | FilePart<Uint8Array> | File
+      v: string | Uint8Array | FilePart<Uint8Array> | File,
     ): void => {
       if (v !== null) {
         let r;
@@ -208,12 +208,12 @@ class Body {
    * @since 2.0.0
    */
   static bytes(
-    bytes: Iterable<number> | ArrayLike<number> | ArrayBuffer
+    bytes: Iterable<number> | ArrayLike<number> | ArrayBuffer,
   ): Body {
     // stringifying Uint8Array doesn't return an array of numbers, so we create one here
     return new Body(
       "Bytes",
-      Array.from(bytes instanceof ArrayBuffer ? new Uint8Array(bytes) : bytes)
+      Array.from(bytes instanceof ArrayBuffer ? new Uint8Array(bytes) : bytes),
     );
   }
 }
@@ -349,7 +349,7 @@ class Client {
             } else if (response.ok) {
               throw Error(
                 `Failed to parse response \`${response.data}\` as JSON: ${e};
-              try setting the \`responseType\` option to \`ResponseType.Text\` or \`ResponseType.Binary\` if the API does not return a JSON response.`
+              try setting the \`responseType\` option to \`ResponseType.Text\` or \`ResponseType.Binary\` if the API does not return a JSON response.`,
               );
             }
           }
@@ -400,7 +400,7 @@ class Client {
   async post<T>(
     url: string,
     body?: Body,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<Response<T>> {
     return this.request({
       method: "POST",
@@ -430,7 +430,7 @@ class Client {
   async put<T>(
     url: string,
     body?: Body,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<Response<T>> {
     return this.request({
       method: "PUT",
@@ -515,7 +515,7 @@ let defaultClient: Client | null = null;
  */
 async function fetch<T>(
   url: string,
-  options?: FetchOptions
+  options?: FetchOptions,
 ): Promise<Response<T>> {
   if (defaultClient === null) {
     defaultClient = await getClient();

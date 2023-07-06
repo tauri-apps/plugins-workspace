@@ -12,7 +12,7 @@
           if (
             target.href &&
             ["http://", "https://", "mailto:", "tel:"].some((v) =>
-              target.href.startsWith(v)
+              target.href.startsWith(v),
             ) &&
             target.target === "_blank"
           ) {
