@@ -48,7 +48,7 @@ https.get(url, options, (response) => {
       console.log(versions.length ? versions[0].num : "0.0.0");
     } else if (kind === "npm") {
       const versions = Object.keys(data.versions).filter((v) =>
-        v.startsWith(target)
+        v.startsWith(target),
       );
       console.log(versions[versions.length - 1] || "0.0.0");
     }

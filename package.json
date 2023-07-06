@@ -22,9 +22,12 @@
     "eslint-plugin-n": "^16.0.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-security": "^1.7.1",
-    "prettier": "^2.8.7",
+    "prettier": "^3.0.0",
     "rollup": "^3.20.4",
     "typescript": "^5.0.4"
+  },
+  "resolutions": {
+    "semver": ">=7.5.2"
   },
   "engines": {
     "pnpm": ">=7.33.0"
