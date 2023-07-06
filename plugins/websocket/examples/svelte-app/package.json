@@ -13,7 +13,7 @@
   "devDependencies": {
     "@sveltejs/adapter-auto": "^2.1.0",
     "@sveltejs/kit": "^1.22.0",
-    "@tauri-apps/cli": "^1.4.0",
+    "@tauri-apps/cli": "2.0.0-alpha.10",
     "svelte": "^4.0.4",
     "svelte-check": "^3.4.4",
     "tslib": "^2.6.0",
