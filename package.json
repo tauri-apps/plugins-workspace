@@ -26,7 +26,7 @@
     "rollup": "^3.20.4",
     "typescript": "^5.0.4"
   },
-    "resolutions": {
+  "resolutions": {
     "semver": ">=7.5.2"
   },
   "engines": {
