@@ -16,7 +16,7 @@ tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
 iota_stronghold = "1"
-iota-crypto = "0.21"
+iota-crypto = "0.22"
 hex = "0.4"
 zeroize = { version = "1", features = ["zeroize_derive"] }
 
