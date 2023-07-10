@@ -15,8 +15,10 @@ use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    FsScope, FsScopeEvent, GlobPattern, Manager, Runtime,
+    GlobPattern, Manager, Runtime,
 };
+#[cfg(feature = "protocol-asset")]
+use tauri::{FsScope, FsScopeEvent};
 use tauri_plugin_fs::{FsExt, Scope as FsPluginScope, ScopeEvent as FsPluginScopeEvent};
 
 use std::{
@@ -231,6 +233,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("persisted-scope")
         .setup(|app, _api| {
             let fs_scope = app.try_fs_scope();
+            #[cfg(feature = "protocol-asset")]
             let asset_protocol_scope = app.asset_protocol_scope();
             let app = app.clone();
             let app_dir = app.path().app_data_dir();
