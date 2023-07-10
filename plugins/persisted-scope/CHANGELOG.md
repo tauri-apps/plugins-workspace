@@ -1,5 +1,10 @@
 # Changelog
 
+## \[0.1.3]
+
+- Split up fs and asset scopes. **This will reset the asset protocol scope once!**
+  - [ad30286](https://github.com/tauri-apps/plugins-workspace/commit/ad3028646c96ed213a2f483823ffdc3c17b5fc1e) fix(persisted-scope): separately save asset protocol patterns ([#459](https://github.com/tauri-apps/plugins-workspace/pull/459)) on 2023-07-10
+
 ## \[0.1.2]
 
 - Fix usage of directory patterns by removing glob asterisks at the end before allowing/forbidding them. This was causing them to be escaped, and so undesirable paths were allowed/forbidden while polluting the `.persisted_scope` file.
