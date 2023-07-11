@@ -193,8 +193,8 @@ importers:
         specifier: 4.0.4
         version: 4.0.4
       svelte-check:
-        specifier: 3.4.4
-        version: 3.4.4(svelte@4.0.4)
+        specifier: 3.4.6
+        version: 3.4.6(svelte@4.0.4)
       tslib:
         specifier: 2.6.0
         version: 2.6.0
@@ -2691,8 +2691,8 @@ packages:
     engines: {node: '>= 0.4'}
     dev: true
 
-  /svelte-check@3.4.4(svelte@4.0.4):
-    resolution: {integrity: sha512-Uys9+R65cj8TmP8f5UpS7B2xKpNLYNxEWJsA5ZoKcWq/uwvABFF7xS6iPQGLoa7hxz0DS6xU60YFpmq06E4JxA==}
+  /svelte-check@3.4.6(svelte@4.0.4):
+    resolution: {integrity: sha512-OBlY8866Zh1zHQTkBMPS6psPi7o2umTUyj6JWm4SacnIHXpWFm658pG32m3dKvKFL49V4ntAkfFHKo4ztH07og==}
     hasBin: true
     peerDependencies:
       svelte: ^3.55.0 || ^4.0.0-next.0 || ^4.0.0
@@ -2704,7 +2704,7 @@ packages:
       picocolors: 1.0.0
       sade: 1.8.1
       svelte: 4.0.4
-      svelte-preprocess: 5.0.3(svelte@4.0.4)(typescript@5.1.6)
+      svelte-preprocess: 5.0.4(svelte@4.0.4)(typescript@5.1.6)
       typescript: 5.1.6
     transitivePeerDependencies:
       - '@babel/core'
@@ -2727,8 +2727,8 @@ packages:
       svelte: 4.0.4
     dev: true
 
-  /svelte-preprocess@5.0.3(svelte@4.0.4)(typescript@5.1.6):
-    resolution: {integrity: sha512-GrHF1rusdJVbOZOwgPWtpqmaexkydznKzy5qIC2FabgpFyKN57bjMUUUqPRfbBXK5igiEWn1uO/DXsa2vJ5VHA==}
+  /svelte-preprocess@5.0.4(svelte@4.0.4)(typescript@5.1.6):
+    resolution: {integrity: sha512-ABia2QegosxOGsVlsSBJvoWeXy1wUKSfF7SWJdTjLAbx/Y3SrVevvvbFNQqrSJw89+lNSsM58SipmZJ5SRi5iw==}
     engines: {node: '>= 14.10.0'}
     requiresBuild: true
     peerDependencies:
@@ -2741,7 +2741,7 @@ packages:
       sass: ^1.26.8
       stylus: ^0.55.0
       sugarss: ^2.0.0 || ^3.0.0 || ^4.0.0
-      svelte: ^3.23.0
+      svelte: ^3.23.0 || ^4.0.0-next.0 || ^4.0.0
       typescript: '>=3.9.5 || ^4.0.0 || ^5.0.0'
     peerDependenciesMeta:
       '@babel/core':
