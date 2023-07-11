@@ -27,7 +27,8 @@
     "typescript": "5.0.4"
   },
   "resolutions": {
-    "semver": ">=7.5.2"
+    "semver": ">=7.5.2",
+    "optionator": ">=0.9.3"
   },
   "engines": {
     "pnpm": ">=7.33.1"
