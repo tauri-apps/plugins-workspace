@@ -182,10 +182,10 @@ importers:
     devDependencies:
       '@sveltejs/adapter-auto':
         specifier: 2.1.0
-        version: 2.1.0(@sveltejs/kit@1.22.0)
+        version: 2.1.0(@sveltejs/kit@1.22.2)
       '@sveltejs/kit':
-        specifier: 1.22.0
-        version: 1.22.0(svelte@4.0.5)(vite@4.4.3)
+        specifier: 1.22.2
+        version: 1.22.2(svelte@4.0.5)(vite@4.4.3)
       '@tauri-apps/cli':
         specifier: 1.4.0
         version: 1.4.0
@@ -618,17 +618,17 @@ packages:
       rollup: 3.26.2
     dev: true
 
-  /@sveltejs/adapter-auto@2.1.0(@sveltejs/kit@1.22.0):
+  /@sveltejs/adapter-auto@2.1.0(@sveltejs/kit@1.22.2):
     resolution: {integrity: sha512-o2pZCfATFtA/Gw/BB0Xm7k4EYaekXxaPGER3xGSY3FvzFJGTlJlZjBseaXwYSM94lZ0HniOjTokN3cWaLX6fow==}
     peerDependencies:
       '@sveltejs/kit': ^1.0.0
     dependencies:
-      '@sveltejs/kit': 1.22.0(svelte@4.0.5)(vite@4.4.3)
+      '@sveltejs/kit': 1.22.2(svelte@4.0.5)(vite@4.4.3)
       import-meta-resolve: 3.0.0
     dev: true
 
-  /@sveltejs/kit@1.22.0(svelte@4.0.5)(vite@4.4.3):
-    resolution: {integrity: sha512-LQhM7CvTaO7OopQffFMuJ2n1lBhfYJKVO2Rujc+/473Yb8jb1mpJm59q5Avbx29kcz8N9lvYUyRP3FXc63VIFA==}
+  /@sveltejs/kit@1.22.2(svelte@4.0.5)(vite@4.4.3):
+    resolution: {integrity: sha512-T6GY5jSfQgoDnNPNqAuDi9IK+ZW0TspzTV16UAN6GTsxbri67DGVIbw7QOXPg8FMrZQMmda1AtAxPMfXbOqCgw==}
     engines: {node: ^16.14 || >=18}
     hasBin: true
     requiresBuild: true
