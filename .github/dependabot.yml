@@ -16,7 +16,7 @@ updates:
   - package-ecosystem: "cargo"
     directory: "/"
     allow:
-      dependency-type: direct # disable lockfile-only updates (excluding security fixes)
+      - dependency-type: direct # disable lockfile-only updates (excluding security fixes)
     commit-message:
       prefix: chore
       include: scope
