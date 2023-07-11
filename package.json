@@ -10,24 +10,25 @@
     "format-check": "prettier --check ."
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.0.2",
-    "@rollup/plugin-terser": "^0.4.1",
-    "@rollup/plugin-typescript": "^11.1.0",
-    "@typescript-eslint/eslint-plugin": "^5.58.0",
-    "@typescript-eslint/parser": "^5.58.0",
-    "eslint": "^8.38.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-config-standard-with-typescript": "^36.0.0",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-n": "^16.0.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-security": "^1.7.1",
-    "prettier": "^3.0.0",
-    "rollup": "^3.20.4",
-    "typescript": "^5.0.4"
+    "@rollup/plugin-node-resolve": "15.0.2",
+    "@rollup/plugin-terser": "0.4.1",
+    "@rollup/plugin-typescript": "11.1.0",
+    "@typescript-eslint/eslint-plugin": "5.58.0",
+    "@typescript-eslint/parser": "5.58.0",
+    "eslint": "8.38.0",
+    "eslint-config-prettier": "8.8.0",
+    "eslint-config-standard-with-typescript": "36.0.0",
+    "eslint-plugin-import": "2.27.5",
+    "eslint-plugin-n": "16.0.0",
+    "eslint-plugin-promise": "6.1.1",
+    "eslint-plugin-security": "1.7.1",
+    "prettier": "3.0.0",
+    "rollup": "3.20.4",
+    "typescript": "5.0.4"
   },
   "resolutions": {
-    "semver": ">=7.5.2"
+    "semver": ">=7.5.2",
+    "optionator": ">=0.9.3"
   },
   "engines": {
     "pnpm": ">=7.33.1"
