@@ -180,28 +180,28 @@ importers:
         version: link:../..
     devDependencies:
       '@sveltejs/adapter-auto':
-        specifier: ^2.1.0
+        specifier: 2.1.0
         version: 2.1.0(@sveltejs/kit@1.22.0)
       '@sveltejs/kit':
-        specifier: ^1.22.0
+        specifier: 1.22.0
         version: 1.22.0(svelte@4.0.4)(vite@4.4.0)
       '@tauri-apps/cli':
-        specifier: ^1.4.0
+        specifier: 1.4.0
         version: 1.4.0
       svelte:
-        specifier: ^4.0.4
+        specifier: 4.0.4
         version: 4.0.4
       svelte-check:
-        specifier: ^3.4.4
+        specifier: 3.4.4
         version: 3.4.4(svelte@4.0.4)
       tslib:
-        specifier: ^2.6.0
+        specifier: 2.6.0
         version: 2.6.0
       typescript:
-        specifier: ^5.1.6
+        specifier: 5.1.6
         version: 5.1.6
       vite:
-        specifier: ^4.4.0
+        specifier: 4.4.0
         version: 4.4.0
 
   plugins/window-state:
@@ -879,6 +879,7 @@ packages:
   /@tauri-apps/cli@1.4.0:
     resolution: {integrity: sha512-VXYr2i2iVFl98etQSQsqLzXgX96bnWiNZd1YADgatqwy/qecbd6Kl5ZAPB5R4ynsgE8A1gU7Fbzh7dCEQYFfmA==}
     engines: {node: '>= 10'}
+    hasBin: true
     optionalDependencies:
       '@tauri-apps/cli-darwin-arm64': 1.4.0
       '@tauri-apps/cli-darwin-x64': 1.4.0
@@ -1438,6 +1439,7 @@ packages:
   /esbuild@0.18.11:
     resolution: {integrity: sha512-i8u6mQF0JKJUlGR3OdFLKldJQMMs8OqM9Cc3UCi9XXziJ9WERM5bfkHaEAy0YAvPRMgqSW55W7xYn84XtEFTtA==}
     engines: {node: '>=12'}
+    hasBin: true
     requiresBuild: true
     optionalDependencies:
       '@esbuild/android-arm': 0.18.11
@@ -2254,6 +2256,7 @@ packages:
   /mime@3.0.0:
     resolution: {integrity: sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==}
     engines: {node: '>=10.0.0'}
+    hasBin: true
     dev: true
 
   /min-indent@1.0.1:
@@ -2273,6 +2276,7 @@ packages:
 
   /mkdirp@0.5.6:
     resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
+    hasBin: true
     dependencies:
       minimist: 1.2.8
     dev: true
@@ -2298,6 +2302,7 @@ packages:
   /nanoid@3.3.6:
     resolution: {integrity: sha512-BGcqMMJuToF7i1rt+2PWSNVnWIkGCU78jBG3RxO/bZlnZPK2Cmi2QaffxGO/2RvWi9sL+FAiRiXMgsyxQ1DIDA==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
+    hasBin: true
     dev: true
 
   /natural-compare-lite@1.4.0:
@@ -2521,6 +2526,7 @@ packages:
   /rollup@3.26.1:
     resolution: {integrity: sha512-I5gJCSpSMr3U9wv4D5YA8g7w7cj3eaSDeo7t+JcaFQOmoOUBgu4K9iMp8k3EZnwbJrjQxUMSKxMyB8qEQzzaSg==}
     engines: {node: '>=14.18.0', npm: '>=8.0.0'}
+    hasBin: true
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
@@ -2623,6 +2629,7 @@ packages:
 
   /sorcery@0.11.0:
     resolution: {integrity: sha512-J69LQ22xrQB1cIFJhPfgtLuI6BpWRiWu1Y3vSsIwK/eAScqJxd/+CJlUuHQRdX2C9NGFamq+KqNywGgaThwfHw==}
+    hasBin: true
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
       buffer-crc32: 0.2.13
@@ -2902,6 +2909,7 @@ packages:
   /typescript@5.1.6:
     resolution: {integrity: sha512-zaWCozRZ6DLEWAWFrVDz1H6FVXzUSfTy5FUMWsQlU8Ym5JP9eO4xkTIROFCQvhQf61z6O/G6ugw3SgAnvvm+HA==}
     engines: {node: '>=14.17'}
+    hasBin: true
     dev: true
 
   /unbox-primitive@1.0.2:
