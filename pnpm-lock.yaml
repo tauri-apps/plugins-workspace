@@ -19,8 +19,8 @@ importers:
         specifier: 0.4.3
         version: 0.4.3(rollup@3.20.4)
       '@rollup/plugin-typescript':
-        specifier: 11.1.0
-        version: 11.1.0(rollup@3.20.4)(typescript@5.0.4)
+        specifier: 11.1.2
+        version: 11.1.2(rollup@3.20.4)(typescript@5.0.4)
       '@typescript-eslint/eslint-plugin':
         specifier: 5.58.0
         version: 5.58.0(@typescript-eslint/parser@5.58.0)(eslint@8.38.0)(typescript@5.0.4)
@@ -584,8 +584,8 @@ packages:
       terser: 5.19.0
     dev: true
 
-  /@rollup/plugin-typescript@11.1.0(rollup@3.20.4)(typescript@5.0.4):
-    resolution: {integrity: sha512-86flrfE+bSHB69znnTV6kVjkncs2LBMhcTCyxWgRxLyfXfQrxg4UwlAqENnjrrxnSNS/XKCDJCl8EkdFJVHOxw==}
+  /@rollup/plugin-typescript@11.1.2(rollup@3.20.4)(typescript@5.0.4):
+    resolution: {integrity: sha512-0ghSOCMcA7fl1JM+0gYRf+Q/HWyg+zg7/gDSc+fRLmlJWcW5K1I+CLRzaRhXf4Y3DRyPnnDo4M2ktw+a6JcDEg==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: ^2.14.0||^3.0.0
