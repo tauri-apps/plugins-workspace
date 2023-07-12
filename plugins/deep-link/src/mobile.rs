@@ -4,8 +4,9 @@
 
 use serde::de::DeserializeOwned;
 use tauri::{
+    ipc::{Channel, InvokeBody},
     plugin::{PluginApi, PluginHandle},
-    AppHandle, Runtime,
+    AppHandle, Manager, Runtime,
 };
 
 use crate::models::*;
@@ -25,6 +26,33 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
     let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "DeepLinkPlugin")?;
     #[cfg(target_os = "ios")]
     let handle = api.register_ios_plugin(init_plugin_deep_link)?;
+
+    #[cfg(target_os = "android")]
+    let app_handle = _app.clone();
+    #[cfg(target_os = "android")]
+    handle
+        .run_mobile_plugin::<()>(
+            "setEventHandler",
+            EventHandler {
+                handler: Channel::new(move |event| {
+                    println!("got channel event: {:?}", &event);
+
+                    let url = match event {
+                        InvokeBody::Json(payload) => payload
+                            .get("url")
+                            .and_then(|v| v.as_str())
+                            .map(|s| s.to_owned()),
+                        _ => None,
+                    };
+
+                    app_handle.trigger_global("deep-link://new-url", url.clone());
+                    app_handle.emit_all("deep-link://new-url", url).unwrap(); // TODO: Replace unwrap with let _ binding
+                    Ok(())
+                }),
+            },
+        )
+        .unwrap(); // TODO: Don't unwrap here.
+
     Ok(DeepLink(handle))
 }
 
@@ -42,7 +70,8 @@ impl<R: Runtime> DeepLink<R> {
     /// Get the last saved URL that triggered the deep link.
     pub fn get_last_link(&self) -> crate::Result<Option<String>> {
         self.0
-            .run_mobile_plugin("getLastLink", ())
+            .run_mobile_plugin::<LastUrl>("getLastLink", ())
+            .map(|v| v.url)
             .map_err(Into::into)
     }
 }

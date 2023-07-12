@@ -1,19 +1,19 @@
 [package]
 name = "tauri-plugin-deep-link"
 version = "0.0.0"
-edition = { workspace = true }
-authors = { workspace = true }
-license = { workspace = true }
+edition = "2021"
+authors = [""]
+license = ""
 links = "tauri-plugin-deep-link"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { workspace = true }
+tauri-build = { git = "https://github.com/FabianLars/tauri-lucas", branch = "android/intent" }
 
 [dependencies]
-serde = { workspace = true }
-serde_json = { workspace = true }
-tauri = { workspace = true }
-log = { workspace = true }
-thiserror = { workspace = true }
+serde = "1"
+serde_json = "1"
+tauri = { git = "https://github.com/FabianLars/tauri-lucas", branch = "android/intent" }
+log = "0.4"
+thiserror = "1"

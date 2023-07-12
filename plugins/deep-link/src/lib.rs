@@ -40,7 +40,10 @@ impl<R: Runtime, T: Manager<R>> crate::DeepLinkExt<R> for T {
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("deep-link")
         .js_init_script(include_str!("api-iife.js").to_string())
-        .invoke_handler(tauri::generate_handler![commands::execute])
+        .invoke_handler(tauri::generate_handler![
+            commands::execute,
+            commands::get_last_link
+        ])
         .setup(|app, api| {
             #[cfg(mobile)]
             let deep_link = mobile::init(app, api)?;

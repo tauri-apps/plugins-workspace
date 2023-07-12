@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use serde::{Deserialize, Serialize};
+use tauri::ipc::Channel;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -14,4 +15,16 @@ pub struct PingRequest {
 #[serde(rename_all = "camelCase")]
 pub struct PingResponse {
     pub value: Option<String>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EventHandler {
+    pub handler: Channel,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LastUrl {
+    pub url: Option<String>,
 }

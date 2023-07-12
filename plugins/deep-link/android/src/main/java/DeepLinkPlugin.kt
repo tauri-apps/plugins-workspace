@@ -10,15 +10,17 @@ import android.webkit.WebView
 import app.tauri.Logger
 import app.tauri.annotation.Command
 import app.tauri.annotation.TauriPlugin
+import app.tauri.plugin.Channel
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 import app.tauri.plugin.Invoke
 
 @TauriPlugin
 class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
-    private val implementation = Example()
+    //private val implementation = Example()
     private var webView: WebView? = null
     private var lastUrl: String? = null
+    private var channel: Channel? = null
 
     companion object {
         var instance: DeepLinkPlugin? = null
@@ -27,7 +29,7 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
     @Command
     fun getLastLink(invoke: Invoke) {
         val ret = JSObject()
-        ret.put("url", this.lastUrl ?: "")
+        ret.put("url", this.lastUrl)
         invoke.resolve(ret)
     }
 
@@ -39,13 +41,29 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
         invoke.resolve(ret)
     } */
 
+    @Command
+    fun setEventHandler(invoke: Invoke) {
+        val channel = invoke.getChannel("handler")
+
+        if (channel == null) {
+            invoke.reject("`handler` not provided")
+        }
+        this.channel = channel
+        invoke.resolve()
+    }
+
     override fun load(webView: WebView) {
         instance = this
 
-        if (intent.action == intent.ACTION_VIEW) {
+        var intent = activity.intent
+
+        if (intent.action == Intent.ACTION_VIEW) {
             // TODO: check if it makes sense to split up init url and last url
-            this.lastUrl = intent.action.toString() + intent.data.toString()
+            this.lastUrl = intent.data.toString()
             // TODO: Emit event - may not work here timing wise
+            val event = JSObject()
+            event.put("url", this.lastUrl)
+            this.channel?.send(event)
         }
 
         super.load(webView)
@@ -53,9 +71,12 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
     }
 
     override fun onNewIntent(intent: Intent) {
-        if (intent.action == intent.ACTION_VIEW) {
+        if (intent.action == Intent.ACTION_VIEW) {
             this.lastUrl = intent.data.toString()
             // TODO: Emit event
+            val event = JSObject()
+            event.put("url", this.lastUrl)
+            this.channel?.send(event)
         }
     }
 }

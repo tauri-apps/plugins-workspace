@@ -1,6 +1,7 @@
 [workspace]
 members = ["plugins/*", "plugins/*/tests/*", "examples/*/src-tauri"]
 resolver = "2"
+exclude = ["plugins/deep-link"] # using tauri from git
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
