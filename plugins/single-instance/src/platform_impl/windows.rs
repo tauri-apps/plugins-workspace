@@ -1,6 +1,6 @@
 #![cfg(target_os = "windows")]
 
-use crate::{SingleInstanceCallback, semver_compat::semver_compat_string};
+use crate::{semver_compat::semver_compat_string, SingleInstanceCallback};
 use std::ffi::CStr;
 use tauri::{
     plugin::{self, TauriPlugin},

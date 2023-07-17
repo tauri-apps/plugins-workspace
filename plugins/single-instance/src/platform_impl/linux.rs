@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use crate::{SingleInstanceCallback, semver_compat::semver_compat_string};
+use crate::{semver_compat::semver_compat_string, SingleInstanceCallback};
 use tauri::{
     plugin::{self, TauriPlugin},
     AppHandle, Config, Manager, RunEvent, Runtime,
@@ -88,7 +88,13 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
 
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
     if let Some(connection) = manager.try_state::<ConnectionHandle>() {
-        let dbus_name = format!("org.{}.SingleInstance", dbus_id(manager.config(), manager.app_handle().package_info().version.clone()));
+        let dbus_name = format!(
+            "org.{}.SingleInstance",
+            dbus_id(
+                manager.config(),
+                manager.app_handle().package_info().version.clone()
+            )
+        );
         let _ = connection.0.release_name(dbus_name);
     }
 }

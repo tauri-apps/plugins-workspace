@@ -10,7 +10,6 @@ mod platform_impl;
 #[path = "platform_impl/macos.rs"]
 mod platform_impl;
 
-
 mod semver_compat;
 
 pub(crate) type SingleInstanceCallback<R> =
