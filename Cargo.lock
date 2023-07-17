@@ -4555,6 +4555,7 @@ name = "tauri-plugin-single-instance"
 version = "0.0.0"
 dependencies = [
  "log",
+ "semver 1.0.16",
  "serde",
  "serde_json",
  "tauri",

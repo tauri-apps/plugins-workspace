@@ -1,6 +1,6 @@
 #![cfg(target_os = "windows")]
 
-use crate::SingleInstanceCallback;
+use crate::{SingleInstanceCallback, semver_compat::semver_compat_string};
 use std::ffi::CStr;
 use tauri::{
     plugin::{self, TauriPlugin},
@@ -29,7 +29,9 @@ const WMCOPYDATA_SINGLE_INSTANCE_DATA: usize = 1542;
 pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(|app| {
-            let id = &app.config().tauri.bundle.identifier;
+            let mut id = (&app.config().tauri.bundle.identifier).to_owned();
+            id.push('_');
+            id.push_str(semver_compat_string(app.package_info().version.clone()).as_str());
 
             let class_name = encode_wide(format!("{id}-sic"));
             let window_name = encode_wide(format!("{id}-siw"));
