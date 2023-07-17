@@ -2976,7 +2976,7 @@ checksum = "df8e77cb757a61f51b947ec4a7e3646efd825b73561db1c232a8ccb639e611a0"
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.10"
-source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#0d69873a6a21cba6717825f06a893006ee955f8b"
+source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#3e04d52348811e2f0e508015634a2d9ff74866de"
 dependencies = [
  "anyhow",
  "bytes",
@@ -3021,7 +3021,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.6"
-source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#0d69873a6a21cba6717825f06a893006ee955f8b"
+source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#3e04d52348811e2f0e508015634a2d9ff74866de"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -3039,7 +3039,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.6"
-source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#0d69873a6a21cba6717825f06a893006ee955f8b"
+source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#3e04d52348811e2f0e508015634a2d9ff74866de"
 dependencies = [
  "base64",
  "brotli",
@@ -3064,7 +3064,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.6"
-source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#0d69873a6a21cba6717825f06a893006ee955f8b"
+source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#3e04d52348811e2f0e508015634a2d9ff74866de"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -3090,7 +3090,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "0.13.0-alpha.6"
-source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#0d69873a6a21cba6717825f06a893006ee955f8b"
+source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#3e04d52348811e2f0e508015634a2d9ff74866de"
 dependencies = [
  "gtk",
  "http",
@@ -3110,7 +3110,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.13.0-alpha.6"
-source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#0d69873a6a21cba6717825f06a893006ee955f8b"
+source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#3e04d52348811e2f0e508015634a2d9ff74866de"
 dependencies = [
  "cocoa",
  "gtk",
@@ -3130,7 +3130,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.6"
-source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#0d69873a6a21cba6717825f06a893006ee955f8b"
+source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#3e04d52348811e2f0e508015634a2d9ff74866de"
 dependencies = [
  "brotli",
  "ctor",
