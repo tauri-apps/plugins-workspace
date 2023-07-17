@@ -8,8 +8,8 @@ declare global {
   }
 }
 
-export async function getLastLink() {
-  await window.__TAURI_INVOKE__<string | null>(
+export async function getLastLink(): Promise<string[] | null> {
+  return await window.__TAURI_INVOKE__(
     "plugin:deep-link|get_last_link"
   );
 }

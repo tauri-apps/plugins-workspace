@@ -14,10 +14,10 @@ rust-version = "1.60"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { git = "https://github.com/FabianLars/tauri-lucas", branch = "android/intent", features = [] }
+tauri-build = { git = "https://github.com/lucasfernog/tauri", branch = "feat/ipc-custom-protocol", features = [] }
 
 [dependencies]
-tauri = { git = "https://github.com/FabianLars/tauri-lucas", branch = "android/intent", features = [] }
+tauri = { git = "https://github.com/lucasfernog/tauri", branch = "feat/ipc-custom-protocol", features = [] }
 tauri-plugin-deep-link = { path = "../../../" }
 
 [features]

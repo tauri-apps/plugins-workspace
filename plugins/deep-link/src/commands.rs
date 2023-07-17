@@ -19,6 +19,6 @@ pub(crate) async fn get_last_link<R: Runtime>(
   _app: AppHandle<R>,
   _window: Window<R>,
   deep_link: State<'_, DeepLink<R>>
-) -> Result<Option<String>> {
+) -> Result<Option<Vec<url::Url>>> {
   deep_link.get_last_link()
 }
