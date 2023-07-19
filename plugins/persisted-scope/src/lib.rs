@@ -47,66 +47,66 @@ const PATTERNS: &[&str] = &[
 const REPLACE_WITH: &[&str] = &[r"[", r"]", r"?", r"*", r"\?", r"\\?\", r"\\?\"];
 
 trait ScopeExt {
-    fn allow_file_(&self, path: &Path);
-    fn allow_directory_(&self, path: &Path, recursive: bool);
+    fn allow_file(&self, path: &Path);
+    fn allow_directory(&self, path: &Path, recursive: bool);
 
-    fn forbid_file_(&self, path: &Path);
-    fn forbid_directory_(&self, path: &Path, recursive: bool);
+    fn forbid_file(&self, path: &Path);
+    fn forbid_directory(&self, path: &Path, recursive: bool);
 
-    fn allowed_patterns_(&self) -> HashSet<GlobPattern>;
-    fn forbidden_patterns_(&self) -> HashSet<GlobPattern>;
+    fn allowed_patterns(&self) -> HashSet<GlobPattern>;
+    fn forbidden_patterns(&self) -> HashSet<GlobPattern>;
 }
 
 impl ScopeExt for &FsPluginScope {
-    fn allow_file_(&self, path: &Path) {
-        let _ = self.allow_file(path);
+    fn allow_file(&self, path: &Path) {
+        let _ = FsPluginScope::allow_file(self, path);
     }
 
-    fn allow_directory_(&self, path: &Path, recursive: bool) {
-        let _ = self.allow_directory(path, recursive);
+    fn allow_directory(&self, path: &Path, recursive: bool) {
+        let _ = FsPluginScope::allow_directory(self, path, recursive);
     }
 
-    fn forbid_file_(&self, path: &Path) {
-        let _ = self.forbid_file(path);
+    fn forbid_file(&self, path: &Path) {
+        let _ = FsPluginScope::forbid_file(self, path);
     }
 
-    fn forbid_directory_(&self, path: &Path, recursive: bool) {
-        let _ = self.forbid_directory(path, recursive);
+    fn forbid_directory(&self, path: &Path, recursive: bool) {
+        let _ = FsPluginScope::forbid_directory(self, path, recursive);
     }
 
-    fn allowed_patterns_(&self) -> HashSet<GlobPattern> {
-        self.allowed_patterns()
+    fn allowed_patterns(&self) -> HashSet<GlobPattern> {
+        FsPluginScope::allowed_patterns(self)
     }
 
-    fn forbidden_patterns_(&self) -> HashSet<GlobPattern> {
-        self.forbidden_patterns()
+    fn forbidden_patterns(&self) -> HashSet<GlobPattern> {
+        FsPluginScope::forbidden_patterns(self)
     }
 }
 
 #[cfg(feature = "protocol-asset")]
 impl ScopeExt for &FsScope {
-    fn allow_file_(&self, path: &Path) {
-        let _ = self.allow_file(path);
+    fn allow_file(&self, path: &Path) {
+        let _ = FsScope::allow_file(self, path);
     }
 
-    fn allow_directory_(&self, path: &Path, recursive: bool) {
-        let _ = self.allow_directory(path, recursive);
+    fn allow_directory(&self, path: &Path, recursive: bool) {
+        let _ = FsScope::allow_directory(self, path, recursive);
     }
 
-    fn forbid_file_(&self, path: &Path) {
-        let _ = self.forbid_file(path);
+    fn forbid_file(&self, path: &Path) {
+        let _ = FsScope::forbid_file(self, path);
     }
 
-    fn forbid_directory_(&self, path: &Path, recursive: bool) {
-        let _ = self.forbid_directory(path, recursive);
+    fn forbid_directory(&self, path: &Path, recursive: bool) {
+        let _ = FsScope::forbid_directory(self, path, recursive);
     }
 
-    fn allowed_patterns_(&self) -> HashSet<GlobPattern> {
-        self.allowed_patterns()
+    fn allowed_patterns(&self) -> HashSet<GlobPattern> {
+        FsScope::allowed_patterns(self)
     }
 
-    fn forbidden_patterns_(&self) -> HashSet<GlobPattern> {
-        self.forbidden_patterns()
+    fn forbidden_patterns(&self) -> HashSet<GlobPattern> {
+        FsScope::forbidden_patterns(self)
     }
 }
 
@@ -177,15 +177,15 @@ fn allow_path(scope: impl ScopeExt, path: &str) {
 
     match target_type {
         TargetType::File => {
-            scope.allow_file_(Path::new(path));
+            scope.allow_file(Path::new(path));
         }
         TargetType::Directory => {
             // We remove the '*' at the end of it, else it will be escaped by the pattern.
-            scope.allow_directory_(fix_directory(path), false);
+            scope.allow_directory(fix_directory(path), false);
         }
         TargetType::RecursiveDirectory => {
             // We remove the '**' at the end of it, else it will be escaped by the pattern.
-            scope.allow_directory_(fix_directory(path), true);
+            scope.allow_directory(fix_directory(path), true);
         }
     }
 }
@@ -195,13 +195,13 @@ fn forbid_path(scope: impl ScopeExt, path: &str) {
 
     match target_type {
         TargetType::File => {
-            scope.forbid_file_(Path::new(path));
+            scope.forbid_file(Path::new(path));
         }
         TargetType::Directory => {
-            scope.forbid_directory_(fix_directory(path), false);
+            scope.forbid_directory(fix_directory(path), false);
         }
         TargetType::RecursiveDirectory => {
-            scope.forbid_directory_(fix_directory(path), true);
+            scope.forbid_directory(fix_directory(path), true);
         }
     }
 }
@@ -209,12 +209,12 @@ fn forbid_path(scope: impl ScopeExt, path: &str) {
 fn save_scopes(scope: impl ScopeExt, app_dir: &Path, scope_state_path: &Path) {
     let scope = Scope {
         allowed_paths: scope
-            .allowed_patterns_()
+            .allowed_patterns()
             .into_iter()
             .map(|p| p.to_string())
             .collect(),
         forbidden_patterns: scope
-            .forbidden_patterns_()
+            .forbidden_patterns()
             .into_iter()
             .map(|p| p.to_string())
             .collect(),
