@@ -5,8 +5,7 @@ description = "Interface with SQL databases."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
-#rust-version = { workspace = true }
-rust-version = "1.65"
+rust-version = { workspace = true }
 
 [package.metadata.docs.rs]
 features = [ "sqlite" ]
