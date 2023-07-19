@@ -4,14 +4,16 @@
 
 #![allow(dead_code)]
 
-#[derive(serde::Deserialize)]
-pub struct Config {
-    android: Vec<AndroidConfig>,
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+pub struct AssociatedDomain {
+    host: String,
+    #[serde(default, alias = "path-prefix", rename = "pathPrefix")]
+    path_prefix: Vec<String>,
 }
 
-#[derive(serde::Deserialize)]
-pub struct AndroidConfig {
-    domain: String,
-    #[serde(rename = "pathPrefix")]
-    path_prefix: Option<String>,
+#[derive(Deserialize)]
+pub struct Config {
+    domains: Vec<AssociatedDomain>,
 }
