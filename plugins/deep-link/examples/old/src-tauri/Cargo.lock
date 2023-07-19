@@ -2987,6 +2987,7 @@ checksum = "1b1c7f239eb94671427157bd93b3694320f3668d4e1eff08c7285366fd777fac"
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.10"
+source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#b6bd17ece0bc57fef296e2b78d4defe303a56ded"
 dependencies = [
  "anyhow",
  "bytes",
@@ -3031,11 +3032,13 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.6"
+source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#b6bd17ece0bc57fef296e2b78d4defe303a56ded"
 dependencies = [
  "anyhow",
  "cargo_toml",
  "heck",
  "json-patch",
+ "plist",
  "semver",
  "serde",
  "serde_json",
@@ -3048,6 +3051,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.6"
+source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#b6bd17ece0bc57fef296e2b78d4defe303a56ded"
 dependencies = [
  "base64",
  "brotli",
@@ -3072,6 +3076,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.6"
+source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#b6bd17ece0bc57fef296e2b78d4defe303a56ded"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -3097,6 +3102,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "0.13.0-alpha.6"
+source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#b6bd17ece0bc57fef296e2b78d4defe303a56ded"
 dependencies = [
  "gtk",
  "http",
@@ -3116,6 +3122,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.13.0-alpha.6"
+source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#b6bd17ece0bc57fef296e2b78d4defe303a56ded"
 dependencies = [
  "cocoa",
  "gtk",
@@ -3135,6 +3142,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.6"
+source = "git+https://github.com/lucasfernog/tauri?branch=feat/ipc-custom-protocol#b6bd17ece0bc57fef296e2b78d4defe303a56ded"
 dependencies = [
  "brotli",
  "ctor",
