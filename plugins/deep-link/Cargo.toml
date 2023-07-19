@@ -9,6 +9,8 @@ links = "tauri-plugin-deep-link"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
+serde = "1"
+serde_json = "1"
 tauri-build = { git = "https://github.com/lucasfernog/tauri", branch = "feat/ipc-custom-protocol" }
 
 [dependencies]
@@ -19,3 +21,6 @@ log = "0.4"
 thiserror = "1"
 url = "2"
 
+[patch."https://github.com/lucasfernog/tauri"]
+tauri-build = { path = "C:/Users/Fabian-Lars/dev/FabianLars/tauri-lucas/core/tauri-build" }
+tauri = { path = "C:/Users/Fabian-Lars/dev/FabianLars/tauri-lucas/core/tauri" }

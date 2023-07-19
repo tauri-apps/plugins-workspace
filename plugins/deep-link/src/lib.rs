@@ -9,6 +9,7 @@ use tauri::{
 };
 
 mod commands;
+mod config;
 mod error;
 
 pub use error::{Error, Result};
@@ -129,7 +130,7 @@ impl<R: Runtime, T: Manager<R>> crate::DeepLinkExt<R> for T {
 }
 
 /// Initializes the plugin.
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
+pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
     Builder::new("deep-link")
         .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![

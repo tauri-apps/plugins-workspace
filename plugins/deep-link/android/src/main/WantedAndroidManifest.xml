@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- TODO: (tauri-cli?) Add auto manifest rewriter to add domains. Format: -->
-
     <application>
-        <activity android:name="app-id.MainActivity" android:exported="true">
+        <activity android:name="${applicationId}.MainActivity" android:exported="true">
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

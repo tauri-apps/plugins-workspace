@@ -12,4 +12,4 @@ export async function getLastLink(): Promise<string[] | null> {
   return await window.__TAURI_INVOKE__("plugin:deep-link|get_last_link");
 }
 
-// TODO: REGISTER EVENT LISTENER
+// TODO: onUrlEvent function (helper function for the event listener)

@@ -1,7 +1,7 @@
 {
   "build": {
-    "beforeDevCommand": "yarn dev",
-    "beforeBuildCommand": "yarn build",
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build",
     "devPath": "http://localhost:1420",
     "distDir": "../dist",
     "withGlobalTauri": false
@@ -56,5 +56,17 @@
         "width": 800
       }
     ]
+  },
+  "plugins": {
+    "whatever": "helloworld",
+    "sec": {
+      "hello": "world"
+    },
+    "deep-link": {
+      "android": [
+        { "domain": "fabianlars.de", "pathPrefix": "/intent" },
+        { "domain": "tauri.app" }
+      ]
+    }
   }
 }

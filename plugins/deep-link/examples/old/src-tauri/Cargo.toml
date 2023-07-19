@@ -19,9 +19,15 @@ tauri-build = { git = "https://github.com/lucasfernog/tauri", branch = "feat/ipc
 [dependencies]
 tauri = { git = "https://github.com/lucasfernog/tauri", branch = "feat/ipc-custom-protocol", features = [] }
 tauri-plugin-deep-link = { path = "../../../" }
+serde = "1"
+serde_json = "1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
 # DO NOT REMOVE!!
 custom-protocol = [ "tauri/custom-protocol" ]
+
+[patch."https://github.com/lucasfernog/tauri"]
+tauri-build = { path = "C:/Users/Fabian-Lars/dev/FabianLars/tauri-lucas/core/tauri-build" }
+tauri = { path = "C:/Users/Fabian-Lars/dev/FabianLars/tauri-lucas/core/tauri" }

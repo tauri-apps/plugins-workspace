@@ -60,7 +60,7 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
         if (intent.action == Intent.ACTION_VIEW) {
             // TODO: check if it makes sense to split up init url and last url
             this.lastUrl = intent.data.toString()
-            // TODO: Emit event - may not work here timing wise
+            // TODO: Test if emitting it here makes sense timing wise
             val event = JSObject()
             event.put("url", this.lastUrl)
             this.channel?.send(event)
