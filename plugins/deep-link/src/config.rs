@@ -2,18 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+// This module is also imported in build.rs!
+
 #![allow(dead_code)]
 
 use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct AssociatedDomain {
-    host: String,
+    pub host: String,
     #[serde(default, alias = "path-prefix", rename = "pathPrefix")]
-    path_prefix: Vec<String>,
+    pub path_prefix: Vec<String>,
 }
 
 #[derive(Deserialize)]
 pub struct Config {
-    domains: Vec<AssociatedDomain>,
+    pub domains: Vec<AssociatedDomain>,
 }

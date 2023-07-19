@@ -5,17 +5,9 @@
 use serde::Deserialize;
 use std::process::exit;
 
-#[derive(Deserialize)]
-struct AssociatedDomain {
-    host: String,
-    #[serde(default, alias = "path-prefix", rename = "pathPrefix")]
-    path_prefix: Vec<String>,
-}
-
-#[derive(Deserialize)]
-struct Config {
-    domains: Vec<AssociatedDomain>,
-}
+#[path = "src/config.rs"]
+mod config;
+use config::{AssociatedDomain, Config};
 
 // TODO: Consider using activity-alias in case users may have multiple activities in their app.
 // TODO: Do we want to support the other path* configs too?
