@@ -36,7 +36,7 @@ export type ShortcutHandler = (shortcut: string) => void;
  */
 async function register(
   shortcut: string,
-  handler: ShortcutHandler
+  handler: ShortcutHandler,
 ): Promise<void> {
   return await window.__TAURI_INVOKE__("plugin:globalShortcut|register", {
     shortcut,
@@ -61,7 +61,7 @@ async function register(
  */
 async function registerAll(
   shortcuts: string[],
-  handler: ShortcutHandler
+  handler: ShortcutHandler,
 ): Promise<void> {
   return await window.__TAURI_INVOKE__("plugin:globalShortcut|register_all", {
     shortcuts,

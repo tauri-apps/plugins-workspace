@@ -40,7 +40,7 @@ class Update {
   }
 
   async downloadAndInstall(
-    onEvent?: (progress: DownloadEvent) => void
+    onEvent?: (progress: DownloadEvent) => void,
   ): Promise<void> {
     const channel = new Channel<DownloadEvent>();
     if (onEvent != null) {
@@ -54,7 +54,7 @@ class Update {
 
 async function check(options?: CheckOptions): Promise<Update> {
   return invoke<UpdateResponse>("plugin:updater|check", { ...options }).then(
-    (response) => new Update(response)
+    (response) => new Update(response),
   );
 }
 

@@ -229,7 +229,7 @@ interface FileEntry {
  */
 async function readTextFile(
   filePath: string,
-  options: FsOptions = {}
+  options: FsOptions = {},
 ): Promise<string> {
   return await window.__TAURI_INVOKE__("plugin:fs|read_text_file", {
     path: filePath,
@@ -250,7 +250,7 @@ async function readTextFile(
  */
 async function readBinaryFile(
   filePath: string,
-  options: FsOptions = {}
+  options: FsOptions = {},
 ): Promise<Uint8Array> {
   const arr = await window.__TAURI_INVOKE__<number[]>("plugin:fs|read_file", {
     path: filePath,
@@ -274,7 +274,7 @@ async function readBinaryFile(
 async function writeTextFile(
   path: string,
   contents: string,
-  options?: FsOptions
+  options?: FsOptions,
 ): Promise<void>;
 
 /**
@@ -291,7 +291,7 @@ async function writeTextFile(
  */
 async function writeTextFile(
   file: FsTextFileOption,
-  options?: FsOptions
+  options?: FsOptions,
 ): Promise<void>;
 
 /**
@@ -304,7 +304,7 @@ async function writeTextFile(
 async function writeTextFile(
   path: string | FsTextFileOption,
   contents?: string | FsOptions,
-  options?: FsOptions
+  options?: FsOptions,
 ): Promise<void> {
   if (typeof options === "object") {
     Object.freeze(options);
@@ -352,7 +352,7 @@ async function writeTextFile(
 async function writeBinaryFile(
   path: string,
   contents: BinaryFileContents,
-  options?: FsOptions
+  options?: FsOptions,
 ): Promise<void>;
 
 /**
@@ -372,7 +372,7 @@ async function writeBinaryFile(
  */
 async function writeBinaryFile(
   file: FsBinaryFileOption,
-  options?: FsOptions
+  options?: FsOptions,
 ): Promise<void>;
 
 /**
@@ -385,7 +385,7 @@ async function writeBinaryFile(
 async function writeBinaryFile(
   path: string | FsBinaryFileOption,
   contents?: BinaryFileContents | FsOptions,
-  options?: FsOptions
+  options?: FsOptions,
 ): Promise<void> {
   if (typeof options === "object") {
     Object.freeze(options);
@@ -415,7 +415,7 @@ async function writeBinaryFile(
     contents: Array.from(
       file.contents instanceof ArrayBuffer
         ? new Uint8Array(file.contents)
-        : file.contents
+        : file.contents,
     ),
     options: fileOptions,
   });
@@ -443,7 +443,7 @@ async function writeBinaryFile(
  */
 async function readDir(
   dir: string,
-  options: FsDirOptions = {}
+  options: FsDirOptions = {},
 ): Promise<FileEntry[]> {
   return await window.__TAURI_INVOKE__("plugin:fs|read_dir", {
     path: dir,
@@ -468,7 +468,7 @@ async function readDir(
  */
 async function createDir(
   dir: string,
-  options: FsDirOptions = {}
+  options: FsDirOptions = {},
 ): Promise<void> {
   return await window.__TAURI_INVOKE__("plugin:fs|create_dir", {
     path: dir,
@@ -492,7 +492,7 @@ async function createDir(
  */
 async function removeDir(
   dir: string,
-  options: FsDirOptions = {}
+  options: FsDirOptions = {},
 ): Promise<void> {
   return await window.__TAURI_INVOKE__("plugin:fs|remove_dir", {
     path: dir,
@@ -516,7 +516,7 @@ async function removeDir(
 async function copyFile(
   source: string,
   destination: string,
-  options: FsOptions = {}
+  options: FsOptions = {},
 ): Promise<void> {
   return await window.__TAURI_INVOKE__("plugin:fs|copy_file", {
     source,
@@ -540,7 +540,7 @@ async function copyFile(
  */
 async function removeFile(
   file: string,
-  options: FsOptions = {}
+  options: FsOptions = {},
 ): Promise<void> {
   return await window.__TAURI_INVOKE__("plugin:fs|remove_file", {
     path: file,
@@ -564,7 +564,7 @@ async function removeFile(
 async function renameFile(
   oldPath: string,
   newPath: string,
-  options: FsOptions = {}
+  options: FsOptions = {},
 ): Promise<void> {
   return await window.__TAURI_INVOKE__("plugin:fs|rename_file", {
     oldPath,

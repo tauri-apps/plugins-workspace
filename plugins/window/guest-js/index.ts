@@ -258,7 +258,7 @@ function getAll(): WebviewWindow[] {
       new WebviewWindow(w.label, {
         // @ts-expect-error `skip` is not defined in the public API but it is handled by the constructor
         skip: true,
-      })
+      }),
   );
 }
 
@@ -309,7 +309,7 @@ class WebviewWindowHandle {
    */
   async listen<T>(
     event: EventName,
-    handler: EventCallback<T>
+    handler: EventCallback<T>,
   ): Promise<UnlistenFn> {
     if (this._handleTauriEvent(event, handler)) {
       return Promise.resolve(() => {
@@ -435,7 +435,7 @@ class WindowManager extends WebviewWindowHandle {
         "plugin:window|inner_position",
         {
           label: this.label,
-        }
+        },
       )
       .then(({ x, y }) => new PhysicalPosition(x, y));
   }
@@ -458,7 +458,7 @@ class WindowManager extends WebviewWindowHandle {
         "plugin:window|outer_position",
         {
           label: this.label,
-        }
+        },
       )
       .then(({ x, y }) => new PhysicalPosition(x, y));
   }
@@ -482,7 +482,7 @@ class WindowManager extends WebviewWindowHandle {
         "plugin:window|inner_size",
         {
           label: this.label,
-        }
+        },
       )
       .then(({ width, height }) => new PhysicalSize(width, height));
   }
@@ -506,7 +506,7 @@ class WindowManager extends WebviewWindowHandle {
         "plugin:window|outer_size",
         {
           label: this.label,
-        }
+        },
       )
       .then(({ width, height }) => new PhysicalSize(width, height));
   }
@@ -782,7 +782,7 @@ class WindowManager extends WebviewWindowHandle {
    * @since 2.0.0
    */
   async requestUserAttention(
-    requestType: UserAttentionType | null
+    requestType: UserAttentionType | null,
   ): Promise<void> {
     let requestType_ = null;
     if (requestType) {
@@ -1182,7 +1182,7 @@ class WindowManager extends WebviewWindowHandle {
   async setSize(size: LogicalSize | PhysicalSize): Promise<void> {
     if (!size || (size.type !== "Logical" && size.type !== "Physical")) {
       throw new Error(
-        "the `size` argument must be either a LogicalSize or a PhysicalSize instance"
+        "the `size` argument must be either a LogicalSize or a PhysicalSize instance",
       );
     }
 
@@ -1212,11 +1212,11 @@ class WindowManager extends WebviewWindowHandle {
    * @since 2.0.0
    */
   async setMinSize(
-    size: LogicalSize | PhysicalSize | null | undefined
+    size: LogicalSize | PhysicalSize | null | undefined,
   ): Promise<void> {
     if (size && size.type !== "Logical" && size.type !== "Physical") {
       throw new Error(
-        "the `size` argument must be either a LogicalSize or a PhysicalSize instance"
+        "the `size` argument must be either a LogicalSize or a PhysicalSize instance",
       );
     }
 
@@ -1248,11 +1248,11 @@ class WindowManager extends WebviewWindowHandle {
    * @since 2.0.0
    */
   async setMaxSize(
-    size: LogicalSize | PhysicalSize | null | undefined
+    size: LogicalSize | PhysicalSize | null | undefined,
   ): Promise<void> {
     if (size && size.type !== "Logical" && size.type !== "Physical") {
       throw new Error(
-        "the `size` argument must be either a LogicalSize or a PhysicalSize instance"
+        "the `size` argument must be either a LogicalSize or a PhysicalSize instance",
       );
     }
 
@@ -1284,14 +1284,14 @@ class WindowManager extends WebviewWindowHandle {
    * @since 2.0.0
    */
   async setPosition(
-    position: LogicalPosition | PhysicalPosition
+    position: LogicalPosition | PhysicalPosition,
   ): Promise<void> {
     if (
       !position ||
       (position.type !== "Logical" && position.type !== "Physical")
     ) {
       throw new Error(
-        "the `position` argument must be either a LogicalPosition or a PhysicalPosition instance"
+        "the `position` argument must be either a LogicalPosition or a PhysicalPosition instance",
       );
     }
 
@@ -1484,14 +1484,14 @@ class WindowManager extends WebviewWindowHandle {
    * @since 2.0.0
    */
   async setCursorPosition(
-    position: LogicalPosition | PhysicalPosition
+    position: LogicalPosition | PhysicalPosition,
   ): Promise<void> {
     if (
       !position ||
       (position.type !== "Logical" && position.type !== "Physical")
     ) {
       throw new Error(
-        "the `position` argument must be either a LogicalPosition or a PhysicalPosition instance"
+        "the `position` argument must be either a LogicalPosition or a PhysicalPosition instance",
       );
     }
 
@@ -1626,7 +1626,7 @@ class WindowManager extends WebviewWindowHandle {
    */
   /* eslint-disable @typescript-eslint/promise-function-async */
   async onCloseRequested(
-    handler: (event: CloseRequestedEvent) => void | Promise<void>
+    handler: (event: CloseRequestedEvent) => void | Promise<void>,
   ): Promise<UnlistenFn> {
     return this.listen<null>(TauriEvent.WINDOW_CLOSE_REQUESTED, (event) => {
       const evt = new CloseRequestedEvent(event);
@@ -1663,13 +1663,13 @@ class WindowManager extends WebviewWindowHandle {
       TauriEvent.WINDOW_FOCUS,
       (event) => {
         handler({ ...event, payload: true });
-      }
+      },
     );
     const unlistenBlur = await this.listen<PhysicalPosition>(
       TauriEvent.WINDOW_BLUR,
       (event) => {
         handler({ ...event, payload: false });
-      }
+      },
     );
     return () => {
       unlistenFocus();
@@ -1701,11 +1701,11 @@ class WindowManager extends WebviewWindowHandle {
    * @since 2.0.0
    */
   async onScaleChanged(
-    handler: EventCallback<ScaleFactorChanged>
+    handler: EventCallback<ScaleFactorChanged>,
   ): Promise<UnlistenFn> {
     return this.listen<ScaleFactorChanged>(
       TauriEvent.WINDOW_SCALE_FACTOR_CHANGED,
-      handler
+      handler,
     );
   }
 
@@ -1760,27 +1760,27 @@ class WindowManager extends WebviewWindowHandle {
    * @since 2.0.0
    */
   async onFileDropEvent(
-    handler: EventCallback<FileDropEvent>
+    handler: EventCallback<FileDropEvent>,
   ): Promise<UnlistenFn> {
     const unlistenFileDrop = await this.listen<string[]>(
       TauriEvent.WINDOW_FILE_DROP,
       (event) => {
         handler({ ...event, payload: { type: "drop", paths: event.payload } });
-      }
+      },
     );
 
     const unlistenFileHover = await this.listen<string[]>(
       TauriEvent.WINDOW_FILE_DROP_HOVER,
       (event) => {
         handler({ ...event, payload: { type: "hover", paths: event.payload } });
-      }
+      },
     );
 
     const unlistenCancel = await this.listen<null>(
       TauriEvent.WINDOW_FILE_DROP_CANCELLED,
       (event) => {
         handler({ ...event, payload: { type: "cancel" } });
-      }
+      },
     );
 
     return () => {
@@ -1963,11 +1963,11 @@ if ("__TAURI_METADATA__" in window) {
     {
       // @ts-expect-error `skip` is not defined in the public API but it is handled by the constructor
       skip: true,
-    }
+    },
   );
 } else {
   console.warn(
-    `Could not find "window.__TAURI_METADATA__". The "appWindow" value will reference the "main" window label.\nNote that this is not an issue if running this frontend on a browser instead of a Tauri window.`
+    `Could not find "window.__TAURI_METADATA__". The "appWindow" value will reference the "main" window label.\nNote that this is not an issue if running this frontend on a browser instead of a Tauri window.`,
   );
   appWindow = new WebviewWindow("main", {
     // @ts-expect-error `skip` is not defined in the public API but it is handled by the constructor

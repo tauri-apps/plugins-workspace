@@ -74,6 +74,37 @@ const db = await Database.load("postgres://postgres:password@localhost/test");
 await db.execute("INSERT INTO ...");
 ```
 
+## Syntax
+
+We use sqlx as our underlying library, adopting their query syntax:
+
+- sqlite and postgres use the "$#" syntax when substituting query data
+- mysql uses "?" when substituting query data
+
+```javascript
+// INSERT and UPDATE examples for sqlite and postgres
+const result = await db.execute(
+  "INSERT into todos (id, title, status) VALUES ($1, $2, $3)",
+  [todos.id, todos.title, todos.status],
+);
+
+const result = await db.execute(
+  "UPDATE todos SET title = $1, completed = $2 WHERE id = $3",
+  [todos.title, todos.status, todos.id],
+);
+
+// INSERT and UPDATE examples for mysql
+const result = await db.execute(
+  "INSERT into todos (id, title, status) VALUES (?, ?, ?)",
+  [todos.id, todos.title, todos.status],
+);
+
+const result = await db.execute(
+  "UPDATE todos SET title = ?, completed = ? WHERE id = ?",
+  [todos.title, todos.status, todos.id],
+);
+```
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.

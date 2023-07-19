@@ -541,13 +541,13 @@ async function channels(): Promise<Channel[]> {
 }
 
 async function onNotificationReceived(
-  cb: (notification: Options) => void
+  cb: (notification: Options) => void,
 ): Promise<PluginListener> {
   return addPluginListener("notification", "notification", cb);
 }
 
 async function onAction(
-  cb: (notification: Options) => void
+  cb: (notification: Options) => void,
 ): Promise<PluginListener> {
   return addPluginListener("notification", "actionPerformed", cb);
 }

@@ -27,6 +27,8 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
+<!-- Add the branch for installations using git! -->
+
 ```sh
 pnpm add @tauri-apps/plugin-{{plugin-name}}
 # or

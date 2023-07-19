@@ -103,16 +103,16 @@ interface ConfirmDialogOptions {
 }
 
 async function open(
-  options?: OpenDialogOptions & { multiple?: false; directory?: false }
+  options?: OpenDialogOptions & { multiple?: false; directory?: false },
 ): Promise<null | FileResponse>;
 async function open(
-  options?: OpenDialogOptions & { multiple?: true; directory?: false }
+  options?: OpenDialogOptions & { multiple?: true; directory?: false },
 ): Promise<null | FileResponse[]>;
 async function open(
-  options?: OpenDialogOptions & { multiple?: false; directory?: true }
+  options?: OpenDialogOptions & { multiple?: false; directory?: true },
 ): Promise<null | string>;
 async function open(
-  options?: OpenDialogOptions & { multiple?: true; directory?: true }
+  options?: OpenDialogOptions & { multiple?: true; directory?: true },
 ): Promise<null | string[]>;
 /**
  * Open a file/directory selection dialog.
@@ -167,7 +167,7 @@ async function open(
  * @since 2.0.0
  */
 async function open(
-  options: OpenDialogOptions = {}
+  options: OpenDialogOptions = {},
 ): Promise<null | string | string[] | FileResponse | FileResponse[]> {
   if (typeof options === "object") {
     Object.freeze(options);
@@ -227,7 +227,7 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
  */
 async function message(
   message: string,
-  options?: string | MessageDialogOptions
+  options?: string | MessageDialogOptions,
 ): Promise<void> {
   const opts = typeof options === "string" ? { title: options } : options;
   return window.__TAURI_INVOKE__("plugin:dialog|message", {
@@ -256,7 +256,7 @@ async function message(
  */
 async function ask(
   message: string,
-  options?: string | ConfirmDialogOptions
+  options?: string | ConfirmDialogOptions,
 ): Promise<boolean> {
   const opts = typeof options === "string" ? { title: options } : options;
   return window.__TAURI_INVOKE__("plugin:dialog|ask", {
@@ -286,7 +286,7 @@ async function ask(
  */
 async function confirm(
   message: string,
-  options?: string | ConfirmDialogOptions
+  options?: string | ConfirmDialogOptions,
 ): Promise<boolean> {
   const opts = typeof options === "string" ? { title: options } : options;
   return window.__TAURI_INVOKE__("plugin:dialog|confirm", {
