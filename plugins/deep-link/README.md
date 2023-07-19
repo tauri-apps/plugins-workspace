@@ -141,7 +141,10 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-
+import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
+await onOpenUrl((urls) => {
+  console.log('deep link:', urls);
+});
 ```
 
 ## Contributing

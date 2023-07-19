@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use serde::Deserialize;
 use std::process::exit;
 
 #[path = "src/config.rs"]

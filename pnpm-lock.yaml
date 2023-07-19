@@ -198,12 +198,9 @@ importers:
       '@tauri-apps/api':
         specifier: ^2.0.0-alpha.5
         version: 2.0.0-alpha.5
-      '@tauri-apps/plugin-shell':
-        specifier: ^2.0.0-alpha.0
-        version: link:../../../shell
-      '@tauri-apps/plugin-window':
-        specifier: ^2.0.0-alpha.0
-        version: link:../../../window
+      '@tauri-apps/plugin-deep-link':
+        specifier: ^1.0.0
+        version: link:../..
     devDependencies:
       '@tauri-apps/cli':
         specifier: ^2.0.0-alpha.10

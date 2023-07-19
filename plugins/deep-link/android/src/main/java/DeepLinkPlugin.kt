@@ -19,7 +19,7 @@ import app.tauri.plugin.Invoke
 class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
     //private val implementation = Example()
     private var webView: WebView? = null
-    private var lastUrl: String? = null
+    private var currentUrl: String? = null
     private var channel: Channel? = null
 
     companion object {
@@ -27,9 +27,9 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
     }
 
     @Command
-    fun getLastLink(invoke: Invoke) {
+    fun getCurrent(invoke: Invoke) {
         val ret = JSObject()
-        ret.put("url", this.lastUrl)
+        ret.put("url", this.currentUrl)
         invoke.resolve(ret)
     }
 
@@ -37,7 +37,7 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
     fun registerListenerRust(invoke: Invoke) {
         val value = invoke.getString("value") ?: ""
         val ret = JSObject()
-        ret.put("value", this.lastUrl ?: "none")
+        ret.put("value", this.currentUrl ?: "none")
         invoke.resolve(ret)
     } */
 
@@ -59,10 +59,9 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
 
         if (intent.action == Intent.ACTION_VIEW) {
             // TODO: check if it makes sense to split up init url and last url
-            this.lastUrl = intent.data.toString()
-            // TODO: Test if emitting it here makes sense timing wise
+            this.currentUrl = intent.data.toString()
             val event = JSObject()
-            event.put("url", this.lastUrl)
+            event.put("url", this.currentUrl)
             this.channel?.send(event)
         }
 
@@ -72,10 +71,9 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
 
     override fun onNewIntent(intent: Intent) {
         if (intent.action == Intent.ACTION_VIEW) {
-            this.lastUrl = intent.data.toString()
-            // TODO: Emit event
+            this.currentUrl = intent.data.toString()
             val event = JSObject()
-            event.put("url", this.lastUrl)
+            event.put("url", this.currentUrl)
             this.channel?.send(event)
         }
     }

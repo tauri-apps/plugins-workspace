@@ -27,7 +27,3 @@ serde_json = "1"
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
 # DO NOT REMOVE!!
 custom-protocol = [ "tauri/custom-protocol" ]
-
-#[patch."https://github.com/lucasfernog/tauri"]
-#tauri-build = { path = "C:/Users/Fabian-Lars/dev/FabianLars/tauri-lucas/core/tauri-build" }
-#tauri = { path = "C:/Users/Fabian-Lars/dev/FabianLars/tauri-lucas/core/tauri" }

@@ -59,7 +59,7 @@ fn init_deep_link<R: Runtime, C: DeserializeOwned>(
     #[cfg(not(target_os = "android"))]
     Ok(DeepLink {
         app: app.clone(),
-        last_link: Default::default(),
+        current: Default::default(),
     })
 }
 
@@ -78,7 +78,7 @@ mod imp {
 
     #[derive(Debug, Deserialize)]
     #[serde(rename_all = "camelCase")]
-    pub struct LastUrl {
+    pub struct GetCurrentResponse {
         pub url: Option<url::Url>,
     }
 
@@ -86,10 +86,10 @@ mod imp {
     pub struct DeepLink<R: Runtime>(pub(crate) PluginHandle<R>);
 
     impl<R: Runtime> DeepLink<R> {
-        /// Get the last saved URL that triggered the deep link.
-        pub fn get_last_link(&self) -> crate::Result<Option<Vec<url::Url>>> {
+        /// Get the current URLs that triggered the deep link.
+        pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
             self.0
-                .run_mobile_plugin::<LastUrl>("getLastLink", ())
+                .run_mobile_plugin::<GetCurrentResponse>("getCurrent", ())
                 .map(|v| v.url.map(|url| vec![url]))
                 .map_err(Into::into)
         }
@@ -105,13 +105,13 @@ mod imp {
     pub struct DeepLink<R: Runtime> {
         #[allow(dead_code)]
         pub(crate) app: AppHandle<R>,
-        pub(crate) last_link: Mutex<Option<Vec<url::Url>>>,
+        pub(crate) current: Mutex<Option<Vec<url::Url>>>,
     }
 
     impl<R: Runtime> DeepLink<R> {
-        /// Get the last saved URL that triggered the deep link.
-        pub fn get_last_link(&self) -> crate::Result<Option<Vec<url::Url>>> {
-            Ok(self.last_link.lock().unwrap().clone())
+        /// Get the current URLs that triggered the deep link.
+        pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
+            Ok(self.current.lock().unwrap().clone())
         }
     }
 }
@@ -133,10 +133,7 @@ impl<R: Runtime, T: Manager<R>> crate::DeepLinkExt<R> for T {
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
     Builder::new("deep-link")
         .js_init_script(include_str!("api-iife.js").to_string())
-        .invoke_handler(tauri::generate_handler![
-            commands::execute,
-            commands::get_last_link
-        ])
+        .invoke_handler(tauri::generate_handler![commands::get_current])
         .setup(|app, api| {
             app.manage(init_deep_link(app, api)?);
             Ok(())
@@ -146,7 +143,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             if let tauri::RunEvent::Opened { urls } = _event {
                 let _ = _app.emit_all("deep-link://new-url", urls);
                 _app.state::<DeepLink<R>>()
-                    .last_link
+                    .current
                     .lock()
                     .unwrap()
                     .replace(urls.clone());
