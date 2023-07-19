@@ -23,6 +23,21 @@ tauri-plugin-deep-link = "2.0.0-alpha"
 tauri-plugin-deep-link = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
+Currently the plugin requires `lucasfernog/tauri#feat/ipc-custom-protocol`:
+
+```toml
+[patch.crates-io]
+tauri = { git = "https://github.com/lucasfernog/tauri", branch = "feat/ipc-custom-protocol" }
+tauri-build = { git = "https://github.com/lucasfernog/tauri", branch = "feat/ipc-custom-protocol" }
+```
+
+Additionally, you must use the Tauri CLI from the `dev` branch:
+
+```sh
+cargo install --git https://github.com/tauri-apps/tauri --branch dev tauri-cli
+cargo tauri [android|ios] [dev|build]
+```
+
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
@@ -40,6 +55,53 @@ pnpm add https://github.com/tauri-apps/tauri-plugin-deep-link#v2
 npm add https://github.com/tauri-apps/tauri-plugin-deep-link#v2
 # or
 yarn add https://github.com/tauri-apps/tauri-plugin-deep-link#v2
+```
+
+## Setting up
+
+### Android
+
+### iOS
+
+For [universal links](https://developer.apple.com/documentation/xcode/allowing-apps-and-websites-to-link-to-your-content?language=objc), you need a server with a `.well-known/apple-app-site-association` endpoint that must return a text response in the given format:
+
+```
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [ "$DEVELOPMENT_TEAM_ID.$APP_BUNDLE_ID" ],
+        "components": [
+          {
+            "/": "/open/*",
+            "comment": "Matches any URL whose path starts with /open/"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Where `$DEVELOPMENT_TEAM_ID` is the value defined on `tauri.conf.json > tauri > bundle > iOS > developmentTeam` or the `TAURI_APPLE_DEVELOPMENT_TEAM` environment variable and `$APP_BUNDLE_ID` is the value defined on `tauri.conf.json > tauri > bundle > identifier`. See [applinks.details](https://developer.apple.com/documentation/bundleresources/applinks/details) for more information.
+
+See [supporting associated domains](https://developer.apple.com/documentation/xcode/supporting-associated-domains?language=objc) for more information.
+
+## Configuration
+
+Under `tauri.conf.json > plugins > deep-link`, configure the domains you want to associate with your application:
+
+```json
+{
+    "plugins": {
+        "deep-link": {
+            "domains": [
+                { "host": "your.website.com", "pathPrefix": ["/open"] },
+                { "host": "another.site.br" }
+            ]
+        }
+    }
+}
 ```
 
 ## Usage
