@@ -61,6 +61,25 @@ yarn add https://github.com/tauri-apps/tauri-plugin-deep-link#v2
 
 ### Android
 
+For [app links](https://developer.android.com/training/app-links#android-app-links), you need a server with a `.well-known/assetlinks.json` endpoint that must return a text response in the given format:
+
+```
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "$APP_BUNDLE_ID",
+      "sha256_cert_fingerprints": [
+        $CERT_FINGERPRINT
+      ]
+    }
+  }
+]
+```
+
+Where `$APP_BUNDLE_ID` is the value defined on `tauri.conf.json > tauri > bundle > identifier` with `-` replaced with `_` and `$CERT_FINGERPRINT` is a list of SHA256 fingerprints of your app's signing certificates, see [verify android applinks](https://developer.android.com/training/app-links/verify-android-applinks#web-assoc) for more information.
+
 ### iOS
 
 For [universal links](https://developer.apple.com/documentation/xcode/allowing-apps-and-websites-to-link-to-your-content?language=objc), you need a server with a `.well-known/apple-app-site-association` endpoint that must return a text response in the given format:
@@ -93,14 +112,14 @@ Under `tauri.conf.json > plugins > deep-link`, configure the domains you want to
 
 ```json
 {
-    "plugins": {
-        "deep-link": {
-            "domains": [
-                { "host": "your.website.com", "pathPrefix": ["/open"] },
-                { "host": "another.site.br" }
-            ]
-        }
+  "plugins": {
+    "deep-link": {
+      "domains": [
+        { "host": "your.website.com", "pathPrefix": ["/open"] },
+        { "host": "another.site.br" }
+      ]
     }
+  }
 }
 ```
 
