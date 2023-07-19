@@ -4,7 +4,8 @@
 <dict>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:d7d7-177-23-156-174.ngrok-free.app</string>
+		<string>applinks:fabianlars.de</string>
+		<string>applinks:tauri.app</string>
 	</array>
 </dict>
 </plist>

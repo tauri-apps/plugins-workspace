@@ -20,7 +20,3 @@ tauri = { git = "https://github.com/lucasfernog/tauri", branch = "feat/ipc-custo
 log = "0.4"
 thiserror = "1"
 url = "2"
-
-#[patch."https://github.com/lucasfernog/tauri"]
-#tauri-build = { path = "C:/Users/Fabian-Lars/dev/FabianLars/tauri-lucas/core/tauri-build" }
-#tauri = { path = "C:/Users/Fabian-Lars/dev/FabianLars/tauri-lucas/core/tauri" }

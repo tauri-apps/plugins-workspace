@@ -63,9 +63,9 @@
       "hello": "world"
     },
     "deep-link": {
-      "android": [
-        { "domain": "fabianlars.de", "pathPrefix": "/intent" },
-        { "domain": "tauri.app" }
+      "domains": [
+        { "host": "fabianlars.de", "pathPrefix": ["/intent"] },
+        { "host": "tauri.app" }
       ]
     }
   }
