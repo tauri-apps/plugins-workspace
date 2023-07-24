@@ -13,7 +13,7 @@ tauri = { version = "1", features = [] }
 tokio = { version = "1", features = ["net"] }
 futures-util = "0.3"
 tauri-plugin-websocket = { path = "../../../" }
-tokio-tungstenite = "0.19"
+tokio-tungstenite = "0.20"
 
 [build-dependencies]
 tauri-build = { version = "1", features = [] }
