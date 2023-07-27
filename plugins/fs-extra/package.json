@@ -25,7 +25,7 @@
     "LICENSE"
   ],
   "devDependencies": {
-    "tslib": "2.6.0"
+    "tslib": "2.6.1"
   },
   "dependencies": {
     "@tauri-apps/api": "1.4.0"
