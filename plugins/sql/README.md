@@ -1,4 +1,4 @@
-![plugin-sql](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/sql/banner.png)
+![plugin-sql](banner.png)
 
 Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx). It supports the `sqlite`, `mysql` and `postgres` drivers, enabled by a Cargo feature.
 
@@ -62,16 +62,16 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import Database from '@tauri-apps/plugin-sql';
+import Database from "@tauri-apps/plugin-sql";
 
 // sqlite. The path is relative to `tauri::api::path::BaseDirectory::App`.
-const db = await Database.load('sqlite:test.db');
+const db = await Database.load("sqlite:test.db");
 // mysql
-const db = await Database.load('mysql://user:pass@host/database');
+const db = await Database.load("mysql://user:pass@host/database");
 // postgres
-const db = await Database.load('postgres://postgres:password@localhost/test');
+const db = await Database.load("postgres://postgres:password@localhost/test");
 
-await db.execute('INSERT INTO ...');
+await db.execute("INSERT INTO ...");
 ```
 
 ## Syntax
@@ -84,24 +84,24 @@ We use sqlx as our underlying library, adopting their query syntax:
 ```javascript
 // INSERT and UPDATE examples for sqlite and postgres
 const result = await db.execute(
-  'INSERT into todos (id, title, status) VALUES ($1, $2, $3)',
-  [todos.id, todos.title, todos.status]
+  "INSERT into todos (id, title, status) VALUES ($1, $2, $3)",
+  [todos.id, todos.title, todos.status],
 );
 
 const result = await db.execute(
-  'UPDATE todos SET title = $1, completed = $2 WHERE id = $3',
-  [todos.title, todos.status, todos.id]
+  "UPDATE todos SET title = $1, completed = $2 WHERE id = $3",
+  [todos.title, todos.status, todos.id],
 );
 
 // INSERT and UPDATE examples for mysql
 const result = await db.execute(
-  'INSERT into todos (id, title, status) VALUES (?, ?, ?)',
-  [todos.id, todos.title, todos.status]
+  "INSERT into todos (id, title, status) VALUES (?, ?, ?)",
+  [todos.id, todos.title, todos.status],
 );
 
 const result = await db.execute(
-  'UPDATE todos SET title = ?, completed = ? WHERE id = ?',
-  [todos.title, todos.status, todos.id]
+  "UPDATE todos SET title = ?, completed = ? WHERE id = ?",
+  [todos.title, todos.status, todos.id],
 );
 ```
 

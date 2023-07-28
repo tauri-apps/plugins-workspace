@@ -1,4 +1,4 @@
-![plugin-autostart](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/autostart/banner.png)
+![plugin-autostart](banner.png)
 
 Automatically launch your application at startup. Supports Windows, Mac (via AppleScript or Launch Agent), and Linux.
 
@@ -62,7 +62,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { enable, isEnabled, disable } from '@tauri-apps/plugin-autostart';
+import { enable, isEnabled, disable } from "@tauri-apps/plugin-autostart";
 
 await enable();
 

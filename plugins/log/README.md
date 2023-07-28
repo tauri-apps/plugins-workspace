@@ -1,4 +1,4 @@
-![plugin-log](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/log/banner.png)
+![plugin-log](banner.png)
 
 Configurable logging for your Tauri app.
 
@@ -66,14 +66,14 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { trace, info, error, attachConsole } from '@tauri-apps/plugin-log';
+import { trace, info, error, attachConsole } from "@tauri-apps/plugin-log";
 
 // with LogTarget::Webview enabled this function will print logs to the browser console
 const detach = await attachConsole();
 
-trace('Trace');
-info('Info');
-error('Error');
+trace("Trace");
+info("Info");
+error("Error");
 
 // detach the browser console from the log stream
 detach();

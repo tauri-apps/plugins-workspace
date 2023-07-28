@@ -1,4 +1,4 @@
-![plugin-fs](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/fs/banner.png)
+![plugin-fs](banner.png)
 
 Access the file system.
 
@@ -60,9 +60,9 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { metadata } from '@tauri-apps/plugin-fs';
+import { metadata } from "@tauri-apps/plugin-fs";
 
-await metadata('/path/to/file');
+await metadata("/path/to/file");
 ```
 
 ## Contributing
