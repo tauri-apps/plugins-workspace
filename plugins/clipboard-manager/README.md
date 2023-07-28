@@ -1,4 +1,4 @@
-![plugin-clipboard-manager](https://github.com/tauri-apps/plugins-workspace/blob/0417b7ad6047694cf101592ed65b41dc006df5ea/plugins/clipboard-manager/banner.png)
+![plugin-clipboard-manager](banner.png)
 
 Read and write to the system clipboard.
 
@@ -60,9 +60,9 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { writeText, readText } from '@tauri-apps/plugin-clipboard-manager';
-await writeText('Tauri is awesome!');
-assert(await readText(), 'Tauri is awesome!');
+import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
+await writeText("Tauri is awesome!");
+assert(await readText(), "Tauri is awesome!");
 ```
 
 ## Contributing

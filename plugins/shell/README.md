@@ -1,4 +1,4 @@
-![plugin-shell](https://github.com/tauri-apps/plugins-workspace/blob/0417b7ad6047694cf101592ed65b41dc006df5ea/plugins/shell/banner.png)
+![plugin-shell](banner.png)
 
 Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application.
 
@@ -60,8 +60,8 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Command } from '@tauri-apps/plugin-shell';
-Command.create('git', ['commit', '-m', 'the commit message']);
+import { Command } from "@tauri-apps/plugin-shell";
+Command.create("git", ["commit", "-m", "the commit message"]);
 ```
 
 ## Contributing

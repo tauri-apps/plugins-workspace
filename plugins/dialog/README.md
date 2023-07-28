@@ -1,4 +1,4 @@
-![plugin-dialog](https://github.com/tauri-apps/plugins-workspace/blob/0417b7ad6047694cf101592ed65b41dc006df5ea/plugins/dialog/banner.png)
+![plugin-dialog](banner.png)
 
 Native system dialogs for opening and saving files along with message dialogs.
 

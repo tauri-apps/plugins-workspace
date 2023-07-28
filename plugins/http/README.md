@@ -1,4 +1,4 @@
-![plugin-http](https://github.com/tauri-apps/plugins-workspace/blob/0417b7ad6047694cf101592ed65b41dc006df5ea/plugins/http/banner.png)
+![plugin-http](banner.png)
 
 Access the HTTP client written in Rust.
 
@@ -60,9 +60,9 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { fetch } from '@tauri-apps/plugin-http';
-const response = await fetch('http://localhost:3003/users/2', {
-  method: 'GET',
+import { fetch } from "@tauri-apps/plugin-http";
+const response = await fetch("http://localhost:3003/users/2", {
+  method: "GET",
   timeout: 30,
 });
 ```

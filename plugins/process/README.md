@@ -1,4 +1,4 @@
-![plugin-process](https://github.com/tauri-apps/plugins-workspace/blob/0417b7ad6047694cf101592ed65b41dc006df5ea/plugins/process/banner.png)
+![plugin-process](banner.png)
 
 This plugin provides APIs to access the current process. To spawn child processes, see the [`shell`](https://github.com/tauri-apps/tauri-plugin-shell) plugin.
 
@@ -60,7 +60,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { exit, relaunch } from '@tauri-apps/plugin-process';
+import { exit, relaunch } from "@tauri-apps/plugin-process";
 // exit the app with the given status code
 await exit(0);
 // restart the app

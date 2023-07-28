@@ -1,4 +1,4 @@
-![plugin-websocket](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/websocket/banner.png)
+![plugin-websocket](banner.png)
 
 Expose a WebSocket server to your Tauri frontend.
 
@@ -60,11 +60,11 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import WebSocket from '@tauri-apps/plugin-websocket';
+import WebSocket from "@tauri-apps/plugin-websocket";
 
-const ws = await WebSocket.connect('wss://example.com');
+const ws = await WebSocket.connect("wss://example.com");
 
-await ws.send('Hello World');
+await ws.send("Hello World");
 
 await ws.disconnect();
 ```

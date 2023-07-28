@@ -1,4 +1,4 @@
-![plugin-os](https://github.com/tauri-apps/plugins-workspace/blob/0417b7ad6047694cf101592ed65b41dc006df5ea/plugins/os/banner.png)
+![plugin-os](banner.png)
 
 Read information about the operating system.
 
@@ -60,7 +60,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { version } from '@tauri-apps/plugin-os';
+import { version } from "@tauri-apps/plugin-os";
 const osVersion = await version();
 ```
 
