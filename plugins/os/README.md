@@ -1,4 +1,4 @@
-![plugin-os](banner.png)
+![plugin-os](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/os/banner.png)
 
 Read information about the operating system.
 
