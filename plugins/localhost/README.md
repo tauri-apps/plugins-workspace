@@ -1,4 +1,4 @@
-![plugin-localhost](banner.png)
+![plugin-localhost]https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/localhost/banner.png
 
 Expose your apps assets through a localhost server instead of the default custom protocol.
 

@@ -1,4 +1,4 @@
-![plugin-websocket](banner.png)
+![plugin-websocket]https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/websocket/banner.png
 
 Expose a WebSocket server to your Tauri frontend.
 

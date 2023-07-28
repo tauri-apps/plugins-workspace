@@ -1,4 +1,4 @@
-![plugin-authenticator](banner.png)
+![plugin-authenticator]https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/authenticator/banner.png
 
 Use hardware security-keys in your Tauri App.
 

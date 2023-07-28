@@ -1,4 +1,4 @@
-![plugin-positioner](banner.png)
+![plugin-positioner]https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/positioner/banner.png
 
 Position your windows at well-known locations.
 

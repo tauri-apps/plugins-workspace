@@ -1,4 +1,4 @@
-![plugin-stronghold](banner.png)
+![plugin-stronghold]https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/stronghold/banner.png
 
 Store secrets and keys using the [IOTA Stronghold](https://github.com/iotaledger/stronghold.rs) encrypted database and secure runtime.
 
