@@ -1,4 +1,4 @@
-![plugin-process]https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/process/banner.png
+![plugin-process](banner.png)
 
 This plugin provides APIs to access the current process. To spawn child processes, see the [`shell`](https://github.com/tauri-apps/tauri-plugin-shell) plugin.
 

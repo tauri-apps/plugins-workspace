@@ -1,4 +1,4 @@
-![plugin-fs]https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/fs/banner.png
+![plugin-fs](banner.png)
 
 Access the file system.
 

@@ -1,4 +1,4 @@
-![plugin-store]https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/store/banner.png
+![plugin-store](banner.png)
 
 Simple, persistent key-value store.
 
