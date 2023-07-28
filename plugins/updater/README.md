@@ -1,4 +1,4 @@
-![plugin-updater](banner.png)
+![plugin-updater](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/updater/banner.png)
 
 In-app updates for Tauri applications.
 
@@ -67,8 +67,8 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { check } from "@tauri-apps/plugin-updater";
-import { relaunch } from "@tauri-apps/plugin-process";
+import { check } from '@tauri-apps/plugin-updater';
+import { relaunch } from '@tauri-apps/plugin-process';
 const update = await check();
 if (update.response.available) {
   await update.downloadAndInstall();

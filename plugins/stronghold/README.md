@@ -1,4 +1,4 @@
-![plugin-stronghold](banner.png)
+![plugin-stronghold](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/stronghold/banner.png)
 
 Store secrets and keys using the [IOTA Stronghold](https://github.com/iotaledger/stronghold.rs) encrypted database and secure runtime.
 
@@ -64,7 +64,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Stronghold, Location } from "@tauri-apps/plugin-stronghold";
+import { Stronghold, Location } from '@tauri-apps/plugin-stronghold';
 
 // TODO
 ```

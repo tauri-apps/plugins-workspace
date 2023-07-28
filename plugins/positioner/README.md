@@ -1,4 +1,4 @@
-![plugin-positioner](banner.png)
+![plugin-positioner](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/positioner/banner.png)
 
 Position your windows at well-known locations.
 
@@ -66,7 +66,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { move_window, Position } from "@tauri-apps/plugin-positioner";
+import { move_window, Position } from '@tauri-apps/plugin-positioner';
 
 move_window(Position.TopRight);
 ```

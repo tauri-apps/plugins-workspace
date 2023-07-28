@@ -1,4 +1,4 @@
-![plugin-authenticator](banner.png)
+![plugin-authenticator](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/authenticator/banner.png)
 
 Use hardware security-keys in your Tauri App.
 
@@ -70,7 +70,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Authenticator } from "@tauri-apps/plugin-authenticator";
+import { Authenticator } from '@tauri-apps/plugin-authenticator';
 
 const auth = new Authenticator();
 auth.init(); // initialize transports
@@ -80,9 +80,9 @@ const arr = new Uint32Array(32);
 window.crypto.getRandomValues(arr);
 const b64 = btoa(String.fromCharCode.apply(null, arr));
 // web-safe base64
-const challenge = b64.replace(/\+/g, "-").replace(/\//g, "_");
+const challenge = b64.replace(/\+/g, '-').replace(/\//g, '_');
 
-const domain = "https://tauri.app";
+const domain = 'https://tauri.app';
 
 // attempt to register with the security key
 const json = await auth.register(challenge, domain);
@@ -93,7 +93,7 @@ const r2 = await auth.verifyRegistration(
   challenge,
   app,
   registerResult.registerData,
-  registerResult.clientData,
+  registerResult.clientData
 );
 const j2 = JSON.parse(r2);
 
@@ -108,11 +108,11 @@ const counter = await auth.verifySignature(
   signData.signData,
   clientData,
   keyHandle,
-  pubkey,
+  pubkey
 );
 
 if (counter && counter > 0) {
-  console.log("SUCCESS!");
+  console.log('SUCCESS!');
 }
 ```
 

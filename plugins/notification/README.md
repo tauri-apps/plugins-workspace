@@ -1,4 +1,4 @@
-![plugin-notification](banner.png)
+![plugin-notification](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/notification/banner.png)
 
 Send message notifications (brief auto-expiring OS window element) to your user. Can also be used with the Notification Web API.
 

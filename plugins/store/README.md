@@ -1,4 +1,4 @@
-![plugin-store](banner.png)
+![plugin-store](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/store/banner.png)
 
 Simple, persistent key-value store.
 
@@ -60,13 +60,13 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Store } from "@tauri-apps/plugin-store";
+import { Store } from '@tauri-apps/plugin-store';
 
-const store = new Store(".settings.dat");
+const store = new Store('.settings.dat');
 
-await store.set("some-key", { value: 5 });
+await store.set('some-key', { value: 5 });
 
-const val = await store.get("some-key");
+const val = await store.get('some-key');
 assert(val, { value: 5 });
 
 await store.save(); // this manually saves the store, otherwise the store is only saved when your app is closed

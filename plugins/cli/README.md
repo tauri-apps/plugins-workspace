@@ -1,4 +1,4 @@
-![plugin-cli](banner.png)
+![plugin-cli](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/cli/banner.png)
 
 Parse arguments from your Command Line Interface.
 
@@ -67,12 +67,12 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { getMatches } from "@tauri-apps/plugin-cli";
+import { getMatches } from '@tauri-apps/plugin-cli';
 const matches = await getMatches();
-if (matches.subcommand?.name === "run") {
+if (matches.subcommand?.name === 'run') {
   // `./your-app run $ARGS` was executed
   const args = matches.subcommand?.matches.args;
-  if ("debug" in args) {
+  if ('debug' in args) {
     // `./your-app run --debug` was executed
   }
 } else {

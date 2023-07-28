@@ -1,4 +1,4 @@
-![plugin-app](banner.png)
+![plugin-app](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/app/banner.png)
 
 This plugin provides APIs to read application metadata and macOS app visibility functions.
 
@@ -60,7 +60,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { getVersion, hide } from "@tauri-apps/plugin-app";
+import { getVersion, hide } from '@tauri-apps/plugin-app';
 const appVersion = await getVersion();
 await hide();
 ```
