@@ -1,4 +1,4 @@
-![plugin-window-state](banner.png)
+![plugin-window-state](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/window-state/banner.png)
 
 Save window positions and sizes and restore them when the app is reopened.
 

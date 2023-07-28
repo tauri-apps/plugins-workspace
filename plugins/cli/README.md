@@ -1,4 +1,4 @@
-![plugin-cli](banner.png)
+![plugin-cli](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/cli/banner.png)
 
 Parse arguments from your Command Line Interface.
 

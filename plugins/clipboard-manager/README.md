@@ -1,4 +1,4 @@
-![plugin-clipboard-manager](banner.png)
+![plugin-clipboard-manager](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/clipboard-manager/banner.png)
 
 Read and write to the system clipboard.
 

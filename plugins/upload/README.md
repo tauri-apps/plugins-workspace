@@ -1,4 +1,4 @@
-![plugin-upload](banner.png)
+![plugin-upload](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/upload/banner.png)
 
 Upload files from disk to a remote server over HTTP.
 Download files from a remote HTTP server to disk.
