@@ -1,4 +1,4 @@
-![plugin-window](banner.png)
+![plugin-window](https://github.com/tauri-apps/plugins-workspace/blob/0417b7ad6047694cf101592ed65b41dc006df5ea/plugins/window/banner.png)
 
 Interact with the Tauri window.
 
@@ -60,19 +60,19 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { appWindow, WebviewWindow } from "@tauri-apps/plugin-window";
+import { appWindow, WebviewWindow } from '@tauri-apps/plugin-window';
 
 // manipulating this window
 await appWindow.setResizable(false);
 
 // Creating new windows:
 // loading embedded asset:
-const webview = new WebviewWindow("theUniqueLabel", {
-  url: "path/to/page.html",
+const webview = new WebviewWindow('theUniqueLabel', {
+  url: 'path/to/page.html',
 });
 // alternatively, load a remote URL:
-const webview = new WebviewWindow("theUniqueLabel", {
-  url: "https://github.com/tauri-apps/tauri",
+const webview = new WebviewWindow('theUniqueLabel', {
+  url: 'https://github.com/tauri-apps/tauri',
 });
 ```
 

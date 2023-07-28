@@ -1,4 +1,4 @@
-![tauri-plugin-single-instance](banner.png)
+![tauri-plugin-single-instance](https://github.com/tauri-apps/plugins-workspace/blob/96fc592649ccf64613afff0bf523dcd3c230f6ad/plugins/single-instance/banner.png)
 
 Ensure a single instance of your tauri app is running.
 

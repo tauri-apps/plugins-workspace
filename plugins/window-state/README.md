@@ -1,4 +1,4 @@
-![plugin-window-state](banner.png)
+![plugin-window-state](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/window-state/banner.png)
 
 Save window positions and sizes and restore them when the app is reopened.
 
@@ -71,7 +71,7 @@ app.save_window_state(StateFlags::all()); // will save the state of all open win
 or through Javascript
 
 ```javascript
-import { saveWindowState, StateFlags } from "@tauri-apps/plugin-window-state";
+import { saveWindowState, StateFlags } from '@tauri-apps/plugin-window-state';
 
 saveWindowState(StateFlags.ALL);
 ```
@@ -91,7 +91,7 @@ or through Javascript
 import {
   restoreStateCurrent,
   StateFlags,
-} from "@tauri-apps/plugin-window-state";
+} from '@tauri-apps/plugin-window-state';
 
 restoreStateCurrent(StateFlags.ALL);
 ```
