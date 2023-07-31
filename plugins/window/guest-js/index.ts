@@ -1606,7 +1606,7 @@ class WindowManager extends WebviewWindowHandle {
    * @example
    * ```typescript
    * import { appWindow } from "@tauri-apps/plugin-window";
-   * import { confirm } from '@tauri-apps/api/dialog';
+   * import { confirm } from '@tauri-apps/plugin-dialog';
    * const unlisten = await appWindow.onCloseRequested(async (event) => {
    *   const confirmed = await confirm('Are you sure?');
    *   if (!confirmed) {
