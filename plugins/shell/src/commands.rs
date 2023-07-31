@@ -133,12 +133,12 @@ pub fn execute<R: Runtime>(
         }
     };
     if let Some(cwd) = options.cwd {
-        command = command.current_dir(cwd);
+        command.current_dir(cwd);
     }
     if let Some(env) = options.env {
-        command = command.envs(env);
+        command.envs(env);
     } else {
-        command = command.env_clear();
+        command.env_clear();
     }
     let encoding = match options.encoding {
         Option::None => EncodingWrapper::Text(None),

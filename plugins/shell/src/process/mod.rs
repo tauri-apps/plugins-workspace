@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: MIT
 
 use std::{
-    collections::HashMap,
+    ffi::OsStr,
     io::{BufReader, Write},
-    path::PathBuf,
+    ops::{Deref, DerefMut},
+    path::{Path, PathBuf},
     process::{Command as StdCommand, Stdio},
     sync::{Arc, RwLock},
     thread::spawn,
@@ -53,12 +54,20 @@ pub enum CommandEvent {
 
 /// The type to spawn commands.
 #[derive(Debug)]
-pub struct Command {
-    program: String,
-    args: Vec<String>,
-    env_clear: bool,
-    env: HashMap<String, String>,
-    current_dir: Option<PathBuf>,
+pub struct Command(StdCommand);
+
+impl Deref for Command {
+    type Target = StdCommand;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Command {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
 }
 
 /// Spawned child process.
@@ -116,83 +125,37 @@ pub struct Output {
     pub stderr: Vec<u8>,
 }
 
-fn relative_command_path(command: String) -> crate::Result<String> {
+fn relative_command_path(command: &Path) -> crate::Result<PathBuf> {
     match platform::current_exe()?.parent() {
         #[cfg(windows)]
-        Some(exe_dir) => Ok(format!("{}\\{command}.exe", exe_dir.display())),
+        Some(exe_dir) => Ok(exe_dir.join(format!("{command}.exe"))),
         #[cfg(not(windows))]
-        Some(exe_dir) => Ok(format!("{}/{command}", exe_dir.display())),
+        Some(exe_dir) => Ok(exe_dir.join(command)),
         None => Err(crate::Error::CurrentExeHasNoParent),
     }
 }
 
 impl From<Command> for StdCommand {
     fn from(cmd: Command) -> StdCommand {
-        let mut command = StdCommand::new(cmd.program);
-        command.args(cmd.args);
-        command.stdout(Stdio::piped());
-        command.stdin(Stdio::piped());
-        command.stderr(Stdio::piped());
-        if cmd.env_clear {
-            command.env_clear();
-        }
-        command.envs(cmd.env);
-        if let Some(current_dir) = cmd.current_dir {
-            command.current_dir(current_dir);
-        }
-        #[cfg(windows)]
-        command.creation_flags(CREATE_NO_WINDOW);
-        command
+        cmd.0
     }
 }
 
 impl Command {
-    pub(crate) fn new<S: Into<String>>(program: S) -> Self {
-        Self {
-            program: program.into(),
-            args: Default::default(),
-            env_clear: false,
-            env: Default::default(),
-            current_dir: None,
-        }
+    pub(crate) fn new<S: AsRef<OsStr>>(program: S) -> Self {
+        let mut command = StdCommand::new(program);
+
+        command.stdout(Stdio::piped());
+        command.stdin(Stdio::piped());
+        command.stderr(Stdio::piped());
+        #[cfg(windows)]
+        command.creation_flags(CREATE_NO_WINDOW);
+
+        Self(command)
     }
 
-    pub(crate) fn new_sidecar<S: Into<String>>(program: S) -> crate::Result<Self> {
-        Ok(Self::new(relative_command_path(program.into())?))
-    }
-
-    /// Appends arguments to the command.
-    #[must_use]
-    pub fn args<I, S>(mut self, args: I) -> Self
-    where
-        I: IntoIterator<Item = S>,
-        S: AsRef<str>,
-    {
-        for arg in args {
-            self.args.push(arg.as_ref().to_string());
-        }
-        self
-    }
-
-    /// Clears the entire environment map for the child process.
-    #[must_use]
-    pub fn env_clear(mut self) -> Self {
-        self.env_clear = true;
-        self
-    }
-
-    /// Adds or updates multiple environment variable mappings.
-    #[must_use]
-    pub fn envs(mut self, env: HashMap<String, String>) -> Self {
-        self.env = env;
-        self
-    }
-
-    /// Sets the working directory for the child process.
-    #[must_use]
-    pub fn current_dir(mut self, current_dir: PathBuf) -> Self {
-        self.current_dir.replace(current_dir);
-        self
+    pub(crate) fn new_sidecar<S: AsRef<Path>>(program: S) -> crate::Result<Self> {
+        Ok(Self::new(relative_command_path(program.as_ref())?))
     }
 
     /// Spawns the command.

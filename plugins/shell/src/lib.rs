@@ -13,6 +13,8 @@
 
 use std::{
     collections::HashMap,
+    ffi::OsStr,
+    path::Path,
     sync::{Arc, Mutex},
 };
 
@@ -45,7 +47,7 @@ pub struct Shell<R: Runtime> {
 
 impl<R: Runtime> Shell<R> {
     /// Creates a new Command for launching the given program.
-    pub fn command(&self, program: impl Into<String>) -> Command {
+    pub fn command(&self, program: impl AsRef<OsStr>) -> Command {
         Command::new(program)
     }
 
@@ -53,7 +55,7 @@ impl<R: Runtime> Shell<R> {
     ///
     /// A sidecar program is a embedded external binary in order to make your application work
     /// or to prevent users having to install additional dependencies (e.g. Node.js, Python, etc).
-    pub fn sidecar(&self, program: impl Into<String>) -> Result<Command> {
+    pub fn sidecar(&self, program: impl AsRef<Path>) -> Result<Command> {
         Command::new_sidecar(program)
     }
 
