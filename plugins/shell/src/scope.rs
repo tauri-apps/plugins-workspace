@@ -237,15 +237,13 @@ impl Scope {
                     .into_owned()
             })
             .unwrap_or_else(|| command.command.to_string_lossy().into_owned());
-        let mut command = if command.sidecar {
+        let command = if command.sidecar {
             Command::new_sidecar(command_s).map_err(|e| Error::Sidecar(e.to_string()))?
         } else {
             Command::new(command_s)
         };
 
-        command.args(args);
-
-        Ok(command)
+        Ok(command.args(args))
     }
 
     /// Open a path in the default (or specified) browser.

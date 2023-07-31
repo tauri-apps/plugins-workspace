@@ -5,7 +5,6 @@
 use std::{
     ffi::OsStr,
     io::{BufReader, Write},
-    ops::{Deref, DerefMut},
     path::{Path, PathBuf},
     process::{Command as StdCommand, Stdio},
     sync::{Arc, RwLock},
@@ -55,20 +54,6 @@ pub enum CommandEvent {
 /// The type to spawn commands.
 #[derive(Debug)]
 pub struct Command(StdCommand);
-
-impl Deref for Command {
-    type Target = StdCommand;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for Command {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
 
 /// Spawned child process.
 #[derive(Debug)]
@@ -156,6 +141,61 @@ impl Command {
 
     pub(crate) fn new_sidecar<S: AsRef<Path>>(program: S) -> crate::Result<Self> {
         Ok(Self::new(relative_command_path(program.as_ref())?))
+    }
+
+    /// Appends an argument to the command.
+    #[must_use]
+    pub fn arg<S: AsRef<OsStr>>(mut self, arg: S) -> Self {
+        self.0.arg(arg);
+        self
+    }
+
+    /// Appends arguments to the command.
+    #[must_use]
+    pub fn args<I, S>(mut self, args: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<OsStr>,
+    {
+        self.0.args(args);
+        self
+    }
+
+    /// Clears the entire environment map for the child process.
+    #[must_use]
+    pub fn env_clear(mut self) -> Self {
+        self.0.env_clear();
+        self
+    }
+
+    /// Inserts or updates an explicit environment variable mapping.
+    #[must_use]
+    pub fn env<K, V>(mut self, key: K, value: V) -> Self
+    where
+        K: AsRef<OsStr>,
+        V: AsRef<OsStr>,
+    {
+        self.0.env(key, value);
+        self
+    }
+
+    /// Adds or updates multiple environment variable mappings.
+    #[must_use]
+    pub fn envs<I, K, V>(mut self, envs: I) -> Self
+    where
+        I: IntoIterator<Item = (K, V)>,
+        K: AsRef<OsStr>,
+        V: AsRef<OsStr>,
+    {
+        self.0.envs(envs);
+        self
+    }
+
+    /// Sets the working directory for the child process.
+    #[must_use]
+    pub fn current_dir<P: AsRef<Path>>(mut self, current_dir: P) -> Self {
+        self.0.current_dir(current_dir);
+        self
     }
 
     /// Spawns the command.
