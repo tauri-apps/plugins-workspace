@@ -113,7 +113,7 @@ pub struct Output {
 fn relative_command_path(command: &Path) -> crate::Result<PathBuf> {
     match platform::current_exe()?.parent() {
         #[cfg(windows)]
-        Some(exe_dir) => Ok(exe_dir.join(command).with_extension("exe"),
+        Some(exe_dir) => Ok(exe_dir.join(command).with_extension("exe")),
         #[cfg(not(windows))]
         Some(exe_dir) => Ok(exe_dir.join(command)),
         None => Err(crate::Error::CurrentExeHasNoParent),
