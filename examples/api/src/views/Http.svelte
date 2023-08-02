@@ -12,20 +12,33 @@
 
     const options = {
       method: method || "GET",
+      headers: {},
     };
 
-    if (
-      (httpBody.startsWith("{") && httpBody.endsWith("}")) ||
-      (httpBody.startsWith("[") && httpBody.endsWith("]"))
-    ) {
-      options.body = JSON.parse(httpBody);
-    } else if (httpBody !== "") {
+    let bodyType;
+
+    if (method !== "GET") {
       options.body = httpBody;
+
+      if (
+        (httpBody.startsWith("{") && httpBody.endsWith("}")) ||
+        (httpBody.startsWith("[") && httpBody.endsWith("]"))
+      ) {
+        options.headers["Content-Type"] = "application/json";
+        bodyType = "json";
+      } else if (httpBody !== "") {
+        bodyType = "text";
+      }
     }
 
-    tauriFetch("http://localhost:3003", options)
-      .then(onMessage)
-      .catch(onMessage);
+    const response = await tauriFetch("http://localhost:3003", options);
+    const body =
+      bodyType === "json" ? await response.json() : await response.text();
+    onMessage({
+      url: response.url,
+      status: response.status,
+      body,
+    });
   }
 
   /// http form
@@ -46,9 +59,10 @@
         : undefined,
     });
     result = {
+      url: response.url,
       status: response.status,
       headers: JSON.parse(JSON.stringify(response.headers)),
-      body: response.body,
+      body: await response.text(),
     };
   }
 </script>

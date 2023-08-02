@@ -2,16 +2,60 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{collections::HashMap, time::Duration};
+use std::{collections::HashMap, str::FromStr, time::Duration};
 
 use http::{header, HeaderName, HeaderValue, Method, StatusCode};
 use reqwest::redirect::Policy;
+use serde::{de::Deserializer, Deserialize, Serialize};
 use tauri::{command, AppHandle, Runtime};
 
-use crate::{Error, FetchRequest, FetchResponse, HttpExt, RequestId};
+use crate::{Error, FetchRequest, HttpExt, RequestId};
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FetchResponse {
+    status: u16,
+    status_text: String,
+    headers: Vec<(String, String)>,
+    url: String,
+}
+
+#[derive(Serialize)]
+#[serde(untagged)]
+pub enum ResponseBody {
+    Blob(Vec<u8>),
+    Text(String),
+}
+
+pub enum BodyKind {
+    Blob,
+    Text,
+}
+
+impl FromStr for BodyKind {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "blob" => Ok(Self::Blob),
+            "text" => Ok(Self::Text),
+            _ => Err("unknown body kind"),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for BodyKind {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let kind = String::deserialize(deserializer)?;
+        kind.parse().map_err(serde::de::Error::custom)
+    }
+}
 
 #[command]
-pub(crate) async fn fetch<R: Runtime>(
+pub async fn fetch<R: Runtime>(
     app: AppHandle<R>,
     method: String,
     url: url::Url,
@@ -109,10 +153,7 @@ pub(crate) async fn fetch<R: Runtime>(
 }
 
 #[command]
-pub(crate) async fn fetch_cancel<R: Runtime>(
-    app: AppHandle<R>,
-    rid: RequestId,
-) -> crate::Result<()> {
+pub async fn fetch_cancel<R: Runtime>(app: AppHandle<R>, rid: RequestId) -> crate::Result<()> {
     let mut request_table = app.http().requests.lock().await;
     let req = request_table
         .get_mut(&rid)
@@ -122,7 +163,7 @@ pub(crate) async fn fetch_cancel<R: Runtime>(
 }
 
 #[command]
-pub(crate) async fn fetch_send<R: Runtime>(
+pub async fn fetch_send<R: Runtime>(
     app: AppHandle<R>,
     rid: RequestId,
 ) -> crate::Result<FetchResponse> {
@@ -146,11 +187,30 @@ pub(crate) async fn fetch_send<R: Runtime>(
         ));
     }
 
+    app.http().responses.lock().await.insert(rid, res);
+
     Ok(FetchResponse {
         status: status.as_u16(),
         status_text: status.canonical_reason().unwrap_or_default().to_string(),
         headers,
         url,
-        data: res.bytes().await?.to_vec(),
     })
+}
+
+// TODO: change return value to tauri::ipc::Response on next alpha
+#[command]
+pub(crate) async fn fetch_read_body<R: Runtime>(
+    app: AppHandle<R>,
+    rid: RequestId,
+    kind: BodyKind,
+) -> crate::Result<ResponseBody> {
+    let mut response_table = app.http().responses.lock().await;
+    let res = response_table
+        .remove(&rid)
+        .ok_or(Error::InvalidRequestId(rid))?;
+
+    match kind {
+        BodyKind::Blob => Ok(ResponseBody::Blob(res.bytes().await?.to_vec())),
+        BodyKind::Text => Ok(ResponseBody::Text(res.text().await?)),
+    }
 }

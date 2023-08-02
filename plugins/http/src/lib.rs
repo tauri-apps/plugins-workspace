@@ -10,7 +10,7 @@ use std::sync::atomic::AtomicU32;
 use std::{collections::HashMap, future::Future, pin::Pin};
 
 pub use reqwest;
-use serde::Serialize;
+use reqwest::Response;
 use tauri::async_runtime::Mutex;
 use tauri::{
     plugin::{Builder, TauriPlugin},
@@ -30,6 +30,7 @@ type CancelableResponseResult = Result<Result<reqwest::Response>>;
 type CancelableResponseFuture =
     Pin<Box<dyn Future<Output = CancelableResponseResult> + Send + Sync>>;
 type RequestTable = HashMap<RequestId, FetchRequest>;
+type ResponseTable = HashMap<RequestId, Response>;
 
 struct FetchRequest(Mutex<CancelableResponseFuture>);
 impl FetchRequest {
@@ -38,22 +39,13 @@ impl FetchRequest {
     }
 }
 
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-struct FetchResponse {
-    status: u16,
-    status_text: String,
-    headers: Vec<(String, String)>,
-    url: String,
-    data: Vec<u8>,
-}
-
 struct Http<R: Runtime> {
     #[allow(dead_code)]
     app: AppHandle<R>,
     scope: scope::Scope,
     current_id: AtomicU32,
     requests: Mutex<RequestTable>,
+    responses: Mutex<ResponseTable>,
 }
 
 impl<R: Runtime> Http<R> {
@@ -80,6 +72,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
             commands::fetch,
             commands::fetch_cancel,
             commands::fetch_send,
+            commands::fetch_read_body,
         ])
         .setup(|app, api| {
             let default_scope = HttpAllowlistScope::default();
@@ -87,6 +80,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
                 app: app.clone(),
                 current_id: 0.into(),
                 requests: Default::default(),
+                responses: Default::default(),
                 scope: scope::Scope::new(
                     api.config()
                         .as_ref()
