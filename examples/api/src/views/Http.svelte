@@ -34,9 +34,12 @@
     const response = await tauriFetch("http://localhost:3003", options);
     const body =
       bodyType === "json" ? await response.json() : await response.text();
+
     onMessage({
       url: response.url,
       status: response.status,
+      ok: response.ok,
+      headers: Object.fromEntries(response.headers.entries()),
       body,
     });
   }
@@ -45,23 +48,20 @@
   let foo = "baz";
   let bar = "qux";
   let result = null;
-  let multipart = true;
 
   async function doPost() {
+    const form = new FormData();
+    form.append("foo", foo);
+    form.append("bar", bar);
     const response = await tauriFetch("http://localhost:3003", {
       method: "POST",
-      body: {
-        foo,
-        bar,
-      },
-      headers: multipart
-        ? { "Content-Type": "multipart/form-data" }
-        : undefined,
+      body: form,
     });
     result = {
       url: response.url,
       status: response.status,
-      headers: JSON.parse(JSON.stringify(response.headers)),
+      ok: response.ok,
+      headers: Object.fromEntries(response.headers.entries()),
       body: await response.text(),
     };
   }
@@ -95,11 +95,6 @@
   <input class="input" bind:value={foo} />
   <input class="input" bind:value={bar} />
 </div>
-<br />
-<label>
-  <input type="checkbox" bind:checked={multipart} />
-  Multipart
-</label>
 <br />
 <br />
 <button class="btn" type="button" on:click={doPost}> Post it</button>
