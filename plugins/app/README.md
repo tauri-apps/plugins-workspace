@@ -1,4 +1,4 @@
-![plugin-app](banner.png)
+![plugin-app](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/app/banner.png)
 
 This plugin provides APIs to read application metadata and macOS app visibility functions.
 

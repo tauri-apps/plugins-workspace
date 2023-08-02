@@ -1,4 +1,4 @@
-![plugin-http](banner.png)
+![plugin-http](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/http/banner.png)
 
 Access the HTTP client written in Rust.
 
