@@ -29,13 +29,15 @@ type RequestId = u32;
 type CancelableResponseResult = Result<Result<reqwest::Response>>;
 type CancelableResponseFuture =
     Pin<Box<dyn Future<Output = CancelableResponseResult> + Send + Sync>>;
+type RequestTable = HashMap<RequestId, FetchRequest>;
+
 struct FetchRequest(Mutex<CancelableResponseFuture>);
 impl FetchRequest {
     fn new(f: CancelableResponseFuture) -> Self {
         Self(Mutex::new(f))
     }
 }
-type RequestTable = HashMap<RequestId, FetchRequest>;
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct FetchResponse {

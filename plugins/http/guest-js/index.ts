@@ -68,8 +68,8 @@ export async function fetch(
 
   // Remove these fields before creating the request
   if (init) {
-    init.maxRedirections = undefined;
-    init.connectTimeout = undefined;
+    delete init.maxRedirections;
+    delete init.connectTimeout;
   }
 
   const req = new Request(input, init);
@@ -104,6 +104,7 @@ export async function fetch(
     await window.__TAURI_INVOKE__<FetchSendResponse>("plugin:http|fetch_send", {
       rid,
     });
+  console.log(status, url, headers, data)
 
   const res = new Response(Uint8Array.from(data), {
     headers,

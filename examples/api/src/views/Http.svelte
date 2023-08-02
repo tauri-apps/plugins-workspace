@@ -18,12 +18,14 @@
       (httpBody.startsWith("{") && httpBody.endsWith("}")) ||
       (httpBody.startsWith("[") && httpBody.endsWith("]"))
     ) {
-      options.body = JSON.parse(httpBody)
+      options.body = JSON.parse(httpBody);
     } else if (httpBody !== "") {
-      options.body = httpBody
+      options.body = httpBody;
     }
 
-    tauriFetch("http://localhost:3003", options).then(onMessage).catch(onMessage);
+    tauriFetch("http://localhost:3003", options)
+      .then(onMessage)
+      .catch(onMessage);
   }
 
   /// http form
@@ -33,7 +35,7 @@
   let multipart = true;
 
   async function doPost() {
-    result = await tauriFetch("http://localhost:3003", {
+    const response = await tauriFetch("http://localhost:3003", {
       method: "POST",
       body: {
         foo,
@@ -43,6 +45,11 @@
         ? { "Content-Type": "multipart/form-data" }
         : undefined,
     });
+    result = {
+      status: response.status,
+      headers: JSON.parse(JSON.stringify(response.headers)),
+      body: response.body,
+    };
   }
 </script>
 

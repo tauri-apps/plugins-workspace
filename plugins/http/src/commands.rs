@@ -14,13 +14,12 @@ use crate::{Error, FetchRequest, FetchResponse, HttpExt, RequestId};
 pub(crate) async fn fetch<R: Runtime>(
     app: AppHandle<R>,
     method: String,
-    url: String,
+    url: url::Url,
     headers: Vec<(String, String)>,
     data: Option<Vec<u8>>,
-    connect_timeout: u64,
-    max_redirections: usize,
+    connect_timeout: Option<u64>,
+    max_redirections: Option<usize>,
 ) -> crate::Result<RequestId> {
-    let url = url::Url::parse(&url)?;
     let scheme = url.scheme();
     let method = Method::from_bytes(method.as_bytes())?;
     let headers: HashMap<String, String> = HashMap::from_iter(headers);
@@ -28,11 +27,21 @@ pub(crate) async fn fetch<R: Runtime>(
     match scheme {
         "http" | "https" => {
             if app.http().scope.is_allowed(&url) {
-                let mut request = reqwest::ClientBuilder::new()
-                    .connect_timeout(Duration::from_millis(connect_timeout))
-                    .redirect(Policy::limited(max_redirections))
-                    .build()?
-                    .request(method.clone(), url);
+                let mut builder = reqwest::ClientBuilder::new();
+
+                if let Some(timeout) = connect_timeout {
+                    builder = builder.connect_timeout(Duration::from_millis(timeout));
+                }
+
+                if let Some(max_redirections) = max_redirections {
+                    builder = builder.redirect(if max_redirections == 0 {
+                        Policy::none()
+                    } else {
+                        Policy::limited(max_redirections)
+                    });
+                }
+
+                let mut request = builder.build()?.request(method.clone(), url);
 
                 for (key, value) in &headers {
                     let name = HeaderName::from_bytes(key.as_bytes())?;
