@@ -96,7 +96,7 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
             let groups = binding.as_ref();
 
             for window in self.windows().values() {
-                window.update_state(state.get(group_name(groups, window.label().into())), flags)?;
+                window.update_state(state.get_mut(&group_name(groups, window.label().into())).unwrap(), flags)?;
             }
 
             create_dir_all(&app_dir)
