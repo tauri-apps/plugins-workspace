@@ -112,11 +112,11 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
     }
 }
 
-fn group_name_by_state(groups: State<GroupStateCache>, label: String) {
+fn group_name_by_state(groups: State<GroupStateCache>, label: String) -> String {
     let binding = groups.0.clone();
     let binding = binding.lock().unwrap();
     let groups = binding.as_ref();
-    let key = group_name(groups, label);
+    group_name(groups, label)
 }
 
 pub trait WindowExt {
@@ -387,7 +387,7 @@ impl Builder {
                     cache
                         .lock()
                         .unwrap()
-                        .entry(key)
+                        .entry(key.clone())
                         .or_insert_with(WindowState::default);
                 }
 
