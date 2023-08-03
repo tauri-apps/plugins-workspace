@@ -4,7 +4,11 @@
 
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
-use tauri::{plugin::{Builder as PluginBuilder, TauriPlugin}, LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, Window, WindowEvent, State, AppHandle};
+use tauri::{
+    plugin::{Builder as PluginBuilder, TauriPlugin},
+    LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, Window,
+    WindowEvent, State,
+};
 
 use std::{
     collections::{HashMap, HashSet},
