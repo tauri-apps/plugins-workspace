@@ -134,7 +134,7 @@ impl<R: Runtime> WindowExt for Window<R> {
 
         let mut should_show = true;
 
-        if let Some(state) = c.get(key) {
+        if let Some(state) = c.get(&key) {
             // avoid restoring the default zeroed state
             if *state == WindowState::default() {
                 return Ok(());
