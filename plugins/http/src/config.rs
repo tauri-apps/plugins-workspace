@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use reqwest::Url;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -15,9 +14,9 @@ pub struct Config {
 /// The scoped URL is matched against the request URL using a glob pattern.
 ///
 /// Examples:
-/// - "https://**": allows all HTTPS urls
+/// - "https://*" or "https://**" : allows all HTTPS urls
 /// - "https://*.github.com/tauri-apps/tauri": allows any subdomain of "github.com" with the "tauri-apps/api" path
 /// - "https://myapi.service.com/users/*": allows access to any URLs that begins with "https://myapi.service.com/users/"
 #[allow(rustdoc::bare_urls)]
 #[derive(Debug, Default, PartialEq, Eq, Clone, Deserialize)]
-pub struct HttpAllowlistScope(pub Vec<Url>);
+pub struct HttpAllowlistScope(pub Vec<String>);
