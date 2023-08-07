@@ -64,11 +64,11 @@ class Update {
 /** Check for updates, resolves to `null` if no updates are available */
 async function check(options?: CheckOptions): Promise<Update | null> {
   if (options?.headers) {
-    options.headers = Array.from(new Headers(options.headers).entries())
+    options.headers = Array.from(new Headers(options.headers).entries());
   }
 
   return invoke<UpdateMetadata>("plugin:updater|check", { ...options }).then(
-    (meta) => (meta.available ? new Update(meta) : null)
+    (meta) => (meta.available ? new Update(meta) : null),
   );
 }
 
