@@ -2320,6 +2320,7 @@ async function availableMonitors(): Promise<Monitor[]> {
 }
 
 export {
+  Window,
   CloseRequestedEvent,
   getCurrent,
   getAll,

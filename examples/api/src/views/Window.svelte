@@ -7,6 +7,7 @@
     PhysicalPosition,
     Effect,
     EffectState,
+    Window
   } from "@tauri-apps/plugin-window";
   import { open as openDialog } from "@tauri-apps/plugin-dialog";
   import { open } from "@tauri-apps/plugin-shell";
@@ -147,7 +148,7 @@
   function createWindow() {
     if (!newWindowLabel) return;
 
-    const webview = new WebviewWindow(newWindowLabel);
+    const webview = new Window(newWindowLabel);
     windowMap[newWindowLabel] = webview;
     webview.once("tauri://error", function () {
       onMessage("Error creating new webview");
