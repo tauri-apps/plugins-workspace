@@ -4,12 +4,10 @@
 
 use crate::{PendingUpdate, Result, UpdaterExt};
 
-use http::header;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::Serialize;
 use tauri::{api::ipc::Channel, AppHandle, Runtime, State};
 
 use std::{
-    collections::HashMap,
     sync::atomic::{AtomicBool, Ordering},
     time::Duration,
 };
@@ -45,43 +43,17 @@ pub(crate) struct Metadata {
     body: Option<String>,
 }
 
-#[derive(Debug, Default)]
-pub(crate) struct HeaderMap(header::HeaderMap);
-
-impl<'de> Deserialize<'de> for HeaderMap {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let map = HashMap::<String, String>::deserialize(deserializer)?;
-        let mut headers = header::HeaderMap::default();
-        for (key, value) in map {
-            if let (Ok(key), Ok(value)) = (
-                header::HeaderName::from_bytes(key.as_bytes()),
-                header::HeaderValue::from_str(&value),
-            ) {
-                headers.insert(key, value);
-            } else {
-                return Err(serde::de::Error::custom(format!(
-                    "invalid header `{key}` `{value}`"
-                )));
-            }
-        }
-        Ok(Self(headers))
-    }
-}
-
 #[tauri::command]
 pub(crate) async fn check<R: Runtime>(
     app: AppHandle<R>,
     pending: State<'_, PendingUpdate>,
-    headers: Option<HeaderMap>,
+    headers: Option<Vec<(String, String)>>,
     timeout: Option<u64>,
     target: Option<String>,
 ) -> Result<Metadata> {
     let mut builder = app.updater_builder();
     if let Some(headers) = headers {
-        for (k, v) in headers.0.iter() {
+        for (k, v) in headers {
             builder = builder.header(k, v)?;
         }
     }
