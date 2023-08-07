@@ -66,7 +66,7 @@ importers:
         specifier: 2.0.0-alpha.0
         version: link:../../plugins/app
       '@tauri-apps/plugin-barcode-scanner':
-        specifier: 1.0.0
+        specifier: 2.0.0-alpha.0
         version: link:../../plugins/barcode-scanner
       '@tauri-apps/plugin-cli':
         specifier: 2.0.0-alpha.0
@@ -173,7 +173,7 @@ importers:
         version: 2.0.0-alpha.5
     devDependencies:
       tslib:
-        specifier: ^2.4.1
+        specifier: ^2.5.0
         version: 2.5.0
 
   plugins/cli:

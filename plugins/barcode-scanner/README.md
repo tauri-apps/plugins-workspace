@@ -1,4 +1,4 @@
-![Barcode Scanner](banner.jpg)
+![Barcode Scanner](banner.png)
 
 Allows your mobile application to use the camera to scan QR codes, EAN-13 and other kinds of barcodes.
 
