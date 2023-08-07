@@ -124,7 +124,7 @@
   let isWindowMaximized;
   onMount(async () => {
     isWindowMaximized = await appWindow.isMaximized();
-    window.onResized(async () => {
+    appWindow.onResized(async () => {
       isWindowMaximized = await appWindow.isMaximized();
     });
   });
