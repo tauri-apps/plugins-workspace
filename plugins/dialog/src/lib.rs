@@ -209,7 +209,9 @@ impl<R: Runtime> MessageDialogBuilder<R> {
         show_message_dialog(self, f)
     }
 
-    //// Shows a message dialog.
+    /// Shows a message dialog.
+    /// This is a blocking operation,
+    /// and should *NOT* be used when running on the main thread context.
     pub fn blocking_show(self) -> bool {
         blocking_fn!(self, show)
     }
