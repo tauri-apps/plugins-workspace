@@ -212,7 +212,7 @@ impl<R: Runtime> WindowExt for Window<R> {
                 metadata.fullscreen = self.is_fullscreen()?;
             }
 
-            c.insert(key.into(), metadata);
+            c.insert(key, metadata);
         }
 
         if flags.contains(StateFlags::VISIBLE) && should_show {
@@ -296,11 +296,9 @@ impl Group {
 }
 
 /// get group name which match first rule
-pub fn group_name(groups: &Vec<Group>, label: String) -> String {
+pub fn group_name(groups: &[Group], label: String) -> String {
     groups
-        .iter()
-        .filter(|g| g.filter(&label))
-        .nth(0)
+        .iter().find(|g| g.filter(&label))
         .map_or(label, |g| g.name.clone())
 }
 
