@@ -18,7 +18,7 @@
     "svelte-check": "3.4.6",
     "tslib": "2.6.1",
     "typescript": "5.1.6",
-    "vite": "4.4.8"
+    "vite": "4.4.9"
   },
   "dependencies": {
     "tauri-plugin-websocket-api": "link:../../"
