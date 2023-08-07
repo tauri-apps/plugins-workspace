@@ -1,4 +1,4 @@
-![plugin-persisted-scope](banner.png)
+![plugin-persisted-scope](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/persisted-scope/banner.png)
 
 Save filesystem and asset scopes and restore them when the app is reopened.
 

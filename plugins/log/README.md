@@ -1,4 +1,4 @@
-![plugin-log](banner.png)
+![plugin-log](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/log/banner.png)
 
 Configurable logging for your Tauri app.
 

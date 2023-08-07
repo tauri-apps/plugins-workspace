@@ -36,7 +36,7 @@ type ClipResponse = Clip<"PlainText", string>;
  */
 async function writeText(
   text: string,
-  opts?: { label?: string }
+  opts?: { label?: string },
 ): Promise<void> {
   return window.__TAURI_INVOKE__("plugin:clipboard|write", {
     data: {
@@ -60,7 +60,7 @@ async function writeText(
  */
 async function readText(): Promise<string> {
   const kind: ClipResponse = await window.__TAURI_INVOKE__(
-    "plugin:clipboard|read"
+    "plugin:clipboard|read",
   );
   return kind.options;
 }

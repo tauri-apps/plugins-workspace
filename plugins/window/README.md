@@ -1,4 +1,4 @@
-![plugin-window](banner.png)
+![plugin-window](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/window/banner.png)
 
 Interact with the Tauri window.
 

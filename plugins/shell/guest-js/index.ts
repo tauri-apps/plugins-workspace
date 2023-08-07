@@ -122,7 +122,7 @@ async function execute<O extends IOPayload>(
   onEvent: (event: CommandEvent<O>) => void,
   program: string,
   args: string | string[] = [],
-  options?: InternalSpawnOptions
+  options?: InternalSpawnOptions,
 ): Promise<number> {
   if (typeof args === "object") {
     Object.freeze(args);
@@ -153,7 +153,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   addListener<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void
+    listener: (arg: E[typeof eventName]) => void,
   ): this {
     return this.on(eventName, listener);
   }
@@ -165,7 +165,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   removeListener<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void
+    listener: (arg: E[typeof eventName]) => void,
   ): this {
     return this.off(eventName, listener);
   }
@@ -182,7 +182,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   on<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void
+    listener: (arg: E[typeof eventName]) => void,
   ): this {
     if (eventName in this.eventListeners) {
       // eslint-disable-next-line security/detect-object-injection
@@ -204,7 +204,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   once<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void
+    listener: (arg: E[typeof eventName]) => void,
   ): this {
     const wrapper = (arg: E[typeof eventName]): void => {
       this.removeListener(eventName, wrapper);
@@ -222,12 +222,12 @@ class EventEmitter<E extends Record<string, any>> {
    */
   off<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void
+    listener: (arg: E[typeof eventName]) => void,
   ): this {
     if (eventName in this.eventListeners) {
       // eslint-disable-next-line security/detect-object-injection
       this.eventListeners[eventName] = this.eventListeners[eventName].filter(
-        (l) => l !== listener
+        (l) => l !== listener,
       );
     }
     return this;
@@ -295,7 +295,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   prependListener<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void
+    listener: (arg: E[typeof eventName]) => void,
   ): this {
     if (eventName in this.eventListeners) {
       // eslint-disable-next-line security/detect-object-injection
@@ -317,7 +317,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   prependOnceListener<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void
+    listener: (arg: E[typeof eventName]) => void,
   ): this {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapper = (arg: any): void => {
@@ -434,7 +434,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   private constructor(
     program: string,
     args: string | string[] = [],
-    options?: SpawnOptions
+    options?: SpawnOptions,
   ) {
     super();
     this.program = program;
@@ -446,12 +446,12 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   static create(
     program: string,
     args?: string | string[],
-    options?: SpawnOptions & { encoding: "raw" }
+    options?: SpawnOptions & { encoding: "raw" },
   ): Command<Uint8Array>;
   static create(
     program: string,
     args?: string | string[],
-    options?: SpawnOptions
+    options?: SpawnOptions,
   ): Command<string>;
 
   /**
@@ -469,7 +469,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   static create<O extends IOPayload>(
     program: string,
     args: string | string[] = [],
-    options?: SpawnOptions
+    options?: SpawnOptions,
   ): Command<O> {
     return new Command(program, args, options);
   }
@@ -478,12 +478,12 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   static sidecar(
     program: string,
     args?: string | string[],
-    options?: SpawnOptions & { encoding: "raw" }
+    options?: SpawnOptions & { encoding: "raw" },
   ): Command<Uint8Array>;
   static sidecar(
     program: string,
     args?: string | string[],
-    options?: SpawnOptions
+    options?: SpawnOptions,
   ): Command<string>;
 
   /**
@@ -501,7 +501,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   static sidecar<O extends IOPayload>(
     program: string,
     args: string | string[] = [],
-    options?: SpawnOptions
+    options?: SpawnOptions,
   ): Command<O> {
     const instance = new Command<O>(program, args, options);
     instance.options.sidecar = true;
@@ -535,7 +535,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
       },
       this.program,
       this.args,
-      this.options
+      this.options,
     ).then((pid) => new Child(pid));
   }
 

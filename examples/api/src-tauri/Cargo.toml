@@ -4,7 +4,7 @@ publish = false
 version = "2.0.0-alpha.1"
 description = "An example Tauri Application showcasing the api"
 edition = "2021"
-rust-version = "1.65"
+rust-version = { workspace = true }
 license = "Apache-2.0 OR MIT"
 
 [lib]
