@@ -6,8 +6,8 @@ use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, Window,
-    WindowEvent, State,
+    LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, State,
+    Window, WindowEvent,
 };
 
 use std::{
@@ -80,8 +80,10 @@ impl Default for WindowState {
     }
 }
 
-struct WindowStateCache(Arc<Mutex< HashMap<String, WindowState>>>);
+struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
+
 struct GroupStateCache(Arc<Mutex<Vec<Group>>>);
+
 pub trait AppHandleExt {
     /// Saves all open windows state to disk
     fn save_window_state(&self, flags: StateFlags) -> Result<()>;
@@ -100,7 +102,12 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
             let groups = binding.as_ref();
 
             for window in self.windows().values() {
-                window.update_state(state.get_mut(&group_name(groups, window.label().into())).unwrap(), flags)?;
+                window.update_state(
+                    state
+                        .get_mut(&group_name(groups, window.label().into()))
+                        .unwrap(),
+                    flags,
+                )?;
             }
 
             create_dir_all(&app_dir)
@@ -298,7 +305,8 @@ impl Group {
 /// get group name which match first rule
 pub fn group_name(groups: &[Group], label: String) -> String {
     groups
-        .iter().find(|g| g.filter(&label))
+        .iter()
+        .find(|g| g.filter(&label))
         .map_or(label, |g| g.name.clone())
 }
 
