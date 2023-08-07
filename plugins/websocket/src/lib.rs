@@ -62,14 +62,14 @@ impl Serialize for Error {
 #[derive(Default)]
 struct ConnectionManager(Mutex<HashMap<Id, WebSocketWriter>>);
 
-#[derive(Default, Deserialize)]
+#[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectionConfig {
     pub max_send_queue: Option<usize>,
     pub max_message_size: Option<usize>,
     pub max_frame_size: Option<usize>,
-    pub accept_unmasked_frames: bool,
-    pub headers: Vec<(String, String)>,
+    pub accept_unmasked_frames: Option<bool>,
+    pub headers: Option<Vec<(String, String)>>,
 }
 
 impl From<ConnectionConfig> for WebSocketConfig {
@@ -78,7 +78,7 @@ impl From<ConnectionConfig> for WebSocketConfig {
             max_send_queue: config.max_send_queue,
             max_message_size: config.max_message_size,
             max_frame_size: config.max_frame_size,
-            accept_unmasked_frames: config.accept_unmasked_frames,
+            accept_unmasked_frames: config.accept_unmasked_frames.unwrap_or_default(),
         }
     }
 }
@@ -109,14 +109,16 @@ async fn connect<R: Runtime>(
     let id = rand::random();
     let mut request = url.into_client_request()?;
 
-    if let Some(config) = config.as_ref() {
-        let config_headers = config.headers.iter().map(|(k, v)| {
-            let header_name = HeaderName::from_str(k.as_str())?;
-            let header_value = HeaderValue::from_str(v.as_str())?;
-            Ok((header_name, header_value))
-        });
+    if let Some(ref config) = config {
+        if let Some(headers) = &config.headers {
+            let config_headers = headers.iter().map(|(k, v)| {
+                let header_name = HeaderName::from_str(k.as_str())?;
+                let header_value = HeaderValue::from_str(v.as_str())?;
+                Ok((header_name, header_value))
+            });
 
-        request.headers_mut().extend(config_headers.filter_map(Result::ok));
+            request.headers_mut().extend(config_headers.filter_map(Result::ok));
+        }
     }
 
     let (ws_stream, _) = connect_async_with_config(request, config.map(Into::into), false).await?;
