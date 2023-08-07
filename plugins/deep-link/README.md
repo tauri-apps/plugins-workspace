@@ -151,6 +151,12 @@ await onOpenUrl((urls) => {
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
 
+## Sponsors
+
+<a href="https://impierce.com/" target="_blank">
+    <img src="sponsors/impierce.png" alt=“Impierce” width="283" height="90">
+</a>
+
 ## License
 
 Code: (c) 2015 - Present - The Tauri Programme within The Commons Conservancy.
