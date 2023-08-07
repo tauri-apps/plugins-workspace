@@ -26,17 +26,19 @@ export default class WebSocket {
     this.listeners = listeners;
   }
 
-  static async connect(url: string, options?: unknown): Promise<WebSocket> {
+  static async connect(url: string, config?: unknown): Promise<WebSocket> {
     const listeners: Array<(arg: Message) => void> = [];
     const handler = (message: Message): void => {
       listeners.forEach((l) => l(message));
     };
 
-    return await invoke<number>("plugin:websocket|connect", {
-      url,
-      callbackFunction: transformCallback(handler),
-      options,
-    }).then((id) => new WebSocket(id, listeners));
+    return await window
+      .__TAURI_INVOKE__<number>("plugin:websocket|connect", {
+        url,
+        callbackFunction: window.__TAURI__.transformCallback(handler),
+        config,
+      })
+      .then((id) => new WebSocket(id, listeners));
   }
 
   addListener(cb: (arg: Message) => void): void {

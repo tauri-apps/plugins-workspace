@@ -42,14 +42,14 @@ impl Serialize for Error {
 #[derive(Default)]
 struct ConnectionManager(Mutex<HashMap<Id, WebSocketWriter>>);
 
-#[derive(Default, Deserialize)]
+#[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectionConfig {
     pub write_buffer_size: Option<usize>,
     pub max_write_buffer_size: Option<usize>,
     pub max_message_size: Option<usize>,
     pub max_frame_size: Option<usize>,
-    pub accept_unmasked_frames: bool,
+    pub accept_unmasked_frames: Option<bool>,
 }
 
 impl From<ConnectionConfig> for WebSocketConfig {
@@ -64,7 +64,7 @@ impl From<ConnectionConfig> for WebSocketConfig {
             max_message_size: config.max_message_size,
             // This may be harmful since if it's not provided from js we're overwriting the default value with None, meaning no size limit.
             max_frame_size: config.max_frame_size,
-            accept_unmasked_frames: config.accept_unmasked_frames,
+            accept_unmasked_frames: config.accept_unmasked_frames.unwrap_or_default(),
         }
     }
 }
