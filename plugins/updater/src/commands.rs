@@ -26,13 +26,6 @@ pub enum DownloadEvent {
     Finished,
 }
 
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct DownloadProgress {
-    chunk_length: usize,
-    content_length: Option<u64>,
-}
-
 #[derive(Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Metadata {
