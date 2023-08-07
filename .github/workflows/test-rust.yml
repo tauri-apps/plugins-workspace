@@ -193,6 +193,11 @@ jobs:
         working-directory: examples/api
         run: mkdir dist
 
+      - name: Downgrade crates with MSRV conflict
+        # The --precise flag can only be used once per invocation.
+        run: |
+          cargo update -p time@0.3.24 --precise 0.3.23
+
       - name: test ${{ matrix.package }}
         if: matrix.package != 'tauri-plugin-sql'
         uses: actions-rs/cargo@v1

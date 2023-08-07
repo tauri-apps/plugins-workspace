@@ -4,11 +4,12 @@
 
 import { invoke, Channel } from "@tauri-apps/api/tauri";
 
+/** Options used to check for updates */
 interface CheckOptions {
   /**
    * Request headers
    */
-  headers?: Record<string, unknown>;
+  headers?: HeadersInit;
   /**
    * Timeout in seconds
    */
@@ -19,26 +20,34 @@ interface CheckOptions {
   target?: string;
 }
 
-interface UpdateResponse {
+interface UpdateMetadata {
   available: boolean;
   currentVersion: string;
-  latestVersion: string;
+  version: string;
   date?: string;
   body?: string;
 }
 
+/** Updater download event */
 type DownloadEvent =
   | { event: "Started"; data: { contentLength?: number } }
   | { event: "Progress"; data: { chunkLength: number } }
   | { event: "Finished" };
 
 class Update {
-  response: UpdateResponse;
+  currentVersion: string;
+  version: string;
+  date?: string;
+  body?: string;
 
-  constructor(response: UpdateResponse) {
-    this.response = response;
+  constructor(metadata: UpdateMetadata) {
+    this.currentVersion = metadata.currentVersion;
+    this.version = metadata.version;
+    this.date = metadata.date;
+    this.body = metadata.body;
   }
 
+  /** Downloads the updater package and installs it */
   async downloadAndInstall(
     onEvent?: (progress: DownloadEvent) => void,
   ): Promise<void> {
@@ -52,11 +61,16 @@ class Update {
   }
 }
 
-async function check(options?: CheckOptions): Promise<Update> {
-  return invoke<UpdateResponse>("plugin:updater|check", { ...options }).then(
-    (response) => new Update(response),
+/** Check for updates, resolves to `null` if no updates are available */
+async function check(options?: CheckOptions): Promise<Update | null> {
+  if (options?.headers) {
+    options.headers = Array.from(new Headers(options.headers).entries());
+  }
+
+  return invoke<UpdateMetadata>("plugin:updater|check", { ...options }).then(
+    (meta) => (meta.available ? new Update(meta) : null),
   );
 }
 
-export type { CheckOptions, UpdateResponse, DownloadEvent };
+export type { CheckOptions, DownloadEvent };
 export { check, Update };
