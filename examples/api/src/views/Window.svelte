@@ -1,7 +1,6 @@
 <script>
   import {
-    appWindow,
-    WebviewWindow,
+    getCurrent,
     LogicalSize,
     UserAttentionType,
     PhysicalSize,
@@ -11,6 +10,8 @@
   } from "@tauri-apps/plugin-window";
   import { open as openDialog } from "@tauri-apps/plugin-dialog";
   import { open } from "@tauri-apps/plugin-shell";
+
+  const appWindow = getCurrent();
 
   let selectedWindow = appWindow.label;
   const windowMap = {

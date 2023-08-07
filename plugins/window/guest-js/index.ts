@@ -335,7 +335,7 @@ class Window {
   listeners: Record<string, Array<EventCallback<any>>>;
 
   /**
-   * Creates a new WebviewWindow.
+   * Creates a new Window.
    * @example
    * ```typescript
    * import { Window } from '@tauri-apps/plugin-window';
@@ -374,22 +374,22 @@ class Window {
   }
 
   /**
-   * Gets the WebviewWindow for the webview associated with the given label.
+   * Gets the Window for the webview associated with the given label.
    * @example
    * ```typescript
-   * import { WebviewWindow } from '@tauri-apps/plugin-window';
-   * const mainWindow = WebviewWindow.getByLabel('main');
+   * import { Window } from '@tauri-apps/plugin-window';
+   * const mainWindow = Window.getByLabel('main');
    * ```
    *
    * @param label The webview window label.
-   * @returns The WebviewWindow instance to communicate with the webview or null if the webview doesn't exist.
+   * @returns The Window instance to communicate with the webview or null if the webview doesn't exist.
    *
    * @since 2.0.0
    */
   static getByLabel(label: string): Window | null {
     if (getAll().some((w) => w.label === label)) {
       // @ts-expect-error `skip` is not defined in the public API but it is handled by the constructor
-      return new WebviewWindow(label, { skip: true });
+      return new Window(label, { skip: true });
     }
     return null;
   }

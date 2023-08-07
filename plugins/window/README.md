@@ -60,18 +60,20 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { appWindow, WebviewWindow } from "@tauri-apps/plugin-window";
+import { getCurrent, Window } from "@tauri-apps/plugin-window";
+
+const appWindow = getCurrent();
 
 // manipulating this window
 await appWindow.setResizable(false);
 
 // Creating new windows:
 // loading embedded asset:
-const webview = new WebviewWindow("theUniqueLabel", {
+const webview = new Window("theUniqueLabel", {
   url: "path/to/page.html",
 });
 // alternatively, load a remote URL:
-const webview = new WebviewWindow("theUniqueLabel", {
+const webview = new Window("theUniqueLabel", {
   url: "https://github.com/tauri-apps/tauri",
 });
 ```
