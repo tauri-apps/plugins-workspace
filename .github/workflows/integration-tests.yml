@@ -48,7 +48,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: install Tauri CLI
-        run: cargo install tauri-cli@^2.0.0-alpha
+        run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch dev
 
       - name: run integration tests
         run: cargo test --test '*' -- --ignored
