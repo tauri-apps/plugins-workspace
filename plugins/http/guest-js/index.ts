@@ -104,9 +104,12 @@ export async function fetch(
       rid,
     });
 
-  const body = await window.__TAURI_INVOKE__<number[]>("plugin:http|fetch_read_body", {
-    rid,
-  });
+  const body = await window.__TAURI_INVOKE__<number[]>(
+    "plugin:http|fetch_read_body",
+    {
+      rid,
+    },
+  );
 
   const res = new Response(Uint8Array.from(body), {
     headers,
