@@ -30,56 +30,6 @@ declare global {
   }
 }
 
-async function readBody<T>(rid: number, kind: "blob" | "text"): Promise<T> {
-  return await window.__TAURI_INVOKE__("plugin:http|fetch_read_body", {
-    rid,
-    kind,
-  });
-}
-
-class TauriResponse extends Response {
-  _rid: number = 0;
-
-  blob(): Promise<Blob> {
-    return readBody<Uint8Array>(this._rid, "blob").then(
-      (bytes) =>
-        new Blob([bytes], {
-          type: this.headers.get("content-type") || "application/octet-stream",
-        }),
-    );
-  }
-
-  json(): Promise<unknown> {
-    return readBody<string>(this._rid, "text").then((data) => {
-      try {
-        return JSON.parse(data);
-      } catch (e) {
-        if (this.ok && data === "") {
-          return {};
-        } else if (this.ok) {
-          throw Error(`Failed to parse response \`${data}\` as JSON: ${e}`);
-        }
-      }
-    });
-  }
-
-  formData(): Promise<FormData> {
-    return this.json().then((json) => {
-      const form = new FormData();
-      for (const [key, value] of Object.entries(
-        json as Record<string, string | Blob>,
-      )) {
-        form.append(key, value);
-      }
-      return form;
-    });
-  }
-
-  text(): Promise<string> {
-    return readBody(this._rid, "text");
-  }
-}
-
 /**
  * Options to configure the Rust client used to make fetch requests
  *
@@ -112,7 +62,7 @@ export interface ClientOptions {
 export async function fetch(
   input: URL | Request | string,
   init?: RequestInit & ClientOptions,
-): Promise<TauriResponse> {
+): Promise<Response> {
   const maxRedirections = init?.maxRedirections;
   const connectTimeout = init?.maxRedirections;
 
@@ -154,12 +104,16 @@ export async function fetch(
       rid,
     });
 
-  const res = new TauriResponse(null, {
+  const body = await window.__TAURI_INVOKE__<number[]>("plugin:http|fetch_read_body", {
+    rid,
+  });
+
+  const res = new Response(Uint8Array.from(body), {
     headers,
     status,
     statusText,
   });
-  res._rid = rid;
+
   // url is read only but seems like we can do this
   Object.defineProperty(res, "url", { value: url });
 
