@@ -190,7 +190,7 @@ importers:
         version: 2.0.0-alpha.5
     devDependencies:
       tslib:
-        specifier: ^2.4.1
+        specifier: ^2.5.0
         version: 2.5.0
 
   plugins/deep-link/examples/old:
@@ -199,7 +199,7 @@ importers:
         specifier: ^2.0.0-alpha.5
         version: 2.0.0-alpha.5
       '@tauri-apps/plugin-deep-link':
-        specifier: ^1.0.0
+        specifier: ^2.0.0-alpha.0
         version: link:../..
     devDependencies:
       '@tauri-apps/cli':

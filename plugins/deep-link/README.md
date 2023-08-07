@@ -1,6 +1,6 @@
 ![plugin-deep-link](banner.png)
 
-<!-- description -->
+Set your Tauri application as the default handler for an URL.
 
 ## Install
 
