@@ -49,7 +49,7 @@ class Update {
 
   /** Downloads the updater package and installs it */
   async downloadAndInstall(
-    onEvent?: (progress: DownloadEvent) => void
+    onEvent?: (progress: DownloadEvent) => void,
   ): Promise<void> {
     const channel = new Channel<DownloadEvent>();
     if (onEvent != null) {

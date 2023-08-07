@@ -1,16 +1,18 @@
 <script>
   import {
-    appWindow,
-    WebviewWindow,
+    getCurrent,
     LogicalSize,
     UserAttentionType,
     PhysicalSize,
     PhysicalPosition,
     Effect,
     EffectState,
+    Window
   } from "@tauri-apps/plugin-window";
   import { open as openDialog } from "@tauri-apps/plugin-dialog";
   import { open } from "@tauri-apps/plugin-shell";
+
+  const appWindow = getCurrent();
 
   let selectedWindow = appWindow.label;
   const windowMap = {
@@ -146,7 +148,7 @@
   function createWindow() {
     if (!newWindowLabel) return;
 
-    const webview = new WebviewWindow(newWindowLabel);
+    const webview = new Window(newWindowLabel);
     windowMap[newWindowLabel] = webview;
     webview.once("tauri://error", function () {
       onMessage("Error creating new webview");

@@ -23,6 +23,11 @@ type FileDialog = rfd::FileDialog;
 #[cfg(not(target_os = "linux"))]
 type FileDialog = rfd::AsyncFileDialog;
 
+#[cfg(target_os = "linux")]
+type MessageDialog = rfd::MessageDialog;
+#[cfg(not(target_os = "linux"))]
+type MessageDialog = rfd::AsyncMessageDialog;
+
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
     _api: PluginApi<R, C>,
@@ -50,7 +55,7 @@ impl<R: Runtime> Dialog<R> {
 macro_rules! run_dialog {
     ($e:expr, $h: ident) => {{
         std::thread::spawn(move || {
-            let response = $e;
+            let response = tauri::async_runtime::block_on($e);
             $h(response);
         });
     }};
@@ -136,9 +141,9 @@ impl<R: Runtime> From<FileDialogBuilder<R>> for FileDialog {
     }
 }
 
-impl<R: Runtime> From<MessageDialogBuilder<R>> for rfd::MessageDialog {
+impl<R: Runtime> From<MessageDialogBuilder<R>> for MessageDialog {
     fn from(d: MessageDialogBuilder<R>) -> Self {
-        let mut dialog = rfd::MessageDialog::new()
+        let mut dialog = MessageDialog::new()
             .set_title(&d.title)
             .set_description(&d.message)
             .set_level(d.kind.into());
@@ -215,5 +220,5 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
     dialog: MessageDialogBuilder<R>,
     f: F,
 ) {
-    run_dialog!(rfd::MessageDialog::from(dialog).show(), f);
+    run_dialog!(MessageDialog::from(dialog).show(), f);
 }

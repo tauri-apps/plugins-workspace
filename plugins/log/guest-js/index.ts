@@ -52,7 +52,7 @@ enum LogLevel {
 async function log(
   level: LogLevel,
   message: string,
-  options?: LogOptions
+  options?: LogOptions,
 ): Promise<void> {
   const traces = new Error().stack?.split("\n").map((line) => line.split("@"));
 
@@ -95,7 +95,7 @@ async function log(
  */
 export async function error(
   message: string,
-  options?: LogOptions
+  options?: LogOptions,
 ): Promise<void> {
   await log(LogLevel.Error, message, options);
 }
@@ -117,7 +117,7 @@ export async function error(
  */
 export async function warn(
   message: string,
-  options?: LogOptions
+  options?: LogOptions,
 ): Promise<void> {
   await log(LogLevel.Warn, message, options);
 }
@@ -139,7 +139,7 @@ export async function warn(
  */
 export async function info(
   message: string,
-  options?: LogOptions
+  options?: LogOptions,
 ): Promise<void> {
   await log(LogLevel.Info, message, options);
 }
@@ -161,7 +161,7 @@ export async function info(
  */
 export async function debug(
   message: string,
-  options?: LogOptions
+  options?: LogOptions,
 ): Promise<void> {
   await log(LogLevel.Debug, message, options);
 }
@@ -183,7 +183,7 @@ export async function debug(
  */
 export async function trace(
   message: string,
-  options?: LogOptions
+  options?: LogOptions,
 ): Promise<void> {
   await log(LogLevel.Trace, message, options);
 }
@@ -202,7 +202,7 @@ export async function attachConsole(): Promise<UnlistenFn> {
       // TODO: Investigate security/detect-unsafe-regex
       // eslint-disable-next-line no-control-regex, security/detect-unsafe-regex
       /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
-      ""
+      "",
     );
 
     switch (payload.level) {
