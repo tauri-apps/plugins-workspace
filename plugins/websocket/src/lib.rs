@@ -29,6 +29,9 @@ use tokio_tungstenite::{
 };
 
 use std::collections::HashMap;
+use std::str::FromStr;
+use tauri::http::header::{HeaderName, HeaderValue};
+use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 
 type Id = u32;
 type WebSocket = WebSocketStream<MaybeTlsStream<TcpStream>>;
@@ -41,6 +44,10 @@ enum Error {
     Websocket(#[from] tokio_tungstenite::tungstenite::Error),
     #[error("connection not found for the given id: {0}")]
     ConnectionNotFound(Id),
+    #[error(transparent)]
+    InvalidHeaderValue(#[from] tokio_tungstenite::tungstenite::http::header::InvalidHeaderValue),
+    #[error(transparent)]
+    InvalidHeaderName(#[from] tokio_tungstenite::tungstenite::http::header::InvalidHeaderName),
 }
 
 impl Serialize for Error {
@@ -63,6 +70,8 @@ pub struct ConnectionConfig {
     pub max_frame_size: Option<usize>,
     #[serde(default)]
     pub accept_unmasked_frames: bool,
+    #[serde(default)]
+    pub headers: HashMap<String, String>,
 }
 
 impl From<ConnectionConfig> for WebSocketConfig {
@@ -100,7 +109,19 @@ async fn connect<R: Runtime>(
     config: Option<ConnectionConfig>,
 ) -> Result<Id> {
     let id = rand::random();
-    let (ws_stream, _) = connect_async_with_config(url, config.map(Into::into), false).await?;
+    let mut request = url.into_client_request()?;
+
+    if let Some(ref config) = config {
+        let config_headers = config.headers.iter().map(|(k, v)| {
+            let header_name = HeaderName::from_str(k.as_str())?;
+            let header_value = HeaderValue::from_str(v.as_str())?;
+            Ok((header_name, header_value))
+        });
+
+        request.headers_mut().extend(config_headers.filter_map(Result::ok));
+    }
+
+    let (ws_stream, _) = connect_async_with_config(request, config.map(Into::into), false).await?;
 
     tauri::async_runtime::spawn(async move {
         let (write, read) = ws_stream.split();
