@@ -2,7 +2,7 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "lib": ["ES2019", "ES2020.Promise", "ES2020.String", "DOM"],
+    "lib": ["ES2019", "ES2020.Promise", "ES2020.String", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "node",
     "noEmit": true,

@@ -58,8 +58,7 @@ pub struct ConnectionConfig {
     pub max_frame_size: Option<usize>,
     #[serde(default)]
     pub accept_unmasked_frames: bool,
-    #[serde(default)]
-    pub headers: HashMap<String, String>,
+    pub headers: Option<Vec<(String, String)>>,
 }
 
 impl From<ConnectionConfig> for WebSocketConfig {
@@ -105,14 +104,12 @@ async fn connect<R: Runtime>(
     let id = rand::random();
     let mut request = url.into_client_request()?;
 
-    if let Some(ref config) = config {
-        let config_headers = config.headers.iter().map(|(k, v)| {
+    if let Some(headers) = config.as_ref().and_then(|c| c.headers.as_ref()) {
+        for (k, v) in headers {
             let header_name = HeaderName::from_str(k.as_str())?;
             let header_value = HeaderValue::from_str(v.as_str())?;
-            Ok((header_name, header_value))
-        });
-
-        request.headers_mut().extend(config_headers.filter_map(Result::ok));
+            request.headers_mut().insert(header_name, header_value);
+        }
     }
 
     let (ws_stream, _) = connect_async_with_config(request, config.map(Into::into), false).await?;
