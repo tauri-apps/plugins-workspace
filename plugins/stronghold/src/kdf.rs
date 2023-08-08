@@ -1,4 +1,3 @@
-use argon2::Argon2;
 use rand_chacha::ChaCha20Rng;
 use rand_core::{RngCore, SeedableRng};
 use std::path::Path;
@@ -17,11 +16,8 @@ impl KeyDerivation {
         let mut salt = [0u8; HASH_LENGTH];
         create_or_get_salt(&mut salt, salt_path);
 
-        let mut encoded = [0u8; HASH_LENGTH];
-        Argon2::default()
-            .hash_password_into(password.as_bytes(), &salt, &mut encoded)
-            .expect("Failed to generate hash for password");
-        encoded.to_vec()
+        argon2::hash_raw(password.as_bytes(), &salt, &Default::default())
+            .expect("Failed to generate hash for password")
     }
 }
 
