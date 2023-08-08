@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     fmt,
-    path::{Path, PathBuf},
+    path::PathBuf,
     sync::{Arc, Mutex},
     time::Duration,
 };
@@ -398,6 +398,7 @@ fn get_client(
 }
 
 enum PasswordHashFunctionKind {
+    #[cfg(feature = "kdf")]
     Argon2(PathBuf),
     Custom(Box<PasswordHashFn>),
 }
@@ -431,7 +432,8 @@ impl Builder {
     ///         Ok(())
     ///     });
     /// ```
-    pub fn with_argon2(salt_path: &Path) -> Self {
+    #[cfg(feature = "kdf")]
+    pub fn with_argon2(salt_path: &std::path::Path) -> Self {
         Self {
             password_hash_function: PasswordHashFunctionKind::Argon2(salt_path.to_owned()),
         }
@@ -443,6 +445,7 @@ impl Builder {
         let plugin_builder = PluginBuilder::new("stronghold").setup(move |app| {
             app.manage(StrongholdCollection::default());
             app.manage(PasswordHashFunction(match password_hash_function {
+                #[cfg(feature = "kdf")]
                 PasswordHashFunctionKind::Argon2(path) => {
                     Box::new(move |p| kdf::KeyDerivation::argon2(p, &path))
                 }
