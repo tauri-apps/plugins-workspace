@@ -5,7 +5,8 @@ description = "Interface with SQL databases."
 authors.workspace = true
 license.workspace = true
 edition.workspace = true
-rust-version.workspace = true
+#rust-version.workspace = true
+rust-version = "1.65"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -16,7 +17,7 @@ tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
 futures-core = "0.3"
-sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "json", "time"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "json", "time"] }
 time = "0.3"
 tokio = { version = "1", features = ["sync"] }
 

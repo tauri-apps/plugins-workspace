@@ -45,7 +45,8 @@ struct ConnectionManager(Mutex<HashMap<Id, WebSocketWriter>>);
 #[derive(Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectionConfig {
-    pub max_send_queue: Option<usize>,
+    pub write_buffer_size: Option<usize>,
+    pub max_write_buffer_size: Option<usize>,
     pub max_message_size: Option<usize>,
     pub max_frame_size: Option<usize>,
     pub accept_unmasked_frames: bool,
@@ -53,9 +54,15 @@ pub struct ConnectionConfig {
 
 impl From<ConnectionConfig> for WebSocketConfig {
     fn from(config: ConnectionConfig) -> Self {
+        // Disabling the warning on max_send_queue which we don't use anymore since it was deprecated.
+        #[allow(deprecated)]
         Self {
-            max_send_queue: config.max_send_queue,
+            max_send_queue: None,
+            write_buffer_size: config.write_buffer_size.unwrap_or(128 * 1024),
+            max_write_buffer_size: config.max_write_buffer_size.unwrap_or(usize::MAX),
+            // This may be harmful since if it's not provided from js we're overwriting the default value with None, meaning no size limit.
             max_message_size: config.max_message_size,
+            // This may be harmful since if it's not provided from js we're overwriting the default value with None, meaning no size limit.
             max_frame_size: config.max_frame_size,
             accept_unmasked_frames: config.accept_unmasked_frames,
         }
