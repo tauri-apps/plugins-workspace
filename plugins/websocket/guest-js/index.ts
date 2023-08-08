@@ -1,5 +1,12 @@
 import { invoke, transformCallback } from "@tauri-apps/api/tauri";
 
+export interface ConnectionConfig {
+  maxSendQueue?: number
+  maxMessageSize?: number
+  maxFrameSize?: number
+  acceptUnmaskedFrames?: boolean
+}
+
 export interface MessageKind<T, D> {
   type: T;
   data: D;
@@ -26,7 +33,7 @@ export default class WebSocket {
     this.listeners = listeners;
   }
 
-  static async connect(url: string, config?: unknown): Promise<WebSocket> {
+  static async connect(url: string, config?: ConnectionConfig): Promise<WebSocket> {
     const listeners: Array<(arg: Message) => void> = [];
     const handler = (message: Message): void => {
       listeners.forEach((l) => l(message));
