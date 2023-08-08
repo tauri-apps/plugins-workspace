@@ -55,12 +55,13 @@ impl Serialize for Error {
 #[derive(Default)]
 struct ConnectionManager(Mutex<HashMap<Id, WebSocketWriter>>);
 
-#[derive(Default, Deserialize)]
+#[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectionConfig {
     pub max_send_queue: Option<usize>,
     pub max_message_size: Option<usize>,
     pub max_frame_size: Option<usize>,
+    #[serde(default)]
     pub accept_unmasked_frames: bool,
 }
 

@@ -1,14 +1,11 @@
-// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
-// SPDX-License-Identifier: Apache-2.0
-// SPDX-License-Identifier: MIT
+import { invoke, transformCallback } from "@tauri-apps/api/tauri";
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-    __TAURI__: {
-      transformCallback: <T>(cb: (payload: T) => void) => number;
-    };
-  }
+export interface ConnectionConfig {
+  writeBufferSize?: number;
+  maxWriteBufferSize?: number;
+  maxMessageSize?: number;
+  maxFrameSize?: number;
+  acceptUnmaskedFrames?: boolean;
 }
 
 export interface MessageKind<T, D> {
@@ -37,19 +34,20 @@ export default class WebSocket {
     this.listeners = listeners;
   }
 
-  static async connect(url: string, options?: unknown): Promise<WebSocket> {
+  static async connect(
+    url: string,
+    config?: ConnectionConfig,
+  ): Promise<WebSocket> {
     const listeners: Array<(arg: Message) => void> = [];
     const handler = (message: Message): void => {
       listeners.forEach((l) => l(message));
     };
 
-    return await window
-      .__TAURI_INVOKE__<number>("plugin:websocket|connect", {
-        url,
-        callbackFunction: window.__TAURI__.transformCallback(handler),
-        options,
-      })
-      .then((id) => new WebSocket(id, listeners));
+    return await invoke<number>("plugin:websocket|connect", {
+      url,
+      callbackFunction: transformCallback(handler),
+      config,
+    }).then((id) => new WebSocket(id, listeners));
   }
 
   addListener(cb: (arg: Message) => void): void {
@@ -69,7 +67,7 @@ export default class WebSocket {
         "invalid `message` type, expected a `{ type: string, data: any }` object, a string or a numeric array",
       );
     }
-    return await window.__TAURI_INVOKE__("plugin:websocket|send", {
+    return await invoke("plugin:websocket|send", {
       id: this.id,
       message: m,
     });
