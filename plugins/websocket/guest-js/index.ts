@@ -6,6 +6,7 @@ export interface ConnectionConfig {
   maxMessageSize?: number;
   maxFrameSize?: number;
   acceptUnmaskedFrames?: boolean;
+  headers?: Record<string, string>;
 }
 
 export interface MessageKind<T, D> {
