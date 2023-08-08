@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     fmt,
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::{Arc, Mutex},
     time::Duration,
 };
@@ -397,28 +397,44 @@ fn get_client(
     }
 }
 
+enum PasswordHashFunctionKind {
+    Argon2(PathBuf),
+    Custom(Box<PasswordHashFn>),
+}
+
 pub struct Builder {
-    password_hash_function: Box<PasswordHashFn>,
+    password_hash_function: PasswordHashFunctionKind,
 }
 
 impl Builder {
     pub fn new<F: Fn(&str) -> Vec<u8> + Send + Sync + 'static>(password_hash_function: F) -> Self {
         Self {
-            password_hash_function: Box::new(password_hash_function),
+            password_hash_function: PasswordHashFunctionKind::Custom(Box::new(
+                password_hash_function,
+            )),
         }
     }
 
-    /// Initializes a stronghold plugin with argon2 as a default kdf
-    pub fn init_and_build_with_argon2<R: Runtime>() -> TauriPlugin<R> {
-        let plugin_builder = PluginBuilder::new("stronghold").setup(move |app| {
-            let app2 = app.clone();
-            app.manage(StrongholdCollection::default());
-            app.manage(PasswordHashFunction(Box::new(move |pwd: &str| {
-                kdf::KeyDerivation::argon2_with_config(pwd, &app2.config())
-            })));
-            Ok(())
-        });
-        Builder::invoke_stronghold_handlers_and_build(plugin_builder)
+    /// Initializes [`Self`] with argon2 as password hash function.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// tauri::Builder::default()
+    ///     .setup(|app| {
+    ///         let salt_path = app
+    ///             .path_resolver()
+    ///             .app_local_data_dir()
+    ///             .expect("could not resolve app local data path")
+    ///             .join("salt.txt");
+    ///         app.handle().plugin(tauri_plugin_stronghold::Builder::with_argon2(&salt_path).build())?;
+    ///         Ok(())
+    ///     });
+    /// ```
+    pub fn with_argon2(salt_path: &Path) -> Self {
+        Self {
+            password_hash_function: PasswordHashFunctionKind::Argon2(salt_path.to_owned()),
+        }
     }
 
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
@@ -426,7 +442,12 @@ impl Builder {
 
         let plugin_builder = PluginBuilder::new("stronghold").setup(move |app| {
             app.manage(StrongholdCollection::default());
-            app.manage(PasswordHashFunction(password_hash_function));
+            app.manage(PasswordHashFunction(match password_hash_function {
+                PasswordHashFunctionKind::Argon2(path) => {
+                    Box::new(move |p| kdf::KeyDerivation::argon2(p, &path))
+                }
+                PasswordHashFunctionKind::Custom(f) => f,
+            }));
             Ok(())
         });
 
