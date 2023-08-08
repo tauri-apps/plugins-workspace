@@ -42,13 +42,11 @@ export default class WebSocket {
       listeners.forEach((l) => l(message));
     };
 
-    return await window
-      .__TAURI_INVOKE__<number>("plugin:websocket|connect", {
-        url,
-        callbackFunction: window.__TAURI__.transformCallback(handler),
-        config,
-      })
-      .then((id) => new WebSocket(id, listeners));
+    return await invoke<number>("plugin:websocket|connect", {
+      url,
+      callbackFunction: transformCallback(handler),
+      config,
+    }).then((id) => new WebSocket(id, listeners));
   }
 
   addListener(cb: (arg: Message) => void): void {
