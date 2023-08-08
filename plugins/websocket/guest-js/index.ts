@@ -1,7 +1,8 @@
 import { invoke, transformCallback } from "@tauri-apps/api/tauri";
 
 export interface ConnectionConfig {
-  maxSendQueue?: number;
+  writeBufferSize?: number;
+  maxWriteBufferSize?: number;
   maxMessageSize?: number;
   maxFrameSize?: number;
   acceptUnmaskedFrames?: boolean;
