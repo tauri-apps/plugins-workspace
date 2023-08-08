@@ -6,6 +6,7 @@ export interface ConnectionConfig {
   maxMessageSize?: number;
   maxFrameSize?: number;
   acceptUnmaskedFrames?: boolean;
+  headers?: HeadersInit;
 }
 
 export interface MessageKind<T, D> {
@@ -42,6 +43,10 @@ export default class WebSocket {
     const handler = (message: Message): void => {
       listeners.forEach((l) => l(message));
     };
+
+    if (config?.headers) {
+      config.headers = Array.from(new Headers(config.headers).entries());
+    }
 
     return await invoke<number>("plugin:websocket|connect", {
       url,
