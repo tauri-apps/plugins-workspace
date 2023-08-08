@@ -29,6 +29,9 @@ use tokio_tungstenite::{
 };
 
 use std::collections::HashMap;
+use std::str::FromStr;
+use tauri::http::header::{HeaderName, HeaderValue};
+use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 
 type Id = u32;
 type WebSocket = WebSocketStream<MaybeTlsStream<TcpStream>>;
@@ -41,6 +44,10 @@ enum Error {
     Websocket(#[from] tokio_tungstenite::tungstenite::Error),
     #[error("connection not found for the given id: {0}")]
     ConnectionNotFound(Id),
+    #[error(transparent)]
+    InvalidHeaderValue(#[from] tokio_tungstenite::tungstenite::http::header::InvalidHeaderValue),
+    #[error(transparent)]
+    InvalidHeaderName(#[from] tokio_tungstenite::tungstenite::http::header::InvalidHeaderName),
 }
 
 impl Serialize for Error {
@@ -55,13 +62,14 @@ impl Serialize for Error {
 #[derive(Default)]
 struct ConnectionManager(Mutex<HashMap<Id, WebSocketWriter>>);
 
-#[derive(Default, Deserialize)]
+#[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectionConfig {
     pub max_send_queue: Option<usize>,
     pub max_message_size: Option<usize>,
     pub max_frame_size: Option<usize>,
-    pub accept_unmasked_frames: bool,
+    pub accept_unmasked_frames: Option<bool>,
+    pub headers: Option<Vec<(String, String)>>,
 }
 
 impl From<ConnectionConfig> for WebSocketConfig {
@@ -70,7 +78,7 @@ impl From<ConnectionConfig> for WebSocketConfig {
             max_send_queue: config.max_send_queue,
             max_message_size: config.max_message_size,
             max_frame_size: config.max_frame_size,
-            accept_unmasked_frames: config.accept_unmasked_frames,
+            accept_unmasked_frames: config.accept_unmasked_frames.unwrap_or_default(),
         }
     }
 }
@@ -99,7 +107,21 @@ async fn connect<R: Runtime>(
     config: Option<ConnectionConfig>,
 ) -> Result<Id> {
     let id = rand::random();
-    let (ws_stream, _) = connect_async_with_config(url, config.map(Into::into), false).await?;
+    let mut request = url.into_client_request()?;
+
+    if let Some(ref config) = config {
+        if let Some(headers) = &config.headers {
+            let config_headers = headers.iter().map(|(k, v)| {
+                let header_name = HeaderName::from_str(k.as_str())?;
+                let header_value = HeaderValue::from_str(v.as_str())?;
+                Ok((header_name, header_value))
+            });
+
+            request.headers_mut().extend(config_headers.filter_map(Result::ok));
+        }
+    }
+
+    let (ws_stream, _) = connect_async_with_config(request, config.map(Into::into), false).await?;
 
     tauri::async_runtime::spawn(async move {
         let (write, read) = ws_stream.split();
