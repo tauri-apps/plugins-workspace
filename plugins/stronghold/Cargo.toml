@@ -20,6 +20,15 @@ iota-crypto = "0.23"
 hex = "0.4"
 zeroize = { version = "1", features = ["zeroize_derive"] }
 
+# kdf dependencies
+rust-argon2 = { version = "1", optional = true }
+rand_chacha = { version = "0.3.1", optional = true }
+rand_core = { version = "0.6.4", features = ["getrandom"], optional = true }
+
 [dev-dependencies]
 rand = "0.8"
 rusty-fork = "0.3"
+
+[features]
+default = ["kdf"]
+kdf = ["dep:rust-argon2", "dep:rand_chacha", "dep:rand_core"]
