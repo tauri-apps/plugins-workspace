@@ -8,7 +8,7 @@ edition = { workspace = true }
 rust-version = { workspace = true }
 
 [package.metadata.docs.rs]
-features = [ "dox" ]
+features = [ "tauri/dox" ]
 
 [dependencies]
 serde = { workspace = true }
@@ -18,6 +18,3 @@ log = { workspace = true }
 thiserror = { workspace = true }
 tiny_http = "0.12"
 http = "0.2"
-
-[features]
-dox = [ "tauri/dox" ]

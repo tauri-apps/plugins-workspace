@@ -8,7 +8,7 @@ license = { workspace = true }
 links = "tauri-plugin-dialog"
 
 [package.metadata.docs.rs]
-features = [ "dox" ]
+features = [ "tauri/dox" ]
 
 [dependencies]
 serde = { workspace = true }
@@ -27,6 +27,3 @@ raw-window-handle = "0.5"
 
 [build-dependencies]
 tauri-build = { workspace = true }
-
-[features]
-dox = [ "tauri/dox" ]

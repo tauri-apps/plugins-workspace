@@ -7,7 +7,7 @@ authors = { workspace = true }
 license = { workspace = true }
 
 [package.metadata.docs.rs]
-features = [ "dox" ]
+features = [ "tauri/dox" ]
 
 [dependencies]
 tauri = { workspace = true }
@@ -36,7 +36,6 @@ zip = { version = "0.6", default-features = false }
 mockito = "0.31"
 
 [features]
-dox = [ "tauri/dox" ]
 native-tls = [ "reqwest/native-tls" ]
 native-tls-vendored = [ "reqwest/native-tls-vendored" ]
 rustls-tls = [ "reqwest/rustls-tls" ]

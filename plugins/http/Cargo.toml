@@ -7,7 +7,7 @@ authors = { workspace = true }
 license = { workspace = true }
 
 [package.metadata.docs.rs]
-features = [ "dox" ]
+features = [ "tauri/dox" ]
 
 [dependencies]
 serde = { workspace = true }
@@ -22,7 +22,6 @@ url = "2.4"
 data-url = "0.3"
 
 [features]
-dox = [ "tauri/dox" ]
 multipart = ["reqwest/multipart"]
 json = ["reqwest/json"]
 stream = ["reqwest/stream"]

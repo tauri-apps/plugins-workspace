@@ -7,7 +7,7 @@ authors = { workspace = true }
 license = { workspace = true }
 
 [package.metadata.docs.rs]
-features = [ "dox" ]
+features = [ "tauri/dox" ]
 
 [dependencies]
 serde = { workspace = true }
@@ -16,6 +16,3 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 clap = { version = "4", features = [ "string" ] }
-
-[features]
-dox = [ "tauri/dox" ]

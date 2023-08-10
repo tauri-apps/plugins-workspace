@@ -8,7 +8,7 @@ license = { workspace = true }
 links = "tauri-plugin-clipboard-manager"
 
 [package.metadata.docs.rs]
-features = [ "dox" ]
+features = [ "tauri/dox" ]
 
 [build-dependencies]
 tauri-build = { workspace = true }
@@ -22,6 +22,3 @@ thiserror = { workspace = true }
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 arboard = "3"
-
-[features]
-dox = [ "tauri/dox" ]

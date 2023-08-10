@@ -9,7 +9,7 @@ rust-version = { workspace = true }
 exclude = [ "/examples" ]
 
 [package.metadata.docs.rs]
-features = [ "dox" ]
+features = [ "tauri/dox" ]
 
 [dependencies]
 serde = { workspace = true }
@@ -32,6 +32,3 @@ features = [
 
 [target."cfg(target_os = \"linux\")".dependencies]
 zbus = "3"
-
-[features]
-dox = [ "tauri/dox" ]

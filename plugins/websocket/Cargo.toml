@@ -9,7 +9,7 @@ rust-version = { workspace = true }
 exclude = [ "/examples" ]
 
 [package.metadata.docs.rs]
-features = [ "dox" ]
+features = [ "tauri/dox" ]
 
 [dependencies]
 serde = { workspace = true }
@@ -23,7 +23,6 @@ tokio = { version = "1", features = [ "net", "sync" ] }
 tokio-tungstenite = { version = "0.19" }
 
 [features]
-dox = [ "tauri/dox" ]
 native-tls = [ "tokio-tungstenite/native-tls" ]
 native-tls-vendored = [ "tokio-tungstenite/native-tls-vendored" ]
 rustls-tls-webpki-roots = [ "tokio-tungstenite/rustls-tls-webpki-roots" ]
