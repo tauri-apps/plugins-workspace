@@ -7,6 +7,9 @@ license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
 
+[package.metadata.docs.rs]
+features = [ "dox" ]
+
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -16,4 +19,5 @@ thiserror = { workspace = true }
 serde_repr = "0.1"
 
 [features]
+dox = [ "tauri/dox" ]
 system-tray = [ "tauri/system-tray" ]

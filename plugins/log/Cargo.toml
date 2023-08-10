@@ -7,6 +7,9 @@ license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
 
+[package.metadata.docs.rs]
+features = [ "dox" ]
+
 [build-dependencies]
 tauri-build = { workspace = true }
 
@@ -29,4 +32,5 @@ objc = "0.2"
 cocoa = "0.24"
 
 [features]
+dox = [ "tauri/dox" ]
 colored = [ "fern/colored" ]

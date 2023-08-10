@@ -8,7 +8,7 @@ edition = { workspace = true }
 rust-version = { workspace = true }
 
 [package.metadata.docs.rs]
-features = [ "sqlite" ]
+features = [ "dox", "sqlite" ]
 
 [dependencies]
 serde = { workspace = true }
@@ -22,6 +22,7 @@ time = "0.3"
 tokio = { version = "1", features = [ "sync" ] }
 
 [features]
+dox = [ "tauri/dox" ]
 sqlite = [ "sqlx/sqlite" ]
 mysql = [ "sqlx/mysql" ]
 postgres = [ "sqlx/postgres" ]

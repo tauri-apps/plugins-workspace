@@ -7,6 +7,9 @@ license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
 
+[package.metadata.docs.rs]
+features = [ "dox" ]
+
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -18,4 +21,5 @@ bincode = "1"
 tauri-plugin-fs = { path = "../fs", version = "2.0.0-alpha.0" }
 
 [features]
+dox = [ "tauri/dox" ]
 protocol-asset = [ "tauri/protocol-asset" ]

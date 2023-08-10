@@ -6,6 +6,9 @@ edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 
+[package.metadata.docs.rs]
+features = [ "dox" ]
+
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -16,3 +19,6 @@ os_info = "3"
 sys-locale = "0.3"
 gethostname = "0.4"
 serialize-to-javascript = "=0.1.1"
+
+[features]
+dox = [ "tauri/dox" ]

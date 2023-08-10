@@ -7,6 +7,9 @@ license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
 
+[package.metadata.docs.rs]
+features = [ "dox" ]
+
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -21,3 +24,6 @@ zeroize = { version = "1", features = [ "zeroize_derive" ] }
 [dev-dependencies]
 rand = "0.8"
 rusty-fork = "0.3"
+
+[features]
+dox = [ "tauri/dox" ]

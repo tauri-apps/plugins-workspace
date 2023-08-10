@@ -6,6 +6,9 @@ authors = { workspace = true }
 license = { workspace = true }
 links = "tauri-plugin-{{name}}"
 
+[package.metadata.docs.rs]
+features = [ "dox" ]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
@@ -17,3 +20,6 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
+
+[features]
+dox = [ "tauri/dox" ]

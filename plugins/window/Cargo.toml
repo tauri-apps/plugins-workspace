@@ -6,12 +6,16 @@ edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 
+[package.metadata.docs.rs]
+features = [ "dox" ]
+
 [dependencies]
 tauri = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
 
 [features]
+dox = [ "tauri/dox" ]
 icon-png = [ "tauri/icon-png" ]
 icon-ico = [ "tauri/icon-ico" ]
 devtools = [ ]
