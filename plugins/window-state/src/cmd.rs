@@ -13,6 +13,17 @@ pub async fn save_window_state<R: Runtime>(
 }
 
 #[command]
+pub async fn restore_window_state<R: Runtime>(
+    app: AppHandle<R>,
+    flags: u32,
+) -> std::result::Result<(), String> {
+    let flags = StateFlags::from_bits(flags)
+        .ok_or_else(|| format!("Invalid state flags bits: {}", flags))?;
+    app.restore_window_state(flags).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[command]
 pub async fn restore_state<R: Runtime>(
     app: AppHandle<R>,
     label: String,

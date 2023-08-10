@@ -19,11 +19,18 @@ async function saveWindowState(flags: StateFlags): Promise<void> {
 }
 
 /**
+ *  Restore the state of all open windows from disk.
+ */
+async function restoreWindowState(flags: StateFlags): Promise<void> {
+  return invoke("plugin:window-state|restore_window_state", { flags });
+}
+
+/**
  *  Restore the state for the specified window from disk.
  */
 async function restoreState(
   label: WindowLabel,
-  flags: StateFlags,
+  flags: StateFlags
 ): Promise<void> {
   return invoke("plugin:window-state|restore_state", { label, flags });
 }
@@ -35,4 +42,9 @@ async function restoreStateCurrent(flags: StateFlags): Promise<void> {
   return restoreState(getCurrent().label, flags);
 }
 
-export { restoreState, restoreStateCurrent, saveWindowState };
+export {
+  restoreState,
+  restoreWindowState,
+  restoreStateCurrent,
+  saveWindowState,
+};

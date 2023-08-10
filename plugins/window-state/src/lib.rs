@@ -19,23 +19,47 @@ use std::{
 
 mod cmd;
 
+/// The default filename used by the plugin.
 pub const STATE_FILENAME: &str = ".window-state";
 
+/// window-state plugin errors.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// I/O errors.
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    /// tauri crate errors.
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+    /// tauri crate [api](tauri::api) errors.
     #[error(transparent)]
     TauriApi(#[from] tauri::api::Error),
+    /// bincode crate errors.
     #[error(transparent)]
     Bincode(#[from] Box<bincode::ErrorKind>),
 }
 
+/// window-state result type.
 pub type Result<T> = std::result::Result<T, Error>;
 
+trait MonitorExt {
+    fn contains(&self, position: PhysicalPosition<i32>) -> bool;
+}
+
+impl MonitorExt for Monitor {
+    fn contains(&self, position: PhysicalPosition<i32>) -> bool {
+        let PhysicalPosition { x, y } = *self.position();
+        let PhysicalSize { width, height } = *self.size();
+
+        x < position.x as _
+            && position.x < (x + width as i32)
+            && y < position.y as _
+            && position.y < (y + height as i32)
+    }
+}
+
 bitflags! {
+    /// The window states to be saved and restored.
     #[derive(Clone, Copy, Debug)]
     pub struct StateFlags: u32 {
         const SIZE        = 1 << 0;
@@ -81,15 +105,38 @@ impl Default for WindowState {
 }
 
 struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
-pub trait AppHandleExt {
-    /// Saves all open windows state to disk
-    fn save_window_state(&self, flags: StateFlags) -> Result<()>;
+
+trait AppHandleExtInternal {
+    fn setup_window_state<S: AsRef<str>>(&self, filename: S) -> Result<()>;
+    fn save_window_state<S: AsRef<str>>(&self, flags: StateFlags, filename: S) -> Result<()>;
 }
 
-impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
-    fn save_window_state(&self, flags: StateFlags) -> Result<()> {
+impl<R: Runtime> AppHandleExtInternal for tauri::AppHandle<R> {
+    fn setup_window_state<S: AsRef<str>>(&self, filename: S) -> Result<()> {
+        let filename = filename.as_ref();
+        let cache: Arc<Mutex<HashMap<String, WindowState>>> =
+            if let Some(app_dir) = self.path_resolver().app_config_dir() {
+                let state_path = app_dir.join(filename);
+                if state_path.exists() {
+                    Arc::new(Mutex::new(
+                        tauri::api::file::read_binary(state_path)
+                            .map_err(Error::TauriApi)
+                            .and_then(|state| bincode::deserialize(&state).map_err(Into::into))
+                            .unwrap_or_default(),
+                    ))
+                } else {
+                    Default::default()
+                }
+            } else {
+                Default::default()
+            };
+        self.manage(WindowStateCache(cache));
+        Ok(())
+    }
+
+    fn save_window_state<S: AsRef<str>>(&self, flags: StateFlags, filename: S) -> Result<()> {
         if let Some(app_dir) = self.path_resolver().app_config_dir() {
-            let state_path = app_dir.join(STATE_FILENAME);
+            let state_path = app_dir.join(filename.as_ref());
             let cache = self.state::<WindowStateCache>();
             let mut state = cache.0.lock().unwrap();
             for (label, s) in state.iter_mut() {
@@ -111,6 +158,45 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
     }
 }
 
+/// A helper trait that provides convenience methods to
+/// call the plugin APIs.
+pub trait AppHandleExt {
+    /// Saves all open windows state to disk using the [default filename](crate::STATE_FILENAME).
+    fn save_window_state(&self, flags: StateFlags) -> Result<()>;
+    /// Saves all open windows state to disk using the specified filename.
+    fn save_window_state_with_filename<S: AsRef<str>>(
+        &self,
+        flags: StateFlags,
+        filename: S,
+    ) -> Result<()>;
+    /// Restores all open windows state from disk.
+    fn restore_window_state(&self, flags: StateFlags) -> Result<()>;
+}
+
+impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
+    fn save_window_state(&self, flags: StateFlags) -> Result<()> {
+        AppHandleExtInternal::save_window_state(self, flags, STATE_FILENAME)
+    }
+
+    fn save_window_state_with_filename<S: AsRef<str>>(
+        &self,
+        flags: StateFlags,
+        filename: S,
+    ) -> Result<()> {
+        AppHandleExtInternal::save_window_state(self, flags, filename)
+    }
+
+    fn restore_window_state(&self, flags: StateFlags) -> Result<()> {
+        for window in self.windows().values() {
+            window.restore_state(flags)?;
+        }
+
+        Ok(())
+    }
+}
+
+/// A helper trait that provides convenience methods to
+/// call the plugin APIs for a specific window.
 pub trait WindowExt {
     /// Restores this window state from disk
     fn restore_state(&self, flags: StateFlags) -> tauri::Result<()>;
@@ -265,14 +351,27 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
     }
 }
 
+/// The window-state plugin builder
 #[derive(Default)]
 pub struct Builder {
     denylist: HashSet<String>,
     skip_initial_state: HashSet<String>,
     state_flags: StateFlags,
+    filename: Option<String>,
 }
 
 impl Builder {
+    /// Create a new window-state plugin builder.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Sets the state flags to control what state gets restored and saved.
+    pub fn with_filename<S: AsRef<str>>(mut self, filename: S) -> Self {
+        self.filename.replace(filename.as_ref().to_string());
+        self
+    }
+
     /// Sets the state flags to control what state gets restored and saved.
     pub fn with_state_flags(mut self, flags: StateFlags) -> Self {
         self.state_flags = flags;
@@ -293,33 +392,15 @@ impl Builder {
     }
 
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
-        let flags = self.state_flags;
+        let filename = self.filename.unwrap_or_else(|| STATE_FILENAME.to_string());
+        let filename_c = filename.clone();
         PluginBuilder::new("window-state")
             .invoke_handler(tauri::generate_handler![
                 cmd::save_window_state,
+                cmd::restore_window_state,
                 cmd::restore_state
             ])
-            .setup(|app| {
-                let cache: Arc<Mutex<HashMap<String, WindowState>>> = if let Some(app_dir) =
-                    app.path_resolver().app_config_dir()
-                {
-                    let state_path = app_dir.join(STATE_FILENAME);
-                    if state_path.exists() {
-                        Arc::new(Mutex::new(
-                            tauri::api::file::read_binary(state_path)
-                                .map_err(Error::TauriApi)
-                                .and_then(|state| bincode::deserialize(&state).map_err(Into::into))
-                                .unwrap_or_default(),
-                        ))
-                    } else {
-                        Default::default()
-                    }
-                } else {
-                    Default::default()
-                };
-                app.manage(WindowStateCache(cache));
-                Ok(())
-            })
+            .setup(|app| app.setup_window_state(filename).map_err(Into::into))
             .on_webview_ready(move |window| {
                 if self.denylist.contains(window.label()) {
                     return;
@@ -333,7 +414,6 @@ impl Builder {
                 let cache = cache.0.clone();
                 let label = window.label().to_string();
                 let window_clone = window.clone();
-                let flags = self.state_flags;
 
                 // insert a default state if this window should be tracked and
                 // the disk cache doesn't have a state for it
@@ -349,32 +429,20 @@ impl Builder {
                     if let WindowEvent::CloseRequested { .. } = e {
                         let mut c = cache.lock().unwrap();
                         if let Some(state) = c.get_mut(&label) {
-                            let _ = window_clone.update_state(state, flags);
+                            let _ = window_clone.update_state(state, self.state_flags);
                         }
                     }
                 });
             })
             .on_event(move |app, event| {
                 if let RunEvent::Exit = event {
-                    let _ = app.save_window_state(flags);
+                    let _ = AppHandleExtInternal::save_window_state(
+                        app,
+                        self.state_flags,
+                        filename_c.clone(),
+                    );
                 }
             })
             .build()
-    }
-}
-
-trait MonitorExt {
-    fn contains(&self, position: PhysicalPosition<i32>) -> bool;
-}
-
-impl MonitorExt for Monitor {
-    fn contains(&self, position: PhysicalPosition<i32>) -> bool {
-        let PhysicalPosition { x, y } = *self.position();
-        let PhysicalSize { width, height } = *self.size();
-
-        x < position.x as _
-            && position.x < (x + width as i32)
-            && y < position.y as _
-            && position.y < (y + height as i32)
     }
 }
