@@ -30,7 +30,7 @@ async function restoreWindowState(flags: StateFlags): Promise<void> {
  */
 async function restoreState(
   label: WindowLabel,
-  flags: StateFlags
+  flags: StateFlags,
 ): Promise<void> {
   return invoke("plugin:window-state|restore_state", { label, flags });
 }
