@@ -8,7 +8,7 @@ edition = { workspace = true }
 rust-version = { workspace = true }
 
 [package.metadata.docs.rs]
-features = [ "sqlite" ]
+features = [ "dox", "sqlite" ]
 
 [dependencies]
 serde = { workspace = true }

@@ -7,6 +7,9 @@ authors = { workspace = true }
 license = { workspace = true }
 links = "tauri-plugin-clipboard-manager"
 
+[package.metadata.docs.rs]
+features = [ "tauri/dox" ]
+
 [build-dependencies]
 tauri-build = { workspace = true }
 
