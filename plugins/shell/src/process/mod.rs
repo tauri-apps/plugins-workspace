@@ -242,8 +242,6 @@ impl Command {
         let child_ = child.clone();
         let guard = Arc::new(RwLock::new(()));
 
-        //TODO commands().lock().unwrap().insert(child.id(), child.clone());
-
         let (tx, rx) = channel(1);
 
         spawn_pipe_reader(
@@ -263,7 +261,6 @@ impl Command {
             let _ = match child_.wait() {
                 Ok(status) => {
                     let _l = guard.write().unwrap();
-                    //TODO commands().lock().unwrap().remove(&child_.id());
                     block_on_task(async move {
                         tx.send(CommandEvent::Terminated(TerminatedPayload {
                             code: status.code(),
