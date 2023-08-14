@@ -16,8 +16,8 @@
 use futures_util::TryStreamExt;
 use serde::{ser::Serializer, Serialize};
 use tauri::{
-    api::ipc::Channel,
     command,
+    ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     Runtime,
 };
@@ -56,11 +56,11 @@ struct ProgressPayload {
 }
 
 #[command]
-async fn download<R: Runtime>(
+async fn download(
     url: &str,
     file_path: &str,
     headers: HashMap<String, String>,
-    on_progress: Channel<R>,
+    on_progress: Channel,
 ) -> Result<()> {
     let client = reqwest::Client::new();
 
@@ -89,11 +89,11 @@ async fn download<R: Runtime>(
 }
 
 #[command]
-async fn upload<R: Runtime>(
+async fn upload(
     url: &str,
     file_path: &str,
     headers: HashMap<String, String>,
-    on_progress: Channel<R>,
+    on_progress: Channel,
 ) -> Result<serde_json::Value> {
     // Read the file
     let file = File::open(file_path).await?;
@@ -113,13 +113,13 @@ async fn upload<R: Runtime>(
     response.json().await.map_err(Into::into)
 }
 
-fn file_to_body<R: Runtime>(channel: Channel<R>, file: File) -> reqwest::Body {
+fn file_to_body(channel: Channel, file: File) -> reqwest::Body {
     let stream = FramedRead::new(file, BytesCodec::new()).map_ok(|r| r.freeze());
 
     reqwest::Body::wrap_stream(ReadProgressStream::new(
         stream,
         Box::new(move |progress, total| {
-            let _ = channel.send(&ProgressPayload { progress, total });
+            let _ = channel.send(ProgressPayload { progress, total });
         }),
     ))
 }

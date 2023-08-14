@@ -13,7 +13,7 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
-            let handle = app.handle();
+            let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 let mut builder = handle.updater_builder();
                 if std::env::var("TARGET").unwrap_or_default() == "nsis" {

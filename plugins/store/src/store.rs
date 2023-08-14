@@ -144,7 +144,7 @@ impl StoreBuilder {
     /// ```
     /// tauri::Builder::default()
     ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new("store.json").build(app.handle());
+    ///     let store = tauri_plugin_store::StoreBuilder::new("store.json").build(app.handle().clone());
     ///     Ok(())
     ///   });
     /// ```

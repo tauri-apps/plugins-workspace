@@ -5,7 +5,7 @@
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
 use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
 use serde::Deserialize;
-use tauri::{api::ipc::Channel, command, Runtime, State};
+use tauri::{command, ipc::Channel, State};
 
 use crate::Result;
 
@@ -30,7 +30,7 @@ enum WatcherKind {
     Watcher(RecommendedWatcher),
 }
 
-fn watch_raw<R: Runtime>(on_event: Channel<R>, rx: Receiver<notify::Result<Event>>) {
+fn watch_raw(on_event: Channel, rx: Receiver<notify::Result<Event>>) {
     spawn(move || {
         while let Ok(event) = rx.recv() {
             if let Ok(event) = event {
@@ -41,7 +41,7 @@ fn watch_raw<R: Runtime>(on_event: Channel<R>, rx: Receiver<notify::Result<Event
     });
 }
 
-fn watch_debounced<R: Runtime>(on_event: Channel<R>, rx: Receiver<DebounceEventResult>) {
+fn watch_debounced(on_event: Channel, rx: Receiver<DebounceEventResult>) {
     spawn(move || {
         while let Ok(event) = rx.recv() {
             if let Ok(event) = event {
@@ -60,12 +60,12 @@ pub struct WatchOptions {
 }
 
 #[command]
-pub async fn watch<R: Runtime>(
+pub async fn watch(
     watchers: State<'_, WatcherCollection>,
     id: Id,
     paths: Vec<PathBuf>,
     options: WatchOptions,
-    on_event: Channel<R>,
+    on_event: Channel,
 ) -> Result<()> {
     let mode = if options.recursive {
         RecursiveMode::Recursive

@@ -317,8 +317,8 @@ impl Builder {
                     let state_path = app_dir.join(STATE_FILENAME);
                     if state_path.exists() {
                         Arc::new(Mutex::new(
-                            tauri::api::file::read_binary(state_path)
-                                .map_err(Error::TauriApi)
+                            std::fs::read(state_path)
+                                .map_err(Error::from)
                                 .and_then(|state| bincode::deserialize(&state).map_err(Into::into))
                                 .unwrap_or_default(),
                         ))
