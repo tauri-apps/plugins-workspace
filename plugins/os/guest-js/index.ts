@@ -29,7 +29,7 @@ type Platform =
   | "android"
   | "windows";
 
-type OsType = "linux" | "windows" | "macss" | "ios" | "android";
+type OsType = "linux" | "windows" | "macos" | "ios" | "android";
 
 type Arch =
   | "x86"
