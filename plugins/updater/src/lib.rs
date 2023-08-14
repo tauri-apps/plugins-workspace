@@ -41,7 +41,7 @@ pub trait UpdaterExt<R: Runtime> {
     /// use tauri_plugin_updater::UpdaterExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
-    ///     let handle = app.handle();
+    ///     let handle = app.handle().clone();
     ///     tauri::async_runtime::spawn(async move {
     ///         let response = handle.updater_builder().build().unwrap().check().await;
     ///     });
@@ -58,7 +58,7 @@ pub trait UpdaterExt<R: Runtime> {
     /// use tauri_plugin_updater::UpdaterExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
-    ///     let handle = app.handle();
+    ///     let handle = app.handle().clone();
     ///     tauri::async_runtime::spawn(async move {
     ///         let response = handle.updater().unwrap().check().await;
     ///     });
