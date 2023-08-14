@@ -163,16 +163,15 @@ pub async fn fetch_send<R: Runtime>(
     })
 }
 
-// TODO: change return value to tauri::ipc::Response on next alpha
 #[command]
 pub(crate) async fn fetch_read_body<R: Runtime>(
     app: AppHandle<R>,
     rid: RequestId,
-) -> crate::Result<Vec<u8>> {
+) -> crate::Result<tauri::ipc::Response> {
     let mut response_table = app.http().responses.lock().await;
     let res = response_table
         .remove(&rid)
         .ok_or(Error::InvalidRequestId(rid))?;
 
-    Ok(res.bytes().await?.to_vec())
+    Ok(tauri::ipc::Response::new(res.bytes().await?.to_vec()))
 }
