@@ -63,8 +63,8 @@ interface ScaleFactorChanged {
 
 /** The file drop event types. */
 type FileDropEvent =
-  | { type: "hover"; paths: string[] }
-  | { type: "drop"; paths: string[] }
+  | { type: "hover"; paths: string[]; position: PhysicalPosition }
+  | { type: "drop"; paths: string[]; position: PhysicalPosition }
   | { type: "cancel" };
 
 /**
@@ -1901,19 +1901,33 @@ class Window {
   async onFileDropEvent(
     handler: EventCallback<FileDropEvent>,
   ): Promise<UnlistenFn> {
-    const unlistenFileDrop = await this.listen<string[]>(
-      TauriEvent.WINDOW_FILE_DROP,
-      (event) => {
-        handler({ ...event, payload: { type: "drop", paths: event.payload } });
-      },
-    );
+    const unlistenFileDrop = await this.listen<{
+      paths: string[];
+      position: PhysicalPosition;
+    }>(TauriEvent.WINDOW_FILE_DROP, (event) => {
+      handler({
+        ...event,
+        payload: {
+          type: "drop",
+          paths: event.payload.paths,
+          position: mapPhysicalPosition(event.payload.position),
+        },
+      });
+    });
 
-    const unlistenFileHover = await this.listen<string[]>(
-      TauriEvent.WINDOW_FILE_DROP_HOVER,
-      (event) => {
-        handler({ ...event, payload: { type: "hover", paths: event.payload } });
-      },
-    );
+    const unlistenFileHover = await this.listen<{
+      paths: string[];
+      position: PhysicalPosition;
+    }>(TauriEvent.WINDOW_FILE_DROP_HOVER, (event) => {
+      handler({
+        ...event,
+        payload: {
+          type: "hover",
+          paths: event.payload.paths,
+          position: mapPhysicalPosition(event.payload.position),
+        },
+      });
+    });
 
     const unlistenCancel = await this.listen<null>(
       TauriEvent.WINDOW_FILE_DROP_CANCELLED,
