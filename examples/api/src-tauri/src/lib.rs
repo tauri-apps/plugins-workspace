@@ -124,7 +124,7 @@ pub fn run() {
 
     #[cfg(target_os = "macos")]
     {
-        builder = builder.menu(tauri::Menu::os_default("Tauri API Validation"));
+        builder = builder.menu(tauri::menu::Menu::default);
     }
 
     #[allow(unused_mut)]
