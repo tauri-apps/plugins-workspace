@@ -5,7 +5,7 @@
 use crate::{PendingUpdate, Result, UpdaterExt};
 
 use serde::Serialize;
-use tauri::{api::ipc::Channel, AppHandle, Runtime, State};
+use tauri::{ipc::Channel, AppHandle, Runtime, State};
 
 use std::{
     sync::atomic::{AtomicBool, Ordering},
@@ -76,7 +76,7 @@ pub(crate) async fn check<R: Runtime>(
 pub(crate) async fn download_and_install<R: Runtime>(
     _app: AppHandle<R>,
     pending: State<'_, PendingUpdate>,
-    on_event: Channel<R>,
+    on_event: Channel,
 ) -> Result<()> {
     if let Some(pending) = &*pending.0.lock().await {
         let first_chunk = AtomicBool::new(false);
@@ -86,11 +86,11 @@ pub(crate) async fn download_and_install<R: Runtime>(
                 move |chunk_length, content_length| {
                     if first_chunk.swap(false, Ordering::Acquire) {
                         on_event
-                            .send(&DownloadEvent::Started { content_length })
+                            .send(DownloadEvent::Started { content_length })
                             .unwrap();
                     }
                     on_event
-                        .send(&DownloadEvent::Progress { chunk_length })
+                        .send(DownloadEvent::Progress { chunk_length })
                         .unwrap();
                 },
                 move || {

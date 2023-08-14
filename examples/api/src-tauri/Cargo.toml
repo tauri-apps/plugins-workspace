@@ -37,7 +37,7 @@ tauri-plugin-window = { path = "../../../plugins/window", version = "2.0.0-alpha
   "icon-png",
   "isolation",
   "macos-private-api",
-  "system-tray",
+  "tray-icon",
   "protocol-asset"
 ]
 

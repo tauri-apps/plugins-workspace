@@ -5,7 +5,7 @@
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
 use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
 use serde::Deserialize;
-use tauri::{api::ipc::Channel, command, Runtime, State};
+use tauri::{command, ipc::Channel, Runtime, State};
 
 use crate::Result;
 

@@ -62,14 +62,7 @@
  * @module
  */
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-    __TAURI__: {
-      transformCallback: <T>(cb: (payload: T) => void) => number;
-    };
-  }
-}
+import { invoke, Channel } from "@tauri-apps/api/tauri";
 
 /**
  * @since 2.0.0
@@ -111,7 +104,7 @@ interface ChildProcess<O extends IOPayload> {
  *
  * @ignore
  * @param program The name of the scoped command.
- * @param onEvent Event handler.
+ * @param onEventHandler Event handler.
  * @param args Program arguments.
  * @param options Configuration for the process spawn.
  * @returns A promise resolving to the process id.
@@ -119,7 +112,7 @@ interface ChildProcess<O extends IOPayload> {
  * @since 2.0.0
  */
 async function execute<O extends IOPayload>(
-  onEvent: (event: CommandEvent<O>) => void,
+  onEventHandler: (event: CommandEvent<O>) => void,
   program: string,
   args: string | string[] = [],
   options?: InternalSpawnOptions,
@@ -128,11 +121,14 @@ async function execute<O extends IOPayload>(
     Object.freeze(args);
   }
 
-  return window.__TAURI_INVOKE__<number>("plugin:shell|execute", {
+  const onEvent = new Channel<CommandEvent<O>>();
+  onEvent.onmessage = onEventHandler;
+
+  return invoke<number>("plugin:shell|execute", {
     program,
     args,
     options,
-    onEventFn: window.__TAURI__.transformCallback(onEvent),
+    onEvent,
   });
 }
 
@@ -358,7 +354,7 @@ class Child {
    * @since 2.0.0
    */
   async write(data: IOPayload): Promise<void> {
-    return window.__TAURI_INVOKE__("plugin:shell|stdin_write", {
+    return invoke("plugin:shell|stdin_write", {
       pid: this.pid,
       // correctly serialize Uint8Arrays
       buffer: typeof data === "string" ? data : Array.from(data),
@@ -373,7 +369,7 @@ class Child {
    * @since 2.0.0
    */
   async kill(): Promise<void> {
-    return window.__TAURI_INVOKE__("plugin:shell|kill", {
+    return invoke("plugin:shell|kill", {
       cmd: "killChild",
       pid: this.pid,
     });
@@ -648,7 +644,7 @@ type CommandEvent<O extends IOPayload> =
  * @since 2.0.0
  */
 async function open(path: string, openWith?: string): Promise<void> {
-  return window.__TAURI_INVOKE__("plugin:shell|open", {
+  return invoke("plugin:shell|open", {
     path,
     with: openWith,
   });

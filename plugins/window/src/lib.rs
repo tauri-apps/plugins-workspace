@@ -37,7 +37,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .invoke_handler(|invoke| {
             #[cfg(desktop)]
             {
-                let handler: Box<dyn Fn(tauri::Invoke<R>) -> bool> =
+                let handler: Box<dyn Fn(tauri::ipc::Invoke<R>) -> bool> =
                     Box::new(tauri::generate_handler![
                         desktop_commands::create,
                         // getters

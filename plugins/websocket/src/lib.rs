@@ -14,7 +14,7 @@
 use futures_util::{stream::SplitSink, SinkExt, StreamExt};
 use serde::{ser::Serializer, Deserialize, Serialize};
 use tauri::{
-    api::ipc::{format_callback, CallbackFn},
+    ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, Runtime, State, Window,
 };
@@ -95,7 +95,7 @@ enum WebSocketMessage {
 async fn connect<R: Runtime>(
     window: Window<R>,
     url: String,
-    callback_function: CallbackFn,
+    on_message: Channel,
     config: Option<ConnectionConfig>,
 ) -> Result<Id> {
     let id = rand::random();
@@ -107,6 +107,7 @@ async fn connect<R: Runtime>(
         manager.0.lock().await.insert(id, write);
         read.for_each(move |message| {
             let window_ = window.clone();
+            let on_message_ = on_message.clone();
             async move {
                 if let Ok(Message::Close(_)) = message {
                     let manager = window_.state::<ConnectionManager>();
@@ -136,9 +137,8 @@ async fn connect<R: Runtime>(
                     Ok(Message::Frame(_)) => serde_json::Value::Null, // This value can't be recieved.
                     Err(e) => serde_json::to_value(Error::from(e)).unwrap(),
                 };
-                let js = format_callback(callback_function, &response)
-                    .expect("unable to serialize websocket message");
-                let _ = window_.eval(js.as_str());
+
+                let _ = on_message_.send(response);
             }
         })
         .await;

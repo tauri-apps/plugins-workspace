@@ -254,7 +254,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
                 if let Some(fs_scope) = fs_scope {
                     if fs_scope_state_path.exists() {
-                    let scope: Scope = tauri::api::file::read_binary(&fs_scope_state_path)
+                    let scope: Scope = std::fs::read(&fs_scope_state_path)
                         .map_err(Error::from)
                         .and_then(|scope| bincode::deserialize(&scope).map_err(Into::into))
                         .unwrap_or_default();
@@ -276,7 +276,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
                 #[cfg(feature = "protocol-asset")]
                 if asset_scope_state_path.exists() {
-                    let scope: Scope = tauri::api::file::read_binary(&asset_scope_state_path)
+                    let scope: Scope = std::fs::read(&asset_scope_state_path)
                         .map_err(Error::from)
                         .and_then(|scope| bincode::deserialize(&scope).map_err(Into::into))
                         .unwrap_or_default();

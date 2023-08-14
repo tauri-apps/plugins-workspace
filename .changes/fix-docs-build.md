@@ -28,4 +28,3 @@
 ---
 
 Fixes docs.rs build by enabling the `tauri/dox` feature flag.
-

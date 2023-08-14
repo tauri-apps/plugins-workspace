@@ -124,6 +124,7 @@
     "security": {
       "csp": {
         "default-src": "'self' customprotocol: asset:",
+        "connect-src": "ipc: https://ipc.localhost",
         "font-src": ["https://fonts.gstatic.com"],
         "img-src": "'self' asset: https://asset.localhost blob: data:",
         "style-src": "'unsafe-inline' 'self' https://fonts.googleapis.com"
@@ -136,11 +137,6 @@
           "deny": ["$APPDATA/db/*.stronghold"]
         }
       }
-    },
-    "systemTray": {
-      "iconPath": "icons/tray_icon_with_transparency.png",
-      "iconAsTemplate": true,
-      "menuOnLeftClick": false
     }
   }
 }
