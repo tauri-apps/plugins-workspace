@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-window"
-version = "2.0.0-alpha.0"
+version = "2.0.0-alpha.1"
 description = "Interact with the Tauri window."
 edition = { workspace = true }
 authors = { workspace = true }
