@@ -206,7 +206,7 @@ impl Command {
     /// use tauri_plugin_shell::{process::CommandEvent, ShellExt};
     /// tauri::Builder::default()
     ///   .setup(|app| {
-    ///     let handle = app.handle();
+    ///     let handle = app.handle().clone();
     ///     tauri::async_runtime::spawn(async move {
     ///       let (mut rx, mut child) = handle.shell().command("cargo")
     ///         .args(["tauri", "dev"])
