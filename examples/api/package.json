@@ -12,7 +12,7 @@
     "@tauri-apps/api": "2.0.0-alpha.6",
     "@tauri-apps/plugin-app": "2.0.0-alpha.1",
     "@tauri-apps/plugin-cli": "2.0.0-alpha.1",
-    "@tauri-apps/plugin-clipboard-manager": "2.0.0-alpha.0",
+    "@tauri-apps/plugin-clipboard-manager": "2.0.0-alpha.1",
     "@tauri-apps/plugin-dialog": "2.0.0-alpha.1",
     "@tauri-apps/plugin-fs": "2.0.0-alpha.1",
     "@tauri-apps/plugin-global-shortcut": "2.0.0-alpha.1",
