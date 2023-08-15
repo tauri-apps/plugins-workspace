@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-alpha.2]
+
+### Dependencies
+
+- Upgraded to `os-js@2.0.0-alpha.2`
+
 ## \[2.0.0-alpha.1]
 
 ### Dependencies
