@@ -6,8 +6,8 @@
   "scripts": {
     "build": "pnpm run -r --parallel --filter !plugins-workspace --filter !\"./plugins/*/examples/**\" --filter !\"./examples/*\" build",
     "lint": "eslint .",
-    "format": "prettier --write .",
-    "format-check": "prettier --check ."
+    "format": "prettier --write \"./**/*.{cjs,mjs,js,jsx,mts,ts,tsx,html,css,json}\"  --ignore-path .prettierignore",
+    "format-check": "prettier --check \"./**/*.{cjs,mjs,js,jsx,mts,ts,tsx,html,css,json}\"  --ignore-path .prettierignore"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "15.1.0",
