@@ -72,9 +72,22 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
 
 ## Sponsors
 
-<a href="https://impierce.com/" target="_blank">
-    <img src="sponsors/impierce.png" alt=“Impierce” width="283" height="90">
-</a>
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev/" target="_blank">
+          <img src="sponsors/crabnebula.svg" alt="CrabNebula" width="283" height="90">
+        </a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://impierce.com/" target="_blank">
+            <img src="sponsors/impierce.png" alt="Impierce" width="283" height="90">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## License
 
