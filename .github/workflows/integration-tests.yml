@@ -1,0 +1,54 @@
+# Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT
+
+name: integration tests
+
+on:
+  push:
+    branches:
+      - v1
+      - v2
+    paths:
+      - ".github/workflows/integration-tests.yml"
+      - "plugins/updater/src/**"
+  pull_request:
+    branches:
+      - v1
+      - v2
+    paths:
+      - ".github/workflows/integration-tests.yml"
+      - "plugins/updater/src/**"
+
+jobs:
+  run-integration-tests:
+    runs-on: ${{ matrix.platform }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: install stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: install Linux dependencies
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y webkit2gtk-4.1 libayatana-appindicator3-dev libfuse2
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: install Tauri CLI
+        run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch dev
+
+      - name: run integration tests
+        run: cargo test --test '*' -- --ignored

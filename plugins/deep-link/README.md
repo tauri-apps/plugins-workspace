@@ -23,21 +23,6 @@ tauri-plugin-deep-link = "2.0.0-alpha"
 tauri-plugin-deep-link = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
-Currently the plugin requires `lucasfernog/tauri#feat/ipc-custom-protocol`:
-
-```toml
-[patch.crates-io]
-tauri = { git = "https://github.com/lucasfernog/tauri", branch = "feat/ipc-custom-protocol" }
-tauri-build = { git = "https://github.com/lucasfernog/tauri", branch = "feat/ipc-custom-protocol" }
-```
-
-Additionally, you must use the Tauri CLI from the `dev` branch:
-
-```sh
-cargo install --git https://github.com/tauri-apps/tauri --branch dev tauri-cli
-cargo tauri [android|ios] [dev|build]
-```
-
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.

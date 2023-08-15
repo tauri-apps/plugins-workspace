@@ -2,14 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-    __TAURI__: {
-      transformCallback: <T>(cb: (payload: T) => void) => number;
-    };
-  }
-}
+import { invoke, Channel } from "@tauri-apps/api/tauri";
 
 export interface MessageKind<T, D> {
   type: T;
@@ -39,17 +32,17 @@ export default class WebSocket {
 
   static async connect(url: string, options?: unknown): Promise<WebSocket> {
     const listeners: Array<(arg: Message) => void> = [];
-    const handler = (message: Message): void => {
+
+    const onMessage = new Channel<Message>();
+    onMessage.onmessage = (message: Message): void => {
       listeners.forEach((l) => l(message));
     };
 
-    return await window
-      .__TAURI_INVOKE__<number>("plugin:websocket|connect", {
-        url,
-        callbackFunction: window.__TAURI__.transformCallback(handler),
-        options,
-      })
-      .then((id) => new WebSocket(id, listeners));
+    return await invoke<number>("plugin:websocket|connect", {
+      url,
+      onMessage,
+      options,
+    }).then((id) => new WebSocket(id, listeners));
   }
 
   addListener(cb: (arg: Message) => void): void {
@@ -66,10 +59,10 @@ export default class WebSocket {
       m = { type: "Binary", data: message };
     } else {
       throw new Error(
-        "invalid `message` type, expected a `{ type: string, data: any }` object, a string or a numeric array"
+        "invalid `message` type, expected a `{ type: string, data: any }` object, a string or a numeric array",
       );
     }
-    return await window.__TAURI_INVOKE__("plugin:websocket|send", {
+    return await invoke("plugin:websocket|send", {
       id: this.id,
       message: m,
     });

@@ -218,7 +218,7 @@ impl<R: Runtime> Builder<R> {
     ///
     /// tauri::Builder::default()
     ///   .setup(|app| {
-    ///     let store = StoreBuilder::new("store.bin").build(app.handle());
+    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
     ///     let builder = Builder::default().store(store);
     ///     Ok(())
     ///   });
@@ -237,7 +237,7 @@ impl<R: Runtime> Builder<R> {
     ///
     /// tauri::Builder::default()
     ///   .setup(|app| {
-    ///     let store = StoreBuilder::new("store.bin").build(app.handle());
+    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
     ///     let builder = Builder::default().stores([store]);
     ///     Ok(())
     ///   });
@@ -261,7 +261,7 @@ impl<R: Runtime> Builder<R> {
     ///
     /// tauri::Builder::default()
     ///   .setup(|app| {
-    ///     let store = StoreBuilder::new("store.bin").build(app.handle());
+    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
     ///     app.handle().plugin(Builder::default().freeze().build());
     ///     Ok(())
     ///   });
@@ -280,7 +280,7 @@ impl<R: Runtime> Builder<R> {
     ///
     /// tauri::Builder::default()
     ///   .setup(|app| {
-    ///     let store = StoreBuilder::new("store.bin").build(app.handle());
+    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
     ///     app.handle().plugin(Builder::default().build());
     ///     Ok(())
     ///   });

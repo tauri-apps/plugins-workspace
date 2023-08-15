@@ -62,14 +62,7 @@
  * @module
  */
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-    __TAURI__: {
-      transformCallback: <T>(cb: (payload: T) => void) => number;
-    };
-  }
-}
+import { invoke, Channel } from "@tauri-apps/api/tauri";
 
 /**
  * @since 2.0.0
@@ -111,7 +104,7 @@ interface ChildProcess<O extends IOPayload> {
  *
  * @ignore
  * @param program The name of the scoped command.
- * @param onEvent Event handler.
+ * @param onEventHandler Event handler.
  * @param args Program arguments.
  * @param options Configuration for the process spawn.
  * @returns A promise resolving to the process id.
@@ -119,20 +112,23 @@ interface ChildProcess<O extends IOPayload> {
  * @since 2.0.0
  */
 async function execute<O extends IOPayload>(
-  onEvent: (event: CommandEvent<O>) => void,
+  onEventHandler: (event: CommandEvent<O>) => void,
   program: string,
   args: string | string[] = [],
-  options?: InternalSpawnOptions
+  options?: InternalSpawnOptions,
 ): Promise<number> {
   if (typeof args === "object") {
     Object.freeze(args);
   }
 
-  return window.__TAURI_INVOKE__<number>("plugin:shell|execute", {
+  const onEvent = new Channel<CommandEvent<O>>();
+  onEvent.onmessage = onEventHandler;
+
+  return invoke<number>("plugin:shell|execute", {
     program,
     args,
     options,
-    onEventFn: window.__TAURI__.transformCallback(onEvent),
+    onEvent,
   });
 }
 
@@ -153,7 +149,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   addListener<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void
+    listener: (arg: E[typeof eventName]) => void,
   ): this {
     return this.on(eventName, listener);
   }
@@ -165,7 +161,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   removeListener<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void
+    listener: (arg: E[typeof eventName]) => void,
   ): this {
     return this.off(eventName, listener);
   }
@@ -182,7 +178,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   on<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void
+    listener: (arg: E[typeof eventName]) => void,
   ): this {
     if (eventName in this.eventListeners) {
       // eslint-disable-next-line security/detect-object-injection
@@ -204,7 +200,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   once<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void
+    listener: (arg: E[typeof eventName]) => void,
   ): this {
     const wrapper = (arg: E[typeof eventName]): void => {
       this.removeListener(eventName, wrapper);
@@ -222,12 +218,12 @@ class EventEmitter<E extends Record<string, any>> {
    */
   off<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void
+    listener: (arg: E[typeof eventName]) => void,
   ): this {
     if (eventName in this.eventListeners) {
       // eslint-disable-next-line security/detect-object-injection
       this.eventListeners[eventName] = this.eventListeners[eventName].filter(
-        (l) => l !== listener
+        (l) => l !== listener,
       );
     }
     return this;
@@ -295,7 +291,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   prependListener<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void
+    listener: (arg: E[typeof eventName]) => void,
   ): this {
     if (eventName in this.eventListeners) {
       // eslint-disable-next-line security/detect-object-injection
@@ -317,7 +313,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   prependOnceListener<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void
+    listener: (arg: E[typeof eventName]) => void,
   ): this {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapper = (arg: any): void => {
@@ -358,7 +354,7 @@ class Child {
    * @since 2.0.0
    */
   async write(data: IOPayload): Promise<void> {
-    return window.__TAURI_INVOKE__("plugin:shell|stdin_write", {
+    return invoke("plugin:shell|stdin_write", {
       pid: this.pid,
       // correctly serialize Uint8Arrays
       buffer: typeof data === "string" ? data : Array.from(data),
@@ -373,7 +369,7 @@ class Child {
    * @since 2.0.0
    */
   async kill(): Promise<void> {
-    return window.__TAURI_INVOKE__("plugin:shell|kill", {
+    return invoke("plugin:shell|kill", {
       cmd: "killChild",
       pid: this.pid,
     });
@@ -434,7 +430,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   private constructor(
     program: string,
     args: string | string[] = [],
-    options?: SpawnOptions
+    options?: SpawnOptions,
   ) {
     super();
     this.program = program;
@@ -446,12 +442,12 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   static create(
     program: string,
     args?: string | string[],
-    options?: SpawnOptions & { encoding: "raw" }
+    options?: SpawnOptions & { encoding: "raw" },
   ): Command<Uint8Array>;
   static create(
     program: string,
     args?: string | string[],
-    options?: SpawnOptions
+    options?: SpawnOptions,
   ): Command<string>;
 
   /**
@@ -469,7 +465,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   static create<O extends IOPayload>(
     program: string,
     args: string | string[] = [],
-    options?: SpawnOptions
+    options?: SpawnOptions,
   ): Command<O> {
     return new Command(program, args, options);
   }
@@ -478,12 +474,12 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   static sidecar(
     program: string,
     args?: string | string[],
-    options?: SpawnOptions & { encoding: "raw" }
+    options?: SpawnOptions & { encoding: "raw" },
   ): Command<Uint8Array>;
   static sidecar(
     program: string,
     args?: string | string[],
-    options?: SpawnOptions
+    options?: SpawnOptions,
   ): Command<string>;
 
   /**
@@ -501,7 +497,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   static sidecar<O extends IOPayload>(
     program: string,
     args: string | string[] = [],
-    options?: SpawnOptions
+    options?: SpawnOptions,
   ): Command<O> {
     const instance = new Command<O>(program, args, options);
     instance.options.sidecar = true;
@@ -535,7 +531,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
       },
       this.program,
       this.args,
-      this.options
+      this.options,
     ).then((pid) => new Child(pid));
   }
 
@@ -648,7 +644,7 @@ type CommandEvent<O extends IOPayload> =
  * @since 2.0.0
  */
 async function open(path: string, openWith?: string): Promise<void> {
-  return window.__TAURI_INVOKE__("plugin:shell|open", {
+  return invoke("plugin:shell|open", {
     path,
     with: openWith,
   });

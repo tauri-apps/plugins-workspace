@@ -1,5 +1,5 @@
 <script>
-  import { getClient, Body, ResponseType } from "@tauri-apps/plugin-http";
+  import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
   import { JsonView } from "@zerodevx/svelte-json-view";
 
   let httpMethod = "GET";
@@ -8,53 +8,62 @@
   export let onMessage;
 
   async function makeHttpRequest() {
-    const client = await getClient().catch((e) => {
-      onMessage(e);
-      throw e;
-    });
     let method = httpMethod || "GET";
 
     const options = {
-      url: "http://localhost:3003",
       method: method || "GET",
+      headers: {},
     };
 
-    if (
-      (httpBody.startsWith("{") && httpBody.endsWith("}")) ||
-      (httpBody.startsWith("[") && httpBody.endsWith("]"))
-    ) {
-      options.body = Body.json(JSON.parse(httpBody));
-    } else if (httpBody !== "") {
-      options.body = Body.text(httpBody);
+    let bodyType;
+
+    if (method !== "GET") {
+      options.body = httpBody;
+
+      if (
+        (httpBody.startsWith("{") && httpBody.endsWith("}")) ||
+        (httpBody.startsWith("[") && httpBody.endsWith("]"))
+      ) {
+        options.headers["Content-Type"] = "application/json";
+        bodyType = "json";
+      } else if (httpBody !== "") {
+        bodyType = "text";
+      }
     }
 
-    client.request(options).then(onMessage).catch(onMessage);
+    const response = await tauriFetch("http://localhost:3003", options);
+    const body =
+      bodyType === "json" ? await response.json() : await response.text();
+
+    onMessage({
+      url: response.url,
+      status: response.status,
+      ok: response.ok,
+      headers: Object.fromEntries(response.headers.entries()),
+      body,
+    });
   }
 
   /// http form
   let foo = "baz";
   let bar = "qux";
   let result = null;
-  let multipart = true;
 
   async function doPost() {
-    const client = await getClient().catch((e) => {
-      onMessage(e);
-      throw e;
-    });
-
-    result = await client.request({
-      url: "http://localhost:3003",
+    const form = new FormData();
+    form.append("foo", foo);
+    form.append("bar", bar);
+    const response = await tauriFetch("http://localhost:3003", {
       method: "POST",
-      body: Body.form({
-        foo,
-        bar,
-      }),
-      headers: multipart
-        ? { "Content-Type": "multipart/form-data" }
-        : undefined,
-      responseType: ResponseType.Text,
+      body: form,
     });
+    result = {
+      url: response.url,
+      status: response.status,
+      ok: response.ok,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
+    };
   }
 </script>
 
@@ -86,11 +95,6 @@
   <input class="input" bind:value={foo} />
   <input class="input" bind:value={bar} />
 </div>
-<br />
-<label>
-  <input type="checkbox" bind:checked={multipart} />
-  Multipart
-</label>
 <br />
 <br />
 <button class="btn" type="button" on:click={doPost}> Post it</button>

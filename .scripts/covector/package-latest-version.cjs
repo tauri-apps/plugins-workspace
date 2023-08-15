@@ -52,7 +52,7 @@ https.get(url, options, (response) => {
       }
     } else if (kind === "npm") {
       const versions = Object.keys(data.versions || {}).filter((v) =>
-        v.startsWith(target)
+        v.startsWith(target),
       );
       console.log(versions[versions.length - 1] || "0.0.0");
     }

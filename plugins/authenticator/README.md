@@ -1,4 +1,4 @@
-![plugin-authenticator](banner.png)
+![plugin-authenticator](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/authenticator/banner.png)
 
 Use hardware security-keys in your Tauri App.
 
@@ -93,7 +93,7 @@ const r2 = await auth.verifyRegistration(
   challenge,
   app,
   registerResult.registerData,
-  registerResult.clientData
+  registerResult.clientData,
 );
 const j2 = JSON.parse(r2);
 
@@ -108,7 +108,7 @@ const counter = await auth.verifySignature(
   signData.signData,
   clientData,
   keyHandle,
-  pubkey
+  pubkey,
 );
 
 if (counter && counter > 0) {

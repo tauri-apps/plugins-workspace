@@ -1,11 +1,14 @@
 [package]
 name = "tauri-plugin-store"
-version = "2.0.0-alpha.0"
+version = "2.0.0-alpha.1"
 description = "Simple, persistent key-value store."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+
+[package.metadata.docs.rs]
+features = [ "tauri/dox" ]
 
 [dependencies]
 serde = { workspace = true }

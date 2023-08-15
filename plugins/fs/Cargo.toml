@@ -1,11 +1,14 @@
 [package]
 name = "tauri-plugin-fs"
-version = "2.0.0-alpha.0"
+version = "2.0.0-alpha.1"
 description = "Access the file system."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+
+[package.metadata.docs.rs]
+features = [ "tauri/dox" ]
 
 [dependencies]
 serde = { workspace = true }

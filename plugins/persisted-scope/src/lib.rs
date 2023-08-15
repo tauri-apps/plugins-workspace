@@ -15,17 +15,23 @@ use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    AppHandle, Manager, Runtime,
+    GlobPattern, Manager, Runtime,
 };
-use tauri_plugin_fs::{FsExt, ScopeEvent as FsScopeEvent};
+#[cfg(feature = "protocol-asset")]
+use tauri::{FsScope, FsScopeEvent};
+use tauri_plugin_fs::{FsExt, Scope as FsPluginScope, ScopeEvent as FsPluginScopeEvent};
 
 use std::{
+    collections::HashSet,
     fs::{create_dir_all, File},
     io::Write,
     path::Path,
 };
 
+// Using 2 separate files so that we don't have to think about write conflicts and not break backwards compat.
 const SCOPE_STATE_FILENAME: &str = ".persisted-scope";
+#[cfg(feature = "protocol-asset")]
+const ASSET_SCOPE_STATE_FILENAME: &str = ".persisted-scope-asset";
 
 // Most of these patterns are just added to try to fix broken files in the wild.
 // After a while we can hopefully reduce it to something like [r"[?]", r"[*]", r"\\?\\\?\"]
@@ -40,6 +46,70 @@ const PATTERNS: &[&str] = &[
 ];
 const REPLACE_WITH: &[&str] = &[r"[", r"]", r"?", r"*", r"\?", r"\\?\", r"\\?\"];
 
+trait ScopeExt {
+    fn allow_file(&self, path: &Path);
+    fn allow_directory(&self, path: &Path, recursive: bool);
+
+    fn forbid_file(&self, path: &Path);
+    fn forbid_directory(&self, path: &Path, recursive: bool);
+
+    fn allowed_patterns(&self) -> HashSet<GlobPattern>;
+    fn forbidden_patterns(&self) -> HashSet<GlobPattern>;
+}
+
+impl ScopeExt for &FsPluginScope {
+    fn allow_file(&self, path: &Path) {
+        let _ = FsPluginScope::allow_file(self, path);
+    }
+
+    fn allow_directory(&self, path: &Path, recursive: bool) {
+        let _ = FsPluginScope::allow_directory(self, path, recursive);
+    }
+
+    fn forbid_file(&self, path: &Path) {
+        let _ = FsPluginScope::forbid_file(self, path);
+    }
+
+    fn forbid_directory(&self, path: &Path, recursive: bool) {
+        let _ = FsPluginScope::forbid_directory(self, path, recursive);
+    }
+
+    fn allowed_patterns(&self) -> HashSet<GlobPattern> {
+        FsPluginScope::allowed_patterns(self)
+    }
+
+    fn forbidden_patterns(&self) -> HashSet<GlobPattern> {
+        FsPluginScope::forbidden_patterns(self)
+    }
+}
+
+#[cfg(feature = "protocol-asset")]
+impl ScopeExt for &FsScope {
+    fn allow_file(&self, path: &Path) {
+        let _ = FsScope::allow_file(self, path);
+    }
+
+    fn allow_directory(&self, path: &Path, recursive: bool) {
+        let _ = FsScope::allow_directory(self, path, recursive);
+    }
+
+    fn forbid_file(&self, path: &Path) {
+        let _ = FsScope::forbid_file(self, path);
+    }
+
+    fn forbid_directory(&self, path: &Path, recursive: bool) {
+        let _ = FsScope::forbid_directory(self, path, recursive);
+    }
+
+    fn allowed_patterns(&self) -> HashSet<GlobPattern> {
+        FsScope::allowed_patterns(self)
+    }
+
+    fn forbidden_patterns(&self) -> HashSet<GlobPattern> {
+        FsScope::forbidden_patterns(self)
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 enum Error {
     #[error(transparent)]
@@ -50,6 +120,14 @@ enum Error {
     TauriApi(#[from] tauri::api::Error),
     #[error(transparent)]
     Bincode(#[from] Box<bincode::ErrorKind>),
+}
+
+#[derive(Debug, Default, Deserialize, Serialize, Eq, PartialEq, Hash)]
+enum TargetType {
+    #[default]
+    File,
+    Directory,
+    RecursiveDirectory,
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -68,85 +146,173 @@ fn fix_pattern(ac: &AhoCorasick, s: &str) -> String {
     s
 }
 
-fn save_scopes<R: Runtime>(app: &AppHandle<R>, app_dir: &Path, scope_state_path: &Path) {
-    if let Some(fs_scope) = app.try_fs_scope() {
-        let scope = Scope {
-            allowed_paths: fs_scope
-                .allowed_patterns()
-                .into_iter()
-                .map(|p| p.to_string())
-                .collect(),
-            forbidden_patterns: fs_scope
-                .forbidden_patterns()
-                .into_iter()
-                .map(|p| p.to_string())
-                .collect(),
-        };
+const RESURSIVE_DIRECTORY_SUFFIX: &str = "**";
+const DIRECTORY_SUFFIX: &str = "*";
 
-        let _ = create_dir_all(app_dir)
-            .and_then(|_| File::create(scope_state_path))
-            .map_err(Error::Io)
-            .and_then(|mut f| {
-                f.write_all(&bincode::serialize(&scope).map_err(Error::from)?)
-                    .map_err(Into::into)
-            });
+fn detect_scope_type(scope_state_path: &str) -> TargetType {
+    if scope_state_path.ends_with(RESURSIVE_DIRECTORY_SUFFIX) {
+        TargetType::RecursiveDirectory
+    } else if scope_state_path.ends_with(DIRECTORY_SUFFIX) {
+        TargetType::Directory
+    } else {
+        TargetType::File
     }
+}
+
+fn fix_directory(path_str: &str) -> &Path {
+    let mut path = Path::new(path_str);
+
+    if path.ends_with(DIRECTORY_SUFFIX) || path.ends_with(RESURSIVE_DIRECTORY_SUFFIX) {
+        path = match path.parent() {
+            Some(value) => value,
+            None => return path,
+        };
+    }
+
+    path
+}
+
+fn allow_path(scope: impl ScopeExt, path: &str) {
+    let target_type = detect_scope_type(path);
+
+    match target_type {
+        TargetType::File => {
+            scope.allow_file(Path::new(path));
+        }
+        TargetType::Directory => {
+            // We remove the '*' at the end of it, else it will be escaped by the pattern.
+            scope.allow_directory(fix_directory(path), false);
+        }
+        TargetType::RecursiveDirectory => {
+            // We remove the '**' at the end of it, else it will be escaped by the pattern.
+            scope.allow_directory(fix_directory(path), true);
+        }
+    }
+}
+
+fn forbid_path(scope: impl ScopeExt, path: &str) {
+    let target_type = detect_scope_type(path);
+
+    match target_type {
+        TargetType::File => {
+            scope.forbid_file(Path::new(path));
+        }
+        TargetType::Directory => {
+            scope.forbid_directory(fix_directory(path), false);
+        }
+        TargetType::RecursiveDirectory => {
+            scope.forbid_directory(fix_directory(path), true);
+        }
+    }
+}
+
+fn save_scopes(scope: impl ScopeExt, app_dir: &Path, scope_state_path: &Path) {
+    let scope = Scope {
+        allowed_paths: scope
+            .allowed_patterns()
+            .into_iter()
+            .map(|p| p.to_string())
+            .collect(),
+        forbidden_patterns: scope
+            .forbidden_patterns()
+            .into_iter()
+            .map(|p| p.to_string())
+            .collect(),
+    };
+
+    let _ = create_dir_all(app_dir)
+        .and_then(|_| File::create(scope_state_path))
+        .map_err(Error::Io)
+        .and_then(|mut f| {
+            f.write_all(&bincode::serialize(&scope).map_err(Error::from)?)
+                .map_err(Into::into)
+        });
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("persisted-scope")
         .setup(|app, _api| {
             let fs_scope = app.try_fs_scope();
-            let core_scopes = app.state::<tauri::scope::Scopes>();
+            #[cfg(feature = "protocol-asset")]
+            let asset_protocol_scope = app.asset_protocol_scope();
             let app = app.clone();
             let app_dir = app.path().app_data_dir();
 
             if let Ok(app_dir) = app_dir {
-                let scope_state_path = app_dir.join(SCOPE_STATE_FILENAME);
+                let fs_scope_state_path = app_dir.join(SCOPE_STATE_FILENAME);
+                #[cfg(feature = "protocol-asset")]
+                let asset_scope_state_path = app_dir.join(ASSET_SCOPE_STATE_FILENAME);
 
-                if let Some(s) = fs_scope {
-                let _ = s.forbid_file(&scope_state_path);
-                }
-                let _ = core_scopes.forbid_file(&scope_state_path);
+                if let Some(fs_scope) = fs_scope {
+                let _ = fs_scope.forbid_file(&fs_scope_state_path);}
+                #[cfg(feature = "protocol-asset")]
+                let _ = asset_protocol_scope.forbid_file(&asset_scope_state_path);
 
                 // We're trying to fix broken .persisted-scope files seamlessly, so we'll be running this on the values read on the saved file.
                 // We will still save some semi-broken values because the scope events are quite spammy and we don't want to reduce runtime performance any further.
                 let ac = AhoCorasick::new(PATTERNS).unwrap(/* This should be impossible to fail since we're using a small static input */);
 
-                if scope_state_path.exists() {
-                    let scope: Scope = tauri::api::file::read_binary(&scope_state_path)
+                if let Some(fs_scope) = fs_scope {
+                    if fs_scope_state_path.exists() {
+                    let scope: Scope = std::fs::read(&fs_scope_state_path)
                         .map_err(Error::from)
                         .and_then(|scope| bincode::deserialize(&scope).map_err(Into::into))
                         .unwrap_or_default();
+
                     for allowed in &scope.allowed_paths {
                         let allowed = fix_pattern(&ac, allowed);
-
-                        if let Some(s) = fs_scope {
-                            let _ = s.allow_file(&allowed);
-                        }
-                        let _ = core_scopes.allow_file(&allowed);
+                        allow_path(fs_scope, &allowed);
                     }
                     for forbidden in &scope.forbidden_patterns {
                         let forbidden = fix_pattern(&ac, forbidden);
-
-                        if let Some(s) = fs_scope {
-                            let _ = s.forbid_file(&forbidden);
-                        }
-                        let _ = core_scopes.forbid_file(&forbidden);
+                        forbid_path(fs_scope, &forbidden);
                     }
 
                     // Manually save the fixed scopes to disk once.
                     // This is needed to fix broken .peristed-scope files in case the app doesn't update the scope itself.
-                    save_scopes(&app, &app_dir, &scope_state_path);
+                    save_scopes(fs_scope, &app_dir, &fs_scope_state_path);
+                }
                 }
 
-                if let Some(s) = fs_scope {
-                    s.listen(move |event| {
-                        if let FsScopeEvent::PathAllowed(_) = event {
-                            save_scopes(&app, &app_dir, &scope_state_path);
+                #[cfg(feature = "protocol-asset")]
+                if asset_scope_state_path.exists() {
+                    let scope: Scope = std::fs::read(&asset_scope_state_path)
+                        .map_err(Error::from)
+                        .and_then(|scope| bincode::deserialize(&scope).map_err(Into::into))
+                        .unwrap_or_default();
+
+                    for allowed in &scope.allowed_paths {
+                        let allowed = fix_pattern(&ac, allowed);
+                        allow_path(&asset_protocol_scope, &allowed);
+                    }
+                    for forbidden in &scope.forbidden_patterns {
+                        let forbidden = fix_pattern(&ac, forbidden);
+                        forbid_path(&asset_protocol_scope, &forbidden);
+                    }
+
+                    // Manually save the fixed scopes to disk once.
+                    save_scopes(&asset_protocol_scope, &app_dir, &asset_scope_state_path);
+                }
+
+                #[cfg(feature = "protocol-asset")]
+                let app_dir_ = app_dir.clone();
+                if let Some(fs_scope) = fs_scope {
+                    let fs_scope_ = fs_scope.clone();
+                    fs_scope.listen(move |event| {
+                        if let FsPluginScopeEvent::PathAllowed(_) = event {
+                            save_scopes(&fs_scope_, &app_dir, &fs_scope_state_path);
                         }
                     });
                 }
+
+                #[cfg(feature = "protocol-asset")]
+                {
+                    let asset_protocol_scope_ = asset_protocol_scope.clone();
+                    asset_protocol_scope.listen(move |event| {
+                    if let FsScopeEvent::PathAllowed(_) = event {
+                        save_scopes(&asset_protocol_scope_, &app_dir_, &asset_scope_state_path);
+                    }
+                });}
             }
             Ok(())
         })

@@ -29,7 +29,7 @@ type Platform =
   | "android"
   | "windows";
 
-type OsType = "linux" | "windows" | "macss" | "ios" | "android";
+type OsType = "linux" | "windows" | "macos" | "ios" | "android";
 
 type Arch =
   | "x86"
@@ -166,7 +166,7 @@ async function exeExtension(): Promise<string | null> {
  * Returns the host name of the operating system.
  * @example
  * ```typescript
- * import { hostname } from '@tauri-apps/api/os';
+ * import { hostname } from '@tauri-apps/plugin-os';
  * const hostname = await hostname();
  * ```
  */

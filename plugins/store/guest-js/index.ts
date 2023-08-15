@@ -184,7 +184,7 @@ export class Store {
    */
   async onKeyChange<T>(
     key: string,
-    cb: (value: T | null) => void
+    cb: (value: T | null) => void,
   ): Promise<UnlistenFn> {
     return await listen<ChangePayload<T>>("store://change", (event) => {
       if (event.payload.path === this.path && event.payload.key === key) {
@@ -201,7 +201,7 @@ export class Store {
    * @since 2.0.0
    */
   async onChange<T>(
-    cb: (key: string, value: T | null) => void
+    cb: (key: string, value: T | null) => void,
   ): Promise<UnlistenFn> {
     return await listen<ChangePayload<T>>("store://change", (event) => {
       if (event.payload.path === this.path) {
