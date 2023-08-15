@@ -8,14 +8,7 @@
  * @module
  */
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-    __TAURI__: {
-      transformCallback: <T>(cb: (payload: T) => void) => number;
-    };
-  }
-}
+import { invoke, Channel } from "@tauri-apps/api/tauri";
 
 export type ShortcutHandler = (shortcut: string) => void;
 
@@ -38,9 +31,12 @@ async function register(
   shortcut: string,
   handler: ShortcutHandler,
 ): Promise<void> {
-  return await window.__TAURI_INVOKE__("plugin:globalShortcut|register", {
+  const h = new Channel<string>();
+  h.onmessage = handler;
+
+  return await invoke("plugin:globalShortcut|register", {
     shortcut,
-    handler: window.__TAURI__.transformCallback(handler),
+    handler: h,
   });
 }
 
@@ -63,9 +59,12 @@ async function registerAll(
   shortcuts: string[],
   handler: ShortcutHandler,
 ): Promise<void> {
-  return await window.__TAURI_INVOKE__("plugin:globalShortcut|register_all", {
+  const h = new Channel<string>();
+  h.onmessage = handler;
+
+  return await invoke("plugin:globalShortcut|register_all", {
     shortcuts,
-    handler: window.__TAURI__.transformCallback(handler),
+    handler: h,
   });
 }
 
@@ -85,7 +84,7 @@ async function registerAll(
  * @since 2.0.0
  */
 async function isRegistered(shortcut: string): Promise<boolean> {
-  return await window.__TAURI_INVOKE__("plugin:globalShortcut|is_registered", {
+  return await invoke("plugin:globalShortcut|is_registered", {
     shortcut,
   });
 }
@@ -103,7 +102,7 @@ async function isRegistered(shortcut: string): Promise<boolean> {
  * @since 2.0.0
  */
 async function unregister(shortcut: string): Promise<void> {
-  return await window.__TAURI_INVOKE__("plugin:globalShortcut|unregister", {
+  return await invoke("plugin:globalShortcut|unregister", {
     shortcut,
   });
 }
@@ -119,7 +118,7 @@ async function unregister(shortcut: string): Promise<void> {
  * @since 2.0.0
  */
 async function unregisterAll(): Promise<void> {
-  return await window.__TAURI_INVOKE__("plugin:globalShortcut|unregister_all");
+  return await invoke("plugin:globalShortcut|unregister_all");
 }
 
 export { register, registerAll, isRegistered, unregister, unregisterAll };

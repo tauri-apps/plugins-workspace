@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-positioner"
-version = "2.0.0-alpha.0"
+version = "2.0.0-alpha.1"
 description = "Position your windows at well-known locations."
 authors = { workspace = true }
 license = { workspace = true }
@@ -19,4 +19,4 @@ thiserror = { workspace = true }
 serde_repr = "0.1"
 
 [features]
-system-tray = [ "tauri/system-tray" ]
+tray-icon = [ "tauri/tray-icon" ]
