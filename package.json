@@ -23,7 +23,7 @@
     "eslint-plugin-promise": "6.1.1",
     "eslint-plugin-security": "1.7.1",
     "prettier": "3.0.1",
-    "rollup": "3.27.2",
+    "rollup": "3.28.0",
     "typescript": "5.1.6"
   },
   "resolutions": {
