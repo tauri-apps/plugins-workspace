@@ -44,7 +44,7 @@ pub fn run() {
         .setup(move |app| {
             #[cfg(desktop)]
             {
-                tray::create_tray(app)?;
+                tray::create_tray(app.handle())?;
                 app.handle().plugin(tauri_plugin_cli::init())?;
                 app.handle()
                     .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
@@ -128,7 +128,7 @@ pub fn run() {
 
     #[cfg(target_os = "macos")]
     {
-        builder = builder.menu(tauri::Menu::os_default("Tauri API Validation"));
+        builder = builder.menu(tauri::menu::Menu::default);
     }
 
     #[allow(unused_mut)]

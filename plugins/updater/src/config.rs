@@ -6,7 +6,7 @@ use serde::{Deserialize, Deserializer};
 use url::Url;
 
 /// Updater configuration.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Default)]
 pub struct Config {
     #[serde(default)]
     pub endpoints: Vec<UpdaterEndpoint>,

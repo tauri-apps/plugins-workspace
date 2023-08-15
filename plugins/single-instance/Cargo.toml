@@ -1,12 +1,15 @@
 [package]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-alpha.0"
+version = "2.0.0-alpha.1"
 description = "Ensure a single instance of your tauri app is running."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
 exclude = [ "/examples" ]
+
+[package.metadata.docs.rs]
+features = [ "tauri/dox" ]
 
 [dependencies]
 serde = { workspace = true }

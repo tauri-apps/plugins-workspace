@@ -41,7 +41,7 @@
         "app",
         "log-plugin",
         "cli",
-        "clipboard",
+        "clipboard-manager",
         "dialog",
         "fs",
         "global-shortcut",
@@ -52,7 +52,8 @@
         "shell",
         "updater",
         "window"
-      ]
+      ],
+      "postversion": "pnpm install --no-frozen-lockfile"
     },
     "api-example-js": {
       "path": "./examples/api",
@@ -62,7 +63,7 @@
         "app-js",
         "log-js",
         "cli-js",
-        "clipboard-js",
+        "clipboard-manager-js",
         "dialog-js",
         "fs-js",
         "global-shortcut-js",

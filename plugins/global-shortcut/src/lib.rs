@@ -23,7 +23,7 @@ use std::{
 pub use global_hotkey::hotkey::{Code, HotKey as Shortcut, Modifiers};
 use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager};
 use tauri::{
-    api::ipc::CallbackFn,
+    ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     AppHandle, Manager, Runtime, State, Window,
 };
@@ -35,21 +35,15 @@ type Result<T> = std::result::Result<T, Error>;
 type HotKeyId = u32;
 type HandlerFn = Box<dyn Fn(&Shortcut) + Send + Sync + 'static>;
 
-enum ShortcutSource<R: Runtime> {
-    Ipc {
-        window: Window<R>,
-        handler: CallbackFn,
-    },
+enum ShortcutSource {
+    Ipc(Channel),
     Rust,
 }
 
-impl<R: Runtime> Clone for ShortcutSource<R> {
+impl Clone for ShortcutSource {
     fn clone(&self) -> Self {
         match self {
-            Self::Ipc { window, handler } => Self::Ipc {
-                window: window.clone(),
-                handler: *handler,
-            },
+            Self::Ipc(channel) => Self::Ipc(channel.clone()),
             Self::Rust => Self::Rust,
         }
     }
@@ -70,8 +64,8 @@ impl TryFrom<&str> for ShortcutWrapper {
     }
 }
 
-struct RegisteredShortcut<R: Runtime> {
-    source: ShortcutSource<R>,
+struct RegisteredShortcut {
+    source: ShortcutSource,
     shortcut: (Shortcut, Option<String>),
 }
 
@@ -79,14 +73,14 @@ pub struct GlobalShortcut<R: Runtime> {
     #[allow(dead_code)]
     app: AppHandle<R>,
     manager: std::result::Result<GlobalHotKeyManager, global_hotkey::Error>,
-    shortcuts: Arc<Mutex<HashMap<HotKeyId, RegisteredShortcut<R>>>>,
+    shortcuts: Arc<Mutex<HashMap<HotKeyId, RegisteredShortcut>>>,
 }
 
 impl<R: Runtime> GlobalShortcut<R> {
     fn register_internal(
         &self,
         shortcut: (Shortcut, Option<String>),
-        source: ShortcutSource<R>,
+        source: ShortcutSource,
     ) -> Result<()> {
         let id = shortcut.0.id();
         acquire_manager(&self.manager)?.register(shortcut.0)?;
@@ -100,7 +94,7 @@ impl<R: Runtime> GlobalShortcut<R> {
     fn register_all_internal<S: IntoIterator<Item = (Shortcut, Option<String>)>>(
         &self,
         shortcuts: S,
-        source: ShortcutSource<R>,
+        source: ShortcutSource,
     ) -> Result<()> {
         let hotkeys = shortcuts
             .into_iter()
@@ -218,29 +212,29 @@ where
 
 #[tauri::command]
 fn register<R: Runtime>(
-    window: Window<R>,
+    _window: Window<R>,
     global_shortcut: State<'_, GlobalShortcut<R>>,
     shortcut: String,
-    handler: CallbackFn,
+    handler: Channel,
 ) -> Result<()> {
     global_shortcut.register_internal(
         (parse_shortcut(&shortcut)?, Some(shortcut)),
-        ShortcutSource::Ipc { window, handler },
+        ShortcutSource::Ipc(handler),
     )
 }
 
 #[tauri::command]
 fn register_all<R: Runtime>(
-    window: Window<R>,
+    _window: Window<R>,
     global_shortcut: State<'_, GlobalShortcut<R>>,
     shortcuts: Vec<String>,
-    handler: CallbackFn,
+    handler: Channel,
 ) -> Result<()> {
     let mut hotkeys = Vec::new();
     for shortcut in shortcuts {
         hotkeys.push((parse_shortcut(&shortcut)?, Some(shortcut)));
     }
-    global_shortcut.register_all_internal(hotkeys, ShortcutSource::Ipc { window, handler })
+    global_shortcut.register_all_internal(hotkeys, ShortcutSource::Ipc(handler))
 }
 
 #[tauri::command]
@@ -303,19 +297,14 @@ impl Builder {
             ])
             .setup(move |app, _api| {
                 let shortcuts =
-                    Arc::new(Mutex::new(HashMap::<HotKeyId, RegisteredShortcut<R>>::new()));
+                    Arc::new(Mutex::new(HashMap::<HotKeyId, RegisteredShortcut>::new()));
                 let shortcuts_ = shortcuts.clone();
 
                 GlobalHotKeyEvent::set_event_handler(Some(move |e: GlobalHotKeyEvent| {
                     if let Some(shortcut) = shortcuts_.lock().unwrap().get(&e.id) {
                         match &shortcut.source {
-                            ShortcutSource::Ipc { window, handler } => {
-                                let callback_string = tauri::api::ipc::format_callback(
-                                    *handler,
-                                    &shortcut.shortcut.1,
-                                )
-                                .expect("unable to serialize shortcut string to json");
-                                let _ = window.eval(callback_string.as_str());
+                            ShortcutSource::Ipc(channel) => {
+                                let _ = channel.send(&shortcut.shortcut.1);
                             }
                             ShortcutSource::Rust => {
                                 if let Some(handler) = &handler {

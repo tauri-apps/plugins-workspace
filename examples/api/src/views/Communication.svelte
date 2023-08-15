@@ -1,7 +1,9 @@
 <script>
-  import { appWindow } from "@tauri-apps/plugin-window";
+  import { getCurrent } from "@tauri-apps/plugin-window";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
+
+  const appWindow = getCurrent();
 
   export let onMessage;
   let unlisten;

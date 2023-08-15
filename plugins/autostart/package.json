@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-autostart",
-  "version": "2.0.0-alpha.0",
+  "version": "2.0.0-alpha.1",
   "license": "MIT or APACHE-2.0",
   "authors": [
     "Tauri Programme within The Commons Conservancy"
@@ -24,9 +24,9 @@
     "LICENSE"
   ],
   "devDependencies": {
-    "tslib": "^2.5.0"
+    "tslib": "2.6.0"
   },
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-alpha.5"
+    "@tauri-apps/api": "2.0.0-alpha.6"
   }
 }

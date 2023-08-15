@@ -1,7 +1,7 @@
 <script>
   import { writable } from "svelte/store";
   import { open } from "@tauri-apps/plugin-shell";
-  import { appWindow, getCurrent } from "@tauri-apps/plugin-window";
+  import { getCurrent } from "@tauri-apps/plugin-window";
   import * as os from "@tauri-apps/plugin-os";
 
   import Welcome from "./views/Welcome.svelte";
@@ -22,6 +22,8 @@
 
   import { onMount } from "svelte";
   import { ask } from "@tauri-apps/plugin-dialog";
+
+  const appWindow = getCurrent();
 
   if (appWindow.label !== "main") {
     appWindow.onCloseRequested(async (event) => {
@@ -127,20 +129,20 @@
   // Window controls
   let isWindowMaximized;
   onMount(async () => {
-    const window = getCurrent();
-    isWindowMaximized = await window.isMaximized();
-    window.onResized(async () => {
-      isWindowMaximized = await window.isMaximized();
+    isWindowMaximized = await appWindow.isMaximized();
+    appWindow.onResized(async () => {
+      isWindowMaximized = await appWindow.isMaximized();
     });
   });
 
   function minimize() {
-    getCurrent().minimize();
+    appWindow.minimize();
   }
 
   async function toggleMaximize() {
-    const window = getCurrent();
-    (await window.isMaximized()) ? window.unmaximize() : window.maximize();
+    (await appWindow.isMaximized())
+      ? appWindow.unmaximize()
+      : appWindow.maximize();
   }
 
   let confirmed_close = false;
@@ -153,7 +155,7 @@
         }
       );
       if (confirmed_close) {
-        getCurrent().close();
+        appWindow.close();
       }
     }
   }

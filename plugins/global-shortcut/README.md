@@ -1,4 +1,4 @@
-![plugin-global-shortcut](banner.png)
+![plugin-global-shortcut](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/global-shortcut/banner.png)
 
 Register global shortcuts.
 
