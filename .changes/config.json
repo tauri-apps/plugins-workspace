@@ -53,7 +53,7 @@
         "updater",
         "window"
       ],
-      "postversion": "pnpm install"
+      "postversion": "pnpm install --no-frozen-lockfile"
     },
     "api-example-js": {
       "path": "./examples/api",
