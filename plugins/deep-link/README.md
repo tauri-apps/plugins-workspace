@@ -152,7 +152,6 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
         </a>
       </td>
     </tr>
-    
   </tbody>
 </table>
 
