@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-alpha.2]
+
+- [`e510f2f`](https://github.com/tauri-apps/plugins-workspace/commit/e510f2fe4c227c107a1faca9386b5ceb326611ed)([#561](https://github.com/tauri-apps/plugins-workspace/pull/561)) Fix `macss -> macos` typo in `OsType` type.
+
 ## \[2.0.0-alpha.1]
 
 - [`1091d6d`](https://github.com/tauri-apps/plugins-workspace/commit/1091d6d6ac5081f2c7526b0f492ae4f34b306f1d)([#419](https://github.com/tauri-apps/plugins-workspace/pull/419)) The os plugin is recieving a few changes to improve consistency and add new features:
@@ -14,7 +18,7 @@
 ## \[2.0.0-alpha.0]
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-te to alpha.11.
+  te to alpha.11.
 
 ## \[2.0.0-alpha.0]
 
