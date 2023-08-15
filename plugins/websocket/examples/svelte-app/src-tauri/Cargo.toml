@@ -1,23 +1,20 @@
-[workspace]
-
 [package]
-name = "app"
+name = "websocket-example"
 version = "0.1.0"
 description = "A Tauri App"
 edition = "2021"
 
 [dependencies]
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-tauri = { version = "2.0.0-alpha.8", features = [] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
 tokio = { version = "1", features = ["net"] }
 futures-util = "0.3"
 tauri-plugin-websocket = { path = "../../../" }
 tokio-tungstenite = "0.19"
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-alpha.4", features = [] }
+tauri-build = { workspace = true }
 
 [features]
-default = [ "custom-protocol" ]
 custom-protocol = [ "tauri/custom-protocol" ]
