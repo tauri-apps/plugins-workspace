@@ -113,18 +113,8 @@ impl<R: Runtime> WindowExt for Window<R> {
             },
             #[cfg(feature = "system-tray")]
             TrayLeft => {
-                if let Some((tray_x, tray_y)) = tray_position {
-                    PhysicalPosition {
-                        x: tray_x,
-                        y: tray_y - window_size.height,
-                    }
-                } else {
-                    panic!("Tray position not set");
-                }
-            }
-            #[cfg(feature = "system-tray")]
-            TrayFixedLeft => {
-                if let(Some((tray_x, tray_y)), Some((_, tray_height))) = (tray_position, tray_size) {
+                if let (Some((tray_x, tray_y)), Some((_, tray_height))) = (tray_position, tray_size)
+                {
                     let y = tray_y - window_size.height;
                     // Choose y value based on the target OS
                     #[cfg(target_os = "windows")]
@@ -151,19 +141,9 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
             #[cfg(feature = "system-tray")]
             TrayRight => {
-                if let (Some((tray_x, tray_y)), Some((tray_width, _))) = (tray_position, tray_size)
+                if let (Some((tray_x, tray_y)), Some((tray_width, tray_height))) =
+                    (tray_position, tray_size)
                 {
-                    PhysicalPosition {
-                        x: tray_x + tray_width,
-                        y: tray_y - window_size.height,
-                    }
-                } else {
-                    panic!("Tray position not set");
-                }
-            }
-            #[cfg(feature = "system-tray")]
-            TrayFixedRight => {
-                if let(Some((tray_x, tray_y)), Some((tray_width, tray_height))) = (tray_position, tray_size) {
                     let y = tray_y - window_size.height;
                     // Choose y value based on the target OS
                     #[cfg(target_os = "windows")]
@@ -172,7 +152,10 @@ impl<R: Runtime> WindowExt for Window<R> {
                     #[cfg(target_os = "macos")]
                     let y = if y < 0 { tray_y } else { y };
 
-                    PhysicalPosition { x: tray_x + tray_width, y }
+                    PhysicalPosition {
+                        x: tray_x + tray_width,
+                        y,
+                    }
                 } else {
                     panic!("Tray position not set");
                 }
@@ -191,19 +174,8 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
             #[cfg(feature = "system-tray")]
             TrayCenter => {
-                if let (Some((tray_x, tray_y)), Some((tray_width, _))) = (tray_position, tray_size)
-                {
-                    PhysicalPosition {
-                        x: tray_x + (tray_width / 2) - (window_size.width / 2),
-                        y: tray_y - window_size.height,
-                    }
-                } else {
-                    panic!("Tray position not set");
-                }
-            }
-            #[cfg(feature = "system-tray")]
-            TrayFixedCenter => {
-                if let (Some((tray_x, tray_y)), Some((tray_width, tray_height))) = (tray_position, tray_size)
+                if let (Some((tray_x, tray_y)), Some((tray_width, tray_height))) =
+                    (tray_position, tray_size)
                 {
                     let x = tray_x + tray_width / 2 - window_size.width / 2;
                     let y = tray_y - window_size.height;
