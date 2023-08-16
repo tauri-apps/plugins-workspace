@@ -19,7 +19,7 @@ http
         function (_error, content) {
           response.writeHead(200);
           response.end(content, "utf-8");
-        }
+        },
       );
     } else {
       response.writeHead(404);

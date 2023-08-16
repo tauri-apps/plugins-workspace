@@ -5,4 +5,5 @@ dist-js
 pnpm-lock.yaml
 Cargo.lock
 .build
+build
 api-iife.js

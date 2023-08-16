@@ -6,16 +6,20 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { UnlistenFn, listen } from "@tauri-apps/api/event";
 
 export async function getCurrent(): Promise<string[] | null> {
-  return await invoke<string[] | null>("plugin:deep-link|get_current")
+  return await invoke<string[] | null>("plugin:deep-link|get_current");
 
   // return await invoke("plugin:deep-link|get_current");
 }
 
-export async function onOpenUrl(handler: (urls: string[]) => void): Promise<UnlistenFn> {
-  const current = await getCurrent()
+export async function onOpenUrl(
+  handler: (urls: string[]) => void,
+): Promise<UnlistenFn> {
+  const current = await getCurrent();
   if (current != null) {
-    handler(current)
+    handler(current);
   }
 
-  return await listen<string[]>("deep-link://new-url", (event) => handler(event.payload))
+  return await listen<string[]>("deep-link://new-url", (event) =>
+    handler(event.payload),
+  );
 }
