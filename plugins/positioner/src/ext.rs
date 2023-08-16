@@ -24,19 +24,13 @@ pub enum Position {
     #[cfg(feature = "system-tray")]
     TrayLeft,
     #[cfg(feature = "system-tray")]
-    TrayFixedLeft,
-    #[cfg(feature = "system-tray")]
     TrayBottomLeft,
     #[cfg(feature = "system-tray")]
     TrayRight,
     #[cfg(feature = "system-tray")]
-    TrayFixedRight,
-    #[cfg(feature = "system-tray")]
     TrayBottomRight,
     #[cfg(feature = "system-tray")]
     TrayCenter,
-    #[cfg(feature = "system-tray")]
-    TrayFixedCenter,
     #[cfg(feature = "system-tray")]
     TrayBottomCenter,
 }
