@@ -2661,6 +2661,7 @@ dependencies = [
  "cfg-if",
  "libc",
  "memoffset 0.7.1",
+ "pin-utils",
  "static_assertions",
 ]
 
@@ -4729,6 +4730,7 @@ name = "tauri-plugin-single-instance"
 version = "0.0.0"
 dependencies = [
  "log",
+ "nix 0.26.2",
  "serde",
  "serde_json",
  "tauri",

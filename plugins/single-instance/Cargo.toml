@@ -31,3 +31,6 @@ features = [
 
 [target.'cfg(target_os = "linux")'.dependencies]
 zbus = "3"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+nix = "0.26.2"
