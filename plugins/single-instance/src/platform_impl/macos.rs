@@ -80,7 +80,7 @@ pub fn init<R: Runtime>(mut f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R>
                         Err(nix::Error::ENXIO) => {
                             // Fifo exists, but no one is reading it
                             println!(
-                                "Detected FIFO, but no read on other side, continuing with launch"
+                                "Detected FIFO (ENXIO), but no read on other side, continuing with launch"
                             );
 
                             None
@@ -104,7 +104,7 @@ pub fn init<R: Runtime>(mut f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R>
 
                                 // Write would block, no other instance is reading from the FIFO
                                 println!(
-                                "Detected FIFO, but no read on other side, continuing with launch"
+                                "Detected FIFO (EAGAIN), but no read on other side, continuing with launch"
                             );
                                 // Continue launching this instance
                             }
