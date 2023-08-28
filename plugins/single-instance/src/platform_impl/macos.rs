@@ -47,6 +47,7 @@ fn bootup_reader<A: Runtime>(
     app: AppHandle<A>,
     mut f: Box<SingleInstanceCallback<A>>,
 ) {
+    println!("Attempting to boot reader");
     let file = File::open(&path).unwrap();
     let reader = BufReader::new(file);
     let app_hand = app.app_handle();
@@ -58,6 +59,7 @@ fn bootup_reader<A: Runtime>(
             f(&app_hand, vec![line.clone()], String::new());
         }
     });
+    println!("booted reader");
 }
 
 pub fn init<R: Runtime>(mut f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
