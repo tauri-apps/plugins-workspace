@@ -51,7 +51,9 @@ fn bootup_reader<A: Runtime>(
     let file = File::open(&path).unwrap();
     let reader = BufReader::new(file);
     let app_hand = app.app_handle();
+    println!("inner line ");
     tokio::task::spawn(async move {
+        println!("inner line running");
         for line in reader.lines() {
             let line = line.unwrap();
             // Here `line` contains the message from another instance.
