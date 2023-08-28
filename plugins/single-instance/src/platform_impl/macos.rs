@@ -50,10 +50,11 @@ fn bootup_reader<A: Runtime>(
     println!("Attempting to boot reader");
     let app_hand = app.app_handle();
     println!("inner line 0");
-    let file = File::open(&path).unwrap();
-    println!("inner line 1");
+    let inner_path = path.clone();
     tokio::task::spawn(async move {
         println!("inner line running");
+        let file = File::open(&inner_path).unwrap();
+        println!("inner line 1");
         let reader = BufReader::new(file);
         for line in reader.lines() {
             let line = line.unwrap();
