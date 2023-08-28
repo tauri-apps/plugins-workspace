@@ -51,7 +51,7 @@ fn bootup_reader<A: Runtime>(
     let file = File::open(&path).unwrap();
     let reader = BufReader::new(file);
     let app_hand = app.app_handle();
-    tokio::task::spawn_blocking(move || {
+    tokio::task::spawn(async move {
         for line in reader.lines() {
             let line = line.unwrap();
             // Here `line` contains the message from another instance.
