@@ -1,25 +1,19 @@
 #![cfg(target_os = "macos")]
 
+use nix::fcntl::{open, OFlag};
+use nix::sys::stat;
+use nix::unistd::{mkfifo, unlink, write};
 use std::fs::File;
-use std::io::{self, BufRead, BufReader, Write};
-use std::os::unix::fs::PermissionsExt;
+use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio;
 
-use nix::errno::Errno;
-use nix::fcntl::{fcntl, open, FcntlArg, OFlag};
-use nix::sys::stat;
-use nix::unistd::{mkfifo, unlink, write};
-
 use crate::SingleInstanceCallback;
 use tauri::{
     plugin::{self, TauriPlugin},
-    utils::platform::current_exe,
     AppHandle, Config, Manager, RunEvent, Runtime,
 };
-
-struct FifoHandle;
 
 fn fifo_path(config: Arc<Config>) -> PathBuf {
     let identifier = config
@@ -28,6 +22,7 @@ fn fifo_path(config: Arc<Config>) -> PathBuf {
         .identifier
         .replace(['.', '-'].as_ref(), "_");
     let data_dir = tauri::api::path::app_local_data_dir(&config);
+    println!("Data dir: {:?}", data_dir);
     match data_dir {
         Some(mut p) => {
             if p.is_file() {
@@ -49,6 +44,11 @@ fn bootup_reader<A: Runtime>(
 ) {
     let app_hand = app.app_handle();
     let inner_path = path.clone();
+    let cwd = std::env::current_dir()
+        .unwrap_or_default()
+        .to_str()
+        .unwrap_or_default()
+        .to_string();
     tokio::task::spawn(async move {
         loop {
             let file = File::open(&inner_path).unwrap();
@@ -59,7 +59,7 @@ fn bootup_reader<A: Runtime>(
 
                 // Here `line` contains the message from another instance.
                 // You can now execute your callback.
-                f(&app_hand, args_vec, String::new());
+                f(&app_hand, args_vec, cwd.clone());
             }
         }
     });
@@ -69,6 +69,7 @@ pub fn init<R: Runtime>(mut f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R>
     plugin::Builder::new("single-instance")
         .setup(move |app| {
             let path = fifo_path(app.config());
+            println!("Final path: {:?}", path);
             match mkfifo(&path, stat::Mode::S_IRWXU) {
                 Ok(_) => {
                     // create and open the FIFO, then listen for messages
@@ -83,20 +84,17 @@ pub fn init<R: Runtime>(mut f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R>
                     ) {
                         Ok(f) => Some(f),
                         Err(nix::Error::ENXIO) => {
-                            // Fifo exists, but no one is reading it
-                            println!(
-                                "Detected FIFO (ENXIO), but no read on other side, continuing with launch"
-                            );
-
+                            // FIFO exists, but no one is reading it, so we're actually the only
+                            // ones alive.
                             None
                         }
                         Err(_) => {
-                            println!("other error");
+                            // There's some other error, and we bias towards launching.
                             None
                         }
                     };
 
-                    // Attempt to write
+                    // Attempt to write to the FIFO to the FIFO
                     if let Some(fd) = fdo {
                         let args_joined = std::env::args().collect::<Vec<String>>().join("\0");
                         let args_bytes = args_joined.as_bytes();
@@ -106,18 +104,13 @@ pub fn init<R: Runtime>(mut f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R>
                                 // Write succeeded, another instance is running and reading from the FIFO
                                 std::process::exit(0);
                             }
-                            Err(nix::Error::EAGAIN) | Err(nix::Error::EWOULDBLOCK) => {
-                                // This should never actually happen, since we should catch it earlier.
+                            Err(nix::Error::EAGAIN) => {
+                                // This should never actually happen, since we should catch "no reader" on open.
                                 bootup_reader(&path, app.clone(), f);
-
-                                // Write would block, no other instance is reading from the FIFO
-                                println!(
-                                "Detected FIFO (EAGAIN), but no read on other side, continuing with launch"
-                            );
-                                // Continue launching this instance
                             }
                             Err(err) => {
-                                eprintln!("An error occurred while writing to the FIFO: {}", err);
+                                // There's some other error, and we bias towards launching.
+                                bootup_reader(&path, app.clone(), f);
                             }
                         }
                     } else {
@@ -125,7 +118,9 @@ pub fn init<R: Runtime>(mut f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R>
                     }
                 }
                 Err(err) => {
-                    eprintln!("An error occurred: {}", err);
+                    // There's some other error, and we bias towards launching.
+                    // Unfortunately the error was in creating the FIFO, so no reader.
+                    eprintln!("An error occurred launching single-instance: {}", err);
                 }
             }
             Ok(())
