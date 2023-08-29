@@ -47,23 +47,20 @@ fn bootup_reader<A: Runtime>(
     app: AppHandle<A>,
     mut f: Box<SingleInstanceCallback<A>>,
 ) {
-    println!("Attempting to boot reader");
     let app_hand = app.app_handle();
-    println!("inner line 0");
     let inner_path = path.clone();
     tokio::task::spawn(async move {
-        println!("inner line running");
-        let file = File::open(&inner_path).unwrap();
-        println!("inner line 1");
-        let reader = BufReader::new(file);
-        for line in reader.lines() {
-            let line = line.unwrap();
-            // Here `line` contains the message from another instance.
-            // You can now execute your callback.
-            f(&app_hand, vec![line.clone()], String::new());
+        loop {
+            let file = File::open(&inner_path).unwrap();
+            let reader = BufReader::new(file);
+            for line in reader.lines() {
+                let line = line.unwrap();
+                // Here `line` contains the message from another instance.
+                // You can now execute your callback.
+                f(&app_hand, vec![line.clone()], String::new());
+            }
         }
     });
-    println!("booted reader");
 }
 
 pub fn init<R: Runtime>(mut f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
