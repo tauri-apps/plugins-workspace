@@ -55,9 +55,11 @@ fn bootup_reader<A: Runtime>(
             let reader = BufReader::new(file);
             for line in reader.lines() {
                 let line = line.unwrap();
+                let args_vec: Vec<String> = line.split('\0').map(String::from).collect();
+
                 // Here `line` contains the message from another instance.
                 // You can now execute your callback.
-                f(&app_hand, vec![line.clone()], String::new());
+                f(&app_hand, args_vec, String::new());
             }
         }
     });
@@ -96,7 +98,10 @@ pub fn init<R: Runtime>(mut f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R>
 
                     // Attempt to write
                     if let Some(fd) = fdo {
-                        match write(fd, b"Another instance is launched") {
+                        let args_joined = std::env::args().collect::<Vec<String>>().join("\0");
+                        let args_bytes = args_joined.as_bytes();
+
+                        match write(fd, args_bytes) {
                             Ok(_) => {
                                 // Write succeeded, another instance is running and reading from the FIFO
                                 std::process::exit(0);
