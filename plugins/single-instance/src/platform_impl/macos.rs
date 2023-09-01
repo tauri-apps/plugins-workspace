@@ -22,15 +22,9 @@ fn fifo_path(config: Arc<Config>) -> PathBuf {
         .identifier
         .replace(['.', '-'].as_ref(), "_");
     let data_dir = tauri::api::path::app_local_data_dir(&config);
-    println!("Data dir: {:?}", data_dir);
     match data_dir {
         Some(mut p) => {
-            if p.is_file() {
-                p.pop();
-                p.push(identifier);
-            } else {
-                p.push(identifier);
-            }
+            p.push(identifier);
             p
         }
         None => PathBuf::from(format!("/tmp/{}_single_instance_fifo", identifier)),
@@ -69,7 +63,6 @@ pub fn init<R: Runtime>(mut f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R>
     plugin::Builder::new("single-instance")
         .setup(move |app| {
             let path = fifo_path(app.config());
-            println!("Final path: {:?}", path);
             match mkfifo(&path, stat::Mode::S_IRWXU) {
                 Ok(_) => {
                     // create and open the FIFO, then listen for messages
