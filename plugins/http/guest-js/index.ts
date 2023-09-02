@@ -77,7 +77,6 @@ export async function fetch(
   const reqData = buffer.byteLength ? Array.from(new Uint8Array(buffer)) : null;
 
   const rid = await window.__TAURI_INVOKE__<number>("plugin:http|fetch", {
-    cmd: "fetch",
     method: req.method,
     url: req.url,
     headers: Array.from(req.headers.entries()),
