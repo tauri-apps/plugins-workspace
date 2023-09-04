@@ -110,7 +110,7 @@ export async function fetch(
     },
   );
 
-  const res = new Response(Uint8Array.from(body), {
+  const res = new Response(new Uint8Array(body), {
     headers,
     status,
     statusText,
