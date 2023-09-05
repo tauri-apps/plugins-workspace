@@ -19,7 +19,7 @@ export enum Format {
   ITF = "ITF",
   Aztec = "AZTEC",
   DataMatrix = "DATA_MATRIX",
-  PDF417 = "PDF_417"
+  PDF417 = "PDF_417",
 }
 
 export interface ScanOptions {
@@ -54,7 +54,7 @@ export async function cancel(): Promise<void> {
  */
 export async function checkPermissions(): Promise<PermissionState> {
   return await invoke<{ camera: PermissionState }>(
-    "plugin:barcodeScanner|check_permissions"
+    "plugin:barcodeScanner|check_permissions",
   ).then((r) => r.camera);
 }
 
@@ -63,7 +63,7 @@ export async function checkPermissions(): Promise<PermissionState> {
  */
 export async function requestPermissions(): Promise<PermissionState> {
   return await invoke<{ camera: PermissionState }>(
-    "plugin:barcodeScanner|request_permissions"
+    "plugin:barcodeScanner|request_permissions",
   ).then((r) => r.camera);
 }
 
