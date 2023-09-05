@@ -1,4 +1,8 @@
 // swift-tools-version:5.3
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
