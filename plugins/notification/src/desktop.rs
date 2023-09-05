@@ -14,7 +14,7 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
     Ok(Notification(app.clone()))
 }
 
-/// Access to the {{ plugin_name }} APIs.
+/// Access to the notification APIs.
 pub struct Notification<R: Runtime>(AppHandle<R>);
 
 impl<R: Runtime> crate::NotificationBuilder<R> {

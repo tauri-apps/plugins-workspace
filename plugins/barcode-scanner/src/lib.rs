@@ -22,16 +22,10 @@ const PLUGIN_IDENTIFIER: &str = "app.tauri.barcodescanner";
 #[cfg(target_os = "ios")]
 tauri::ios_plugin_binding!(init_plugin_barcode_scanner);
 
-/// Access to the {{ plugin_name }} APIs.
+/// Access to the scanner APIs.
 pub struct BarcodeScanner<R: Runtime>(PluginHandle<R>);
 
-impl<R: Runtime> BarcodeScanner<R> {
-    pub fn ping(&self, payload: PingRequest) -> crate::Result<PingResponse> {
-        self.0
-            .run_mobile_plugin("ping", payload)
-            .map_err(Into::into)
-    }
-}
+impl<R: Runtime> BarcodeScanner<R> {}
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the barcode scanner APIs.
 pub trait BarcodeScannerExt<R: Runtime> {
