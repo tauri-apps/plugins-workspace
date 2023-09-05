@@ -657,7 +657,9 @@ impl Update {
     // └── ...
     #[cfg(target_os = "macos")]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
-        let archive = Cursor::new(bytes);
+        use flate2::read::GzDecoder;
+
+        let cursor = Cursor::new(bytes);
         let mut extracted_files: Vec<PathBuf> = Vec::new();
 
         // the first file in the tar.gz will always be
@@ -669,29 +671,34 @@ impl Update {
         // create backup of our current app
         std::fs::rename(&self.extract_path, tmp_dir.path())?;
 
-        let mut archive = tar::Archive::new(archive);
-        for mut entry in archive.entries()?.flatten() {
-            if let Ok(path) = entry.path() {
-                // skip the first folder (should be the app name)
-                let collected_path: PathBuf = path.iter().skip(1).collect();
-                let extraction_path = &self.extract_path.join(collected_path);
+        let decoder = GzDecoder::new(cursor);
+        let mut archive = tar::Archive::new(decoder);
 
-                // if something went wrong during the extraction, we should restore previous app
-                if let Err(err) = entry.unpack(extraction_path) {
-                    for file in &extracted_files {
-                        // delete all the files we extracted
-                        if file.is_dir() {
-                            std::fs::remove_dir(file)?;
-                        } else {
-                            std::fs::remove_file(file)?;
-                        }
+        std::fs::create_dir(&self.extract_path)?;
+        extracted_files.push(self.extract_path.clone());
+
+        for entry in archive.entries()? {
+            let mut entry = entry?;
+
+            // skip the first folder (should be the app name)
+            let collected_path: PathBuf = entry.path()?.iter().skip(1).collect();
+            let extraction_path = &self.extract_path.join(collected_path);
+
+            // if something went wrong during the extraction, we should restore previous app
+            if let Err(err) = entry.unpack(extraction_path) {
+                for file in extracted_files.iter().rev() {
+                    // delete all the files we extracted
+                    if file.is_dir() {
+                        std::fs::remove_dir(file)?;
+                    } else {
+                        std::fs::remove_file(file)?;
                     }
-                    std::fs::rename(tmp_dir.path(), &self.extract_path)?;
-                    return Err(err.into());
                 }
-
-                extracted_files.push(extraction_path.to_path_buf());
+                std::fs::rename(tmp_dir.path(), &self.extract_path)?;
+                return Err(err.into());
             }
+
+            extracted_files.push(extraction_path.to_path_buf());
         }
 
         let _ = std::process::Command::new("touch")
