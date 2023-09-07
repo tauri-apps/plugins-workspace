@@ -9,7 +9,7 @@ edition = "2021"
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tauri = { version = "2.0.0-alpha.8", features = [] }
+tauri = { version = "2.0.0-alpha.12", features = [] }
 tokio = { version = "1", features = ["net"] }
 futures-util = "0.3"
 tauri-plugin-websocket = { path = "../../../" }

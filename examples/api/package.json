@@ -29,7 +29,7 @@
     "@iconify-json/codicon": "^1.1.26",
     "@iconify-json/ph": "^1.1.5",
     "@sveltejs/vite-plugin-svelte": "^2.4.1",
-    "@tauri-apps/cli": "2.0.0-alpha.11",
+    "@tauri-apps/cli": "2.0.0-alpha.12",
     "@unocss/extractor-svelte": "^0.53.1",
     "internal-ip": "^8.0.0",
     "svelte": "^3.59.1",

@@ -83,7 +83,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
         .on_event(|app, event| {
             if let RunEvent::WindowEvent {
                 label: _,
-                event: WindowEvent::FileDrop(FileDropEvent::Dropped(paths)),
+                event: WindowEvent::FileDrop(FileDropEvent::Dropped { paths, position: _ }),
                 ..
             } = event
             {
