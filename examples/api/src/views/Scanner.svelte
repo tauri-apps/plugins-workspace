@@ -1,5 +1,5 @@
 <script>
-  import { scan, Format } from "@tauri-apps/plugin-barcode-scanner";
+  import { scan, checkPermissions, requestPermissions, Format } from "@tauri-apps/plugin-barcode-scanner";
 
   export let onMessage;
 
@@ -8,17 +8,25 @@
   let formats = [Format.QRCode];
   const supportedFormats = [Format.QRCode, Format.EAN13];
 
-  function startScan() {
-    scanning = true;
-    scan({ windowed, formats })
-      .then((res) => {
-        scanning = false;
-        onMessage(res);
-      })
-      .catch((error) => {
-        scanning = false;
-        onMessage(error);
-      });
+  async function startScan() {
+    let permission = await checkPermissions();
+    if (permission === 'prompt') {
+      permission = await requestPermissions();
+    }
+    if (permission === 'granted') {
+      scanning = true;
+      scan({ windowed, formats })
+        .then((res) => {
+          scanning = false;
+          onMessage(res);
+        })
+        .catch((error) => {
+          scanning = false;
+          onMessage(error);
+        });
+    } else {
+      onMessage('Permission denied')
+    }
   }
 </script>
 
