@@ -28,8 +28,8 @@ importers:
         specifier: 6.1.0
         version: 6.1.0(eslint@8.45.0)(typescript@5.1.6)
       covector:
-        specifier: ^0.9.0
-        version: 0.9.0(mocha@10.2.0)
+        specifier: ^0.10.0
+        version: 0.10.0(mocha@10.2.0)
       eslint:
         specifier: 8.45.0
         version: 8.45.0
@@ -203,7 +203,7 @@ importers:
         specifier: 2.0.0-alpha.6
         version: 2.0.0-alpha.6
       '@tauri-apps/plugin-deep-link':
-        specifier: 2.0.0-alpha.0
+        specifier: 1.0.0
         version: link:../..
     devDependencies:
       '@tauri-apps/cli':
@@ -469,23 +469,22 @@ packages:
       event-target-shim: 5.0.1
     dev: true
 
-  /@covector/apply@0.8.0(mocha@10.2.0):
-    resolution: {integrity: sha512-t/yDcj9kzLl0NjmA86lET5ePGmGneHtcTlENdDEoWiJvLtjgtrCg9NcxMBHImEwIdUi1EsLQw9MgpWEZSMmtRg==}
+  /@covector/apply@0.9.0(mocha@10.2.0):
+    resolution: {integrity: sha512-a844qKgZ7a8Gy4ls4awMXoF8q+jxcI5DoldoPBOO0nDddteBNO7Y5fOJJkCeZyvuoZRl23GOVdn+sluX/UpLKQ==}
     dependencies:
-      '@covector/files': 0.6.1
+      '@covector/files': 0.6.2
       effection: 2.0.7(mocha@10.2.0)
-      lodash: 4.17.21
       semver: 7.5.4
     transitivePeerDependencies:
       - encoding
       - mocha
     dev: true
 
-  /@covector/assemble@0.10.0(mocha@10.2.0):
-    resolution: {integrity: sha512-Ug8NMj/tEbRB3ZE7DhVL86AJiymi3T7AE6gBKVlWjSOQsAfj10bLRUUYXUrpFpt0uf1UGxldaqJshp9qemRKsA==}
+  /@covector/assemble@0.10.1(mocha@10.2.0):
+    resolution: {integrity: sha512-xz8kGgc2ZH4zUWgGotXAp9wX3QZoDXitZOPM5cYhOs3z6vS2Vj5dY4sqvgueAUpadHSjjQMWIktaw9yBJHAAnQ==}
     dependencies:
-      '@covector/command': 0.6.1(mocha@10.2.0)
-      '@covector/files': 0.6.1
+      '@covector/command': 0.7.0(mocha@10.2.0)
+      '@covector/files': 0.6.2
       effection: 2.0.7(mocha@10.2.0)
       js-yaml: 4.1.0
       lodash: 4.17.21
@@ -499,10 +498,10 @@ packages:
       - supports-color
     dev: true
 
-  /@covector/changelog@0.8.0(mocha@10.2.0):
-    resolution: {integrity: sha512-INSuWMdGt96gkafwF+lK3o4113tqAuBNEP6VxjWGVUX4LRKRZlndwLua1Ckjc7TV5pMMfSTSUgBuc7AF/p2uzA==}
+  /@covector/changelog@0.9.0(mocha@10.2.0):
+    resolution: {integrity: sha512-206w2jTX6ATaPhv2Frp8zTgMbjvaWEOOOyGnhQZdWTRst3vx2PUWxAoZ9xMLoYTk4jYpuzupKDOmgxk9NssOfQ==}
     dependencies:
-      '@covector/files': 0.6.1
+      '@covector/files': 0.6.2
       effection: 2.0.7(mocha@10.2.0)
       lodash: 4.17.21
       remark-parse: 9.0.0
@@ -514,8 +513,8 @@ packages:
       - supports-color
     dev: true
 
-  /@covector/command@0.6.1(mocha@10.2.0):
-    resolution: {integrity: sha512-H44DLRVqRp/GarYqt1X1yo26+hBYqrrFqUstIb6b/+KRuuwN57VlHCvTlOnEK4Mn5bGZErFDrRiJ5yRCdMDYNw==}
+  /@covector/command@0.7.0(mocha@10.2.0):
+    resolution: {integrity: sha512-9DGx4tOY9Fkd4AlYbOE0rnesYAYJm7Wr6BUBJlRxErtA0vDAejZ0+jVHZbemB1MbLOaYWXkDf/wD7SLnf06gfw==}
     dependencies:
       '@effection/process': 2.1.3(mocha@10.2.0)
       effection: 2.0.7(mocha@10.2.0)
@@ -525,8 +524,8 @@ packages:
       - mocha
     dev: true
 
-  /@covector/files@0.6.1:
-    resolution: {integrity: sha512-JQuh7LUqOvymOg/TYOfVZJJiXOrtCy2FD7/sNCAqabN6yOiVvY2kHQ134rqI20YnYtXghEbO7BZSPiyrCOiIYg==}
+  /@covector/files@0.6.2:
+    resolution: {integrity: sha512-DmG0FBNnfJ1g8qDjETAkiMbetlrewfrFPkpej59rQ41cyRFPqypFsydMR3B+VTm0vIxXlP5WrJzoOSzf+bcGXA==}
     dependencies:
       '@iarna/toml': 2.2.5
       '@tauri-apps/toml': 2.2.4
@@ -2274,15 +2273,15 @@ packages:
     engines: {node: '>= 0.6'}
     dev: true
 
-  /covector@0.9.0(mocha@10.2.0):
-    resolution: {integrity: sha512-uGDdpb33ZOwThylB8GKWpygGrpbipt7YRGUtIKnS4EBLugXz7ZM+Aj3g+BXzvFJC87S0My1+y98ejcXAoQkwbQ==}
+  /covector@0.10.0(mocha@10.2.0):
+    resolution: {integrity: sha512-C8OqMG4ZA0bMwt0uHuCfPK8rfy6QFDV8qUaJW0giggywK+w7dz2dxpCcv2bYtJQyBh+GKSt8E4i2wB0c3paxCQ==}
     hasBin: true
     dependencies:
-      '@covector/apply': 0.8.0(mocha@10.2.0)
-      '@covector/assemble': 0.10.0(mocha@10.2.0)
-      '@covector/changelog': 0.8.0(mocha@10.2.0)
-      '@covector/command': 0.6.1(mocha@10.2.0)
-      '@covector/files': 0.6.1
+      '@covector/apply': 0.9.0(mocha@10.2.0)
+      '@covector/assemble': 0.10.1(mocha@10.2.0)
+      '@covector/changelog': 0.9.0(mocha@10.2.0)
+      '@covector/command': 0.7.0(mocha@10.2.0)
+      '@covector/files': 0.6.2
       effection: 2.0.7(mocha@10.2.0)
       globby: 11.1.0
       inquirer: 8.2.5

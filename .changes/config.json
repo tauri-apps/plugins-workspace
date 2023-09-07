@@ -52,8 +52,7 @@
         "shell",
         "updater",
         "window"
-      ],
-      "postversion": "pnpm install --no-frozen-lockfile"
+      ]
     },
     "api-example-js": {
       "path": "./examples/api",
@@ -74,7 +73,16 @@
         "shell-js",
         "updater-js",
         "window-js"
-      ]
+      ],
+      "postversion": "pnpm install --no-frozen-lockfile"
+    },
+
+    "deep-link-example-js": {
+      "path": "./plugins/deep-link/examples/app",
+      "manager": "javascript",
+      "publish": false,
+      "dependencies": [ "deep-link-js" ],
+      "postversion": "pnpm install --no-frozen-lockfile"
     },
 
     "app": {
@@ -119,6 +127,15 @@
     },
     "clipboard-manager-js": {
       "path": "./plugins/clipboard-manager",
+      "manager": "javascript"
+    },
+
+    "deep-link": {
+      "path": "./plugins/deep-link",
+      "manager": "rust"
+    },
+    "deep-link-js": {
+      "path": "./plugins/deep-link",
       "manager": "javascript"
     },
 
