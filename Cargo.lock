@@ -3252,9 +3252,9 @@ dependencies = [
 
 [[package]]
 name = "muda"
-version = "0.8.2"
+version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47e33f46fb20f85553edb85e30a6a5231567f4103276ccdb5a2050613d253b1d"
+checksum = "41fe753ec4d3e8137a1d3ecb1aee1192b8f7661fe1247641968f5bf5f2e6ebbe"
 dependencies = [
  "cocoa 0.25.0",
  "crossbeam-channel",
@@ -5527,9 +5527,9 @@ checksum = "1d2faeef5759ab89935255b1a4cd98e0baf99d1085e37d36599c625dac49ae8e"
 
 [[package]]
 name = "tauri"
-version = "2.0.0-alpha.11"
+version = "2.0.0-alpha.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fad0a5c32ce9e3e9862fb8cd433abf63e65ffea9b80dcc44d3d991e6794ea9a6"
+checksum = "8ee399da0cca87a81e1bf9365321340595a45a24190f20b1aa476b4cd96c3318"
 dependencies = [
  "anyhow",
  "bytes 1.4.0",
@@ -5542,6 +5542,7 @@ dependencies = [
  "gtk",
  "heck",
  "http",
+ "http-range",
  "ico",
  "infer 0.15.0",
  "jni",
@@ -6023,13 +6024,12 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime"
-version = "1.0.0-alpha.0"
+version = "1.0.0-alpha.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5ba2ea1c0b7a2c3e53259edc3c78527e9f40fa7b45f73c52ab5165e42f9d18a"
+checksum = "525c4dea52547a13e58816c655bd0928f6c30026515e7b2a77166bcd984da6d0"
 dependencies = [
  "gtk",
  "http",
- "http-range",
  "jni",
  "rand 0.8.5",
  "raw-window-handle",
@@ -6044,12 +6044,13 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime-wry"
-version = "1.0.0-alpha.0"
+version = "1.0.0-alpha.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "095d8a6cb312211bd0ed6b51f078be2e5bba4e3244b5fdbe39fce2ebfc0d7a15"
+checksum = "79f53914c8ab391c5cd83f0bc269f8dfa6d48cb826d0584b57d396862360dc38"
 dependencies = [
  "cocoa 0.24.1",
  "gtk",
+ "http",
  "jni",
  "percent-encoding",
  "rand 0.8.5",
@@ -7457,9 +7458,9 @@ dependencies = [
 
 [[package]]
 name = "wry"
-version = "0.31.0"
+version = "0.32.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c6289018fa3cbc051c13f4ae1a102d80c3f35a527456c75567eb2cad6989020"
+checksum = "41fc00d1511c9ff5b600a6c6bde254eb39b9fcc5c0369b71a8efd5ff807bf937"
 dependencies = [
  "base64 0.21.2",
  "block",
