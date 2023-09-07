@@ -32,7 +32,7 @@ open class BuildTask : DefaultTask() {
         val rootDirRel = rootDirRel ?: throw GradleException("rootDirRel cannot be null")
         val target = target ?: throw GradleException("target cannot be null")
         val release = release ?: throw GradleException("release cannot be null")
-        val args = listOf("/Users/lucas/projects/tauri/plugins-workspace/examples/api/./node_modules/.bin/../../../../node_modules/.pnpm/@tauri-apps+cli@2.0.0-alpha.11/node_modules/@tauri-apps/cli/tauri.js", "android", "android-studio-script");
+        val args = listOf("/Users/lucas/projects/tauri/plugins-workspace/examples/api/./node_modules/.bin/../../../../node_modules/.pnpm/@tauri-apps+cli@2.0.0-alpha.12/node_modules/@tauri-apps/cli/tauri.js", "android", "android-studio-script");
 
         project.exec {
             workingDir(File(project.projectDir, rootDirRel))
