@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-app"
-version = "2.0.0-alpha.1"
+version = "2.0.0-alpha.2"
 description = "APIs to read application metadata and change app visibility on macOS."
 edition = { workspace = true }
 authors = { workspace = true }

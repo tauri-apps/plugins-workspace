@@ -2,6 +2,10 @@
 
 ## \[2.0.0-alpha.2]
 
+- [`4e2cef9`](https://github.com/tauri-apps/plugins-workspace/commit/4e2cef9b702bbbb9cf4ee17de50791cb21f1b2a4)([#593](https://github.com/tauri-apps/plugins-workspace/pull/593)) Update to alpha.12.
+
+## \[2.0.0-alpha.2]
+
 - [`e510f2f`](https://github.com/tauri-apps/plugins-workspace/commit/e510f2fe4c227c107a1faca9386b5ceb326611ed)([#561](https://github.com/tauri-apps/plugins-workspace/pull/561)) Fix `macss -> macos` typo in `OsType` type.
 
 ## \[2.0.0-alpha.1]

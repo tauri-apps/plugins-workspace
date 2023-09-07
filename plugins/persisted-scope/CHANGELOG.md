@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-alpha.2]
+
+- [`4e2cef9`](https://github.com/tauri-apps/plugins-workspace/commit/4e2cef9b702bbbb9cf4ee17de50791cb21f1b2a4)([#593](https://github.com/tauri-apps/plugins-workspace/pull/593)) Update to alpha.12.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-alpha.2`
+
 ## \[2.0.0-alpha.1]
 
 - [`d5a7c77`](https://github.com/tauri-apps/plugins-workspace/commit/d5a7c77a8d0e7912a6b07b22ed329004edd6e80b)([#545](https://github.com/tauri-apps/plugins-workspace/pull/545)) Fixes docs.rs build by enabling the `tauri/dox` feature flag.
