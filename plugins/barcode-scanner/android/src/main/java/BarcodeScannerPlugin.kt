@@ -334,6 +334,7 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
 
     @Command
     fun cancel(invoke: Invoke) {
+        destroy()
         savedInvoke?.reject("cancelled")
         invoke.resolve()
     }
