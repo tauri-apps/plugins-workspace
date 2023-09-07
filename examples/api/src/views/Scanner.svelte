@@ -1,5 +1,5 @@
 <script>
-  import { scan, checkPermissions, requestPermissions, Format } from "@tauri-apps/plugin-barcode-scanner";
+  import { scan, checkPermissions, requestPermissions, Format, cancel } from "@tauri-apps/plugin-barcode-scanner";
 
   export let onMessage;
 
@@ -28,6 +28,12 @@
       onMessage('Permission denied')
     }
   }
+
+  async function cancelScan() {
+    await cancel();
+    scanning = false;
+    onMessage("cancelled");
+  }
 </script>
 
 <div class="full-height">
@@ -53,6 +59,7 @@
       <div class="barcode-scanner--area--container">
         <div class="relative">
           <p>Aim your camera at a QR code</p>
+          <button class="btn" type="button" on:click={cancelScan}>Cancel</button>
         </div>
         <div class="square surround-cover">
           <div class="barcode-scanner--area--outer surround-cover">
@@ -91,6 +98,9 @@
 
   .relative {
     position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     z-index: 1;
   }
 
