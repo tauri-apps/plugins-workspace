@@ -8,6 +8,7 @@
     ".changes/fs-wiret-binary-file.md",
     ".changes/http-multipart-refactor.md",
     ".changes/http-plugin-refactor.md",
+    ".changes/http-remove-cmd-property.md",
     ".changes/http-response.md",
     ".changes/notification-init-script.md",
     ".changes/notification-revert-sound.md",
@@ -22,6 +23,7 @@
     ".changes/stronghold-arg-name.md",
     ".changes/stronghold-constructor.md",
     ".changes/tauri-alpha.11.md",
+    ".changes/tauri-alpha.12.md",
     ".changes/updater-nsis-admin.md",
     ".changes/updater-nsis.md",
     ".changes/updater-plugin-refactor.md",
@@ -31,6 +33,7 @@
     ".changes/window-plugin-refactor.md",
     ".changes/window-set-effects.md",
     ".changes/window-state-decorated.md",
-    ".changes/window-state-promise.md"
+    ".changes/window-state-promise.md",
+    ".changes/window-tap-drag-region-detection.md"
   ]
 }
