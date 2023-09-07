@@ -39,6 +39,7 @@
       "publish": false,
       "dependencies": [
         "app",
+        "barcode-scanner",
         "log-plugin",
         "cli",
         "clipboard-manager",
@@ -61,6 +62,7 @@
       "publish": false,
       "dependencies": [
         "app-js",
+        "barcode-scanner-js",
         "log-js",
         "cli-js",
         "clipboard-manager-js",
@@ -101,6 +103,15 @@
     },
     "autostart-js": {
       "path": "./plugins/autostart",
+      "manager": "javascript"
+    },
+
+    "barcode-scanner": {
+      "path": "./plugins/barcode-scanner",
+      "manager": "rust"
+    },
+    "barcode-scanner-js": {
+      "path": "./plugins/barcode-scanner",
       "manager": "javascript"
     },
 

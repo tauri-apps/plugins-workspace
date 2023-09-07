@@ -18,6 +18,8 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
+tauri-plugin-barcode-scanner = "2.0.0-alpha"
+# alternatively with Git:
 tauri-plugin-barcode-scanner = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
