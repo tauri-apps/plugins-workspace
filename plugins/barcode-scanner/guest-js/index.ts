@@ -4,7 +4,7 @@
 
 import { invoke } from "@tauri-apps/api/tauri";
 
-export type PermissionState = "granted" | "denied" | "default";
+export type PermissionState = "granted" | "denied" | "prompt";
 
 export enum Format {
   QRCode = "QR_CODE",
@@ -54,7 +54,7 @@ export async function cancel(): Promise<void> {
  */
 export async function checkPermissions(): Promise<PermissionState> {
   return await invoke<{ camera: PermissionState }>(
-    "plugin:barcodeScanner|check_permissions",
+    "plugin:barcodeScanner|checkPermissions",
   ).then((r) => r.camera);
 }
 
@@ -63,7 +63,7 @@ export async function checkPermissions(): Promise<PermissionState> {
  */
 export async function requestPermissions(): Promise<PermissionState> {
   return await invoke<{ camera: PermissionState }>(
-    "plugin:barcodeScanner|request_permissions",
+    "plugin:barcodeScanner|requestPermissions",
   ).then((r) => r.camera);
 }
 
@@ -71,5 +71,5 @@ export async function requestPermissions(): Promise<PermissionState> {
  * Open application settings. Useful if permission was denied and the user must manually enable it.
  */
 export async function openAppSettings(): Promise<void> {
-  return await invoke("plugin:barcodeScanner|open_app_settings");
+  return await invoke("plugin:barcodeScanner|openAppSettings");
 }
