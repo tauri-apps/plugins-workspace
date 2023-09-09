@@ -194,7 +194,7 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
     case .denied:
       permissionState = "denied"
     default:
-      permissionState = "default"
+      permissionState = "prompt"
     }
 
     return permissionState
@@ -207,7 +207,7 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
 
   @objc override func requestPermissions(_ invoke: Invoke) {
     let state = getPermissionState()
-    if state == "default" {
+    if state == "prompt" {
       AVCaptureDevice.requestAccess(for: .video) { (authorized) in
         invoke.resolve(["camera": authorized ? "granted" : "denied"])
       }
