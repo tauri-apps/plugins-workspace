@@ -658,10 +658,8 @@ impl Update {
     #[cfg(target_os = "macos")]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
         let archive = Cursor::new(bytes);
-        let mut extracted_files: Vec<PathBuf> = Vec::new();
+        let archive = flate2::read::GzDecoder::new(archive);
 
-        // the first file in the tar.gz will always be
-        // <app_name>/Contents
         let tmp_dir = tempfile::Builder::new()
             .prefix("tauri_current_app")
             .tempdir()?;
@@ -670,33 +668,11 @@ impl Update {
         std::fs::rename(&self.extract_path, tmp_dir.path())?;
 
         let mut archive = tar::Archive::new(archive);
-        for mut entry in archive.entries()?.flatten() {
-            if let Ok(path) = entry.path() {
-                // skip the first folder (should be the app name)
-                let collected_path: PathBuf = path.iter().skip(1).collect();
-                let extraction_path = &self.extract_path.join(collected_path);
-
-                // if something went wrong during the extraction, we should restore previous app
-                if let Err(err) = entry.unpack(extraction_path) {
-                    for file in &extracted_files {
-                        // delete all the files we extracted
-                        if file.is_dir() {
-                            std::fs::remove_dir(file)?;
-                        } else {
-                            std::fs::remove_file(file)?;
-                        }
-                    }
-                    std::fs::rename(tmp_dir.path(), &self.extract_path)?;
-                    return Err(err.into());
-                }
-
-                extracted_files.push(extraction_path.to_path_buf());
-            }
-        }
-
-        let _ = std::process::Command::new("touch")
-            .arg(&self.extract_path)
-            .status();
+        if let Err(err) = archive.unpack(&self.extract_path.join("..")) {
+            std::fs::remove_dir_all(&self.extract_path)?;
+            std::fs::rename(tmp_dir.path(), &self.extract_path)?;
+            return Err(err.into());
+        };
 
         Ok(())
     }
