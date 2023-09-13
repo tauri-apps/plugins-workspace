@@ -81,7 +81,7 @@
       "path": "./plugins/deep-link/examples/app",
       "manager": "javascript",
       "publish": false,
-      "dependencies": [ "deep-link-js" ],
+      "dependencies": ["deep-link-js"],
       "postversion": "pnpm install --no-frozen-lockfile"
     },
 

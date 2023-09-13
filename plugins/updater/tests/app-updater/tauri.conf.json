@@ -33,9 +33,7 @@
   },
   "plugins": {
     "updater": {
-      "endpoints": [
-        "http://localhost:3007"
-      ]
+      "endpoints": ["http://localhost:3007"]
     }
   }
 }
