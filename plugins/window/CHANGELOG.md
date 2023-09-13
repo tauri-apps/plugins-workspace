@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.0.0-alpha.2]
+
+- [`4e2cef9`](https://github.com/tauri-apps/plugins-workspace/commit/4e2cef9b702bbbb9cf4ee17de50791cb21f1b2a4)([#593](https://github.com/tauri-apps/plugins-workspace/pull/593)) Update to alpha.12.
+- [`70e535a`](https://github.com/tauri-apps/plugins-workspace/commit/70e535abd5410873862fb035b6b66f0fea1edde2)([#590](https://github.com/tauri-apps/plugins-workspace/pull/590)) On macOS, fixed tapping on custom title bar doesn't maximize the window.
+
 ## \[2.0.0-alpha.1]
 
 - [`d74fc0a`](https://github.com/tauri-apps/plugins-workspace/commit/d74fc0a097996e90a37be8f57d50b7d1f6ca616f)([#555](https://github.com/tauri-apps/plugins-workspace/pull/555)) Update to alpha.11.
