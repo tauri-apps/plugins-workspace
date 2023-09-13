@@ -79,7 +79,8 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
     <tr>
       <td align="center" valign="middle">
         <a href="https://crabnebula.dev/" target="_blank">
-          <img src="contributors/crabnebula.svg" alt="CrabNebula" width="483">
+          <img src="contributors/crabnebula.svg#gh-dark-mode-only" alt="CrabNebula" width="483">
+          <img src="contributors/crabnebula.svg#gh-light-mode-only" alt="CrabNebula" width="483">
         </a>
       </td>
       <td align="center" valign="middle">
