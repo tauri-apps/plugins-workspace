@@ -1,5 +1,14 @@
 # Changelog
 
+## \[2.0.0-alpha.3]
+
+- [`2cb0fa7`](https://github.com/tauri-apps/plugins-workspace/commit/2cb0fa719b8b1f5ac07dada93520dbbcf637d64c)([#587](https://github.com/tauri-apps/plugins-workspace/pull/587)) Remove `cmd` property which breaks invoke call.
+- [`4e2cef9`](https://github.com/tauri-apps/plugins-workspace/commit/4e2cef9b702bbbb9cf4ee17de50791cb21f1b2a4)([#593](https://github.com/tauri-apps/plugins-workspace/pull/593)) Update to alpha.12.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-alpha.2`
+
 ## \[2.0.0-alpha.2]
 
 - [`aec17a9`](https://github.com/tauri-apps/plugins-workspace/commit/aec17a90fc365774c70c4876b94a899416120e26)([#558](https://github.com/tauri-apps/plugins-workspace/pull/558)) Improve response performance by using the new IPC streaming data.
