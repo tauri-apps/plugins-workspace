@@ -36,6 +36,7 @@ targets:
       - path: Sources
       - path: Assets.xcassets
       - path: Externals
+      - path: deep-link-example_iOS
       - path: assets
         buildPhase: resources
         type: folder
@@ -56,6 +57,8 @@ targets:
           - UIInterfaceOrientationLandscapeRight
         CFBundleShortVersionString: 0.0.0
         CFBundleVersion: 0.0.0
+    entitlements:
+      path: deep-link-example_iOS/deep-link-example_iOS.entitlements
     scheme:
       environmentVariables:
         RUST_BACKTRACE: full
