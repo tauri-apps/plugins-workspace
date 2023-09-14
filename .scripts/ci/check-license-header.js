@@ -21,6 +21,7 @@ const ignore = [
   "dist-js",
   ".svelte-kit",
   "api-iife.js",
+  ".build",
 ];
 
 async function checkFile(file) {
@@ -70,7 +71,9 @@ async function checkFile(file) {
 async function check(src) {
   const missingHeader = [];
 
-  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+  for (const entry of fs.readdirSync(src, {
+    withFileTypes: true,
+  })) {
     const p = path.join(src, entry.name);
 
     if (entry.isSymbolicLink() || ignore.includes(entry.name)) {

@@ -7,3 +7,4 @@ Cargo.lock
 .build
 build
 api-iife.js
+intermediates/

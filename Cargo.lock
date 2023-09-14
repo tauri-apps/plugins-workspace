@@ -238,6 +238,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-app",
+ "tauri-plugin-barcode-scanner",
  "tauri-plugin-cli",
  "tauri-plugin-clipboard-manager",
  "tauri-plugin-dialog",
@@ -5675,6 +5676,18 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "thiserror",
+]
+
+[[package]]
+name = "tauri-plugin-barcode-scanner"
+version = "1.0.0"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
  "thiserror",
 ]
 

@@ -55,3 +55,7 @@ body {
 #console {
   padding-bottom: calc(env(safe-area-inset-bottom) + 24px);
 }
+
+.transparent {
+  background-color: transparent;
+}
