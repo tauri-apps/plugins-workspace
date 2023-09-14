@@ -74,9 +74,22 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
 
 ## Contributed By
 
-![CrabNebula](contributors/crabnebula-dark.svg#gh-dark-mode-only)
-![CrabNebula](contributors/crabnebula-light.svg#gh-light-mode-only)
-![Impierce Technologies](contributors/impierce.png)
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev#gh-dark-mode-only" target="_blank">
+          <img src="contributors/crabnebula-dark.svg" alt="CrabNebula" width="483">
+        </a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://impierce.com#gh-light-mode-only" target="_blank">
+            <img src="contributors/impierce.png" alt="Impierce" width="283" height="90">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## License
 
