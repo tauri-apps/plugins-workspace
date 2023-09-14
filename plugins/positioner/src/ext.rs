@@ -107,10 +107,8 @@ impl<R: Runtime> WindowExt for Window<R> {
             },
             #[cfg(feature = "system-tray")]
             TrayLeft => {
-                if let (
-                    Some((tray_x, tray_y)),
-                    Some((_, _tray_height))
-                ) = (tray_position, tray_size)
+                if let (Some((tray_x, tray_y)), Some((_, _tray_height))) =
+                    (tray_position, tray_size)
                 {
                     let y = tray_y - window_size.height;
                     // Choose y value based on the target OS
