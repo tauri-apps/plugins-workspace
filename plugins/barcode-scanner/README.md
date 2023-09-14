@@ -79,10 +79,10 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
     <tr>
       <td align="center" valign="middle">
         <a href="https://crabnebula.dev#gh-dark-mode-only" target="_blank">
-          <img src="contributors/crabnebula-dark.svg" alt="CrabNebula" width="483">
+          <img src="contributors/crabnebula-dark.svg" alt="CrabNebula" width="283">
         </a>
         <a href="https://crabnebula.dev#gh-light-mode-only" target="_blank">
-          <img src="contributors/crabnebula-light.svg" alt="CrabNebula" width="483">
+          <img src="contributors/crabnebula-light.svg" alt="CrabNebula" width="283">
         </a>
       </td>
       <td align="center" valign="middle">
