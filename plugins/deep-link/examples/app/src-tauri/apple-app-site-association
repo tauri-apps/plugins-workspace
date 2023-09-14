@@ -1,0 +1,15 @@
+{
+  "applinks": {
+      "details": [
+      {
+        "appIDs": [ "DEVELOPMENT_TEAM_ID_HERE.com.tauri.deep-link-example" ],
+        "components": [
+          {
+            "/": "/open/*",
+            "comment": "Matches any URL whose path starts with /open/"
+          }
+        ]
+      }
+    ]
+  }
+}
