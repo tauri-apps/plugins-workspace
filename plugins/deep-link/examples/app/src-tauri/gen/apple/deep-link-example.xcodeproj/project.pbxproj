@@ -1,0 +1,458 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 51;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		017AE826151E36372534A964 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED2B1BC06DFE0498ECDEEE51 /* Metal.framework */; };
+		65A8D948440EDAA7F62BA1F4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 486CAFD81CB14F9A2DF72FDF /* Assets.xcassets */; };
+		8267407118D9FF73C271D81B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9435FC7E183EA6260CE76637 /* QuartzCore.framework */; };
+		8DD47883B792C4FC20927AB4 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BDECB1ED2EEEB5A6A8B8372 /* Security.framework */; };
+		ABA8D5D86E66C92292DA3B3E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F316D1CD78DD2E070DA5C17 /* UIKit.framework */; };
+		BC36958BBBA7FE61066213D7 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C21C8B4A18EC7D0B5808C10 /* MetalKit.framework */; };
+		C384FB77F116B05F8E642CA8 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = BF7ECB9AB55B71692A21D5F7 /* assets */; };
+		D01EC573029B7BEC701F6012 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6BDF5DBBA740DA7D86791DEC /* WebKit.framework */; };
+		D4D232DBB85C5C1594FACC3D /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = D99665C1C3247732C6BF25F4 /* main.mm */; };
+		D7A9EBD47413746EDE96BDF8 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B18865218362A4BE07527DBD /* CoreGraphics.framework */; };
+		FBB3FE3EDDEAF717E61F2AD4 /* libdeep_link_example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEEC42BAB5E4A4757C89C2 /* libdeep_link_example.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1C21C8B4A18EC7D0B5808C10 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		1CAAFA750FD735A285DC1238 /* deep-link-example_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "deep-link-example_iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2F316D1CD78DD2E070DA5C17 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		3DD32303BEC377C10162CF69 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
+		486CAFD81CB14F9A2DF72FDF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		4A33212233BFAA738F6A46FC /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
+		4BDECB1ED2EEEB5A6A8B8372 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		6BDF5DBBA740DA7D86791DEC /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		8AB0099573FE8BF1DC82CDBA /* deep-link-example_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "deep-link-example_iOS.entitlements"; sourceTree = "<group>"; };
+		9435FC7E183EA6260CE76637 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		AEA78299D25FEC31E2988090 /* main.rs */ = {isa = PBXFileReference; path = main.rs; sourceTree = "<group>"; };
+		B005488D1B56B657AB52E28C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B18865218362A4BE07527DBD /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		BF7ECB9AB55B71692A21D5F7 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
+		D99665C1C3247732C6BF25F4 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		DCAEEC42BAB5E4A4757C89C2 /* libdeep_link_example.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libdeep_link_example.a; sourceTree = "<group>"; };
+		ED2B1BC06DFE0498ECDEEE51 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5C340AB143FB1483D2013F8B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FBB3FE3EDDEAF717E61F2AD4 /* libdeep_link_example.a in Frameworks */,
+				D7A9EBD47413746EDE96BDF8 /* CoreGraphics.framework in Frameworks */,
+				017AE826151E36372534A964 /* Metal.framework in Frameworks */,
+				BC36958BBBA7FE61066213D7 /* MetalKit.framework in Frameworks */,
+				8267407118D9FF73C271D81B /* QuartzCore.framework in Frameworks */,
+				8DD47883B792C4FC20927AB4 /* Security.framework in Frameworks */,
+				ABA8D5D86E66C92292DA3B3E /* UIKit.framework in Frameworks */,
+				D01EC573029B7BEC701F6012 /* WebKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		146BAF1D709F8A0FE5B07709 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				15AD0F4F98577F71B7752D85 /* deep-link-example */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		15AD0F4F98577F71B7752D85 /* deep-link-example */ = {
+			isa = PBXGroup;
+			children = (
+				D99665C1C3247732C6BF25F4 /* main.mm */,
+				9FE22F548D05F1B0C03527E4 /* bindings */,
+			);
+			path = "deep-link-example";
+			sourceTree = "<group>";
+		};
+		1DC58B1705AA3ECC6B887FE7 = {
+			isa = PBXGroup;
+			children = (
+				BF7ECB9AB55B71692A21D5F7 /* assets */,
+				486CAFD81CB14F9A2DF72FDF /* Assets.xcassets */,
+				7D12035C470ED9DAF55A709E /* deep-link-example_iOS */,
+				84EADC52DA26583ACE816A6D /* Externals */,
+				146BAF1D709F8A0FE5B07709 /* Sources */,
+				EEC07EE3E5E2B16228B36C78 /* src */,
+				308F912BBFBABA6B939FA2B3 /* Frameworks */,
+				F9EEBB3248B74B1D6CDA4D84 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		308F912BBFBABA6B939FA2B3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B18865218362A4BE07527DBD /* CoreGraphics.framework */,
+				DCAEEC42BAB5E4A4757C89C2 /* libdeep_link_example.a */,
+				ED2B1BC06DFE0498ECDEEE51 /* Metal.framework */,
+				1C21C8B4A18EC7D0B5808C10 /* MetalKit.framework */,
+				9435FC7E183EA6260CE76637 /* QuartzCore.framework */,
+				4BDECB1ED2EEEB5A6A8B8372 /* Security.framework */,
+				2F316D1CD78DD2E070DA5C17 /* UIKit.framework */,
+				6BDF5DBBA740DA7D86791DEC /* WebKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7D12035C470ED9DAF55A709E /* deep-link-example_iOS */ = {
+			isa = PBXGroup;
+			children = (
+				8AB0099573FE8BF1DC82CDBA /* deep-link-example_iOS.entitlements */,
+				B005488D1B56B657AB52E28C /* Info.plist */,
+			);
+			path = "deep-link-example_iOS";
+			sourceTree = "<group>";
+		};
+		84EADC52DA26583ACE816A6D /* Externals */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Externals;
+			sourceTree = "<group>";
+		};
+		9FE22F548D05F1B0C03527E4 /* bindings */ = {
+			isa = PBXGroup;
+			children = (
+				3DD32303BEC377C10162CF69 /* bindings.h */,
+			);
+			path = bindings;
+			sourceTree = "<group>";
+		};
+		EEC07EE3E5E2B16228B36C78 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				4A33212233BFAA738F6A46FC /* lib.rs */,
+				AEA78299D25FEC31E2988090 /* main.rs */,
+			);
+			name = src;
+			path = ../../src;
+			sourceTree = "<group>";
+		};
+		F9EEBB3248B74B1D6CDA4D84 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1CAAFA750FD735A285DC1238 /* deep-link-example_iOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A1C635908C823A89928264CD /* deep-link-example_iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CC3B2B9068F702AB6ED6E36C /* Build configuration list for PBXNativeTarget "deep-link-example_iOS" */;
+			buildPhases = (
+				E8BEC9005266B4780C27DC05 /* Build Rust Code */,
+				EAFF3E530DA24F7AB759ABB3 /* Sources */,
+				8E775D86229F98E9F18AAAB7 /* Resources */,
+				5C340AB143FB1483D2013F8B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "deep-link-example_iOS";
+			productName = "deep-link-example_iOS";
+			productReference = 1CAAFA750FD735A285DC1238 /* deep-link-example_iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BCB4BA6E81088C5B470E3436 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1200;
+				TargetAttributes = {
+					A1C635908C823A89928264CD = {
+						DevelopmentTeam = Q93MBH6S2F;
+					};
+				};
+			};
+			buildConfigurationList = 8FCB58B8ADB9F9CB9ECE01FA /* Build configuration list for PBXProject "deep-link-example" */;
+			compatibilityVersion = "Xcode 11.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 1DC58B1705AA3ECC6B887FE7;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1C635908C823A89928264CD /* deep-link-example_iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8E775D86229F98E9F18AAAB7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				65A8D948440EDAA7F62BA1F4 /* Assets.xcassets in Resources */,
+				C384FB77F116B05F8E642CA8 /* assets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		E8BEC9005266B4780C27DC05 /* Build Rust Code */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Rust Code";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/target/aarch64-apple-ios/${CONFIGURATION}/deps/libdeep_link_example.a",
+				"$(SRCROOT)/target/x86_64-apple-ios/${CONFIGURATION}/deps/libdeep_link_example.a",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "pnpm tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths \"${FRAMEWORK_SEARCH_PATHS:?}\" --header-search-paths \"${HEADER_SEARCH_PATHS:?}\" --gcc-preprocessor-definitions \"${GCC_PREPROCESSOR_DEFINITIONS:-}\" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		EAFF3E530DA24F7AB759ABB3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D4D232DBB85C5C1594FACC3D /* main.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		21DF092E6F2020CEC95B687A /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = debug;
+		};
+		3655D9D0A68600F8988F24EB /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+					"arm64-sim",
+				);
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "deep-link-example_iOS/deep-link-example_iOS.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = Q93MBH6S2F;
+				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = "deep-link-example_iOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64-sim]" = "$(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tauri.deep-link-example";
+				PRODUCT_NAME = "deep-link-example";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64  arm64-sim";
+			};
+			name = debug;
+		};
+		7A19D7CB4CA2808477E73B8A /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = release;
+		};
+		7C085E1672AF39D75FFD0081 /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+					"arm64-sim",
+				);
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "deep-link-example_iOS/deep-link-example_iOS.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = Q93MBH6S2F;
+				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = "deep-link-example_iOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64-sim]" = "$(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tauri.deep-link-example";
+				PRODUCT_NAME = "deep-link-example";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64  arm64-sim";
+			};
+			name = release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8FCB58B8ADB9F9CB9ECE01FA /* Build configuration list for PBXProject "deep-link-example" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21DF092E6F2020CEC95B687A /* debug */,
+				7A19D7CB4CA2808477E73B8A /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+		CC3B2B9068F702AB6ED6E36C /* Build configuration list for PBXNativeTarget "deep-link-example_iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3655D9D0A68600F8988F24EB /* debug */,
+				7C085E1672AF39D75FFD0081 /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BCB4BA6E81088C5B470E3436 /* Project object */;
+}
