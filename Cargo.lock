@@ -230,7 +230,7 @@ checksum = "3b13c32d80ecc7ab747b80c3784bce54ee8a7a0cc4fbda9bf4cda2cf6fe90854"
 
 [[package]]
 name = "api"
-version = "2.0.0-alpha.4"
+version = "2.0.0-alpha.5"
 dependencies = [
  "log",
  "serde",
@@ -5681,7 +5681,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-barcode-scanner"
-version = "1.0.0"
+version = "2.0.0-alpha.0"
 dependencies = [
  "log",
  "serde",
@@ -5718,7 +5718,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "1.0.0"
+version = "2.0.0-alpha.0"
 dependencies = [
  "log",
  "serde",
