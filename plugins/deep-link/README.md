@@ -142,13 +142,13 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
   <tbody>
     <tr>
       <td align="center" valign="middle">
-        <a href="https://crabnebula.dev/" target="_blank">
-          <img src="contributors/crabnebula.svg" alt="CrabNebula" width="483">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="contributors/crabnebula.svg" alt="CrabNebula" width="283">
         </a>
       </td>
       <td align="center" valign="middle">
-        <a href="https://impierce.com/" target="_blank">
-            <img src="contributors/impierce.png" alt="Impierce" width="283" height="90">
+        <a href="https://impierce.com" target="_blank">
+            <img src="contributors/impierce.svg" alt="Impierce" width="283" height="90">
         </a>
       </td>
     </tr>
