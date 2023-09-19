@@ -753,12 +753,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "21a53c0a4d288377e7415b53dcfc3c04da5cdc2cc95c8d5ac178b58f0b861ad6"
 
 [[package]]
-name = "constant_time_eq"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7144d30dcf0fafbce74250a3963025d8d52177934239851c917d29f1df280c2"
-
-[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2168,7 +2162,7 @@ dependencies = [
  "bincode",
  "hkdf",
  "iota-crypto 0.15.3",
- "rust-argon2 1.0.0",
+ "rust-argon2",
  "serde",
  "stronghold-derive",
  "stronghold-utils",
@@ -3592,17 +3586,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust-argon2"
-version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e71971821b3ae0e769e4a4328dbcb517607b434db7697e9aba17203ec14e46a"
-dependencies = [
- "base64 0.21.2",
- "blake2b_simd",
- "constant_time_eq 0.3.0",
-]
-
-[[package]]
 name = "rustc-demangle"
 version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4789,7 +4772,7 @@ dependencies = [
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "rand_core 0.6.4",
- "rust-argon2 2.0.0",
+ "rust-argon2",
  "rusty-fork",
  "serde",
  "serde_json",
