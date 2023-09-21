@@ -73,6 +73,18 @@ fn app_path<R: Runtime>(app: &AppHandle<R>) -> PathBuf {
 /// Maps the user supplied DB connection string to a connection string
 /// with a fully qualified file path to the App's designed "app_path"
 fn path_mapper(mut app_path: PathBuf, connection_string: &str) -> String {
+    if connection_string.contains(std::path::MAIN_SEPARATOR_STR) {
+        let file_path = std::path::Path::new(connection_string);
+        if file_path.exists() {
+            format!(
+                "sqlite:{}",
+                connection_string
+                    .split_once(':')
+                    .expect("Couldn't parse the connection string for DB!")
+                    .1
+            )
+        };
+    }
     app_path.push(
         connection_string
             .split_once(':')
