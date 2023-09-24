@@ -71,7 +71,7 @@ const domain = "https://tauri.app";
 const json = await auth.register(challenge, domain);
 const registerResult = JSON.parse(json);
 
-// verify te registration was successfull
+// verify the registration was successfull
 const r2 = await auth.verifyRegistration(
   challenge,
   app,
