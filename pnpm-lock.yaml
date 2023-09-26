@@ -65,8 +65,8 @@ importers:
         version: 1.4.0
     devDependencies:
       tslib:
-        specifier: 2.6.1
-        version: 2.6.1
+        specifier: 2.6.2
+        version: 2.6.2
 
   plugins/autostart:
     dependencies:
@@ -75,8 +75,8 @@ importers:
         version: 1.4.0
     devDependencies:
       tslib:
-        specifier: 2.6.1
-        version: 2.6.1
+        specifier: 2.6.2
+        version: 2.6.2
 
   plugins/fs-extra:
     dependencies:
@@ -85,8 +85,8 @@ importers:
         version: 1.4.0
     devDependencies:
       tslib:
-        specifier: 2.6.1
-        version: 2.6.1
+        specifier: 2.6.2
+        version: 2.6.2
 
   plugins/fs-watch:
     dependencies:
@@ -95,8 +95,8 @@ importers:
         version: 1.4.0
     devDependencies:
       tslib:
-        specifier: 2.6.1
-        version: 2.6.1
+        specifier: 2.6.2
+        version: 2.6.2
 
   plugins/log:
     dependencies:
@@ -105,8 +105,8 @@ importers:
         version: 1.4.0
     devDependencies:
       tslib:
-        specifier: 2.6.1
-        version: 2.6.1
+        specifier: 2.6.2
+        version: 2.6.2
 
   plugins/positioner:
     dependencies:
@@ -115,8 +115,8 @@ importers:
         version: 1.4.0
     devDependencies:
       tslib:
-        specifier: 2.6.1
-        version: 2.6.1
+        specifier: 2.6.2
+        version: 2.6.2
 
   plugins/single-instance/examples/vanilla:
     devDependencies:
@@ -131,8 +131,8 @@ importers:
         version: 1.4.0
     devDependencies:
       tslib:
-        specifier: 2.6.1
-        version: 2.6.1
+        specifier: 2.6.2
+        version: 2.6.2
 
   plugins/store:
     dependencies:
@@ -141,8 +141,8 @@ importers:
         version: 1.4.0
     devDependencies:
       tslib:
-        specifier: 2.6.1
-        version: 2.6.1
+        specifier: 2.6.2
+        version: 2.6.2
 
   plugins/stronghold:
     dependencies:
@@ -151,8 +151,8 @@ importers:
         version: 1.4.0
     devDependencies:
       tslib:
-        specifier: 2.6.1
-        version: 2.6.1
+        specifier: 2.6.2
+        version: 2.6.2
 
   plugins/upload:
     dependencies:
@@ -161,8 +161,8 @@ importers:
         version: 1.4.0
     devDependencies:
       tslib:
-        specifier: 2.6.1
-        version: 2.6.1
+        specifier: 2.6.2
+        version: 2.6.2
 
   plugins/websocket:
     dependencies:
@@ -171,8 +171,8 @@ importers:
         version: 1.4.0
     devDependencies:
       tslib:
-        specifier: 2.6.1
-        version: 2.6.1
+        specifier: 2.6.2
+        version: 2.6.2
 
   plugins/websocket/examples/svelte-app:
     dependencies:
@@ -196,8 +196,8 @@ importers:
         specifier: 3.5.2
         version: 3.5.2(svelte@4.2.1)
       tslib:
-        specifier: 2.6.1
-        version: 2.6.1
+        specifier: 2.6.2
+        version: 2.6.2
       typescript:
         specifier: 5.1.6
         version: 5.1.6
@@ -212,8 +212,8 @@ importers:
         version: 1.4.0
     devDependencies:
       tslib:
-        specifier: 2.6.1
-        version: 2.6.1
+        specifier: 2.6.2
+        version: 2.6.2
 
 packages:
 
@@ -2891,8 +2891,8 @@ packages:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
     dev: true
 
-  /tslib@2.6.1:
-    resolution: {integrity: sha512-t0hLfiEKfMUoqhG+U1oid7Pva4bbDPHYfJNiB7BiIjRkj1pyC++4N3huJfqY6aRH6VTB0rvtzQwjM4K6qpfOig==}
+  /tslib@2.6.2:
+    resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
     dev: true
 
   /tsutils@3.21.0(typescript@5.1.6):
