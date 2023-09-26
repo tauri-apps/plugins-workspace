@@ -17,6 +17,7 @@
   import Updater from "./views/Updater.svelte";
   import Clipboard from "./views/Clipboard.svelte";
   import WebRTC from "./views/WebRTC.svelte";
+  import Scanner from "./views/Scanner.svelte";
   import App from "./views/App.svelte";
 
   import { onMount } from "svelte";
@@ -112,6 +113,11 @@
       label: "WebRTC",
       component: WebRTC,
       icon: "i-ph-broadcast",
+    },
+    isMobile && {
+      label: "Scanner",
+      component: Scanner,
+      icon: "i-ph-scan",
     },
   ];
 
@@ -444,6 +450,7 @@
   </aside>
   <main
     class="flex-1 bg-primary dark:bg-darkPrimary transition-transform transition-colors-250 grid grid-rows-[2fr_auto]"
+    class:transparent={isMobile}
   >
     <div class="px-5 overflow-hidden grid grid-rows-[auto_1fr]">
       <h1>{selected.label}</h1>

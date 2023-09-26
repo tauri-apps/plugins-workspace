@@ -1,7 +1,7 @@
 {
   "name": "svelte-app",
   "private": true,
-  "version": "2.0.0-alpha.2",
+  "version": "2.0.0-alpha.3",
   "type": "module",
   "scripts": {
     "dev": "vite --clearScreen false",
@@ -9,8 +9,9 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-alpha.6",
+    "@tauri-apps/api": "2.0.0-alpha.8",
     "@tauri-apps/plugin-app": "2.0.0-alpha.1",
+    "@tauri-apps/plugin-barcode-scanner": "2.0.0-alpha.0",
     "@tauri-apps/plugin-cli": "2.0.0-alpha.1",
     "@tauri-apps/plugin-clipboard-manager": "2.0.0-alpha.1",
     "@tauri-apps/plugin-dialog": "2.0.0-alpha.1",
@@ -29,7 +30,7 @@
     "@iconify-json/codicon": "^1.1.26",
     "@iconify-json/ph": "^1.1.5",
     "@sveltejs/vite-plugin-svelte": "^2.4.1",
-    "@tauri-apps/cli": "2.0.0-alpha.12",
+    "@tauri-apps/cli": "2.0.0-alpha.14",
     "@unocss/extractor-svelte": "^0.53.1",
     "internal-ip": "^8.0.0",
     "svelte": "^3.59.1",

@@ -1,6 +1,7 @@
 {
   "tag": "alpha",
   "changes": [
+    ".changes/deep-link-initial-release.md",
     ".changes/dialog-async-message-dialog.md",
     ".changes/disable-window-controls-api-options.md",
     ".changes/disable-window-controls-api.md",
@@ -18,6 +19,7 @@
     ".changes/persisted-scope-asset.md",
     ".changes/persisted-scope-glob.md",
     ".changes/positioner-tray-flag.md",
+    ".changes/scanner-initial-release.md",
     ".changes/shell-command-apis.md",
     ".changes/shell-detached.md",
     ".changes/stronghold-arg-name.md",

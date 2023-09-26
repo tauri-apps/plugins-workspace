@@ -39,6 +39,7 @@
       "publish": false,
       "dependencies": [
         "app",
+        "barcode-scanner",
         "log-plugin",
         "cli",
         "clipboard-manager",
@@ -52,8 +53,7 @@
         "shell",
         "updater",
         "window"
-      ],
-      "postversion": "pnpm install --no-frozen-lockfile"
+      ]
     },
     "api-example-js": {
       "path": "./examples/api",
@@ -61,6 +61,7 @@
       "publish": false,
       "dependencies": [
         "app-js",
+        "barcode-scanner-js",
         "log-js",
         "cli-js",
         "clipboard-manager-js",
@@ -74,7 +75,16 @@
         "shell-js",
         "updater-js",
         "window-js"
-      ]
+      ],
+      "postversion": "pnpm install --no-frozen-lockfile"
+    },
+
+    "deep-link-example-js": {
+      "path": "./plugins/deep-link/examples/app",
+      "manager": "javascript",
+      "publish": false,
+      "dependencies": ["deep-link-js"],
+      "postversion": "pnpm install --no-frozen-lockfile"
     },
 
     "app": {
@@ -104,6 +114,15 @@
       "manager": "javascript"
     },
 
+    "barcode-scanner": {
+      "path": "./plugins/barcode-scanner",
+      "manager": "rust"
+    },
+    "barcode-scanner-js": {
+      "path": "./plugins/barcode-scanner",
+      "manager": "javascript"
+    },
+
     "cli": {
       "path": "./plugins/cli",
       "manager": "rust"
@@ -119,6 +138,15 @@
     },
     "clipboard-manager-js": {
       "path": "./plugins/clipboard-manager",
+      "manager": "javascript"
+    },
+
+    "deep-link": {
+      "path": "./plugins/deep-link",
+      "manager": "rust"
+    },
+    "deep-link-js": {
+      "path": "./plugins/deep-link",
       "manager": "javascript"
     },
 

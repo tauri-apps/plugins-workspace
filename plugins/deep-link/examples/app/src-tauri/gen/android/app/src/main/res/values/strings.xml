@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">deep-link-example</string>
+    <string name="main_activity_title">deep-link-example</string>
+</resources>

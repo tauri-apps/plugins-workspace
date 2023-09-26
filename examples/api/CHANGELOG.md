@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-alpha.3]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@2.0.0-alpha.0`
+
 ## \[2.0.0-alpha.2]
 
 ### Dependencies
