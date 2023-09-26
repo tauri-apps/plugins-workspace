@@ -193,8 +193,8 @@ importers:
         specifier: 4.2.1
         version: 4.2.1
       svelte-check:
-        specifier: 3.5.0
-        version: 3.5.0(svelte@4.2.1)
+        specifier: 3.5.2
+        version: 3.5.2(svelte@4.2.1)
       tslib:
         specifier: 2.6.1
         version: 2.6.1
@@ -2733,8 +2733,8 @@ packages:
     engines: {node: '>= 0.4'}
     dev: true
 
-  /svelte-check@3.5.0(svelte@4.2.1):
-    resolution: {integrity: sha512-KHujbn4k17xKYLmtCwv0sKKM7uiHTYcQvXnvrCcNU6a7hcszh99zFTIoiu/Sp/ewAw5aJmillJ1Cs8gKLmcX4A==}
+  /svelte-check@3.5.2(svelte@4.2.1):
+    resolution: {integrity: sha512-5a/YWbiH4c+AqAUP+0VneiV5bP8YOk9JL3jwvN+k2PEPLgpu85bjQc5eE67+eIZBBwUEJzmO3I92OqKcqbp3fw==}
     hasBin: true
     peerDependencies:
       svelte: ^3.55.0 || ^4.0.0-next.0 || ^4.0.0
