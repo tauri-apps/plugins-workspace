@@ -16,4 +16,4 @@ tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
 notify = { version = "6" , features = ["serde"] }
-notify-debouncer-mini = { version = "0.3" , features = ["serde"] }
+notify-debouncer-mini = { version = "0.4" , features = ["serde"] }
