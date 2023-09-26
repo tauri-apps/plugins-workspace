@@ -21,8 +21,7 @@
   }
 
   function requestPermission() {
-    return window.__TAURI__
-      .invoke("plugin:notification|request_permission")
+    return window.__TAURI_INVOKE__("plugin:notification|request_permission")
       .then(function (permission) {
         setNotificationPermission(permission);
         return permission;
