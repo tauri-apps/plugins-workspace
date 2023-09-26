@@ -24,7 +24,7 @@
     "eslint-plugin-security": "1.7.1",
     "prettier": "3.0.3",
     "rollup": "3.29.3",
-    "typescript": "5.1.6"
+    "typescript": "5.2.2"
   },
   "resolutions": {
     "semver": ">=7.5.2",
