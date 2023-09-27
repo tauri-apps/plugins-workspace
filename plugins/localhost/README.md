@@ -6,6 +6,8 @@ Expose your apps assets through a localhost server instead of the default custom
 
 ## Install
 
+_This plugin requires a Rust version of at least **1.64**_
+
 There are three general methods of installation that we can recommend.
 
 1. Use crates.io and npm (easiest, and requires you to trust that our publishing pipeline worked)
@@ -18,7 +20,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-localhost = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-localhost = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 portpicker = "0.1" # used in the example to pick a random free port
 ```
 
@@ -39,14 +41,21 @@ fn main() {
   let window_url = WindowUrl::External(url);
   // rewrite the config so the IPC is enabled on this URL
   context.config_mut().build.dist_dir = AppUrl::Url(window_url.clone());
-  context.config_mut().build.dev_path = AppUrl::Url(window_url.clone());
 
   tauri::Builder::default()
     .plugin(tauri_plugin_localhost::Builder::new(port).build())
     .setup(move |app| {
-      WindowBuilder::new(app, "main".to_string(), window_url)
-        .title("Localhost Example")
-        .build()?;
+      WindowBuilder::new(
+        app,
+        "main".to_string(),
+        if cfg!(dev) {
+          Default::default()
+        } else {
+          window_url
+        }
+      )
+      .title("Localhost Example")
+      .build()?;
       Ok(())
     })
     .run(context)

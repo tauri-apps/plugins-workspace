@@ -3,14 +3,16 @@ name: Lint Rust
 on:
   push:
     branches:
-      - dev
+      - v1
+      - v2
     paths:
       - ".github/workflows/lint-rust.yml"
       - "plugins/*/src/**"
       - "**/Cargo.toml"
   pull_request:
     branches:
-      - dev
+      - v1
+      - v2
     paths:
       - ".github/workflows/lint-rust.yml"
       - "plugins/*/src/**"
@@ -32,7 +34,7 @@ jobs:
       - name: install webkit2gtk and libudev for [authenticator]
         run: |
           sudo apt-get update
-          sudo apt-get install -y webkit2gtk-4.0 libudev-dev
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libudev-dev
 
       - name: Install clippy with stable toolchain
         uses: dtolnay/rust-toolchain@stable

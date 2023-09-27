@@ -4,6 +4,8 @@ Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx)
 
 ## Install
 
+_This plugin requires a Rust version of at least **1.65**_
+
 There are three general methods of installation that we can recommend.
 
 1. Use crates.io and npm (easiest, and requires you to trust that our publishing pipeline worked)
@@ -17,7 +19,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 [dependencies.tauri-plugin-sql]
 git = "https://github.com/tauri-apps/plugins-workspace"
-branch = "dev"
+branch = "v1"
 features = ["sqlite"] # or "postgres", or "mysql"
 ```
 
@@ -26,11 +28,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-sql
+pnpm add https://github.com/tauri-apps/tauri-plugin-sql#v1
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-sql
+npm add https://github.com/tauri-apps/tauri-plugin-sql#v1
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-sql
+yarn add https://github.com/tauri-apps/tauri-plugin-sql#v1
 ```
 
 ## Usage
@@ -61,6 +63,37 @@ const db = await Database.load("mysql://user:pass@host/database");
 const db = await Database.load("postgres://postgres:password@localhost/test");
 
 await db.execute("INSERT INTO ...");
+```
+
+## Syntax
+
+We use sqlx as our underlying library, adopting their query syntax:
+
+- sqlite and postgres use the "$#" syntax when substituting query data
+- mysql uses "?" when substituting query data
+
+```javascript
+// INSERT and UPDATE examples for sqlite and postgres
+const result = await db.execute(
+  "INSERT into todos (id, title, status) VALUES ($1, $2, $3)",
+  [todos.id, todos.title, todos.status],
+);
+
+const result = await db.execute(
+  "UPDATE todos SET title = $1, completed = $2 WHERE id = $3",
+  [todos.title, todos.status, todos.id],
+);
+
+// INSERT and UPDATE examples for mysql
+const result = await db.execute(
+  "INSERT into todos (id, title, status) VALUES (?, ?, ?)",
+  [todos.id, todos.title, todos.status],
+);
+
+const result = await db.execute(
+  "UPDATE todos SET title = ?, completed = ? WHERE id = ?",
+  [todos.title, todos.status, todos.id],
+);
 ```
 
 ## Contributing

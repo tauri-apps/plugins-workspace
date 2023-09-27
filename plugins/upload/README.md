@@ -1,8 +1,11 @@
 ![plugin-upload](banner.png)
 
 Upload files from disk to a remote server over HTTP.
+Download files from a remote HTTP server to disk.
 
 ## Install
+
+_This plugin requires a Rust version of at least **1.64**_
 
 There are three general methods of installation that we can recommend.
 
@@ -16,7 +19,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-upload = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-upload = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -24,11 +27,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-upload
+pnpm add https://github.com/tauri-apps/tauri-plugin-upload#v1
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-upload
+npm add https://github.com/tauri-apps/tauri-plugin-upload#v1
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-upload
+yarn add https://github.com/tauri-apps/tauri-plugin-upload#v1
 ```
 
 ## Usage
@@ -49,14 +52,25 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { upload } from 'tauri-plugin-upload-api'
+import { upload } from "tauri-plugin-upload-api";
 
 upload(
-    'https://example.com/file-upload'
-    './path/to/my/file.txt'
-    (progress, total) => console.log(`Downloaded ${progress} of ${total} bytes`) // a callback that will be called with the upload progress
-    { 'ContentType': 'text/plain' } // optional headers to send with the request
-)
+  "https://example.com/file-upload",
+  "./path/to/my/file.txt",
+  (progress, total) => console.log(`Uploaded ${progress} of ${total} bytes`), // a callback that will be called with the upload progress
+  { "Content-Type": "text/plain" }, // optional headers to send with the request
+);
+```
+
+```javascript
+import { download } from "tauri-plugin-upload-api";
+
+download(
+  "https://example.com/file-download-link",
+  "./path/to/save/my/file.txt",
+  (progress, total) => console.log(`Downloaded ${progress} of ${total} bytes`), // a callback that will be called with the download progress
+  { "Content-Type": "text/plain" }, // optional headers to send with the request
+);
 ```
 
 ## Contributing

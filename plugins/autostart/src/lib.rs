@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: MIT
 
 use auto_launch::{AutoLaunch, AutoLaunchBuilder};
+#[cfg(target_os = "macos")]
+use log::info;
 use serde::{ser::Serializer, Serialize};
 use tauri::{
     command,
@@ -98,7 +100,6 @@ pub fn init<R: Runtime>(
         .invoke_handler(tauri::generate_handler![enable, disable, is_enabled])
         .setup(move |app| {
             let mut builder = AutoLaunchBuilder::new();
-
             builder.set_app_name(&app.package_info().name);
             if let Some(args) = args {
                 builder.set_args(&args);
@@ -110,7 +111,22 @@ pub fn init<R: Runtime>(
             #[cfg(windows)]
             builder.set_app_path(&current_exe.display().to_string());
             #[cfg(target_os = "macos")]
-            builder.set_app_path(&current_exe.canonicalize()?.display().to_string());
+            {
+                // on macOS, current_exe gives path to /Applications/Example.app/MacOS/Example
+                // but this results in seeing a Unix Executable in macOS login items
+                // It must be: /Applications/Example.app
+                // If it didn't find exactly a single occurance of .app, it will default to
+                // exe path to not break it.
+                let exe_path = current_exe.canonicalize()?.display().to_string();
+                let parts: Vec<&str> = exe_path.split(".app/").collect();
+                let app_path = if parts.len() == 2 {
+                    format!("{}.app", parts.get(0).unwrap().to_string())
+                } else {
+                    exe_path
+                };
+                info!("auto_start path {}", &app_path);
+                builder.set_app_path(&app_path);
+            }
             #[cfg(target_os = "linux")]
             if let Some(appimage) = app
                 .env()

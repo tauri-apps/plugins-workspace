@@ -4,13 +4,15 @@ Use hardware security-keys in your Tauri App.
 
 ## Install
 
+_This plugin requires a Rust version of at least **1.64**_
+
 There are three general methods of installation that we can recommend.
 
-1. Use crates.io and npm (easiest, and requires you to trust that our publishing pipeline worked)
+1. Use crates.io and npm (easiest and requires you to trust that our publishing pipeline worked)
 2. Pull sources directly from Github using git tags / revision hashes (most secure)
-3. Git submodule install this repo in your tauri project and then use file protocol to ingest the source (most secure, but inconvenient to use)
+3. Git submodule install this repo in your tauri project and then use the file protocol to ingest the source (most secure, but inconvenient to use)
 
-Install the Core plugin by adding the following to your `Cargo.toml` file:
+Install the authenticator plugin by adding the following lines to your `Cargo.toml` file:
 
 `src-tauri/Cargo.toml`
 
@@ -18,7 +20,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 [dependencies]
 tauri-plugin-authenticator = "0.1"
 # or through git
-tauri-plugin-authenticator = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-authenticator = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -26,16 +28,16 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-authenticator
+pnpm add https://github.com/tauri-apps/tauri-plugin-authenticator#v1
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-authenticator
+npm add https://github.com/tauri-apps/tauri-plugin-authenticator#v1
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-authenticator
+yarn add https://github.com/tauri-apps/tauri-plugin-authenticator#v1
 ```
 
 ## Usage
 
-First you need to register the core plugin with Tauri:
+First, you need to register the authenticator plugin with Tauri:
 
 `src-tauri/src/main.rs`
 
@@ -48,7 +50,7 @@ fn main() {
 }
 ```
 
-Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
+Afterwards, all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
 import { Authenticator } from "tauri-plugin-authenticator-api";
@@ -69,12 +71,12 @@ const domain = "https://tauri.app";
 const json = await auth.register(challenge, domain);
 const registerResult = JSON.parse(json);
 
-// verify te registration was successfull
+// verify the registration was successful
 const r2 = await auth.verifyRegistration(
   challenge,
   app,
   registerResult.registerData,
-  registerResult.clientData
+  registerResult.clientData,
 );
 const j2 = JSON.parse(r2);
 
@@ -89,7 +91,7 @@ const counter = await auth.verifySignature(
   signData.signData,
   clientData,
   keyHandle,
-  pubkey
+  pubkey,
 );
 
 if (counter && counter > 0) {

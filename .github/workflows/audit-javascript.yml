@@ -6,14 +6,16 @@ on:
     - cron: "0 0 * * *"
   push:
     branches:
-      - dev
+      - v1
+      - v2
     paths:
       - ".github/workflows/audit-javascript.yml"
       - "**/pnpm-lock.yaml"
       - "**/package.json"
   pull_request:
     branches:
-      - dev
+      - v1
+      - v2
     paths:
       - ".github/workflows/audit-javascript.yml"
       - "**/pnpm-lock.yaml"
@@ -38,8 +40,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - uses: pnpm/action-setup@v2.2.4
+      - uses: pnpm/action-setup@v2
         with:
+          version: 7.x.x
           run_install: true
       - name: audit
         run: pnpm audit

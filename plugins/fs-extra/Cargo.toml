@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-fs-extra"
-version = "0.1.0"
+version = "0.0.0"
 description = "Additional file system methods not included in the core API."
 authors.workspace = true
 license.workspace = true

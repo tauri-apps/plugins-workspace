@@ -1,0 +1,57 @@
+name: Check MSRV
+
+on:
+  push:
+    branches:
+      - v1
+      - v2
+    paths:
+      - ".github/workflows/msrv-check.yml"
+      - "plugins/*/src/**"
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+  pull_request:
+    branches:
+      - v1
+      - v2
+    paths:
+      - ".github/workflows/msrv-check.yml"
+      - "plugins/*/src/**"
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  msrv:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: install webkit2gtk and libudev for [authenticator]
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libudev-dev
+
+      - uses: dtolnay/rust-toolchain@1.64.0
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: build
+        run: cargo build --workspace --exclude 'tauri-plugin-sql' --all-targets --all-features
+
+      - uses: dtolnay/rust-toolchain@1.65.0
+
+      - name: build sql:sqlite
+        run: cargo build --package 'tauri-plugin-sql' --all-targets --features sqlite
+
+      - name: build sql:mysql
+        run: cargo build --package 'tauri-plugin-sql' --all-targets --features mysql
+
+      - name: build sql:postgres
+        run: cargo build --package 'tauri-plugin-sql' --all-targets --features postgres

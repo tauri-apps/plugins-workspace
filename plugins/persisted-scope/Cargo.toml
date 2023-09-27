@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-persisted-scope"
-version = "0.1.0"
+version = "0.1.3"
 description = "Save filesystem and asset scopes and restore them when the app is reopened."
 authors.workspace = true
 license.workspace = true
@@ -15,6 +15,7 @@ serde_json.workspace = true
 tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
+aho-corasick = "1.1"
 bincode = "1"
 
 [features]

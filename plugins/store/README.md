@@ -4,6 +4,8 @@ Simple, persistent key-value store.
 
 ## Install
 
+_This plugin requires a Rust version of at least **1.64**_
+
 There are three general methods of installation that we can recommend.
 
 1. Use crates.io and npm (easiest, and requires you to trust that our publishing pipeline worked)
@@ -16,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -24,11 +26,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
-pnpm add https://github.com/tauri-apps/tauri-plugin-store
+pnpm add https://github.com/tauri-apps/tauri-plugin-store#v1
 # or
-npm add https://github.com/tauri-apps/tauri-plugin-store
+npm add https://github.com/tauri-apps/tauri-plugin-store#v1
 # or
-yarn add https://github.com/tauri-apps/tauri-plugin-store
+yarn add https://github.com/tauri-apps/tauri-plugin-store#v1
 ```
 
 ## Usage
@@ -57,6 +59,48 @@ await store.set("some-key", { value: 5 });
 
 const val = await store.get("some-key");
 assert(val, { value: 5 });
+
+await store.save(); // this manually saves the store, otherwise the store is only saved when your app is closed
+```
+
+### Persisting values
+
+Values added to the store are not persisted between application loads unless:
+
+1. The application is closed gracefully (plugin automatically saves)
+2. The store is manually saved (using `store.save()`)
+
+## Usage from Rust
+
+You can also access Stores from Rust, you can create new stores:
+
+```rust
+use tauri_plugin_store::StoreBuilder;
+use serde_json::json;
+
+fn main() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::default().build())
+        .setup(|app| {
+            let mut store = StoreBuilder::new(app.handle(), "path/to/store.bin".parse()?).build();
+
+            store.insert("a".to_string(), json!("b")) // note that values must be serd_json::Value to be compatible with JS
+        })
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+```
+
+As you may have noticed, the Store crated above isn't accessible to the frontend. To interoperate with stores created by JS use the exported `with_store` method:
+
+```rust
+use tauri::Wry;
+use tauri_plugin_store::with_store;
+
+let stores = app.state::<StoreCollection<Wry>>();
+let path = PathBuf::from("path/to/the/storefile");
+
+with_store(app_handle, stores, path, |store| store.insert("a".to_string(), json!("b")))
 ```
 
 ## Contributing
