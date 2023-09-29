@@ -571,6 +571,6 @@ private extension CameraPlugin {
 }
 
 @_cdecl("init_plugin_camera")
-func initCameraPlugin(webview: WKWebView?) {
-	Tauri.registerPlugin(webview: webview, name: "camera", plugin: CameraPlugin())
+func initPlugin() -> Plugin {
+  return CameraPlugin()
 }
