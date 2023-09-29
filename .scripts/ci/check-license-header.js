@@ -72,8 +72,8 @@ async function check(src) {
   const missingHeader = [];
 
   for (const entry of fs.readdirSync(src, {
-      withFileTypes: true,
-    })) {
+    withFileTypes: true,
+  })) {
     const p = path.join(src, entry.name);
 
     if (entry.isSymbolicLink() || ignore.includes(entry.name)) {
@@ -113,8 +113,7 @@ if (files.length > 0) {
 
   run();
 } else {
-  check(path.resolve(new URL(
-    import.meta.url).pathname, "../../..")).then(
+  check(path.resolve(new URL(import.meta.url).pathname, "../../..")).then(
     (missing) => {
       if (missing.length > 0) {
         console.log(missing.join("\n"));
