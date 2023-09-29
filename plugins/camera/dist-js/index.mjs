@@ -1,6 +1,8 @@
-import { invoke } from '@tauri-apps/api/tauri';
+import {
+    invoke
+} from '@tauri-apps/api/tauri';
 
-// Copyright 2019-2022 Tauri Programme within The Commons Conservancy
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 var Source;
@@ -21,8 +23,15 @@ var CameraDirection;
     CameraDirection["Front"] = "FRONT";
 })(CameraDirection || (CameraDirection = {}));
 async function getPhoto(options) {
-    return await invoke("plugin:camera|getPhoto", { ...options });
+    return await invoke("plugin:camera|getPhoto", {
+        ...options
+    });
 }
 
-export { CameraDirection, ResultType, Source, getPhoto };
+export {
+    CameraDirection,
+    ResultType,
+    Source,
+    getPhoto
+};
 //# sourceMappingURL=index.mjs.map
