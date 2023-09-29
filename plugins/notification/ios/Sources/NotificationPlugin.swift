@@ -120,9 +120,9 @@ class NotificationPlugin: Plugin {
       case .denied:
         permission = "denied"
       case .notDetermined:
-        permission = "default"
+        permission = "prompt"
       @unknown default:
-        permission = "default"
+        permission = "prompt"
       }
 
       invoke.resolve(["permissionState": permission])
