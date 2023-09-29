@@ -236,7 +236,7 @@ impl<'de> Deserialize<'de> for PermissionState {
         match s.to_lowercase().as_str() {
             "granted" => Ok(Self::Granted),
             "denied" => Ok(Self::Denied),
-            "default" => Ok(Self::Unknown),
+            "prompt" => Ok(Self::Unknown),
             _ => Err(DeError::custom(format!("unknown permission state '{s}'"))),
         }
     }
