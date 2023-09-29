@@ -1,5 +1,5 @@
 <script>
-  import { getPhoto, ResultType, Source } from "tauri-plugin-camera-api";
+  import { getPhoto, ResultType, Source } from "@tauri-apps/plugin-camera";
 
   let source = Source.Camera;
   let imageSrc = "";
