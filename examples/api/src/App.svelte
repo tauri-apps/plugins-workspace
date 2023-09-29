@@ -18,7 +18,7 @@
   import Clipboard from "./views/Clipboard.svelte";
   import WebRTC from "./views/WebRTC.svelte";
   import Scanner from "./views/Scanner.svelte";
-  import { Camera } from "./views/Camera.svelte";
+  import Camera from "./views/Camera.svelte";
   import App from "./views/App.svelte";
 
   import { onMount } from "svelte";

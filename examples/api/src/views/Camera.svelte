@@ -10,7 +10,7 @@
       label: "Camera",
     },
     {
-      value: Source.Photo,
+      value: Source.Photos,
       label: "Photo",
     },
     {
