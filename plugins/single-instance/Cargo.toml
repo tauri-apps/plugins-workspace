@@ -1,33 +1,34 @@
 [package]
 name = "tauri-plugin-single-instance"
-version = "0.0.0"
+version = "2.0.0-alpha.2"
 description = "Ensure a single instance of your tauri app is running."
-authors.workspace = true
-license.workspace = true
-edition.workspace = true
-rust-version.workspace = true
-exclude = ["/examples"]
+authors = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+exclude = [ "/examples" ]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[package.metadata.docs.rs]
+features = [ "tauri/dox" ]
 
 [dependencies]
-serde.workspace = true
-serde_json.workspace = true
-tauri.workspace = true
-log.workspace = true
-thiserror.workspace = true
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
 
-[target.'cfg(target_os = "windows")'.dependencies.windows-sys]
+[target."cfg(target_os = \"windows\")".dependencies.windows-sys]
 version = "0.48"
 features = [
-    "Win32_System_Threading",
-    "Win32_System_DataExchange",
-    "Win32_Foundation",
-    "Win32_UI_WindowsAndMessaging",
-    "Win32_Security",
-    "Win32_System_LibraryLoader",
-    "Win32_Graphics_Gdi",
+  "Win32_System_Threading",
+  "Win32_System_DataExchange",
+  "Win32_Foundation",
+  "Win32_UI_WindowsAndMessaging",
+  "Win32_Security",
+  "Win32_System_LibraryLoader",
+  "Win32_Graphics_Gdi"
 ]
 
-[target.'cfg(target_os = "linux")'.dependencies]
+[target."cfg(target_os = \"linux\")".dependencies]
 zbus = "3"

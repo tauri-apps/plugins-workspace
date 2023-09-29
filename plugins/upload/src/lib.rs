@@ -1,20 +1,32 @@
-// Copyright 2021 Tauri Programme within The Commons Conservancy
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
+
+//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/upload/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/upload)
+//!
+//! Upload files from disk to a remote server over HTTP.
+//!
+//! Download files from a remote HTTP server to disk.
+
+#![doc(
+    html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
+    html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
+)]
 
 use futures_util::TryStreamExt;
 use serde::{ser::Serializer, Serialize};
 use tauri::{
     command,
+    ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Runtime, Window,
+    Runtime,
 };
 use tokio::{fs::File, io::AsyncWriteExt};
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 use read_progress_stream::ReadProgressStream;
 
-use std::{collections::HashMap, sync::Mutex};
+use std::collections::HashMap;
 
 type Result<T> = std::result::Result<T, Error>;
 
@@ -39,19 +51,17 @@ impl Serialize for Error {
 
 #[derive(Clone, Serialize)]
 struct ProgressPayload {
-    id: u32,
     progress: u64,
     total: u64,
 }
 
 #[command]
-async fn download<R: Runtime>(
-    window: Window<R>,
-    id: u32,
+async fn download(
     url: &str,
     file_path: &str,
     headers: HashMap<String, String>,
-) -> Result<u32> {
+    on_progress: Channel,
+) -> Result<()> {
     let client = reqwest::Client::new();
 
     let mut request = client.get(url);
@@ -69,33 +79,28 @@ async fn download<R: Runtime>(
 
     while let Some(chunk) = stream.try_next().await? {
         file.write_all(&chunk).await?;
-        let _ = window.emit(
-            "download://progress",
-            ProgressPayload {
-                id,
-                progress: chunk.len() as u64,
-                total,
-            },
-        );
+        let _ = on_progress.send(&ProgressPayload {
+            progress: chunk.len() as u64,
+            total,
+        });
     }
 
-    Ok(id)
+    Ok(())
 }
 
 #[command]
-async fn upload<R: Runtime>(
-    window: Window<R>,
-    id: u32,
+async fn upload(
     url: &str,
     file_path: &str,
     headers: HashMap<String, String>,
+    on_progress: Channel,
 ) -> Result<serde_json::Value> {
     // Read the file
     let file = File::open(file_path).await?;
 
     // Create the request and attach the file to the body
     let client = reqwest::Client::new();
-    let mut request = client.post(url).body(file_to_body(id, window, file));
+    let mut request = client.post(url).body(file_to_body(on_progress, file));
 
     // Loop trought the headers keys and values
     // and add them to the request object.
@@ -108,26 +113,20 @@ async fn upload<R: Runtime>(
     response.json().await.map_err(Into::into)
 }
 
-fn file_to_body<R: Runtime>(id: u32, window: Window<R>, file: File) -> reqwest::Body {
+fn file_to_body(channel: Channel, file: File) -> reqwest::Body {
     let stream = FramedRead::new(file, BytesCodec::new()).map_ok(|r| r.freeze());
-    let window = Mutex::new(window);
+
     reqwest::Body::wrap_stream(ReadProgressStream::new(
         stream,
         Box::new(move |progress, total| {
-            let _ = window.lock().unwrap().emit(
-                "upload://progress",
-                ProgressPayload {
-                    id,
-                    progress,
-                    total,
-                },
-            );
+            let _ = channel.send(ProgressPayload { progress, total });
         }),
     ))
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     PluginBuilder::new("upload")
+        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![download, upload])
         .build()
 }

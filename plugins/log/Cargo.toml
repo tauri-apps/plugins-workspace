@@ -1,25 +1,26 @@
 [package]
 name = "tauri-plugin-log"
-version = "0.0.0"
+version = "2.0.0-alpha.2"
 description = "Configurable logging for your Tauri app."
-authors.workspace = true
-license.workspace = true
-edition.workspace = true
-rust-version.workspace = true
+authors = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[package.metadata.docs.rs]
+features = [ "tauri/dox" ]
 
 [build-dependencies]
-tauri-build.workspace = true
+tauri-build = { workspace = true }
 
 [dependencies]
-serde.workspace = true
-serde_json.workspace = true
-tauri.workspace = true
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
 serde_repr = "0.1"
 byte-unit = "4.0"
-log = { workspace = true, features = ["kv_unstable"] }
-time = { version = "0.3", features = ["formatting", "local-offset"] }
+log = { workspace = true, features = [ "kv_unstable" ] }
+time = { version = "0.3", features = [ "formatting", "local-offset" ] }
 fern = "0.6"
 
 [target."cfg(target_os = \"android\")".dependencies]
@@ -31,4 +32,4 @@ objc = "0.2"
 cocoa = "0.24"
 
 [features]
-colored = ["fern/colored"]
+colored = [ "fern/colored" ]

@@ -1,3 +1,16 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
+//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/stronghold/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/stronghold)
+//!
+//! Store secrets and keys using the [IOTA Stronghold](https://github.com/iotaledger/stronghold.rs) encrypted database and secure runtime.
+
+#![doc(
+    html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
+    html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
+)]
+
 use std::{
     collections::HashMap,
     fmt,
@@ -409,6 +422,7 @@ impl Builder {
         let password_hash_function = self.password_hash_function;
 
         PluginBuilder::new("stronghold")
+            .js_init_script(include_str!("api-iife.js").to_string())
             .setup(move |app, _api| {
                 app.manage(StrongholdCollection::default());
                 app.manage(PasswordHashFunction(password_hash_function));

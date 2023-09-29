@@ -1,10 +1,20 @@
-import { invoke } from "@tauri-apps/api/tauri";
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
+
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 export type LogOptions = {
   file?: string;
   line?: number;
-} & Record<string, string | undefined>;
+  keyValues?: Record<string, string | undefined>;
+};
 
 enum LogLevel {
   /**
@@ -42,7 +52,7 @@ enum LogLevel {
 async function log(
   level: LogLevel,
   message: string,
-  options?: LogOptions
+  options?: LogOptions,
 ): Promise<void> {
   const traces = new Error().stack?.split("\n").map((line) => line.split("@"));
 
@@ -50,14 +60,14 @@ async function log(
     return name.length > 0 && location !== "[native code]";
   });
 
-  const { file, line, ...keyValues } = options ?? {};
+  const { file, line, keyValues } = options ?? {};
 
   let location = filtered?.[0]?.filter((v) => v.length > 0).join("@");
   if (location === "Error") {
     location = "webview::unknown";
   }
 
-  await invoke("plugin:log|log", {
+  await window.__TAURI_INVOKE__("plugin:log|log", {
     level,
     message,
     location,
@@ -75,7 +85,7 @@ async function log(
  * # Examples
  *
  * ```js
- * import { error } from 'tauri-plugin-log-api';
+ * import { error } from '@tauri-apps/plugin-log';
  *
  * const err_info = "No connection";
  * const port = 22;
@@ -85,7 +95,7 @@ async function log(
  */
 export async function error(
   message: string,
-  options?: LogOptions
+  options?: LogOptions,
 ): Promise<void> {
   await log(LogLevel.Error, message, options);
 }
@@ -98,7 +108,7 @@ export async function error(
  * # Examples
  *
  * ```js
- * import { warn } from 'tauri-plugin-log-api';
+ * import { warn } from '@tauri-apps/plugin-log';
  *
  * const warn_description = "Invalid Input";
  *
@@ -107,7 +117,7 @@ export async function error(
  */
 export async function warn(
   message: string,
-  options?: LogOptions
+  options?: LogOptions,
 ): Promise<void> {
   await log(LogLevel.Warn, message, options);
 }
@@ -120,7 +130,7 @@ export async function warn(
  * # Examples
  *
  * ```js
- * import { info } from 'tauri-plugin-log-api';
+ * import { info } from '@tauri-apps/plugin-log';
  *
  * const conn_info = { port: 40, speed: 3.20 };
  *
@@ -129,7 +139,7 @@ export async function warn(
  */
 export async function info(
   message: string,
-  options?: LogOptions
+  options?: LogOptions,
 ): Promise<void> {
   await log(LogLevel.Info, message, options);
 }
@@ -142,7 +152,7 @@ export async function info(
  * # Examples
  *
  * ```js
- * import { debug } from 'tauri-plugin-log-api';
+ * import { debug } from '@tauri-apps/plugin-log';
  *
  * const pos = { x: 3.234, y: -1.223 };
  *
@@ -151,7 +161,7 @@ export async function info(
  */
 export async function debug(
   message: string,
-  options?: LogOptions
+  options?: LogOptions,
 ): Promise<void> {
   await log(LogLevel.Debug, message, options);
 }
@@ -164,7 +174,7 @@ export async function debug(
  * # Examples
  *
  * ```js
- * import { trace } from 'tauri-plugin-log-api';
+ * import { trace } from '@tauri-apps/plugin-log';
  *
  * let pos = { x: 3.234, y: -1.223 };
  *
@@ -173,7 +183,7 @@ export async function debug(
  */
 export async function trace(
   message: string,
-  options?: LogOptions
+  options?: LogOptions,
 ): Promise<void> {
   await log(LogLevel.Trace, message, options);
 }
@@ -192,7 +202,7 @@ export async function attachConsole(): Promise<UnlistenFn> {
       // TODO: Investigate security/detect-unsafe-regex
       // eslint-disable-next-line no-control-regex, security/detect-unsafe-regex
       /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
-      ""
+      "",
     );
 
     switch (payload.level) {

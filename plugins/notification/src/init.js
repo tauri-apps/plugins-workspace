@@ -1,3 +1,7 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
 (function () {
   let permissionSettable = false;
   let permissionValue = "default";
@@ -6,7 +10,7 @@
     if (window.Notification.permission !== "default") {
       return Promise.resolve(window.Notification.permission === "granted");
     }
-    return window.__TAURI__.invoke("plugin:notification|is_permission_granted");
+    return window.__TAURI_INVOKE__("plugin:notification|is_permission_granted");
   }
 
   function setNotificationPermission(value) {
@@ -17,8 +21,7 @@
   }
 
   function requestPermission() {
-    return window.__TAURI__
-      .invoke("plugin:notification|request_permission")
+    return window.__TAURI_INVOKE__("plugin:notification|request_permission")
       .then(function (permission) {
         setNotificationPermission(permission);
         return permission;
@@ -30,7 +33,7 @@
       Object.freeze(options);
     }
 
-    return window.__TAURI__.invoke("plugin:notification|notify", {
+    return window.__TAURI_INVOKE__("plugin:notification|notify", {
       options:
         typeof options === "string"
           ? {

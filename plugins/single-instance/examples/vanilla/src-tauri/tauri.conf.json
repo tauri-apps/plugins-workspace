@@ -40,12 +40,6 @@
         "timestampUrl": ""
       }
     },
-    "updater": {
-      "active": false
-    },
-    "allowlist": {
-      "all": true
-    },
     "windows": [
       {
         "title": "app",
@@ -56,7 +50,7 @@
       }
     ],
     "security": {
-      "csp": "default-src blob: data: filesystem: ws: wss: http: https: tauri: 'unsafe-eval' 'unsafe-inline' 'self' img-src: 'self'"
+      "csp": "default-src blob: data: filesystem: ws: wss: http: https: tauri: http://tauri.localhost 'unsafe-eval' 'unsafe-inline' 'self' img-src: 'self'"
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "name": "tauri-plugin-camera-api",
-  "version": "0.0.0",
+  "name": "@tauri-apps/plugin-camera",
+  "version": "1.0.0",
   "description": "Ask the user take a photo with the camera or select an image from the gallery.",
   "license": "MIT or APACHE-2.0",
   "authors": [
@@ -28,6 +28,6 @@
     "tslib": "^2.4.1"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.0.0-alpha.0"
+    "@tauri-apps/api": "2.0.0-alpha.8"
   }
 }

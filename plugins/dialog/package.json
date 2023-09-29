@@ -1,6 +1,6 @@
 {
-  "name": "tauri-plugin-dialog-api",
-  "version": "0.0.0",
+  "name": "@tauri-apps/plugin-dialog",
+  "version": "2.0.0-alpha.1",
   "license": "MIT or APACHE-2.0",
   "authors": [
     "Tauri Programme within The Commons Conservancy"
@@ -27,6 +27,6 @@
     "tslib": "^2.4.1"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.2.0"
+    "@tauri-apps/api": "2.0.0-alpha.8"
   }
 }

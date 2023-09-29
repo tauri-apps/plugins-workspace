@@ -1,10 +1,10 @@
-![{{plugin name}}](banner.jpg)
+![{{plugin-name}}](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/{{plugin-name}}/banner.png)
 
 <!-- description -->
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.64**_
+_This plugin requires a Rust version of at least **1.65**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,19 +18,30 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-<!-- plugin here --> = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
+tauri-plugin-{{plugin-name}} = "2.0.0-alpha"
+# alternatively with Git:
+tauri-plugin-{{plugin-name}} = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
+<!-- Add the branch for installations using git! -->
+
 ```sh
-pnpm add <!-- plugin here -->
+pnpm add @tauri-apps/plugin-{{plugin-name}}
 # or
-npm add <!-- plugin here -->
+npm add @tauri-apps/plugin-{{plugin-name}}
 # or
-yarn add <!-- plugin here -->
+yarn add @tauri-apps/plugin-{{plugin-name}}
+
+# alternatively with Git:
+pnpm add https://github.com/tauri-apps/tauri-plugin-{{plugin-name}}#v2
+# or
+npm add https://github.com/tauri-apps/tauri-plugin-{{plugin-name}}#v2
+# or
+yarn add https://github.com/tauri-apps/tauri-plugin-{{plugin-name}}#v2
 ```
 
 ## Usage
@@ -42,7 +53,7 @@ First you need to register the core plugin with Tauri:
 ```rust
 fn main() {
     tauri::Builder::default()
-        .plugin(<!-- plugin here -->)
+        .plugin(tauri_plugin_{{plugin-name}}::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

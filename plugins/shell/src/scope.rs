@@ -248,7 +248,7 @@ impl Scope {
 
     /// Open a path in the default (or specified) browser.
     ///
-    /// The path is validated against the `tauri > allowlist > shell > open` validation regex, which
+    /// The path is validated against the `plugins > shell > open` validation regex, which
     /// defaults to `^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+`.
     pub fn open(&self, path: &str, with: Option<Program>) -> Result<(), Error> {
         // ensure we pass validation if the configuration has one
@@ -264,8 +264,8 @@ impl Scope {
         // The prevention of argument escaping is handled by the usage of std::process::Command::arg by
         // the `open` dependency. This behavior should be re-confirmed during upgrades of `open`.
         match with.map(Program::name) {
-            Some(program) => ::open::with(path, program),
-            None => ::open::that(path),
+            Some(program) => ::open::with_detached(path, program),
+            None => ::open::that_detached(path),
         }
         .map_err(Into::into)
     }

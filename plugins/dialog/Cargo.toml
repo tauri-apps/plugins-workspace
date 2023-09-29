@@ -1,18 +1,22 @@
 [package]
 name = "tauri-plugin-dialog"
-version = "0.0.0"
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
+version = "2.0.0-alpha.2"
+description = "Native system dialogs for opening and saving files along with message dialogs on your Tauri application."
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+links = "tauri-plugin-dialog"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[package.metadata.docs.rs]
+features = [ "tauri/dox" ]
 
 [dependencies]
-serde.workspace = true
-serde_json.workspace = true
-tauri.workspace = true
-log.workspace = true
-thiserror.workspace = true
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+tauri-plugin-fs = { path = "../fs", version = "2.0.0-alpha.2" }
 
 [target."cfg(any(target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 glib = "0.16"
@@ -22,4 +26,4 @@ rfd = { version = "0.11", features = [ "gtk3", "common-controls-v6" ] }
 raw-window-handle = "0.5"
 
 [build-dependencies]
-tauri-build.workspace = true
+tauri-build = { workspace = true }

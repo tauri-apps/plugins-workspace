@@ -6,30 +6,19 @@
  * Send toast notifications (brief auto-expiring OS window element) to your user.
  * Can also be used with the Notification Web API.
  *
- * This package is also accessible with `window.__TAURI__.notification` when [`build.withGlobalTauri`](https://tauri.app/v1/api/config/#buildconfig.withglobaltauri) in `tauri.conf.json` is set to `true`.
- *
- * The APIs must be added to [`tauri.allowlist.notification`](https://tauri.app/v1/api/config/#allowlistconfig.notification) in `tauri.conf.json`:
- * ```json
- * {
- *   "tauri": {
- *     "allowlist": {
- *       "notification": {
- *         "all": true // enable all notification APIs
- *       }
- *     }
- *   }
- * }
- * ```
- * It is recommended to allowlist only the APIs you use for optimal bundle size and security.
  * @module
  */
 
-import { invoke, transformCallback } from "@tauri-apps/api/tauri";
+import {
+  invoke,
+  PluginListener,
+  addPluginListener,
+} from "@tauri-apps/api/tauri";
 
 /**
  * Options to send a notification.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface Options {
   /**
@@ -307,11 +296,11 @@ type Permission = "granted" | "denied" | "default";
  * Checks if the permission to send notifications is granted.
  * @example
  * ```typescript
- * import { isPermissionGranted } from '@tauri-apps/api/notification';
+ * import { isPermissionGranted } from '@tauri-apps/plugin-notification';
  * const permissionGranted = await isPermissionGranted();
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function isPermissionGranted(): Promise<boolean> {
   if (window.Notification.permission !== "default") {
@@ -324,7 +313,7 @@ async function isPermissionGranted(): Promise<boolean> {
  * Requests the permission to send notifications.
  * @example
  * ```typescript
- * import { isPermissionGranted, requestPermission } from '@tauri-apps/api/notification';
+ * import { isPermissionGranted, requestPermission } from '@tauri-apps/plugin-notification';
  * let permissionGranted = await isPermissionGranted();
  * if (!permissionGranted) {
  *   const permission = await requestPermission();
@@ -334,7 +323,7 @@ async function isPermissionGranted(): Promise<boolean> {
  *
  * @returns A promise resolving to whether the user granted the permission or not.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function requestPermission(): Promise<Permission> {
   return window.Notification.requestPermission();
@@ -344,7 +333,7 @@ async function requestPermission(): Promise<Permission> {
  * Sends a notification to the user.
  * @example
  * ```typescript
- * import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/api/notification';
+ * import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification';
  * let permissionGranted = await isPermissionGranted();
  * if (!permissionGranted) {
  *   const permission = await requestPermission();
@@ -356,7 +345,7 @@ async function requestPermission(): Promise<Permission> {
  * }
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 function sendNotification(options: Options | string): void {
   if (typeof options === "string") {
@@ -373,7 +362,7 @@ function sendNotification(options: Options | string): void {
  *
  * @example
  * ```typescript
- * import { registerActionTypes } from '@tauri-apps/api/notification';
+ * import { registerActionTypes } from '@tauri-apps/plugin-notification';
  * await registerActionTypes([{
  *   id: 'tauri',
  *   actions: [{
@@ -396,7 +385,7 @@ async function registerActionTypes(types: ActionType[]): Promise<void> {
  *
  * @example
  * ```typescript
- * import { pending } from '@tauri-apps/api/notification';
+ * import { pending } from '@tauri-apps/plugin-notification';
  * const pendingNotifications = await pending();
  * ```
  *
@@ -413,7 +402,7 @@ async function pending(): Promise<PendingNotification[]> {
  *
  * @example
  * ```typescript
- * import { cancel } from '@tauri-apps/api/notification';
+ * import { cancel } from '@tauri-apps/plugin-notification';
  * await cancel([-34234, 23432, 4311]);
  * ```
  *
@@ -430,7 +419,7 @@ async function cancel(notifications: number[]): Promise<void> {
  *
  * @example
  * ```typescript
- * import { cancelAll } from '@tauri-apps/api/notification';
+ * import { cancelAll } from '@tauri-apps/plugin-notification';
  * await cancelAll();
  * ```
  *
@@ -447,7 +436,7 @@ async function cancelAll(): Promise<void> {
  *
  * @example
  * ```typescript
- * import { active } from '@tauri-apps/api/notification';
+ * import { active } from '@tauri-apps/plugin-notification';
  * const activeNotifications = await active();
  * ```
  *
@@ -464,7 +453,7 @@ async function active(): Promise<ActiveNotification[]> {
  *
  * @example
  * ```typescript
- * import { cancel } from '@tauri-apps/api/notification';
+ * import { cancel } from '@tauri-apps/plugin-notification';
  * await cancel([-34234, 23432, 4311])
  * ```
  *
@@ -481,7 +470,7 @@ async function removeActive(notifications: number[]): Promise<void> {
  *
  * @example
  * ```typescript
- * import { removeAllActive } from '@tauri-apps/api/notification';
+ * import { removeAllActive } from '@tauri-apps/plugin-notification';
  * await removeAllActive()
  * ```
  *
@@ -498,7 +487,7 @@ async function removeAllActive(): Promise<void> {
  *
  * @example
  * ```typescript
- * import { createChannel, Importance, Visibility } from '@tauri-apps/api/notification';
+ * import { createChannel, Importance, Visibility } from '@tauri-apps/plugin-notification';
  * await createChannel({
  *   id: 'new-messages',
  *   name: 'New Messages',
@@ -522,7 +511,7 @@ async function createChannel(channel: Channel): Promise<void> {
  *
  * @example
  * ```typescript
- * import { removeChannel } from '@tauri-apps/api/notification';
+ * import { removeChannel } from '@tauri-apps/plugin-notification';
  * await removeChannel();
  * ```
  *
@@ -539,7 +528,7 @@ async function removeChannel(id: string): Promise<void> {
  *
  * @example
  * ```typescript
- * import { channels } from '@tauri-apps/api/notification';
+ * import { channels } from '@tauri-apps/plugin-notification';
  * const notificationChannels = await channels();
  * ```
  *
@@ -551,59 +540,16 @@ async function channels(): Promise<Channel[]> {
   return invoke("plugin:notification|getActive");
 }
 
-class EventChannel {
-  id: number;
-  unregisterFn: (channel: EventChannel) => Promise<void>;
-
-  constructor(
-    id: number,
-    unregisterFn: (channel: EventChannel) => Promise<void>
-  ) {
-    this.id = id;
-    this.unregisterFn = unregisterFn;
-  }
-
-  toJSON(): string {
-    return `__CHANNEL__:${this.id}`;
-  }
-
-  async unregister(): Promise<void> {
-    return this.unregisterFn(this);
-  }
-}
-
-// TODO: use addPluginListener API on @tauri-apps/api/tauri 2.0.0-alpha.4
 async function onNotificationReceived(
-  cb: (notification: Options) => void
-): Promise<EventChannel> {
-  const channelId = transformCallback(cb);
-  const handler = new EventChannel(channelId, (channel) =>
-    invoke("plugin:notification|remove_listener", {
-      event: "notification",
-      channelId: channel.id,
-    })
-  );
-  return invoke("plugin:notification|register_listener", {
-    event: "notification",
-    handler,
-  }).then(() => handler);
+  cb: (notification: Options) => void,
+): Promise<PluginListener> {
+  return addPluginListener("notification", "notification", cb);
 }
 
-// TODO: use addPluginListener API on @tauri-apps/api/tauri 2.0.0-alpha.4
 async function onAction(
-  cb: (notification: Options) => void
-): Promise<EventChannel> {
-  const channelId = transformCallback(cb);
-  const handler = new EventChannel(channelId, (channel) =>
-    invoke("plugin:notification|remove_listener", {
-      event: "actionPerformed",
-      channelId: channel.id,
-    })
-  );
-  return invoke("plugin:notification|register_listener", {
-    event: "actionPerformed",
-    handler,
-  }).then(() => handler);
+  cb: (notification: Options) => void,
+): Promise<PluginListener> {
+  return addPluginListener("notification", "actionPerformed", cb);
 }
 
 export type {

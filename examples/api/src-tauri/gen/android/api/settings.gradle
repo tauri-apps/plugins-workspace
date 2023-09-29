@@ -1,6 +1,0 @@
-include ':app'
-
-include ':tauri-android'
-project(':tauri-android').projectDir = new File('./.tauri/tauri-api')
-
-apply from: 'tauri.settings.gradle'

@@ -10,6 +10,7 @@
 
 use std::path::PathBuf;
 
+use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 use serde::de::DeserializeOwned;
 use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
@@ -21,6 +22,11 @@ const OK: &str = "Ok";
 type FileDialog = rfd::FileDialog;
 #[cfg(not(target_os = "linux"))]
 type FileDialog = rfd::AsyncFileDialog;
+
+#[cfg(target_os = "linux")]
+type MessageDialog = rfd::MessageDialog;
+#[cfg(not(target_os = "linux"))]
+type MessageDialog = rfd::AsyncMessageDialog;
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
@@ -49,7 +55,7 @@ impl<R: Runtime> Dialog<R> {
 macro_rules! run_dialog {
     ($e:expr, $h: ident) => {{
         std::thread::spawn(move || {
-            let response = $e;
+            let response = tauri::async_runtime::block_on($e);
             $h(response);
         });
     }};
@@ -101,6 +107,14 @@ impl From<MessageDialogKind> for rfd::MessageLevel {
     }
 }
 
+struct WindowHandle(RawWindowHandle);
+
+unsafe impl HasRawWindowHandle for WindowHandle {
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        self.0
+    }
+}
+
 impl<R: Runtime> From<FileDialogBuilder<R>> for FileDialog {
     fn from(d: FileDialogBuilder<R>) -> Self {
         let mut builder = FileDialog::new();
@@ -119,17 +133,17 @@ impl<R: Runtime> From<FileDialogBuilder<R>> for FileDialog {
             builder = builder.add_filter(&filter.name, &v);
         }
         #[cfg(desktop)]
-        if let Some(_parent) = d.parent {
-            // TODO builder = builder.set_parent(&parent);
+        if let Some(parent) = d.parent {
+            builder = builder.set_parent(&WindowHandle(parent));
         }
 
         builder
     }
 }
 
-impl<R: Runtime> From<MessageDialogBuilder<R>> for rfd::MessageDialog {
+impl<R: Runtime> From<MessageDialogBuilder<R>> for MessageDialog {
     fn from(d: MessageDialogBuilder<R>) -> Self {
-        let mut dialog = rfd::MessageDialog::new()
+        let mut dialog = MessageDialog::new()
             .set_title(&d.title)
             .set_description(&d.message)
             .set_level(d.kind.into());
@@ -144,8 +158,8 @@ impl<R: Runtime> From<MessageDialogBuilder<R>> for rfd::MessageDialog {
             dialog = dialog.set_buttons(buttons);
         }
 
-        if let Some(_parent) = d.parent {
-            // TODO dialog.set_parent(parent);
+        if let Some(parent) = d.parent {
+            dialog = dialog.set_parent(&WindowHandle(parent));
         }
 
         dialog
@@ -206,5 +220,5 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
     dialog: MessageDialogBuilder<R>,
     f: F,
 ) {
-    run_dialog!(rfd::MessageDialog::from(dialog).show(), f);
+    run_dialog!(MessageDialog::from(dialog).show(), f);
 }

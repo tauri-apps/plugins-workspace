@@ -1,0 +1,11 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:hardwareAccelerated="true">
+
+    <!-- Paste the following line into the AndroidManifest.xml of your project -->
+    <!-- See also: https://capacitorjs.com/docs/plugins/android#manifest -->
+    <!-- <uses-feature android:name="android.hardware.camera" android:required="false" /> -->
+
+    <uses-sdk tools:overrideLibrary="com.google.zxing.client.android" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+</manifest>

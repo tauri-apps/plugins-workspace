@@ -1,53 +1,37 @@
-import { invoke } from "@tauri-apps/api/tauri";
-import { appWindow } from "@tauri-apps/api/window";
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
+import { invoke, Channel } from "@tauri-apps/api/tauri";
 
 interface ProgressPayload {
-  id: number;
   progress: number;
   total: number;
 }
 
-type ProgressHandler = (progress: number, total: number) => void;
-const handlers: Map<number, ProgressHandler> = new Map();
-let listening = false;
-
-async function listenToEventIfNeeded(event: string): Promise<void> {
-  if (listening) {
-    return await Promise.resolve();
-  }
-  return await appWindow
-    .listen<ProgressPayload>(event, ({ payload }) => {
-      const handler = handlers.get(payload.id);
-      if (handler != null) {
-        handler(payload.progress, payload.total);
-      }
-    })
-    .then(() => {
-      listening = true;
-    });
-}
+type ProgressHandler = (progress: ProgressPayload) => void;
 
 async function upload(
   url: string,
   filePath: string,
   progressHandler?: ProgressHandler,
-  headers?: Map<string, string>
+  headers?: Map<string, string>,
 ): Promise<void> {
   const ids = new Uint32Array(1);
   window.crypto.getRandomValues(ids);
   const id = ids[0];
 
+  const onProgress = new Channel<ProgressPayload>();
   if (progressHandler != null) {
-    handlers.set(id, progressHandler);
+    onProgress.onmessage = progressHandler;
   }
-
-  await listenToEventIfNeeded("upload://progress");
 
   await invoke("plugin:upload|upload", {
     id,
     url,
     filePath,
     headers: headers ?? {},
+    onProgress,
   });
 }
 
@@ -59,25 +43,24 @@ async function download(
   url: string,
   filePath: string,
   progressHandler?: ProgressHandler,
-  headers?: Map<string, string>
+  headers?: Map<string, string>,
 ): Promise<void> {
   const ids = new Uint32Array(1);
   window.crypto.getRandomValues(ids);
   const id = ids[0];
 
+  const onProgress = new Channel<ProgressPayload>();
   if (progressHandler != null) {
-    handlers.set(id, progressHandler);
+    onProgress.onmessage = progressHandler;
   }
-
-  await listenToEventIfNeeded("download://progress");
 
   await invoke("plugin:upload|download", {
     id,
     url,
     filePath,
     headers: headers ?? {},
+    onProgress,
   });
 }
 
-export default upload;
 export { download, upload };

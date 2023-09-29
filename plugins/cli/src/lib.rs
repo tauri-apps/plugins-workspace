@@ -1,3 +1,18 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
+//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/cli/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/cli)
+//!
+//! Parse arguments from your Command Line Interface.
+//!
+//! - Supported platforms: Windows, Linux and macOS.
+
+#![doc(
+    html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
+    html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
+)]
+
 use tauri::{
     plugin::{Builder, PluginApi, TauriPlugin},
     AppHandle, Manager, Runtime, State,
@@ -11,12 +26,11 @@ use config::{Arg, Config};
 pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 
-// TODO: use PluginApi#app when 2.0.0-alpha.9 is released
-pub struct Cli<R: Runtime>(PluginApi<R, Config>, AppHandle<R>);
+pub struct Cli<R: Runtime>(PluginApi<R, Config>);
 
 impl<R: Runtime> Cli<R> {
     pub fn matches(&self) -> Result<parser::Matches> {
-        parser::get_matches(self.0.config(), self.1.package_info())
+        parser::get_matches(self.0.config(), self.0.app().package_info())
     }
 }
 
@@ -37,9 +51,10 @@ fn cli_matches<R: Runtime>(_app: AppHandle<R>, cli: State<'_, Cli<R>>) -> Result
 
 pub fn init<R: Runtime>() -> TauriPlugin<R, Config> {
     Builder::new("cli")
+        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![cli_matches])
         .setup(|app, api| {
-            app.manage(Cli(api, app.clone()));
+            app.manage(Cli(api));
             Ok(())
         })
         .build()

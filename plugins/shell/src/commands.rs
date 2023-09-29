@@ -1,8 +1,12 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
 use std::{collections::HashMap, path::PathBuf, string::FromUtf8Error};
 
 use encoding_rs::Encoding;
 use serde::{Deserialize, Serialize};
-use tauri::{api::ipc::CallbackFn, Manager, Runtime, State, Window};
+use tauri::{ipc::Channel, Manager, Runtime, State, Window};
 
 use crate::{
     open::Program,
@@ -93,7 +97,7 @@ pub fn execute<R: Runtime>(
     shell: State<'_, Shell<R>>,
     program: String,
     args: ExecuteArgs,
-    on_event_fn: CallbackFn,
+    on_event: Channel,
     options: CommandOptions,
 ) -> crate::Result<ChildId> {
     let mut command = if options.sidecar {
@@ -162,10 +166,7 @@ pub fn execute<R: Runtime>(
                 children.lock().unwrap().remove(&pid);
             };
             let js_event = JSCommandEvent::new(event, encoding);
-            let js = tauri::api::ipc::format_callback(on_event_fn, &js_event)
-                .expect("unable to serialize CommandEvent");
-
-            let _ = window.eval(js.as_str());
+            let _ = on_event.send(&js_event);
         }
     });
 

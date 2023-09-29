@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/tauri";
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 interface FileResponse {
   base64Data?: string;
@@ -19,7 +23,7 @@ interface FileResponse {
 /**
  * Extension filters for the file dialog.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface DialogFilter {
   /** Filter name. */
@@ -37,7 +41,7 @@ interface DialogFilter {
 /**
  * Options for the open dialog.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface OpenDialogOptions {
   /** The title of the dialog window. */
@@ -60,7 +64,7 @@ interface OpenDialogOptions {
 /**
  * Options for the save dialog.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface SaveDialogOptions {
   /** The title of the dialog window. */
@@ -76,7 +80,7 @@ interface SaveDialogOptions {
 }
 
 /**
- * @since 1.0.0
+ * @since 2.0.0
  */
 interface MessageDialogOptions {
   /** The title of the dialog. Defaults to the app name. */
@@ -99,29 +103,29 @@ interface ConfirmDialogOptions {
 }
 
 async function open(
-  options?: OpenDialogOptions & { multiple?: false; directory?: false }
+  options?: OpenDialogOptions & { multiple?: false; directory?: false },
 ): Promise<null | FileResponse>;
 async function open(
-  options?: OpenDialogOptions & { multiple?: true; directory?: false }
+  options?: OpenDialogOptions & { multiple?: true; directory?: false },
 ): Promise<null | FileResponse[]>;
 async function open(
-  options?: OpenDialogOptions & { multiple?: false; directory?: true }
+  options?: OpenDialogOptions & { multiple?: false; directory?: true },
 ): Promise<null | string>;
 async function open(
-  options?: OpenDialogOptions & { multiple?: true; directory?: true }
+  options?: OpenDialogOptions & { multiple?: true; directory?: true },
 ): Promise<null | string[]>;
 /**
  * Open a file/directory selection dialog.
  *
- * The selected paths are added to the filesystem and asset protocol allowlist scopes.
+ * The selected paths are added to the filesystem and asset protocol scopes.
  * When security is more important than the easy of use of this API,
  * prefer writing a dedicated command instead.
  *
- * Note that the allowlist scope change is not persisted, so the values are cleared when the application is restarted.
+ * Note that the scope change is not persisted, so the values are cleared when the application is restarted.
  * You can save it to the filesystem using [tauri-plugin-persisted-scope](https://github.com/tauri-apps/tauri-plugin-persisted-scope).
  * @example
  * ```typescript
- * import { open } from '@tauri-apps/api/dialog';
+ * import { open } from '@tauri-apps/plugin-dialog';
  * // Open a selection dialog for image files
  * const selected = await open({
  *   multiple: true,
@@ -141,7 +145,7 @@ async function open(
  *
  * @example
  * ```typescript
- * import { open } from '@tauri-apps/api/dialog';
+ * import { open } from '@tauri-apps/plugin-dialog';
  * import { appDir } from '@tauri-apps/api/path';
  * // Open a selection dialog for directories
  * const selected = await open({
@@ -160,30 +164,30 @@ async function open(
  *
  * @returns A promise resolving to the selected path(s)
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function open(
-  options: OpenDialogOptions = {}
+  options: OpenDialogOptions = {},
 ): Promise<null | string | string[] | FileResponse | FileResponse[]> {
   if (typeof options === "object") {
     Object.freeze(options);
   }
 
-  return invoke("plugin:dialog|open", { options });
+  return window.__TAURI_INVOKE__("plugin:dialog|open", { options });
 }
 
 /**
  * Open a file/directory save dialog.
  *
- * The selected path is added to the filesystem and asset protocol allowlist scopes.
+ * The selected path is added to the filesystem and asset protocol scopes.
  * When security is more important than the easy of use of this API,
  * prefer writing a dedicated command instead.
  *
- * Note that the allowlist scope change is not persisted, so the values are cleared when the application is restarted.
+ * Note that the scope change is not persisted, so the values are cleared when the application is restarted.
  * You can save it to the filesystem using [tauri-plugin-persisted-scope](https://github.com/tauri-apps/tauri-plugin-persisted-scope).
  * @example
  * ```typescript
- * import { save } from '@tauri-apps/api/dialog';
+ * import { save } from '@tauri-apps/plugin-dialog';
  * const filePath = await save({
  *   filters: [{
  *     name: 'Image',
@@ -194,21 +198,21 @@ async function open(
  *
  * @returns A promise resolving to the selected path.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function save(options: SaveDialogOptions = {}): Promise<string | null> {
   if (typeof options === "object") {
     Object.freeze(options);
   }
 
-  return invoke("plugin:dialog|save", { options });
+  return window.__TAURI_INVOKE__("plugin:dialog|save", { options });
 }
 
 /**
  * Shows a message dialog with an `Ok` button.
  * @example
  * ```typescript
- * import { message } from '@tauri-apps/api/dialog';
+ * import { message } from '@tauri-apps/plugin-dialog';
  * await message('Tauri is awesome', 'Tauri');
  * await message('File not found', { title: 'Tauri', type: 'error' });
  * ```
@@ -218,15 +222,15 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
  *
  * @returns A promise indicating the success or failure of the operation.
  *
- * @since 1.0.0
+ * @since 2.0.0
  *
  */
 async function message(
   message: string,
-  options?: string | MessageDialogOptions
+  options?: string | MessageDialogOptions,
 ): Promise<void> {
   const opts = typeof options === "string" ? { title: options } : options;
-  return invoke("plugin:dialog|message", {
+  return window.__TAURI_INVOKE__("plugin:dialog|message", {
     message: message.toString(),
     title: opts?.title?.toString(),
     type_: opts?.type,
@@ -238,7 +242,7 @@ async function message(
  * Shows a question dialog with `Yes` and `No` buttons.
  * @example
  * ```typescript
- * import { ask } from '@tauri-apps/api/dialog';
+ * import { ask } from '@tauri-apps/plugin-dialog';
  * const yes = await ask('Are you sure?', 'Tauri');
  * const yes2 = await ask('This action cannot be reverted. Are you sure?', { title: 'Tauri', type: 'warning' });
  * ```
@@ -248,14 +252,14 @@ async function message(
  *
  * @returns A promise resolving to a boolean indicating whether `Yes` was clicked or not.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function ask(
   message: string,
-  options?: string | ConfirmDialogOptions
+  options?: string | ConfirmDialogOptions,
 ): Promise<boolean> {
   const opts = typeof options === "string" ? { title: options } : options;
-  return invoke("plugin:dialog|ask", {
+  return window.__TAURI_INVOKE__("plugin:dialog|ask", {
     message: message.toString(),
     title: opts?.title?.toString(),
     type_: opts?.type,
@@ -268,7 +272,7 @@ async function ask(
  * Shows a question dialog with `Ok` and `Cancel` buttons.
  * @example
  * ```typescript
- * import { confirm } from '@tauri-apps/api/dialog';
+ * import { confirm } from '@tauri-apps/plugin-dialog';
  * const confirmed = await confirm('Are you sure?', 'Tauri');
  * const confirmed2 = await confirm('This action cannot be reverted. Are you sure?', { title: 'Tauri', type: 'warning' });
  * ```
@@ -278,14 +282,14 @@ async function ask(
  *
  * @returns A promise resolving to a boolean indicating whether `Ok` was clicked or not.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 async function confirm(
   message: string,
-  options?: string | ConfirmDialogOptions
+  options?: string | ConfirmDialogOptions,
 ): Promise<boolean> {
   const opts = typeof options === "string" ? { title: options } : options;
-  return invoke("plugin:dialog|confirm", {
+  return window.__TAURI_INVOKE__("plugin:dialog|confirm", {
     message: message.toString(),
     title: opts?.title?.toString(),
     type_: opts?.type,

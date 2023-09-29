@@ -1,3 +1,7 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
 import UIKit
 import MobileCoreServices
 import PhotosUI
@@ -202,6 +206,6 @@ class DialogPlugin: Plugin {
 }
 
 @_cdecl("init_plugin_dialog")
-func initPlugin(name: SRString, webview: WKWebView?) {
-  Tauri.registerPlugin(webview: webview, name: name.toString(), plugin: DialogPlugin())
+func initPlugin() -> Plugin {
+  return DialogPlugin()
 }

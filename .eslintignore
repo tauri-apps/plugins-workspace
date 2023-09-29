@@ -2,3 +2,5 @@ target
 node_modules
 dist
 dist-js
+api-iife.js
+init.js

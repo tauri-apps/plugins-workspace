@@ -1,5 +1,25 @@
-import { invoke } from "@tauri-apps/api/tauri";
-import { WindowLabel, getCurrent } from "@tauri-apps/api/window";
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
+
+interface WindowDef {
+  label: string;
+}
+
+declare global {
+  interface Window {
+    __TAURI_METADATA__: {
+      __windows: WindowDef[];
+      __currentWindow: WindowDef;
+    };
+  }
+}
 
 export enum StateFlags {
   SIZE = 1 << 0,
@@ -14,22 +34,27 @@ export enum StateFlags {
 /**
  *  Save the state of all open windows to disk.
  */
-async function saveWindowState(flags: StateFlags) {
-  invoke("plugin:window-state|save_window_state", { flags });
+async function saveWindowState(flags: StateFlags): Promise<void> {
+  return window.__TAURI_INVOKE__("plugin:window-state|save_window_state", {
+    flags,
+  });
 }
 
 /**
  *  Restore the state for the specified window from disk.
  */
-async function restoreState(label: WindowLabel, flags: StateFlags) {
-  invoke("plugin:window-state|restore_state", { label, flags });
+async function restoreState(label: string, flags: StateFlags): Promise<void> {
+  return window.__TAURI_INVOKE__("plugin:window-state|restore_state", {
+    label,
+    flags,
+  });
 }
 
 /**
  *  Restore the state for the current window from disk.
  */
-async function restoreStateCurrent(flags: StateFlags) {
-  restoreState(getCurrent().label, flags);
+async function restoreStateCurrent(flags: StateFlags): Promise<void> {
+  return restoreState(window.__TAURI_METADATA__.__currentWindow.label, flags);
 }
 
 export { restoreState, restoreStateCurrent, saveWindowState };

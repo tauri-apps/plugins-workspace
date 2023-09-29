@@ -1,99 +1,102 @@
 <script>
-  import { open, save, confirm } from 'tauri-plugin-dialog-api'
-  import { readBinaryFile } from 'tauri-plugin-fs-api'
+  import { open, save, confirm } from "@tauri-apps/plugin-dialog";
+  import { readBinaryFile } from "@tauri-apps/plugin-fs";
 
-  export let onMessage
-  export let insecureRenderHtml
-  let defaultPath = null
-  let filter = null
-  let multiple = false
-  let directory = false
+  export let onMessage;
+  export let insecureRenderHtml;
+  let defaultPath = null;
+  let filter = null;
+  let multiple = false;
+  let directory = false;
 
   function arrayBufferToBase64(buffer, callback) {
     var blob = new Blob([buffer], {
-      type: 'application/octet-binary'
-    })
-    var reader = new FileReader()
+      type: "application/octet-binary",
+    });
+    var reader = new FileReader();
     reader.onload = function (evt) {
-      var dataurl = evt.target.result
-      callback(dataurl.substr(dataurl.indexOf(',') + 1))
-    }
-    reader.readAsDataURL(blob)
+      var dataurl = evt.target.result;
+      callback(dataurl.substr(dataurl.indexOf(",") + 1));
+    };
+    reader.readAsDataURL(blob);
   }
 
   async function prompt() {
-    confirm('Is Tauri awesome?', {
-      okLabel: 'Absolutely',
-      cancelLabel: 'Totally',
-    }).then(res => onMessage(res
-      ? "Tauri is absolutely awesome"
-      : "Tauri is totally awesome"
-    )).catch(onMessage)
+    confirm("Is Tauri awesome?", {
+      okLabel: "Absolutely",
+      cancelLabel: "Totally",
+    })
+      .then((res) =>
+        onMessage(
+          res ? "Tauri is absolutely awesome" : "Tauri is totally awesome"
+        )
+      )
+      .catch(onMessage);
   }
 
   function openDialog() {
     open({
-      title: 'My wonderful open dialog',
+      title: "My wonderful open dialog",
       defaultPath,
       filters: filter
         ? [
             {
-              name: 'Tauri Example',
-              extensions: filter.split(',').map((f) => f.trim())
-            }
+              name: "Tauri Example",
+              extensions: filter.split(",").map((f) => f.trim()),
+            },
           ]
         : [],
       multiple,
-      directory
+      directory,
     })
       .then(function (res) {
         if (Array.isArray(res)) {
-          onMessage(res)
+          onMessage(res);
         } else {
-          var pathToRead = typeof res === 'string' ? res : res.path
-          var isFile = pathToRead.match(/\S+\.\S+$/g)
+          var pathToRead = typeof res === "string" ? res : res.path;
+          var isFile = pathToRead.match(/\S+\.\S+$/g);
           readBinaryFile(pathToRead)
             .then(function (response) {
               if (isFile) {
                 if (
-                  pathToRead.includes('.png') ||
-                  pathToRead.includes('.jpg')
+                  pathToRead.includes(".png") ||
+                  pathToRead.includes(".jpg")
                 ) {
                   arrayBufferToBase64(
                     new Uint8Array(response),
                     function (base64) {
-                      var src = 'data:image/png;base64,' + base64
-                      insecureRenderHtml('<img src="' + src + '"></img>')
+                      var src = "data:image/png;base64," + base64;
+                      insecureRenderHtml('<img src="' + src + '"></img>');
                     }
-                  )
+                  );
                 } else {
-                  onMessage(res)
+                  onMessage(res);
                 }
               } else {
-                onMessage(res)
+                onMessage(res);
               }
             })
-            .catch(onMessage(res))
+            .catch(onMessage(res));
         }
       })
-      .catch(onMessage)
+      .catch(onMessage);
   }
 
   function saveDialog() {
     save({
-      title: 'My wonderful save dialog',
+      title: "My wonderful save dialog",
       defaultPath,
       filters: filter
         ? [
             {
-              name: 'Tauri Example',
-              extensions: filter.split(',').map((f) => f.trim())
-            }
+              name: "Tauri Example",
+              extensions: filter.split(",").map((f) => f.trim()),
+            },
           ]
-        : []
+        : [],
     })
       .then(onMessage)
-      .catch(onMessage)
+      .catch(onMessage);
   }
 </script>
 

@@ -1,0 +1,1 @@
+see https://fabianlars.de/.well-known/assetlinks.json

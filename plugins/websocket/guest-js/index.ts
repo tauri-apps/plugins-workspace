@@ -1,4 +1,8 @@
-import { invoke, transformCallback } from "@tauri-apps/api/tauri";
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
+import { invoke, Channel } from "@tauri-apps/api/tauri";
 
 export interface MessageKind<T, D> {
   type: T;
@@ -28,13 +32,15 @@ export default class WebSocket {
 
   static async connect(url: string, options?: unknown): Promise<WebSocket> {
     const listeners: Array<(arg: Message) => void> = [];
-    const handler = (message: Message): void => {
+
+    const onMessage = new Channel<Message>();
+    onMessage.onmessage = (message: Message): void => {
       listeners.forEach((l) => l(message));
     };
 
     return await invoke<number>("plugin:websocket|connect", {
       url,
-      callbackFunction: transformCallback(handler),
+      onMessage,
       options,
     }).then((id) => new WebSocket(id, listeners));
   }
@@ -53,7 +59,7 @@ export default class WebSocket {
       m = { type: "Binary", data: message };
     } else {
       throw new Error(
-        "invalid `message` type, expected a `{ type: string, data: any }` object, a string or a numeric array"
+        "invalid `message` type, expected a `{ type: string, data: any }` object, a string or a numeric array",
       );
     }
     return await invoke("plugin:websocket|send", {

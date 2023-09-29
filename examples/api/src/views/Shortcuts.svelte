@@ -1,46 +1,46 @@
 <script>
-  import { writable } from 'svelte/store'
+  import { writable } from "svelte/store";
   import {
     register as registerShortcut,
     unregister as unregisterShortcut,
-    unregisterAll as unregisterAllShortcuts
-  } from 'tauri-plugin-global-shortcut-api'
+    unregisterAll as unregisterAllShortcuts,
+  } from "@tauri-apps/plugin-global-shortcut";
 
-  export let onMessage
-  const shortcuts = writable([])
-  let shortcut = 'CmdOrControl+X'
+  export let onMessage;
+  const shortcuts = writable([]);
+  let shortcut = "CmdOrControl+X";
 
   function register() {
-    const shortcut_ = shortcut
+    const shortcut_ = shortcut;
     registerShortcut(shortcut_, () => {
-      onMessage(`Shortcut ${shortcut_} triggered`)
+      onMessage(`Shortcut ${shortcut_} triggered`);
     })
       .then(() => {
-        shortcuts.update((shortcuts_) => [...shortcuts_, shortcut_])
-        onMessage(`Shortcut ${shortcut_} registered successfully`)
+        shortcuts.update((shortcuts_) => [...shortcuts_, shortcut_]);
+        onMessage(`Shortcut ${shortcut_} registered successfully`);
       })
-      .catch(onMessage)
+      .catch(onMessage);
   }
 
   function unregister(shortcut) {
-    const shortcut_ = shortcut
+    const shortcut_ = shortcut;
     unregisterShortcut(shortcut_)
       .then(() => {
         shortcuts.update((shortcuts_) =>
           shortcuts_.filter((s) => s !== shortcut_)
-        )
-        onMessage(`Shortcut ${shortcut_} unregistered`)
+        );
+        onMessage(`Shortcut ${shortcut_} unregistered`);
       })
-      .catch(onMessage)
+      .catch(onMessage);
   }
 
   function unregisterAll() {
     unregisterAllShortcuts()
       .then(() => {
-        shortcuts.update(() => [])
-        onMessage(`Unregistered all shortcuts`)
+        shortcuts.update(() => []);
+        onMessage(`Unregistered all shortcuts`);
       })
-      .catch(onMessage)
+      .catch(onMessage);
   }
 </script>
 

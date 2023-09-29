@@ -14,7 +14,7 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
     Ok(Notification(app.clone()))
 }
 
-/// Access to the {{ plugin_name }} APIs.
+/// Access to the notification APIs.
 pub struct Notification<R: Runtime>(AppHandle<R>);
 
 impl<R: Runtime> crate::NotificationBuilder<R> {
@@ -72,15 +72,16 @@ mod imp {
     ///
     /// # Examples
     /// ```rust,no_run
-    /// use tauri::api::notification::Notification;
+    /// use tauri_plugin_notification::NotificationExt;
     /// // first we build the application to access the Tauri configuration
     /// let app = tauri::Builder::default()
     ///   // on an actual app, remove the string argument
-    ///   .build(tauri::generate_context!("test/fixture/src-tauri/tauri.conf.json"))
+    ///   .build(tauri::generate_context!("test/tauri.conf.json"))
     ///   .expect("error while building tauri application");
     ///
     /// // shows a notification with the given title and body
-    /// Notification::new(&app.config().tauri.bundle.identifier)
+    /// app.notification()
+    ///   .builder()
     ///   .title("New message")
     ///   .body("You've got a new message.")
     ///   .show();
@@ -136,15 +137,20 @@ mod imp {
         /// # Examples
         ///
         /// ```no_run
-        /// use tauri::api::notification::Notification;
+        /// use tauri_plugin_notification::NotificationExt;
         ///
-        /// // on an actual app, remove the string argument
-        /// let context = tauri::generate_context!("test/fixture/src-tauri/tauri.conf.json");
-        /// Notification::new(&context.config().tauri.bundle.identifier)
-        ///   .title("Tauri")
-        ///   .body("Tauri is awesome!")
-        ///   .show()
-        ///   .unwrap();
+        /// tauri::Builder::default()
+        ///   .setup(|app| {
+        ///     app.notification()
+        ///       .builder()
+        ///       .title("Tauri")
+        ///       .body("Tauri is awesome!")
+        ///       .show()
+        ///       .unwrap();
+        ///     Ok(())
+        ///   })
+        ///   .run(tauri::generate_context!("test/tauri.conf.json"))
+        ///   .expect("error while running tauri application");
         /// ```
         ///
         /// ## Platform-specific
@@ -200,22 +206,18 @@ mod imp {
         /// # Examples
         ///
         /// ```no_run
-        /// use tauri::api::notification::Notification;
-        ///
-        /// // on an actual app, remove the string argument
-        /// let context = tauri::generate_context!("test/fixture/src-tauri/tauri.conf.json");
-        /// let identifier = context.config().tauri.bundle.identifier.clone();
+        /// use tauri_plugin_notification::NotificationExt;
         ///
         /// tauri::Builder::default()
         ///   .setup(move |app| {
-        ///     Notification::new(&identifier)
+        ///     app.notification().builder()
         ///       .title("Tauri")
         ///       .body("Tauri is awesome!")
-        ///       .notify(&app.handle())
+        ///       .show()
         ///       .unwrap();
         ///     Ok(())
         ///   })
-        ///   .run(context)
+        ///   .run(tauri::generate_context!("test/tauri.conf.json"))
         ///   .expect("error while running tauri application");
         /// ```
         #[cfg(feature = "windows7-compat")]
@@ -241,7 +243,7 @@ mod imp {
         #[cfg(all(windows, feature = "windows7-compat"))]
         fn notify_win7<R: tauri::Runtime>(self, app: &tauri::AppHandle<R>) -> crate::Result<()> {
             let app = app.clone();
-            let default_window_icon = app.manager.inner.default_window_icon.clone();
+            let default_window_icon = app.default_window_icon().cloned();
             let _ = app.run_on_main_thread(move || {
                 let mut notification = win7_notifications::Notification::new();
                 if let Some(body) = self.body {

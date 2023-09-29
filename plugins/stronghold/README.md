@@ -1,10 +1,10 @@
-![plugin-stronghold](banner.png)
+![plugin-stronghold](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/stronghold/banner.png)
 
 Store secrets and keys using the [IOTA Stronghold](https://github.com/iotaledger/stronghold.rs) encrypted database and secure runtime.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.64**_
+_This plugin requires a Rust version of at least **1.65**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,6 +18,8 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
+tauri-plugin-stronghold = "2.0.0-alpha"
+# alternatively with Git:
 tauri-plugin-stronghold = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
@@ -26,6 +28,13 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
 
 ```sh
+pnpm add @tauri-apps/plugin-stronghold
+# or
+npm add @tauri-apps/plugin-stronghold
+# or
+yarn add @tauri-apps/plugin-stronghold
+
+# alternatively with Git:
 pnpm add https://github.com/tauri-apps/tauri-plugin-stronghold#v2
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-stronghold#v2
@@ -55,7 +64,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Stronghold, Location } from "tauri-plugin-stronghold-api";
+import { Stronghold, Location } from "@tauri-apps/plugin-stronghold";
 
 // TODO
 ```

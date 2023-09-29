@@ -1,10 +1,12 @@
-![plugin-authenticator](banner.png)
+![plugin-authenticator](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/authenticator/banner.png)
 
 Use hardware security-keys in your Tauri App.
 
+- Supported platforms: Windows, Linux, FreeBSD, NetBSD, OpenBSD, and macOS.
+
 ## Install
 
-_This plugin requires a Rust version of at least **1.64**_
+_This plugin requires a Rust version of at least **1.65**_
 
 There are three general methods of installation that we can recommend.
 
@@ -17,15 +19,26 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 `src-tauri/Cargo.toml`
 
 ```toml
-[dependencies]
-tauri-plugin-authenticator = "0.1"
-# or through git
+# you can add the dependencies on the `[dependencies]` section if you do not target mobile
+[target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
+tauri-plugin-authenticator = "2.0.0-alpha"
+# alternatively with Git:
 tauri-plugin-authenticator = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
 > Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
+
+```sh
+pnpm add @tauri-apps/plugin-authenticator
+# or
+npm add @tauri-apps/plugin-authenticator
+# or
+yarn add @tauri-apps/plugin-authenticator
+```
+
+Alternatively with Git:
 
 ```sh
 pnpm add https://github.com/tauri-apps/tauri-plugin-authenticator#v2
@@ -44,7 +57,11 @@ First you need to register the core plugin with Tauri:
 ```rust
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_authenticator::init())
+        .setup(|app| {
+            #[cfg(desktop)]
+            app.handle().plugin(tauri_plugin_authenticator::init())?;
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -53,7 +70,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Authenticator } from "tauri-plugin-authenticator-api";
+import { Authenticator } from "@tauri-apps/plugin-authenticator";
 
 const auth = new Authenticator();
 auth.init(); // initialize transports
@@ -76,7 +93,7 @@ const r2 = await auth.verifyRegistration(
   challenge,
   app,
   registerResult.registerData,
-  registerResult.clientData
+  registerResult.clientData,
 );
 const j2 = JSON.parse(r2);
 
@@ -91,7 +108,7 @@ const counter = await auth.verifySignature(
   signData.signData,
   clientData,
   keyHandle,
-  pubkey
+  pubkey,
 );
 
 if (counter && counter > 0) {

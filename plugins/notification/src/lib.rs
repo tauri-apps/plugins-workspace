@@ -2,6 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/notification/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/notification)
+//!
+//! Send message notifications (brief auto-expiring OS window element) to your user. Can also be used with the Notification Web API.
+
+#![doc(
+    html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
+    html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
+)]
+
 use serde::Serialize;
 #[cfg(mobile)]
 use tauri::plugin::PluginHandle;
@@ -212,13 +221,15 @@ impl<R: Runtime, T: Manager<R>> crate::NotificationExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    let mut init_script = include_str!("init.js").to_string();
+    init_script.push_str(include_str!("api-iife.js"));
     Builder::new("notification")
         .invoke_handler(tauri::generate_handler![
             commands::notify,
             commands::request_permission,
             commands::is_permission_granted
         ])
-        .js_init_script(include_str!("init.js").into())
+        .js_init_script(init_script)
         .setup(|app, api| {
             #[cfg(mobile)]
             let notification = mobile::init(app, api)?;

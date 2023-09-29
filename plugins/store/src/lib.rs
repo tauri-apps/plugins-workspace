@@ -1,6 +1,15 @@
-// Copyright 2021 Tauri Programme within The Commons Conservancy
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
+
+//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/store/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/store)
+//!
+//! Simple, persistent key-value store.
+
+#![doc(
+    html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
+    html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
+)]
 
 pub use error::Error;
 use log::warn;
@@ -46,7 +55,7 @@ pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T, Error>>(
         if collection.frozen {
             return Err(Error::NotFound(path.to_path_buf()));
         }
-        let mut store = StoreBuilder::new(app, path.to_path_buf()).build();
+        let mut store = StoreBuilder::new(path).build(app);
         // ignore loading errors, just use the default
         if let Err(err) = store.load() {
             warn!(
@@ -205,15 +214,14 @@ impl<R: Runtime> Builder<R> {
     /// # Examples
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::{StoreBuilder,PluginBuilder};
+    /// use tauri_plugin_store::{StoreBuilder, Builder};
     ///
-    /// let store = StoreBuilder::new("store.bin".parse()?).build();
-    ///
-    /// let builder = PluginBuilder::default().store(store);
-    ///
-    /// # Ok(())
-    /// # }
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
+    ///     let builder = Builder::default().store(store);
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn store(mut self, store: Store<R>) -> Self {
         self.stores.insert(store.path.clone(), store);
@@ -225,15 +233,14 @@ impl<R: Runtime> Builder<R> {
     /// # Examples
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::{StoreBuilder,PluginBuilder};
+    /// use tauri_plugin_store::{StoreBuilder, Builder};
     ///
-    /// let store = StoreBuilder::new("store.bin".parse()?).build();
-    ///
-    /// let builder = PluginBuilder::default().stores([store]);
-    ///
-    /// # Ok(())
-    /// # }
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
+    ///     let builder = Builder::default().stores([store]);
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn stores<T: IntoIterator<Item = Store<R>>>(mut self, stores: T) -> Self {
         self.stores = stores
@@ -250,15 +257,14 @@ impl<R: Runtime> Builder<R> {
     /// # Examples
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::{StoreBuilder,PluginBuilder};
+    /// use tauri_plugin_store::{StoreBuilder, Builder};
     ///
-    /// let store = StoreBuilder::new("store.bin".parse()?).build();
-    ///
-    /// let builder = PluginBuilder::default().freeze();
-    ///
-    /// # Ok(())
-    /// # }
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
+    ///     app.handle().plugin(Builder::default().freeze().build());
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn freeze(mut self) -> Self {
         self.frozen = true;
@@ -270,19 +276,18 @@ impl<R: Runtime> Builder<R> {
     /// # Examples
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::{StoreBuilder,PluginBuilder};
-    /// use tauri::Wry;
+    /// use tauri_plugin_store::{StoreBuilder, Builder};
     ///
-    /// let store = StoreBuilder::new("store.bin".parse()?).build();
-    ///
-    /// let plugin = PluginBuilder::default().build::<Wry>();
-    ///
-    /// # Ok(())
-    /// # }
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
+    ///     app.handle().plugin(Builder::default().build());
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn build(mut self) -> TauriPlugin<R> {
         plugin::Builder::new("store")
+            .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![
                 set, get, has, delete, clear, reset, keys, values, length, entries, load, save
             ])

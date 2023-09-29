@@ -1,9 +1,14 @@
-// Copyright 2021 Tauri Programme within The Commons Conservancy
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/tauri";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
+
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 interface ChangePayload<T> {
   path: string;
@@ -28,7 +33,7 @@ export class Store {
    * @returns
    */
   async set(key: string, value: unknown): Promise<void> {
-    return await invoke("plugin:store|set", {
+    return await window.__TAURI_INVOKE__("plugin:store|set", {
       path: this.path,
       key,
       value,
@@ -42,7 +47,7 @@ export class Store {
    * @returns
    */
   async get<T>(key: string): Promise<T | null> {
-    return await invoke("plugin:store|get", {
+    return await window.__TAURI_INVOKE__("plugin:store|get", {
       path: this.path,
       key,
     });
@@ -55,7 +60,7 @@ export class Store {
    * @returns
    */
   async has(key: string): Promise<boolean> {
-    return await invoke("plugin:store|has", {
+    return await window.__TAURI_INVOKE__("plugin:store|has", {
       path: this.path,
       key,
     });
@@ -68,7 +73,7 @@ export class Store {
    * @returns
    */
   async delete(key: string): Promise<boolean> {
-    return await invoke("plugin:store|delete", {
+    return await window.__TAURI_INVOKE__("plugin:store|delete", {
       path: this.path,
       key,
     });
@@ -81,7 +86,7 @@ export class Store {
    * @returns
    */
   async clear(): Promise<void> {
-    return await invoke("plugin:store|clear", {
+    return await window.__TAURI_INVOKE__("plugin:store|clear", {
       path: this.path,
     });
   }
@@ -93,7 +98,7 @@ export class Store {
    * @returns
    */
   async reset(): Promise<void> {
-    return await invoke("plugin:store|reset", {
+    return await window.__TAURI_INVOKE__("plugin:store|reset", {
       path: this.path,
     });
   }
@@ -104,7 +109,7 @@ export class Store {
    * @returns
    */
   async keys(): Promise<string[]> {
-    return await invoke("plugin:store|keys", {
+    return await window.__TAURI_INVOKE__("plugin:store|keys", {
       path: this.path,
     });
   }
@@ -115,7 +120,7 @@ export class Store {
    * @returns
    */
   async values<T>(): Promise<T[]> {
-    return await invoke("plugin:store|values", {
+    return await window.__TAURI_INVOKE__("plugin:store|values", {
       path: this.path,
     });
   }
@@ -126,7 +131,7 @@ export class Store {
    * @returns
    */
   async entries<T>(): Promise<Array<[key: string, value: T]>> {
-    return await invoke("plugin:store|entries", {
+    return await window.__TAURI_INVOKE__("plugin:store|entries", {
       path: this.path,
     });
   }
@@ -137,7 +142,7 @@ export class Store {
    * @returns
    */
   async length(): Promise<number> {
-    return await invoke("plugin:store|length", {
+    return await window.__TAURI_INVOKE__("plugin:store|length", {
       path: this.path,
     });
   }
@@ -151,7 +156,7 @@ export class Store {
    * @returns
    */
   async load(): Promise<void> {
-    return await invoke("plugin:store|load", {
+    return await window.__TAURI_INVOKE__("plugin:store|load", {
       path: this.path,
     });
   }
@@ -164,7 +169,7 @@ export class Store {
    * @returns
    */
   async save(): Promise<void> {
-    return await invoke("plugin:store|save", {
+    return await window.__TAURI_INVOKE__("plugin:store|save", {
       path: this.path,
     });
   }
@@ -174,10 +179,12 @@ export class Store {
    * @param key
    * @param cb
    * @returns A promise resolving to a function to unlisten to the event.
+   *
+   * @since 2.0.0
    */
   async onKeyChange<T>(
     key: string,
-    cb: (value: T | null) => void
+    cb: (value: T | null) => void,
   ): Promise<UnlistenFn> {
     return await listen<ChangePayload<T>>("store://change", (event) => {
       if (event.payload.path === this.path && event.payload.key === key) {
@@ -190,9 +197,11 @@ export class Store {
    * Listen to changes on the store.
    * @param cb
    * @returns A promise resolving to a function to unlisten to the event.
+   *
+   * @since 2.0.0
    */
   async onChange<T>(
-    cb: (key: string, value: T | null) => void
+    cb: (key: string, value: T | null) => void,
   ): Promise<UnlistenFn> {
     return await listen<ChangePayload<T>>("store://change", (event) => {
       if (event.payload.path === this.path) {

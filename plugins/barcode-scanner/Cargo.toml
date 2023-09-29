@@ -1,0 +1,18 @@
+[package]
+name = "tauri-plugin-barcode-scanner"
+version = "2.0.0-alpha.0"
+description = "Scan QR codes, EAN-13 and other kinds of barcodes on Android and iOS"
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+links = "tauri-plugin-barcode-scanner"
+
+[build-dependencies]
+tauri-build = { workspace = true }
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }

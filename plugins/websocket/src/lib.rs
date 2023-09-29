@@ -1,7 +1,20 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
+//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/websocket/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/websocket)
+//!
+//! Expose a WebSocket server to your Tauri frontend.
+
+#![doc(
+    html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
+    html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
+)]
+
 use futures_util::{stream::SplitSink, SinkExt, StreamExt};
 use serde::{ser::Serializer, Deserialize, Serialize};
 use tauri::{
-    api::ipc::{format_callback, CallbackFn},
+    ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, Runtime, State, Window,
 };
@@ -82,11 +95,11 @@ enum WebSocketMessage {
 async fn connect<R: Runtime>(
     window: Window<R>,
     url: String,
-    callback_function: CallbackFn,
+    on_message: Channel,
     config: Option<ConnectionConfig>,
 ) -> Result<Id> {
     let id = rand::random();
-    let (ws_stream, _) = connect_async_with_config(url, config.map(Into::into)).await?;
+    let (ws_stream, _) = connect_async_with_config(url, config.map(Into::into), false).await?;
 
     tauri::async_runtime::spawn(async move {
         let (write, read) = ws_stream.split();
@@ -94,6 +107,7 @@ async fn connect<R: Runtime>(
         manager.0.lock().await.insert(id, write);
         read.for_each(move |message| {
             let window_ = window.clone();
+            let on_message_ = on_message.clone();
             async move {
                 if let Ok(Message::Close(_)) = message {
                     let manager = window_.state::<ConnectionManager>();
@@ -123,9 +137,8 @@ async fn connect<R: Runtime>(
                     Ok(Message::Frame(_)) => serde_json::Value::Null, // This value can't be recieved.
                     Err(e) => serde_json::to_value(Error::from(e)).unwrap(),
                 };
-                let js = format_callback(callback_function, &response)
-                    .expect("unable to serialize websocket message");
-                let _ = window_.eval(js.as_str());
+
+                let _ = on_message_.send(response);
             }
         })
         .await;
@@ -161,6 +174,7 @@ async fn send(
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     PluginBuilder::new("websocket")
+        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![connect, send])
         .setup(|app, _api| {
             app.manage(ConnectionManager::default());

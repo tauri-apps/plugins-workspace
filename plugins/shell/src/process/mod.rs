@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: MIT
 
 use std::{
-    collections::HashMap,
+    ffi::OsStr,
     io::{BufReader, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::{Command as StdCommand, Stdio},
     sync::{Arc, RwLock},
     thread::spawn,
@@ -53,13 +53,7 @@ pub enum CommandEvent {
 
 /// The type to spawn commands.
 #[derive(Debug)]
-pub struct Command {
-    program: String,
-    args: Vec<String>,
-    env_clear: bool,
-    env: HashMap<String, String>,
-    current_dir: Option<PathBuf>,
-}
+pub struct Command(StdCommand);
 
 /// Spawned child process.
 #[derive(Debug)]
@@ -116,49 +110,44 @@ pub struct Output {
     pub stderr: Vec<u8>,
 }
 
-fn relative_command_path(command: String) -> crate::Result<String> {
+fn relative_command_path(command: &Path) -> crate::Result<PathBuf> {
     match platform::current_exe()?.parent() {
         #[cfg(windows)]
-        Some(exe_dir) => Ok(format!("{}\\{command}.exe", exe_dir.display())),
+        Some(exe_dir) => Ok(exe_dir.join(command).with_extension("exe")),
         #[cfg(not(windows))]
-        Some(exe_dir) => Ok(format!("{}/{command}", exe_dir.display())),
+        Some(exe_dir) => Ok(exe_dir.join(command)),
         None => Err(crate::Error::CurrentExeHasNoParent),
     }
 }
 
 impl From<Command> for StdCommand {
     fn from(cmd: Command) -> StdCommand {
-        let mut command = StdCommand::new(cmd.program);
-        command.args(cmd.args);
-        command.stdout(Stdio::piped());
-        command.stdin(Stdio::piped());
-        command.stderr(Stdio::piped());
-        if cmd.env_clear {
-            command.env_clear();
-        }
-        command.envs(cmd.env);
-        if let Some(current_dir) = cmd.current_dir {
-            command.current_dir(current_dir);
-        }
-        #[cfg(windows)]
-        command.creation_flags(CREATE_NO_WINDOW);
-        command
+        cmd.0
     }
 }
 
 impl Command {
-    pub(crate) fn new<S: Into<String>>(program: S) -> Self {
-        Self {
-            program: program.into(),
-            args: Default::default(),
-            env_clear: false,
-            env: Default::default(),
-            current_dir: None,
-        }
+    pub(crate) fn new<S: AsRef<OsStr>>(program: S) -> Self {
+        let mut command = StdCommand::new(program);
+
+        command.stdout(Stdio::piped());
+        command.stdin(Stdio::piped());
+        command.stderr(Stdio::piped());
+        #[cfg(windows)]
+        command.creation_flags(CREATE_NO_WINDOW);
+
+        Self(command)
     }
 
-    pub(crate) fn new_sidecar<S: Into<String>>(program: S) -> crate::Result<Self> {
-        Ok(Self::new(relative_command_path(program.into())?))
+    pub(crate) fn new_sidecar<S: AsRef<Path>>(program: S) -> crate::Result<Self> {
+        Ok(Self::new(relative_command_path(program.as_ref())?))
+    }
+
+    /// Appends an argument to the command.
+    #[must_use]
+    pub fn arg<S: AsRef<OsStr>>(mut self, arg: S) -> Self {
+        self.0.arg(arg);
+        self
     }
 
     /// Appends arguments to the command.
@@ -166,32 +155,46 @@ impl Command {
     pub fn args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
-        S: AsRef<str>,
+        S: AsRef<OsStr>,
     {
-        for arg in args {
-            self.args.push(arg.as_ref().to_string());
-        }
+        self.0.args(args);
         self
     }
 
     /// Clears the entire environment map for the child process.
     #[must_use]
     pub fn env_clear(mut self) -> Self {
-        self.env_clear = true;
+        self.0.env_clear();
+        self
+    }
+
+    /// Inserts or updates an explicit environment variable mapping.
+    #[must_use]
+    pub fn env<K, V>(mut self, key: K, value: V) -> Self
+    where
+        K: AsRef<OsStr>,
+        V: AsRef<OsStr>,
+    {
+        self.0.env(key, value);
         self
     }
 
     /// Adds or updates multiple environment variable mappings.
     #[must_use]
-    pub fn envs(mut self, env: HashMap<String, String>) -> Self {
-        self.env = env;
+    pub fn envs<I, K, V>(mut self, envs: I) -> Self
+    where
+        I: IntoIterator<Item = (K, V)>,
+        K: AsRef<OsStr>,
+        V: AsRef<OsStr>,
+    {
+        self.0.envs(envs);
         self
     }
 
     /// Sets the working directory for the child process.
     #[must_use]
-    pub fn current_dir(mut self, current_dir: PathBuf) -> Self {
-        self.current_dir.replace(current_dir);
+    pub fn current_dir<P: AsRef<Path>>(mut self, current_dir: P) -> Self {
+        self.0.current_dir(current_dir);
         self
     }
 
@@ -200,24 +203,29 @@ impl Command {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri::api::process::{Command, CommandEvent};
-    /// tauri::async_runtime::spawn(async move {
-    ///   let (mut rx, mut child) = Command::new("cargo")
-    ///     .args(["tauri", "dev"])
-    ///     .spawn()
-    ///     .expect("Failed to spawn cargo");
+    /// use tauri_plugin_shell::{process::CommandEvent, ShellExt};
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let handle = app.handle().clone();
+    ///     tauri::async_runtime::spawn(async move {
+    ///       let (mut rx, mut child) = handle.shell().command("cargo")
+    ///         .args(["tauri", "dev"])
+    ///         .spawn()
+    ///         .expect("Failed to spawn cargo");
     ///
-    ///   let mut i = 0;
-    ///   while let Some(event) = rx.recv().await {
-    ///     if let CommandEvent::Stdout(line) = event {
-    ///       println!("got: {}", String::from_utf8(line).unwrap());
-    ///       i += 1;
-    ///       if i == 4 {
-    ///         child.write("message from Rust\n".as_bytes()).unwrap();
-    ///         i = 0;
+    ///       let mut i = 0;
+    ///       while let Some(event) = rx.recv().await {
+    ///         if let CommandEvent::Stdout(line) = event {
+    ///           println!("got: {}", String::from_utf8(line).unwrap());
+    ///           i += 1;
+    ///           if i == 4 {
+    ///             child.write("message from Rust\n".as_bytes()).unwrap();
+    ///             i = 0;
+    ///           }
+    ///         }
     ///       }
-    ///     }
-    ///   }
+    ///     });
+    ///     Ok(())
     /// });
     /// ```
     pub fn spawn(self) -> crate::Result<(Receiver<CommandEvent>, CommandChild)> {
@@ -233,8 +241,6 @@ impl Command {
         let child = Arc::new(shared_child);
         let child_ = child.clone();
         let guard = Arc::new(RwLock::new(()));
-
-        //TODO commands().lock().unwrap().insert(child.id(), child.clone());
 
         let (tx, rx) = channel(1);
 
@@ -255,7 +261,6 @@ impl Command {
             let _ = match child_.wait() {
                 Ok(status) => {
                     let _l = guard.write().unwrap();
-                    //TODO commands().lock().unwrap().remove(&child_.id());
                     block_on_task(async move {
                         tx.send(CommandEvent::Terminated(TerminatedPayload {
                             code: status.code(),
@@ -288,9 +293,13 @@ impl Command {
     ///
     /// # Examples
     /// ```rust,no_run
-    /// use tauri::api::process::Command;
-    /// let status = Command::new("which").args(["ls"]).status().unwrap();
-    /// println!("`which` finished with status: {:?}", status.code());
+    /// use tauri_plugin_shell::ShellExt;
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let status = tauri::async_runtime::block_on(async move { app.shell().command("which").args(["ls"]).status().await.unwrap() });
+    ///     println!("`which` finished with status: {:?}", status.code());
+    ///     Ok(())
+    ///   });
     /// ```
     pub async fn status(self) -> crate::Result<ExitStatus> {
         let (mut rx, _child) = self.spawn()?;
@@ -310,10 +319,14 @@ impl Command {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri::api::process::Command;
-    /// let output = Command::new("echo").args(["TAURI"]).output().unwrap();
-    /// assert!(output.status.success());
-    /// assert_eq!(String::from_utf8(output.stdout).unwrap(), "TAURI");
+    /// use tauri_plugin_shell::ShellExt;
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let output = tauri::async_runtime::block_on(async move { app.shell().command("echo").args(["TAURI"]).output().await.unwrap() });
+    ///     assert!(output.status.success());
+    ///     assert_eq!(String::from_utf8(output.stdout).unwrap(), "TAURI");
+    ///     Ok(())
+    ///   });
     /// ```
     pub async fn output(self) -> crate::Result<Output> {
         let (mut rx, _child) = self.spawn()?;
@@ -387,7 +400,7 @@ mod tests {
     #[cfg(not(windows))]
     #[test]
     fn test_cmd_spawn_output() {
-        let cmd = Command::new("cat").args(["test/api/test.txt"]);
+        let cmd = Command::new("cat").args(["test/test.txt"]);
         let (mut rx, _) = cmd.spawn().unwrap();
 
         tauri::async_runtime::block_on(async move {
@@ -408,7 +421,7 @@ mod tests {
     #[cfg(not(windows))]
     #[test]
     fn test_cmd_spawn_raw_output() {
-        let cmd = Command::new("cat").args(["test/api/test.txt"]);
+        let cmd = Command::new("cat").args(["test/test.txt"]);
         let (mut rx, _) = cmd.spawn().unwrap();
 
         tauri::async_runtime::block_on(async move {
@@ -430,7 +443,7 @@ mod tests {
     #[test]
     // test the failure case
     fn test_cmd_spawn_fail() {
-        let cmd = Command::new("cat").args(["test/api/"]);
+        let cmd = Command::new("cat").args(["test/"]);
         let (mut rx, _) = cmd.spawn().unwrap();
 
         tauri::async_runtime::block_on(async move {
@@ -442,7 +455,7 @@ mod tests {
                     CommandEvent::Stderr(line) => {
                         assert_eq!(
                             String::from_utf8(line).unwrap(),
-                            "cat: test/api/: Is a directory"
+                            "cat: test/: Is a directory"
                         );
                     }
                     _ => {}
@@ -455,7 +468,7 @@ mod tests {
     #[test]
     // test the failure case (raw encoding)
     fn test_cmd_spawn_raw_fail() {
-        let cmd = Command::new("cat").args(["test/api/"]);
+        let cmd = Command::new("cat").args(["test/"]);
         let (mut rx, _) = cmd.spawn().unwrap();
 
         tauri::async_runtime::block_on(async move {
@@ -467,7 +480,7 @@ mod tests {
                     CommandEvent::Stderr(line) => {
                         assert_eq!(
                             String::from_utf8(line).unwrap(),
-                            "cat: test/api/: Is a directory"
+                            "cat: test/: Is a directory"
                         );
                     }
                     _ => {}
@@ -479,7 +492,7 @@ mod tests {
     #[cfg(not(windows))]
     #[test]
     fn test_cmd_output_output() {
-        let cmd = Command::new("cat").args(["test/api/test.txt"]);
+        let cmd = Command::new("cat").args(["test/test.txt"]);
         let output = tauri::async_runtime::block_on(cmd.output()).unwrap();
 
         assert_eq!(String::from_utf8(output.stderr).unwrap(), "");
@@ -492,13 +505,13 @@ mod tests {
     #[cfg(not(windows))]
     #[test]
     fn test_cmd_output_output_fail() {
-        let cmd = Command::new("cat").args(["test/api/"]);
+        let cmd = Command::new("cat").args(["test/"]);
         let output = tauri::async_runtime::block_on(cmd.output()).unwrap();
 
         assert_eq!(String::from_utf8(output.stdout).unwrap(), "");
         assert_eq!(
             String::from_utf8(output.stderr).unwrap(),
-            "cat: test/api/: Is a directory\n"
+            "cat: test/: Is a directory\n"
         );
     }
 }

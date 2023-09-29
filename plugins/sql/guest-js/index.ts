@@ -1,4 +1,12 @@
-import { invoke } from "@tauri-apps/api/tauri";
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
+declare global {
+  interface Window {
+    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+  }
+}
 
 export interface QueryResult {
   /** The number of rows affected by the query. */
@@ -42,7 +50,7 @@ export default class Database {
    * ```
    */
   static async load(path: string): Promise<Database> {
-    const _path = await invoke<string>("plugin:sql|load", {
+    const _path = await window.__TAURI_INVOKE__<string>("plugin:sql|load", {
       db: path,
     });
 
@@ -76,28 +84,45 @@ export default class Database {
    *
    * @example
    * ```ts
+   * // for sqlite & postgres
+   * // INSERT example
+   * const result = await db.execute(
+   *    "INSERT into todos (id, title, status) VALUES ($1, $2, $3)",
+   *    [ todos.id, todos.title, todos.status ]
+   * );
+   * // UPDATE example
    * const result = await db.execute(
    *    "UPDATE todos SET title = $1, completed = $2 WHERE id = $3",
+   *    [ todos.title, todos.status, todos.id ]
+   * );
+   *
+   * // for mysql
+   * // INSERT example
+   * const result = await db.execute(
+   *    "INSERT into todos (id, title, status) VALUES (?, ?, ?)",
+   *    [ todos.id, todos.title, todos.status ]
+   * );
+   * // UPDATE example
+   * const result = await db.execute(
+   *    "UPDATE todos SET title = ?, completed = ? WHERE id = ?",
    *    [ todos.title, todos.status, todos.id ]
    * );
    * ```
    */
   async execute(query: string, bindValues?: unknown[]): Promise<QueryResult> {
-    const [rowsAffected, lastInsertId] = await invoke<[number, number]>(
-      "plugin:sql|execute",
-      {
-        db: this.path,
-        query,
-        values: bindValues ?? [],
-      }
-    );
+    const [rowsAffected, lastInsertId] = await window.__TAURI_INVOKE__<
+      [number, number]
+    >("plugin:sql|execute", {
+      db: this.path,
+      query,
+      values: bindValues ?? [],
+    });
 
     return {
       lastInsertId,
       rowsAffected,
     };
   }
-
   /**
    * **select**
    *
@@ -105,13 +130,19 @@ export default class Database {
    *
    * @example
    * ```ts
+   * // for sqlite & postgres
    * const result = await db.select(
    *    "SELECT * from todos WHERE id = $1", id
+   * );
+   *
+   * // for mysql
+   * const result = await db.select(
+   *    "SELECT * from todos WHERE id = ?", id
    * );
    * ```
    */
   async select<T>(query: string, bindValues?: unknown[]): Promise<T> {
-    const result = await invoke<T>("plugin:sql|select", {
+    const result = await window.__TAURI_INVOKE__<T>("plugin:sql|select", {
       db: this.path,
       query,
       values: bindValues ?? [],
@@ -132,7 +163,7 @@ export default class Database {
    * @param db - Optionally state the name of a database if you are managing more than one. Otherwise, all database pools will be in scope.
    */
   async close(db?: string): Promise<boolean> {
-    const success = await invoke<boolean>("plugin:sql|close", {
+    const success = await window.__TAURI_INVOKE__<boolean>("plugin:sql|close", {
       db,
     });
     return success;
