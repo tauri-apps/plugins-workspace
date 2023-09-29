@@ -6,6 +6,7 @@ authors.workspace = true
 license.workspace = true
 edition.workspace = true
 rust-version.workspace = true
+links = "tauri-plugin-camera"
 
 [dependencies]
 serde.workspace = true
