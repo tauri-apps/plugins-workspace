@@ -167,6 +167,7 @@ pub struct Builder {
     timezone_strategy: TimezoneStrategy,
     max_file_size: u128,
     targets: Vec<LogTarget>,
+    log_name: String
 }
 
 impl Default for Builder {
@@ -183,12 +184,14 @@ impl Default for Builder {
                 message
             ))
         });
+        let log_name = "".to_owned();
         Self {
             dispatch,
             rotation_strategy: DEFAULT_ROTATION_STRATEGY,
             timezone_strategy: DEFAULT_TIMEZONE_STRATEGY,
             max_file_size: DEFAULT_MAX_FILE_SIZE,
             targets: DEFAULT_LOG_TARGETS.into(),
+            log_name
         }
     }
 }
@@ -262,6 +265,29 @@ impl Builder {
         self
     }
 
+    /// Writes logs to the given file. Default: <app_name>.log)
+    /// 
+    /// Note: This does not modify the directory logs go into. For that refer to `LogTarget::Folder`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tauri_plugin_log::Builder;
+    /// let name = "custom-name";
+    /// let builder = Builder::default()
+    ///     .targets([
+    ///         LogTarget::LogDir
+    ///     ])
+    ///     .log_name(name)
+    ///     .build()
+    /// ); // Outputs content to custom-name.log 
+    ///
+    /// ```
+    pub fn log_name(mut self, log_name: &str) -> Self {
+        self.log_name = log_name.to_owned();
+        self
+    }
+
     #[cfg(feature = "colored")]
     pub fn with_colors(self, colors: fern::colors::ColoredLevelConfig) -> Self {
         let format =
@@ -284,8 +310,10 @@ impl Builder {
         plugin::Builder::new("log")
             .invoke_handler(tauri::generate_handler![log])
             .setup(move |app_handle| {
-                let app_name = &app_handle.package_info().name;
-
+                let mut app_name = &app_handle.package_info().name;
+                if !self.log_name.is_empty() {
+                    app_name = &self.log_name;
+                }
                 // setup targets
                 for target in &self.targets {
                     self.dispatch = self.dispatch.chain(match target {
