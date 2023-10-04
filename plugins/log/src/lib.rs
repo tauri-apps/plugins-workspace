@@ -310,10 +310,12 @@ impl Builder {
         plugin::Builder::new("log")
             .invoke_handler(tauri::generate_handler![log])
             .setup(move |app_handle| {
-                let mut app_name = &app_handle.package_info().name;
-                if !self.log_name.is_empty() {
-                    app_name = &self.log_name;
+                let log_name = if !self.log_name.is_empty() {
+                    &self.log_name
                 }
+                else {
+                    &app_handle.package_info().name
+                };
                 // setup targets
                 for target in &self.targets {
                     self.dispatch = self.dispatch.chain(match target {
@@ -326,7 +328,7 @@ impl Builder {
 
                             fern::log_file(get_log_file_path(
                                 &path,
-                                app_name,
+                                log_name,
                                 &self.rotation_strategy,
                                 &self.timezone_strategy,
                                 self.max_file_size,
@@ -341,7 +343,7 @@ impl Builder {
 
                             fern::log_file(get_log_file_path(
                                 &path,
-                                app_name,
+                                log_name,
                                 &self.rotation_strategy,
                                 &self.timezone_strategy,
                                 self.max_file_size,
@@ -375,12 +377,12 @@ impl Builder {
 
 fn get_log_file_path(
     dir: &impl AsRef<Path>,
-    app_name: &str,
+    log_name: &str,
     rotation_strategy: &RotationStrategy,
     timezone_strategy: &TimezoneStrategy,
     max_file_size: u128,
 ) -> plugin::Result<PathBuf> {
-    let path = dir.as_ref().join(format!("{app_name}.log"));
+    let path = dir.as_ref().join(format!("{log_name}.log"));
 
     if path.exists() {
         let log_size = File::open(&path)?.metadata()?.len() as u128;
@@ -389,7 +391,7 @@ fn get_log_file_path(
                 RotationStrategy::KeepAll => {
                     let to = dir.as_ref().join(format!(
                         "{}_{}.log",
-                        app_name,
+                        log_name,
                         timezone_strategy
                             .get_now()
                             .format(
