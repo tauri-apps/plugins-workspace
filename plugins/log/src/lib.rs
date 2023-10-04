@@ -118,7 +118,7 @@ pub enum LogTarget {
     ///
     /// The plugin will ensure the directory exists before writing logs.
     Folder(PathBuf),
-    /// Write logs to the OS specififc logs directory.
+    /// Write logs to the OS specific logs directory.
     ///
     /// ### Platform-specific
     ///
