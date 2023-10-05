@@ -184,14 +184,13 @@ impl Default for Builder {
                 message
             ))
         });
-        let log_name = None;
         Self {
             dispatch,
             rotation_strategy: DEFAULT_ROTATION_STRATEGY,
             timezone_strategy: DEFAULT_TIMEZONE_STRATEGY,
             max_file_size: DEFAULT_MAX_FILE_SIZE,
             targets: DEFAULT_LOG_TARGETS.into(),
-            log_name,
+            log_name: None,
         }
     }
 }
@@ -283,7 +282,7 @@ impl Builder {
     /// ); // Outputs content to custom-name.log
     ///
     /// ```
-    pub fn log_name(mut self, log_name: &str) -> Self {
+    pub fn log_name<S: Into<String>>(mut self, log_name: S) -> Self {
         self.log_name = Some(log_name.to_string());
         self
     }
@@ -310,11 +309,10 @@ impl Builder {
         plugin::Builder::new("log")
             .invoke_handler(tauri::generate_handler![log])
             .setup(move |app_handle| {
-                let name = self
+                let log_name = self
                     .log_name
-                    .clone()
-                    .unwrap_or_else(|| app_handle.package_info().name.clone());
-                let log_name = name.as_str();
+                    .as_deref()
+                    .unwrap_or_else(|| &app_handle.package_info().name);
 
                 // setup targets
                 for target in &self.targets {
