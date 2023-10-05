@@ -283,7 +283,7 @@ impl Builder {
     ///
     /// ```
     pub fn log_name<S: Into<String>>(mut self, log_name: S) -> Self {
-        self.log_name = Some(log_name.to_string());
+        self.log_name = Some(log_name.into());
         self
     }
 
