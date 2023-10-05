@@ -167,7 +167,7 @@ pub struct Builder {
     timezone_strategy: TimezoneStrategy,
     max_file_size: u128,
     targets: Vec<LogTarget>,
-    log_name: String
+    log_name: Option<String>,
 }
 
 impl Default for Builder {
@@ -184,14 +184,14 @@ impl Default for Builder {
                 message
             ))
         });
-        let log_name = "".to_owned();
+        let log_name = None;
         Self {
             dispatch,
             rotation_strategy: DEFAULT_ROTATION_STRATEGY,
             timezone_strategy: DEFAULT_TIMEZONE_STRATEGY,
             max_file_size: DEFAULT_MAX_FILE_SIZE,
             targets: DEFAULT_LOG_TARGETS.into(),
-            log_name
+            log_name,
         }
     }
 }
@@ -266,7 +266,7 @@ impl Builder {
     }
 
     /// Writes logs to the given file. Default: <app_name>.log)
-    /// 
+    ///
     /// Note: This does not modify the directory logs go into. For that refer to `LogTarget::Folder`.
     ///
     /// # Examples
@@ -280,11 +280,11 @@ impl Builder {
     ///     ])
     ///     .log_name(name)
     ///     .build()
-    /// ); // Outputs content to custom-name.log 
+    /// ); // Outputs content to custom-name.log
     ///
     /// ```
     pub fn log_name(mut self, log_name: &str) -> Self {
-        self.log_name = log_name.to_owned();
+        self.log_name = Some(log_name.to_string());
         self
     }
 
@@ -310,12 +310,12 @@ impl Builder {
         plugin::Builder::new("log")
             .invoke_handler(tauri::generate_handler![log])
             .setup(move |app_handle| {
-                let log_name = if !self.log_name.is_empty() {
-                    &self.log_name
-                }
-                else {
-                    &app_handle.package_info().name
-                };
+                let name = self
+                    .log_name
+                    .clone()
+                    .unwrap_or_else(|| app_handle.package_info().name.clone());
+                let log_name = name.as_str();
+
                 // setup targets
                 for target in &self.targets {
                     self.dispatch = self.dispatch.chain(match target {
