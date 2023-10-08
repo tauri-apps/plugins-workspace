@@ -12,7 +12,7 @@ import app.tauri.plugin.Plugin
 import app.tauri.plugin.Invoke
 
 @TauriPlugin
-class ExamplePlugin(private val activity: Activity): Plugin(activity) {
+class NfcPlugin(private val activity: Activity): Plugin(activity) {
     @Command
     fun ping(invoke: Invoke) {
         val value = invoke.getString("value") ?: ""
