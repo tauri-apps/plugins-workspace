@@ -6,7 +6,5 @@
 	<string>Request camera access for WebRTC</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Request microphone access for WebRTC</string>
-	<key>NFCReaderUsageDescription</key>
-	<string>NFC Test</string>
 </dict>
 </plist>
