@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
    LastUpgradeVersion = "1200"
-   version = "1.3">
+   version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
-      buildImplicitDependencies = "YES">
+      buildImplicitDependencies = "YES"
+      runPostActionsOnFailure = "NO">
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"
@@ -15,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "54DC6E273C78071F3BA12EF3"
-               BuildableName = "Tauri API.app"
+               BuildableName = "api_iOS.app"
                BlueprintName = "api_iOS"
                ReferencedContainer = "container:api.xcodeproj">
             </BuildableReference>
@@ -26,16 +27,21 @@
       buildConfiguration = "debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "NO">
+      shouldUseLaunchSchemeArgsEnv = "NO"
+      onlyGenerateCoverageForSpecifiedTargets = "NO">
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "54DC6E273C78071F3BA12EF3"
-            BuildableName = "Tauri API.app"
+            BuildableName = "api_iOS.app"
             BlueprintName = "api_iOS"
             ReferencedContainer = "container:api.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
+      <Testables>
+      </Testables>
+      <CommandLineArguments>
+      </CommandLineArguments>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "RUST_BACKTRACE"
@@ -48,8 +54,6 @@
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
-      <Testables>
-      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "debug"
@@ -66,11 +70,13 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "54DC6E273C78071F3BA12EF3"
-            BuildableName = "Tauri API.app"
+            BuildableName = "api_iOS.app"
             BlueprintName = "api_iOS"
             ReferencedContainer = "container:api.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+      </CommandLineArguments>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "RUST_BACKTRACE"
@@ -95,11 +101,13 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "54DC6E273C78071F3BA12EF3"
-            BuildableName = "Tauri API.app"
+            BuildableName = "api_iOS.app"
             BlueprintName = "api_iOS"
             ReferencedContainer = "container:api.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+      </CommandLineArguments>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "RUST_BACKTRACE"
