@@ -273,16 +273,20 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
     return tag
   }
 
-  @objc public func scanNdef(_ invoke: Invoke) {
-    DispatchQueue.main.async { [self] in
-      self.startScanSession(invoke: invoke, kind: .ndef)
+  @objc public func scan(_ invoke: Invoke) {
+    let kind: ScanKind
+    switch invoke.getString("kind") {
+      case "tag":
+      kind = .tag
+      break
+      case "ndef":
+      kind = .ndef
+      break
+      default:
+      invoke.reject("invalid `kind` argument, expected one of `tag`,  `ndef`.")
+      return
     }
-  }
-
-  @objc public func scanTag(_ invoke: Invoke) {
-    DispatchQueue.main.async { [self] in
-      self.startScanSession(invoke: invoke, kind: .tag)
-    }
+    self.startScanSession(invoke: invoke, kind: kind)
   }
 
   private func startScanSession(invoke: Invoke, kind: ScanKind) {
