@@ -117,9 +117,9 @@ pub fn write_file<R: Runtime>(
         .with_context(|| format!("path: {}", resolved_path.display()))
         .map_err(Into::into)
         .and_then(|mut f| {
-            f.write_all(&contents)
-                .map_err(|err| anyhow::anyhow!("{}", err))
-                .map_err(Into::into)
+            f.write_all(&contents).map_err(|err| anyhow::anyhow!("{}", err))?;
+            f.set_len(contents.len() as u64).map_err(|err| anyhow::anyhow!("{}", err))?;
+            Ok(())
         })
 }
 
