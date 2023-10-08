@@ -1,0 +1,1 @@
+if("__TAURI__"in window){var __TAURI_NFC__=function(_){"use strict";return _.scanNdef=async function(){},_.scanTag=async function(){},_}({});Object.defineProperty(window.__TAURI__,"nfc",{value:__TAURI_NFC__})}

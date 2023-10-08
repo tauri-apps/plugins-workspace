@@ -1,7 +1,3 @@
-# Copyright 2019-2023 Tauri Programme within The Commons Conservancy
-# SPDX-License-Identifier: Apache-2.0
-# SPDX-License-Identifier: MIT
-
 name: api
 options:
   bundleIdPrefix: com.tauri
@@ -84,7 +80,7 @@ targets:
       - sdk: UIKit.framework
       - sdk: WebKit.framework
     preBuildScripts:
-      - script: node /Users/lucas/projects/tauri/plugins-workspace/examples/api/./node_modules/.bin/../../../../node_modules/.pnpm/@tauri-apps+cli@2.0.0-alpha.14/node_modules/@tauri-apps/cli/tauri.js ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths "${FRAMEWORK_SEARCH_PATHS:?}" --header-search-paths "${HEADER_SEARCH_PATHS:?}" --gcc-preprocessor-definitions "${GCC_PREPROCESSOR_DEFINITIONS:-}" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}
+      - script: /Users/lucas/projects/tauri/tauri/tooling/cli/target/debug/./cargo-tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths "${FRAMEWORK_SEARCH_PATHS:?}" --header-search-paths "${HEADER_SEARCH_PATHS:?}" --gcc-preprocessor-definitions "${GCC_PREPROCESSOR_DEFINITIONS:-}" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}
         name: Build Rust Code
         basedOnDependencyAnalysis: false
         outputFiles:
