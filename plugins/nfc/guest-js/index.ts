@@ -17,8 +17,18 @@ export interface ScanOptions {
   keepAlive?: boolean;
 }
 
+export enum NFCTypeNameFormat {
+  Empty = 0,
+  NfcWellKnown = 1,
+  Media = 2,
+  AbsoluteURI = 3,
+  NfcExternal = 4,
+  Unknown = 5,
+  Unchanged = 6,
+}
+
 export interface TagRecord {
-  tnf: number;
+  tnf: NFCTypeNameFormat;
   kind: number[];
   id: number[];
   payload: number[];

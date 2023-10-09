@@ -260,9 +260,9 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
     for record in message.records {
       var recordJson: JsonObject = [:]
       recordJson["tnf"] = record.typeNameFormat.rawValue
-      recordJson["kind"] = record.type
-      recordJson["id"] = record.identifier
-      recordJson["payload"] = record.payload
+      recordJson["kind"] = byteArrayFromData(record.type)
+      recordJson["id"] = byteArrayFromData(record.identifier)
+      recordJson["payload"] = byteArrayFromData(record.payload)
 
       records.append(recordJson)
     }
@@ -270,6 +270,14 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
     tag["records"] = records
 
     return tag
+  }
+
+  private func byteArrayFromData(_ data: Data) -> [UInt8] {
+    var arr: [UInt8] = []
+    for b in data {
+      arr.append(b)
+    }
+    return arr
   }
 
   @objc func isAvailable(_ invoke: Invoke) {

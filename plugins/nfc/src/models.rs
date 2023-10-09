@@ -12,9 +12,21 @@ pub struct ScanRequest {
     pub keep_alive: bool,
 }
 
+#[derive(serde_repr::Deserialize_repr)]
+#[repr(u8)]
+pub enum NFCTypeNameFormat {
+    Empty = 0,
+    NfcWellKnown = 1,
+    Media = 2,
+    AbsoluteURI = 3,
+    NfcExternal = 4,
+    Unknown = 5,
+    Unchanged = 6,
+}
+
 #[derive(Deserialize)]
 pub struct NfcTagRecord {
-    pub tnf: u8,
+    pub tnf: NFCTypeNameFormat,
     pub kind: Vec<u8>,
     pub id: Vec<u8>,
     pub payload: Vec<u8>,
