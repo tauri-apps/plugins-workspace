@@ -2,17 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+#![cfg(mobile)]
+
+use serde::Deserialize;
 use tauri::{
-    plugin::{Builder, TauriPlugin},
+    plugin::{Builder, PluginHandle, TauriPlugin},
     Manager, Runtime,
 };
 
 pub use models::*;
-
-#[cfg(desktop)]
-mod desktop;
-#[cfg(mobile)]
-mod mobile;
 
 mod commands;
 mod error;
@@ -20,10 +18,34 @@ mod models;
 
 pub use error::{Error, Result};
 
-#[cfg(desktop)]
-use desktop::Nfc;
-#[cfg(mobile)]
-use mobile::Nfc;
+#[cfg(target_os = "android")]
+const PLUGIN_IDENTIFIER: &str = "app.tauri.nfc";
+
+#[cfg(target_os = "ios")]
+tauri::ios_plugin_binding!(init_plugin_nfc);
+
+/// Access to the nfc APIs.
+pub struct Nfc<R: Runtime>(PluginHandle<R>);
+
+#[derive(Deserialize)]
+struct IsAvailableResponse {
+    available: bool,
+}
+
+impl<R: Runtime> Nfc<R> {
+    pub fn is_available(&self) -> crate::Result<bool> {
+        self.0
+            .run_mobile_plugin::<IsAvailableResponse>("isAvailable", ())
+            .map(|r| r.available)
+            .map_err(Into::into)
+    }
+
+    pub fn scan(&self, payload: ScanRequest) -> crate::Result<ScanResponse> {
+        self.0
+            .run_mobile_plugin("scan", payload)
+            .map_err(Into::into)
+    }
+}
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the nfc APIs.
 pub trait NfcExt<R: Runtime> {
@@ -42,11 +64,11 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![commands::execute])
         .setup(|app, api| {
-            #[cfg(mobile)]
-            let nfc = mobile::init(app, api)?;
-            #[cfg(desktop)]
-            let nfc = desktop::init(app, api)?;
-            app.manage(nfc);
+            #[cfg(target_os = "android")]
+            let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "NfcPlugin")?;
+            #[cfg(target_os = "ios")]
+            let handle = api.register_ios_plugin(init_plugin_nfc)?;
+            app.manage(Nfc(handle));
             Ok(())
         })
         .build()

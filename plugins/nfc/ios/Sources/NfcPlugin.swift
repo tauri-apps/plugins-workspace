@@ -45,7 +45,6 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
   }
 
   func tagReaderSession(_ session: NFCTagReaderSession, didDetect tags: [NFCTag]) {
-    Logger.info("detected tags!")
     let tag = tags.first!
 
     session.connect(
@@ -132,23 +131,23 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
 
     switch tag {
     case .feliCa:
-      metadata["type"] = "FeliCa"
+      metadata["kind"] = "FeliCa"
       metadata["id"] = nil
       break
     case let .miFare(tag):
-      metadata["type"] = "MiFare"
+      metadata["kind"] = "MiFare"
       metadata["id"] = tag.identifier
       break
     case let .iso15693(tag):
-      metadata["type"] = "ISO15693"
+      metadata["kind"] = "ISO15693"
       metadata["id"] = tag.identifier
       break
     case let .iso7816(tag):
-      metadata["type"] = "ISO7816Compatible"
+      metadata["kind"] = "ISO7816Compatible"
       metadata["id"] = tag.identifier
       break
     default:
-      metadata["type"] = "Unknown"
+      metadata["kind"] = "Unknown"
       metadata["id"] = nil
       break
     }
@@ -260,8 +259,8 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
     var records: [JsonObject] = []
     for record in message.records {
       var recordJson: JsonObject = [:]
-      recordJson["tnf"] = record.typeNameFormat
-      recordJson["type"] = record.type
+      recordJson["tnf"] = record.typeNameFormat.rawValue
+      recordJson["kind"] = record.type
       recordJson["id"] = record.identifier
       recordJson["payload"] = record.payload
 
@@ -273,16 +272,22 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
     return tag
   }
 
+  @objc func isAvailable(_ invoke: Invoke) {
+    invoke.resolve([
+      "available": NFCNDEFReaderSession.readingAvailable
+    ])
+  }
+
   @objc public func scan(_ invoke: Invoke) {
     let kind: ScanKind
     switch invoke.getString("kind") {
-      case "tag":
+    case "tag":
       kind = .tag
       break
-      case "ndef":
+    case "ndef":
       kind = .ndef
       break
-      default:
+    default:
       invoke.reject("invalid `kind` argument, expected one of `tag`,  `ndef`.")
       return
     }
