@@ -10,7 +10,7 @@
     "format-check": "prettier --check ."
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "15.2.2",
+    "@rollup/plugin-node-resolve": "15.2.3",
     "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-typescript": "11.1.5",
     "@typescript-eslint/eslint-plugin": "6.7.4",
