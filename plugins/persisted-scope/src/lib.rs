@@ -15,7 +15,8 @@ use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    GlobPattern, Manager, Runtime,
+    scope::fs::Pattern as GlobPattern,
+    Manager, Runtime,
 };
 #[cfg(feature = "protocol-asset")]
 use tauri::{FsScope, FsScopeEvent};
@@ -116,8 +117,6 @@ enum Error {
     Io(#[from] std::io::Error),
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
-    #[error(transparent)]
-    TauriApi(#[from] tauri::api::Error),
     #[error(transparent)]
     Bincode(#[from] Box<bincode::ErrorKind>),
 }
