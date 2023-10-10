@@ -9,10 +9,19 @@ use std::fmt::Display;
 #[serde(rename_all = "camelCase")]
 pub struct ScanRequest {
     pub kind: ScanKind,
-    pub keep_alive: bool,
+    pub keep_session_alive: bool,
 }
 
-#[derive(serde_repr::Deserialize_repr)]
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NfcRecord {
+    pub format: NFCTypeNameFormat,
+    pub kind: Vec<u8>,
+    pub id: Vec<u8>,
+    pub payload: Vec<u8>,
+}
+
+#[derive(serde_repr::Deserialize_repr, serde_repr::Serialize_repr)]
 #[repr(u8)]
 pub enum NFCTypeNameFormat {
     Empty = 0,

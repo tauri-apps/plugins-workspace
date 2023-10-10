@@ -14,7 +14,7 @@ export enum ScanKind {
 }
 
 export interface ScanOptions {
-  keepAlive?: boolean;
+  keepSessionAlive?: boolean;
 }
 
 export enum NFCTypeNameFormat {
@@ -46,6 +46,13 @@ export interface Scan {
   tag: Tag;
 }
 
+export interface NFCRecord {
+  format: NFCTypeNameFormat;
+  kind: number[];
+  id: number[];
+  payload: number[];
+}
+
 export async function scan(
   kind: ScanKind,
   options?: ScanOptions,
@@ -53,6 +60,12 @@ export async function scan(
   return await window.__TAURI_INVOKE__("plugin:nfc|scan", {
     kind: kind === ScanKind.Ndef ? "ndef" : "tag",
     ...options,
+  });
+}
+
+export async function write(records: NFCRecord[]): Promise<void> {
+  return await window.__TAURI_INVOKE__("plugin:nfc|write", {
+    records,
   });
 }
 

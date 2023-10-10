@@ -4,7 +4,7 @@
 
 #![cfg(mobile)]
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder, PluginHandle, TauriPlugin},
     Manager, Runtime,
@@ -32,6 +32,11 @@ struct IsAvailableResponse {
     available: bool,
 }
 
+#[derive(Serialize)]
+struct WriteRequest {
+    records: Vec<NfcRecord>,
+}
+
 impl<R: Runtime> Nfc<R> {
     pub fn is_available(&self) -> crate::Result<bool> {
         self.0
@@ -43,6 +48,12 @@ impl<R: Runtime> Nfc<R> {
     pub fn scan(&self, payload: ScanRequest) -> crate::Result<ScanResponse> {
         self.0
             .run_mobile_plugin("scan", payload)
+            .map_err(Into::into)
+    }
+
+    pub fn write(&self, records: Vec<NfcRecord>) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin("write", WriteRequest { records })
             .map_err(Into::into)
     }
 }
