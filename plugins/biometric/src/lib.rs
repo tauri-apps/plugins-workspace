@@ -4,6 +4,7 @@
 
 #![cfg(mobile)]
 
+use serde::Serialize;
 use tauri::{
     plugin::{Builder, PluginHandle, TauriPlugin},
     Manager, Runtime,
@@ -11,7 +12,6 @@ use tauri::{
 
 pub use models::*;
 
-mod commands;
 mod error;
 mod models;
 
@@ -26,10 +26,21 @@ tauri::ios_plugin_binding!(init_plugin_biometric);
 /// Access to the biometric APIs.
 pub struct Biometric<R: Runtime>(PluginHandle<R>);
 
+#[derive(Serialize)]
+struct AuthenticatePayload {
+    reason: String,
+    #[serde(flatten)]
+    options: AuthOptions,
+}
+
 impl<R: Runtime> Biometric<R> {
-    pub fn ping(&self, payload: PingRequest) -> crate::Result<PingResponse> {
+    pub fn status(&self) -> crate::Result<Status> {
+        self.0.run_mobile_plugin("status", ()).map_err(Into::into)
+    }
+
+    pub fn authenticate(&self, reason: String, options: AuthOptions) -> crate::Result<()> {
         self.0
-            .run_mobile_plugin("ping", payload)
+            .run_mobile_plugin("authenticate", AuthenticatePayload { reason, options })
             .map_err(Into::into)
     }
 }
@@ -49,7 +60,6 @@ impl<R: Runtime, T: Manager<R>> crate::BiometricExt<R> for T {
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("biometric")
         .js_init_script(include_str!("api-iife.js").to_string())
-        .invoke_handler(tauri::generate_handler![commands::execute])
         .setup(|app, api| {
             #[cfg(target_os = "android")]
             let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "BiometricPlugin")?;

@@ -84,8 +84,8 @@ class BiometricPlugin: Plugin {
       invoke.resolve([
         "isAvailable": self.status.available,
         "biometryType": self.status.biometryType.rawValue,
-        "reason": self.status.errorReason ?? "",
-        "code": self.status.errorCode ?? "",
+        "error": self.status.errorReason ?? "",
+        "errorCode": self.status.errorCode ?? "",
       ])
     }
   }

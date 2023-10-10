@@ -4,14 +4,27 @@
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PingRequest {
-    pub value: Option<String>,
+pub struct AuthOptions {
+    pub fallback_title: Option<String>,
+    pub cancel_title: Option<String>,
+    pub allow_device_credential: bool,
 }
 
-#[derive(Debug, Clone, Default, Deserialize)]
+#[derive(Debug, Clone, serde_repr::Deserialize_repr)]
+#[repr(u8)]
+pub enum BiometryType {
+    None = 0,
+    TouchID = 1,
+    FaceID = 2,
+}
+
+#[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PingResponse {
-    pub value: Option<String>,
+pub struct Status {
+    pub is_available: bool,
+    pub biometry_type: BiometryType,
+    pub error: Option<String>,
+    pub error_code: Option<String>,
 }
