@@ -7,9 +7,17 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AuthOptions {
-    pub fallback_title: Option<String>,
-    pub cancel_title: Option<String>,
     pub allow_device_credential: bool,
+    /// iOS only.
+    pub fallback_title: Option<String>,
+    /// iOS only.
+    pub cancel_title: Option<String>,
+    /// Android only.
+    pub title: Option<String>,
+    /// Android only.
+    pub subtitle: Option<String>,
+    /// Android only.
+    pub confirmation_required: Option<bool>,
 }
 
 #[derive(Debug, Clone, serde_repr::Deserialize_repr)]

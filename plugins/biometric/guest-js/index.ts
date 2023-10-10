@@ -10,8 +10,12 @@ declare global {
 
 export enum BiometryType {
   None = 0,
+  // Apple TouchID or Android fingerprint
   TouchID = 1,
+  // Apple FaceID or Android face authentication
   FaceID = 2,
+  // Android iris authentication
+  Iris = 3,
 }
 
 export interface Status {
@@ -33,9 +37,16 @@ export interface Status {
 }
 
 export interface AuthOptions {
+  allowDeviceCredential?: boolean;
+
+  // iOS options
   fallbackTitle?: string;
   cancelTitle?: string;
-  allowDeviceCredential?: boolean;
+  
+  // android options
+  title?: string;
+  subtitle?: string;
+  confirmationRequired?: boolean;
 }
 
 export async function checkStatus(): Promise<Status> {
