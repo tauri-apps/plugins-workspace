@@ -5,10 +5,15 @@ description = "Read and write to the system clipboard."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
+rust-version = { workspace = true }
 links = "tauri-plugin-clipboard-manager"
 
 [package.metadata.docs.rs]
-features = [ "tauri/dox" ]
+features = [ "dox" ]
+targets = [
+  "x86_64-unknown-linux-gnu",
+  "x86_64-linux-android"
+]
 
 [build-dependencies]
 tauri-build = { workspace = true }
@@ -22,3 +27,6 @@ thiserror = { workspace = true }
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 arboard = "3"
+
+[features]
+dox = [ "tauri/dox" ]

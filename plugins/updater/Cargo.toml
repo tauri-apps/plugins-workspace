@@ -5,6 +5,7 @@ description = "In-app updates for Tauri applications."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
+rust-version = { workspace = true }
 
 [package.metadata.docs.rs]
 features = [ "tauri/dox" ]

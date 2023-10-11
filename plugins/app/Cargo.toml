@@ -5,6 +5,7 @@ description = "APIs to read application metadata and change app visibility on ma
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
+rust-version = { workspace = true }
 
 [package.metadata.docs.rs]
 features = [ "tauri/dox" ]

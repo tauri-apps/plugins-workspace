@@ -431,7 +431,7 @@ impl Update {
         self.install(bytes)
     }
 
-    #[cfg(any(target_os = "android", target_os = "ios"))]
+    #[cfg(mobile)]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
         Ok(())
     }

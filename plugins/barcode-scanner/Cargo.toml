@@ -5,7 +5,12 @@ description = "Scan QR codes, EAN-13 and other kinds of barcodes on Android and 
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
+rust-version = { workspace = true }
 links = "tauri-plugin-barcode-scanner"
+
+[package.metadata.docs.rs]
+features = [ "dox" ]
+targets = [ "x86_64-linux-android" ]
 
 [build-dependencies]
 tauri-build = { workspace = true }
@@ -16,3 +21,6 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
+
+[features]
+dox = [ "tauri/dox" ]

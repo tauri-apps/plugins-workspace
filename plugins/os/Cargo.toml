@@ -5,6 +5,7 @@ description = "Read information about the operating system."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
+rust-version = { workspace = true }
 
 [package.metadata.docs.rs]
 features = [ "tauri/dox" ]

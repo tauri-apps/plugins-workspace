@@ -745,6 +745,7 @@ checksum = "f3125b15ec28b84c238f6f476c6034016a5f6cc0221cb514ca46c532139fc97d"
 dependencies = [
  "bitflags 1.3.2",
  "cairo-sys-rs",
+ "freetype-rs",
  "glib",
  "libc",
  "once_cell",
@@ -760,6 +761,7 @@ dependencies = [
  "glib-sys",
  "libc",
  "system-deps",
+ "x11",
 ]
 
 [[package]]
@@ -916,6 +918,15 @@ dependencies = [
  "error-code",
  "str-buf",
  "winapi",
+]
+
+[[package]]
+name = "cmake"
+version = "0.1.50"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a31c789563b815f77f4250caee12365734369f942439b7defd71e18a48197130"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -1755,6 +1766,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "freetype-rs"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4200d5c6da26d4b5acff9098c1747f9f86da5e0f23bd7d63fed4c4a07e0b60ba"
+dependencies = [
+ "bitflags 1.3.2",
+ "freetype-sys",
+ "libc",
+]
+
+[[package]]
+name = "freetype-sys"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a17c696ead7d51c6c585f3513eee3b604a73c4e8345b16d450843eb0a59591b2"
+dependencies = [
+ "cmake",
+ "libc",
+ "pkg-config",
+]
+
+[[package]]
 name = "fsevent-sys"
 version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2126,6 +2159,7 @@ dependencies = [
  "glib-sys",
  "gobject-sys",
  "libc",
+ "log",
  "once_cell",
  "smallvec",
  "thiserror",

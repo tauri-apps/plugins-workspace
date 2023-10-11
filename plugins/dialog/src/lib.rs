@@ -129,7 +129,7 @@ pub struct MessageDialogBuilder<R: Runtime> {
 #[cfg(mobile)]
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct MessageDialogPayload<'a> {
+pub(crate) struct MessageDialogPayload<'a> {
     title: &'a String,
     message: &'a String,
     kind: &'a MessageDialogKind,
@@ -272,7 +272,7 @@ pub struct FileDialogBuilder<R: Runtime> {
 #[cfg(mobile)]
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct FileDialogPayload<'a> {
+pub(crate) struct FileDialogPayload<'a> {
     filters: &'a Vec<Filter>,
     multiple: bool,
 }

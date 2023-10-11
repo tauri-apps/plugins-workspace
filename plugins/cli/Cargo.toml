@@ -5,6 +5,7 @@ description = "Parse arguments from your Tauri application's command line interf
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
+rust-version = { workspace = true }
 
 [package.metadata.docs.rs]
 features = [ "tauri/dox" ]

@@ -5,6 +5,7 @@ description = "Access the system shell. Allows you to spawn child processes and 
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
+rust-version = { workspace = true }
 
 [package.metadata.docs.rs]
 features = [ "tauri/dox" ]
