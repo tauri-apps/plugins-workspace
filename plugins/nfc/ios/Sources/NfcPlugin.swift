@@ -13,7 +13,8 @@ enum ScanKind {
 }
 
 enum TagProcessMode {
-  case write, read
+  case write(message: NFCNDEFMessage)
+  case read
 }
 
 class Session {
@@ -23,7 +24,6 @@ class Session {
   let tagProcessMode: TagProcessMode
   var tagStatus: NFCNDEFStatus?
   var tag: NFCNDEFTag?
-  var writeMessage: NFCNDEFMessage?
 
   init(
     nfcSession: NFCReaderSession?, invoke: Invoke, keepAlive: Bool, tagProcessMode: TagProcessMode
@@ -81,7 +81,7 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
   }
 
   func tagReaderSession(_ session: NFCTagReaderSession, didInvalidateWithError error: Error) {
-    Logger.error("Tag reader session error")
+    Logger.error("Tag reader session error \(error)")
     self.session?.invoke.reject("session invalidated with error: \(error)")
   }
 
@@ -119,7 +119,7 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
       // not an error because we're using invalidateAfterFirstRead: true
       Logger.debug("readerSessionInvalidationErrorFirstNDEFTagRead")
     } else {
-      Logger.error("NDEF reader session error")
+      Logger.error("NDEF reader session error \(error)")
       self.session?.invoke.reject("session invalidated with error: \(error)")
     }
   }
@@ -134,15 +134,15 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
       break
     case let .miFare(tag):
       metadata["kind"] = "MiFare"
-      metadata["id"] = tag.identifier
+      metadata["id"] = byteArrayFromData(tag.identifier)
       break
     case let .iso15693(tag):
       metadata["kind"] = "ISO15693"
-      metadata["id"] = tag.identifier
+      metadata["id"] = byteArrayFromData(tag.identifier)
       break
     case let .iso7816(tag):
       metadata["kind"] = "ISO7816Compatible"
-      metadata["id"] = tag.identifier
+      metadata["id"] = byteArrayFromData(tag.identifier)
       break
     default:
       metadata["kind"] = "Unknown"
@@ -172,8 +172,8 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
         self.closeSession(session, error: "cannot connect to tag: \(error)")
       } else {
         switch mode {
-        case .write:
-          self.writeNDEFTag(session: session, status: status, tag: tag)
+        case .write(let message):
+          self.writeNDEFTag(session: session, status: status, tag: tag, message: message)
           break
         case .read:
           if self.session?.keepAlive == true {
@@ -187,8 +187,9 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
     })
   }
 
-  private func writeNDEFTag<T: NFCNDEFTag>(session: NFCReaderSession, status: NFCNDEFStatus, tag: T)
-  {
+  private func writeNDEFTag<T: NFCNDEFTag>(
+    session: NFCReaderSession, status: NFCNDEFStatus, tag: T, message: NFCNDEFMessage
+  ) {
     switch status {
     case .notSupported:
       self.closeSession(session, error: "Tag is not an NDEF-formatted tag")
@@ -199,7 +200,7 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
     case .readWrite:
       if let currentSession = self.session {
         tag.writeNDEF(
-          currentSession.writeMessage!,
+          message,
           completionHandler: { (error) in
             if let error = error {
               self.closeSession(session, error: "cannot write to tag: \(error)")
@@ -337,12 +338,13 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
     }
 
     if let session = self.session {
-      session.writeMessage = NFCNDEFMessage(records: ndefPayloads)
       if let nfcSession = session.nfcSession, let tagStatus = session.tagStatus,
         let tag = session.tag
       {
         session.keepAlive = false
-        self.writeNDEFTag(session: nfcSession, status: tagStatus, tag: tag)
+        self.writeNDEFTag(
+          session: nfcSession, status: tagStatus, tag: tag,
+          message: NFCNDEFMessage(records: ndefPayloads))
       } else {
         invoke.reject(
           "connected tag not found, please wait for it to be available and then call write()")
@@ -350,7 +352,9 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
     } else {
       self.startScanSession(
         invoke: invoke, kind: .ndef, keepAlive: false, invalidateAfterFirstRead: false,
-        tagProcessMode: .write)
+        tagProcessMode: .write(
+          message: NFCNDEFMessage(records: ndefPayloads)
+        ))
     }
   }
 

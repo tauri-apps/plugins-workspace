@@ -8,6 +8,9 @@ declare global {
   }
 }
 
+export const RTD_TEXT = [0x54]; // "T"
+export const RTD_URI = [0x55]; // "U"
+
 export enum ScanKind {
   Ndef,
   Tag,
@@ -53,9 +56,104 @@ export interface NFCRecord {
   payload: number[];
 }
 
+export function record(
+  format: NFCTypeNameFormat,
+  kind: string | number[],
+  id: string | number[],
+  payload: string | number[]
+): NFCRecord {
+  return {
+    format,
+    kind:
+      typeof kind === "string"
+        ? Array.from(new TextEncoder().encode(kind))
+        : kind,
+    id: typeof id === "string" ? Array.from(new TextEncoder().encode(id)) : id,
+    payload:
+      typeof payload === "string"
+        ? Array.from(new TextEncoder().encode(payload))
+        : payload,
+  };
+}
+
+export function textRecord(text: string, id?: string | number[]): NFCRecord {
+  return record(NFCTypeNameFormat.NfcWellKnown, RTD_TEXT, id || [], text);
+}
+
+const protocols = [
+  "",
+  "http://www.",
+  "https://www.",
+  "http://",
+  "https://",
+  "tel:",
+  "mailto:",
+  "ftp://anonymous:anonymous@",
+  "ftp://ftp.",
+  "ftps://",
+  "sftp://",
+  "smb://",
+  "nfs://",
+  "ftp://",
+  "dav://",
+  "news:",
+  "telnet://",
+  "imap:",
+  "rtsp://",
+  "urn:",
+  "pop:",
+  "sip:",
+  "sips:",
+  "tftp:",
+  "btspp://",
+  "btl2cap://",
+  "btgoep://",
+  "tcpobex://",
+  "irdaobex://",
+  "file://",
+  "urn:epc:id:",
+  "urn:epc:tag:",
+  "urn:epc:pat:",
+  "urn:epc:raw:",
+  "urn:epc:",
+  "urn:nfc:",
+];
+
+function encodeURI(uri: string): number[] {
+  let prefix = "";
+
+  protocols.slice(1).forEach(function (protocol) {
+    if ((!prefix || prefix === "urn:") && uri.indexOf(protocol) === 0) {
+      prefix = protocol;
+    }
+  });
+
+  if (!prefix) {
+    prefix = "";
+  }
+
+  const encoded = Array.from(
+    new TextEncoder().encode(uri.slice(prefix.length))
+  );
+  const protocolCode = protocols.indexOf(prefix);
+  // prepend protocol code
+  encoded.unshift(protocolCode);
+
+  return encoded;
+}
+
+export function uriRecord(uri: string, id?: string | number[]): NFCRecord {
+  return record(
+    NFCTypeNameFormat.NfcWellKnown,
+    RTD_URI,
+    id || [],
+    encodeURI(uri)
+  );
+}
+
 export async function scan(
   kind: ScanKind,
-  options?: ScanOptions,
+  options?: ScanOptions
 ): Promise<Scan> {
   return await window.__TAURI_INVOKE__("plugin:nfc|scan", {
     kind: kind === ScanKind.Ndef ? "ndef" : "tag",
