@@ -21,9 +21,12 @@
   }
 
   function requestPermission() {
-    return window.__TAURI_INVOKE__("plugin:notification|request_permission")
+    return window
+      .__TAURI_INVOKE__("plugin:notification|request_permission")
       .then(function (permission) {
-        setNotificationPermission(permission);
+        setNotificationPermission(
+          permission === "prompt" ? "default" : permission,
+        );
         return permission;
       });
   }
