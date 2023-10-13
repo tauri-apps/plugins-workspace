@@ -42,7 +42,7 @@ export interface AuthOptions {
   // iOS options
   fallbackTitle?: string;
   cancelTitle?: string;
-  
+
   // android options
   title?: string;
   subtitle?: string;
@@ -50,14 +50,14 @@ export interface AuthOptions {
 }
 
 export async function checkStatus(): Promise<Status> {
-  return window.__TAURI_INVOKE__("plugin:biometry|status");
+  return window.__TAURI_INVOKE__("plugin:biometric|status");
 }
 
 export async function authenticate(
   reason: string,
-  options?: AuthOptions,
+  options?: AuthOptions
 ): Promise<void> {
-  return window.__TAURI_INVOKE__("plugin:biometry|authenticate", {
+  return window.__TAURI_INVOKE__("plugin:biometric|authenticate", {
     reason,
     ...options,
   });
