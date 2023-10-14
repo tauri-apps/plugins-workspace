@@ -51,7 +51,7 @@ class BiometricPlugin: Plugin {
     if available && context.biometryType == .faceID {
       let entry = Bundle.main.infoDictionary?["NSFaceIDUsageDescription"] as? String
 
-      if entry == nil {
+      if entry == nil || entry?.count == 0 {
         available = false
         reason = "NSFaceIDUsageDescription is not in the app Info.plist"
         errorCode = authenticationErrorCodeMap[LAError.biometryNotAvailable.rawValue] ?? ""
