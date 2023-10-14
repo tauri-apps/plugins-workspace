@@ -35,8 +35,41 @@ class Session {
   }
 }
 
+class NfcStatus {
+  let available: Bool
+  let errorReason: String?
+
+  init(available: Bool, errorReason: String?) {
+    self.available = available
+    self.errorReason = errorReason
+  }
+}
+
 class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelegate {
   var session: Session?
+  var status: NfcStatus!
+
+  public override func load(webview: WKWebView) {
+    var available = false
+    var errorReason: String?
+
+    let entry = Bundle.main.infoDictionary?["NFCReaderUsageDescription"] as? String
+
+    if entry == nil || entry?.count == 0 {
+      errorReason = "missing NFCReaderUsageDescription configuration on the Info.plist file"
+    } else if !NFCNDEFReaderSession.readingAvailable {
+      errorReason =
+        "NFC tag reading unavailable, make sure the Near-Field Communication capability on Xcode is enabled and the device supports NFC tag reading"
+    } else {
+      available = true
+    }
+
+    if let error = errorReason {
+      Logger.error("\(error)")
+    }
+
+    self.status = NfcStatus(available: available, errorReason: errorReason)
+  }
 
   func tagReaderSessionDidBecomeActive(
     _ session: NFCTagReaderSession
@@ -309,11 +342,16 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
 
   @objc func isAvailable(_ invoke: Invoke) {
     invoke.resolve([
-      "available": NFCNDEFReaderSession.readingAvailable
+      "available": self.status.available
     ])
   }
 
   @objc public func write(_ invoke: Invoke) {
+    if !self.status.available {
+      invoke.reject("NFC reading unavailable: \(self.status.errorReason ?? "")")
+      return
+    }
+
     guard let records = invoke.getArray("records", JSObject.self) else {
       invoke.reject("`records` array is required")
       return
@@ -359,6 +397,11 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
   }
 
   @objc public func scan(_ invoke: Invoke) {
+    if !self.status.available {
+      invoke.reject("NFC reading unavailable: \(self.status.errorReason ?? "")")
+      return
+    }
+
     let kind: ScanKind
     switch invoke.getString("kind") {
     case "tag":
