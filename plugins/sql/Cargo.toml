@@ -17,11 +17,11 @@ tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
 futures-core = "0.3"
-sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "json", "time"] }
+sqlx = { version = "0.7", features = ["json", "time"] }
 time = "0.3"
 tokio = { version = "1", features = ["sync"] }
 
 [features]
-sqlite = ["sqlx/sqlite"]
-mysql = ["sqlx/mysql"]
-postgres = ["sqlx/postgres"]
+sqlite = ["sqlx/sqlite", "sqlx/runtime-tokio"]
+mysql = ["sqlx/mysql", "sqlx/runtime-tokio-rustls"]
+postgres = ["sqlx/postgres", "sqlx/runtime-tokio-rustls"]
