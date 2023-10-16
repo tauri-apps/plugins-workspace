@@ -56,6 +56,11 @@ pub fn run() {
                 app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
             }
 
+            #[cfg(mobile)]
+            {
+                app.handle().plugin(tauri_plugin_camera::init())?;
+            }
+
             let mut window_builder = WindowBuilder::new(app, "main", WindowUrl::default());
             #[cfg(desktop)]
             {

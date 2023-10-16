@@ -18,6 +18,7 @@
   import Clipboard from "./views/Clipboard.svelte";
   import WebRTC from "./views/WebRTC.svelte";
   import Scanner from "./views/Scanner.svelte";
+  import Camera from "./views/Camera.svelte";
   import App from "./views/App.svelte";
 
   import { onMount } from "svelte";
@@ -119,7 +120,12 @@
       component: Scanner,
       icon: "i-ph-scan",
     },
-  ];
+    isMobile && {
+      label: 'Camera',
+      component: Camera,
+      icon: 'i-codicon-clippy'
+    },
+  ]
 
   let selected = views[0];
   function select(view) {
