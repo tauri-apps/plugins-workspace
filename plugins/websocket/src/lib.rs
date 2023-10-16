@@ -96,10 +96,10 @@ async fn connect<R: Runtime>(
     window: Window<R>,
     url: String,
     on_message: Channel,
-    config: Option<ConnectionConfig>,
+    options: Option<ConnectionConfig>,
 ) -> Result<Id> {
     let id = rand::random();
-    let (ws_stream, _) = connect_async_with_config(url, config.map(Into::into), false).await?;
+    let (ws_stream, _) = connect_async_with_config(url, options.map(Into::into), false).await?;
 
     tauri::async_runtime::spawn(async move {
         let (write, read) = ws_stream.split();
