@@ -259,7 +259,10 @@ impl Updater {
             let url: Url = url
                 .to_string()
                 // url::Url automatically url-encodes the string
-                .replace("%7B%7Bcurrent_version%7D%7D", &self.current_version.to_string())
+                .replace(
+                    "%7B%7Bcurrent_version%7D%7D",
+                    &self.current_version.to_string(),
+                )
                 .replace("%7B%7Btarget%7D%7D", &self.target)
                 .replace("%7B%7Barch%7D%7D", self.arch)
                 .parse()?;
