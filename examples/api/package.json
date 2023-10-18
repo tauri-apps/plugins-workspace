@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@tauri-apps/api": "2.0.0-alpha.8",
-    "@tauri-apps/plugin-app": "2.0.0-alpha.1",
     "@tauri-apps/plugin-barcode-scanner": "2.0.0-alpha.0",
     "@tauri-apps/plugin-cli": "2.0.0-alpha.1",
     "@tauri-apps/plugin-clipboard-manager": "2.0.0-alpha.1",
@@ -23,7 +22,6 @@
     "@tauri-apps/plugin-process": "2.0.0-alpha.1",
     "@tauri-apps/plugin-shell": "2.0.0-alpha.1",
     "@tauri-apps/plugin-updater": "2.0.0-alpha.1",
-    "@tauri-apps/plugin-window": "2.0.0-alpha.1",
     "@zerodevx/svelte-json-view": "1.0.5"
   },
   "devDependencies": {

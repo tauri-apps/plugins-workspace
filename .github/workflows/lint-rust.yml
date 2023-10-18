@@ -41,9 +41,6 @@ jobs:
         id: filter
         with:
           filters: |
-            tauri-plugin-app:
-              - .github/workflows/lint-rust.yml
-              - plugins/app/**
             tauri-plugin-authenticator:
               - .github/workflows/lint-rust.yml
               - plugins/authenticator/**
@@ -116,9 +113,6 @@ jobs:
             tauri-plugin-websocket:
               - .github/workflows/lint-rust.yml
               - plugins/websocket/**
-            tauri-plugin-window:
-              - .github/workflows/lint-rust.yml
-              - plugins/window/**
             tauri-plugin-window-state:
               - .github/workflows/lint-rust.yml
               - plugins/window-state/**
@@ -169,8 +163,6 @@ jobs:
 
   fmt:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
 
     steps:
       - uses: actions/checkout@v3

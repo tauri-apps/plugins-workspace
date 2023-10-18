@@ -3,8 +3,6 @@
   "changes": [
     ".changes/deep-link-initial-release.md",
     ".changes/dialog-async-message-dialog.md",
-    ".changes/disable-window-controls-api-options.md",
-    ".changes/disable-window-controls-api.md",
     ".changes/fix-docs-build.md",
     ".changes/fs-wiret-binary-file.md",
     ".changes/http-multipart-refactor.md",
@@ -30,12 +28,7 @@
     ".changes/updater-nsis.md",
     ".changes/updater-plugin-refactor.md",
     ".changes/v2-alpha.md",
-    ".changes/window-incognito.md",
-    ".changes/window-is-focused.md",
-    ".changes/window-plugin-refactor.md",
-    ".changes/window-set-effects.md",
     ".changes/window-state-decorated.md",
-    ".changes/window-state-promise.md",
-    ".changes/window-tap-drag-region-detection.md"
+    ".changes/window-state-promise.md"
   ]
 }
