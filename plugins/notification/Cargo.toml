@@ -5,10 +5,15 @@ description = "Send desktop and mobile notifications on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
+rust-version = { workspace = true }
 links = "tauri-plugin-notification"
 
 [package.metadata.docs.rs]
-features = [ "tauri/dox" ]
+features = [ "dox" ]
+targets = [
+  "x86_64-unknown-linux-gnu",
+  "x86_64-linux-android"
+]
 
 [build-dependencies]
 tauri-build = { workspace = true }
@@ -32,3 +37,4 @@ win7-notifications = { version = "0.3.1", optional = true }
 
 [features]
 windows7-compat = [ "win7-notifications" ]
+dox = [ "tauri/dox" ]

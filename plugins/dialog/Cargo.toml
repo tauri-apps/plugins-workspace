@@ -5,10 +5,15 @@ description = "Native system dialogs for opening and saving files along with mes
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
+rust-version = { workspace = true }
 links = "tauri-plugin-dialog"
 
 [package.metadata.docs.rs]
-features = [ "tauri/dox" ]
+features = [ "dox" ]
+targets = [
+  "x86_64-unknown-linux-gnu",
+  "x86_64-linux-android"
+]
 
 [dependencies]
 serde = { workspace = true }
@@ -27,3 +32,6 @@ raw-window-handle = "0.5"
 
 [build-dependencies]
 tauri-build = { workspace = true }
+
+[features]
+dox = [ "tauri/dox" ]
