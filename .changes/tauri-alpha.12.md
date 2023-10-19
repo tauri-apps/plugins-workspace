@@ -1,5 +1,4 @@
 ---
-"app": patch
 "authenticator": patch
 "autostart": patch
 "cli": patch
@@ -23,7 +22,6 @@
 "updater": patch
 "upload": patch
 "websocket": patch
-"window": patch
 "window-state": patch
 ---
 

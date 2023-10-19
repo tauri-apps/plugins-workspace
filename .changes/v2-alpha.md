@@ -1,6 +1,4 @@
 ---
-"app": major
-"app-js": major
 "authenticator": major
 "authenticator-js": major
 "autostart": major
@@ -44,8 +42,6 @@
 "upload-js": major
 "websocket": major
 "websocket-js": major
-"window": major
-"window-js": major
 "window-state": major
 "window-state-js": major
 ---

@@ -66,9 +66,6 @@ importers:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.8
         version: 2.0.0-alpha.8
-      '@tauri-apps/plugin-app':
-        specifier: 2.0.0-alpha.1
-        version: link:../../plugins/app
       '@tauri-apps/plugin-barcode-scanner':
         specifier: 2.0.0-alpha.0
         version: link:../../plugins/barcode-scanner
@@ -105,9 +102,6 @@ importers:
       '@tauri-apps/plugin-updater':
         specifier: 2.0.0-alpha.1
         version: link:../../plugins/updater
-      '@tauri-apps/plugin-window':
-        specifier: 2.0.0-alpha.1
-        version: link:../../plugins/window
       '@zerodevx/svelte-json-view':
         specifier: 1.0.5
         version: 1.0.5(svelte@3.59.1)
@@ -139,16 +133,6 @@ importers:
       vite:
         specifier: ^4.3.9
         version: 4.4.4
-
-  plugins/app:
-    dependencies:
-      '@tauri-apps/api':
-        specifier: 2.0.0-alpha.8
-        version: 2.0.0-alpha.8
-    devDependencies:
-      tslib:
-        specifier: ^2.5.0
-        version: 2.6.0
 
   plugins/authenticator:
     dependencies:
@@ -428,16 +412,6 @@ importers:
       vite:
         specifier: 4.4.4
         version: 4.4.4
-
-  plugins/window:
-    dependencies:
-      '@tauri-apps/api':
-        specifier: 2.0.0-alpha.8
-        version: 2.0.0-alpha.8
-    devDependencies:
-      tslib:
-        specifier: ^2.5.0
-        version: 2.6.0
 
   plugins/window-state:
     dependencies:

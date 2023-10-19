@@ -237,7 +237,6 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
- "tauri-plugin-app",
  "tauri-plugin-barcode-scanner",
  "tauri-plugin-cli",
  "tauri-plugin-clipboard-manager",
@@ -251,7 +250,6 @@ dependencies = [
  "tauri-plugin-process",
  "tauri-plugin-shell",
  "tauri-plugin-updater",
- "tauri-plugin-window",
  "tiny_http 0.11.0",
  "window-shadows",
 ]
@@ -5676,13 +5674,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tauri-plugin-app"
-version = "2.0.0-alpha.2"
-dependencies = [
- "tauri",
-]
-
-[[package]]
 name = "tauri-plugin-authenticator"
 version = "2.0.0-alpha.2"
 dependencies = [
@@ -6046,15 +6037,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-tungstenite",
-]
-
-[[package]]
-name = "tauri-plugin-window"
-version = "2.0.0-alpha.2"
-dependencies = [
- "serde",
- "tauri",
- "thiserror",
 ]
 
 [[package]]

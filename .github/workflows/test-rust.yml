@@ -43,9 +43,6 @@ jobs:
         id: filter
         with:
           filters: |
-            tauri-plugin-app:
-              - .github/workflows/test-rust.yml
-              - plugins/app/**
             tauri-plugin-authenticator:
               - .github/workflows/test-rust.yml
               - plugins/authenticator/**
@@ -118,9 +115,6 @@ jobs:
             tauri-plugin-websocket:
               - .github/workflows/test-rust.yml
               - plugins/websocket/**
-            tauri-plugin-window:
-              - .github/workflows/test-rust.yml
-              - plugins/window/**
             tauri-plugin-window-state:
               - .github/workflows/test-rust.yml
               - plugins/window-state/**
