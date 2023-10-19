@@ -13,7 +13,7 @@ use std::{
 
 use serde::Serialize;
 
-const UPDATER_PRIVATE_KEY: &str = "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5YTBGV3JiTy9lRDZVd3NkL0RoQ1htZmExNDd3RmJaNmRMT1ZGVjczWTBKZ0FBQkFBQUFBQUFBQUFBQUlBQUFBQWdMekUzVkE4K0tWQ1hjeGt1Vkx2QnRUR3pzQjVuV0ZpM2czWXNkRm9hVUxrVnB6TUN3K1NheHJMREhQbUVWVFZRK3NIL1VsMDBHNW5ET1EzQno0UStSb21nRW4vZlpTaXIwZFh5ZmRlL1lSN0dKcHdyOUVPclVvdzFhVkxDVnZrbHM2T1o4Tk1NWEU9Cg==";
+const UPDATER_PRIVATE_KEY: &str = "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5Qm9uUXIyeEM2YkczeGMwZDFENmw1WHEzaFk5aDlOOXNyTWRxRnY4UUpzZ0FBQkFBQUFBQUFBQUFBQUlBQUFBQTVWbWdFYUZRWnNDZmdyUW9ibWExVEFTY0pVTWpVS2xlOHdhR1I3Q3hpd2FTNjg1MXZENEQyZWxnVE5PbnJUYWFTajRmdTJ3UWVPRlNDZldqY3dJeThKNktmY3BGdXl1M1BPdHgwOFhIQzJLSnpqS0Z2cVdmaEs2WWRmK3d4SHVCMlpHVGduaVAzclU9Cg==";
 
 #[derive(Serialize)]
 struct PackageConfig {
@@ -72,8 +72,8 @@ fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTa
         command.args(["--bundles", "msi", "nsis"]);
 
         command
-            .env("TAURI_PRIVATE_KEY", UPDATER_PRIVATE_KEY)
-            .env("TAURI_KEY_PASSWORD", "")
+            .env("TAURI_SIGNING_PRIVATE_KEY", UPDATER_PRIVATE_KEY)
+            .env("TAURI_SIGNING_PRIVATE_KEY_PASSWORD", "")
             .args(["--bundles", "updater"]);
     } else {
         #[cfg(windows)]

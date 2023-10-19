@@ -149,10 +149,6 @@ jobs:
         if: matrix.package != 'tauri-plugin-sql'
         run: cargo clippy --package ${{ matrix.package }} --all-targets -- -D warnings
 
-      - name: clippy ${{ matrix.package }} --all-features
-        if: ${{ !contains(fromJSON('["tauri-plugin-http", "tauri-plugin-upload", "tauri-plugin-updater", "tauri-plugin-websocket", "tauri-plugin-sql"]'), matrix.package) }}
-        run: cargo clippy --package ${{ matrix.package }} --all-targets --all-features -- -D warnings
-
       - name: clippy ${{ matrix.package }} mysql
         if: matrix.package == 'tauri-plugin-sql'
         run: cargo clippy --package ${{ matrix.package }} --all-targets --no-default-features --features mysql -- -D warnings

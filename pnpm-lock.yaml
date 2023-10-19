@@ -116,8 +116,8 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1(svelte@3.59.1)(vite@4.4.4)
       '@tauri-apps/cli':
-        specifier: 2.0.0-alpha.14
-        version: 2.0.0-alpha.14
+        specifier: 2.0.0-alpha.15
+        version: 2.0.0-alpha.15
       '@unocss/extractor-svelte':
         specifier: ^0.53.1
         version: 0.53.1
@@ -129,7 +129,7 @@ importers:
         version: 3.59.1
       unocss:
         specifier: ^0.53.1
-        version: 0.53.1(postcss@8.4.26)(rollup@3.26.3)(vite@4.4.4)
+        version: 0.53.1(postcss@8.4.31)(rollup@3.26.3)(vite@4.4.4)
       vite:
         specifier: ^4.3.9
         version: 4.4.4
@@ -204,8 +204,8 @@ importers:
         version: link:../..
     devDependencies:
       '@tauri-apps/cli':
-        specifier: ^2.0.0-alpha.14
-        version: 2.0.0-alpha.14
+        specifier: ^2.0.0-alpha.15
+        version: 2.0.0-alpha.15
       internal-ip:
         specifier: ^7.0.0
         version: 7.0.0
@@ -319,8 +319,8 @@ importers:
   plugins/single-instance/examples/vanilla:
     devDependencies:
       '@tauri-apps/cli':
-        specifier: 2.0.0-alpha.14
-        version: 2.0.0-alpha.14
+        specifier: 2.0.0-alpha.15
+        version: 2.0.0-alpha.15
 
   plugins/sql:
     dependencies:
@@ -395,8 +395,8 @@ importers:
         specifier: 1.22.3
         version: 1.22.3(svelte@4.0.5)(vite@4.4.4)
       '@tauri-apps/cli':
-        specifier: 2.0.0-alpha.14
-        version: 2.0.0-alpha.14
+        specifier: 2.0.0-alpha.15
+        version: 2.0.0-alpha.15
       svelte:
         specifier: 4.0.5
         version: 4.0.5
@@ -1421,8 +1421,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli@2.0.0-alpha.14:
-    resolution: {integrity: sha512-4/IQwN5S94D6LTXQrDWbSea0pGb9TTC4BwxHUFmhep4NjFxms161v1zadAUIsq/N2x6WwCBGrsdq9SIkgKv49Q==}
+  /@tauri-apps/cli@2.0.0-alpha.15:
+    resolution: {integrity: sha512-4/IQwN5S94D6LTXQrDWbSea0pGb9TTC4BwxHUFmhep4NjFxms161v1zadAUIsq/N2x6WwCBGrsdq9SIkgKv49Q==, tarball: https://registry.npmjs.org/@tauri-apps/cli/-/cli-2.0.0-alpha.15.tgz}
     engines: {node: '>= 10'}
     hasBin: true
     optionalDependencies:
@@ -1736,7 +1736,7 @@ packages:
       sirv: 2.0.3
     dev: true
 
-  /@unocss/postcss@0.53.1(postcss@8.4.26):
+  /@unocss/postcss@0.53.1(postcss@8.4.31):
     resolution: {integrity: sha512-vuUj/Tsvn6/YlEYp/AezyjoZLNBp+YomwpQctNZAC5ged5cqKfaw+oISw1LYzi/48Ynx7cV/4XqikApuozrvRQ==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -1747,7 +1747,7 @@ packages:
       css-tree: 2.3.1
       fast-glob: 3.3.0
       magic-string: 0.30.1
-      postcss: 8.4.26
+      postcss: 8.4.31
     dev: true
 
   /@unocss/preset-attributify@0.53.1:
@@ -2146,7 +2146,7 @@ packages:
       normalize-path: 3.0.0
       readdirp: 3.6.0
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
     dev: true
 
   /cidr-regex@4.0.3:
@@ -3004,8 +3004,8 @@ packages:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
     dev: true
 
-  /fsevents@2.3.2:
-    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+  /fsevents@2.3.3:
+    resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
     requiresBuild: true
@@ -4064,6 +4064,15 @@ packages:
       source-map-js: 1.0.2
     dev: true
 
+  /postcss@8.4.31:
+    resolution: {integrity: sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ==}
+    engines: {node: ^10 || ^12 || >=14}
+    dependencies:
+      nanoid: 3.3.6
+      picocolors: 1.0.0
+      source-map-js: 1.0.2
+    dev: true
+
   /prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
@@ -4197,7 +4206,7 @@ packages:
     engines: {node: '>=14.18.0', npm: '>=8.0.0'}
     hasBin: true
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
     dev: true
 
   /run-async@2.4.1:
@@ -4802,7 +4811,7 @@ packages:
       '@types/unist': 2.0.7
     dev: true
 
-  /unocss@0.53.1(postcss@8.4.26)(rollup@3.26.3)(vite@4.4.4):
+  /unocss@0.53.1(postcss@8.4.31)(rollup@3.26.3)(vite@4.4.4):
     resolution: {integrity: sha512-0lRblA8hX7VUu5dywbcStzm590Iz5ahSJGsMNKNH3+u9C7AfJcKT8epxjkIkJWQBNJLD5vsao4SuuhLWB7eMQQ==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -4815,7 +4824,7 @@ packages:
       '@unocss/cli': 0.53.1(rollup@3.26.3)
       '@unocss/core': 0.53.1
       '@unocss/extractor-arbitrary-variants': 0.53.1
-      '@unocss/postcss': 0.53.1(postcss@8.4.26)
+      '@unocss/postcss': 0.53.1(postcss@8.4.31)
       '@unocss/preset-attributify': 0.53.1
       '@unocss/preset-icons': 0.53.1
       '@unocss/preset-mini': 0.53.1
@@ -4893,7 +4902,7 @@ packages:
       postcss: 8.4.26
       rollup: 3.26.3
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
     dev: true
 
   /vite@4.4.4:
@@ -4928,7 +4937,7 @@ packages:
       postcss: 8.4.26
       rollup: 3.26.3
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
     dev: true
 
   /vitefu@0.2.4(vite@4.4.4):

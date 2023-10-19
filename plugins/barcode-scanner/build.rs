@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::process::exit;
-
 fn main() {
     if let Err(error) = tauri_build::mobile::PluginBuilder::new()
         .android_path("android")
@@ -11,6 +9,9 @@ fn main() {
         .run()
     {
         println!("{error:#}");
-        exit(1);
+        // when building documentation for Android the plugin build result is irrelevant to the crate itself
+        if !(cfg!(feature = "dox") && std::env::var("TARGET").unwrap().contains("android")) {
+            std::process::exit(1);
+        }
     }
 }

@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::process::exit;
-
 #[path = "src/config.rs"]
 mod config;
 use config::{AssociatedDomain, Config};
@@ -37,7 +35,9 @@ fn main() {
         .run()
     {
         println!("{error:#}");
-        exit(1);
+        if !(cfg!(feature = "dox") && std::env::var("TARGET").unwrap().contains("android")) {
+            std::process::exit(1);
+        }
     }
 
     if let Some(config) = tauri_build::config::plugin_config::<Config>("deep-link") {
