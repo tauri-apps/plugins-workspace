@@ -24,7 +24,7 @@
       },
       "updater": {
         "active": true,
-        "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE5QzMxNjYwNTM5OEUwNTgKUldSWTRKaFRZQmJER1h4d1ZMYVA3dnluSjdpN2RmMldJR09hUFFlZDY0SlFqckkvRUJhZDJVZXAK",
+        "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMwNjY1MEExMTFBMDU5RTUKUldUbFdhQVJvVkJtd09sZ1ROT25yVGFhU2o0ZnUyd1FlT0ZTQ2ZXamN3SXk4SjZLZmNwRnV5dTMK",
         "windows": {
           "installMode": "quiet"
         }

@@ -675,7 +675,6 @@ impl Update {
         let mut archive = tar::Archive::new(decoder);
 
         std::fs::create_dir(&self.extract_path)?;
-        extracted_files.push(self.extract_path.clone());
 
         for entry in archive.entries()? {
             let mut entry = entry?;
