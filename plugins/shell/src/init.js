@@ -16,7 +16,7 @@
             ) &&
             target.target === "_blank"
           ) {
-            window.__TAURI_INVOKE__("plugin:shell|open", {
+            window.__TAURI_INTERNALS__.invoke("plugin:shell|open", {
               path: target.href,
             });
             e.preventDefault();

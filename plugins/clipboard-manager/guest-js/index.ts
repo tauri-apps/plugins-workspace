@@ -8,9 +8,14 @@
  * @module
  */
 
+import type { invoke } from "@tauri-apps/api/primitives";
+
+/** @ignore */
 declare global {
   interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+    __TAURI_INTERNALS__: {
+      invoke: typeof invoke;
+    };
   }
 }
 
@@ -38,7 +43,7 @@ async function writeText(
   text: string,
   opts?: { label?: string },
 ): Promise<void> {
-  return window.__TAURI_INVOKE__("plugin:clipboard|write", {
+  return window.__TAURI_INTERNALS__.invoke("plugin:clipboard|write", {
     data: {
       kind: "PlainText",
       options: {
@@ -59,7 +64,7 @@ async function writeText(
  * @since 2.0.0
  */
 async function readText(): Promise<string> {
-  const kind: ClipResponse = await window.__TAURI_INVOKE__(
+  const kind: ClipResponse = await window.__TAURI_INTERNALS__.invoke(
     "plugin:clipboard|read",
   );
   return kind.options;

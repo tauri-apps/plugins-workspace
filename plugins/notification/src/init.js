@@ -10,7 +10,9 @@
     if (window.Notification.permission !== "default") {
       return Promise.resolve(window.Notification.permission === "granted");
     }
-    return window.__TAURI_INVOKE__("plugin:notification|is_permission_granted");
+    return window.__TAURI_INTERNALS__.invoke(
+      "plugin:notification|is_permission_granted",
+    );
   }
 
   function setNotificationPermission(value) {
@@ -21,8 +23,8 @@
   }
 
   function requestPermission() {
-    return window
-      .__TAURI_INVOKE__("plugin:notification|request_permission")
+    return window.__TAURI_INTERNALS__
+      .invoke("plugin:notification|request_permission")
       .then(function (permission) {
         setNotificationPermission(
           permission === "prompt" ? "default" : permission,
@@ -36,7 +38,7 @@
       Object.freeze(options);
     }
 
-    return window.__TAURI_INVOKE__("plugin:notification|notify", {
+    return window.__TAURI_INTERNALS__.invoke("plugin:notification|notify", {
       options:
         typeof options === "string"
           ? {
@@ -49,7 +51,11 @@
   // @ts-expect-error unfortunately we can't implement the whole type, so we overwrite it with our own version
   window.Notification = function (title, options) {
     const opts = options || {};
-    sendNotification(Object.assign(opts, { title }));
+    sendNotification(
+      Object.assign(opts, {
+        title,
+      }),
+    );
   };
 
   window.Notification.requestPermission = requestPermission;

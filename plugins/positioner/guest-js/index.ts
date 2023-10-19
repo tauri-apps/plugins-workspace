@@ -3,9 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+import type { invoke } from "@tauri-apps/api/primitives";
+
+/** @ignore */
 declare global {
   interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+    __TAURI_INTERNALS__: {
+      invoke: typeof invoke;
+    };
   }
 }
 
@@ -37,7 +42,7 @@ export enum Position {
  * @param to The {@link Position} to move to.
  */
 export async function moveWindow(to: Position): Promise<void> {
-  await window.__TAURI_INVOKE__("plugin:positioner|move_window", {
+  await window.__TAURI_INTERNALS__.invoke("plugin:positioner|move_window", {
     position: to,
   });
 }

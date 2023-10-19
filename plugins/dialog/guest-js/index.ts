@@ -2,9 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+import type { invoke } from "@tauri-apps/api/primitives";
+
+/** @ignore */
 declare global {
   interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+    __TAURI_INTERNALS__: {
+      invoke: typeof invoke;
+    };
   }
 }
 
@@ -173,7 +178,7 @@ async function open(
     Object.freeze(options);
   }
 
-  return window.__TAURI_INVOKE__("plugin:dialog|open", { options });
+  return window.__TAURI_INTERNALS__.invoke("plugin:dialog|open", { options });
 }
 
 /**
@@ -205,7 +210,7 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
     Object.freeze(options);
   }
 
-  return window.__TAURI_INVOKE__("plugin:dialog|save", { options });
+  return window.__TAURI_INTERNALS__.invoke("plugin:dialog|save", { options });
 }
 
 /**
@@ -230,7 +235,7 @@ async function message(
   options?: string | MessageDialogOptions,
 ): Promise<void> {
   const opts = typeof options === "string" ? { title: options } : options;
-  return window.__TAURI_INVOKE__("plugin:dialog|message", {
+  return window.__TAURI_INTERNALS__.invoke("plugin:dialog|message", {
     message: message.toString(),
     title: opts?.title?.toString(),
     type_: opts?.type,
@@ -259,7 +264,7 @@ async function ask(
   options?: string | ConfirmDialogOptions,
 ): Promise<boolean> {
   const opts = typeof options === "string" ? { title: options } : options;
-  return window.__TAURI_INVOKE__("plugin:dialog|ask", {
+  return window.__TAURI_INTERNALS__.invoke("plugin:dialog|ask", {
     message: message.toString(),
     title: opts?.title?.toString(),
     type_: opts?.type,
@@ -289,7 +294,7 @@ async function confirm(
   options?: string | ConfirmDialogOptions,
 ): Promise<boolean> {
   const opts = typeof options === "string" ? { title: options } : options;
-  return window.__TAURI_INVOKE__("plugin:dialog|confirm", {
+  return window.__TAURI_INTERNALS__.invoke("plugin:dialog|confirm", {
     message: message.toString(),
     title: opts?.title?.toString(),
     type_: opts?.type,

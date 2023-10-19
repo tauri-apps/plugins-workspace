@@ -2,23 +2,33 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+import type { invoke } from "@tauri-apps/api/primitives";
+
+/** @ignore */
 declare global {
   interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+    __TAURI_INTERNALS__: {
+      invoke: typeof invoke;
+    };
   }
 }
 
 export class Authenticator {
   async init(): Promise<void> {
-    return await window.__TAURI_INVOKE__("plugin:authenticator|init_auth");
+    return await window.__TAURI_INTERNALS__.invoke(
+      "plugin:authenticator|init_auth",
+    );
   }
 
   async register(challenge: string, application: string): Promise<string> {
-    return await window.__TAURI_INVOKE__("plugin:authenticator|register", {
-      timeout: 10000,
-      challenge,
-      application,
-    });
+    return await window.__TAURI_INTERNALS__.invoke(
+      "plugin:authenticator|register",
+      {
+        timeout: 10000,
+        challenge,
+        application,
+      },
+    );
   }
 
   async verifyRegistration(
@@ -27,7 +37,7 @@ export class Authenticator {
     registerData: string,
     clientData: string,
   ): Promise<string> {
-    return await window.__TAURI_INVOKE__(
+    return await window.__TAURI_INTERNALS__.invoke(
       "plugin:authenticator|verify_registration",
       {
         challenge,
@@ -43,12 +53,15 @@ export class Authenticator {
     application: string,
     keyHandle: string,
   ): Promise<string> {
-    return await window.__TAURI_INVOKE__("plugin:authenticator|sign", {
-      timeout: 10000,
-      challenge,
-      application,
-      keyHandle,
-    });
+    return await window.__TAURI_INTERNALS__.invoke(
+      "plugin:authenticator|sign",
+      {
+        timeout: 10000,
+        challenge,
+        application,
+        keyHandle,
+      },
+    );
   }
 
   async verifySignature(
@@ -59,7 +72,7 @@ export class Authenticator {
     keyHandle: string,
     pubkey: string,
   ): Promise<number> {
-    return await window.__TAURI_INVOKE__(
+    return await window.__TAURI_INTERNALS__.invoke(
       "plugin:authenticator|verify_signature",
       {
         challenge,

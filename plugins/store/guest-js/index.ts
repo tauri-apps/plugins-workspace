@@ -4,9 +4,14 @@
 
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
+import type { invoke } from "@tauri-apps/api/primitives";
+
+/** @ignore */
 declare global {
   interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
+    __TAURI_INTERNALS__: {
+      invoke: typeof invoke;
+    };
   }
 }
 
@@ -33,7 +38,7 @@ export class Store {
    * @returns
    */
   async set(key: string, value: unknown): Promise<void> {
-    return await window.__TAURI_INVOKE__("plugin:store|set", {
+    return await window.__TAURI_INTERNALS__.invoke("plugin:store|set", {
       path: this.path,
       key,
       value,
@@ -47,7 +52,7 @@ export class Store {
    * @returns
    */
   async get<T>(key: string): Promise<T | null> {
-    return await window.__TAURI_INVOKE__("plugin:store|get", {
+    return await window.__TAURI_INTERNALS__.invoke("plugin:store|get", {
       path: this.path,
       key,
     });
@@ -60,7 +65,7 @@ export class Store {
    * @returns
    */
   async has(key: string): Promise<boolean> {
-    return await window.__TAURI_INVOKE__("plugin:store|has", {
+    return await window.__TAURI_INTERNALS__.invoke("plugin:store|has", {
       path: this.path,
       key,
     });
@@ -73,7 +78,7 @@ export class Store {
    * @returns
    */
   async delete(key: string): Promise<boolean> {
-    return await window.__TAURI_INVOKE__("plugin:store|delete", {
+    return await window.__TAURI_INTERNALS__.invoke("plugin:store|delete", {
       path: this.path,
       key,
     });
@@ -86,7 +91,7 @@ export class Store {
    * @returns
    */
   async clear(): Promise<void> {
-    return await window.__TAURI_INVOKE__("plugin:store|clear", {
+    return await window.__TAURI_INTERNALS__.invoke("plugin:store|clear", {
       path: this.path,
     });
   }
@@ -98,7 +103,7 @@ export class Store {
    * @returns
    */
   async reset(): Promise<void> {
-    return await window.__TAURI_INVOKE__("plugin:store|reset", {
+    return await window.__TAURI_INTERNALS__.invoke("plugin:store|reset", {
       path: this.path,
     });
   }
@@ -109,7 +114,7 @@ export class Store {
    * @returns
    */
   async keys(): Promise<string[]> {
-    return await window.__TAURI_INVOKE__("plugin:store|keys", {
+    return await window.__TAURI_INTERNALS__.invoke("plugin:store|keys", {
       path: this.path,
     });
   }
@@ -120,7 +125,7 @@ export class Store {
    * @returns
    */
   async values<T>(): Promise<T[]> {
-    return await window.__TAURI_INVOKE__("plugin:store|values", {
+    return await window.__TAURI_INTERNALS__.invoke("plugin:store|values", {
       path: this.path,
     });
   }
@@ -131,7 +136,7 @@ export class Store {
    * @returns
    */
   async entries<T>(): Promise<Array<[key: string, value: T]>> {
-    return await window.__TAURI_INVOKE__("plugin:store|entries", {
+    return await window.__TAURI_INTERNALS__.invoke("plugin:store|entries", {
       path: this.path,
     });
   }
@@ -142,7 +147,7 @@ export class Store {
    * @returns
    */
   async length(): Promise<number> {
-    return await window.__TAURI_INVOKE__("plugin:store|length", {
+    return await window.__TAURI_INTERNALS__.invoke("plugin:store|length", {
       path: this.path,
     });
   }
@@ -156,7 +161,7 @@ export class Store {
    * @returns
    */
   async load(): Promise<void> {
-    return await window.__TAURI_INVOKE__("plugin:store|load", {
+    return await window.__TAURI_INTERNALS__.invoke("plugin:store|load", {
       path: this.path,
     });
   }
@@ -169,7 +174,7 @@ export class Store {
    * @returns
    */
   async save(): Promise<void> {
-    return await window.__TAURI_INVOKE__("plugin:store|save", {
+    return await window.__TAURI_INTERNALS__.invoke("plugin:store|save", {
       path: this.path,
     });
   }
