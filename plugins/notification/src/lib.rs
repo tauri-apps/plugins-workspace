@@ -221,7 +221,7 @@ impl<R: Runtime, T: Manager<R>> crate::NotificationExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    let mut init_script = include_str!("init.js").to_string();
+    let mut init_script = include_str!("init-iife.js").to_string();
     init_script.push_str(include_str!("api-iife.js"));
     Builder::new("notification")
         .invoke_handler(tauri::generate_handler![

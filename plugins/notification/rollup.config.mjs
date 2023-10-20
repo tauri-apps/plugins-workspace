@@ -17,7 +17,7 @@ const config = createConfig({
 config.push({
   input: "guest-js/init.ts",
   output: {
-    file: "src/init.js",
+    file: "src/init-iife.js",
     format: "iife",
   },
   plugins: [

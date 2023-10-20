@@ -3,4 +3,5 @@ node_modules
 dist
 dist-js
 api-iife.js
+init-iife.js
 init.js
