@@ -55,20 +55,29 @@ impl Serialize for Error {
 #[derive(Default)]
 struct ConnectionManager(Mutex<HashMap<Id, WebSocketWriter>>);
 
-#[derive(Default, Deserialize)]
+#[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectionConfig {
-    pub max_send_queue: Option<usize>,
+    pub write_buffer_size: Option<usize>,
+    pub max_write_buffer_size: Option<usize>,
     pub max_message_size: Option<usize>,
     pub max_frame_size: Option<usize>,
+    #[serde(default)]
     pub accept_unmasked_frames: bool,
+    pub headers: Option<Vec<(String, String)>>,
 }
 
 impl From<ConnectionConfig> for WebSocketConfig {
     fn from(config: ConnectionConfig) -> Self {
+        // Disabling the warning on max_send_queue which we don't use anymore since it was deprecated.
+        #[allow(deprecated)]
         Self {
-            max_send_queue: config.max_send_queue,
+            max_send_queue: None,
+            write_buffer_size: config.write_buffer_size.unwrap_or(128 * 1024),
+            max_write_buffer_size: config.max_write_buffer_size.unwrap_or(usize::MAX),
+            // This may be harmful since if it's not provided from js we're overwriting the default value with None, meaning no size limit.
             max_message_size: config.max_message_size,
+            // This may be harmful since if it's not provided from js we're overwriting the default value with None, meaning no size limit.
             max_frame_size: config.max_frame_size,
             accept_unmasked_frames: config.accept_unmasked_frames,
         }
@@ -96,10 +105,10 @@ async fn connect<R: Runtime>(
     window: Window<R>,
     url: String,
     on_message: Channel,
-    options: Option<ConnectionConfig>,
+    config: Option<ConnectionConfig>,
 ) -> Result<Id> {
     let id = rand::random();
-    let (ws_stream, _) = connect_async_with_config(url, options.map(Into::into), false).await?;
+    let (ws_stream, _) = connect_async_with_config(url, config.map(Into::into), false).await?;
 
     tauri::async_runtime::spawn(async move {
         let (write, read) = ws_stream.split();
