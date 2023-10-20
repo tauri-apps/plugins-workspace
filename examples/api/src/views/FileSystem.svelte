@@ -5,7 +5,7 @@
     readDir,
     Dir,
   } from "@tauri-apps/plugin-fs";
-  import { convertFileSrc } from "@tauri-apps/api/tauri";
+  import { convertFileSrc } from "@tauri-apps/api/primitives";
 
   export let onMessage;
   export let insecureRenderHtml;

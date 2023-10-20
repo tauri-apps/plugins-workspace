@@ -8,7 +8,7 @@
  * @module
  */
 
-import { invoke, Channel } from "@tauri-apps/api/tauri";
+import { invoke, Channel } from "@tauri-apps/api/primitives";
 
 export type ShortcutHandler = (shortcut: string) => void;
 

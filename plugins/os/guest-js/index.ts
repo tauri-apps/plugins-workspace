@@ -8,9 +8,11 @@
  * @module
  */
 
+import { invoke } from "@tauri-apps/api/primitives";
+
+/** @ignore */
 declare global {
   interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
     __TAURI__: {
       os: { __eol: string };
     };
@@ -69,7 +71,7 @@ function eol() {
  *
  */
 async function platform(): Promise<Platform> {
-  return window.__TAURI_INVOKE__("plugin:os|platform");
+  return invoke("plugin:os|platform");
 }
 
 /**
@@ -83,7 +85,7 @@ async function platform(): Promise<Platform> {
  * @since 2.0.0
  */
 async function version(): Promise<string> {
-  return window.__TAURI_INVOKE__("plugin:os|version");
+  return invoke("plugin:os|version");
 }
 
 type Family = "unix" | "windows";
@@ -99,7 +101,7 @@ type Family = "unix" | "windows";
  * @since 2.0.0
  */
 async function family(): Promise<Family> {
-  return window.__TAURI_INVOKE__("plugin:os|family");
+  return invoke("plugin:os|family");
 }
 
 /**
@@ -113,7 +115,7 @@ async function family(): Promise<Family> {
  * @since 2.0.0
  */
 async function type(): Promise<OsType> {
-  return window.__TAURI_INVOKE__("plugin:os|os_type");
+  return invoke("plugin:os|os_type");
 }
 
 /**
@@ -128,7 +130,7 @@ async function type(): Promise<OsType> {
  * @since 2.0.0
  */
 async function arch(): Promise<Arch> {
-  return window.__TAURI_INVOKE__("plugin:os|arch");
+  return invoke("plugin:os|arch");
 }
 
 /**
@@ -145,7 +147,7 @@ async function arch(): Promise<Arch> {
  * @since 2.0.0
  */
 async function locale(): Promise<string | null> {
-  return window.__TAURI_INVOKE__("plugin:os|locale");
+  return invoke("plugin:os|locale");
 }
 
 /**
@@ -159,7 +161,7 @@ async function locale(): Promise<string | null> {
  * @since 2.0.0
  */
 async function exeExtension(): Promise<string | null> {
-  return window.__TAURI_INVOKE__("plugin:os|exe_extension");
+  return invoke("plugin:os|exe_extension");
 }
 
 /**
@@ -171,7 +173,7 @@ async function exeExtension(): Promise<string | null> {
  * ```
  */
 async function hostname(): Promise<string | null> {
-  return window.__TAURI_INVOKE__("plugin:os|hostname");
+  return invoke("plugin:os|hostname");
 }
 
 export {

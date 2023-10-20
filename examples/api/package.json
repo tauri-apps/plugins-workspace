@@ -9,7 +9,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-alpha.8",
+    "@tauri-apps/api": "2.0.0-alpha.9",
     "@tauri-apps/plugin-barcode-scanner": "2.0.0-alpha.0",
     "@tauri-apps/plugin-cli": "2.0.0-alpha.1",
     "@tauri-apps/plugin-clipboard-manager": "2.0.0-alpha.1",
@@ -22,17 +22,17 @@
     "@tauri-apps/plugin-process": "2.0.0-alpha.1",
     "@tauri-apps/plugin-shell": "2.0.0-alpha.1",
     "@tauri-apps/plugin-updater": "2.0.0-alpha.1",
-    "@zerodevx/svelte-json-view": "1.0.5"
+    "@zerodevx/svelte-json-view": "1.0.7"
   },
   "devDependencies": {
-    "@iconify-json/codicon": "^1.1.26",
-    "@iconify-json/ph": "^1.1.5",
-    "@sveltejs/vite-plugin-svelte": "^2.4.1",
-    "@tauri-apps/cli": "2.0.0-alpha.15",
-    "@unocss/extractor-svelte": "^0.53.1",
+    "@iconify-json/codicon": "^1.1.31",
+    "@iconify-json/ph": "^1.1.6",
+    "@sveltejs/vite-plugin-svelte": "^2.4.6",
+    "@tauri-apps/cli": "2.0.0-alpha.16",
+    "@unocss/extractor-svelte": "^0.56.5",
     "internal-ip": "^8.0.0",
-    "svelte": "^3.59.1",
-    "unocss": "^0.53.1",
-    "vite": "^4.3.9"
+    "svelte": "^4.2.2",
+    "unocss": "^0.56.5",
+    "vite": "^4.5.0"
   }
 }

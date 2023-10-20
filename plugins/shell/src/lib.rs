@@ -120,7 +120,7 @@ fn shell_scope(scope: ShellAllowlistScope, open: &ShellAllowlistOpen) -> ScopeCo
     let shell_scope_open = match open {
         ShellAllowlistOpen::Flag(false) => None,
         ShellAllowlistOpen::Flag(true) => {
-            Some(Regex::new(r#"^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+"#).unwrap())
+            Some(Regex::new(r"^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+").unwrap())
         }
         ShellAllowlistOpen::Validate(validator) => {
             let validator =

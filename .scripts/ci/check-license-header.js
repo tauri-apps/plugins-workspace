@@ -21,6 +21,7 @@ const ignore = [
   "dist-js",
   ".svelte-kit",
   "api-iife.js",
+  "init-iife.js",
   ".build",
 ];
 
