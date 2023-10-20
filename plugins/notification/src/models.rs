@@ -94,7 +94,7 @@ impl<'de> Deserialize<'de> for ScheduleEvery {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "kind", content = "data")]
+#[serde(rename_all = "camelCase")]
 pub enum Schedule {
     At {
         #[serde(
@@ -105,9 +105,12 @@ pub enum Schedule {
         #[serde(default)]
         repeating: bool,
     },
-    Interval(ScheduleInterval),
+    Interval {
+        interval: ScheduleInterval,
+    },
     Every {
         interval: ScheduleEvery,
+        count: u8,
     },
 }
 

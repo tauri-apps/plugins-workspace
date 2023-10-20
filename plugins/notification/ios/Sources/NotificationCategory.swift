@@ -5,21 +5,7 @@
 import Tauri
 import UserNotifications
 
-enum CategoryError: LocalizedError {
-  case noId
-  case noActionId
-
-  var errorDescription: String? {
-    switch self {
-    case .noId:
-      return "Action type `id` missing"
-    case .noActionId:
-      return "Action `id` missing"
-    }
-  }
-}
-
-public func makeCategories(_ actionTypes: [JSObject]) throws {
+internal func makeCategories(_ actionTypes: [ActionType]) {
   var createdCategories = [UNNotificationCategory]()
 
   let generalCategory = UNNotificationCategory(
@@ -30,22 +16,16 @@ public func makeCategories(_ actionTypes: [JSObject]) throws {
 
   createdCategories.append(generalCategory)
   for type in actionTypes {
-    guard let id = type["id"] as? String else {
-      throw CategoryError.noId
-    }
-    let hiddenBodyPlaceholder = type["hiddenPreviewsBodyPlaceholder"] as? String ?? ""
-    let actions = type["actions"] as? [JSObject] ?? []
-
-    let newActions = try makeActions(actions)
+    let newActions = makeActions(type.actions)
 
     // Create the custom actions for the TIMER_EXPIRED category.
     var newCategory: UNNotificationCategory?
 
     newCategory = UNNotificationCategory(
-      identifier: id,
+      identifier: type.id,
       actions: newActions,
       intentIdentifiers: [],
-      hiddenPreviewsBodyPlaceholder: hiddenBodyPlaceholder,
+      hiddenPreviewsBodyPlaceholder: type.hiddenBodyPlaceholder ?? "",
       options: makeCategoryOptions(type))
 
     createdCategories.append(newCategory!)
@@ -55,37 +35,28 @@ public func makeCategories(_ actionTypes: [JSObject]) throws {
   center.setNotificationCategories(Set(createdCategories))
 }
 
-func makeActions(_ actions: [JSObject]) throws -> [UNNotificationAction] {
+func makeActions(_ actions: [Action]) -> [UNNotificationAction] {
   var createdActions = [UNNotificationAction]()
 
   for action in actions {
-    guard let id = action["id"] as? String else {
-      throw CategoryError.noActionId
-    }
-    let title = action["title"] as? String ?? ""
-    let input = action["input"] as? Bool ?? false
-
     var newAction: UNNotificationAction
-    if input {
-      let inputButtonTitle = action["inputButtonTitle"] as? String
-      let inputPlaceholder = action["inputPlaceholder"] as? String ?? ""
-
-      if inputButtonTitle != nil {
+    if action.input {
+      if action.inputButtonTitle != nil {
         newAction = UNTextInputNotificationAction(
-          identifier: id,
-          title: title,
+          identifier: action.id,
+          title: action.title,
           options: makeActionOptions(action),
-          textInputButtonTitle: inputButtonTitle!,
-          textInputPlaceholder: inputPlaceholder)
+          textInputButtonTitle: action.inputButtonTitle ?? "",
+          textInputPlaceholder: action.inputPlaceholder ?? "")
       } else {
         newAction = UNTextInputNotificationAction(
-          identifier: id, title: title, options: makeActionOptions(action))
+          identifier: action.id, title: action.title, options: makeActionOptions(action))
       }
     } else {
       // Create the custom actions for the TIMER_EXPIRED category.
       newAction = UNNotificationAction(
-        identifier: id,
-        title: title,
+        identifier: action.id,
+        title: action.title,
         options: makeActionOptions(action))
     }
     createdActions.append(newAction)
@@ -94,40 +65,31 @@ func makeActions(_ actions: [JSObject]) throws -> [UNNotificationAction] {
   return createdActions
 }
 
-func makeActionOptions(_ action: JSObject) -> UNNotificationActionOptions {
-  let foreground = action["foreground"] as? Bool ?? false
-  let destructive = action["destructive"] as? Bool ?? false
-  let requiresAuthentication = action["requiresAuthentication"] as? Bool ?? false
-
-  if foreground {
+func makeActionOptions(_ action: Action) -> UNNotificationActionOptions {
+  if action.foreground {
     return .foreground
   }
-  if destructive {
+  if action.destructive {
     return .destructive
   }
-  if requiresAuthentication {
+  if action.requiresAuthentication {
     return .authenticationRequired
   }
   return UNNotificationActionOptions(rawValue: 0)
 }
 
-func makeCategoryOptions(_ type: JSObject) -> UNNotificationCategoryOptions {
-  let customDismiss = type["customDismissAction"] as? Bool ?? false
-  let carPlay = type["allowInCarPlay"] as? Bool ?? false
-  let hiddenPreviewsShowTitle = type["hiddenPreviewsShowTitle"] as? Bool ?? false
-  let hiddenPreviewsShowSubtitle = type["hiddenPreviewsShowSubtitle"] as? Bool ?? false
-
-  if customDismiss {
+func makeCategoryOptions(_ type: ActionType) -> UNNotificationCategoryOptions {
+  if type.customDismissAction {
     return .customDismissAction
   }
-  if carPlay {
+  if type.allowInCarPlay {
     return .allowInCarPlay
   }
 
-  if hiddenPreviewsShowTitle {
+  if type.hiddenPreviewsShowTitle {
     return .hiddenPreviewsShowTitle
   }
-  if hiddenPreviewsShowSubtitle {
+  if type.hiddenPreviewsShowSubtitle {
     return .hiddenPreviewsShowSubtitle
   }
 

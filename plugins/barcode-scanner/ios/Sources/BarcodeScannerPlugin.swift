@@ -7,7 +7,13 @@ import Tauri
 import UIKit
 import WebKit
 
-enum SupportedFormat: String, CaseIterable {
+struct ScanOptions: Decodable {
+  var formats: [SupportedFormat] = []
+  let windowed: Bool?
+  let cameraDirection: String?
+}
+
+enum SupportedFormat: String, CaseIterable, Decodable {
   // UPC_A not supported
   case UPC_E
   case EAN_8
@@ -232,19 +238,11 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
     }
   }
 
-  private func runScanner(_ invoke: Invoke) {
+  private func runScanner(_ invoke: Invoke, args: ScanOptions) {
     scanFormats = [AVMetadataObject.ObjectType]()
 
-    if (invoke.data["formats"]) != nil {
-      let _scanFormats = invoke.getArray("formats", String.self)
-
-      if _scanFormats != nil && _scanFormats?.count ?? 0 > 0 {
-        _scanFormats?.forEach { targetedFormat in
-          if let value = SupportedFormat(rawValue: targetedFormat)?.value {
-            scanFormats.append(value)
-          }
-        }
-      }
+    args.formats.forEach { format in
+      scanFormats.append(format.value)
     }
 
     if scanFormats.count == 0 {
@@ -259,7 +257,9 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
     self.isScanning = true
   }
 
-  @objc private func scan(_ invoke: Invoke) {
+  @objc private func scan(_ invoke: Invoke) throws {
+    let args = try invoke.parseArgs(ScanOptions.self)
+
     self.invoke = invoke
 
     var iOS14min: Bool = false
@@ -279,10 +279,10 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
       self.loadCamera()
       self.dismantleCamera()
       self.setupCamera(
-        direction: invoke.getString("cameraDirection") ?? "back",
-        windowed: invoke.getBool("windowed") ?? false
+        direction: args.cameraDirection ?? "back",
+        windowed: args.windowed ?? false
       )
-      self.runScanner(invoke)
+      self.runScanner(invoke, args: args)
     }
   }
 

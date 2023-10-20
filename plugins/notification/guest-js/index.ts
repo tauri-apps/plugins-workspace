@@ -150,57 +150,59 @@ type ScheduleInterval = {
 };
 
 enum ScheduleEvery {
-  Year = "Year",
-  Month = "Month",
-  TwoWeeks = "TwoWeeks",
-  Week = "Week",
-  Day = "Day",
-  Hour = "Hour",
-  Minute = "Minute",
+  Year = "year",
+  Month = "month",
+  TwoWeeks = "twoWeeks",
+  Week = "week",
+  Day = "day",
+  Hour = "hour",
+  Minute = "minute",
   /**
    * Not supported on iOS.
    */
-  Second = "Second",
+  Second = "second",
 }
 
 type ScheduleData =
   | {
-      kind: "At";
-      data: {
+      at: {
         date: Date;
         repeating: boolean;
       };
     }
   | {
-      kind: "Interval";
-      data: ScheduleInterval;
+      interval: {
+        interval: ScheduleInterval
+      };
     }
   | {
-      kind: "Every";
-      data: {
+      every: {
         interval: ScheduleEvery;
+        count: number;
       };
     };
 
 class Schedule {
-  kind: string;
-  data: unknown;
+  schedule: ScheduleData;
 
   private constructor(schedule: ScheduleData) {
-    this.kind = schedule.kind;
-    this.data = schedule.data;
+    this.schedule = schedule;
+  }
+
+  toJSON(): string {
+    return JSON.stringify(this.schedule)
   }
 
   static at(date: Date, repeating = false) {
-    return new Schedule({ kind: "At", data: { date, repeating } });
+    return new Schedule({ at: { date, repeating } });
   }
 
   static interval(interval: ScheduleInterval) {
-    return new Schedule({ kind: "Interval", data: interval });
+    return new Schedule({ interval: { interval: interval } });
   }
 
-  static every(kind: ScheduleEvery) {
-    return new Schedule({ kind: "Every", data: { interval: kind } });
+  static every(kind: ScheduleEvery, count: number) {
+    return new Schedule({ every: { interval: kind, count } });
   }
 }
 

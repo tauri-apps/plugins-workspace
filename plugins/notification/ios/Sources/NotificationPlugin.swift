@@ -9,14 +9,11 @@ import UserNotifications
 import WebKit
 
 enum ShowNotificationError: LocalizedError {
-  case noId
   case make(Error)
   case create(Error)
 
   var errorDescription: String? {
     switch self {
-    case .noId:
-      return "notification `id` missing"
     case .make(let error):
       return "Unable to make notification: \(error)"
     case .create(let error):
@@ -25,13 +22,63 @@ enum ShowNotificationError: LocalizedError {
   }
 }
 
-func showNotification(invoke: Invoke, notification: JSObject)
+enum ScheduleEveryKind: String, Decodable {
+  case year
+  case month
+  case twoWeeks
+  case week
+  case day
+  case hour
+  case minute
+  case second
+}
+
+struct ScheduleInterval: Decodable {
+  let year: Int?
+  let month: Int?
+  let day: Int?
+  let weekday: Int?
+  let hour: Int?
+  let minute: Int?
+  let second: Int?
+}
+
+enum NotificationSchedule: Decodable {
+  case at(date: String, repeating: Bool)
+  case interval(interval: ScheduleInterval)
+  case every(interval: ScheduleEveryKind, count: Int)
+}
+
+struct NotificationAttachmentOptions: Decodable {
+  let iosUNNotificationAttachmentOptionsTypeHintKey: String?
+  let iosUNNotificationAttachmentOptionsThumbnailHiddenKey: String?
+  let iosUNNotificationAttachmentOptionsThumbnailClippingRectKey: String?
+  let iosUNNotificationAttachmentOptionsThumbnailTimeKey: String?
+}
+
+struct NotificationAttachment: Decodable {
+  let id: String
+  let url: String
+  let options: NotificationAttachmentOptions?
+}
+
+struct Notification: Decodable {
+  let id: Int
+  var title: String = ""
+  var body: String = ""
+  var extra: [String: String] = [:]
+  let schedule: NotificationSchedule?
+  let attachments: [NotificationAttachment]?
+  let sound: String?
+  let group: String?
+  let actionTypeId: String?
+  let summary: String?
+  var silent = false
+}
+
+func showNotification(invoke: Invoke, notification: Notification)
   throws -> UNNotificationRequest
 {
-  guard let identifier = notification["id"] as? Int else {
-    throw ShowNotificationError.noId
-  }
-
   var content: UNNotificationContent
   do {
     content = try makeNotificationContent(notification)
@@ -42,7 +89,7 @@ func showNotification(invoke: Invoke, notification: JSObject)
   var trigger: UNNotificationTrigger?
 
   do {
-    if let schedule = notification["schedule"] as? JSObject {
+    if let schedule = notification.schedule {
       try trigger = handleScheduledNotification(schedule)
     }
   } catch {
@@ -51,7 +98,7 @@ func showNotification(invoke: Invoke, notification: JSObject)
 
   // Schedule the request.
   let request = UNNotificationRequest(
-    identifier: "\(identifier)", content: content, trigger: trigger
+    identifier: "\(notification.id)", content: content, trigger: trigger
   )
 
   let center = UNUserNotificationCenter.current()
@@ -62,6 +109,40 @@ func showNotification(invoke: Invoke, notification: JSObject)
   }
 
   return request
+}
+
+struct CancelArgs: Decodable {
+  let notifications: [Int]
+}
+
+struct Action: Decodable {
+  let id: String
+  let title: String
+  var requiresAuthentication: Bool = false
+  var foreground: Bool = false
+  var destructive: Bool = false
+  var input: Bool = false
+  let inputButtonTitle: String?
+  let inputPlaceholder: String?
+}
+
+struct ActionType: Decodable {
+  let id: String
+  let actions: [Action]
+  let hiddenPreviewsBodyPlaceholder: String?
+  var customDismissAction = false
+  var allowInCarPlay = false
+  var hiddenPreviewsShowTitle = false
+  var hiddenPreviewsShowSubtitle = false
+  let hiddenBodyPlaceholder: String?
+}
+
+struct RegisterActionTypesArgs: Decodable {
+  let types: [ActionType]
+}
+
+struct BatchArgs: Decodable {
+  let notifications: [Notification]
 }
 
 class NotificationPlugin: Plugin {
@@ -75,21 +156,20 @@ class NotificationPlugin: Plugin {
   }
 
   @objc public func show(_ invoke: Invoke) throws {
-    let request = try showNotification(invoke: invoke, notification: invoke.data)
-    notificationHandler.saveNotification(request.identifier, invoke.data)
+    let notification = try invoke.parseArgs(Notification.self)
+
+    let request = try showNotification(invoke: invoke, notification: notification)
+    notificationHandler.saveNotification(request.identifier, notification)
     invoke.resolve([
       "id": Int(request.identifier) ?? -1
     ])
   }
 
   @objc public func batch(_ invoke: Invoke) throws {
-    guard let notifications = invoke.getArray("notifications", JSObject.self) else {
-      invoke.reject("`notifications` array is required")
-      return
-    }
+    let args = try invoke.parseArgs(BatchArgs.self)
     var ids = [Int]()
 
-    for notification in notifications {
+    for notification in args.notifications {
       let request = try showNotification(invoke: invoke, notification: notification)
       notificationHandler.saveNotification(request.identifier, notification)
       ids.append(Int(request.identifier) ?? -1)
@@ -129,18 +209,11 @@ class NotificationPlugin: Plugin {
     }
   }
 
-  @objc func cancel(_ invoke: Invoke) {
-    guard let notifications = invoke.getArray("notifications", NSNumber.self),
-      notifications.count > 0
-    else {
-      invoke.reject("`notifications` input is required")
-      return
-    }
+  @objc func cancel(_ invoke: Invoke) throws {
+    let args = try invoke.parseArgs(CancelArgs.self)
 
     UNUserNotificationCenter.current().removePendingNotificationRequests(
-      withIdentifiers: notifications.map({ (id) -> String in
-        return id.stringValue
-      })
+      withIdentifiers: args.notifications.map { String($0) }
     )
     invoke.resolve()
   }
@@ -159,19 +232,18 @@ class NotificationPlugin: Plugin {
   }
 
   @objc func registerActionTypes(_ invoke: Invoke) throws {
-    guard let types = invoke.getArray("types", JSObject.self) else {
-      return
-    }
-    try makeCategories(types)
+    let args = try invoke.parseArgs(RegisterActionTypesArgs.self)
+    makeCategories(args.types)
     invoke.resolve()
   }
 
   @objc func removeActive(_ invoke: Invoke) {
-    if let notifications = invoke.getArray("notifications", JSObject.self) {
-      let ids = notifications.map { "\($0["id"] ?? "")" }
-      UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ids)
+    do {
+      let ids = try invoke.parseArgs([Int].self)
+      UNUserNotificationCenter.current().removeDeliveredNotifications(
+        withIdentifiers: ids.map { String($0) })
       invoke.resolve()
-    } else {
+    } catch {
       UNUserNotificationCenter.current().removeAllDeliveredNotifications()
       DispatchQueue.main.async(execute: {
         UIApplication.shared.applicationIconBadgeNumber = 0

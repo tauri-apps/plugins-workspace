@@ -5,13 +5,13 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "kind", content = "options")]
+#[serde(rename_all = "camelCase")]
 pub enum ClipKind {
     PlainText { label: Option<String>, text: String },
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "kind", content = "options")]
+#[serde(rename_all = "camelCase")]
 pub enum ClipboardContents {
-    PlainText(String),
+    PlainText { text: String },
 }

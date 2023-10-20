@@ -9,9 +9,9 @@ public class NotificationHandler: NSObject, NotificationHandlerProtocol {
 
   public weak var plugin: Plugin?
 
-  private var notificationsMap = [String: JSObject]()
+  private var notificationsMap = [String: Notification]()
 
-  public func saveNotification(_ key: String, _ notification: JSObject) {
+  internal func saveNotification(_ key: String, _ notification: Notification) {
     notificationsMap.updateValue(notification, forKey: key)
   }
 
@@ -34,8 +34,7 @@ public class NotificationHandler: NSObject, NotificationHandlerProtocol {
     self.plugin?.trigger("notification", data: notificationData)
 
     if let options = notificationsMap[notification.request.identifier] {
-      let silent = options["silent"] as? Bool ?? false
-      if silent {
+      if options.silent {
         return UNNotificationPresentationOptions.init(rawValue: 0)
       }
     }
@@ -76,44 +75,20 @@ public class NotificationHandler: NSObject, NotificationHandlerProtocol {
     * Turn a UNNotificationRequest into a JSObject to return back to the client.
     */
   func makeNotificationRequestJSObject(_ request: UNNotificationRequest) -> JSObject {
-    let notificationRequest = notificationsMap[request.identifier] ?? [:]
+    let notificationRequest = notificationsMap[request.identifier]!
     var notification = makePendingNotificationRequestJSObject(request)
-    notification["sound"] = notificationRequest["sound"] ?? ""
+    notification["sound"] = notificationRequest.sound ?? ""
     notification["actionTypeId"] = request.content.categoryIdentifier
-    notification["attachments"] = notificationRequest["attachments"] ?? [JSObject]()
+    notification["attachments"] = notificationRequest.attachments
     return notification
   }
 
   func makePendingNotificationRequestJSObject(_ request: UNNotificationRequest) -> JSObject {
-    var notification: JSObject = [
+    let notification: JSObject = [
       "id": Int(request.identifier) ?? -1,
       "title": request.content.title,
       "body": request.content.body,
     ]
-
-    if let userInfo = JSTypes.coerceDictionaryToJSObject(request.content.userInfo) {
-      var extra = userInfo["__EXTRA__"] as? JSObject ?? userInfo
-
-      // check for any dates and convert them to strings
-      for (key, value) in extra {
-        if let date = value as? Date {
-          let dateString = ISO8601DateFormatter().string(from: date)
-          extra[key] = dateString
-        }
-      }
-
-      notification["extra"] = extra
-
-      if var schedule = userInfo["__SCHEDULE__"] as? JSObject {
-        // convert schedule at date to string
-        if let date = schedule["at"] as? Date {
-          let dateString = ISO8601DateFormatter().string(from: date)
-          schedule["at"] = dateString
-        }
-
-        notification["schedule"] = schedule
-      }
-    }
 
     return notification
   }
