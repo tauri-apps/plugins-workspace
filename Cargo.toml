@@ -14,7 +14,7 @@ thiserror = "1"
 edition = "2021"
 authors = [ "Tauri Programme within The Commons Conservancy" ]
 license = "Apache-2.0 OR MIT"
-rust-version = "1.65"
+rust-version = "1.70"
 
 # default to small, optimized release binaries
 [profile.release]
