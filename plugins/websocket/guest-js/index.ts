@@ -39,7 +39,10 @@ export default class WebSocket {
     this.listeners = listeners;
   }
 
-  static async connect(url: string, config?: ConnectionConfig): Promise<WebSocket> {
+  static async connect(
+    url: string,
+    config?: ConnectionConfig,
+  ): Promise<WebSocket> {
     const listeners: Array<(arg: Message) => void> = [];
 
     const onMessage = new Channel<Message>();
