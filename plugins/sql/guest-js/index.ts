@@ -2,16 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import type { invoke } from "@tauri-apps/api/primitives";
-
-/** @ignore */
-declare global {
-  interface Window {
-    __TAURI_INTERNALS__: {
-      invoke: typeof invoke;
-    };
-  }
-}
+import { invoke } from "@tauri-apps/api/primitives";
 
 export interface QueryResult {
   /** The number of rows affected by the query. */
@@ -55,12 +46,9 @@ export default class Database {
    * ```
    */
   static async load(path: string): Promise<Database> {
-    const _path = await window.__TAURI_INTERNALS__.invoke<string>(
-      "plugin:sql|load",
-      {
-        db: path,
-      },
-    );
+    const _path = await invoke<string>("plugin:sql|load", {
+      db: path,
+    });
 
     return new Database(_path);
   }
@@ -118,15 +106,14 @@ export default class Database {
    * ```
    */
   async execute(query: string, bindValues?: unknown[]): Promise<QueryResult> {
-    const [rowsAffected, lastInsertId] =
-      await window.__TAURI_INTERNALS__.invoke<[number, number]>(
-        "plugin:sql|execute",
-        {
-          db: this.path,
-          query,
-          values: bindValues ?? [],
-        },
-      );
+    const [rowsAffected, lastInsertId] = await invoke<[number, number]>(
+      "plugin:sql|execute",
+      {
+        db: this.path,
+        query,
+        values: bindValues ?? [],
+      },
+    );
 
     return {
       lastInsertId,
@@ -152,14 +139,11 @@ export default class Database {
    * ```
    */
   async select<T>(query: string, bindValues?: unknown[]): Promise<T> {
-    const result = await window.__TAURI_INTERNALS__.invoke<T>(
-      "plugin:sql|select",
-      {
-        db: this.path,
-        query,
-        values: bindValues ?? [],
-      },
-    );
+    const result = await invoke<T>("plugin:sql|select", {
+      db: this.path,
+      query,
+      values: bindValues ?? [],
+    });
 
     return result;
   }
@@ -176,12 +160,9 @@ export default class Database {
    * @param db - Optionally state the name of a database if you are managing more than one. Otherwise, all database pools will be in scope.
    */
   async close(db?: string): Promise<boolean> {
-    const success = await window.__TAURI_INTERNALS__.invoke<boolean>(
-      "plugin:sql|close",
-      {
-        db,
-      },
-    );
+    const success = await invoke<boolean>("plugin:sql|close", {
+      db,
+    });
     return success;
   }
 }

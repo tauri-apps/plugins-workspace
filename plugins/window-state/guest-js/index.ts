@@ -2,16 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import type { invoke } from "@tauri-apps/api/primitives";
-
-/** @ignore */
-declare global {
-  interface Window {
-    __TAURI_INTERNALS__: {
-      invoke: typeof invoke;
-    };
-  }
-}
+import { invoke } from "@tauri-apps/api/primitives";
 
 interface WindowDef {
   label: string;
@@ -40,25 +31,19 @@ export enum StateFlags {
  *  Save the state of all open windows to disk.
  */
 async function saveWindowState(flags: StateFlags): Promise<void> {
-  return window.__TAURI_INTERNALS__.invoke(
-    "plugin:window-state|save_window_state",
-    {
-      flags,
-    },
-  );
+  return invoke("plugin:window-state|save_window_state", {
+    flags,
+  });
 }
 
 /**
  *  Restore the state for the specified window from disk.
  */
 async function restoreState(label: string, flags: StateFlags): Promise<void> {
-  return window.__TAURI_INTERNALS__.invoke(
-    "plugin:window-state|restore_state",
-    {
-      label,
-      flags,
-    },
-  );
+  return invoke("plugin:window-state|restore_state", {
+    label,
+    flags,
+  });
 }
 
 /**

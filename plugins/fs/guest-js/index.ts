@@ -47,16 +47,7 @@
 
 import { BaseDirectory } from "@tauri-apps/api/path";
 
-import type { invoke } from "@tauri-apps/api/primitives";
-
-/** @ignore */
-declare global {
-  interface Window {
-    __TAURI_INTERNALS__: {
-      invoke: typeof invoke;
-    };
-  }
-}
+import { invoke } from "@tauri-apps/api/primitives";
 
 interface Permissions {
   /**
@@ -236,7 +227,7 @@ async function readTextFile(
   filePath: string,
   options: FsOptions = {},
 ): Promise<string> {
-  return await window.__TAURI_INTERNALS__.invoke("plugin:fs|read_text_file", {
+  return await invoke("plugin:fs|read_text_file", {
     path: filePath,
     options,
   });
@@ -257,13 +248,10 @@ async function readBinaryFile(
   filePath: string,
   options: FsOptions = {},
 ): Promise<Uint8Array> {
-  const arr = await window.__TAURI_INTERNALS__.invoke<number[]>(
-    "plugin:fs|read_file",
-    {
-      path: filePath,
-      options,
-    },
-  );
+  const arr = await invoke<number[]>("plugin:fs|read_file", {
+    path: filePath,
+    options,
+  });
 
   return Uint8Array.from(arr);
 }
@@ -336,7 +324,7 @@ async function writeTextFile(
     fileOptions = contents;
   }
 
-  return await window.__TAURI_INTERNALS__.invoke("plugin:fs|write_file", {
+  return await invoke("plugin:fs|write_file", {
     path: file.path,
     contents: Array.from(new TextEncoder().encode(file.contents)),
     options: fileOptions,
@@ -418,7 +406,7 @@ async function writeBinaryFile(
     file.contents = contents ?? [];
   }
 
-  return await window.__TAURI_INTERNALS__.invoke("plugin:fs|write_file", {
+  return await invoke("plugin:fs|write_file", {
     path: file.path,
     contents: Array.from(
       file.contents instanceof ArrayBuffer
@@ -453,7 +441,7 @@ async function readDir(
   dir: string,
   options: FsDirOptions = {},
 ): Promise<FileEntry[]> {
-  return await window.__TAURI_INTERNALS__.invoke("plugin:fs|read_dir", {
+  return await invoke("plugin:fs|read_dir", {
     path: dir,
     options,
   });
@@ -478,7 +466,7 @@ async function createDir(
   dir: string,
   options: FsDirOptions = {},
 ): Promise<void> {
-  return await window.__TAURI_INTERNALS__.invoke("plugin:fs|create_dir", {
+  return await invoke("plugin:fs|create_dir", {
     path: dir,
     options,
   });
@@ -502,7 +490,7 @@ async function removeDir(
   dir: string,
   options: FsDirOptions = {},
 ): Promise<void> {
-  return await window.__TAURI_INTERNALS__.invoke("plugin:fs|remove_dir", {
+  return await invoke("plugin:fs|remove_dir", {
     path: dir,
     options,
   });
@@ -526,7 +514,7 @@ async function copyFile(
   destination: string,
   options: FsOptions = {},
 ): Promise<void> {
-  return await window.__TAURI_INTERNALS__.invoke("plugin:fs|copy_file", {
+  return await invoke("plugin:fs|copy_file", {
     source,
     destination,
     options,
@@ -550,7 +538,7 @@ async function removeFile(
   file: string,
   options: FsOptions = {},
 ): Promise<void> {
-  return await window.__TAURI_INTERNALS__.invoke("plugin:fs|remove_file", {
+  return await invoke("plugin:fs|remove_file", {
     path: file,
     options,
   });
@@ -574,7 +562,7 @@ async function renameFile(
   newPath: string,
   options: FsOptions = {},
 ): Promise<void> {
-  return await window.__TAURI_INTERNALS__.invoke("plugin:fs|rename_file", {
+  return await invoke("plugin:fs|rename_file", {
     oldPath,
     newPath,
     options,
@@ -593,7 +581,7 @@ async function renameFile(
  * @since 2.0.0
  */
 async function exists(path: string): Promise<boolean> {
-  return await window.__TAURI_INTERNALS__.invoke("plugin:fs|exists", { path });
+  return await invoke("plugin:fs|exists", { path });
 }
 
 /**
@@ -602,19 +590,17 @@ async function exists(path: string): Promise<boolean> {
  * @since 2.0.0
  */
 async function metadata(path: string): Promise<Metadata> {
-  return await window.__TAURI_INTERNALS__
-    .invoke<BackendMetadata>("plugin:fs|metadata", {
-      path,
-    })
-    .then((metadata) => {
-      const { accessedAtMs, createdAtMs, modifiedAtMs, ...data } = metadata;
-      return {
-        accessedAt: new Date(accessedAtMs),
-        createdAt: new Date(createdAtMs),
-        modifiedAt: new Date(modifiedAtMs),
-        ...data,
-      };
-    });
+  return await invoke<BackendMetadata>("plugin:fs|metadata", {
+    path,
+  }).then((metadata) => {
+    const { accessedAtMs, createdAtMs, modifiedAtMs, ...data } = metadata;
+    return {
+      accessedAt: new Date(accessedAtMs),
+      createdAt: new Date(createdAtMs),
+      modifiedAt: new Date(modifiedAtMs),
+      ...data,
+    };
+  });
 }
 
 export type {

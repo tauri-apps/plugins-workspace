@@ -24,16 +24,7 @@
  * @module
  */
 
-import type { invoke } from "@tauri-apps/api/primitives";
-
-/** @ignore */
-declare global {
-  interface Window {
-    __TAURI_INTERNALS__: {
-      invoke: typeof invoke;
-    };
-  }
-}
+import { invoke } from "@tauri-apps/api/primitives";
 
 /**
  * Options to configure the Rust client used to make fetch requests
@@ -81,20 +72,17 @@ export async function fetch(
   const buffer = await req.arrayBuffer();
   const reqData = buffer.byteLength ? Array.from(new Uint8Array(buffer)) : null;
 
-  const rid = await window.__TAURI_INTERNALS__.invoke<number>(
-    "plugin:http|fetch",
-    {
-      method: req.method,
-      url: req.url,
-      headers: Array.from(req.headers.entries()),
-      data: reqData,
-      maxRedirections,
-      connectTimeout,
-    },
-  );
+  const rid = await invoke<number>("plugin:http|fetch", {
+    method: req.method,
+    url: req.url,
+    headers: Array.from(req.headers.entries()),
+    data: reqData,
+    maxRedirections,
+    connectTimeout,
+  });
 
   req.signal.addEventListener("abort", () => {
-    window.__TAURI_INTERNALS__.invoke("plugin:http|fetch_cancel", {
+    invoke("plugin:http|fetch_cancel", {
       rid,
     });
   });
@@ -106,20 +94,16 @@ export async function fetch(
     url: string;
   }
 
-  const { status, statusText, url, headers } =
-    await window.__TAURI_INTERNALS__.invoke<FetchSendResponse>(
-      "plugin:http|fetch_send",
-      {
-        rid,
-      },
-    );
-
-  const body = await window.__TAURI_INTERNALS__.invoke<number[]>(
-    "plugin:http|fetch_read_body",
+  const { status, statusText, url, headers } = await invoke<FetchSendResponse>(
+    "plugin:http|fetch_send",
     {
       rid,
     },
   );
+
+  const body = await invoke<number[]>("plugin:http|fetch_read_body", {
+    rid,
+  });
 
   const res = new Response(new Uint8Array(body), {
     headers,
