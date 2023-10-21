@@ -29,6 +29,6 @@
   }
 </script>
 
-<button class="btn" id="notification" on:click={_sendNotification}>
+<button class="btn" id="notification" on:click={sendNotification}>
   Send test notification
 </button>
