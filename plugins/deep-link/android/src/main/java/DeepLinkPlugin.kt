@@ -38,7 +38,7 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
     @Command
     fun setEventHandler(invoke: Invoke) {
         val args = invoke.parseArgs(SetEventHandlerArgs::class.java)
-        this.channel = args.channel
+        this.channel = args.handler
         invoke.resolve()
     }
 
