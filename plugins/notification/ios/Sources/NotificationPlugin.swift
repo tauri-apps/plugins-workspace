@@ -76,6 +76,14 @@ struct Notification: Decodable {
   var silent = false
 }
 
+struct RemoveActiveNotification: Decodable {
+  let id: Int
+}
+
+struct RemoveActiveArgs: Decodable {
+  let notifications: [RemoveActiveNotification]
+}
+
 func showNotification(invoke: Invoke, notification: Notification)
   throws -> UNNotificationRequest
 {
@@ -160,9 +168,7 @@ class NotificationPlugin: Plugin {
 
     let request = try showNotification(invoke: invoke, notification: notification)
     notificationHandler.saveNotification(request.identifier, notification)
-    invoke.resolve([
-      "id": Int(request.identifier) ?? -1
-    ])
+    invoke.resolve(Int(request.identifier) ?? -1)
   }
 
   @objc public func batch(_ invoke: Invoke) throws {
@@ -175,9 +181,7 @@ class NotificationPlugin: Plugin {
       ids.append(Int(request.identifier) ?? -1)
     }
 
-    invoke.resolve([
-      "notifications": ids
-    ])
+    invoke.resolve(ids)
   }
 
   @objc public override func requestPermissions(_ invoke: Invoke) {
@@ -225,9 +229,7 @@ class NotificationPlugin: Plugin {
         return self?.notificationHandler.makePendingNotificationRequestJSObject(notification)
       })
 
-      invoke.resolve([
-        "notifications": ret
-      ])
+      invoke.resolve(ret)
     })
   }
 
@@ -239,9 +241,9 @@ class NotificationPlugin: Plugin {
 
   @objc func removeActive(_ invoke: Invoke) {
     do {
-      let ids = try invoke.parseArgs([Int].self)
+      let args = try invoke.parseArgs(RemoveActiveArgs.self)
       UNUserNotificationCenter.current().removeDeliveredNotifications(
-        withIdentifiers: ids.map { String($0) })
+        withIdentifiers: args.notifications.map { String($0.id) })
       invoke.resolve()
     } catch {
       UNUserNotificationCenter.current().removeAllDeliveredNotifications()
@@ -259,9 +261,7 @@ class NotificationPlugin: Plugin {
         return self.notificationHandler.makeNotificationRequestJSObject(
           notification.request)
       })
-      invoke.resolve([
-        "notifications": ret
-      ])
+      invoke.resolve(ret)
     })
   }
 

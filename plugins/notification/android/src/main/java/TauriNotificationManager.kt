@@ -44,7 +44,7 @@ class TauriNotificationManager(
   private val storage: NotificationStorage,
   private val activity: Activity?,
   private val context: Context,
-  private val config: JSObject
+  private val config: PluginConfig?
 ) {
   private var defaultSoundID: Int = AssetUtils.RESOURCE_ID_ZERO_VALUE
   private var defaultSmallIconID: Int = AssetUtils.RESOURCE_ID_ZERO_VALUE
@@ -200,7 +200,7 @@ class TauriNotificationManager(
     mBuilder.setOnlyAlertOnce(true)
     mBuilder.setSmallIcon(notification.getSmallIcon(context, getDefaultSmallIcon(context)))
     mBuilder.setLargeIcon(notification.getLargeIcon(context))
-    val iconColor = notification.getIconColor(config.getString("iconColor"))
+    val iconColor = notification.getIconColor(config?.iconColor ?: "")
     if (iconColor.isNotEmpty()) {
       try {
         mBuilder.color = Color.parseColor(iconColor)
@@ -216,7 +216,7 @@ class TauriNotificationManager(
     } else {
       notificationManager.notify(notification.id, buildNotification)
       try {
-        NotificationPlugin.triggerNotification(notification.source ?: JSObject())
+        NotificationPlugin.triggerNotification(notification)
       } catch (_: JSONException) {
       }
     }
@@ -254,7 +254,7 @@ class TauriNotificationManager(
           notificationAction.title,
           actionPendingIntent
         )
-        if (notificationAction.input) {
+        if (notificationAction.input == true) {
           val remoteInput = RemoteInput.Builder(REMOTE_INPUT_KEY).setLabel(
             notificationAction.title
           ).build()
@@ -298,7 +298,7 @@ class TauriNotificationManager(
     intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
     intent.putExtra(NOTIFICATION_INTENT_KEY, notification.id)
     intent.putExtra(ACTION_INTENT_KEY, action)
-    intent.putExtra(NOTIFICATION_OBJ_INTENT_KEY, notification.source.toString())
+    intent.putExtra(NOTIFICATION_OBJ_INTENT_KEY, notification.sourceJson)
     val schedule = notification.schedule
     intent.putExtra(NOTIFICATION_IS_REMOVABLE_KEY, schedule == null || schedule.isRemovable())
     return intent
@@ -326,23 +326,22 @@ class TauriNotificationManager(
     var pendingIntent =
       PendingIntent.getBroadcast(context, request.id, notificationIntent, flags)
 
-    when (val scheduleKind = schedule?.kind) {
-      is ScheduleKind.At -> {
-        val at = scheduleKind.date
-        if (at.time < Date().time) {
+    when (schedule) {
+      is NotificationSchedule.At -> {
+        if (schedule.date.time < Date().time) {
           Logger.error(Logger.tags("Notification"), "Scheduled time must be *after* current time", null)
           return
         }
-        if (scheduleKind.repeating) {
-          val interval: Long = at.time - Date().time
-          alarmManager.setRepeating(AlarmManager.RTC, at.time, interval, pendingIntent)
+        if (schedule.repeating) {
+          val interval: Long = schedule.date.time - Date().time
+          alarmManager.setRepeating(AlarmManager.RTC, schedule.date.time, interval, pendingIntent)
         } else {
-          setExactIfPossible(alarmManager, schedule, at.time, pendingIntent)
+          setExactIfPossible(alarmManager, schedule, schedule.date.time, pendingIntent)
         }
       }
-      is ScheduleKind.Interval -> {
-        val trigger = scheduleKind.interval.nextTrigger(Date())
-        notificationIntent.putExtra(TimedNotificationPublisher.CRON_KEY, scheduleKind.interval.toMatchString())
+      is NotificationSchedule.Interval -> {
+        val trigger = schedule.interval.nextTrigger(Date())
+        notificationIntent.putExtra(TimedNotificationPublisher.CRON_KEY, schedule.interval.toMatchString())
         pendingIntent =
           PendingIntent.getBroadcast(context, request.id, notificationIntent, flags)
         setExactIfPossible(alarmManager, schedule, trigger, pendingIntent)
@@ -352,8 +351,8 @@ class TauriNotificationManager(
           "notification " + request.id + " will next fire at " + sdf.format(Date(trigger))
         )
       }
-      is ScheduleKind.Every -> {
-        val everyInterval = getIntervalTime(scheduleKind.interval, scheduleKind.count)
+      is NotificationSchedule.Every -> {
+        val everyInterval = getIntervalTime(schedule.interval, schedule.count)
         val startTime: Long = Date().time + everyInterval
         alarmManager.setRepeating(AlarmManager.RTC, startTime, everyInterval, pendingIntent)
       }
@@ -369,13 +368,13 @@ class TauriNotificationManager(
     pendingIntent: PendingIntent
   ) {
     if (SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-      if (SDK_INT >= Build.VERSION_CODES.M && schedule.whileIdle) {
+      if (SDK_INT >= Build.VERSION_CODES.M && schedule.allowWhileIdle()) {
         alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pendingIntent)
       } else {
         alarmManager[AlarmManager.RTC, trigger] = pendingIntent
       }
     } else {
-      if (SDK_INT >= Build.VERSION_CODES.M && schedule.whileIdle) {
+      if (SDK_INT >= Build.VERSION_CODES.M && schedule.allowWhileIdle()) {
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pendingIntent)
       } else {
         alarmManager.setExact(AlarmManager.RTC, trigger, pendingIntent)
@@ -426,7 +425,7 @@ class TauriNotificationManager(
   private fun getDefaultSound(context: Context): Int {
     if (defaultSoundID != AssetUtils.RESOURCE_ID_ZERO_VALUE) return defaultSoundID
     var resId: Int = AssetUtils.RESOURCE_ID_ZERO_VALUE
-    val soundConfigResourceName = AssetUtils.getResourceBaseName(config.getString("sound"))
+    val soundConfigResourceName = AssetUtils.getResourceBaseName(config?.sound)
     if (soundConfigResourceName != null) {
       resId = AssetUtils.getResourceID(context, soundConfigResourceName, "raw")
     }
@@ -437,7 +436,7 @@ class TauriNotificationManager(
   private fun getDefaultSmallIcon(context: Context): Int {
     if (defaultSmallIconID != AssetUtils.RESOURCE_ID_ZERO_VALUE) return defaultSmallIconID
     var resId: Int = AssetUtils.RESOURCE_ID_ZERO_VALUE
-    val smallIconConfigResourceName = AssetUtils.getResourceBaseName(config.getString("icon"))
+    val smallIconConfigResourceName = AssetUtils.getResourceBaseName(config?.icon)
     if (smallIconConfigResourceName != null) {
       resId = AssetUtils.getResourceID(context, smallIconConfigResourceName, "drawable")
     }
@@ -487,10 +486,12 @@ class TimedNotificationPublisher : BroadcastReceiver() {
       Logger.error(Logger.tags("Notification"), "No valid id supplied", null)
     }
     val storage = NotificationStorage(context)
-    val notificationJson = storage.getSavedNotificationAsJSObject(id.toString())
-    if (notificationJson != null) {
-      NotificationPlugin.triggerNotification(notificationJson)
+
+    val savedNotification = storage.getSavedNotification(id.toString())
+    if (savedNotification != null) {
+      NotificationPlugin.triggerNotification(savedNotification)
     }
+
     notificationManager.notify(id, notification)
     if (!rescheduleNotificationIfNeeded(context, intent, id)) {
       storage.deleteNotification(id.toString())
@@ -552,12 +553,12 @@ class LocalNotificationRestoreReceiver : BroadcastReceiver() {
     for (id in ids) {
       val notification = storage.getSavedNotification(id) ?: continue
       val schedule = notification.schedule
-      if (schedule != null && schedule.kind is ScheduleKind.At) {
-        val at: Date = schedule.kind.date
+      if (schedule != null && schedule is NotificationSchedule.At) {
+        val at: Date = schedule.date
         if (at.before(Date())) {
           // modify the scheduled date in order to show notifications that would have been delivered while device was off.
           val newDateTime = Date().time + 15 * 1000
-          schedule.kind.date = Date(newDateTime)
+          schedule.date = Date(newDateTime)
           updatedNotifications.add(notification)
         }
       }
@@ -567,7 +568,13 @@ class LocalNotificationRestoreReceiver : BroadcastReceiver() {
       storage.appendNotifications(updatedNotifications)
     }
 
-    val notificationManager = TauriNotificationManager(storage, null, context, PluginManager.loadConfig(context, "notification"))
+    var config: PluginConfig? = null
+    try {
+      config = PluginManager.loadConfig(context, "notification", PluginConfig::class.java)
+    } catch (ex: Exception) {
+      ex.printStackTrace()
+    }
+    val notificationManager = TauriNotificationManager(storage, null, context, config)
     notificationManager.schedule(notifications)
   }
 }

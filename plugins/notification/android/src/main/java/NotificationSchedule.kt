@@ -5,12 +5,25 @@
 package app.tauri.notification
 
 import android.annotation.SuppressLint
+import android.content.ClipData.Item
 import android.text.format.DateUtils
-import app.tauri.plugin.JSObject
+import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
+
 
 const val JS_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 
@@ -33,70 +46,88 @@ fun getIntervalTime(interval: NotificationInterval, count: Int): Long {
   }
 }
 
-sealed class ScheduleKind {
+@JsonDeserialize(using = NotificationScheduleDeserializer::class)
+@JsonSerialize(using = NotificationScheduleSerializer::class)
+sealed class NotificationSchedule {
   // At specific moment of time (with repeating option)
-  class At(var date: Date, val repeating: Boolean): ScheduleKind()
-  class Interval(val interval: DateMatch): ScheduleKind()
-  class Every(val interval: NotificationInterval, val count: Int): ScheduleKind()
-}
-
-@SuppressLint("SimpleDateFormat")
-class NotificationSchedule(val scheduleObj: JSObject) {
-  val kind: ScheduleKind
-  // Schedule this notification to fire even if app is idled (Doze)
-  var whileIdle: Boolean = false
-
-  init {
-    val payload = scheduleObj.getJSObject("data", JSObject())
-
-    when (val scheduleKind = scheduleObj.getString("kind", "")) {
-      "At" -> {
-        val dateString = payload.getString("date")
-        if (dateString.isNotEmpty()) {
-          val sdf = SimpleDateFormat(JS_DATE_FORMAT)
-          sdf.timeZone = TimeZone.getTimeZone("UTC")
-          val at = sdf.parse(dateString)
-          if (at == null) {
-            throw Exception("could not parse `at` date")
-          } else {
-            kind = ScheduleKind.At(at, payload.getBoolean("repeating"))
-          }
-        } else {
-          throw Exception("`at` date cannot be empty")
-        }
-      }
-      "Interval" -> {
-        val dateMatch = onFromJson(payload)
-        kind = ScheduleKind.Interval(dateMatch)
-      }
-      "Every" -> {
-        val interval = NotificationInterval.valueOf(payload.getString("interval"))
-        kind = ScheduleKind.Every(interval, payload.getInteger("count", 1))
-      }
-      else -> {
-        throw Exception("Unknown schedule kind $scheduleKind")
-      }
-    }
-    whileIdle = scheduleObj.getBoolean("allowWhileIdle", false)
-  }
-
-  private fun onFromJson(onJson: JSObject): DateMatch {
-    val match = DateMatch()
-    match.year = onJson.getInteger("year")
-    match.month = onJson.getInteger("month")
-    match.day = onJson.getInteger("day")
-    match.weekday = onJson.getInteger("weekday")
-    match.hour = onJson.getInteger("hour")
-    match.minute = onJson.getInteger("minute")
-    match.second = onJson.getInteger("second")
-    return match
-  }
+  class At(@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JS_DATE_FORMAT) var date: Date, val repeating: Boolean = false, val allowWhileIdle: Boolean = false): NotificationSchedule()
+  class Interval(val interval: DateMatch, val allowWhileIdle: Boolean = false): NotificationSchedule()
+  class Every(val interval: NotificationInterval, val count: Int = 0, val allowWhileIdle: Boolean = false): NotificationSchedule()
 
   fun isRemovable(): Boolean {
-    return when (kind) {
-      is ScheduleKind.At -> !kind.repeating
+    return when (this) {
+      is At -> !repeating
       else -> false
     }
+  }
+
+  fun allowWhileIdle(): Boolean {
+    return when (this) {
+      is At -> allowWhileIdle
+      is Interval -> allowWhileIdle
+      is Every -> allowWhileIdle
+      else -> false
+    }
+  }
+}
+
+internal class NotificationScheduleSerializer @JvmOverloads constructor(t: Class<NotificationSchedule>? = null) :
+  StdSerializer<NotificationSchedule>(t) {
+  @SuppressLint("SimpleDateFormat")
+  @Throws(IOException::class, JsonProcessingException::class)
+  override fun serialize(
+    value: NotificationSchedule, jgen: JsonGenerator, provider: SerializerProvider
+  ) {
+    jgen.writeStartObject()
+    when (value) {
+      is NotificationSchedule.At -> {
+        jgen.writeObjectFieldStart("at")
+
+        val sdf = SimpleDateFormat(JS_DATE_FORMAT)
+        sdf.timeZone = TimeZone.getTimeZone("UTC")
+        jgen.writeStringField("date", sdf.format(value.date))
+        jgen.writeBooleanField("repeating", value.repeating)
+
+        jgen.writeEndObject()
+      }
+      is NotificationSchedule.Interval -> {
+        jgen.writeObjectFieldStart("interval")
+
+        jgen.writeObjectField("interval", value.interval)
+
+        jgen.writeEndObject()
+      }
+      is NotificationSchedule.Every -> {
+        jgen.writeObjectFieldStart("every")
+
+        jgen.writeObjectField("interval", value.interval)
+        jgen.writeNumberField("count", value.count)
+
+        jgen.writeEndObject()
+      }
+      else -> {}
+    }
+
+    jgen.writeEndObject()
+  }
+}
+
+internal class NotificationScheduleDeserializer: JsonDeserializer<NotificationSchedule>() {
+  override fun deserialize(
+    jsonParser: JsonParser,
+    deserializationContext: DeserializationContext
+  ): NotificationSchedule {
+    val node: JsonNode = jsonParser.codec.readTree(jsonParser)
+    node.get("at")?.let {
+      return jsonParser.codec.treeToValue(it, NotificationSchedule.At::class.java)
+    }
+    node.get("interval")?.let {
+      return jsonParser.codec.treeToValue(it, NotificationSchedule.Interval::class.java)
+    }
+    node.get("every")?.let {
+      return jsonParser.codec.treeToValue(it, NotificationSchedule.Every::class.java)
+    }
+    throw Error("unknown schedule kind $node")
   }
 }
 

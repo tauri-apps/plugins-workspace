@@ -165,22 +165,25 @@ enum ScheduleEvery {
 
 type ScheduleData =
   | {
-      at: {
-        date: Date;
-        repeating: boolean;
-      };
-    }
-  | {
-      interval: {
-        interval: ScheduleInterval
-      };
-    }
-  | {
-      every: {
-        interval: ScheduleEvery;
-        count: number;
-      };
+    at: {
+      date: Date;
+      repeating: boolean;
+      allowWhileIdle: boolean;
     };
+  }
+  | {
+    interval: {
+      interval: ScheduleInterval;
+      allowWhileIdle: boolean;
+    };
+  }
+  | {
+    every: {
+      interval: ScheduleEvery;
+      count: number;
+      allowWhileIdle: boolean;
+    };
+  };
 
 class Schedule {
   schedule: ScheduleData;
@@ -193,16 +196,16 @@ class Schedule {
     return JSON.stringify(this.schedule)
   }
 
-  static at(date: Date, repeating = false) {
-    return new Schedule({ at: { date, repeating } });
+  static at(date: Date, repeating = false, allowWhileIdle = false) {
+    return new Schedule({ at: { date, repeating, allowWhileIdle } });
   }
 
-  static interval(interval: ScheduleInterval) {
-    return new Schedule({ interval: { interval: interval } });
+  static interval(interval: ScheduleInterval, allowWhileIdle = false) {
+    return new Schedule({ interval: { interval: interval, allowWhileIdle } });
   }
 
-  static every(kind: ScheduleEvery, count: number) {
-    return new Schedule({ every: { interval: kind, count } });
+  static every(kind: ScheduleEvery, count: number, allowWhileIdle = false) {
+    return new Schedule({ every: { interval: kind, count, allowWhileIdle } });
   }
 }
 
@@ -463,7 +466,7 @@ async function active(): Promise<ActiveNotification[]> {
  *
  * @since 2.0.0
  */
-async function removeActive(notifications: number[]): Promise<void> {
+async function removeActive(notifications: { id: number, tag?: string }[]): Promise<void> {
   return invoke("plugin:notification|remove_active", { notifications });
 }
 
@@ -485,7 +488,7 @@ async function removeAllActive(): Promise<void> {
 }
 
 /**
- * Removes all active notifications.
+ * Creates a notification channel.
  *
  * @example
  * ```typescript
@@ -539,7 +542,7 @@ async function removeChannel(id: string): Promise<void> {
  * @since 2.0.0
  */
 async function channels(): Promise<Channel[]> {
-  return invoke("plugin:notification|getActive");
+  return invoke("plugin:notification|listChannels");
 }
 
 async function onNotificationReceived(

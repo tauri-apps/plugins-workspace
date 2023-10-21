@@ -11,13 +11,18 @@ import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 import app.tauri.plugin.Invoke
 
+class PingArgs(val value: String?)
+
 @TauriPlugin
 class ExamplePlugin(private val activity: Activity): Plugin(activity) {
+    private val implementation = Example()
+
     @Command
     fun ping(invoke: Invoke) {
-        val value = invoke.getString("value") ?: ""
+        val args = invoke.parseArgs(PingArgs::class.java)
+
         val ret = JSObject()
-        ret.put("value", value)
+        ret.put("value", implementation.pong(args.value ?: "default value :("))
         invoke.resolve(ret)
     }
 }

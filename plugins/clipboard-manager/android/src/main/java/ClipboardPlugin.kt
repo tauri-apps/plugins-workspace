@@ -15,7 +15,29 @@ import app.tauri.annotation.TauriPlugin
 import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
+@JsonDeserialize(using = WriteOptionsDeserializer::class)
+sealed class WriteOptions {
+  class PlainText(val text: String, val label: String?): WriteOptions()
+}
+
+internal class WriteOptionsDeserializer: JsonDeserializer<WriteOptions>() {
+  override fun deserialize(
+    jsonParser: JsonParser,
+    deserializationContext: DeserializationContext
+  ): WriteOptions {
+    val node: JsonNode = jsonParser.codec.readTree(jsonParser)
+    node.get("plainText")?.let {
+      return jsonParser.codec.treeToValue(it, WriteOptions.PlainText::class.java)
+    }
+    throw Error("unknown write options $node")
+  }
+}
 
 @TauriPlugin
 class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
@@ -25,22 +47,15 @@ class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
   @Command
   @Suppress("MoveVariableDeclarationIntoWhen")
   fun write(invoke: Invoke) {
-    val options = invoke.getObject("options")
-    if (options == null) {
-      invoke.reject("Missing `options` input")
-      return
-    }
-    val kind = invoke.getString("kind", "")
+    val args = invoke.parseArgs(WriteOptions::class.java)
 
-    val clipData = when (kind) {
-      "PlainText" -> {
-        val label = options.getString("label", "")
-        val text = options.getString("text", "")
-        ClipData.newPlainText(label, text)
+    val clipData = when (args) {
+      is WriteOptions.PlainText -> {
+        ClipData.newPlainText(args.label, args.text)
       }
 
       else -> {
-        invoke.reject("Unknown kind $kind")
+        invoke.reject("Unimplemented $args")
         return
       }
     }

@@ -104,13 +104,19 @@ pub enum Schedule {
         date: time::OffsetDateTime,
         #[serde(default)]
         repeating: bool,
+        #[serde(default)]
+        allow_while_idle: bool,
     },
     Interval {
         interval: ScheduleInterval,
+        #[serde(default)]
+        allow_while_idle: bool,
     },
     Every {
         interval: ScheduleEvery,
         count: u8,
+        #[serde(default)]
+        allow_while_idle: bool,
     },
 }
 

@@ -15,6 +15,8 @@ import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 import app.tauri.plugin.Invoke
 
+class SetEventHandlerArgs(val handler: Channel)
+
 @TauriPlugin
 class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
     //private val implementation = Example()
@@ -33,22 +35,10 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
         invoke.resolve(ret)
     }
 
-    /* @Command
-    fun registerListenerRust(invoke: Invoke) {
-        val value = invoke.getString("value") ?: ""
-        val ret = JSObject()
-        ret.put("value", this.currentUrl ?: "none")
-        invoke.resolve(ret)
-    } */
-
     @Command
     fun setEventHandler(invoke: Invoke) {
-        val channel = invoke.getChannel("handler")
-
-        if (channel == null) {
-            invoke.reject("`handler` not provided")
-        }
-        this.channel = channel
+        val args = invoke.parseArgs(SetEventHandlerArgs::class.java)
+        this.channel = args.channel
         invoke.resolve()
     }
 

@@ -12,21 +12,37 @@ import android.graphics.Color
 import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
-import androidx.core.app.NotificationCompat
 import app.tauri.Logger
 import app.tauri.plugin.Invoke
-import app.tauri.plugin.JSArray
-import app.tauri.plugin.JSObject
+import com.fasterxml.jackson.annotation.JsonValue
 
-private const val CHANNEL_ID = "id"
-private const val CHANNEL_NAME = "name"
-private const val CHANNEL_DESCRIPTION = "description"
-private const val CHANNEL_IMPORTANCE = "importance"
-private const val CHANNEL_VISIBILITY = "visibility"
-private const val CHANNEL_SOUND = "sound"
-private const val CHANNEL_VIBRATE = "vibration"
-private const val CHANNEL_USE_LIGHTS = "lights"
-private const val CHANNEL_LIGHT_COLOR = "lightColor"
+enum class Importance(@JsonValue val value: Int) {
+  None(0),
+  Min(1),
+  Low(2),
+  Default(3),
+  High(4);
+}
+
+enum class Visibility(@JsonValue val value: Int) {
+  Secret(-1),
+  Private(0),
+  Public(1);
+}
+
+class Channel(
+  val id: String,
+  val name: String,
+  val description: String?,
+  val sound: String?,
+  val lights: Boolean?,
+  val lightsColor: String?,
+  val vibration: Boolean?,
+  val importance: Importance?,
+  val visibility: Visibility?
+)
+
+class DeleteChannelArgs(val id: String)
 
 class ChannelManager(private var context: Context) {
   private var notificationManager: NotificationManager? = null
@@ -38,32 +54,7 @@ class ChannelManager(private var context: Context) {
 
   fun createChannel(invoke: Invoke) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      val channel = JSObject()
-      if (invoke.getString(CHANNEL_ID) != null) {
-        channel.put(CHANNEL_ID, invoke.getString(CHANNEL_ID))
-      } else {
-        invoke.reject("Channel missing identifier")
-        return
-      }
-      if (invoke.getString(CHANNEL_NAME) != null) {
-        channel.put(CHANNEL_NAME, invoke.getString(CHANNEL_NAME))
-      } else {
-        invoke.reject("Channel missing name")
-        return
-      }
-      channel.put(
-        CHANNEL_IMPORTANCE,
-        invoke.getInt(CHANNEL_IMPORTANCE, NotificationManager.IMPORTANCE_DEFAULT)
-      )
-      channel.put(CHANNEL_DESCRIPTION, invoke.getString(CHANNEL_DESCRIPTION, ""))
-      channel.put(
-        CHANNEL_VISIBILITY,
-        invoke.getInt(CHANNEL_VISIBILITY, NotificationCompat.VISIBILITY_PUBLIC)
-      )
-      channel.put(CHANNEL_SOUND, invoke.getString(CHANNEL_SOUND))
-      channel.put(CHANNEL_VIBRATE, invoke.getBoolean(CHANNEL_VIBRATE, false))
-      channel.put(CHANNEL_USE_LIGHTS, invoke.getBoolean(CHANNEL_USE_LIGHTS, false))
-      channel.put(CHANNEL_LIGHT_COLOR, invoke.getString(CHANNEL_LIGHT_COLOR))
+      val channel = invoke.parseArgs(Channel::class.java)
       createChannel(channel)
       invoke.resolve()
     } else {
@@ -71,18 +62,18 @@ class ChannelManager(private var context: Context) {
     }
   }
 
-  private fun createChannel(channel: JSObject) {
+  private fun createChannel(channel: Channel) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val notificationChannel = NotificationChannel(
-        channel.getString(CHANNEL_ID),
-        channel.getString(CHANNEL_NAME),
-        channel.getInteger(CHANNEL_IMPORTANCE)!!
+        channel.id,
+        channel.name,
+        (channel.importance ?: Importance.Default).value
       )
-      notificationChannel.description = channel.getString(CHANNEL_DESCRIPTION)
-      notificationChannel.lockscreenVisibility = channel.getInteger(CHANNEL_VISIBILITY, android.app.Notification.VISIBILITY_PRIVATE)
-      notificationChannel.enableVibration(channel.getBoolean(CHANNEL_VIBRATE, false))
-      notificationChannel.enableLights(channel.getBoolean(CHANNEL_USE_LIGHTS, false))
-      val lightColor = channel.getString(CHANNEL_LIGHT_COLOR)
+      notificationChannel.description = channel.description
+      notificationChannel.lockscreenVisibility = (channel.visibility ?: Visibility.Private).value
+      notificationChannel.enableVibration(channel.vibration ?: false)
+      notificationChannel.enableLights(channel.lights ?: false)
+      val lightColor = channel.lightsColor ?: ""
       if (lightColor.isNotEmpty()) {
         try {
           notificationChannel.lightColor = Color.parseColor(lightColor)
@@ -94,7 +85,7 @@ class ChannelManager(private var context: Context) {
           )
         }
       }
-      var sound = channel.getString(CHANNEL_SOUND)
+      var sound = channel.sound ?: ""
       if (sound.isNotEmpty()) {
         if (sound.contains(".")) {
           sound = sound.substring(0, sound.lastIndexOf('.'))
@@ -113,8 +104,8 @@ class ChannelManager(private var context: Context) {
 
   fun deleteChannel(invoke: Invoke) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      val channelId = invoke.getString("id")
-      notificationManager?.deleteNotificationChannel(channelId)
+      val args = invoke.parseArgs(DeleteChannelArgs::class.java)
+      notificationManager?.deleteNotificationChannel(args.id)
       invoke.resolve()
     } else {
       invoke.reject("channel not available")
@@ -125,28 +116,30 @@ class ChannelManager(private var context: Context) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val notificationChannels: List<NotificationChannel> =
         notificationManager?.notificationChannels ?: listOf()
-      val channels = JSArray()
+
+      val channels = mutableListOf<Channel>()
+
       for (notificationChannel in notificationChannels) {
-        val channel = JSObject()
-        channel.put(CHANNEL_ID, notificationChannel.id)
-        channel.put(CHANNEL_NAME, notificationChannel.name)
-        channel.put(CHANNEL_DESCRIPTION, notificationChannel.description)
-        channel.put(CHANNEL_IMPORTANCE, notificationChannel.importance)
-        channel.put(CHANNEL_VISIBILITY, notificationChannel.lockscreenVisibility)
-        channel.put(CHANNEL_SOUND, notificationChannel.sound)
-        channel.put(CHANNEL_VIBRATE, notificationChannel.shouldVibrate())
-        channel.put(CHANNEL_USE_LIGHTS, notificationChannel.shouldShowLights())
-        channel.put(
-          CHANNEL_LIGHT_COLOR, String.format(
+        val channel = Channel(
+          notificationChannel.id,
+          notificationChannel.name.toString(),
+          notificationChannel.description,
+          notificationChannel.sound.toString(),
+          notificationChannel.shouldShowLights(),
+          String.format(
             "#%06X",
             0xFFFFFF and notificationChannel.lightColor
-          )
+          ),
+          notificationChannel.shouldVibrate(),
+          Importance.values().firstOrNull { it.value == notificationChannel.importance },
+          Visibility.values().firstOrNull { it.value == notificationChannel.lockscreenVisibility }
         )
-        channels.put(channel)
+
+        channels.add(channel)
       }
-      val result = JSObject()
-      result.put("channels", channels)
-      invoke.resolve(result)
+
+      invoke.resolveObject(channels)
+
     } else {
       invoke.reject("channel not available")
     }
