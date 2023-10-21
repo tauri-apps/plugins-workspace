@@ -11,6 +11,10 @@ enum WriteOptions: Codable {
   case plainText(text: String)
 }
 
+enum ReadClipData: Codable {
+  case plainText(text: String)
+}
+
 class ClipboardPlugin: Plugin {
   @objc public func write(_ invoke: Invoke) throws {
     let options = try invoke.parseArgs(WriteOptions.self)
@@ -29,7 +33,7 @@ class ClipboardPlugin: Plugin {
   @objc public func read(_ invoke: Invoke) throws {
     let clipboard = UIPasteboard.general
     if let text = clipboard.string {
-      invoke.resolve(WriteOptions.plainText(text: text))
+      invoke.resolve(ReadClipData.plainText(text: text))
     } else {
       invoke.reject("Clipboard is empty")
     }
