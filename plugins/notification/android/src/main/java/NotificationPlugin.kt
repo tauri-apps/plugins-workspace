@@ -71,7 +71,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
       notificationStorage,
       activity,
       activity,
-      getConfig()
+      getConfig(PluginConfig::class.java)
     )
     manager.createNotificationChannel()
     

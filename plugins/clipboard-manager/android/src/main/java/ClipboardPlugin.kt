@@ -53,11 +53,6 @@ class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
       is WriteOptions.PlainText -> {
         ClipData.newPlainText(args.label, args.text)
       }
-
-      else -> {
-        invoke.reject("Unimplemented $args")
-        return
-      }
     }
 
     manager.setPrimaryClip(clipData)
