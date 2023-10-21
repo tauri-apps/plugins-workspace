@@ -49,14 +49,14 @@ enum NotificationSchedule: Decodable {
   case every(interval: ScheduleEveryKind, count: Int)
 }
 
-struct NotificationAttachmentOptions: Decodable {
+struct NotificationAttachmentOptions: Codable {
   let iosUNNotificationAttachmentOptionsTypeHintKey: String?
   let iosUNNotificationAttachmentOptionsThumbnailHiddenKey: String?
   let iosUNNotificationAttachmentOptionsThumbnailClippingRectKey: String?
   let iosUNNotificationAttachmentOptionsThumbnailTimeKey: String?
 }
 
-struct NotificationAttachment: Decodable {
+struct NotificationAttachment: Codable {
   let id: String
   let url: String
   let options: NotificationAttachmentOptions?
@@ -225,8 +225,8 @@ class NotificationPlugin: Plugin {
   @objc func getPending(_ invoke: Invoke) {
     UNUserNotificationCenter.current().getPendingNotificationRequests(completionHandler: {
       (notifications) in
-      let ret = notifications.compactMap({ [weak self] (notification) -> JSObject? in
-        return self?.notificationHandler.makePendingNotificationRequestJSObject(notification)
+      let ret = notifications.compactMap({ [weak self] (notification) -> PendingNotification? in
+        return self?.notificationHandler.toPendingNotification(notification)
       })
 
       invoke.resolve(ret)
@@ -257,8 +257,8 @@ class NotificationPlugin: Plugin {
   @objc func getActive(_ invoke: Invoke) {
     UNUserNotificationCenter.current().getDeliveredNotifications(completionHandler: {
       (notifications) in
-      let ret = notifications.map({ (notification) -> [String: Any] in
-        return self.notificationHandler.makeNotificationRequestJSObject(
+      let ret = notifications.map({ (notification) -> ActiveNotification in
+        return self.notificationHandler.toActiveNotification(
           notification.request)
       })
       invoke.resolve(ret)
