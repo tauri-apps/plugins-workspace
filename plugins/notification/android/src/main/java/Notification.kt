@@ -18,9 +18,9 @@ class Notification(var id: Int) {
   var body: String? = null
   var largeBody: String? = null
   var summary: String? = null
-  private var sound: String? = null
-  private var smallIcon: String? = null
-  private var largeIcon: String? = null
+  var sound: String? = null
+  var icon: String? = null
+  var largeIcon: String? = null
   var iconColor: String? = null
   var actionTypeId: String? = null
   var group: String? = null
@@ -60,8 +60,8 @@ class Notification(var id: Int) {
 
   fun getSmallIcon(context: Context, defaultIcon: Int): Int {
     var resId: Int = AssetUtils.RESOURCE_ID_ZERO_VALUE
-    if (smallIcon != null) {
-      resId = AssetUtils.getResourceID(context, smallIcon, "drawable")
+    if (icon != null) {
+      resId = AssetUtils.getResourceID(context, icon, "drawable")
     }
     if (resId == AssetUtils.RESOURCE_ID_ZERO_VALUE) {
       resId = defaultIcon
