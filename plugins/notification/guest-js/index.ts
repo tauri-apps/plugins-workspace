@@ -165,25 +165,25 @@ enum ScheduleEvery {
 
 type ScheduleData =
   | {
-    at: {
-      date: Date;
-      repeating: boolean;
-      allowWhileIdle: boolean;
-    };
-  }
+      at: {
+        date: Date;
+        repeating: boolean;
+        allowWhileIdle: boolean;
+      };
+    }
   | {
-    interval: {
-      interval: ScheduleInterval;
-      allowWhileIdle: boolean;
-    };
-  }
+      interval: {
+        interval: ScheduleInterval;
+        allowWhileIdle: boolean;
+      };
+    }
   | {
-    every: {
-      interval: ScheduleEvery;
-      count: number;
-      allowWhileIdle: boolean;
+      every: {
+        interval: ScheduleEvery;
+        count: number;
+        allowWhileIdle: boolean;
+      };
     };
-  };
 
 class Schedule {
   schedule: ScheduleData;
@@ -193,7 +193,7 @@ class Schedule {
   }
 
   toJSON(): string {
-    return JSON.stringify(this.schedule)
+    return JSON.stringify(this.schedule);
   }
 
   static at(date: Date, repeating = false, allowWhileIdle = false) {
@@ -466,7 +466,9 @@ async function active(): Promise<ActiveNotification[]> {
  *
  * @since 2.0.0
  */
-async function removeActive(notifications: { id: number, tag?: string }[]): Promise<void> {
+async function removeActive(
+  notifications: { id: number; tag?: string }[],
+): Promise<void> {
   return invoke("plugin:notification|remove_active", { notifications });
 }
 
