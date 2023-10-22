@@ -14,16 +14,26 @@ import androidx.activity.result.ActivityResult
 import app.tauri.Logger
 import app.tauri.annotation.ActivityCallback
 import app.tauri.annotation.Command
+import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.TauriPlugin
 import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSArray
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 
-class Filter(val extensions: Array<String>)
+@InvokeArg
+class Filter {
+  lateinit var extensions: Array<String>
+}
 
-class FilePickerOptions(val filters: Array<Filter>, val multiple: Boolean?, val readData: Boolean?)
+@InvokeArg
+class FilePickerOptions {
+  lateinit var filters: Array<Filter>
+  var multiple: Boolean? = null
+  var readData: Boolean? = null
+}
 
+@InvokeArg
 class MessageOptions(val title: String?, val message: String, val okButtonLabel: String?, val cancelButtonLabel: String?)
 
 @TauriPlugin

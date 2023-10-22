@@ -8,12 +8,15 @@ import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import app.tauri.annotation.InvokeArg
 import app.tauri.plugin.JSArray
 import app.tauri.plugin.JSObject
 import org.json.JSONException
 import org.json.JSONObject
 
-class Notification(var id: Int) {
+@InvokeArg
+class Notification {
+  var id: Int = 0
   var title: String? = null
   var body: String? = null
   var largeBody: String? = null

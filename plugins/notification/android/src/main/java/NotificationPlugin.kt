@@ -14,6 +14,7 @@ import android.os.Build
 import android.webkit.WebView
 import app.tauri.PermissionState
 import app.tauri.annotation.Command
+import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.Permission
 import app.tauri.annotation.PermissionCallback
 import app.tauri.annotation.TauriPlugin
@@ -24,21 +25,51 @@ import app.tauri.plugin.Plugin
 
 const val LOCAL_NOTIFICATIONS = "permissionState"
 
-class PluginConfig(val icon: String?, val sound: String?, val iconColor: String?)
+@InvokeArg
+class PluginConfig {
+  var icon: String? = null
+  var sound: String? = null
+  var iconColor: String? = null
+}
 
-class BatchArgs(val notifications: List<Notification>)
+@InvokeArg
+class BatchArgs {
+  lateinit var notifications: List<Notification>
+}
 
-class CancelArgs(val notifications: List<Int>)
+@InvokeArg
+class CancelArgs {
+  lateinit var notifications: List<Int>
+}
 
-class NotificationAction(val id: String, val title: String?, val input: Boolean?)
+@InvokeArg
+class NotificationAction {
+  lateinit var id: String
+  var title: String? = null
+  var input: Boolean? = null
+}
 
-class ActionType(val id: String, val actions: List<NotificationAction>)
+@InvokeArg
+class ActionType {
+  lateinit var id: String
+  lateinit var actions: List<NotificationAction>
+}
 
-class RegisterActionTypesArgs(val types: List<ActionType>)
+@InvokeArg
+class RegisterActionTypesArgs {
+  lateinit var types: List<ActionType>
+}
 
-class ActiveNotification(val id: Int, val tag: String?)
+@InvokeArg
+class ActiveNotification {
+  var id: Int = 0
+  var tag: String? = null
+}
 
-class RemoveActiveArgs(val notifications: List<ActiveNotification>)
+@InvokeArg
+class RemoveActiveArgs {
+  var notifications: List<ActiveNotification> = listOf()
+}
 
 @TauriPlugin(
   permissions = [

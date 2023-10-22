@@ -11,6 +11,7 @@ import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
 import app.tauri.annotation.Command
+import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.TauriPlugin
 import app.tauri.plugin.Invoke
 import app.tauri.plugin.Plugin
@@ -26,15 +27,21 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import java.io.IOException
 
+@InvokeArg
 @JsonDeserialize(using = WriteOptionsDeserializer::class)
 sealed class WriteOptions {
   @JsonDeserialize
-  class PlainText(val text: String, val label: String?): WriteOptions()
+  class PlainText: WriteOptions() {
+    lateinit var text: String
+    var label: String? = null
+  }
 }
 
 @JsonSerialize(using = ReadClipDataSerializer::class)
 sealed class ReadClipData {
-  class PlainText(val text: String): ReadClipData()
+  class PlainText: ReadClipData() {
+    lateinit var text: String
+  }
 }
 
 internal class ReadClipDataSerializer @JvmOverloads constructor(t: Class<ReadClipData>? = null) :
@@ -103,7 +110,9 @@ class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
     val data = if (manager.hasPrimaryClip()) {
       if (manager.primaryClipDescription?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) == true) {
         val item: ClipData.Item = manager.primaryClip!!.getItemAt(0)
-        ReadClipData.PlainText(item.text.toString())
+        val data = ReadClipData.PlainText()
+        data.text = item.text.toString()
+        data
       } else {
         // TODO
         invoke.reject("Clipboard content reader not implemented")

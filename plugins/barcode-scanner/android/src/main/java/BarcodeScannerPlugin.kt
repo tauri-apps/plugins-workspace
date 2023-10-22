@@ -37,6 +37,7 @@ import app.tauri.Logger
 import app.tauri.PermissionState
 import app.tauri.annotation.ActivityCallback
 import app.tauri.annotation.Command
+import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.Permission
 import app.tauri.annotation.PermissionCallback
 import app.tauri.annotation.TauriPlugin
@@ -57,7 +58,12 @@ private const val PERMISSION_ALIAS_CAMERA = "camera"
 private const val PERMISSION_NAME = Manifest.permission.CAMERA
 private const val PREFS_PERMISSION_FIRST_TIME_ASKING = "PREFS_PERMISSION_FIRST_TIME_ASKING"
 
-class ScanOptions(val formats: Array<String>?, val windowed: Boolean?, val cameraDirection: String?)
+@InvokeArg
+class ScanOptions {
+    var formats: Array<String>? = null
+    var windowed: Boolean = false
+    var cameraDirection: String? = null
+}
 
 @TauriPlugin(
     permissions = [
@@ -344,7 +350,7 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
                 throw Exception("No permission to use camera. Did you request it yet?")
             } else {
                 webViewBackground = null
-                prepare(args.cameraDirection ?: "back", args.windowed ?: false)
+                prepare(args.cameraDirection ?: "back", args.windowed)
                 configureCamera(getFormats(args))
             }
         }

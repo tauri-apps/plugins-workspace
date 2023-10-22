@@ -2879,9 +2879,9 @@ dependencies = [
 
 [[package]]
 name = "json-patch"
-version = "1.0.0"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1f54898088ccb91df1b492cc80029a6fdf1c48ca0db7c6822a8babad69c94658"
+checksum = "55ff1e1486799e3f64129f8ccad108b38290df9cd7015cd31bed17239f0789d6"
 dependencies = [
  "serde",
  "serde_json",
@@ -5582,7 +5582,7 @@ checksum = "1d2faeef5759ab89935255b1a4cd98e0baf99d1085e37d36599c625dac49ae8e"
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.16"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/mobile-typed-invoke-args#2823d600c783008cefbb8cf0b9d00c0f4e057b08"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/mobile-typed-invoke-args#dcfa7219c1f4093a7eec7cbe5d393619dde819bb"
 dependencies = [
  "anyhow",
  "bytes 1.4.0",
@@ -5635,10 +5635,11 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.10"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/mobile-typed-invoke-args#2823d600c783008cefbb8cf0b9d00c0f4e057b08"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/mobile-typed-invoke-args#dcfa7219c1f4093a7eec7cbe5d393619dde819bb"
 dependencies = [
  "anyhow",
  "cargo_toml",
+ "dirs-next",
  "heck",
  "json-patch",
  "plist",
@@ -5656,7 +5657,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.9"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/mobile-typed-invoke-args#2823d600c783008cefbb8cf0b9d00c0f4e057b08"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/mobile-typed-invoke-args#dcfa7219c1f4093a7eec7cbe5d393619dde819bb"
 dependencies = [
  "base64 0.21.2",
  "brotli",
@@ -5681,7 +5682,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.9"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/mobile-typed-invoke-args#2823d600c783008cefbb8cf0b9d00c0f4e057b08"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/mobile-typed-invoke-args#dcfa7219c1f4093a7eec7cbe5d393619dde819bb"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -6073,7 +6074,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "1.0.0-alpha.3"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/mobile-typed-invoke-args#2823d600c783008cefbb8cf0b9d00c0f4e057b08"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/mobile-typed-invoke-args#dcfa7219c1f4093a7eec7cbe5d393619dde819bb"
 dependencies = [
  "gtk",
  "http",
@@ -6090,7 +6091,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "1.0.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/mobile-typed-invoke-args#2823d600c783008cefbb8cf0b9d00c0f4e057b08"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/mobile-typed-invoke-args#dcfa7219c1f4093a7eec7cbe5d393619dde819bb"
 dependencies = [
  "cocoa 0.24.1",
  "gtk",
@@ -6109,7 +6110,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.9"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/mobile-typed-invoke-args#2823d600c783008cefbb8cf0b9d00c0f4e057b08"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/mobile-typed-invoke-args#dcfa7219c1f4093a7eec7cbe5d393619dde819bb"
 dependencies = [
  "aes-gcm 0.10.2",
  "brotli",

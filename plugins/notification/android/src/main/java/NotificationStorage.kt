@@ -104,7 +104,12 @@ class NotificationStorage(private val context: Context) {
       val id = storage.getString("id$i", "")
       val title = storage.getString("title$i", "")
       val input = storage.getBoolean("input$i", false)
-      actions[i] = NotificationAction(id ?: "", title, input)
+
+      val action = NotificationAction()
+      action.id = id ?: ""
+      action.title = title
+      action.input = input
+      actions[i] = action
     }
     return actions
   }

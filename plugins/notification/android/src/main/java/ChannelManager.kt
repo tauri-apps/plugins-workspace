@@ -13,6 +13,7 @@ import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
 import app.tauri.Logger
+import app.tauri.annotation.InvokeArg
 import app.tauri.plugin.Invoke
 import com.fasterxml.jackson.annotation.JsonValue
 
@@ -30,19 +31,23 @@ enum class Visibility(@JsonValue val value: Int) {
   Public(1);
 }
 
-class Channel(
-  val id: String,
-  val name: String,
-  val description: String?,
-  val sound: String?,
-  val lights: Boolean?,
-  val lightsColor: String?,
-  val vibration: Boolean?,
-  val importance: Importance?,
-  val visibility: Visibility?
-)
+@InvokeArg
+class Channel {
+  lateinit var id: String
+  lateinit var name: String
+  var description: String? = null
+  var sound: String? = null
+  var lights: Boolean? = null
+  var lightsColor: String? = null
+  var vibration: Boolean? = null
+  var importance: Importance? = null
+  var visibility: Visibility? = null
+}
 
-class DeleteChannelArgs(val id: String)
+@InvokeArg
+class DeleteChannelArgs {
+  lateinit var id: String
+}
 
 class ChannelManager(private var context: Context) {
   private var notificationManager: NotificationManager? = null
@@ -120,20 +125,19 @@ class ChannelManager(private var context: Context) {
       val channels = mutableListOf<Channel>()
 
       for (notificationChannel in notificationChannels) {
-        val channel = Channel(
-          notificationChannel.id,
-          notificationChannel.name.toString(),
-          notificationChannel.description,
-          notificationChannel.sound.toString(),
-          notificationChannel.shouldShowLights(),
-          String.format(
-            "#%06X",
-            0xFFFFFF and notificationChannel.lightColor
-          ),
-          notificationChannel.shouldVibrate(),
-          Importance.values().firstOrNull { it.value == notificationChannel.importance },
-          Visibility.values().firstOrNull { it.value == notificationChannel.lockscreenVisibility }
+        val channel = Channel()
+        channel.id = notificationChannel.id
+        channel.name = notificationChannel.name.toString()
+        channel.description = notificationChannel.description
+        channel.sound = notificationChannel.sound.toString()
+        channel.lights = notificationChannel.shouldShowLights()
+        String.format(
+          "#%06X",
+          0xFFFFFF and notificationChannel.lightColor
         )
+        channel.vibration = notificationChannel.shouldVibrate()
+        channel.importance = Importance.values().firstOrNull { it.value == notificationChannel.importance }
+        channel.visibility = Visibility.values().firstOrNull { it.value == notificationChannel.lockscreenVisibility }
 
         channels.add(channel)
       }

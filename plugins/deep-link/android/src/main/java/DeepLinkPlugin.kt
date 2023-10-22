@@ -8,6 +8,7 @@ import android.app.Activity
 import android.content.Intent
 import android.webkit.WebView
 import app.tauri.Logger
+import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.Command
 import app.tauri.annotation.TauriPlugin
 import app.tauri.plugin.Channel
@@ -15,7 +16,10 @@ import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 import app.tauri.plugin.Invoke
 
-class SetEventHandlerArgs(val handler: Channel)
+@InvokeArg
+class SetEventHandlerArgs {
+    lateinit var handler: Channel
+}
 
 @TauriPlugin
 class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
