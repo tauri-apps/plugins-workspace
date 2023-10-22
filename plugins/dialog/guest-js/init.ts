@@ -2,13 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-window.alert = function (message) {
+import { invoke } from "@tauri-apps/api/primitives";
+
+window.alert = function (message: string) {
   invoke("plugin:dialog|message", {
     message: message.toString(),
   });
 };
 
-window.confirm = function (message) {
+// @ts-expect-error tauri does not have sync IPC :(
+window.confirm = function (message: string) {
   return invoke("plugin:dialog|confirm", {
     message: message.toString(),
   });
