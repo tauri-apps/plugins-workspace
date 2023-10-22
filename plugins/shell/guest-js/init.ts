@@ -2,31 +2,30 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-// @ts-nocheck
-
 import { invoke } from "@tauri-apps/api/primitives";
 
 // open <a href="..."> links with the API
 function openLinks() {
   document.querySelector("body")?.addEventListener("click", function (e) {
-    var target = e.target;
+    var target = e.target as HTMLElement;
     while (target != null) {
       if (target.matches("a")) {
+        const t = target as HTMLAnchorElement
         if (
-          target.href &&
+          t.href &&
           ["http://", "https://", "mailto:", "tel:"].some((v) =>
-            target.href.startsWith(v),
+            t.href.startsWith(v),
           ) &&
-          target.target === "_blank"
+          t.target === "_blank"
         ) {
           invoke("plugin:shell|open", {
-            path: target.href,
+            path: t.href,
           });
           e.preventDefault();
         }
         break;
       }
-      target = target.parentElement;
+      target = target.parentElement as HTMLElement;
     }
   });
 }
