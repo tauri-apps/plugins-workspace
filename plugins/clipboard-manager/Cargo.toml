@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-clipboard-manager"
-version = "2.0.0-alpha.2"
+version = "2.0.0-alpha.3"
 description = "Read and write to the system clipboard."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -10,10 +10,7 @@ links = "tauri-plugin-clipboard-manager"
 
 [package.metadata.docs.rs]
 features = [ "dox" ]
-targets = [
-  "x86_64-unknown-linux-gnu",
-  "x86_64-linux-android"
-]
+targets = [ "x86_64-unknown-linux-gnu", "x86_64-linux-android" ]
 
 [build-dependencies]
 tauri-build = { workspace = true }
