@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import { invoke } from "@tauri-apps/api/primitives";
-import { getCurrent } from '@tauri-apps/api/window';
+import { getCurrent } from "@tauri-apps/api/window";
 
 export enum StateFlags {
   SIZE = 1 << 0,

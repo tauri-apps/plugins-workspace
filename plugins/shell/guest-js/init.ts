@@ -7,10 +7,10 @@ import { invoke } from "@tauri-apps/api/primitives";
 // open <a href="..."> links with the API
 function openLinks() {
   document.querySelector("body")?.addEventListener("click", function (e) {
-    var target = e.target as HTMLElement;
+    let target = e.target as HTMLElement;
     while (target != null) {
       if (target.matches("a")) {
-        const t = target as HTMLAnchorElement
+        const t = target as HTMLAnchorElement;
         if (
           t.href &&
           ["http://", "https://", "mailto:", "tel:"].some((v) =>
