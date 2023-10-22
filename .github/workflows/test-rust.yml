@@ -181,16 +181,11 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          key: cache-${{ matrix.package }}
+          key: cache-${{ matrix.package }}-${{ matrix.platform.target }}
 
       - name: create dummy dist
         working-directory: examples/api
         run: mkdir dist
-
-      - name: Downgrade crates with MSRV conflict
-        # The --precise flag can only be used once per invocation.
-        run: |
-          cargo update -p time@0.3.24 --precise 0.3.23
 
       - name: install cross
         if: ${{ matrix.platform.runner == 'cross' }}
