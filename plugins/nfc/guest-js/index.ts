@@ -76,8 +76,10 @@ export function record(
   };
 }
 
-export function textRecord(text: string, id?: string | number[]): NFCRecord {
-  return record(NFCTypeNameFormat.NfcWellKnown, RTD_TEXT, id || [], text);
+export function textRecord(text: string, id?: string | number[], language: string = "en"): NFCRecord {
+  const payload = Array.from(new TextEncoder().encode(language + text))
+  payload.unshift(language.length)
+  return record(NFCTypeNameFormat.NfcWellKnown, RTD_TEXT, id || [], payload);
 }
 
 const protocols = [
