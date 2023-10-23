@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-updater"
-version = "2.0.0-alpha.2"
+version = "2.0.0-alpha.3"
 description = "In-app updates for Tauri applications."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -35,7 +35,6 @@ zip = { version = "0.6", default-features = false }
 
 [target."cfg(target_os = \"macos\")".dependencies]
 flate2 = "1.0.27"
-
 
 [dev-dependencies]
 mockito = "0.31"

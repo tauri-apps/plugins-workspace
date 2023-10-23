@@ -2,6 +2,11 @@
 
 ## \[2.0.0-alpha.2]
 
+- [`5c13736`](https://github.com/tauri-apps/plugins-workspace/commit/5c137365c60790e8d4037d449e8237aa3fffdab0)([#673](https://github.com/tauri-apps/plugins-workspace/pull/673)) Update to @tauri-apps/api v2.0.0-alpha.16.
+- [`beb6b13`](https://github.com/tauri-apps/plugins-workspace/commit/beb6b139eb669dc0346b3de919aed024f649b9d2)([#675](https://github.com/tauri-apps/plugins-workspace/pull/675)) Fix usage of no longer available `__TAURI_METADATA__` API.
+
+## \[2.0.0-alpha.2]
+
 - [`4e2cef9`](https://github.com/tauri-apps/plugins-workspace/commit/4e2cef9b702bbbb9cf4ee17de50791cb21f1b2a4)([#593](https://github.com/tauri-apps/plugins-workspace/pull/593)) Update to alpha.12.
 
 ## \[2.0.0-alpha.1]

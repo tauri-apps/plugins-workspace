@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-notification"
-version = "2.0.0-alpha.3"
+version = "2.0.0-alpha.4"
 description = "Send desktop and mobile notifications on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -10,10 +10,7 @@ links = "tauri-plugin-notification"
 
 [package.metadata.docs.rs]
 features = [ "dox" ]
-targets = [
-  "x86_64-unknown-linux-gnu",
-  "x86_64-linux-android"
-]
+targets = [ "x86_64-unknown-linux-gnu", "x86_64-linux-android" ]
 
 [build-dependencies]
 tauri-build = { workspace = true }
