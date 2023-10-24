@@ -25,10 +25,6 @@ jobs:
         id: filter
         with:
           filters: |
-            app:
-              - .github/workflows/check-generated-files.yml
-              - plugins/app/guest-js/**
-              - plugins/app/src/api-iife.js
             authenticator:
               - .github/workflows/check-generated-files.yml
               - plugins/authenticator/guest-js/**
@@ -109,10 +105,6 @@ jobs:
               - .github/workflows/check-generated-files.yml
               - plugins/websocket/guest-js/**
               - plugins/websocket/src/api-iife.js
-            window:
-              - .github/workflows/check-generated-files.yml
-              - plugins/window/guest-js/**
-              - plugins/window/src/api-iife.js
             window-state:
               - .github/workflows/check-generated-files.yml
               - plugins/window-state/guest-js/**

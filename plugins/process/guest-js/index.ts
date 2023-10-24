@@ -7,11 +7,7 @@
  * @module
  */
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-  }
-}
+import { invoke } from "@tauri-apps/api/primitives";
 
 /**
  * Exits immediately with the given `exitCode`.
@@ -27,7 +23,7 @@ declare global {
  * @since 2.0.0
  */
 async function exit(code = 0): Promise<void> {
-  return window.__TAURI_INVOKE__("plugin:process|exit", { code });
+  return invoke("plugin:process|exit", { code });
 }
 
 /**
@@ -43,7 +39,7 @@ async function exit(code = 0): Promise<void> {
  * @since 2.0.0
  */
 async function relaunch(): Promise<void> {
-  return window.__TAURI_INVOKE__("plugin:process|restart");
+  return invoke("plugin:process|restart");
 }
 
 export { exit, relaunch };

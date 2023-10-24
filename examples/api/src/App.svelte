@@ -1,7 +1,7 @@
 <script>
   import { writable } from "svelte/store";
   import { open } from "@tauri-apps/plugin-shell";
-  import { getCurrent } from "@tauri-apps/plugin-window";
+  import { getCurrent } from "@tauri-apps/api/window";
   import * as os from "@tauri-apps/plugin-os";
 
   import Welcome from "./views/Welcome.svelte";
@@ -11,14 +11,12 @@
   import FileSystem from "./views/FileSystem.svelte";
   import Http from "./views/Http.svelte";
   import Notifications from "./views/Notifications.svelte";
-  import Window from "./views/Window.svelte";
   import Shortcuts from "./views/Shortcuts.svelte";
   import Shell from "./views/Shell.svelte";
   import Updater from "./views/Updater.svelte";
   import Clipboard from "./views/Clipboard.svelte";
   import WebRTC from "./views/WebRTC.svelte";
   import Scanner from "./views/Scanner.svelte";
-  import App from "./views/App.svelte";
 
   import { onMount } from "svelte";
   import { ask } from "@tauri-apps/plugin-dialog";
@@ -79,16 +77,6 @@
       label: "Notifications",
       component: Notifications,
       icon: "i-codicon-bell-dot",
-    },
-    !isMobile && {
-      label: "App",
-      component: App,
-      icon: "i-codicon-hubot",
-    },
-    !isMobile && {
-      label: "Window",
-      component: Window,
-      icon: "i-codicon-window",
     },
     !isMobile && {
       label: "Shortcuts",

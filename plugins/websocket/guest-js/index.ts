@@ -2,7 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke, Channel } from "@tauri-apps/api/tauri";
+import { invoke, Channel } from "@tauri-apps/api/primitives";
+
+export interface ConnectionConfig {
+  writeBufferSize?: number;
+  maxWriteBufferSize?: number;
+  maxMessageSize?: number;
+  maxFrameSize?: number;
+  acceptUnmaskedFrames?: boolean;
+  headers?: HeadersInit;
+}
 
 export interface MessageKind<T, D> {
   type: T;
@@ -30,7 +39,10 @@ export default class WebSocket {
     this.listeners = listeners;
   }
 
-  static async connect(url: string, options?: unknown): Promise<WebSocket> {
+  static async connect(
+    url: string,
+    config?: ConnectionConfig,
+  ): Promise<WebSocket> {
     const listeners: Array<(arg: Message) => void> = [];
 
     const onMessage = new Channel<Message>();
@@ -41,7 +53,7 @@ export default class WebSocket {
     return await invoke<number>("plugin:websocket|connect", {
       url,
       onMessage,
-      options,
+      config,
     }).then((id) => new WebSocket(id, listeners));
   }
 

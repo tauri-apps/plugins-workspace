@@ -2,20 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-  }
-}
+import { invoke } from "@tauri-apps/api/primitives";
 
 export async function isEnabled(): Promise<boolean> {
-  return await window.__TAURI_INVOKE__("plugin:autostart|is_enabled");
+  return await invoke("plugin:autostart|is_enabled");
 }
 
 export async function enable(): Promise<void> {
-  await window.__TAURI_INVOKE__("plugin:autostart|enable");
+  await invoke("plugin:autostart|enable");
 }
 
 export async function disable(): Promise<void> {
-  await window.__TAURI_INVOKE__("plugin:autostart|disable");
+  await invoke("plugin:autostart|disable");
 }

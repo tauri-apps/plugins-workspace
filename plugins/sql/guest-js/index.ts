@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-  }
-}
+import { invoke } from "@tauri-apps/api/primitives";
 
 export interface QueryResult {
   /** The number of rows affected by the query. */
@@ -42,7 +38,7 @@ export default class Database {
    *
    * # Sqlite
    *
-   * The path is relative to `tauri::api::path::BaseDirectory::App` and must start with `sqlite:`.
+   * The path is relative to `tauri::path::BaseDirectory::App` and must start with `sqlite:`.
    *
    * @example
    * ```ts
@@ -50,7 +46,7 @@ export default class Database {
    * ```
    */
   static async load(path: string): Promise<Database> {
-    const _path = await window.__TAURI_INVOKE__<string>("plugin:sql|load", {
+    const _path = await invoke<string>("plugin:sql|load", {
       db: path,
     });
 
@@ -66,7 +62,7 @@ export default class Database {
    *
    * # Sqlite
    *
-   * The path is relative to `tauri::api::path::BaseDirectory::App` and must start with `sqlite:`.
+   * The path is relative to `tauri::path::BaseDirectory::App` and must start with `sqlite:`.
    *
    * @example
    * ```ts
@@ -110,13 +106,14 @@ export default class Database {
    * ```
    */
   async execute(query: string, bindValues?: unknown[]): Promise<QueryResult> {
-    const [rowsAffected, lastInsertId] = await window.__TAURI_INVOKE__<
-      [number, number]
-    >("plugin:sql|execute", {
-      db: this.path,
-      query,
-      values: bindValues ?? [],
-    });
+    const [rowsAffected, lastInsertId] = await invoke<[number, number]>(
+      "plugin:sql|execute",
+      {
+        db: this.path,
+        query,
+        values: bindValues ?? [],
+      },
+    );
 
     return {
       lastInsertId,
@@ -142,7 +139,7 @@ export default class Database {
    * ```
    */
   async select<T>(query: string, bindValues?: unknown[]): Promise<T> {
-    const result = await window.__TAURI_INVOKE__<T>("plugin:sql|select", {
+    const result = await invoke<T>("plugin:sql|select", {
       db: this.path,
       query,
       values: bindValues ?? [],
@@ -163,7 +160,7 @@ export default class Database {
    * @param db - Optionally state the name of a database if you are managing more than one. Otherwise, all database pools will be in scope.
    */
   async close(db?: string): Promise<boolean> {
-    const success = await window.__TAURI_INVOKE__<boolean>("plugin:sql|close", {
+    const success = await invoke<boolean>("plugin:sql|close", {
       db,
     });
     return success;

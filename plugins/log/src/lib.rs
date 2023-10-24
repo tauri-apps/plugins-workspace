@@ -499,7 +499,7 @@ fn get_log_file_path(
     rotation_strategy: &RotationStrategy,
     timezone_strategy: &TimezoneStrategy,
     max_file_size: u128,
-) -> plugin::Result<PathBuf> {
+) -> Result<PathBuf, Box<dyn std::error::Error>> {
     let path = dir.as_ref().join(format!("{file_name}.log"));
 
     if path.exists() {

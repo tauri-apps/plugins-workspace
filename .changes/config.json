@@ -38,7 +38,6 @@
       "manager": "rust",
       "publish": false,
       "dependencies": [
-        "app",
         "barcode-scanner",
         "log-plugin",
         "cli",
@@ -51,8 +50,7 @@
         "os",
         "process",
         "shell",
-        "updater",
-        "window"
+        "updater"
       ]
     },
     "api-example-js": {
@@ -60,7 +58,6 @@
       "manager": "javascript",
       "publish": false,
       "dependencies": [
-        "app-js",
         "barcode-scanner-js",
         "log-js",
         "cli-js",
@@ -73,8 +70,7 @@
         "os-js",
         "process-js",
         "shell-js",
-        "updater-js",
-        "window-js"
+        "updater-js"
       ],
       "postversion": "pnpm install --no-frozen-lockfile"
     },
@@ -85,15 +81,6 @@
       "publish": false,
       "dependencies": ["deep-link-js"],
       "postversion": "pnpm install --no-frozen-lockfile"
-    },
-
-    "app": {
-      "path": "./plugins/app",
-      "manager": "rust"
-    },
-    "app-js": {
-      "path": "./plugins/app",
-      "manager": "javascript"
     },
 
     "authenticator": {
@@ -330,15 +317,6 @@
     },
     "websocket-js": {
       "path": "./plugins/websocket",
-      "manager": "javascript"
-    },
-
-    "window": {
-      "path": "./plugins/window",
-      "manager": "rust"
-    },
-    "window-js": {
-      "path": "./plugins/window",
       "manager": "javascript"
     },
 

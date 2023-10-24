@@ -4,11 +4,7 @@
 
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-  }
-}
+import { invoke } from "@tauri-apps/api/primitives";
 
 export type LogOptions = {
   file?: string;
@@ -67,7 +63,7 @@ async function log(
     location = "webview::unknown";
   }
 
-  await window.__TAURI_INVOKE__("plugin:log|log", {
+  await invoke("plugin:log|log", {
     level,
     message,
     location,

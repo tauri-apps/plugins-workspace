@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-websocket"
-version = "2.0.0-alpha.2"
+version = "2.0.0-alpha.3"
 description = "Expose a WebSocket server to your Tauri frontend."
 authors = { workspace = true }
 license = { workspace = true }
@@ -20,7 +20,7 @@ thiserror = { workspace = true }
 rand = "0.8"
 futures-util = "0.3"
 tokio = { version = "1", features = [ "net", "sync" ] }
-tokio-tungstenite = { version = "0.19" }
+tokio-tungstenite = { version = "0.20" }
 
 [features]
 native-tls = [ "tokio-tungstenite/native-tls" ]
