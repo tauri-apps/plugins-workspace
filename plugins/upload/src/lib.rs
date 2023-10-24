@@ -9,7 +9,10 @@ use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
     Runtime, Window,
 };
-use tokio::{fs::File, io::AsyncWriteExt};
+use tokio::{
+    fs::File,
+    io::{AsyncWriteExt, BufWriter},
+};
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 use read_progress_stream::ReadProgressStream;
@@ -64,7 +67,7 @@ async fn download<R: Runtime>(
     let response = request.send().await?;
     let total = response.content_length().unwrap_or(0);
 
-    let mut file = File::create(file_path).await?;
+    let mut file = BufWriter::new(File::create(file_path).await?);
     let mut stream = response.bytes_stream();
 
     while let Some(chunk) = stream.try_next().await? {
@@ -78,6 +81,7 @@ async fn download<R: Runtime>(
             },
         );
     }
+    file.flush().await?;
 
     Ok(id)
 }
