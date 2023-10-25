@@ -16,6 +16,24 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- NFC PLUGIN. AUTO-GENERATED. DO NOT REMOVE. -->
+            <intent-filter>
+              <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+              <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            
+            <intent-filter>
+              <action android:name="android.nfc.action.TECH_DISCOVERED" />
+            </intent-filter>
+            
+            <meta-data
+              android:name="android.nfc.action.TECH_DISCOVERED"
+              android:resource="@xml/nfc_tech_filter" />
+            
+            <intent-filter>
+              <action android:name="android.nfc.action.TAG_DISCOVERED" />
+            </intent-filter>
+            <!-- NFC PLUGIN. AUTO-GENERATED. DO NOT REMOVE. -->
         </activity>
 
         <provider
