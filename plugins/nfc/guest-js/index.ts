@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-  }
-}
+import { invoke } from "@tauri-apps/api/primitives";
 
 export const RTD_TEXT = [0x54]; // "T"
 export const RTD_URI = [0x55]; // "U"
@@ -157,18 +153,18 @@ export async function scan(
   kind: ScanKind,
   options?: ScanOptions
 ): Promise<Scan> {
-  return await window.__TAURI_INVOKE__("plugin:nfc|scan", {
+  return await invoke("plugin:nfc|scan", {
     kind: kind === ScanKind.Ndef ? "ndef" : "tag",
     ...options,
   });
 }
 
 export async function write(records: NFCRecord[]): Promise<void> {
-  return await window.__TAURI_INVOKE__("plugin:nfc|write", {
+  return await invoke("plugin:nfc|write", {
     records,
   });
 }
 
 export async function isAvailable(): Promise<boolean> {
-  return await window.__TAURI_INVOKE__("plugin:nfc|isAvailable");
+  return await invoke("plugin:nfc|isAvailable");
 }

@@ -6,7 +6,7 @@
 
   onMount(async () => {
     let record = textRecord("Hello from Tauri!", "someTestId")
-    write([record]).then(onMessage).catch(onMessage)
+    write([record]).then(m => onMessage(`success: ${m}`)).catch(m => onMessage(`error: ${m}`))
   });
 /*  onDestroy(() => {
 
