@@ -20,9 +20,11 @@ import app.tauri.Logger
 import app.tauri.annotation.Command
 import app.tauri.annotation.TauriPlugin
 import app.tauri.plugin.Invoke
+import app.tauri.plugin.JSArray
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 import org.json.JSONArray
+import org.json.JSONObject
 import java.io.IOException
 import kotlin.concurrent.thread
 
@@ -63,8 +65,6 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
             this.available = true
         }
 
-
-
         this.errorReason?.let {
             Logger.error("NFC", it, null)
         }
@@ -80,18 +80,22 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
                 writeTag(intent)
             }
         }
+
     }
 
     override fun onPause() {
+        disableNFCInForeground()
         super.onPause()
         Logger.info("NFC", "onPause")
-        disableNFCInForeground()
     }
 
     override fun onResume() {
         super.onResume()
         Logger.info("NFC", "onResume")
-        if (this.pendingNfcAction != NfcAction.NONE) {
+        if (this.pendingNfcAction == NfcAction.NONE) {
+            //disableNFCInForeground()
+        }
+        else {
             enableNFCInForeground()
         }
     }
@@ -104,9 +108,14 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     }
 
     @Command
-    fun read(invoke: Invoke) {
+    fun scan(invoke: Invoke) {
         if (this.nfcAdapter === null) {
             invoke.reject("NFC writing unavailable: " + this.errorReason)
+            return
+        }
+        val kind = invoke.getString("kind")
+        if (kind != "tag" && kind != "ndef") {
+            invoke.reject("invalid `kind` argument, expected one of `tag`, `ndef`, got: '$kind'")
             return
         }
 
@@ -148,7 +157,69 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
         Logger.warn("NFC", "Write Mode Enabled")
     }
 
-    private fun readTag(intent: Intent) {}
+    // TODO: keepAlive
+    private fun readTag(intent: Intent) {
+        try {
+            val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG)
+            val rawMessages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)
+
+            // For some reason this one never triggers.
+            if (intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED) {
+                Logger.info("NFC", "new NDEF intent")
+
+                val ndef = Ndef.get(tag)
+
+                // iOS part only reads the first message so we do too. i think that covers most if not all use cases anyway.
+                val ndefMessage = rawMessages?.get(0) as NdefMessage
+                val ret = JSObject()
+
+                val records = ndefMessage.records
+
+                val jsonRecords = Array(records.size) { i -> recordToJson(records[i]) }
+
+                if (tag?.id !== null) {
+                    ret.put("id", fromU8Array(tag.id))
+                }
+                ret.put("kind", ndef.type) // todo: should be the tag's type, not the ndef type
+                ret.put("records", JSArray.from(jsonRecords))
+
+                invokeHandler?.resolve(ret)
+
+            } else if (intent.action == NfcAdapter.ACTION_TECH_DISCOVERED) {
+                // For some reason this always triggers instead of NDEF_DISCOVERED even though we set ndef filters right now
+                Logger.info("NFC", "new TECH intent")
+
+                // TODO: HANDLE DIFFERENT TECHS!!!!! Don't assume ndef
+
+                val ndef = Ndef.get(tag)
+
+                val ndefMessage = rawMessages?.get(0) as NdefMessage
+                val ret = JSObject()
+
+                val records = ndefMessage.records
+
+                val jsonRecords = Array(records.size) { i -> recordToJson(records[i]) }
+
+                if (tag?.id !== null) {
+                    ret.put("id", fromU8Array(tag.id))
+                }
+                ret.put("kind", ndef.type) // todo: should be the tag's type, not the ndef type
+                ret.put("records", JSArray.from(jsonRecords))
+
+                invokeHandler?.resolve(ret)
+
+
+
+            } else if (intent.action == NfcAdapter.ACTION_TAG_DISCOVERED) {
+                // This should never trigger when an app handles NDEF and TECH
+            }
+
+            this.pendingNfcAction = NfcAction.NONE
+            //disableNFCInForeground()
+        } catch (e: Exception) {
+            Logger.error("wtf", e)
+        }
+    }
 
     private fun writeTag(intent: Intent) {
         if (messageToWrite !== null) { // This should always be true
@@ -183,6 +254,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
                 }
 
                 ndefTag.close() // TODO: Catch possible IOException
+                this.pendingNfcAction = NfcAction.NONE
                 disableNFCInForeground()
                 return
 
@@ -228,11 +300,12 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
         val nfcIntentFilter = IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED)
         val filters = arrayOf(nfcIntentFilter)
 
-        val techLists = arrayOf(arrayOf(Ndef::class.java.name), arrayOf(NdefFormatable::class.java.name))
+        val techLists =
+            arrayOf(arrayOf(Ndef::class.java.name), arrayOf(NdefFormatable::class.java.name))
 
         // TODO: check again after adding the reader portion
-        //nfcAdapter?.enableForegroundDispatch(activity, pendingIntent, filters, techLists)
-        nfcAdapter?.enableForegroundDispatch(activity, pendingIntent, null, null)
+        nfcAdapter?.enableForegroundDispatch(activity, pendingIntent, filters, techLists)
+        //nfcAdapter?.enableForegroundDispatch(activity, pendingIntent, null, null)
     }
 
     private fun disableNFCInForeground() {
@@ -240,6 +313,23 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     }
 }
 
-fun toU8Array(jsonArray: JSONArray): ByteArray {
+private fun toU8Array(jsonArray: JSONArray): ByteArray {
     return ByteArray(jsonArray.length()) { i -> jsonArray.getInt(i).toByte() }
+}
+
+private fun fromU8Array(byteArray: ByteArray): JSONArray {
+    val json = JSONArray()
+    for (byte in byteArray) {
+        json.put(byte)
+    }
+    return json
+}
+
+private fun recordToJson(record: NdefRecord): JSObject {
+    val json = JSObject()
+    json.put("tnf", record.tnf)
+    json.put("kind", fromU8Array(record.type))
+    json.put("id", fromU8Array(record.id))
+    json.put("payload", fromU8Array(record.payload))
+    return json
 }
