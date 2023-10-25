@@ -14,20 +14,24 @@ import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.Ndef
 import android.nfc.tech.NdefFormatable
+import android.os.Build
 import android.webkit.WebView
 import app.tauri.Logger
 import app.tauri.annotation.Command
 import app.tauri.annotation.TauriPlugin
+import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
-import app.tauri.plugin.Invoke
 import org.json.JSONArray
 import java.io.IOException
 import kotlin.concurrent.thread
 
+
 enum class NfcAction {
     NONE, READ, WRITE
 }
+
+// TODO: Use ReaderMode instead of ForegroundDispatch
 
 @TauriPlugin
 class NfcPlugin(private val activity: Activity) : Plugin(activity) {
@@ -61,7 +65,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
 
 
 
-        this.errorReason?.let { it ->
+        this.errorReason?.let {
             Logger.error("NFC", it, null)
         }
     }
@@ -209,21 +213,22 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     }
 
     private fun enableNFCInForeground() {
+        val flag =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
         val pendingIntent = PendingIntent.getActivity(
             activity, 0,
             Intent(
                 activity,
                 activity.javaClass
             ).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP/* or Intent.FLAG_ACTIVITY_CLEAR_TOP*/),
-            PendingIntent.FLAG_MUTABLE
+            flag
         )
 
         // TODO: add other 2 actions if we actually set filters below
         val nfcIntentFilter = IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED)
         val filters = arrayOf(nfcIntentFilter)
 
-        val techLists =
-            arrayOf(arrayOf(Ndef::class.java.name), arrayOf(NdefFormatable::class.java.name))
+        val techLists = arrayOf(arrayOf(Ndef::class.java.name), arrayOf(NdefFormatable::class.java.name))
 
         // TODO: check again after adding the reader portion
         //nfcAdapter?.enableForegroundDispatch(activity, pendingIntent, filters, techLists)
@@ -235,6 +240,6 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     }
 }
 
-fun toU8Array(jsarray: JSONArray): ByteArray {
-    return ByteArray(jsarray.length()) { i -> jsarray.getInt(i).toByte() }
+fun toU8Array(jsonArray: JSONArray): ByteArray {
+    return ByteArray(jsonArray.length()) { i -> jsonArray.getInt(i).toByte() }
 }
