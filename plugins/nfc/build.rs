@@ -14,24 +14,28 @@ fn main() {
         exit(1);
     }
 
-
-    // TODO: check if this can reference the plugin's xml as it expects rn
-    tauri_build::mobile::update_android_manifest("NFC PLUGIN", "activity",
-                                                 r#"<intent-filter>
+    // TODO: triple check if this can reference the plugin's xml as it expects rn
+    // TODO: This has to be configurable if we want to support handling nfc tags when the app is not open.
+    tauri_build::mobile::update_android_manifest(
+        "NFC PLUGIN",
+        "activity",
+        r#"<intent-filter>
   <action android:name="android.nfc.action.NDEF_DISCOVERED" />
   <category android:name="android.intent.category.DEFAULT" />
 </intent-filter>
 
 <intent-filter>
   <action android:name="android.nfc.action.TECH_DISCOVERED" />
+  <category android:name="android.intent.category.DEFAULT" />
+</intent-filter>
+
+<intent-filter>
+  <action android:name="android.nfc.action.TAG_DISCOVERED" />
+  <category android:name="android.intent.category.DEFAULT" />
 </intent-filter>
 
 <meta-data
   android:name="android.nfc.action.TECH_DISCOVERED"
-  android:resource="@xml/nfc_tech_filter" />
-
-<intent-filter>
-  <action android:name="android.nfc.action.TAG_DISCOVERED" />
-</intent-filter>"#.to_string())
+  android:resource="@xml/nfc_tech_filter" />"#.to_string())
         .expect("failed to rewrite AndroidManifest.xml");
 }

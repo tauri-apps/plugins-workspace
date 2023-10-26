@@ -15,6 +15,7 @@ import android.nfc.Tag
 import android.nfc.tech.Ndef
 import android.nfc.tech.NdefFormatable
 import android.os.Build
+import android.os.Parcelable
 import android.webkit.WebView
 import app.tauri.Logger
 import app.tauri.annotation.Command
@@ -24,7 +25,6 @@ import app.tauri.plugin.JSArray
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 import org.json.JSONArray
-import org.json.JSONObject
 import java.io.IOException
 import kotlin.concurrent.thread
 
@@ -33,12 +33,9 @@ enum class NfcAction {
     NONE, READ, WRITE
 }
 
-// TODO: Use ReaderMode instead of ForegroundDispatch
-
 @TauriPlugin
 class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     private lateinit var webView: WebView
-    private var savedIntent: Intent? = null;
 
     private var available = false
     private var errorReason: String? = null
@@ -92,10 +89,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     override fun onResume() {
         super.onResume()
         Logger.info("NFC", "onResume")
-        if (this.pendingNfcAction == NfcAction.NONE) {
-            //disableNFCInForeground()
-        }
-        else {
+        if (this.pendingNfcAction != NfcAction.NONE) {
             enableNFCInForeground()
         }
     }
@@ -157,7 +151,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
         Logger.warn("NFC", "Write Mode Enabled")
     }
 
-    // TODO: keepAlive
+    // TODO: keepAlive?
     private fun readTag(intent: Intent) {
         try {
             val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG)
@@ -167,58 +161,50 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
             if (intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED) {
                 Logger.info("NFC", "new NDEF intent")
 
-                val ndef = Ndef.get(tag)
-
-                // iOS part only reads the first message so we do too. i think that covers most if not all use cases anyway.
-                val ndefMessage = rawMessages?.get(0) as NdefMessage
-                val ret = JSObject()
-
-                val records = ndefMessage.records
-
-                val jsonRecords = Array(records.size) { i -> recordToJson(records[i]) }
-
-                if (tag?.id !== null) {
-                    ret.put("id", fromU8Array(tag.id))
-                }
-                ret.put("kind", ndef.type) // todo: should be the tag's type, not the ndef type
-                ret.put("records", JSArray.from(jsonRecords))
-
-                invokeHandler?.resolve(ret)
+                readTagInner(tag, rawMessages)
 
             } else if (intent.action == NfcAdapter.ACTION_TECH_DISCOVERED) {
                 // For some reason this always triggers instead of NDEF_DISCOVERED even though we set ndef filters right now
                 Logger.info("NFC", "new TECH intent")
 
-                // TODO: HANDLE DIFFERENT TECHS!!!!! Don't assume ndef
+                // TODO: handle different techs. Don't assume ndef.
 
-                val ndef = Ndef.get(tag)
-
-                val ndefMessage = rawMessages?.get(0) as NdefMessage
-                val ret = JSObject()
-
-                val records = ndefMessage.records
-
-                val jsonRecords = Array(records.size) { i -> recordToJson(records[i]) }
-
-                if (tag?.id !== null) {
-                    ret.put("id", fromU8Array(tag.id))
-                }
-                ret.put("kind", ndef.type) // todo: should be the tag's type, not the ndef type
-                ret.put("records", JSArray.from(jsonRecords))
-
-                invokeHandler?.resolve(ret)
-
-
+                readTagInner(tag, rawMessages)
 
             } else if (intent.action == NfcAdapter.ACTION_TAG_DISCOVERED) {
                 // This should never trigger when an app handles NDEF and TECH
+
+                // TODO: Don't assume ndef.
+
+                readTagInner(tag, rawMessages)
             }
 
             this.pendingNfcAction = NfcAction.NONE
-            //disableNFCInForeground()
+            disableNFCInForeground()
         } catch (e: Exception) {
             Logger.error("wtf", e)
         }
+    }
+
+    private fun readTagInner(tag: Tag?, rawMessages: Array<Parcelable>?) {
+        val ndef = Ndef.get(tag)
+
+        // iOS part only reads the first message (? - there are 2 conflicting impls so not sure) so we do too. i think that covers most if not all use cases anyway.
+        val ndefMessage = rawMessages?.get(0) as NdefMessage
+
+        val records = ndefMessage.records
+
+        val jsonRecords = Array(records.size) { i -> recordToJson(records[i]) }
+
+        val ret = JSObject()
+        if (tag !== null) {
+            ret.put("id", fromU8Array(tag.id))
+            // There's also ndef.type which returns the ndef spec type which may be interesting to know too?
+            ret.put("kind", JSArray.from(tag.techList))
+        }
+        ret.put("records", JSArray.from(jsonRecords))
+
+        invokeHandler?.resolve(ret)
     }
 
     private fun writeTag(intent: Intent) {
@@ -284,6 +270,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
         invokeHandler?.reject("Tag doesn't support Ndef format")
     }
 
+    // TODO: Use ReaderMode instead of ForegroundDispatch
     private fun enableNFCInForeground() {
         val flag =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
@@ -292,20 +279,19 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
             Intent(
                 activity,
                 activity.javaClass
-            ).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP/* or Intent.FLAG_ACTIVITY_CLEAR_TOP*/),
+            ).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             flag
         )
 
-        // TODO: add other 2 actions if we actually set filters below
+        // For some reason this is ignored
         val nfcIntentFilter = IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED)
         val filters = arrayOf(nfcIntentFilter)
 
+        // Probably also ignored, if not it should include more than just these 2 once we don't just read simple ndefs.
         val techLists =
             arrayOf(arrayOf(Ndef::class.java.name), arrayOf(NdefFormatable::class.java.name))
 
-        // TODO: check again after adding the reader portion
         nfcAdapter?.enableForegroundDispatch(activity, pendingIntent, filters, techLists)
-        //nfcAdapter?.enableForegroundDispatch(activity, pendingIntent, null, null)
     }
 
     private fun disableNFCInForeground() {
