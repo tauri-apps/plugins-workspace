@@ -28,7 +28,6 @@ import org.json.JSONArray
 import java.io.IOException
 import kotlin.concurrent.thread
 
-
 enum class NfcAction {
     NONE, READ, WRITE
 }
@@ -125,14 +124,13 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
             return
         }
 
-        enableNFCInForeground()
-
         val records = invoke.getArray("records")
         if (records === null) {
             invoke.reject("`records` array is required")
-            disableNFCInForeground()
             return
         }
+
+        enableNFCInForeground()
 
         val ndefRecords: MutableList<NdefRecord> = ArrayList()
         for (record in records.toList<JSObject>()) {
@@ -157,32 +155,28 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
             val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG)
             val rawMessages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)
 
-            // For some reason this one never triggers.
-            if (intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED) {
-                Logger.info("NFC", "new NDEF intent")
-
-                readTagInner(tag, rawMessages)
-
-            } else if (intent.action == NfcAdapter.ACTION_TECH_DISCOVERED) {
-                // For some reason this always triggers instead of NDEF_DISCOVERED even though we set ndef filters right now
-                Logger.info("NFC", "new TECH intent")
-
-                // TODO: handle different techs. Don't assume ndef.
-
-                readTagInner(tag, rawMessages)
-
-            } else if (intent.action == NfcAdapter.ACTION_TAG_DISCOVERED) {
-                // This should never trigger when an app handles NDEF and TECH
-
-                // TODO: Don't assume ndef.
-
-                readTagInner(tag, rawMessages)
+            when (intent.action) {
+                NfcAdapter.ACTION_NDEF_DISCOVERED -> {
+                    // For some reason this one never triggers.
+                    Logger.info("NFC", "new NDEF intent")
+                    readTagInner(tag, rawMessages)
+                }
+                NfcAdapter.ACTION_TECH_DISCOVERED -> {
+                    // For some reason this always triggers instead of NDEF_DISCOVERED even though we set ndef filters right now
+                    Logger.info("NFC", "new TECH intent")
+                    // TODO: handle different techs. Don't assume ndef.
+                    readTagInner(tag, rawMessages)
+                }
+                NfcAdapter.ACTION_TAG_DISCOVERED -> {
+                    // This should never trigger when an app handles NDEF and TECH
+                    // TODO: Don't assume ndef.
+                    readTagInner(tag, rawMessages)
+                }
             }
-
-            this.pendingNfcAction = NfcAction.NONE
-            disableNFCInForeground()
         } catch (e: Exception) {
-            Logger.error("wtf", e)
+            invokeHandler?.reject("failed to read tag", e)
+        } finally {
+            this.pendingNfcAction = NfcAction.NONE
         }
     }
 
@@ -190,9 +184,9 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
         val ndef = Ndef.get(tag)
 
         // iOS part only reads the first message (? - there are 2 conflicting impls so not sure) so we do too. i think that covers most if not all use cases anyway.
-        val ndefMessage = rawMessages?.get(0) as NdefMessage
+        val ndefMessage = rawMessages?.get(0) as NdefMessage?
 
-        val records = ndefMessage.records
+        val records = ndefMessage?.records ?: arrayOf()
 
         val jsonRecords = Array(records.size) { i -> recordToJson(records[i]) }
 
@@ -214,9 +208,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
 
             // This should return tags that are already in ndef format
             val ndefTag = Ndef.get(tag)
-
             if (ndefTag !== null) {
-
                 // We have to connect first to check maxSize.
                 try {
                     ndefTag.connect()
@@ -239,18 +231,20 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
                     }
                 }
 
-                ndefTag.close() // TODO: Catch possible IOException
-                this.pendingNfcAction = NfcAction.NONE
-                disableNFCInForeground()
+                try {
+                    ndefTag.close()
+                } catch (e: IOException) {
+                    Logger.error("failed to close tag", e)
+                } finally {
+                    this.pendingNfcAction = NfcAction.NONE
+                    disableNFCInForeground()
+                }
                 return
-
             }
 
             // This should cover tags that are not yet in ndef format but can be converted
             val ndefFormatableTag = NdefFormatable.get(tag)
-
             if (ndefFormatableTag !== null) {
-
                 try {
                     ndefFormatableTag.connect()
                     ndefFormatableTag.format(messageToWrite)
@@ -259,10 +253,15 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
                     invokeHandler?.reject("Couldn't format tag as Ndef", e)
                 }
 
-                ndefFormatableTag.close() // TODO: Catch possible IOException
-                disableNFCInForeground()
+                try {
+                    ndefFormatableTag.close()
+                } catch (e: IOException) {
+                    Logger.error("failed to close tag", e)
+                } finally {
+                    this.pendingNfcAction = NfcAction.NONE
+                    disableNFCInForeground()
+                }
                 return
-
             }
         }
 
