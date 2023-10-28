@@ -36,9 +36,6 @@ sealed class NfcAction {
 class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     private lateinit var webView: WebView
 
-    private var available = false
-    private var errorReason: String? = null
-
     private var nfcAdapter: NfcAdapter? = null
 
     // all actual tag handling happens in onNewIntent so we need to keep track of how to handle the intent here
@@ -48,21 +45,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     override fun load(webView: WebView) {
         super.load(webView)
         this.webView = webView
-
         this.nfcAdapter = NfcAdapter.getDefaultAdapter(activity.applicationContext)
-
-        if (this.nfcAdapter === null) {
-            this.errorReason = "Device does not have NFC capabilities"
-        } else if (this.nfcAdapter?.isEnabled == false) {
-            // TODO: re-check this in case user enabled it.
-            this.errorReason = "NFC is disabled in device settings"
-        } else {
-            this.available = true
-        }
-
-        this.errorReason?.let {
-            Logger.error("NFC", it, null)
-        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -92,19 +75,38 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
         }
     }
 
+    private fun isAvailable(): Pair<Boolean, String?> {
+        val available: Boolean
+        var errorReason: String? = null
+
+        if (this.nfcAdapter === null) {
+            available = false
+            errorReason = "Device does not have NFC capabilities"
+        } else if (this.nfcAdapter?.isEnabled == false) {
+            available = false
+            errorReason = "NFC is disabled in device settings"
+        } else {
+            available = true
+        }
+
+        return Pair(available, errorReason)
+    }
+
     @Command
     fun isAvailable(invoke: Invoke) {
         val ret = JSObject()
-        ret.put("available", this.available)
+        ret.put("available", isAvailable().first)
         invoke.resolve(ret)
     }
 
     @Command
     fun scan(invoke: Invoke) {
-        if (this.nfcAdapter === null) {
-            invoke.reject("NFC writing unavailable: " + this.errorReason)
+        val status = isAvailable()
+        if (!status.first) {
+            invoke.reject("NFC unavailable: " + status.second)
             return
         }
+
         val kind = invoke.getString("kind")
         if (kind != "tag" && kind != "ndef") {
             invoke.reject("invalid `kind` argument, expected one of `tag`, `ndef`, got: '$kind'")
@@ -118,8 +120,9 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
 
     @Command
     fun write(invoke: Invoke) {
-        if (this.nfcAdapter === null) {
-            invoke.reject("NFC writing unavailable: " + this.errorReason)
+        val status = isAvailable()
+        if (!status.first) {
+            invoke.reject("NFC unavailable: " + status.second)
             return
         }
 
