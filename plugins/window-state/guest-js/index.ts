@@ -3,19 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import { invoke } from "@tauri-apps/api/primitives";
-
-interface WindowDef {
-  label: string;
-}
-
-declare global {
-  interface Window {
-    __TAURI_METADATA__: {
-      __windows: WindowDef[];
-      __currentWindow: WindowDef;
-    };
-  }
-}
+import { getCurrent } from "@tauri-apps/api/window";
 
 export enum StateFlags {
   SIZE = 1 << 0,
@@ -50,7 +38,7 @@ async function restoreState(label: string, flags: StateFlags): Promise<void> {
  *  Restore the state for the current window from disk.
  */
 async function restoreStateCurrent(flags: StateFlags): Promise<void> {
-  return restoreState(window.__TAURI_METADATA__.__currentWindow.label, flags);
+  return restoreState(getCurrent().label, flags);
 }
 
 export { restoreState, restoreStateCurrent, saveWindowState };
