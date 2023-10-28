@@ -9,7 +9,8 @@ rust-version = { workspace = true }
 links = "tauri-plugin-barcode-scanner"
 
 [package.metadata.docs.rs]
-features = [ "dox" ]
+rustc-args = [ "--cfg", "docsrs" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
 targets = [ "x86_64-linux-android" ]
 
 [build-dependencies]
@@ -21,6 +22,3 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
-
-[features]
-dox = [ "tauri/dox" ]

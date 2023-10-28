@@ -35,7 +35,7 @@ fn main() {
         .run()
     {
         println!("{error:#}");
-        if !(cfg!(feature = "dox") && std::env::var("TARGET").unwrap().contains("android")) {
+        if !(cfg!(docsrs) && std::env::var("TARGET").unwrap().contains("android")) {
             std::process::exit(1);
         }
     }

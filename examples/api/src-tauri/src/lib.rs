@@ -12,7 +12,7 @@ mod cmd;
 mod tray;
 
 use serde::Serialize;
-use tauri::{window::WindowBuilder, App, AppHandle, RunEvent, WindowUrl};
+use tauri::{window::WindowBuilder, App, AppHandle, Manager, RunEvent, WindowUrl};
 
 #[derive(Clone, Serialize)]
 struct Reply {
