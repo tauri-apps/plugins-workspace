@@ -4,7 +4,7 @@
         <receiver android:name="app.tauri.notification.TimedNotificationPublisher" />
         <receiver android:name="app.tauri.notification.NotificationDismissReceiver" />
         <receiver
-            android:name="app.tauri.notification.NotificationRestoreReceiver"
+            android:name="app.tauri.notification.LocalNotificationRestoreReceiver"
             android:directBootAware="true"
             android:exported="false">
             <intent-filter>
