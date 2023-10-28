@@ -16,6 +16,10 @@ export interface ScanOptions {
   keepSessionAlive?: boolean;
 }
 
+export interface WriteOptions {
+  keepSessionAlive?: boolean;
+}
+
 export enum NFCTypeNameFormat {
   Empty = 0,
   NfcWellKnown = 1,
@@ -72,9 +76,13 @@ export function record(
   };
 }
 
-export function textRecord(text: string, id?: string | number[], language: string = "en"): NFCRecord {
-  const payload = Array.from(new TextEncoder().encode(language + text))
-  payload.unshift(language.length)
+export function textRecord(
+  text: string,
+  id?: string | number[],
+  language: string = "en"
+): NFCRecord {
+  const payload = Array.from(new TextEncoder().encode(language + text));
+  payload.unshift(language.length);
   return record(NFCTypeNameFormat.NfcWellKnown, RTD_TEXT, id || [], payload);
 }
 
@@ -159,9 +167,13 @@ export async function scan(
   });
 }
 
-export async function write(records: NFCRecord[]): Promise<void> {
+export async function write(
+  records: NFCRecord[],
+  options?: WriteOptions
+): Promise<void> {
   return await invoke("plugin:nfc|write", {
     records,
+    ...options,
   });
 }
 

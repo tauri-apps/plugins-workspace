@@ -389,7 +389,8 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
       }
     } else {
       self.startScanSession(
-        invoke: invoke, kind: .ndef, keepAlive: false, invalidateAfterFirstRead: false,
+        invoke: invoke, kind: .ndef, keepAlive: invoke.getBool("keepSessionAlive", false),
+        invalidateAfterFirstRead: false,
         tagProcessMode: .write(
           message: NFCNDEFMessage(records: ndefPayloads)
         ))

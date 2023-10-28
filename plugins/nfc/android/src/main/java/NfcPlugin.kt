@@ -34,7 +34,9 @@ sealed class NfcAction {
 
 class Session(
     val action: NfcAction,
-    val invoke: Invoke
+    val invoke: Invoke,
+    val keepAlive: Boolean,
+    var tag: Tag? = null
 )
 
 @TauriPlugin
@@ -53,12 +55,36 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     override fun onNewIntent(intent: Intent) {
         Logger.info("NFC", "onNewIntent")
         super.onNewIntent(intent)
-        when (session?.action) {
-            is NfcAction.Read -> readTag(intent)
-            is NfcAction.Write -> thread {
-                writeTag(intent)
+
+        val extraTag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG)
+
+        extraTag?.let { tag ->
+            session?.let {
+                if (it.keepAlive) {
+                    it.tag = tag
+                }
             }
-            else -> {}
+
+            when (session?.action) {
+                is NfcAction.Read -> readTag(tag, intent)
+                is NfcAction.Write -> thread {
+                    if (session?.action is NfcAction.Write) {
+                        try {
+                            writeTag(tag, (session?.action as NfcAction.Write).message)
+                            session?.invoke?.resolve()
+                        } catch (e: Exception) {
+                            session?.invoke?.reject(e.toString())
+                        } finally {
+                            if (this.session?.keepAlive != true) {
+                                this.session = null
+                                disableNFCInForeground()
+                            }
+                        }
+                    }
+                }
+
+                else -> {}
+            }
         }
 
     }
@@ -117,7 +143,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
 
         enableNFCInForeground()
 
-        session = Session(NfcAction.Read, invoke)
+        session = Session(NfcAction.Read, invoke, invoke.getBoolean("keepSessionAlive", false))
     }
 
     @Command
@@ -128,13 +154,13 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
             return
         }
 
+        val keepAlive = invoke.getBoolean("keepSessionAlive", false)
+
         val records = invoke.getArray("records")
         if (records === null) {
             invoke.reject("`records` array is required")
             return
         }
-
-        enableNFCInForeground()
 
         val ndefRecords: MutableList<NdefRecord> = ArrayList()
         for (record in records.toList<JSObject>()) {
@@ -146,15 +172,33 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
             ndefRecords.add(NdefRecord(format.toShort(), type, identifier, payload))
         }
 
-        session = Session(NfcAction.Write(NdefMessage(ndefRecords.toTypedArray())), invoke)
+        val message = NdefMessage(ndefRecords.toTypedArray())
 
-        Logger.warn("NFC", "Write Mode Enabled")
+        session?.let { session ->
+            session.tag?.let {
+                try {
+                    writeTag(it, message)
+                    invoke.resolve()
+                } catch (e: Exception) {
+                    invoke.reject(e.toString())
+                } finally {
+                    if (this.session?.keepAlive != true) {
+                        this.session = null
+                        disableNFCInForeground()
+                    }
+                }
+            } ?: run {
+                invoke.reject("connected tag not found, please wait for it to be available and then call write()")
+            }
+        } ?: run {
+            enableNFCInForeground()
+            session = Session(NfcAction.Write(message), invoke, keepAlive)
+            Logger.warn("NFC", "Write Mode Enabled")
+        }
     }
 
-    // TODO: keepAlive?
-    private fun readTag(intent: Intent) {
+    private fun readTag(tag: Tag, intent: Intent) {
         try {
-            val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG)
             val rawMessages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)
 
             when (intent.action) {
@@ -178,13 +222,14 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
         } catch (e: Exception) {
             session?.invoke?.reject("failed to read tag", e)
         } finally {
-            this.session = null
+            if (this.session?.keepAlive != true) {
+                this.session = null
+            }
+            // TODO this crashes? disableNFCInForeground()
         }
     }
 
     private fun readTagInner(tag: Tag?, rawMessages: Array<Parcelable>?) {
-        val ndef = Ndef.get(tag)
-
         // iOS part only reads the first message (? - there are 2 conflicting impls so not sure) so we do too. i think that covers most if not all use cases anyway.
         val ndefMessage = rawMessages?.get(0) as NdefMessage?
 
@@ -203,72 +248,60 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
         session?.invoke?.resolve(ret)
     }
 
-    private fun writeTag(intent: Intent) {
-        if (session?.action is NfcAction.Write) {
-            val message = (session?.action as NfcAction.Write).message
-            val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG)
-
-            // This should return tags that are already in ndef format
-            val ndefTag = Ndef.get(tag)
-            if (ndefTag !== null) {
-                // We have to connect first to check maxSize.
-                try {
-                    ndefTag.connect()
-                } catch (e: IOException) {
-                    session?.invoke?.reject("Couldn't connect to NFC tag", e)
-                    disableNFCInForeground()
-                    return
-                }
-
-                if (ndefTag.maxSize < message.toByteArray().size) {
-                    session?.invoke?.reject("The message is too large for the provided NFC tag")
-                } else if (!ndefTag.isWritable) {
-                    session?.invoke?.reject("NFC tag is read-only")
-                } else {
-                    try {
-                        ndefTag.writeNdefMessage(message)
-                        session?.invoke?.resolve()
-                    } catch (e: Exception) {
-                        session?.invoke?.reject("Couldn't write message to NFC tag", e)
-                    }
-                }
-
-                try {
-                    ndefTag.close()
-                } catch (e: IOException) {
-                    Logger.error("failed to close tag", e)
-                } finally {
-                    this.session = null
-                    disableNFCInForeground()
-                }
-                return
+    private fun writeTag(tag: Tag, message: NdefMessage) {
+        // This should return tags that are already in ndef format
+        val ndefTag = Ndef.get(tag)
+        if (ndefTag !== null) {
+            // We have to connect first to check maxSize.
+            try {
+                ndefTag.connect()
+            } catch (e: IOException) {
+                throw Exception("Couldn't connect to NFC tag", e)
             }
 
-            // This should cover tags that are not yet in ndef format but can be converted
-            val ndefFormatableTag = NdefFormatable.get(tag)
-            if (ndefFormatableTag !== null) {
+            if (ndefTag.maxSize < message.toByteArray().size) {
+                throw Exception("The message is too large for the provided NFC tag")
+            } else if (!ndefTag.isWritable) {
+                throw Exception("NFC tag is read-only")
+            } else {
                 try {
-                    ndefFormatableTag.connect()
-                    ndefFormatableTag.format(message)
-                    session?.invoke?.resolve()
+                    ndefTag.writeNdefMessage(message)
                 } catch (e: Exception) {
-                    session?.invoke?.reject("Couldn't format tag as Ndef", e)
+                    throw Exception("Couldn't write message to NFC tag", e)
                 }
-
-                try {
-                    ndefFormatableTag.close()
-                } catch (e: IOException) {
-                    Logger.error("failed to close tag", e)
-                } finally {
-                    this.session = null
-                    disableNFCInForeground()
-                }
-                return
             }
+
+            try {
+                ndefTag.close()
+            } catch (e: IOException) {
+                Logger.error("failed to close tag", e)
+            }
+
+            return
         }
 
+        // This should cover tags that are not yet in ndef format but can be converted
+        val ndefFormatableTag = NdefFormatable.get(tag)
+        if (ndefFormatableTag !== null) {
+            try {
+                ndefFormatableTag.connect()
+                ndefFormatableTag.format(message)
+            } catch (e: Exception) {
+                throw Exception("Couldn't format tag as Ndef", e)
+            }
+
+            try {
+                ndefFormatableTag.close()
+            } catch (e: IOException) {
+                Logger.error("failed to close tag", e)
+            }
+
+            return
+        }
+
+
         // if we get to this line, the tag was neither Ndef nor NdefFormatable compatible
-        session?.invoke?.reject("Tag doesn't support Ndef format")
+        throw Exception("Tag doesn't support Ndef format")
     }
 
     // TODO: Use ReaderMode instead of ForegroundDispatch
@@ -296,7 +329,9 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     }
 
     private fun disableNFCInForeground() {
-        nfcAdapter?.disableForegroundDispatch(activity)
+        activity.runOnUiThread {
+            nfcAdapter?.disableForegroundDispatch(activity)
+        }
     }
 }
 
