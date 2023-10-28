@@ -109,10 +109,19 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     this.manager = manager
     
     notificationManager = activity.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+    val intent = activity.intent
+    intent?.let {
+      onIntent(it)
+    }
   }
 
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
+    onIntent(intent)
+  }
+
+  fun onIntent(intent: Intent) {
     if (Intent.ACTION_MAIN != intent.action) {
       return
     }

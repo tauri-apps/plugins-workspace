@@ -1,5 +1,5 @@
 ---
-"log": patch
+"log-plugin": patch
 "deep-link": patch
 "store": patch
 ---

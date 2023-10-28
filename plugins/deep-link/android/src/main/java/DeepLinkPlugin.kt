@@ -6,6 +6,7 @@ package app.tauri.deep_link
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Bundle
 import android.webkit.WebView
 import app.tauri.Logger
 import app.tauri.annotation.InvokeArg
@@ -49,7 +50,7 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
     override fun load(webView: WebView) {
         instance = this
 
-        var intent = activity.intent
+        val intent = activity.intent
 
         if (intent.action == Intent.ACTION_VIEW) {
             // TODO: check if it makes sense to split up init url and last url
