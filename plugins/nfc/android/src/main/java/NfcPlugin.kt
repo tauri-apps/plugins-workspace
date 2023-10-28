@@ -27,9 +27,9 @@ import app.tauri.plugin.Plugin
 import org.json.JSONArray
 import java.io.IOException
 import kotlin.concurrent.thread
-
-enum class NfcAction {
-    NONE, READ, WRITE
+sealed class NfcAction {
+    object Read: NfcAction()
+    data class Write(val message: NdefMessage): NfcAction()
 }
 
 @TauriPlugin
@@ -42,8 +42,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     private var nfcAdapter: NfcAdapter? = null
 
     // all actual tag handling happens in onNewIntent so we need to keep track of how to handle the intent here
-    private var pendingNfcAction = NfcAction.NONE
-    private var messageToWrite: NdefMessage? = null
+    private var pendingNfcAction: NfcAction? = null
     private var invokeHandler: Invoke? = null
 
     override fun load(webView: WebView) {
@@ -70,11 +69,11 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
         Logger.info("NFC", "onNewIntent")
         super.onNewIntent(intent)
         when (pendingNfcAction) {
-            NfcAction.NONE -> {}
-            NfcAction.READ -> readTag(intent)
-            NfcAction.WRITE -> thread {
+            is NfcAction.Read -> readTag(intent)
+            is NfcAction.Write -> thread {
                 writeTag(intent)
             }
+            else -> {}
         }
 
     }
@@ -88,7 +87,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     override fun onResume() {
         super.onResume()
         Logger.info("NFC", "onResume")
-        if (this.pendingNfcAction != NfcAction.NONE) {
+        if (this.pendingNfcAction != null) {
             enableNFCInForeground()
         }
     }
@@ -113,7 +112,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
         }
 
         enableNFCInForeground()
-        this.pendingNfcAction = NfcAction.READ
+        this.pendingNfcAction = NfcAction.Read
         this.invokeHandler = invoke
     }
 
@@ -142,8 +141,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
             ndefRecords.add(NdefRecord(format.toShort(), type, identifier, payload))
         }
 
-        this.messageToWrite = NdefMessage(ndefRecords.toTypedArray())
-        this.pendingNfcAction = NfcAction.WRITE
+        this.pendingNfcAction = NfcAction.Write(NdefMessage(ndefRecords.toTypedArray()))
         this.invokeHandler = invoke
 
         Logger.warn("NFC", "Write Mode Enabled")
@@ -176,7 +174,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
         } catch (e: Exception) {
             invokeHandler?.reject("failed to read tag", e)
         } finally {
-            this.pendingNfcAction = NfcAction.NONE
+            this.pendingNfcAction = null
         }
     }
 
@@ -202,8 +200,8 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     }
 
     private fun writeTag(intent: Intent) {
-        if (messageToWrite !== null) { // This should always be true
-
+        if (pendingNfcAction is NfcAction.Write) {
+            val message = (pendingNfcAction as NfcAction.Write).message
             val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG)
 
             // This should return tags that are already in ndef format
@@ -218,13 +216,13 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
                     return
                 }
 
-                if (ndefTag.maxSize < messageToWrite!!.toByteArray().size) {
+                if (ndefTag.maxSize < message.toByteArray().size) {
                     invokeHandler?.reject("The message is too large for the provided NFC tag")
                 } else if (!ndefTag.isWritable) {
                     invokeHandler?.reject("NFC tag is read-only")
                 } else {
                     try {
-                        ndefTag.writeNdefMessage(messageToWrite)
+                        ndefTag.writeNdefMessage(message)
                         invokeHandler?.resolve()
                     } catch (e: Exception) {
                         invokeHandler?.reject("Couldn't write message to NFC tag", e)
@@ -236,7 +234,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
                 } catch (e: IOException) {
                     Logger.error("failed to close tag", e)
                 } finally {
-                    this.pendingNfcAction = NfcAction.NONE
+                    this.pendingNfcAction = null
                     disableNFCInForeground()
                 }
                 return
@@ -247,7 +245,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
             if (ndefFormatableTag !== null) {
                 try {
                     ndefFormatableTag.connect()
-                    ndefFormatableTag.format(messageToWrite)
+                    ndefFormatableTag.format(message)
                     invokeHandler?.resolve()
                 } catch (e: Exception) {
                     invokeHandler?.reject("Couldn't format tag as Ndef", e)
@@ -258,7 +256,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
                 } catch (e: IOException) {
                     Logger.error("failed to close tag", e)
                 } finally {
-                    this.pendingNfcAction = NfcAction.NONE
+                    this.pendingNfcAction = null
                     disableNFCInForeground()
                 }
                 return
