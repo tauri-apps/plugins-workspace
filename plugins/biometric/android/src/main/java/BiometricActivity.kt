@@ -56,6 +56,7 @@ class BiometricActivity : AppCompatActivity() {
             }
             builder.setAllowedAuthenticators(authenticators)
         } else {
+            @Suppress("DEPRECATION")
             builder.setDeviceCredentialAllowed(allowDeviceCredential)
         }
 
