@@ -96,7 +96,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
 
     super.load(webView)
     this.webView = webView
-    notificationStorage = NotificationStorage(activity)
+    notificationStorage = NotificationStorage(activity, jsonMapper())
     
     val manager = TauriNotificationManager(
       notificationStorage,

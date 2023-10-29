@@ -34,7 +34,12 @@ class FilePickerOptions {
 }
 
 @InvokeArg
-class MessageOptions(val title: String?, val message: String, val okButtonLabel: String?, val cancelButtonLabel: String?)
+class MessageOptions {
+  var title: String?
+  lateinit var message: String
+  var okButtonLabel: String?
+  var cancelButtonLabel: String?
+}
 
 @TauriPlugin
 class DialogPlugin(private val activity: Activity): Plugin(activity) {

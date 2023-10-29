@@ -201,7 +201,7 @@ class Schedule {
   }
 
   static interval(interval: ScheduleInterval, allowWhileIdle = false) {
-    return new Schedule({ interval: { interval: interval, allowWhileIdle } });
+    return new Schedule({ interval: { interval, allowWhileIdle } });
   }
 
   static every(kind: ScheduleEvery, count: number, allowWhileIdle = false) {
