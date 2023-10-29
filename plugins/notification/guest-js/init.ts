@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+import { invoke } from "@tauri-apps/api/primitives";
+import type { Options } from "./index";
+
 (function () {
   let permissionSettable = false;
   let permissionValue = "default";
@@ -10,10 +13,10 @@
     if (window.Notification.permission !== "default") {
       return Promise.resolve(window.Notification.permission === "granted");
     }
-    return window.__TAURI_INVOKE__("plugin:notification|is_permission_granted");
+    return invoke("plugin:notification|is_permission_granted");
   }
 
-  function setNotificationPermission(value) {
+  function setNotificationPermission(value: "granted" | "denied" | "default") {
     permissionSettable = true;
     // @ts-expect-error we can actually set this value on the webview
     window.Notification.permission = value;
@@ -21,22 +24,22 @@
   }
 
   function requestPermission() {
-    return window
-      .__TAURI_INVOKE__("plugin:notification|request_permission")
-      .then(function (permission) {
-        setNotificationPermission(
-          permission === "prompt" ? "default" : permission,
-        );
-        return permission;
-      });
+    return invoke<"prompt" | "default" | "granted" | "denied">(
+      "plugin:notification|request_permission",
+    ).then((permission) => {
+      setNotificationPermission(
+        permission === "prompt" ? "default" : permission,
+      );
+      return permission;
+    });
   }
 
-  function sendNotification(options) {
+  function sendNotification(options: string | Options) {
     if (typeof options === "object") {
       Object.freeze(options);
     }
 
-    return window.__TAURI_INVOKE__("plugin:notification|notify", {
+    return invoke("plugin:notification|notify", {
       options:
         typeof options === "string"
           ? {
@@ -49,17 +52,20 @@
   // @ts-expect-error unfortunately we can't implement the whole type, so we overwrite it with our own version
   window.Notification = function (title, options) {
     const opts = options || {};
-    sendNotification(Object.assign(opts, { title }));
+    sendNotification(
+      Object.assign(opts, {
+        title,
+      }),
+    );
   };
 
+  // @ts-expect-error tauri does not have sync IPC :(
   window.Notification.requestPermission = requestPermission;
 
   Object.defineProperty(window.Notification, "permission", {
     enumerable: true,
-    get: function () {
-      return permissionValue;
-    },
-    set: function (v) {
+    get: () => permissionValue,
+    set: (v) => {
       if (!permissionSettable) {
         throw new Error("Readonly property");
       }

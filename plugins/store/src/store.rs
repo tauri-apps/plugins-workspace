@@ -208,7 +208,7 @@ impl<R: Runtime> Store<R> {
 
     pub fn insert(&mut self, key: String, value: JsonValue) -> Result<(), Error> {
         self.cache.insert(key.clone(), value.clone());
-        self.app.emit_all(
+        self.app.emit(
             "store://change",
             ChangePayload {
                 path: &self.path,
@@ -231,7 +231,7 @@ impl<R: Runtime> Store<R> {
     pub fn delete(&mut self, key: impl AsRef<str>) -> Result<bool, Error> {
         let flag = self.cache.remove(key.as_ref()).is_some();
         if flag {
-            self.app.emit_all(
+            self.app.emit(
                 "store://change",
                 ChangePayload {
                     path: &self.path,
@@ -247,7 +247,7 @@ impl<R: Runtime> Store<R> {
         let keys: Vec<String> = self.cache.keys().cloned().collect();
         self.cache.clear();
         for key in keys {
-            self.app.emit_all(
+            self.app.emit(
                 "store://change",
                 ChangePayload {
                     path: &self.path,
@@ -266,7 +266,7 @@ impl<R: Runtime> Store<R> {
             if let Some(defaults) = &self.defaults {
                 for (key, value) in &self.cache {
                     if defaults.get(key) != Some(value) {
-                        let _ = self.app.emit_all(
+                        let _ = self.app.emit(
                             "store://change",
                             ChangePayload {
                                 path: &self.path,

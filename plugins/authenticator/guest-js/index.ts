@@ -2,19 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-  }
-}
+import { invoke } from "@tauri-apps/api/primitives";
 
 export class Authenticator {
   async init(): Promise<void> {
-    return await window.__TAURI_INVOKE__("plugin:authenticator|init_auth");
+    return await invoke("plugin:authenticator|init_auth");
   }
 
   async register(challenge: string, application: string): Promise<string> {
-    return await window.__TAURI_INVOKE__("plugin:authenticator|register", {
+    return await invoke("plugin:authenticator|register", {
       timeout: 10000,
       challenge,
       application,
@@ -27,15 +23,12 @@ export class Authenticator {
     registerData: string,
     clientData: string,
   ): Promise<string> {
-    return await window.__TAURI_INVOKE__(
-      "plugin:authenticator|verify_registration",
-      {
-        challenge,
-        application,
-        registerData,
-        clientData,
-      },
-    );
+    return await invoke("plugin:authenticator|verify_registration", {
+      challenge,
+      application,
+      registerData,
+      clientData,
+    });
   }
 
   async sign(
@@ -43,7 +36,7 @@ export class Authenticator {
     application: string,
     keyHandle: string,
   ): Promise<string> {
-    return await window.__TAURI_INVOKE__("plugin:authenticator|sign", {
+    return await invoke("plugin:authenticator|sign", {
       timeout: 10000,
       challenge,
       application,
@@ -59,16 +52,13 @@ export class Authenticator {
     keyHandle: string,
     pubkey: string,
   ): Promise<number> {
-    return await window.__TAURI_INVOKE__(
-      "plugin:authenticator|verify_signature",
-      {
-        challenge,
-        application,
-        signData,
-        clientData,
-        keyHandle,
-        pubkey,
-      },
-    );
+    return await invoke("plugin:authenticator|verify_signature", {
+      challenge,
+      application,
+      signData,
+      clientData,
+      keyHandle,
+      pubkey,
+    });
   }
 }

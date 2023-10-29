@@ -1,6 +1,4 @@
 ---
-"app": patch
-"app-js": patch
 "authenticator": patch
 "authenticator-js": patch
 "autostart": patch
@@ -44,8 +42,6 @@
 "upload-js": patch
 "websocket": patch
 "websocket-js": patch
-"window": patch
-"window-js": patch
 "window-state": patch
 "window-state-js": patch
 ---

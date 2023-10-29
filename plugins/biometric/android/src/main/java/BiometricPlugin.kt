@@ -14,6 +14,7 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import app.tauri.annotation.ActivityCallback
 import app.tauri.annotation.Command
+import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.TauriPlugin
 import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSArray
@@ -27,10 +28,19 @@ enum class BiometryResultType {
     SUCCESS, FAILURE, ERROR
 }
 
-private const val MAX_ATTEMPTS = "androidMaxAttempts"
-private const val DEFAULT_MAX_ATTEMPTS = 3
+private const val MAX_ATTEMPTS = "maxAttemps"
 private const val BIOMETRIC_FAILURE = "authenticationFailed"
 private const val INVALID_CONTEXT_ERROR = "invalidContext"
+
+@InvokeArg
+class AuthOptions {
+    lateinit var reason: String
+    var allowDeviceCredential: Bool = false
+    var title: String? = null
+    var subtitle: String? = null
+    var confirmationRequired: Bool = false
+    var maxAttemps: UInt = 3
+}
 
 @TauriPlugin
 class BiometricPlugin(private val activity: Activity): Plugin(activity) {
@@ -158,31 +168,24 @@ class BiometricPlugin(private val activity: Activity): Plugin(activity) {
             activity,
             BiometricActivity::class.java
         )
+        
+        val args = invoke.parseArgs(AuthOptions::class.java)
 
         // Pass the options to the activity
         intent.putExtra(
             TITLE,
-            invoke.getString(TITLE, biometryNameMap[biometryTypes[0]] ?: "")
+            args.title ?? (biometryNameMap[biometryTypes[0]] ?: "")
         )
-        intent.putExtra(SUBTITLE, invoke.getString(SUBTITLE))
-        intent.putExtra(REASON, invoke.getString(REASON))
-        intent.putExtra(CANCEL_TITLE, invoke.getString(CANCEL_TITLE))
-        intent.putExtra(
-            DEVICE_CREDENTIAL,
-            invoke.getBoolean(DEVICE_CREDENTIAL, false)
-        )
+        intent.putExtra(SUBTITLE, args.subtitle)
+        intent.putExtra(REASON, args.reason)
+        intent.putExtra(CANCEL_TITLE, args.cancelTitle)
+        intent.putExtra(DEVICE_CREDENTIAL, args.allowDeviceCredential)
         if (invoke.hasOption(CONFIRMATION_REQUIRED)) {
-            intent.putExtra(
-                CONFIRMATION_REQUIRED,
-                invoke.getBoolean(CONFIRMATION_REQUIRED, true)
-            )
+            intent.putExtra(CONFIRMATION_REQUIRED, args.confirmationRequired)
         }
 
-        val maxAttemptsConfig = invoke.getInt(MAX_ATTEMPTS, DEFAULT_MAX_ATTEMPTS)
-        val maxAttempts = max(
-            maxAttemptsConfig,
-            1
-        )
+        val maxAttemptsConfig = args.maxAttemps
+        val maxAttempts = max(maxAttemptsConfig, 1)
         intent.putExtra(MAX_ATTEMPTS, maxAttempts)
         startActivityForResult(invoke, intent, "authenticateResult")
     }

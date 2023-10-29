@@ -41,9 +41,6 @@ jobs:
         id: filter
         with:
           filters: |
-            tauri-plugin-app:
-              - .github/workflows/lint-rust.yml
-              - plugins/app/**
             tauri-plugin-authenticator:
               - .github/workflows/lint-rust.yml
               - plugins/authenticator/**
@@ -116,9 +113,6 @@ jobs:
             tauri-plugin-websocket:
               - .github/workflows/lint-rust.yml
               - plugins/websocket/**
-            tauri-plugin-window:
-              - .github/workflows/lint-rust.yml
-              - plugins/window/**
             tauri-plugin-window-state:
               - .github/workflows/lint-rust.yml
               - plugins/window-state/**
@@ -155,10 +149,6 @@ jobs:
         if: matrix.package != 'tauri-plugin-sql'
         run: cargo clippy --package ${{ matrix.package }} --all-targets -- -D warnings
 
-      - name: clippy ${{ matrix.package }} --all-features
-        if: ${{ !contains(fromJSON('["tauri-plugin-http", "tauri-plugin-upload", "tauri-plugin-updater", "tauri-plugin-websocket", "tauri-plugin-sql"]'), matrix.package) }}
-        run: cargo clippy --package ${{ matrix.package }} --all-targets --all-features -- -D warnings
-
       - name: clippy ${{ matrix.package }} mysql
         if: matrix.package == 'tauri-plugin-sql'
         run: cargo clippy --package ${{ matrix.package }} --all-targets --no-default-features --features mysql -- -D warnings
@@ -169,8 +159,6 @@ jobs:
 
   fmt:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
 
     steps:
       - uses: actions/checkout@v3

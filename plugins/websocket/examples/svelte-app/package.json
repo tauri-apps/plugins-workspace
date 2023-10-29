@@ -11,14 +11,14 @@
     "tauri": "tauri"
   },
   "devDependencies": {
-    "@sveltejs/adapter-static": "1.0.0-next.50",
-    "@sveltejs/kit": "1.22.3",
-    "@tauri-apps/cli": "2.0.0-alpha.15",
-    "svelte": "4.0.5",
-    "svelte-check": "3.4.6",
-    "tslib": "2.6.0",
-    "typescript": "5.1.6",
-    "vite": "4.4.4"
+    "@sveltejs/adapter-static": "2.0.3",
+    "@sveltejs/kit": "1.26.0",
+    "@tauri-apps/cli": "2.0.0-alpha.17",
+    "svelte": "4.2.2",
+    "svelte-check": "3.5.2",
+    "tslib": "2.6.2",
+    "typescript": "5.2.2",
+    "vite": "4.5.0"
   },
   "dependencies": {
     "@tauri-apps/plugin-websocket": "link:../../"

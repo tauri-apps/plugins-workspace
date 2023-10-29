@@ -56,7 +56,10 @@ macro_rules! run_dialog {
     ($e:expr, $h: ident) => {{
         std::thread::spawn(move || {
             let response = tauri::async_runtime::block_on($e);
-            $h(response);
+            $h(!matches!(
+                response,
+                rfd::MessageDialogResult::No | rfd::MessageDialogResult::Cancel
+            ));
         });
     }};
 }
@@ -68,7 +71,10 @@ macro_rules! run_dialog {
             let context = glib::MainContext::default();
             context.invoke_with_priority(glib::PRIORITY_HIGH, move || {
                 let response = $e;
-                $h(response);
+                $h(!matches!(
+                    response,
+                    rfd::MessageDialogResult::No | rfd::MessageDialogResult::Cancel
+                ));
             });
         });
     }};

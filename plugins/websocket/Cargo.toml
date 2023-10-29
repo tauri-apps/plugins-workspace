@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-websocket"
-version = "2.0.0-alpha.2"
+version = "2.0.0-alpha.4"
 description = "Expose a WebSocket server to your Tauri frontend."
 authors = { workspace = true }
 license = { workspace = true }
@@ -9,7 +9,8 @@ rust-version = { workspace = true }
 exclude = [ "/examples" ]
 
 [package.metadata.docs.rs]
-features = [ "tauri/dox" ]
+rustc-args = [ "--cfg", "docsrs" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
 
 [dependencies]
 serde = { workspace = true }
@@ -20,7 +21,7 @@ thiserror = { workspace = true }
 rand = "0.8"
 futures-util = "0.3"
 tokio = { version = "1", features = [ "net", "sync" ] }
-tokio-tungstenite = { version = "0.19" }
+tokio-tungstenite = { version = "0.20" }
 
 [features]
 native-tls = [ "tokio-tungstenite/native-tls" ]

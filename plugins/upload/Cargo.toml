@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-upload"
-version = "2.0.0-alpha.2"
+version = "2.0.0-alpha.4"
 description = "Upload files from disk to a remote server over HTTP."
 authors = { workspace = true }
 license = { workspace = true }
@@ -8,7 +8,8 @@ edition = { workspace = true }
 rust-version = { workspace = true }
 
 [package.metadata.docs.rs]
-features = [ "tauri/dox" ]
+rustc-args = [ "--cfg", "docsrs" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
 
 [dependencies]
 serde = { workspace = true }

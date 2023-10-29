@@ -6,7 +6,7 @@ Parse arguments from your Command Line Interface.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.65**_
+_This plugin requires a Rust version of at least **1.70**_
 
 There are three general methods of installation that we can recommend.
 

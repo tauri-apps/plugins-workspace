@@ -8,18 +8,9 @@
  * @module
  */
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-  }
-}
+import { invoke } from "@tauri-apps/api/primitives";
 
-interface Clip<K, T> {
-  kind: K;
-  options: T;
-}
-
-type ClipResponse = Clip<"PlainText", string>;
+type ClipResponse = Record<"plainText", { text: string }>;
 
 /**
  * Writes plain text to the clipboard.
@@ -38,10 +29,9 @@ async function writeText(
   text: string,
   opts?: { label?: string },
 ): Promise<void> {
-  return window.__TAURI_INVOKE__("plugin:clipboard|write", {
+  return invoke("plugin:clipboard|write", {
     data: {
-      kind: "PlainText",
-      options: {
+      plainText: {
         label: opts?.label,
         text,
       },
@@ -59,10 +49,8 @@ async function writeText(
  * @since 2.0.0
  */
 async function readText(): Promise<string> {
-  const kind: ClipResponse = await window.__TAURI_INVOKE__(
-    "plugin:clipboard|read",
-  );
-  return kind.options;
+  const kind: ClipResponse = await invoke("plugin:clipboard|read");
+  return kind.plainText.text;
 }
 
 export { writeText, readText };

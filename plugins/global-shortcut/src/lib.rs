@@ -33,7 +33,7 @@ mod error;
 pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 type HotKeyId = u32;
-type HandlerFn = Box<dyn Fn(&Shortcut) + Send + Sync + 'static>;
+type HandlerFn<R> = Box<dyn Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static>;
 
 enum ShortcutSource {
     Ipc(Channel),
@@ -268,23 +268,32 @@ fn is_registered<R: Runtime>(
     Ok(global_shortcut.is_registered(parse_shortcut(shortcut)?))
 }
 
-#[derive(Default)]
-pub struct Builder {
-    handler: Option<HandlerFn>,
+pub struct Builder<R: Runtime> {
+    handler: Option<HandlerFn<R>>,
 }
 
-impl Builder {
+impl<R: Runtime> Default for Builder<R> {
+    fn default() -> Self {
+        Self {
+            handler: Default::default(),
+        }
+    }
+}
+
+impl<R: Runtime> Builder<R> {
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn with_handler<F: Fn(&Shortcut) + Send + Sync + 'static>(handler: F) -> Self {
+    pub fn with_handler<F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static>(
+        handler: F,
+    ) -> Self {
         Self {
             handler: Some(Box::new(handler)),
         }
     }
 
-    pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
+    pub fn build(self) -> TauriPlugin<R> {
         let handler = self.handler;
         PluginBuilder::new("globalShortcut")
             .js_init_script(include_str!("api-iife.js").to_string())
@@ -300,6 +309,7 @@ impl Builder {
                     Arc::new(Mutex::new(HashMap::<HotKeyId, RegisteredShortcut>::new()));
                 let shortcuts_ = shortcuts.clone();
 
+                let app_handle = app.clone();
                 GlobalHotKeyEvent::set_event_handler(Some(move |e: GlobalHotKeyEvent| {
                     if let Some(shortcut) = shortcuts_.lock().unwrap().get(&e.id) {
                         match &shortcut.source {
@@ -308,7 +318,7 @@ impl Builder {
                             }
                             ShortcutSource::Rust => {
                                 if let Some(handler) = &handler {
-                                    handler(&shortcut.shortcut.0);
+                                    handler(&app_handle, &shortcut.shortcut.0);
                                 }
                             }
                         }

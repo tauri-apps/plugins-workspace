@@ -1,13 +1,15 @@
 [package]
 name = "tauri-plugin-process"
-version = "2.0.0-alpha.2"
+version = "2.0.0-alpha.4"
 description = "Access the current process of your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
+rust-version = { workspace = true }
 
 [package.metadata.docs.rs]
-features = [ "tauri/dox" ]
+rustc-args = [ "--cfg", "docsrs" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
 
 [dependencies]
 tauri = { workspace = true }

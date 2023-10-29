@@ -6,14 +6,21 @@ package app.tauri.deep_link
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Bundle
 import android.webkit.WebView
 import app.tauri.Logger
+import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.Command
 import app.tauri.annotation.TauriPlugin
 import app.tauri.plugin.Channel
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 import app.tauri.plugin.Invoke
+
+@InvokeArg
+class SetEventHandlerArgs {
+    lateinit var handler: Channel
+}
 
 @TauriPlugin
 class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
@@ -33,29 +40,17 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
         invoke.resolve(ret)
     }
 
-    /* @Command
-    fun registerListenerRust(invoke: Invoke) {
-        val value = invoke.getString("value") ?: ""
-        val ret = JSObject()
-        ret.put("value", this.currentUrl ?: "none")
-        invoke.resolve(ret)
-    } */
-
     @Command
     fun setEventHandler(invoke: Invoke) {
-        val channel = invoke.getChannel("handler")
-
-        if (channel == null) {
-            invoke.reject("`handler` not provided")
-        }
-        this.channel = channel
+        val args = invoke.parseArgs(SetEventHandlerArgs::class.java)
+        this.channel = args.handler
         invoke.resolve()
     }
 
     override fun load(webView: WebView) {
         instance = this
 
-        var intent = activity.intent
+        val intent = activity.intent
 
         if (intent.action == Intent.ACTION_VIEW) {
             // TODO: check if it makes sense to split up init url and last url

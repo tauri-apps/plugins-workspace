@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke, Channel } from "@tauri-apps/api/tauri";
+import { invoke, Channel } from "@tauri-apps/api/primitives";
 
 /** Options used to check for updates */
 interface CheckOptions {

@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-  }
-}
+import { invoke } from "@tauri-apps/api/primitives";
 
 export enum BiometryType {
   None = 0,
@@ -38,26 +34,27 @@ export interface Status {
 
 export interface AuthOptions {
   allowDeviceCredential?: boolean;
+  cancelTitle?: string;
 
   // iOS options
   fallbackTitle?: string;
-  cancelTitle?: string;
 
   // android options
   title?: string;
   subtitle?: string;
   confirmationRequired?: boolean;
+  maxAttemps?: number;
 }
 
 export async function checkStatus(): Promise<Status> {
-  return window.__TAURI_INVOKE__("plugin:biometric|status");
+  return invoke("plugin:biometric|status");
 }
 
 export async function authenticate(
   reason: string,
   options?: AuthOptions
 ): Promise<void> {
-  return window.__TAURI_INVOKE__("plugin:biometric|authenticate", {
+  return invoke("plugin:biometric|authenticate", {
     reason,
     ...options,
   });

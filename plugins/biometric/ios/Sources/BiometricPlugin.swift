@@ -22,6 +22,13 @@ class BiometricStatus {
   }
 }
 
+struct AuthOptions: Decodable {
+  let reason: String
+  var allowDeviceCredential = false
+  let fallbackTitle: String?
+  let cancelTitle: String?
+}
+
 class BiometricPlugin: Plugin {
   let authenticationErrorCodeMap: [Int: String] = [
     0: "",
@@ -90,29 +97,24 @@ class BiometricPlugin: Plugin {
     }
   }
 
-  @objc func authenticate(_ invoke: Invoke) {
+  @objc func authenticate(_ invoke: Invoke) throws {
     guard self.status.available else {
       invoke.reject(
         self.status.errorReason ?? "",
-        self.status.errorCode ?? ""
+        code: self.status.errorCode ?? ""
       )
       return
     }
 
-    guard let reason = invoke.getString("reason"), !reason.isEmpty else {
-      invoke.reject("`reason` is required")
-      return
-    }
+    let args = try invoke.parseArgs(AuthOptions.self)
 
     let context = LAContext()
-    context.localizedFallbackTitle = invoke.getString("fallbackTitle")
-    context.localizedCancelTitle = invoke.getString("cancelTitle")
+    context.localizedFallbackTitle = args.fallbackTitle
+    context.localizedCancelTitle = args.cancelTitle
     context.touchIDAuthenticationAllowableReuseDuration = 0
 
-    let allowDeviceCredential = invoke.getBool("allowDeviceCredential") ?? false
-
     // force system default fallback title if an empty string is provided (the OS hides the fallback button in this case)
-    if allowDeviceCredential,
+    if args.allowDeviceCredential,
       let fallbackTitle = context.localizedFallbackTitle,
       fallbackTitle.isEmpty
     {
@@ -120,19 +122,20 @@ class BiometricPlugin: Plugin {
     }
 
     context.evaluatePolicy(
-      allowDeviceCredential ? .deviceOwnerAuthentication : .deviceOwnerAuthenticationWithBiometrics,
-      localizedReason: reason
+      args.allowDeviceCredential
+        ? .deviceOwnerAuthentication : .deviceOwnerAuthenticationWithBiometrics,
+      localizedReason: args.reason
     ) { success, error in
       if success {
         invoke.resolve()
       } else {
         if let policyError = error as? LAError {
           let code = self.authenticationErrorCodeMap[policyError.code.rawValue]
-          invoke.reject(policyError.localizedDescription, code)
+          invoke.reject(policyError.localizedDescription, code: code)
         } else {
           invoke.reject(
             "Unknown error",
-            self.authenticationErrorCodeMap[LAError.authenticationFailed.rawValue]
+            code: self.authenticationErrorCodeMap[LAError.authenticationFailed.rawValue]
           )
         }
       }

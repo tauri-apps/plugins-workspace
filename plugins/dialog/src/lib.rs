@@ -84,7 +84,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     // Dialogs are implemented natively on Android
     #[cfg(not(target_os = "android"))]
     {
-        let mut init_script = include_str!("init.js").to_string();
+        let mut init_script = include_str!("init-iife.js").to_string();
         init_script.push_str(include_str!("api-iife.js"));
         builder = builder.js_init_script(init_script);
     }
@@ -129,7 +129,7 @@ pub struct MessageDialogBuilder<R: Runtime> {
 #[cfg(mobile)]
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct MessageDialogPayload<'a> {
+pub(crate) struct MessageDialogPayload<'a> {
     title: &'a String,
     message: &'a String,
     kind: &'a MessageDialogKind,
@@ -272,7 +272,7 @@ pub struct FileDialogBuilder<R: Runtime> {
 #[cfg(mobile)]
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct FileDialogPayload<'a> {
+pub(crate) struct FileDialogPayload<'a> {
     filters: &'a Vec<Filter>,
     multiple: bool,
 }

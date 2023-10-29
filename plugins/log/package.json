@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-log",
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.0-alpha.3",
   "description": "Configurable logging for your Tauri app.",
   "license": "MIT or APACHE-2.0",
   "authors": [
@@ -28,6 +28,6 @@
     "tslib": "2.6.0"
   },
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-alpha.8"
+    "@tauri-apps/api": "2.0.0-alpha.11"
   }
 }

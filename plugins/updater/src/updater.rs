@@ -258,9 +258,13 @@ impl Updater {
             // the URL will be generated dynamically
             let url: Url = url
                 .to_string()
-                .replace("{{current_version}}", &self.current_version.to_string())
-                .replace("{{target}}", &self.target)
-                .replace("{{arch}}", self.arch)
+                // url::Url automatically url-encodes the string
+                .replace(
+                    "%7B%7Bcurrent_version%7D%7D",
+                    &self.current_version.to_string(),
+                )
+                .replace("%7B%7Btarget%7D%7D", &self.target)
+                .replace("%7B%7Barch%7D%7D", self.arch)
                 .parse()?;
 
             let mut request = Client::new().get(url).headers(headers.clone());
@@ -431,7 +435,7 @@ impl Update {
         self.install(bytes)
     }
 
-    #[cfg(any(target_os = "android", target_os = "ios"))]
+    #[cfg(mobile)]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
         Ok(())
     }
@@ -657,7 +661,9 @@ impl Update {
     // └── ...
     #[cfg(target_os = "macos")]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
-        let archive = Cursor::new(bytes);
+        use flate2::read::GzDecoder;
+
+        let cursor = Cursor::new(bytes);
         let mut extracted_files: Vec<PathBuf> = Vec::new();
 
         // the first file in the tar.gz will always be
@@ -669,29 +675,33 @@ impl Update {
         // create backup of our current app
         std::fs::rename(&self.extract_path, tmp_dir.path())?;
 
-        let mut archive = tar::Archive::new(archive);
-        for mut entry in archive.entries()?.flatten() {
-            if let Ok(path) = entry.path() {
-                // skip the first folder (should be the app name)
-                let collected_path: PathBuf = path.iter().skip(1).collect();
-                let extraction_path = &self.extract_path.join(collected_path);
+        let decoder = GzDecoder::new(cursor);
+        let mut archive = tar::Archive::new(decoder);
 
-                // if something went wrong during the extraction, we should restore previous app
-                if let Err(err) = entry.unpack(extraction_path) {
-                    for file in &extracted_files {
-                        // delete all the files we extracted
-                        if file.is_dir() {
-                            std::fs::remove_dir(file)?;
-                        } else {
-                            std::fs::remove_file(file)?;
-                        }
+        std::fs::create_dir(&self.extract_path)?;
+
+        for entry in archive.entries()? {
+            let mut entry = entry?;
+
+            // skip the first folder (should be the app name)
+            let collected_path: PathBuf = entry.path()?.iter().skip(1).collect();
+            let extraction_path = &self.extract_path.join(collected_path);
+
+            // if something went wrong during the extraction, we should restore previous app
+            if let Err(err) = entry.unpack(extraction_path) {
+                for file in extracted_files.iter().rev() {
+                    // delete all the files we extracted
+                    if file.is_dir() {
+                        std::fs::remove_dir(file)?;
+                    } else {
+                        std::fs::remove_file(file)?;
                     }
-                    std::fs::rename(tmp_dir.path(), &self.extract_path)?;
-                    return Err(err.into());
                 }
-
-                extracted_files.push(extraction_path.to_path_buf());
+                std::fs::rename(tmp_dir.path(), &self.extract_path)?;
+                return Err(err.into());
             }
+
+            extracted_files.push(extraction_path.to_path_buf());
         }
 
         let _ = std::process::Command::new("touch")

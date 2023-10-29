@@ -8,11 +8,7 @@
  * @module
  */
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-  }
-}
+import { invoke } from "@tauri-apps/api/primitives";
 
 /**
  * @since 2.0.0
@@ -68,7 +64,7 @@ interface CliMatches {
  * @since 2.0.0
  */
 async function getMatches(): Promise<CliMatches> {
-  return await window.__TAURI_INVOKE__("plugin:cli|cli_matches");
+  return await invoke("plugin:cli|cli_matches");
 }
 
 export type { ArgMatch, SubcommandMatch, CliMatches };

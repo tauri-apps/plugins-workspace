@@ -9,9 +9,9 @@ public class NotificationHandler: NSObject, NotificationHandlerProtocol {
 
   public weak var plugin: Plugin?
 
-  private var notificationsMap = [String: JSObject]()
+  private var notificationsMap = [String: Notification]()
 
-  public func saveNotification(_ key: String, _ notification: JSObject) {
+  internal func saveNotification(_ key: String, _ notification: Notification) {
     notificationsMap.updateValue(notification, forKey: key)
   }
 
@@ -30,12 +30,11 @@ public class NotificationHandler: NSObject, NotificationHandlerProtocol {
   }
 
   public func willPresent(notification: UNNotification) -> UNNotificationPresentationOptions {
-    let notificationData = makeNotificationRequestJSObject(notification.request)
-    self.plugin?.trigger("notification", data: notificationData)
+    let notificationData = toActiveNotification(notification.request)
+    try? self.plugin?.trigger("notification", data: notificationData)
 
     if let options = notificationsMap[notification.request.identifier] {
-      let silent = options["silent"] as? Bool ?? false
-      if silent {
+      if options.silent {
         return UNNotificationPresentationOptions.init(rawValue: 0)
       }
     }
@@ -48,73 +47,72 @@ public class NotificationHandler: NSObject, NotificationHandlerProtocol {
   }
 
   public func didReceive(response: UNNotificationResponse) {
-    var data = JSObject()
-
     let originalNotificationRequest = response.notification.request
     let actionId = response.actionIdentifier
 
+    var actionIdValue: String
     // We turn the two default actions (open/dismiss) into generic strings
     if actionId == UNNotificationDefaultActionIdentifier {
-      data["actionId"] = "tap"
+      actionIdValue = "tap"
     } else if actionId == UNNotificationDismissActionIdentifier {
-      data["actionId"] = "dismiss"
+      actionIdValue = "dismiss"
     } else {
-      data["actionId"] = actionId
+      actionIdValue = actionId
     }
 
+    var inputValue: String? = nil
     // If the type of action was for an input type, get the value
     if let inputType = response as? UNTextInputNotificationResponse {
-      data["inputValue"] = inputType.userText
+      inputValue = inputType.userText
     }
 
-    data["notification"] = makeNotificationRequestJSObject(originalNotificationRequest)
-
-    self.plugin?.trigger("actionPerformed", data: data)
+    try? self.plugin?.trigger(
+      "actionPerformed",
+      data: ReceivedNotification(
+        actionId: actionIdValue,
+        inputValue: inputValue,
+        notification: toActiveNotification(originalNotificationRequest)
+      ))
   }
 
-  /**
-    * Turn a UNNotificationRequest into a JSObject to return back to the client.
-    */
-  func makeNotificationRequestJSObject(_ request: UNNotificationRequest) -> JSObject {
-    let notificationRequest = notificationsMap[request.identifier] ?? [:]
-    var notification = makePendingNotificationRequestJSObject(request)
-    notification["sound"] = notificationRequest["sound"] ?? ""
-    notification["actionTypeId"] = request.content.categoryIdentifier
-    notification["attachments"] = notificationRequest["attachments"] ?? [JSObject]()
-    return notification
+  func toActiveNotification(_ request: UNNotificationRequest) -> ActiveNotification {
+    let notificationRequest = notificationsMap[request.identifier]!
+    return ActiveNotification(
+      id: Int(request.identifier) ?? -1,
+      title: request.content.title,
+      body: request.content.body,
+      sound: notificationRequest.sound ?? "",
+      actionTypeId: request.content.categoryIdentifier,
+      attachments: notificationRequest.attachments
+    )
   }
 
-  func makePendingNotificationRequestJSObject(_ request: UNNotificationRequest) -> JSObject {
-    var notification: JSObject = [
-      "id": Int(request.identifier) ?? -1,
-      "title": request.content.title,
-      "body": request.content.body,
-    ]
-
-    if let userInfo = JSTypes.coerceDictionaryToJSObject(request.content.userInfo) {
-      var extra = userInfo["__EXTRA__"] as? JSObject ?? userInfo
-
-      // check for any dates and convert them to strings
-      for (key, value) in extra {
-        if let date = value as? Date {
-          let dateString = ISO8601DateFormatter().string(from: date)
-          extra[key] = dateString
-        }
-      }
-
-      notification["extra"] = extra
-
-      if var schedule = userInfo["__SCHEDULE__"] as? JSObject {
-        // convert schedule at date to string
-        if let date = schedule["at"] as? Date {
-          let dateString = ISO8601DateFormatter().string(from: date)
-          schedule["at"] = dateString
-        }
-
-        notification["schedule"] = schedule
-      }
-    }
-
-    return notification
+  func toPendingNotification(_ request: UNNotificationRequest) -> PendingNotification {
+    return PendingNotification(
+      id: Int(request.identifier) ?? -1,
+      title: request.content.title,
+      body: request.content.body
+    )
   }
+}
+
+struct PendingNotification: Encodable {
+  let id: Int
+  let title: String
+  let body: String
+}
+
+struct ActiveNotification: Encodable {
+  let id: Int
+  let title: String
+  let body: String
+  let sound: String
+  let actionTypeId: String
+  let attachments: [NotificationAttachment]?
+}
+
+struct ReceivedNotification: Encodable {
+  let actionId: String
+  let inputValue: String?
+  let notification: ActiveNotification
 }

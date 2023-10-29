@@ -13,7 +13,7 @@ import {
   invoke,
   PluginListener,
   addPluginListener,
-} from "@tauri-apps/api/tauri";
+} from "@tauri-apps/api/primitives";
 
 /**
  * Options to send a notification.
@@ -150,57 +150,62 @@ type ScheduleInterval = {
 };
 
 enum ScheduleEvery {
-  Year = "Year",
-  Month = "Month",
-  TwoWeeks = "TwoWeeks",
-  Week = "Week",
-  Day = "Day",
-  Hour = "Hour",
-  Minute = "Minute",
+  Year = "year",
+  Month = "month",
+  TwoWeeks = "twoWeeks",
+  Week = "week",
+  Day = "day",
+  Hour = "hour",
+  Minute = "minute",
   /**
    * Not supported on iOS.
    */
-  Second = "Second",
+  Second = "second",
 }
 
 type ScheduleData =
   | {
-      kind: "At";
-      data: {
+      at: {
         date: Date;
         repeating: boolean;
+        allowWhileIdle: boolean;
       };
     }
   | {
-      kind: "Interval";
-      data: ScheduleInterval;
+      interval: {
+        interval: ScheduleInterval;
+        allowWhileIdle: boolean;
+      };
     }
   | {
-      kind: "Every";
-      data: {
+      every: {
         interval: ScheduleEvery;
+        count: number;
+        allowWhileIdle: boolean;
       };
     };
 
 class Schedule {
-  kind: string;
-  data: unknown;
+  schedule: ScheduleData;
 
   private constructor(schedule: ScheduleData) {
-    this.kind = schedule.kind;
-    this.data = schedule.data;
+    this.schedule = schedule;
   }
 
-  static at(date: Date, repeating = false) {
-    return new Schedule({ kind: "At", data: { date, repeating } });
+  toJSON(): string {
+    return JSON.stringify(this.schedule);
   }
 
-  static interval(interval: ScheduleInterval) {
-    return new Schedule({ kind: "Interval", data: interval });
+  static at(date: Date, repeating = false, allowWhileIdle = false) {
+    return new Schedule({ at: { date, repeating, allowWhileIdle } });
   }
 
-  static every(kind: ScheduleEvery) {
-    return new Schedule({ kind: "Every", data: { interval: kind } });
+  static interval(interval: ScheduleInterval, allowWhileIdle = false) {
+    return new Schedule({ interval: { interval, allowWhileIdle } });
+  }
+
+  static every(kind: ScheduleEvery, count: number, allowWhileIdle = false) {
+    return new Schedule({ every: { interval: kind, count, allowWhileIdle } });
   }
 }
 
@@ -461,7 +466,9 @@ async function active(): Promise<ActiveNotification[]> {
  *
  * @since 2.0.0
  */
-async function removeActive(notifications: number[]): Promise<void> {
+async function removeActive(
+  notifications: { id: number; tag?: string }[],
+): Promise<void> {
   return invoke("plugin:notification|remove_active", { notifications });
 }
 
@@ -483,7 +490,7 @@ async function removeAllActive(): Promise<void> {
 }
 
 /**
- * Removes all active notifications.
+ * Creates a notification channel.
  *
  * @example
  * ```typescript
@@ -537,7 +544,7 @@ async function removeChannel(id: string): Promise<void> {
  * @since 2.0.0
  */
 async function channels(): Promise<Channel[]> {
-  return invoke("plugin:notification|getActive");
+  return invoke("plugin:notification|listChannels");
 }
 
 async function onNotificationReceived(
