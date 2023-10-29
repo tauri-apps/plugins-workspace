@@ -167,8 +167,23 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
           self.closeSession(session, error: "cannot connect to tag: \(error)")
 
         } else {
+          var metadata: JsonObject = [:]
+          if tag.isKind(of: NFCFeliCaTag.self) {
+            metadata["kind"] = ["FeliCa"]
+            metadata["id"] = nil
+          } else if let t = tag as? NFCMiFareTag {
+            metadata["kind"] = ["MiFare"]
+            metadata["id"] = byteArrayFromData(t.identifier)
+          } else if let t = tag as? NFCISO15693Tag {
+            metadata["kind"] = ["ISO15693"]
+            metadata["id"] = byteArrayFromData(t.identifier)
+          } else if let t = tag as? NFCISO7816Tag {
+            metadata["kind"] = ["ISO7816Compatible"]
+            metadata["id"] = byteArrayFromData(t.identifier)
+          }
+
           self.processTag(
-            session: session, tag: tag, metadata: [:],
+            session: session, tag: tag, metadata: metadata,
             mode: self.session!.tagProcessMode)
         }
       }
@@ -194,7 +209,7 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
     switch tag {
     case .feliCa:
       metadata["kind"] = ["FeliCa"]
-      metadata["id"] = nil
+      metadata["id"] = []
       break
     case let .miFare(tag):
       metadata["kind"] = ["MiFare"]
@@ -210,7 +225,7 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
       break
     default:
       metadata["kind"] = ["Unknown"]
-      metadata["id"] = nil
+      metadata["id"] = []
       break
     }
 
