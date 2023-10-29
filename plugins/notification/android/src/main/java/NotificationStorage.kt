@@ -6,19 +6,16 @@ package app.tauri.notification
 
 import android.content.Context
 import android.content.SharedPreferences
-import app.tauri.plugin.JSObject
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.json.JSONException
 import java.lang.Exception
-import java.text.ParseException
 
 // Key for private preferences
 private const val NOTIFICATION_STORE_ID = "NOTIFICATION_STORE"
 // Key used to save action types
 private const val ACTION_TYPES_ID = "ACTION_TYPE_STORE"
 
-class NotificationStorage(private val context: Context) {
+class NotificationStorage(private val context: Context, private val jsonMapper: ObjectMapper) {
   fun appendNotifications(localNotifications: List<Notification>) {
     val storage = getStorage(NOTIFICATION_STORE_ID)
     val editor = storage.edit()
@@ -47,7 +44,7 @@ class NotificationStorage(private val context: Context) {
       for (key in all.keys) {
         val notificationString = all[key] as String?
         try {
-          val notification = ObjectMapper().registerKotlinModule().readValue(notificationString, Notification::class.java)
+          val notification = jsonMapper.readValue(notificationString, Notification::class.java)
           notifications.add(notification)
         } catch (_: Exception) { }
       }
@@ -65,7 +62,7 @@ class NotificationStorage(private val context: Context) {
     } ?: return null
 
     return try {
-      ObjectMapper().registerKotlinModule().readValue(notificationString, Notification::class.java)
+      jsonMapper.readValue(notificationString, Notification::class.java)
     } catch (ex: JSONException) {
       null
     }
