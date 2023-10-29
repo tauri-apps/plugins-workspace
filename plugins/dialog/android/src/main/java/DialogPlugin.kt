@@ -35,10 +35,10 @@ class FilePickerOptions {
 
 @InvokeArg
 class MessageOptions {
-  var title: String?
+  var title: String? = null
   lateinit var message: String
-  var okButtonLabel: String?
-  var cancelButtonLabel: String?
+  var okButtonLabel: String? = null
+  var cancelButtonLabel: String? = null
 }
 
 @TauriPlugin
