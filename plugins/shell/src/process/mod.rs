@@ -455,7 +455,7 @@ mod tests {
                     CommandEvent::Stderr(line) => {
                         assert_eq!(
                             String::from_utf8(line).unwrap(),
-                            "cat: test/: Is a directory"
+                            "cat: test/: Is a directory\n"
                         );
                     }
                     _ => {}
@@ -480,7 +480,7 @@ mod tests {
                     CommandEvent::Stderr(line) => {
                         assert_eq!(
                             String::from_utf8(line).unwrap(),
-                            "cat: test/: Is a directory"
+                            "cat: test/: Is a directory\n"
                         );
                     }
                     _ => {}
@@ -511,7 +511,7 @@ mod tests {
         assert_eq!(String::from_utf8(output.stdout).unwrap(), "");
         assert_eq!(
             String::from_utf8(output.stderr).unwrap(),
-            "cat: test/: Is a directory\n"
+            "cat: test/: Is a directory\n\n"
         );
     }
 }
