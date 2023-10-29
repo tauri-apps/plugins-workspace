@@ -19,6 +19,7 @@ import android.os.Parcelable
 import android.webkit.WebView
 import app.tauri.Logger
 import app.tauri.annotation.Command
+import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.TauriPlugin
 import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSArray
@@ -27,9 +28,29 @@ import app.tauri.plugin.Plugin
 import org.json.JSONArray
 import java.io.IOException
 import kotlin.concurrent.thread
+
 sealed class NfcAction {
-    object Read: NfcAction()
-    data class Write(val message: NdefMessage): NfcAction()
+    object Read : NfcAction()
+    data class Write(val message: NdefMessage) : NfcAction()
+}
+
+@InvokeArg
+class ScanOptions {
+    var keepSessionAlive: Boolean = false
+}
+
+@InvokeArg
+class NDEFRecordData {
+    var format: Short = 0
+    var kind: ByteArray = ByteArray(0)
+    var id: ByteArray = ByteArray(0)
+    var payload: ByteArray = ByteArray(0)
+}
+
+@InvokeArg
+class WriteOptions {
+    var keepSessionAlive: Boolean = false
+    lateinit var records: Array<NDEFRecordData>
 }
 
 class Session(
@@ -135,15 +156,11 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
             return
         }
 
-        val kind = invoke.getString("kind")
-        if (kind != "tag" && kind != "ndef") {
-            invoke.reject("invalid `kind` argument, expected one of `tag`, `ndef`, got: '$kind'")
-            return
-        }
+        val args = invoke.parseArgs(ScanOptions::class.java)
 
         enableNFCInForeground()
 
-        session = Session(NfcAction.Read, invoke, invoke.getBoolean("keepSessionAlive", false))
+        session = Session(NfcAction.Read, invoke, args.keepSessionAlive)
     }
 
     @Command
@@ -154,22 +171,11 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
             return
         }
 
-        val keepAlive = invoke.getBoolean("keepSessionAlive", false)
-
-        val records = invoke.getArray("records")
-        if (records === null) {
-            invoke.reject("`records` array is required")
-            return
-        }
+        val args = invoke.parseArgs(WriteOptions::class.java)
 
         val ndefRecords: MutableList<NdefRecord> = ArrayList()
-        for (record in records.toList<JSObject>()) {
-            val format = record.getInteger("format", 0)
-            val type = toU8Array(record.getJSONArray("kind"))
-            val identifier = toU8Array(record.getJSONArray("id"))
-            val payload = toU8Array(record.getJSONArray("payload"))
-
-            ndefRecords.add(NdefRecord(format.toShort(), type, identifier, payload))
+        for (record in args.records) {
+            ndefRecords.add(NdefRecord(record.format, record.kind, record.id, record.payload))
         }
 
         val message = NdefMessage(ndefRecords.toTypedArray())
@@ -192,7 +198,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
             }
         } ?: run {
             enableNFCInForeground()
-            session = Session(NfcAction.Write(message), invoke, keepAlive)
+            session = Session(NfcAction.Write(message), invoke, args.keepSessionAlive)
             Logger.warn("NFC", "Write Mode Enabled")
         }
     }
@@ -333,10 +339,6 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
             nfcAdapter?.disableForegroundDispatch(activity)
         }
     }
-}
-
-private fun toU8Array(jsonArray: JSONArray): ByteArray {
-    return ByteArray(jsonArray.length()) { i -> jsonArray.getInt(i).toByte() }
 }
 
 private fun fromU8Array(byteArray: ByteArray): JSONArray {

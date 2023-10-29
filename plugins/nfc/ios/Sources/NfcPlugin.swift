@@ -8,8 +8,25 @@ import Tauri
 import UIKit
 import WebKit
 
-enum ScanKind {
+enum ScanKind: String, Decodable {
   case ndef, tag
+}
+
+struct ScanOptions: Decodable {
+  let kind: ScanKind
+  let keepSessionAlive: Bool?
+}
+
+struct NDEFRecord: Decodable {
+  let format: UInt8?
+  let kind: [UInt8]?
+  let identifier: [UInt8]?
+  let payload: [UInt8]?
+}
+
+struct WriteOptions: Decodable {
+  let records: [NDEFRecord]
+  let keepSessionAlive: Bool?
 }
 
 enum TagProcessMode {
@@ -346,31 +363,23 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
     ])
   }
 
-  @objc public func write(_ invoke: Invoke) {
+  @objc public func write(_ invoke: Invoke) throws {
     if !self.status.available {
       invoke.reject("NFC reading unavailable: \(self.status.errorReason ?? "")")
       return
     }
 
-    guard let records = invoke.getArray("records", JSObject.self) else {
-      invoke.reject("`records` array is required")
-      return
-    }
+    let args = try invoke.parseArgs(WriteOptions.self)
 
     var ndefPayloads = [NFCNDEFPayload]()
 
-    for record in records {
-      let format = record["format"] as? NSNumber ?? 0
-      let type = record["kind"] as? [UInt8] ?? []
-      let identifier = record["id"] as? [UInt8] ?? []
-      let payload = record["payload"] as? [UInt8] ?? []
-
+    for record in args.records {
       ndefPayloads.append(
         NFCNDEFPayload(
-          format: NFCTypeNameFormat(rawValue: UInt8(truncating: format)) ?? .unknown,
-          type: dataFromByteArray(type),
-          identifier: dataFromByteArray(identifier),
-          payload: dataFromByteArray(payload)
+          format: NFCTypeNameFormat(rawValue: record.format ?? 0) ?? .unknown,
+          type: dataFromByteArray(record.kind ?? []),
+          identifier: dataFromByteArray(record.identifier ?? []),
+          payload: dataFromByteArray(record.payload ?? [])
         )
       )
     }
@@ -389,7 +398,7 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
       }
     } else {
       self.startScanSession(
-        invoke: invoke, kind: .ndef, keepAlive: invoke.getBool("keepSessionAlive", false),
+        invoke: invoke, kind: .ndef, keepAlive: args.keepSessionAlive ?? false,
         invalidateAfterFirstRead: false,
         tagProcessMode: .write(
           message: NFCNDEFMessage(records: ndefPayloads)
@@ -397,26 +406,16 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
     }
   }
 
-  @objc public func scan(_ invoke: Invoke) {
+  @objc public func scan(_ invoke: Invoke) throws {
     if !self.status.available {
       invoke.reject("NFC reading unavailable: \(self.status.errorReason ?? "")")
       return
     }
 
-    let kind: ScanKind
-    switch invoke.getString("kind") {
-    case "tag":
-      kind = .tag
-      break
-    case "ndef":
-      kind = .ndef
-      break
-    default:
-      invoke.reject("invalid `kind` argument, expected one of `tag`,  `ndef`.")
-      return
-    }
+    let args = try invoke.parseArgs(ScanOptions.self)
+
     self.startScanSession(
-      invoke: invoke, kind: kind, keepAlive: invoke.getBool("keepSessionAlive", false),
+      invoke: invoke, kind: args.kind, keepAlive: args.keepSessionAlive ?? false,
       invalidateAfterFirstRead: true, tagProcessMode: .read)
   }
 
