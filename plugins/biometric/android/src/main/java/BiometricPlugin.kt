@@ -35,11 +35,12 @@ private const val INVALID_CONTEXT_ERROR = "invalidContext"
 @InvokeArg
 class AuthOptions {
     lateinit var reason: String
-    var allowDeviceCredential: Bool = false
+    var allowDeviceCredential: Boolean = false
     var title: String? = null
     var subtitle: String? = null
-    var confirmationRequired: Bool = false
-    var maxAttemps: UInt = 3
+    var cancelTitle: String? = null
+    var confirmationRequired: Boolean? = null
+    var maxAttemps: Int = 3
 }
 
 @TauriPlugin
@@ -174,14 +175,14 @@ class BiometricPlugin(private val activity: Activity): Plugin(activity) {
         // Pass the options to the activity
         intent.putExtra(
             TITLE,
-            args.title ?? (biometryNameMap[biometryTypes[0]] ?: "")
+            args.title ?: (biometryNameMap[biometryTypes[0]] ?: "")
         )
         intent.putExtra(SUBTITLE, args.subtitle)
         intent.putExtra(REASON, args.reason)
         intent.putExtra(CANCEL_TITLE, args.cancelTitle)
         intent.putExtra(DEVICE_CREDENTIAL, args.allowDeviceCredential)
-        if (invoke.hasOption(CONFIRMATION_REQUIRED)) {
-            intent.putExtra(CONFIRMATION_REQUIRED, args.confirmationRequired)
+        args.confirmationRequired?.let {
+            intent.putExtra(CONFIRMATION_REQUIRED, it)
         }
 
         val maxAttemptsConfig = args.maxAttemps
