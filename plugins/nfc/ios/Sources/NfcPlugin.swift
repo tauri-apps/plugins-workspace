@@ -30,7 +30,6 @@ struct NDEFRecord: Decodable {
 
 struct WriteOptions: Decodable {
   let records: [NDEFRecord]
-  let keepSessionAlive: Bool?
   let message: String?
   let successMessage: String?
   let successfulReadMessage: String?
@@ -279,9 +278,8 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
               }
               currentSession.invoke.resolve()
 
-              if currentSession.keepAlive != true {
-                self.closeSession(session)
-              }
+              self.closeSession(session)
+
             }
           })
       }
@@ -422,7 +420,7 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
       self.startScanSession(
         invoke: invoke,
         kind: .ndef,
-        keepAlive: args.keepSessionAlive ?? false,
+        keepAlive: true,
         invalidateAfterFirstRead: false,
         tagProcessMode: .write(
           message: NFCNDEFMessage(records: ndefPayloads)

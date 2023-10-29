@@ -68,7 +68,6 @@ export interface ScanOptions {
 }
 
 export interface WriteOptions {
-  keepSessionAlive?: boolean;
   /** Message displayed in the UI when reading the tag. iOS only. */
   message?: string;
   /** Message displayed in the UI when the tag has been read. iOS only. */

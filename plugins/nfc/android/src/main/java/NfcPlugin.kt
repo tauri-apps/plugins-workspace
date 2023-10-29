@@ -201,7 +201,6 @@ class NDEFRecordData {
 @InvokeArg
 class WriteOptions {
     var kind: ScanKind? = null
-    var keepSessionAlive: Boolean = false
     lateinit var records: Array<NDEFRecordData>
 }
 
@@ -362,7 +361,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
                 val filters = kind.filters()
                 val techLists = kind.techLists()
                 enableNFCInForeground(filters, techLists)
-                session = Session(NfcAction.Write(message), invoke, args.keepSessionAlive, null, filters, techLists)
+                session = Session(NfcAction.Write(message), invoke, true, null, filters, techLists)
                 Logger.warn("NFC", "Write Mode Enabled")
             }} ?: run {
                 invoke.reject("Missing `kind` for write")
