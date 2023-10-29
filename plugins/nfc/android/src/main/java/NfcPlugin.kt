@@ -409,7 +409,6 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     }
 
     private fun readTagInner(tag: Tag?, rawMessages: Array<Parcelable>?) {
-        // iOS part only reads the first message (? - there are 2 conflicting impls so not sure) so we do too. i think that covers most if not all use cases anyway.
         val ndefMessage = rawMessages?.get(0) as NdefMessage?
 
         val records = ndefMessage?.records ?: arrayOf()
@@ -419,7 +418,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
         val ret = JSObject()
         if (tag !== null) {
             ret.put("id", fromU8Array(tag.id))
-            // There's also ndef.type which returns the ndef spec type which may be interesting to know too?
+            // TODO There's also ndef.type which returns the ndef spec type which may be interesting to know too?
             ret.put("kind", JSArray.from(tag.techList))
         }
         ret.put("records", JSArray.from(jsonRecords))
@@ -477,7 +476,6 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
 
             return
         }
-
 
         // if we get to this line, the tag was neither Ndef nor NdefFormatable compatible
         throw Exception("Tag doesn't support Ndef format")

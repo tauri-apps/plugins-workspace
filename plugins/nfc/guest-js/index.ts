@@ -85,15 +85,9 @@ export interface TagRecord {
 }
 
 export interface Tag {
-  id: string;
-  kind: string;
+  id: number[];
+  kind: string[];
   records: TagRecord[];
-}
-
-export interface Scan {
-  id: string;
-  kind: string;
-  tag: Tag;
 }
 
 export interface NFCRecord {
@@ -204,11 +198,21 @@ export function uriRecord(uri: string, id?: string | number[]): NFCRecord {
   );
 }
 
+/**
+ * Scans an NFC tag.
+ *
+ * See <https://developer.android.com/develop/connectivity/nfc/nfc#ndef> for more information.
+ *
+ * @param kind
+ * @param options
+ * @returns
+ */
 export async function scan(
   kind: ScanKind,
   options?: ScanOptions
-): Promise<Scan> {
+): Promise<Tag> {
   const { type: scanKind, ...kindOptions } = kind;
+  console.log(scanKind, kindOptions, kind);
 
   return await invoke("plugin:nfc|scan", {
     kind: {

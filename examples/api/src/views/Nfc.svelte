@@ -1,25 +1,120 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
-  import { write, textRecord } from "@tauri-apps/plugin-nfc"
-  import { invoke } from "@tauri-apps/api/primitives";
+  import { onMount } from "svelte";
+  import { write, scan, textRecord, uriRecord } from "@tauri-apps/plugin-nfc";
+  import * as os from "@tauri-apps/plugin-os";
 
   export let onMessage;
+  const decoder = new TextDecoder();
 
+  let kind = "ndef";
+  let writeToNfc = false;
+  let text = "";
+  let uri = "";
+
+  let scheme = "";
+  let host = "";
+  let pathPrefix = "";
+  let mimeType = "";
+
+  let isAndroid;
   onMount(async () => {
-    let record = textRecord("Hello from Tauri!", "someTestId")
-    //write([record]).then(m => onMessage(`success: ${m}`)).catch(m => onMessage(`error: ${m}`))
-    // @ts-ignore
-    const res = await invoke("plugin:nfc|scan", {kind:'ndef'}).catch(onMessage)
-    // @ts-ignore
-    onMessage(res)
-    // @ts-ignore
-    if (res && res.records) onMessage(res.records)
+    isAndroid = (await os.platform()) === "android";
   });
-/*  onDestroy(() => {
 
-  });*/
+  async function _readNfc() {
+    onMessage(`NFC scanning ${kind}`);
+
+    const tagResponse = await scan(
+      {
+        type: kind,
+        uri: {
+          scheme: scheme || null,
+          host: host || null,
+          pathPrefix: pathPrefix || null,
+        },
+        mimeType: mimeType || null,
+      },
+      { keepSessionAlive: writeToNfc }
+    );
+
+    onMessage({
+      id: decoder.decode(new Uint8Array(tagResponse.id)),
+      kind: tagResponse.kind,
+      records: tagResponse.records.map((record) => ({
+        id: decoder.decode(new Uint8Array(record.id)),
+        kind: decoder.decode(new Uint8Array(record.kind)),
+        payload: decoder.decode(new Uint8Array(record.payload)),
+        tnf: record.tnf,
+      })),
+    });
+
+    if (writeToNfc) {
+      const records = [];
+      if (text) {
+        records.push(textRecord(text, "tauriTextId"));
+      }
+      if (uri) {
+        records.push(uriRecord(uri, "tauriUriId"));
+      }
+      await write(records);
+      onMessage("Wrote to tag");
+    }
+  }
+
+  function readNfc() {
+    _readNfc().catch(onMessage);
+  }
 </script>
 
 <div>
-  WARNING: Writing mode enabled!
+  <div class="flex gap-2 children:grow items-center">
+    <div>
+      <input type="checkbox" id="nfc-write" bind:checked={writeToNfc} />
+      <label for="nfc-write">Write data</label>
+    </div>
+
+    <select class="input" id="request-method" bind:value={kind}>
+      <option value="ndef">NDEF</option>
+      <option value="tag">TAG</option>
+    </select>
+  </div>
+
+  {#if isAndroid}
+    <div class="flex flex-col gap-2 children:grow">
+      <p>Filters</p>
+      <div class="flex gap-2">
+        <input
+          class="input"
+          placeholder="Scheme"
+          style="width: 33%"
+          bind:value={scheme}
+        />
+        <input
+          class="input"
+          placeholder="Host"
+          style="width: 33%"
+          bind:value={host}
+        />
+        <input
+          class="input"
+          placeholder="Path prefix"
+          style="width: 33%"
+          bind:value={pathPrefix}
+        />
+      </div>
+      <div class="flex gap-2">
+        <input class="input" placeholder="Mime type" bind:value={mimeType} />
+      </div>
+    </div>
+  {/if}
+
+  <div class="flex flex-col gap-2 children:grow">
+    <p>Write Records</p>
+    <div class="flex">
+      <input class="input" placeholder="Text record" bind:value={text} />
+      <input class="input" placeholder="URI record" bind:value={uri} />
+    </div>
+  </div>
+
+  <button class="btn" on:click={readNfc}>Scan</button>
 </div>

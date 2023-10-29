@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+// https://developer.apple.com/documentation/corenfc/building_an_nfc_tag-reader_app
+
 import CoreNFC
 import SwiftRs
 import Tauri
@@ -136,11 +138,9 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
   }
 
   func readerSession(_ session: NFCNDEFReaderSession, didDetectNDEFs messages: [NFCNDEFMessage]) {
-    var jsonMessages: [JsonObject] = []
-    for message in messages {
-      jsonMessages.append(ndefMessageToJson(message))
-    }
-    self.session?.invoke.resolve(["messages": jsonMessages])
+    let message = messages.first!
+    // TODO: do we really need this hook?
+    self.session?.invoke.resolve(["records": ndefMessageRecords(message)])
   }
 
   func readerSession(_ session: NFCNDEFReaderSession, didDetect tags: [NFCNDEFTag]) {
@@ -179,23 +179,23 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
 
     switch tag {
     case .feliCa:
-      metadata["kind"] = "FeliCa"
+      metadata["kind"] = ["FeliCa"]
       metadata["id"] = nil
       break
     case let .miFare(tag):
-      metadata["kind"] = "MiFare"
+      metadata["kind"] = ["MiFare"]
       metadata["id"] = byteArrayFromData(tag.identifier)
       break
     case let .iso15693(tag):
-      metadata["kind"] = "ISO15693"
+      metadata["kind"] = ["ISO15693"]
       metadata["id"] = byteArrayFromData(tag.identifier)
       break
     case let .iso7816(tag):
-      metadata["kind"] = "ISO7816Compatible"
+      metadata["kind"] = ["ISO7816Compatible"]
       metadata["id"] = byteArrayFromData(tag.identifier)
       break
     default:
-      metadata["kind"] = "Unknown"
+      metadata["kind"] = ["Unknown"]
       metadata["id"] = nil
       break
     }
@@ -313,18 +313,16 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
   private func resolveInvoke(message: NFCNDEFMessage?, metadata: JsonObject) {
     var data: JsonObject = [:]
 
+    data.merge(metadata) { (_, new) in new }
+
     if let message = message {
-      var tag = ndefMessageToJson(message)
-      tag.merge(metadata) { (_, new) in new }
-      data["tag"] = tag
+      data["records"] = ndefMessageRecords(message)
     }
 
     self.session?.invoke.resolve(data)
   }
 
-  private func ndefMessageToJson(_ message: NFCNDEFMessage) -> JsonObject {
-    var tag: JsonObject = [:]
-
+  private func ndefMessageRecords(_ message: NFCNDEFMessage) -> [JsonObject] {
     var records: [JsonObject] = []
     for record in message.records {
       var recordJson: JsonObject = [:]
@@ -336,9 +334,7 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
       records.append(recordJson)
     }
 
-    tag["records"] = records
-
-    return tag
+    return records
   }
 
   private func byteArrayFromData(_ data: Data) -> [UInt8] {
