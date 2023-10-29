@@ -9,7 +9,8 @@ rust-version = { workspace = true }
 links = "tauri-plugin-notification"
 
 [package.metadata.docs.rs]
-features = [ "dox" ]
+rustc-args = [ "--cfg", "docsrs" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
 targets = [ "x86_64-unknown-linux-gnu", "x86_64-linux-android" ]
 
 [build-dependencies]
@@ -34,4 +35,3 @@ win7-notifications = { version = "0.3.1", optional = true }
 
 [features]
 windows7-compat = [ "win7-notifications" ]
-dox = [ "tauri/dox" ]

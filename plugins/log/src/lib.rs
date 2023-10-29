@@ -475,7 +475,7 @@ impl Builder {
                                 };
                                 let app_handle = app_handle.clone();
                                 tauri::async_runtime::spawn(async move {
-                                    app_handle.emit_all("log://log", payload).unwrap();
+                                    app_handle.emit("log://log", payload).unwrap();
                                 });
                             })
                         }

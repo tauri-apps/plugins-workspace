@@ -9,7 +9,8 @@ rust-version = { workspace = true }
 links = "tauri-plugin-clipboard-manager"
 
 [package.metadata.docs.rs]
-features = [ "dox" ]
+rustc-args = [ "--cfg", "docsrs" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
 targets = [ "x86_64-unknown-linux-gnu", "x86_64-linux-android" ]
 
 [build-dependencies]
@@ -24,6 +25,3 @@ thiserror = { workspace = true }
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 arboard = "3"
-
-[features]
-dox = [ "tauri/dox" ]

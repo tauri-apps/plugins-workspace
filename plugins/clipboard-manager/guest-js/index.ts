@@ -10,12 +10,7 @@
 
 import { invoke } from "@tauri-apps/api/primitives";
 
-interface Clip<K, T> {
-  kind: K;
-  options: T;
-}
-
-type ClipResponse = Clip<"PlainText", string>;
+type ClipResponse = Record<"plainText", { text: string }>;
 
 /**
  * Writes plain text to the clipboard.
@@ -36,8 +31,7 @@ async function writeText(
 ): Promise<void> {
   return invoke("plugin:clipboard|write", {
     data: {
-      kind: "PlainText",
-      options: {
+      plainText: {
         label: opts?.label,
         text,
       },
@@ -56,7 +50,7 @@ async function writeText(
  */
 async function readText(): Promise<string> {
   const kind: ClipResponse = await invoke("plugin:clipboard|read");
-  return kind.options;
+  return kind.plainText.text;
 }
 
 export { writeText, readText };

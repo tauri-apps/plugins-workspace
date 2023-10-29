@@ -37,6 +37,7 @@ import app.tauri.Logger
 import app.tauri.PermissionState
 import app.tauri.annotation.ActivityCallback
 import app.tauri.annotation.Command
+import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.Permission
 import app.tauri.annotation.PermissionCallback
 import app.tauri.annotation.TauriPlugin
@@ -56,6 +57,13 @@ import java.util.concurrent.ExecutionException
 private const val PERMISSION_ALIAS_CAMERA = "camera"
 private const val PERMISSION_NAME = Manifest.permission.CAMERA
 private const val PREFS_PERMISSION_FIRST_TIME_ASKING = "PREFS_PERMISSION_FIRST_TIME_ASKING"
+
+@InvokeArg
+class ScanOptions {
+    var formats: Array<String>? = null
+    var windowed: Boolean = false
+    var cameraDirection: String? = null
+}
 
 @TauriPlugin(
     permissions = [
@@ -206,19 +214,12 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
             }
     }
 
-    private fun getFormats(invoke: Invoke): List<Int> {
-        val jsFormats = invoke.getArray("formats", JSArray())
+    private fun getFormats(args: ScanOptions): List<Int> {
         val formats = ArrayList<Int>()
-        for (i in 0 until jsFormats.length()) {
-            try {
-                val targetedFormat: String = jsFormats.getString(i)
-                val targetedBarcodeFormat =
-                    supportedFormats[targetedFormat]
-                if (targetedBarcodeFormat != null) {
-                    formats.add(targetedBarcodeFormat)
-                }
-            } catch (e: JSONException) {
-                e.printStackTrace()
+        for (format in args.formats ?: arrayOf()) {
+            val targetedBarcodeFormat = supportedFormats[format]
+            if (targetedBarcodeFormat != null) {
+                formats.add(targetedBarcodeFormat)
             }
         }
         return formats
@@ -341,14 +342,16 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
 
     @Command
     fun scan(invoke: Invoke) {
+        val args = invoke.parseArgs(ScanOptions::class.java)
+
         savedInvoke = invoke
         if (hasCamera()) {
             if (getPermissionState("camera") != PermissionState.GRANTED) {
                 throw Exception("No permission to use camera. Did you request it yet?")
             } else {
                 webViewBackground = null
-                prepare(invoke.getString("cameraDirection", "back"), invoke.getBoolean("windowed", false))
-                configureCamera(getFormats(invoke))
+                prepare(args.cameraDirection ?: "back", args.windowed)
+                configureCamera(getFormats(args))
             }
         }
     }

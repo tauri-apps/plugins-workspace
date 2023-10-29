@@ -14,24 +14,44 @@ import androidx.activity.result.ActivityResult
 import app.tauri.Logger
 import app.tauri.annotation.ActivityCallback
 import app.tauri.annotation.Command
+import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.TauriPlugin
 import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSArray
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
-import org.json.JSONException
 
+@InvokeArg
+class Filter {
+  lateinit var extensions: Array<String>
+}
+
+@InvokeArg
+class FilePickerOptions {
+  lateinit var filters: Array<Filter>
+  var multiple: Boolean? = null
+  var readData: Boolean? = null
+}
+
+@InvokeArg
+class MessageOptions {
+  var title: String?
+  lateinit var message: String
+  var okButtonLabel: String?
+  var cancelButtonLabel: String?
+}
 
 @TauriPlugin
 class DialogPlugin(private val activity: Activity): Plugin(activity) {
+  var filePickerOptions: FilePickerOptions? = null
+
   @Command
   fun showFilePicker(invoke: Invoke) {
     try {
-      val filters = invoke.getArray("filters", JSArray())
-      val multiple = invoke.getBoolean("multiple", false)
-      val parsedTypes = parseFiltersOption(filters)
+      val args = invoke.parseArgs(FilePickerOptions::class.java)
+      val parsedTypes = parseFiltersOption(args.filters)
       
-      val intent = if (parsedTypes != null && parsedTypes.isNotEmpty()) {
+      val intent = if (parsedTypes.isNotEmpty()) {
         val intent = Intent(Intent.ACTION_PICK)
         intent.putExtra(Intent.EXTRA_MIME_TYPES, parsedTypes)
         
@@ -55,7 +75,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
         intent
       }
 
-      intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, multiple)
+      intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, args.multiple ?: false)
       
       startActivityForResult(invoke, intent, "filePickerResult")
     } catch (ex: Exception) {
@@ -68,10 +88,9 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
   @ActivityCallback
   fun filePickerResult(invoke: Invoke, result: ActivityResult) {
     try {
-      val readData = invoke.getBoolean("readData", false)
       when (result.resultCode) {
         Activity.RESULT_OK -> {
-          val callResult = createPickFilesResult(result.data, readData)
+          val callResult = createPickFilesResult(result.data, filePickerOptions?.readData ?: false)
           invoke.resolve(callResult)
         }
         Activity.RESULT_CANCELED -> invoke.reject("File picker cancelled")
@@ -130,36 +149,19 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     return callResult
   }
   
-  private fun parseFiltersOption(filters: JSArray): Array<String>? {
-    return try {
-      val filtersList: List<JSObject> = filters.toList()
-      val mimeTypes = mutableListOf<String>()
-      for (filter in filtersList) {
-        val extensionsList = filter.getJSONArray("extensions")
-        for (i in 0 until extensionsList.length()) {
-          val mime = extensionsList.getString(i)
-          mimeTypes.add(if (mime == "text/csv") "text/comma-separated-values" else mime)
-        }
+  private fun parseFiltersOption(filters: Array<Filter>): Array<String> {
+    val mimeTypes = mutableListOf<String>()
+    for (filter in filters) {
+      for (mime in filter.extensions) {
+        mimeTypes.add(if (mime == "text/csv") "text/comma-separated-values" else mime)
       }
-      
-      mimeTypes.toTypedArray()
-    } catch (exception: JSONException) {
-      Logger.error("parseTypesOption failed.", exception)
-      null
     }
+    return mimeTypes.toTypedArray()
   }
   
   @Command
   fun showMessageDialog(invoke: Invoke) {
-    val title = invoke.getString("title")
-    val message = invoke.getString("message")
-    val okButtonLabel = invoke.getString("okButtonLabel", "OK")
-    val cancelButtonLabel = invoke.getString("cancelButtonLabel", "Cancel")
-    
-    if (message == null) {
-      invoke.reject("The `message` argument is required")
-      return
-    }
+    val args = invoke.parseArgs(MessageOptions::class.java)
     
     if (activity.isFinishing) {
       invoke.reject("App is finishing")
@@ -177,19 +179,19 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
       .post {
         val builder = AlertDialog.Builder(activity)
         
-        if (title != null) {
-          builder.setTitle(title)
+        if (args.title != null) {
+          builder.setTitle(args.title)
         }
         builder
-          .setMessage(message)
+          .setMessage(args.message)
           .setPositiveButton(
-            okButtonLabel
+            args.okButtonLabel ?: "OK"
           ) { dialog, _ ->
             dialog.dismiss()
             handler(false, true)
           }
           .setNegativeButton(
-            cancelButtonLabel
+            args.cancelButtonLabel ?: "Cancel"
           ) { dialog, _ ->
             dialog.dismiss()
             handler(false, false)

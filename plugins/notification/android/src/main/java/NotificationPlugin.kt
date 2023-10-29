@@ -14,6 +14,7 @@ import android.os.Build
 import android.webkit.WebView
 import app.tauri.PermissionState
 import app.tauri.annotation.Command
+import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.Permission
 import app.tauri.annotation.PermissionCallback
 import app.tauri.annotation.TauriPlugin
@@ -21,10 +22,54 @@ import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSArray
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
-import org.json.JSONException
-import org.json.JSONObject
 
 const val LOCAL_NOTIFICATIONS = "permissionState"
+
+@InvokeArg
+class PluginConfig {
+  var icon: String? = null
+  var sound: String? = null
+  var iconColor: String? = null
+}
+
+@InvokeArg
+class BatchArgs {
+  lateinit var notifications: List<Notification>
+}
+
+@InvokeArg
+class CancelArgs {
+  lateinit var notifications: List<Int>
+}
+
+@InvokeArg
+class NotificationAction {
+  lateinit var id: String
+  var title: String? = null
+  var input: Boolean? = null
+}
+
+@InvokeArg
+class ActionType {
+  lateinit var id: String
+  lateinit var actions: List<NotificationAction>
+}
+
+@InvokeArg
+class RegisterActionTypesArgs {
+  lateinit var types: List<ActionType>
+}
+
+@InvokeArg
+class ActiveNotification {
+  var id: Int = 0
+  var tag: String? = null
+}
+
+@InvokeArg
+class RemoveActiveArgs {
+  var notifications: List<ActiveNotification> = listOf()
+}
 
 @TauriPlugin(
   permissions = [
@@ -41,8 +86,8 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   companion object {
     var instance: NotificationPlugin? = null
 
-    fun triggerNotification(notification: JSObject) {
-      instance?.trigger("notification", notification)
+    fun triggerNotification(notification: Notification) {
+      instance?.triggerObject("notification", notification)
     }
   }
 
@@ -51,23 +96,32 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
 
     super.load(webView)
     this.webView = webView
-    notificationStorage = NotificationStorage(activity)
+    notificationStorage = NotificationStorage(activity, jsonMapper())
     
     val manager = TauriNotificationManager(
       notificationStorage,
       activity,
       activity,
-      getConfig()
+      getConfig(PluginConfig::class.java)
     )
     manager.createNotificationChannel()
     
     this.manager = manager
     
     notificationManager = activity.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+    val intent = activity.intent
+    intent?.let {
+      onIntent(it)
+    }
   }
 
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
+    onIntent(intent)
+  }
+
+  fun onIntent(intent: Intent) {
     if (Intent.ACTION_MAIN != intent.action) {
       return
     }
@@ -79,80 +133,43 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
 
   @Command
   fun show(invoke: Invoke) {
-    val notification = Notification.fromJSObject(invoke.data)
+    val notification = invoke.parseArgs(Notification::class.java)
     val id = manager.schedule(notification)
 
-    val returnVal = JSObject().put("id", id)
-    invoke.resolve(returnVal)
+    invoke.resolveObject(id)
   }
 
   @Command
   fun batch(invoke: Invoke) {
-    val notificationArray = invoke.getArray("notifications")
-    if (notificationArray == null) {
-      invoke.reject("Missing `notifications` argument")
-      return
-    }
+    val args = invoke.parseArgs(BatchArgs::class.java)
 
-    val notifications: MutableList<Notification> =
-      ArrayList(notificationArray.length())
-    val notificationsInput: List<JSONObject> = try {
-      notificationArray.toList()
-    } catch (e: JSONException) {
-      invoke.reject("Provided notification format is invalid")
-      return
-    }
+    val ids = manager.schedule(args.notifications)
+    notificationStorage.appendNotifications(args.notifications)
 
-    for (jsonNotification in notificationsInput) {
-      val notification = Notification.fromJson(jsonNotification)
-      notifications.add(notification)
-    }
-
-    val ids = manager.schedule(notifications)
-    notificationStorage.appendNotifications(notifications)
-
-    val result = JSObject()
-    result.put("notifications", ids)
-    invoke.resolve(result)
+    invoke.resolveObject(ids)
   }
 
   @Command
   fun cancel(invoke: Invoke) {
-    val notifications: List<Int> = invoke.getArray("notifications", JSArray()).toList()
-    if (notifications.isEmpty()) {
-      invoke.reject("Must provide notifications array as notifications option")
-      return
-    }
-
-    manager.cancel(notifications)
+    val args = invoke.parseArgs(CancelArgs::class.java)
+    manager.cancel(args.notifications)
     invoke.resolve()
   }
 
   @Command
   fun removeActive(invoke: Invoke) {
-    val notifications = invoke.getArray("notifications")
-    if (notifications == null) {
+    val args = invoke.parseArgs(RemoveActiveArgs::class.java)
+
+    if (args.notifications.isEmpty()) {
       notificationManager.cancelAll()
       invoke.resolve()
     } else {
-      try {
-        for (o in notifications.toList<Any>()) {
-          if (o is JSONObject) {
-            val notification = JSObject.fromJSONObject((o))
-            val tag = notification.getString("tag", null)
-            val id = notification.getInteger("id", 0)
-            if (tag == null) {
-              notificationManager.cancel(id)
-            } else {
-              notificationManager.cancel(tag, id)
-            }
-          } else {
-            invoke.reject("Unexpected notification type")
-            return
-          }
+      for (notification in args.notifications) {
+        if (notification.tag == null) {
+          notificationManager.cancel(notification.id)
+        } else {
+          notificationManager.cancel(notification.tag, notification.id)
         }
-      } catch (e: JSONException) {
-        invoke.reject(e.message)
       }
       invoke.resolve()
     }
@@ -162,14 +179,13 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   fun getPending(invoke: Invoke) {
     val notifications= notificationStorage.getSavedNotifications()
     val result = Notification.buildNotificationPendingList(notifications)
-    invoke.resolve(result)
+    invoke.resolveObject(result)
   }
 
   @Command
   fun registerActionTypes(invoke: Invoke) {
-    val types = invoke.getArray("types", JSArray())
-    val typesArray = NotificationAction.buildTypes(types)
-    notificationStorage.writeActionGroup(typesArray)
+    val args = invoke.parseArgs(RegisterActionTypesArgs::class.java)
+    notificationStorage.writeActionGroup(args.types)
     invoke.resolve()
   }
 
@@ -201,9 +217,8 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
         notifications.put(jsNotification)
       }
     }
-    val result = JSObject()
-    result.put("notifications", notifications)
-    invoke.resolve(result)
+    
+    invoke.resolveObject(notifications)
   }
 
   @Command
