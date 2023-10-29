@@ -6,7 +6,7 @@
   export let onMessage;
   const decoder = new TextDecoder();
 
-  let kind = "ndef";
+  let kind = "tag";
   let writeToNfc = false;
   let text = "";
   let uri = "";
@@ -80,8 +80,8 @@
     </div>
 
     <select class="input" id="request-method" bind:value={kind}>
-      <option value="ndef">NDEF</option>
       <option value="tag">TAG</option>
+      <option value="ndef">NDEF</option>
     </select>
   </div>
 
