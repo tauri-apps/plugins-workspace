@@ -105,6 +105,7 @@ impl Serialize for TechKind {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub enum ScanKind {
     Ndef {
         mime_type: Option<String>,

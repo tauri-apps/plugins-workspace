@@ -7,10 +7,57 @@ import { invoke } from "@tauri-apps/api/primitives";
 export const RTD_TEXT = [0x54]; // "T"
 export const RTD_URI = [0x55]; // "U"
 
-export enum ScanKind {
-  Ndef,
-  Tag,
+export interface UriFilter {
+  scheme?: string;
+  host?: string;
+  pathPrefix?: string;
 }
+
+export enum TechKind {
+  IsoDep,
+  MifareClassic,
+  MifareUltralight,
+  Ndef,
+  NdefFormatable,
+  NfcA,
+  NfcB,
+  NfcBarcode,
+  NfcF,
+  NfcV,
+}
+
+export type ScanKind =
+  | {
+      type: "tag";
+      uri?: UriFilter;
+      mimeType?: string;
+    }
+  | {
+      type: "ndef";
+      uri?: UriFilter;
+      mimeType?: string;
+      /**
+       *  Each of the tech-lists is considered independently and the activity is considered a match if
+       * any single tech-list matches the tag that was discovered.
+       * This provides AND and OR semantics for filtering desired techs.
+       *
+       * See <https://developer.android.com/reference/android/nfc/NfcAdapter#ACTION_TECH_DISCOVERED> for more information.
+       *
+       * Examples
+       *
+       * ```ts
+       * import type { TechKind } from "@tauri-apps/plugin-nfc"
+       *
+       * const techLists = [
+       *  // capture anything using NfcF
+       *  [TechKind.NfcF],
+       *  // capture all MIFARE Classics with NDEF payloads
+       *  [TechKind.NfcA, TechKind.MifareClassic, TechKind.Ndef]
+       * ]
+       * ```
+       */
+      techLists?: TechKind[][];
+    };
 
 export interface ScanOptions {
   keepSessionAlive?: boolean;
@@ -161,8 +208,12 @@ export async function scan(
   kind: ScanKind,
   options?: ScanOptions
 ): Promise<Scan> {
+  const { type: scanKind, ...kindOptions } = kind;
+
   return await invoke("plugin:nfc|scan", {
-    kind: kind === ScanKind.Ndef ? "ndef" : "tag",
+    kind: {
+      [scanKind]: kindOptions,
+    },
     ...options,
   });
 }
