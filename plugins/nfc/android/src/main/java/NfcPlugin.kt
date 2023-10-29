@@ -16,6 +16,7 @@ import android.nfc.tech.Ndef
 import android.nfc.tech.NdefFormatable
 import android.os.Build
 import android.os.Parcelable
+import android.os.PatternMatcher
 import android.webkit.WebView
 import app.tauri.Logger
 import app.tauri.annotation.Command
@@ -25,6 +26,12 @@ import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSArray
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
+import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import org.json.JSONArray
 import java.io.IOException
 import kotlin.concurrent.thread
@@ -35,7 +42,151 @@ sealed class NfcAction {
 }
 
 @InvokeArg
+class UriFilter {
+    var scheme: String? = null
+    var host: String? = null
+    var pathPrefix: String? = null
+}
+
+@InvokeArg
+enum class TechKind(@JsonValue val value: String) {
+    IsoDep("IsoDep"),
+    MifareClassic("MifareClassic"),
+    MifareUltralight("MifareUltralight"),
+    Ndef("Ndef"),
+    NdefFormatable("NdefFormatable"),
+    NfcA("NfcA"),
+    NfcB("NfcB"),
+    NfcBarcode("NfcBarcode"),
+    NfcF("NfcF"),
+    NfcV("NfcV");
+
+    fun className(): String {
+        return when (this) {
+            IsoDep -> {
+                android.nfc.tech.IsoDep::class.java.name
+            }
+            MifareClassic -> {
+                android.nfc.tech.MifareClassic::class.java.name
+            }
+            MifareUltralight -> {
+                android.nfc.tech.MifareUltralight::class.java.name
+            }
+            Ndef -> {
+                android.nfc.tech.Ndef::class.java.name
+            }
+            NdefFormatable -> {
+                android.nfc.tech.NdefFormatable::class.java.name
+            }
+            NfcA -> {
+                android.nfc.tech.NfcA::class.java.name
+            }
+            NfcB -> {
+                android.nfc.tech.NfcB::class.java.name
+            }
+            NfcBarcode -> {
+                android.nfc.tech.NfcBarcode::class.java.name
+            }
+            NfcF -> {
+                android.nfc.tech.NfcF::class.java.name
+            }
+            NfcV -> {
+                android.nfc.tech.NfcV::class.java.name
+            }
+        }
+    }
+}
+
+private fun addDataFilters(intentFilter: IntentFilter, uri: UriFilter?, mimeType: String?) {
+    uri?.let { it -> {
+        it.scheme?.let {
+            intentFilter.addDataScheme(it)
+        }
+        it.host?.let {
+            intentFilter.addDataAuthority(it, null)
+        }
+        it.pathPrefix?.let {
+            intentFilter.addDataPath(it, PatternMatcher.PATTERN_PREFIX)
+        }
+    }}
+    mimeType?.let {
+        intentFilter.addDataType(it)
+    }
+}
+
+@InvokeArg
+@JsonDeserialize(using = ScanKindDeserializer::class)
+sealed class ScanKind {
+    @JsonDeserialize
+    class Tag: ScanKind() {
+        var mimeType: String? = null
+        var uri: UriFilter? = null
+    }
+    @JsonDeserialize
+    class Ndef: ScanKind() {
+        var mimeType: String? = null
+        var uri: UriFilter? = null
+        var techLists: Array<Array<TechKind>>? = null
+    }
+
+    fun filters(): Array<IntentFilter>? {
+        return when (this) {
+            is Tag -> {
+                val intentFilter = IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED)
+                addDataFilters(intentFilter, uri, mimeType)
+                arrayOf(intentFilter)
+            }
+            is Ndef -> {
+                val intentFilter = IntentFilter(if (techLists == null) NfcAdapter.ACTION_NDEF_DISCOVERED else NfcAdapter.ACTION_TECH_DISCOVERED)
+                addDataFilters(intentFilter, uri, mimeType)
+                arrayOf(intentFilter)
+            }
+            else -> null
+        }
+    }
+
+    fun techLists(): Array<Array<String>>? {
+        return when (this) {
+            is Tag -> null
+            is Ndef -> {
+                techLists?.let {
+                    val techs = mutableListOf<Array<String>>()
+                    for (techList in it) {
+                        val list = mutableListOf<String>()
+                        for (tech in techList) {
+                            list.add(tech.className())
+                        }
+                        techs.add(list.toTypedArray())
+                    }
+                    techs.toTypedArray()
+                } ?: run {
+                    null
+                }
+            }
+            else -> null
+        }
+    }
+}
+
+internal class ScanKindDeserializer: JsonDeserializer<ScanKind>() {
+    override fun deserialize(
+        jsonParser: JsonParser,
+        deserializationContext: DeserializationContext
+    ): ScanKind {
+        val node: JsonNode = jsonParser.codec.readTree(jsonParser)
+        node.get("tag")?.let {
+            return jsonParser.codec.treeToValue(it, ScanKind.Tag::class.java)
+        } ?: node.get("ndef")?.let {
+            return jsonParser.codec.treeToValue(it, ScanKind.Ndef::class.java)
+        } ?: run {
+            throw Error("unknown scan kind $node")
+        }
+    }
+}
+
+@InvokeArg
 class ScanOptions {
+    lateinit var kind: ScanKind
     var keepSessionAlive: Boolean = false
 }
 
@@ -49,6 +200,7 @@ class NDEFRecordData {
 
 @InvokeArg
 class WriteOptions {
+    var kind: ScanKind? = null
     var keepSessionAlive: Boolean = false
     lateinit var records: Array<NDEFRecordData>
 }
@@ -57,7 +209,9 @@ class Session(
     val action: NfcAction,
     val invoke: Invoke,
     val keepAlive: Boolean,
-    var tag: Tag? = null
+    var tag: Tag? = null,
+    val filters: Array<IntentFilter>? = null,
+    val techLists: Array<Array<String>>? = null
 )
 
 @TauriPlugin
@@ -77,7 +231,12 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
         Logger.info("NFC", "onNewIntent")
         super.onNewIntent(intent)
 
-        val extraTag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG)
+        val extraTag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra(NfcAdapter.EXTRA_TAG)
+        }
 
         extraTag?.let { tag ->
             session?.let {
@@ -119,8 +278,8 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     override fun onResume() {
         super.onResume()
         Logger.info("NFC", "onResume")
-        if (this.session != null) {
-            enableNFCInForeground()
+        session?.let {
+            enableNFCInForeground(it.filters, it.techLists)
         }
     }
 
@@ -158,9 +317,11 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
 
         val args = invoke.parseArgs(ScanOptions::class.java)
 
-        enableNFCInForeground()
+        val filters = args.kind.filters()
+        val techLists = args.kind.techLists()
+        enableNFCInForeground(filters, techLists)
 
-        session = Session(NfcAction.Read, invoke, args.keepSessionAlive)
+        session = Session(NfcAction.Read, invoke, args.keepSessionAlive, null, filters, techLists)
     }
 
     @Command
@@ -197,15 +358,27 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
                 invoke.reject("connected tag not found, please wait for it to be available and then call write()")
             }
         } ?: run {
-            enableNFCInForeground()
-            session = Session(NfcAction.Write(message), invoke, args.keepSessionAlive)
-            Logger.warn("NFC", "Write Mode Enabled")
+            args.kind?.let { kind -> {
+                val filters = kind.filters()
+                val techLists = kind.techLists()
+                enableNFCInForeground(filters, techLists)
+                session = Session(NfcAction.Write(message), invoke, args.keepSessionAlive, null, filters, techLists)
+                Logger.warn("NFC", "Write Mode Enabled")
+            }} ?: run {
+                invoke.reject("Missing `kind` for write")
+            }
+
         }
     }
 
     private fun readTag(tag: Tag, intent: Intent) {
         try {
-            val rawMessages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)
+            val rawMessages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES, Parcelable::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)
+            }
 
             when (intent.action) {
                 NfcAdapter.ACTION_NDEF_DISCOVERED -> {
@@ -311,7 +484,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
     }
 
     // TODO: Use ReaderMode instead of ForegroundDispatch
-    private fun enableNFCInForeground() {
+    private fun enableNFCInForeground(filters: Array<IntentFilter>?, techLists: Array<Array<String>>?) {
         val flag =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
         val pendingIntent = PendingIntent.getActivity(
@@ -322,14 +495,6 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
             ).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             flag
         )
-
-        // For some reason this is ignored
-        val nfcIntentFilter = IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED)
-        val filters = arrayOf(nfcIntentFilter)
-
-        // Probably also ignored, if not it should include more than just these 2 once we don't just read simple ndefs.
-        val techLists =
-            arrayOf(arrayOf(Ndef::class.java.name), arrayOf(NdefFormatable::class.java.name))
 
         nfcAdapter?.enableForegroundDispatch(activity, pendingIntent, filters, techLists)
     }

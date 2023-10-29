@@ -8,7 +8,7 @@ import Tauri
 import UIKit
 import WebKit
 
-enum ScanKind: String, Decodable {
+enum ScanKind: Decodable {
   case ndef, tag
 }
 
