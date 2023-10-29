@@ -227,7 +227,7 @@
 
   let isWindows;
   onMount(async () => {
-    isWindows = (await os.platform()) === "win32";
+    isWindows = (await os.platform()) === "windows";
   });
 
   // mobile
