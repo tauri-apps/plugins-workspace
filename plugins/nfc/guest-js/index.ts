@@ -61,10 +61,20 @@ export type ScanKind =
 
 export interface ScanOptions {
   keepSessionAlive?: boolean;
+  /** Message displayed in the UI. iOS only. */
+  message?: string;
+  /** Message displayed in the UI when the message has been read. iOS only. */
+  successMessage?: string;
 }
 
 export interface WriteOptions {
   keepSessionAlive?: boolean;
+  /** Message displayed in the UI when reading the tag. iOS only. */
+  message?: string;
+  /** Message displayed in the UI when the tag has been read. iOS only. */
+  successfulReadMessage?: string;
+  /** Message displayed in the UI when the message has been written. iOS only. */
+  successMessage?: string;
 }
 
 export enum NFCTypeNameFormat {

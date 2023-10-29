@@ -34,7 +34,11 @@
         },
         mimeType: mimeType || null,
       },
-      { keepSessionAlive: writeToNfc }
+      {
+        keepSessionAlive: writeToNfc,
+        message: "Hold your iPhone near an NFC tag",
+        successMessage: "Tag successfully read",
+      }
     );
 
     onMessage({
@@ -56,7 +60,9 @@
       if (uri) {
         records.push(uriRecord(uri, "tauriUriId"));
       }
-      await write(records);
+      await write(records, {
+        successMessage: "Data written to tag",
+      });
       onMessage("Wrote to tag");
     }
   }
