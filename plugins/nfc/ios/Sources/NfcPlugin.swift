@@ -29,6 +29,7 @@ struct NDEFRecord: Decodable {
 }
 
 struct WriteOptions: Decodable {
+  let kind: ScanKind?
   let records: [NDEFRecord]
   let message: String?
   let successMessage: String?
@@ -419,7 +420,7 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
     } else {
       self.startScanSession(
         invoke: invoke,
-        kind: .ndef,
+        kind: args.kind ?? .ndef,
         keepAlive: true,
         invalidateAfterFirstRead: false,
         tagProcessMode: .write(

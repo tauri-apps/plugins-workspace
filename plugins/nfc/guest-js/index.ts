@@ -68,6 +68,7 @@ export interface ScanOptions {
 }
 
 export interface WriteOptions {
+  kind?: ScanKind;
   /** Message displayed in the UI when reading the tag. iOS only. */
   message?: string;
   /** Message displayed in the UI when the tag has been read. iOS only. */
@@ -207,6 +208,11 @@ export function uriRecord(uri: string, id?: string | number[]): NFCRecord {
   );
 }
 
+function mapScanKind(kind: ScanKind): Record<string, unknown> {
+  const { type: scanKind, ...kindOptions } = kind;
+  return { [scanKind]: kindOptions };
+}
+
 /**
  * Scans an NFC tag.
  *
@@ -220,13 +226,8 @@ export async function scan(
   kind: ScanKind,
   options?: ScanOptions
 ): Promise<Tag> {
-  const { type: scanKind, ...kindOptions } = kind;
-  console.log(scanKind, kindOptions, kind);
-
   return await invoke("plugin:nfc|scan", {
-    kind: {
-      [scanKind]: kindOptions,
-    },
+    kind: mapScanKind(kind),
     ...options,
   });
 }
@@ -235,9 +236,14 @@ export async function write(
   records: NFCRecord[],
   options?: WriteOptions
 ): Promise<void> {
+  const { kind, ...opts } = options || {};
+  if (kind) {
+    // @ts-expect-error map the property
+    opts.kind = mapScanKind(kind);
+  }
   return await invoke("plugin:nfc|write", {
     records,
-    ...options,
+    ...opts,
   });
 }
 
