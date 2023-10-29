@@ -4,6 +4,8 @@
 <dict>
 	<key>NFCReaderUsageDescription</key>
 	<string>NFC Test</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Request camera access for barcode scanner</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>

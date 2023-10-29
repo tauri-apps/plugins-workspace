@@ -39,7 +39,7 @@ impl<R: Runtime> Clipboard<R> {
         match &self.clipboard {
             Ok(clipboard) => {
                 let text = clipboard.lock().unwrap().get_text()?;
-                Ok(ClipboardContents::PlainText(text))
+                Ok(ClipboardContents::PlainText { text })
             }
             Err(e) => Err(crate::Error::Clipboard(e.to_string())),
         }

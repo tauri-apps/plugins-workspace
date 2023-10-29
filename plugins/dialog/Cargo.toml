@@ -9,7 +9,8 @@ rust-version = { workspace = true }
 links = "tauri-plugin-dialog"
 
 [package.metadata.docs.rs]
-features = [ "dox" ]
+rustc-args = [ "--cfg", "docsrs" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
 targets = [ "x86_64-unknown-linux-gnu", "x86_64-linux-android" ]
 
 [dependencies]
@@ -24,11 +25,8 @@ tauri-plugin-fs = { path = "../fs", version = "2.0.0-alpha.3" }
 glib = "0.16"
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
-rfd = { version = "0.11", features = [ "gtk3", "common-controls-v6" ] }
+rfd = { version = "0.12", features = [ "gtk3", "common-controls-v6" ] }
 raw-window-handle = "0.5"
 
 [build-dependencies]
 tauri-build = { workspace = true }
-
-[features]
-dox = [ "tauri/dox" ]

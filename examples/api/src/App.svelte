@@ -73,7 +73,7 @@
       component: Http,
       icon: "i-ph-globe-hemisphere-west",
     },
-    !isMobile && {
+    {
       label: "Notifications",
       component: Notifications,
       icon: "i-codicon-bell-dot",
@@ -93,7 +93,7 @@
       component: Updater,
       icon: "i-codicon-cloud-download",
     },
-    !isMobile && {
+    {
       label: "Clipboard",
       component: Clipboard,
       icon: "i-codicon-clippy",

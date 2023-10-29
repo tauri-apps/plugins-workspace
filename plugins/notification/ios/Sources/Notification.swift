@@ -6,12 +6,7 @@ import Tauri
 import UserNotifications
 
 enum NotificationError: LocalizedError {
-  case contentNoId
-  case contentNoTitle
-  case contentNoBody
   case triggerRepeatIntervalTooShort
-  case attachmentNoId
-  case attachmentNoUrl
   case attachmentFileNotFound(path: String)
   case attachmentUnableToCreate(String)
   case pastScheduledTime
@@ -19,18 +14,8 @@ enum NotificationError: LocalizedError {
 
   var errorDescription: String? {
     switch self {
-    case .contentNoId:
-      return "Missing notification identifier"
-    case .contentNoTitle:
-      return "Missing notification title"
-    case .contentNoBody:
-      return "Missing notification body"
     case .triggerRepeatIntervalTooShort:
       return "Schedule interval too short, must be a least 1 minute"
-    case .attachmentNoId:
-      return "Missing attachment identifier"
-    case .attachmentNoUrl:
-      return "Missing attachment URL"
     case .attachmentFileNotFound(let path):
       return "Unable to find file \(path) for attachment"
     case .attachmentUnableToCreate(let error):
@@ -43,69 +28,56 @@ enum NotificationError: LocalizedError {
   }
 }
 
-func makeNotificationContent(_ notification: JSObject) throws -> UNNotificationContent {
-  guard let title = notification["title"] as? String else {
-    throw NotificationError.contentNoTitle
-  }
-  guard let body = notification["body"] as? String else {
-    throw NotificationError.contentNoBody
-  }
-
-  let extra = notification["extra"] as? JSObject ?? [:]
-  let schedule = notification["schedule"] as? JSObject ?? [:]
+func makeNotificationContent(_ notification: Notification) throws -> UNNotificationContent {
   let content = UNMutableNotificationContent()
-  content.title = NSString.localizedUserNotificationString(forKey: title, arguments: nil)
+  content.title = NSString.localizedUserNotificationString(
+    forKey: notification.title, arguments: nil)
   content.body = NSString.localizedUserNotificationString(
-    forKey: body,
+    forKey: notification.body,
     arguments: nil)
 
   content.userInfo = [
-    "__EXTRA__": extra,
-    "__SCHEDULE__": schedule,
+    "__EXTRA__": notification.extra as Any,
+    "__SCHEDULE__": notification.schedule as Any,
   ]
 
-  if let actionTypeId = notification["actionTypeId"] as? String {
+  if let actionTypeId = notification.actionTypeId {
     content.categoryIdentifier = actionTypeId
   }
 
-  if let threadIdentifier = notification["group"] as? String {
+  if let threadIdentifier = notification.group {
     content.threadIdentifier = threadIdentifier
   }
 
-  if let summaryArgument = notification["summary"] as? String {
+  if let summaryArgument = notification.summary {
     content.summaryArgument = summaryArgument
   }
 
-  if let sound = notification["sound"] as? String {
+  if let sound = notification.sound {
     content.sound = UNNotificationSound(named: UNNotificationSoundName(sound))
   }
 
-  if let attachments = notification["attachments"] as? [JSObject] {
+  if let attachments = notification.attachments {
     content.attachments = try makeAttachments(attachments)
   }
 
   return content
 }
 
-func makeAttachments(_ attachments: [JSObject]) throws -> [UNNotificationAttachment] {
+func makeAttachments(_ attachments: [NotificationAttachment]) throws -> [UNNotificationAttachment] {
   var createdAttachments = [UNNotificationAttachment]()
 
   for attachment in attachments {
-    guard let id = attachment["id"] as? String else {
-      throw NotificationError.attachmentNoId
-    }
-    guard let url = attachment["url"] as? String else {
-      throw NotificationError.attachmentNoUrl
-    }
-    guard let urlObject = makeAttachmentUrl(url) else {
-      throw NotificationError.attachmentFileNotFound(path: url)
+
+    guard let urlObject = makeAttachmentUrl(attachment.url) else {
+      throw NotificationError.attachmentFileNotFound(path: attachment.url)
     }
 
-    let options = attachment["options"] as? JSObject ?? [:]
+    let options = attachment.options != nil ? makeAttachmentOptions(attachment.options!) : nil
 
     do {
       let newAttachment = try UNNotificationAttachment(
-        identifier: id, url: urlObject, options: makeAttachmentOptions(options))
+        identifier: attachment.id, url: urlObject, options: options)
       createdAttachments.append(newAttachment)
     } catch {
       throw NotificationError.attachmentUnableToCreate(error.localizedDescription)
@@ -119,50 +91,37 @@ func makeAttachmentUrl(_ path: String) -> URL? {
   return URL(string: path)
 }
 
-func makeAttachmentOptions(_ options: JSObject) -> JSObject {
-  var opts: JSObject = [:]
+func makeAttachmentOptions(_ options: NotificationAttachmentOptions) -> [AnyHashable: Any] {
+  var opts: [AnyHashable: Any] = [:]
 
-  if let iosUNNotificationAttachmentOptionsTypeHintKey = options[
-    "iosUNNotificationAttachmentOptionsTypeHintKey"] as? String
-  {
-    opts[UNNotificationAttachmentOptionsTypeHintKey] = iosUNNotificationAttachmentOptionsTypeHintKey
+  if let value = options.iosUNNotificationAttachmentOptionsTypeHintKey {
+    opts[UNNotificationAttachmentOptionsTypeHintKey] = value
   }
-  if let iosUNNotificationAttachmentOptionsThumbnailHiddenKey = options[
-    "iosUNNotificationAttachmentOptionsThumbnailHiddenKey"] as? String
-  {
-    opts[UNNotificationAttachmentOptionsThumbnailHiddenKey] =
-      iosUNNotificationAttachmentOptionsThumbnailHiddenKey
+  if let value = options.iosUNNotificationAttachmentOptionsThumbnailHiddenKey {
+    opts[UNNotificationAttachmentOptionsThumbnailHiddenKey] = value
   }
-  if let iosUNNotificationAttachmentOptionsThumbnailClippingRectKey = options[
-    "iosUNNotificationAttachmentOptionsThumbnailClippingRectKey"] as? String
-  {
-    opts[UNNotificationAttachmentOptionsThumbnailClippingRectKey] =
-      iosUNNotificationAttachmentOptionsThumbnailClippingRectKey
+  if let value = options.iosUNNotificationAttachmentOptionsThumbnailClippingRectKey {
+    opts[UNNotificationAttachmentOptionsThumbnailClippingRectKey] = value
   }
-  if let iosUNNotificationAttachmentOptionsThumbnailTimeKey = options[
-    "iosUNNotificationAttachmentOptionsThumbnailTimeKey"] as? String
+  if let value = options
+    .iosUNNotificationAttachmentOptionsThumbnailTimeKey
+
   {
-    opts[UNNotificationAttachmentOptionsThumbnailTimeKey] =
-      iosUNNotificationAttachmentOptionsThumbnailTimeKey
+    opts[UNNotificationAttachmentOptionsThumbnailTimeKey] = value
   }
   return opts
 }
 
-func handleScheduledNotification(_ schedule: JSObject) throws
+func handleScheduledNotification(_ schedule: NotificationSchedule) throws
   -> UNNotificationTrigger?
 {
-  let kind = schedule["kind"] as? String ?? ""
-  let payload = schedule["data"] as? JSObject ?? [:]
-  switch kind {
-  case "At":
-    let date = payload["date"] as? String ?? ""
+  switch schedule {
+  case .at(let date, let repeating):
     let dateFormatter = DateFormatter()
     dateFormatter.locale = Locale(identifier: "en_US_POSIX")
     dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 
     if let at = dateFormatter.date(from: date) {
-      let repeats = payload["repeats"] as? Bool ?? false
-
       let dateInfo = Calendar.current.dateComponents(in: TimeZone.current, from: at)
 
       if dateInfo.date! < Date() {
@@ -172,23 +131,20 @@ func handleScheduledNotification(_ schedule: JSObject) throws
       let dateInterval = DateInterval(start: Date(), end: dateInfo.date!)
 
       // Notifications that repeat have to be at least a minute between each other
-      if repeats && dateInterval.duration < 60 {
+      if repeating && dateInterval.duration < 60 {
         throw NotificationError.triggerRepeatIntervalTooShort
       }
 
       return UNTimeIntervalNotificationTrigger(
-        timeInterval: dateInterval.duration, repeats: repeats)
+        timeInterval: dateInterval.duration, repeats: repeating)
 
     } else {
       throw NotificationError.invalidDate(date)
     }
-  case "Interval":
-    let dateComponents = getDateComponents(payload)
+  case .interval(let interval):
+    let dateComponents = getDateComponents(interval)
     return UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
-  case "Every":
-    let interval = payload["interval"] as? String ?? ""
-    let count = schedule["count"] as? Int ?? 1
-
+  case .every(let interval, let count):
     if let repeatDateInterval = getRepeatDateInterval(interval, count) {
       // Notifications that repeat have to be at least a minute between each other
       if repeatDateInterval.duration < 60 {
@@ -198,9 +154,6 @@ func handleScheduledNotification(_ schedule: JSObject) throws
       return UNTimeIntervalNotificationTrigger(
         timeInterval: repeatDateInterval.duration, repeats: true)
     }
-
-  default:
-    return nil
   }
 
   return nil
@@ -209,30 +162,30 @@ func handleScheduledNotification(_ schedule: JSObject) throws
 /// Given our schedule format, return a DateComponents object
 /// that only contains the components passed in.
 
-func getDateComponents(_ at: JSObject) -> DateComponents {
+func getDateComponents(_ at: ScheduleInterval) -> DateComponents {
   // var dateInfo = Calendar.current.dateComponents(in: TimeZone.current, from: Date())
   // dateInfo.calendar = Calendar.current
   var dateInfo = DateComponents()
 
-  if let year = at["year"] as? Int {
+  if let year = at.year {
     dateInfo.year = year
   }
-  if let month = at["month"] as? Int {
+  if let month = at.month {
     dateInfo.month = month
   }
-  if let day = at["day"] as? Int {
+  if let day = at.day {
     dateInfo.day = day
   }
-  if let hour = at["hour"] as? Int {
+  if let hour = at.hour {
     dateInfo.hour = hour
   }
-  if let minute = at["minute"] as? Int {
+  if let minute = at.minute {
     dateInfo.minute = minute
   }
-  if let second = at["second"] as? Int {
+  if let second = at.second {
     dateInfo.second = second
   }
-  if let weekday = at["weekday"] as? Int {
+  if let weekday = at.weekday {
     dateInfo.weekday = weekday
   }
   return dateInfo
@@ -242,35 +195,33 @@ func getDateComponents(_ at: JSObject) -> DateComponents {
 /// interval and today. For example, if every is "month", then we
 /// return the interval between today and a month from today.
 
-func getRepeatDateInterval(_ every: String, _ count: Int) -> DateInterval? {
+func getRepeatDateInterval(_ every: ScheduleEveryKind, _ count: Int) -> DateInterval? {
   let cal = Calendar.current
   let now = Date()
   switch every {
-  case "Year":
+  case .year:
     let newDate = cal.date(byAdding: .year, value: count, to: now)!
     return DateInterval(start: now, end: newDate)
-  case "Month":
+  case .month:
     let newDate = cal.date(byAdding: .month, value: count, to: now)!
     return DateInterval(start: now, end: newDate)
-  case "TwoWeeks":
+  case .twoWeeks:
     let newDate = cal.date(byAdding: .weekOfYear, value: 2 * count, to: now)!
     return DateInterval(start: now, end: newDate)
-  case "Week":
+  case .week:
     let newDate = cal.date(byAdding: .weekOfYear, value: count, to: now)!
     return DateInterval(start: now, end: newDate)
-  case "Day":
+  case .day:
     let newDate = cal.date(byAdding: .day, value: count, to: now)!
     return DateInterval(start: now, end: newDate)
-  case "Hour":
+  case .hour:
     let newDate = cal.date(byAdding: .hour, value: count, to: now)!
     return DateInterval(start: now, end: newDate)
-  case "Minute":
+  case .minute:
     let newDate = cal.date(byAdding: .minute, value: count, to: now)!
     return DateInterval(start: now, end: newDate)
-  case "Second":
+  case .second:
     let newDate = cal.date(byAdding: .second, value: count, to: now)!
     return DateInterval(start: now, end: newDate)
-  default:
-    return nil
   }
 }
