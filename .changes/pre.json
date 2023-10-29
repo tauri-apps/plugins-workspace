@@ -2,10 +2,13 @@
   "tag": "alpha",
   "changes": [
     ".changes/alpha.16.md",
+    ".changes/alpha.17.md",
+    ".changes/api-alpha.11.md",
     ".changes/api-alpha.9.md",
     ".changes/deep-link-initial-release.md",
     ".changes/dialog-async-message-dialog.md",
     ".changes/fix-docs-build.md",
+    ".changes/fix-emit-all-usage.md",
     ".changes/fix-invoke-usage.md",
     ".changes/fix-permission-notification.md",
     ".changes/fix-updater-macos.md",
