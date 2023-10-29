@@ -24,7 +24,7 @@ class BiometricStatus {
 
 struct AuthOptions: Decodable {
   let reason: String
-  var allowDeviceCredential = false
+  var allowDeviceCredential: Bool?
   let fallbackTitle: String?
   let cancelTitle: String?
 }
@@ -113,8 +113,10 @@ class BiometricPlugin: Plugin {
     context.localizedCancelTitle = args.cancelTitle
     context.touchIDAuthenticationAllowableReuseDuration = 0
 
+    let allowDeviceCredential = args.allowDeviceCredential ?? false
+
     // force system default fallback title if an empty string is provided (the OS hides the fallback button in this case)
-    if args.allowDeviceCredential,
+    if allowDeviceCredential,
       let fallbackTitle = context.localizedFallbackTitle,
       fallbackTitle.isEmpty
     {
@@ -122,7 +124,7 @@ class BiometricPlugin: Plugin {
     }
 
     context.evaluatePolicy(
-      args.allowDeviceCredential
+      allowDeviceCredential
         ? .deviceOwnerAuthentication : .deviceOwnerAuthenticationWithBiometrics,
       localizedReason: args.reason
     ) { success, error in
