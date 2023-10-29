@@ -340,6 +340,8 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
 
     if let message = message {
       data["records"] = ndefMessageRecords(message)
+    } else {
+      data["records"] = []
     }
 
     self.session?.invoke.resolve(data)
