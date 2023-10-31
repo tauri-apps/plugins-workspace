@@ -70,16 +70,27 @@ async fn download<R: Runtime>(
     let mut file = BufWriter::new(File::create(file_path).await?);
     let mut stream = response.bytes_stream();
 
+    let mut i = 0;
+    let mut temp_progress = 0;
+
     while let Some(chunk) = stream.try_next().await? {
+        i = i + 1;
         file.write_all(&chunk).await?;
-        let _ = window.emit(
-            "download://progress",
-            ProgressPayload {
-                id,
-                progress: chunk.len() as u64,
-                total,
-            },
-        );
+        temp_progress = temp_progress + chunk.len();
+        if i >= 10 {
+            window
+                .emit(
+                    "download://progress",
+                    ProgressPayload {
+                        id,
+                        progress: temp_progress as u64,
+                        total,
+                    },
+                )
+                .unwrap(); // TODO: remove the unwrap again.
+            i = 0;
+            temp_progress = 0;
+        }
     }
     file.flush().await?;
 
