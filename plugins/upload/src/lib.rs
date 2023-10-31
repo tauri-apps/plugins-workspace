@@ -92,6 +92,18 @@ async fn download<R: Runtime>(
             temp_progress = 0;
         }
     }
+    if i < 10 {
+        window
+            .emit(
+                "download://progress",
+                ProgressPayload {
+                    id,
+                    progress: temp_progress as u64,
+                    total,
+                },
+            )
+            .unwrap(); // TODO: remove the unwrap again.
+    }
     file.flush().await?;
 
     Ok(id)
