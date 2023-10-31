@@ -92,7 +92,7 @@ async fn download<R: Runtime>(
             temp_progress = 0;
         }
     }
-    if i < 10 {
+    if temp_progress != 0 {
         window
             .emit(
                 "download://progress",
