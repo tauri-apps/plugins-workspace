@@ -249,7 +249,7 @@ pub struct Builder {
     rotation_strategy: RotationStrategy,
     timezone_strategy: TimezoneStrategy,
     max_file_size: u128,
-    targets: Vec<LogTarget>,
+    targets: Vec<Target>,
     log_name: Option<String>,
 }
 
@@ -423,7 +423,7 @@ impl Builder {
         plugin::Builder::new("log")
             .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![log])
-            .setup(move |app_handle| {
+            .setup(move |app_handle, _api| {
                 let log_name = self
                     .log_name
                     .as_deref()
@@ -486,7 +486,7 @@ impl Builder {
 
                             fern::log_file(get_log_file_path(
                                 &path,
-                                file_name.as_deref().unwrap_or(app_name),
+                                file_name.as_deref().unwrap_or(log_name),
                                 &self.rotation_strategy,
                                 &self.timezone_strategy,
                                 self.max_file_size,
@@ -527,7 +527,7 @@ fn get_log_file_path(
     rotation_strategy: &RotationStrategy,
     timezone_strategy: &TimezoneStrategy,
     max_file_size: u128,
-) -> plugin::Result<PathBuf> {
+) -> Result<PathBuf, Box<dyn std::error::Error>> {
     let path = dir.as_ref().join(format!("{log_name}.log"));
 
     if path.exists() {
