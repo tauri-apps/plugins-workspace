@@ -13,15 +13,6 @@ export interface ConnectionConfig {
   headers?: HeadersInit;
 }
 
-export interface ConnectionConfig {
-  writeBufferSize?: number;
-  maxWriteBufferSize?: number;
-  maxMessageSize?: number;
-  maxFrameSize?: number;
-  acceptUnmaskedFrames?: boolean;
-  headers?: HeadersInit;
-}
-
 export interface MessageKind<T, D> {
   type: T;
   data: D;
