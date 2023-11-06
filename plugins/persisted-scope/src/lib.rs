@@ -15,8 +15,7 @@ use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    scope::fs::Pattern as GlobPattern,
-    Manager, Runtime,
+    FsScope, FsScopeEvent, Manager, Runtime,
 };
 #[cfg(feature = "protocol-asset")]
 use tauri::{FsScope, FsScopeEvent};
@@ -171,12 +170,12 @@ fn fix_directory(path_str: &str) -> &Path {
     path
 }
 
-fn allow_path(scope: impl ScopeExt, path: &str) {
+fn allow_path(scope: &impl ScopeExt, path: &str) {
     let target_type = detect_scope_type(path);
 
     match target_type {
         TargetType::File => {
-            scope.allow_file(Path::new(path));
+            scope.allow_file(path);
         }
         TargetType::Directory => {
             // We remove the '*' at the end of it, else it will be escaped by the pattern.
@@ -189,12 +188,12 @@ fn allow_path(scope: impl ScopeExt, path: &str) {
     }
 }
 
-fn forbid_path(scope: impl ScopeExt, path: &str) {
+fn forbid_path(scope: &impl ScopeExt, path: &str) {
     let target_type = detect_scope_type(path);
 
     match target_type {
         TargetType::File => {
-            scope.forbid_file(Path::new(path));
+            scope.forbid_file(path);
         }
         TargetType::Directory => {
             scope.forbid_directory(fix_directory(path), false);
@@ -205,7 +204,7 @@ fn forbid_path(scope: impl ScopeExt, path: &str) {
     }
 }
 
-fn save_scopes(scope: impl ScopeExt, app_dir: &Path, scope_state_path: &Path) {
+fn save_scopes(scope: &impl ScopeExt, app_dir: &Path, scope_state_path: &Path) {
     let scope = Scope {
         allowed_paths: scope
             .allowed_patterns()
@@ -237,13 +236,14 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             let app = app.clone();
             let app_dir = app.path().app_data_dir();
 
-            if let Ok(app_dir) = app_dir {
+            if let Some(app_dir) = app_dir {
                 let fs_scope_state_path = app_dir.join(SCOPE_STATE_FILENAME);
                 #[cfg(feature = "protocol-asset")]
                 let asset_scope_state_path = app_dir.join(ASSET_SCOPE_STATE_FILENAME);
 
                 if let Some(fs_scope) = fs_scope {
-                let _ = fs_scope.forbid_file(&fs_scope_state_path);}
+                    let _ = fs_scope.forbid_file(&fs_scope_state_path);
+                }
                 #[cfg(feature = "protocol-asset")]
                 let _ = asset_protocol_scope.forbid_file(&asset_scope_state_path);
 
@@ -260,17 +260,16 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
                     for allowed in &scope.allowed_paths {
                         let allowed = fix_pattern(&ac, allowed);
-                        allow_path(fs_scope, &allowed);
+                        allow_path(&fs_scope, &allowed);
                     }
                     for forbidden in &scope.forbidden_patterns {
                         let forbidden = fix_pattern(&ac, forbidden);
-                        forbid_path(fs_scope, &forbidden);
+                        forbid_path(&fs_scope, &forbidden);
                     }
 
                     // Manually save the fixed scopes to disk once.
                     // This is needed to fix broken .peristed-scope files in case the app doesn't update the scope itself.
-                    save_scopes(fs_scope, &app_dir, &fs_scope_state_path);
-                }
+                    save_scopes(&fs_scope, &app_dir, &fs_scope_state_path);
                 }
 
                 #[cfg(feature = "protocol-asset")]
@@ -295,15 +294,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
                 #[cfg(feature = "protocol-asset")]
                 let app_dir_ = app_dir.clone();
-                if let Some(fs_scope) = fs_scope {
-                    let fs_scope_ = fs_scope.clone();
-                    fs_scope.listen(move |event| {
-                        if let FsPluginScopeEvent::PathAllowed(_) = event {
-                            save_scopes(&fs_scope_, &app_dir, &fs_scope_state_path);
-                        }
-                    });
-                }
-
+                let fs_scope_ = fs_scope.clone();
+                fs_scope.listen(move |event| {
+                    if let FsScopeEvent::PathAllowed(_) = event {
+                        save_scopes(&fs_scope_, &app_dir, &fs_scope_state_path);
+                    }
+                });
                 #[cfg(feature = "protocol-asset")]
                 {
                     let asset_protocol_scope_ = asset_protocol_scope.clone();

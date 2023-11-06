@@ -114,7 +114,6 @@ export default class Database {
         values: bindValues ?? [],
       },
     );
-
     return {
       lastInsertId,
       rowsAffected,

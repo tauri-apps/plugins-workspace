@@ -13,6 +13,15 @@ export interface ConnectionConfig {
   headers?: HeadersInit;
 }
 
+export interface ConnectionConfig {
+  writeBufferSize?: number;
+  maxWriteBufferSize?: number;
+  maxMessageSize?: number;
+  maxFrameSize?: number;
+  acceptUnmaskedFrames?: boolean;
+  headers?: HeadersInit;
+}
+
 export interface MessageKind<T, D> {
   type: T;
   data: D;
@@ -49,6 +58,10 @@ export default class WebSocket {
     onMessage.onmessage = (message: Message): void => {
       listeners.forEach((l) => l(message));
     };
+
+    if (config?.headers) {
+      config.headers = Array.from(new Headers(config.headers).entries());
+    }
 
     return await invoke<number>("plugin:websocket|connect", {
       url,

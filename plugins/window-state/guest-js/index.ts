@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import { invoke } from "@tauri-apps/api/primitives";
-import { getCurrent } from "@tauri-apps/api/window";
+import { WindowLabel, getCurrent } from "@tauri-apps/api/window";
 
 export enum StateFlags {
   SIZE = 1 << 0,
@@ -19,19 +19,17 @@ export enum StateFlags {
  *  Save the state of all open windows to disk.
  */
 async function saveWindowState(flags: StateFlags): Promise<void> {
-  return invoke("plugin:window-state|save_window_state", {
-    flags,
-  });
+  return invoke("plugin:window-state|save_window_state", { flags });
 }
 
 /**
  *  Restore the state for the specified window from disk.
  */
-async function restoreState(label: string, flags: StateFlags): Promise<void> {
-  return invoke("plugin:window-state|restore_state", {
-    label,
-    flags,
-  });
+async function restoreState(
+  label: WindowLabel,
+  flags: StateFlags,
+): Promise<void> {
+  return invoke("plugin:window-state|restore_state", { label, flags });
 }
 
 /**

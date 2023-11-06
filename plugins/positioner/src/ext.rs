@@ -109,13 +109,20 @@ impl<R: Runtime> WindowExt for Window<R> {
             },
             #[cfg(feature = "tray-icon")]
             TrayLeft => {
-                if let Some((tray_x, tray_y)) = tray_position {
-                    PhysicalPosition {
-                        x: tray_x,
-                        y: tray_y - window_size.height,
-                    }
+                if let (Some((tray_x, tray_y)), Some((_, _tray_height))) =
+                    (tray_position, tray_size)
+                {
+                    let y = tray_y - window_size.height;
+                    // Choose y value based on the target OS
+                    #[cfg(target_os = "windows")]
+                    let y = if y < 0 { tray_y + _tray_height } else { y };
+
+                    #[cfg(target_os = "macos")]
+                    let y = if y < 0 { tray_y } else { y };
+
+                    PhysicalPosition { x: tray_x, y }
                 } else {
-                    panic!("tray position not set");
+                    panic!("Tray position not set");
                 }
             }
             #[cfg(feature = "tray-icon")]
@@ -131,11 +138,20 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
             #[cfg(feature = "tray-icon")]
             TrayRight => {
-                if let (Some((tray_x, tray_y)), Some((tray_width, _))) = (tray_position, tray_size)
+                if let (Some((tray_x, tray_y)), Some((tray_width, _tray_height))) =
+                    (tray_position, tray_size)
                 {
+                    let y = tray_y - window_size.height;
+                    // Choose y value based on the target OS
+                    #[cfg(target_os = "windows")]
+                    let y = if y < 0 { tray_y + _tray_height } else { y };
+
+                    #[cfg(target_os = "macos")]
+                    let y = if y < 0 { tray_y } else { y };
+
                     PhysicalPosition {
                         x: tray_x + tray_width,
-                        y: tray_y - window_size.height,
+                        y,
                     }
                 } else {
                     panic!("Tray position not set");
@@ -155,12 +171,19 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
             #[cfg(feature = "tray-icon")]
             TrayCenter => {
-                if let (Some((tray_x, tray_y)), Some((tray_width, _))) = (tray_position, tray_size)
+                if let (Some((tray_x, tray_y)), Some((tray_width, _tray_height))) =
+                    (tray_position, tray_size)
                 {
-                    PhysicalPosition {
-                        x: tray_x + (tray_width / 2) - (window_size.width / 2),
-                        y: tray_y - window_size.height,
-                    }
+                    let x = tray_x + tray_width / 2 - window_size.width / 2;
+                    let y = tray_y - window_size.height;
+                    // Choose y value based on the target OS
+                    #[cfg(target_os = "windows")]
+                    let y = if y < 0 { tray_y + _tray_height } else { y };
+
+                    #[cfg(target_os = "macos")]
+                    let y = if y < 0 { tray_y } else { y };
+
+                    PhysicalPosition { x, y }
                 } else {
                     panic!("Tray position not set");
                 }
