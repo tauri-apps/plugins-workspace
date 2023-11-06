@@ -250,7 +250,6 @@ pub struct Builder {
     timezone_strategy: TimezoneStrategy,
     max_file_size: u128,
     targets: Vec<Target>,
-    log_name: Option<String>,
 }
 
 impl Default for Builder {
@@ -279,7 +278,6 @@ impl Default for Builder {
             timezone_strategy: DEFAULT_TIMEZONE_STRATEGY,
             max_file_size: DEFAULT_MAX_FILE_SIZE,
             targets: DEFAULT_LOG_TARGETS.into(),
-            log_name: None,
         }
     }
 }
@@ -378,29 +376,6 @@ impl Builder {
         self
     }
 
-    /// Writes logs to the given file. Default: <app_name>.log)
-    ///
-    /// Note: This does not modify the directory logs go into. For that refer to `LogTarget::Folder`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tauri_plugin_log::Builder;
-    /// let name = "custom-name";
-    /// let builder = Builder::default()
-    ///     .targets([
-    ///         LogTarget::LogDir
-    ///     ])
-    ///     .log_name(name)
-    ///     .build()
-    /// ); // Outputs content to custom-name.log
-    ///
-    /// ```
-    pub fn log_name<S: Into<String>>(mut self, log_name: S) -> Self {
-        self.log_name = Some(log_name.into());
-        self
-    }
-
     #[cfg(feature = "colored")]
     pub fn with_colors(self, colors: fern::colors::ColoredLevelConfig) -> Self {
         let format =
@@ -424,10 +399,7 @@ impl Builder {
             .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![log])
             .setup(move |app_handle, _api| {
-                let log_name = self
-                    .log_name
-                    .as_deref()
-                    .unwrap_or_else(|| &app_handle.package_info().name);
+                let app_name = &app_handle.package_info().name;
 
                 // setup targets
                 for target in self.targets {
@@ -468,7 +440,7 @@ impl Builder {
 
                             fern::log_file(get_log_file_path(
                                 &path,
-                                log_name,
+                                file_name.as_deref().unwrap_or(app_name),
                                 &self.rotation_strategy,
                                 &self.timezone_strategy,
                                 self.max_file_size,
@@ -486,7 +458,7 @@ impl Builder {
 
                             fern::log_file(get_log_file_path(
                                 &path,
-                                file_name.as_deref().unwrap_or(log_name),
+                                file_name.as_deref().unwrap_or(app_name),
                                 &self.rotation_strategy,
                                 &self.timezone_strategy,
                                 self.max_file_size,
@@ -523,12 +495,12 @@ impl Builder {
 
 fn get_log_file_path(
     dir: &impl AsRef<Path>,
-    log_name: &str,
+    file_name: &str,
     rotation_strategy: &RotationStrategy,
     timezone_strategy: &TimezoneStrategy,
     max_file_size: u128,
 ) -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let path = dir.as_ref().join(format!("{log_name}.log"));
+    let path = dir.as_ref().join(format!("{file_name}.log"));
 
     if path.exists() {
         let log_size = File::open(&path)?.metadata()?.len() as u128;
@@ -537,7 +509,7 @@ fn get_log_file_path(
                 RotationStrategy::KeepAll => {
                     let to = dir.as_ref().join(format!(
                         "{}_{}.log",
-                        log_name,
+                        file_name,
                         timezone_strategy
                             .get_now()
                             .format(
