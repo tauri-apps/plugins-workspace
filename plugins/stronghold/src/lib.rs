@@ -457,7 +457,7 @@ impl Builder {
 
         let plugin_builder = PluginBuilder::new("stronghold")
             .js_init_script(include_str!("api-iife.js").to_string())
-            .setup(move |app| {
+            .setup(move |app, _api| {
                 app.manage(StrongholdCollection::default());
                 app.manage(PasswordHashFunction(match password_hash_function {
                     #[cfg(feature = "kdf")]
