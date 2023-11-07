@@ -25,3 +25,6 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 url = "2"
+
+[target."cfg(windows)".dependencies]
+winreg = "0.51"

@@ -32,5 +32,9 @@ where
 
 #[derive(Deserialize)]
 pub struct Config {
-    pub domains: Vec<AssociatedDomain>,
+    /// Mobile requires `https://<host>` urls.
+    pub mobile: Vec<AssociatedDomain>,
+    /// Desktop requires urls starting with `<scheme>://`.
+    /// These urls are also active in dev mode on Android.
+    pub desktop: Vec<String>,
 }

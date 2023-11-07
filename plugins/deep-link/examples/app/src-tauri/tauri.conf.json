@@ -63,10 +63,11 @@
       "hello": "world"
     },
     "deep-link": {
-      "domains": [
+      "mobile": [
         { "host": "fabianlars.de", "pathPrefix": ["/intent"] },
         { "host": "tauri.app" }
-      ]
+      ],
+      "desktop": ["taurischeme"]
     }
   }
 }

@@ -45,7 +45,7 @@ fn main() {
             "DEEP LINK PLUGIN",
             "activity",
             config
-                .domains
+                .mobile
                 .iter()
                 .map(intent_filter)
                 .collect::<Vec<_>>()
@@ -59,7 +59,7 @@ fn main() {
                 entitlements.insert(
                     "com.apple.developer.associated-domains".into(),
                     config
-                        .domains
+                        .mobile
                         .into_iter()
                         .map(|d| format!("applinks:{}", d.host).into())
                         .collect::<Vec<_>>()

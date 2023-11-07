@@ -98,8 +98,10 @@ mod imp {
 
 #[cfg(not(target_os = "android"))]
 mod imp {
-    use std::sync::Mutex;
+    use std::{path::Path, sync::Mutex};
     use tauri::{AppHandle, Runtime};
+    #[cfg(windows)]
+    use winreg::{enums::HKEY_CURRENT_USER, RegKey};
 
     /// Access to the deep-link APIs.
     pub struct DeepLink<R: Runtime> {
@@ -110,8 +112,117 @@ mod imp {
 
     impl<R: Runtime> DeepLink<R> {
         /// Get the current URLs that triggered the deep link.
+        ///
+        /// ## Platform-specific:
+        ///
+        /// -**Windows / Linux**: Unsupported.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
             Ok(self.current.lock().unwrap().clone())
+        }
+
+        /// Register the app as the default handler for the specified protocol.
+        ///
+        /// - `protocol`: The name of the protocol without `://`. For example, if you want your app to handle `tauri://` links, call this method with `tauri` as the protocol.
+        ///
+        /// ## Platform-specific:
+        ///
+        /// -**macOS / Android / iOS**: Unsupported.
+        pub fn register<S: AsRef<str>>(&self, protocol: S) -> crate::Result<()> {
+            #[cfg(windows)]
+            {
+                let hkcu = RegKey::predef(HKEY_CURRENT_USER);
+                let base = Path::new("Software")
+                    .join("Classes")
+                    .join(protocol.as_ref());
+
+                let exe = tauri::utils::platform::current_exe()?
+                    .display()
+                    .to_string()
+                    .replace("\\\\?\\", "");
+
+                let (key, _) = hkcu.create_subkey(&base)?;
+                key.set_value(
+                    "",
+                    &format!("URL:{} protocol", self.app.config().tauri.bundle.identifier),
+                )?;
+                key.set_value("URL Protocol", &"")?;
+
+                let (icon, _) = hkcu.create_subkey(base.join("DefaultIcon"))?;
+                icon.set_value("", &format!("{},0", &exe))?;
+
+                let (cmd, _) =
+                    hkcu.create_subkey(base.join("shell").join("open").join("command"))?;
+
+                cmd.set_value("", &format!("{} \"%1\"", &exe))?;
+            }
+
+            #[cfg(target_os = "linux")]
+            {
+                // TODO: linux
+            }
+
+            Ok(())
+        }
+
+        /// Unregister the app as the default handler for the specified protocol.
+        ///
+        /// - `protocol`: The name of the protocol without `://`.
+        ///
+        /// ## Platform-specific:
+        ///
+        /// -**macOS / Android / iOS**: Unsupported.
+        pub fn unregister<S: AsRef<str>>(&self, protocol: S) -> crate::Result<()> {
+            #[cfg(windows)]
+            {
+                let hkcu = RegKey::predef(HKEY_CURRENT_USER);
+                let base = Path::new("Software")
+                    .join("Classes")
+                    .join(protocol.as_ref());
+
+                hkcu.delete_subkey_all(base)?;
+            }
+            #[cfg(target_os = "linux")]
+            {
+                // TODO: linux
+            }
+
+            Ok(())
+        }
+
+        /// Check whether the app is the default handler for the specified protocol.
+        ///
+        /// - `protocol`: The name of the protocol without `://`.
+        ///
+        /// ## Platform-specific:
+        ///
+        /// -**macOS / Android / iOS**: Unsupported, always returns `Ok(false)`
+        pub fn is_registered<S: AsRef<str>>(&self, protocol: S) -> crate::Result<bool> {
+            #[cfg(windows)]
+            {
+                let hkcu = RegKey::predef(HKEY_CURRENT_USER);
+
+                let cmd_reg = hkcu.open_subkey(format!(
+                    "Software\\Classes\\{}\\shell\\open\\command",
+                    protocol.as_ref()
+                ))?;
+
+                let registered_cmd: String = cmd_reg.get_value("")?;
+
+                let exe = tauri::utils::platform::current_exe()?
+                    .display()
+                    .to_string()
+                    .replace("\\\\?\\", "");
+
+                return Ok(registered_cmd == format!("{} \"%1\"", &exe));
+            }
+            #[cfg(target_os = "linux")]
+            {
+                // TODO: linux
+                return Ok(false);
+            }
+
+            #[cfg(not(any(windows, target_os = "linux")))]
+            Ok(is_default)
         }
     }
 }
