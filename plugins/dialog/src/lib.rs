@@ -267,6 +267,8 @@ pub struct FileDialogBuilder<R: Runtime> {
     pub(crate) title: Option<String>,
     #[cfg(desktop)]
     pub(crate) parent: Option<raw_window_handle::RawWindowHandle>,
+    #[cfg(mobile)]
+    pub(crate) read_data: bool,
 }
 
 #[cfg(mobile)]
@@ -275,6 +277,8 @@ pub struct FileDialogBuilder<R: Runtime> {
 pub(crate) struct FileDialogPayload<'a> {
     filters: &'a Vec<Filter>,
     multiple: bool,
+    read_data: bool
+
 }
 
 // raw window handle :(
@@ -291,6 +295,8 @@ impl<R: Runtime> FileDialogBuilder<R> {
             title: None,
             #[cfg(desktop)]
             parent: None,
+            #[cfg(mobile)]
+            read_data: false,
         }
     }
 
@@ -299,6 +305,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
         FileDialogPayload {
             filters: &self.filters,
             multiple,
+            read_data: self.read_data,
         }
     }
 
@@ -338,6 +345,13 @@ impl<R: Runtime> FileDialogBuilder<R> {
     #[must_use]
     pub fn set_title(mut self, title: impl Into<String>) -> Self {
         self.title.replace(title.into());
+        self
+    }
+
+    #[cfg(mobile)]
+    #[must_use]
+    pub fn set_read_data(mut self, read_data: bool) -> Self {
+        self.read_data = read_data;
         self
     }
 

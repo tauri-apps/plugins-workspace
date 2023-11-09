@@ -51,6 +51,10 @@ pub struct OpenDialogOptions {
     #[serde(default)]
     #[cfg_attr(mobile, allow(dead_code))]
     recursive: bool,
+    /// Read the contents of the selected files
+    #[serde(default)]
+    #[cfg_attr(desktop, allow(dead_code))]
+    read_data: bool,
 }
 
 /// The options for the save dialog API.
@@ -107,6 +111,11 @@ pub(crate) async fn open<R: Runtime>(
         let extensions: Vec<&str> = filter.extensions.iter().map(|s| &**s).collect();
         dialog_builder = dialog_builder.add_filter(filter.name, &extensions);
     }
+    #[cfg(mobile)]
+    {
+        dialog_builder = dialog_builder.set_read_data(options.read_data);
+    }
+
 
     let res = if options.directory {
         #[cfg(desktop)]

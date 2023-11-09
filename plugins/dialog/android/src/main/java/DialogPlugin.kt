@@ -49,6 +49,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
   fun showFilePicker(invoke: Invoke) {
     try {
       val args = invoke.parseArgs(FilePickerOptions::class.java)
+      filePickerOptions = args
       val parsedTypes = parseFiltersOption(args.filters)
       
       val intent = if (parsedTypes.isNotEmpty()) {
