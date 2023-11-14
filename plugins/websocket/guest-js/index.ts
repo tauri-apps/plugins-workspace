@@ -50,6 +50,10 @@ export default class WebSocket {
       listeners.forEach((l) => l(message));
     };
 
+    if (config?.headers) {
+      config.headers = Array.from(new Headers(config.headers).entries());
+    }
+
     return await invoke<number>("plugin:websocket|connect", {
       url,
       onMessage,
