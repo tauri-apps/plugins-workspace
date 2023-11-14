@@ -60,7 +60,9 @@ class BiometricActivity : AppCompatActivity() {
             builder.setDeviceCredentialAllowed(allowDeviceCredential)
         }
 
-        // Android docs say that negative button text should not be set if device credential is allowed
+        // From the Android docs:
+        //  You can't call setNegativeButtonText() and setAllowedAuthenticators(... or DEVICE_CREDENTIAL)
+        //  at the same time on a BiometricPrompt.PromptInfo.Builder instance.
         if (!allowDeviceCredential) {
             val negativeButtonText = intent.getStringExtra(BiometricPlugin.CANCEL_TITLE)
             builder.setNegativeButtonText(
