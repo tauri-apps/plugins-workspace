@@ -7,26 +7,19 @@
     "Tauri Programme within The Commons Conservancy"
   ],
   "type": "module",
-  "browser": "dist-js/index.min.js",
-  "module": "dist-js/index.mjs",
-  "types": "dist-js/index.d.ts",
   "exports": {
-    "import": "./dist-js/index.mjs",
     "types": "./dist-js/index.d.ts",
-    "browser": "./dist-js/index.min.js"
+    "import": "./dist-js/index.js",
+    "require": "./dist-js/index.cjs"
   },
   "scripts": {
     "build": "rollup -c"
   },
   "files": [
     "dist-js",
-    "!dist-js/**/*.map",
     "README.md",
     "LICENSE"
   ],
-  "devDependencies": {
-    "tslib": "2.6.2"
-  },
   "dependencies": {
     "@tauri-apps/api": "2.0.0-alpha.11"
   }

@@ -139,60 +139,36 @@ importers:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: 2.6.2
-        version: 2.6.2
 
   plugins/autostart:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: 2.6.2
-        version: 2.6.2
 
   plugins/barcode-scanner:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: ^2.5.0
-        version: 2.6.2
 
   plugins/cli:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: ^2.4.1
-        version: 2.6.2
 
   plugins/clipboard-manager:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: 2.6.2
-        version: 2.6.2
 
   plugins/deep-link:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: ^2.5.0
-        version: 2.6.2
 
   plugins/deep-link/examples/app:
     dependencies:
@@ -221,100 +197,60 @@ importers:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: ^2.4.1
-        version: 2.6.2
 
   plugins/fs:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: ^2.4.1
-        version: 2.6.2
 
   plugins/global-shortcut:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: ^2.4.1
-        version: 2.6.2
 
   plugins/http:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: 2.6.2
-        version: 2.6.2
 
   plugins/log:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: 2.6.2
-        version: 2.6.2
 
   plugins/notification:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: ^2.4.1
-        version: 2.6.2
 
   plugins/os:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: 2.6.0
-        version: 2.6.0
 
   plugins/positioner:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: 2.6.2
-        version: 2.6.2
 
   plugins/process:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: 2.6.0
-        version: 2.6.0
 
   plugins/shell:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: ^2.4.1
-        version: 2.6.2
 
   plugins/single-instance/examples/vanilla:
     devDependencies:
@@ -327,60 +263,36 @@ importers:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: 2.6.2
-        version: 2.6.2
 
   plugins/store:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: 2.6.2
-        version: 2.6.2
 
   plugins/stronghold:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: 2.6.2
-        version: 2.6.2
 
   plugins/updater:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: ^2.5.0
-        version: 2.6.2
 
   plugins/upload:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: 2.6.2
-        version: 2.6.2
 
   plugins/websocket:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: 2.6.2
-        version: 2.6.2
 
   plugins/websocket/examples/svelte-app:
     dependencies:
@@ -403,9 +315,6 @@ importers:
       svelte-check:
         specifier: 3.5.2
         version: 3.5.2(svelte@4.2.2)
-      tslib:
-        specifier: 2.6.2
-        version: 2.6.2
       typescript:
         specifier: 5.2.2
         version: 5.2.2
@@ -418,10 +327,6 @@ importers:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.11
         version: 2.0.0-alpha.11
-    devDependencies:
-      tslib:
-        specifier: 2.6.2
-        version: 2.6.2
 
 packages:
 
@@ -459,7 +364,7 @@ packages:
     resolution: {integrity: sha512-XrNujG6ERUq8bwPCQgOEzuwBCSLKV5nC4AuO+QBpuC0xA9Qz9w025YKYNMIsXxVf0SBscMXKzhBAo9iUDTzKFw==}
     dependencies:
       '@covector/files': 0.7.1
-      effection: 2.0.8(mocha@10.2.0)
+      effection: 2.0.7(mocha@10.2.0)
       semver: 7.5.4
     transitivePeerDependencies:
       - encoding
@@ -471,7 +376,7 @@ packages:
     dependencies:
       '@covector/command': 0.7.0(mocha@10.2.0)
       '@covector/files': 0.7.1
-      effection: 2.0.8(mocha@10.2.0)
+      effection: 2.0.7(mocha@10.2.0)
       js-yaml: 4.1.0
       lodash: 4.17.21
       remark-frontmatter: 3.0.0
@@ -488,7 +393,7 @@ packages:
     resolution: {integrity: sha512-p1kDf6abq8TAKIzLMcieMD+hoP4RamykoPpk3PYHUhZnz0xi1+8sVGEPByCQGb3SI9PCg8CZPuyIA91YtuiTsQ==}
     dependencies:
       '@covector/files': 0.7.1
-      effection: 2.0.8(mocha@10.2.0)
+      effection: 2.0.7(mocha@10.2.0)
       lodash: 4.17.21
       remark-parse: 9.0.0
       remark-stringify: 9.0.1
@@ -503,7 +408,7 @@ packages:
     resolution: {integrity: sha512-9DGx4tOY9Fkd4AlYbOE0rnesYAYJm7Wr6BUBJlRxErtA0vDAejZ0+jVHZbemB1MbLOaYWXkDf/wD7SLnf06gfw==}
     dependencies:
       '@effection/process': 2.1.4(mocha@10.2.0)
-      effection: 2.0.8(mocha@10.2.0)
+      effection: 2.0.7(mocha@10.2.0)
       strip-ansi: 6.0.1
     transitivePeerDependencies:
       - encoding
@@ -522,6 +427,14 @@ packages:
       zod-validation-error: 1.5.0(zod@3.22.4)
     dev: true
 
+  /@effection/channel@2.0.5:
+    resolution: {integrity: sha512-Tq1BHVOKcH2Gd5Wsp1kqW1uKU+ZnXxb/wAXeRx57ciOY3bB6+0uOf1GdL9U8YQW5h2WQPBx76RykYLBhgVs9Cw==}
+    dependencies:
+      '@effection/core': 2.2.2
+      '@effection/events': 2.0.5
+      '@effection/stream': 2.0.5
+    dev: true
+
   /@effection/channel@2.0.6:
     resolution: {integrity: sha512-ugBR6GfhUo1Ltqz472h+48k+s72hkU8x8QI9Zd7FZRuS4z1xdv8I795QgQWD5hBTgl8o36zMVCzyICQpfwwkMw==}
     dependencies:
@@ -530,10 +443,23 @@ packages:
       '@effection/stream': 2.0.6
     dev: true
 
+  /@effection/core@2.2.2:
+    resolution: {integrity: sha512-JdOTXLrflRyBTgvTHwX9l0ItWfcEPUGiUFKhqnMDJT6lf2FUnQ85oKTrDZXco2sQjXKuMtO0dwzmKngos2cTIQ==}
+    dependencies:
+      '@chainsafe/abort-controller': 3.0.1
+    dev: true
+
   /@effection/core@2.2.3:
     resolution: {integrity: sha512-arg67zzGS+24CkSSn86cDOU80XwlBv9yM4lEJEd19DZhu9J9bkf8Lktm1AP1W5UXLM5mjGjEpIeYo1k/uYF5Fw==}
     dependencies:
       '@chainsafe/abort-controller': 3.0.1
+    dev: true
+
+  /@effection/events@2.0.5:
+    resolution: {integrity: sha512-xhF5hX8+ZmCvLuRSSCHwVudm/vm1/U9M9xi8+h0jwECt/2PV26vz+8ZDXbJGh9eF+0TZ+tIHto/X+7bTiRtQxg==}
+    dependencies:
+      '@effection/core': 2.2.2
+      '@effection/stream': 2.0.5
     dev: true
 
   /@effection/events@2.0.6:
@@ -541,6 +467,17 @@ packages:
     dependencies:
       '@effection/core': 2.2.3
       '@effection/stream': 2.0.6
+    dev: true
+
+  /@effection/fetch@2.0.6(mocha@10.2.0):
+    resolution: {integrity: sha512-b0fUUe4vWCVopp8GyaP67L7EttGVA1NAYFm+4aLQntR0R3ybfl1uPGz164tM4eVXGwHYEwEkArFV9/oaXePyKA==}
+    dependencies:
+      '@effection/core': 2.2.2
+      '@effection/mocha': 2.0.8(mocha@10.2.0)
+      cross-fetch: 3.1.5
+    transitivePeerDependencies:
+      - encoding
+      - mocha
     dev: true
 
   /@effection/fetch@2.0.7(mocha@10.2.0):
@@ -569,6 +506,8 @@ packages:
     dependencies:
       effection: 2.0.8(mocha@10.2.0)
       mocha: 10.2.0
+    transitivePeerDependencies:
+      - encoding
     dev: true
 
   /@effection/process@2.1.4(mocha@10.2.0):
@@ -583,11 +522,24 @@ packages:
       - mocha
     dev: true
 
+  /@effection/stream@2.0.5:
+    resolution: {integrity: sha512-uALkQhCjgc7moeY3H8FG/plfYvgVTmxGOyJscgopRKYJIIuagswD0HD8RiSu1C21PuaUDCqfjMO3LIyNamcIqQ==}
+    dependencies:
+      '@effection/core': 2.2.2
+      '@effection/subscription': 2.0.5
+    dev: true
+
   /@effection/stream@2.0.6:
     resolution: {integrity: sha512-cAg6p5S2NKbRF418J9Df3biMY+f0vEjgW46IOyShkMyg0AK/fYXMT6GIiMB5oNGiALkTuj/xsi3DDnEcO4Of+w==}
     dependencies:
       '@effection/core': 2.2.3
       '@effection/subscription': 2.0.6
+    dev: true
+
+  /@effection/subscription@2.0.5:
+    resolution: {integrity: sha512-Vsufl5Ywum2HgIjruhh4OJefvFnxYCWXtWZY/yVK3X2rovgdXr2IKphfO00VsXKeP4Uez4BhuiuFF5tq2DKDnw==}
+    dependencies:
+      '@effection/core': 2.2.2
     dev: true
 
   /@effection/subscription@2.0.6:
@@ -992,10 +944,25 @@ packages:
       tslib:
         optional: true
     dependencies:
-      '@rollup/pluginutils': 5.0.5(rollup@4.3.0)
+      '@rollup/pluginutils': 5.0.2(rollup@4.3.0)
       resolve: 1.22.8
       rollup: 4.3.0
       typescript: 5.2.2
+    dev: true
+
+  /@rollup/pluginutils@5.0.2(rollup@4.3.0):
+    resolution: {integrity: sha512-pTd9rIsP92h+B6wWwFbW8RkZv4hiR/xKsqre4SIuAOaOEQRxi0lqLke9k2/7WegC85GgUs9pjmOjCUi3In4vwA==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+    dependencies:
+      '@types/estree': 1.0.4
+      estree-walker: 2.0.2
+      picomatch: 2.3.1
+      rollup: 4.3.0
     dev: true
 
   /@rollup/pluginutils@5.0.5(rollup@4.3.0):
@@ -2085,7 +2052,7 @@ packages:
       '@covector/changelog': 0.10.1(mocha@10.2.0)
       '@covector/command': 0.7.0(mocha@10.2.0)
       '@covector/files': 0.7.1
-      effection: 2.0.8(mocha@10.2.0)
+      effection: 2.0.7(mocha@10.2.0)
       globby: 11.1.0
       inquirer: 8.2.6
       yargs: 17.7.2
@@ -2241,6 +2208,21 @@ packages:
 
   /duplexer@0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
+    dev: true
+
+  /effection@2.0.7(mocha@10.2.0):
+    resolution: {integrity: sha512-I9ndFvtByvHbvOHwMp1NM7vlLDT0RBOu1YlIfBece46VASSot0oPnAfoGdc1YKoQShQLjigvHZ6OqZYUAxUcXg==}
+    dependencies:
+      '@effection/channel': 2.0.5
+      '@effection/core': 2.2.2
+      '@effection/events': 2.0.5
+      '@effection/fetch': 2.0.6(mocha@10.2.0)
+      '@effection/main': 2.1.2
+      '@effection/stream': 2.0.5
+      '@effection/subscription': 2.0.5
+    transitivePeerDependencies:
+      - encoding
+      - mocha
     dev: true
 
   /effection@2.0.8(mocha@10.2.0):
@@ -4491,10 +4473,6 @@ packages:
       json5: 1.0.2
       minimist: 1.2.8
       strip-bom: 3.0.0
-    dev: true
-
-  /tslib@2.6.0:
-    resolution: {integrity: sha512-7At1WUettjcSRHXCyYtTselblcHl9PJFFVKiCAy/bY97+BPZXSQ2wbq0P9s8tK2G7dFQfNnlJnPAiArVBVBsfA==}
     dev: true
 
   /tslib@2.6.2:
