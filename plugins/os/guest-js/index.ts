@@ -13,8 +13,8 @@ import { invoke } from "@tauri-apps/api/primitives";
 /** @ignore */
 declare global {
   interface Window {
-    __TAURI__: {
-      os: { __eol: string };
+    __TAURI_OS_PLUGIN_INTERNALS__: {
+      eol: string;
     };
   }
 }
@@ -54,7 +54,7 @@ type Arch =
  * @since 2.0.0
  * */
 function eol() {
-  return window.__TAURI__.os.__eol;
+  return window.__TAURI_OS_PLUGIN_INTERNALS__.eol;
 }
 
 /**
