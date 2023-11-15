@@ -551,7 +551,7 @@ impl Update {
                         "-ArgumentList",
                     ])
                     .arg("/i,")
-                    .arg(msi_path_arg)
+                    .arg(&msi_path_arg)
                     .arg(format!(", {}, /promptrestart;", msiexec_args.join(", ")))
                     .arg("Start-Process")
                     .arg(current_exe_arg)
