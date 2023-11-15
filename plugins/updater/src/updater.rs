@@ -551,7 +551,7 @@ impl Update {
                         "-ArgumentList",
                     ])
                     .arg("/i,")
-                    .arg(msi_path_arg)
+                    .arg(&msi_path_arg)
                     .arg(format!(", {}, /promptrestart;", msiexec_args.join(", ")))
                     .arg("Start-Process")
                     .arg(current_exe_arg)
@@ -565,7 +565,7 @@ impl Update {
                     );
                     let _ = Command::new(msiexec_path)
                         .arg("/i")
-                        .arg(found_path)
+                        .arg(msi_path_arg)
                         .args(msiexec_args)
                         .arg("/promptrestart")
                         .spawn();
