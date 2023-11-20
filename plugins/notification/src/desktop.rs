@@ -226,7 +226,7 @@ mod imp {
         pub fn notify<R: tauri::Runtime>(self, app: &tauri::AppHandle<R>) -> crate::Result<()> {
             #[cfg(windows)]
             {
-                if tauri::utils::platform::is_windows_7() {
+                if is_windows_7() {
                     self.notify_win7(app)
                 } else {
                     #[allow(deprecated)]
@@ -266,4 +266,11 @@ mod imp {
             Ok(())
         }
     }
+}
+
+#[cfg(windows)]
+fn is_windows_7() -> bool {
+    let v = windows_version::OsVersion::current();
+    // windows 7 is 6.1
+    v.major == 6 && v.minor == 1
 }
