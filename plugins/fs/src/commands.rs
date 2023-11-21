@@ -741,7 +741,7 @@ pub struct FileInfo {
     birthtime: Option<u64>,
     readonly: bool,
     // Following are only valid under Windows.
-    file_attribues: u32,
+    file_attribues: Option<u32>,
     // Following are only valid under Unix.
     dev: Option<u64>,
     ino: Option<u64>,
@@ -786,7 +786,10 @@ fn get_stat(metadata: std::fs::Metadata) -> FileInfo {
         birthtime: to_msec(metadata.created()),
         readonly: metadata.permissions().readonly(),
         // Following are only valid under Windows.
-        file_attribues: metadata.file_attributes(),
+        #[cfg(windows)]
+        file_attribues: Some(metadata.file_attributes()),
+        #[cfg(windows)]
+        file_attribues: None,
         // Following are only valid under Unix.
         dev: usm!(dev),
         ino: usm!(ino),
