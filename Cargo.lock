@@ -5135,7 +5135,7 @@ checksum = "14c39fd04924ca3a864207c66fc2cd7d22d7c016007f9ce846cbb9326331930a"
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.18"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/expose-resources_table#9be8ae6d881efb39ba244b175fe5711819f7cf4d"
+source = "git+https://github.com/tauri-apps/tauri#bf095df55aa27fb22c9240ddf8d673cfe0a4a2db"
 dependencies = [
  "anyhow",
  "bytes",
@@ -5187,7 +5187,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.12"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/expose-resources_table#9be8ae6d881efb39ba244b175fe5711819f7cf4d"
+source = "git+https://github.com/tauri-apps/tauri#bf095df55aa27fb22c9240ddf8d673cfe0a4a2db"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -5209,7 +5209,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.11"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/expose-resources_table#9be8ae6d881efb39ba244b175fe5711819f7cf4d"
+source = "git+https://github.com/tauri-apps/tauri#bf095df55aa27fb22c9240ddf8d673cfe0a4a2db"
 dependencies = [
  "base64 0.21.5",
  "brotli",
@@ -5234,7 +5234,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.11"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/expose-resources_table#9be8ae6d881efb39ba244b175fe5711819f7cf4d"
+source = "git+https://github.com/tauri-apps/tauri#bf095df55aa27fb22c9240ddf8d673cfe0a4a2db"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -5598,7 +5598,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "1.0.0-alpha.5"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/expose-resources_table#9be8ae6d881efb39ba244b175fe5711819f7cf4d"
+source = "git+https://github.com/tauri-apps/tauri#bf095df55aa27fb22c9240ddf8d673cfe0a4a2db"
 dependencies = [
  "gtk",
  "http",
@@ -5615,7 +5615,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "1.0.0-alpha.6"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/expose-resources_table#9be8ae6d881efb39ba244b175fe5711819f7cf4d"
+source = "git+https://github.com/tauri-apps/tauri#bf095df55aa27fb22c9240ddf8d673cfe0a4a2db"
 dependencies = [
  "cocoa 0.24.1",
  "gtk",
@@ -5634,7 +5634,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.11"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/expose-resources_table#9be8ae6d881efb39ba244b175fe5711819f7cf4d"
+source = "git+https://github.com/tauri-apps/tauri#bf095df55aa27fb22c9240ddf8d673cfe0a4a2db"
 dependencies = [
  "aes-gcm 0.10.3",
  "brotli",
