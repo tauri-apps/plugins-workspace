@@ -307,8 +307,7 @@ pub fn read<R: Runtime>(
     rid: ResourceId,
     len: u32,
 ) -> CommandResult<(Vec<u8>, usize)> {
-    let mut data = Vec::new();
-    data.resize(len as usize, 0);
+    let mut data = vec![0; len as usize];
     let file = app.resources_table().get::<StdFileResource>(rid)?;
     let nread = StdFileResource::with_lock(&file, |mut file| file.read(&mut data))
         .map_err(|e| format!("faied to read bytes from file with error: {e}"))?;
