@@ -32,6 +32,7 @@ notify-rust = "4.5"
 
 [target."cfg(windows)".dependencies]
 win7-notifications = { version = "0.3.1", optional = true }
+windows-version = { version = "0.1", optional = true }
 
 [features]
-windows7-compat = [ "win7-notifications" ]
+windows7-compat = [ "win7-notifications", "windows-version" ]
