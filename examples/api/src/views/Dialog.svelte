@@ -1,6 +1,6 @@
 <script>
   import { open, save, confirm } from "@tauri-apps/plugin-dialog";
-  import { readBinaryFile } from "@tauri-apps/plugin-fs";
+  import { readFile } from "@tauri-apps/plugin-fs";
 
   export let onMessage;
   export let insecureRenderHtml;
@@ -55,7 +55,7 @@
         } else {
           var pathToRead = typeof res === "string" ? res : res.path;
           var isFile = pathToRead.match(/\S+\.\S+$/g);
-          readBinaryFile(pathToRead)
+          readFile(pathToRead)
             .then(function (response) {
               if (isFile) {
                 if (

@@ -18,7 +18,7 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 tokio = "1"
 reqwest = { version = "0.11", default-features = false, features = [ "json", "stream" ] }
-url = "2"
+url = { workspace = true }
 http = "0.2"
 dirs-next = "2"
 minisign-verify = "0.2"

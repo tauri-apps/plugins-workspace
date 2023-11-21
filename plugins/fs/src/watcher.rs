@@ -5,12 +5,9 @@
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
 use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
 use serde::Deserialize;
-use tauri::{command, ipc::Channel, State};
-
-use crate::Result;
+use tauri::{ipc::Channel, AppHandle, Manager, Resource, ResourceId, Runtime};
 
 use std::{
-    collections::HashMap,
     path::PathBuf,
     sync::{
         mpsc::{channel, Receiver},
@@ -20,10 +17,26 @@ use std::{
     time::Duration,
 };
 
-type Id = u32;
+use crate::commands::CommandResult;
 
-#[derive(Default)]
-pub struct WatcherCollection(Mutex<HashMap<Id, (WatcherKind, Vec<PathBuf>)>>);
+struct InnerWatcher {
+    pub kind: WatcherKind,
+    paths: Vec<PathBuf>,
+}
+
+pub struct WatcherResource(Mutex<InnerWatcher>);
+impl WatcherResource {
+    fn new(kind: WatcherKind, paths: Vec<PathBuf>) -> Self {
+        Self(Mutex::new(InnerWatcher { kind, paths }))
+    }
+
+    fn with_lock<R, F: FnMut(&mut InnerWatcher) -> R>(&self, mut f: F) -> R {
+        let mut watcher = self.0.lock().unwrap();
+        f(&mut watcher)
+    }
+}
+
+impl Resource for WatcherResource {}
 
 enum WatcherKind {
     Debouncer(Debouncer<RecommendedWatcher>),
@@ -59,23 +72,22 @@ pub struct WatchOptions {
     recursive: bool,
 }
 
-#[command]
-pub async fn watch(
-    watchers: State<'_, WatcherCollection>,
-    id: Id,
+#[tauri::command]
+pub async fn watch<R: Runtime>(
+    app: AppHandle<R>,
     paths: Vec<PathBuf>,
     options: WatchOptions,
     on_event: Channel,
-) -> Result<()> {
+) -> CommandResult<ResourceId> {
     let mode = if options.recursive {
         RecursiveMode::Recursive
     } else {
         RecursiveMode::NonRecursive
     };
 
-    let watcher = if let Some(delay) = options.delay_ms {
+    let kind = if let Some(delay) = options.delay_ms {
         let (tx, rx) = channel();
-        let mut debouncer = new_debouncer(Duration::from_millis(delay), tx)?;
+        let mut debouncer = new_debouncer(Duration::from_millis(delay), None, tx)?;
         let watcher = debouncer.watcher();
         for path in &paths {
             watcher.watch(path, mode)?;
@@ -92,26 +104,32 @@ pub async fn watch(
         WatcherKind::Watcher(watcher)
     };
 
-    watchers.0.lock().unwrap().insert(id, (watcher, paths));
+    let rid = app.resources_table().add(WatcherResource::new(kind, paths));
 
-    Ok(())
+    Ok(rid)
 }
 
-#[command]
-pub async fn unwatch(watchers: State<'_, WatcherCollection>, id: Id) -> Result<()> {
-    if let Some((watcher, paths)) = watchers.0.lock().unwrap().remove(&id) {
-        match watcher {
-            WatcherKind::Debouncer(mut debouncer) => {
-                for path in paths {
-                    debouncer.watcher().unwatch(&path)?
+#[tauri::command]
+pub async fn unwatch<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> CommandResult<()> {
+    let watcher = app.resources_table().take::<WatcherResource>(rid)?;
+    WatcherResource::with_lock(&watcher, |watcher| {
+        match &mut watcher.kind {
+            WatcherKind::Debouncer(ref mut debouncer) => {
+                for path in &watcher.paths {
+                    debouncer.watcher().unwatch(path).map_err(|e| {
+                        format!("failed to unwatch path: {} with error: {e}", path.display())
+                    })?
                 }
             }
-            WatcherKind::Watcher(mut watcher) => {
-                for path in paths {
-                    watcher.unwatch(&path)?
+            WatcherKind::Watcher(ref mut w) => {
+                for path in &watcher.paths {
+                    w.unwatch(path).map_err(|e| {
+                        format!("failed to unwatch path: {} with error: {e}", path.display())
+                    })?
                 }
             }
-        };
-    }
-    Ok(())
+        }
+
+        Ok(())
+    })
 }

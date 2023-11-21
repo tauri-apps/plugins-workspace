@@ -18,7 +18,7 @@
   import WebRTC from "./views/WebRTC.svelte";
   import Scanner from "./views/Scanner.svelte";
 
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import { ask } from "@tauri-apps/plugin-dialog";
 
   const appWindow = getCurrent();
@@ -166,30 +166,35 @@
 
   // Console
   let messages = writable([]);
-  function onMessage(value) {
+  let consoleTextEl;
+  async function onMessage(value) {
     messages.update((r) => [
+      ...r,
       {
         html:
           `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> ` +
           (typeof value === "string" ? value : JSON.stringify(value, null, 1)) +
           "</pre>",
       },
-      ...r,
     ]);
+    await tick();
+    if (consoleTextEl) consoleTextEl.scrollTop = consoleTextEl.scrollHeight;
   }
 
   // this function is renders HTML without sanitizing it so it's insecure
   // we only use it with our own input data
-  function insecureRenderHtml(html) {
+  async function insecureRenderHtml(html) {
     messages.update((r) => [
+      ...r,
       {
         html:
           `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> ` +
           html +
           "</pre>",
       },
-      ...r,
     ]);
+    await tick();
+    if (consoleTextEl) consoleTextEl.scrollTop = consoleTextEl.scrollHeight;
   }
 
   function clear() {
@@ -474,7 +479,7 @@
           <div class="i-codicon-clear-all" />
         </div>
       </div>
-      <div class="px-2 overflow-y-auto all:font-mono code-block all:text-xs">
+      <div bind:this={consoleTextEl} class="px-2 overflow-y-auto all:font-mono code-block all:text-xs select-text mr-2">
         {#each $messages as r}
           {@html r.html}
         {/each}

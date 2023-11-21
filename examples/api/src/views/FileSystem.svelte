@@ -1,9 +1,9 @@
 <script>
   import {
-    readBinaryFile,
+    readFile,
     writeTextFile,
     readDir,
-    Dir,
+    BaseDirectory,
   } from "@tauri-apps/plugin-fs";
   import { convertFileSrc } from "@tauri-apps/api/primitives";
 
@@ -30,9 +30,9 @@
     reader.readAsDataURL(blob);
   }
 
-  const DirOptions = Object.keys(Dir)
+  const DirOptions = Object.keys(BaseDirectory)
     .filter((key) => isNaN(parseInt(key)))
-    .map((dir) => [dir, Dir[dir]]);
+    .map((dir) => [dir, BaseDirectory[dir]]);
 
   function read() {
     const isFile = pathToRead.match(/\S+\.\S+$/g);
@@ -40,7 +40,7 @@
       dir: getDir(),
     };
     const promise = isFile
-      ? readBinaryFile(pathToRead, opts)
+      ? readFile(pathToRead, opts)
       : readDir(pathToRead, opts);
     promise
       .then(function (response) {
