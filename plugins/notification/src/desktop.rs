@@ -226,7 +226,7 @@ mod imp {
         pub fn notify<R: tauri::Runtime>(self, app: &tauri::AppHandle<R>) -> crate::Result<()> {
             #[cfg(windows)]
             {
-                if is_windows_7() {
+                if super::is_windows_7() {
                     self.notify_win7(app)
                 } else {
                     #[allow(deprecated)]
