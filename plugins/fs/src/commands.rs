@@ -788,7 +788,7 @@ fn get_stat(metadata: std::fs::Metadata) -> FileInfo {
         // Following are only valid under Windows.
         #[cfg(windows)]
         file_attribues: Some(metadata.file_attributes()),
-        #[cfg(windows)]
+        #[cfg(not(windows))]
         file_attribues: None,
         // Following are only valid under Unix.
         dev: usm!(dev),
