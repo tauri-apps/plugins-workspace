@@ -62,7 +62,7 @@
  */
 
 import { BaseDirectory } from "@tauri-apps/api/path";
-import { invoke } from "@tauri-apps/api/primitives";
+import { Channel, invoke } from "@tauri-apps/api/primitives";
 
 enum SeekMode {
   Start = 0,
@@ -72,6 +72,8 @@ enum SeekMode {
 
 /**
  * A FileInfo describes a file and is returned by `stat`, `lstat` or `fstat`.
+ *
+ * @since 2.0.0
  */
 interface FileInfo {
   /**
@@ -241,7 +243,11 @@ function parseFileInfo(r: UnparsedFileInfo): FileInfo {
   };
 }
 
-/** The Tauri abstraction for reading and writing files. */
+/**
+ *  The Tauri abstraction for reading and writing files.
+ *
+ * @since 2.0.0
+ */
 class FsFile {
   readonly rid: number;
 
@@ -319,6 +325,9 @@ class FsFile {
   }
 }
 
+/**
+ * @since 2.0.0
+ */
 interface CreateOptions {
   /** Base directory for `path` */
   baseDir?: BaseDirectory;
@@ -333,6 +342,8 @@ interface CreateOptions {
  * import { create, BaseDirectory } from "@tauri-apps/plugin-fs"
  * const file = await create("foo/bar.txt", { dir: BaseDirectory.App });
  * ```
+ *
+ * @since 2.0.0
  */
 async function create(
   path: string | URL,
@@ -350,6 +361,9 @@ async function create(
   return new FsFile(rid);
 }
 
+/**
+ * @since 2.0.0
+ */
 interface OpenOptions {
   /**
    * Sets the option for read access. This option, when `true`, means that the
@@ -413,6 +427,8 @@ interface OpenOptions {
  * // Do work with file
  * await close(file.rid);
  * ```
+ *
+ * @since 2.0.0
  */
 async function open(
   path: string | URL,
@@ -442,6 +458,8 @@ async function open(
  * // do work with "file" object
  * await close(file.rid);
  * ```
+ *
+ * @since 2.0.0
  */
 async function close(rid: number): Promise<void> {
   return invoke("plugin:fs|close", {
@@ -449,6 +467,9 @@ async function close(rid: number): Promise<void> {
   });
 }
 
+/**
+ * @since 2.0.0
+ */
 interface CopyFileOptions {
   /** Base directory for `fromPath`. */
   fromPathBaseDir?: BaseDirectory;
@@ -463,6 +484,8 @@ interface CopyFileOptions {
  * import { copyFile, BaseDirectory } from '@tauri-apps/plugin-fs';
  * await copyFile('app.conf', 'app.conf.bk', { dir: BaseDirectory.App });
  * ```
+ *
+ * @since 2.0.0
  */
 async function copyFile(
   fromPath: string | URL,
@@ -483,6 +506,9 @@ async function copyFile(
   });
 }
 
+/**
+ * @since 2.0.0
+ */
 interface MkdirOptions {
   /** Permissions to use when creating the directory (defaults to `0o777`, before the process's umask). Ignored on Windows. */
   mode?: number;
@@ -491,7 +517,7 @@ interface MkdirOptions {
    * */
   recursive?: boolean;
   /** Base directory for `path` */
-  dir: BaseDirectory;
+  dir?: BaseDirectory;
 }
 
 /**
@@ -501,6 +527,8 @@ interface MkdirOptions {
  * import { mkdir, BaseDirectory } from '@tauri-apps/plugin-fs';
  * await mkdir('users', { dir: BaseDirectory.App });
  * ```
+ *
+ * @since 2.0.0
  */
 async function mkdir(
   path: string | URL,
@@ -516,9 +544,12 @@ async function mkdir(
   });
 }
 
+/**
+ * @since 2.0.0
+ */
 interface ReadDirOptions {
   /** Base directory for `path` */
-  dir: BaseDirectory;
+  dir?: BaseDirectory;
 }
 
 /**
@@ -526,6 +557,7 @@ interface ReadDirOptions {
  *
  * This is the result of the {@linkcode readDir}.
  *
+ * @since 2.0.0
  */
 interface DirEntry {
   /** The name of the entry (file name with extension or directory name). */
@@ -556,6 +588,8 @@ interface DirEntry {
  *   }
  * }
  * ```
+ *
+ * @since 2.0.0
  */
 async function readDir(
   path: string | URL,
@@ -593,6 +627,8 @@ async function readDir(
  * const text = new TextDecoder().decode(buf);  // "hello world"
  * await close(file.rid);
  * ```
+ *
+ * @since 2.0.0
  */
 async function read(rid: number, buffer: Uint8Array): Promise<number | null> {
   if (buffer.byteLength === 0) {
@@ -609,6 +645,9 @@ async function read(rid: number, buffer: Uint8Array): Promise<number | null> {
   return nread === 0 ? null : nread;
 }
 
+/**
+ * @since 2.0.0
+ */
 interface ReadFileOptions {
   /** Base directory for `path` */
   baseDir?: BaseDirectory;
@@ -622,6 +661,8 @@ interface ReadFileOptions {
  * import { readFile, BaseDirectory } from '@tauri-apps/plugin-fs';
  * const contents = await readFile('avatar.png', { dir: BaseDirectory.Resource });
  * ```
+ *
+ * @since 2.0.0
  */
 async function readFile(
   path: string | URL,
@@ -646,6 +687,8 @@ async function readFile(
  * import { readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
  * const contents = await readTextFile('app.conf', { dir: BaseDirectory.App });
  * ```
+ *
+ * @since 2.0.0
  */
 async function readTextFile(
   path: string | URL,
@@ -673,6 +716,8 @@ async function readTextFile(
  * ```
  * You could also call {@linkcode AsyncIterableIterator.next} to advance the
  * iterator so you can lazily read the next line whenever you want.
+ *
+ * @since 2.0.0
  */
 async function readTextFileLines(
   path: string | URL,
@@ -714,11 +759,14 @@ async function readTextFileLines(
   });
 }
 
+/**
+ * @since 2.0.0
+ */
 interface RemoveOptions {
   /** Defaults to `false`. If set to `true`, path will be removed even if it's a non-empty directory. */
   recursive?: boolean;
   /** Base directory for `path` */
-  dir: BaseDirectory;
+  dir?: BaseDirectory;
 }
 
 /**
@@ -730,6 +778,8 @@ interface RemoveOptions {
  * await remove('users/file.txt', { dir: BaseDirectory.App });
  * await remove('users', { dir: BaseDirectory.App });
  * ```
+ *
+ * @since 2.0.0
  */
 async function remove(
   path: string | URL,
@@ -745,6 +795,9 @@ async function remove(
   });
 }
 
+/**
+ * @since 2.0.0
+ */
 interface RenameOptions {
   /** Base directory for `oldPath`. */
   oldPathBaseDir?: BaseDirectory;
@@ -764,6 +817,8 @@ interface RenameOptions {
  * import { rename, BaseDirectory } from '@tauri-apps/plugin-fs';
  * await rename('avatar.png', 'deleted.png', { dir: BaseDirectory.App });
  * ```
+ *
+ * @since 2.0.0
  */
 async function rename(
   oldPath: string | URL,
@@ -820,6 +875,8 @@ async function rename(
  * // Seek backwards 2 bytes from the end of the file
  * console.log(await seek(file.rid, -2, SeekMode.End)); // "9" (e.g. 11-2)
  * ```
+ *
+ * @since 2.0.0
  */
 async function seek(
   rid: number,
@@ -833,9 +890,12 @@ async function seek(
   });
 }
 
+/**
+ * @since 2.0.0
+ */
 interface StatOptions {
   /** Base directory for `path`. */
-  dir: BaseDirectory;
+  dir?: BaseDirectory;
 }
 
 /**
@@ -848,6 +908,8 @@ interface StatOptions {
  * const fileInfo = await stat("hello.txt", { dir: BaseDirectory.App });
  * console.log(fileInfo.isFile); // true
  * ```
+ *
+ * @since 2.0.0
  */
 async function stat(
   path: string | URL,
@@ -872,6 +934,8 @@ async function stat(
  * const fileInfo = await lstat("hello.txt", { dir: BaseDirectory.App });
  * console.log(fileInfo.isFile); // true
  * ```
+ *
+ * @since 2.0.0
  */
 async function lstat(
   path: string | URL,
@@ -895,6 +959,8 @@ async function lstat(
  * const fileInfo = await fstat(file.rid);
  * console.log(fileInfo.isFile); // true
  * ```
+ *
+ * @since 2.0.0
  */
 async function fstat(rid: number): Promise<FileInfo> {
   const res = await invoke<UnparsedFileInfo>("plugin:fs|fstat", {
@@ -904,9 +970,12 @@ async function fstat(rid: number): Promise<FileInfo> {
   return parseFileInfo(res);
 }
 
+/**
+ * @since 2.0.0
+ */
 interface TruncateOptions {
   /** Base directory for `path`. */
-  dir: BaseDirectory;
+  dir?: BaseDirectory;
 }
 
 /**
@@ -926,6 +995,8 @@ interface TruncateOptions {
  * const data = await readFile(file, { dir: BaseDirectory.App });
  * console.log(new TextDecoder().decode(data));  // "Hello W"
  * ```
+ *
+ * @since 2.0.0
  */
 async function truncate(
   path: string | URL,
@@ -968,6 +1039,8 @@ async function truncate(
  * await read(file.rid, data);
  * console.log(new TextDecoder().decode(data)); // Hello W
  * ```
+ *
+ * @since 2.0.0
  */
 async function ftruncate(rid: number, len?: number): Promise<void> {
   return invoke("plugin:fs|ftruncate", {
@@ -993,6 +1066,8 @@ async function ftruncate(rid: number, len?: number): Promise<void> {
  * const bytesWritten = await write(file.rid, data); // 11
  * await close(file.rid);
  * ```
+ *
+ * @since 2.0.0
  */
 async function write(rid: number, data: Uint8Array): Promise<number> {
   return invoke("plugin:fs|write", {
@@ -1001,6 +1076,9 @@ async function write(rid: number, data: Uint8Array): Promise<number> {
   });
 }
 
+/**
+ * @since 2.0.0
+ */
 interface WriteFileOptions {
   /** Defaults to `false`. If set to `true`, will append to a file instead of overwriting previous contents. */
   append?: boolean;
@@ -1022,6 +1100,8 @@ interface WriteFileOptions {
  * let data = encoder.encode("Hello World");
  * await writeFile('file.txt', data, { dir: BaseDirectory.App });
  * ```
+ *
+ * @since 2.0.0
  */
 async function writeFile(
   path: string | URL,
@@ -1047,6 +1127,8 @@ async function writeFile(
   *
   * await writeTextFile('file.txt', "Hello world", { dir: BaseDirectory.App });
   * ```
+  * 
+  * @since 2.0.0
   */
 async function writeTextFile(
   path: string | URL,
@@ -1064,9 +1146,12 @@ async function writeTextFile(
   });
 }
 
+/**
+ * @since 2.0.0
+ */
 interface ExistsOptions {
   /** Base directory for `path`. */
-  dir: BaseDirectory;
+  dir?: BaseDirectory;
 }
 
 /**
@@ -1078,13 +1163,158 @@ interface ExistsOptions {
  * await exists('avatar.png', { dir: BaseDirectory.AppData });
  * ```
  *
- * @since 1.1.0
+ * @since 2.0.0
  */
-async function exists(path: string, options?: ExistsOptions): Promise<boolean> {
+async function exists(
+  path: string | URL,
+  options?: ExistsOptions,
+): Promise<boolean> {
+  if (path instanceof URL && path.protocol !== "file:") {
+    throw new TypeError("Must be a file URL.");
+  }
+
   return invoke("plugin:fs|exists", {
-    path,
+    path: path instanceof URL ? path.toString() : path,
     options,
   });
+}
+
+/**
+ * @since 2.0.0
+ */
+interface WatchOptions {
+  /** Watch a directory recursively */
+  recursive?: boolean;
+  /** Base directory for `path` */
+  dir?: BaseDirectory;
+}
+
+/**
+ * @since 2.0.0
+ */
+interface DebouncedWatchOptions extends WatchOptions {
+  /** Debounce delay */
+  delayMs?: number;
+}
+
+/**
+ * @since 2.0.0
+ */
+type RawEvent = {
+  type: RawEventKind;
+  paths: string[];
+  attrs: unknown;
+};
+
+/**
+ * @since 2.0.0
+ */
+type RawEventKind =
+  | "any "
+  | {
+      access?: unknown;
+    }
+  | {
+      create?: unknown;
+    }
+  | {
+      modify?: unknown;
+    }
+  | {
+      remove?: unknown;
+    }
+  | "other";
+
+/**
+ * @since 2.0.0
+ */
+type DebouncedEvent =
+  | { kind: "any"; path: string }
+  | { kind: "AnyContinous"; path: string };
+
+/**
+ * @since 2.0.0
+ */
+type UnWatchFn = () => void;
+
+async function unwatch(id: number): Promise<void> {
+  await invoke("plugin:fs|unwatch", { id });
+}
+
+/**
+ * Watch changes (after a delay) on files or directories.
+ *
+ * @since 2.0.0
+ */
+async function watch(
+  paths: string | string[] | URL | URL[],
+  cb: (event: DebouncedEvent) => void,
+  options?: DebouncedWatchOptions,
+): Promise<UnWatchFn> {
+  const opts = {
+    recursive: false,
+    delayMs: 2000,
+    ...options,
+  };
+
+  const watchPaths = Array.isArray(paths) ? paths : [paths];
+
+  for (const path of watchPaths) {
+    if (path instanceof URL && path.protocol !== "file:") {
+      throw new TypeError("Must be a file URL.");
+    }
+  }
+
+  const onEvent = new Channel<DebouncedEvent>();
+  onEvent.onmessage = cb;
+
+  const rid: number = await invoke("plugin:fs|watch", {
+    paths: watchPaths.map((p) => (p instanceof URL ? p.toString() : p)),
+    options: opts,
+    onEvent,
+  });
+
+  return () => {
+    void unwatch(rid);
+  };
+}
+
+/**
+ * Watch changes on files or directories.
+ *
+ * @since 2.0.0
+ */
+async function watchImmediate(
+  paths: string | string[] | URL | URL[],
+  cb: (event: RawEvent) => void,
+  options?: WatchOptions,
+): Promise<UnWatchFn> {
+  const opts = {
+    recursive: false,
+    ...options,
+    delayMs: null,
+  };
+
+  const watchPaths = Array.isArray(paths) ? paths : [paths];
+
+  for (const path of watchPaths) {
+    if (path instanceof URL && path.protocol !== "file:") {
+      throw new TypeError("Must be a file URL.");
+    }
+  }
+
+  const onEvent = new Channel<RawEvent>();
+  onEvent.onmessage = cb;
+
+  const rid: number = await invoke("plugin:fs|watch", {
+    paths: watchPaths.map((p) => (p instanceof URL ? p.toString() : p)),
+    options: opts,
+    onEvent,
+  });
+
+  return () => {
+    void unwatch(rid);
+  };
 }
 
 export type {
@@ -1102,6 +1332,11 @@ export type {
   WriteFileOptions,
   ExistsOptions,
   FileInfo,
+  WatchOptions,
+  DebouncedWatchOptions,
+  DebouncedEvent,
+  RawEvent,
+  UnWatchFn,
 };
 
 export {
@@ -1130,4 +1365,6 @@ export {
   writeFile,
   writeTextFile,
   exists,
+  watch,
+  watchImmediate,
 };

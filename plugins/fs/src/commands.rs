@@ -648,21 +648,20 @@ pub fn exists<R: Runtime>(
     Ok(resolved_path.exists())
 }
 
-fn resolve_path<R: Runtime>(
-    window: &AppHandle<R>,
+pub fn resolve_path<R: Runtime>(
+    app: &AppHandle<R>,
     path: SafePathBuf,
     dir: Option<BaseDirectory>,
 ) -> CommandResult<PathBuf> {
     let path = file_url_to_safe_pathbuf(path)?;
     let path = if let Some(dir) = dir {
-        window
-            .path()
+        app.path()
             .resolve(&path, dir)
             .map_err(Error::CannotResolvePath)?
     } else {
         path.as_ref().to_path_buf()
     };
-    if window.fs_scope().is_allowed(&path) {
+    if app.fs_scope().is_allowed(&path) {
         Ok(path)
     } else {
         Err(CommandError::Plugin(Error::PathForbidden(path)))
