@@ -16,6 +16,7 @@ targets = [ "x86_64-linux-android" ]
 [build-dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
+tauri = { workspace = true }
 tauri-build = { workspace = true }
 
 [dependencies]

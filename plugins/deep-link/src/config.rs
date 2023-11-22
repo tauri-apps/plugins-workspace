@@ -7,6 +7,7 @@
 #![allow(dead_code)]
 
 use serde::{Deserialize, Deserializer};
+use tauri::utils::config::BundleTypeRole;
 
 #[derive(Deserialize)]
 pub struct AssociatedDomain {
@@ -36,5 +37,13 @@ pub struct Config {
     pub mobile: Vec<AssociatedDomain>,
     /// Desktop requires urls starting with `<scheme>://`.
     /// These urls are also active in dev mode on Android.
-    pub desktop: Vec<String>,
+    pub desktop: Vec<DeepLinkProtocol>,
+}
+
+#[derive(Deserialize)]
+pub struct DeepLinkProtocol {
+    /// URL schema to asoociate with this app.
+    pub scheme: String,
+    /// The app's role for this scheme. Maps to `CFBundleTypeRole` on macOS.
+    pub role: BundleTypeRole,
 }

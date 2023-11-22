@@ -222,7 +222,7 @@ mod imp {
             }
 
             #[cfg(not(any(windows, target_os = "linux")))]
-            Ok(is_default)
+            Ok(false)
         }
     }
 }
