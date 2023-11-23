@@ -19,3 +19,19 @@
 | [window-state](plugins/window-state)       | Persist window sizes and positions.                       | ✅  | ✅  | ✅  | ?   | ?   |
 
 _This repo and all plugins require a Rust version of at least **1.64**_
+
+## Partners
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src=".github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+For the complete list of sponsors please visit our [website](https://tauri.app#sponsors) and [Open Collective](https://opencollective.com/tauri).

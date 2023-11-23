@@ -1,4 +1,4 @@
-![plugin-store](banner.png)
+![plugin-store](https://github.com/tauri-apps/plugins-workspace/raw/v1/plugins/store/banner.png)
 
 Simple, persistent key-value store.
 
@@ -106,6 +106,22 @@ with_store(app_handle, stores, path, |store| store.insert("a".to_string(), json!
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
+
+## Partners
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v1/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+For the complete list of sponsors please visit our [website](https://tauri.app#sponsors) and [Open Collective](https://opencollective.com/tauri).
 
 ## License
 
