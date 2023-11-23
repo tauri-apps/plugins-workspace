@@ -126,13 +126,13 @@ impl<R: Runtime> From<FileDialogBuilder<R>> for FileDialog {
         let mut builder = FileDialog::new();
 
         if let Some(title) = d.title {
-            builder = builder.set_title(&title);
+            builder = builder.set_title(title);
         }
         if let Some(starting_directory) = d.starting_directory {
             builder = builder.set_directory(starting_directory);
         }
         if let Some(file_name) = d.file_name {
-            builder = builder.set_file_name(&file_name);
+            builder = builder.set_file_name(file_name);
         }
         for filter in d.filters {
             let v: Vec<&str> = filter.extensions.iter().map(|x| &**x).collect();
