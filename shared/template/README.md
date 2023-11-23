@@ -67,17 +67,7 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
     <tr>
       <td align="center" valign="middle">
         <a href="https://crabnebula.dev" target="_blank">
-          <img src=".github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
-        </a>
-      </td>
-      <td align="center" valign="middle">
-        <a href="https://crabnebula.dev" target="_blank">
           <img src="/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
-        </a>
-      </td>
-      <td align="center" valign="middle">
-        <a href="https://crabnebula.dev" target="_blank">
-          <img src="../.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
         </a>
       </td>
     </tr>
