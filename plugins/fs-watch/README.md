@@ -59,7 +59,7 @@ const stopWatching = await watch(
   (event) => {
     const { kind, path } = event;
   },
-  { recursive: true }
+  { recursive: true },
 );
 
 const stopRawWatcher = await watchImmediate(
@@ -67,7 +67,7 @@ const stopRawWatcher = await watchImmediate(
   (event) => {
     const { type, paths, attrs } = event;
   },
-  {}
+  {},
 );
 ```
 

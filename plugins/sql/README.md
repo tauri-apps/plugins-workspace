@@ -76,23 +76,23 @@ We use sqlx as our underlying library, adopting their query syntax:
 // INSERT and UPDATE examples for sqlite and postgres
 const result = await db.execute(
   "INSERT into todos (id, title, status) VALUES ($1, $2, $3)",
-  [todos.id, todos.title, todos.status]
+  [todos.id, todos.title, todos.status],
 );
 
 const result = await db.execute(
   "UPDATE todos SET title = $1, completed = $2 WHERE id = $3",
-  [todos.title, todos.status, todos.id]
+  [todos.title, todos.status, todos.id],
 );
 
 // INSERT and UPDATE examples for mysql
 const result = await db.execute(
   "INSERT into todos (id, title, status) VALUES (?, ?, ?)",
-  [todos.id, todos.title, todos.status]
+  [todos.id, todos.title, todos.status],
 );
 
 const result = await db.execute(
   "UPDATE todos SET title = ?, completed = ? WHERE id = ?",
-  [todos.title, todos.status, todos.id]
+  [todos.title, todos.status, todos.id],
 );
 ```
 
