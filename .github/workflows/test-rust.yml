@@ -192,8 +192,12 @@ jobs:
         run: cargo install cross --git https://github.com/cross-rs/cross
 
       - name: test ${{ matrix.package }}
-        if: matrix.package != 'tauri-plugin-sql'
+        if: matrix.package != 'tauri-plugin-sql' && matrix.package != 'tauri-plugin-http'
         run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features
+
+      - name: test ${{ matrix.package }}
+        if: matrix.package == 'tauri-plugin-http'
+        run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets
 
       - name: test ${{ matrix.package }} sqlite
         if: matrix.package == 'tauri-plugin-sql'
