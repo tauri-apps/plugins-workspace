@@ -1,4 +1,4 @@
-![plugin-sql](banner.png)
+![plugin-sql](https://github.com/tauri-apps/plugins-workspace/raw/v1/plugins/sql/banner.png)
 
 Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx). It supports the `sqlite`, `mysql` and `postgres` drivers, enabled by a Cargo feature.
 
@@ -76,23 +76,23 @@ We use sqlx as our underlying library, adopting their query syntax:
 // INSERT and UPDATE examples for sqlite and postgres
 const result = await db.execute(
   "INSERT into todos (id, title, status) VALUES ($1, $2, $3)",
-  [todos.id, todos.title, todos.status],
+  [todos.id, todos.title, todos.status]
 );
 
 const result = await db.execute(
   "UPDATE todos SET title = $1, completed = $2 WHERE id = $3",
-  [todos.title, todos.status, todos.id],
+  [todos.title, todos.status, todos.id]
 );
 
 // INSERT and UPDATE examples for mysql
 const result = await db.execute(
   "INSERT into todos (id, title, status) VALUES (?, ?, ?)",
-  [todos.id, todos.title, todos.status],
+  [todos.id, todos.title, todos.status]
 );
 
 const result = await db.execute(
   "UPDATE todos SET title = ?, completed = ? WHERE id = ?",
-  [todos.title, todos.status, todos.id],
+  [todos.title, todos.status, todos.id]
 );
 ```
 
@@ -107,7 +107,7 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
     <tr>
       <td align="center" valign="middle">
         <a href="https://crabnebula.dev" target="_blank">
-          <img src="/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v1/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
         </a>
       </td>
     </tr>

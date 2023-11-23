@@ -1,4 +1,4 @@
-![plugin-autostart](banner.png)
+![plugin-autostart](https://github.com/tauri-apps/plugins-workspace/raw/v1/plugins/autostart/banner.png)
 
 Automatically launch your application at startup. Supports Windows, Mac (via AppleScript or Launch Agent), and Linux.
 
@@ -73,7 +73,7 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
     <tr>
       <td align="center" valign="middle">
         <a href="https://crabnebula.dev" target="_blank">
-          <img src="/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v1/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
         </a>
       </td>
     </tr>

@@ -1,4 +1,4 @@
-![plugin-upload](banner.png)
+![plugin-upload](https://github.com/tauri-apps/plugins-workspace/raw/v1/plugins/upload/banner.png)
 
 Upload files from disk to a remote server over HTTP.
 Download files from a remote HTTP server to disk.
@@ -58,7 +58,7 @@ upload(
   "https://example.com/file-upload",
   "./path/to/my/file.txt",
   (progress, total) => console.log(`Uploaded ${progress} of ${total} bytes`), // a callback that will be called with the upload progress
-  { "Content-Type": "text/plain" }, // optional headers to send with the request
+  { "Content-Type": "text/plain" } // optional headers to send with the request
 );
 ```
 
@@ -69,7 +69,7 @@ download(
   "https://example.com/file-download-link",
   "./path/to/save/my/file.txt",
   (progress, total) => console.log(`Downloaded ${progress} of ${total} bytes`), // a callback that will be called with the download progress
-  { "Content-Type": "text/plain" }, // optional headers to send with the request
+  { "Content-Type": "text/plain" } // optional headers to send with the request
 );
 ```
 
@@ -84,7 +84,7 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
     <tr>
       <td align="center" valign="middle">
         <a href="https://crabnebula.dev" target="_blank">
-          <img src="/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v1/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
         </a>
       </td>
     </tr>

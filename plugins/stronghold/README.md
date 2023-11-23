@@ -1,4 +1,4 @@
-![plugin-stronghold](banner.png)
+![plugin-stronghold](https://github.com/tauri-apps/plugins-workspace/raw/v1/plugins/stronghold/banner.png)
 
 Store secrets and keys using the [IOTA Stronghold](https://github.com/iotaledger/stronghold.rs) encrypted database and secure runtime.
 
@@ -71,7 +71,7 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
     <tr>
       <td align="center" valign="middle">
         <a href="https://crabnebula.dev" target="_blank">
-          <img src="/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v1/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
         </a>
       </td>
     </tr>

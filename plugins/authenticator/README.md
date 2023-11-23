@@ -1,4 +1,4 @@
-![plugin-authenticator](banner.png)
+![plugin-authenticator](https://github.com/tauri-apps/plugins-workspace/raw/v1/plugins/authenticator/banner.png)
 
 Use hardware security-keys in your Tauri App.
 
@@ -76,7 +76,7 @@ const r2 = await auth.verifyRegistration(
   challenge,
   app,
   registerResult.registerData,
-  registerResult.clientData,
+  registerResult.clientData
 );
 const j2 = JSON.parse(r2);
 
@@ -91,7 +91,7 @@ const counter = await auth.verifySignature(
   signData.signData,
   clientData,
   keyHandle,
-  pubkey,
+  pubkey
 );
 
 if (counter && counter > 0) {
@@ -110,7 +110,7 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
     <tr>
       <td align="center" valign="middle">
         <a href="https://crabnebula.dev" target="_blank">
-          <img src="/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v1/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
         </a>
       </td>
     </tr>
