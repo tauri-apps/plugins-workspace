@@ -42,7 +42,7 @@ fn main() {
     .plugin(tauri_plugin_localhost::Builder::new(port).build())
     .setup(move |app| {
       app.ipc_scope().configure_remote_access(
-        RemoteDomainAccessScope::new(format!("localhost", port))
+        RemoteDomainAccessScope::new("localhost")
           .add_window("main")
       );
 
