@@ -97,7 +97,7 @@ pub async fn watch<R: Runtime>(
 
     let kind = if let Some(delay) = options.delay_ms {
         let (tx, rx) = channel();
-        let mut debouncer = new_debouncer(Duration::from_millis(delay), None, tx)?;
+        let mut debouncer = new_debouncer(Duration::from_millis(delay), tx)?;
         let watcher = debouncer.watcher();
         for path in &resolved_paths {
             watcher.watch(path.as_ref(), mode)?;
