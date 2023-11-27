@@ -53,14 +53,8 @@ impl<R: Runtime> Dialog<R> {
 
 #[cfg(not(target_os = "linux"))]
 macro_rules! run_dialog {
-    ($e:expr, $h: ident) => {{
-        std::thread::spawn(move || {
-            let response = tauri::async_runtime::block_on($e);
-            $h(!matches!(
-                response,
-                rfd::MessageDialogResult::No | rfd::MessageDialogResult::Cancel
-            ));
-        });
+    ($e:expr, $h: expr) => {{
+        std::thread::spawn(move || $h(tauri::async_runtime::block_on($e)));
     }};
 }
 
@@ -69,13 +63,7 @@ macro_rules! run_dialog {
     ($e:expr, $h: ident) => {{
         std::thread::spawn(move || {
             let context = glib::MainContext::default();
-            context.invoke_with_priority(glib::PRIORITY_HIGH, move || {
-                let response = $e;
-                $h(!matches!(
-                    response,
-                    rfd::MessageDialogResult::No | rfd::MessageDialogResult::Cancel
-                ));
-            });
+            context.invoke_with_priority(glib::PRIORITY_HIGH, move || $h($e));
         });
     }};
 }
@@ -83,10 +71,7 @@ macro_rules! run_dialog {
 #[cfg(not(target_os = "linux"))]
 macro_rules! run_file_dialog {
     ($e:expr, $h: ident) => {{
-        std::thread::spawn(move || {
-            let response = tauri::async_runtime::block_on($e);
-            $h(response);
-        });
+        std::thread::spawn(move || $h(tauri::async_runtime::block_on($e)));
     }};
 }
 
@@ -226,5 +211,13 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
     dialog: MessageDialogBuilder<R>,
     f: F,
 ) {
+    use rfd::MessageDialogResult as Result;
+    let f = move |res| {
+        f(match res {
+            Result::Ok | Result::Yes => true,
+            Result::Custom(s) => s == OK,
+            _ => false,
+        });
+    };
     run_dialog!(MessageDialog::from(dialog).show(), f);
 }
