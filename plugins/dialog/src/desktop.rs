@@ -80,10 +80,7 @@ macro_rules! run_file_dialog {
     ($e:expr, $h: ident) => {{
         std::thread::spawn(move || {
             let context = glib::MainContext::default();
-            context.invoke_with_priority(glib::PRIORITY_HIGH, move || {
-                let response = $e;
-                $h(response);
-            });
+            context.invoke_with_priority(glib::PRIORITY_HIGH, move || $h($e));
         });
     }};
 }
