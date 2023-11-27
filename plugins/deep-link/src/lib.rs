@@ -98,6 +98,8 @@ mod imp {
 
 #[cfg(not(target_os = "android"))]
 mod imp {
+    #[cfg(windows)]
+    use std::path::Path;
     use std::sync::Mutex;
     use tauri::{AppHandle, Runtime};
     #[cfg(windows)]
