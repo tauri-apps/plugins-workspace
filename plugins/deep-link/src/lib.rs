@@ -98,7 +98,7 @@ mod imp {
 
 #[cfg(not(target_os = "android"))]
 mod imp {
-    use std::{path::Path, sync::Mutex};
+    use std::sync::Mutex;
     use tauri::{AppHandle, Runtime};
     #[cfg(windows)]
     use winreg::{enums::HKEY_CURRENT_USER, RegKey};
@@ -127,13 +127,13 @@ mod imp {
         /// ## Platform-specific:
         ///
         /// -**macOS / Android / iOS**: Unsupported.
-        pub fn register<S: AsRef<str>>(&self, protocol: S) -> crate::Result<()> {
+        pub fn register<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
             {
                 let hkcu = RegKey::predef(HKEY_CURRENT_USER);
                 let base = Path::new("Software")
                     .join("Classes")
-                    .join(protocol.as_ref());
+                    .join(_protocol.as_ref());
 
                 let exe = tauri::utils::platform::current_exe()?
                     .display()
@@ -171,13 +171,13 @@ mod imp {
         /// ## Platform-specific:
         ///
         /// -**macOS / Android / iOS**: Unsupported.
-        pub fn unregister<S: AsRef<str>>(&self, protocol: S) -> crate::Result<()> {
+        pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
             {
                 let hkcu = RegKey::predef(HKEY_CURRENT_USER);
                 let base = Path::new("Software")
                     .join("Classes")
-                    .join(protocol.as_ref());
+                    .join(_protocol.as_ref());
 
                 hkcu.delete_subkey_all(base)?;
             }
@@ -196,14 +196,14 @@ mod imp {
         /// ## Platform-specific:
         ///
         /// -**macOS / Android / iOS**: Unsupported, always returns `Ok(false)`
-        pub fn is_registered<S: AsRef<str>>(&self, protocol: S) -> crate::Result<bool> {
+        pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
             #[cfg(windows)]
             {
                 let hkcu = RegKey::predef(HKEY_CURRENT_USER);
 
                 let cmd_reg = hkcu.open_subkey(format!(
                     "Software\\Classes\\{}\\shell\\open\\command",
-                    protocol.as_ref()
+                    _protocol.as_ref()
                 ))?;
 
                 let registered_cmd: String = cmd_reg.get_value("")?;

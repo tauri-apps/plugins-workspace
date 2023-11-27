@@ -67,7 +67,9 @@
         { "host": "fabianlars.de", "pathPrefix": ["/intent"] },
         { "host": "tauri.app" }
       ],
-      "desktop": ["taurischeme"]
+      "desktop": {
+        "schemes": ["fabianlars", "my-tauri-app"]
+      }
     }
   }
 }

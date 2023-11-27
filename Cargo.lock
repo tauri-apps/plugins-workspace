@@ -236,7 +236,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build",
+ "tauri-build 2.0.0-alpha.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "tauri-plugin-barcode-scanner",
  "tauri-plugin-cli",
  "tauri-plugin-clipboard-manager",
@@ -261,7 +261,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build",
+ "tauri-build 2.0.0-alpha.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "tauri-plugin-updater",
  "time 0.3.24",
  "tiny_http 0.11.0",
@@ -1315,7 +1315,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build",
+ "tauri-build 2.0.0-alpha.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "tauri-plugin-deep-link",
 ]
 
@@ -5039,7 +5039,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build",
+ "tauri-build 2.0.0-alpha.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "tauri-plugin-single-instance",
 ]
 
@@ -5617,8 +5617,7 @@ checksum = "1d2faeef5759ab89935255b1a4cd98e0baf99d1085e37d36599c625dac49ae8e"
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.17"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "892f45e7f10c9481488633f506496eeb3c69034c17fc71d5562d1e87b5442f78"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#4a7a795293eb65ab01ab91782dcc5193900b7c4c"
 dependencies = [
  "anyhow",
  "bytes 1.4.0",
@@ -5651,11 +5650,11 @@ dependencies = [
  "serialize-to-javascript",
  "state",
  "swift-rs",
- "tauri-build",
+ "tauri-build 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=feat/deep-links)",
  "tauri-macros",
  "tauri-runtime",
  "tauri-runtime-wry",
- "tauri-utils",
+ "tauri-utils 2.0.0-alpha.10 (git+https://github.com/tauri-apps/tauri?branch=feat/deep-links)",
  "thiserror",
  "tokio",
  "tray-icon",
@@ -5684,8 +5683,28 @@ dependencies = [
  "serde",
  "serde_json",
  "swift-rs",
- "tauri-codegen",
- "tauri-utils",
+ "tauri-codegen 2.0.0-alpha.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tauri-utils 2.0.0-alpha.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tauri-winres",
+ "walkdir",
+]
+
+[[package]]
+name = "tauri-build"
+version = "2.0.0-alpha.11"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#4a7a795293eb65ab01ab91782dcc5193900b7c4c"
+dependencies = [
+ "anyhow",
+ "cargo_toml",
+ "dirs-next",
+ "heck",
+ "json-patch",
+ "plist",
+ "semver",
+ "serde",
+ "serde_json",
+ "swift-rs",
+ "tauri-utils 2.0.0-alpha.10 (git+https://github.com/tauri-apps/tauri?branch=feat/deep-links)",
  "tauri-winres",
  "walkdir",
 ]
@@ -5708,7 +5727,32 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.7",
- "tauri-utils",
+ "tauri-utils 2.0.0-alpha.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "thiserror",
+ "time 0.3.24",
+ "url",
+ "uuid",
+ "walkdir",
+]
+
+[[package]]
+name = "tauri-codegen"
+version = "2.0.0-alpha.10"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#4a7a795293eb65ab01ab91782dcc5193900b7c4c"
+dependencies = [
+ "base64 0.21.2",
+ "brotli",
+ "ico",
+ "json-patch",
+ "plist",
+ "png",
+ "proc-macro2",
+ "quote",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha2 0.10.7",
+ "tauri-utils 2.0.0-alpha.10 (git+https://github.com/tauri-apps/tauri?branch=feat/deep-links)",
  "thiserror",
  "time 0.3.24",
  "url",
@@ -5719,15 +5763,14 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1df582259285a81324d4d38846433bfd3c0440c7a268f730acb7c29350f25cf"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#4a7a795293eb65ab01ab91782dcc5193900b7c4c"
 dependencies = [
  "heck",
  "proc-macro2",
  "quote",
  "syn 1.0.109",
- "tauri-codegen",
- "tauri-utils",
+ "tauri-codegen 2.0.0-alpha.10 (git+https://github.com/tauri-apps/tauri?branch=feat/deep-links)",
+ "tauri-utils 2.0.0-alpha.10 (git+https://github.com/tauri-apps/tauri?branch=feat/deep-links)",
 ]
 
 [[package]]
@@ -5769,7 +5812,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build",
+ "tauri-build 2.0.0-alpha.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror",
 ]
 
@@ -5794,7 +5837,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build",
+ "tauri-build 2.0.0-alpha.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror",
 ]
 
@@ -5806,7 +5849,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build",
+ "tauri-build 2.0.0-alpha.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror",
  "url",
  "winreg 0.51.0",
@@ -5823,7 +5866,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build",
+ "tauri-build 2.0.0-alpha.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "tauri-plugin-fs",
  "thiserror",
 ]
@@ -5898,7 +5941,7 @@ dependencies = [
  "serde_repr",
  "swift-rs",
  "tauri",
- "tauri-build",
+ "tauri-build 2.0.0-alpha.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.3.24",
 ]
 
@@ -5913,7 +5956,7 @@ dependencies = [
  "serde_json",
  "serde_repr",
  "tauri",
- "tauri-build",
+ "tauri-build 2.0.0-alpha.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror",
  "time 0.3.24",
  "url",
@@ -6113,8 +6156,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "1.0.0-alpha.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f46889d91efc090ac4031c7c423c30c5280d6984cb071b729b748d643aa3df40"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#4a7a795293eb65ab01ab91782dcc5193900b7c4c"
 dependencies = [
  "gtk",
  "http",
@@ -6122,7 +6164,7 @@ dependencies = [
  "raw-window-handle",
  "serde",
  "serde_json",
- "tauri-utils",
+ "tauri-utils 2.0.0-alpha.10 (git+https://github.com/tauri-apps/tauri?branch=feat/deep-links)",
  "thiserror",
  "url",
  "windows 0.51.1",
@@ -6131,8 +6173,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "1.0.0-alpha.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b083797e147019c318db883a51868014751b578ba0d1ef3aadd34199a3bbcf61"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#4a7a795293eb65ab01ab91782dcc5193900b7c4c"
 dependencies = [
  "cocoa 0.24.1",
  "gtk",
@@ -6141,7 +6182,7 @@ dependencies = [
  "percent-encoding",
  "raw-window-handle",
  "tauri-runtime",
- "tauri-utils",
+ "tauri-utils 2.0.0-alpha.10 (git+https://github.com/tauri-apps/tauri?branch=feat/deep-links)",
  "webkit2gtk",
  "webview2-com",
  "windows 0.51.1",
@@ -6153,6 +6194,38 @@ name = "tauri-utils"
 version = "2.0.0-alpha.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68e138783ca404416a4afe34f22f804d533c28fb73f87870f365c6ecdcee6c23"
+dependencies = [
+ "aes-gcm 0.10.2",
+ "brotli",
+ "ctor",
+ "dunce",
+ "getrandom 0.2.10",
+ "glob",
+ "heck",
+ "html5ever",
+ "infer",
+ "json-patch",
+ "kuchikiki",
+ "log",
+ "memchr",
+ "phf 0.11.2",
+ "proc-macro2",
+ "quote",
+ "semver",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "serialize-to-javascript",
+ "thiserror",
+ "url",
+ "walkdir",
+ "windows 0.51.1",
+]
+
+[[package]]
+name = "tauri-utils"
+version = "2.0.0-alpha.10"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#4a7a795293eb65ab01ab91782dcc5193900b7c4c"
 dependencies = [
  "aes-gcm 0.10.2",
  "brotli",
@@ -7095,7 +7168,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build",
+ "tauri-build 2.0.0-alpha.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "tauri-plugin-websocket",
  "tokio",
  "tokio-tungstenite",

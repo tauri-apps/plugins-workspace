@@ -23,3 +23,6 @@ codegen-units = 1
 lto = true
 incremental = false
 opt-level = "s"
+
+[patch.crates-io]
+tauri = {git="https://github.com/tauri-apps/tauri", branch="feat/deep-links"}
