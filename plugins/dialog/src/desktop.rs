@@ -208,13 +208,16 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
     dialog: MessageDialogBuilder<R>,
     f: F,
 ) {
-    use rfd::MessageDialogResult as Result;
+    use rfd::MessageDialogResult;
+
+    let ok_label = dialog.ok_button_label.clone();
     let f = move |res| {
         f(match res {
-            Result::Ok | Result::Yes => true,
-            Result::Custom(s) => s == OK,
+            MessageDialogResult::Ok | MessageDialogResult::Yes => true,
+            MessageDialogResult::Custom(s) => ok_label.map_or(s == OK, |ok_label| ok_label == s),
             _ => false,
         });
     };
+
     run_dialog!(MessageDialog::from(dialog).show(), f);
 }
