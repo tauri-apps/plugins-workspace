@@ -5617,7 +5617,7 @@ checksum = "1d2faeef5759ab89935255b1a4cd98e0baf99d1085e37d36599c625dac49ae8e"
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.17"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#4a7a795293eb65ab01ab91782dcc5193900b7c4c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#8f5d7af0bc23c1064ec161789eaad9bbc7ece695"
 dependencies = [
  "anyhow",
  "bytes 1.4.0",
@@ -5692,7 +5692,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.11"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#4a7a795293eb65ab01ab91782dcc5193900b7c4c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#8f5d7af0bc23c1064ec161789eaad9bbc7ece695"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -5738,7 +5738,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.10"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#4a7a795293eb65ab01ab91782dcc5193900b7c4c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#8f5d7af0bc23c1064ec161789eaad9bbc7ece695"
 dependencies = [
  "base64 0.21.2",
  "brotli",
@@ -5763,7 +5763,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.10"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#4a7a795293eb65ab01ab91782dcc5193900b7c4c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#8f5d7af0bc23c1064ec161789eaad9bbc7ece695"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -6156,7 +6156,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "1.0.0-alpha.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#4a7a795293eb65ab01ab91782dcc5193900b7c4c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#8f5d7af0bc23c1064ec161789eaad9bbc7ece695"
 dependencies = [
  "gtk",
  "http",
@@ -6173,7 +6173,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "1.0.0-alpha.5"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#4a7a795293eb65ab01ab91782dcc5193900b7c4c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#8f5d7af0bc23c1064ec161789eaad9bbc7ece695"
 dependencies = [
  "cocoa 0.24.1",
  "gtk",
@@ -6225,7 +6225,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.10"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#4a7a795293eb65ab01ab91782dcc5193900b7c4c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/deep-links#8f5d7af0bc23c1064ec161789eaad9bbc7ece695"
 dependencies = [
  "aes-gcm 0.10.2",
  "brotli",

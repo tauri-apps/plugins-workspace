@@ -101,7 +101,13 @@ mod imp {
     #[cfg(windows)]
     use std::path::Path;
     use std::sync::Mutex;
-    use tauri::{AppHandle, Runtime};
+    #[cfg(target_os = "linux")]
+    use std::{
+        fs::{create_dir_all, File},
+        io::Write,
+        process::Command,
+    };
+    use tauri::{AppHandle, Manager, Runtime};
     #[cfg(windows)]
     use winreg::{enums::HKEY_CURRENT_USER, RegKey};
 
@@ -160,7 +166,45 @@ mod imp {
 
             #[cfg(target_os = "linux")]
             {
-                // TODO: linux
+                let bin = tauri::utils::platform::current_exe()?;
+                // TODO: Research if this conflicts with appimage integrations somehow. If it does, re-add a `-handler` suffix if running in an appimage.
+                let file_name = format!("{}.desktop", bin.file_name().unwrap().to_string_lossy());
+                let appimage = self.app.env().appimage;
+                let exec = appimage
+                    .clone()
+                    .unwrap_or_else(|| bin.into_os_string())
+                    .to_string_lossy()
+                    .to_string();
+
+                // If the app is an appimage it's likely that there is no desktop file yet.
+                // If that's the case we create a non-integrated one that only registers the scheme.
+                if appimage.is_some() {
+                    let target = self.app.path().data_dir()?.join("applications");
+
+                    create_dir_all(&target)?;
+
+                    let target_file = target.join(&file_name);
+
+                    if !target_file.exists() {
+                        let mut file = File::create(target_file)?;
+                        file.write_all(
+                            format!(
+                                include_str!("template.desktop"),
+                                name = self.app.config().tauri.bundle.identifier,
+                                exec = exec
+                            )
+                            .as_bytes(),
+                        )?;
+
+                        Command::new("update-desktop-database")
+                            .arg(target)
+                            .status()?;
+                    }
+
+                    Command::new("xdg-mime")
+                        .args(["default", &file_name, _protocol.as_ref()])
+                        .status()?;
+                }
             }
 
             Ok(())
@@ -172,7 +216,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// -**macOS / Android / iOS**: Unsupported.
+        /// -**macOS / Linux / Android / iOS**: Unsupported.
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
             {
@@ -182,10 +226,6 @@ mod imp {
                     .join(_protocol.as_ref());
 
                 hkcu.delete_subkey_all(base)?;
-            }
-            #[cfg(target_os = "linux")]
-            {
-                // TODO: linux
             }
 
             Ok(())
@@ -219,8 +259,19 @@ mod imp {
             }
             #[cfg(target_os = "linux")]
             {
-                // TODO: linux
-                return Ok(false);
+                let file_name = format!(
+                    "{}.desktop",
+                    tauri::utils::platform::current_exe()?
+                        .file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                );
+
+                let output = Command::new("xdg-mime")
+                    .args(["default", &file_name, _protocol.as_ref()])
+                    .output()?;
+
+                return Ok(String::from_utf8_lossy(&output.stdout).contains(&file_name));
             }
 
             #[cfg(not(any(windows, target_os = "linux")))]
