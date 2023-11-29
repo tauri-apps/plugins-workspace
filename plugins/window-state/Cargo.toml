@@ -2,10 +2,10 @@
 name = "tauri-plugin-window-state"
 version = "0.1.0"
 description = "Save window positions and sizes and restore them when the app is reopened."
-authors.workspace = true
-license.workspace = true
-edition.workspace = true
-rust-version.workspace = true
+authors = [ "Tauri Programme within The Commons Conservancy" ]
+license = "Apache-2.0 OR MIT"
+edition = "2021"
+rust-version = "1.64"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
