@@ -43,7 +43,7 @@ impl Challenge {
 impl U2f {
     // The app ID is a string used to uniquely identify an U2F app
     pub fn new(app_id: String) -> Self {
-        U2f { app_id: app_id }
+        U2f { app_id }
     }
 
     // Not used in this plugin.
@@ -53,7 +53,7 @@ impl U2f {
 
         let challenge_bytes = generate_challenge(32)?;
         let challenge = Challenge {
-            challenge: URL_SAFE_NO_PAD.encode(&challenge_bytes),
+            challenge: URL_SAFE_NO_PAD.encode(challenge_bytes),
             timestamp: format!("{:?}", utc),
             app_id: self.app_id.clone(),
         };
@@ -180,12 +180,12 @@ impl U2f {
                 // CounterTooLow is raised when the counter value received from the device is
                 // lower than last stored counter value.
                 if res.counter < counter {
-                    return Err(U2fError::CounterTooLow);
+                    Err(U2fError::CounterTooLow)
                 } else {
-                    return Ok(res.counter);
+                    Ok(res.counter)
                 }
             }
-            Err(e) => return Err(e),
+            Err(e) => Err(e),
         }
     }
 }

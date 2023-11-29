@@ -115,7 +115,7 @@ unsafe extern "system" fn single_instance_window_proc<R: Runtime>(
                 let data = CStr::from_ptr((*cds_ptr).lpData as _).to_string_lossy();
                 let mut s = data.split('|');
                 let cwd = s.next().unwrap();
-                let args = s.into_iter().map(|s| s.to_string()).collect();
+                let args = s.map(|s| s.to_string()).collect();
                 callback(app_handle, args, cwd.to_string());
             }
             1

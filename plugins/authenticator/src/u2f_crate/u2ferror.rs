@@ -35,5 +35,5 @@ pub enum U2fError {
     #[error("OpenSSL no curve name")]
     InvalidPublicKey,
     #[error(transparent)]
-    OpenSSLError(openssl::error::ErrorStack),
+    OpenSSLError(#[from] openssl::error::ErrorStack),
 }

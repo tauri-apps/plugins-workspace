@@ -12,7 +12,7 @@ use openssl::rand;
 /// The `Result` type used in this crate.
 type Result<T> = ::std::result::Result<T, U2fError>;
 
-pub const U2F_V2: &'static str = "U2F_V2";
+pub const U2F_V2: &str = "U2F_V2";
 
 // Generates a challenge from a secure, random source.
 pub fn generate_challenge(size: usize) -> Result<Vec<u8>> {
@@ -54,7 +54,7 @@ pub fn asn_length(mem: Bytes) -> Result<usize> {
         length = length * 0x100 + (buffer[(2 + num) as usize] as usize);
     }
 
-    length = length + (numbem_of_bytes as usize);
+    length += numbem_of_bytes as usize;
 
     Ok(length + 2) // Add the 2 initial bytes: type and length.
 }

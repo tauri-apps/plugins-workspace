@@ -39,14 +39,14 @@ pub fn parse_sign_response(
 
     let mut msg = vec![];
     msg.put(app_id_hash.as_ref());
-    msg.put(user_presence_flag.clone());
+    msg.put(*user_presence_flag);
     msg.put(counter);
     msg.put(client_data_hash.as_ref());
 
     let public_key = super::crypto::NISTP256Key::from_bytes(&public_key)?;
 
     // The signature is to be verified by the relying party using the public key obtained during registration.
-    let verified = public_key.verify_signature(&signature[..], msg.as_ref())?;
+    let verified = public_key.verify_signature(signature, msg.as_ref())?;
     if !verified {
         return Err(U2fError::BadSignature);
     }
@@ -60,6 +60,6 @@ pub fn parse_sign_response(
 }
 
 fn get_counter(counter: &[u8]) -> u32 {
-    let mut buf = Cursor::new(&counter[..]);
+    let mut buf = Cursor::new(counter);
     buf.get_u32_be()
 }
