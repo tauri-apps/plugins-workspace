@@ -1,5 +1,3 @@
-[workspace]
-
 [package]
 name = "single-instance-example"
 version = "0.1.0"
@@ -19,5 +17,4 @@ tauri-plugin-single-instance = { path = "../../../" }
 tauri-build = { version = "1", features = [] }
 
 [features]
-default = [ "custom-protocol" ]
 custom-protocol = [ "tauri/custom-protocol" ]
