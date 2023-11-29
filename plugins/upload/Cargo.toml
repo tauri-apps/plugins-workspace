@@ -2,10 +2,10 @@
 name = "tauri-plugin-upload"
 version = "0.0.0"
 description = "Upload files from disk to a remote server over HTTP."
-authors.workspace = true
-license.workspace = true
-edition.workspace = true
-rust-version.workspace = true
+authors = [ "Tauri Programme within The Commons Conservancy" ]
+license = "Apache-2.0 OR MIT"
+edition = "2021"
+rust-version = "1.64"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

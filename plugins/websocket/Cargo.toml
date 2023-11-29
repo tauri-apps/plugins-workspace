@@ -1,10 +1,10 @@
 [package]
 name = "tauri-plugin-websocket"
 version = "0.0.0"
-authors.workspace = true
-license.workspace = true
-edition.workspace = true
-rust-version.workspace = true
+authors = [ "Tauri Programme within The Commons Conservancy" ]
+license = "Apache-2.0 OR MIT"
+edition = "2021"
+rust-version = "1.64"
 exclude = ["/examples"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
