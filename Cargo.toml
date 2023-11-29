@@ -10,7 +10,6 @@ tauri-build = "1"
 serde_json = "1"
 thiserror = "1"
 
-# TODO: Make plugins use these again once dependabot supports it.
 [workspace.package]
 edition = "2021"
 authors = [ "Tauri Programme within The Commons Conservancy" ]
