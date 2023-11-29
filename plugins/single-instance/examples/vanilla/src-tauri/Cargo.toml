@@ -17,5 +17,4 @@ tauri-plugin-single-instance = { path = "../../../" }
 tauri-build = { version = "1", features = [] }
 
 [features]
-default = [ "custom-protocol" ]
 custom-protocol = [ "tauri/custom-protocol" ]
