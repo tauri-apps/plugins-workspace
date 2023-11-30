@@ -16,4 +16,4 @@ tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
 tiny_http = "0.12"
-http = "0.2"
+http = "1"
