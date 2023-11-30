@@ -600,6 +600,7 @@ impl Update {
         target_os = "openbsd"
     ))]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
+        use flate2::read::GzDecoder;
         use std::{
             ffi::OsStr,
             os::unix::fs::{MetadataExt, PermissionsExt},
@@ -632,7 +633,8 @@ impl Update {
 
                     // extract the buffer to the tmp_dir
                     // we extract our signed archive into our final directory without any temp file
-                    let mut archive = tar::Archive::new(archive);
+                    let decoder = GzDecoder::new(archive);
+                    let mut archive = tar::Archive::new(decoder);
                     for mut entry in archive.entries()?.flatten() {
                         if let Ok(path) = entry.path() {
                             if path.extension() == Some(OsStr::new("AppImage")) {
@@ -646,8 +648,10 @@ impl Update {
                             }
                         }
                     }
+                    // if we have not returned early we should restore the backup
+                    std::fs::rename(tmp_app_image, &self.extract_path)?;
 
-                    return Ok(());
+                    return Err(Error::BinaryNotFoundInAcrhive);
                 }
             }
         }
