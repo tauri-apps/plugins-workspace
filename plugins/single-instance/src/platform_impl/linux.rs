@@ -30,7 +30,7 @@ impl<R: Runtime> SingleInstanceDBus<R> {
     }
 }
 
-fn dbus_id(config: Arc<Config>) -> String {
+fn dbus_id(config: &Config) -> String {
     config.tauri.bundle.identifier.replace(['.', '-'], "_")
 }
 
