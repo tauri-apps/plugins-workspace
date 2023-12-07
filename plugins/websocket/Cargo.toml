@@ -15,7 +15,8 @@ serde_json.workspace = true
 tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
+http = "1"
 rand = "0.8"
 futures-util = "0.3"
 tokio = { version = "1", features = ["net", "sync"] }
-tokio-tungstenite = { version = "0.20", features = ["native-tls"] }
+tokio-tungstenite = { version = "0.21", features = ["native-tls"] }
