@@ -5012,6 +5012,7 @@ name = "tauri-plugin-websocket"
 version = "0.0.0"
 dependencies = [
  "futures-util",
+ "http 1.0.0",
  "log",
  "rand 0.8.5",
  "serde",
