@@ -63,7 +63,7 @@ pub enum Error {
     #[error("temp directory is not on the same mount point as the AppImage")]
     TempDirNotOnSameMountPoint,
     #[error("binary for the current target not found in the archive")]
-    BinaryNotFoundInAcrhive,
+    BinaryNotFoundInArchive,
     #[error(transparent)]
     Http(#[from] http::Error),
 }

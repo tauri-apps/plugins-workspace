@@ -651,7 +651,7 @@ impl Update {
                     // if we have not returned early we should restore the backup
                     std::fs::rename(tmp_app_image, &self.extract_path)?;
 
-                    return Err(Error::BinaryNotFoundInAcrhive);
+                    return Err(Error::BinaryNotFoundInArchive);
                 }
             }
         }
