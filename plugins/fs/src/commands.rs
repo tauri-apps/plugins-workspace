@@ -133,7 +133,7 @@ pub fn create<R: Runtime>(
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
-    let resolved_path = resolve_path(&app, path, options.and_then(|o| o.dir))?;
+    let resolved_path = resolve_path(&app, path, options.and_then(|o| o.base_dir))?;
     let file = File::create(&resolved_path).map_err(|e| {
         format!(
             "failed to create file at path: {} with error: {e}",
@@ -150,7 +150,7 @@ pub fn open<R: Runtime>(
     path: SafePathBuf,
     options: Option<OpenOptions>,
 ) -> CommandResult<ResourceId> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base.dir))?;
+    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base.base_dir))?;
 
     let mut opts = std::fs::OpenOptions::new();
 
@@ -231,7 +231,7 @@ pub fn mkdir<R: Runtime>(
     path: SafePathBuf,
     options: Option<MkdirOptions>,
 ) -> CommandResult<()> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base.dir))?;
+    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base.base_dir))?;
 
     let mut builder = std::fs::DirBuilder::new();
     builder.recursive(options.as_ref().and_then(|o| o.recursive).unwrap_or(false));
@@ -290,7 +290,7 @@ pub fn read_dir<R: Runtime>(
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<Vec<DirEntry>> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.dir))?;
+    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
 
     read_dir_inner(&resolved_path)
         .map_err(|e| {
@@ -321,7 +321,7 @@ pub fn read_file<R: Runtime>(
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<Vec<u8>> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.dir))?;
+    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
     std::fs::read(&resolved_path)
         .map_err(|e| {
             format!(
@@ -338,7 +338,7 @@ pub fn read_text_file<R: Runtime>(
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<String> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.dir))?;
+    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
     std::fs::read_to_string(&resolved_path)
         .map_err(|e| {
             format!(
@@ -357,7 +357,7 @@ pub fn read_text_file_lines<R: Runtime>(
 ) -> CommandResult<ResourceId> {
     use std::io::BufRead;
 
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.dir))?;
+    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
 
     let file = File::open(&resolved_path).map_err(|e| {
         format!(
@@ -396,7 +396,7 @@ pub fn remove<R: Runtime>(
     path: SafePathBuf,
     options: Option<RemoveOptions>,
 ) -> CommandResult<()> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base.dir))?;
+    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base.base_dir))?;
 
     let metadata = std::fs::symlink_metadata(&resolved_path).map_err(|e| {
         format!(
@@ -497,7 +497,7 @@ pub fn stat<R: Runtime>(
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.dir))?;
+    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
     let metadata = std::fs::metadata(&resolved_path).map_err(|e| {
         format!(
             "failed to get metadata of path: {} with error: {e}",
@@ -513,7 +513,7 @@ pub fn lstat<R: Runtime>(
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.dir))?;
+    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
     let metadata = std::fs::symlink_metadata(&resolved_path).map_err(|e| {
         format!(
             "failed to get metadata of path: {} with error: {e}",
@@ -538,7 +538,7 @@ pub fn truncate<R: Runtime>(
     len: Option<u64>,
     options: Option<BaseOptions>,
 ) -> CommandResult<()> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.dir))?;
+    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
     let f = std::fs::OpenOptions::new()
         .write(true)
         .open(&resolved_path)
@@ -588,7 +588,7 @@ fn write_file_inner<R: Runtime>(
     data: &[u8],
     options: Option<WriteFileOptions>,
 ) -> CommandResult<()> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base.dir))?;
+    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base.base_dir))?;
 
     let mut opts = std::fs::OpenOptions::new();
     opts.append(options.as_ref().map(|o| o.append.unwrap_or(false)).unwrap());
@@ -645,7 +645,7 @@ pub fn exists<R: Runtime>(
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<bool> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.dir))?;
+    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
     Ok(resolved_path.exists())
 }
 
