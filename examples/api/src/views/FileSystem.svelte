@@ -1,10 +1,5 @@
 <script>
-  import {
-    readFile,
-    writeTextFile,
-    readDir,
-    BaseDirectory,
-  } from "@tauri-apps/plugin-fs";
+  import * as fs from "@tauri-apps/plugin-fs";
   import { convertFileSrc } from "@tauri-apps/api/primitives";
 
   export let onMessage;
@@ -30,18 +25,18 @@
     reader.readAsDataURL(blob);
   }
 
-  const DirOptions = Object.keys(BaseDirectory)
+  const DirOptions = Object.keys(fs.BaseDirectory)
     .filter((key) => isNaN(parseInt(key)))
-    .map((dir) => [dir, BaseDirectory[dir]]);
+    .map((dir) => [dir, fs.BaseDirectory[dir]]);
 
   function read() {
     const isFile = pathToRead.match(/\S+\.\S+$/g);
     const opts = {
-      dir: getDir(),
+      baseDir: getDir(),
     };
     const promise = isFile
-      ? readFile(pathToRead, opts)
-      : readDir(pathToRead, opts);
+      ? fs.readFile(pathToRead, opts)
+      : fs.readDir(pathToRead, opts);
     promise
       .then(function (response) {
         if (isFile) {
@@ -61,7 +56,7 @@
               document
                 .getElementById("file-save")
                 .addEventListener("click", function () {
-                  writeTextFile(pathToRead, fileInput.value, {
+                  fs.writeTextFile(pathToRead, fileInput.value, {
                     dir: getDir(),
                   }).catch(onMessage);
                 });

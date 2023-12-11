@@ -59,8 +59,9 @@ impl Serialize for CommandError {
 pub type CommandResult<T> = std::result::Result<T, CommandError>;
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BaseOptions {
-    dir: Option<BaseDirectory>,
+    base_dir: Option<BaseDirectory>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -651,12 +652,12 @@ pub fn exists<R: Runtime>(
 pub fn resolve_path<R: Runtime>(
     app: &AppHandle<R>,
     path: SafePathBuf,
-    dir: Option<BaseDirectory>,
+    base_dir: Option<BaseDirectory>,
 ) -> CommandResult<PathBuf> {
     let path = file_url_to_safe_pathbuf(path)?;
-    let path = if let Some(dir) = dir {
+    let path = if let Some(base_dir) = base_dir {
         app.path()
-            .resolve(&path, dir)
+            .resolve(&path, base_dir)
             .map_err(Error::CannotResolvePath)?
     } else {
         path.as_ref().to_path_buf()

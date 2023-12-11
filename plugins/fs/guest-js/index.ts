@@ -517,7 +517,7 @@ interface MkdirOptions {
    * */
   recursive?: boolean;
   /** Base directory for `path` */
-  dir?: BaseDirectory;
+  baseDir?: BaseDirectory;
 }
 
 /**
@@ -549,7 +549,7 @@ async function mkdir(
  */
 interface ReadDirOptions {
   /** Base directory for `path` */
-  dir?: BaseDirectory;
+  baseDir?: BaseDirectory;
 }
 
 /**
@@ -766,7 +766,7 @@ interface RemoveOptions {
   /** Defaults to `false`. If set to `true`, path will be removed even if it's a non-empty directory. */
   recursive?: boolean;
   /** Base directory for `path` */
-  dir?: BaseDirectory;
+  baseDir?: BaseDirectory;
 }
 
 /**
@@ -895,7 +895,7 @@ async function seek(
  */
 interface StatOptions {
   /** Base directory for `path`. */
-  dir?: BaseDirectory;
+  baseDir?: BaseDirectory;
 }
 
 /**
@@ -975,7 +975,7 @@ async function fstat(rid: number): Promise<FileInfo> {
  */
 interface TruncateOptions {
   /** Base directory for `path`. */
-  dir?: BaseDirectory;
+  baseDir?: BaseDirectory;
 }
 
 /**
@@ -1151,7 +1151,7 @@ async function writeTextFile(
  */
 interface ExistsOptions {
   /** Base directory for `path`. */
-  dir?: BaseDirectory;
+  baseDir?: BaseDirectory;
 }
 
 /**
@@ -1186,7 +1186,7 @@ interface WatchOptions {
   /** Watch a directory recursively */
   recursive?: boolean;
   /** Base directory for `path` */
-  dir?: BaseDirectory;
+  baseDir?: BaseDirectory;
 }
 
 /**
