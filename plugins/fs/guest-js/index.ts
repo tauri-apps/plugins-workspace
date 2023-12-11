@@ -415,7 +415,7 @@ interface OpenOptions {
 }
 
 /**
- * Open a file and resolve to an instance of {@linkcode FsFile}.  The
+ * Open a file and resolve to an instance of {@linkcode FsFile}. The
  * file does not need to previously exist if using the `create` or `createNew`
  * open options. It is the callers responsibility to close the file when finished
  * with it.
@@ -1212,17 +1212,17 @@ type RawEvent = {
 type RawEventKind =
   | "any "
   | {
-      access?: unknown;
-    }
+    access?: unknown;
+  }
   | {
-      create?: unknown;
-    }
+    create?: unknown;
+  }
   | {
-      modify?: unknown;
-    }
+    modify?: unknown;
+  }
   | {
-      remove?: unknown;
-    }
+    remove?: unknown;
+  }
   | "other";
 
 /**
@@ -1344,7 +1344,6 @@ export {
   FsFile,
   create,
   open,
-  close,
   copyFile,
   mkdir,
   read,
