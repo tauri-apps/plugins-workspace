@@ -211,6 +211,8 @@ async fn execute(
             query = query.bind(None::<JsonValue>);
         } else if value.is_string() {
             query = query.bind(value.as_str().unwrap().to_owned())
+        } else if let Some(number) = value.as_number() {
+            query = query.bind(number.as_f64().unwrap_or_default())
         } else {
             query = query.bind(value);
         }
@@ -240,6 +242,8 @@ async fn select(
             query = query.bind(None::<JsonValue>);
         } else if value.is_string() {
             query = query.bind(value.as_str().unwrap().to_owned())
+        } else if let Some(number) = value.as_number() {
+            query = query.bind(number.as_f64().unwrap_or_default())
         } else {
             query = query.bind(value);
         }
