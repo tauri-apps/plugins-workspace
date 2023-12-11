@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-upload"
-version = "2.0.0-alpha.4"
+version = "2.0.0-alpha.5"
 description = "Upload files from disk to a remote server over HTTP."
 authors = { workspace = true }
 license = { workspace = true }
