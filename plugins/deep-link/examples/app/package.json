@@ -10,11 +10,11 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-alpha.11",
+    "@tauri-apps/api": "2.0.0-alpha.12",
     "@tauri-apps/plugin-deep-link": "2.0.0-alpha.2"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "2.0.0-alpha.17",
+    "@tauri-apps/cli": "2.0.0-alpha.18",
     "internal-ip": "^8.0.0",
     "typescript": "^5.2.2",
     "vite": "^4.5.0"

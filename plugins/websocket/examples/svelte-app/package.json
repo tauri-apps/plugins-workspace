@@ -12,15 +12,15 @@
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "2.1.1",
-    "@sveltejs/kit": "1.27.6",
-    "@tauri-apps/cli": "2.0.0-alpha.17",
-    "svelte": "4.2.7",
-    "svelte-check": "3.6.1",
+    "@sveltejs/kit": "1.27.7",
+    "@tauri-apps/cli": "2.0.0-alpha.18",
+    "svelte": "4.2.8",
+    "svelte-check": "3.6.2",
     "typescript": "5.3.2",
-    "vite": "5.0.2"
+    "vite": "5.0.6"
   },
   "dependencies": {
-    "@tauri-apps/plugin-websocket": "link:../../"
+    "@tauri-apps/plugin-websocket": "link:..\\.."
   },
   "type": "module"
 }
