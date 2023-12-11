@@ -64,69 +64,6 @@ pub struct BaseOptions {
     base_dir: Option<BaseDirectory>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct OpenOptions {
-    #[serde(flatten)]
-    base: BaseOptions,
-    read: Option<bool>,
-    write: Option<bool>,
-    append: Option<bool>,
-    truncate: Option<bool>,
-    create: Option<bool>,
-    create_new: Option<bool>,
-    #[allow(unused)]
-    mode: Option<u32>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CopyFileOptions {
-    from_path_base_dir: Option<BaseDirectory>,
-    to_path_base_dir: Option<BaseDirectory>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct MkdirOptions {
-    #[serde(flatten)]
-    base: BaseOptions,
-    #[allow(unused)]
-    mode: Option<u32>,
-    recursive: Option<bool>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct RemoveOptions {
-    #[serde(flatten)]
-    base: BaseOptions,
-    recursive: Option<bool>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RenameOptions {
-    new_path_base_dir: Option<BaseDirectory>,
-    old_path_base_dir: Option<BaseDirectory>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct WriteFileOptions {
-    #[serde(flatten)]
-    base: BaseOptions,
-    append: Option<bool>,
-    create: Option<bool>,
-    #[allow(unused)]
-    mode: Option<u32>,
-}
-
-#[derive(Serialize_repr, Deserialize_repr, Clone, Copy, Debug)]
-#[repr(u16)]
-pub enum SeekMode {
-    Start = 0,
-    Current = 1,
-    End = 2,
-}
-
 #[tauri::command]
 pub fn create<R: Runtime>(
     app: AppHandle<R>,
@@ -144,6 +81,31 @@ pub fn create<R: Runtime>(
     Ok(rid)
 }
 
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OpenOptions {
+    #[serde(flatten)]
+    base: BaseOptions,
+    #[serde(default = "default_true")]
+    read: bool,
+    #[serde(default)]
+    write: bool,
+    #[serde(default)]
+    append: bool,
+    #[serde(default)]
+    truncate: bool,
+    #[serde(default)]
+    create: bool,
+    #[serde(default)]
+    create_new: bool,
+    #[allow(unused)]
+    mode: Option<u32>,
+}
+
+fn default_true() -> bool {
+    true
+}
+
 #[tauri::command]
 pub fn open<R: Runtime>(
     app: AppHandle<R>,
@@ -153,32 +115,24 @@ pub fn open<R: Runtime>(
     let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base.base_dir))?;
 
     let mut opts = std::fs::OpenOptions::new();
+    // default to read-only
+    opts.read(true);
 
-    match options {
-        None => {
-            opts.read(true)
-                .create(false)
-                .write(false)
-                .truncate(false)
-                .append(false)
-                .create_new(false);
-        }
-        Some(options) => {
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::OpenOptionsExt;
-                if let Some(mode) = options.mode {
-                    opts.mode(mode & 0o777);
-                }
+    if let Some(options) = options {
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            if let Some(mode) = options.mode {
+                opts.mode(mode);
             }
-
-            opts.read(options.read.unwrap_or(true))
-                .create(options.create.unwrap_or(false))
-                .write(options.write.unwrap_or(false))
-                .truncate(options.truncate.unwrap_or(false))
-                .append(options.append.unwrap_or(false))
-                .create_new(options.create_new.unwrap_or(false));
         }
+
+        opts.read(options.read)
+            .create(options.create)
+            .write(options.write)
+            .truncate(options.truncate)
+            .append(options.append)
+            .create_new(options.create_new);
     }
 
     let file = opts.open(&resolved_path).map_err(|e| {
@@ -196,6 +150,13 @@ pub fn open<R: Runtime>(
 #[tauri::command]
 pub fn close<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> CommandResult<()> {
     app.resources_table().close(rid).map_err(Into::into)
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CopyFileOptions {
+    from_path_base_dir: Option<BaseDirectory>,
+    to_path_base_dir: Option<BaseDirectory>,
 }
 
 #[tauri::command]
@@ -223,6 +184,15 @@ pub fn copy_file<R: Runtime>(
         )
     })?;
     Ok(())
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct MkdirOptions {
+    #[serde(flatten)]
+    base: BaseOptions,
+    #[allow(unused)]
+    mode: Option<u32>,
+    recursive: Option<bool>,
 }
 
 #[tauri::command]
@@ -390,6 +360,13 @@ pub fn read_text_file_lines_next<R: Runtime>(
     Ok(ret)
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct RemoveOptions {
+    #[serde(flatten)]
+    base: BaseOptions,
+    recursive: Option<bool>,
+}
+
 #[tauri::command]
 pub fn remove<R: Runtime>(
     app: AppHandle<R>,
@@ -443,6 +420,13 @@ pub fn remove<R: Runtime>(
     .map_err(Into::into)
 }
 
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RenameOptions {
+    new_path_base_dir: Option<BaseDirectory>,
+    old_path_base_dir: Option<BaseDirectory>,
+}
+
 #[tauri::command]
 pub fn rename<R: Runtime>(
     app: AppHandle<R>,
@@ -469,6 +453,14 @@ pub fn rename<R: Runtime>(
             )
         })
         .map_err(Into::into)
+}
+
+#[derive(Serialize_repr, Deserialize_repr, Clone, Copy, Debug)]
+#[repr(u16)]
+pub enum SeekMode {
+    Start = 0,
+    Current = 1,
+    End = 2,
 }
 
 #[tauri::command]
@@ -580,6 +572,16 @@ pub fn write<R: Runtime>(
     StdFileResource::with_lock(&file, |mut file| file.write(&data))
         .map_err(|e| format!("failed to write bytes to file with error: {e}"))
         .map_err(Into::into)
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct WriteFileOptions {
+    #[serde(flatten)]
+    base: BaseOptions,
+    append: Option<bool>,
+    create: Option<bool>,
+    #[allow(unused)]
+    mode: Option<u32>,
 }
 
 fn write_file_inner<R: Runtime>(
