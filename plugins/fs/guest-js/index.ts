@@ -248,7 +248,7 @@ function parseFileInfo(r: UnparsedFileInfo): FileInfo {
  *
  * @since 2.0.0
  */
-class FsFile {
+class FileHandle {
   readonly rid: number;
 
   constructor(rid: number) {
@@ -272,9 +272,33 @@ class FsFile {
    * considering the EOF (`null`). Doing so correctly handles I/O errors that
    * happen after reading some bytes and also both of the allowed EOF
    * behaviors.
+   *
+   * @example
+   * ```typescript
+   * import { open, read, close, BaseDirectory } from "@tauri-apps/plugin-fs"
+   * // if "$APP/foo/bar.txt" contains the text "hello world":
+   * const file = await open("foo/bar.txt", { dir: BaseDirectory.App });
+   * const buf = new Uint8Array(100);
+   * const numberOfBytesRead = await file.read(buf); // 11 bytes
+   * const text = new TextDecoder().decode(buf);  // "hello world"
+   * await close(file.rid);
+   * ```
+   *
+   * @since 2.0.0
    */
-  async read(p: Uint8Array): Promise<number | null> {
-    return read(this.rid, p);
+  async read(buffer: Uint8Array): Promise<number | null> {
+    if (buffer.byteLength === 0) {
+      return 0;
+    }
+
+    const [data, nread] = await invoke<[number[], number]>("plugin:fs|read", {
+      rid: this.rid,
+      len: buffer.byteLength,
+    });
+
+    buffer.set(data);
+
+    return nread === 0 ? null : nread;
   }
 
   /**
@@ -288,24 +312,82 @@ class FsFile {
    * any positive offset is legal, but the behavior of subsequent I/O
    * operations on the underlying object is implementation-dependent.
    * It returns the number of cursor position.
+   *
+   * @example
+   * ```typescript
+   * import { open, seek, write, SeekMode, BaseDirectory } from '@tauri-apps/plugin-fs';
+   *
+   * // Given hello.txt pointing to file with "Hello world", which is 11 bytes long:
+   * const file = await open('hello.txt', { read: true, write: true, truncate: true, create: true, dir: BaseDirectory.App });
+   * await file.write(new TextEncoder().encode("Hello world"), { dir: BaseDirectory.App });
+   *
+   * // Seek 6 bytes from the start of the file
+   * console.log(await file.seek(6, SeekMode.Start)); // "6"
+   * // Seek 2 more bytes from the current position
+   * console.log(await file.seek(2, SeekMode.Current)); // "8"
+   * // Seek backwards 2 bytes from the end of the file
+   * console.log(await file.seek(-2, SeekMode.End)); // "9" (e.g. 11-2)
+   * ```
+   *
+   * @since 2.0.0
    */
   async seek(offset: number, whence: SeekMode): Promise<number> {
-    return seek(this.rid, offset, whence);
+    return invoke("plugin:fs|seek", {
+      rid: this.rid,
+      offset,
+      whence,
+    });
   }
 
   /**
    * Returns a {@linkcode FileInfo } for this file.
+   *
+   * @example
+   * ```typescript
+   * import { open, fstat, BaseDirectory } from '@tauri-apps/plugin-fs';
+   * const file = await open("file.txt", { read: true, dir: BaseDirectory.App });
+   * const fileInfo = await fstat(file.rid);
+   * console.log(fileInfo.isFile); // true
+   * ```
+   *
+   * @since 2.0.0
    */
   async stat(): Promise<FileInfo> {
-    return fstat(this.rid);
+    const res = await invoke<UnparsedFileInfo>("plugin:fs|fstat", {
+      rid: this.rid,
+    });
+
+    return parseFileInfo(res);
   }
 
   /**
    * Truncates or extends this file, to reach the specified `len`.
    * If `len` is not specified then the entire file contents are truncated.
+   *
+   * @example
+   * ```typescript
+   * import { ftruncate, open, write, read, BaseDirectory } from '@tauri-apps/plugin-fs';
+   *
+   * // truncate the entire file
+   * const file = await open("my_file.txt", { read: true, write: true, create: true, dir: BaseDirectory.App });
+   * await ftruncate(file.rid);
+   *
+   * // truncate part of the file
+   * const file = await open("my_file.txt", { read: true, write: true, create: true, dir: BaseDirectory.App });
+   * await write(file.rid, new TextEncoder().encode("Hello World"));
+   * await ftruncate(file.rid, 7);
+   * const data = new Uint8Array(32);
+   * await read(file.rid, data);
+   * console.log(new TextDecoder().decode(data)); // Hello W
+   * ```
+   *
+   * @since 2.0.0
    */
   async truncate(len?: number): Promise<void> {
-    return ftruncate(this.rid, len);
+    return invoke("plugin:fs|ftruncate", {
+      rid: this.rid,
+      len,
+    });
   }
 
   /**
@@ -315,9 +397,24 @@ class FsFile {
    * write to stop early. `write()` must reject with a non-null error if
    * would resolve to `n` < `p.byteLength`. `write()` must not modify the
    * slice data, even temporarily.
+   *
+   * @example
+   * ```typescript
+   * import { open, write, close, BaseDirectory } from '@tauri-apps/plugin-fs';
+   * const encoder = new TextEncoder();
+   * const data = encoder.encode("Hello world");
+   * const file = await open("bar.txt", { write: true, dir: BaseDirectory.App });
+   * const bytesWritten = await write(file.rid, data); // 11
+   * await close(file.rid);
+   * ```
+   *
+   * @since 2.0.0
    */
-  async write(p: Uint8Array): Promise<number> {
-    return write(this.rid, p);
+  async write(data: Uint8Array): Promise<number> {
+    return invoke("plugin:fs|write", {
+      rid: this.rid,
+      data: Array.from(data),
+    });
   }
 
   async close(): Promise<void> {
@@ -335,7 +432,7 @@ interface CreateOptions {
 
 /**
  * Creates a file if none exists or truncates an existing file and resolves to
- *  an instance of {@linkcode FsFile }.
+ *  an instance of {@linkcode FileHandle }.
  *
  * @example
  * ```typescript
@@ -348,7 +445,7 @@ interface CreateOptions {
 async function create(
   path: string | URL,
   options?: CreateOptions,
-): Promise<FsFile> {
+): Promise<FileHandle> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
   }
@@ -358,7 +455,7 @@ async function create(
     options,
   });
 
-  return new FsFile(rid);
+  return new FileHandle(rid);
 }
 
 /**
@@ -415,7 +512,7 @@ interface OpenOptions {
 }
 
 /**
- * Open a file and resolve to an instance of {@linkcode FsFile}. The
+ * Open a file and resolve to an instance of {@linkcode FileHandle}. The
  * file does not need to previously exist if using the `create` or `createNew`
  * open options. It is the callers responsibility to close the file when finished
  * with it.
@@ -433,7 +530,7 @@ interface OpenOptions {
 async function open(
   path: string | URL,
   options?: OpenOptions,
-): Promise<FsFile> {
+): Promise<FileHandle> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
   }
@@ -443,7 +540,7 @@ async function open(
     options,
   });
 
-  return new FsFile(rid);
+  return new FileHandle(rid);
 }
 
 /**
@@ -603,46 +700,6 @@ async function readDir(
     path: path instanceof URL ? path.toString() : path,
     options,
   });
-}
-
-/**
- *  Read from a resource ID (`rid`) into an array buffer (`buffer`).
- *
- * Resolves to either the number of bytes read during the operation or EOF
- * (`null`) if there was nothing more to read.
- *
- * It is possible for a read to successfully return with `0` bytes. This does
- * not indicate EOF.
- *
- *
- * **It is not guaranteed that the full buffer will be read in a single call.**
- *
- * @example
- * ```typescript
- * import { open, read, close, BaseDirectory } from "@tauri-apps/plugin-fs"
- * // if "$APP/foo/bar.txt" contains the text "hello world":
- * const file = await open("foo/bar.txt", { dir: BaseDirectory.App });
- * const buf = new Uint8Array(100);
- * const numberOfBytesRead = await read(file.rid, buf); // 11 bytes
- * const text = new TextDecoder().decode(buf);  // "hello world"
- * await close(file.rid);
- * ```
- *
- * @since 2.0.0
- */
-async function read(rid: number, buffer: Uint8Array): Promise<number | null> {
-  if (buffer.byteLength === 0) {
-    return 0;
-  }
-
-  const [data, nread] = await invoke<[number[], number]>("plugin:fs|read", {
-    rid,
-    len: buffer.byteLength,
-  });
-
-  buffer.set(data);
-
-  return nread === 0 ? null : nread;
 }
 
 /**
@@ -840,57 +897,6 @@ async function rename(
 }
 
 /**
- * Seek a resource ID (`rid`) to the given `offset` under mode given by `whence`.
- * The call resolves to the new position within the resource (bytes from the start).
- *
- * @example
- * ```typescript
- * import { open, seek, write, SeekMode, BaseDirectory } from '@tauri-apps/plugin-fs';
- *
- * // Given file.rid pointing to file with "Hello world", which is 11 bytes long:
- * const file = await open('hello.txt', { read: true, write: true, truncate: true, create: true, dir: BaseDirectory.App });
- * await write(file.rid, new TextEncoder().encode("Hello world"));
- *
- * // advance cursor 6 bytes
- * const cursorPosition = await seek(file.rid, 6, SeekMode.Start);
- * console.log(cursorPosition);  // 6
- * const buf = new Uint8Array(100);
- * await file.read(buf);
- * console.log(new TextDecoder().decode(buf)); // "world"
- * ```
- *
- * The seek modes work as follows:
- *
- * ```typescript
- * import { open, seek, write, SeekMode, BaseDirectory } from '@tauri-apps/plugin-fs';
- *
- * // Given file.rid pointing to file with "Hello world", which is 11 bytes long:
- * const file = await open('hello.txt', { read: true, write: true, truncate: true, create: true, dir: BaseDirectory.App });
- * await write(file.rid, new TextEncoder().encode("Hello world"), { dir: BaseDirectory.App });
- *
- * // Seek 6 bytes from the start of the file
- * console.log(await seek(file.rid, 6, SeekMode.Start)); // "6"
- * // Seek 2 more bytes from the current position
- * console.log(await seek(file.rid, 2, SeekMode.Current)); // "8"
- * // Seek backwards 2 bytes from the end of the file
- * console.log(await seek(file.rid, -2, SeekMode.End)); // "9" (e.g. 11-2)
- * ```
- *
- * @since 2.0.0
- */
-async function seek(
-  rid: number,
-  offset: number,
-  whence: SeekMode,
-): Promise<number> {
-  return invoke("plugin:fs|seek", {
-    rid,
-    offset,
-    whence,
-  });
-}
-
-/**
  * @since 2.0.0
  */
 interface StatOptions {
@@ -950,27 +956,6 @@ async function lstat(
 }
 
 /**
- * Returns a {@linkcode FileInfo} for the given file stream.
- *
- * @example
- * ```typescript
- * import { open, fstat, BaseDirectory } from '@tauri-apps/plugin-fs';
- * const file = await open("file.txt", { read: true, dir: BaseDirectory.App });
- * const fileInfo = await fstat(file.rid);
- * console.log(fileInfo.isFile); // true
- * ```
- *
- * @since 2.0.0
- */
-async function fstat(rid: number): Promise<FileInfo> {
-  const res = await invoke<UnparsedFileInfo>("plugin:fs|fstat", {
-    rid,
-  });
-
-  return parseFileInfo(res);
-}
-
-/**
  * @since 2.0.0
  */
 interface TruncateOptions {
@@ -1011,68 +996,6 @@ async function truncate(
     path: path instanceof URL ? path.toString() : path,
     len,
     options,
-  });
-}
-
-/**
- * Truncates or extends the specified file stream, to reach the specified `len`.
- *
- * If `len` is `0` or not specified then the entire file contents are truncated as if len was set to 0.
- *
- * If the file previously was larger than this new length, the extra  data  is  lost.
- *
- * If  the  file  previously  was shorter, it is extended, and the extended part reads as null bytes ('\0').
- *
- * @example
- * ```typescript
- * import { ftruncate, open, write, read, BaseDirectory } from '@tauri-apps/plugin-fs';
- *
- * // truncate the entire file
- * const file = await open("my_file.txt", { read: true, write: true, create: true, dir: BaseDirectory.App });
- * await ftruncate(file.rid);
- *
- * // truncate part of the file
- * const file = await open("my_file.txt", { read: true, write: true, create: true, dir: BaseDirectory.App });
- * await write(file.rid, new TextEncoder().encode("Hello World"));
- * await ftruncate(file.rid, 7);
- * const data = new Uint8Array(32);
- * await read(file.rid, data);
- * console.log(new TextDecoder().decode(data)); // Hello W
- * ```
- *
- * @since 2.0.0
- */
-async function ftruncate(rid: number, len?: number): Promise<void> {
-  return invoke("plugin:fs|ftruncate", {
-    rid,
-    len,
-  });
-}
-
-/**
- * Write to the resource ID (`rid`) the contents of the array buffer (`data`).
- *
- * Resolves to the number of bytes written.
- *
- * **It is not guaranteed that the full buffer will be written in a single
- * call.**
- *
- * @example
- * ```typescript
- * import { open, write, close, BaseDirectory } from '@tauri-apps/plugin-fs';
- * const encoder = new TextEncoder();
- * const data = encoder.encode("Hello world");
- * const file = await open("bar.txt", { write: true, dir: BaseDirectory.App });
- * const bytesWritten = await write(file.rid, data); // 11
- * await close(file.rid);
- * ```
- *
- * @since 2.0.0
- */
-async function write(rid: number, data: Uint8Array): Promise<number> {
-  return invoke("plugin:fs|write", {
-    rid,
-    data: Array.from(data),
   });
 }
 
@@ -1235,7 +1158,7 @@ type DebouncedEvent =
 /**
  * @since 2.0.0
  */
-type UnWatchFn = () => void;
+type UnwatchFn = () => void;
 
 async function unwatch(id: number): Promise<void> {
   await invoke("plugin:fs|unwatch", { id });
@@ -1250,7 +1173,7 @@ async function watch(
   paths: string | string[] | URL | URL[],
   cb: (event: DebouncedEvent) => void,
   options?: DebouncedWatchOptions,
-): Promise<UnWatchFn> {
+): Promise<UnwatchFn> {
   const opts = {
     recursive: false,
     delayMs: 2000,
@@ -1288,7 +1211,7 @@ async function watchImmediate(
   paths: string | string[] | URL | URL[],
   cb: (event: RawEvent) => void,
   options?: WatchOptions,
-): Promise<UnWatchFn> {
+): Promise<UnwatchFn> {
   const opts = {
     recursive: false,
     ...options,
@@ -1336,17 +1259,16 @@ export type {
   DebouncedWatchOptions,
   DebouncedEvent,
   RawEvent,
-  UnWatchFn,
+  UnwatchFn,
 };
 
 export {
   BaseDirectory,
-  FsFile,
+  FileHandle,
   create,
   open,
   copyFile,
   mkdir,
-  read,
   readDir,
   readFile,
   readTextFile,
@@ -1354,13 +1276,9 @@ export {
   remove,
   rename,
   SeekMode,
-  seek,
   stat,
   lstat,
-  fstat,
   truncate,
-  ftruncate,
-  write,
   writeFile,
   writeTextFile,
   exists,
