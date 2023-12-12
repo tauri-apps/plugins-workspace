@@ -61,8 +61,8 @@ importers:
   plugins/authenticator:
     dependencies:
       '@tauri-apps/api':
-        specifier: 1.5.1
-        version: 1.5.1
+        specifier: 1.5.2
+        version: 1.5.2
     devDependencies:
       tslib:
         specifier: 2.6.2
@@ -71,8 +71,8 @@ importers:
   plugins/autostart:
     dependencies:
       '@tauri-apps/api':
-        specifier: 1.5.1
-        version: 1.5.1
+        specifier: 1.5.2
+        version: 1.5.2
     devDependencies:
       tslib:
         specifier: 2.6.2
@@ -81,8 +81,8 @@ importers:
   plugins/fs-extra:
     dependencies:
       '@tauri-apps/api':
-        specifier: 1.5.1
-        version: 1.5.1
+        specifier: 1.5.2
+        version: 1.5.2
     devDependencies:
       tslib:
         specifier: 2.6.2
@@ -91,8 +91,8 @@ importers:
   plugins/fs-watch:
     dependencies:
       '@tauri-apps/api':
-        specifier: 1.5.1
-        version: 1.5.1
+        specifier: 1.5.2
+        version: 1.5.2
     devDependencies:
       tslib:
         specifier: 2.6.2
@@ -101,8 +101,8 @@ importers:
   plugins/log:
     dependencies:
       '@tauri-apps/api':
-        specifier: 1.5.1
-        version: 1.5.1
+        specifier: 1.5.2
+        version: 1.5.2
     devDependencies:
       tslib:
         specifier: 2.6.2
@@ -111,8 +111,8 @@ importers:
   plugins/positioner:
     dependencies:
       '@tauri-apps/api':
-        specifier: 1.5.1
-        version: 1.5.1
+        specifier: 1.5.2
+        version: 1.5.2
     devDependencies:
       tslib:
         specifier: 2.6.2
@@ -127,8 +127,8 @@ importers:
   plugins/sql:
     dependencies:
       '@tauri-apps/api':
-        specifier: 1.5.1
-        version: 1.5.1
+        specifier: 1.5.2
+        version: 1.5.2
     devDependencies:
       tslib:
         specifier: 2.6.2
@@ -137,8 +137,8 @@ importers:
   plugins/store:
     dependencies:
       '@tauri-apps/api':
-        specifier: 1.5.1
-        version: 1.5.1
+        specifier: 1.5.2
+        version: 1.5.2
     devDependencies:
       tslib:
         specifier: 2.6.2
@@ -147,8 +147,8 @@ importers:
   plugins/stronghold:
     dependencies:
       '@tauri-apps/api':
-        specifier: 1.5.1
-        version: 1.5.1
+        specifier: 1.5.2
+        version: 1.5.2
     devDependencies:
       tslib:
         specifier: 2.6.2
@@ -157,8 +157,8 @@ importers:
   plugins/upload:
     dependencies:
       '@tauri-apps/api':
-        specifier: 1.5.1
-        version: 1.5.1
+        specifier: 1.5.2
+        version: 1.5.2
     devDependencies:
       tslib:
         specifier: 2.6.2
@@ -167,8 +167,8 @@ importers:
   plugins/websocket:
     dependencies:
       '@tauri-apps/api':
-        specifier: 1.5.1
-        version: 1.5.1
+        specifier: 1.5.2
+        version: 1.5.2
     devDependencies:
       tslib:
         specifier: 2.6.2
@@ -193,8 +193,8 @@ importers:
   plugins/window-state:
     dependencies:
       '@tauri-apps/api':
-        specifier: 1.5.1
-        version: 1.5.1
+        specifier: 1.5.2
+        version: 1.5.2
     devDependencies:
       tslib:
         specifier: 2.6.2
@@ -691,8 +691,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/api@1.5.1:
-    resolution: {integrity: sha512-6unsZDOdlXTmauU3NhWhn+Cx0rODV+rvNvTdvolE5Kls5ybA6cqndQENDt1+FS0tF7ozCP66jwWoH6a5h90BrA==}
+  /@tauri-apps/api@1.5.2:
+    resolution: {integrity: sha512-tZK3XJiIUnUdHN7rGqA+j57dvT3/7z2bEiPfWmO3uAymv2JMBJrfGwbyDWLjGue37UVhh0gLYSkA9wV+/bASwA==}
     engines: {node: '>= 14.6.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
     dev: false
 
