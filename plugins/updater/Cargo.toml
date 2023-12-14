@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-updater"
-version = "2.0.0-alpha.4"
+version = "2.0.0-alpha.5"
 description = "In-app updates for Tauri applications."
 edition = { workspace = true }
 authors = { workspace = true }
