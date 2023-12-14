@@ -62,6 +62,7 @@
  */
 
 import { BaseDirectory } from "@tauri-apps/api/path";
+import { Resource } from "@tauri-apps/api/primitives";
 import { Channel, invoke } from "@tauri-apps/api/primitives";
 
 enum SeekMode {
@@ -249,10 +250,8 @@ function parseFileInfo(r: UnparsedFileInfo): FileInfo {
  * @since 2.0.0
  */
 class FileHandle {
-  readonly rid: number;
-
   constructor(rid: number) {
-    this.rid = rid;
+    super(rid);
   }
 
   /**
@@ -416,10 +415,6 @@ class FileHandle {
       data: Array.from(data),
     });
   }
-
-  async close(): Promise<void> {
-    return close(this.rid);
-  }
 }
 
 /**
@@ -541,27 +536,6 @@ async function open(
   });
 
   return new FileHandle(rid);
-}
-
-/**
- * Close the given resource ID (rid) which has been previously opened, such
- * as via opening or creating a file. Closing a file when you are finished
- * with it is important to avoid leaking resources.
- *
- * @example
- * ```typescript
- * import { open, close, BaseDirectory } from "@tauri-apps/plugin-fs"
- * const file = await open("my_file.txt", { dir: BaseDirectory.App });
- * // do work with "file" object
- * await close(file.rid);
- * ```
- *
- * @since 2.0.0
- */
-async function close(rid: number): Promise<void> {
-  return invoke("plugin:fs|close", {
-    rid,
-  });
 }
 
 /**
