@@ -71,6 +71,7 @@ fn set_default_path<R: Runtime>(
     mut dialog_builder: FileDialogBuilder<R>,
     default_path: PathBuf,
 ) -> FileDialogBuilder<R> {
+    let default_path: PathBuf = default_path.components().collect();
     if default_path.is_file() || !default_path.exists() {
         if let (Some(parent), Some(file_name)) = (default_path.parent(), default_path.file_name()) {
             if parent.components().count() > 0 {
