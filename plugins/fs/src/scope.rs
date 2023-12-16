@@ -68,11 +68,33 @@ fn push_pattern<P: AsRef<Path>, F: Fn(&str) -> Result<Pattern, glob::PatternErro
 ) -> crate::Result<()> {
     let path: PathBuf = pattern.as_ref().components().collect();
     list.insert(f(&path.to_string_lossy())?);
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "android"))]
     {
-        if let Ok(p) = std::fs::canonicalize(&path) {
+        let mut path = path;
+        let mut buf = None;
+
+        // attempt to canonicalize parents in case we have a path like `/data/user/0/appid/**`
+        // where `**` obviously does not exist but we need to canonicalize the parent
+        let canonicalized = loop {
+            if let Ok(p) = path.canonicalize() {
+                break Some(if let Some(buf) = buf { p.join(buf) } else { p });
+            }
+
+            let last = path.iter().rev().next().map(PathBuf::from);
+            if let Some(mut p) = last {
+                path.pop();
+                if let Some(buf) = &buf {
+                    p.push(buf);
+                }
+                buf.replace(p);
+            } else {
+                break None;
+            }
+        };
+
+        if let Some(p) = canonicalized {
             list.insert(f(&p.to_string_lossy())?);
-        } else {
+        } else if cfg!(windows) {
             list.insert(f(&format!("\\\\?\\{}", path.display()))?);
         }
     }
@@ -203,6 +225,7 @@ impl Scope {
     /// Determines if the given path is allowed on this scope.
     pub fn is_allowed<P: AsRef<Path>>(&self, path: P) -> bool {
         let path = path.as_ref();
+
         let path = if !path.exists() {
             crate::Result::Ok(path.to_path_buf())
         } else {
