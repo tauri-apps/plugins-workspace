@@ -77,6 +77,7 @@ fn attach_proxy(
     Ok(builder)
 }
 
+#[allow(clippy::too_many_arguments)]
 #[command]
 pub async fn fetch<R: Runtime>(
     app: AppHandle<R>,
