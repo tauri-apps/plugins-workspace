@@ -127,7 +127,7 @@ impl From<Command> for StdCommand {
 }
 
 impl Command {
-    pub(crate) fn new<S: AsRef<OsStr>>(program: S) -> Self {
+    pub fn new<S: AsRef<OsStr>>(program: S) -> Self {
         let mut command = StdCommand::new(program);
 
         command.stdout(Stdio::piped());
@@ -139,7 +139,7 @@ impl Command {
         Self(command)
     }
 
-    pub(crate) fn new_sidecar<S: AsRef<Path>>(program: S) -> crate::Result<Self> {
+    pub fn new_sidecar<S: AsRef<Path>>(program: S) -> crate::Result<Self> {
         Ok(Self::new(relative_command_path(program.as_ref())?))
     }
 
