@@ -5,8 +5,8 @@
 use std::{collections::HashMap, time::Duration};
 
 use http::{header, HeaderName, HeaderValue, Method, StatusCode};
-use reqwest::redirect::Policy;
-use serde::Serialize;
+use reqwest::{redirect::Policy, NoProxy, Proxy};
+use serde::{Deserialize, Serialize};
 use tauri::{command, AppHandle, Runtime};
 
 use crate::{Error, FetchRequest, HttpExt, RequestId};
@@ -20,6 +20,63 @@ pub struct FetchResponse {
     url: String,
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProxyConfig {
+    all: Option<String>,
+    http: Option<String>,
+    https: Option<String>,
+    basic_auth: Option<BasicAuth>,
+    no_proxy: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct BasicAuth {
+    username: String,
+    password: String,
+}
+
+fn attach_proxy(
+    settings: ProxyConfig,
+    builder: reqwest::ClientBuilder,
+) -> crate::Result<reqwest::ClientBuilder> {
+    let ProxyConfig {
+        all,
+        http,
+        https,
+        basic_auth,
+        no_proxy,
+    } = settings;
+
+    let mut builder = builder;
+
+    let attach_auth_and_exclusion = |proxy: Proxy| {
+        let mut attatched = proxy;
+        if let Some(BasicAuth { username, password }) = &basic_auth {
+            attatched = attatched.basic_auth(username, password);
+        }
+        if let Some(no_proxy) = &no_proxy {
+            attatched = attatched.no_proxy(NoProxy::from_string(no_proxy));
+        }
+        attatched
+    };
+
+    if let Some(all_proxy) = all {
+        let proxy = attach_auth_and_exclusion(Proxy::all(all_proxy)?);
+        builder = builder.proxy(proxy);
+    }
+    if let Some(http_proxy) = http {
+        let proxy = attach_auth_and_exclusion(Proxy::http(http_proxy)?);
+        builder = builder.proxy(proxy);
+    }
+    if let Some(https_proxy) = https {
+        let proxy = attach_auth_and_exclusion(Proxy::https(https_proxy)?);
+        builder = builder.proxy(proxy);
+    }
+
+    Ok(builder)
+}
+
 #[command]
 pub async fn fetch<R: Runtime>(
     app: AppHandle<R>,
@@ -29,6 +86,7 @@ pub async fn fetch<R: Runtime>(
     data: Option<Vec<u8>>,
     connect_timeout: Option<u64>,
     max_redirections: Option<usize>,
+    proxy: Option<ProxyConfig>,
 ) -> crate::Result<RequestId> {
     let scheme = url.scheme();
     let method = Method::from_bytes(method.as_bytes())?;
@@ -49,6 +107,10 @@ pub async fn fetch<R: Runtime>(
                     } else {
                         Policy::limited(max_redirections)
                     });
+                }
+
+                if let Some(proxy_config) = proxy {
+                    builder = attach_proxy(proxy_config, builder)?;
                 }
 
                 let mut request = builder.build()?.request(method.clone(), url);
