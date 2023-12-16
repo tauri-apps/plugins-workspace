@@ -103,6 +103,7 @@ export async function fetch(
   if (init) {
     delete init.maxRedirections;
     delete init.connectTimeout;
+    delete init.proxy;
   }
 
   const req = new Request(input, init);
