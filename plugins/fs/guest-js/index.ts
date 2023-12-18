@@ -249,7 +249,7 @@ function parseFileInfo(r: UnparsedFileInfo): FileInfo {
  *
  * @since 2.0.0
  */
-class FileHandle {
+class FileHandle extends Resource {
   constructor(rid: number) {
     super(rid);
   }
