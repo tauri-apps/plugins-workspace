@@ -69,6 +69,41 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
 
+## Contributed By
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="contributors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://impierce.com" target="_blank">
+            <img src="contributors/impierce.svg" alt="Impierce" width="283" height="90">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+## Partners
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v2/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+For the complete list of sponsors please visit our [website](https://tauri.app#sponsors) and [Open Collective](https://opencollective.com/tauri).
+
 ## License
 
 Code: (c) 2015 - Present - The Tauri Programme within The Commons Conservancy.

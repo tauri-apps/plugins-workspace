@@ -52,7 +52,7 @@ export async function checkStatus(): Promise<Status> {
 
 export async function authenticate(
   reason: string,
-  options?: AuthOptions
+  options?: AuthOptions,
 ): Promise<void> {
   return invoke("plugin:biometric|authenticate", {
     reason,
