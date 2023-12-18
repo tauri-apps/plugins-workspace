@@ -98,7 +98,7 @@ pub(crate) async fn open<R: Runtime>(
         dialog_builder = dialog_builder.set_parent(&window);
     }
     if let Some(title) = options.title {
-        dialog_builder = dialog_builder.set_title(&title);
+        dialog_builder = dialog_builder.set_title(title);
     }
     if let Some(default_path) = options.default_path {
         dialog_builder = set_default_path(dialog_builder, default_path);
@@ -178,7 +178,7 @@ pub(crate) async fn save<R: Runtime>(
             dialog_builder = dialog_builder.set_parent(&window);
         }
         if let Some(title) = options.title {
-            dialog_builder = dialog_builder.set_title(&title);
+            dialog_builder = dialog_builder.set_title(title);
         }
         if let Some(default_path) = options.default_path {
             dialog_builder = set_default_path(dialog_builder, default_path);

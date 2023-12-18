@@ -580,8 +580,8 @@ async function renameFile(
  *
  * @since 2.0.0
  */
-async function exists(path: string): Promise<boolean> {
-  return await invoke("plugin:fs|exists", { path });
+async function exists(path: string, options: FsOptions = {}): Promise<boolean> {
+  return await invoke("plugin:fs|exists", { path, options });
 }
 
 /**

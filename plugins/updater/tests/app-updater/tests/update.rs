@@ -39,21 +39,6 @@ struct Update {
     platforms: HashMap<String, PlatformUpdate>,
 }
 
-fn get_cli_bin_path(cli_dir: &Path, debug: bool) -> Option<PathBuf> {
-    let mut cli_bin_path = cli_dir.join(format!(
-        "target/{}/cargo-tauri",
-        if debug { "debug" } else { "release" }
-    ));
-    if cfg!(windows) {
-        cli_bin_path.set_extension("exe");
-    }
-    if cli_bin_path.exists() {
-        Some(cli_bin_path)
-    } else {
-        None
-    }
-}
-
 fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTarget) {
     let mut command = Command::new("cargo");
     command

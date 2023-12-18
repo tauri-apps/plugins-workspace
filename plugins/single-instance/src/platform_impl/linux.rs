@@ -4,8 +4,6 @@
 
 #![cfg(target_os = "linux")]
 
-use std::sync::Arc;
-
 use crate::SingleInstanceCallback;
 use tauri::{
     plugin::{self, TauriPlugin},
@@ -30,7 +28,7 @@ impl<R: Runtime> SingleInstanceDBus<R> {
     }
 }
 
-fn dbus_id(config: Arc<Config>) -> String {
+fn dbus_id(config: &Config) -> String {
     config.tauri.bundle.identifier.replace(['.', '-'], "_")
 }
 

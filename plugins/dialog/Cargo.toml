@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-dialog"
-version = "2.0.0-alpha.4"
+version = "2.0.0-alpha.5"
 description = "Native system dialogs for opening and saving files along with message dialogs on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -19,13 +19,13 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
-tauri-plugin-fs = { path = "../fs", version = "2.0.0-alpha.4" }
+tauri-plugin-fs = { path = "../fs", version = "2.0.0-alpha.5" }
 
 [target."cfg(any(target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 glib = "0.16"
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
-rfd = { version = "0.12", features = [ "gtk3", "common-controls-v6" ] }
+rfd = { version = "=0.12.0", features = [ "gtk3", "common-controls-v6" ] }
 raw-window-handle = "0.5"
 
 [build-dependencies]
