@@ -258,13 +258,17 @@ impl Updater {
             // the URL will be generated dynamically
             let url: Url = url
                 .to_string()
-                // url::Url automatically url-encodes the string
+                // url::Url automatically url-encodes the path components
                 .replace(
                     "%7B%7Bcurrent_version%7D%7D",
                     &self.current_version.to_string(),
                 )
                 .replace("%7B%7Btarget%7D%7D", &self.target)
                 .replace("%7B%7Barch%7D%7D", self.arch)
+                // but not query parameters
+                .replace("{{current_version}}", &self.current_version.to_string())
+                .replace("{{target}}", &self.target)
+                .replace("{{arch}}", self.arch)
                 .parse()?;
 
             let mut request = Client::new().get(url).headers(headers.clone());
@@ -501,7 +505,7 @@ impl Update {
                 Command::new(powershell_path)
                     .args(["-NoProfile", "-WindowStyle", "Hidden"])
                     .args(["Start-Process"])
-                    .arg(found_path)
+                    .arg(installer_arg)
                     .arg("-ArgumentList")
                     .arg(
                         [
@@ -551,7 +555,7 @@ impl Update {
                         "-ArgumentList",
                     ])
                     .arg("/i,")
-                    .arg(msi_path_arg)
+                    .arg(&msi_path_arg)
                     .arg(format!(", {}, /promptrestart;", msiexec_args.join(", ")))
                     .arg("Start-Process")
                     .arg(current_exe_arg)
@@ -565,7 +569,7 @@ impl Update {
                     );
                     let _ = Command::new(msiexec_path)
                         .arg("/i")
-                        .arg(found_path)
+                        .arg(msi_path_arg)
                         .args(msiexec_args)
                         .arg("/promptrestart")
                         .spawn();
@@ -596,6 +600,7 @@ impl Update {
         target_os = "openbsd"
     ))]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
+        use flate2::read::GzDecoder;
         use std::{
             ffi::OsStr,
             os::unix::fs::{MetadataExt, PermissionsExt},
@@ -628,7 +633,8 @@ impl Update {
 
                     // extract the buffer to the tmp_dir
                     // we extract our signed archive into our final directory without any temp file
-                    let mut archive = tar::Archive::new(archive);
+                    let decoder = GzDecoder::new(archive);
+                    let mut archive = tar::Archive::new(decoder);
                     for mut entry in archive.entries()?.flatten() {
                         if let Ok(path) = entry.path() {
                             if path.extension() == Some(OsStr::new("AppImage")) {
@@ -642,8 +648,10 @@ impl Update {
                             }
                         }
                     }
+                    // if we have not returned early we should restore the backup
+                    std::fs::rename(tmp_app_image, &self.extract_path)?;
 
-                    return Ok(());
+                    return Err(Error::BinaryNotFoundInArchive);
                 }
             }
         }

@@ -13,13 +13,13 @@
 
 use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "protocol-asset")]
+use tauri::scope::fs::{Event as FsScopeEvent, Scope as FsScope};
 use tauri::{
     plugin::{Builder, TauriPlugin},
     scope::fs::Pattern as GlobPattern,
     Manager, Runtime,
 };
-#[cfg(feature = "protocol-asset")]
-use tauri::{FsScope, FsScopeEvent};
 use tauri_plugin_fs::{FsExt, Scope as FsPluginScope, ScopeEvent as FsPluginScopeEvent};
 
 use std::{
@@ -58,7 +58,7 @@ trait ScopeExt {
     fn forbidden_patterns(&self) -> HashSet<GlobPattern>;
 }
 
-impl ScopeExt for &FsPluginScope {
+impl ScopeExt for FsPluginScope {
     fn allow_file(&self, path: &Path) {
         let _ = FsPluginScope::allow_file(self, path);
     }
@@ -85,7 +85,7 @@ impl ScopeExt for &FsPluginScope {
 }
 
 #[cfg(feature = "protocol-asset")]
-impl ScopeExt for &FsScope {
+impl ScopeExt for FsScope {
     fn allow_file(&self, path: &Path) {
         let _ = FsScope::allow_file(self, path);
     }
@@ -171,7 +171,7 @@ fn fix_directory(path_str: &str) -> &Path {
     path
 }
 
-fn allow_path(scope: impl ScopeExt, path: &str) {
+fn allow_path(scope: &impl ScopeExt, path: &str) {
     let target_type = detect_scope_type(path);
 
     match target_type {
@@ -189,7 +189,7 @@ fn allow_path(scope: impl ScopeExt, path: &str) {
     }
 }
 
-fn forbid_path(scope: impl ScopeExt, path: &str) {
+fn forbid_path(scope: &impl ScopeExt, path: &str) {
     let target_type = detect_scope_type(path);
 
     match target_type {
@@ -205,7 +205,7 @@ fn forbid_path(scope: impl ScopeExt, path: &str) {
     }
 }
 
-fn save_scopes(scope: impl ScopeExt, app_dir: &Path, scope_state_path: &Path) {
+fn save_scopes(scope: &impl ScopeExt, app_dir: &Path, scope_state_path: &Path) {
     let scope = Scope {
         allowed_paths: scope
             .allowed_patterns()
@@ -243,7 +243,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 let asset_scope_state_path = app_dir.join(ASSET_SCOPE_STATE_FILENAME);
 
                 if let Some(fs_scope) = fs_scope {
-                let _ = fs_scope.forbid_file(&fs_scope_state_path);}
+                    let _ = fs_scope.forbid_file(&fs_scope_state_path);
+                }
                 #[cfg(feature = "protocol-asset")]
                 let _ = asset_protocol_scope.forbid_file(&asset_scope_state_path);
 
@@ -271,7 +272,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     // This is needed to fix broken .peristed-scope files in case the app doesn't update the scope itself.
                     save_scopes(fs_scope, &app_dir, &fs_scope_state_path);
                 }
-                }
+            }
 
                 #[cfg(feature = "protocol-asset")]
                 if asset_scope_state_path.exists() {
@@ -303,15 +304,15 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         }
                     });
                 }
-
                 #[cfg(feature = "protocol-asset")]
                 {
                     let asset_protocol_scope_ = asset_protocol_scope.clone();
                     asset_protocol_scope.listen(move |event| {
-                    if let FsScopeEvent::PathAllowed(_) = event {
-                        save_scopes(&asset_protocol_scope_, &app_dir_, &asset_scope_state_path);
-                    }
-                });}
+                        if let FsScopeEvent::PathAllowed(_) = event {
+                            save_scopes(&asset_protocol_scope_, &app_dir_, &asset_scope_state_path);
+                        }
+                    });
+                }
             }
             Ok(())
         })
