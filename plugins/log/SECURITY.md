@@ -26,7 +26,7 @@ Alternatively, you can also contact us by email via [security@tauri.app](mailto:
 
 ### Security Assumptions
 
-- The log file interpreting applications are hardened as input is not sanitized
+- The log file interpreting applications are hardened, as input is not sanitized
 - No log events in the rust core are leaked to the frontend unless explicitly configured to output to the `TargetKind::Webview` component
 - The log events generated in the frontend can be accessed from everywhere in the frontend
 - There is no secret censoring inbuilt and developers need to take care of what they log in their application
@@ -37,13 +37,13 @@ Alternatively, you can also contact us by email via [security@tauri.app](mailto:
 
 One possible threat you need to consider when using this plugin is that secrets
 in logs can theoretically be leaked when the application's frontend gets compromised.
+
 For this threat to be possible all of the following requirements need to be fulfilled:
-- `TargetKind::Webview` enabled or secrets stem from frontend logs
-- Frontend application is compromised via something like XSS (cross-site-scripting)
+- `TargetKind::Webview` enabled OR secrets stem from frontend logs
+- Frontend application is compromised via something like XSS (cross-site-scripting) OR logs are directly exposed
 - Logs contain secrets or sensitive information
 
-If these requirements are not met, the possible leakage should not
-
+If these requirements are not met, the leakage should not be possible.
 
 #### Out Of Scope
 
@@ -52,3 +52,4 @@ If these requirements are not met, the possible leakage should not
 ## Best Practices
 
 Do not log secrets or sensitive values in your logging and ensure that the upstream crates are not leaking such values in their logging events.
+Ensure that logs are sanitized or trusted before opening them with third party tools.
