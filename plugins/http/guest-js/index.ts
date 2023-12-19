@@ -57,7 +57,7 @@ export interface ClientOptions {
  */
 export async function fetch(
   input: URL | Request | string,
-  init?: RequestInit & ClientOptions,
+  init?: RequestInit & ClientOptions
 ): Promise<Response> {
   const maxRedirections = init?.maxRedirections;
   const connectTimeout = init?.maxRedirections;
@@ -67,6 +67,8 @@ export async function fetch(
     delete init.maxRedirections;
     delete init.connectTimeout;
   }
+
+  const signal = init?.signal;
 
   const req = new Request(input, init);
   const buffer = await req.arrayBuffer();
@@ -81,7 +83,7 @@ export async function fetch(
     connectTimeout,
   });
 
-  req.signal.addEventListener("abort", () => {
+  signal?.addEventListener("abort", () => {
     invoke("plugin:http|fetch_cancel", {
       rid,
     });
@@ -92,17 +94,21 @@ export async function fetch(
     statusText: string;
     headers: [[string, string]];
     url: string;
+    rid: number;
   }
 
-  const { status, statusText, url, headers } = await invoke<FetchSendResponse>(
-    "plugin:http|fetch_send",
-    {
-      rid,
-    },
-  );
+  const {
+    status,
+    statusText,
+    url,
+    headers,
+    rid: responseRid,
+  } = await invoke<FetchSendResponse>("plugin:http|fetch_send", {
+    rid,
+  });
 
   const body = await invoke<number[]>("plugin:http|fetch_read_body", {
-    rid,
+    rid: responseRid,
   });
 
   const res = new Response(new Uint8Array(body), {
