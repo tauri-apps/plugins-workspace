@@ -24,4 +24,4 @@
 "window-state-js": patch
 ---
 
-Update to @tauri-apps/api v2.0.0-alpha.13.
+Update to @tauri-apps/api v2.0.0-alpha.12.
