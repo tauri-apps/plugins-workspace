@@ -36,6 +36,8 @@ fn main() {
 
 <meta-data
   android:name="android.nfc.action.TECH_DISCOVERED"
-  android:resource="@xml/nfc_tech_filter" />"#.to_string())
-        .expect("failed to rewrite AndroidManifest.xml");
+  android:resource="@xml/nfc_tech_filter" />"#
+            .to_string(),
+    )
+    .expect("failed to rewrite AndroidManifest.xml");
 }
