@@ -84,33 +84,6 @@ impl ScopeExt for FsScope {
     }
 }
 
-#[cfg(feature = "protocol-asset")]
-impl ScopeExt for FsScope {
-    fn allow_file(&self, path: &Path) {
-        let _ = FsScope::allow_file(self, path);
-    }
-
-    fn allow_directory(&self, path: &Path, recursive: bool) {
-        let _ = FsScope::allow_directory(self, path, recursive);
-    }
-
-    fn forbid_file(&self, path: &Path) {
-        let _ = FsScope::forbid_file(self, path);
-    }
-
-    fn forbid_directory(&self, path: &Path, recursive: bool) {
-        let _ = FsScope::forbid_directory(self, path, recursive);
-    }
-
-    fn allowed_patterns(&self) -> HashSet<GlobPattern> {
-        FsScope::allowed_patterns(self)
-    }
-
-    fn forbidden_patterns(&self) -> HashSet<GlobPattern> {
-        FsScope::forbidden_patterns(self)
-    }
-}
-
 #[derive(Debug, thiserror::Error)]
 enum Error {
     #[error(transparent)]
