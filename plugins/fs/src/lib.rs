@@ -11,22 +11,21 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use config::FsScope;
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
+    scope::fs::Scope,
+    utils::config::FsScope,
     FileDropEvent, Manager, RunEvent, Runtime, WindowEvent,
 };
 
 mod commands;
 mod config;
 mod error;
-mod scope;
 #[cfg(feature = "watch")]
 mod watcher;
 
 pub use config::Config;
 pub use error::Error;
-pub use scope::{Event as ScopeEvent, Scope};
 
 type Result<T> = std::result::Result<T, Error>;
 
