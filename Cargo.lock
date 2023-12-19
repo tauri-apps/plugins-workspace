@@ -5751,7 +5751,7 @@ checksum = "14c39fd04924ca3a864207c66fc2cd7d22d7c016007f9ce846cbb9326331930a"
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.18"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new#98817e1ed45a6320ff8050de39e8635d75ce8339"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#b59f2f54e7c1e01e33baf710d50c046401edb9d8"
 dependencies = [
  "anyhow",
  "bytes 1.5.0",
@@ -5783,11 +5783,11 @@ dependencies = [
  "serialize-to-javascript",
  "state",
  "swift-rs",
- "tauri-build 2.0.0-alpha.12 (git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new)",
+ "tauri-build 2.0.0-alpha.12 (git+https://github.com/tauri-apps/tauri?branch=dev)",
  "tauri-macros",
  "tauri-runtime",
  "tauri-runtime-wry",
- "tauri-utils 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new)",
+ "tauri-utils 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=dev)",
  "thiserror",
  "tokio",
  "tray-icon",
@@ -5825,7 +5825,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.12"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new#98817e1ed45a6320ff8050de39e8635d75ce8339"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#b59f2f54e7c1e01e33baf710d50c046401edb9d8"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -5837,7 +5837,7 @@ dependencies = [
  "serde",
  "serde_json",
  "swift-rs",
- "tauri-utils 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new)",
+ "tauri-utils 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=dev)",
  "tauri-winres",
  "walkdir",
 ]
@@ -5871,7 +5871,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.11"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new#98817e1ed45a6320ff8050de39e8635d75ce8339"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#b59f2f54e7c1e01e33baf710d50c046401edb9d8"
 dependencies = [
  "base64 0.21.5",
  "brotli",
@@ -5885,7 +5885,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.8",
- "tauri-utils 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new)",
+ "tauri-utils 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=dev)",
  "thiserror",
  "time 0.3.30",
  "url",
@@ -5896,14 +5896,14 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.11"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new#98817e1ed45a6320ff8050de39e8635d75ce8339"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#b59f2f54e7c1e01e33baf710d50c046401edb9d8"
 dependencies = [
  "heck",
  "proc-macro2",
  "quote",
  "syn 2.0.39",
- "tauri-codegen 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new)",
- "tauri-utils 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new)",
+ "tauri-codegen 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=dev)",
+ "tauri-utils 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=dev)",
 ]
 
 [[package]]
@@ -6292,7 +6292,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "1.0.0-alpha.5"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new#98817e1ed45a6320ff8050de39e8635d75ce8339"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#b59f2f54e7c1e01e33baf710d50c046401edb9d8"
 dependencies = [
  "gtk",
  "http",
@@ -6300,7 +6300,7 @@ dependencies = [
  "raw-window-handle",
  "serde",
  "serde_json",
- "tauri-utils 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new)",
+ "tauri-utils 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=dev)",
  "thiserror",
  "url",
  "windows 0.52.0",
@@ -6309,7 +6309,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "1.0.0-alpha.6"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new#98817e1ed45a6320ff8050de39e8635d75ce8339"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#b59f2f54e7c1e01e33baf710d50c046401edb9d8"
 dependencies = [
  "cocoa 0.25.0",
  "gtk",
@@ -6319,7 +6319,7 @@ dependencies = [
  "raw-window-handle",
  "tao",
  "tauri-runtime",
- "tauri-utils 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new)",
+ "tauri-utils 2.0.0-alpha.11 (git+https://github.com/tauri-apps/tauri?branch=dev)",
  "webkit2gtk",
  "webview2-com",
  "windows 0.52.0",
@@ -6362,7 +6362,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.11"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/expose-fs-scope-new#98817e1ed45a6320ff8050de39e8635d75ce8339"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#b59f2f54e7c1e01e33baf710d50c046401edb9d8"
 dependencies = [
  "aes-gcm 0.10.3",
  "brotli",
