@@ -216,6 +216,11 @@ function mapScanKind(kind: ScanKind): Record<string, unknown> {
 /**
  * Scans an NFC tag.
  *
+ * ```javascript
+ * import { scan } from "@tauri-apps/plugin-nfc";
+ * await scan({ type: "tag" });
+ * ```
+ *
  * See <https://developer.android.com/develop/connectivity/nfc/nfc#ndef> for more information.
  *
  * @param kind
@@ -232,6 +237,21 @@ export async function scan(
   });
 }
 
+/**
+ * Write to an NFC tag.
+ *
+ * ```javascript
+ * import { uriRecord, write } from "@tauri-apps/plugin-nfc";
+ * await write([uriRecord("https://tauri.app")], { kind: { type: "ndef" } });
+ * ```
+ *
+ * If you did not previously call {@link scan} with {@link ScanOptions.keepSessionAlive} set to true,
+ * it will first scan the tag then write to it.
+ *
+ * @param records
+ * @param options
+ * @returns
+ */
 export async function write(
   records: NFCRecord[],
   options?: WriteOptions,
