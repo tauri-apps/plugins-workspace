@@ -46,10 +46,26 @@ export interface AuthOptions {
   maxAttemps?: number;
 }
 
+/**
+ * Checks if the biometric authentication is available.
+ * @returns a promise resolving to an object containing all the information about the status of the biometry.
+ */
 export async function checkStatus(): Promise<Status> {
   return invoke("plugin:biometric|status");
 }
 
+/**
+ * Prompts the user for authentication using the system interface (touchID, faceID or Android Iris).
+ * Rejects if the authentication fails.
+ *
+ * ```javascript
+ * import { authenticate } from "@tauri-apps/plugin-biometric";
+ * await authenticate('Open your wallet');
+ * ```
+ * @param reason
+ * @param options
+ * @returns
+ */
 export async function authenticate(
   reason: string,
   options?: AuthOptions,
