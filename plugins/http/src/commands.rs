@@ -73,88 +73,48 @@ pub struct BasicAuth {
     password: String,
 }
 
+fn attach_config(
+    basic_auth: Option<BasicAuth>,
+    no_proxy: Option<String>,
+    mut proxy: Proxy,
+) -> Proxy {
+    if let Some(basic_auth) = basic_auth {
+        proxy = proxy.basic_auth(&basic_auth.username, &basic_auth.password)
+    }
+    if let Some(no_proxy) = no_proxy {
+        proxy = proxy.no_proxy(NoProxy::from_string(&no_proxy))
+    }
+    proxy
+}
+
+macro_rules! process_proxy {
+    ($config:expr, $builder:expr, $proxy_fn:path) => {
+        match $config {
+            UrlOrConfig::Url(url) => {
+                $builder = $builder.proxy($proxy_fn(&url)?);
+            }
+            UrlOrConfig::Config(config) => {
+                $builder = $builder.proxy(attach_config(
+                    config.basic_auth,
+                    config.no_proxy,
+                    $proxy_fn(config.url)?,
+                ));
+            }
+        }
+    };
+}
+
 fn attach_proxy(
     config: ProxyConfig,
     mut builder: reqwest::ClientBuilder,
 ) -> crate::Result<reqwest::ClientBuilder> {
-    fn attach_config(
-        basic_auth: Option<BasicAuth>,
-        no_proxy: Option<String>,
-        mut proxy: Proxy,
-    ) -> Proxy {
-        if let Some(basic_auth) = basic_auth {
-            proxy = proxy.basic_auth(&basic_auth.username, &basic_auth.password)
-        }
-        if let Some(no_proxy) = no_proxy {
-            proxy = proxy.no_proxy(NoProxy::from_string(&no_proxy))
-        }
-        proxy
-    }
-
     match config {
-        ProxyConfig::All { all } => match all {
-            UrlOrConfig::Url(url) => {
-                builder = builder.proxy(Proxy::all(url)?);
-            }
-            UrlOrConfig::Config(DetailedProxyConfig {
-                url,
-                basic_auth,
-                no_proxy,
-            }) => {
-                builder = builder.proxy(attach_config(basic_auth, no_proxy, Proxy::all(url)?));
-            }
-        },
-        ProxyConfig::Http { http } => match http {
-            UrlOrConfig::Url(url) => {
-                builder = builder.proxy(Proxy::http(url)?);
-            }
-            UrlOrConfig::Config(DetailedProxyConfig {
-                url,
-                basic_auth,
-                no_proxy,
-            }) => {
-                builder = builder.proxy(attach_config(basic_auth, no_proxy, Proxy::http(url)?));
-            }
-        },
-        ProxyConfig::Https { https } => match https {
-            UrlOrConfig::Url(url) => {
-                builder = builder.proxy(Proxy::https(url)?);
-            }
-            UrlOrConfig::Config(DetailedProxyConfig {
-                url,
-                basic_auth,
-                no_proxy,
-            }) => {
-                builder = builder.proxy(attach_config(basic_auth, no_proxy, Proxy::https(url)?));
-            }
-        },
+        ProxyConfig::All { all } => process_proxy!(all, builder, Proxy::all),
+        ProxyConfig::Http { http } => process_proxy!(http, builder, Proxy::http),
+        ProxyConfig::Https { https } => process_proxy!(https, builder, Proxy::https),
         ProxyConfig::HttpAndHttps { http, https } => {
-            match http {
-                UrlOrConfig::Url(url) => {
-                    builder = builder.proxy(Proxy::http(url)?);
-                }
-                UrlOrConfig::Config(DetailedProxyConfig {
-                    url,
-                    basic_auth,
-                    no_proxy,
-                }) => {
-                    builder = builder.proxy(attach_config(basic_auth, no_proxy, Proxy::http(url)?));
-                }
-            }
-
-            match https {
-                UrlOrConfig::Url(url) => {
-                    builder = builder.proxy(Proxy::https(url)?);
-                }
-                UrlOrConfig::Config(DetailedProxyConfig {
-                    url,
-                    basic_auth,
-                    no_proxy,
-                }) => {
-                    builder =
-                        builder.proxy(attach_config(basic_auth, no_proxy, Proxy::https(url)?));
-                }
-            }
+            process_proxy!(http, builder, Proxy::http);
+            process_proxy!(https, builder, Proxy::https);
         }
     }
 
