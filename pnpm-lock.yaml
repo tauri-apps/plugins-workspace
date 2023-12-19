@@ -90,6 +90,9 @@ importers:
       '@tauri-apps/plugin-http':
         specifier: 2.0.0-alpha.4
         version: link:../../plugins/http
+      '@tauri-apps/plugin-nfc':
+        specifier: 1.0.0
+        version: link:../../plugins/nfc
       '@tauri-apps/plugin-notification':
         specifier: 2.0.0-alpha.4
         version: link:../../plugins/notification
@@ -234,6 +237,16 @@ importers:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.12
         version: 2.0.0-alpha.12
+
+  plugins/nfc:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: 2.0.0-alpha.12
+        version: 2.0.0-alpha.12
+    devDependencies:
+      tslib:
+        specifier: 2.6.0
+        version: 2.6.0
 
   plugins/notification:
     dependencies:

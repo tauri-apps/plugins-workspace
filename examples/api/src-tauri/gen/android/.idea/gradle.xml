@@ -18,6 +18,7 @@
             <option value="$PROJECT_DIR$/../../../../../plugins/biometric/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/clipboard-manager/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/dialog/android" />
+            <option value="$PROJECT_DIR$/../../../../../plugins/nfc/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/notification/android" />
           </set>
         </option>

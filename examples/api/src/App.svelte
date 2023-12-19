@@ -21,6 +21,7 @@
 
   import { onMount } from "svelte";
   import { ask } from "@tauri-apps/plugin-dialog";
+  import Nfc from "./views/Nfc.svelte";
 
   const appWindow = getCurrent();
 
@@ -107,6 +108,11 @@
       label: "Scanner",
       component: Scanner,
       icon: "i-ph-scan",
+    },
+    isMobile && {
+      label: "NFC",
+      component: Nfc,
+      icon: "i-ph-nfc",
     },
     isMobile && {
       label: "Biometric",
@@ -227,7 +233,7 @@
 
   let isWindows;
   onMount(async () => {
-    isWindows = (await os.platform()) === "win32";
+    isWindows = (await os.platform()) === "windows";
   });
 
   // mobile
