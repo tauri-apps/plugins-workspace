@@ -1,6 +1,6 @@
 <script>
   import * as fs from "@tauri-apps/plugin-fs";
-  import { convertFileSrc } from "@tauri-apps/api/primitives";
+  import { convertFileSrc } from "@tauri-apps/api/core";
 
   export let onMessage;
   export let insecureRenderHtml;

@@ -1,5 +1,23 @@
 # Changelog
 
+## \[2.0.0-alpha.8]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.0.0-alpha.3`
+- Upgraded to `cli@2.0.0-alpha.5`
+- Upgraded to `clipboard-manager@2.0.0-alpha.5`
+- Upgraded to `dialog@2.0.0-alpha.5`
+- Upgraded to `fs@2.0.0-alpha.5`
+- Upgraded to `global-shortcut@2.0.0-alpha.5`
+- Upgraded to `http@2.0.0-alpha.6`
+- Upgraded to `log-plugin@2.0.0-alpha.5`
+- Upgraded to `notification@2.0.0-alpha.6`
+- Upgraded to `os@2.0.0-alpha.5`
+- Upgraded to `process@2.0.0-alpha.5`
+- Upgraded to `shell@2.0.0-alpha.5`
+- Upgraded to `updater@2.0.0-alpha.5`
+
 ## \[2.0.0-alpha.7]
 
 ### Dependencies

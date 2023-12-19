@@ -17,9 +17,11 @@
   import Clipboard from "./views/Clipboard.svelte";
   import WebRTC from "./views/WebRTC.svelte";
   import Scanner from "./views/Scanner.svelte";
+  import Biometric from "./views/Biometric.svelte";
 
   import { onMount, tick } from "svelte";
   import { ask } from "@tauri-apps/plugin-dialog";
+  import Nfc from "./views/Nfc.svelte";
 
   const appWindow = getCurrent();
 
@@ -105,6 +107,16 @@
     isMobile && {
       label: "Scanner",
       component: Scanner,
+      icon: "i-ph-scan",
+    },
+    isMobile && {
+      label: "NFC",
+      component: Nfc,
+      icon: "i-ph-nfc",
+    },
+    isMobile && {
+      label: "Biometric",
+      component: Biometric,
       icon: "i-ph-scan",
     },
   ];
@@ -226,7 +238,7 @@
 
   let isWindows;
   onMount(async () => {
-    isWindows = (await os.platform()) === "win32";
+    isWindows = (await os.platform()) === "windows";
   });
 
   // mobile

@@ -62,8 +62,7 @@
  */
 
 import { BaseDirectory } from "@tauri-apps/api/path";
-import { Resource } from "@tauri-apps/api/primitives";
-import { Channel, invoke } from "@tauri-apps/api/primitives";
+import { Channel, invoke, Resource } from "@tauri-apps/api/core";
 
 enum SeekMode {
   Start = 0,

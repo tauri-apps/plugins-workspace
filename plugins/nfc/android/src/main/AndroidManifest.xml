@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.NFC" />
+    <!-- TODO: if the app doesn't rely on nfc the uses-feature line could be removed. The app store uses this prop to decide whether or not to show the app. -->
+    <!-- TODO: Move that info somewhere else since users usually can't see this file. -->
+    <!-- Paste the following line into the AndroidManifest.xml of your project -->
+    <!-- See also: https://capacitorjs.com/docs/plugins/android#manifest -->
+    <!-- <uses-feature android:name="android.hardware.nfc" android:required="true" /> -->
+</manifest>

@@ -52,7 +52,11 @@ impl Serialize for CommandError {
     where
         S: Serializer,
     {
-        serializer.serialize_str(self.to_string().as_ref())
+        if let Self::Anyhow(err) = self {
+            serializer.serialize_str(format!("{err:#}").as_ref())
+        } else {
+            serializer.serialize_str(self.to_string().as_ref())
+        }
     }
 }
 
