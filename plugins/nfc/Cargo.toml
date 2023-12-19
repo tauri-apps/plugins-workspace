@@ -7,9 +7,8 @@ license = { workspace = true }
 links = "tauri-plugin-nfc"
 
 [package.metadata.docs.rs]
-features = [ "tauri/dox" ]
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+rustc-args = [ "--cfg", "docsrs" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
 
 [build-dependencies]
 tauri-build = { workspace = true }
