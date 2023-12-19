@@ -62,7 +62,7 @@
  * @module
  */
 
-import { invoke, Channel } from "@tauri-apps/api/primitives";
+import { invoke, Channel } from "@tauri-apps/api/core";
 
 /**
  * @since 2.0.0

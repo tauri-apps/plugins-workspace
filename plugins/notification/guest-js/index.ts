@@ -13,7 +13,7 @@ import {
   invoke,
   PluginListener,
   addPluginListener,
-} from "@tauri-apps/api/primitives";
+} from "@tauri-apps/api/core";
 
 /**
  * Options to send a notification.
