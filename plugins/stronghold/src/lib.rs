@@ -434,10 +434,11 @@ impl Builder {
     /// # Examples
     ///
     /// ```rust
+    /// use tauri::Manager;
     /// tauri::Builder::default()
     ///     .setup(|app| {
     ///         let salt_path = app
-    ///             .path_resolver()
+    ///             .path()
     ///             .app_local_data_dir()
     ///             .expect("could not resolve app local data path")
     ///             .join("salt.txt");

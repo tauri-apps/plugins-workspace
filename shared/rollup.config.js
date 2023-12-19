@@ -26,6 +26,7 @@ export function createConfig(options = {}) {
     additionalConfigs = [],
   } = options;
 
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   const pkg = JSON.parse(readFileSync(join(cwd(), "package.json"), "utf8"));
 
   const pluginJsName = pkg.name

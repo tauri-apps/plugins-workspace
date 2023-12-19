@@ -8,7 +8,7 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/primitives";
+import { invoke } from "@tauri-apps/api/core";
 
 /**
  * @since 2.0.0

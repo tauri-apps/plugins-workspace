@@ -24,7 +24,7 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/primitives";
+import { invoke } from "@tauri-apps/api/core";
 
 /**
  * Options to configure the Rust client used to make fetch requests
