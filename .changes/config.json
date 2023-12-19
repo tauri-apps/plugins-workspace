@@ -189,6 +189,15 @@
       "manager": "javascript"
     },
 
+    "nfc": {
+      "path": "./plugins/nfc",
+      "manager": "rust"
+    },
+    "nfc-js": {
+      "path": "./plugins/nfc",
+      "manager": "javascript"
+    },
+
     "notification": {
       "path": "./plugins/notification",
       "manager": "rust"

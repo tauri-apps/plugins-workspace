@@ -245,6 +245,7 @@ dependencies = [
  "tauri-plugin-global-shortcut",
  "tauri-plugin-http",
  "tauri-plugin-log",
+ "tauri-plugin-nfc",
  "tauri-plugin-notification",
  "tauri-plugin-os",
  "tauri-plugin-process",
@@ -6021,6 +6022,19 @@ dependencies = [
  "tauri",
  "tauri-build",
  "time 0.3.30",
+]
+
+[[package]]
+name = "tauri-plugin-nfc"
+version = "1.0.0"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "serde_repr",
+ "tauri",
+ "tauri-build",
+ "thiserror",
 ]
 
 [[package]]
