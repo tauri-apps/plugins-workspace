@@ -17,6 +17,7 @@
   import Clipboard from "./views/Clipboard.svelte";
   import WebRTC from "./views/WebRTC.svelte";
   import Scanner from "./views/Scanner.svelte";
+  import Biometric from "./views/Biometric.svelte";
 
   import { onMount } from "svelte";
   import { ask } from "@tauri-apps/plugin-dialog";
@@ -112,6 +113,11 @@
       label: "NFC",
       component: Nfc,
       icon: "i-ph-nfc",
+    },
+    isMobile && {
+      label: "Biometric",
+      component: Biometric,
+      icon: "i-ph-scan",
     },
   ];
 

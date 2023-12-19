@@ -69,6 +69,9 @@ importers:
       '@tauri-apps/plugin-barcode-scanner':
         specifier: 2.0.0-alpha.3
         version: link:../../plugins/barcode-scanner
+      '@tauri-apps/plugin-biometric':
+        specifier: 1.0.0
+        version: link:../../plugins/biometric
       '@tauri-apps/plugin-cli':
         specifier: 2.0.0-alpha.4
         version: link:../../plugins/cli
@@ -154,6 +157,16 @@ importers:
       '@tauri-apps/api':
         specifier: 2.0.0-alpha.12
         version: 2.0.0-alpha.12
+
+  plugins/biometric:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: 2.0.0-alpha.12
+        version: 2.0.0-alpha.12
+    devDependencies:
+      tslib:
+        specifier: 2.6.0
+        version: 2.6.0
 
   plugins/cli:
     dependencies:
