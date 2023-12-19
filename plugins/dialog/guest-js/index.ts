@@ -296,6 +296,7 @@ async function confirm(
 
 export type {
   DialogFilter,
+  FileResponse,
   OpenDialogOptions,
   SaveDialogOptions,
   MessageDialogOptions,
