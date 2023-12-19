@@ -57,7 +57,7 @@ export interface ClientOptions {
  */
 export async function fetch(
   input: URL | Request | string,
-  init?: RequestInit & ClientOptions
+  init?: RequestInit & ClientOptions,
 ): Promise<Response> {
   const maxRedirections = init?.maxRedirections;
   const connectTimeout = init?.maxRedirections;
