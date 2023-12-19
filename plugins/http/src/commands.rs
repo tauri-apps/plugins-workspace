@@ -22,10 +22,47 @@ pub struct FetchResponse {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ProxyConfig {
-    all: Option<String>,
-    http: Option<String>,
-    https: Option<String>,
+pub struct ClientConfig {
+    method: String,
+    url: url::Url,
+    headers: Vec<(String, String)>,
+    data: Option<Vec<u8>>,
+    connect_timeout: Option<u64>,
+    max_redirections: Option<usize>,
+    proxy: Option<ProxyConfig>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(untagged)]
+pub enum ProxyConfig {
+    All {
+        all: UrlOrConfig,
+    },
+    HttpAndHttps {
+        http: UrlOrConfig,
+        https: UrlOrConfig,
+    },
+    Http {
+        http: UrlOrConfig,
+    },
+    Https {
+        https: UrlOrConfig,
+    },
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(untagged)]
+pub enum UrlOrConfig {
+    Url(String),
+    Config(DetailedProxyConfig),
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DetailedProxyConfig {
+    url: String,
     basic_auth: Option<BasicAuth>,
     no_proxy: Option<String>,
 }
@@ -37,58 +74,108 @@ pub struct BasicAuth {
 }
 
 fn attach_proxy(
-    settings: ProxyConfig,
-    builder: reqwest::ClientBuilder,
+    config: ProxyConfig,
+    mut builder: reqwest::ClientBuilder,
 ) -> crate::Result<reqwest::ClientBuilder> {
-    let ProxyConfig {
-        all,
-        http,
-        https,
-        basic_auth,
-        no_proxy,
-    } = settings;
-
-    let mut builder = builder;
-
-    let attach_auth_and_exclusion = |proxy: Proxy| {
-        let mut attatched = proxy;
-        if let Some(BasicAuth { username, password }) = &basic_auth {
-            attatched = attatched.basic_auth(username, password);
+    fn attach_config(
+        basic_auth: Option<BasicAuth>,
+        no_proxy: Option<String>,
+        mut proxy: Proxy,
+    ) -> Proxy {
+        if let Some(basic_auth) = basic_auth {
+            proxy = proxy.basic_auth(&basic_auth.username, &basic_auth.password)
         }
-        if let Some(no_proxy) = &no_proxy {
-            attatched = attatched.no_proxy(NoProxy::from_string(no_proxy));
+        if let Some(no_proxy) = no_proxy {
+            proxy = proxy.no_proxy(NoProxy::from_string(&no_proxy))
         }
-        attatched
-    };
+        proxy
+    }
 
-    if let Some(all_proxy) = all {
-        let proxy = attach_auth_and_exclusion(Proxy::all(all_proxy)?);
-        builder = builder.proxy(proxy);
-    }
-    if let Some(http_proxy) = http {
-        let proxy = attach_auth_and_exclusion(Proxy::http(http_proxy)?);
-        builder = builder.proxy(proxy);
-    }
-    if let Some(https_proxy) = https {
-        let proxy = attach_auth_and_exclusion(Proxy::https(https_proxy)?);
-        builder = builder.proxy(proxy);
+    match config {
+        ProxyConfig::All { all } => match all {
+            UrlOrConfig::Url(url) => {
+                builder = builder.proxy(Proxy::all(url)?);
+            }
+            UrlOrConfig::Config(DetailedProxyConfig {
+                url,
+                basic_auth,
+                no_proxy,
+            }) => {
+                builder = builder.proxy(attach_config(basic_auth, no_proxy, Proxy::all(url)?));
+            }
+        },
+        ProxyConfig::Http { http } => match http {
+            UrlOrConfig::Url(url) => {
+                builder = builder.proxy(Proxy::http(url)?);
+            }
+            UrlOrConfig::Config(DetailedProxyConfig {
+                url,
+                basic_auth,
+                no_proxy,
+            }) => {
+                builder = builder.proxy(attach_config(basic_auth, no_proxy, Proxy::http(url)?));
+            }
+        },
+        ProxyConfig::Https { https } => match https {
+            UrlOrConfig::Url(url) => {
+                builder = builder.proxy(Proxy::https(url)?);
+            }
+            UrlOrConfig::Config(DetailedProxyConfig {
+                url,
+                basic_auth,
+                no_proxy,
+            }) => {
+                builder = builder.proxy(attach_config(basic_auth, no_proxy, Proxy::https(url)?));
+            }
+        },
+        ProxyConfig::HttpAndHttps { http, https } => {
+            match http {
+                UrlOrConfig::Url(url) => {
+                    builder = builder.proxy(Proxy::http(url)?);
+                }
+                UrlOrConfig::Config(DetailedProxyConfig {
+                    url,
+                    basic_auth,
+                    no_proxy,
+                }) => {
+                    builder = builder.proxy(attach_config(basic_auth, no_proxy, Proxy::http(url)?));
+                }
+            }
+
+            match https {
+                UrlOrConfig::Url(url) => {
+                    builder = builder.proxy(Proxy::https(url)?);
+                }
+                UrlOrConfig::Config(DetailedProxyConfig {
+                    url,
+                    basic_auth,
+                    no_proxy,
+                }) => {
+                    builder =
+                        builder.proxy(attach_config(basic_auth, no_proxy, Proxy::https(url)?));
+                }
+            }
+        }
     }
 
     Ok(builder)
 }
 
-#[allow(clippy::too_many_arguments)]
 #[command]
 pub async fn fetch<R: Runtime>(
     app: AppHandle<R>,
-    method: String,
-    url: url::Url,
-    headers: Vec<(String, String)>,
-    data: Option<Vec<u8>>,
-    connect_timeout: Option<u64>,
-    max_redirections: Option<usize>,
-    proxy: Option<ProxyConfig>,
+    client_config: ClientConfig,
 ) -> crate::Result<RequestId> {
+    let ClientConfig {
+        method,
+        url,
+        headers,
+        data,
+        connect_timeout,
+        max_redirections,
+        proxy,
+    } = client_config;
+
     let scheme = url.scheme();
     let method = Method::from_bytes(method.as_bytes())?;
     let headers: HashMap<String, String> = HashMap::from_iter(headers);

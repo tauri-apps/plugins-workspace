@@ -31,19 +31,26 @@ import { invoke } from "@tauri-apps/api/primitives";
  *
  * @since 2.0.0
  */
+export type Proxy =
+  | {
+      all: string | ProxyConfig;
+    }
+  | {
+      http: string | ProxyConfig;
+    }
+  | {
+      https: string | ProxyConfig;
+    }
+  | {
+      http: string | ProxyConfig;
+      https: string | ProxyConfig;
+    };
+
 export interface ProxyConfig {
   /**
-   * Proxy all traffic to the passed URL.
+   * The URL of the proxy server.
    */
-  all?: string;
-  /**
-   * Proxy all HTTP traffic to the passed URL.
-   */
-  http?: string;
-  /**
-   * Proxy all HTTPS traffic to the passed URL.
-   */
-  https?: string;
+  url: string;
   /**
    * Set the `Proxy-Authorization` header using Basic auth.
    */
@@ -74,7 +81,7 @@ export interface ClientOptions {
   /**
    * Configuration of a proxy that a Client should pass requests to.
    */
-  proxy?: ProxyConfig;
+  proxy?: Proxy;
 }
 
 /**
@@ -111,13 +118,15 @@ export async function fetch(
   const reqData = buffer.byteLength ? Array.from(new Uint8Array(buffer)) : null;
 
   const rid = await invoke<number>("plugin:http|fetch", {
-    method: req.method,
-    url: req.url,
-    headers: Array.from(req.headers.entries()),
-    data: reqData,
-    maxRedirections,
-    connectTimeout,
-    proxy,
+    clientConfig: {
+      method: req.method,
+      url: req.url,
+      headers: Array.from(req.headers.entries()),
+      data: reqData,
+      maxRedirections,
+      connectTimeout,
+      proxy,
+    },
   });
 
   req.signal.addEventListener("abort", () => {
