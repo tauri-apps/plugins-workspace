@@ -9,9 +9,9 @@ rust-version = { workspace = true }
 links = "tauri-plugin-deep-link"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
-targets = [ "x86_64-linux-android" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+targets = ["x86_64-linux-android"]
 
 [build-dependencies]
 serde = { workspace = true }
@@ -24,4 +24,4 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
-url = "2"
+url = { workspace = true }

@@ -13,8 +13,10 @@ rustdoc-args = [ "--cfg", "docsrs" ]
 
 [dependencies]
 serde = { workspace = true }
+serde_repr = "0.1"
 tauri = { workspace = true }
 thiserror = { workspace = true }
+url = { workspace = true }
 anyhow = "1"
 uuid = { version = "1", features = [ "v4" ] }
 glob = "0.3"

@@ -1,0 +1,22 @@
+[package]
+name = "tauri-plugin-biometric"
+version = "1.0.0"
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+links = "tauri-plugin-biometric"
+
+[package.metadata.docs.rs]
+rustc-args = [ "--cfg", "docsrs" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
+
+[build-dependencies]
+tauri-build = { workspace = true }
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+serde_repr = "0.1"

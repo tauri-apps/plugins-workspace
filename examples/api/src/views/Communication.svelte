@@ -1,6 +1,6 @@
 <script>
   import { getCurrent } from "@tauri-apps/api/window";
-  import { invoke } from "@tauri-apps/api/primitives";
+  import { invoke } from "@tauri-apps/api/core";
   import { onMount, onDestroy } from "svelte";
 
   const appWindow = getCurrent();
