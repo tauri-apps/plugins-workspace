@@ -119,7 +119,7 @@ pub fn init<R: Runtime>(
                 // exe path to not break it.
                 let exe_path = current_exe.canonicalize()?.display().to_string();
                 let parts: Vec<&str> = exe_path.split(".app/").collect();
-                let app_path = if parts.len() == 2 {
+                let app_path = if parts.len() == 2 && matches!(macos_launcher, MacosLauncher::AppleScript) {
                     format!("{}.app", parts.get(0).unwrap().to_string())
                 } else {
                     exe_path
