@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-alpha.10]
+
+### Dependencies
+
+- Upgraded to `http@2.0.0-alpha.8`
+
 ## \[2.0.0-alpha.9]
 
 ### Dependencies
