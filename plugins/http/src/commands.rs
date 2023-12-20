@@ -5,8 +5,8 @@
 use std::{collections::HashMap, time::Duration};
 
 use http::{header, HeaderName, HeaderValue, Method, StatusCode};
-use reqwest::redirect::Policy;
-use serde::Serialize;
+use reqwest::{redirect::Policy, NoProxy};
+use serde::{Deserialize, Serialize};
 use tauri::{command, AppHandle, Runtime};
 
 use crate::{Error, FetchRequest, HttpExt, RequestId};
@@ -20,16 +20,111 @@ pub struct FetchResponse {
     url: String,
 }
 
-#[command]
-pub async fn fetch<R: Runtime>(
-    app: AppHandle<R>,
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClientConfig {
     method: String,
     url: url::Url,
     headers: Vec<(String, String)>,
     data: Option<Vec<u8>>,
     connect_timeout: Option<u64>,
     max_redirections: Option<usize>,
+    proxy: Option<Proxy>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Proxy {
+    all: Option<UrlOrConfig>,
+    http: Option<UrlOrConfig>,
+    https: Option<UrlOrConfig>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(untagged)]
+pub enum UrlOrConfig {
+    Url(String),
+    Config(ProxyConfig),
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProxyConfig {
+    url: String,
+    basic_auth: Option<BasicAuth>,
+    no_proxy: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct BasicAuth {
+    username: String,
+    password: String,
+}
+
+#[inline]
+fn proxy_creator(
+    url_or_config: UrlOrConfig,
+    proxy_fn: fn(String) -> reqwest::Result<reqwest::Proxy>,
+) -> reqwest::Result<reqwest::Proxy> {
+    match url_or_config {
+        UrlOrConfig::Url(url) => Ok(proxy_fn(url)?),
+        UrlOrConfig::Config(ProxyConfig {
+            url,
+            basic_auth,
+            no_proxy,
+        }) => {
+            let mut proxy = proxy_fn(url)?;
+            if let Some(basic_auth) = basic_auth {
+                proxy = proxy.basic_auth(&basic_auth.username, &basic_auth.password);
+            }
+            if let Some(no_proxy) = no_proxy {
+                proxy = proxy.no_proxy(NoProxy::from_string(&no_proxy));
+            }
+            Ok(proxy)
+        }
+    }
+}
+
+fn attach_proxy(
+    proxy: Proxy,
+    mut builder: reqwest::ClientBuilder,
+) -> crate::Result<reqwest::ClientBuilder> {
+    let Proxy { all, http, https } = proxy;
+
+    if let Some(all) = all {
+        let proxy = proxy_creator(all, reqwest::Proxy::all)?;
+        builder = builder.proxy(proxy);
+    }
+
+    if let Some(http) = http {
+        let proxy = proxy_creator(http, reqwest::Proxy::http)?;
+        builder = builder.proxy(proxy);
+    }
+
+    if let Some(https) = https {
+        let proxy = proxy_creator(https, reqwest::Proxy::https)?;
+        builder = builder.proxy(proxy);
+    }
+
+    Ok(builder)
+}
+
+#[command]
+pub async fn fetch<R: Runtime>(
+    app: AppHandle<R>,
+    client_config: ClientConfig,
 ) -> crate::Result<RequestId> {
+    let ClientConfig {
+        method,
+        url,
+        headers,
+        data,
+        connect_timeout,
+        max_redirections,
+        proxy,
+    } = client_config;
+
     let scheme = url.scheme();
     let method = Method::from_bytes(method.as_bytes())?;
     let headers: HashMap<String, String> = HashMap::from_iter(headers);
@@ -49,6 +144,10 @@ pub async fn fetch<R: Runtime>(
                     } else {
                         Policy::limited(max_redirections)
                     });
+                }
+
+                if let Some(proxy_config) = proxy {
+                    builder = attach_proxy(proxy_config, builder)?;
                 }
 
                 let mut request = builder.build()?.request(method.clone(), url);
