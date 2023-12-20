@@ -1,6 +1,6 @@
 ![NFC](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/nfc/banner.png)
 
-<!-- description -->
+Read and write NFC tags on Android and iOS.
 
 ## Install
 
