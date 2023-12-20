@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-fs",
-  "version": "2.0.0-alpha.4",
+  "version": "2.0.0-alpha.5",
   "description": "Access the file system.",
   "license": "MIT or APACHE-2.0",
   "authors": [
@@ -24,6 +24,6 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-alpha.12"
+    "@tauri-apps/api": "2.0.0-alpha.13"
   }
 }

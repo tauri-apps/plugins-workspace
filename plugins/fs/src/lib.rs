@@ -11,22 +11,21 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use config::FsScope;
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
+    scope::fs::Scope,
+    utils::config::FsScope,
     FileDropEvent, Manager, RunEvent, Runtime, WindowEvent,
 };
 
 mod commands;
 mod config;
 mod error;
-mod scope;
 #[cfg(feature = "watch")]
 mod watcher;
 
 pub use config::Config;
 pub use error::Error;
-pub use scope::{Event as ScopeEvent, Scope};
 
 type Result<T> = std::result::Result<T, Error>;
 
@@ -49,17 +48,29 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
     PluginBuilder::<R, Option<Config>>::new("fs")
         .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
+            commands::create,
+            commands::open,
+            commands::copy_file,
+            commands::close,
+            commands::mkdir,
+            commands::read_dir,
+            commands::read,
             commands::read_file,
             commands::read_text_file,
+            commands::read_text_file_lines,
+            commands::read_text_file_lines_next,
+            commands::remove,
+            commands::rename,
+            commands::seek,
+            commands::stat,
+            commands::lstat,
+            commands::fstat,
+            commands::truncate,
+            commands::ftruncate,
+            commands::write,
             commands::write_file,
-            commands::read_dir,
-            commands::copy_file,
-            commands::create_dir,
-            commands::remove_dir,
-            commands::remove_file,
-            commands::rename_file,
+            commands::write_text_file,
             commands::exists,
-            commands::metadata,
             #[cfg(feature = "watch")]
             watcher::watch,
             #[cfg(feature = "watch")]
@@ -74,9 +85,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
                     .map(|c| &c.scope)
                     .unwrap_or(&default_scope),
             )?);
-
-            #[cfg(feature = "watch")]
-            app.manage(watcher::WatcherCollection::default());
 
             Ok(())
         })

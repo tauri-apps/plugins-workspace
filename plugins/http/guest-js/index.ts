@@ -24,7 +24,7 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/primitives";
+import { invoke } from "@tauri-apps/api/core";
 
 /**
  * Configuration of a proxy that a Client should pass requests to.
