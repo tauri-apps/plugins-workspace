@@ -44,7 +44,7 @@ export type Proxy = {
    * Proxy all HTTPS traffic to the passed URL.
    */
   https?: string | ProxyConfig;
-}
+};
 
 export interface ProxyConfig {
   /**
