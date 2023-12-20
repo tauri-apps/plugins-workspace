@@ -1,5 +1,10 @@
 [workspace]
-members = ["plugins/*", "plugins/*/tests/*", "plugins/*/examples/*/src-tauri", "examples/*/src-tauri"]
+members = [
+  "plugins/*",
+  "plugins/*/tests/*",
+  "plugins/*/examples/*/src-tauri",
+  "examples/*/src-tauri",
+]
 resolver = "2"
 
 [workspace.dependencies]
@@ -13,7 +18,7 @@ url = "2"
 
 [workspace.package]
 edition = "2021"
-authors = [ "Tauri Programme within The Commons Conservancy" ]
+authors = ["Tauri Programme within The Commons Conservancy"]
 license = "Apache-2.0 OR MIT"
 rust-version = "1.70"
 
