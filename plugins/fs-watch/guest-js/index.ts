@@ -35,8 +35,8 @@ type RawEventKind =
   | "other";
 
 export type DebouncedEvent =
-  | { kind: "any"; path: string }
-  | { kind: "AnyContinous"; path: string };
+  | { kind: "Any"; path: string }[]
+  | { kind: "AnyContinuous"; path: string }[];
 
 async function unwatch(id: number): Promise<void> {
   await invoke("plugin:fs-watch|unwatch", { id });
