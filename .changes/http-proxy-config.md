@@ -3,4 +3,4 @@
 "http-js": minor
 ---
 
-The fetch method now exposes a `proxy` field to configure proxy.
+Add `proxy` field to `fetch` options to configure proxy.

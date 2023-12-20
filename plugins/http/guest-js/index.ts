@@ -31,20 +31,20 @@ import { invoke } from "@tauri-apps/api/core";
  *
  * @since 2.0.0
  */
-export type Proxy =
-  | {
-      all: string | ProxyConfig;
-    }
-  | {
-      http: string | ProxyConfig;
-    }
-  | {
-      https: string | ProxyConfig;
-    }
-  | {
-      http: string | ProxyConfig;
-      https: string | ProxyConfig;
-    };
+export type Proxy = {
+  /**
+   * Proxy all traffic to the passed URL.
+   */
+  all?: string | ProxyConfig;
+  /**
+   * Proxy all HTTP traffic to the passed URL.
+   */
+  http?: string | ProxyConfig;
+  /**
+   * Proxy all HTTPS traffic to the passed URL.
+   */
+  https?: string | ProxyConfig;
+}
 
 export interface ProxyConfig {
   /**
