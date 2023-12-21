@@ -14,6 +14,8 @@ pub enum Error {
     #[cfg(desktop)]
     #[error("{0}")]
     Clipboard(String),
+    #[error("invalid image: {0}")]
+    Image(#[from] image::ImageError),
 }
 
 impl Serialize for Error {

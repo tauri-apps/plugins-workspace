@@ -16,9 +16,17 @@ pub(crate) async fn write<R: Runtime>(
 }
 
 #[command]
-pub(crate) async fn read<R: Runtime>(
+pub(crate) async fn read_text<R: Runtime>(
     _app: AppHandle<R>,
     clipboard: State<'_, Clipboard<R>>,
 ) -> Result<ClipboardContents> {
-    clipboard.read()
+    clipboard.read_text()
+}
+
+#[command]
+pub(crate) async fn read_image<R: Runtime>(
+    _app: AppHandle<R>,
+    clipboard: State<'_, Clipboard<R>>,
+) -> Result<ClipboardContents> {
+    clipboard.read_image()
 }

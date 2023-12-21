@@ -8,10 +8,12 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub enum ClipKind {
     PlainText { label: Option<String>, text: String },
+    Image { buffer: Vec<u8> },
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ClipboardContents {
     PlainText { text: String },
+    Image { buffer: Vec<u8> },
 }
