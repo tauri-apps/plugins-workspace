@@ -438,7 +438,7 @@ interface CreateOptions {
  */
 async function create(
   path: string | URL,
-  options?: CreateOptions
+  options?: CreateOptions,
 ): Promise<FileHandle> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -523,7 +523,7 @@ interface OpenOptions {
  */
 async function open(
   path: string | URL,
-  options?: OpenOptions
+  options?: OpenOptions,
 ): Promise<FileHandle> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -560,7 +560,7 @@ interface CopyFileOptions {
 async function copyFile(
   fromPath: string | URL,
   toPath: string | URL,
-  options?: CopyFileOptions
+  options?: CopyFileOptions,
 ): Promise<void> {
   if (
     (fromPath instanceof URL && fromPath.protocol !== "file:") ||
@@ -602,7 +602,7 @@ interface MkdirOptions {
  */
 async function mkdir(
   path: string | URL,
-  options?: MkdirOptions
+  options?: MkdirOptions,
 ): Promise<void> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -663,7 +663,7 @@ interface DirEntry {
  */
 async function readDir(
   path: string | URL,
-  options?: ReadDirOptions
+  options?: ReadDirOptions,
 ): Promise<DirEntry[]> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -696,7 +696,7 @@ interface ReadFileOptions {
  */
 async function readFile(
   path: string | URL,
-  options?: ReadFileOptions
+  options?: ReadFileOptions,
 ): Promise<Uint8Array> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -722,7 +722,7 @@ async function readFile(
  */
 async function readTextFile(
   path: string | URL,
-  options?: ReadFileOptions
+  options?: ReadFileOptions,
 ): Promise<string> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -751,7 +751,7 @@ async function readTextFile(
  */
 async function readTextFileLines(
   path: string | URL,
-  options?: ReadFileOptions
+  options?: ReadFileOptions,
 ): Promise<AsyncIterableIterator<string>> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -772,7 +772,7 @@ async function readTextFileLines(
 
       const [line, done] = await invoke<[string | null, boolean]>(
         "plugin:fs|read_text_file_lines_next",
-        { rid: this.rid }
+        { rid: this.rid },
       );
 
       // an iteration is over, reset rid for next iteration
@@ -813,7 +813,7 @@ interface RemoveOptions {
  */
 async function remove(
   path: string | URL,
-  options?: RemoveOptions
+  options?: RemoveOptions,
 ): Promise<void> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -853,7 +853,7 @@ interface RenameOptions {
 async function rename(
   oldPath: string | URL,
   newPath: string | URL,
-  options: RenameOptions
+  options: RenameOptions,
 ): Promise<void> {
   if (
     (oldPath instanceof URL && oldPath.protocol !== "file:") ||
@@ -892,7 +892,7 @@ interface StatOptions {
  */
 async function stat(
   path: string | URL,
-  options?: StatOptions
+  options?: StatOptions,
 ): Promise<FileInfo> {
   const res = await invoke<UnparsedFileInfo>("plugin:fs|stat", {
     path: path instanceof URL ? path.toString() : path,
@@ -918,7 +918,7 @@ async function stat(
  */
 async function lstat(
   path: string | URL,
-  options?: StatOptions
+  options?: StatOptions,
 ): Promise<FileInfo> {
   const res = await invoke<UnparsedFileInfo>("plugin:fs|lstat", {
     path: path instanceof URL ? path.toString() : path,
@@ -959,7 +959,7 @@ interface TruncateOptions {
 async function truncate(
   path: string | URL,
   len?: number,
-  options?: TruncateOptions
+  options?: TruncateOptions,
 ): Promise<void> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -1004,7 +1004,7 @@ interface WriteFileOptions {
 async function writeFile(
   path: string | URL,
   data: Uint8Array,
-  options?: WriteFileOptions
+  options?: WriteFileOptions,
 ): Promise<void> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -1031,7 +1031,7 @@ async function writeFile(
 async function writeTextFile(
   path: string | URL,
   data: string,
-  options?: WriteFileOptions
+  options?: WriteFileOptions,
 ): Promise<void> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -1065,7 +1065,7 @@ interface ExistsOptions {
  */
 async function exists(
   path: string | URL,
-  options?: ExistsOptions
+  options?: ExistsOptions,
 ): Promise<boolean> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -1147,7 +1147,7 @@ async function unwatch(id: number): Promise<void> {
 async function watch(
   paths: string | string[] | URL | URL[],
   cb: (event: DebouncedEvent) => void,
-  options?: DebouncedWatchOptions
+  options?: DebouncedWatchOptions,
 ): Promise<UnwatchFn> {
   const opts = {
     recursive: false,
@@ -1185,7 +1185,7 @@ async function watch(
 async function watchImmediate(
   paths: string | string[] | URL | URL[],
   cb: (event: RawEvent) => void,
-  options?: WatchOptions
+  options?: WatchOptions,
 ): Promise<UnwatchFn> {
   const opts = {
     recursive: false,
