@@ -58,7 +58,7 @@ impl<R: Runtime> Clipboard<R> {
         }
     }
 
-    pub fn read_text(&self) -> crate::Result<ClipboardContents> {
+    pub fn read(&self) -> crate::Result<ClipboardContents> {
         match &self.clipboard {
             Ok(clipboard) => {
                 let text = clipboard.lock().unwrap().get_text()?;

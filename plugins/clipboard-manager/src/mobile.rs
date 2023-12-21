@@ -39,4 +39,8 @@ impl<R: Runtime> Clipboard<R> {
     pub fn read(&self) -> crate::Result<ClipboardContents> {
         self.0.run_mobile_plugin("read", ()).map_err(Into::into)
     }
+
+    pub fn read_image(&self) -> crate::Result<ClipboardContents> {
+        panic!("unsupported on this platform")
+    }
 }

@@ -52,6 +52,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .invoke_handler(tauri::generate_handler![
             commands::write,
             commands::read_text,
+            #[cfg(desktop)]
             commands::read_image,
         ])
         .setup(|app, api| {

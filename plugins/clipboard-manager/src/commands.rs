@@ -20,7 +20,7 @@ pub(crate) async fn read_text<R: Runtime>(
     _app: AppHandle<R>,
     clipboard: State<'_, Clipboard<R>>,
 ) -> Result<ClipboardContents> {
-    clipboard.read_text()
+    clipboard.read()
 }
 
 #[command]
