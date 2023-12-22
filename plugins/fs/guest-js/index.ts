@@ -1125,8 +1125,8 @@ type RawEventKind =
  * @since 2.0.0
  */
 type DebouncedEvent =
-  | { kind: "any"; path: string }
-  | { kind: "AnyContinous"; path: string };
+  | { kind: "Any"; path: string }[]
+  | { kind: "AnyContinuous"; path: string }[];
 
 /**
  * @since 2.0.0
