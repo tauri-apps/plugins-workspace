@@ -9,7 +9,6 @@ use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
 use crate::models::*;
 
-use std::io::{BufWriter, Cursor};
 use std::{borrow::Cow, sync::Mutex};
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
@@ -98,7 +97,7 @@ fn buffer_to_image_data(buffer: &[u8]) -> crate::Result<ImageData> {
 // copied from https://github.com/CrossCopy/tauri-plugin-clipboard/blob/main/src/util.rs
 fn image_data_to_buffer(img: &ImageData) -> crate::Result<Vec<u8>> {
     let mut buffer: Vec<u8> = Vec::new();
-    image::codecs::png::PngEncoder::new(BufWriter::new(Cursor::new(&mut buffer))).write_image(
+    image::codecs::png::PngEncoder::new(&mut buffer).write_image(
         &img.bytes,
         img.width as u32,
         img.height as u32,
