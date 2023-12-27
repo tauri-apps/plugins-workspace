@@ -980,6 +980,8 @@ interface WriteFileOptions {
   append?: boolean;
   /** Sets the option to allow creating a new file, if one doesn't already exist at the specified path (defaults to `true`). */
   create?: boolean;
+  /** Sets the option to create a new file, failing if it already exists. */
+  createNew?: boolean;
   /** File permissions. Ignored on Windows. */
   mode?: number;
   /** Base directory for `path` */
@@ -1023,7 +1025,7 @@ async function writeFile(
   *
   * await writeTextFile('file.txt', "Hello world", { dir: BaseDirectory.App });
   * ```
-  * 
+  *
   * @since 2.0.0
   */
 async function writeTextFile(
