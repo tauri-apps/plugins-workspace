@@ -13,14 +13,14 @@
 
 use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
-#[cfg(feature = "protocol-asset")]
+
 use tauri::scope::fs::{Event as FsScopeEvent, Scope as FsScope};
 use tauri::{
     plugin::{Builder, TauriPlugin},
     scope::fs::Pattern as GlobPattern,
     Manager, Runtime,
 };
-use tauri_plugin_fs::{FsExt, Scope as FsPluginScope, ScopeEvent as FsPluginScopeEvent};
+use tauri_plugin_fs::FsExt;
 
 use std::{
     collections::HashSet,
@@ -58,33 +58,6 @@ trait ScopeExt {
     fn forbidden_patterns(&self) -> HashSet<GlobPattern>;
 }
 
-impl ScopeExt for FsPluginScope {
-    fn allow_file(&self, path: &Path) {
-        let _ = FsPluginScope::allow_file(self, path);
-    }
-
-    fn allow_directory(&self, path: &Path, recursive: bool) {
-        let _ = FsPluginScope::allow_directory(self, path, recursive);
-    }
-
-    fn forbid_file(&self, path: &Path) {
-        let _ = FsPluginScope::forbid_file(self, path);
-    }
-
-    fn forbid_directory(&self, path: &Path, recursive: bool) {
-        let _ = FsPluginScope::forbid_directory(self, path, recursive);
-    }
-
-    fn allowed_patterns(&self) -> HashSet<GlobPattern> {
-        FsPluginScope::allowed_patterns(self)
-    }
-
-    fn forbidden_patterns(&self) -> HashSet<GlobPattern> {
-        FsPluginScope::forbidden_patterns(self)
-    }
-}
-
-#[cfg(feature = "protocol-asset")]
 impl ScopeExt for FsScope {
     fn allow_file(&self, path: &Path) {
         let _ = FsScope::allow_file(self, path);
@@ -299,7 +272,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 if let Some(fs_scope) = fs_scope {
                     let fs_scope_ = fs_scope.clone();
                     fs_scope.listen(move |event| {
-                        if let FsPluginScopeEvent::PathAllowed(_) = event {
+                        if let FsScopeEvent::PathAllowed(_) = event {
                             save_scopes(&fs_scope_, &app_dir, &fs_scope_state_path);
                         }
                     });

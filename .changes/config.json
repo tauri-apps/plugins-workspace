@@ -39,6 +39,7 @@
       "publish": false,
       "dependencies": [
         "barcode-scanner",
+        "biometric",
         "log-plugin",
         "cli",
         "clipboard-manager",
@@ -46,6 +47,7 @@
         "fs",
         "global-shortcut",
         "http",
+        "nfc",
         "notification",
         "os",
         "process",
@@ -59,6 +61,7 @@
       "publish": false,
       "dependencies": [
         "barcode-scanner-js",
+        "biometric-js",
         "log-js",
         "cli-js",
         "clipboard-manager-js",
@@ -66,6 +69,7 @@
         "fs-js",
         "global-shortcut-js",
         "http-js",
+        "nfc-js",
         "notification-js",
         "os-js",
         "process-js",

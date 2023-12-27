@@ -1,5 +1,10 @@
 [workspace]
-members = ["plugins/*", "plugins/*/tests/*", "plugins/*/examples/*/src-tauri", "examples/*/src-tauri"]
+members = [
+  "plugins/*",
+  "plugins/*/tests/*",
+  "plugins/*/examples/*/src-tauri",
+  "examples/*/src-tauri",
+]
 resolver = "2"
 
 [workspace.dependencies]
@@ -9,10 +14,11 @@ tauri = "2.0.0-alpha.20"
 tauri-build = "2.0.0-alpha.13"
 serde_json = "1"
 thiserror = "1"
+url = "2"
 
 [workspace.package]
 edition = "2021"
-authors = [ "Tauri Programme within The Commons Conservancy" ]
+authors = ["Tauri Programme within The Commons Conservancy"]
 license = "Apache-2.0 OR MIT"
 rust-version = "1.70"
 

@@ -1,6 +1,6 @@
 ![biometric](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/biometric/banner.png)
 
-<!-- description -->
+Prompt the user for biometric authentication on Android and iOS.
 
 ## Install
 
