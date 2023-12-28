@@ -50,10 +50,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("clipboard")
         .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
-            commands::write,
+            commands::write_text,
             commands::read_text,
             #[cfg(desktop)]
             commands::read_image,
+            #[cfg(desktop)]
+            commands::write_image
         ])
         .setup(|app, api| {
             #[cfg(mobile)]

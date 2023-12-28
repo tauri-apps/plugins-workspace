@@ -87,7 +87,7 @@ class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
 
   @Command
   @Suppress("MoveVariableDeclarationIntoWhen")
-  fun write(invoke: Invoke) {
+  fun writeText(invoke: Invoke) {
     val args = invoke.parseArgs(WriteOptions::class.java)
 
     val clipData = when (args) {
@@ -106,7 +106,7 @@ class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
   }
 
   @Command
-  fun read(invoke: Invoke) {
+  fun readText(invoke: Invoke) {
     val data = if (manager.hasPrimaryClip()) {
       if (manager.primaryClipDescription?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) == true) {
         val item: ClipData.Item = manager.primaryClip!!.getItemAt(0)

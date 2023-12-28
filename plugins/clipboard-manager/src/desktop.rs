@@ -29,35 +29,34 @@ pub struct Clipboard<R: Runtime> {
 }
 
 impl<R: Runtime> Clipboard<R> {
-    pub fn write(&self, kind: ClipKind) -> crate::Result<()> {
+    pub fn write_text(&self, kind: ClipKind) -> crate::Result<()> {
         match kind {
-            ClipKind::PlainText { text, .. } => self.write_text(text),
-            ClipKind::Image { buffer } => self.write_image(buffer),
+            ClipKind::PlainText { text, .. } => match &self.clipboard {
+                Ok(clipboard) => clipboard.lock().unwrap().set_text(text).map_err(Into::into),
+                Err(e) => Err(crate::Error::Clipboard(e.to_string())),
+            },
+            _ => Err(crate::Error::Clipboard("Invalid clip kind".to_string())),
         }
     }
 
-    fn write_text(&self, text: String) -> crate::Result<()> {
-        match &self.clipboard {
-            Ok(clipboard) => clipboard.lock().unwrap().set_text(text).map_err(Into::into),
-            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
+    pub fn write_image(&self, kind: ClipKind) -> crate::Result<()> {
+        match kind {
+            ClipKind::Image { buffer, .. } => match &self.clipboard {
+                Ok(clipboard) => {
+                    let image = buffer_to_image_data(&buffer)?;
+                    clipboard
+                        .lock()
+                        .unwrap()
+                        .set_image(image)
+                        .map_err(Into::into)
+                }
+                Err(e) => Err(crate::Error::Clipboard(e.to_string())),
+            },
+            _ => Err(crate::Error::Clipboard("Invalid clip kind".to_string())),
         }
     }
 
-    fn write_image(&self, buffer: Vec<u8>) -> crate::Result<()> {
-        match &self.clipboard {
-            Ok(clipboard) => {
-                let image = buffer_to_image_data(&buffer)?;
-                clipboard
-                    .lock()
-                    .unwrap()
-                    .set_image(image)
-                    .map_err(Into::into)
-            }
-            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
-        }
-    }
-
-    pub fn read(&self) -> crate::Result<ClipboardContents> {
+    pub fn read_text(&self) -> crate::Result<ClipboardContents> {
         match &self.clipboard {
             Ok(clipboard) => {
                 let text = clipboard.lock().unwrap().get_text()?;

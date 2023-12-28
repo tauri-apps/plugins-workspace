@@ -7,12 +7,21 @@ use tauri::{command, AppHandle, Runtime, State};
 use crate::{ClipKind, Clipboard, ClipboardContents, Result};
 
 #[command]
-pub(crate) async fn write<R: Runtime>(
+pub(crate) async fn write_text<R: Runtime>(
     _app: AppHandle<R>,
     clipboard: State<'_, Clipboard<R>>,
     data: ClipKind,
 ) -> Result<()> {
-    clipboard.write(data)
+    clipboard.write_text(data)
+}
+
+#[command]
+pub(crate) async fn write_image<R: Runtime>(
+    _app: AppHandle<R>,
+    clipboard: State<'_, Clipboard<R>>,
+    data: ClipKind,
+) -> Result<()> {
+    clipboard.write_image(data)
 }
 
 #[command]
@@ -20,7 +29,7 @@ pub(crate) async fn read_text<R: Runtime>(
     _app: AppHandle<R>,
     clipboard: State<'_, Clipboard<R>>,
 ) -> Result<ClipboardContents> {
-    clipboard.read()
+    clipboard.read_text()
 }
 
 #[command]

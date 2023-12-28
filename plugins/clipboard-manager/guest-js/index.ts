@@ -31,7 +31,7 @@ async function writeText(
   text: string,
   opts?: { label?: string },
 ): Promise<void> {
-  return invoke("plugin:clipboard|write", {
+  return invoke("plugin:clipboard|write_text", {
     data: {
       plainText: {
         label: opts?.label,
@@ -92,7 +92,7 @@ async function readImage(): Promise<Uint8Array> {
  * @since 2.0.0
  */
 async function writeImage(buffer: Uint8Array | Array<number>): Promise<void> {
-  return invoke("plugin:clipboard|write", {
+  return invoke("plugin:clipboard|write_image", {
     data: {
       image: {
         buffer: Array.isArray(buffer) ? buffer : Array.from(buffer),
