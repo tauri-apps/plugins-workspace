@@ -230,7 +230,7 @@ checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 
 [[package]]
 name = "api"
-version = "2.0.0-alpha.9"
+version = "2.0.0-alpha.11"
 dependencies = [
  "log",
  "serde",
@@ -5965,7 +5965,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.0.0-alpha.4"
+version = "2.0.0-alpha.5"
 dependencies = [
  "log",
  "serde",
@@ -5978,7 +5978,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-alpha.6"
+version = "2.0.0-alpha.7"
 dependencies = [
  "glib 0.16.9",
  "log",
@@ -5994,7 +5994,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-alpha.6"
+version = "2.0.0-alpha.7"
 dependencies = [
  "anyhow",
  "glob",
@@ -6022,7 +6022,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.0-alpha.7"
+version = "2.0.0-alpha.9"
 dependencies = [
  "data-url",
  "glob",
@@ -6117,7 +6117,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.0-alpha.6"
+version = "2.0.0-alpha.7"
 dependencies = [
  "aho-corasick",
  "bincode",

@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-alpha.7]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-alpha.7`
+
 ## \[2.0.0-alpha.6]
 
 - [`2cf8faa`](https://github.com/tauri-apps/plugins-workspace/commit/2cf8faa3e149af55eb86e5aba8ebfc54210ca703)([#839](https://github.com/tauri-apps/plugins-workspace/pull/839)) Update to tauri@alpha.20.
