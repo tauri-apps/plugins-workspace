@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-alpha.9]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-alpha.7`
+
 ## \[2.0.0-alpha.6]
 
 - [`bfa87da`](https://github.com/tauri-apps/plugins-workspace/commit/bfa87da848f9f1da2abae3354eed632881eddf11)([#824](https://github.com/tauri-apps/plugins-workspace/pull/824)) Add `proxy` field to `fetch` options to configure proxy.

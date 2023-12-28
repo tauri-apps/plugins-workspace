@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-alpha.6]
+
+- [`85f8419`](https://github.com/tauri-apps/plugins-workspace/commit/85f841968200316958d707db0c39bb115f762471)([#848](https://github.com/tauri-apps/plugins-workspace/pull/848)) Fix `DebouncedEvent` type to correctly represent the actual type.
+- [`c601230`](https://github.com/tauri-apps/plugins-workspace/commit/c60123093ddf725af7228494182fed697ff8b021)([#847](https://github.com/tauri-apps/plugins-workspace/pull/847)) Add `createNew` option for `writeFile` and `writeTextFile` to create the file if doesn't exist and fail if it does.
+- [`c601230`](https://github.com/tauri-apps/plugins-workspace/commit/c60123093ddf725af7228494182fed697ff8b021)([#847](https://github.com/tauri-apps/plugins-workspace/pull/847)) Truncate files when using `writeFile` and `writeTextFile` with `append: false`.
+- [`2e2fc8d`](https://github.com/tauri-apps/plugins-workspace/commit/2e2fc8de69dd8d282b66ec81561d57d8af802dc5)([#857](https://github.com/tauri-apps/plugins-workspace/pull/857)) Fix `invalid args id for command unwatch` error when trying to unwatch a previously watched file or directory.
+- [`c601230`](https://github.com/tauri-apps/plugins-workspace/commit/c60123093ddf725af7228494182fed697ff8b021)([#847](https://github.com/tauri-apps/plugins-workspace/pull/847)) Fix panic when using `writeFile` or `writeTextFile` without passing an option object.
+
 ## \[2.0.0-alpha.5]
 
 - [`387c2f9`](https://github.com/tauri-apps/plugins-workspace/commit/387c2f9e0ce4c75c07ffa3fd76391a25b58f5daf)([#802](https://github.com/tauri-apps/plugins-workspace/pull/802)) Update to @tauri-apps/api v2.0.0-alpha.13.
@@ -30,7 +38,7 @@
 ## \[2.0.0-alpha.0]
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-/pull/454)) Fix `writeBinaryFile` crashing with `command 'write_binary_file' not found`
+  /pull/454)) Fix `writeBinaryFile` crashing with `command 'write_binary_file' not found`
 - [`d74fc0a`](https://github.com/tauri-apps/plugins-workspace/commit/d74fc0a097996e90a37be8f57d50b7d1f6ca616f)([#555](https://github.com/tauri-apps/plugins-workspace/pull/555)) Update to alpha.11.
 
 ## \[2.0.0-alpha.0]
