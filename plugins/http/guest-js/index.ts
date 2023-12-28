@@ -103,7 +103,7 @@ export async function fetch(
   init?: RequestInit & ClientOptions,
 ): Promise<Response> {
   const maxRedirections = init?.maxRedirections;
-  const connectTimeout = init?.maxRedirections;
+  const connectTimeout = init?.connectTimeout;
   const proxy = init?.proxy;
 
   // Remove these fields before creating the request
