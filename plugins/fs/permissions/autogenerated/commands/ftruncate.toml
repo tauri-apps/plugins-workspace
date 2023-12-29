@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ftruncate"
+description = "This enables the ftruncate command without any pre-configured accessible paths."
+commands.allow = [
+    "ftruncate"
+]
+
+[[permission]]
+identifier = "deny-ftruncate"
+description = "This denies the ftruncate command without any pre-configured accessible paths."
+commands.deny = [
+    "ftruncate"
+]

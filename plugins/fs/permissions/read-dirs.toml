@@ -1,0 +1,9 @@
+identifier = "read-dirs"
+description = "This enables directory read and file metadata related commands without any pre-configured accessible paths."
+commands.allow = [
+    "read_dir",
+    "stat",
+    "lstat",
+    "fstat",
+    "exists"
+]

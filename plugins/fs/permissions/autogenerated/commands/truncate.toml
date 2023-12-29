@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-truncate"
+description = "This enables the truncate command without any pre-configured accessible paths."
+commands.allow = [
+    "truncate"
+]
+
+[[permission]]
+identifier = "deny-truncate"
+description = "This denies the truncate command without any pre-configured accessible paths."
+commands.deny = [
+    "truncate"
+]

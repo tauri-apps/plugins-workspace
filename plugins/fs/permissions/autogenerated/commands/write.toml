@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-write"
+description = "This enables the write command without any pre-configured accessible paths."
+commands.allow = [
+    "write"
+]
+
+[[permission]]
+identifier = "deny-write"
+description = "This denies the write command without any pre-configured accessible paths."
+commands.deny = [
+    "write"
+]

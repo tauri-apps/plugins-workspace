@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-read"
+description = "This enables the read command without any pre-configured accessible paths."
+commands.allow = [
+    "read"
+]
+
+[[permission]]
+identifier = "deny-read"
+description = "This denies the read command without any pre-configured accessible paths."
+commands.deny = [
+    "read"
+]

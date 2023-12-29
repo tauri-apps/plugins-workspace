@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-unwatch"
+description = "This enables the unwatch command without any pre-configured accessible paths."
+commands.allow = [
+    "unwatch"
+]
+
+[[permission]]
+identifier = "deny-unwatch"
+description = "This denies the unwatch command without any pre-configured accessible paths."
+commands.deny = [
+    "unwatch"
+]

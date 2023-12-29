@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-mkdir"
+description = "This enables the mkdir command without any pre-configured accessible paths."
+commands.allow = [
+    "mkdir"
+]
+
+[[permission]]
+identifier = "deny-mkdir"
+description = "This denies the mkdir command without any pre-configured accessible paths."
+commands.deny = [
+    "mkdir"
+]

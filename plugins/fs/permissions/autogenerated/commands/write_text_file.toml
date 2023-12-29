@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-write-text-file"
+description = "This enables the write_text_file command without any pre-configured accessible paths."
+commands.allow = [
+    "write_text_file"
+]
+
+[[permission]]
+identifier = "deny-write-text-file"
+description = "This denies the write_text_file command without any pre-configured accessible paths."
+commands.deny = [
+    "write_text_file"
+]

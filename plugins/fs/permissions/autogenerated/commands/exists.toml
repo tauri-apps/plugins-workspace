@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-exists"
+description = "This enables the exists command without any pre-configured accessible paths."
+commands.allow = [
+    "exists"
+]
+
+[[permission]]
+identifier = "deny-exists"
+description = "This denies the exists command without any pre-configured accessible paths."
+commands.deny = [
+    "exists"
+]

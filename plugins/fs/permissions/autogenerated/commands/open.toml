@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-open"
+description = "This enables the open command without any pre-configured accessible paths."
+commands.allow = [
+    "open"
+]
+
+[[permission]]
+identifier = "deny-open"
+description = "This denies the open command without any pre-configured accessible paths."
+commands.deny = [
+    "open"
+]

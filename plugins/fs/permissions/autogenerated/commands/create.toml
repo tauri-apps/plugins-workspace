@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-create"
+description = "This enables the create command without any pre-configured accessible paths."
+commands.allow = [
+    "create"
+]
+
+[[permission]]
+identifier = "deny-create"
+description = "This denies the create command without any pre-configured accessible paths."
+commands.deny = [
+    "create"
+]

@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-rename"
+description = "This enables the rename command without any pre-configured accessible paths."
+commands.allow = [
+    "rename"
+]
+
+[[permission]]
+identifier = "deny-rename"
+description = "This denies the rename command without any pre-configured accessible paths."
+commands.deny = [
+    "rename"
+]

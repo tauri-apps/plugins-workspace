@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-copy-file"
+description = "This enables the copy_file command without any pre-configured accessible paths."
+commands.allow = [
+    "copy_file"
+]
+
+[[permission]]
+identifier = "deny-copy-file"
+description = "This denies the copy_file command without any pre-configured accessible paths."
+commands.deny = [
+    "copy_file"
+]

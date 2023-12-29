@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-stat"
+description = "This enables the stat command without any pre-configured accessible paths."
+commands.allow = [
+    "stat"
+]
+
+[[permission]]
+identifier = "deny-stat"
+description = "This denies the stat command without any pre-configured accessible paths."
+commands.deny = [
+    "stat"
+]

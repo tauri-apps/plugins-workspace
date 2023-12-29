@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-seek"
+description = "This enables the seek command without any pre-configured accessible paths."
+commands.allow = [
+    "seek"
+]
+
+[[permission]]
+identifier = "deny-seek"
+description = "This denies the seek command without any pre-configured accessible paths."
+commands.deny = [
+    "seek"
+]

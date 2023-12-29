@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-read-text-file"
+description = "This enables the read_text_file command without any pre-configured accessible paths."
+commands.allow = [
+    "read_text_file"
+]
+
+[[permission]]
+identifier = "deny-read-text-file"
+description = "This denies the read_text_file command without any pre-configured accessible paths."
+commands.deny = [
+    "read_text_file"
+]

@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-watch"
+description = "This enables the watch command without any pre-configured accessible paths."
+commands.allow = [
+    "watch"
+]
+
+[[permission]]
+identifier = "deny-watch"
+description = "This denies the watch command without any pre-configured accessible paths."
+commands.deny = [
+    "watch"
+]

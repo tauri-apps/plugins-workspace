@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-fstat"
+description = "This enables the fstat command without any pre-configured accessible paths."
+commands.allow = [
+    "fstat"
+]
+
+[[permission]]
+identifier = "deny-fstat"
+description = "This denies the fstat command without any pre-configured accessible paths."
+commands.deny = [
+    "fstat"
+]

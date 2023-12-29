@@ -1,0 +1,15 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-read-dir"
+description = "This enables the read_dir command without any pre-configured accessible paths."
+commands.allow = [
+    "read_dir"
+]
+
+[[permission]]
+identifier = "deny-read-dir"
+description = "This denies the read_dir command without any pre-configured accessible paths."
+commands.deny = [
+    "read_dir"
+]
