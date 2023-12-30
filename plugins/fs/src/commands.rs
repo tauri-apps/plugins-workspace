@@ -585,12 +585,16 @@ pub struct WriteFileOptions {
     base: BaseOptions,
     #[serde(default)]
     append: bool,
-    #[serde(default)]
+    #[serde(default = "default_create_value")]
     create: bool,
     #[serde(default)]
     create_new: bool,
     #[allow(unused)]
     mode: Option<u32>,
+}
+
+fn default_create_value() -> bool {
+    true
 }
 
 fn write_file_inner<R: Runtime>(
