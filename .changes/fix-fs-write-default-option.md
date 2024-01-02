@@ -3,4 +3,4 @@
 "fs-js": "patch"
 ---
 
-Fix `create` option inconsistency for `writeFile` and `writeTextFile` in guest-js and rust side.
+Fix incorrect `create` option default value for `writeFile` and `writeTextFile` which didn't match documentation.
