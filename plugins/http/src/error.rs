@@ -5,8 +5,6 @@
 use serde::{Serialize, Serializer};
 use url::Url;
 
-use crate::RequestId;
-
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error(transparent)]
@@ -39,8 +37,8 @@ pub enum Error {
     DataUrlError,
     #[error("failed to decode data url into bytes")]
     DataUrlDecodeError,
-    #[error("invalid request id: {0}")]
-    InvalidRequestId(RequestId),
+    #[error(transparent)]
+    Tauri(#[from] tauri::Error),
     #[error(transparent)]
     Utf8(#[from] std::string::FromUtf8Error),
 }

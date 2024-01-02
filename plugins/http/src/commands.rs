@@ -2,14 +2,30 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{collections::HashMap, time::Duration};
+use std::{collections::HashMap, future::Future, pin::Pin, sync::Arc, time::Duration};
 
 use http::{header, HeaderName, HeaderValue, Method, StatusCode};
 use reqwest::{redirect::Policy, NoProxy};
 use serde::{Deserialize, Serialize};
-use tauri::{command, AppHandle, Runtime};
+use tauri::{async_runtime::Mutex, command, AppHandle, Manager, ResourceId, Runtime};
 
-use crate::{Error, FetchRequest, HttpExt, RequestId};
+use crate::{Error, HttpExt, Result};
+
+struct ReqwestResponse(reqwest::Response);
+
+type CancelableResponseResult = Result<Result<reqwest::Response>>;
+type CancelableResponseFuture =
+    Pin<Box<dyn Future<Output = CancelableResponseResult> + Send + Sync>>;
+
+struct FetchRequest(Mutex<CancelableResponseFuture>);
+impl FetchRequest {
+    fn new(f: CancelableResponseFuture) -> Self {
+        Self(Mutex::new(f))
+    }
+}
+
+impl tauri::Resource for FetchRequest {}
+impl tauri::Resource for ReqwestResponse {}
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -18,6 +34,7 @@ pub struct FetchResponse {
     status_text: String,
     headers: Vec<(String, String)>,
     url: String,
+    rid: ResourceId,
 }
 
 #[derive(Deserialize)]
@@ -114,7 +131,7 @@ fn attach_proxy(
 pub async fn fetch<R: Runtime>(
     app: AppHandle<R>,
     client_config: ClientConfig,
-) -> crate::Result<RequestId> {
+) -> crate::Result<ResourceId> {
     let ClientConfig {
         method,
         url,
@@ -183,11 +200,9 @@ pub async fn fetch<R: Runtime>(
                     request = request.body(data);
                 }
 
-                let http_state = app.http();
-                let rid = http_state.next_id();
                 let fut = async move { Ok(request.send().await.map_err(Into::into)) };
-                let mut request_table = http_state.requests.lock().await;
-                request_table.insert(rid, FetchRequest::new(Box::pin(fut)));
+                let mut resources_table = app.resources_table();
+                let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
 
                 Ok(rid)
             } else {
@@ -206,11 +221,9 @@ pub async fn fetch<R: Runtime>(
                 .header(header::CONTENT_TYPE, data_url.mime_type().to_string())
                 .body(reqwest::Body::from(body))?;
 
-            let http_state = app.http();
-            let rid = http_state.next_id();
             let fut = async move { Ok(Ok(reqwest::Response::from(response))) };
-            let mut request_table = http_state.requests.lock().await;
-            request_table.insert(rid, FetchRequest::new(Box::pin(fut)));
+            let mut resources_table = app.resources_table();
+            let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
             Ok(rid)
         }
         _ => Err(Error::SchemeNotSupport(scheme.to_string())),
@@ -218,24 +231,25 @@ pub async fn fetch<R: Runtime>(
 }
 
 #[command]
-pub async fn fetch_cancel<R: Runtime>(app: AppHandle<R>, rid: RequestId) -> crate::Result<()> {
-    let mut request_table = app.http().requests.lock().await;
-    let req = request_table
-        .get_mut(&rid)
-        .ok_or(Error::InvalidRequestId(rid))?;
-    *req = FetchRequest::new(Box::pin(async { Err(Error::RequestCanceled) }));
+pub async fn fetch_cancel<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> crate::Result<()> {
+    let req = {
+        let resources_table = app.resources_table();
+        resources_table.get::<FetchRequest>(rid)?
+    };
+    let mut req = req.0.lock().await;
+    *req = Box::pin(async { Err(Error::RequestCanceled) });
     Ok(())
 }
 
 #[command]
 pub async fn fetch_send<R: Runtime>(
     app: AppHandle<R>,
-    rid: RequestId,
+    rid: ResourceId,
 ) -> crate::Result<FetchResponse> {
-    let mut request_table = app.http().requests.lock().await;
-    let req = request_table
-        .remove(&rid)
-        .ok_or(Error::InvalidRequestId(rid))?;
+    let req = {
+        let mut resources_table = app.resources_table();
+        resources_table.take::<FetchRequest>(rid)?
+    };
 
     let res = match req.0.lock().await.as_mut().await {
         Ok(Ok(res)) => res,
@@ -252,25 +266,27 @@ pub async fn fetch_send<R: Runtime>(
         ));
     }
 
-    app.http().responses.lock().await.insert(rid, res);
+    let mut resources_table = app.resources_table();
+    let rid = resources_table.add(ReqwestResponse(res));
 
     Ok(FetchResponse {
         status: status.as_u16(),
         status_text: status.canonical_reason().unwrap_or_default().to_string(),
         headers,
         url,
+        rid,
     })
 }
 
 #[command]
 pub(crate) async fn fetch_read_body<R: Runtime>(
     app: AppHandle<R>,
-    rid: RequestId,
+    rid: ResourceId,
 ) -> crate::Result<tauri::ipc::Response> {
-    let mut response_table = app.http().responses.lock().await;
-    let res = response_table
-        .remove(&rid)
-        .ok_or(Error::InvalidRequestId(rid))?;
-
+    let res = {
+        let mut resources_table = app.resources_table();
+        resources_table.take::<ReqwestResponse>(rid)?
+    };
+    let res = Arc::into_inner(res).unwrap().0;
     Ok(tauri::ipc::Response::new(res.bytes().await?.to_vec()))
 }
