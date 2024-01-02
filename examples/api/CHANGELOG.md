@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-alpha.9]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.0.0-alpha.6`
+
 ## \[2.0.0-alpha.8]
 
 ### Dependencies

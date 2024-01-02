@@ -1135,8 +1135,8 @@ type DebouncedEvent =
  */
 type UnwatchFn = () => void;
 
-async function unwatch(id: number): Promise<void> {
-  await invoke("plugin:fs|unwatch", { id });
+async function unwatch(rid: number): Promise<void> {
+  await invoke("plugin:fs|unwatch", { rid });
 }
 
 /**
