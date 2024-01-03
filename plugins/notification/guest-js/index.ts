@@ -568,6 +568,8 @@ export type {
   PendingNotification,
   ActiveNotification,
   Channel,
+  ScheduleInterval,
+  ScheduleData,
 };
 
 export {
@@ -588,4 +590,6 @@ export {
   channels,
   onNotificationReceived,
   onAction,
+  Schedule,
+  ScheduleEvery,
 };
