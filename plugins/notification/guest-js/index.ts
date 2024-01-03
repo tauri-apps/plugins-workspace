@@ -569,7 +569,6 @@ export type {
   ActiveNotification,
   Channel,
   ScheduleInterval,
-  ScheduleData,
 };
 
 export {
