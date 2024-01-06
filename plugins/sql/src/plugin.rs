@@ -149,8 +149,9 @@ async fn load<R: Runtime>(
     migrations: State<'_, Migrations>,
     db: String,
 ) -> Result<String> {
+    // see test cases from [sqlx](https://github.com/launchbadge/sqlx/blob/929af41745a9434ae83417dcf2571685cecca6f0/sqlx-sqlite/src/options/parse.rs#L135)
     #[cfg(feature = "sqlite")]
-    let is_in_memory = db.contains("memory");
+    let is_in_memory = db.contains(":memory") || db.contains("mode=memory");
 
     #[cfg(feature = "sqlite")]
     let fqdb = if is_in_memory {
