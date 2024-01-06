@@ -66,6 +66,8 @@ import Database from "@tauri-apps/plugin-sql";
 
 // sqlite. The path is relative to `tauri::api::path::BaseDirectory::App`.
 const db = await Database.load("sqlite:test.db");
+// sqlite. In memory database
+const db = await Database.load("sqlite::memory:");
 // mysql
 const db = await Database.load("mysql://user:pass@host/database");
 // postgres
