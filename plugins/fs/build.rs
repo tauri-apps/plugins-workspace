@@ -178,4 +178,7 @@ permissions = [
         std::fs::write(base_dirs.join(format!("{lower}.toml")), toml)
             .expect(&format!("unable to autogenerate ${upper}"));
     }
+
+    tauri_plugin::acl::define_permissions("./permissions/**/*.toml")
+        .expect("failed to define plugin permissions");
 }

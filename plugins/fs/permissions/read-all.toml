@@ -1,3 +1,4 @@
+[[permission]]
 identifier = "read-all"
 description = "This enables all read related commands without any pre-configured accessible paths."
 commands.allow = [
@@ -14,5 +15,5 @@ commands.allow = [
     "fstat",
     "exists",
     "watch",
-    "unwatch"
+    "unwatch",
 ]

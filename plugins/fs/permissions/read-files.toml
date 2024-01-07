@@ -1,3 +1,4 @@
+[[permission]]
 identifier = "read-files"
 description = "This enables file read related commands without any pre-configured accessible paths."
 commands.allow = [

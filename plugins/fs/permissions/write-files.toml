@@ -1,3 +1,4 @@
+[[permission]]
 identifier = "write-files"
 description = "This enables all file write related commands without any pre-configured accessible paths."
 commands.allow = [
@@ -9,5 +10,5 @@ commands.allow = [
     "ftruncate",
     "write",
     "write_file",
-    "write_text_file"
+    "write_text_file",
 ]
