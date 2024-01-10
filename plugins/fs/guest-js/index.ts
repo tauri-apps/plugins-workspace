@@ -1093,6 +1093,10 @@ interface WatchOptions {
 interface DebouncedWatchOptions extends WatchOptions {
   /** Debounce delay */
   delayMs?: number;
+  /** Use {@link https://docs.rs/notify-debouncer-full | full debouncer} instead of the {@link https://docs.rs/notify-debouncer-mini | mini debouncer} */
+  debounceFull?: boolean;
+  /** Keep track of the file system IDs of all files */
+  trackFileIds?: boolean;
 }
 
 /**
