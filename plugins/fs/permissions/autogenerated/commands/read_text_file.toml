@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-read-text-file"
-description = "This enables the read_text_file command without any pre-configured accessible paths."
+description = "This enables the read_text_file command without any pre-configured scope."
 commands.allow = [
     "read_text_file"
 ]
 
 [[permission]]
 identifier = "deny-read-text-file"
-description = "This denies the read_text_file command without any pre-configured accessible paths."
+description = "This denies the read_text_file command without any pre-configured scope."
 commands.deny = [
     "read_text_file"
 ]

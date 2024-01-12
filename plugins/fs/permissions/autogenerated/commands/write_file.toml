@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-write-file"
-description = "This enables the write_file command without any pre-configured accessible paths."
+description = "This enables the write_file command without any pre-configured scope."
 commands.allow = [
     "write_file"
 ]
 
 [[permission]]
 identifier = "deny-write-file"
-description = "This denies the write_file command without any pre-configured accessible paths."
+description = "This denies the write_file command without any pre-configured scope."
 commands.deny = [
     "write_file"
 ]

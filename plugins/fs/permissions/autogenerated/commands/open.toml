@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-open"
-description = "This enables the open command without any pre-configured accessible paths."
+description = "This enables the open command without any pre-configured scope."
 commands.allow = [
     "open"
 ]
 
 [[permission]]
 identifier = "deny-open"
-description = "This denies the open command without any pre-configured accessible paths."
+description = "This denies the open command without any pre-configured scope."
 commands.deny = [
     "open"
 ]

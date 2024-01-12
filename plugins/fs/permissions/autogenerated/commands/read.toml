@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-read"
-description = "This enables the read command without any pre-configured accessible paths."
+description = "This enables the read command without any pre-configured scope."
 commands.allow = [
     "read"
 ]
 
 [[permission]]
 identifier = "deny-read"
-description = "This denies the read command without any pre-configured accessible paths."
+description = "This denies the read command without any pre-configured scope."
 commands.deny = [
     "read"
 ]

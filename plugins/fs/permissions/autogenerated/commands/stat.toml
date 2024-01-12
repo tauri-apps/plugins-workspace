@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-stat"
-description = "This enables the stat command without any pre-configured accessible paths."
+description = "This enables the stat command without any pre-configured scope."
 commands.allow = [
     "stat"
 ]
 
 [[permission]]
 identifier = "deny-stat"
-description = "This denies the stat command without any pre-configured accessible paths."
+description = "This denies the stat command without any pre-configured scope."
 commands.deny = [
     "stat"
 ]

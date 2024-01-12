@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-seek"
-description = "This enables the seek command without any pre-configured accessible paths."
+description = "This enables the seek command without any pre-configured scope."
 commands.allow = [
     "seek"
 ]
 
 [[permission]]
 identifier = "deny-seek"
-description = "This denies the seek command without any pre-configured accessible paths."
+description = "This denies the seek command without any pre-configured scope."
 commands.deny = [
     "seek"
 ]

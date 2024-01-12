@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-ftruncate"
-description = "This enables the ftruncate command without any pre-configured accessible paths."
+description = "This enables the ftruncate command without any pre-configured scope."
 commands.allow = [
     "ftruncate"
 ]
 
 [[permission]]
 identifier = "deny-ftruncate"
-description = "This denies the ftruncate command without any pre-configured accessible paths."
+description = "This denies the ftruncate command without any pre-configured scope."
 commands.deny = [
     "ftruncate"
 ]

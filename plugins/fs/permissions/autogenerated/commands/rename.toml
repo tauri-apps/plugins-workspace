@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-rename"
-description = "This enables the rename command without any pre-configured accessible paths."
+description = "This enables the rename command without any pre-configured scope."
 commands.allow = [
     "rename"
 ]
 
 [[permission]]
 identifier = "deny-rename"
-description = "This denies the rename command without any pre-configured accessible paths."
+description = "This denies the rename command without any pre-configured scope."
 commands.deny = [
     "rename"
 ]

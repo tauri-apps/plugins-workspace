@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-fstat"
-description = "This enables the fstat command without any pre-configured accessible paths."
+description = "This enables the fstat command without any pre-configured scope."
 commands.allow = [
     "fstat"
 ]
 
 [[permission]]
 identifier = "deny-fstat"
-description = "This denies the fstat command without any pre-configured accessible paths."
+description = "This denies the fstat command without any pre-configured scope."
 commands.deny = [
     "fstat"
 ]

@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-watch"
-description = "This enables the watch command without any pre-configured accessible paths."
+description = "This enables the watch command without any pre-configured scope."
 commands.allow = [
     "watch"
 ]
 
 [[permission]]
 identifier = "deny-watch"
-description = "This denies the watch command without any pre-configured accessible paths."
+description = "This denies the watch command without any pre-configured scope."
 commands.deny = [
     "watch"
 ]

@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-unwatch"
-description = "This enables the unwatch command without any pre-configured accessible paths."
+description = "This enables the unwatch command without any pre-configured scope."
 commands.allow = [
     "unwatch"
 ]
 
 [[permission]]
 identifier = "deny-unwatch"
-description = "This denies the unwatch command without any pre-configured accessible paths."
+description = "This denies the unwatch command without any pre-configured scope."
 commands.deny = [
     "unwatch"
 ]

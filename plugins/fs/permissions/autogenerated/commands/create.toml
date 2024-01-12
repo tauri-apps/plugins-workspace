@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-create"
-description = "This enables the create command without any pre-configured accessible paths."
+description = "This enables the create command without any pre-configured scope."
 commands.allow = [
     "create"
 ]
 
 [[permission]]
 identifier = "deny-create"
-description = "This denies the create command without any pre-configured accessible paths."
+description = "This denies the create command without any pre-configured scope."
 commands.deny = [
     "create"
 ]

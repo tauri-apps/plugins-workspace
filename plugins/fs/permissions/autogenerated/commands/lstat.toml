@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-lstat"
-description = "This enables the lstat command without any pre-configured accessible paths."
+description = "This enables the lstat command without any pre-configured scope."
 commands.allow = [
     "lstat"
 ]
 
 [[permission]]
 identifier = "deny-lstat"
-description = "This denies the lstat command without any pre-configured accessible paths."
+description = "This denies the lstat command without any pre-configured scope."
 commands.deny = [
     "lstat"
 ]

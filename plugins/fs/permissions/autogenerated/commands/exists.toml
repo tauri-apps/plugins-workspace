@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-exists"
-description = "This enables the exists command without any pre-configured accessible paths."
+description = "This enables the exists command without any pre-configured scope."
 commands.allow = [
     "exists"
 ]
 
 [[permission]]
 identifier = "deny-exists"
-description = "This denies the exists command without any pre-configured accessible paths."
+description = "This denies the exists command without any pre-configured scope."
 commands.deny = [
     "exists"
 ]

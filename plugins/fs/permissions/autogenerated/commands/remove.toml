@@ -2,14 +2,14 @@
 
 [[permission]]
 identifier = "allow-remove"
-description = "This enables the remove command without any pre-configured accessible paths."
+description = "This enables the remove command without any pre-configured scope."
 commands.allow = [
     "remove"
 ]
 
 [[permission]]
 identifier = "deny-remove"
-description = "This denies the remove command without any pre-configured accessible paths."
+description = "This denies the remove command without any pre-configured scope."
 commands.deny = [
     "remove"
 ]
