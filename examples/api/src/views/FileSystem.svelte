@@ -12,7 +12,6 @@
   let watchPath = "";
   let watchDebounceDelay = 0;
   let watchRecursive = false;
-  let watchDebounceFull = false;
   let watchTrackFileIds = false;
   let unwatchFn;
   let unwatchPath = "";
@@ -156,7 +155,6 @@
       let options = {
         recursive: watchRecursive,
         delayMs: parseInt(watchDebounceDelay),
-        debounceFull: watchDebounceFull,
         trackFileIds: watchTrackFileIds,
       };
       if (options.delayMs === 0) {
@@ -242,12 +240,8 @@
     <label for="watch-recursive">Recursive</label>
   </div>
   <div>
-    <input type="checkbox" id="watch-debounce-full" bind:checked={watchDebounceFull} />
-    <label for="watch-debounce-full">Debounce full (requires a debounce delay to be set)</label>
-  </div>
-  <div>
     <input type="checkbox" id="watch-track-file-ids" bind:checked={watchTrackFileIds} />
-    <label for="watch-track-file-ids">Track file IDs (requires debounce full to be set)</label>
+    <label for="watch-track-file-ids">Track file IDs (requires a debounce delay to be set)</label>
   </div>
   <br />
   <div>

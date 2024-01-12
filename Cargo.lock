@@ -3597,18 +3597,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "notify-debouncer-mini"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d40b221972a1fc5ef4d858a2f671fb34c75983eb385463dff3780eeff6a9d43"
-dependencies = [
- "crossbeam-channel",
- "log",
- "notify",
- "serde",
-]
-
-[[package]]
 name = "notify-rust"
 version = "4.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6023,7 +6011,6 @@ dependencies = [
  "glob",
  "notify",
  "notify-debouncer-full",
- "notify-debouncer-mini",
  "serde",
  "serde_repr",
  "tauri",

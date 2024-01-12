@@ -1093,8 +1093,6 @@ interface WatchOptions {
 interface DebouncedWatchOptions extends WatchOptions {
   /** Debounce delay */
   delayMs?: number;
-  /** Use {@link https://docs.rs/notify-debouncer-full | full debouncer} instead of the {@link https://docs.rs/notify-debouncer-mini | mini debouncer} */
-  debounceFull?: boolean;
   /** Keep track of the file system IDs of all files */
   trackFileIds?: boolean;
 }
@@ -1130,13 +1128,6 @@ type RawEventKind =
 /**
  * @since 2.0.0
  */
-type DebouncedEvent =
-  | { kind: "Any"; path: string }[]
-  | { kind: "AnyContinuous"; path: string }[];
-
-/**
- * @since 2.0.0
- */
 type UnwatchFn = () => void;
 
 async function unwatch(rid: number): Promise<void> {
@@ -1150,7 +1141,7 @@ async function unwatch(rid: number): Promise<void> {
  */
 async function watch(
   paths: string | string[] | URL | URL[],
-  cb: (event: DebouncedEvent) => void,
+  cb: (event: RawEvent) => void,
   options?: DebouncedWatchOptions,
 ): Promise<UnwatchFn> {
   const opts = {
@@ -1167,7 +1158,7 @@ async function watch(
     }
   }
 
-  const onEvent = new Channel<DebouncedEvent>();
+  const onEvent = new Channel<RawEvent>();
   onEvent.onmessage = cb;
 
   const rid: number = await invoke("plugin:fs|watch", {
@@ -1236,7 +1227,6 @@ export type {
   FileInfo,
   WatchOptions,
   DebouncedWatchOptions,
-  DebouncedEvent,
   RawEvent,
   UnwatchFn,
 };
