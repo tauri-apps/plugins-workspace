@@ -1100,8 +1100,8 @@ interface DebouncedWatchOptions extends WatchOptions {
 /**
  * @since 2.0.0
  */
-type RawEvent = {
-  type: RawEventKind;
+type WatchEvent = {
+  type: WatchEventKind;
   paths: string[];
   attrs: unknown;
 };
@@ -1109,7 +1109,7 @@ type RawEvent = {
 /**
  * @since 2.0.0
  */
-type RawEventKind =
+type WatchEventKind =
   | "any "
   | {
       access?: unknown;
@@ -1141,7 +1141,7 @@ async function unwatch(rid: number): Promise<void> {
  */
 async function watch(
   paths: string | string[] | URL | URL[],
-  cb: (event: RawEvent) => void,
+  cb: (event: WatchEvent) => void,
   options?: DebouncedWatchOptions,
 ): Promise<UnwatchFn> {
   const opts = {
@@ -1158,7 +1158,7 @@ async function watch(
     }
   }
 
-  const onEvent = new Channel<RawEvent>();
+  const onEvent = new Channel<WatchEvent>();
   onEvent.onmessage = cb;
 
   const rid: number = await invoke("plugin:fs|watch", {
@@ -1179,7 +1179,7 @@ async function watch(
  */
 async function watchImmediate(
   paths: string | string[] | URL | URL[],
-  cb: (event: RawEvent) => void,
+  cb: (event: WatchEvent) => void,
   options?: WatchOptions,
 ): Promise<UnwatchFn> {
   const opts = {
@@ -1196,7 +1196,7 @@ async function watchImmediate(
     }
   }
 
-  const onEvent = new Channel<RawEvent>();
+  const onEvent = new Channel<WatchEvent>();
   onEvent.onmessage = cb;
 
   const rid: number = await invoke("plugin:fs|watch", {
@@ -1227,7 +1227,7 @@ export type {
   FileInfo,
   WatchOptions,
   DebouncedWatchOptions,
-  RawEvent,
+  WatchEvent,
   UnwatchFn,
 };
 
