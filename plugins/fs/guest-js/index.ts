@@ -1110,20 +1110,59 @@ type WatchEvent = {
  * @since 2.0.0
  */
 type WatchEventKind =
-  | "any "
-  | {
-      access?: unknown;
-    }
-  | {
-      create?: unknown;
-    }
-  | {
-      modify?: unknown;
-    }
-  | {
-      remove?: unknown;
-    }
+  | "any"
+  | { access: WatchEventKindAccess }
+  | { create: WatchEventKindCreate }
+  | { modify: WatchEventKindModify }
+  | { remove: WatchEventKindRemove }
   | "other";
+
+/**
+ * @since 2.0.0
+ */
+type WatchEventKindAccess =
+  | { kind: "any" }
+  | { kind: "close"; mode: "any" | "execute" | "read" | "write" | "other" }
+  | { kind: "open"; mode: "any" | "execute" | "read" | "write" | "other" }
+  | { kind: "other" };
+
+/**
+ * @since 2.0.0
+ */
+type WatchEventKindCreate =
+  | { kind: "any" }
+  | { kind: "file" }
+  | { kind: "folder" }
+  | { kind: "other" };
+
+/**
+ * @since 2.0.0
+ */
+type WatchEventKindModify =
+  | { kind: "any" }
+  | { kind: "data"; mode: "any" | "size" | "content" | "other" }
+  | {
+      kind: "metadata";
+      mode:
+        | "any"
+        | "access-time"
+        | "write-time"
+        | "permissions"
+        | "ownership"
+        | "extended"
+        | "other";
+    }
+  | { kind: "name"; mode: "any" | "to" | "from" | "both" | "other" }
+  | { kind: "other" };
+
+/**
+ * @since 2.0.0
+ */
+type WatchEventKindRemove =
+  | { kind: "any" }
+  | { kind: "file" }
+  | { kind: "folder" }
+  | { kind: "other" };
 
 /**
  * @since 2.0.0
