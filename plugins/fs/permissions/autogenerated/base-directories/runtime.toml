@@ -1,5 +1,7 @@
 # Automatically generated - DO NOT EDIT!
 
+"$schema" = "../../.schema.json"
+
 # Scopes Section
 # This section contains scopes, which define file level access
 
@@ -7,21 +9,21 @@
 identifier = "scope-runtime-recursive"
 description = "This scope recursive access to the complete `$RUNTIME` folder, including sub directories and files."
 
-[[scope.allow]]
+[permission.scope.allow]
 path = "$RUNTIME/**"
 
 [[permission]]
 identifier = "scope-runtime"
 description = "This scope permits access to all files and list content of top level directories in the `$RUNTIME`folder."
 
-[[scope.allow]]
+[permission.scope.allow]
 path = "$RUNTIME/*"
 
 [[permission]]
 identifier = "scope-runtime-index"
 description = "This scope permits to list all files and folders in the `$RUNTIME`folder."
 
-[[scope.allow]]
+[permission.scope.allow]
 path = "$RUNTIME/"
 
 # Sets Section

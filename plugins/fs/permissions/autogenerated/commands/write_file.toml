@@ -1,15 +1,13 @@
 # Automatically generated - DO NOT EDIT!
 
+"$schema" = "../../.schema.json"
+
 [[permission]]
 identifier = "allow-write-file"
-description = "This enables the write_file command without any pre-configured scope."
-commands.allow = [
-    "write_file"
-]
+description = "Enables the write_file command without any pre-configured scope."
+commands.allow = ["write_file"]
 
 [[permission]]
 identifier = "deny-write-file"
-description = "This denies the write_file command without any pre-configured scope."
-commands.deny = [
-    "write_file"
-]
+description = "Denies the write_file command without any pre-configured scope."
+commands.deny = ["write_file"]

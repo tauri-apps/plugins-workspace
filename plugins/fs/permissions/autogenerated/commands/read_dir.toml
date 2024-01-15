@@ -1,15 +1,13 @@
 # Automatically generated - DO NOT EDIT!
 
+"$schema" = "../../.schema.json"
+
 [[permission]]
 identifier = "allow-read-dir"
-description = "This enables the read_dir command without any pre-configured scope."
-commands.allow = [
-    "read_dir"
-]
+description = "Enables the read_dir command without any pre-configured scope."
+commands.allow = ["read_dir"]
 
 [[permission]]
 identifier = "deny-read-dir"
-description = "This denies the read_dir command without any pre-configured scope."
-commands.deny = [
-    "read_dir"
-]
+description = "Denies the read_dir command without any pre-configured scope."
+commands.deny = ["read_dir"]

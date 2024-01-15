@@ -1,3 +1,5 @@
+"$schema" = ".schema.json"
+
 [default]
 description = """
 # Tauri `fs` default permissions
@@ -23,8 +25,4 @@ of the Tauri application by default.
 On Windows the webview data folder access is denied.
 
 """
-permissions = [
-    "read-all",
-    "scope-app-recursive",
-    "deny-default",
-]
+permissions = ["read-all", "scope-app-recursive", "deny-default"]

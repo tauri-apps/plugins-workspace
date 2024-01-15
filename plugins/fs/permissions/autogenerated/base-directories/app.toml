@@ -1,5 +1,7 @@
 # Automatically generated - DO NOT EDIT!
 
+"$schema" = "../../.schema.json"
+
 # Scopes Section
 # This section contains scopes, which define file level access
 
@@ -7,21 +9,21 @@
 identifier = "scope-app-recursive"
 description = "This scope recursive access to the complete `$APP` folder, including sub directories and files."
 
-[[scope.allow]]
+[permission.scope.allow]
 path = "$APP/**"
 
 [[permission]]
 identifier = "scope-app"
 description = "This scope permits access to all files and list content of top level directories in the `$APP`folder."
 
-[[scope.allow]]
+[permission.scope.allow]
 path = "$APP/*"
 
 [[permission]]
 identifier = "scope-app-index"
 description = "This scope permits to list all files and folders in the `$APP`folder."
 
-[[scope.allow]]
+[permission.scope.allow]
 path = "$APP/"
 
 # Sets Section

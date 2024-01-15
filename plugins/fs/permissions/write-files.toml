@@ -1,3 +1,5 @@
+"$schema" = ".schema.json"
+
 [[permission]]
 identifier = "write-files"
 description = "This enables all file write related commands without any pre-configured accessible paths."

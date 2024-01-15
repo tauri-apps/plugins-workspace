@@ -1,15 +1,13 @@
 # Automatically generated - DO NOT EDIT!
 
+"$schema" = "../../.schema.json"
+
 [[permission]]
 identifier = "allow-read-text-file-lines"
-description = "This enables the read_text_file_lines command without any pre-configured scope."
-commands.allow = [
-    "read_text_file_lines"
-]
+description = "Enables the read_text_file_lines command without any pre-configured scope."
+commands.allow = ["read_text_file_lines"]
 
 [[permission]]
 identifier = "deny-read-text-file-lines"
-description = "This denies the read_text_file_lines command without any pre-configured scope."
-commands.deny = [
-    "read_text_file_lines"
-]
+description = "Denies the read_text_file_lines command without any pre-configured scope."
+commands.deny = ["read_text_file_lines"]

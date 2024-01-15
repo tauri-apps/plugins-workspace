@@ -1,15 +1,13 @@
 # Automatically generated - DO NOT EDIT!
 
+"$schema" = "../../.schema.json"
+
 [[permission]]
 identifier = "allow-rename"
-description = "This enables the rename command without any pre-configured scope."
-commands.allow = [
-    "rename"
-]
+description = "Enables the rename command without any pre-configured scope."
+commands.allow = ["rename"]
 
 [[permission]]
 identifier = "deny-rename"
-description = "This denies the rename command without any pre-configured scope."
-commands.deny = [
-    "rename"
-]
+description = "Denies the rename command without any pre-configured scope."
+commands.deny = ["rename"]

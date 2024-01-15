@@ -1570,6 +1570,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56ce8c6da7551ec6c462cbaf3bfbc75131ebbfa1c944aeaa9dab51ca1c5f0c3b"
 
 [[package]]
+name = "dyn-clone"
+version = "1.0.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "545b22097d44f8a9581187cdf93de7a71e4722bf51200cfaba810865b49a495d"
+
+[[package]]
 name = "ed25519-zebra"
 version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4920,6 +4926,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "schemars"
+version = "0.8.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "45a28f4c49489add4ce10783f7911893516f15afe45d015608d41faca6bc4d29"
+dependencies = [
+ "dyn-clone",
+ "schemars_derive",
+ "serde",
+ "serde_json",
+ "url",
+]
+
+[[package]]
+name = "schemars_derive"
+version = "0.8.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c767fd6fa65d9ccf9cf026122c1b555f2ef9a4f0cea69da4d7dbc3e258d30967"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "serde_derive_internals",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "scoped-tls"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5011,6 +5042,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.39",
+]
+
+[[package]]
+name = "serde_derive_internals"
+version = "0.26.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "85bf8229e7920a9f636479437026331ce11aa132b4dde37d121944a44d6e5f3c"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -5802,7 +5844,7 @@ checksum = "14c39fd04924ca3a864207c66fc2cd7d22d7c016007f9ce846cbb9326331930a"
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.20"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ddd898c6a9cf07ef7ebafce4ad1261f1fe86c75c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
 dependencies = [
  "anyhow",
  "bytes 1.5.0",
@@ -5854,7 +5896,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.13"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ddd898c6a9cf07ef7ebafce4ad1261f1fe86c75c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -5864,12 +5906,12 @@ dependencies = [
  "json-patch",
  "plist",
  "quote",
+ "schemars",
  "semver",
  "serde",
  "serde_json",
  "swift-rs",
  "tauri-codegen",
- "tauri-plugin",
  "tauri-utils",
  "tauri-winres",
  "toml 0.8.8",
@@ -5879,7 +5921,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.12"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ddd898c6a9cf07ef7ebafce4ad1261f1fe86c75c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
 dependencies = [
  "base64 0.21.5",
  "brotli",
@@ -5904,7 +5946,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.12"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ddd898c6a9cf07ef7ebafce4ad1261f1fe86c75c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -5917,14 +5959,15 @@ dependencies = [
 [[package]]
 name = "tauri-plugin"
 version = "0.1.0"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ddd898c6a9cf07ef7ebafce4ad1261f1fe86c75c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
 dependencies = [
  "cargo_metadata",
  "glob",
+ "schemars",
  "serde",
  "serde_json",
+ "tauri",
  "tauri-utils",
- "thiserror",
  "toml 0.8.8",
 ]
 
@@ -6343,7 +6386,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "1.0.0-alpha.7"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ddd898c6a9cf07ef7ebafce4ad1261f1fe86c75c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
 dependencies = [
  "gtk",
  "http",
@@ -6360,7 +6403,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "1.0.0-alpha.8"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ddd898c6a9cf07ef7ebafce4ad1261f1fe86c75c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
 dependencies = [
  "cocoa 0.25.0",
  "gtk",
@@ -6380,10 +6423,11 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.12"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ddd898c6a9cf07ef7ebafce4ad1261f1fe86c75c"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
 dependencies = [
  "aes-gcm 0.10.3",
  "brotli",
+ "cargo_metadata",
  "ctor",
  "dunce",
  "getrandom 0.2.11",
@@ -6398,6 +6442,7 @@ dependencies = [
  "phf 0.11.2",
  "proc-macro2",
  "quote",
+ "schemars",
  "semver",
  "serde",
  "serde_json",

@@ -1,15 +1,13 @@
 # Automatically generated - DO NOT EDIT!
 
+"$schema" = "../../.schema.json"
+
 [[permission]]
 identifier = "allow-open"
-description = "This enables the open command without any pre-configured scope."
-commands.allow = [
-    "open"
-]
+description = "Enables the open command without any pre-configured scope."
+commands.allow = ["open"]
 
 [[permission]]
 identifier = "deny-open"
-description = "This denies the open command without any pre-configured scope."
-commands.deny = [
-    "open"
-]
+description = "Denies the open command without any pre-configured scope."
+commands.deny = ["open"]

@@ -1,5 +1,7 @@
 # Automatically generated - DO NOT EDIT!
 
+"$schema" = "../../.schema.json"
+
 # Scopes Section
 # This section contains scopes, which define file level access
 
@@ -7,21 +9,21 @@
 identifier = "scope-font-recursive"
 description = "This scope recursive access to the complete `$FONT` folder, including sub directories and files."
 
-[[scope.allow]]
+[permission.scope.allow]
 path = "$FONT/**"
 
 [[permission]]
 identifier = "scope-font"
 description = "This scope permits access to all files and list content of top level directories in the `$FONT`folder."
 
-[[scope.allow]]
+[permission.scope.allow]
 path = "$FONT/*"
 
 [[permission]]
 identifier = "scope-font-index"
 description = "This scope permits to list all files and folders in the `$FONT`folder."
 
-[[scope.allow]]
+[permission.scope.allow]
 path = "$FONT/"
 
 # Sets Section
