@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
-use notify_debouncer_full::{
-    new_debouncer, DebounceEventResult, Debouncer, FileIdCache, FileIdMap,
-};
+use notify_debouncer_full::{new_debouncer, DebounceEventResult, Debouncer, FileIdMap};
 use serde::Deserialize;
 use tauri::{
     ipc::Channel,
@@ -77,8 +75,6 @@ pub struct WatchOptions {
     dir: Option<BaseDirectory>,
     recursive: bool,
     delay_ms: Option<u64>,
-    #[serde(default)]
-    track_file_ids: bool,
 }
 
 #[tauri::command]
@@ -104,9 +100,6 @@ pub async fn watch<R: Runtime>(
         let mut debouncer = new_debouncer(Duration::from_millis(delay), None, tx)?;
         for path in &resolved_paths {
             debouncer.watcher().watch(path.as_ref(), mode)?;
-            if options.track_file_ids {
-                debouncer.cache().add_path(path.as_ref());
-            }
         }
         watch_debounced(on_event, rx);
         WatcherKind::Debouncer(debouncer)
@@ -137,7 +130,6 @@ pub async fn unwatch<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> CommandR
                     debouncer.watcher().unwatch(path.as_ref()).map_err(|e| {
                         format!("failed to unwatch path: {} with error: {e}", path.display())
                     })?;
-                    debouncer.cache().remove_path(path.as_ref());
                 }
             }
             WatcherKind::Watcher(ref mut w) => {
