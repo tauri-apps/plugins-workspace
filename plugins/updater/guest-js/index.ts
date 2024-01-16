@@ -35,12 +35,14 @@ type DownloadEvent =
   | { event: "Finished" };
 
 class Update {
+  available: boolean;
   currentVersion: string;
   version: string;
   date?: string;
   body?: string;
 
   constructor(metadata: UpdateMetadata) {
+    this.available = metadata.available;
     this.currentVersion = metadata.currentVersion;
     this.version = metadata.version;
     this.date = metadata.date;
