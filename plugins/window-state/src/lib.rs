@@ -252,12 +252,9 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
 
         if flags.contains(StateFlags::POSITION) {
             let position = self.outer_position()?;
-            if let Ok(Some(monitor)) = self.current_monitor() {
-                // save only window positions that are inside the current monitor
-                if monitor.contains(position) && !is_maximized {
-                    state.x = position.x;
-                    state.y = position.y;
-                }
+            if !is_maximized {
+                state.x = position.x;
+                state.y = position.y;
             }
         }
 
@@ -372,9 +369,9 @@ impl MonitorExt for Monitor {
         let PhysicalPosition { x, y } = *self.position();
         let PhysicalSize { width, height } = *self.size();
 
-        x < position.x as _
-            && position.x < (x + width as i32)
-            && y < position.y as _
-            && position.y < (y + height as i32)
+        x <= position.x as _
+            && position.x <= (x + width as i32)
+            && y <= position.y as _
+            && position.y <= (y + height as i32)
     }
 }
