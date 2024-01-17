@@ -15,6 +15,10 @@ interface CheckOptions {
    */
   timeout?: number;
   /**
+   * Request proxy
+   */
+  proxy?: string;
+  /**
    * Target identifier for the running application. This is sent to the backend.
    */
   target?: string;

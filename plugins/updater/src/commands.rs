@@ -11,6 +11,7 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
     time::Duration,
 };
+use url::Url;
 
 #[derive(Debug, Serialize)]
 #[serde(tag = "event", content = "data")]
@@ -42,6 +43,7 @@ pub(crate) async fn check<R: Runtime>(
     pending: State<'_, PendingUpdate>,
     headers: Option<Vec<(String, String)>>,
     timeout: Option<u64>,
+    proxy: Option<String>,
     target: Option<String>,
 ) -> Result<Metadata> {
     let mut builder = app.updater_builder();
@@ -52,6 +54,10 @@ pub(crate) async fn check<R: Runtime>(
     }
     if let Some(timeout) = timeout {
         builder = builder.timeout(Duration::from_secs(timeout));
+    }
+    if let Some(ref proxy) = proxy {
+        let url = Url::parse(proxy.as_str())?;
+        builder = builder.proxy(url);
     }
     if let Some(target) = target {
         builder = builder.target(target);

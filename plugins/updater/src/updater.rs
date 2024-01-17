@@ -94,7 +94,7 @@ pub struct UpdaterBuilder {
     endpoints: Option<Vec<Url>>,
     headers: HeaderMap,
     timeout: Option<Duration>,
-    proxy: Option<String>,
+    proxy: Option<Url>,
     installer_args: Option<Vec<String>>,
 }
 
@@ -162,8 +162,8 @@ impl UpdaterBuilder {
         self
     }
 
-    pub fn proxy(mut self, proxy: impl Into<String>) -> Self {
-        self.proxy.replace(proxy.into());
+    pub fn proxy(mut self, proxy: Url) -> Self {
+        self.proxy.replace(proxy);
         self
     }
 
@@ -225,7 +225,7 @@ pub struct Updater {
     current_version: Version,
     version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
     timeout: Option<Duration>,
-    proxy: Option<String>,
+    proxy: Option<Url>,
     endpoints: Vec<Url>,
     #[allow(dead_code)]
     installer_args: Vec<String>,
@@ -285,7 +285,7 @@ impl Updater {
                 request = request.timeout(timeout);
             }
             if let Some(ref proxy) = self.proxy {
-                let proxy = reqwest::Proxy::all(proxy)?;
+                let proxy = reqwest::Proxy::all(proxy.as_str())?;
                 request = request.proxy(proxy);
             }
             let response = request.build()?.get(url).headers(headers.clone()).send().await;
@@ -375,7 +375,7 @@ pub struct Update {
     /// Request timeout
     pub timeout: Option<Duration>,
     /// Request proxy
-    pub proxy: Option<String>,
+    pub proxy: Option<Url>,
     /// Request headers
     pub headers: HeaderMap,
 }
@@ -405,7 +405,7 @@ impl Update {
             request = request.timeout(timeout);
         }
         if let Some(ref proxy) = self.proxy {
-            let proxy = reqwest::Proxy::all(proxy)?;
+            let proxy = reqwest::Proxy::all(proxy.as_str())?;
             request = request.proxy(proxy);
         }
         let response = request.build()?.get(self.download_url.clone()).headers(headers).send().await?;
