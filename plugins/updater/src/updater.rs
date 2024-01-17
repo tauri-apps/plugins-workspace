@@ -16,7 +16,7 @@ use http::HeaderName;
 use minisign_verify::{PublicKey, Signature};
 use reqwest::{
     header::{HeaderMap, HeaderValue},
-    Client, StatusCode,
+    ClientBuilder, StatusCode,
 };
 use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
@@ -94,6 +94,7 @@ pub struct UpdaterBuilder {
     endpoints: Option<Vec<Url>>,
     headers: HeaderMap,
     timeout: Option<Duration>,
+    proxy: Option<Url>,
     installer_args: Option<Vec<String>>,
 }
 
@@ -113,6 +114,7 @@ impl UpdaterBuilder {
             endpoints: None,
             headers: Default::default(),
             timeout: None,
+            proxy: None,
             installer_args: None,
         }
     }
@@ -160,6 +162,11 @@ impl UpdaterBuilder {
         self
     }
 
+    pub fn proxy(mut self, proxy: Url) -> Self {
+        self.proxy.replace(proxy);
+        self
+    }
+
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
@@ -201,6 +208,7 @@ impl UpdaterBuilder {
             current_version: self.current_version,
             version_comparator: self.version_comparator,
             timeout: self.timeout,
+            proxy: self.proxy,
             endpoints,
             installer_args: self.installer_args.unwrap_or(self.config.installer_args),
             arch,
@@ -217,6 +225,7 @@ pub struct Updater {
     current_version: Version,
     version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
     timeout: Option<Duration>,
+    proxy: Option<Url>,
     endpoints: Vec<Url>,
     #[allow(dead_code)]
     installer_args: Vec<String>,
@@ -271,11 +280,20 @@ impl Updater {
                 .replace("{{arch}}", self.arch)
                 .parse()?;
 
-            let mut request = Client::new().get(url).headers(headers.clone());
+            let mut request = ClientBuilder::new();
             if let Some(timeout) = self.timeout {
                 request = request.timeout(timeout);
             }
-            let response = request.send().await;
+            if let Some(ref proxy) = self.proxy {
+                let proxy = reqwest::Proxy::all(proxy.as_str())?;
+                request = request.proxy(proxy);
+            }
+            let response = request
+                .build()?
+                .get(url)
+                .headers(headers.clone())
+                .send()
+                .await;
 
             if let Ok(res) = response {
                 if res.status().is_success() {
@@ -326,6 +344,7 @@ impl Updater {
                 body: release.notes.clone(),
                 signature: release.signature(&self.json_target)?.to_owned(),
                 timeout: self.timeout,
+                proxy: self.proxy.clone(),
                 headers: self.headers.clone(),
             })
         } else {
@@ -360,6 +379,8 @@ pub struct Update {
     pub signature: String,
     /// Request timeout
     pub timeout: Option<Duration>,
+    /// Request proxy
+    pub proxy: Option<Url>,
     /// Request headers
     pub headers: HeaderMap,
 }
@@ -384,13 +405,20 @@ impl Update {
             HeaderValue::from_str("tauri-updater").unwrap(),
         );
 
-        let mut request = Client::new()
-            .get(self.download_url.clone())
-            .headers(headers);
+        let mut request = ClientBuilder::new();
         if let Some(timeout) = self.timeout {
             request = request.timeout(timeout);
         }
-        let response = request.send().await?;
+        if let Some(ref proxy) = self.proxy {
+            let proxy = reqwest::Proxy::all(proxy.as_str())?;
+            request = request.proxy(proxy);
+        }
+        let response = request
+            .build()?
+            .get(self.download_url.clone())
+            .headers(headers)
+            .send()
+            .await?;
 
         if !response.status().is_success() {
             return Err(Error::Network(format!(
