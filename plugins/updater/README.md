@@ -70,7 +70,7 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 import { check } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 const update = await check();
-if (update.response.available) {
+if (update?.available) {
   await update.downloadAndInstall();
   await relaunch();
 }

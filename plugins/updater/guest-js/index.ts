@@ -36,6 +36,7 @@ type DownloadEvent =
   | { event: "Finished" };
 
 class Update extends Resource {
+  available: boolean;
   currentVersion: string;
   version: string;
   date?: string;
@@ -43,6 +44,7 @@ class Update extends Resource {
 
   constructor(metadata: UpdateMetadata) {
     super(metadata.rid);
+    this.available = metadata.available;
     this.currentVersion = metadata.currentVersion;
     this.version = metadata.version;
     this.date = metadata.date;
@@ -51,7 +53,7 @@ class Update extends Resource {
 
   /** Downloads the updater package and installs it */
   async downloadAndInstall(
-    onEvent?: (progress: DownloadEvent) => void,
+    onEvent?: (progress: DownloadEvent) => void
   ): Promise<void> {
     const channel = new Channel<DownloadEvent>();
     if (onEvent) {
