@@ -288,7 +288,12 @@ impl Updater {
                 let proxy = reqwest::Proxy::all(proxy.as_str())?;
                 request = request.proxy(proxy);
             }
-            let response = request.build()?.get(url).headers(headers.clone()).send().await;
+            let response = request
+                .build()?
+                .get(url)
+                .headers(headers.clone())
+                .send()
+                .await;
 
             if let Ok(res) = response {
                 if res.status().is_success() {
@@ -408,7 +413,12 @@ impl Update {
             let proxy = reqwest::Proxy::all(proxy.as_str())?;
             request = request.proxy(proxy);
         }
-        let response = request.build()?.get(self.download_url.clone()).headers(headers).send().await?;
+        let response = request
+            .build()?
+            .get(self.download_url.clone())
+            .headers(headers)
+            .send()
+            .await?;
 
         if !response.status().is_success() {
             return Err(Error::Network(format!(
