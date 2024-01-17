@@ -2,4 +2,7 @@
 "window-state": "patch"
 ---
 
-Fix restoring window positions where `x` or `y` are equal to the monitors `x` or `y` respectively.
+Address a couple of issues with restoring positions:
+
+- Fix restoring window positions correctly when the top-left corner of the window was outside of the monitor.
+- Fix restore maximization state only maximized on main monitor.
