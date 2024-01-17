@@ -77,21 +77,21 @@ fn main() {
 identifier = "scope-{lower}-recursive"
 description = "This scope recursive access to the complete `${upper}` folder, including sub directories and files."
 
-[permission.scope.allow]
+[[permission.scope.allow]]
 path = "${upper}/**"
 
 [[permission]]
 identifier = "scope-{lower}"
 description = "This scope permits access to all files and list content of top level directories in the `${upper}`folder."
 
-[permission.scope.allow]
+[[permission.scope.allow]]
 path = "${upper}/*"
 
 [[permission]]
 identifier = "scope-{lower}-index"
 description = "This scope permits to list all files and folders in the `${upper}`folder."
 
-[permission.scope.allow]
+[[permission.scope.allow]]
 path = "${upper}/"
 
 # Sets Section

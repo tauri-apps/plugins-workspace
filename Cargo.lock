@@ -5843,8 +5843,8 @@ checksum = "14c39fd04924ca3a864207c66fc2cd7d22d7c016007f9ce846cbb9326331930a"
 
 [[package]]
 name = "tauri"
-version = "2.0.0-alpha.20"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
+version = "2.0.0-alpha.21"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ac6d869b667b99ed475a5accd29113c42b9d9523"
 dependencies = [
  "anyhow",
  "bytes 1.5.0",
@@ -5895,8 +5895,8 @@ dependencies = [
 
 [[package]]
 name = "tauri-build"
-version = "2.0.0-alpha.13"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
+version = "2.0.0-alpha.14"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ac6d869b667b99ed475a5accd29113c42b9d9523"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -5920,8 +5920,8 @@ dependencies = [
 
 [[package]]
 name = "tauri-codegen"
-version = "2.0.0-alpha.12"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
+version = "2.0.0-alpha.13"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ac6d869b667b99ed475a5accd29113c42b9d9523"
 dependencies = [
  "base64 0.21.5",
  "brotli",
@@ -5945,8 +5945,8 @@ dependencies = [
 
 [[package]]
 name = "tauri-macros"
-version = "2.0.0-alpha.12"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
+version = "2.0.0-alpha.13"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ac6d869b667b99ed475a5accd29113c42b9d9523"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -5959,11 +5959,10 @@ dependencies = [
 [[package]]
 name = "tauri-plugin"
 version = "0.1.0"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ac6d869b667b99ed475a5accd29113c42b9d9523"
 dependencies = [
  "cargo_metadata",
  "glob",
- "schemars",
  "serde",
  "serde_json",
  "tauri",
@@ -6385,8 +6384,8 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime"
-version = "1.0.0-alpha.7"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
+version = "1.0.0-alpha.8"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ac6d869b667b99ed475a5accd29113c42b9d9523"
 dependencies = [
  "gtk",
  "http",
@@ -6402,8 +6401,8 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime-wry"
-version = "1.0.0-alpha.8"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
+version = "1.0.0-alpha.9"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ac6d869b667b99ed475a5accd29113c42b9d9523"
 dependencies = [
  "cocoa 0.25.0",
  "gtk",
@@ -6422,8 +6421,8 @@ dependencies = [
 
 [[package]]
 name = "tauri-utils"
-version = "2.0.0-alpha.12"
-source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#6b7a0d0c46783bfe6a346c354039c4282ef16bb5"
+version = "2.0.0-alpha.13"
+source = "git+https://github.com/tauri-apps/tauri?branch=feat/allowlist-v2#ac6d869b667b99ed475a5accd29113c42b9d9523"
 dependencies = [
  "aes-gcm 0.10.3",
  "brotli",
@@ -7867,9 +7866,9 @@ dependencies = [
 
 [[package]]
 name = "wry"
-version = "0.35.1"
+version = "0.35.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2ad1bc1d6925e0cde1bd01830b0073cd0448e21357e843b9ede33b6d81c7423"
+checksum = "d3016c47c9b6f7029a9da7cd48af8352327226bba0e955f3c92e2966651365a9"
 dependencies = [
  "base64 0.21.5",
  "block",
