@@ -15,7 +15,7 @@ interface CheckOptions {
    */
   timeout?: number;
   /**
-   * Request proxy
+   * A proxy url to be used when checking and downloading updates.
    */
   proxy?: string;
   /**
