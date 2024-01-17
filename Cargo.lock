@@ -5985,6 +5985,7 @@ dependencies = [
  "serde_json",
  "sha2 0.10.8",
  "tauri",
+ "tauri-plugin",
  "thiserror",
  "u2f",
 ]
@@ -5998,6 +5999,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "tauri-plugin",
  "thiserror",
 ]
 
@@ -6010,6 +6012,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin",
  "thiserror",
 ]
 
@@ -6023,6 +6026,7 @@ dependencies = [
  "serde_repr",
  "tauri",
  "tauri-build",
+ "tauri-plugin",
  "thiserror",
 ]
 
@@ -6035,6 +6039,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "tauri-plugin",
  "thiserror",
 ]
 
@@ -6048,6 +6053,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin",
  "thiserror",
 ]
 
@@ -6060,6 +6066,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin",
  "thiserror",
  "url",
 ]
@@ -6076,6 +6083,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin",
  "tauri-plugin-fs",
  "thiserror",
 ]
@@ -6106,6 +6114,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "tauri-plugin",
  "thiserror",
 ]
 
@@ -6120,6 +6129,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "tauri-plugin",
  "tauri-plugin-fs",
  "thiserror",
  "url",
@@ -6154,6 +6164,7 @@ dependencies = [
  "swift-rs",
  "tauri",
  "tauri-build",
+ "tauri-plugin",
  "time 0.3.30",
 ]
 
@@ -6167,6 +6178,7 @@ dependencies = [
  "serde_repr",
  "tauri",
  "tauri-build",
+ "tauri-plugin",
  "thiserror",
 ]
 
@@ -6182,6 +6194,7 @@ dependencies = [
  "serde_repr",
  "tauri",
  "tauri-build",
+ "tauri-plugin",
  "thiserror",
  "time 0.3.30",
  "url",
@@ -6201,6 +6214,7 @@ dependencies = [
  "serialize-to-javascript",
  "sys-locale",
  "tauri",
+ "tauri-plugin",
  "thiserror",
 ]
 
@@ -6227,6 +6241,7 @@ dependencies = [
  "serde_json",
  "serde_repr",
  "tauri",
+ "tauri-plugin",
  "thiserror",
 ]
 
@@ -6235,6 +6250,7 @@ name = "tauri-plugin-process"
 version = "2.0.0-alpha.6"
 dependencies = [
  "tauri",
+ "tauri-plugin",
 ]
 
 [[package]]
@@ -6250,6 +6266,7 @@ dependencies = [
  "serde_json",
  "shared_child",
  "tauri",
+ "tauri-plugin",
  "thiserror",
 ]
 
@@ -6276,6 +6293,7 @@ dependencies = [
  "serde_json",
  "sqlx",
  "tauri",
+ "tauri-plugin",
  "thiserror",
  "time 0.3.30",
  "tokio",
@@ -6289,6 +6307,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "tauri-plugin",
  "thiserror",
 ]
 
@@ -6308,6 +6327,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "tauri-plugin",
  "thiserror",
  "zeroize",
 ]
@@ -6330,6 +6350,7 @@ dependencies = [
  "serde_json",
  "tar",
  "tauri",
+ "tauri-plugin",
  "tempfile",
  "thiserror",
  "time 0.3.30",
@@ -6349,6 +6370,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "tauri-plugin",
  "thiserror",
  "tokio",
  "tokio-util",
@@ -6364,6 +6386,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "tauri-plugin",
  "thiserror",
  "tokio",
  "tokio-tungstenite",
@@ -6379,6 +6402,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "tauri-plugin",
  "thiserror",
 ]
 

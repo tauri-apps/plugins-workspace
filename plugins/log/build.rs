@@ -4,7 +4,11 @@
 
 use std::process::exit;
 
+const COMMANDS: &[&str] = &["log"];
+
 fn main() {
+    tauri_plugin::Builder::new(COMMANDS).build();
+
     if let Err(error) = tauri_build::mobile::PluginBuilder::new()
         .ios_path("ios")
         .run()

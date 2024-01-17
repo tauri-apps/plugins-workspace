@@ -13,6 +13,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [build-dependencies]
 tauri-build = { workspace = true }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }

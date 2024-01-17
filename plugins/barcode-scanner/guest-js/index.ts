@@ -54,7 +54,7 @@ export async function cancel(): Promise<void> {
  */
 export async function checkPermissions(): Promise<PermissionState> {
   return await invoke<{ camera: PermissionState }>(
-    "plugin:barcodeScanner|checkPermissions",
+    "plugin:barcodeScanner|check_permissions"
   ).then((r) => r.camera);
 }
 
@@ -63,7 +63,7 @@ export async function checkPermissions(): Promise<PermissionState> {
  */
 export async function requestPermissions(): Promise<PermissionState> {
   return await invoke<{ camera: PermissionState }>(
-    "plugin:barcodeScanner|requestPermissions",
+    "plugin:barcodeScanner|request_permissions"
   ).then((r) => r.camera);
 }
 
@@ -71,5 +71,5 @@ export async function requestPermissions(): Promise<PermissionState> {
  * Open application settings. Useful if permission was denied and the user must manually enable it.
  */
 export async function openAppSettings(): Promise<void> {
-  return await invoke("plugin:barcodeScanner|openAppSettings");
+  return await invoke("plugin:barcodeScanner|open_app_settings");
 }

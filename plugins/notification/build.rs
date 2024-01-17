@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+const COMMANDS: &[&str] = &["notify", "request_permission", "is_permission_granted"];
+
 fn main() {
+    tauri_plugin::Builder::new(COMMANDS).build();
+
     if let Err(error) = tauri_build::mobile::PluginBuilder::new()
         .android_path("android")
         .ios_path("ios")

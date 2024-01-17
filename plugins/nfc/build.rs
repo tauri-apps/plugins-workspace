@@ -4,7 +4,11 @@
 
 use std::process::exit;
 
+const COMMANDS: &[&str] = &["is_available", "write", "scan"];
+
 fn main() {
+    tauri_plugin::Builder::new(COMMANDS).build();
+
     if let Err(error) = tauri_build::mobile::PluginBuilder::new()
         .android_path("android")
         .ios_path("ios")

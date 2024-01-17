@@ -6,6 +6,8 @@
 mod config;
 use config::{AssociatedDomain, Config};
 
+const COMMANDS: &[&str] = &["get_current"];
+
 // TODO: Consider using activity-alias in case users may have multiple activities in their app.
 // TODO: Do we want to support the other path* configs too?
 fn intent_filter(domain: &AssociatedDomain) -> String {
@@ -30,6 +32,8 @@ fn intent_filter(domain: &AssociatedDomain) -> String {
 }
 
 fn main() {
+    tauri_plugin::Builder::new(COMMANDS).build();
+
     if let Err(error) = tauri_build::mobile::PluginBuilder::new()
         .android_path("android")
         .run()
