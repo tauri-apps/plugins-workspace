@@ -21,7 +21,7 @@ anyhow = "1"
 uuid = { version = "1", features = [ "v4" ] }
 glob = "0.3"
 notify = { version = "6", optional = true, features = [ "serde" ] }
-notify-debouncer-mini = { version = "0.4", optional = true, features = [ "serde" ] }
+notify-debouncer-full = { version = "0.3", optional = true }
 
 [features]
-watch = [ "notify", "notify-debouncer-mini" ]
+watch = [ "notify", "notify-debouncer-full" ]

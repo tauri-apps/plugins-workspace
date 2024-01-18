@@ -1740,6 +1740,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "file-id"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6584280525fb2059cba3db2c04abf947a1a29a45ddae89f3870f8281704fafc9"
+dependencies = [
+ "windows-sys 0.48.0",
+]
+
+[[package]]
 name = "filetime"
 version = "0.2.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3574,15 +3583,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "notify-debouncer-mini"
-version = "0.4.1"
+name = "notify-debouncer-full"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d40b221972a1fc5ef4d858a2f671fb34c75983eb385463dff3780eeff6a9d43"
+checksum = "49f5dab59c348b9b50cf7f261960a20e389feb2713636399cd9082cd4b536154"
 dependencies = [
  "crossbeam-channel",
+ "file-id",
  "log",
  "notify",
- "serde",
+ "parking_lot",
+ "walkdir",
 ]
 
 [[package]]
@@ -5999,7 +6010,7 @@ dependencies = [
  "anyhow",
  "glob",
  "notify",
- "notify-debouncer-mini",
+ "notify-debouncer-full",
  "serde",
  "serde_repr",
  "tauri",

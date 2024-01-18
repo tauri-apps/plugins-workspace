@@ -20,7 +20,7 @@ serde = { workspace = true }
 tiny_http = "0.11"
 log = { workspace = true }
 tauri-plugin-log = { path = "../../../plugins/log", version = "2.0.0-alpha.6" }
-tauri-plugin-fs = { path = "../../../plugins/fs", version = "2.0.0-alpha.7" }
+tauri-plugin-fs = { path = "../../../plugins/fs", version = "2.0.0-alpha.7", features = [ "watch" ] }
 tauri-plugin-clipboard-manager = { path = "../../../plugins/clipboard-manager", version = "2.0.0-alpha.6" }
 tauri-plugin-dialog = { path = "../../../plugins/dialog", version = "2.0.0-alpha.7" }
 tauri-plugin-http = { path = "../../../plugins/http", features = [ "multipart" ], version = "2.0.0-alpha.9" }

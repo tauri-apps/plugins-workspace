@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
-use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
+use notify_debouncer_full::{new_debouncer, DebounceEventResult, Debouncer, FileIdMap};
 use serde::Deserialize;
 use tauri::{
     ipc::Channel,
@@ -43,7 +43,7 @@ impl WatcherResource {
 impl Resource for WatcherResource {}
 
 enum WatcherKind {
-    Debouncer(Debouncer<RecommendedWatcher>),
+    Debouncer(Debouncer<RecommendedWatcher, FileIdMap>),
     Watcher(RecommendedWatcher),
 }
 
@@ -60,10 +60,10 @@ fn watch_raw(on_event: Channel, rx: Receiver<notify::Result<Event>>) {
 
 fn watch_debounced(on_event: Channel, rx: Receiver<DebounceEventResult>) {
     spawn(move || {
-        while let Ok(event) = rx.recv() {
-            if let Ok(event) = event {
+        while let Ok(Ok(events)) = rx.recv() {
+            for event in events {
                 // TODO: Should errors be emitted too?
-                let _ = on_event.send(&event);
+                let _ = on_event.send(&event.event);
             }
         }
     });
@@ -97,10 +97,9 @@ pub async fn watch<R: Runtime>(
 
     let kind = if let Some(delay) = options.delay_ms {
         let (tx, rx) = channel();
-        let mut debouncer = new_debouncer(Duration::from_millis(delay), tx)?;
-        let watcher = debouncer.watcher();
+        let mut debouncer = new_debouncer(Duration::from_millis(delay), None, tx)?;
         for path in &resolved_paths {
-            watcher.watch(path.as_ref(), mode)?;
+            debouncer.watcher().watch(path.as_ref(), mode)?;
         }
         watch_debounced(on_event, rx);
         WatcherKind::Debouncer(debouncer)
@@ -130,14 +129,14 @@ pub async fn unwatch<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> CommandR
                 for path in &watcher.paths {
                     debouncer.watcher().unwatch(path.as_ref()).map_err(|e| {
                         format!("failed to unwatch path: {} with error: {e}", path.display())
-                    })?
+                    })?;
                 }
             }
             WatcherKind::Watcher(ref mut w) => {
                 for path in &watcher.paths {
                     w.unwatch(path.as_ref()).map_err(|e| {
                         format!("failed to unwatch path: {} with error: {e}", path.display())
-                    })?
+                    })?;
                 }
             }
         }
