@@ -1265,6 +1265,11 @@ export type {
   WatchOptions,
   DebouncedWatchOptions,
   WatchEvent,
+  WatchEventKind,
+  WatchEventKindAccess,
+  WatchEventKindCreate,
+  WatchEventKindModify,
+  WatchEventKindRemove,
   UnwatchFn,
 };
 
