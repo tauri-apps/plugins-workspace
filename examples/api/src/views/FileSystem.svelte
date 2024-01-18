@@ -12,6 +12,7 @@
   let watchPath = "";
   let watchDebounceDelay = 0;
   let watchRecursive = false;
+  let watchTrackFileIds = false;
   let unwatchFn;
   let unwatchPath = "";
 
@@ -154,6 +155,7 @@
       let options = {
         recursive: watchRecursive,
         delayMs: parseInt(watchDebounceDelay),
+        trackFileIds: watchTrackFileIds,
       };
       if (options.delayMs === 0) {
         fs.watchImmediate(watchPath, onMessage, options)
@@ -236,6 +238,10 @@
   <div>
     <input type="checkbox" id="watch-recursive" bind:checked={watchRecursive} />
     <label for="watch-recursive">Recursive</label>
+  </div>
+  <div>
+    <input type="checkbox" id="watch-track-file-ids" bind:checked={watchTrackFileIds} />
+    <label for="watch-track-file-ids">Track file IDs (requires a debounce delay to be set)</label>
   </div>
   <br />
   <div>

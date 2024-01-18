@@ -1093,6 +1093,8 @@ interface WatchOptions {
 interface DebouncedWatchOptions extends WatchOptions {
   /** Debounce delay */
   delayMs?: number;
+  /** Keep track of the file system IDs of all files in order to stich together rename events */
+  trackFileIds?: boolean;
 }
 
 /**
