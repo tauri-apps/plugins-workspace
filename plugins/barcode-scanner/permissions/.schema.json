@@ -184,6 +184,20 @@
           ]
         },
         {
+          "description": "allow-check-permissions -> Enables the check_permissions command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-check-permissions"
+          ]
+        },
+        {
+          "description": "deny-check-permissions -> Denies the check_permissions command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-check-permissions"
+          ]
+        },
+        {
           "description": "allow-open-app-settings -> Enables the open_app_settings command without any pre-configured scope.",
           "type": "string",
           "enum": [

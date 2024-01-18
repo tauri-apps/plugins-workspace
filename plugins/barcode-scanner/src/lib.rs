@@ -40,7 +40,7 @@ impl<R: Runtime, T: Manager<R>> crate::BarcodeScannerExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("barcodeScanner")
+    Builder::new("barcode-scanner")
         .setup(|app, api| {
             #[cfg(target_os = "android")]
             let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "BarcodeScannerPlugin")?;

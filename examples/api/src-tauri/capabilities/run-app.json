@@ -1,0 +1,75 @@
+{
+  "$schema": ".schema.json",
+  "capabilities": [
+    {
+      "identifier": "run-app-base",
+      "description": "Permissions to run the app",
+      "windows": [
+        "main"
+      ],
+      "permissions": [
+        "log:default",
+        "http:default",
+        "app:default",
+        "resources:default",
+        "fs:default",
+        "menu:default",
+        "path:default",
+        "tray:default",
+        "event:default",
+        "window:default",
+        "resources:default",
+        "notification:default",
+        "os:allow-platform",
+        "dialog:allow-open",
+        "dialog:allow-save",
+        "dialog:allow-confirm",
+        "shell:allow-execute",
+        "shell:allow-kill",
+        "shell:allow-stdin-write",
+        "clipboard-manager:allow-read",
+        "clipboard-manager:allow-write",
+        "fs:allow-rename",
+        "fs:allow-mkdir",
+        "fs:allow-remove",
+        "fs:allow-write-text-file"
+      ]
+    },
+    {
+      "identifier": "run-app-desktop",
+      "description": "Permissions to run the app (desktop only)",
+      "windows": [
+        "main"
+      ],
+      "platforms": [
+        "desktop"
+      ],
+      "permissions": [
+        "cli:default",
+        "updater:default",
+        "global-shortcut:allow-unregister",
+        "global-shortcut:allow-register",
+        "global-shortcut:allow-unregister-all"
+      ]
+    },
+    {
+      "identifier": "run-app-mobile",
+      "description": "Permissions to run the app (mobile only)",
+      "windows": [
+        "main"
+      ],
+      "platforms": [
+        "mobile"
+      ],
+      "permissions": [
+        "nfc:allow-write",
+        "nfc:allow-scan",
+        "biometric:allow-authenticate",
+        "barcode-scanner:allow-scan",
+        "barcode-scanner:allow-cancel",
+        "barcode-scanner:allow-request-permissions",
+        "barcode-scanner:allow-check-permissions"
+      ]
+    }
+  ]
+}

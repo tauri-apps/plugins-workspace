@@ -63,6 +63,17 @@
             "$ref": "#/definitions/Identifier"
           }
         },
+        "platforms": {
+          "description": "Target platforms this capability applies. By default all platforms applies.",
+          "default": [
+            "desktop",
+            "mobile"
+          ],
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CapabilityPlatform"
+          }
+        },
         "windows": {
           "description": "List of windows that uses this capability. Can be a glob pattern.",
           "type": "array",
@@ -109,6 +120,60 @@
         }
       ]
     },
+    "CapabilityPlatform": {
+      "description": "Target platform of a capability.",
+      "oneOf": [
+        {
+          "description": "Windows.",
+          "type": "string",
+          "enum": [
+            "windows"
+          ]
+        },
+        {
+          "description": "Linux.",
+          "type": "string",
+          "enum": [
+            "linux"
+          ]
+        },
+        {
+          "description": "macOS.",
+          "type": "string",
+          "enum": [
+            "macOS"
+          ]
+        },
+        {
+          "description": "Android.",
+          "type": "string",
+          "enum": [
+            "android"
+          ]
+        },
+        {
+          "description": "iOS",
+          "type": "string",
+          "enum": [
+            "iOS"
+          ]
+        },
+        {
+          "description": "Desktop.",
+          "type": "string",
+          "enum": [
+            "desktop"
+          ]
+        },
+        {
+          "description": "Mobile.",
+          "type": "string",
+          "enum": [
+            "mobile"
+          ]
+        }
+      ]
+    },
     "Identifier": {
       "description": "Permission identifier",
       "oneOf": [
@@ -120,31 +185,10 @@
           ]
         },
         {
-          "description": "app:deny-version -> Denies the version command without any pre-configured scope.",
+          "description": "app:deny-app-hide -> Denies the app_hide command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "app:deny-version"
-          ]
-        },
-        {
-          "description": "app:deny-name -> Denies the name command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "app:deny-name"
-          ]
-        },
-        {
-          "description": "app:allow-version -> Enables the version command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "app:allow-version"
-          ]
-        },
-        {
-          "description": "app:allow-tauri-version -> Enables the tauri_version command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "app:allow-tauri-version"
+            "app:deny-app-hide"
           ]
         },
         {
@@ -155,13 +199,6 @@
           ]
         },
         {
-          "description": "app:deny-app-hide -> Denies the app_hide command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "app:deny-app-hide"
-          ]
-        },
-        {
           "description": "app:allow-app-show -> Enables the app_show command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -169,17 +206,17 @@
           ]
         },
         {
-          "description": "app:deny-app-show -> Denies the app_show command without any pre-configured scope.",
+          "description": "app:deny-version -> Denies the version command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "app:deny-app-show"
+            "app:deny-version"
           ]
         },
         {
-          "description": "app:allow-name -> Enables the name command without any pre-configured scope.",
+          "description": "app:allow-version -> Enables the version command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "app:allow-name"
+            "app:allow-version"
           ]
         },
         {
@@ -190,10 +227,66 @@
           ]
         },
         {
+          "description": "app:allow-name -> Enables the name command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "app:allow-name"
+          ]
+        },
+        {
+          "description": "app:allow-tauri-version -> Enables the tauri_version command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "app:allow-tauri-version"
+          ]
+        },
+        {
+          "description": "app:deny-name -> Denies the name command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "app:deny-name"
+          ]
+        },
+        {
+          "description": "app:deny-app-show -> Denies the app_show command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "app:deny-app-show"
+          ]
+        },
+        {
           "description": "event:default -> Default permissions for the plugin.",
           "type": "string",
           "enum": [
             "event:default"
+          ]
+        },
+        {
+          "description": "event:allow-emit -> Enables the emit command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "event:allow-emit"
+          ]
+        },
+        {
+          "description": "event:deny-emit -> Denies the emit command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "event:deny-emit"
+          ]
+        },
+        {
+          "description": "event:allow-unlisten -> Enables the unlisten command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "event:allow-unlisten"
+          ]
+        },
+        {
+          "description": "event:allow-listen -> Enables the listen command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "event:allow-listen"
           ]
         },
         {
@@ -211,290 +304,10 @@
           ]
         },
         {
-          "description": "event:allow-unlisten -> Enables the unlisten command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "event:allow-unlisten"
-          ]
-        },
-        {
-          "description": "event:deny-emit -> Denies the emit command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "event:deny-emit"
-          ]
-        },
-        {
-          "description": "event:allow-emit -> Enables the emit command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "event:allow-emit"
-          ]
-        },
-        {
-          "description": "event:allow-listen -> Enables the listen command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "event:allow-listen"
-          ]
-        },
-        {
           "description": "menu:default -> Default permissions for the plugin.",
           "type": "string",
           "enum": [
             "menu:default"
-          ]
-        },
-        {
-          "description": "menu:allow-get -> Enables the get command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-get"
-          ]
-        },
-        {
-          "description": "menu:deny-create-default -> Denies the create_default command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-create-default"
-          ]
-        },
-        {
-          "description": "menu:deny-set-as-window-menu -> Denies the set_as_window_menu command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-set-as-window-menu"
-          ]
-        },
-        {
-          "description": "menu:allow-remove -> Enables the remove command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-remove"
-          ]
-        },
-        {
-          "description": "menu:deny-set-as-windows-menu-for-nsapp -> Denies the set_as_windows_menu_for_nsapp command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-set-as-windows-menu-for-nsapp"
-          ]
-        },
-        {
-          "description": "menu:allow-new -> Enables the new command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-new"
-          ]
-        },
-        {
-          "description": "menu:allow-items -> Enables the items command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-items"
-          ]
-        },
-        {
-          "description": "menu:allow-prepend -> Enables the prepend command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-prepend"
-          ]
-        },
-        {
-          "description": "menu:allow-set-checked -> Enables the set_checked command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-set-checked"
-          ]
-        },
-        {
-          "description": "menu:deny-append -> Denies the append command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-append"
-          ]
-        },
-        {
-          "description": "menu:allow-set-icon -> Enables the set_icon command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-set-icon"
-          ]
-        },
-        {
-          "description": "menu:allow-set-text -> Enables the set_text command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-set-text"
-          ]
-        },
-        {
-          "description": "menu:deny-text -> Denies the text command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-text"
-          ]
-        },
-        {
-          "description": "menu:allow-set-enabled -> Enables the set_enabled command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-set-enabled"
-          ]
-        },
-        {
-          "description": "menu:deny-get -> Denies the get command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-get"
-          ]
-        },
-        {
-          "description": "menu:allow-create-default -> Enables the create_default command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-create-default"
-          ]
-        },
-        {
-          "description": "menu:deny-prepend -> Denies the prepend command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-prepend"
-          ]
-        },
-        {
-          "description": "menu:deny-set-icon -> Denies the set_icon command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-set-icon"
-          ]
-        },
-        {
-          "description": "menu:allow-text -> Enables the text command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-text"
-          ]
-        },
-        {
-          "description": "menu:deny-set-as-app-menu -> Denies the set_as_app_menu command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-set-as-app-menu"
-          ]
-        },
-        {
-          "description": "menu:deny-set-enabled -> Denies the set_enabled command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-set-enabled"
-          ]
-        },
-        {
-          "description": "menu:allow-set-as-app-menu -> Enables the set_as_app_menu command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-set-as-app-menu"
-          ]
-        },
-        {
-          "description": "menu:allow-set-as-help-menu-for-nsapp -> Enables the set_as_help_menu_for_nsapp command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-set-as-help-menu-for-nsapp"
-          ]
-        },
-        {
-          "description": "menu:deny-remove -> Denies the remove command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-remove"
-          ]
-        },
-        {
-          "description": "menu:deny-insert -> Denies the insert command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-insert"
-          ]
-        },
-        {
-          "description": "menu:deny-set-checked -> Denies the set_checked command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-set-checked"
-          ]
-        },
-        {
-          "description": "menu:deny-new -> Denies the new command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-new"
-          ]
-        },
-        {
-          "description": "menu:allow-set-as-windows-menu-for-nsapp -> Enables the set_as_windows_menu_for_nsapp command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-set-as-windows-menu-for-nsapp"
-          ]
-        },
-        {
-          "description": "menu:allow-is-checked -> Enables the is_checked command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-is-checked"
-          ]
-        },
-        {
-          "description": "menu:deny-items -> Denies the items command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-items"
-          ]
-        },
-        {
-          "description": "menu:deny-set-text -> Denies the set_text command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-set-text"
-          ]
-        },
-        {
-          "description": "menu:deny-is-enabled -> Denies the is_enabled command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-is-enabled"
-          ]
-        },
-        {
-          "description": "menu:deny-remove-at -> Denies the remove_at command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:deny-remove-at"
-          ]
-        },
-        {
-          "description": "menu:allow-is-enabled -> Enables the is_enabled command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-is-enabled"
-          ]
-        },
-        {
-          "description": "menu:allow-remove-at -> Enables the remove_at command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-remove-at"
-          ]
-        },
-        {
-          "description": "menu:allow-set-as-window-menu -> Enables the set_as_window_menu command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "menu:allow-set-as-window-menu"
           ]
         },
         {
@@ -505,10 +318,38 @@
           ]
         },
         {
-          "description": "menu:deny-set-as-help-menu-for-nsapp -> Denies the set_as_help_menu_for_nsapp command without any pre-configured scope.",
+          "description": "menu:deny-items -> Denies the items command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "menu:deny-set-as-help-menu-for-nsapp"
+            "menu:deny-items"
+          ]
+        },
+        {
+          "description": "menu:allow-prepend -> Enables the prepend command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-prepend"
+          ]
+        },
+        {
+          "description": "menu:allow-remove-at -> Enables the remove_at command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-remove-at"
+          ]
+        },
+        {
+          "description": "menu:allow-new -> Enables the new command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-new"
+          ]
+        },
+        {
+          "description": "menu:deny-get -> Denies the get command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-get"
           ]
         },
         {
@@ -519,6 +360,13 @@
           ]
         },
         {
+          "description": "menu:deny-set-as-app-menu -> Denies the set_as_app_menu command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-set-as-app-menu"
+          ]
+        },
+        {
           "description": "menu:allow-insert -> Enables the insert command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -526,10 +374,24 @@
           ]
         },
         {
-          "description": "menu:deny-is-checked -> Denies the is_checked command without any pre-configured scope.",
+          "description": "menu:deny-remove-at -> Denies the remove_at command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "menu:deny-is-checked"
+            "menu:deny-remove-at"
+          ]
+        },
+        {
+          "description": "menu:allow-set-as-windows-menu-for-nsapp -> Enables the set_as_windows_menu_for_nsapp command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-set-as-windows-menu-for-nsapp"
+          ]
+        },
+        {
+          "description": "menu:deny-set-as-windows-menu-for-nsapp -> Denies the set_as_windows_menu_for_nsapp command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-set-as-windows-menu-for-nsapp"
           ]
         },
         {
@@ -547,6 +409,90 @@
           ]
         },
         {
+          "description": "menu:deny-set-checked -> Denies the set_checked command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-set-checked"
+          ]
+        },
+        {
+          "description": "menu:allow-set-text -> Enables the set_text command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-set-text"
+          ]
+        },
+        {
+          "description": "menu:allow-set-enabled -> Enables the set_enabled command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-set-enabled"
+          ]
+        },
+        {
+          "description": "menu:allow-set-icon -> Enables the set_icon command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-set-icon"
+          ]
+        },
+        {
+          "description": "menu:allow-set-as-app-menu -> Enables the set_as_app_menu command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-set-as-app-menu"
+          ]
+        },
+        {
+          "description": "menu:deny-set-enabled -> Denies the set_enabled command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-set-enabled"
+          ]
+        },
+        {
+          "description": "menu:deny-set-text -> Denies the set_text command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-set-text"
+          ]
+        },
+        {
+          "description": "menu:allow-is-checked -> Enables the is_checked command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-is-checked"
+          ]
+        },
+        {
+          "description": "menu:allow-create-default -> Enables the create_default command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-create-default"
+          ]
+        },
+        {
+          "description": "menu:allow-set-as-window-menu -> Enables the set_as_window_menu command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-set-as-window-menu"
+          ]
+        },
+        {
+          "description": "menu:deny-append -> Denies the append command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-append"
+          ]
+        },
+        {
+          "description": "menu:allow-get -> Enables the get command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-get"
+          ]
+        },
+        {
           "description": "menu:allow-append -> Enables the append command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -554,108 +500,129 @@
           ]
         },
         {
+          "description": "menu:allow-is-enabled -> Enables the is_enabled command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-is-enabled"
+          ]
+        },
+        {
+          "description": "menu:deny-is-enabled -> Denies the is_enabled command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-is-enabled"
+          ]
+        },
+        {
+          "description": "menu:allow-set-checked -> Enables the set_checked command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-set-checked"
+          ]
+        },
+        {
+          "description": "menu:deny-create-default -> Denies the create_default command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-create-default"
+          ]
+        },
+        {
+          "description": "menu:deny-insert -> Denies the insert command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-insert"
+          ]
+        },
+        {
+          "description": "menu:deny-remove -> Denies the remove command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-remove"
+          ]
+        },
+        {
+          "description": "menu:deny-set-as-window-menu -> Denies the set_as_window_menu command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-set-as-window-menu"
+          ]
+        },
+        {
+          "description": "menu:deny-new -> Denies the new command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-new"
+          ]
+        },
+        {
+          "description": "menu:deny-set-icon -> Denies the set_icon command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-set-icon"
+          ]
+        },
+        {
+          "description": "menu:deny-prepend -> Denies the prepend command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-prepend"
+          ]
+        },
+        {
+          "description": "menu:deny-set-as-help-menu-for-nsapp -> Denies the set_as_help_menu_for_nsapp command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-set-as-help-menu-for-nsapp"
+          ]
+        },
+        {
+          "description": "menu:allow-remove -> Enables the remove command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-remove"
+          ]
+        },
+        {
+          "description": "menu:deny-is-checked -> Denies the is_checked command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-is-checked"
+          ]
+        },
+        {
+          "description": "menu:allow-set-as-help-menu-for-nsapp -> Enables the set_as_help_menu_for_nsapp command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-set-as-help-menu-for-nsapp"
+          ]
+        },
+        {
+          "description": "menu:allow-text -> Enables the text command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-text"
+          ]
+        },
+        {
+          "description": "menu:allow-items -> Enables the items command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:allow-items"
+          ]
+        },
+        {
+          "description": "menu:deny-text -> Denies the text command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "menu:deny-text"
+          ]
+        },
+        {
           "description": "path:default -> Default permissions for the plugin.",
           "type": "string",
           "enum": [
             "path:default"
-          ]
-        },
-        {
-          "description": "path:deny-dirname -> Denies the dirname command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "path:deny-dirname"
-          ]
-        },
-        {
-          "description": "path:allow-basename -> Enables the basename command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "path:allow-basename"
-          ]
-        },
-        {
-          "description": "path:deny-basename -> Denies the basename command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "path:deny-basename"
-          ]
-        },
-        {
-          "description": "path:deny-join -> Denies the join command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "path:deny-join"
-          ]
-        },
-        {
-          "description": "path:allow-normalize -> Enables the normalize command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "path:allow-normalize"
-          ]
-        },
-        {
-          "description": "path:allow-dirname -> Enables the dirname command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "path:allow-dirname"
-          ]
-        },
-        {
-          "description": "path:allow-is-absolute -> Enables the is_absolute command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "path:allow-is-absolute"
-          ]
-        },
-        {
-          "description": "path:deny-resolve-directory -> Denies the resolve_directory command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "path:deny-resolve-directory"
-          ]
-        },
-        {
-          "description": "path:allow-resolve-directory -> Enables the resolve_directory command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "path:allow-resolve-directory"
-          ]
-        },
-        {
-          "description": "path:deny-resolve -> Denies the resolve command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "path:deny-resolve"
-          ]
-        },
-        {
-          "description": "path:allow-extname -> Enables the extname command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "path:allow-extname"
-          ]
-        },
-        {
-          "description": "path:deny-extname -> Denies the extname command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "path:deny-extname"
-          ]
-        },
-        {
-          "description": "path:deny-normalize -> Denies the normalize command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "path:deny-normalize"
-          ]
-        },
-        {
-          "description": "path:allow-join -> Enables the join command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "path:allow-join"
           ]
         },
         {
@@ -673,17 +640,108 @@
           ]
         },
         {
+          "description": "path:allow-join -> Enables the join command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "path:allow-join"
+          ]
+        },
+        {
+          "description": "path:allow-extname -> Enables the extname command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "path:allow-extname"
+          ]
+        },
+        {
+          "description": "path:allow-basename -> Enables the basename command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "path:allow-basename"
+          ]
+        },
+        {
+          "description": "path:deny-join -> Denies the join command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "path:deny-join"
+          ]
+        },
+        {
+          "description": "path:deny-resolve -> Denies the resolve command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "path:deny-resolve"
+          ]
+        },
+        {
+          "description": "path:allow-is-absolute -> Enables the is_absolute command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "path:allow-is-absolute"
+          ]
+        },
+        {
+          "description": "path:deny-extname -> Denies the extname command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "path:deny-extname"
+          ]
+        },
+        {
+          "description": "path:allow-dirname -> Enables the dirname command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "path:allow-dirname"
+          ]
+        },
+        {
+          "description": "path:allow-resolve-directory -> Enables the resolve_directory command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "path:allow-resolve-directory"
+          ]
+        },
+        {
+          "description": "path:deny-resolve-directory -> Denies the resolve_directory command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "path:deny-resolve-directory"
+          ]
+        },
+        {
+          "description": "path:allow-normalize -> Enables the normalize command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "path:allow-normalize"
+          ]
+        },
+        {
+          "description": "path:deny-basename -> Denies the basename command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "path:deny-basename"
+          ]
+        },
+        {
+          "description": "path:deny-normalize -> Denies the normalize command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "path:deny-normalize"
+          ]
+        },
+        {
+          "description": "path:deny-dirname -> Denies the dirname command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "path:deny-dirname"
+          ]
+        },
+        {
           "description": "resources:default -> Default permissions for the plugin.",
           "type": "string",
           "enum": [
             "resources:default"
-          ]
-        },
-        {
-          "description": "resources:deny-close -> Denies the close command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "resources:deny-close"
           ]
         },
         {
@@ -694,6 +752,13 @@
           ]
         },
         {
+          "description": "resources:deny-close -> Denies the close command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "resources:deny-close"
+          ]
+        },
+        {
           "description": "tray:default -> Default permissions for the plugin.",
           "type": "string",
           "enum": [
@@ -701,17 +766,10 @@
           ]
         },
         {
-          "description": "tray:allow-set-menu -> Enables the set_menu command without any pre-configured scope.",
+          "description": "tray:allow-set-temp-dir-path -> Enables the set_temp_dir_path command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "tray:allow-set-menu"
-          ]
-        },
-        {
-          "description": "tray:allow-set-tooltip -> Enables the set_tooltip command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "tray:allow-set-tooltip"
+            "tray:allow-set-temp-dir-path"
           ]
         },
         {
@@ -722,20 +780,6 @@
           ]
         },
         {
-          "description": "tray:deny-set-temp-dir-path -> Denies the set_temp_dir_path command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "tray:deny-set-temp-dir-path"
-          ]
-        },
-        {
-          "description": "tray:deny-new -> Denies the new command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "tray:deny-new"
-          ]
-        },
-        {
           "description": "tray:deny-set-icon-as-template -> Denies the set_icon_as_template command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -743,10 +787,10 @@
           ]
         },
         {
-          "description": "tray:allow-set-title -> Enables the set_title command without any pre-configured scope.",
+          "description": "tray:allow-set-tooltip -> Enables the set_tooltip command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "tray:allow-set-title"
+            "tray:allow-set-tooltip"
           ]
         },
         {
@@ -757,10 +801,45 @@
           ]
         },
         {
+          "description": "tray:allow-set-menu -> Enables the set_menu command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "tray:allow-set-menu"
+          ]
+        },
+        {
           "description": "tray:allow-set-visible -> Enables the set_visible command without any pre-configured scope.",
           "type": "string",
           "enum": [
             "tray:allow-set-visible"
+          ]
+        },
+        {
+          "description": "tray:allow-set-show-menu-on-left-click -> Enables the set_show_menu_on_left_click command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "tray:allow-set-show-menu-on-left-click"
+          ]
+        },
+        {
+          "description": "tray:deny-set-temp-dir-path -> Denies the set_temp_dir_path command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "tray:deny-set-temp-dir-path"
+          ]
+        },
+        {
+          "description": "tray:deny-set-title -> Denies the set_title command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "tray:deny-set-title"
+          ]
+        },
+        {
+          "description": "tray:deny-set-visible -> Denies the set_visible command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "tray:deny-set-visible"
           ]
         },
         {
@@ -785,27 +864,6 @@
           ]
         },
         {
-          "description": "tray:allow-set-icon-as-template -> Enables the set_icon_as_template command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "tray:allow-set-icon-as-template"
-          ]
-        },
-        {
-          "description": "tray:deny-set-title -> Denies the set_title command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "tray:deny-set-title"
-          ]
-        },
-        {
-          "description": "tray:allow-set-temp-dir-path -> Enables the set_temp_dir_path command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "tray:allow-set-temp-dir-path"
-          ]
-        },
-        {
           "description": "tray:deny-set-show-menu-on-left-click -> Denies the set_show_menu_on_left_click command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -813,17 +871,24 @@
           ]
         },
         {
-          "description": "tray:allow-set-show-menu-on-left-click -> Enables the set_show_menu_on_left_click command without any pre-configured scope.",
+          "description": "tray:deny-new -> Denies the new command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "tray:allow-set-show-menu-on-left-click"
+            "tray:deny-new"
           ]
         },
         {
-          "description": "tray:deny-set-visible -> Denies the set_visible command without any pre-configured scope.",
+          "description": "tray:allow-set-title -> Enables the set_title command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "tray:deny-set-visible"
+            "tray:allow-set-title"
+          ]
+        },
+        {
+          "description": "tray:allow-set-icon-as-template -> Enables the set_icon_as_template command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "tray:allow-set-icon-as-template"
           ]
         },
         {
@@ -834,17 +899,17 @@
           ]
         },
         {
+          "description": "websocket:deny-send -> Denies the send command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "websocket:deny-send"
+          ]
+        },
+        {
           "description": "websocket:allow-send -> Enables the send command without any pre-configured scope.",
           "type": "string",
           "enum": [
             "websocket:allow-send"
-          ]
-        },
-        {
-          "description": "websocket:deny-connect -> Denies the connect command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "websocket:deny-connect"
           ]
         },
         {
@@ -855,10 +920,10 @@
           ]
         },
         {
-          "description": "websocket:deny-send -> Denies the send command without any pre-configured scope.",
+          "description": "websocket:deny-connect -> Denies the connect command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "websocket:deny-send"
+            "websocket:deny-connect"
           ]
         },
         {
@@ -869,104 +934,6 @@
           ]
         },
         {
-          "description": "window:allow-set-min-size -> Enables the set_min_size command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-min-size"
-          ]
-        },
-        {
-          "description": "window:deny-start-dragging -> Denies the start_dragging command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-start-dragging"
-          ]
-        },
-        {
-          "description": "window:deny-is-resizable -> Denies the is_resizable command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-is-resizable"
-          ]
-        },
-        {
-          "description": "window:allow-set-cursor-grab -> Enables the set_cursor_grab command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-cursor-grab"
-          ]
-        },
-        {
-          "description": "window:allow-set-position -> Enables the set_position command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-position"
-          ]
-        },
-        {
-          "description": "window:allow-is-minimizable -> Enables the is_minimizable command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-is-minimizable"
-          ]
-        },
-        {
-          "description": "window:deny-is-maximizable -> Denies the is_maximizable command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-is-maximizable"
-          ]
-        },
-        {
-          "description": "window:deny-set-always-on-bottom -> Denies the set_always_on_bottom command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-always-on-bottom"
-          ]
-        },
-        {
-          "description": "window:allow-scale-factor -> Enables the scale_factor command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-scale-factor"
-          ]
-        },
-        {
-          "description": "window:allow-toggle-maximize -> Enables the toggle_maximize command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-toggle-maximize"
-          ]
-        },
-        {
-          "description": "window:deny-unminimize -> Denies the unminimize command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-unminimize"
-          ]
-        },
-        {
-          "description": "window:deny-create -> Denies the create command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-create"
-          ]
-        },
-        {
-          "description": "window:deny-is-maximized -> Denies the is_maximized command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-is-maximized"
-          ]
-        },
-        {
-          "description": "window:allow-outer-size -> Enables the outer_size command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-outer-size"
-          ]
-        },
-        {
           "description": "window:allow-set-cursor-visible -> Enables the set_cursor_visible command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -974,164 +941,10 @@
           ]
         },
         {
-          "description": "window:allow-set-focus -> Enables the set_focus command without any pre-configured scope.",
+          "description": "window:allow-theme -> Enables the theme command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:allow-set-focus"
-          ]
-        },
-        {
-          "description": "window:allow-set-icon -> Enables the set_icon command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-icon"
-          ]
-        },
-        {
-          "description": "window:deny-set-maximizable -> Denies the set_maximizable command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-maximizable"
-          ]
-        },
-        {
-          "description": "window:allow-print -> Enables the print command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-print"
-          ]
-        },
-        {
-          "description": "window:allow-set-size -> Enables the set_size command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-size"
-          ]
-        },
-        {
-          "description": "window:allow-internal-toggle-devtools -> Enables the internal_toggle_devtools command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-internal-toggle-devtools"
-          ]
-        },
-        {
-          "description": "window:allow-center -> Enables the center command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-center"
-          ]
-        },
-        {
-          "description": "window:allow-set-cursor-icon -> Enables the set_cursor_icon command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-cursor-icon"
-          ]
-        },
-        {
-          "description": "window:allow-current-monitor -> Enables the current_monitor command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-current-monitor"
-          ]
-        },
-        {
-          "description": "window:allow-set-fullscreen -> Enables the set_fullscreen command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-fullscreen"
-          ]
-        },
-        {
-          "description": "window:allow-create -> Enables the create command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-create"
-          ]
-        },
-        {
-          "description": "window:deny-print -> Denies the print command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-print"
-          ]
-        },
-        {
-          "description": "window:allow-inner-size -> Enables the inner_size command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-inner-size"
-          ]
-        },
-        {
-          "description": "window:deny-is-fullscreen -> Denies the is_fullscreen command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-is-fullscreen"
-          ]
-        },
-        {
-          "description": "window:deny-set-decorations -> Denies the set_decorations command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-decorations"
-          ]
-        },
-        {
-          "description": "window:allow-set-always-on-bottom -> Enables the set_always_on_bottom command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-always-on-bottom"
-          ]
-        },
-        {
-          "description": "window:deny-is-minimized -> Denies the is_minimized command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-is-minimized"
-          ]
-        },
-        {
-          "description": "window:deny-toggle-maximize -> Denies the toggle_maximize command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-toggle-maximize"
-          ]
-        },
-        {
-          "description": "window:allow-primary-monitor -> Enables the primary_monitor command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-primary-monitor"
-          ]
-        },
-        {
-          "description": "window:deny-set-title -> Denies the set_title command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-title"
-          ]
-        },
-        {
-          "description": "window:deny-set-minimizable -> Denies the set_minimizable command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-minimizable"
-          ]
-        },
-        {
-          "description": "window:deny-primary-monitor -> Denies the primary_monitor command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-primary-monitor"
-          ]
-        },
-        {
-          "description": "window:allow-title -> Enables the title command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-title"
+            "window:allow-theme"
           ]
         },
         {
@@ -1142,143 +955,45 @@
           ]
         },
         {
-          "description": "window:deny-current-monitor -> Denies the current_monitor command without any pre-configured scope.",
+          "description": "window:allow-set-skip-taskbar -> Enables the set_skip_taskbar command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:deny-current-monitor"
+            "window:allow-set-skip-taskbar"
           ]
         },
         {
-          "description": "window:deny-set-progress-bar -> Denies the set_progress_bar command without any pre-configured scope.",
+          "description": "window:allow-center -> Enables the center command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:deny-set-progress-bar"
+            "window:allow-center"
           ]
         },
         {
-          "description": "window:deny-set-max-size -> Denies the set_max_size command without any pre-configured scope.",
+          "description": "window:allow-set-progress-bar -> Enables the set_progress_bar command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:deny-set-max-size"
+            "window:allow-set-progress-bar"
           ]
         },
         {
-          "description": "window:allow-start-dragging -> Enables the start_dragging command without any pre-configured scope.",
+          "description": "window:deny-set-position -> Denies the set_position command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:allow-start-dragging"
+            "window:deny-set-position"
           ]
         },
         {
-          "description": "window:allow-set-closable -> Enables the set_closable command without any pre-configured scope.",
+          "description": "window:deny-is-resizable -> Denies the is_resizable command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:allow-set-closable"
+            "window:deny-is-resizable"
           ]
         },
         {
-          "description": "window:allow-unminimize -> Enables the unminimize command without any pre-configured scope.",
+          "description": "window:allow-is-visible -> Enables the is_visible command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:allow-unminimize"
-          ]
-        },
-        {
-          "description": "window:allow-set-minimizable -> Enables the set_minimizable command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-minimizable"
-          ]
-        },
-        {
-          "description": "window:deny-close -> Denies the close command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-close"
-          ]
-        },
-        {
-          "description": "window:deny-maximize -> Denies the maximize command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-maximize"
-          ]
-        },
-        {
-          "description": "window:allow-outer-position -> Enables the outer_position command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-outer-position"
-          ]
-        },
-        {
-          "description": "window:allow-is-resizable -> Enables the is_resizable command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-is-resizable"
-          ]
-        },
-        {
-          "description": "window:deny-internal-toggle-devtools -> Denies the internal_toggle_devtools command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-internal-toggle-devtools"
-          ]
-        },
-        {
-          "description": "window:allow-request-user-attention -> Enables the request_user_attention command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-request-user-attention"
-          ]
-        },
-        {
-          "description": "window:deny-set-content-protected -> Denies the set_content_protected command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-content-protected"
-          ]
-        },
-        {
-          "description": "window:deny-set-cursor-visible -> Denies the set_cursor_visible command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-cursor-visible"
-          ]
-        },
-        {
-          "description": "window:deny-is-decorated -> Denies the is_decorated command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-is-decorated"
-          ]
-        },
-        {
-          "description": "window:allow-set-resizable -> Enables the set_resizable command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-resizable"
-          ]
-        },
-        {
-          "description": "window:allow-is-minimized -> Enables the is_minimized command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-is-minimized"
-          ]
-        },
-        {
-          "description": "window:deny-is-closable -> Denies the is_closable command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-is-closable"
-          ]
-        },
-        {
-          "description": "window:deny-set-fullscreen -> Denies the set_fullscreen command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-fullscreen"
+            "window:allow-is-visible"
           ]
         },
         {
@@ -1289,31 +1004,45 @@
           ]
         },
         {
-          "description": "window:deny-set-skip-taskbar -> Denies the set_skip_taskbar command without any pre-configured scope.",
+          "description": "window:allow-set-title -> Enables the set_title command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:deny-set-skip-taskbar"
+            "window:allow-set-title"
           ]
         },
         {
-          "description": "window:allow-set-max-size -> Enables the set_max_size command without any pre-configured scope.",
+          "description": "window:deny-theme -> Denies the theme command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:allow-set-max-size"
+            "window:deny-theme"
           ]
         },
         {
-          "description": "window:allow-is-maximized -> Enables the is_maximized command without any pre-configured scope.",
+          "description": "window:deny-is-visible -> Denies the is_visible command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:allow-is-maximized"
+            "window:deny-is-visible"
           ]
         },
         {
-          "description": "window:allow-is-fullscreen -> Enables the is_fullscreen command without any pre-configured scope.",
+          "description": "window:deny-set-always-on-top -> Denies the set_always_on_top command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:allow-is-fullscreen"
+            "window:deny-set-always-on-top"
+          ]
+        },
+        {
+          "description": "window:deny-set-title -> Denies the set_title command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-title"
+          ]
+        },
+        {
+          "description": "window:deny-toggle-maximize -> Denies the toggle_maximize command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-toggle-maximize"
           ]
         },
         {
@@ -1331,199 +1060,10 @@
           ]
         },
         {
-          "description": "window:deny-set-cursor-grab -> Denies the set_cursor_grab command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-cursor-grab"
-          ]
-        },
-        {
-          "description": "window:allow-is-decorated -> Enables the is_decorated command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-is-decorated"
-          ]
-        },
-        {
-          "description": "window:deny-outer-position -> Denies the outer_position command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-outer-position"
-          ]
-        },
-        {
-          "description": "window:deny-show -> Denies the show command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-show"
-          ]
-        },
-        {
-          "description": "window:allow-unmaximize -> Enables the unmaximize command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-unmaximize"
-          ]
-        },
-        {
-          "description": "window:deny-is-visible -> Denies the is_visible command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-is-visible"
-          ]
-        },
-        {
-          "description": "window:allow-set-effects -> Enables the set_effects command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-effects"
-          ]
-        },
-        {
-          "description": "window:allow-inner-position -> Enables the inner_position command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-inner-position"
-          ]
-        },
-        {
-          "description": "window:deny-hide -> Denies the hide command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-hide"
-          ]
-        },
-        {
-          "description": "window:allow-is-visible -> Enables the is_visible command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-is-visible"
-          ]
-        },
-        {
-          "description": "window:deny-set-focus -> Denies the set_focus command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-focus"
-          ]
-        },
-        {
-          "description": "window:allow-hide -> Enables the hide command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-hide"
-          ]
-        },
-        {
-          "description": "window:deny-set-closable -> Denies the set_closable command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-closable"
-          ]
-        },
-        {
-          "description": "window:allow-maximize -> Enables the maximize command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-maximize"
-          ]
-        },
-        {
-          "description": "window:deny-scale-factor -> Denies the scale_factor command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-scale-factor"
-          ]
-        },
-        {
-          "description": "window:deny-set-ignore-cursor-events -> Denies the set_ignore_cursor_events command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-ignore-cursor-events"
-          ]
-        },
-        {
-          "description": "window:allow-set-ignore-cursor-events -> Enables the set_ignore_cursor_events command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-ignore-cursor-events"
-          ]
-        },
-        {
-          "description": "window:allow-set-always-on-top -> Enables the set_always_on_top command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-always-on-top"
-          ]
-        },
-        {
-          "description": "window:deny-set-shadow -> Denies the set_shadow command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-shadow"
-          ]
-        },
-        {
-          "description": "window:allow-show -> Enables the show command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-show"
-          ]
-        },
-        {
-          "description": "window:deny-internal-toggle-maximize -> Denies the internal_toggle_maximize command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-internal-toggle-maximize"
-          ]
-        },
-        {
-          "description": "window:deny-set-resizable -> Denies the set_resizable command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-resizable"
-          ]
-        },
-        {
-          "description": "window:allow-set-title -> Enables the set_title command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-title"
-          ]
-        },
-        {
-          "description": "window:allow-set-shadow -> Enables the set_shadow command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-shadow"
-          ]
-        },
-        {
           "description": "window:deny-set-effects -> Denies the set_effects command without any pre-configured scope.",
           "type": "string",
           "enum": [
             "window:deny-set-effects"
-          ]
-        },
-        {
-          "description": "window:allow-theme -> Enables the theme command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-theme"
-          ]
-        },
-        {
-          "description": "window:deny-title -> Denies the title command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-title"
-          ]
-        },
-        {
-          "description": "window:deny-set-position -> Denies the set_position command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-position"
           ]
         },
         {
@@ -1534,129 +1074,17 @@
           ]
         },
         {
-          "description": "window:deny-set-icon -> Denies the set_icon command without any pre-configured scope.",
+          "description": "window:allow-set-shadow -> Enables the set_shadow command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:deny-set-icon"
+            "window:allow-set-shadow"
           ]
         },
         {
-          "description": "window:allow-is-focused -> Enables the is_focused command without any pre-configured scope.",
+          "description": "window:deny-title -> Denies the title command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:allow-is-focused"
-          ]
-        },
-        {
-          "description": "window:allow-set-content-protected -> Enables the set_content_protected command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-content-protected"
-          ]
-        },
-        {
-          "description": "window:allow-set-skip-taskbar -> Enables the set_skip_taskbar command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-skip-taskbar"
-          ]
-        },
-        {
-          "description": "window:deny-set-cursor-icon -> Denies the set_cursor_icon command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-cursor-icon"
-          ]
-        },
-        {
-          "description": "window:deny-request-user-attention -> Denies the request_user_attention command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-request-user-attention"
-          ]
-        },
-        {
-          "description": "window:deny-theme -> Denies the theme command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-theme"
-          ]
-        },
-        {
-          "description": "window:allow-is-maximizable -> Enables the is_maximizable command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-is-maximizable"
-          ]
-        },
-        {
-          "description": "window:allow-set-maximizable -> Enables the set_maximizable command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-maximizable"
-          ]
-        },
-        {
-          "description": "window:deny-available-monitors -> Denies the available_monitors command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-available-monitors"
-          ]
-        },
-        {
-          "description": "window:deny-inner-size -> Denies the inner_size command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-inner-size"
-          ]
-        },
-        {
-          "description": "window:deny-inner-position -> Denies the inner_position command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-inner-position"
-          ]
-        },
-        {
-          "description": "window:deny-set-size -> Denies the set_size command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-size"
-          ]
-        },
-        {
-          "description": "window:allow-close -> Enables the close command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-close"
-          ]
-        },
-        {
-          "description": "window:allow-internal-toggle-maximize -> Enables the internal_toggle_maximize command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-internal-toggle-maximize"
-          ]
-        },
-        {
-          "description": "window:allow-set-cursor-position -> Enables the set_cursor_position command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-cursor-position"
-          ]
-        },
-        {
-          "description": "window:deny-set-min-size -> Denies the set_min_size command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-set-min-size"
-          ]
-        },
-        {
-          "description": "window:allow-set-progress-bar -> Enables the set_progress_bar command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-set-progress-bar"
+            "window:deny-title"
           ]
         },
         {
@@ -1667,31 +1095,136 @@
           ]
         },
         {
-          "description": "window:deny-center -> Denies the center command without any pre-configured scope.",
+          "description": "window:deny-set-always-on-bottom -> Denies the set_always_on_bottom command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:deny-center"
+            "window:deny-set-always-on-bottom"
           ]
         },
         {
-          "description": "window:deny-set-cursor-position -> Denies the set_cursor_position command without any pre-configured scope.",
+          "description": "window:allow-print -> Enables the print command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:deny-set-cursor-position"
+            "window:allow-print"
           ]
         },
         {
-          "description": "window:deny-set-always-on-top -> Denies the set_always_on_top command without any pre-configured scope.",
+          "description": "window:deny-set-cursor-icon -> Denies the set_cursor_icon command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:deny-set-always-on-top"
+            "window:deny-set-cursor-icon"
           ]
         },
         {
-          "description": "window:deny-is-minimizable -> Denies the is_minimizable command without any pre-configured scope.",
+          "description": "window:allow-set-effects -> Enables the set_effects command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "window:deny-is-minimizable"
+            "window:allow-set-effects"
+          ]
+        },
+        {
+          "description": "window:allow-set-content-protected -> Enables the set_content_protected command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-content-protected"
+          ]
+        },
+        {
+          "description": "window:deny-set-max-size -> Denies the set_max_size command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-max-size"
+          ]
+        },
+        {
+          "description": "window:allow-start-dragging -> Enables the start_dragging command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-start-dragging"
+          ]
+        },
+        {
+          "description": "window:deny-start-dragging -> Denies the start_dragging command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-start-dragging"
+          ]
+        },
+        {
+          "description": "window:allow-maximize -> Enables the maximize command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-maximize"
+          ]
+        },
+        {
+          "description": "window:allow-is-fullscreen -> Enables the is_fullscreen command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-is-fullscreen"
+          ]
+        },
+        {
+          "description": "window:deny-maximize -> Denies the maximize command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-maximize"
+          ]
+        },
+        {
+          "description": "window:allow-close -> Enables the close command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-close"
+          ]
+        },
+        {
+          "description": "window:deny-set-icon -> Denies the set_icon command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-icon"
+          ]
+        },
+        {
+          "description": "window:allow-set-ignore-cursor-events -> Enables the set_ignore_cursor_events command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-ignore-cursor-events"
+          ]
+        },
+        {
+          "description": "window:allow-create -> Enables the create command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-create"
+          ]
+        },
+        {
+          "description": "window:deny-show -> Denies the show command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-show"
+          ]
+        },
+        {
+          "description": "window:allow-unminimize -> Enables the unminimize command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-unminimize"
+          ]
+        },
+        {
+          "description": "window:allow-set-always-on-top -> Enables the set_always_on_top command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-always-on-top"
+          ]
+        },
+        {
+          "description": "window:deny-set-size -> Denies the set_size command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-size"
           ]
         },
         {
@@ -1702,10 +1235,542 @@
           ]
         },
         {
+          "description": "window:allow-set-cursor-position -> Enables the set_cursor_position command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-cursor-position"
+          ]
+        },
+        {
+          "description": "window:allow-set-cursor-icon -> Enables the set_cursor_icon command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-cursor-icon"
+          ]
+        },
+        {
+          "description": "window:allow-set-cursor-grab -> Enables the set_cursor_grab command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-cursor-grab"
+          ]
+        },
+        {
+          "description": "window:deny-is-fullscreen -> Denies the is_fullscreen command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-is-fullscreen"
+          ]
+        },
+        {
+          "description": "window:allow-set-always-on-bottom -> Enables the set_always_on_bottom command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-always-on-bottom"
+          ]
+        },
+        {
+          "description": "window:deny-is-decorated -> Denies the is_decorated command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-is-decorated"
+          ]
+        },
+        {
+          "description": "window:deny-set-fullscreen -> Denies the set_fullscreen command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-fullscreen"
+          ]
+        },
+        {
+          "description": "window:allow-is-focused -> Enables the is_focused command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-is-focused"
+          ]
+        },
+        {
+          "description": "window:allow-set-icon -> Enables the set_icon command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-icon"
+          ]
+        },
+        {
+          "description": "window:allow-is-resizable -> Enables the is_resizable command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-is-resizable"
+          ]
+        },
+        {
+          "description": "window:deny-set-content-protected -> Denies the set_content_protected command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-content-protected"
+          ]
+        },
+        {
+          "description": "window:deny-set-progress-bar -> Denies the set_progress_bar command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-progress-bar"
+          ]
+        },
+        {
+          "description": "window:allow-is-maximizable -> Enables the is_maximizable command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-is-maximizable"
+          ]
+        },
+        {
+          "description": "window:allow-unmaximize -> Enables the unmaximize command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-unmaximize"
+          ]
+        },
+        {
+          "description": "window:deny-current-monitor -> Denies the current_monitor command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-current-monitor"
+          ]
+        },
+        {
+          "description": "window:allow-current-monitor -> Enables the current_monitor command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-current-monitor"
+          ]
+        },
+        {
+          "description": "window:allow-is-decorated -> Enables the is_decorated command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-is-decorated"
+          ]
+        },
+        {
+          "description": "window:deny-create -> Denies the create command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-create"
+          ]
+        },
+        {
+          "description": "window:allow-is-minimized -> Enables the is_minimized command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-is-minimized"
+          ]
+        },
+        {
+          "description": "window:allow-internal-toggle-maximize -> Enables the internal_toggle_maximize command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-internal-toggle-maximize"
+          ]
+        },
+        {
+          "description": "window:allow-set-closable -> Enables the set_closable command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-closable"
+          ]
+        },
+        {
+          "description": "window:deny-internal-toggle-devtools -> Denies the internal_toggle_devtools command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-internal-toggle-devtools"
+          ]
+        },
+        {
+          "description": "window:allow-set-minimizable -> Enables the set_minimizable command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-minimizable"
+          ]
+        },
+        {
+          "description": "window:deny-set-skip-taskbar -> Denies the set_skip_taskbar command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-skip-taskbar"
+          ]
+        },
+        {
+          "description": "window:allow-set-resizable -> Enables the set_resizable command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-resizable"
+          ]
+        },
+        {
+          "description": "window:deny-outer-position -> Denies the outer_position command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-outer-position"
+          ]
+        },
+        {
+          "description": "window:deny-set-focus -> Denies the set_focus command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-focus"
+          ]
+        },
+        {
+          "description": "window:deny-inner-size -> Denies the inner_size command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-inner-size"
+          ]
+        },
+        {
+          "description": "window:deny-close -> Denies the close command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-close"
+          ]
+        },
+        {
+          "description": "window:deny-request-user-attention -> Denies the request_user_attention command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-request-user-attention"
+          ]
+        },
+        {
+          "description": "window:allow-is-minimizable -> Enables the is_minimizable command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-is-minimizable"
+          ]
+        },
+        {
+          "description": "window:deny-set-decorations -> Denies the set_decorations command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-decorations"
+          ]
+        },
+        {
+          "description": "window:deny-is-minimized -> Denies the is_minimized command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-is-minimized"
+          ]
+        },
+        {
+          "description": "window:deny-set-cursor-grab -> Denies the set_cursor_grab command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-cursor-grab"
+          ]
+        },
+        {
+          "description": "window:allow-set-size -> Enables the set_size command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-size"
+          ]
+        },
+        {
+          "description": "window:allow-toggle-maximize -> Enables the toggle_maximize command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-toggle-maximize"
+          ]
+        },
+        {
+          "description": "window:deny-set-ignore-cursor-events -> Denies the set_ignore_cursor_events command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-ignore-cursor-events"
+          ]
+        },
+        {
+          "description": "window:allow-hide -> Enables the hide command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-hide"
+          ]
+        },
+        {
+          "description": "window:allow-inner-position -> Enables the inner_position command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-inner-position"
+          ]
+        },
+        {
+          "description": "window:allow-set-max-size -> Enables the set_max_size command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-max-size"
+          ]
+        },
+        {
+          "description": "window:deny-center -> Denies the center command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-center"
+          ]
+        },
+        {
+          "description": "window:deny-primary-monitor -> Denies the primary_monitor command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-primary-monitor"
+          ]
+        },
+        {
+          "description": "window:deny-set-resizable -> Denies the set_resizable command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-resizable"
+          ]
+        },
+        {
           "description": "window:deny-unmaximize -> Denies the unmaximize command without any pre-configured scope.",
           "type": "string",
           "enum": [
             "window:deny-unmaximize"
+          ]
+        },
+        {
+          "description": "window:deny-print -> Denies the print command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-print"
+          ]
+        },
+        {
+          "description": "window:allow-outer-size -> Enables the outer_size command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-outer-size"
+          ]
+        },
+        {
+          "description": "window:deny-hide -> Denies the hide command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-hide"
+          ]
+        },
+        {
+          "description": "window:allow-set-position -> Enables the set_position command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-position"
+          ]
+        },
+        {
+          "description": "window:allow-outer-position -> Enables the outer_position command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-outer-position"
+          ]
+        },
+        {
+          "description": "window:allow-is-maximized -> Enables the is_maximized command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-is-maximized"
+          ]
+        },
+        {
+          "description": "window:deny-is-minimizable -> Denies the is_minimizable command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-is-minimizable"
+          ]
+        },
+        {
+          "description": "window:deny-available-monitors -> Denies the available_monitors command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-available-monitors"
+          ]
+        },
+        {
+          "description": "window:allow-title -> Enables the title command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-title"
+          ]
+        },
+        {
+          "description": "window:deny-unminimize -> Denies the unminimize command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-unminimize"
+          ]
+        },
+        {
+          "description": "window:allow-request-user-attention -> Enables the request_user_attention command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-request-user-attention"
+          ]
+        },
+        {
+          "description": "window:deny-scale-factor -> Denies the scale_factor command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-scale-factor"
+          ]
+        },
+        {
+          "description": "window:allow-set-focus -> Enables the set_focus command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-focus"
+          ]
+        },
+        {
+          "description": "window:allow-set-min-size -> Enables the set_min_size command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-min-size"
+          ]
+        },
+        {
+          "description": "window:deny-is-maximized -> Denies the is_maximized command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-is-maximized"
+          ]
+        },
+        {
+          "description": "window:allow-internal-toggle-devtools -> Enables the internal_toggle_devtools command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-internal-toggle-devtools"
+          ]
+        },
+        {
+          "description": "window:allow-primary-monitor -> Enables the primary_monitor command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-primary-monitor"
+          ]
+        },
+        {
+          "description": "window:deny-set-cursor-position -> Denies the set_cursor_position command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-cursor-position"
+          ]
+        },
+        {
+          "description": "window:allow-inner-size -> Enables the inner_size command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-inner-size"
+          ]
+        },
+        {
+          "description": "window:allow-show -> Enables the show command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-show"
+          ]
+        },
+        {
+          "description": "window:allow-set-maximizable -> Enables the set_maximizable command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-maximizable"
+          ]
+        },
+        {
+          "description": "window:deny-is-closable -> Denies the is_closable command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-is-closable"
+          ]
+        },
+        {
+          "description": "window:deny-internal-toggle-maximize -> Denies the internal_toggle_maximize command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-internal-toggle-maximize"
+          ]
+        },
+        {
+          "description": "window:deny-inner-position -> Denies the inner_position command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-inner-position"
+          ]
+        },
+        {
+          "description": "window:deny-set-shadow -> Denies the set_shadow command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-shadow"
+          ]
+        },
+        {
+          "description": "window:deny-set-min-size -> Denies the set_min_size command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-min-size"
+          ]
+        },
+        {
+          "description": "window:deny-is-maximizable -> Denies the is_maximizable command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-is-maximizable"
+          ]
+        },
+        {
+          "description": "window:allow-set-fullscreen -> Enables the set_fullscreen command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-fullscreen"
+          ]
+        },
+        {
+          "description": "window:deny-set-maximizable -> Denies the set_maximizable command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-maximizable"
+          ]
+        },
+        {
+          "description": "window:deny-set-closable -> Denies the set_closable command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-closable"
+          ]
+        },
+        {
+          "description": "window:deny-set-minimizable -> Denies the set_minimizable command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-minimizable"
+          ]
+        },
+        {
+          "description": "window:allow-scale-factor -> Enables the scale_factor command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-scale-factor"
+          ]
+        },
+        {
+          "description": "window:deny-set-cursor-visible -> Denies the set_cursor_visible command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-cursor-visible"
           ]
         }
       ]

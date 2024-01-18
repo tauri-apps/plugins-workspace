@@ -6,6 +6,7 @@ const COMMANDS: &[&str] = &[
     "scan",
     "cancel",
     "request_permissions",
+    "check_permissions",
     "open_app_settings",
     "vibrate",
 ];

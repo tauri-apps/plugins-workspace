@@ -39,14 +39,14 @@ export interface Scanned {
  * @param options
  */
 export async function scan(options?: ScanOptions): Promise<Scanned> {
-  return await invoke("plugin:barcodeScanner|scan", { ...options });
+  return await invoke("plugin:barcode-scanner|scan", { ...options });
 }
 
 /**
  * Cancel the current scan process.
  */
 export async function cancel(): Promise<void> {
-  return await invoke("plugin:barcodeScanner|cancel");
+  return await invoke("plugin:barcode-scanner|cancel");
 }
 
 /**
@@ -54,7 +54,7 @@ export async function cancel(): Promise<void> {
  */
 export async function checkPermissions(): Promise<PermissionState> {
   return await invoke<{ camera: PermissionState }>(
-    "plugin:barcodeScanner|check_permissions"
+    "plugin:barcode-scanner|check_permissions"
   ).then((r) => r.camera);
 }
 
@@ -63,7 +63,7 @@ export async function checkPermissions(): Promise<PermissionState> {
  */
 export async function requestPermissions(): Promise<PermissionState> {
   return await invoke<{ camera: PermissionState }>(
-    "plugin:barcodeScanner|request_permissions"
+    "plugin:barcode-scanner|request_permissions"
   ).then((r) => r.camera);
 }
 
@@ -71,5 +71,5 @@ export async function requestPermissions(): Promise<PermissionState> {
  * Open application settings. Useful if permission was denied and the user must manually enable it.
  */
 export async function openAppSettings(): Promise<void> {
-  return await invoke("plugin:barcodeScanner|open_app_settings");
+  return await invoke("plugin:barcode-scanner|open_app_settings");
 }

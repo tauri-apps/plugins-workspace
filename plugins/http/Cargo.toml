@@ -6,7 +6,7 @@ edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 rust-version = { workspace = true }
-links = "tauri-plugin-global-http"
+links = "tauri-plugin-http"
 
 [package.metadata.docs.rs]
 rustc-args = ["--cfg", "docsrs"]

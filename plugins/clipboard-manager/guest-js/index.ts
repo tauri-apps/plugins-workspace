@@ -29,7 +29,7 @@ async function writeText(
   text: string,
   opts?: { label?: string },
 ): Promise<void> {
-  return invoke("plugin:clipboard|write", {
+  return invoke("plugin:clipboard-manager|write", {
     data: {
       plainText: {
         label: opts?.label,
@@ -49,7 +49,7 @@ async function writeText(
  * @since 2.0.0
  */
 async function readText(): Promise<string> {
-  const kind: ClipResponse = await invoke("plugin:clipboard|read");
+  const kind: ClipResponse = await invoke("plugin:clipboard-manager|read");
   return kind.plainText.text;
 }
 
