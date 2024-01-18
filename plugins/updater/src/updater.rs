@@ -20,7 +20,10 @@ use reqwest::{
 };
 use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
-use tauri::utils::{config::UpdaterConfig, platform::current_exe};
+use tauri::{
+    utils::{config::UpdaterConfig, platform::current_exe},
+    Resource,
+};
 use time::OffsetDateTime;
 use url::Url;
 
@@ -385,13 +388,15 @@ pub struct Update {
     pub headers: HeaderMap,
 }
 
+impl Resource for Update {}
+
 impl Update {
     /// Downloads the updater package, verifies it then return it as bytes.
     ///
     /// Use [`Update::install`] to install it
-    pub async fn download<C: Fn(usize, Option<u64>), D: FnOnce()>(
+    pub async fn download<C: FnMut(usize, Option<u64>), D: FnOnce()>(
         &self,
-        on_chunk: C,
+        mut on_chunk: C,
         on_download_finish: D,
     ) -> Result<Vec<u8>> {
         // set our headers
@@ -458,7 +463,7 @@ impl Update {
     }
 
     /// Downloads and installs the updater package
-    pub async fn download_and_install<C: Fn(usize, Option<u64>), D: FnOnce()>(
+    pub async fn download_and_install<C: FnMut(usize, Option<u64>), D: FnOnce()>(
         &self,
         on_chunk: C,
         on_download_finish: D,

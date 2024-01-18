@@ -66,6 +66,8 @@ pub enum Error {
     BinaryNotFoundInArchive,
     #[error(transparent)]
     Http(#[from] http::Error),
+    #[error(transparent)]
+    Tauri(#[from] tauri::Error),
 }
 
 impl Serialize for Error {
