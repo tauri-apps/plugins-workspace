@@ -6,7 +6,9 @@
     "main"
   ],
   "platforms": [
-    "desktop"
+    "linux",
+    "macOS",
+    "windows"
   ],
   "permissions": [
     "cli:default",

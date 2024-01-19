@@ -6,7 +6,8 @@
     "main"
   ],
   "platforms": [
-    "mobile"
+    "android",
+    "iOS"
   ],
   "permissions": [
     "nfc:allow-write",
