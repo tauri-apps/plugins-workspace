@@ -195,7 +195,7 @@ class Schedule {
 
   static interval(
     interval: ScheduleInterval,
-    allowWhileIdle = false
+    allowWhileIdle = false,
   ): Schedule {
     return {
       at: undefined,
@@ -207,7 +207,7 @@ class Schedule {
   static every(
     kind: ScheduleEvery,
     count: number,
-    allowWhileIdle = false
+    allowWhileIdle = false,
   ): Schedule {
     return {
       at: undefined,
@@ -475,7 +475,7 @@ async function active(): Promise<ActiveNotification[]> {
  * @since 2.0.0
  */
 async function removeActive(
-  notifications: { id: number; tag?: string }[]
+  notifications: { id: number; tag?: string }[],
 ): Promise<void> {
   return invoke("plugin:notification|remove_active", { notifications });
 }
@@ -556,13 +556,13 @@ async function channels(): Promise<Channel[]> {
 }
 
 async function onNotificationReceived(
-  cb: (notification: Options) => void
+  cb: (notification: Options) => void,
 ): Promise<PluginListener> {
   return addPluginListener("notification", "notification", cb);
 }
 
 async function onAction(
-  cb: (notification: Options) => void
+  cb: (notification: Options) => void,
 ): Promise<PluginListener> {
   return addPluginListener("notification", "actionPerformed", cb);
 }
