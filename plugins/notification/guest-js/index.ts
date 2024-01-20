@@ -163,49 +163,57 @@ enum ScheduleEvery {
   Second = "second",
 }
 
-type ScheduleData =
-  | {
-      at: {
+class Schedule {
+  at:
+    | {
         date: Date;
         repeating: boolean;
         allowWhileIdle: boolean;
-      };
-    }
-  | {
-      interval: {
+      }
+    | undefined;
+  interval:
+    | {
         interval: ScheduleInterval;
         allowWhileIdle: boolean;
-      };
-    }
-  | {
-      every: {
+      }
+    | undefined;
+  every:
+    | {
         interval: ScheduleEvery;
         count: number;
         allowWhileIdle: boolean;
-      };
+      }
+    | undefined;
+
+  static at(date: Date, repeating = false, allowWhileIdle = false): Schedule {
+    return {
+      at: { date, repeating, allowWhileIdle },
+      interval: undefined,
+      every: undefined,
     };
-
-class Schedule {
-  schedule: ScheduleData;
-
-  private constructor(schedule: ScheduleData) {
-    this.schedule = schedule;
   }
 
-  toJSON(): string {
-    return JSON.stringify(this.schedule);
+  static interval(
+    interval: ScheduleInterval,
+    allowWhileIdle = false
+  ): Schedule {
+    return {
+      at: undefined,
+      interval: { interval, allowWhileIdle },
+      every: undefined,
+    };
   }
 
-  static at(date: Date, repeating = false, allowWhileIdle = false) {
-    return new Schedule({ at: { date, repeating, allowWhileIdle } });
-  }
-
-  static interval(interval: ScheduleInterval, allowWhileIdle = false) {
-    return new Schedule({ interval: { interval, allowWhileIdle } });
-  }
-
-  static every(kind: ScheduleEvery, count: number, allowWhileIdle = false) {
-    return new Schedule({ every: { interval: kind, count, allowWhileIdle } });
+  static every(
+    kind: ScheduleEvery,
+    count: number,
+    allowWhileIdle = false
+  ): Schedule {
+    return {
+      at: undefined,
+      interval: undefined,
+      every: { interval: kind, count, allowWhileIdle },
+    };
   }
 }
 
@@ -467,7 +475,7 @@ async function active(): Promise<ActiveNotification[]> {
  * @since 2.0.0
  */
 async function removeActive(
-  notifications: { id: number; tag?: string }[],
+  notifications: { id: number; tag?: string }[]
 ): Promise<void> {
   return invoke("plugin:notification|remove_active", { notifications });
 }
@@ -548,13 +556,13 @@ async function channels(): Promise<Channel[]> {
 }
 
 async function onNotificationReceived(
-  cb: (notification: Options) => void,
+  cb: (notification: Options) => void
 ): Promise<PluginListener> {
   return addPluginListener("notification", "notification", cb);
 }
 
 async function onAction(
-  cb: (notification: Options) => void,
+  cb: (notification: Options) => void
 ): Promise<PluginListener> {
   return addPluginListener("notification", "actionPerformed", cb);
 }
