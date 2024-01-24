@@ -5,9 +5,9 @@
 package app.tauri.notification
 
 import android.annotation.SuppressLint
-import android.content.ClipData.Item
 import android.text.format.DateUtils
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonProcessingException
@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -24,11 +25,25 @@ import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
 
-
 const val JS_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 
 enum class NotificationInterval {
-  Year, Month, TwoWeeks, Week, Day, Hour, Minute, Second
+  @JsonProperty("year")
+  Year,
+  @JsonProperty("month")
+  Month,
+  @JsonProperty("twoWeeks")
+  TwoWeeks,
+  @JsonProperty("week")
+  Week,
+  @JsonProperty("day")
+  Day,
+  @JsonProperty("hour")
+  Hour,
+  @JsonProperty("minute")
+  Minute,
+  @JsonProperty("second")
+  Second
 }
 
 fun getIntervalTime(interval: NotificationInterval, count: Int): Long {
@@ -50,9 +65,24 @@ fun getIntervalTime(interval: NotificationInterval, count: Int): Long {
 @JsonSerialize(using = NotificationScheduleSerializer::class)
 sealed class NotificationSchedule {
   // At specific moment of time (with repeating option)
-  class At(@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JS_DATE_FORMAT) var date: Date, val repeating: Boolean = false, val allowWhileIdle: Boolean = false): NotificationSchedule()
-  class Interval(val interval: DateMatch, val allowWhileIdle: Boolean = false): NotificationSchedule()
-  class Every(val interval: NotificationInterval, val count: Int = 0, val allowWhileIdle: Boolean = false): NotificationSchedule()
+  @JsonDeserialize
+  class At: NotificationSchedule() {
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JS_DATE_FORMAT)
+    lateinit var date: Date
+    var repeating: Boolean = false
+    var allowWhileIdle: Boolean = false
+  }
+  @JsonDeserialize
+  class Interval: NotificationSchedule() {
+    lateinit var interval: DateMatch
+    var allowWhileIdle: Boolean = false
+  }
+  @JsonDeserialize
+  class Every: NotificationSchedule() {
+    lateinit var interval: NotificationInterval
+    var count: Int = 0
+    var allowWhileIdle: Boolean = false
+  }
 
   fun isRemovable(): Boolean {
     return when (this) {
