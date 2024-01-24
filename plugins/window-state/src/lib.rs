@@ -101,8 +101,8 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
             let cache = self.state::<WindowStateCache>();
             let mut state = cache.0.lock().unwrap();
             for (label, s) in state.iter_mut() {
-                if let Some(window) = self.get_window(label) {
-                    window.update_state(s, flags)?;
+                if let Some(window) = self.get_webview_window(label) {
+                    window.as_ref().window().update_state(s, flags)?;
                 }
             }
 
@@ -329,7 +329,7 @@ impl Builder {
                 app.manage(WindowStateCache(cache));
                 Ok(())
             })
-            .on_webview_ready(move |window| {
+            .on_window_ready(move |window| {
                 if self.denylist.contains(window.label()) {
                     return;
                 }
