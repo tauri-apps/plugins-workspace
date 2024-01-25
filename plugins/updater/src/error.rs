@@ -62,8 +62,12 @@ pub enum Error {
     /// Temp dir is not on same mount mount. This prevents our updater to rename the AppImage to a temp file.
     #[error("temp directory is not on the same mount point as the AppImage")]
     TempDirNotOnSameMountPoint,
+    #[error("binary for the current target not found in the archive")]
+    BinaryNotFoundInArchive,
     #[error(transparent)]
     Http(#[from] http::Error),
+    #[error(transparent)]
+    Tauri(#[from] tauri::Error),
 }
 
 impl Serialize for Error {

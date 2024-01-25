@@ -49,14 +49,14 @@ First you need to register the core plugin with Tauri:
 `src-tauri/src/main.rs`
 
 ```rust
-use tauri_plugin_log::{LogTarget};
+use tauri_plugin_log::{Target, TargetKind};
 
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_log::Builder::default().targets([
-            LogTarget::LogDir,
-            LogTarget::Stdout,
-            LogTarget::Webview,
+        .plugin(tauri_plugin_log::Builder::new().targets([
+            Target::new(TargetKind::Stdout),
+            Target::new(TargetKind::LogDir { file_name: None }),
+            Target::new(TargetKind::Webview),
         ]).build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -68,7 +68,7 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 ```javascript
 import { trace, info, error, attachConsole } from "@tauri-apps/plugin-log";
 
-// with LogTarget::Webview enabled this function will print logs to the browser console
+// with TargetKind::Webview enabled this function will print logs to the browser console
 const detach = await attachConsole();
 
 trace("Trace");
@@ -91,6 +91,22 @@ Now, you can use the macros provided by the log crate to log messages from your 
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
+
+## Partners
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v2/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+For the complete list of sponsors please visit our [website](https://tauri.app#sponsors) and [Open Collective](https://opencollective.com/tauri).
 
 ## License
 

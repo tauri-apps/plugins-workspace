@@ -8,7 +8,7 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/primitives";
+import { invoke } from "@tauri-apps/api/core";
 
 type ClipResponse = Record<"plainText", { text: string }>;
 

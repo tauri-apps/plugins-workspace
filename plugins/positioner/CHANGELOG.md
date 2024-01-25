@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-alpha.5]
+
+- [`387c2f9`](https://github.com/tauri-apps/plugins-workspace/commit/387c2f9e0ce4c75c07ffa3fd76391a25b58f5daf)([#802](https://github.com/tauri-apps/plugins-workspace/pull/802)) Update to @tauri-apps/api v2.0.0-alpha.13.
+
+## \[2.0.0-alpha.4]
+
+- [`387c2f9`](https://github.com/tauri-apps/plugins-workspace/commit/387c2f9e0ce4c75c07ffa3fd76391a25b58f5daf)([#802](https://github.com/tauri-apps/plugins-workspace/pull/802)) Update to @tauri-apps/api v2.0.0-alpha.12.
+
 ## \[2.0.0-alpha.3]
 
 - [`e438e0a`](https://github.com/tauri-apps/plugins-workspace/commit/e438e0a62d4b430a5159f05f13ecd397dd891a0d)([#676](https://github.com/tauri-apps/plugins-workspace/pull/676)) Update to @tauri-apps/api v2.0.0-alpha.11.
@@ -77,5 +85,8 @@
   - [39e517c](https://www.github.com/JonasKruckenberg/tauri-plugin-positioner/commit/39e517c145a4a901839ae9b46e296370ce6ababf) Update update-metadata.md on 2021-11-19
     nberg/tauri-plugin-positioner/commit/119d9c47639e1df16f5520a08f039bdb6f39532b) update metadata on 2021-11-19
   - [39e517c](https://www.github.com/JonasKruckenberg/tauri-plugin-positioner/commit/39e517c145a4a901839ae9b46e296370ce6ababf) Update update-metadata.md on 2021-11-19
+    data on 2021-11-19
+  - [39e517c](https://www.github.com/JonasKruckenberg/tauri-plugin-positioner/commit/39e517c145a4a901839ae9b46e296370ce6ababf) Update update-metadata.md on 2021-11-19
+    [39e517c](https://www.github.com/JonasKruckenberg/tauri-plugin-positioner/commit/39e517c145a4a901839ae9b46e296370ce6ababf) Update update-metadata.md on 2021-11-19
     data on 2021-11-19
   - [39e517c](https://www.github.com/JonasKruckenberg/tauri-plugin-positioner/commit/39e517c145a4a901839ae9b46e296370ce6ababf) Update update-metadata.md on 2021-11-19

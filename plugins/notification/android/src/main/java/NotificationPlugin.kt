@@ -268,7 +268,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   @PermissionCallback
   private fun permissionsCallback(invoke: Invoke) {
     val permissionsResultJSON = JSObject()
-    permissionsResultJSON.put("display", getPermissionState())
+    permissionsResultJSON.put("permissionState", getPermissionState())
     invoke.resolve(permissionsResultJSON)
   }
 

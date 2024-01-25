@@ -2,15 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use crate::{PendingUpdate, Result, UpdaterExt};
+use crate::{Result, Update, UpdaterExt};
 
 use serde::Serialize;
-use tauri::{ipc::Channel, AppHandle, Runtime, State};
+use tauri::{ipc::Channel, AppHandle, Manager, ResourceId, Runtime};
 
-use std::{
-    sync::atomic::{AtomicBool, Ordering},
-    time::Duration,
-};
+use std::time::Duration;
+use url::Url;
 
 #[derive(Debug, Serialize)]
 #[serde(tag = "event", content = "data")]
@@ -29,6 +27,7 @@ pub enum DownloadEvent {
 #[derive(Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Metadata {
+    rid: Option<ResourceId>,
     available: bool,
     current_version: String,
     version: String,
@@ -39,9 +38,9 @@ pub(crate) struct Metadata {
 #[tauri::command]
 pub(crate) async fn check<R: Runtime>(
     app: AppHandle<R>,
-    pending: State<'_, PendingUpdate>,
     headers: Option<Vec<(String, String)>>,
     timeout: Option<u64>,
+    proxy: Option<String>,
     target: Option<String>,
 ) -> Result<Metadata> {
     let mut builder = app.updater_builder();
@@ -52,6 +51,10 @@ pub(crate) async fn check<R: Runtime>(
     }
     if let Some(timeout) = timeout {
         builder = builder.timeout(Duration::from_secs(timeout));
+    }
+    if let Some(ref proxy) = proxy {
+        let url = Url::parse(proxy.as_str())?;
+        builder = builder.proxy(url);
     }
     if let Some(target) = target {
         builder = builder.target(target);
@@ -66,7 +69,7 @@ pub(crate) async fn check<R: Runtime>(
         metadata.version = update.version.clone();
         metadata.date = update.date.map(|d| d.to_string());
         metadata.body = update.body.clone();
-        pending.0.lock().await.replace(update);
+        metadata.rid = Some(app.resources_table().add(update));
     }
 
     Ok(metadata)
@@ -74,30 +77,28 @@ pub(crate) async fn check<R: Runtime>(
 
 #[tauri::command]
 pub(crate) async fn download_and_install<R: Runtime>(
-    _app: AppHandle<R>,
-    pending: State<'_, PendingUpdate>,
+    app: AppHandle<R>,
+    rid: ResourceId,
     on_event: Channel,
 ) -> Result<()> {
-    if let Some(pending) = &*pending.0.lock().await {
-        let first_chunk = AtomicBool::new(false);
-        let on_event_c = on_event.clone();
-        pending
-            .download_and_install(
-                move |chunk_length, content_length| {
-                    if first_chunk.swap(false, Ordering::Acquire) {
-                        on_event
-                            .send(DownloadEvent::Started { content_length })
-                            .unwrap();
-                    }
-                    on_event
-                        .send(DownloadEvent::Progress { chunk_length })
-                        .unwrap();
-                },
-                move || {
-                    on_event_c.send(&DownloadEvent::Finished).unwrap();
-                },
-            )
-            .await?;
-    }
+    let update = app.resources_table().get::<Update>(rid)?;
+
+    let mut first_chunk = true;
+
+    update
+        .download_and_install(
+            |chunk_length, content_length| {
+                if first_chunk {
+                    first_chunk = !first_chunk;
+                    let _ = on_event.send(DownloadEvent::Started { content_length });
+                }
+                let _ = on_event.send(DownloadEvent::Progress { chunk_length });
+            },
+            || {
+                let _ = on_event.send(&DownloadEvent::Finished);
+            },
+        )
+        .await?;
+
     Ok(())
 }

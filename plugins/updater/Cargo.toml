@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-updater"
-version = "2.0.0-alpha.4"
+version = "2.0.0-alpha.6"
 description = "In-app updates for Tauri applications."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -18,7 +18,7 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 tokio = "1"
 reqwest = { version = "0.11", default-features = false, features = [ "json", "stream" ] }
-url = "2"
+url = { workspace = true }
 http = "0.2"
 dirs-next = "2"
 minisign-verify = "0.2"
@@ -34,7 +34,7 @@ tar = "0.4"
 [target."cfg(target_os = \"windows\")".dependencies]
 zip = { version = "0.6", default-features = false }
 
-[target."cfg(target_os = \"macos\")".dependencies]
+[target."cfg(any(target_os = \"macos\", target_os = \"linux\"))".dependencies]
 flate2 = "1.0.27"
 
 [dev-dependencies]

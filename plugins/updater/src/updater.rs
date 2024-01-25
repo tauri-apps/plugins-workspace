@@ -16,11 +16,14 @@ use http::HeaderName;
 use minisign_verify::{PublicKey, Signature};
 use reqwest::{
     header::{HeaderMap, HeaderValue},
-    Client, StatusCode,
+    ClientBuilder, StatusCode,
 };
 use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
-use tauri::utils::{config::UpdaterConfig, platform::current_exe};
+use tauri::{
+    utils::{config::UpdaterConfig, platform::current_exe},
+    Resource,
+};
 use time::OffsetDateTime;
 use url::Url;
 
@@ -94,6 +97,7 @@ pub struct UpdaterBuilder {
     endpoints: Option<Vec<Url>>,
     headers: HeaderMap,
     timeout: Option<Duration>,
+    proxy: Option<Url>,
     installer_args: Option<Vec<String>>,
 }
 
@@ -113,6 +117,7 @@ impl UpdaterBuilder {
             endpoints: None,
             headers: Default::default(),
             timeout: None,
+            proxy: None,
             installer_args: None,
         }
     }
@@ -160,6 +165,11 @@ impl UpdaterBuilder {
         self
     }
 
+    pub fn proxy(mut self, proxy: Url) -> Self {
+        self.proxy.replace(proxy);
+        self
+    }
+
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
@@ -201,6 +211,7 @@ impl UpdaterBuilder {
             current_version: self.current_version,
             version_comparator: self.version_comparator,
             timeout: self.timeout,
+            proxy: self.proxy,
             endpoints,
             installer_args: self.installer_args.unwrap_or(self.config.installer_args),
             arch,
@@ -217,6 +228,7 @@ pub struct Updater {
     current_version: Version,
     version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
     timeout: Option<Duration>,
+    proxy: Option<Url>,
     endpoints: Vec<Url>,
     #[allow(dead_code)]
     installer_args: Vec<String>,
@@ -258,20 +270,33 @@ impl Updater {
             // the URL will be generated dynamically
             let url: Url = url
                 .to_string()
-                // url::Url automatically url-encodes the string
+                // url::Url automatically url-encodes the path components
                 .replace(
                     "%7B%7Bcurrent_version%7D%7D",
                     &self.current_version.to_string(),
                 )
                 .replace("%7B%7Btarget%7D%7D", &self.target)
                 .replace("%7B%7Barch%7D%7D", self.arch)
+                // but not query parameters
+                .replace("{{current_version}}", &self.current_version.to_string())
+                .replace("{{target}}", &self.target)
+                .replace("{{arch}}", self.arch)
                 .parse()?;
 
-            let mut request = Client::new().get(url).headers(headers.clone());
+            let mut request = ClientBuilder::new();
             if let Some(timeout) = self.timeout {
                 request = request.timeout(timeout);
             }
-            let response = request.send().await;
+            if let Some(ref proxy) = self.proxy {
+                let proxy = reqwest::Proxy::all(proxy.as_str())?;
+                request = request.proxy(proxy);
+            }
+            let response = request
+                .build()?
+                .get(url)
+                .headers(headers.clone())
+                .send()
+                .await;
 
             if let Ok(res) = response {
                 if res.status().is_success() {
@@ -322,6 +347,7 @@ impl Updater {
                 body: release.notes.clone(),
                 signature: release.signature(&self.json_target)?.to_owned(),
                 timeout: self.timeout,
+                proxy: self.proxy.clone(),
                 headers: self.headers.clone(),
             })
         } else {
@@ -356,17 +382,21 @@ pub struct Update {
     pub signature: String,
     /// Request timeout
     pub timeout: Option<Duration>,
+    /// Request proxy
+    pub proxy: Option<Url>,
     /// Request headers
     pub headers: HeaderMap,
 }
+
+impl Resource for Update {}
 
 impl Update {
     /// Downloads the updater package, verifies it then return it as bytes.
     ///
     /// Use [`Update::install`] to install it
-    pub async fn download<C: Fn(usize, Option<u64>), D: FnOnce()>(
+    pub async fn download<C: FnMut(usize, Option<u64>), D: FnOnce()>(
         &self,
-        on_chunk: C,
+        mut on_chunk: C,
         on_download_finish: D,
     ) -> Result<Vec<u8>> {
         // set our headers
@@ -380,13 +410,20 @@ impl Update {
             HeaderValue::from_str("tauri-updater").unwrap(),
         );
 
-        let mut request = Client::new()
-            .get(self.download_url.clone())
-            .headers(headers);
+        let mut request = ClientBuilder::new();
         if let Some(timeout) = self.timeout {
             request = request.timeout(timeout);
         }
-        let response = request.send().await?;
+        if let Some(ref proxy) = self.proxy {
+            let proxy = reqwest::Proxy::all(proxy.as_str())?;
+            request = request.proxy(proxy);
+        }
+        let response = request
+            .build()?
+            .get(self.download_url.clone())
+            .headers(headers)
+            .send()
+            .await?;
 
         if !response.status().is_success() {
             return Err(Error::Network(format!(
@@ -426,7 +463,7 @@ impl Update {
     }
 
     /// Downloads and installs the updater package
-    pub async fn download_and_install<C: Fn(usize, Option<u64>), D: FnOnce()>(
+    pub async fn download_and_install<C: FnMut(usize, Option<u64>), D: FnOnce()>(
         &self,
         on_chunk: C,
         on_download_finish: D,
@@ -492,31 +529,32 @@ impl Update {
             // If it's an `exe` we expect an installer not a runtime.
             if found_path.extension() == Some(OsStr::new("exe")) {
                 // we need to wrap the installer path in quotes for Start-Process
-                let mut installer_arg = std::ffi::OsString::new();
-                installer_arg.push("\"");
-                installer_arg.push(&found_path);
-                installer_arg.push("\"");
+                let mut installer_path = std::ffi::OsString::new();
+                installer_path.push("\"");
+                installer_path.push(&found_path);
+                installer_path.push("\"");
+
+                let installer_args = [
+                    self.config.windows.install_mode.nsis_args(),
+                    self.installer_args
+                        .iter()
+                        .map(AsRef::as_ref)
+                        .collect::<Vec<_>>()
+                        .as_slice(),
+                ]
+                .concat();
 
                 // Run the installer
-                Command::new(powershell_path)
-                    .args(["-NoProfile", "-WindowStyle", "Hidden"])
+                let mut cmd = Command::new(powershell_path);
+
+                cmd.args(["-NoProfile", "-WindowStyle", "Hidden"])
                     .args(["Start-Process"])
-                    .arg(found_path)
-                    .arg("-ArgumentList")
-                    .arg(
-                        [
-                            self.config.windows.install_mode.nsis_args(),
-                            self.installer_args
-                                .iter()
-                                .map(AsRef::as_ref)
-                                .collect::<Vec<_>>()
-                                .as_slice(),
-                        ]
-                        .concat()
-                        .join(", "),
-                    )
-                    .spawn()
-                    .expect("installer failed to start");
+                    .arg(installer_path);
+
+                if !installer_args.is_empty() {
+                    cmd.arg("-ArgumentList").arg(installer_args.join(", "));
+                }
+                cmd.spawn().expect("installer failed to start");
 
                 std::process::exit(0);
             } else if found_path.extension() == Some(OsStr::new("msi")) {
@@ -526,19 +564,20 @@ impl Update {
                 current_exe_arg.push(current_exe()?);
                 current_exe_arg.push("\"");
 
-                let mut msi_path_arg = std::ffi::OsString::new();
-                msi_path_arg.push("\"\"\"");
-                msi_path_arg.push(&found_path);
-                msi_path_arg.push("\"\"\"");
+                let mut msi_path = std::ffi::OsString::new();
+                msi_path.push("\"\"\"");
+                msi_path.push(&found_path);
+                msi_path.push("\"\"\"");
 
-                let msiexec_args = self
-                    .config
-                    .windows
-                    .install_mode
-                    .msiexec_args()
-                    .iter()
-                    .map(|p| p.to_string())
-                    .collect::<Vec<String>>();
+                let installer_args = [
+                    self.config.windows.install_mode.msiexec_args(),
+                    self.installer_args
+                        .iter()
+                        .map(AsRef::as_ref)
+                        .collect::<Vec<_>>()
+                        .as_slice(),
+                ]
+                .concat();
 
                 // run the installer and relaunch the application
                 let powershell_install_res = Command::new(powershell_path)
@@ -547,12 +586,12 @@ impl Update {
                         "Start-Process",
                         "-Wait",
                         "-FilePath",
-                        "$env:SYSTEMROOT\\System32\\msiexec.exe",
+                        "$Env:SYSTEMROOT\\System32\\msiexec.exe",
                         "-ArgumentList",
                     ])
                     .arg("/i,")
-                    .arg(msi_path_arg)
-                    .arg(format!(", {}, /promptrestart;", msiexec_args.join(", ")))
+                    .arg(&msi_path)
+                    .arg(format!(", {}, /promptrestart;", installer_args.join(", ")))
                     .arg("Start-Process")
                     .arg(current_exe_arg)
                     .spawn();
@@ -565,8 +604,8 @@ impl Update {
                     );
                     let _ = Command::new(msiexec_path)
                         .arg("/i")
-                        .arg(found_path)
-                        .args(msiexec_args)
+                        .arg(msi_path)
+                        .args(installer_args)
                         .arg("/promptrestart")
                         .spawn();
                 }
@@ -596,6 +635,7 @@ impl Update {
         target_os = "openbsd"
     ))]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
+        use flate2::read::GzDecoder;
         use std::{
             ffi::OsStr,
             os::unix::fs::{MetadataExt, PermissionsExt},
@@ -628,7 +668,8 @@ impl Update {
 
                     // extract the buffer to the tmp_dir
                     // we extract our signed archive into our final directory without any temp file
-                    let mut archive = tar::Archive::new(archive);
+                    let decoder = GzDecoder::new(archive);
+                    let mut archive = tar::Archive::new(decoder);
                     for mut entry in archive.entries()?.flatten() {
                         if let Ok(path) = entry.path() {
                             if path.extension() == Some(OsStr::new("AppImage")) {
@@ -642,8 +683,10 @@ impl Update {
                             }
                         }
                     }
+                    // if we have not returned early we should restore the backup
+                    std::fs::rename(tmp_app_image, &self.extract_path)?;
 
-                    return Ok(());
+                    return Err(Error::BinaryNotFoundInArchive);
                 }
             }
         }

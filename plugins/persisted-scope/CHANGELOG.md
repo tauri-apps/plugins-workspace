@@ -1,5 +1,28 @@
 # Changelog
 
+## \[2.0.0-alpha.7]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-alpha.7`
+
+## \[2.0.0-alpha.6]
+
+- [`2cf8faa`](https://github.com/tauri-apps/plugins-workspace/commit/2cf8faa3e149af55eb86e5aba8ebfc54210ca703)([#839](https://github.com/tauri-apps/plugins-workspace/pull/839)) Update to tauri@alpha.20.
+- [`10b8039`](https://github.com/tauri-apps/plugins-workspace/commit/10b80391fcdef28e26124505053fb3a4c4f85e75)([#825](https://github.com/tauri-apps/plugins-workspace/pull/825)) Use `tauri::scope::fs::Scope` instead of local copy of its implementation.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-alpha.6`
+
+## \[2.0.0-alpha.5]
+
+- [`387c2f9`](https://github.com/tauri-apps/plugins-workspace/commit/387c2f9e0ce4c75c07ffa3fd76391a25b58f5daf)([#802](https://github.com/tauri-apps/plugins-workspace/pull/802)) Update to tauri@alpha.18.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-alpha.5`
+
 ## \[2.0.0-alpha.4]
 
 - [`e438e0a`](https://github.com/tauri-apps/plugins-workspace/commit/e438e0a62d4b430a5159f05f13ecd397dd891a0d)([#676](https://github.com/tauri-apps/plugins-workspace/pull/676)) Update to tauri@alpha.17.

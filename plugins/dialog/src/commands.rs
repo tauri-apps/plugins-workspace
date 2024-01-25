@@ -71,6 +71,8 @@ fn set_default_path<R: Runtime>(
     mut dialog_builder: FileDialogBuilder<R>,
     default_path: PathBuf,
 ) -> FileDialogBuilder<R> {
+    // we need to adjust the separator on Windows: https://github.com/tauri-apps/tauri/issues/8074
+    let default_path: PathBuf = default_path.components().collect();
     if default_path.is_file() || !default_path.exists() {
         if let (Some(parent), Some(file_name)) = (default_path.parent(), default_path.file_name()) {
             if parent.components().count() > 0 {
@@ -98,7 +100,7 @@ pub(crate) async fn open<R: Runtime>(
         dialog_builder = dialog_builder.set_parent(&window);
     }
     if let Some(title) = options.title {
-        dialog_builder = dialog_builder.set_title(&title);
+        dialog_builder = dialog_builder.set_title(title);
     }
     if let Some(default_path) = options.default_path {
         dialog_builder = set_default_path(dialog_builder, default_path);
@@ -178,7 +180,7 @@ pub(crate) async fn save<R: Runtime>(
             dialog_builder = dialog_builder.set_parent(&window);
         }
         if let Some(title) = options.title {
-            dialog_builder = dialog_builder.set_title(&title);
+            dialog_builder = dialog_builder.set_title(title);
         }
         if let Some(default_path) = options.default_path {
             dialog_builder = set_default_path(dialog_builder, default_path);

@@ -1,0 +1,23 @@
+[package]
+name = "tauri-plugin-biometric"
+version = "2.0.0-alpha.0"
+description = "Prompt the user for biometric authentication on Android and iOS."
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+links = "tauri-plugin-biometric"
+
+[package.metadata.docs.rs]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[build-dependencies]
+tauri-build = { workspace = true }
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+serde_repr = "0.1"

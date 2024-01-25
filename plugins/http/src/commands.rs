@@ -2,14 +2,30 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{collections::HashMap, time::Duration};
+use std::{collections::HashMap, future::Future, pin::Pin, sync::Arc, time::Duration};
 
 use http::{header, HeaderName, HeaderValue, Method, StatusCode};
-use reqwest::redirect::Policy;
-use serde::Serialize;
-use tauri::{command, AppHandle, Runtime};
+use reqwest::{redirect::Policy, NoProxy};
+use serde::{Deserialize, Serialize};
+use tauri::{async_runtime::Mutex, command, AppHandle, Manager, ResourceId, Runtime};
 
-use crate::{Error, FetchRequest, HttpExt, RequestId};
+use crate::{Error, HttpExt, Result};
+
+struct ReqwestResponse(reqwest::Response);
+
+type CancelableResponseResult = Result<Result<reqwest::Response>>;
+type CancelableResponseFuture =
+    Pin<Box<dyn Future<Output = CancelableResponseResult> + Send + Sync>>;
+
+struct FetchRequest(Mutex<CancelableResponseFuture>);
+impl FetchRequest {
+    fn new(f: CancelableResponseFuture) -> Self {
+        Self(Mutex::new(f))
+    }
+}
+
+impl tauri::Resource for FetchRequest {}
+impl tauri::Resource for ReqwestResponse {}
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -18,18 +34,114 @@ pub struct FetchResponse {
     status_text: String,
     headers: Vec<(String, String)>,
     url: String,
+    rid: ResourceId,
 }
 
-#[command]
-pub async fn fetch<R: Runtime>(
-    app: AppHandle<R>,
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClientConfig {
     method: String,
     url: url::Url,
     headers: Vec<(String, String)>,
     data: Option<Vec<u8>>,
     connect_timeout: Option<u64>,
     max_redirections: Option<usize>,
-) -> crate::Result<RequestId> {
+    proxy: Option<Proxy>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Proxy {
+    all: Option<UrlOrConfig>,
+    http: Option<UrlOrConfig>,
+    https: Option<UrlOrConfig>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(untagged)]
+pub enum UrlOrConfig {
+    Url(String),
+    Config(ProxyConfig),
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProxyConfig {
+    url: String,
+    basic_auth: Option<BasicAuth>,
+    no_proxy: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct BasicAuth {
+    username: String,
+    password: String,
+}
+
+#[inline]
+fn proxy_creator(
+    url_or_config: UrlOrConfig,
+    proxy_fn: fn(String) -> reqwest::Result<reqwest::Proxy>,
+) -> reqwest::Result<reqwest::Proxy> {
+    match url_or_config {
+        UrlOrConfig::Url(url) => Ok(proxy_fn(url)?),
+        UrlOrConfig::Config(ProxyConfig {
+            url,
+            basic_auth,
+            no_proxy,
+        }) => {
+            let mut proxy = proxy_fn(url)?;
+            if let Some(basic_auth) = basic_auth {
+                proxy = proxy.basic_auth(&basic_auth.username, &basic_auth.password);
+            }
+            if let Some(no_proxy) = no_proxy {
+                proxy = proxy.no_proxy(NoProxy::from_string(&no_proxy));
+            }
+            Ok(proxy)
+        }
+    }
+}
+
+fn attach_proxy(
+    proxy: Proxy,
+    mut builder: reqwest::ClientBuilder,
+) -> crate::Result<reqwest::ClientBuilder> {
+    let Proxy { all, http, https } = proxy;
+
+    if let Some(all) = all {
+        let proxy = proxy_creator(all, reqwest::Proxy::all)?;
+        builder = builder.proxy(proxy);
+    }
+
+    if let Some(http) = http {
+        let proxy = proxy_creator(http, reqwest::Proxy::http)?;
+        builder = builder.proxy(proxy);
+    }
+
+    if let Some(https) = https {
+        let proxy = proxy_creator(https, reqwest::Proxy::https)?;
+        builder = builder.proxy(proxy);
+    }
+
+    Ok(builder)
+}
+
+#[command]
+pub async fn fetch<R: Runtime>(
+    app: AppHandle<R>,
+    client_config: ClientConfig,
+) -> crate::Result<ResourceId> {
+    let ClientConfig {
+        method,
+        url,
+        headers,
+        data,
+        connect_timeout,
+        max_redirections,
+        proxy,
+    } = client_config;
+
     let scheme = url.scheme();
     let method = Method::from_bytes(method.as_bytes())?;
     let headers: HashMap<String, String> = HashMap::from_iter(headers);
@@ -49,6 +161,10 @@ pub async fn fetch<R: Runtime>(
                     } else {
                         Policy::limited(max_redirections)
                     });
+                }
+
+                if let Some(proxy_config) = proxy {
+                    builder = attach_proxy(proxy_config, builder)?;
                 }
 
                 let mut request = builder.build()?.request(method.clone(), url);
@@ -84,11 +200,9 @@ pub async fn fetch<R: Runtime>(
                     request = request.body(data);
                 }
 
-                let http_state = app.http();
-                let rid = http_state.next_id();
                 let fut = async move { Ok(request.send().await.map_err(Into::into)) };
-                let mut request_table = http_state.requests.lock().await;
-                request_table.insert(rid, FetchRequest::new(Box::pin(fut)));
+                let mut resources_table = app.resources_table();
+                let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
 
                 Ok(rid)
             } else {
@@ -107,11 +221,9 @@ pub async fn fetch<R: Runtime>(
                 .header(header::CONTENT_TYPE, data_url.mime_type().to_string())
                 .body(reqwest::Body::from(body))?;
 
-            let http_state = app.http();
-            let rid = http_state.next_id();
             let fut = async move { Ok(Ok(reqwest::Response::from(response))) };
-            let mut request_table = http_state.requests.lock().await;
-            request_table.insert(rid, FetchRequest::new(Box::pin(fut)));
+            let mut resources_table = app.resources_table();
+            let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
             Ok(rid)
         }
         _ => Err(Error::SchemeNotSupport(scheme.to_string())),
@@ -119,24 +231,25 @@ pub async fn fetch<R: Runtime>(
 }
 
 #[command]
-pub async fn fetch_cancel<R: Runtime>(app: AppHandle<R>, rid: RequestId) -> crate::Result<()> {
-    let mut request_table = app.http().requests.lock().await;
-    let req = request_table
-        .get_mut(&rid)
-        .ok_or(Error::InvalidRequestId(rid))?;
-    *req = FetchRequest::new(Box::pin(async { Err(Error::RequestCanceled) }));
+pub async fn fetch_cancel<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> crate::Result<()> {
+    let req = {
+        let resources_table = app.resources_table();
+        resources_table.get::<FetchRequest>(rid)?
+    };
+    let mut req = req.0.lock().await;
+    *req = Box::pin(async { Err(Error::RequestCanceled) });
     Ok(())
 }
 
 #[command]
 pub async fn fetch_send<R: Runtime>(
     app: AppHandle<R>,
-    rid: RequestId,
+    rid: ResourceId,
 ) -> crate::Result<FetchResponse> {
-    let mut request_table = app.http().requests.lock().await;
-    let req = request_table
-        .remove(&rid)
-        .ok_or(Error::InvalidRequestId(rid))?;
+    let req = {
+        let mut resources_table = app.resources_table();
+        resources_table.take::<FetchRequest>(rid)?
+    };
 
     let res = match req.0.lock().await.as_mut().await {
         Ok(Ok(res)) => res,
@@ -153,25 +266,27 @@ pub async fn fetch_send<R: Runtime>(
         ));
     }
 
-    app.http().responses.lock().await.insert(rid, res);
+    let mut resources_table = app.resources_table();
+    let rid = resources_table.add(ReqwestResponse(res));
 
     Ok(FetchResponse {
         status: status.as_u16(),
         status_text: status.canonical_reason().unwrap_or_default().to_string(),
         headers,
         url,
+        rid,
     })
 }
 
 #[command]
 pub(crate) async fn fetch_read_body<R: Runtime>(
     app: AppHandle<R>,
-    rid: RequestId,
+    rid: ResourceId,
 ) -> crate::Result<tauri::ipc::Response> {
-    let mut response_table = app.http().responses.lock().await;
-    let res = response_table
-        .remove(&rid)
-        .ok_or(Error::InvalidRequestId(rid))?;
-
+    let res = {
+        let mut resources_table = app.resources_table();
+        resources_table.take::<ReqwestResponse>(rid)?
+    };
+    let res = Arc::into_inner(res).unwrap().0;
     Ok(tauri::ipc::Response::new(res.bytes().await?.to_vec()))
 }

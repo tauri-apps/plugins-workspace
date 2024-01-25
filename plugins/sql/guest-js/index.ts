@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/primitives";
+import { invoke } from "@tauri-apps/api/core";
 
 export interface QueryResult {
   /** The number of rows affected by the query. */
@@ -114,7 +114,6 @@ export default class Database {
         values: bindValues ?? [],
       },
     );
-
     return {
       lastInsertId,
       rowsAffected,

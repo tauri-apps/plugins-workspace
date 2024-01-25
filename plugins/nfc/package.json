@@ -1,0 +1,32 @@
+{
+  "name": "@tauri-apps/plugin-nfc",
+  "version": "2.0.0-alpha.0",
+  "license": "MIT or APACHE-2.0",
+  "authors": [
+    "Tauri Programme within The Commons Conservancy"
+  ],
+  "type": "module",
+  "types": "./dist-js/index.d.ts",
+  "main": "./dist-js/index.cjs",
+  "module": "./dist-js/index.js",
+  "exports": {
+    "types": "./dist-js/index.d.ts",
+    "import": "./dist-js/index.js",
+    "require": "./dist-js/index.cjs"
+  },
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "files": [
+    "dist-js",
+    "!dist-js/**/*.map",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "tslib": "2.6.0"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.0.0-alpha.13"
+  }
+}

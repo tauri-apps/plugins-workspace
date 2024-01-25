@@ -39,6 +39,7 @@
       "publish": false,
       "dependencies": [
         "barcode-scanner",
+        "biometric",
         "log-plugin",
         "cli",
         "clipboard-manager",
@@ -46,6 +47,7 @@
         "fs",
         "global-shortcut",
         "http",
+        "nfc",
         "notification",
         "os",
         "process",
@@ -59,6 +61,7 @@
       "publish": false,
       "dependencies": [
         "barcode-scanner-js",
+        "biometric-js",
         "log-js",
         "cli-js",
         "clipboard-manager-js",
@@ -66,6 +69,7 @@
         "fs-js",
         "global-shortcut-js",
         "http-js",
+        "nfc-js",
         "notification-js",
         "os-js",
         "process-js",
@@ -74,7 +78,6 @@
       ],
       "postversion": "pnpm install --no-frozen-lockfile"
     },
-
     "deep-link-example-js": {
       "path": "./plugins/deep-link/examples/app",
       "manager": "javascript",
@@ -82,7 +85,6 @@
       "dependencies": ["deep-link-js"],
       "postversion": "pnpm install --no-frozen-lockfile"
     },
-
     "authenticator": {
       "path": "./plugins/authenticator",
       "manager": "rust"
@@ -91,7 +93,6 @@
       "path": "./plugins/authenticator",
       "manager": "javascript"
     },
-
     "autostart": {
       "path": "./plugins/autostart",
       "manager": "rust"
@@ -100,7 +101,6 @@
       "path": "./plugins/autostart",
       "manager": "javascript"
     },
-
     "barcode-scanner": {
       "path": "./plugins/barcode-scanner",
       "manager": "rust"
@@ -109,7 +109,14 @@
       "path": "./plugins/barcode-scanner",
       "manager": "javascript"
     },
-
+    "biometric": {
+      "path": "./plugins/biometric",
+      "manager": "rust"
+    },
+    "biometric-js": {
+      "path": "./plugins/biometric",
+      "manager": "javascript"
+    },
     "cli": {
       "path": "./plugins/cli",
       "manager": "rust"
@@ -118,7 +125,6 @@
       "path": "./plugins/cli",
       "manager": "javascript"
     },
-
     "clipboard-manager": {
       "path": "./plugins/clipboard-manager",
       "manager": "rust"
@@ -127,7 +133,6 @@
       "path": "./plugins/clipboard-manager",
       "manager": "javascript"
     },
-
     "deep-link": {
       "path": "./plugins/deep-link",
       "manager": "rust"
@@ -136,7 +141,6 @@
       "path": "./plugins/deep-link",
       "manager": "javascript"
     },
-
     "fs": {
       "path": "./plugins/fs",
       "manager": "rust"
@@ -145,7 +149,6 @@
       "path": "./plugins/fs",
       "manager": "javascript"
     },
-
     "dialog": {
       "path": "./plugins/dialog",
       "manager": "rust",
@@ -155,7 +158,6 @@
       "path": "./plugins/dialog",
       "manager": "javascript"
     },
-
     "global-shortcut": {
       "path": "./plugins/global-shortcut",
       "manager": "rust"
@@ -164,7 +166,6 @@
       "path": "./plugins/global-shortcut",
       "manager": "javascript"
     },
-
     "http": {
       "path": "./plugins/http",
       "manager": "rust",
@@ -174,18 +175,25 @@
       "path": "./plugins/http",
       "manager": "javascript"
     },
-
     "localhost": {
       "path": "./plugins/localhost",
       "manager": "rust"
     },
-
     "log-plugin": {
       "path": "./plugins/log",
       "manager": "rust"
     },
     "log-js": {
       "path": "./plugins/log",
+      "manager": "javascript"
+    },
+
+    "nfc": {
+      "path": "./plugins/nfc",
+      "manager": "rust"
+    },
+    "nfc-js": {
+      "path": "./plugins/nfc",
       "manager": "javascript"
     },
 
@@ -197,7 +205,6 @@
       "path": "./plugins/notification",
       "manager": "javascript"
     },
-
     "os": {
       "path": "./plugins/os",
       "manager": "rust"
@@ -206,13 +213,11 @@
       "path": "./plugins/os",
       "manager": "javascript"
     },
-
     "persisted-scope": {
       "path": "./plugins/persisted-scope",
       "manager": "rust",
       "dependencies": ["fs"]
     },
-
     "positioner": {
       "path": "./plugins/positioner",
       "manager": "rust"
@@ -221,7 +226,6 @@
       "path": "./plugins/positioner",
       "manager": "javascript"
     },
-
     "process": {
       "path": "./plugins/process",
       "manager": "rust"
@@ -230,7 +234,6 @@
       "path": "./plugins/process",
       "manager": "javascript"
     },
-
     "shell": {
       "path": "./plugins/shell",
       "manager": "rust"
@@ -239,12 +242,10 @@
       "path": "./plugins/shell",
       "manager": "javascript"
     },
-
     "single-instance": {
       "path": "./plugins/single-instance",
       "manager": "rust"
     },
-
     "sql": {
       "path": "./plugins/sql",
       "manager": "rust",
@@ -274,7 +275,6 @@
       "path": "./plugins/sql",
       "manager": "javascript"
     },
-
     "store": {
       "path": "./plugins/store",
       "manager": "rust"
@@ -283,7 +283,6 @@
       "path": "./plugins/store",
       "manager": "javascript"
     },
-
     "stronghold": {
       "path": "./plugins/stronghold",
       "manager": "rust"
@@ -292,7 +291,6 @@
       "path": "./plugins/stronghold",
       "manager": "javascript"
     },
-
     "updater": {
       "path": "./plugins/updater",
       "manager": "rust"
@@ -301,7 +299,6 @@
       "path": "./plugins/updater",
       "manager": "javascript"
     },
-
     "upload": {
       "path": "./plugins/upload",
       "manager": "rust"
@@ -310,7 +307,6 @@
       "path": "./plugins/upload",
       "manager": "javascript"
     },
-
     "websocket": {
       "path": "./plugins/websocket",
       "manager": "rust"
@@ -319,7 +315,6 @@
       "path": "./plugins/websocket",
       "manager": "javascript"
     },
-
     "window-state": {
       "path": "./plugins/window-state",
       "manager": "rust"

@@ -4,7 +4,7 @@
 
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
-import { invoke } from "@tauri-apps/api/primitives";
+import { invoke } from "@tauri-apps/api/core";
 
 interface ChangePayload<T> {
   path: string;

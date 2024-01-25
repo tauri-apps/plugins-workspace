@@ -53,14 +53,8 @@ impl<R: Runtime> Dialog<R> {
 
 #[cfg(not(target_os = "linux"))]
 macro_rules! run_dialog {
-    ($e:expr, $h: ident) => {{
-        std::thread::spawn(move || {
-            let response = tauri::async_runtime::block_on($e);
-            $h(!matches!(
-                response,
-                rfd::MessageDialogResult::No | rfd::MessageDialogResult::Cancel
-            ));
-        });
+    ($e:expr, $h: expr) => {{
+        std::thread::spawn(move || $h(tauri::async_runtime::block_on($e)));
     }};
 }
 
@@ -69,13 +63,7 @@ macro_rules! run_dialog {
     ($e:expr, $h: ident) => {{
         std::thread::spawn(move || {
             let context = glib::MainContext::default();
-            context.invoke_with_priority(glib::PRIORITY_HIGH, move || {
-                let response = $e;
-                $h(!matches!(
-                    response,
-                    rfd::MessageDialogResult::No | rfd::MessageDialogResult::Cancel
-                ));
-            });
+            context.invoke_with_priority(glib::PRIORITY_HIGH, move || $h($e));
         });
     }};
 }
@@ -83,10 +71,7 @@ macro_rules! run_dialog {
 #[cfg(not(target_os = "linux"))]
 macro_rules! run_file_dialog {
     ($e:expr, $h: ident) => {{
-        std::thread::spawn(move || {
-            let response = tauri::async_runtime::block_on($e);
-            $h(response);
-        });
+        std::thread::spawn(move || $h(tauri::async_runtime::block_on($e)));
     }};
 }
 
@@ -95,10 +80,7 @@ macro_rules! run_file_dialog {
     ($e:expr, $h: ident) => {{
         std::thread::spawn(move || {
             let context = glib::MainContext::default();
-            context.invoke_with_priority(glib::PRIORITY_HIGH, move || {
-                let response = $e;
-                $h(response);
-            });
+            context.invoke_with_priority(glib::PRIORITY_HIGH, move || $h($e));
         });
     }};
 }
@@ -126,13 +108,13 @@ impl<R: Runtime> From<FileDialogBuilder<R>> for FileDialog {
         let mut builder = FileDialog::new();
 
         if let Some(title) = d.title {
-            builder = builder.set_title(&title);
+            builder = builder.set_title(title);
         }
         if let Some(starting_directory) = d.starting_directory {
             builder = builder.set_directory(starting_directory);
         }
         if let Some(file_name) = d.file_name {
-            builder = builder.set_file_name(&file_name);
+            builder = builder.set_file_name(file_name);
         }
         for filter in d.filters {
             let v: Vec<&str> = filter.extensions.iter().map(|x| &**x).collect();
@@ -226,5 +208,16 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
     dialog: MessageDialogBuilder<R>,
     f: F,
 ) {
+    use rfd::MessageDialogResult;
+
+    let ok_label = dialog.ok_button_label.clone();
+    let f = move |res| {
+        f(match res {
+            MessageDialogResult::Ok | MessageDialogResult::Yes => true,
+            MessageDialogResult::Custom(s) => ok_label.map_or(s == OK, |ok_label| ok_label == s),
+            _ => false,
+        });
+    };
+
     run_dialog!(MessageDialog::from(dialog).show(), f);
 }

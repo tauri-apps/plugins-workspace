@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-alpha.4"
+version = "2.0.0-alpha.6"
 description = "Ensure a single instance of your tauri app is running."
 authors = { workspace = true }
 license = { workspace = true }
@@ -20,7 +20,7 @@ log = { workspace = true }
 thiserror = { workspace = true }
 
 [target."cfg(target_os = \"windows\")".dependencies.windows-sys]
-version = "0.48"
+version = "0.52"
 features = [
   "Win32_System_Threading",
   "Win32_System_DataExchange",

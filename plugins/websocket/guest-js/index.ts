@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke, Channel } from "@tauri-apps/api/primitives";
+import { invoke, Channel } from "@tauri-apps/api/core";
 
 export interface ConnectionConfig {
   writeBufferSize?: number;
@@ -49,6 +49,10 @@ export default class WebSocket {
     onMessage.onmessage = (message: Message): void => {
       listeners.forEach((l) => l(message));
     };
+
+    if (config?.headers) {
+      config.headers = Array.from(new Headers(config.headers).entries());
+    }
 
     return await invoke<number>("plugin:websocket|connect", {
       url,

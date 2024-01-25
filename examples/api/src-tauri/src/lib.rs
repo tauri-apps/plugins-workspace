@@ -2,11 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-#![cfg_attr(
-    all(not(debug_assertions), target_os = "windows"),
-    windows_subsystem = "windows"
-)]
-
 mod cmd;
 #[cfg(desktop)]
 mod tray;
@@ -52,6 +47,8 @@ pub fn run() {
             #[cfg(mobile)]
             {
                 app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
+                app.handle().plugin(tauri_plugin_nfc::init())?;
+                app.handle().plugin(tauri_plugin_biometric::init())?;
             }
 
             let mut window_builder = WindowBuilder::new(app, "main", WindowUrl::default());

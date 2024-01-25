@@ -14,7 +14,6 @@
 )]
 
 use tauri::{
-    async_runtime::Mutex,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, Runtime,
 };
@@ -27,8 +26,6 @@ mod updater;
 pub use config::Config;
 pub use error::{Error, Result};
 pub use updater::*;
-
-struct PendingUpdate(Mutex<Option<Update>>);
 
 /// Extension trait to use the updater on [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`].
 pub trait UpdaterExt<R: Runtime> {
@@ -145,7 +142,6 @@ impl Builder {
                     config.installer_args = installer_args;
                 }
                 app.manage(UpdaterState { target, config });
-                app.manage(PendingUpdate(Default::default()));
                 Ok(())
             })
             .invoke_handler(tauri::generate_handler![

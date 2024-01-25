@@ -51,14 +51,14 @@ impl Display for ScheduleEvery {
             f,
             "{}",
             match self {
-                Self::Year => "Year",
-                Self::Month => "Month",
-                Self::TwoWeeks => "TwoWeeks",
-                Self::Week => "Week",
-                Self::Day => "Day",
-                Self::Hour => "Hour",
-                Self::Minute => "Minute",
-                Self::Second => "Second",
+                Self::Year => "year",
+                Self::Month => "month",
+                Self::TwoWeeks => "twoWeeks",
+                Self::Week => "week",
+                Self::Day => "day",
+                Self::Hour => "hour",
+                Self::Minute => "minute",
+                Self::Second => "second",
             }
         )
     }
@@ -96,6 +96,7 @@ impl<'de> Deserialize<'de> for ScheduleEvery {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Schedule {
+    #[serde(rename_all = "camelCase")]
     At {
         #[serde(
             serialize_with = "iso8601::serialize",
@@ -107,11 +108,13 @@ pub enum Schedule {
         #[serde(default)]
         allow_while_idle: bool,
     },
+    #[serde(rename_all = "camelCase")]
     Interval {
         interval: ScheduleInterval,
         #[serde(default)]
         allow_while_idle: bool,
     },
+    #[serde(rename_all = "camelCase")]
     Every {
         interval: ScheduleEvery,
         count: u8,

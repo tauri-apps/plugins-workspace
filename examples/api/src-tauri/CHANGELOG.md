@@ -1,5 +1,57 @@
 # Changelog
 
+## \[2.0.0-alpha.11]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-alpha.7`
+- Upgraded to `dialog@2.0.0-alpha.7`
+- Upgraded to `http@2.0.0-alpha.9`
+
+## \[2.0.0-alpha.10]
+
+### Dependencies
+
+- Upgraded to `http@2.0.0-alpha.8`
+
+## \[2.0.0-alpha.9]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.0.0-alpha.4`
+- Upgraded to `cli@2.0.0-alpha.6`
+- Upgraded to `clipboard-manager@2.0.0-alpha.6`
+- Upgraded to `dialog@2.0.0-alpha.6`
+- Upgraded to `fs@2.0.0-alpha.6`
+- Upgraded to `global-shortcut@2.0.0-alpha.6`
+- Upgraded to `http@2.0.0-alpha.7`
+- Upgraded to `log-plugin@2.0.0-alpha.6`
+- Upgraded to `notification@2.0.0-alpha.7`
+- Upgraded to `os@2.0.0-alpha.6`
+- Upgraded to `process@2.0.0-alpha.6`
+- Upgraded to `shell@2.0.0-alpha.6`
+- Upgraded to `updater@2.0.0-alpha.6`
+- Upgraded to `biometric@2.0.0-alpha.0`
+- Upgraded to `nfc@2.0.0-alpha.0`
+
+## \[2.0.0-alpha.8]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.0.0-alpha.3`
+- Upgraded to `cli@2.0.0-alpha.5`
+- Upgraded to `clipboard-manager@2.0.0-alpha.5`
+- Upgraded to `dialog@2.0.0-alpha.5`
+- Upgraded to `fs@2.0.0-alpha.5`
+- Upgraded to `global-shortcut@2.0.0-alpha.5`
+- Upgraded to `http@2.0.0-alpha.6`
+- Upgraded to `log-plugin@2.0.0-alpha.5`
+- Upgraded to `notification@2.0.0-alpha.6`
+- Upgraded to `os@2.0.0-alpha.5`
+- Upgraded to `process@2.0.0-alpha.5`
+- Upgraded to `shell@2.0.0-alpha.5`
+- Upgraded to `updater@2.0.0-alpha.5`
+
 ## \[2.0.0-alpha.7]
 
 ### Dependencies
