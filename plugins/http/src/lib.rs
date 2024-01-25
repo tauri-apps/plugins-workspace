@@ -11,17 +11,16 @@ use std::{collections::HashMap, future::Future, pin::Pin};
 
 pub use reqwest;
 use reqwest::Response;
+use serde::{Deserialize, Deserializer};
 use tauri::async_runtime::Mutex;
 use tauri::{
     plugin::{Builder, TauriPlugin},
     AppHandle, Manager, Runtime,
 };
 
-use crate::config::{Config, HttpAllowlistScope};
 pub use error::{Error, Result};
 
 mod commands;
-mod config;
 mod error;
 mod scope;
 
@@ -39,10 +38,46 @@ impl FetchRequest {
     }
 }
 
+/// HTTP scope entry object definition.
+/// It is a URL that can be accessed by the webview when using the HTTP APIs.
+/// The scoped URL is matched against the request URL using a glob pattern.
+///
+/// Examples:
+/// - "https://*" or "https://**" : allows all HTTPS urls
+/// - "https://*.github.com/tauri-apps/tauri": allows any subdomain of "github.com" with the "tauri-apps/api" path
+/// - "https://myapi.service.com/users/*": allows access to any URLs that begins with "https://myapi.service.com/users/"
+#[allow(rustdoc::bare_urls)]
+#[derive(Debug)]
+pub struct ScopeEntry {
+    pub url: glob::Pattern,
+}
+
+impl<'de> Deserialize<'de> for ScopeEntry {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct ScopeEntryRaw {
+            url: String,
+        }
+
+        ScopeEntryRaw::deserialize(deserializer).and_then(|raw| {
+            Ok(ScopeEntry {
+                url: glob::Pattern::new(&raw.url).map_err(|e| {
+                    serde::de::Error::custom(format!(
+                        "URL `{}` is not a valid glob pattern: {e}",
+                        raw.url
+                    ))
+                })?,
+            })
+        })
+    }
+}
+
 struct Http<R: Runtime> {
     #[allow(dead_code)]
     app: AppHandle<R>,
-    scope: scope::Scope,
     current_id: AtomicU32,
     requests: Mutex<RequestTable>,
     responses: Mutex<ResponseTable>,
@@ -65,8 +100,8 @@ impl<R: Runtime, T: Manager<R>> HttpExt<R> for T {
     }
 }
 
-pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
-    Builder::<R, Option<Config>>::new("http")
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    Builder::<R>::new("http")
         .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
             commands::fetch,
@@ -74,19 +109,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
             commands::fetch_send,
             commands::fetch_read_body,
         ])
-        .setup(|app, api| {
-            let default_scope = HttpAllowlistScope::default();
+        .setup(|app, _api| {
             app.manage(Http {
                 app: app.clone(),
                 current_id: 0.into(),
                 requests: Default::default(),
                 responses: Default::default(),
-                scope: scope::Scope::new(
-                    api.config()
-                        .as_ref()
-                        .map(|c| &c.scope)
-                        .unwrap_or(&default_scope),
-                ),
             });
             Ok(())
         })

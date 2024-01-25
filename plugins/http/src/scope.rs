@@ -2,39 +2,40 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use glob::Pattern;
+use crate::ScopeEntry;
 use reqwest::Url;
 
-use crate::config::HttpAllowlistScope;
-
 /// Scope for filesystem access.
-#[derive(Debug, Clone)]
-pub struct Scope {
-    allowed_urls: Vec<Pattern>,
+#[derive(Debug)]
+pub struct Scope<'a> {
+    allowed: Vec<&'a ScopeEntry>,
+    denied: Vec<&'a ScopeEntry>,
 }
 
-impl Scope {
+impl<'a> Scope<'a> {
     /// Creates a new scope from the scope configuration.
-    pub(crate) fn new(scope: &HttpAllowlistScope) -> Self {
-        Self {
-            allowed_urls: scope
-                .0
-                .iter()
-                .map(|url| {
-                    glob::Pattern::new(url).unwrap_or_else(|_| {
-                        panic!("scoped URL is not a valid glob pattern: `{url}`")
-                    })
-                })
-                .collect(),
-        }
+    pub(crate) fn new(allowed: Vec<&'a ScopeEntry>, denied: Vec<&'a ScopeEntry>) -> Self {
+        Self { allowed, denied }
     }
 
     /// Determines if the given URL is allowed on this scope.
     pub fn is_allowed(&self, url: &Url) -> bool {
-        self.allowed_urls.iter().any(|allowed| {
-            allowed.matches(url.as_str())
-                || allowed.matches(url.as_str().strip_suffix('/').unwrap_or_default())
-        })
+        let denied = self.denied.iter().any(|entry| {
+            entry.url.matches(url.as_str())
+                || entry
+                    .url
+                    .matches(url.as_str().strip_suffix('/').unwrap_or_default())
+        });
+        if denied {
+            false
+        } else {
+            self.allowed.iter().any(|entry| {
+                entry.url.matches(url.as_str())
+                    || entry
+                        .url
+                        .matches(url.as_str().strip_suffix('/').unwrap_or_default())
+            })
+        }
     }
 }
 

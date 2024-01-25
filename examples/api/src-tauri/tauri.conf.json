@@ -76,11 +76,6 @@
         }
       ]
     },
-    "http": {
-      "scope": [
-        "http://localhost:3003"
-      ]
-    },
     "updater": {
       "endpoints": [
         "https://tauri-update-server.vercel.app/update/{{target}}/{{current_version}}"

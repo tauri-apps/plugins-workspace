@@ -7,9 +7,12 @@ use std::{collections::HashMap, time::Duration};
 use http::{header, HeaderName, HeaderValue, Method, StatusCode};
 use reqwest::redirect::Policy;
 use serde::Serialize;
-use tauri::{command, AppHandle, Runtime};
+use tauri::{
+    command::{CommandScope, GlobalScope},
+    AppHandle, Runtime,
+};
 
-use crate::{Error, FetchRequest, HttpExt, RequestId};
+use crate::{scope::Scope, Error, FetchRequest, HttpExt, RequestId, ScopeEntry};
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -20,7 +23,7 @@ pub struct FetchResponse {
     url: String,
 }
 
-#[command]
+#[tauri::command]
 pub async fn fetch<R: Runtime>(
     app: AppHandle<R>,
     method: String,
@@ -29,6 +32,8 @@ pub async fn fetch<R: Runtime>(
     data: Option<Vec<u8>>,
     connect_timeout: Option<u64>,
     max_redirections: Option<usize>,
+    command_scope: CommandScope<'_, ScopeEntry>,
+    global_scope: GlobalScope<'_, ScopeEntry>,
 ) -> crate::Result<RequestId> {
     let scheme = url.scheme();
     let method = Method::from_bytes(method.as_bytes())?;
@@ -36,7 +41,20 @@ pub async fn fetch<R: Runtime>(
 
     match scheme {
         "http" | "https" => {
-            if app.http().scope.is_allowed(&url) {
+            if Scope::new(
+                command_scope
+                    .allows()
+                    .into_iter()
+                    .chain(global_scope.allows())
+                    .collect(),
+                command_scope
+                    .denies()
+                    .into_iter()
+                    .chain(global_scope.denies())
+                    .collect(),
+            )
+            .is_allowed(&url)
+            {
                 let mut builder = reqwest::ClientBuilder::new();
 
                 if let Some(timeout) = connect_timeout {
@@ -118,7 +136,7 @@ pub async fn fetch<R: Runtime>(
     }
 }
 
-#[command]
+#[tauri::command]
 pub async fn fetch_cancel<R: Runtime>(app: AppHandle<R>, rid: RequestId) -> crate::Result<()> {
     let mut request_table = app.http().requests.lock().await;
     let req = request_table
@@ -128,7 +146,7 @@ pub async fn fetch_cancel<R: Runtime>(app: AppHandle<R>, rid: RequestId) -> crat
     Ok(())
 }
 
-#[command]
+#[tauri::command]
 pub async fn fetch_send<R: Runtime>(
     app: AppHandle<R>,
     rid: RequestId,
@@ -163,7 +181,7 @@ pub async fn fetch_send<R: Runtime>(
     })
 }
 
-#[command]
+#[tauri::command]
 pub(crate) async fn fetch_read_body<R: Runtime>(
     app: AppHandle<R>,
     rid: RequestId,

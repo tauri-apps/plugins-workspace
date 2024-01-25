@@ -78,7 +78,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             watcher::unwatch
         ])
         .setup(|app: &tauri::AppHandle<R>, api| {
-            let acl_scope = api.scope::<ScopeVal>()?;
+            let acl_scope = api.scope::<ScopeEntry>()?;
 
             app.manage(Scope::new(
                 app,
@@ -112,6 +112,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 }
 
 #[derive(Debug, Deserialize)]
-struct ScopeVal {
+struct ScopeEntry {
     path: PathBuf,
 }
