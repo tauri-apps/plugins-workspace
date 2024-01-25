@@ -8,13 +8,13 @@ use tauri::{
 };
 use tokio::{net::TcpStream, sync::Mutex};
 use tokio_tungstenite::{
-    connect_async_with_config,
+    connect_async_tls_with_config,
     tungstenite::{
         client::IntoClientRequest,
         protocol::{CloseFrame as ProtocolCloseFrame, WebSocketConfig},
         Message,
     },
-    MaybeTlsStream, WebSocketStream,
+    Connector, MaybeTlsStream, WebSocketStream,
 };
 
 use std::collections::HashMap;
@@ -61,6 +61,24 @@ pub struct ConnectionConfig {
     pub headers: Option<Vec<(String, String)>>,
 }
 
+#[derive(Default)]
+pub struct TlsConfig {
+    connector: Mutex<Option<Connector>>,
+}
+
+impl TlsConfig {
+    pub fn from_connector(connector: Option<Connector>) -> Self {
+        Self {
+            connector: Mutex::new(connector),
+        }
+    }
+
+    pub async fn set_connector(&self, connector: Option<Connector>) {
+        let mut inner = self.connector.lock().await;
+        *inner = connector;
+    }
+}
+
 impl From<ConnectionConfig> for WebSocketConfig {
     fn from(config: ConnectionConfig) -> Self {
         // Disabling the warning on max_send_queue which we don't use anymore since it was deprecated.
@@ -103,6 +121,10 @@ async fn connect<R: Runtime>(
 ) -> Result<Id> {
     let id = rand::random();
     let mut request = url.into_client_request()?;
+    let tls_connector = match (window.try_state::<TlsConfig>()) {
+        Some(tls_config) => tls_config.connector.lock().await.clone(),
+        None => None,
+    };
 
     if let Some(headers) = config.as_ref().and_then(|c| c.headers.as_ref()) {
         for (k, v) in headers {
@@ -112,7 +134,9 @@ async fn connect<R: Runtime>(
         }
     }
 
-    let (ws_stream, _) = connect_async_with_config(request, config.map(Into::into), false).await?;
+    let (ws_stream, _) =
+        connect_async_tls_with_config(request, config.map(Into::into), false, tls_connector)
+            .await?;
 
     tauri::async_runtime::spawn(async move {
         let (write, read) = ws_stream.split();
@@ -190,6 +214,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .invoke_handler(tauri::generate_handler![connect, send])
         .setup(|app| {
             app.manage(ConnectionManager::default());
+            app.manage(TlsConfig::default());
             Ok(())
         })
         .build()
