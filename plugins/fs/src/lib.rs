@@ -11,6 +11,9 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
+use std::path::PathBuf;
+
+use serde::Deserialize;
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
     scope::fs::Scope,
@@ -19,12 +22,10 @@ use tauri::{
 };
 
 mod commands;
-mod config;
 mod error;
 #[cfg(feature = "watch")]
 mod watcher;
 
-pub use config::Config;
 pub use error::Error;
 
 type Result<T> = std::result::Result<T, Error>;
@@ -44,8 +45,8 @@ impl<R: Runtime, T: Manager<R>> FsExt<R> for T {
     }
 }
 
-pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
-    PluginBuilder::<R, Option<Config>>::new("fs")
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    PluginBuilder::<R>::new("fs")
         .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
             commands::create,
@@ -77,13 +78,15 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
             watcher::unwatch
         ])
         .setup(|app: &tauri::AppHandle<R>, api| {
-            let default_scope = FsScope::default();
+            let acl_scope = api.scope::<ScopeVal>()?;
+
             app.manage(Scope::new(
                 app,
-                api.config()
-                    .as_ref()
-                    .map(|c| &c.scope)
-                    .unwrap_or(&default_scope),
+                &FsScope::Scope {
+                    allow: acl_scope.allows().iter().map(|s| s.path.clone()).collect(),
+                    deny: acl_scope.denies().iter().map(|s| s.path.clone()).collect(),
+                    require_literal_leading_dot: None,
+                },
             )?);
 
             Ok(())
@@ -106,4 +109,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
             }
         })
         .build()
+}
+
+#[derive(Debug, Deserialize)]
+struct ScopeVal {
+    path: PathBuf,
 }

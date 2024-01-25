@@ -16,7 +16,6 @@
     "tray:default",
     "event:default",
     "window:default",
-    "resources:default",
     "notification:default",
     "os:allow-platform",
     "dialog:allow-open",
@@ -30,6 +29,21 @@
     "fs:allow-rename",
     "fs:allow-mkdir",
     "fs:allow-remove",
-    "fs:allow-write-text-file"
+    "fs:allow-write-text-file",
+    "fs:scope-download-recursive",
+    "fs:scope-resource-recursive",
+    {
+      "identifier": "fs:scope-appdata-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/db/**"
+        }
+      ],
+      "deny": [
+        {
+          "path": "$APPDATA/db/*.stronghold"
+        }
+      ]
+    }
   ]
 }
