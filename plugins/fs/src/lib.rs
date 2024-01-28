@@ -11,9 +11,6 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use std::path::PathBuf;
-
-use serde::Deserialize;
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
     scope::fs::Scope,
@@ -23,6 +20,7 @@ use tauri::{
 
 mod commands;
 mod error;
+mod scope;
 #[cfg(feature = "watch")]
 mod watcher;
 
@@ -78,7 +76,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             watcher::unwatch
         ])
         .setup(|app: &tauri::AppHandle<R>, api| {
-            let acl_scope = api.scope::<ScopeEntry>()?;
+            let acl_scope = api.scope::<scope::Entry>()?;
 
             app.manage(Scope::new(
                 app,
@@ -109,9 +107,4 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             }
         })
         .build()
-}
-
-#[derive(Debug, Deserialize)]
-struct ScopeEntry {
-    path: PathBuf,
 }

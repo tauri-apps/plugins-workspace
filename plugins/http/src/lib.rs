@@ -11,7 +11,6 @@ use std::{collections::HashMap, future::Future, pin::Pin};
 
 pub use reqwest;
 use reqwest::Response;
-use serde::{Deserialize, Deserializer};
 use tauri::async_runtime::Mutex;
 use tauri::{
     plugin::{Builder, TauriPlugin},
@@ -35,43 +34,6 @@ struct FetchRequest(Mutex<CancelableResponseFuture>);
 impl FetchRequest {
     fn new(f: CancelableResponseFuture) -> Self {
         Self(Mutex::new(f))
-    }
-}
-
-/// HTTP scope entry object definition.
-/// It is a URL that can be accessed by the webview when using the HTTP APIs.
-/// The scoped URL is matched against the request URL using a glob pattern.
-///
-/// Examples:
-/// - "https://*" or "https://**" : allows all HTTPS urls
-/// - "https://*.github.com/tauri-apps/tauri": allows any subdomain of "github.com" with the "tauri-apps/api" path
-/// - "https://myapi.service.com/users/*": allows access to any URLs that begins with "https://myapi.service.com/users/"
-#[allow(rustdoc::bare_urls)]
-#[derive(Debug)]
-pub struct ScopeEntry {
-    pub url: glob::Pattern,
-}
-
-impl<'de> Deserialize<'de> for ScopeEntry {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        struct ScopeEntryRaw {
-            url: String,
-        }
-
-        ScopeEntryRaw::deserialize(deserializer).and_then(|raw| {
-            Ok(ScopeEntry {
-                url: glob::Pattern::new(&raw.url).map_err(|e| {
-                    serde::de::Error::custom(format!(
-                        "URL `{}` is not a valid glob pattern: {e}",
-                        raw.url
-                    ))
-                })?,
-            })
-        })
     }
 }
 

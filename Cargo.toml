@@ -10,12 +10,13 @@ resolver = "2"
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
 log = "0.4"
-tauri = { git = "https://github.com/tauri-apps/tauri", branch = "fix/command-scope-infallible" }
-tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "fix/command-scope-infallible" }
-tauri-plugin = { git = "https://github.com/tauri-apps/tauri", branch = "fix/command-scope-infallible" }
+tauri = { git = "https://github.com/tauri-apps/tauri", branch = "feat/permission-scope-schema" }
+tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "feat/permission-scope-schema" }
+tauri-plugin = { git = "https://github.com/tauri-apps/tauri", branch = "feat/permission-scope-schema" }
 serde_json = "1"
 thiserror = "1"
 url = "2"
+schemars = "0.8"
 
 [workspace.package]
 edition = "2021"

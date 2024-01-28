@@ -12,7 +12,10 @@ use tauri::{
     AppHandle, Runtime,
 };
 
-use crate::{scope::Scope, Error, FetchRequest, HttpExt, RequestId, ScopeEntry};
+use crate::{
+    scope::{Entry, Scope},
+    Error, FetchRequest, HttpExt, RequestId,
+};
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -32,8 +35,8 @@ pub async fn fetch<R: Runtime>(
     data: Option<Vec<u8>>,
     connect_timeout: Option<u64>,
     max_redirections: Option<usize>,
-    command_scope: CommandScope<'_, ScopeEntry>,
-    global_scope: GlobalScope<'_, ScopeEntry>,
+    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<'_, Entry>,
 ) -> crate::Result<RequestId> {
     let scheme = url.scheme();
     let method = Method::from_bytes(method.as_bytes())?;

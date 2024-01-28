@@ -1,5 +1,8 @@
 use std::{fs::create_dir_all, path::Path};
 
+#[path = "src/scope.rs"]
+mod scope;
+
 const BASE_DIR_VARS: &[&str] = &[
     "AUDIO",
     "CACHE",
@@ -150,5 +153,7 @@ permissions = [
             .unwrap_or_else(|e| panic!("unable to autogenerate ${upper}: {e}"));
     }
 
-    tauri_plugin::Builder::new(COMMANDS).build();
+    tauri_plugin::Builder::new(COMMANDS)
+        .global_scope_schema(schemars::schema_for!(scope::Entry))
+        .build();
 }

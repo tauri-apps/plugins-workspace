@@ -2,19 +2,48 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use crate::ScopeEntry;
-use reqwest::Url;
+use serde::{Deserialize, Deserializer};
+use url::Url;
+
+#[allow(rustdoc::bare_urls)]
+#[derive(Debug)]
+pub struct Entry {
+    pub url: glob::Pattern,
+}
+
+impl<'de> Deserialize<'de> for Entry {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct EntryRaw {
+            url: String,
+        }
+
+        EntryRaw::deserialize(deserializer).and_then(|raw| {
+            Ok(Entry {
+                url: glob::Pattern::new(&raw.url).map_err(|e| {
+                    serde::de::Error::custom(format!(
+                        "URL `{}` is not a valid glob pattern: {e}",
+                        raw.url
+                    ))
+                })?,
+            })
+        })
+    }
+}
 
 /// Scope for filesystem access.
 #[derive(Debug)]
 pub struct Scope<'a> {
-    allowed: Vec<&'a ScopeEntry>,
-    denied: Vec<&'a ScopeEntry>,
+    allowed: Vec<&'a Entry>,
+    denied: Vec<&'a Entry>,
 }
 
 impl<'a> Scope<'a> {
     /// Creates a new scope from the scope configuration.
-    pub(crate) fn new(allowed: Vec<&'a ScopeEntry>, denied: Vec<&'a ScopeEntry>) -> Self {
+    pub(crate) fn new(allowed: Vec<&'a Entry>, denied: Vec<&'a Entry>) -> Self {
         Self { allowed, denied }
     }
 
