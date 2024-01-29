@@ -6816,6 +6816,10 @@
       "description": "All supported ACL values.",
       "anyOf": [
         {
+          "description": "Represents a null JSON value.",
+          "type": "null"
+        },
+        {
           "description": "Represents a [`bool`].",
           "type": "boolean"
         },

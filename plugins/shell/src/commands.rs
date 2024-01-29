@@ -104,16 +104,16 @@ pub fn execute<R: Runtime>(
     args: ExecuteArgs,
     on_event: Channel,
     options: CommandOptions,
-    command_scope: CommandScope<'_, crate::scope_entry::Entry>,
-    global_scope: GlobalScope<'_, crate::scope_entry::Entry>,
+    command_scope: CommandScope<'_, crate::scope::ScopeAllowedCommand>,
+    global_scope: GlobalScope<'_, crate::scope::ScopeAllowedCommand>,
 ) -> crate::Result<ChildId> {
-    let scope = shell.shell_scope(
-        command_scope
+    let scope = crate::scope::ShellScope {
+        scopes: command_scope
             .allows()
             .iter()
             .chain(global_scope.allows())
             .collect(),
-    )?;
+    };
 
     let mut command = if options.sidecar {
         let program = PathBuf::from(program);

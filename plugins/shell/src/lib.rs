@@ -42,7 +42,6 @@ pub struct Shell<R: Runtime> {
     app: AppHandle<R>,
     open_scope: scope::OpenScope,
     children: ChildStore,
-    resolved_scope_entry_cache: Mutex<HashMap<scope_entry::Entry, scope::ScopeAllowedCommand>>,
 }
 
 impl<R: Runtime> Shell<R> {
@@ -64,56 +63,6 @@ impl<R: Runtime> Shell<R> {
     /// See [`crate::api::shell::open`] for how it handles security-related measures.
     pub fn open(&self, path: impl Into<String>, with: Option<open::Program>) -> Result<()> {
         open::open(&self.open_scope, path.into(), with).map_err(Into::into)
-    }
-
-    fn shell_scope(&self, allowed: Vec<&crate::scope_entry::Entry>) -> Result<scope::ShellScope> {
-        let mut cache = self.resolved_scope_entry_cache.lock().unwrap();
-
-        let commands = allowed
-            .into_iter()
-            .map(|scope| {
-                if let Some(resolved_command) = cache.get(scope) {
-                    Ok((scope.name.clone(), resolved_command.clone()))
-                } else {
-                    let args = match scope.args.clone() {
-                        crate::scope_entry::ShellAllowedArgs::Flag(true) => None,
-                        crate::scope_entry::ShellAllowedArgs::Flag(false) => Some(Vec::new()),
-                        crate::scope_entry::ShellAllowedArgs::List(list) => {
-                            let list = list.into_iter().map(|arg| match arg {
-                                crate::scope_entry::ShellAllowedArg::Fixed(fixed) => {
-                                    crate::scope::ScopeAllowedArg::Fixed(fixed)
-                                }
-                                crate::scope_entry::ShellAllowedArg::Var { validator } => {
-                                    let validator = Regex::new(&validator).unwrap_or_else(|e| {
-                                        panic!("invalid regex {validator}: {e}")
-                                    });
-                                    crate::scope::ScopeAllowedArg::Var { validator }
-                                }
-                            });
-                            Some(list.collect())
-                        }
-                    };
-
-                    let command = if let Ok(path) = self.app.path().parse(&scope.command) {
-                        path
-                    } else {
-                        scope.command.clone()
-                    };
-
-                    let resolved_command = scope::ScopeAllowedCommand {
-                        command,
-                        args,
-                        sidecar: scope.sidecar,
-                    };
-
-                    cache.insert(scope.clone(), resolved_command.clone());
-
-                    Ok((scope.name.clone(), resolved_command))
-                }
-            })
-            .collect::<Result<HashMap<_, _>>>()?;
-
-        Ok(scope::ShellScope { scopes: commands })
     }
 }
 
@@ -146,7 +95,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
                 app: app.clone(),
                 children: Default::default(),
                 open_scope: open_scope(&config.open),
-                resolved_scope_entry_cache: Default::default(),
             });
             Ok(())
         })
