@@ -30,6 +30,7 @@ pub struct Scope {
     pub(crate) denied: Mutex<Vec<PathBuf>>,
     event_listeners: Mutex<HashMap<EventId, EventListener>>,
     next_event_id: AtomicU32,
+    pub(crate) require_literal_leading_dot: Option<bool>,
 }
 
 impl Scope {

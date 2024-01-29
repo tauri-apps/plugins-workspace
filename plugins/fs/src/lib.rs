@@ -22,6 +22,7 @@ use tauri::{
 };
 
 mod commands;
+mod config;
 mod error;
 mod scope;
 #[cfg(feature = "watch")]
@@ -66,8 +67,8 @@ impl ScopeObject for scope::Entry {
     }
 }
 
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    PluginBuilder::<R>::new("fs")
+pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
+    PluginBuilder::<R, Option<config::Config>>::new("fs")
         .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
             commands::create,
@@ -98,8 +99,13 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             #[cfg(feature = "watch")]
             watcher::unwatch
         ])
-        .setup(|app, _api| {
-            app.manage(Scope::default());
+        .setup(|app, api| {
+            let mut scope = Scope::default();
+            scope.require_literal_leading_dot = api
+                .config()
+                .as_ref()
+                .and_then(|c| c.require_literal_leading_dot);
+            app.manage(scope);
             Ok(())
         })
         .on_event(|app, event| {
