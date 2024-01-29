@@ -28,7 +28,31 @@
     "dialog:allow-open",
     "dialog:allow-save",
     "dialog:allow-confirm",
-    "shell:allow-execute",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "sh",
+          "cmd": "sh",
+          "args": [
+            "-c",
+            {
+              "validator": "\\S+"
+            }
+          ]
+        },
+        {
+          "name": "cmd",
+          "cmd": "cmd",
+          "args": [
+            "/C",
+            {
+              "validator": "\\S+"
+            }
+          ]
+        }
+      ]
+    },
     "shell:allow-kill",
     "shell:allow-stdin-write",
     "clipboard-manager:allow-read",

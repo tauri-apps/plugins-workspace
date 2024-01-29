@@ -4,7 +4,6 @@
 
 use crate::open::Program;
 use crate::process::Command;
-use crate::{Manager, Runtime};
 
 use regex::Regex;
 
@@ -55,16 +54,6 @@ impl From<Vec<String>> for ExecuteArgs {
     }
 }
 
-/// Shell scope configuration.
-#[derive(Debug, Clone)]
-pub struct ScopeConfig {
-    /// The validation regex that `shell > open` paths must match against.
-    pub open: Option<Regex>,
-
-    /// All allowed commands, using their unique command name as the keys.
-    pub scopes: HashMap<String, ScopeAllowedCommand>,
-}
-
 /// A configured scoped shell command.
 #[derive(Debug, Clone)]
 pub struct ScopeAllowedCommand {
@@ -98,9 +87,18 @@ impl ScopeAllowedArg {
     }
 }
 
-/// Scope for filesystem access.
+/// Scope for the open command
+pub struct OpenScope {
+    /// The validation regex that `shell > open` paths must match against.
+    pub open: Option<Regex>,
+}
+
+/// Scope for shell process spawning.
 #[derive(Clone)]
-pub struct Scope(ScopeConfig);
+pub struct ShellScope {
+    /// All allowed commands, using their unique command name as the keys.
+    pub scopes: HashMap<String, ScopeAllowedCommand>,
+}
 
 /// All errors that can happen while validating a scoped command.
 #[derive(Debug, thiserror::Error)]
@@ -147,17 +145,33 @@ pub enum Error {
     Io(#[from] std::io::Error),
 }
 
-impl Scope {
-    /// Creates a new shell scope.
-    pub(crate) fn new<R: Runtime, M: Manager<R>>(manager: &M, mut scope: ScopeConfig) -> Self {
-        for cmd in scope.scopes.values_mut() {
-            if let Ok(path) = manager.path().parse(&cmd.command) {
-                cmd.command = path;
+impl OpenScope {
+    /// Open a path in the default (or specified) browser.
+    ///
+    /// The path is validated against the `plugins > shell > open` validation regex, which
+    /// defaults to `^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+`.
+    pub fn open(&self, path: &str, with: Option<Program>) -> Result<(), Error> {
+        // ensure we pass validation if the configuration has one
+        if let Some(regex) = &self.open {
+            if !regex.is_match(path) {
+                return Err(Error::Validation {
+                    index: 0,
+                    validation: regex.as_str().into(),
+                });
             }
         }
-        Self(scope)
-    }
 
+        // The prevention of argument escaping is handled by the usage of std::process::Command::arg by
+        // the `open` dependency. This behavior should be re-confirmed during upgrades of `open`.
+        match with.map(Program::name) {
+            Some(program) => ::open::with_detached(path, program),
+            None => ::open::that_detached(path),
+        }
+        .map_err(Into::into)
+    }
+}
+
+impl ShellScope {
     /// Validates argument inputs and creates a Tauri sidecar [`Command`].
     pub fn prepare_sidecar(
         &self,
@@ -180,7 +194,7 @@ impl Scope {
         args: ExecuteArgs,
         sidecar: Option<&str>,
     ) -> Result<Command, Error> {
-        let command = match self.0.scopes.get(command_name) {
+        let command = match self.scopes.get(command_name) {
             Some(command) => command,
             None => return Err(Error::NotFound(command_name.into())),
         };
@@ -244,29 +258,5 @@ impl Scope {
         };
 
         Ok(command.args(args))
-    }
-
-    /// Open a path in the default (or specified) browser.
-    ///
-    /// The path is validated against the `plugins > shell > open` validation regex, which
-    /// defaults to `^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+`.
-    pub fn open(&self, path: &str, with: Option<Program>) -> Result<(), Error> {
-        // ensure we pass validation if the configuration has one
-        if let Some(regex) = &self.0.open {
-            if !regex.is_match(path) {
-                return Err(Error::Validation {
-                    index: 0,
-                    validation: regex.as_str().into(),
-                });
-            }
-        }
-
-        // The prevention of argument escaping is handled by the usage of std::process::Command::arg by
-        // the `open` dependency. This behavior should be re-confirmed during upgrades of `open`.
-        match with.map(Program::name) {
-            Some(program) => ::open::with_detached(path, program),
-            None => ::open::that_detached(path),
-        }
-        .map_err(Into::into)
     }
 }

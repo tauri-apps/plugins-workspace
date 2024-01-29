@@ -26,6 +26,7 @@ pub struct FetchResponse {
     url: String,
 }
 
+#[allow(clippy::too_many_arguments)]
 #[tauri::command]
 pub async fn fetch<R: Runtime>(
     app: AppHandle<R>,
@@ -47,12 +48,12 @@ pub async fn fetch<R: Runtime>(
             if Scope::new(
                 command_scope
                     .allows()
-                    .into_iter()
+                    .iter()
                     .chain(global_scope.allows())
                     .collect(),
                 command_scope
                     .denies()
-                    .into_iter()
+                    .iter()
                     .chain(global_scope.denies())
                     .collect(),
             )
