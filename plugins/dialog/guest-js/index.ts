@@ -294,7 +294,7 @@ export type {
   DialogFilter,
   FileResponse,
   OpenDialogOptions,
-	OpenDialogReturn,
+  OpenDialogReturn,
   SaveDialogOptions,
   MessageDialogOptions,
   ConfirmDialogOptions,
