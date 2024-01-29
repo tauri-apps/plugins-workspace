@@ -1,6 +1,7 @@
 use std::{fs::create_dir_all, path::Path};
 
 #[path = "src/scope.rs"]
+#[allow(dead_code)]
 mod scope;
 
 const BASE_DIR_VARS: &[&str] = &[

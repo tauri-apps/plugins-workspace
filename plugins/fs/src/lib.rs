@@ -11,11 +11,14 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
+use std::path::PathBuf;
+
+use serde::Deserialize;
 use tauri::{
+    command::ScopeObject,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    scope::fs::Scope,
-    utils::config::FsScope,
-    FileDropEvent, Manager, RunEvent, Runtime, WindowEvent,
+    utils::acl::Value,
+    AppHandle, FileDropEvent, Manager, RunEvent, Runtime, WindowEvent,
 };
 
 mod commands;
@@ -25,6 +28,7 @@ mod scope;
 mod watcher;
 
 pub use error::Error;
+pub use scope::{Event as ScopeEvent, Scope};
 
 type Result<T> = std::result::Result<T, Error>;
 
@@ -40,6 +44,25 @@ impl<R: Runtime, T: Manager<R>> FsExt<R> for T {
 
     fn try_fs_scope(&self) -> Option<&Scope> {
         self.try_state::<Scope>().map(|s| s.inner())
+    }
+}
+
+impl ScopeObject for scope::Entry {
+    type Error = Error;
+    fn deserialize<R: Runtime>(
+        app: &AppHandle<R>,
+        raw: Value,
+    ) -> std::result::Result<Self, Self::Error> {
+        #[derive(Deserialize)]
+        struct EntryRaw {
+            path: PathBuf,
+        }
+
+        let entry = serde_json::from_value::<EntryRaw>(raw.into())?;
+
+        Ok(Self {
+            path: app.path().parse(entry.path)?,
+        })
     }
 }
 
@@ -75,18 +98,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             #[cfg(feature = "watch")]
             watcher::unwatch
         ])
-        .setup(|app: &tauri::AppHandle<R>, api| {
-            let acl_scope = api.scope::<scope::Entry>()?;
-
-            app.manage(Scope::new(
-                app,
-                &FsScope::Scope {
-                    allow: acl_scope.allows().iter().map(|s| s.path.clone()).collect(),
-                    deny: acl_scope.denies().iter().map(|s| s.path.clone()).collect(),
-                    require_literal_leading_dot: None,
-                },
-            )?);
-
+        .setup(|app, _api| {
+            app.manage(Scope::default());
             Ok(())
         })
         .on_event(|app, event| {
@@ -99,9 +112,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 let scope = app.fs_scope();
                 for path in paths {
                     if path.is_file() {
-                        let _ = scope.allow_file(path);
+                        scope.allow_file(path);
                     } else {
-                        let _ = scope.allow_directory(path, false);
+                        scope.allow_directory(path, false);
                     }
                 }
             }

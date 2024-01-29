@@ -6241,6 +6241,7 @@ dependencies = [
  "notify-debouncer-mini",
  "schemars",
  "serde",
+ "serde_json",
  "serde_repr",
  "tauri",
  "tauri-plugin",
