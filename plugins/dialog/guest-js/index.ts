@@ -103,8 +103,8 @@ type OpenDialogReturn<T extends OpenDialogOptions> = T["directory"] extends true
     ? string[] | null
     : string | null
   : T["multiple"] extends true
-  ? FileResponse[] | null
-  : FileResponse | null;
+    ? FileResponse[] | null
+    : FileResponse | null;
 
 /**
  * Open a file/directory selection dialog.
