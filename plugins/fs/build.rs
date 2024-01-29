@@ -71,7 +71,7 @@ fn main() {
         let toml = format!(
             r###"# Automatically generated - DO NOT EDIT!
 
-"$schema" = "../../.schema.json"
+"$schema" = "../../schemas/schema.json"
 
 # Scopes Section
 # This section contains scopes, which define file level access

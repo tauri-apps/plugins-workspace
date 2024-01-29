@@ -1814,6 +1814,13 @@
           ]
         },
         {
+          "description": "fs:scope -> An empty permission you can use to modify the global scope.",
+          "type": "string",
+          "enum": [
+            "fs:scope"
+          ]
+        },
+        {
           "description": "fs:scope-app -> This scope permits access to all files and list content of top level directories in the `$APP`folder.",
           "type": "string",
           "enum": [
@@ -5878,6 +5885,13 @@
                       "type": "string",
                       "enum": [
                         "fs:read-meta"
+                      ]
+                    },
+                    {
+                      "description": "fs:scope -> An empty permission you can use to modify the global scope.",
+                      "type": "string",
+                      "enum": [
+                        "fs:scope"
                       ]
                     },
                     {

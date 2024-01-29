@@ -1,4 +1,4 @@
-"$schema" = ".schema.json"
+"$schema" = "schemas/schema.json"
 [default]
 description = "Allows requesting permission, checking permission state and sending notifications"
 permissions = [
