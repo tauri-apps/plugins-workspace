@@ -70,14 +70,24 @@ impl<'a> Scope<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::HttpAllowlistScope;
+    use std::str::FromStr;
+
+    use super::Entry;
+
+    impl FromStr for Entry {
+        type Err = glob::PatternError;
+
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            let pattern = s.parse()?;
+            Ok(Self { url: pattern })
+        }
+    }
 
     #[test]
     fn is_allowed() {
         // plain URL
-        let scope = super::Scope::new(&HttpAllowlistScope(vec!["http://localhost:8080"
-            .parse()
-            .unwrap()]));
+        let entry = "http://localhost:8080".parse().unwrap();
+        let scope = super::Scope::new(vec![&entry], Vec::new());
         assert!(scope.is_allowed(&"http://localhost:8080".parse().unwrap()));
         assert!(scope.is_allowed(&"http://localhost:8080/".parse().unwrap()));
 
@@ -87,10 +97,15 @@ mod tests {
         assert!(!scope.is_allowed(&"http://localhost:8081".parse().unwrap()));
         assert!(!scope.is_allowed(&"http://local:8080".parse().unwrap()));
 
+        // deny takes precedence
+        let allow = "http://localhost:8080/file.png".parse().unwrap();
+        let deny = "http://localhost:8080/*".parse().unwrap();
+        let scope = super::Scope::new(vec![&allow], vec![&deny]);
+        assert!(!scope.is_allowed(&"http://localhost:8080/file.png".parse().unwrap()));
+
         // URL with fixed path
-        let scope = super::Scope::new(&HttpAllowlistScope(vec!["http://localhost:8080/file.png"
-            .parse()
-            .unwrap()]));
+        let entry = "http://localhost:8080/file.png".parse().unwrap();
+        let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://localhost:8080/file.png".parse().unwrap()));
 
@@ -99,22 +114,23 @@ mod tests {
         assert!(!scope.is_allowed(&"http://localhost:8080/file.png/other.jpg".parse().unwrap()));
 
         // URL with glob pattern
-        let scope = super::Scope::new(&HttpAllowlistScope(vec!["http://localhost:8080/*.png"
-            .parse()
-            .unwrap()]));
+        let entry = "http://localhost:8080/*.png".parse().unwrap();
+        let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://localhost:8080/file.png".parse().unwrap()));
         assert!(scope.is_allowed(&"http://localhost:8080/assets/file.png".parse().unwrap()));
 
         assert!(!scope.is_allowed(&"http://localhost:8080/file.jpeg".parse().unwrap()));
 
-        let scope = super::Scope::new(&HttpAllowlistScope(vec!["http://*".parse().unwrap()]));
+        let entry = "http://*".parse().unwrap();
+        let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://something.else".parse().unwrap()));
         assert!(scope.is_allowed(&"http://something.else/path/to/file".parse().unwrap()));
         assert!(!scope.is_allowed(&"https://something.else".parse().unwrap()));
 
-        let scope = super::Scope::new(&HttpAllowlistScope(vec!["http://**".parse().unwrap()]));
+        let entry = "http://**".parse().unwrap();
+        let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://something.else".parse().unwrap()));
         assert!(scope.is_allowed(&"http://something.else/path/to/file".parse().unwrap()));
