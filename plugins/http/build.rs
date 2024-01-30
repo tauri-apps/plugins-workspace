@@ -24,15 +24,16 @@ struct ScopeEntry {
     url: String,
 }
 
-fn main() {
-    // ensure scope entry is up to date
-    let dummy = ScopeEntry {
-        url: "https://tauri.app/*".into(),
-    };
-    let _ = scope::Entry {
-        url: dummy.url.parse().unwrap(),
-    };
+// ensure scope entry is up to date
+impl From<ScopeEntry> for scope::Entry {
+    fn from(value: ScopeEntry) -> Self {
+        scope::Entry {
+            url: value.url.parse().unwrap(),
+        }
+    }
+}
 
+fn main() {
     tauri_plugin::Builder::new(COMMANDS)
         .global_scope_schema(schemars::schema_for!(ScopeEntry))
         .build();
