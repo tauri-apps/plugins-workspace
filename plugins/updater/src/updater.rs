@@ -678,10 +678,7 @@ impl Update {
     ))]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
         use flate2::read::GzDecoder;
-        use std::{
-            ffi::OsStr,
-            os::unix::fs::{MetadataExt, PermissionsExt},
-        };
+        use std::os::unix::fs::{MetadataExt, PermissionsExt};
         let archive = Cursor::new(bytes);
         let extract_path_metadata = self.extract_path.metadata()?;
 
