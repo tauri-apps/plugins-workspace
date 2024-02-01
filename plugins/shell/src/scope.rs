@@ -6,7 +6,7 @@ use crate::open::Program;
 use crate::process::Command;
 
 use regex::Regex;
-use tauri::command::ScopeObject;
+use tauri::ipc::ScopeObject;
 use tauri::Manager;
 
 /// Allowed representation of `Execute` command arguments.

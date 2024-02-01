@@ -8,7 +8,7 @@ use http::{header, HeaderName, HeaderValue, Method, StatusCode};
 use reqwest::redirect::Policy;
 use serde::Serialize;
 use tauri::{
-    command::{CommandScope, GlobalScope},
+    ipc::{CommandScope, GlobalScope},
     AppHandle, Runtime,
 };
 

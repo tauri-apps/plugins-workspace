@@ -337,6 +337,13 @@
           ]
         },
         {
+          "description": "event:allow-emit-to -> Enables the emit_to command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "event:allow-emit-to"
+          ]
+        },
+        {
           "description": "event:allow-listen -> Enables the listen command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -355,6 +362,13 @@
           "type": "string",
           "enum": [
             "event:deny-emit"
+          ]
+        },
+        {
+          "description": "event:deny-emit-to -> Denies the emit_to command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "event:deny-emit-to"
           ]
         },
         {
@@ -3571,6 +3585,13 @@
           ]
         },
         {
+          "description": "window:allow-destroy -> Enables the destroy command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-destroy"
+          ]
+        },
+        {
           "description": "window:allow-hide -> Enables the hide command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -3907,6 +3928,13 @@
           ]
         },
         {
+          "description": "window:allow-set-visible-on-all-workspaces -> Enables the set_visible_on_all_workspaces command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:allow-set-visible-on-all-workspaces"
+          ]
+        },
+        {
           "description": "window:allow-show -> Enables the show command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -3988,6 +4016,13 @@
           "type": "string",
           "enum": [
             "window:deny-current-monitor"
+          ]
+        },
+        {
+          "description": "window:deny-destroy -> Denies the destroy command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-destroy"
           ]
         },
         {
@@ -4324,6 +4359,13 @@
           "type": "string",
           "enum": [
             "window:deny-set-title"
+          ]
+        },
+        {
+          "description": "window:deny-set-visible-on-all-workspaces -> Denies the set_visible_on_all_workspaces command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window:deny-set-visible-on-all-workspaces"
           ]
         },
         {

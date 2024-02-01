@@ -15,7 +15,7 @@ use std::path::PathBuf;
 
 use serde::Deserialize;
 use tauri::{
-    command::ScopeObject,
+    ipc::ScopeObject,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     utils::acl::Value,
     AppHandle, FileDropEvent, Manager, RunEvent, Runtime, WindowEvent,

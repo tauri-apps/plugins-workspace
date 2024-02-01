@@ -7,8 +7,7 @@ use std::{collections::HashMap, path::PathBuf, string::FromUtf8Error};
 use encoding_rs::Encoding;
 use serde::{Deserialize, Serialize};
 use tauri::{
-    command::{CommandScope, GlobalScope},
-    ipc::Channel,
+    ipc::{Channel, CommandScope, GlobalScope},
     Manager, Runtime, State, Window,
 };
 
