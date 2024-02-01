@@ -13,6 +13,8 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
+use std::ffi::{OsStr, OsString};
+
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, Runtime,
@@ -69,13 +71,17 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
     fn updater_builder(&self) -> UpdaterBuilder {
         let app = self.app_handle();
         let version = app.package_info().version.clone();
-        let updater_config = app.config().tauri.bundle.updater.clone();
         let UpdaterState { config, target } = self.state::<UpdaterState>().inner();
 
-        let mut builder = UpdaterBuilder::new(version, config.clone(), updater_config);
+        let mut builder = UpdaterBuilder::new(version, config.clone());
 
         if let Some(target) = target {
             builder = builder.target(target);
+        }
+
+        let args = self.env().args_os;
+        if !args.is_empty() {
+            builder = builder.installer_arg("/ARGS").installer_args(args);
         }
 
         #[cfg(any(
@@ -108,7 +114,8 @@ struct UpdaterState {
 #[derive(Default)]
 pub struct Builder {
     target: Option<String>,
-    installer_args: Option<Vec<String>>,
+    pubkey: Option<String>,
+    installer_args: Vec<OsString>,
 }
 
 impl Builder {
@@ -121,25 +128,50 @@ impl Builder {
         self
     }
 
+    pub fn pubkey<S: Into<String>>(mut self, pubkey: S) -> Self {
+        self.pubkey.replace(pubkey.into());
+        self
+    }
+
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
-        S: Into<String>,
+        S: AsRef<OsStr>,
     {
-        self.installer_args
-            .replace(args.into_iter().map(Into::into).collect());
+        let args = args
+            .into_iter()
+            .map(|a| a.as_ref().to_os_string())
+            .collect::<Vec<_>>();
+        self.installer_args.extend_from_slice(&args);
+        self
+    }
+
+    pub fn installer_arg<S>(mut self, arg: S) -> Self
+    where
+        S: AsRef<OsStr>,
+    {
+        self.installer_args.push(arg.as_ref().to_os_string());
+        self
+    }
+
+    pub fn clear_installer_args(mut self) -> Self {
+        self.installer_args.clear();
         self
     }
 
     pub fn build<R: Runtime>(self) -> TauriPlugin<R, Config> {
+        let pubkey = self.pubkey;
         let target = self.target;
         let installer_args = self.installer_args;
         PluginBuilder::<R, Config>::new("updater")
             .js_init_script(include_str!("api-iife.js").to_string())
             .setup(move |app, api| {
                 let mut config = api.config().clone();
-                if let Some(installer_args) = installer_args {
-                    config.installer_args = installer_args;
+                if let Some(pubkey) = pubkey {
+                    config.pubkey = pubkey;
+                }
+                if let Some(windows) = &mut config.windows {
+                    windows.installer_args.extend_from_slice(&installer_args);
                 }
                 app.manage(UpdaterState { target, config });
                 Ok(())
