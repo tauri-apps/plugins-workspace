@@ -2,5 +2,4 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-export const prerender = true;
-export const ssr = false;
+/// <reference types="vite/client" />

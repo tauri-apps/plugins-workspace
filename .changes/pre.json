@@ -89,6 +89,7 @@
     ".changes/websocket-fix-arg-name.md",
     ".changes/websocket-headers.md",
     ".changes/window-state-decorated.md",
-    ".changes/window-state-promise.md"
+    ".changes/window-state-promise.md",
+    ".changes/window-state-zero-positions.md"
   ]
 }
