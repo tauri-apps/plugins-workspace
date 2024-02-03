@@ -20,7 +20,6 @@ use std::{
 
 use process::{Command, CommandChild};
 use regex::Regex;
-use scope::{Scope, ScopeAllowedCommand, ScopeConfig};
 use tauri::{
     plugin::{Builder, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime,
@@ -32,8 +31,8 @@ mod error;
 mod open;
 pub mod process;
 mod scope;
+mod scope_entry;
 
-use config::{Config, ShellAllowedArg, ShellAllowedArgs, ShellAllowlistOpen, ShellAllowlistScope};
 pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 type ChildStore = Arc<Mutex<HashMap<u32, CommandChild>>>;
@@ -41,7 +40,7 @@ type ChildStore = Arc<Mutex<HashMap<u32, CommandChild>>>;
 pub struct Shell<R: Runtime> {
     #[allow(dead_code)]
     app: AppHandle<R>,
-    scope: Scope,
+    open_scope: scope::OpenScope,
     children: ChildStore,
 }
 
@@ -63,7 +62,7 @@ impl<R: Runtime> Shell<R> {
     ///
     /// See [`crate::api::shell::open`] for how it handles security-related measures.
     pub fn open(&self, path: impl Into<String>, with: Option<open::Program>) -> Result<()> {
-        open::open(&self.scope, path.into(), with).map_err(Into::into)
+        open::open(&self.open_scope, path.into(), with).map_err(Into::into)
     }
 }
 
@@ -77,11 +76,11 @@ impl<R: Runtime, T: Manager<R>> ShellExt<R> for T {
     }
 }
 
-pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
+pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
     let mut init_script = include_str!("init-iife.js").to_string();
     init_script.push_str(include_str!("api-iife.js"));
 
-    Builder::<R, Option<Config>>::new("shell")
+    Builder::<R, Option<config::Config>>::new("shell")
         .js_init_script(init_script)
         .invoke_handler(tauri::generate_handler![
             commands::execute,
@@ -90,12 +89,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
             commands::open
         ])
         .setup(|app, api| {
-            let default_config = Config::default();
+            let default_config = config::Config::default();
             let config = api.config().as_ref().unwrap_or(&default_config);
             app.manage(Shell {
                 app: app.clone(),
                 children: Default::default(),
-                scope: Scope::new(app, shell_scope(config.scope.clone(), &config.open)),
+                open_scope: open_scope(&config.open),
             });
             Ok(())
         })
@@ -114,56 +113,20 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
         .build()
 }
 
-fn shell_scope(scope: ShellAllowlistScope, open: &ShellAllowlistOpen) -> ScopeConfig {
-    let shell_scopes = get_allowed_clis(scope);
-
+fn open_scope(open: &config::ShellAllowlistOpen) -> scope::OpenScope {
     let shell_scope_open = match open {
-        ShellAllowlistOpen::Flag(false) => None,
-        ShellAllowlistOpen::Flag(true) => {
+        config::ShellAllowlistOpen::Flag(false) => None,
+        config::ShellAllowlistOpen::Flag(true) => {
             Some(Regex::new(r"^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+").unwrap())
         }
-        ShellAllowlistOpen::Validate(validator) => {
+        config::ShellAllowlistOpen::Validate(validator) => {
             let validator =
                 Regex::new(validator).unwrap_or_else(|e| panic!("invalid regex {validator}: {e}"));
             Some(validator)
         }
     };
 
-    ScopeConfig {
+    scope::OpenScope {
         open: shell_scope_open,
-        scopes: shell_scopes,
     }
-}
-
-fn get_allowed_clis(scope: ShellAllowlistScope) -> HashMap<String, ScopeAllowedCommand> {
-    scope
-        .0
-        .into_iter()
-        .map(|scope| {
-            let args = match scope.args {
-                ShellAllowedArgs::Flag(true) => None,
-                ShellAllowedArgs::Flag(false) => Some(Vec::new()),
-                ShellAllowedArgs::List(list) => {
-                    let list = list.into_iter().map(|arg| match arg {
-                        ShellAllowedArg::Fixed(fixed) => scope::ScopeAllowedArg::Fixed(fixed),
-                        ShellAllowedArg::Var { validator } => {
-                            let validator = Regex::new(&validator)
-                                .unwrap_or_else(|e| panic!("invalid regex {validator}: {e}"));
-                            scope::ScopeAllowedArg::Var { validator }
-                        }
-                    });
-                    Some(list.collect())
-                }
-            };
-
-            (
-                scope.name,
-                ScopeAllowedCommand {
-                    command: scope.command,
-                    args,
-                    sidecar: scope.sidecar,
-                },
-            )
-        })
-        .collect()
 }

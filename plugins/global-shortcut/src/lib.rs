@@ -295,7 +295,7 @@ impl<R: Runtime> Builder<R> {
 
     pub fn build(self) -> TauriPlugin<R> {
         let handler = self.handler;
-        PluginBuilder::new("globalShortcut")
+        PluginBuilder::new("global-shortcut")
             .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![
                 register,

@@ -6,7 +6,7 @@ use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
 use notify_debouncer_full::{new_debouncer, DebounceEventResult, Debouncer, FileIdMap};
 use serde::Deserialize;
 use tauri::{
-    ipc::Channel,
+    ipc::{Channel, CommandScope, GlobalScope},
     path::{BaseDirectory, SafePathBuf},
     AppHandle, Manager, Resource, ResourceId, Runtime,
 };
@@ -21,7 +21,10 @@ use std::{
     time::Duration,
 };
 
-use crate::commands::{resolve_path, CommandResult};
+use crate::{
+    commands::{resolve_path, CommandResult},
+    scope::Entry,
+};
 
 struct InnerWatcher {
     pub kind: WatcherKind,
@@ -83,10 +86,18 @@ pub async fn watch<R: Runtime>(
     paths: Vec<SafePathBuf>,
     options: WatchOptions,
     on_event: Channel,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
 ) -> CommandResult<ResourceId> {
     let mut resolved_paths = Vec::with_capacity(paths.capacity());
     for path in paths {
-        resolved_paths.push(resolve_path(&app, path, options.dir)?);
+        resolved_paths.push(resolve_path(
+            &app,
+            &global_scope,
+            &command_scope,
+            path,
+            options.dir,
+        )?);
     }
 
     let mode = if options.recursive {

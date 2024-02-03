@@ -6,7 +6,10 @@ use std::{collections::HashMap, path::PathBuf, string::FromUtf8Error};
 
 use encoding_rs::Encoding;
 use serde::{Deserialize, Serialize};
-use tauri::{ipc::Channel, Manager, Runtime, State, Window};
+use tauri::{
+    ipc::{Channel, CommandScope, GlobalScope},
+    Manager, Runtime, State, Window,
+};
 
 use crate::{
     open::Program,
@@ -91,6 +94,7 @@ fn default_env() -> Option<HashMap<String, String>> {
     Some(HashMap::default())
 }
 
+#[allow(clippy::too_many_arguments)]
 #[tauri::command]
 pub fn execute<R: Runtime>(
     window: Window<R>,
@@ -99,14 +103,23 @@ pub fn execute<R: Runtime>(
     args: ExecuteArgs,
     on_event: Channel,
     options: CommandOptions,
+    command_scope: CommandScope<'_, crate::scope::ScopeAllowedCommand>,
+    global_scope: GlobalScope<'_, crate::scope::ScopeAllowedCommand>,
 ) -> crate::Result<ChildId> {
+    let scope = crate::scope::ShellScope {
+        scopes: command_scope
+            .allows()
+            .iter()
+            .chain(global_scope.allows())
+            .collect(),
+    };
+
     let mut command = if options.sidecar {
         let program = PathBuf::from(program);
         let program_as_string = program.display().to_string();
         let program_no_ext_as_string = program.with_extension("").display().to_string();
         let configured_sidecar = window
             .config()
-            .tauri
             .bundle
             .external_bin
             .as_ref()
@@ -116,14 +129,12 @@ pub fn execute<R: Runtime>(
             })
             .cloned();
         if let Some(sidecar) = configured_sidecar {
-            shell
-                .scope
-                .prepare_sidecar(&program.to_string_lossy(), &sidecar, args)?
+            scope.prepare_sidecar(&program.to_string_lossy(), &sidecar, args)?
         } else {
             return Err(crate::Error::SidecarNotAllowed(program));
         }
     } else {
-        match shell.scope.prepare(&program, args) {
+        match scope.prepare(&program, args) {
             Ok(cmd) => cmd,
             Err(e) => {
                 #[cfg(debug_assertions)]

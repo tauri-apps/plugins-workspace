@@ -33,7 +33,7 @@ const WMCOPYDATA_SINGLE_INSTANCE_DATA: usize = 1542;
 pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(|app, _api| {
-            let id = &app.config().tauri.bundle.identifier;
+            let id = &app.config().identifier;
 
             let class_name = encode_wide(format!("{id}-sic"));
             let window_name = encode_wide(format!("{id}-siw"));

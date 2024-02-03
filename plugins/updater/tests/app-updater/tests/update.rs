@@ -16,13 +16,8 @@ use serde::Serialize;
 const UPDATER_PRIVATE_KEY: &str = "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5Qm9uUXIyeEM2YkczeGMwZDFENmw1WHEzaFk5aDlOOXNyTWRxRnY4UUpzZ0FBQkFBQUFBQUFBQUFBQUlBQUFBQTVWbWdFYUZRWnNDZmdyUW9ibWExVEFTY0pVTWpVS2xlOHdhR1I3Q3hpd2FTNjg1MXZENEQyZWxnVE5PbnJUYWFTajRmdTJ3UWVPRlNDZldqY3dJeThKNktmY3BGdXl1M1BPdHgwOFhIQzJLSnpqS0Z2cVdmaEs2WWRmK3d4SHVCMlpHVGduaVAzclU9Cg==";
 
 #[derive(Serialize)]
-struct PackageConfig {
-    version: &'static str,
-}
-
-#[derive(Serialize)]
 struct Config {
-    package: PackageConfig,
+    version: &'static str,
 }
 
 #[derive(Serialize)]
@@ -163,9 +158,7 @@ fn update_app() {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let root_dir = manifest_dir.join("../../../..");
 
-    let mut config = Config {
-        package: PackageConfig { version: "1.0.0" },
-    };
+    let mut config = Config { version: "1.0.0" };
 
     // bundle app update
     build_app(&manifest_dir, &config, true, Default::default());
@@ -248,7 +241,7 @@ fn update_app() {
             }
         });
 
-        config.package.version = "0.1.0";
+        config.version = "0.1.0";
 
         // bundle initial app version
         build_app(&manifest_dir, &config, false, bundle_target);

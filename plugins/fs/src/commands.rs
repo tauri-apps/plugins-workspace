@@ -6,7 +6,9 @@
 use serde::{Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use tauri::{
+    ipc::{CommandScope, GlobalScope},
     path::{BaseDirectory, SafePathBuf},
+    utils::config::FsScope,
     AppHandle, Manager, Resource, ResourceId, Runtime,
 };
 
@@ -18,7 +20,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{Error, FsExt};
+use crate::{scope::Entry, Error, FsExt};
 
 #[derive(Debug, thiserror::Error)]
 pub enum CommandError {
@@ -71,10 +73,18 @@ pub struct BaseOptions {
 #[tauri::command]
 pub fn create<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
-    let resolved_path = resolve_path(&app, path, options.and_then(|o| o.base_dir))?;
+    let resolved_path = resolve_path(
+        &app,
+        &global_scope,
+        &command_scope,
+        path,
+        options.and_then(|o| o.base_dir),
+    )?;
     let file = File::create(&resolved_path).map_err(|e| {
         format!(
             "failed to create file at path: {} with error: {e}",
@@ -113,10 +123,18 @@ fn default_true() -> bool {
 #[tauri::command]
 pub fn open<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     path: SafePathBuf,
     options: Option<OpenOptions>,
 ) -> CommandResult<ResourceId> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base.base_dir))?;
+    let resolved_path = resolve_path(
+        &app,
+        &global_scope,
+        &command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base.base_dir),
+    )?;
 
     let mut opts = std::fs::OpenOptions::new();
     // default to read-only
@@ -166,17 +184,23 @@ pub struct CopyFileOptions {
 #[tauri::command]
 pub fn copy_file<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     from_path: SafePathBuf,
     to_path: SafePathBuf,
     options: Option<CopyFileOptions>,
 ) -> CommandResult<()> {
     let resolved_from_path = resolve_path(
         &app,
+        &global_scope,
+        &command_scope,
         from_path,
         options.as_ref().and_then(|o| o.from_path_base_dir),
     )?;
     let resolved_to_path = resolve_path(
         &app,
+        &global_scope,
+        &command_scope,
         to_path,
         options.as_ref().and_then(|o| o.to_path_base_dir),
     )?;
@@ -202,10 +226,18 @@ pub struct MkdirOptions {
 #[tauri::command]
 pub fn mkdir<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     path: SafePathBuf,
     options: Option<MkdirOptions>,
 ) -> CommandResult<()> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base.base_dir))?;
+    let resolved_path = resolve_path(
+        &app,
+        &global_scope,
+        &command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base.base_dir),
+    )?;
 
     let mut builder = std::fs::DirBuilder::new();
     builder.recursive(options.as_ref().and_then(|o| o.recursive).unwrap_or(false));
@@ -261,10 +293,18 @@ fn read_dir_inner<P: AsRef<Path>>(path: P) -> crate::Result<Vec<DirEntry>> {
 #[tauri::command]
 pub fn read_dir<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<Vec<DirEntry>> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
+    let resolved_path = resolve_path(
+        &app,
+        &global_scope,
+        &command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base_dir),
+    )?;
 
     read_dir_inner(&resolved_path)
         .map_err(|e| {
@@ -292,10 +332,18 @@ pub fn read<R: Runtime>(
 #[tauri::command]
 pub fn read_file<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<Vec<u8>> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
+    let resolved_path = resolve_path(
+        &app,
+        &global_scope,
+        &command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base_dir),
+    )?;
     std::fs::read(&resolved_path)
         .map_err(|e| {
             format!(
@@ -309,10 +357,18 @@ pub fn read_file<R: Runtime>(
 #[tauri::command]
 pub fn read_text_file<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<String> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
+    let resolved_path = resolve_path(
+        &app,
+        &global_scope,
+        &command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base_dir),
+    )?;
     std::fs::read_to_string(&resolved_path)
         .map_err(|e| {
             format!(
@@ -326,12 +382,20 @@ pub fn read_text_file<R: Runtime>(
 #[tauri::command]
 pub fn read_text_file_lines<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
     use std::io::BufRead;
 
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
+    let resolved_path = resolve_path(
+        &app,
+        &global_scope,
+        &command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base_dir),
+    )?;
 
     let file = File::open(&resolved_path).map_err(|e| {
         format!(
@@ -374,10 +438,18 @@ pub struct RemoveOptions {
 #[tauri::command]
 pub fn remove<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     path: SafePathBuf,
     options: Option<RemoveOptions>,
 ) -> CommandResult<()> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base.base_dir))?;
+    let resolved_path = resolve_path(
+        &app,
+        &global_scope,
+        &command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base.base_dir),
+    )?;
 
     let metadata = std::fs::symlink_metadata(&resolved_path).map_err(|e| {
         format!(
@@ -434,17 +506,23 @@ pub struct RenameOptions {
 #[tauri::command]
 pub fn rename<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     old_path: SafePathBuf,
     new_path: SafePathBuf,
     options: Option<RenameOptions>,
 ) -> CommandResult<()> {
     let resolved_old_path = resolve_path(
         &app,
+        &global_scope,
+        &command_scope,
         old_path,
         options.as_ref().and_then(|o| o.old_path_base_dir),
     )?;
     let resolved_new_path = resolve_path(
         &app,
+        &global_scope,
+        &command_scope,
         new_path,
         options.as_ref().and_then(|o| o.new_path_base_dir),
     )?;
@@ -490,10 +568,18 @@ pub fn seek<R: Runtime>(
 #[tauri::command]
 pub fn stat<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
+    let resolved_path = resolve_path(
+        &app,
+        &global_scope,
+        &command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base_dir),
+    )?;
     let metadata = std::fs::metadata(&resolved_path).map_err(|e| {
         format!(
             "failed to get metadata of path: {} with error: {e}",
@@ -506,10 +592,18 @@ pub fn stat<R: Runtime>(
 #[tauri::command]
 pub fn lstat<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
+    let resolved_path = resolve_path(
+        &app,
+        &global_scope,
+        &command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base_dir),
+    )?;
     let metadata = std::fs::symlink_metadata(&resolved_path).map_err(|e| {
         format!(
             "failed to get metadata of path: {} with error: {e}",
@@ -530,11 +624,19 @@ pub fn fstat<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> CommandResult<Fi
 #[tauri::command]
 pub fn truncate<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     path: SafePathBuf,
     len: Option<u64>,
     options: Option<BaseOptions>,
 ) -> CommandResult<()> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
+    let resolved_path = resolve_path(
+        &app,
+        &global_scope,
+        &command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base_dir),
+    )?;
     let f = std::fs::OpenOptions::new()
         .write(true)
         .open(&resolved_path)
@@ -599,11 +701,19 @@ fn default_create_value() -> bool {
 
 fn write_file_inner<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: &GlobalScope<'_, Entry>,
+    command_scope: &CommandScope<'_, Entry>,
     path: SafePathBuf,
     data: &[u8],
     options: Option<WriteFileOptions>,
 ) -> CommandResult<()> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base.base_dir))?;
+    let resolved_path = resolve_path(
+        &app,
+        global_scope,
+        command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base.base_dir),
+    )?;
 
     let mut opts = std::fs::OpenOptions::new();
     // defaults
@@ -644,35 +754,56 @@ fn write_file_inner<R: Runtime>(
 #[tauri::command]
 pub fn write_file<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     path: SafePathBuf,
     data: Vec<u8>,
     options: Option<WriteFileOptions>,
 ) -> CommandResult<()> {
-    write_file_inner(app, path, &data, options)
+    write_file_inner(app, &global_scope, &command_scope, path, &data, options)
 }
 
 #[tauri::command]
 pub fn write_text_file<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     path: SafePathBuf,
     data: String,
     options: Option<WriteFileOptions>,
 ) -> CommandResult<()> {
-    write_file_inner(app, path, data.as_bytes(), options)
+    write_file_inner(
+        app,
+        &global_scope,
+        &command_scope,
+        path,
+        data.as_bytes(),
+        options,
+    )
 }
 
 #[tauri::command]
 pub fn exists<R: Runtime>(
     app: AppHandle<R>,
+    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<'_, Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<bool> {
-    let resolved_path = resolve_path(&app, path, options.as_ref().and_then(|o| o.base_dir))?;
+    let resolved_path = resolve_path(
+        &app,
+        &global_scope,
+        &command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base_dir),
+    )?;
     Ok(resolved_path.exists())
 }
 
 pub fn resolve_path<R: Runtime>(
     app: &AppHandle<R>,
+    global_scope: &GlobalScope<'_, Entry>,
+    command_scope: &CommandScope<'_, Entry>,
     path: SafePathBuf,
     base_dir: Option<BaseDirectory>,
 ) -> CommandResult<PathBuf> {
@@ -684,7 +815,35 @@ pub fn resolve_path<R: Runtime>(
     } else {
         path.as_ref().to_path_buf()
     };
-    if app.fs_scope().is_allowed(&path) {
+
+    let scope = tauri::scope::fs::Scope::new(
+        app,
+        &FsScope::Scope {
+            allow: app
+                .fs_scope()
+                .allowed
+                .lock()
+                .unwrap()
+                .clone()
+                .into_iter()
+                .chain(global_scope.allows().iter().map(|e| e.path.clone()))
+                .chain(command_scope.allows().iter().map(|e| e.path.clone()))
+                .collect(),
+            deny: app
+                .fs_scope()
+                .denied
+                .lock()
+                .unwrap()
+                .clone()
+                .into_iter()
+                .chain(global_scope.denies().iter().map(|e| e.path.clone()))
+                .chain(command_scope.denies().iter().map(|e| e.path.clone()))
+                .collect(),
+            require_literal_leading_dot: None,
+        },
+    )?;
+
+    if scope.is_allowed(&path) {
         Ok(path)
     } else {
         Err(CommandError::Plugin(Error::PathForbidden(path)))

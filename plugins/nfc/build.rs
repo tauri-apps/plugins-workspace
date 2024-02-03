@@ -2,21 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::process::exit;
+const COMMANDS: &[&str] = &["is_available", "write", "scan"];
 
 fn main() {
-    if let Err(error) = tauri_build::mobile::PluginBuilder::new()
+    tauri_plugin::Builder::new(COMMANDS)
         .android_path("android")
         .ios_path("ios")
-        .run()
-    {
-        println!("{error:#}");
-        exit(1);
-    }
+        .build();
 
     // TODO: triple check if this can reference the plugin's xml as it expects rn
     // TODO: This has to be configurable if we want to support handling nfc tags when the app is not open.
-    tauri_build::mobile::update_android_manifest(
+    tauri_plugin::mobile::update_android_manifest(
         "NFC PLUGIN",
         "activity",
         r#"<intent-filter>

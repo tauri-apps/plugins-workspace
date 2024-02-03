@@ -6,13 +6,14 @@ authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+links = "tauri-plugin-log"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [build-dependencies]
-tauri-build = { workspace = true }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }
@@ -20,8 +21,8 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 serde_repr = "0.1"
 byte-unit = "4.0"
-log = { workspace = true, features = [ "kv_unstable" ] }
-time = { version = "0.3", features = [ "formatting", "local-offset" ] }
+log = { workspace = true, features = ["kv_unstable"] }
+time = { version = "0.3", features = ["formatting", "local-offset"] }
 fern = "0.6"
 
 [target."cfg(target_os = \"android\")".dependencies]
@@ -33,4 +34,4 @@ objc = "0.2"
 cocoa = "0.24"
 
 [features]
-colored = [ "fern/colored" ]
+colored = ["fern/colored"]

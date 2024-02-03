@@ -8,8 +8,8 @@ edition = { workspace = true }
 rust-version = { workspace = true }
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 serde = { workspace = true }
@@ -22,4 +22,4 @@ bincode = "1"
 tauri-plugin-fs = { path = "../fs", version = "2.0.0-alpha.7" }
 
 [features]
-protocol-asset = [ "tauri/protocol-asset" ]
+protocol-asset = ["tauri/protocol-asset"]

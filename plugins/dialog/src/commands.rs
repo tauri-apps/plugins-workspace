@@ -118,7 +118,7 @@ pub(crate) async fn open<R: Runtime>(
                 if let Some(folders) = &folders {
                     for folder in folders {
                         if let Some(s) = window.try_fs_scope() {
-                            s.allow_directory(folder, options.recursive)?;
+                            s.allow_directory(folder, options.recursive);
                         }
                     }
                 }
@@ -127,7 +127,7 @@ pub(crate) async fn open<R: Runtime>(
                 let folder = dialog_builder.blocking_pick_folder();
                 if let Some(path) = &folder {
                     if let Some(s) = window.try_fs_scope() {
-                        s.allow_directory(path, options.recursive)?;
+                        s.allow_directory(path, options.recursive);
                     }
                 }
                 OpenResponse::Folder(folder)
@@ -140,7 +140,7 @@ pub(crate) async fn open<R: Runtime>(
         if let Some(files) = &files {
             for file in files {
                 if let Some(s) = window.try_fs_scope() {
-                    s.allow_file(&file.path)?;
+                    s.allow_file(&file.path);
                 }
                 window
                     .state::<tauri::scope::Scopes>()
@@ -152,7 +152,7 @@ pub(crate) async fn open<R: Runtime>(
         let file = dialog_builder.blocking_pick_file();
         if let Some(file) = &file {
             if let Some(s) = window.try_fs_scope() {
-                s.allow_file(&file.path)?;
+                s.allow_file(&file.path);
             }
             window
                 .state::<tauri::scope::Scopes>()
@@ -193,7 +193,7 @@ pub(crate) async fn save<R: Runtime>(
         let path = dialog_builder.blocking_save_file();
         if let Some(p) = &path {
             if let Some(s) = window.try_fs_scope() {
-                s.allow_file(p)?;
+                s.allow_file(p);
             }
             window.state::<tauri::scope::Scopes>().allow_file(p)?;
         }

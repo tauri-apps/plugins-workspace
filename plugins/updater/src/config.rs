@@ -64,10 +64,10 @@ impl Default for WindowsUpdateInstallMode {
 #[serde(rename_all = "camelCase")]
 pub struct WindowsConfig {
     /// Additional arguments given to the NSIS or WiX installer.
-    #[serde(default)]
+    #[serde(default, alias = "installer-args")]
     pub installer_args: Vec<OsString>,
     /// Updating mode, see [`WindowsUpdateInstallMode`] for more info.
-    #[serde(default)]
+    #[serde(default, alias = "install-mode")]
     pub install_mode: WindowsUpdateInstallMode,
 }
 
@@ -78,9 +78,9 @@ pub struct Config {
     /// Updater endpoints.
     #[serde(default)]
     pub endpoints: Vec<UpdaterEndpoint>,
-    /// Updater pubkey used to verify signatures.
+    /// Signature public key.
     pub pubkey: String,
-    /// Updater config options specific to windows.
+    /// The Windows configuration for the updater.
     pub windows: Option<WindowsConfig>,
 }
 

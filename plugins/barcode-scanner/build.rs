@@ -2,11 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+const COMMANDS: &[&str] = &[
+    "scan",
+    "cancel",
+    "request_permissions",
+    "check_permissions",
+    "open_app_settings",
+    "vibrate",
+];
+
 fn main() {
-    if let Err(error) = tauri_build::mobile::PluginBuilder::new()
+    if let Err(error) = tauri_plugin::Builder::new(COMMANDS)
         .android_path("android")
         .ios_path("ios")
-        .run()
+        .try_build()
     {
         println!("{error:#}");
         // when building documentation for Android the plugin build result is irrelevant to the crate itself

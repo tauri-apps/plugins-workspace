@@ -29,8 +29,13 @@
     },
     "deep-link": {
       "domains": [
-        { "host": "fabianlars.de", "pathPrefix": ["/intent"] },
-        { "host": "tauri.app" }
+        {
+          "host": "fabianlars.de",
+          "pathPrefix": ["/intent"]
+        },
+        {
+          "host": "tauri.app"
+        }
       ]
     }
   },

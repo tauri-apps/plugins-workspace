@@ -1,0 +1,78 @@
+{
+  "$schema": "schemas/desktop-schema.json",
+  "identifier": "run-app-base",
+  "description": "Base permissions to run the app",
+  "windows": ["main"],
+  "permissions": [
+    "log:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "http://localhost:3003"
+        }
+      ]
+    },
+    "app:default",
+    "resources:default",
+    "fs:default",
+    "menu:default",
+    "path:default",
+    "tray:default",
+    "event:default",
+    "window:default",
+    "notification:default",
+    "os:allow-platform",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "dialog:allow-confirm",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "sh",
+          "cmd": "sh",
+          "args": [
+            "-c",
+            {
+              "validator": "\\S+"
+            }
+          ]
+        },
+        {
+          "name": "cmd",
+          "cmd": "cmd",
+          "args": [
+            "/C",
+            {
+              "validator": "\\S+"
+            }
+          ]
+        }
+      ]
+    },
+    "shell:allow-kill",
+    "shell:allow-stdin-write",
+    "clipboard-manager:allow-read",
+    "clipboard-manager:allow-write",
+    "fs:allow-rename",
+    "fs:allow-mkdir",
+    "fs:allow-remove",
+    "fs:allow-write-text-file",
+    "fs:scope-download-recursive",
+    "fs:scope-resource-recursive",
+    {
+      "identifier": "fs:scope-appdata-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/db/**"
+        }
+      ],
+      "deny": [
+        {
+          "path": "$APPDATA/db/*.stronghold"
+        }
+      ]
+    }
+  ]
+}

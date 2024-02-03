@@ -19,13 +19,12 @@ pub struct Notification<R: Runtime>(AppHandle<R>);
 
 impl<R: Runtime> crate::NotificationBuilder<R> {
     pub fn show(self) -> crate::Result<()> {
-        let mut notification =
-            imp::Notification::new(self.app.config().tauri.bundle.identifier.clone());
+        let mut notification = imp::Notification::new(self.app.config().identifier.clone());
 
         if let Some(title) = self
             .data
             .title
-            .or_else(|| self.app.config().package.product_name.clone())
+            .or_else(|| self.app.config().product_name.clone())
         {
             notification = notification.title(title);
         }

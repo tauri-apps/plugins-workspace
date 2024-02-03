@@ -7,9 +7,17 @@ use std::{collections::HashMap, future::Future, pin::Pin, sync::Arc, time::Durat
 use http::{header, HeaderName, HeaderValue, Method, StatusCode};
 use reqwest::{redirect::Policy, NoProxy};
 use serde::{Deserialize, Serialize};
-use tauri::{async_runtime::Mutex, command, AppHandle, Manager, ResourceId, Runtime};
+use tauri::{
+    async_runtime::Mutex,
+    command,
+    ipc::{CommandScope, GlobalScope},
+    AppHandle, Manager, ResourceId, Runtime,
+};
 
-use crate::{Error, HttpExt, Result};
+use crate::{
+    scope::{Entry, Scope},
+    Error, Result,
+};
 
 struct ReqwestResponse(reqwest::Response);
 
@@ -131,6 +139,8 @@ fn attach_proxy(
 pub async fn fetch<R: Runtime>(
     app: AppHandle<R>,
     client_config: ClientConfig,
+    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<'_, Entry>,
 ) -> crate::Result<ResourceId> {
     let ClientConfig {
         method,
@@ -148,7 +158,20 @@ pub async fn fetch<R: Runtime>(
 
     match scheme {
         "http" | "https" => {
-            if app.http().scope.is_allowed(&url) {
+            if Scope::new(
+                command_scope
+                    .allows()
+                    .iter()
+                    .chain(global_scope.allows())
+                    .collect(),
+                command_scope
+                    .denies()
+                    .iter()
+                    .chain(global_scope.denies())
+                    .collect(),
+            )
+            .is_allowed(&url)
+            {
                 let mut builder = reqwest::ClientBuilder::new();
 
                 if let Some(timeout) = connect_timeout {
@@ -238,10 +261,11 @@ pub async fn fetch_cancel<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> cra
     };
     let mut req = req.0.lock().await;
     *req = Box::pin(async { Err(Error::RequestCanceled) });
+
     Ok(())
 }
 
-#[command]
+#[tauri::command]
 pub async fn fetch_send<R: Runtime>(
     app: AppHandle<R>,
     rid: ResourceId,
@@ -278,7 +302,7 @@ pub async fn fetch_send<R: Runtime>(
     })
 }
 
-#[command]
+#[tauri::command]
 pub(crate) async fn fetch_read_body<R: Runtime>(
     app: AppHandle<R>,
     rid: ResourceId,

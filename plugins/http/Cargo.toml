@@ -6,10 +6,18 @@ edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 rust-version = { workspace = true }
+links = "tauri-plugin-http"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[build-dependencies]
+tauri-plugin = { workspace = true, features = ["build"] }
+schemars = { workspace = true }
+serde = { workspace = true }
+url = { workspace = true }
+glob = "0.3"
 
 [dependencies]
 serde = { workspace = true }
@@ -24,22 +32,22 @@ url = { workspace = true }
 data-url = "0.3"
 
 [features]
-multipart = [ "reqwest/multipart" ]
-json = [ "reqwest/json" ]
-stream = [ "reqwest/stream" ]
-native-tls = [ "reqwest/native-tls" ]
-native-tls-vendored = [ "reqwest/native-tls-vendored" ]
-rustls-tls = [ "reqwest/rustls-tls" ]
-default-tls = [ "reqwest/default-tls" ]
-native-tls-alpn = [ "reqwest/native-tls-alpn" ]
-rustls-tls-manual-roots = [ "reqwest/rustls-tls-manual-roots" ]
-rustls-tls-webpki-roots = [ "reqwest/rustls-tls-webpki-roots" ]
-rustls-tls-native-roots = [ "reqwest/rustls-tls-native-roots" ]
-blocking = [ "reqwest/blocking" ]
-cookies = [ "reqwest/cookies" ]
-gzip = [ "reqwest/gzip" ]
-brotli = [ "reqwest/brotli" ]
-deflate = [ "reqwest/deflate" ]
-trust-dns = [ "reqwest/trust-dns" ]
-socks = [ "reqwest/socks" ]
-http3 = [ "reqwest/http3" ]
+multipart = ["reqwest/multipart"]
+json = ["reqwest/json"]
+stream = ["reqwest/stream"]
+native-tls = ["reqwest/native-tls"]
+native-tls-vendored = ["reqwest/native-tls-vendored"]
+rustls-tls = ["reqwest/rustls-tls"]
+default-tls = ["reqwest/default-tls"]
+native-tls-alpn = ["reqwest/native-tls-alpn"]
+rustls-tls-manual-roots = ["reqwest/rustls-tls-manual-roots"]
+rustls-tls-webpki-roots = ["reqwest/rustls-tls-webpki-roots"]
+rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
+blocking = ["reqwest/blocking"]
+cookies = ["reqwest/cookies"]
+gzip = ["reqwest/gzip"]
+brotli = ["reqwest/brotli"]
+deflate = ["reqwest/deflate"]
+trust-dns = ["reqwest/trust-dns"]
+socks = ["reqwest/socks"]
+http3 = ["reqwest/http3"]

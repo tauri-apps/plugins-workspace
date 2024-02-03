@@ -43,6 +43,7 @@ fn init_deep_link<R: Runtime, C: DeserializeOwned>(
                     };
 
                     let _ = app_handle.emit("deep-link://new-url", vec![url]);
+
                     Ok(())
                 }),
             },

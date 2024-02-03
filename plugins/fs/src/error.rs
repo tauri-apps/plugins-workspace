@@ -9,6 +9,10 @@ use serde::{Serialize, Serializer};
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error(transparent)]
+    Json(#[from] serde_json::Error),
+    #[error(transparent)]
+    Tauri(#[from] tauri::Error),
+    #[error(transparent)]
     Io(#[from] std::io::Error),
     #[error("forbidden path: {0}")]
     PathForbidden(PathBuf),

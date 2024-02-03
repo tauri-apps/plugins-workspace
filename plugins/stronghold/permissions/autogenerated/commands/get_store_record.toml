@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-get-store-record"
+description = "Enables the get_store_record command without any pre-configured scope."
+commands.allow = ["get_store_record"]
+
+[[permission]]
+identifier = "deny-get-store-record"
+description = "Denies the get_store_record command without any pre-configured scope."
+commands.deny = ["get_store_record"]
