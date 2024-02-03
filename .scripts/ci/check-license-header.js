@@ -124,6 +124,6 @@ if (files.length > 0) {
         console.log(missing.join("\n"));
         process.exit(1);
       }
-    }
+    },
   );
 }
