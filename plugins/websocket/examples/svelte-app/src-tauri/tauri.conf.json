@@ -1,8 +1,8 @@
 {
   "identifier": "com.tauri.dev",
   "build": {
-    "frontendDist": "../build",
     "devUrl": "http://localhost:5173/",
+    "frontendDist": "../build",
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build"
   },
@@ -29,22 +29,6 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ],
-    "resources": [],
-    "externalBin": [],
-    "copyright": "",
-    "category": "DeveloperTool",
-    "shortDescription": "",
-    "longDescription": "",
-    "linux": {
-      "deb": {
-        "depends": []
-      }
-    },
-    "macOS": {
-      "frameworks": [],
-      "minimumSystemVersion": "",
-      "exceptionDomain": ""
-    }
+    ]
   }
 }

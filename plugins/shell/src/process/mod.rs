@@ -385,6 +385,7 @@ fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
                         block_on_task(
                             async move { tx_.send(CommandEvent::Error(e.to_string())).await },
                         );
+                    break;
                 }
             }
         }

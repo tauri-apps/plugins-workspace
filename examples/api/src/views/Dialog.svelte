@@ -1,5 +1,5 @@
 <script>
-  import { open, save, confirm } from "@tauri-apps/plugin-dialog";
+  import { open, save, confirm, message } from "@tauri-apps/plugin-dialog";
   import { readFile } from "@tauri-apps/plugin-fs";
 
   export let onMessage;
@@ -22,6 +22,16 @@
   }
 
   async function prompt() {
+    confirm("Do you want to do something?")
+      .then((res) =>
+        onMessage(
+          res ? "Yes" : "No"
+        )
+      )
+      .catch(onMessage);
+  }
+
+  async function promptCustom() {
     confirm("Is Tauri awesome?", {
       okLabel: "Absolutely",
       cancelLabel: "Totally",
@@ -32,6 +42,10 @@
         )
       )
       .catch(onMessage);
+  }
+
+  async function msg() {
+    await message("Tauri is awesome!");
   }
 
   function openDialog() {
@@ -130,3 +144,5 @@
   >Open save dialog</button
 >
 <button class="btn" id="prompt-dialog" on:click={prompt}>Prompt</button>
+<button class="btn" id="custom-prompt-dialog" on:click={promptCustom}>Prompt (custom)</button>
+<button class="btn" id="message-dialog" on:click={msg}>Message</button>

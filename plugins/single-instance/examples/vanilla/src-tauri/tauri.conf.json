@@ -28,28 +28,6 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ],
-    "resources": [],
-    "externalBin": [],
-    "copyright": "",
-    "category": "DeveloperTool",
-    "shortDescription": "",
-    "longDescription": "",
-    "linux": {
-      "deb": {
-        "depends": []
-      }
-    },
-    "macOS": {
-      "frameworks": [],
-      "exceptionDomain": "",
-      "signingIdentity": null,
-      "entitlements": null
-    },
-    "windows": {
-      "certificateThumbprint": null,
-      "digestAlgorithm": "sha256",
-      "timestampUrl": ""
-    }
+    ]
   }
 }

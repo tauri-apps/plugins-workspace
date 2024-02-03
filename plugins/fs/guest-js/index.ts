@@ -980,6 +980,8 @@ interface WriteFileOptions {
   append?: boolean;
   /** Sets the option to allow creating a new file, if one doesn't already exist at the specified path (defaults to `true`). */
   create?: boolean;
+  /** Sets the option to create a new file, failing if it already exists. */
+  createNew?: boolean;
   /** File permissions. Ignored on Windows. */
   mode?: number;
   /** Base directory for `path` */
@@ -1023,7 +1025,7 @@ async function writeFile(
   *
   * await writeTextFile('file.txt', "Hello world", { dir: BaseDirectory.App });
   * ```
-  * 
+  *
   * @since 2.0.0
   */
 async function writeTextFile(
@@ -1096,8 +1098,8 @@ interface DebouncedWatchOptions extends WatchOptions {
 /**
  * @since 2.0.0
  */
-type RawEvent = {
-  type: RawEventKind;
+type WatchEvent = {
+  type: WatchEventKind;
   paths: string[];
   attrs: unknown;
 };
@@ -1105,36 +1107,68 @@ type RawEvent = {
 /**
  * @since 2.0.0
  */
-type RawEventKind =
-  | "any "
-  | {
-      access?: unknown;
-    }
-  | {
-      create?: unknown;
-    }
-  | {
-      modify?: unknown;
-    }
-  | {
-      remove?: unknown;
-    }
+type WatchEventKind =
+  | "any"
+  | { access: WatchEventKindAccess }
+  | { create: WatchEventKindCreate }
+  | { modify: WatchEventKindModify }
+  | { remove: WatchEventKindRemove }
   | "other";
 
 /**
  * @since 2.0.0
  */
-type DebouncedEvent =
-  | { kind: "any"; path: string }
-  | { kind: "AnyContinous"; path: string };
+type WatchEventKindAccess =
+  | { kind: "any" }
+  | { kind: "close"; mode: "any" | "execute" | "read" | "write" | "other" }
+  | { kind: "open"; mode: "any" | "execute" | "read" | "write" | "other" }
+  | { kind: "other" };
+
+/**
+ * @since 2.0.0
+ */
+type WatchEventKindCreate =
+  | { kind: "any" }
+  | { kind: "file" }
+  | { kind: "folder" }
+  | { kind: "other" };
+
+/**
+ * @since 2.0.0
+ */
+type WatchEventKindModify =
+  | { kind: "any" }
+  | { kind: "data"; mode: "any" | "size" | "content" | "other" }
+  | {
+      kind: "metadata";
+      mode:
+        | "any"
+        | "access-time"
+        | "write-time"
+        | "permissions"
+        | "ownership"
+        | "extended"
+        | "other";
+    }
+  | { kind: "name"; mode: "any" | "to" | "from" | "both" | "other" }
+  | { kind: "other" };
+
+/**
+ * @since 2.0.0
+ */
+type WatchEventKindRemove =
+  | { kind: "any" }
+  | { kind: "file" }
+  | { kind: "folder" }
+  | { kind: "other" };
 
 /**
  * @since 2.0.0
  */
 type UnwatchFn = () => void;
 
-async function unwatch(id: number): Promise<void> {
-  await invoke("plugin:fs|unwatch", { id });
+async function unwatch(rid: number): Promise<void> {
+  await invoke("plugin:fs|unwatch", { rid });
 }
 
 /**
@@ -1144,7 +1178,7 @@ async function unwatch(id: number): Promise<void> {
  */
 async function watch(
   paths: string | string[] | URL | URL[],
-  cb: (event: DebouncedEvent) => void,
+  cb: (event: WatchEvent) => void,
   options?: DebouncedWatchOptions,
 ): Promise<UnwatchFn> {
   const opts = {
@@ -1161,7 +1195,7 @@ async function watch(
     }
   }
 
-  const onEvent = new Channel<DebouncedEvent>();
+  const onEvent = new Channel<WatchEvent>();
   onEvent.onmessage = cb;
 
   const rid: number = await invoke("plugin:fs|watch", {
@@ -1182,7 +1216,7 @@ async function watch(
  */
 async function watchImmediate(
   paths: string | string[] | URL | URL[],
-  cb: (event: RawEvent) => void,
+  cb: (event: WatchEvent) => void,
   options?: WatchOptions,
 ): Promise<UnwatchFn> {
   const opts = {
@@ -1199,7 +1233,7 @@ async function watchImmediate(
     }
   }
 
-  const onEvent = new Channel<RawEvent>();
+  const onEvent = new Channel<WatchEvent>();
   onEvent.onmessage = cb;
 
   const rid: number = await invoke("plugin:fs|watch", {
@@ -1230,8 +1264,12 @@ export type {
   FileInfo,
   WatchOptions,
   DebouncedWatchOptions,
-  DebouncedEvent,
-  RawEvent,
+  WatchEvent,
+  WatchEventKind,
+  WatchEventKindAccess,
+  WatchEventKindCreate,
+  WatchEventKindModify,
+  WatchEventKindRemove,
   UnwatchFn,
 };
 

@@ -4,10 +4,44 @@
   "version": "2.0.0",
   "identifier": "com.tauri.api",
   "build": {
-    "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
+    "frontendDist": "../dist",
     "beforeDevCommand": "yarn dev",
     "beforeBuildCommand": "yarn build"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "macOSPrivateApi": true,
+    "security": {
+      "pattern": {
+        "use": "isolation",
+        "options": {
+          "dir": "../isolation-dist/"
+        }
+      },
+      "csp": {
+        "default-src": "'self' customprotocol: asset:",
+        "connect-src": "ipc: http://ipc.localhost",
+        "font-src": [
+          "https://fonts.gstatic.com"
+        ],
+        "img-src": "'self' asset: http://asset.localhost blob: data:",
+        "style-src": "'unsafe-inline' 'self' http://fonts.googleapis.com"
+      },
+      "freezePrototype": true,
+      "assetProtocol": {
+        "enable": true,
+        "scope": {
+          "allow": [
+            "$APPDATA/db/**",
+            "$RESOURCE/**"
+          ],
+          "deny": [
+            "$APPDATA/db/*.stronghold"
+          ]
+        }
+      }
+    }
   },
   "plugins": {
     "cli": {
@@ -57,41 +91,6 @@
       "endpoints": [
         "https://tauri-update-server.vercel.app/update/{{target}}/{{current_version}}"
       ]
-    }
-  },
-  "app": {
-    "withGlobalTauri": true,
-    "macOSPrivateApi": true,
-    "windows": [],
-    "security": {
-      "pattern": {
-        "use": "isolation",
-        "options": {
-          "dir": "../isolation-dist/"
-        }
-      },
-      "csp": {
-        "default-src": "'self' customprotocol: asset:",
-        "connect-src": "ipc: http://ipc.localhost",
-        "font-src": [
-          "https://fonts.gstatic.com"
-        ],
-        "img-src": "'self' asset: http://asset.localhost blob: data:",
-        "style-src": "'unsafe-inline' 'self' http://fonts.googleapis.com"
-      },
-      "freezePrototype": true,
-      "assetProtocol": {
-        "enable": true,
-        "scope": {
-          "allow": [
-            "$APPDATA/db/**",
-            "$RESOURCE/**"
-          ],
-          "deny": [
-            "$APPDATA/db/*.stronghold"
-          ]
-        }
-      }
     }
   },
   "bundle": {

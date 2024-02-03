@@ -42,11 +42,8 @@ fn init_deep_link<R: Runtime, C: DeserializeOwned>(
                         _ => None,
                     };
 
-                    let payload = vec![url];
-                    app_handle.emit(
-                        "deep-link://new-url",
-                        Some(serde_json::to_string(&payload).unwrap()),
-                    )?;
+                    let _ = app_handle.emit("deep-link://new-url", vec![url]);
+
                     Ok(())
                 }),
             },

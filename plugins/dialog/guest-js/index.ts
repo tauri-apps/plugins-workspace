@@ -98,18 +98,14 @@ interface ConfirmDialogOptions {
   cancelLabel?: string;
 }
 
-async function open(
-  options?: OpenDialogOptions & { multiple?: false; directory?: false },
-): Promise<null | FileResponse>;
-async function open(
-  options?: OpenDialogOptions & { multiple?: true; directory?: false },
-): Promise<null | FileResponse[]>;
-async function open(
-  options?: OpenDialogOptions & { multiple?: false; directory?: true },
-): Promise<null | string>;
-async function open(
-  options?: OpenDialogOptions & { multiple?: true; directory?: true },
-): Promise<null | string[]>;
+type OpenDialogReturn<T extends OpenDialogOptions> = T["directory"] extends true
+  ? T["multiple"] extends true
+    ? string[] | null
+    : string | null
+  : T["multiple"] extends true
+    ? FileResponse[] | null
+    : FileResponse | null;
+
 /**
  * Open a file/directory selection dialog.
  *
@@ -162,9 +158,9 @@ async function open(
  *
  * @since 2.0.0
  */
-async function open(
-  options: OpenDialogOptions = {},
-): Promise<null | string | string[] | FileResponse | FileResponse[]> {
+async function open<T extends OpenDialogOptions>(
+  options: T = {} as T,
+): Promise<OpenDialogReturn<T>> {
   if (typeof options === "object") {
     Object.freeze(options);
   }
@@ -298,6 +294,7 @@ export type {
   DialogFilter,
   FileResponse,
   OpenDialogOptions,
+  OpenDialogReturn,
   SaveDialogOptions,
   MessageDialogOptions,
   ConfirmDialogOptions,

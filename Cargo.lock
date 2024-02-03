@@ -230,7 +230,7 @@ checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 
 [[package]]
 name = "api"
-version = "2.0.0-alpha.9"
+version = "2.0.0-alpha.11"
 dependencies = [
  "log",
  "serde",
@@ -1855,6 +1855,15 @@ checksum = "38e2275cc4e4fc009b0669731a1e5ab7ebf11f469eaede2bab9309a5b4d6057f"
 dependencies = [
  "memoffset 0.9.0",
  "rustc_version",
+]
+
+[[package]]
+name = "file-id"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6584280525fb2059cba3db2c04abf947a1a29a45ddae89f3870f8281704fafc9"
+dependencies = [
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -3727,15 +3736,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "notify-debouncer-mini"
-version = "0.4.1"
+name = "notify-debouncer-full"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d40b221972a1fc5ef4d858a2f671fb34c75983eb385463dff3780eeff6a9d43"
+checksum = "49f5dab59c348b9b50cf7f261960a20e389feb2713636399cd9082cd4b536154"
 dependencies = [
  "crossbeam-channel",
+ "file-id",
  "log",
  "notify",
- "serde",
+ "parking_lot",
+ "walkdir 2.4.0",
 ]
 
 [[package]]
@@ -6017,7 +6028,7 @@ checksum = "14c39fd04924ca3a864207c66fc2cd7d22d7c016007f9ce846cbb9326331930a"
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.21"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#0cdfda28767701369cd774e2b20d943c6ddc9f05"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#3364b6727c189f59a948d69ee6a5cf756bf0da38"
 dependencies = [
  "anyhow",
  "bytes 1.5.0",
@@ -6069,7 +6080,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.14"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#0cdfda28767701369cd774e2b20d943c6ddc9f05"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#3364b6727c189f59a948d69ee6a5cf756bf0da38"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -6092,7 +6103,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.13"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#0cdfda28767701369cd774e2b20d943c6ddc9f05"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#3364b6727c189f59a948d69ee6a5cf756bf0da38"
 dependencies = [
  "base64 0.21.5",
  "brotli",
@@ -6117,7 +6128,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.13"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#0cdfda28767701369cd774e2b20d943c6ddc9f05"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#3364b6727c189f59a948d69ee6a5cf756bf0da38"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -6130,7 +6141,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin"
 version = "1.0.0"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#0cdfda28767701369cd774e2b20d943c6ddc9f05"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#3364b6727c189f59a948d69ee6a5cf756bf0da38"
 dependencies = [
  "anyhow",
  "glob",
@@ -6229,7 +6240,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.0.0-alpha.4"
+version = "2.0.0-alpha.5"
 dependencies = [
  "log",
  "serde",
@@ -6242,7 +6253,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-alpha.6"
+version = "2.0.0-alpha.7"
 dependencies = [
  "glib 0.16.9",
  "log",
@@ -6258,12 +6269,12 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-alpha.6"
+version = "2.0.0-alpha.7"
 dependencies = [
  "anyhow",
  "glob",
  "notify",
- "notify-debouncer-mini",
+ "notify-debouncer-full",
  "schemars",
  "serde",
  "serde_json",
@@ -6290,7 +6301,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.0-alpha.7"
+version = "2.0.0-alpha.9"
 dependencies = [
  "data-url",
  "glob",
@@ -6388,7 +6399,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.0-alpha.6"
+version = "2.0.0-alpha.7"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6578,7 +6589,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "1.0.0-alpha.8"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#0cdfda28767701369cd774e2b20d943c6ddc9f05"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#3364b6727c189f59a948d69ee6a5cf756bf0da38"
 dependencies = [
  "gtk",
  "http",
@@ -6595,7 +6606,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "1.0.0-alpha.9"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#0cdfda28767701369cd774e2b20d943c6ddc9f05"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#3364b6727c189f59a948d69ee6a5cf756bf0da38"
 dependencies = [
  "cocoa 0.25.0",
  "gtk",
@@ -6616,7 +6627,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.13"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#0cdfda28767701369cd774e2b20d943c6ddc9f05"
+source = "git+https://github.com/tauri-apps/tauri?branch=dev#3364b6727c189f59a948d69ee6a5cf756bf0da38"
 dependencies = [
  "aes-gcm 0.10.3",
  "brotli",

@@ -4,6 +4,7 @@
 
 use std::{
     collections::HashMap,
+    ffi::{OsStr, OsString},
     io::{Cursor, Read},
     path::{Path, PathBuf},
     str::FromStr,
@@ -16,16 +17,15 @@ use http::HeaderName;
 use minisign_verify::{PublicKey, Signature};
 use reqwest::{
     header::{HeaderMap, HeaderValue},
-    Client, StatusCode,
+    ClientBuilder, StatusCode,
 };
 use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
-use tauri::utils::platform::current_exe;
+use tauri::{utils::platform::current_exe, Resource};
 use time::OffsetDateTime;
 use url::Url;
 
 use crate::{
-    config::UpdaterWindowsConfig,
     error::{Error, Result},
     Config,
 };
@@ -97,12 +97,18 @@ pub struct UpdaterBuilder {
     endpoints: Option<Vec<Url>>,
     headers: HeaderMap,
     timeout: Option<Duration>,
-    installer_args: Option<Vec<String>>,
+    proxy: Option<Url>,
+    installer_args: Vec<OsString>,
 }
 
 impl UpdaterBuilder {
-    pub fn new(current_version: Version, config: Config) -> Self {
+    pub fn new(current_version: Version, config: crate::Config) -> Self {
         Self {
+            installer_args: config
+                .windows
+                .as_ref()
+                .map(|w| w.installer_args.clone())
+                .unwrap_or_default(),
             current_version,
             config,
             version_comparator: None,
@@ -111,7 +117,7 @@ impl UpdaterBuilder {
             endpoints: None,
             headers: Default::default(),
             timeout: None,
-            installer_args: None,
+            proxy: None,
         }
     }
 
@@ -158,20 +164,46 @@ impl UpdaterBuilder {
         self
     }
 
+    pub fn proxy(mut self, proxy: Url) -> Self {
+        self.proxy.replace(proxy);
+        self
+    }
+
+    pub fn pubkey<S: Into<String>>(mut self, pubkey: S) -> Self {
+        self.config.pubkey = pubkey.into();
+        self
+    }
+
+    pub fn installer_arg<S>(mut self, arg: S) -> Self
+    where
+        S: AsRef<OsStr>,
+    {
+        self.installer_args.push(arg.as_ref().to_os_string());
+        self
+    }
+
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
-        S: Into<String>,
+        S: AsRef<OsStr>,
     {
-        self.installer_args
-            .replace(args.into_iter().map(Into::into).collect());
+        let args = args
+            .into_iter()
+            .map(|a| a.as_ref().to_os_string())
+            .collect::<Vec<_>>();
+        self.installer_args.extend_from_slice(&args);
+        self
+    }
+
+    pub fn clear_installer_args(mut self) -> Self {
+        self.installer_args.clear();
         self
     }
 
     pub fn build(self) -> Result<Updater> {
         let endpoints = self
             .endpoints
-            .unwrap_or_else(|| self.config.endpoints.into_iter().map(|e| e.0).collect());
+            .unwrap_or_else(|| self.config.endpoints.iter().map(|e| e.0.clone()).collect());
 
         if endpoints.is_empty() {
             return Err(Error::EmptyEndpoints);
@@ -195,15 +227,13 @@ impl UpdaterBuilder {
         };
 
         Ok(Updater {
-            pubkey: self.config.pubkey,
-            windows_config: self.config.windows,
+            config: self.config,
             current_version: self.current_version,
             version_comparator: self.version_comparator,
             timeout: self.timeout,
+            proxy: self.proxy,
             endpoints,
-            installer_args: self
-                .installer_args
-                .unwrap_or(self.config.installer_args.clone()),
+            installer_args: self.installer_args,
             arch,
             target,
             json_target,
@@ -214,14 +244,14 @@ impl UpdaterBuilder {
 }
 
 pub struct Updater {
-    pubkey: String,
-    windows_config: UpdaterWindowsConfig,
+    config: Config,
     current_version: Version,
     version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
     timeout: Option<Duration>,
+    proxy: Option<Url>,
     endpoints: Vec<Url>,
     #[allow(dead_code)]
-    installer_args: Vec<String>,
+    installer_args: Vec<OsString>,
     arch: &'static str,
     // The `{{target}}` variable we replace in the endpoint
     target: String,
@@ -273,11 +303,20 @@ impl Updater {
                 .replace("{{arch}}", self.arch)
                 .parse()?;
 
-            let mut request = Client::new().get(url).headers(headers.clone());
+            let mut request = ClientBuilder::new();
             if let Some(timeout) = self.timeout {
                 request = request.timeout(timeout);
             }
-            let response = request.send().await;
+            if let Some(ref proxy) = self.proxy {
+                let proxy = reqwest::Proxy::all(proxy.as_str())?;
+                request = request.proxy(proxy);
+            }
+            let response = request
+                .build()?
+                .get(url)
+                .headers(headers.clone())
+                .send()
+                .await;
 
             if let Ok(res) = response {
                 if res.status().is_success() {
@@ -317,8 +356,7 @@ impl Updater {
 
         let update = if should_update {
             Some(Update {
-                pubkey: self.pubkey.clone(),
-                windows_config: self.windows_config.clone(),
+                config: self.config.clone(),
                 current_version: self.current_version.to_string(),
                 target: self.target.clone(),
                 extract_path: self.extract_path.clone(),
@@ -329,6 +367,7 @@ impl Updater {
                 body: release.notes.clone(),
                 signature: release.signature(&self.json_target)?.to_owned(),
                 timeout: self.timeout,
+                proxy: self.proxy.clone(),
                 headers: self.headers.clone(),
             })
         } else {
@@ -341,9 +380,7 @@ impl Updater {
 
 #[derive(Debug, Clone)]
 pub struct Update {
-    pubkey: String,
-    #[allow(dead_code)]
-    windows_config: UpdaterWindowsConfig,
+    config: Config,
     /// Update description
     pub body: Option<String>,
     /// Version used to check for update
@@ -358,24 +395,28 @@ pub struct Update {
     #[allow(unused)]
     extract_path: PathBuf,
     #[allow(unused)]
-    installer_args: Vec<String>,
+    installer_args: Vec<OsString>,
     /// Download URL announced
     pub download_url: Url,
     /// Signature announced
     pub signature: String,
     /// Request timeout
     pub timeout: Option<Duration>,
+    /// Request proxy
+    pub proxy: Option<Url>,
     /// Request headers
     pub headers: HeaderMap,
 }
+
+impl Resource for Update {}
 
 impl Update {
     /// Downloads the updater package, verifies it then return it as bytes.
     ///
     /// Use [`Update::install`] to install it
-    pub async fn download<C: Fn(usize, Option<u64>), D: FnOnce()>(
+    pub async fn download<C: FnMut(usize, Option<u64>), D: FnOnce()>(
         &self,
-        on_chunk: C,
+        mut on_chunk: C,
         on_download_finish: D,
     ) -> Result<Vec<u8>> {
         // set our headers
@@ -389,13 +430,20 @@ impl Update {
             HeaderValue::from_str("tauri-updater").unwrap(),
         );
 
-        let mut request = Client::new()
-            .get(self.download_url.clone())
-            .headers(headers);
+        let mut request = ClientBuilder::new();
         if let Some(timeout) = self.timeout {
             request = request.timeout(timeout);
         }
-        let response = request.send().await?;
+        if let Some(ref proxy) = self.proxy {
+            let proxy = reqwest::Proxy::all(proxy.as_str())?;
+            request = request.proxy(proxy);
+        }
+        let response = request
+            .build()?
+            .get(self.download_url.clone())
+            .headers(headers)
+            .send()
+            .await?;
 
         if !response.status().is_success() {
             return Err(Error::Network(format!(
@@ -424,7 +472,7 @@ impl Update {
 
         let mut update_buffer = Cursor::new(&buffer);
 
-        verify_signature(&mut update_buffer, &self.signature, &self.pubkey)?;
+        verify_signature(&mut update_buffer, &self.signature, &self.config.pubkey)?;
 
         Ok(buffer)
     }
@@ -435,7 +483,7 @@ impl Update {
     }
 
     /// Downloads and installs the updater package
-    pub async fn download_and_install<C: Fn(usize, Option<u64>), D: FnOnce()>(
+    pub async fn download_and_install<C: FnMut(usize, Option<u64>), D: FnOnce()>(
         &self,
         on_chunk: C,
         on_download_finish: D,
@@ -467,7 +515,7 @@ impl Update {
     // Update server can provide a custom EXE (installer) who can run any task.
     #[cfg(windows)]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
-        use std::{ffi::OsStr, fs, process::Command};
+        use std::{fs, process::Command};
 
         // FIXME: We need to create a memory buffer with the MSI and then run it.
         //        (instead of extracting the MSI to a temp path)
@@ -507,12 +555,21 @@ impl Update {
                 installer_path.push("\"");
 
                 let installer_args = [
-                    self.windows_config.install_mode.nsis_args(),
+                    self.config
+                        .windows
+                        .as_ref()
+                        .map(|w| {
+                            w.install_mode
+                                .nsis_args()
+                                .iter()
+                                .map(|a| OsStr::new(a))
+                                .collect::<Vec<_>>()
+                        })
+                        .unwrap_or_default(),
                     self.installer_args
                         .iter()
-                        .map(AsRef::as_ref)
-                        .collect::<Vec<_>>()
-                        .as_slice(),
+                        .map(|a| a.as_os_str())
+                        .collect::<Vec<_>>(),
                 ]
                 .concat();
 
@@ -524,7 +581,8 @@ impl Update {
                     .arg(installer_path);
 
                 if !installer_args.is_empty() {
-                    cmd.arg("-ArgumentList").arg(installer_args.join(", "));
+                    cmd.arg("-ArgumentList")
+                        .arg(installer_args.join(OsStr::new(", ")));
                 }
                 cmd.spawn().expect("installer failed to start");
 
@@ -542,12 +600,21 @@ impl Update {
                 msi_path.push("\"\"\"");
 
                 let installer_args = [
-                    self.windows_config.install_mode.msiexec_args(),
+                    self.config
+                        .windows
+                        .as_ref()
+                        .map(|w| {
+                            w.install_mode
+                                .msiexec_args()
+                                .iter()
+                                .map(|a| OsStr::new(a))
+                                .collect::<Vec<_>>()
+                        })
+                        .unwrap_or_default(),
                     self.installer_args
                         .iter()
-                        .map(AsRef::as_ref)
-                        .collect::<Vec<_>>()
-                        .as_slice(),
+                        .map(|a| a.as_os_str())
+                        .collect::<Vec<_>>(),
                 ]
                 .concat();
 
@@ -563,7 +630,10 @@ impl Update {
                     ])
                     .arg("/i,")
                     .arg(&msi_path)
-                    .arg(format!(", {}, /promptrestart;", installer_args.join(", ")))
+                    .arg(format!(
+                        ", {}, /promptrestart;",
+                        installer_args.join(OsStr::new(", ")).to_string_lossy()
+                    ))
                     .arg("Start-Process")
                     .arg(current_exe_arg)
                     .spawn();
@@ -608,10 +678,7 @@ impl Update {
     ))]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
         use flate2::read::GzDecoder;
-        use std::{
-            ffi::OsStr,
-            os::unix::fs::{MetadataExt, PermissionsExt},
-        };
+        use std::os::unix::fs::{MetadataExt, PermissionsExt};
         let archive = Cursor::new(bytes);
         let extract_path_metadata = self.extract_path.metadata()?;
 

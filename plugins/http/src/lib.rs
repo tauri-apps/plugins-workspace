@@ -6,12 +6,7 @@
 //!
 //! Access the HTTP client written in Rust.
 
-use std::sync::atomic::AtomicU32;
-use std::{collections::HashMap, future::Future, pin::Pin};
-
 pub use reqwest;
-use reqwest::Response;
-use tauri::async_runtime::Mutex;
 use tauri::{
     plugin::{Builder, TauriPlugin},
     AppHandle, Manager, Runtime,
@@ -23,33 +18,9 @@ mod commands;
 mod error;
 mod scope;
 
-type RequestId = u32;
-type CancelableResponseResult = Result<Result<reqwest::Response>>;
-type CancelableResponseFuture =
-    Pin<Box<dyn Future<Output = CancelableResponseResult> + Send + Sync>>;
-type RequestTable = HashMap<RequestId, FetchRequest>;
-type ResponseTable = HashMap<RequestId, Response>;
-
-struct FetchRequest(Mutex<CancelableResponseFuture>);
-impl FetchRequest {
-    fn new(f: CancelableResponseFuture) -> Self {
-        Self(Mutex::new(f))
-    }
-}
-
 struct Http<R: Runtime> {
     #[allow(dead_code)]
     app: AppHandle<R>,
-    current_id: AtomicU32,
-    requests: Mutex<RequestTable>,
-    responses: Mutex<ResponseTable>,
-}
-
-impl<R: Runtime> Http<R> {
-    fn next_id(&self) -> RequestId {
-        self.current_id
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
-    }
 }
 
 trait HttpExt<R: Runtime> {
@@ -72,12 +43,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::fetch_read_body,
         ])
         .setup(|app, _api| {
-            app.manage(Http {
-                app: app.clone(),
-                current_id: 0.into(),
-                requests: Default::default(),
-                responses: Default::default(),
-            });
+            app.manage(Http { app: app.clone() });
             Ok(())
         })
         .build()

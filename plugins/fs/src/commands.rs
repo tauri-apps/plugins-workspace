@@ -681,13 +681,22 @@ pub fn write<R: Runtime>(
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct WriteFileOptions {
     #[serde(flatten)]
     base: BaseOptions,
-    append: Option<bool>,
-    create: Option<bool>,
+    #[serde(default)]
+    append: bool,
+    #[serde(default = "default_create_value")]
+    create: bool,
+    #[serde(default)]
+    create_new: bool,
     #[allow(unused)]
     mode: Option<u32>,
+}
+
+fn default_create_value() -> bool {
+    true
 }
 
 fn write_file_inner<R: Runtime>(
@@ -707,18 +716,25 @@ fn write_file_inner<R: Runtime>(
     )?;
 
     let mut opts = std::fs::OpenOptions::new();
-    opts.append(options.as_ref().map(|o| o.append.unwrap_or(false)).unwrap());
-    opts.create(options.as_ref().map(|o| o.create.unwrap_or(true)).unwrap());
+    // defaults
+    opts.read(false).write(true).truncate(true).create(true);
 
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::OpenOptionsExt;
-        if let Some(Some(mode)) = options.map(|o| o.mode) {
-            opts.mode(mode & 0o777);
+    if let Some(options) = options {
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            if let Some(mode) = options.mode {
+                opts.mode(mode);
+            }
         }
+
+        opts.create(options.create)
+            .append(options.append)
+            .truncate(!options.append)
+            .create_new(options.create_new);
     }
 
-    let mut file = opts.write(true).open(&resolved_path).map_err(|e| {
+    let mut file = opts.open(&resolved_path).map_err(|e| {
         format!(
             "failed to open file at path: {} with error: {e}",
             resolved_path.display()

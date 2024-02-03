@@ -25,9 +25,7 @@ pub enum Error {
     #[error("Could not fetch a valid release JSON from the remote")]
     ReleaseNotFound,
     /// Unsupported app architecture.
-    #[error(
-    "Unsupported application architecture, expected one of `x86`, `x86_64`, `arm` or `aarch64`."
-  )]
+    #[error("Unsupported application architecture, expected one of `x86`, `x86_64`, `arm` or `aarch64`.")]
     UnsupportedArch,
     /// Operating system is not supported.
     #[error("Unsupported OS, expected one of `linux`, `darwin` or `windows`.")]
@@ -66,6 +64,8 @@ pub enum Error {
     BinaryNotFoundInArchive,
     #[error(transparent)]
     Http(#[from] http::Error),
+    #[error(transparent)]
+    Tauri(#[from] tauri::Error),
 }
 
 impl Serialize for Error {

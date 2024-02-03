@@ -82,13 +82,13 @@ importers:
         specifier: 2.0.0-alpha.5
         version: link:../../plugins/dialog
       '@tauri-apps/plugin-fs':
-        specifier: 2.0.0-alpha.5
+        specifier: 2.0.0-alpha.6
         version: link:../../plugins/fs
       '@tauri-apps/plugin-global-shortcut':
         specifier: 2.0.0-alpha.5
         version: link:../../plugins/global-shortcut
       '@tauri-apps/plugin-http':
-        specifier: 2.0.0-alpha.5
+        specifier: 2.0.0-alpha.6
         version: link:../../plugins/http
       '@tauri-apps/plugin-nfc':
         specifier: 2.0.0-alpha.0

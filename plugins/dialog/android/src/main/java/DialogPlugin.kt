@@ -190,16 +190,16 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
             dialog.dismiss()
             handler(false, true)
           }
-          .setNegativeButton(
-            args.cancelButtonLabel ?: "Cancel"
-          ) { dialog, _ ->
-            dialog.dismiss()
-            handler(false, false)
-          }
           .setOnCancelListener { dialog ->
             dialog.dismiss()
             handler(true, false)
           }
+        if (args.cancelButtonLabel != null) {
+          builder.setNegativeButton( args.cancelButtonLabel) { dialog, _ ->
+            dialog.dismiss()
+            handler(false, false)
+          }
+        }
         val dialog = builder.create()
         dialog.show()
       }
