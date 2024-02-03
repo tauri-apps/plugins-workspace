@@ -66,6 +66,15 @@ impl WindowsUpdateInstallMode {
             _ => &[],
         }
     }
+
+    /// Returns the associated `msiexec.exe` arguments.
+    pub fn msiexec_args(&self) -> &'static [&'static str] {
+        match self {
+            Self::BasicUi => &["/qb+"],
+            Self::Quiet => &["/quiet"],
+            Self::Passive => &["/passive"],
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]

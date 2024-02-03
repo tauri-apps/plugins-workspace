@@ -215,7 +215,6 @@ impl UpdaterBuilder {
 
 pub struct Updater {
     pubkey: String,
-    #[allow(dead_code)]
     windows_config: UpdaterWindowsConfig,
     current_version: Version,
     version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
@@ -319,6 +318,7 @@ impl Updater {
         let update = if should_update {
             Some(Update {
                 pubkey: self.pubkey.clone(),
+                windows_config: self.windows_config.clone(),
                 current_version: self.current_version.to_string(),
                 target: self.target.clone(),
                 extract_path: self.extract_path.clone(),
@@ -342,6 +342,8 @@ impl Updater {
 #[derive(Debug, Clone)]
 pub struct Update {
     pubkey: String,
+    #[allow(dead_code)]
+    windows_config: UpdaterWindowsConfig,
     /// Update description
     pub body: Option<String>,
     /// Version used to check for update
@@ -540,7 +542,7 @@ impl Update {
                 msi_path.push("\"\"\"");
 
                 let installer_args = [
-                    self.config.windows.install_mode.msiexec_args(),
+                    self.windows_config.install_mode.msiexec_args(),
                     self.installer_args
                         .iter()
                         .map(AsRef::as_ref)
