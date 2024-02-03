@@ -230,7 +230,7 @@ checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 
 [[package]]
 name = "api"
-version = "2.0.0-alpha.11"
+version = "2.0.0-beta.0"
 dependencies = [
  "log",
  "serde",
@@ -6219,9 +6219,9 @@ checksum = "14c39fd04924ca3a864207c66fc2cd7d22d7c016007f9ce846cbb9326331930a"
 
 [[package]]
 name = "tauri"
-version = "2.0.0-beta.0"
+version = "2.0.0-beta.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ab20e6305a618700ba238b21afb938559fc86c217c4b025ec6626fe5e826007"
+checksum = "0f04c896fc95e8fae460dea7c5e99df8b110a2e8aa9246ac871cd853ece5081c"
 dependencies = [
  "anyhow",
  "bytes",
@@ -6353,7 +6353,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-authenticator"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "authenticator",
  "base64 0.21.5",
@@ -6375,7 +6375,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-autostart"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "auto-launch",
  "log",
@@ -6388,7 +6388,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-barcode-scanner"
-version = "2.0.0-alpha.4"
+version = "2.0.0-beta.0"
 dependencies = [
  "log",
  "serde",
@@ -6400,7 +6400,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-biometric"
-version = "2.0.0-alpha.0"
+version = "2.0.0-beta.0"
 dependencies = [
  "log",
  "serde",
@@ -6413,7 +6413,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-cli"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "clap",
  "log",
@@ -6426,7 +6426,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-clipboard-manager"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "arboard",
  "log",
@@ -6439,7 +6439,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.0.0-alpha.5"
+version = "2.0.0-beta.0"
 dependencies = [
  "log",
  "serde",
@@ -6452,7 +6452,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-alpha.7"
+version = "2.0.0-beta.0"
 dependencies = [
  "glib 0.16.9",
  "log",
@@ -6468,7 +6468,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-alpha.7"
+version = "2.0.0-beta.0"
 dependencies = [
  "anyhow",
  "glob",
@@ -6487,7 +6487,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-global-shortcut"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "global-hotkey",
  "log",
@@ -6500,7 +6500,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.0-alpha.9"
+version = "2.0.0-beta.0"
 dependencies = [
  "data-url",
  "glob",
@@ -6518,7 +6518,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-localhost"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "http 1.0.0",
  "log",
@@ -6531,7 +6531,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-log"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "android_logger",
  "byte-unit",
@@ -6550,7 +6550,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-nfc"
-version = "2.0.0-alpha.0"
+version = "2.0.0-beta.0"
 dependencies = [
  "log",
  "serde",
@@ -6563,7 +6563,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "2.0.0-alpha.7"
+version = "2.0.0-beta.0"
 dependencies = [
  "log",
  "notify-rust",
@@ -6582,7 +6582,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-os"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "gethostname 0.4.3",
  "log",
@@ -6598,7 +6598,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.0-alpha.7"
+version = "2.0.0-beta.0"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6612,7 +6612,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-positioner"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "log",
  "serde",
@@ -6625,7 +6625,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-process"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "tauri",
  "tauri-plugin",
@@ -6633,7 +6633,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-shell"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "encoding_rs",
  "log",
@@ -6651,7 +6651,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "log",
  "serde",
@@ -6664,7 +6664,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-sql"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "futures-core",
  "log",
@@ -6680,7 +6680,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-store"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "log",
  "serde",
@@ -6692,7 +6692,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-stronghold"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "hex",
  "iota-crypto 0.23.0",
@@ -6713,7 +6713,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "base64 0.21.5",
  "dirs-next",
@@ -6740,7 +6740,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-upload"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "futures-util",
  "log",
@@ -6757,7 +6757,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-websocket"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "futures-util",
  "http 1.0.0",
@@ -6774,7 +6774,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 dependencies = [
  "bincode",
  "bitflags 2.4.1",

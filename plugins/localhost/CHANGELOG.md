@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.0.0-beta.0]
+
+- [`d198c01`](https://github.com/tauri-apps/plugins-workspace/commit/d198c014863ee260cb0de88a14b7fc4356ef7474)([#862](https://github.com/tauri-apps/plugins-workspace/pull/862)) Update to tauri beta.
+- [`d198c01`](https://github.com/tauri-apps/plugins-workspace/commit/d198c014863ee260cb0de88a14b7fc4356ef7474)([#862](https://github.com/tauri-apps/plugins-workspace/pull/862)) Add permissions.
+
 ## \[2.0.0-alpha.6]
 
 - [`2cf8faa`](https://github.com/tauri-apps/plugins-workspace/commit/2cf8faa3e149af55eb86e5aba8ebfc54210ca703)([#839](https://github.com/tauri-apps/plugins-workspace/pull/839)) Update to tauri@alpha.20.

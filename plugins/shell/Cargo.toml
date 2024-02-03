@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-shell"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 description = "Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -9,11 +9,11 @@ rust-version = { workspace = true }
 links = "tauri-plugin-shell"
 
 [package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
+rustc-args = [ "--cfg", "docsrs" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = ["build"] }
+tauri-plugin = { workspace = true, features = [ "build" ] }
 schemars = { workspace = true }
 serde = { workspace = true }
 

@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-http"
-version = "2.0.0-alpha.9"
+version = "2.0.0-beta.0"
 description = "Access an HTTP client written in Rust."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -9,11 +9,11 @@ rust-version = { workspace = true }
 links = "tauri-plugin-http"
 
 [package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
+rustc-args = [ "--cfg", "docsrs" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = ["build"] }
+tauri-plugin = { workspace = true, features = [ "build" ] }
 schemars = { workspace = true }
 serde = { workspace = true }
 url = { workspace = true }
@@ -24,7 +24,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
 thiserror = { workspace = true }
-tauri-plugin-fs = { path = "../fs", version = "2.0.0-alpha.7" }
+tauri-plugin-fs = { path = "../fs", version = "2.0.0-beta.0" }
 glob = "0.3"
 http = "0.2"
 reqwest = { version = "0.11", default-features = false }
@@ -32,22 +32,22 @@ url = { workspace = true }
 data-url = "0.3"
 
 [features]
-multipart = ["reqwest/multipart"]
-json = ["reqwest/json"]
-stream = ["reqwest/stream"]
-native-tls = ["reqwest/native-tls"]
-native-tls-vendored = ["reqwest/native-tls-vendored"]
-rustls-tls = ["reqwest/rustls-tls"]
-default-tls = ["reqwest/default-tls"]
-native-tls-alpn = ["reqwest/native-tls-alpn"]
-rustls-tls-manual-roots = ["reqwest/rustls-tls-manual-roots"]
-rustls-tls-webpki-roots = ["reqwest/rustls-tls-webpki-roots"]
-rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
-blocking = ["reqwest/blocking"]
-cookies = ["reqwest/cookies"]
-gzip = ["reqwest/gzip"]
-brotli = ["reqwest/brotli"]
-deflate = ["reqwest/deflate"]
-trust-dns = ["reqwest/trust-dns"]
-socks = ["reqwest/socks"]
-http3 = ["reqwest/http3"]
+multipart = [ "reqwest/multipart" ]
+json = [ "reqwest/json" ]
+stream = [ "reqwest/stream" ]
+native-tls = [ "reqwest/native-tls" ]
+native-tls-vendored = [ "reqwest/native-tls-vendored" ]
+rustls-tls = [ "reqwest/rustls-tls" ]
+default-tls = [ "reqwest/default-tls" ]
+native-tls-alpn = [ "reqwest/native-tls-alpn" ]
+rustls-tls-manual-roots = [ "reqwest/rustls-tls-manual-roots" ]
+rustls-tls-webpki-roots = [ "reqwest/rustls-tls-webpki-roots" ]
+rustls-tls-native-roots = [ "reqwest/rustls-tls-native-roots" ]
+blocking = [ "reqwest/blocking" ]
+cookies = [ "reqwest/cookies" ]
+gzip = [ "reqwest/gzip" ]
+brotli = [ "reqwest/brotli" ]
+deflate = [ "reqwest/deflate" ]
+trust-dns = [ "reqwest/trust-dns" ]
+socks = [ "reqwest/socks" ]
+http3 = [ "reqwest/http3" ]

@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-beta.0]
+
+- [`d198c01`](https://github.com/tauri-apps/plugins-workspace/commit/d198c014863ee260cb0de88a14b7fc4356ef7474)([#862](https://github.com/tauri-apps/plugins-workspace/pull/862)) Update to tauri beta.
+- [`ea8eadc`](https://github.com/tauri-apps/plugins-workspace/commit/ea8eadce85b2e3e8eb7eb1a779fc3aa6c1201fa3)([#865](https://github.com/tauri-apps/plugins-workspace/pull/865)) Fix incorrect `create` option default value for `writeFile` and `writeTextFile` which didn't match documentation.
+- [`61edbbe`](https://github.com/tauri-apps/plugins-workspace/commit/61edbbec0acda4213ed8684f75a973e8be123a52)([#885](https://github.com/tauri-apps/plugins-workspace/pull/885)) Replace `notify-debouncer-mini` with `notify-debouncer-full`. [(plugins-workspace#885)](https://github.com/tauri-apps/plugins-workspace/pull/885)
+
 ## \[2.0.0-alpha.6]
 
 - [`85f8419`](https://github.com/tauri-apps/plugins-workspace/commit/85f841968200316958d707db0c39bb115f762471)([#848](https://github.com/tauri-apps/plugins-workspace/pull/848)) Fix `DebouncedEvent` type to correctly represent the actual type.
@@ -44,3 +50,4 @@
 ## \[2.0.0-alpha.0]
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!

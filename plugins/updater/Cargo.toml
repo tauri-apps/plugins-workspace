@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-updater"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.0"
 description = "In-app updates for Tauri applications."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -9,11 +9,11 @@ rust-version = { workspace = true }
 links = "tauri-plugin-updater"
 
 [package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
+rustc-args = [ "--cfg", "docsrs" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = ["build"] }
+tauri-plugin = { workspace = true, features = [ "build" ] }
 
 [dependencies]
 tauri = { workspace = true }
@@ -21,18 +21,15 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 tokio = "1"
-reqwest = { version = "0.11", default-features = false, features = [
-  "json",
-  "stream",
-] }
+reqwest = { version = "0.11", default-features = false, features = [ "json", "stream" ] }
 url = { workspace = true }
 http = "0.2"
 dirs-next = "2"
 minisign-verify = "0.2"
-time = { version = "0.3", features = ["parsing", "formatting"] }
+time = { version = "0.3", features = [ "parsing", "formatting" ] }
 base64 = "0.21"
 percent-encoding = "2"
-semver = { version = "1", features = ["serde"] }
+semver = { version = "1", features = [ "serde" ] }
 futures-util = "0.3"
 tempfile = "3"
 zip = "0.6"
@@ -48,6 +45,6 @@ flate2 = "1.0.27"
 mockito = "0.31"
 
 [features]
-native-tls = ["reqwest/native-tls"]
-native-tls-vendored = ["reqwest/native-tls-vendored"]
-rustls-tls = ["reqwest/rustls-tls"]
+native-tls = [ "reqwest/native-tls" ]
+native-tls-vendored = [ "reqwest/native-tls-vendored" ]
+rustls-tls = [ "reqwest/rustls-tls" ]
