@@ -32,11 +32,9 @@ fn intent_filter(domain: &AssociatedDomain) -> String {
 }
 
 fn main() {
-    tauri_plugin::Builder::new(COMMANDS).build();
-
-    if let Err(error) = tauri_build::mobile::PluginBuilder::new()
+    if let Err(error) = tauri_plugin::Builder::new(COMMANDS)
         .android_path("android")
-        .run()
+        .try_build()
     {
         println!("{error:#}");
         if !(cfg!(docsrs) && std::env::var("TARGET").unwrap().contains("android")) {
@@ -44,8 +42,8 @@ fn main() {
         }
     }
 
-    if let Some(config) = tauri_build::config::plugin_config::<Config>("deep-link") {
-        tauri_build::mobile::update_android_manifest(
+    if let Some(config) = tauri_plugin::plugin_config::<Config>("deep-link") {
+        tauri_plugin::mobile::update_android_manifest(
             "DEEP LINK PLUGIN",
             "activity",
             config
@@ -59,7 +57,7 @@ fn main() {
 
         #[cfg(target_os = "macos")]
         {
-            tauri_build::mobile::update_entitlements(|entitlements| {
+            tauri_plugin::mobile::update_entitlements(|entitlements| {
                 entitlements.insert(
                     "com.apple.developer.associated-domains".into(),
                     config

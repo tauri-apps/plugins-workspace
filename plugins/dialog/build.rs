@@ -5,12 +5,10 @@
 const COMMANDS: &[&str] = &["open", "save", "message", "ask", "confirm"];
 
 fn main() {
-    tauri_plugin::Builder::new(COMMANDS).build();
-
-    if let Err(error) = tauri_build::mobile::PluginBuilder::new()
+    if let Err(error) = tauri_plugin::Builder::new(COMMANDS)
         .android_path("android")
         .ios_path("ios")
-        .run()
+        .try_build()
     {
         println!("{error:#}");
         // when building documentation for Android the plugin build result is irrelevant to the crate itself

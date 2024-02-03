@@ -284,7 +284,7 @@ dependencies = [
  "objc_id",
  "parking_lot",
  "thiserror",
- "winapi",
+ "winapi 0.3.9",
  "x11rb 0.12.0",
 ]
 
@@ -570,7 +570,7 @@ dependencies = [
  "log",
  "rand 0.7.3",
  "runloop",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -1039,7 +1039,7 @@ checksum = "7191c27c2357d9b7ef96baac1773290d4ca63b24205b82a3fd8a0637afcf0362"
 dependencies = [
  "error-code",
  "str-buf",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -1108,7 +1108,7 @@ checksum = "5a5f741c91823341bebf717d4c71bda820630ce065443b58bd1b7451af008355"
 dependencies = [
  "is-terminal",
  "lazy_static",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -1548,7 +1548,7 @@ checksum = "1b1d1d91c932ef41c0f2663aa8b0ca0342d444d842c06914aa0a7e352d0bada6"
 dependencies = [
  "libc",
  "redox_users",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -1559,7 +1559,7 @@ checksum = "4ebda144c4fe02d1f7ea1a7d9641b6fc6b580adcfa024ae48797ecdeb6825b4d"
 dependencies = [
  "libc",
  "redox_users",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -2239,7 +2239,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb65d4ba3173c56a500b555b532f72c42e8d1fe64962b518897f8959fae2c177"
 dependencies = [
  "libc",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -2331,7 +2331,7 @@ dependencies = [
  "gobject-sys 0.16.3",
  "libc",
  "system-deps",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -2344,7 +2344,7 @@ dependencies = [
  "gobject-sys 0.18.0",
  "libc",
  "system-deps",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -2666,7 +2666,7 @@ checksum = "3c731c3e10504cc8ed35cfe2f1db4c9274c3d35fa486e3b31df46f068ef3e867"
 dependencies = [
  "libc",
  "match_cfg",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -3105,7 +3105,7 @@ dependencies = [
  "jni-sys",
  "log",
  "thiserror",
- "walkdir",
+ "walkdir 2.4.0",
  "windows-sys 0.45.0",
 ]
 
@@ -3149,6 +3149,16 @@ dependencies = [
  "serde_json",
  "thiserror",
  "treediff",
+]
+
+[[package]]
+name = "kernel32-sys"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7507624b29483431c0ba2d82aece8ca6cdba9382bff4ddd0f7490560c056098d"
+dependencies = [
+ "winapi 0.2.8",
+ "winapi-build",
 ]
 
 [[package]]
@@ -3252,7 +3262,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b67380fd3b2fbe7527a606e18729d21c6f3951633d0500574c4dc22d2d638b9f"
 dependencies = [
  "cfg-if",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -3291,7 +3301,7 @@ dependencies = [
  "cc",
  "libc",
  "pkg-config",
- "walkdir",
+ "walkdir 2.4.0",
 ]
 
 [[package]]
@@ -3712,7 +3722,7 @@ dependencies = [
  "log",
  "mio",
  "serde",
- "walkdir",
+ "walkdir 2.4.0",
  "windows-sys 0.48.0",
 ]
 
@@ -3748,7 +3758,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77a8165726e8236064dbb45459242600304b42a5ea24ee2948e18e023bf7ba84"
 dependencies = [
  "overload",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -3993,7 +4003,7 @@ checksum = "006e42d5b888366f1880eda20371fedde764ed2213dc8496f49622fa0c99cd5e"
 dependencies = [
  "log",
  "serde",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -4842,7 +4852,7 @@ dependencies = [
  "spin 0.5.2",
  "untrusted 0.7.1",
  "web-sys",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -5017,6 +5027,16 @@ name = "safemem"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef703b7cb59335eae2eb93ceb664c0eb7ea6bf567079d843e09420219668e072"
+
+[[package]]
+name = "same-file"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d931a44fdaa43b8637009e7632a02adc4f2b2e0733c08caa4cf00e8da4a117a7"
+dependencies = [
+ "kernel32-sys",
+ "winapi 0.2.8",
+]
 
 [[package]]
 name = "same-file"
@@ -5322,7 +5342,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b0d94659ad3c2137fef23ae75b03d5241d633f8acded53d672decfa0e6e0caef"
 dependencies = [
  "libc",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -5395,7 +5415,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f7916fc008ca5542385b89a3d3ce689953c143e9304a9bf8beec1de48994c0d"
 dependencies = [
  "libc",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -5997,7 +6017,7 @@ checksum = "14c39fd04924ca3a864207c66fc2cd7d22d7c016007f9ce846cbb9326331930a"
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.21"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#95da1a27476e01e06f6ce0335df8535b662dd9c4"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/tauri-build-plugin#c74db2c9239357532f4555b93b0216a057729f0d"
 dependencies = [
  "anyhow",
  "bytes 1.5.0",
@@ -6049,7 +6069,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.14"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#95da1a27476e01e06f6ce0335df8535b662dd9c4"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/tauri-build-plugin#c74db2c9239357532f4555b93b0216a057729f0d"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -6057,24 +6077,22 @@ dependencies = [
  "glob",
  "heck",
  "json-patch",
- "plist",
  "quote",
  "schemars",
  "semver",
  "serde",
  "serde_json",
- "swift-rs",
  "tauri-codegen",
  "tauri-utils",
  "tauri-winres",
  "toml 0.8.8",
- "walkdir",
+ "walkdir 2.4.0",
 ]
 
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.13"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#95da1a27476e01e06f6ce0335df8535b662dd9c4"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/tauri-build-plugin#c74db2c9239357532f4555b93b0216a057729f0d"
 dependencies = [
  "base64 0.21.5",
  "brotli",
@@ -6093,13 +6111,13 @@ dependencies = [
  "time 0.3.30",
  "url",
  "uuid",
- "walkdir",
+ "walkdir 2.4.0",
 ]
 
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.13"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#95da1a27476e01e06f6ce0335df8535b662dd9c4"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/tauri-build-plugin#c74db2c9239357532f4555b93b0216a057729f0d"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -6112,15 +6130,17 @@ dependencies = [
 [[package]]
 name = "tauri-plugin"
 version = "1.0.0"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#95da1a27476e01e06f6ce0335df8535b662dd9c4"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/tauri-build-plugin#c74db2c9239357532f4555b93b0216a057729f0d"
 dependencies = [
- "cargo_metadata",
+ "anyhow",
  "glob",
+ "plist",
  "schemars",
  "serde",
  "serde_json",
- "tauri",
+ "tauri-utils",
  "toml 0.8.8",
+ "walkdir 1.0.7",
 ]
 
 [[package]]
@@ -6164,7 +6184,6 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build",
  "tauri-plugin",
  "thiserror",
 ]
@@ -6178,7 +6197,6 @@ dependencies = [
  "serde_json",
  "serde_repr",
  "tauri",
- "tauri-build",
  "tauri-plugin",
  "thiserror",
 ]
@@ -6205,7 +6223,6 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build",
  "tauri-plugin",
  "thiserror",
 ]
@@ -6218,7 +6235,6 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build",
  "tauri-plugin",
  "thiserror",
  "url",
@@ -6235,7 +6251,6 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "tauri-build",
  "tauri-plugin",
  "tauri-plugin-fs",
  "thiserror",
@@ -6319,7 +6334,6 @@ dependencies = [
  "serde_repr",
  "swift-rs",
  "tauri",
- "tauri-build",
  "tauri-plugin",
  "time 0.3.30",
 ]
@@ -6333,7 +6347,6 @@ dependencies = [
  "serde_json",
  "serde_repr",
  "tauri",
- "tauri-build",
  "tauri-plugin",
  "thiserror",
 ]
@@ -6349,7 +6362,6 @@ dependencies = [
  "serde_json",
  "serde_repr",
  "tauri",
- "tauri-build",
  "tauri-plugin",
  "thiserror",
  "time 0.3.30",
@@ -6566,7 +6578,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "1.0.0-alpha.8"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#95da1a27476e01e06f6ce0335df8535b662dd9c4"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/tauri-build-plugin#c74db2c9239357532f4555b93b0216a057729f0d"
 dependencies = [
  "gtk",
  "http",
@@ -6583,7 +6595,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "1.0.0-alpha.9"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#95da1a27476e01e06f6ce0335df8535b662dd9c4"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/tauri-build-plugin#c74db2c9239357532f4555b93b0216a057729f0d"
 dependencies = [
  "cocoa 0.25.0",
  "gtk",
@@ -6604,7 +6616,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.13"
-source = "git+https://github.com/tauri-apps/tauri?branch=dev#95da1a27476e01e06f6ce0335df8535b662dd9c4"
+source = "git+https://github.com/tauri-apps/tauri?branch=refactor/tauri-build-plugin#c74db2c9239357532f4555b93b0216a057729f0d"
 dependencies = [
  "aes-gcm 0.10.3",
  "brotli",
@@ -6629,10 +6641,11 @@ dependencies = [
  "serde_json",
  "serde_with",
  "serialize-to-javascript",
+ "swift-rs",
  "thiserror",
  "toml 0.8.8",
  "url",
- "walkdir",
+ "walkdir 2.4.0",
 ]
 
 [[package]]
@@ -6734,7 +6747,7 @@ checksum = "1b797afad3f312d1c66a56d11d0316f916356d11bd158fbc6ca6389ff6bf805a"
 dependencies = [
  "libc",
  "wasi 0.10.0+wasi-snapshot-preview1",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -7180,7 +7193,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce65604324d3cce9b966701489fbd0cf318cb1f7bd9dd07ac9a4ee6fb791930d"
 dependencies = [
  "tempfile",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -7369,11 +7382,22 @@ checksum = "f3c4517f54858c779bbcbf228f4fca63d121bf85fbecb2dc578cdf4a39395690"
 
 [[package]]
 name = "walkdir"
+version = "1.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb08f9e670fab86099470b97cd2b252d6527f0b3cc1401acdb595ffc9dd288ff"
+dependencies = [
+ "kernel32-sys",
+ "same-file 0.1.3",
+ "winapi 0.2.8",
+]
+
+[[package]]
+name = "walkdir"
 version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d71d857dc86794ca4c280d616f7da00d2dbfd8cd788846559a6813e6aa4b54ee"
 dependencies = [
- "same-file",
+ "same-file 1.0.6",
  "winapi-util",
 ]
 
@@ -7672,6 +7696,12 @@ dependencies = [
 
 [[package]]
 name = "winapi"
+version = "0.2.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "167dc9d6949a9b857f3451275e911c3f44255842c1f7a76f33c55103a909087a"
+
+[[package]]
+name = "winapi"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c839a674fcd7a98952e593242ea400abe93992746761e38641405d28b00f419"
@@ -7679,6 +7709,12 @@ dependencies = [
  "winapi-i686-pc-windows-gnu",
  "winapi-x86_64-pc-windows-gnu",
 ]
+
+[[package]]
+name = "winapi-build"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d315eee3b34aca4797b2da6b13ed88266e6d612562a0c46390af8299fc699bc"
 
 [[package]]
 name = "winapi-i686-pc-windows-gnu"
@@ -7692,7 +7728,7 @@ version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f29e6f9198ba0d26b4c9f07dbe6f9ed633e1f3d5b8b414090084349e46a52596"
 dependencies = [
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -7701,7 +7737,7 @@ version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "44c17110f57155602a80dca10be03852116403c9ff3cd25b079d666f2aa3df6e"
 dependencies = [
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -8084,7 +8120,7 @@ version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "80d0f4e272c85def139476380b12f9ac60926689dd2e01d4923222f40580869d"
 dependencies = [
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -8181,7 +8217,7 @@ checksum = "b1641b26d4dec61337c35a1b1aaf9e3cba8f46f0b43636c609ab0291a648040a"
 dependencies = [
  "gethostname 0.3.0",
  "nix 0.26.4",
- "winapi",
+ "winapi 0.3.9",
  "winapi-wsapoll",
  "x11rb-protocol 0.12.0",
 ]
@@ -8243,7 +8279,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2769203cd13a0c6015d515be729c526d041e9cf2c0cc478d57faee85f40c6dcd"
 dependencies = [
  "nix 0.26.4",
- "winapi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -8280,7 +8316,7 @@ dependencies = [
  "static_assertions",
  "tracing",
  "uds_windows",
- "winapi",
+ "winapi 0.3.9",
  "xdg-home",
  "zbus_macros",
  "zbus_names",
