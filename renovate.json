@@ -18,5 +18,6 @@
       "matchDepTypes": ["engines", "packageManager"],
       "enabled": false
     }
-  ]
+  ],
+  "postUpdateOptions": ["pnpmDedupe"]
 }

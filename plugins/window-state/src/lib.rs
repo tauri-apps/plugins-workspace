@@ -67,6 +67,11 @@ struct WindowState {
     height: f64,
     x: i32,
     y: i32,
+    // prev_x and prev_y are used to store position
+    // before maximization happened, because maximization
+    // will set x and y to the top-left corner of the monitor
+    prev_x: i32,
+    prev_y: i32,
     maximized: bool,
     visible: bool,
     decorated: bool,
@@ -80,6 +85,8 @@ impl Default for WindowState {
             height: Default::default(),
             x: Default::default(),
             y: Default::default(),
+            prev_x: Default::default(),
+            prev_y: Default::default(),
             maximized: Default::default(),
             visible: true,
             decorated: true,
@@ -149,13 +156,23 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
 
             if flags.contains(StateFlags::POSITION) {
+                let position = (state.x, state.y).into();
+                let size = (state.width, state.height).into();
                 // restore position to saved value if saved monitor exists
                 // otherwise, let the OS decide where to place the window
                 for m in self.available_monitors()? {
-                    if m.contains((state.x, state.y).into()) {
+                    if m.intersects(position, size) {
                         self.set_position(PhysicalPosition {
-                            x: state.x,
-                            y: state.y,
+                            x: if state.maximized {
+                                state.prev_x
+                            } else {
+                                state.x
+                            },
+                            y: if state.maximized {
+                                state.prev_y
+                            } else {
+                                state.y
+                            },
                         })?;
                     }
                 }
@@ -251,22 +268,17 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
                 .unwrap_or(1.);
             let size = self.inner_size()?.to_logical(scale_factor);
 
-            // It doesn't make sense to save a self with 0 height or width
+            // It doesn't make sense to save a window with 0 height or width
             if size.width > 0. && size.height > 0. && !is_maximized {
                 state.width = size.width;
                 state.height = size.height;
             }
         }
 
-        if flags.contains(StateFlags::POSITION) {
+        if flags.contains(StateFlags::POSITION) && !is_maximized {
             let position = self.outer_position()?;
-            if let Ok(Some(monitor)) = self.current_monitor() {
-                // save only window positions that are inside the current monitor
-                if monitor.contains(position) && !is_maximized {
-                    state.x = position.x;
-                    state.y = position.y;
-                }
-            }
+            state.x = position.x;
+            state.y = position.y;
         }
 
         Ok(())
@@ -281,6 +293,10 @@ pub struct Builder {
 }
 
 impl Builder {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     /// Sets the state flags to control what state gets restored and saved.
     pub fn with_state_flags(mut self, flags: StateFlags) -> Self {
         self.state_flags = flags;
@@ -354,13 +370,25 @@ impl Builder {
                         .or_insert_with(WindowState::default);
                 }
 
-                window.on_window_event(move |e| {
-                    if let WindowEvent::CloseRequested { .. } = e {
+                window.on_window_event(move |e| match e {
+                    WindowEvent::CloseRequested { .. } => {
                         let mut c = cache.lock().unwrap();
                         if let Some(state) = c.get_mut(&label) {
                             let _ = window_clone.update_state(state, flags);
                         }
                     }
+
+                    WindowEvent::Moved(position) if flags.contains(StateFlags::POSITION) => {
+                        let mut c = cache.lock().unwrap();
+                        if let Some(state) = c.get_mut(&label) {
+                            state.prev_x = state.x;
+                            state.prev_y = state.y;
+
+                            state.x = position.x;
+                            state.y = position.y;
+                        }
+                    }
+                    _ => {}
                 });
             })
             .on_event(move |app, event| {
@@ -373,17 +401,31 @@ impl Builder {
 }
 
 trait MonitorExt {
-    fn contains(&self, position: PhysicalPosition<i32>) -> bool;
+    fn intersects(&self, position: PhysicalPosition<i32>, size: LogicalSize<u32>) -> bool;
 }
 
 impl MonitorExt for Monitor {
-    fn contains(&self, position: PhysicalPosition<i32>) -> bool {
+    fn intersects(&self, position: PhysicalPosition<i32>, size: LogicalSize<u32>) -> bool {
+        let size = size.to_physical::<u32>(self.scale_factor());
+
         let PhysicalPosition { x, y } = *self.position();
         let PhysicalSize { width, height } = *self.size();
 
-        x < position.x as _
-            && position.x < (x + width as i32)
-            && y < position.y as _
-            && position.y < (y + height as i32)
+        let left = x;
+        let right = x + width as i32;
+        let top = y;
+        let bottom = y + height as i32;
+
+        [
+            (position.x, position.y),
+            (position.x + size.width as i32, position.y),
+            (position.x, position.y + size.height as i32),
+            (
+                position.x + size.width as i32,
+                position.y + size.height as i32,
+            ),
+        ]
+        .into_iter()
+        .any(|(x, y)| x >= left && x < right && y >= top && y < bottom)
     }
 }
