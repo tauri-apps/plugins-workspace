@@ -2,17 +2,86 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use std::{ffi::OsString, fmt::Display};
+
 use serde::{Deserialize, Deserializer};
 use url::Url;
 
+/// Install modes for the Windows update.
+#[derive(Debug, PartialEq, Eq, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum WindowsUpdateInstallMode {
+    /// Specifies there's a basic UI during the installation process, including a final dialog box at the end.
+    BasicUi,
+    /// The quiet mode means there's no user interaction required.
+    /// Requires admin privileges if the installer does.
+    Quiet,
+    /// Specifies unattended mode, which means the installation only shows a progress bar.
+    Passive,
+}
+
+impl WindowsUpdateInstallMode {
+    /// Returns the associated `msiexec.exe` arguments.
+    pub fn msiexec_args(&self) -> &'static [&'static str] {
+        match self {
+            Self::BasicUi => &["/qb+"],
+            Self::Quiet => &["/quiet"],
+            Self::Passive => &["/passive"],
+        }
+    }
+
+    /// Returns the associated nsis arguments.
+    pub fn nsis_args(&self) -> &'static [&'static str] {
+        match self {
+            Self::Passive => &["/P", "/R"],
+            Self::Quiet => &["/S", "/R"],
+            _ => &[],
+        }
+    }
+}
+
+impl Display for WindowsUpdateInstallMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::BasicUi => "basicUI",
+                Self::Quiet => "quiet",
+                Self::Passive => "passive",
+            }
+        )
+    }
+}
+
+impl Default for WindowsUpdateInstallMode {
+    fn default() -> Self {
+        Self::Passive
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct WindowsConfig {
+    /// Additional arguments given to the NSIS or WiX installer.
+    #[serde(default)]
+    pub installer_args: Vec<OsString>,
+    /// Updating mode, see [`WindowsUpdateInstallMode`] for more info.
+    #[serde(default)]
+    pub install_mode: WindowsUpdateInstallMode,
+}
+
 /// Updater configuration.
 #[derive(Debug, Clone, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct Config {
+    /// Updater endpoints.
     #[serde(default)]
     pub endpoints: Vec<UpdaterEndpoint>,
-    /// Additional arguments given to the NSIS or WiX installer.
-    #[serde(default, alias = "installer-args")]
-    pub installer_args: Vec<String>,
+    /// Updater pubkey used to verify signatures.
+    pub pubkey: String,
+    /// Updater config options specific to windows.
+    pub windows: Option<WindowsConfig>,
 }
 
 /// A URL to an updater server.

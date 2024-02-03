@@ -1,39 +1,28 @@
 {
-  "$schema": "../../../../node_modules/.pnpm/@tauri-apps+cli@2.0.0-alpha.17/node_modules/@tauri-apps/cli/schema.json",
-  "build": {
-    "distDir": [],
-    "devPath": []
-  },
-  "tauri": {
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "com.tauri.updater",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "category": "DeveloperTool",
+  "identifier": "com.tauri.updater",
+  "plugins": {
+    "updater": {
+      "endpoints": ["http://localhost:3007"],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMwNjY1MEExMTFBMDU5RTUKUldUbFdhQVJvVkJtd09sZ1ROT25yVGFhU2o0ZnUyd1FlT0ZTQ2ZXamN3SXk4SjZLZmNwRnV5dTMK",
       "windows": {
-        "wix": {
-          "skipWebviewInstall": true
-        }
-      },
-      "updater": {
-        "active": true,
-        "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMwNjY1MEExMTFBMDU5RTUKUldUbFdhQVJvVkJtd09sZ1ROT25yVGFhU2o0ZnUyd1FlT0ZTQ2ZXamN3SXk4SjZLZmNwRnV5dTMK",
-        "windows": {
-          "installMode": "quiet"
-        }
+        "installMode": "quiet"
       }
     }
   },
-  "plugins": {
-    "updater": {
-      "endpoints": ["http://localhost:3007"]
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "wix": {
+        "skipWebviewInstall": true
+      }
     }
   }
 }
