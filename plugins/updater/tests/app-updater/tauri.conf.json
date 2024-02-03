@@ -2,9 +2,7 @@
   "identifier": "com.tauri.updater",
   "plugins": {
     "updater": {
-      "endpoints": [
-        "http://localhost:3007"
-      ],
+      "endpoints": ["http://localhost:3007"],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMwNjY1MEExMTFBMDU5RTUKUldUbFdhQVJvVkJtd09sZ1ROT25yVGFhU2o0ZnUyd1FlT0ZTQ2ZXamN3SXk4SjZLZmNwRnV5dTMK",
       "windows": {
         "installMode": "quiet"

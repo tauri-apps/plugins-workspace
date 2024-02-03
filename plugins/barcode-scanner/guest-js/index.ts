@@ -54,7 +54,7 @@ export async function cancel(): Promise<void> {
  */
 export async function checkPermissions(): Promise<PermissionState> {
   return await invoke<{ camera: PermissionState }>(
-    "plugin:barcode-scanner|check_permissions"
+    "plugin:barcode-scanner|check_permissions",
   ).then((r) => r.camera);
 }
 
@@ -63,7 +63,7 @@ export async function checkPermissions(): Promise<PermissionState> {
  */
 export async function requestPermissions(): Promise<PermissionState> {
   return await invoke<{ camera: PermissionState }>(
-    "plugin:barcode-scanner|request_permissions"
+    "plugin:barcode-scanner|request_permissions",
   ).then((r) => r.camera);
 }
 

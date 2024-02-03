@@ -81,7 +81,6 @@ pub fn run() {
             #[cfg(debug_assertions)]
             webview.open_devtools();
 
-            #[cfg(desktop)]
             std::thread::spawn(|| {
                 let server = match tiny_http::Server::http("localhost:3003") {
                     Ok(s) => s,

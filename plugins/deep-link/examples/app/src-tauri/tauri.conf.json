@@ -31,9 +31,7 @@
       "domains": [
         {
           "host": "fabianlars.de",
-          "pathPrefix": [
-            "/intent"
-          ]
+          "pathPrefix": ["/intent"]
         },
         {
           "host": "tauri.app"

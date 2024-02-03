@@ -111,7 +111,7 @@ export function record(
   format: NFCTypeNameFormat,
   kind: string | number[],
   id: string | number[],
-  payload: string | number[]
+  payload: string | number[],
 ): NFCRecord {
   return {
     format,
@@ -130,7 +130,7 @@ export function record(
 export function textRecord(
   text: string,
   id?: string | number[],
-  language: string = "en"
+  language: string = "en",
 ): NFCRecord {
   const payload = Array.from(new TextEncoder().encode(language + text));
   payload.unshift(language.length);
@@ -190,7 +190,7 @@ function encodeURI(uri: string): number[] {
   }
 
   const encoded = Array.from(
-    new TextEncoder().encode(uri.slice(prefix.length))
+    new TextEncoder().encode(uri.slice(prefix.length)),
   );
   const protocolCode = protocols.indexOf(prefix);
   // prepend protocol code
@@ -204,7 +204,7 @@ export function uriRecord(uri: string, id?: string | number[]): NFCRecord {
     NFCTypeNameFormat.NfcWellKnown,
     RTD_URI,
     id || [],
-    encodeURI(uri)
+    encodeURI(uri),
   );
 }
 
@@ -229,7 +229,7 @@ function mapScanKind(kind: ScanKind): Record<string, unknown> {
  */
 export async function scan(
   kind: ScanKind,
-  options?: ScanOptions
+  options?: ScanOptions,
 ): Promise<Tag> {
   return await invoke("plugin:nfc|scan", {
     kind: mapScanKind(kind),
@@ -254,7 +254,7 @@ export async function scan(
  */
 export async function write(
   records: NFCRecord[],
-  options?: WriteOptions
+  options?: WriteOptions,
 ): Promise<void> {
   const { kind, ...opts } = options || {};
   if (kind) {
