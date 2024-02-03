@@ -10,6 +10,7 @@ const header = `Copyright 2019-2023 Tauri Programme within The Commons Conservan
 SPDX-License-Identifier: Apache-2.0
 SPDX-License-Identifier: MIT`;
 const ignoredLicenses = [
+  "// Copyright 2021 Flabio Oliveira",
   "// Copyright 2021 Jonas Kruckenberg",
   "// Copyright 2018-2023 the Deno authors.",
 ];
@@ -123,6 +124,6 @@ if (files.length > 0) {
         console.log(missing.join("\n"));
         process.exit(1);
       }
-    },
+    }
   );
 }
