@@ -20,11 +20,15 @@ use reqwest::{
 };
 use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
-use tauri::utils::{config::UpdaterConfig, platform::current_exe};
+use tauri::utils::platform::current_exe;
 use time::OffsetDateTime;
 use url::Url;
 
-use crate::error::{Error, Result};
+use crate::{
+    config::UpdaterWindowsConfig,
+    error::{Error, Result},
+    Config,
+};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ReleaseManifestPlatform {
@@ -86,8 +90,7 @@ impl RemoteRelease {
 
 pub struct UpdaterBuilder {
     current_version: Version,
-    config: crate::Config,
-    updater_config: UpdaterConfig,
+    config: Config,
     version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
     executable_path: Option<PathBuf>,
     target: Option<String>,
@@ -98,15 +101,10 @@ pub struct UpdaterBuilder {
 }
 
 impl UpdaterBuilder {
-    pub fn new(
-        current_version: Version,
-        config: crate::Config,
-        updater_config: UpdaterConfig,
-    ) -> Self {
+    pub fn new(current_version: Version, config: Config) -> Self {
         Self {
             current_version,
             config,
-            updater_config,
             version_comparator: None,
             executable_path: None,
             target: None,
@@ -197,12 +195,15 @@ impl UpdaterBuilder {
         };
 
         Ok(Updater {
-            config: self.updater_config,
+            pubkey: self.config.pubkey,
+            windows_config: self.config.windows,
             current_version: self.current_version,
             version_comparator: self.version_comparator,
             timeout: self.timeout,
             endpoints,
-            installer_args: self.installer_args.unwrap_or(self.config.installer_args),
+            installer_args: self
+                .installer_args
+                .unwrap_or(self.config.installer_args.clone()),
             arch,
             target,
             json_target,
@@ -213,7 +214,9 @@ impl UpdaterBuilder {
 }
 
 pub struct Updater {
-    config: UpdaterConfig,
+    pubkey: String,
+    #[allow(dead_code)]
+    windows_config: UpdaterWindowsConfig,
     current_version: Version,
     version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
     timeout: Option<Duration>,
@@ -315,8 +318,8 @@ impl Updater {
 
         let update = if should_update {
             Some(Update {
+                pubkey: self.pubkey.clone(),
                 current_version: self.current_version.to_string(),
-                config: self.config.clone(),
                 target: self.target.clone(),
                 extract_path: self.extract_path.clone(),
                 installer_args: self.installer_args.clone(),
@@ -338,7 +341,7 @@ impl Updater {
 
 #[derive(Debug, Clone)]
 pub struct Update {
-    config: UpdaterConfig,
+    pubkey: String,
     /// Update description
     pub body: Option<String>,
     /// Version used to check for update
@@ -419,7 +422,7 @@ impl Update {
 
         let mut update_buffer = Cursor::new(&buffer);
 
-        verify_signature(&mut update_buffer, &self.signature, &self.config.pubkey)?;
+        verify_signature(&mut update_buffer, &self.signature, &self.pubkey)?;
 
         Ok(buffer)
     }
@@ -502,7 +505,7 @@ impl Update {
                 installer_path.push("\"");
 
                 let installer_args = [
-                    self.config.windows.install_mode.nsis_args(),
+                    self.windows_config.install_mode.nsis_args(),
                     self.installer_args
                         .iter()
                         .map(AsRef::as_ref)

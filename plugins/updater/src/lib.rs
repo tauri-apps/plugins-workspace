@@ -72,10 +72,9 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
     fn updater_builder(&self) -> UpdaterBuilder {
         let app = self.app_handle();
         let version = app.package_info().version.clone();
-        let updater_config = app.config().tauri.bundle.updater.clone();
         let UpdaterState { config, target } = self.state::<UpdaterState>().inner();
 
-        let mut builder = UpdaterBuilder::new(version, config.clone(), updater_config);
+        let mut builder = UpdaterBuilder::new(version, config.clone());
 
         if let Some(target) = target {
             builder = builder.target(target);

@@ -29,7 +29,7 @@ impl<R: Runtime> SingleInstanceDBus<R> {
 }
 
 fn dbus_id(config: &Config) -> String {
-    config.tauri.bundle.identifier.replace(['.', '-'], "_")
+    config.identifier.replace(['.', '-'], "_")
 }
 
 pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {

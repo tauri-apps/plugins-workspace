@@ -120,7 +120,6 @@ pub fn execute<R: Runtime>(
         let program_no_ext_as_string = program.with_extension("").display().to_string();
         let configured_sidecar = window
             .config()
-            .tauri
             .bundle
             .external_bin
             .as_ref()
