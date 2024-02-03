@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-{{plugin-name}} = "2.0.0-alpha"
+tauri-plugin-{{plugin-name}} = "2.0.0-beta"
 # alternatively with Git:
 tauri-plugin-{{plugin-name}} = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```

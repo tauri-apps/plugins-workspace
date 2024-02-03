@@ -1,5 +1,4 @@
 {
-  "$schema": "../../../node_modules/.pnpm/@tauri-apps+cli@2.0.0-alpha.17/node_modules/@tauri-apps/cli/schema.json",
   "identifier": "app.tauri.example",
   "build": {
     "frontendDist": ".",

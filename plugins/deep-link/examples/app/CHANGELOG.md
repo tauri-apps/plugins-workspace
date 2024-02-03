@@ -1,10 +1,10 @@
 # Changelog
 
-## \[0.0.1-alpha.5]
+## \[2.0.0-beta.0]
 
 ### Dependencies
 
-- Upgraded to `deep-link-js@2.0.0-alpha.5`
+- Upgraded to `deep-link-js@2.0.0-beta.0`
 
 ## \[0.0.1-alpha.4]
 
