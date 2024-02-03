@@ -10,9 +10,9 @@ resolver = "2"
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
 log = "0.4"
-tauri = { git = "https://github.com/tauri-apps/tauri", branch = "dev" }
-tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "dev" }
-tauri-plugin = { git = "https://github.com/tauri-apps/tauri", branch = "dev" }
+tauri = "2.0.0-beta.0"
+tauri-build = "2.0.0-beta.0"
+tauri-plugin = "2.0.0-beta.0"
 serde_json = "1"
 thiserror = "1"
 url = "2"
