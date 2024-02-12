@@ -172,7 +172,8 @@ async fn load<R: Runtime>(
     .pragma("cipher_hmac_algorithm", "HMAC_SHA1")
     .pragma("cipher_kdf_algorithm", "PBKDF2_HMAC_SHA1")
     .journal_mode(SqliteJournalMode::Delete)
-    .foreign_keys(false)).await?;  
+    .foreign_keys(false)).await?;
+
     if let Some(migrations) = migrations.0.lock().await.remove(&db) {
         let migrator = Migrator::new(migrations).await?;
         migrator.run(&pool).await?;
@@ -320,7 +321,7 @@ impl Builder {
                         
                         #[cfg(feature = "sqlite")]
                         let pool = Pool::connect_with(SqliteConnectOptions::from_str(&fqdb)?
-                        .pragma("key", "the_password")
+                        .pragma("key", "cff4a04ab9e45b3908e7d26653775ecbda37ec224b72094ec174bb3217bbb36b")
                         .pragma("cipher_page_size", "1024")
                         .pragma("kdf_iter", "64000")
                         .pragma("cipher_hmac_algorithm", "HMAC_SHA1")
