@@ -10,7 +10,7 @@ use sqlx::{
         MigrateDatabase, Migration as SqlxMigration, MigrationSource, MigrationType, Migrator,
     }, Column, Pool, Row
 };
-use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
+use sqlx::sqlite::{SqliteConnectOptions};
 use std::str::FromStr;
 use tauri::{
     command,
@@ -167,13 +167,16 @@ async fn load<R: Runtime>(
     println!("TEST");
     #[cfg(feature = "sqlite")]
     println!("TESTSQLITE");
+
+    #[cfg(feature = "sqlite")]
+    println!("TESTSQLITE");
+    #[cfg(not(feature = "sqlite"))]
+    println!("TESTNOSQLITE");
+
     #[cfg(feature = "sqlite")]
     let pool = Pool::connect_with(SqliteConnectOptions::from_str(&fqdb)?
     .pragma("key", "cff4a04ab9e45b3908e7d26653775ecbda37ec224b72094ec174bb3217bbb36b")
-    .pragma("cipher_page_size", "1024")
-    .pragma("kdf_iter", "64000")
-    .pragma("cipher_hmac_algorithm", "HMAC_SHA1")
-    .pragma("cipher_kdf_algorithm", "PBKDF2_HMAC_SHA1").create_if_missing(true)).await?;
+    .create_if_missing(true)).await?;
 
     if let Some(migrations) = migrations.0.lock().await.remove(&db) {
         let migrator = Migrator::new(migrations).await?;
@@ -322,11 +325,7 @@ impl Builder {
                         
                         #[cfg(feature = "sqlite")]
                         let pool = Pool::connect_with(SqliteConnectOptions::from_str(&fqdb)?
-                        .pragma("cipher_kdf_algorithm", "PBKDF2_HMAC_SHA1")
-                        .pragma("cipher_page_size", "1024")
-                        .pragma("key", "cff4a04ab9e45b3908e7d26653775ecbda37ec224b72094ec174bb3217bbb36b")
-                        .pragma("kdf_iter", "64000")
-                        .pragma("cipher_hmac_algorithm", "HMAC_SHA1").create_if_missing(true)).await?;                        
+                        .pragma("key", "cff4a04ab9e45b3908e7d26653775ecbda37ec224b72094ec174bb3217bbb36b").create_if_missing(true)).await?;                        
 
                         if let Some(migrations) = self.migrations.as_mut().unwrap().remove(&db) {
                             let migrator = Migrator::new(migrations).await?;
