@@ -6,19 +6,18 @@ use futures_core::future::BoxFuture;
 use serde::{ser::Serializer, Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use sqlx::{
-    error::BoxDynError,
-    migrate::{
+    error::BoxDynError, migrate::{
         MigrateDatabase, Migration as SqlxMigration, MigrationSource, MigrationType, Migrator,
-    },
-    Column, Pool, Row,
+    }, Column, Pool, Row
 };
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
+use std::str::FromStr;
 use tauri::{
     command,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime, State,
 };
 use tokio::sync::Mutex;
-
 use std::collections::HashMap;
 
 #[cfg(feature = "sqlite")]
@@ -160,8 +159,20 @@ async fn load<R: Runtime>(
     if !Db::database_exists(&fqdb).await.unwrap_or(false) {
         Db::create_database(&fqdb).await?;
     }
-    let pool = Pool::connect(&fqdb).await?;
 
+    
+    #[cfg(not(feature = "sqlite"))]
+    let pool = Pool::connect(&fqdb).await?;
+    
+    #[cfg(feature = "sqlite")]
+    let pool = Pool::connect_with(SqliteConnectOptions::from_str(&fqdb)?
+    .pragma("key", "cff4a04ab9e45b3908e7d26653775ecbda37ec224b72094ec174bb3217bbb36b")
+    .pragma("cipher_page_size", "1024")
+    .pragma("kdf_iter", "64000")
+    .pragma("cipher_hmac_algorithm", "HMAC_SHA1")
+    .pragma("cipher_kdf_algorithm", "PBKDF2_HMAC_SHA1")
+    .journal_mode(SqliteJournalMode::Delete)
+    .foreign_keys(false)).await?;  
     if let Some(migrations) = migrations.0.lock().await.remove(&db) {
         let migrator = Migrator::new(migrations).await?;
         migrator.run(&pool).await?;
@@ -304,7 +315,18 @@ impl Builder {
                         if !Db::database_exists(&fqdb).await.unwrap_or(false) {
                             Db::create_database(&fqdb).await?;
                         }
+                        #[cfg(not(feature = "sqlite"))]
                         let pool = Pool::connect(&fqdb).await?;
+                        
+                        #[cfg(feature = "sqlite")]
+                        let pool = Pool::connect_with(SqliteConnectOptions::from_str(&fqdb)?
+                        .pragma("key", "the_password")
+                        .pragma("cipher_page_size", "1024")
+                        .pragma("kdf_iter", "64000")
+                        .pragma("cipher_hmac_algorithm", "HMAC_SHA1")
+                        .pragma("cipher_kdf_algorithm", "PBKDF2_HMAC_SHA1")
+                        .journal_mode(SqliteJournalMode::Delete)
+                        .foreign_keys(false)).await?;                        
 
                         if let Some(migrations) = self.migrations.as_mut().unwrap().remove(&db) {
                             let migrator = Migrator::new(migrations).await?;
