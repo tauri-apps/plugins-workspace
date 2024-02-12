@@ -6667,6 +6667,7 @@ name = "tauri-plugin-sql"
 version = "2.0.0-beta.0"
 dependencies = [
  "futures-core",
+ "libsqlite3-sys",
  "log",
  "serde",
  "serde_json",
