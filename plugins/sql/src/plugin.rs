@@ -155,7 +155,7 @@ async fn load<R: Runtime>(
 
     #[cfg(feature = "sqlite")]
     create_dir_all(app_path(&app)).expect("Problem creating App directory!");
-
+    #[cfg(not(feature = "sqlite"))]
     if !Db::database_exists(&fqdb).await.unwrap_or(false) {
         Db::create_database(&fqdb).await?;
     }
@@ -170,9 +170,7 @@ async fn load<R: Runtime>(
     .pragma("cipher_page_size", "1024")
     .pragma("kdf_iter", "64000")
     .pragma("cipher_hmac_algorithm", "HMAC_SHA1")
-    .pragma("cipher_kdf_algorithm", "PBKDF2_HMAC_SHA1")
-    .journal_mode(SqliteJournalMode::Delete)
-    .foreign_keys(false)).await?;
+    .pragma("cipher_kdf_algorithm", "PBKDF2_HMAC_SHA1").create_if_missing(true)).await?;
 
     if let Some(migrations) = migrations.0.lock().await.remove(&db) {
         let migrator = Migrator::new(migrations).await?;
@@ -312,7 +310,7 @@ impl Builder {
                         let fqdb = path_mapper(app_path(app), &db);
                         #[cfg(not(feature = "sqlite"))]
                         let fqdb = db.clone();
-
+                        #[cfg(not(feature = "sqlite"))]
                         if !Db::database_exists(&fqdb).await.unwrap_or(false) {
                             Db::create_database(&fqdb).await?;
                         }
@@ -321,13 +319,11 @@ impl Builder {
                         
                         #[cfg(feature = "sqlite")]
                         let pool = Pool::connect_with(SqliteConnectOptions::from_str(&fqdb)?
-                        .pragma("key", "cff4a04ab9e45b3908e7d26653775ecbda37ec224b72094ec174bb3217bbb36b")
-                        .pragma("cipher_page_size", "1024")
-                        .pragma("kdf_iter", "64000")
-                        .pragma("cipher_hmac_algorithm", "HMAC_SHA1")
                         .pragma("cipher_kdf_algorithm", "PBKDF2_HMAC_SHA1")
-                        .journal_mode(SqliteJournalMode::Delete)
-                        .foreign_keys(false)).await?;                        
+                        .pragma("cipher_page_size", "1024")
+                        .pragma("key", "cff4a04ab9e45b3908e7d26653775ecbda37ec224b72094ec174bb3217bbb36b")
+                        .pragma("kdf_iter", "64000")
+                        .pragma("cipher_hmac_algorithm", "HMAC_SHA1").create_if_missing(true)).await?;                        
 
                         if let Some(migrations) = self.migrations.as_mut().unwrap().remove(&db) {
                             let migrator = Migrator::new(migrations).await?;
