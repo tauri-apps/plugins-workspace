@@ -163,7 +163,10 @@ async fn load<R: Runtime>(
     
     #[cfg(not(feature = "sqlite"))]
     let pool = Pool::connect(&fqdb).await?;
-    
+
+    println!("TEST");
+    #[cfg(feature = "sqlite")]
+    println!("TESTSQLITE");
     #[cfg(feature = "sqlite")]
     let pool = Pool::connect_with(SqliteConnectOptions::from_str(&fqdb)?
     .pragma("key", "cff4a04ab9e45b3908e7d26653775ecbda37ec224b72094ec174bb3217bbb36b")
