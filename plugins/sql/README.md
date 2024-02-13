@@ -1,3 +1,29 @@
+# Fork implementing simple sqlcipher password.
+
+To use this needs to be added to you .toml:
+```toml
+openssl = "0.10.63"
+libsqlite3-sys = { version = "0.27", features = ["bundled-sqlcipher"] }
+```
+
+You will also need to fill in the key in you tauri.config.json
+```json
+"plugins": {
+  "sql": {
+        "permission":["allow-load", "allow-execute", "allow-select"],
+        "key":"MyPassword"
+      }
+}
+```
+
+On windows, you may experience some problems to build everything because of ssl. I recommand building and installing openssl using vcpkg https://github.com/Microsoft/vcpkg
+- Clone vcpkg to C:\src\vcpkg for example
+- Bootstrap vcpkg C:\src\vcpkg\bootstrap-vcpkg.bat
+- C:\src\vcpkg\vcpkg.exe integrate install
+- C:\src\vcpkg\vcpkg.exe openssl:x64-windows
+- Add OPENSSL_DIR env variable C:\src\vcpkg\installed\x64-windows
+- You may set it to the current powershell for test purposes $Env:OPENSSL_DIR="C:\src\vcpkg\installed\x64-windows"
+
 ![plugin-sql](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/sql/banner.png)
 
 Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx). It supports the `sqlite`, `mysql` and `postgres` drivers, enabled by a Cargo feature.
