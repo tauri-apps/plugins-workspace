@@ -225,7 +225,7 @@ async function message(
   return invoke("plugin:dialog|message", {
     message: message.toString(),
     title: opts?.title?.toString(),
-    type_: opts?.type,
+    type: opts?.type,
     okButtonLabel: opts?.okLabel?.toString(),
   });
 }
@@ -254,7 +254,7 @@ async function ask(
   return invoke("plugin:dialog|ask", {
     message: message.toString(),
     title: opts?.title?.toString(),
-    type_: opts?.type,
+    type: opts?.type,
     okButtonLabel: opts?.okLabel?.toString() ?? "Yes",
     cancelButtonLabel: opts?.cancelLabel?.toString() ?? "No",
   });
@@ -284,7 +284,7 @@ async function confirm(
   return invoke("plugin:dialog|confirm", {
     message: message.toString(),
     title: opts?.title?.toString(),
-    type_: opts?.type,
+    type: opts?.type,
     okButtonLabel: opts?.okLabel?.toString() ?? "Ok",
     cancelButtonLabel: opts?.cancelLabel?.toString() ?? "Cancel",
   });
