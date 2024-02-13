@@ -207,7 +207,7 @@ fn message_dialog<R: Runtime>(
     dialog: State<'_, Dialog<R>>,
     title: Option<String>,
     message: String,
-    type_: Option<MessageDialogKind>,
+    kind: Option<MessageDialogKind>,
     ok_button_label: Option<String>,
     cancel_button_label: Option<String>,
 ) -> bool {
@@ -222,8 +222,8 @@ fn message_dialog<R: Runtime>(
         builder = builder.parent(&window);
     }
 
-    if let Some(type_) = type_ {
-        builder = builder.kind(type_);
+    if let Some(kind) = kind {
+        builder = builder.kind(kind);
     }
 
     if let Some(ok) = ok_button_label {
@@ -243,7 +243,7 @@ pub(crate) async fn message<R: Runtime>(
     dialog: State<'_, Dialog<R>>,
     title: Option<String>,
     message: String,
-    type_: Option<MessageDialogKind>,
+    kind: Option<MessageDialogKind>,
     ok_button_label: Option<String>,
 ) -> Result<bool> {
     Ok(message_dialog(
@@ -251,7 +251,7 @@ pub(crate) async fn message<R: Runtime>(
         dialog,
         title,
         message,
-        type_,
+        kind,
         ok_button_label,
         None,
     ))
@@ -263,7 +263,7 @@ pub(crate) async fn ask<R: Runtime>(
     dialog: State<'_, Dialog<R>>,
     title: Option<String>,
     message: String,
-    type_: Option<MessageDialogKind>,
+    kind: Option<MessageDialogKind>,
     ok_button_label: Option<String>,
     cancel_button_label: Option<String>,
 ) -> Result<bool> {
@@ -272,7 +272,7 @@ pub(crate) async fn ask<R: Runtime>(
         dialog,
         title,
         message,
-        type_,
+        kind,
         Some(ok_button_label.unwrap_or_else(|| "Yes".into())),
         Some(cancel_button_label.unwrap_or_else(|| "No".into())),
     ))
@@ -284,7 +284,7 @@ pub(crate) async fn confirm<R: Runtime>(
     dialog: State<'_, Dialog<R>>,
     title: Option<String>,
     message: String,
-    type_: Option<MessageDialogKind>,
+    kind: Option<MessageDialogKind>,
     ok_button_label: Option<String>,
     cancel_button_label: Option<String>,
 ) -> Result<bool> {
@@ -293,7 +293,7 @@ pub(crate) async fn confirm<R: Runtime>(
         dialog,
         title,
         message,
-        type_,
+        kind,
         Some(ok_button_label.unwrap_or_else(|| "Ok".into())),
         Some(cancel_button_label.unwrap_or_else(|| "Cancel".into())),
     ))
