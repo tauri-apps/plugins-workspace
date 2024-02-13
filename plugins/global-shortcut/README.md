@@ -23,7 +23,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
 tauri-plugin-global-shortcut = "2.0.0-beta"
 # alternatively with Git:
-tauri-plugin-shortcut = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
+tauri-plugin-global-shortcut = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
