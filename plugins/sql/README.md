@@ -4,6 +4,11 @@ To use this needs to be added to you .toml:
 ```toml
 openssl = "0.10.63"
 libsqlite3-sys = { version = "0.27", features = ["bundled-sqlcipher"] }
+
+[dependencies.tauri-plugin-sql]
+features = ["sqlite"] # or "postgres", or "mysql"
+git = "https://github.com/eleroy/plugins-workspace"
+branch = "v2"
 ```
 
 You will also need to fill in the key in you tauri.config.json
