@@ -25,7 +25,7 @@ On windows, you may experience some problems to build everything because of ssl.
 - Clone vcpkg to C:\src\vcpkg for example
 - Bootstrap vcpkg C:\src\vcpkg\bootstrap-vcpkg.bat
 - C:\src\vcpkg\vcpkg.exe integrate install
-- C:\src\vcpkg\vcpkg.exe openssl:x64-windows
+- C:\src\vcpkg\vcpkg.exe install openssl:x64-windows
 - Add OPENSSL_DIR env variable C:\src\vcpkg\installed\x64-windows
 - You may set it to the current powershell for test purposes $Env:OPENSSL_DIR="C:\src\vcpkg\installed\x64-windows"
 
