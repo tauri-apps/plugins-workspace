@@ -26,6 +26,7 @@
     "dialog:allow-open",
     "dialog:allow-save",
     "dialog:allow-confirm",
+    "dialog:allow-message",
     {
       "identifier": "shell:allow-execute",
       "allow": [
