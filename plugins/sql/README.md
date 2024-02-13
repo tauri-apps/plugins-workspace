@@ -2,6 +2,8 @@
 
 To use this needs to be added to you .toml:
 ```toml
+[dependencies]
+...
 openssl = "0.10.63"
 libsqlite3-sys = { version = "0.27", features = ["bundled-sqlcipher"] }
 
