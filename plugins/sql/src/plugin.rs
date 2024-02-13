@@ -89,10 +89,15 @@ struct DbInstances(Mutex<HashMap<String, Pool<Db>>>);
 
 struct Migrations(Mutex<HashMap<String, MigrationList>>);
 
+
+#[derive(Default)]
+struct Store(Mutex<HashMap<String, String>>);
+
 #[derive(Default, Clone, Deserialize)]
 pub struct PluginConfig {
     #[serde(default)]
     preload: Vec<String>,
+    key:String,
 }
 
 #[derive(Debug)]
@@ -148,6 +153,9 @@ async fn load<R: Runtime>(
     migrations: State<'_, Migrations>,
     db: String,
 ) -> Result<String> {
+    let store = app.state::<Store>();
+    let store_lock = store.0.lock().await;
+    let db_key = store_lock.get("key").unwrap().clone();
     #[cfg(feature = "sqlite")]
     let fqdb = path_mapper(app_path(&app), &db);
     #[cfg(not(feature = "sqlite"))]
@@ -163,19 +171,10 @@ async fn load<R: Runtime>(
     
     #[cfg(not(feature = "sqlite"))]
     let pool = Pool::connect(&fqdb).await?;
-
-    println!("TEST");
-    #[cfg(feature = "sqlite")]
-    println!("TESTSQLITE");
-
-    #[cfg(feature = "sqlite")]
-    println!("TESTSQLITE");
-    #[cfg(not(feature = "sqlite"))]
-    println!("TESTNOSQLITE");
-
+    
     #[cfg(feature = "sqlite")]
     let pool = Pool::connect_with(SqliteConnectOptions::from_str(&fqdb)?
-    .pragma("key", "cff4a04ab9e45b3908e7d26653775ecbda37ec224b72094ec174bb3217bbb36b")
+    .pragma("key", db_key)
     .create_if_missing(true)).await?;
 
     if let Some(migrations) = migrations.0.lock().await.remove(&db) {
@@ -304,11 +303,16 @@ impl Builder {
             .invoke_handler(tauri::generate_handler![load, execute, select, close])
             .setup(|app, api| {
                 let config = api.config().clone().unwrap_or_default();
-
+                let db_key = config.key;
+                
                 #[cfg(feature = "sqlite")]
                 create_dir_all(app_path(app)).expect("problems creating App directory!");
 
                 tauri::async_runtime::block_on(async move {
+                    let store: Store = Store::default();
+                    let mut store_lock = store.0.lock().await;
+                    store_lock.insert("key".to_string(), db_key.clone());
+                    drop(store_lock);
                     let instances = DbInstances::default();
                     let mut lock = instances.0.lock().await;
                     for db in config.preload {
@@ -325,7 +329,7 @@ impl Builder {
                         
                         #[cfg(feature = "sqlite")]
                         let pool = Pool::connect_with(SqliteConnectOptions::from_str(&fqdb)?
-                        .pragma("key", "cff4a04ab9e45b3908e7d26653775ecbda37ec224b72094ec174bb3217bbb36b").create_if_missing(true)).await?;                        
+                        .pragma("key", db_key.clone()).create_if_missing(true)).await?;                        
 
                         if let Some(migrations) = self.migrations.as_mut().unwrap().remove(&db) {
                             let migrator = Migrator::new(migrations).await?;
@@ -334,7 +338,7 @@ impl Builder {
                         lock.insert(db, pool);
                     }
                     drop(lock);
-
+                    app.manage(store);
                     app.manage(instances);
                     app.manage(Migrations(Mutex::new(
                         self.migrations.take().unwrap_or_default(),
