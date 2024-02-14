@@ -8,11 +8,11 @@
 | [biometric](plugins/biometric)                  | Prompt the user for biometric authentication on Android and iOS.                                                                                                       | ?   | ?   | ?   | ✅  | ✅  |
 | [cli](plugins/cli)                              | Parse arguments from your Command Line Interface       | ✅  | ✅  | ✅  | ?   | ?   |
 | [clipboard-manager](plugins/clipboard-manager)  | Read and write to the system clipboard.                | ✅  | ✅  | ✅  | ✅  | ✅  |
-| [deep-link](plugins/deep-link)                  | Set your Tauri application as the default handler for an URL.                                                                                                       | ?   | ?   | ?   | ?   | ✅  |
+| [deep-link](plugins/deep-link)                  | Set your Tauri application as the default handler for an URL.                                                                                                       | ?   | ?   | ?   | ✅   | ✅  |
 | [dialog](plugins/dialog)                        | Native system dialogs for opening and saving files along with message dialogs.                                                                                                   | ✅  | ✅  | ✅  | ✅  | ✅ |
-| [fs](plugins/fs)                                | Access the file system.                                | ?   | ?   | ?   | ?   | ?  |
+| [fs](plugins/fs)                                | Access the file system.                                | ✅   | ✅   | ✅   | ?   | ?  |
 | [global-shortcut](plugins/global-shortcut)      | Register global shortcuts.                             | ✅  | ✅  | ✅  | ?   | ?  |
-| [http](plugins/http)                            | Access the HTTP client written in Rust.                | ?   | ?   | ?   | ?   | ?  |
+| [http](plugins/http)                            | Access the HTTP client written in Rust.                | ✅   | ✅   | ✅   | ✅   | ✅  |
 | [localhost](plugins/localhost)                  | Use a localhost server in production apps.             | ✅  | ✅  | ✅  | ?   | ?  |
 | [log](plugins/log)                              | Configurable logging.                                  | ✅  | ✅  | ✅  | ✅  | ✅ |
 | [nfc](plugins/nfc)                              | Read and write NFC tags on Android and iOS.            | ?   | ?   | ?   | ✅  | ✅  |
@@ -20,8 +20,8 @@
 | [os](plugins/os)                                | Read information about the operating system.           | ✅  | ✅  | ✅  | ✅   | ✅ |
 | [persisted-scope](plugins/persisted-scope)      | Persist runtime scope changes on the filesystem.       | ✅  | ✅  | ✅  | ?   | ?   |
 | [positioner](plugins/positioner)                | Move windows to common locations.                      | ✅  | ✅  | ✅  | ?   | ?   |
-| [process](plugins/process)                      | This plugin provides APIs to access the current process. To spawn child processes, see the [`shell`](https://github.com/tauri-apps/tauri-plugin-shell) plugin.                                                          | ?   | ?   | ?   | ?   | ?   |
-| [shell](plugins/shell)                          | Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application.                                                                                               | ?   | ?   | ?   | ?   | ?   |
+| [process](plugins/process)                      | This plugin provides APIs to access the current process. To spawn child processes, see the [`shell`](https://github.com/tauri-apps/tauri-plugin-shell) plugin.                                                          | ✅   | ✅   | ✅   | ?   | ?   |
+| [shell](plugins/shell)                          | Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application.                                                                                               | ✅   | ✅   | ✅   | ?   | ?   |
 | [single-instance](plugins/single-instance)      | Ensure a single instance of your tauri app is running. | ✅  | ?   | ✅  | ?   | ?   |
 | [sql](plugins/sql)                              | Interface with SQL databases.                          | ✅  | ✅  | ✅  | ?   | ?   |
 | [store](plugins/store)                          | Persistent key value storage.                          | ✅  | ✅  | ✅  | ?   | ?   |
