@@ -1150,7 +1150,7 @@ type WatchEventKindModify =
         | "extended"
         | "other";
     }
-  | { kind: "name"; mode: "any" | "to" | "from" | "both" | "other" }
+  | { kind: "rename"; mode: "any" | "to" | "from" | "both" | "other" }
   | { kind: "other" };
 
 /**
