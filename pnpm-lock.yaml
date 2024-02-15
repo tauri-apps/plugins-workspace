@@ -46,8 +46,8 @@ importers:
         specifier: 6.1.1
         version: 6.1.1(eslint@8.56.0)
       eslint-plugin-security:
-        specifier: 2.1.0
-        version: 2.1.0
+        specifier: 2.1.1
+        version: 2.1.1
       prettier:
         specifier: 3.2.2
         version: 3.2.2
@@ -1503,8 +1503,8 @@ packages:
       eslint: 8.56.0
     dev: true
 
-  /eslint-plugin-security@2.1.0:
-    resolution: {integrity: sha512-ywxclP954bf8d3gr6KOQ/AFc+PRvWuhOxtPOEtiHmVYiZr/mcgQtmSJq6+hTEXC5ylTjHnPPG+PEnzlDiWMXbQ==}
+  /eslint-plugin-security@2.1.1:
+    resolution: {integrity: sha512-7cspIGj7WTfR3EhaILzAPcfCo5R9FbeWvbgsPYWivSurTBKW88VQxtP3c4aWMG9Hz/GfJlJVdXEJ3c8LqS+u2w==}
     dependencies:
       safe-regex: 2.1.1
     dev: true
