@@ -28,7 +28,7 @@ use tauri::{
 mod commands;
 mod config;
 mod error;
-mod open;
+pub mod open;
 pub mod process;
 mod scope;
 mod scope_entry;
@@ -60,7 +60,7 @@ impl<R: Runtime> Shell<R> {
 
     /// Open a (url) path with a default or specific browser opening program.
     ///
-    /// See [`crate::api::shell::open`] for how it handles security-related measures.
+    /// See [`crate::open::open`] for how it handles security-related measures.
     pub fn open(&self, path: impl Into<String>, with: Option<open::Program>) -> Result<()> {
         open::open(&self.open_scope, path.into(), with).map_err(Into::into)
     }
