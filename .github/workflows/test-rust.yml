@@ -189,7 +189,7 @@ jobs:
 
       - name: install cross
         if: ${{ matrix.platform.runner == 'cross' }}
-        run: cargo install cross --git https://github.com/cross-rs/cross
+        run: cargo +stable install cross --git https://github.com/cross-rs/cross
 
       - name: test ${{ matrix.package }}
         if: matrix.package != 'tauri-plugin-sql' && matrix.package != 'tauri-plugin-http'
