@@ -28,6 +28,23 @@ use serde::Serialize;
 use shared_child::SharedChild;
 use tauri::utils::platform;
 
+type ChildStore = Arc<Mutex<HashMap<u32, Arc<SharedChild>>>>;
+
+fn commands() -> &'static ChildStore {
+    use once_cell::sync::Lazy;
+    static STORE: Lazy<ChildStore> = Lazy::new(Default::default);
+    &STORE
+}
+
+/// Kills all child processes created with [`Command`].
+pub fn kill_children() {
+    let commands = commands().lock().unwrap();
+    let children = commands.values();
+    for child in children {
+        let _ = child.kill();
+    }
+}
+
 /// Payload for the [`CommandEvent::Terminated`] command event.
 #[derive(Debug, Clone, Serialize)]
 pub struct TerminatedPayload {
