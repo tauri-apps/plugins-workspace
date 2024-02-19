@@ -4,7 +4,10 @@
     "javascript": {
       "version": true,
       "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.cjs npm ${ pkgFile.pkg.name } ${ pkgFile.pkg.version }",
-      "publish": ["pnpm build", "pnpm publish --access public --no-git-checks"]
+      "publish": [
+        "pnpm build",
+        "pnpm publish --access public --no-git-checks"
+      ]
     },
     "rust": {
       "version": true,
@@ -82,7 +85,9 @@
       "path": "./plugins/deep-link/examples/app",
       "manager": "javascript",
       "publish": false,
-      "dependencies": ["deep-link-js"],
+      "dependencies": [
+        "deep-link-js"
+      ],
       "postversion": "pnpm install --no-frozen-lockfile"
     },
     "authenticator": {
@@ -149,6 +154,15 @@
       "path": "./plugins/fs",
       "manager": "javascript"
     },
+    "dialog": {
+      "path": "./plugins/dialog",
+      "manager": "rust",
+      "dependencies": ["fs"]
+    },
+    "dialog-js": {
+      "path": "./plugins/dialog",
+      "manager": "javascript"
+    }
     "global-shortcut": {
       "path": "./plugins/global-shortcut",
       "manager": "rust"
@@ -160,7 +174,9 @@
     "http": {
       "path": "./plugins/http",
       "manager": "rust",
-      "dependencies": ["fs"]
+      "dependencies": [
+        "fs"
+      ]
     },
     "http-js": {
       "path": "./plugins/http",
@@ -178,7 +194,6 @@
       "path": "./plugins/log",
       "manager": "javascript"
     },
-
     "nfc": {
       "path": "./plugins/nfc",
       "manager": "rust"
@@ -187,7 +202,6 @@
       "path": "./plugins/nfc",
       "manager": "javascript"
     },
-
     "notification": {
       "path": "./plugins/notification",
       "manager": "rust"
@@ -207,7 +221,9 @@
     "persisted-scope": {
       "path": "./plugins/persisted-scope",
       "manager": "rust",
-      "dependencies": ["fs"]
+      "dependencies": [
+        "fs"
+      ]
     },
     "positioner": {
       "path": "./plugins/positioner",
@@ -312,15 +328,6 @@
     },
     "window-state-js": {
       "path": "./plugins/window-state",
-      "manager": "javascript"
-    },
-    "dialog": {
-      "path": "./plugins/dialog",
-      "manager": "rust",
-      "dependencies": ["fs"]
-    },
-    "dialog-js": {
-      "path": "./plugins/dialog",
       "manager": "javascript"
     }
   }
