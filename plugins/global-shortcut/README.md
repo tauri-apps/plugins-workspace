@@ -56,7 +56,20 @@ fn main() {
     tauri::Builder::default()
         .setup(|app| {
             #[cfg(desktop)]
-            app.handle().plugin(tauri_plugin_shortcut::init())?;
+            {
+              use tauri_plugin_shortcut::{Shortcut, Code, Modifiers};
+
+              let alt_d_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::KeyD);
+              app.handle().plugin(
+                tauri_plugin_shortcut::Builder::::with_handler(move |app, shortcut| {
+                      if shortcut == &alt_d_shortcut {
+                          println!("Shortcut triggered");
+                      }
+                  })
+                  .build()
+              )?;
+            }
+
             Ok(())
         })
         .run(tauri::generate_context!())
@@ -64,10 +77,13 @@ fn main() {
 }
 ```
 
-Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
+Afterwards all the plugin's APIs are available through the JavaScript bindings:
 
 ```javascript
-
+import { register } from "@tauri-apps/plugin-global-shortcut";
+await register("CommandOrControl+Shift+C", () => {
+  console.log("Shortcut triggered");
+});
 ```
 
 ## Contributing
