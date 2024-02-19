@@ -427,7 +427,8 @@ impl<R: Runtime> Builder<R> {
                             ShortcutSource::Rust => {
                                 if let Some(handler) = &shortcut.handler {
                                     handler(&app_handle, &shortcut.shortcut);
-                                } else if let Some(handler) = &handler {
+                                }
+                                if let Some(handler) = &handler {
                                     handler(&app_handle, &shortcut.shortcut);
                                 }
                             }
