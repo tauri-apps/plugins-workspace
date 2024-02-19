@@ -4,10 +4,7 @@
     "javascript": {
       "version": true,
       "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.cjs npm ${ pkgFile.pkg.name } ${ pkgFile.pkg.version }",
-      "publish": [
-        "pnpm build",
-        "pnpm publish --access public --no-git-checks"
-      ]
+      "publish": ["pnpm build", "pnpm publish --access public --no-git-checks"]
     },
     "rust": {
       "version": true,
@@ -85,9 +82,7 @@
       "path": "./plugins/deep-link/examples/app",
       "manager": "javascript",
       "publish": false,
-      "dependencies": [
-        "deep-link-js"
-      ],
+      "dependencies": ["deep-link-js"],
       "postversion": "pnpm install --no-frozen-lockfile"
     },
     "authenticator": {
@@ -174,9 +169,7 @@
     "http": {
       "path": "./plugins/http",
       "manager": "rust",
-      "dependencies": [
-        "fs"
-      ]
+      "dependencies": ["fs"]
     },
     "http-js": {
       "path": "./plugins/http",
@@ -221,9 +214,7 @@
     "persisted-scope": {
       "path": "./plugins/persisted-scope",
       "manager": "rust",
-      "dependencies": [
-        "fs"
-      ]
+      "dependencies": ["fs"]
     },
     "positioner": {
       "path": "./plugins/positioner",
