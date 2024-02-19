@@ -64,13 +64,11 @@ impl TryFrom<&str> for ShortcutWrapper {
     }
 }
 
-type ShortcutHandler<R> = dyn Fn(&AppHandle<R>, &Shortcut) + Send + 'static;
-
 struct RegisteredShortcut<R: Runtime> {
     source: ShortcutSource,
     shortcut: Shortcut,
     channel_id: Option<String>,
-    handler: Option<Box<ShortcutHandler<R>>>,
+    handler: Option<Arc<HandlerFn<R>>>,
 }
 
 pub struct GlobalShortcut<R: Runtime> {
@@ -81,7 +79,7 @@ pub struct GlobalShortcut<R: Runtime> {
 }
 
 impl<R: Runtime> GlobalShortcut<R> {
-    fn register_internal(
+    fn register_internal_without_handler(
         &self,
         shortcut: Shortcut,
         channel_id: Option<String>,
@@ -101,7 +99,7 @@ impl<R: Runtime> GlobalShortcut<R> {
         Ok(())
     }
 
-    fn register_internal_with_handler<F: Fn(&AppHandle<R>, &Shortcut) + Send + 'static>(
+    fn register_internal<F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static>(
         &self,
         shortcut: Shortcut,
         channel_id: Option<String>,
@@ -116,13 +114,13 @@ impl<R: Runtime> GlobalShortcut<R> {
                 source,
                 shortcut,
                 channel_id,
-                handler: Some(Box::new(handler)),
+                handler: Some(Arc::new(Box::new(handler))),
             },
         );
         Ok(())
     }
 
-    fn register_all_internal<S: IntoIterator<Item = (Shortcut, Option<String>)>>(
+    fn register_all_internal_without_handler<S: IntoIterator<Item = (Shortcut, Option<String>)>>(
         &self,
         shortcuts: S,
         source: ShortcutSource,
@@ -150,20 +148,48 @@ impl<R: Runtime> GlobalShortcut<R> {
         Ok(())
     }
 
-    pub fn register<S: TryInto<ShortcutWrapper>>(&self, shortcut: S) -> Result<()>
+    fn register_all_internal<S, F>(
+        &self,
+        shortcuts: S,
+        source: ShortcutSource,
+        handler: F,
+    ) -> Result<()>
     where
-        S::Error: std::error::Error,
+        S: IntoIterator<Item = (Shortcut, Option<String>)>,
+        F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static,
     {
-        self.register_internal(try_into_shortcut(shortcut)?, None, ShortcutSource::Rust)
+        let handler: Arc<HandlerFn<R>> = Arc::new(Box::new(handler));
+
+        let hotkeys = shortcuts
+            .into_iter()
+            .collect::<Vec<(Shortcut, Option<String>)>>();
+
+        let manager = acquire_manager(&self.manager)?;
+        let mut shortcuts = self.shortcuts.lock().unwrap();
+        for (shortcut, channel_id) in hotkeys {
+            manager.register(shortcut)?;
+
+            shortcuts.insert(
+                shortcut.id(),
+                RegisteredShortcut {
+                    source: source.clone(),
+                    shortcut,
+                    channel_id,
+                    handler: Some(handler.clone()),
+                },
+            );
+        }
+
+        Ok(())
     }
 
-    pub fn register_with_handler<S, F>(&self, shortcut: S, handler: F) -> Result<()>
+    pub fn register<S, F>(&self, shortcut: S, handler: F) -> Result<()>
     where
         S: TryInto<ShortcutWrapper>,
         S::Error: std::error::Error,
-        F: Fn(&AppHandle<R>, &Shortcut) + Send + 'static,
+        F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static,
     {
-        self.register_internal_with_handler(
+        self.register_internal(
             try_into_shortcut(shortcut)?,
             None,
             ShortcutSource::Rust,
@@ -171,27 +197,55 @@ impl<R: Runtime> GlobalShortcut<R> {
         )
     }
 
-    pub fn register_all<T: TryInto<ShortcutWrapper>, S: IntoIterator<Item = T>>(
-        &self,
-        shortcuts: S,
-    ) -> Result<()>
+    pub fn register_without_handler<S>(&self, shortcut: S) -> Result<()>
     where
+        S: TryInto<ShortcutWrapper>,
+        S::Error: std::error::Error,
+    {
+        self.register_internal_without_handler(
+            try_into_shortcut(shortcut)?,
+            None,
+            ShortcutSource::Rust,
+        )
+    }
+
+    pub fn register_all<S, T, F>(&self, shortcuts: S, handler: F) -> Result<()>
+    where
+        S: IntoIterator<Item = T>,
+        T: TryInto<ShortcutWrapper>,
+        T::Error: std::error::Error,
+        F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static,
+    {
+        let mut s = Vec::new();
+        for shortcut in shortcuts {
+            s.push((try_into_shortcut(shortcut)?, None));
+        }
+        self.register_all_internal(s, ShortcutSource::Rust, handler)
+    }
+
+    pub fn register_all_without_handler<S, T>(&self, shortcuts: S) -> Result<()>
+    where
+        S: IntoIterator<Item = T>,
+        T: TryInto<ShortcutWrapper>,
         T::Error: std::error::Error,
     {
         let mut s = Vec::new();
         for shortcut in shortcuts {
             s.push((try_into_shortcut(shortcut)?, None));
         }
-        self.register_all_internal(s, ShortcutSource::Rust)
+        self.register_all_internal_without_handler(s, ShortcutSource::Rust)
     }
 
     pub fn unregister<S: TryInto<ShortcutWrapper>>(&self, shortcut: S) -> Result<()>
     where
         S::Error: std::error::Error,
     {
-        acquire_manager(&self.manager)?
-            .unregister(try_into_shortcut(shortcut)?)
-            .map_err(Into::into)
+        let shortcut = try_into_shortcut(shortcut)?;
+        acquire_manager(&self.manager)?.unregister(shortcut)?;
+
+        self.shortcuts.lock().unwrap().remove(&shortcut.id());
+
+        Ok(())
     }
 
     pub fn unregister_all<T: TryInto<ShortcutWrapper>, S: IntoIterator<Item = T>>(
@@ -205,9 +259,15 @@ impl<R: Runtime> GlobalShortcut<R> {
         for shortcut in shortcuts {
             s.push(try_into_shortcut(shortcut)?);
         }
-        acquire_manager(&self.manager)?
-            .unregister_all(&s)
-            .map_err(Into::into)
+
+        acquire_manager(&self.manager)?.unregister_all(&s)?;
+
+        let mut shortcuts = self.shortcuts.lock().unwrap();
+        for s in s {
+            shortcuts.remove(&s.id());
+        }
+
+        Ok(())
     }
 
     /// Determines whether the given shortcut is registered by this application or not.
@@ -264,7 +324,7 @@ fn register<R: Runtime>(
     shortcut: String,
     handler: Channel,
 ) -> Result<()> {
-    global_shortcut.register_internal(
+    global_shortcut.register_internal_without_handler(
         parse_shortcut(&shortcut)?,
         Some(shortcut),
         ShortcutSource::Ipc(handler),
@@ -282,7 +342,7 @@ fn register_all<R: Runtime>(
     for shortcut in shortcuts {
         hotkeys.push((parse_shortcut(&shortcut)?, Some(shortcut)));
     }
-    global_shortcut.register_all_internal(hotkeys, ShortcutSource::Ipc(handler))
+    global_shortcut.register_all_internal_without_handler(hotkeys, ShortcutSource::Ipc(handler))
 }
 
 #[tauri::command]
@@ -334,11 +394,11 @@ impl<R: Runtime> Builder<R> {
     }
 
     pub fn with_handler<F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static>(
+        mut self,
         handler: F,
     ) -> Self {
-        Self {
-            handler: Some(Box::new(handler)),
-        }
+        self.handler.replace(Box::new(handler));
+        self
     }
 
     pub fn build(self) -> TauriPlugin<R> {
