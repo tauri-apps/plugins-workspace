@@ -209,7 +209,7 @@ impl<R: Runtime> Default for Builder<R> {
 }
 
 impl<R: Runtime> Builder<R> {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self::default()
     }
 
