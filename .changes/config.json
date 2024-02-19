@@ -149,15 +149,6 @@
       "path": "./plugins/fs",
       "manager": "javascript"
     },
-    "dialog": {
-      "path": "./plugins/dialog",
-      "manager": "rust",
-      "dependencies": ["fs"]
-    },
-    "dialog-js": {
-      "path": "./plugins/dialog",
-      "manager": "javascript"
-    },
     "global-shortcut": {
       "path": "./plugins/global-shortcut",
       "manager": "rust"
@@ -321,6 +312,15 @@
     },
     "window-state-js": {
       "path": "./plugins/window-state",
+      "manager": "javascript"
+    },
+    "dialog": {
+      "path": "./plugins/dialog",
+      "manager": "rust",
+      "dependencies": ["fs"]
+    },
+    "dialog-js": {
+      "path": "./plugins/dialog",
       "manager": "javascript"
     }
   }

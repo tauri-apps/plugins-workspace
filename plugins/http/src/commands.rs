@@ -139,8 +139,8 @@ fn attach_proxy(
 pub async fn fetch<R: Runtime>(
     app: AppHandle<R>,
     client_config: ClientConfig,
-    command_scope: CommandScope<'_, Entry>,
-    global_scope: GlobalScope<'_, Entry>,
+    command_scope: CommandScope<Entry>,
+    global_scope: GlobalScope<Entry>,
 ) -> crate::Result<ResourceId> {
     let ClientConfig {
         method,

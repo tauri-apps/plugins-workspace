@@ -48,7 +48,7 @@
           "type": "string"
         },
         "context": {
-          "description": "Execution context of the capability.\n\nAt runtime, Tauri filters the IPC command together with the context to determine wheter it is allowed or not and its scope.",
+          "description": "Execution context of the capability.\n\nAt runtime, Tauri filters the IPC command together with the context to determine whether it is allowed or not and its scope.",
           "default": "local",
           "allOf": [
             {
@@ -57,7 +57,14 @@
           ]
         },
         "windows": {
-          "description": "List of windows that uses this capability. Can be a glob pattern.",
+          "description": "List of windows that uses this capability. Can be a glob pattern.\n\nOn multiwebview windows, prefer [`Self::webviews`] for a fine grained access control.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "webviews": {
+          "description": "List of webviews that uses this capability. Can be a glob pattern.\n\nThis is only required when using on multiwebview contexts, by default all child webviews of a window that matches [`Self::windows`] are linked.",
           "type": "array",
           "items": {
             "type": "string"
@@ -106,10 +113,10 @@
             "remote": {
               "type": "object",
               "required": [
-                "domains"
+                "urls"
               ],
               "properties": {
-                "domains": {
+                "urls": {
                   "description": "Remote domains this capability refers to. Can use glob patterns.",
                   "type": "array",
                   "items": {
@@ -2147,8 +2154,7 @@
                       "path": {
                         "type": "string"
                       }
-                    },
-                    "$schema": "http://json-schema.org/draft-07/schema#"
+                    }
                   }
                 },
                 "deny": {
@@ -2162,8 +2168,7 @@
                       "path": {
                         "type": "string"
                       }
-                    },
-                    "$schema": "http://json-schema.org/draft-07/schema#"
+                    }
                   }
                 }
               }
@@ -2254,8 +2259,7 @@
                         "description": "A URL that can be accessed by the webview when using the HTTP APIs. The scoped URL is matched against the request URL using a glob pattern.\n\nExamples:\n\n- \"https://*\" or \"https://**\" : allows all HTTPS urls\n\n- \"https://*.github.com/tauri-apps/tauri\": allows any subdomain of \"github.com\" with the \"tauri-apps/api\" path\n\n- \"https://myapi.service.com/users/*\": allows access to any URLs that begins with \"https://myapi.service.com/users/\"",
                         "type": "string"
                       }
-                    },
-                    "$schema": "http://json-schema.org/draft-07/schema#"
+                    }
                   }
                 },
                 "deny": {
@@ -2271,8 +2275,7 @@
                         "description": "A URL that can be accessed by the webview when using the HTTP APIs. The scoped URL is matched against the request URL using a glob pattern.\n\nExamples:\n\n- \"https://*\" or \"https://**\" : allows all HTTPS urls\n\n- \"https://*.github.com/tauri-apps/tauri\": allows any subdomain of \"github.com\" with the \"tauri-apps/api\" path\n\n- \"https://myapi.service.com/users/*\": allows access to any URLs that begins with \"https://myapi.service.com/users/\"",
                         "type": "string"
                       }
-                    },
-                    "$schema": "http://json-schema.org/draft-07/schema#"
+                    }
                   }
                 }
               }
@@ -2375,48 +2378,6 @@
                         "description": "If this command is a sidecar command.",
                         "type": "boolean"
                       }
-                    },
-                    "$schema": "http://json-schema.org/draft-07/schema#",
-                    "definitions": {
-                      "ShellAllowedArg": {
-                        "anyOf": [
-                          {
-                            "description": "A non-configurable argument that is passed to the command in the order it was specified.",
-                            "type": "string"
-                          },
-                          {
-                            "additionalProperties": false,
-                            "description": "A variable that is set while calling the command from the webview API.",
-                            "properties": {
-                              "validator": {
-                                "description": "[regex] validator to require passed values to conform to an expected input.\n\nThis will require the argument value passed to this variable to match the `validator` regex before it will be executed.\n\n[regex]: https://docs.rs/regex/latest/regex/#syntax",
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "validator"
-                            ],
-                            "type": "object"
-                          }
-                        ],
-                        "description": "A command argument allowed to be executed by the webview API."
-                      },
-                      "ShellAllowedArgs": {
-                        "anyOf": [
-                          {
-                            "description": "Use a simple boolean to allow all or disable all arguments to this command configuration.",
-                            "type": "boolean"
-                          },
-                          {
-                            "description": "A specific set of [`ShellAllowedArg`] that are valid to call for the command configuration.",
-                            "items": {
-                              "$ref": "#/definitions/ShellAllowedArg"
-                            },
-                            "type": "array"
-                          }
-                        ],
-                        "description": "A set of command arguments allowed to be executed by the webview API.\n\nA value of `true` will allow any arguments to be passed to the command. `false` will disable all arguments. A list of [`ShellAllowedArg`] will set those arguments as the only valid arguments to be passed to the attached command configuration."
-                      }
                     }
                   }
                 },
@@ -2452,48 +2413,6 @@
                         "description": "If this command is a sidecar command.",
                         "type": "boolean"
                       }
-                    },
-                    "$schema": "http://json-schema.org/draft-07/schema#",
-                    "definitions": {
-                      "ShellAllowedArg": {
-                        "anyOf": [
-                          {
-                            "description": "A non-configurable argument that is passed to the command in the order it was specified.",
-                            "type": "string"
-                          },
-                          {
-                            "additionalProperties": false,
-                            "description": "A variable that is set while calling the command from the webview API.",
-                            "properties": {
-                              "validator": {
-                                "description": "[regex] validator to require passed values to conform to an expected input.\n\nThis will require the argument value passed to this variable to match the `validator` regex before it will be executed.\n\n[regex]: https://docs.rs/regex/latest/regex/#syntax",
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "validator"
-                            ],
-                            "type": "object"
-                          }
-                        ],
-                        "description": "A command argument allowed to be executed by the webview API."
-                      },
-                      "ShellAllowedArgs": {
-                        "anyOf": [
-                          {
-                            "description": "Use a simple boolean to allow all or disable all arguments to this command configuration.",
-                            "type": "boolean"
-                          },
-                          {
-                            "description": "A specific set of [`ShellAllowedArg`] that are valid to call for the command configuration.",
-                            "items": {
-                              "$ref": "#/definitions/ShellAllowedArg"
-                            },
-                            "type": "array"
-                          }
-                        ],
-                        "description": "A set of command arguments allowed to be executed by the webview API.\n\nA value of `true` will allow any arguments to be passed to the command. `false` will disable all arguments. A list of [`ShellAllowedArg`] will set those arguments as the only valid arguments to be passed to the attached command configuration."
-                      }
                     }
                   }
                 }
@@ -2504,7 +2423,6 @@
       ]
     },
     "Identifier": {
-      "description": "Permission identifier",
       "oneOf": [
         {
           "description": "app:default -> Default permissions for the plugin.",
@@ -2584,115 +2502,24 @@
           ]
         },
         {
-          "description": "barcode-scanner:allow-cancel -> Enables the cancel command without any pre-configured scope.",
+          "description": "cli:default -> Allows reading the CLI matches",
           "type": "string",
           "enum": [
-            "barcode-scanner:allow-cancel"
+            "cli:default"
           ]
         },
         {
-          "description": "barcode-scanner:allow-check-permissions -> Enables the check_permissions command without any pre-configured scope.",
+          "description": "cli:allow-cli-matches -> Enables the cli_matches command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "barcode-scanner:allow-check-permissions"
+            "cli:allow-cli-matches"
           ]
         },
         {
-          "description": "barcode-scanner:allow-open-app-settings -> Enables the open_app_settings command without any pre-configured scope.",
+          "description": "cli:deny-cli-matches -> Denies the cli_matches command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "barcode-scanner:allow-open-app-settings"
-          ]
-        },
-        {
-          "description": "barcode-scanner:allow-request-permissions -> Enables the request_permissions command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "barcode-scanner:allow-request-permissions"
-          ]
-        },
-        {
-          "description": "barcode-scanner:allow-scan -> Enables the scan command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "barcode-scanner:allow-scan"
-          ]
-        },
-        {
-          "description": "barcode-scanner:allow-vibrate -> Enables the vibrate command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "barcode-scanner:allow-vibrate"
-          ]
-        },
-        {
-          "description": "barcode-scanner:deny-cancel -> Denies the cancel command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "barcode-scanner:deny-cancel"
-          ]
-        },
-        {
-          "description": "barcode-scanner:deny-check-permissions -> Denies the check_permissions command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "barcode-scanner:deny-check-permissions"
-          ]
-        },
-        {
-          "description": "barcode-scanner:deny-open-app-settings -> Denies the open_app_settings command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "barcode-scanner:deny-open-app-settings"
-          ]
-        },
-        {
-          "description": "barcode-scanner:deny-request-permissions -> Denies the request_permissions command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "barcode-scanner:deny-request-permissions"
-          ]
-        },
-        {
-          "description": "barcode-scanner:deny-scan -> Denies the scan command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "barcode-scanner:deny-scan"
-          ]
-        },
-        {
-          "description": "barcode-scanner:deny-vibrate -> Denies the vibrate command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "barcode-scanner:deny-vibrate"
-          ]
-        },
-        {
-          "description": "biometric:allow-authenticate -> Enables the authenticate command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "biometric:allow-authenticate"
-          ]
-        },
-        {
-          "description": "biometric:allow-status -> Enables the status command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "biometric:allow-status"
-          ]
-        },
-        {
-          "description": "biometric:deny-authenticate -> Denies the authenticate command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "biometric:deny-authenticate"
-          ]
-        },
-        {
-          "description": "biometric:deny-status -> Denies the status command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "biometric:deny-status"
+            "cli:deny-cli-matches"
           ]
         },
         {
@@ -4845,6 +4672,76 @@
           ]
         },
         {
+          "description": "global-shortcut:allow-is-registered -> Enables the is_registered command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "global-shortcut:allow-is-registered"
+          ]
+        },
+        {
+          "description": "global-shortcut:allow-register -> Enables the register command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "global-shortcut:allow-register"
+          ]
+        },
+        {
+          "description": "global-shortcut:allow-register-all -> Enables the register_all command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "global-shortcut:allow-register-all"
+          ]
+        },
+        {
+          "description": "global-shortcut:allow-unregister -> Enables the unregister command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "global-shortcut:allow-unregister"
+          ]
+        },
+        {
+          "description": "global-shortcut:allow-unregister-all -> Enables the unregister_all command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "global-shortcut:allow-unregister-all"
+          ]
+        },
+        {
+          "description": "global-shortcut:deny-is-registered -> Denies the is_registered command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "global-shortcut:deny-is-registered"
+          ]
+        },
+        {
+          "description": "global-shortcut:deny-register -> Denies the register command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "global-shortcut:deny-register"
+          ]
+        },
+        {
+          "description": "global-shortcut:deny-register-all -> Denies the register_all command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "global-shortcut:deny-register-all"
+          ]
+        },
+        {
+          "description": "global-shortcut:deny-unregister -> Denies the unregister command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "global-shortcut:deny-unregister"
+          ]
+        },
+        {
+          "description": "global-shortcut:deny-unregister-all -> Denies the unregister_all command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "global-shortcut:deny-unregister-all"
+          ]
+        },
+        {
           "description": "http:default -> Allows all fetch operations",
           "type": "string",
           "enum": [
@@ -5241,48 +5138,6 @@
           "type": "string",
           "enum": [
             "menu:deny-text"
-          ]
-        },
-        {
-          "description": "nfc:allow-is-available -> Enables the is_available command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "nfc:allow-is-available"
-          ]
-        },
-        {
-          "description": "nfc:allow-scan -> Enables the scan command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "nfc:allow-scan"
-          ]
-        },
-        {
-          "description": "nfc:allow-write -> Enables the write command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "nfc:allow-write"
-          ]
-        },
-        {
-          "description": "nfc:deny-is-available -> Denies the is_available command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "nfc:deny-is-available"
-          ]
-        },
-        {
-          "description": "nfc:deny-scan -> Denies the scan command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "nfc:deny-scan"
-          ]
-        },
-        {
-          "description": "nfc:deny-write -> Denies the write command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "nfc:deny-write"
           ]
         },
         {
@@ -5804,6 +5659,41 @@
           ]
         },
         {
+          "description": "updater:default -> Allows checking for new updates and installing them",
+          "type": "string",
+          "enum": [
+            "updater:default"
+          ]
+        },
+        {
+          "description": "updater:allow-check -> Enables the check command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "updater:allow-check"
+          ]
+        },
+        {
+          "description": "updater:allow-download-and-install -> Enables the download_and_install command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "updater:allow-download-and-install"
+          ]
+        },
+        {
+          "description": "updater:deny-check -> Denies the check command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "updater:deny-check"
+          ]
+        },
+        {
+          "description": "updater:deny-download-and-install -> Denies the download_and_install command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "updater:deny-download-and-install"
+          ]
+        },
+        {
           "description": "webview:default -> Default permissions for the plugin.",
           "type": "string",
           "enum": [
@@ -6018,20 +5908,6 @@
           "type": "string",
           "enum": [
             "window:allow-inner-size"
-          ]
-        },
-        {
-          "description": "window:allow-internal-on-mousedown -> Enables the internal_on_mousedown command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-internal-on-mousedown"
-          ]
-        },
-        {
-          "description": "window:allow-internal-on-mousemove -> Enables the internal_on_mousemove command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:allow-internal-on-mousemove"
           ]
         },
         {
@@ -6452,20 +6328,6 @@
           "type": "string",
           "enum": [
             "window:deny-inner-size"
-          ]
-        },
-        {
-          "description": "window:deny-internal-on-mousedown -> Denies the internal_on_mousedown command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-internal-on-mousedown"
-          ]
-        },
-        {
-          "description": "window:deny-internal-on-mousemove -> Denies the internal_on_mousemove command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "window:deny-internal-on-mousemove"
           ]
         },
         {
@@ -6918,6 +6780,45 @@
           "enum": [
             "iOS"
           ]
+        }
+      ]
+    },
+    "ShellAllowedArg": {
+      "description": "A command argument allowed to be executed by the webview API.",
+      "anyOf": [
+        {
+          "description": "A non-configurable argument that is passed to the command in the order it was specified.",
+          "type": "string"
+        },
+        {
+          "description": "A variable that is set while calling the command from the webview API.",
+          "type": "object",
+          "required": [
+            "validator"
+          ],
+          "properties": {
+            "validator": {
+              "description": "[regex] validator to require passed values to conform to an expected input.\n\nThis will require the argument value passed to this variable to match the `validator` regex before it will be executed.\n\n[regex]: https://docs.rs/regex/latest/regex/#syntax",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ShellAllowedArgs": {
+      "description": "A set of command arguments allowed to be executed by the webview API.\n\nA value of `true` will allow any arguments to be passed to the command. `false` will disable all arguments. A list of [`ShellAllowedArg`] will set those arguments as the only valid arguments to be passed to the attached command configuration.",
+      "anyOf": [
+        {
+          "description": "Use a simple boolean to allow all or disable all arguments to this command configuration.",
+          "type": "boolean"
+        },
+        {
+          "description": "A specific set of [`ShellAllowedArg`] that are valid to call for the command configuration.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ShellAllowedArg"
+          }
         }
       ]
     }
