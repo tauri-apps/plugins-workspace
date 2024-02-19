@@ -273,7 +273,7 @@ pub struct Builder {
 }
 
 impl Builder {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self::default()
     }
 
