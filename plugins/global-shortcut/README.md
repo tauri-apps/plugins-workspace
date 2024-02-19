@@ -59,17 +59,44 @@ fn main() {
             {
                 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
 
+                app.handle().plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
+                app.global_shortcut().register_with_handler(
+                  Shortcut::new(Some(Modifiers::ALT), Code::KeyD),
+                  |app, _shortcut| {
+                    handle.emit("custom-global-shortcut-event","Alt-D Detected!");
+                  }
+                )?;
+            }
+
+            Ok(())
+        })
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+```
+
+or
+
+```rs
+fn main() {
+    tauri::Builder::default()
+        .setup(|app| {
+            #[cfg(desktop)]
+            {
+                use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
+
+                let handle = app.handle().clone();
                 let ctrl_n_shortcut = Shortcut::new(Some(Modifiers::CONTROL), Code::KeyN);
                 app.handle().plugin(
                     tauri_plugin_global_shortcut::Builder::with_handler(move |_app, shortcut| {
-                        println!("{:?}", shortcut);
+                        println!("Shortcut: {:?}", shortcut);
+
                         if shortcut == &ctrl_n_shortcut {
-                            println!("Ctrl-N Detected!");
+                            handle.emit("custom-global-shortcut-event","Ctrl-N Detected!");
                         }
                     })
                     .build(),
                 )?;
-
                 app.global_shortcut().register(ctrl_n_shortcut)?;
             }
 

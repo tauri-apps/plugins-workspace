@@ -64,11 +64,13 @@ impl TryFrom<&str> for ShortcutWrapper {
     }
 }
 
+type ShortcutHandler<R> = dyn Fn(&AppHandle<R>, &Shortcut) + Send + 'static;
+
 struct RegisteredShortcut<R: Runtime> {
     source: ShortcutSource,
     shortcut: Shortcut,
     channel_id: Option<String>,
-    handler: Option<Box<dyn Fn(&AppHandle<R>, &Shortcut) + Send + 'static>>,
+    handler: Option<Box<ShortcutHandler<R>>>,
 }
 
 pub struct GlobalShortcut<R: Runtime> {
