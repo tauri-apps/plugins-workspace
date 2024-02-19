@@ -853,7 +853,7 @@ interface RenameOptions {
 async function rename(
   oldPath: string | URL,
   newPath: string | URL,
-  options: RenameOptions,
+  options?: RenameOptions,
 ): Promise<void> {
   if (
     (oldPath instanceof URL && oldPath.protocol !== "file:") ||
