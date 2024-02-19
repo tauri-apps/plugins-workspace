@@ -162,7 +162,7 @@
     "dialog-js": {
       "path": "./plugins/dialog",
       "manager": "javascript"
-    }
+    },
     "global-shortcut": {
       "path": "./plugins/global-shortcut",
       "manager": "rust"
