@@ -27,6 +27,7 @@ const ignore = [
   "api-iife.js",
   "init-iife.js",
   ".build",
+  "notify_rust"
 ];
 
 async function checkFile(file) {

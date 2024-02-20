@@ -32,6 +32,8 @@ mod commands;
 mod error;
 mod models;
 
+mod notify_rust;
+
 pub use error::{Error, Result};
 
 #[cfg(desktop)]
