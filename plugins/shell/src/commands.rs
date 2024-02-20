@@ -103,8 +103,8 @@ pub fn execute<R: Runtime>(
     args: ExecuteArgs,
     on_event: Channel,
     options: CommandOptions,
-    command_scope: CommandScope<'_, crate::scope::ScopeAllowedCommand>,
-    global_scope: GlobalScope<'_, crate::scope::ScopeAllowedCommand>,
+    command_scope: CommandScope<crate::scope::ScopeAllowedCommand>,
+    global_scope: GlobalScope<crate::scope::ScopeAllowedCommand>,
 ) -> crate::Result<ChildId> {
     let scope = crate::scope::ShellScope {
         scopes: command_scope
