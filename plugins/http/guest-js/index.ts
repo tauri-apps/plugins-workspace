@@ -155,15 +155,25 @@ export async function fetch(
     rid,
   });
 
-  const body = await invoke<number[]>("plugin:http|fetch_read_body", {
-    rid: responseRid,
-  });
+  const body = await invoke<ArrayBuffer | number[]>(
+    "plugin:http|fetch_read_body",
+    {
+      rid: responseRid,
+    },
+  );
 
-  const res = new Response(new Uint8Array(body), {
-    headers,
-    status,
-    statusText,
-  });
+  const res = new Response(
+    body instanceof ArrayBuffer && body.byteLength
+      ? body
+      : body instanceof Array && body.length
+        ? new Uint8Array(body)
+        : null,
+    {
+      headers,
+      status,
+      statusText,
+    },
+  );
 
   // url is read only but seems like we can do this
   Object.defineProperty(res, "url", { value: url });
