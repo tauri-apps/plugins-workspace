@@ -14,4 +14,4 @@
   ```rs
   Builder::with_handler().build()
   ```
-- if using `Builder::with_handler`, it will be triggered for all shortcuts, even if the shortcut is registered through JS the new `GlobalShortcutExt::register`.
+- if using `Builder::with_handler`, it will be triggered for all shortcuts, even if the shortcut is registered through JS or through `GlobalShortcutExt::register` and `GlobalShortcutExt::register_without_handler`.
