@@ -60,9 +60,15 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
+import { writeText, readText, writeHtml, readHtml, clear } from "@tauri-apps/plugin-clipboard-manager";
 await writeText("Tauri is awesome!");
 assert(await readText(), "Tauri is awesome!");
+
+// 2nd parameter is alternative text that is treated as plain text
+await writeHtml('<h1>Tauri is awesome!</h1>', '<h1>Tauri is awesome!</h1>')
+assert(await readHtml(), "<h1>Tauri is awesome!</h1>");
+
+await clear()
 ```
 
 ## Contributing
