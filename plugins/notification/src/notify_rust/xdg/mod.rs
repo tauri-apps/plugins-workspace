@@ -119,22 +119,6 @@ impl NotificationHandle {
     }
 
     /// Manually close the notification
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// # use notify_rust::*;
-    /// let handle: NotificationHandle = Notification::new()
-    ///     .summary("oh no")
-    ///     .hint(notify_rust::Hint::Transient(true))
-    ///     .body("I'll be here till you close me!")
-    ///     .hint(Hint::Resident(true)) // does not work on kde
-    ///     .timeout(Timeout::Never) // works on kde and gnome
-    ///     .show()
-    ///     .unwrap();
-    /// // ... and then later
-    /// handle.close();
-    /// ```
     pub fn close(self) {
         match self.inner {
             #[cfg(feature = "dbus")]
@@ -145,30 +129,6 @@ impl NotificationHandle {
     }
 
     /// Executes a closure after the notification has closed.
-    ///
-    /// ## Example 1: *I don't care about why it closed* (the good ole API)
-    ///
-    /// ```no_run
-    /// # use notify_rust::Notification;
-    /// Notification::new().summary("Time is running out")
-    ///                    .body("This will go away.")
-    ///                    .icon("clock")
-    ///                    .show()
-    ///                    .unwrap()
-    ///                    .on_close(|| println!("closed"));
-    /// ```
-    ///
-    /// ## Example 2: *I **do** care about why it closed* (added in v4.5.0)
-    ///
-    /// ```no_run
-    /// # use notify_rust::Notification;
-    /// Notification::new().summary("Time is running out")
-    ///                    .body("This will go away.")
-    ///                    .icon("clock")
-    ///                    .show()
-    ///                    .unwrap()
-    ///                    .on_close(|reason| println!("closed: {:?}", reason));
-    /// ```
     pub fn on_close<A>(self, handler: impl CloseHandler<A>) {
         match self.inner {
             #[cfg(feature = "dbus")]
@@ -190,26 +150,6 @@ impl NotificationHandle {
         };
     }
 
-    /// Replace the original notification with an updated version
-    /// ## Example
-    /// ```no_run
-    /// # use notify_rust::Notification;
-    /// let mut notification = Notification::new().summary("Latest News")
-    ///                                           .body("Bayern Dortmund 3:2")
-    ///                                           .show()
-    ///                                           .unwrap();
-    ///
-    /// std::thread::sleep_ms(1_500);
-    ///
-    /// notification.summary("Latest News (Correction)")
-    ///             .body("Bayern Dortmund 3:3");
-    ///
-    /// notification.update();
-    /// ```
-    /// Watch out for different implementations of the
-    /// notification server! On plasma5 for instance, you should also change the appname, so the old
-    /// message is really replaced and not just amended. Xfce behaves well, all others have not
-    /// been tested by the developer.
     pub fn update(&mut self) {
         match self.inner {
             #[cfg(feature = "dbus")]

@@ -11,20 +11,6 @@ use std::convert::TryFrom;
 /// > **Critical notifications should not automatically expire**, as they are things that the user will most likely want to know about. They should only be closed when the user dismisses them, for example, by clicking on the notification.
 ///
 /// <cite> — see [Galago](http://www.galago-project.org/specs/notification/0.9/x320.html) or [Gnome](https://developer.gnome.org/notification-spec/#urgency-levels) specification.</cite>
-///
-/// # Example
-/// ```no_run
-/// # use notify_rust::*;
-/// # fn _doc() -> Result<(), Box<dyn std::error::Error>> {
-/// Notification::new()
-///     .summary("oh no")
-///     .icon("dialog-warning")
-///     .urgency(Urgency::Critical)
-///     .show()?;
-/// # Ok(())
-/// # }
-/// ```
-///
 #[derive(Eq, PartialEq, Hash, Copy, Clone, Debug)]
 pub enum Urgency {
     /// The behavior for `Low` urgency depends on the notification server.

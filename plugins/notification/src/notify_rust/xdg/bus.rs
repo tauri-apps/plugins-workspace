@@ -1,4 +1,4 @@
-use crate::xdg::NOTIFICATION_DEFAULT_BUS;
+use super::super::xdg::NOTIFICATION_DEFAULT_BUS;
 
 fn skip_first_slash(s: &str) -> &str {
     if let Some('/') = s.chars().next() {

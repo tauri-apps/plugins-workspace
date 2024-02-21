@@ -1,6 +1,6 @@
 use winrt_notification::Toast;
 
-pub use crate::{error::*, notification::Notification, timeout::Timeout};
+pub use super::{error::*, notification::Notification, timeout::Timeout};
 
 use std::{path::Path, str::FromStr};
 

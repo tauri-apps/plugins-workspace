@@ -8,7 +8,7 @@ use std::error::Error;
 use std::fmt;
 use std::path::Path;
 
-use crate::miniver::Version;
+use super::miniver::Version;
 
 mod constants {
     pub const IMAGE_DATA: &str = "image-data";

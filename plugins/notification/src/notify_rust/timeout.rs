@@ -4,12 +4,6 @@ use std::{convert::TryInto, num::ParseIntError, str::FromStr, time::Duration};
 ///
 /// # `FromStr`
 /// You can also parse a `Timeout` from a `&str`.
-/// ```
-/// # use notify_rust::Timeout;
-/// assert_eq!("default".parse(), Ok(Timeout::Default));
-/// assert_eq!("never".parse(), Ok(Timeout::Never));
-/// assert_eq!("42".parse(), Ok(Timeout::Milliseconds(42)));
-/// ```
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Timeout {
     /// Expires according to server default.

@@ -32,17 +32,6 @@ fn exe_name() -> String {
 /// Desktop notification.
 ///
 /// A desktop notification is configured via builder pattern, before it is launched with `show()`.
-///
-/// # Example
-/// ``` no_run
-/// # use notify_rust::*;
-/// # fn _doc() -> Result<(), Box<dyn std::error::Error>> {
-///     Notification::new()
-///         .summary("☝️ A notification")
-///         .show()?;
-/// # Ok(())
-/// # }
-/// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Notification {
@@ -247,18 +236,6 @@ impl Notification {
     ///   * [`image_data(...)`](#method.image_data)
     ///   * [`image_path(...)`](#method.image_path)
     ///
-    /// ```no_run
-    /// # use notify_rust::Notification;
-    /// # use notify_rust::Hint;
-    /// Notification::new().summary("Category:email")
-    ///                    .body("This should not go away until you acknowledge it.")
-    ///                    .icon("thunderbird")
-    ///                    .appname("thunderbird")
-    ///                    .hint(Hint::Category("email".to_owned()))
-    ///                    .hint(Hint::Resident(true))
-    ///                    .show();
-    /// ```
-    ///
     /// # Platform support
     /// Most of these hints don't even have an effect on the big XDG Desktops, they are completely tossed on macOS.
     #[cfg(all(unix, not(target_os = "macos")))]
@@ -299,23 +276,6 @@ impl Notification {
     /// ## [Duration](`std::time::Duration`)
     ///
     /// When passing a [`Duration`](`std::time::Duration`) we will try convert it into milliseconds.
-    ///
-    ///
-    /// ```
-    /// # use std::time::Duration;
-    /// # use notify_rust::Timeout;
-    /// assert_eq!(Timeout::from(Duration::from_millis(2000)), Timeout::Milliseconds(2000));
-    /// ```
-    /// ### Caveats!
-    ///
-    /// 1. If the duration is zero milliseconds then the original behavior will apply and the notification will **Never** timeout.
-    /// 2. Should the number of milliseconds not fit within an [`i32`] then we will fall back to the default timeout.
-    /// ```
-    /// # use std::time::Duration;
-    /// # use notify_rust::Timeout;
-    /// assert_eq!(Timeout::from(Duration::from_millis(0)), Timeout::Never);
-    /// assert_eq!(Timeout::from(Duration::from_millis(u64::MAX)), Timeout::Default);
-    /// ```
     ///
     /// # Platform support
     /// This only works on XDG Desktops, macOS does not support manually setting the timeout.

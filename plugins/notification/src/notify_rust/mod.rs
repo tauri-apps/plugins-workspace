@@ -12,69 +12,6 @@
 //! in these cases you will have to add platform specific toggles to your code.
 //! For more see [platform differences](#platform-differences)
 //!
-//! # Examples
-//!
-//! ## Example 1: Simple Notification
-//!
-//! ```no_run
-//! # use notify_rust::*;
-//! Notification::new()
-//!     .summary("Firefox News")
-//!     .body("This will almost look like a real firefox notification.")
-//!     .icon("firefox")
-//!     .timeout(Timeout::Milliseconds(6000)) //milliseconds
-//!     .show().unwrap();
-//! ```
-//!
-//! ## Example 2: Persistent Notification
-//!
-//! ```no_run
-//! # use notify_rust::*;
-//! Notification::new()
-//!     .summary("Category:email")
-//!     .body("This has nothing to do with emails.\nIt should not go away until you acknowledge it.")
-//!     .icon("thunderbird")
-//!     .appname("thunderbird")
-//!     .hint(Hint::Category("email".to_owned()))
-//!     .hint(Hint::Resident(true)) // this is not supported by all implementations
-//!     .timeout(Timeout::Never) // this however is
-//!     .show().unwrap();
-//! ```
-//!
-//! Careful! There are no checks whether you use hints twice.
-//! It is possible to set `urgency=Low` AND `urgency=Critical`, in which case the behavior of the server is undefined.
-//!
-//! ## Example 3: Ask the user to do something
-//!
-//! ```no_run
-//! # use notify_rust::*;
-//! # #[cfg(all(unix, not(target_os = "macos")))]
-//! Notification::new().summary("click me")
-//!                    .action("default", "default")
-//!                    .action("clicked", "click here")
-//!                    .hint(Hint::Resident(true))
-//!                    .show()
-//!                    .unwrap()
-//!                    .wait_for_action(|action| match action {
-//!                                         "default" => println!("you clicked \"default\""),
-//!                                         "clicked" => println!("that was correct"),
-//!                                         // here "__closed" is a hard coded keyword
-//!                                         "__closed" => println!("the notification was closed"),
-//!                                         _ => ()
-//!                                     });
-//! ```
-//!
-//! ## Minimal Example
-//!
-//! You can omit almost everything
-//!
-//! ```no_run
-//! # use notify_rust::Notification;
-//! Notification::new().show();
-//! ```
-//!
-//! more [examples](https://github.com/hoodie/notify-rust/tree/main/examples) in the repository.
-//!
 //! # Platform Differences
 //! <details>
 //! ✔︎ = works <br/>

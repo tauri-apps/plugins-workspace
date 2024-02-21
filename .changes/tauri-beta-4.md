@@ -54,4 +54,4 @@
 "window-state-js": patch
 ---
 
-Update to tauri beta.3.
+Update to tauri beta.4.

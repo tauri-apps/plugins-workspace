@@ -1,13 +1,13 @@
 #![allow(missing_docs)]
 
 #[cfg(all(feature = "images", unix, not(target_os = "macos")))]
-use crate::image::ImageError;
+use super::image::ImageError;
 use std::{fmt, num};
 /// Convenient wrapper around `std::Result`.
 pub type Result<T> = ::std::result::Result<T, Error>;
 
 #[cfg(target_os = "macos")]
-pub use crate::macos::{ApplicationError, MacOsError, NotificationError};
+pub use super::macos::{ApplicationError, MacOsError, NotificationError};
 
 /// The Error type.
 #[derive(Debug)]

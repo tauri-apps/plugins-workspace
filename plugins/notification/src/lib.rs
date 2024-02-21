@@ -32,6 +32,7 @@ mod commands;
 mod error;
 mod models;
 
+#[allow(dead_code, unused_imports, deprecated)]
 mod notify_rust;
 
 pub use error::{Error, Result};
