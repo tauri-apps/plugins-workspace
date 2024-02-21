@@ -20,8 +20,8 @@ use dbus::{
     Path,
 };
 
-use super::{Hint, Notification, Timeout};
 use super::xdg::{NOTIFICATION_NAMESPACE, NOTIFICATION_OBJECTPATH};
+use super::{Hint, Notification, Timeout};
 
 static DBUS_ERROR_FAILED: &str = "org.freedesktop.DBus.Error.Failed";
 /// Version of the crate equals the version server.

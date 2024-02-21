@@ -33,7 +33,7 @@ const ignore = [
 async function checkFile(file) {
   if (
     extensions.some((e) => file.endsWith(e)) &&
-    !ignore.some((i) => file.endsWith(i))
+    !ignore.some((i) => file.includes(`${path.sep}${i}`))
   ) {
     const fileStream = fs.createReadStream(file);
     const rl = readline.createInterface({
@@ -125,6 +125,6 @@ if (files.length > 0) {
         console.log(missing.join("\n"));
         process.exit(1);
       }
-    },
+    }
   );
 }
