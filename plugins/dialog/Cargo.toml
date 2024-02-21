@@ -28,5 +28,5 @@ tauri-plugin-fs = { path = "../fs", version = "2.0.0-beta.0" }
 glib = "0.16"
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
-rfd = { version = "=0.12.0", features = [ "gtk3", "common-controls-v6" ] }
-raw-window-handle = "0.5"
+rfd = { version = "0.14", default-features = false, features = [ "tokio", "gtk3", "common-controls-v6" ] }
+raw-window-handle = "0.6"

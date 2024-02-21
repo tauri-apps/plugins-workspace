@@ -3,4 +3,4 @@
 /target/
 WixTools
 
-/capabilities/schemas
+/gen/schemas

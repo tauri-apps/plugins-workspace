@@ -32,4 +32,4 @@ features = [
 ]
 
 [target."cfg(target_os = \"linux\")".dependencies]
-zbus = "3"
+zbus = "4"

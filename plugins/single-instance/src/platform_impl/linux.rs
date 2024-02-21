@@ -10,8 +10,8 @@ use tauri::{
     AppHandle, Config, Manager, RunEvent, Runtime,
 };
 use zbus::{
-    blocking::{Connection, ConnectionBuilder},
-    dbus_interface,
+    blocking::{Builder, Connection},
+    interface,
 };
 
 struct ConnectionHandle(Connection);
@@ -21,7 +21,7 @@ struct SingleInstanceDBus<R: Runtime> {
     app_handle: AppHandle<R>,
 }
 
-#[dbus_interface(name = "org.SingleInstance.DBus")]
+#[interface(name = "org.SingleInstance.DBus")]
 impl<R: Runtime> SingleInstanceDBus<R> {
     fn execute_callback(&mut self, argv: Vec<String>, cwd: String) {
         (self.callback)(&self.app_handle, argv, cwd);
@@ -43,7 +43,7 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
             let dbus_name = format!("org.{id}.SingleInstance");
             let dbus_path = format!("/org/{id}/SingleInstance");
 
-            match ConnectionBuilder::session()
+            match Builder::session()
                 .unwrap()
                 .name(dbus_name.as_str())
                 .unwrap()

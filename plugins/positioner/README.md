@@ -6,7 +6,7 @@ This plugin is a port of [electron-positioner](https://github.com/jenslind/elect
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.70**_
+_This plugin requires a Rust version of at least **1.75**_
 
 There are three general methods of installation that we can recommend.
 

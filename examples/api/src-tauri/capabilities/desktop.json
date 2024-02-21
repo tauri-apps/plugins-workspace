@@ -1,5 +1,5 @@
 {
-  "$schema": "./schemas/desktop-schema.json",
+  "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "run-app-desktop",
   "description": "Permissions to run the app (desktop only)",
   "windows": ["main"],

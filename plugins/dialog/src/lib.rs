@@ -178,8 +178,10 @@ impl<R: Runtime> MessageDialogBuilder<R> {
     ///
     /// - **Linux:** Unsupported.
     #[cfg(desktop)]
-    pub fn parent<W: raw_window_handle::HasRawWindowHandle>(mut self, parent: &W) -> Self {
-        self.parent.replace(parent.raw_window_handle());
+    pub fn parent<W: raw_window_handle::HasWindowHandle>(mut self, parent: &W) -> Self {
+        if let Ok(h) = parent.window_handle() {
+            self.parent.replace(h.as_raw());
+        }
         self
     }
 
@@ -329,8 +331,10 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// Sets the parent window of the dialog.
     #[cfg(desktop)]
     #[must_use]
-    pub fn set_parent<W: raw_window_handle::HasRawWindowHandle>(mut self, parent: &W) -> Self {
-        self.parent.replace(parent.raw_window_handle());
+    pub fn set_parent<W: raw_window_handle::HasWindowHandle>(mut self, parent: &W) -> Self {
+        if let Ok(h) = parent.window_handle() {
+            self.parent.replace(h.as_raw());
+        }
         self
     }
 
