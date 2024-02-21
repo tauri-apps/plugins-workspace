@@ -86,6 +86,9 @@ impl<R: Runtime> GlobalShortcut<R> {
         source: ShortcutSource,
         handler: Option<F>,
     ) -> Result<()> {
+        // For some reason, using `handler.map(|h| Arc::new(Box::new(h)))`
+        // resutls in `Option<Arc<F>>` instead of the needed type
+        #[allow(clippy::manual_map)]
         let handler: Option<Arc<HandlerFn<R>>> = match handler {
             Some(h) => Some(Arc::new(Box::new(h))),
             None => None,
@@ -115,6 +118,9 @@ impl<R: Runtime> GlobalShortcut<R> {
         S: IntoIterator<Item = (Shortcut, Option<String>)>,
         F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static,
     {
+        // For some reason, using `handler.map(|h| Arc::new(Box::new(h)))`
+        // resutls in `Option<Arc<F>>` instead of the needed type
+        #[allow(clippy::manual_map)]
         let handler: Option<Arc<HandlerFn<R>>> = match handler {
             Some(h) => Some(Arc::new(Box::new(h))),
             None => None,
