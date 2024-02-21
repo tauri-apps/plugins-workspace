@@ -28,10 +28,14 @@ pub struct Clipboard<R: Runtime> {
 
 impl<R: Runtime> Clipboard<R> {
     pub fn write(&self, kind: ClipKind) -> crate::Result<()> {
-        let ClipKind::PlainText { text, .. } = kind;
-        match &self.clipboard {
-            Ok(clipboard) => clipboard.lock().unwrap().set_text(text).map_err(Into::into),
-            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
+        match kind {
+            ClipKind::PlainText { text, .. } => {
+                match &self.clipboard {
+                    Ok(clipboard) => clipboard.lock().unwrap().set_text(text).map_err(Into::into),
+                    Err(e) => Err(crate::Error::Clipboard(e.to_string())),
+                }
+            }
+            _ => Err(crate::Error::Clipboard("Invalid clip kind!".to_string())),
         }
     }
 
@@ -40,6 +44,37 @@ impl<R: Runtime> Clipboard<R> {
             Ok(clipboard) => {
                 let text = clipboard.lock().unwrap().get_text()?;
                 Ok(ClipboardContents::PlainText { text })
+            }
+            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
+        }
+    }
+
+    pub fn write_html(&self, kind: ClipKind) -> crate::Result<()> {
+        match kind {
+            ClipKind::Html { html, alt_html, .. } => match &self.clipboard {
+                Ok(clipboard) => clipboard.lock().unwrap().set_html(html, alt_html).map_err(Into::into),
+                Err(e) => Err(crate::Error::Clipboard(e.to_string())),
+            }
+            _ => Err(crate::Error::Clipboard("Invalid clip kind!".to_string())),
+            }
+        }
+
+    pub fn read_html(&self) -> crate::Result<ClipboardContents> {
+        match &self.clipboard {
+            Ok(clipboard) => {
+                let html = clipboard.lock().unwrap().get_text()?;
+                // arboard does not have read_html() as its just text, therefor unable to populate alt_html in this case
+                Ok(ClipboardContents::Html { html, alt_html: None })
+            }
+            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
+        }
+    }
+
+    pub fn clear(&self) -> crate::Result<()> {
+        match &self.clipboard {
+            Ok(clipboard) => {
+                clipboard.lock().unwrap().clear().unwrap();
+                Ok(())
             }
             Err(e) => Err(crate::Error::Clipboard(e.to_string())),
         }

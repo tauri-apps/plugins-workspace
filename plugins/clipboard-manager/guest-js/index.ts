@@ -11,6 +11,7 @@
 import { invoke } from "@tauri-apps/api/core";
 
 type ClipResponse = Record<"plainText", { text: string }>;
+type ClipHtmlResponse = Record<"html", { html: string, alt_html: string }>;
 
 /**
  * Writes plain text to the clipboard.
@@ -53,4 +54,60 @@ async function readText(): Promise<string> {
   return kind.plainText.text;
 }
 
-export { writeText, readText };
+/**
+ * Writes HTML or fallbacks to write provided plain text to the clipboard.
+ * @example
+ * ```typescript
+ * import { writeHtml, readHtml } from '@tauri-apps/plugin-clipboard-manager';
+ * await writeHtml('<h1>Tauri is awesome!</h1>', 'plaintext');
+ * await writeHtml('<h1>Tauri is awesome!</h1>', '<h1>Tauri is awesome</h1>'); // Will write "<h1>Tauri is awesome</h1>" as plain text
+ * assert(await readHtml(), '<h1>Tauri is awesome!</h1>');
+ * ```
+ *
+ * @returns A promise indicating the success or failure of the operation.
+ *
+ * @since 2.0.0
+ */
+async function writeHtml(
+    html: string,
+    alt_html: string
+): Promise<void> {
+  return invoke("plugin:clipboard-manager|write_html", {
+    data: {
+      html: {
+        html,
+        alt_html
+      },
+    },
+  });
+}
+
+/**
+ * Gets the clipboard content as HTML text.
+ * @example
+ * ```typescript
+ * import { readHtml } from '@tauri-apps/plugin-clipboard-manager';
+ * const clipboardHtml = await readHtml();
+ * ```
+ * @since 2.0.0
+ */
+async function readHtml(): Promise<object> {
+  const kind: ClipHtmlResponse = await invoke("plugin:clipboard-manager|read_html");
+  return kind.html
+}
+
+/**
+ * Gets the clipboard content as HTML text.
+ * @example
+ * ```typescript
+ * import { readHtml } from '@tauri-apps/plugin-clipboard-manager';
+ * const clipboardHtml = await readHtml();
+ * ```
+ * @since 2.0.0
+ */
+async function clear(): Promise<void> {
+  await invoke("plugin:clipboard-manager|clear");
+  return;
+}
+
+export { writeText, readText, writeHtml, readHtml, clear };
