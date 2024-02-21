@@ -64,10 +64,10 @@ fn main() {
                 app.handle().plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
                 app.global_shortcut().register(
                     Shortcut::new(Some(Modifiers::ALT), Code::KeyD),
-                    |app, shortcut| {
+                    Some(|app, shortcut| {
                         println!("Shortcut: {:?}", shortcut);
                         app.emit("custom-global-shortcut-event", "Alt-D triggered!");
-                    },
+                    }),
                 )?;
             }
 
