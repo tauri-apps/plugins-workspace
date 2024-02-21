@@ -1,4 +1,8 @@
 {
   "tag": "beta",
-  "changes": [".changes/beta.md"]
+  "changes": [
+    ".changes/beta.md",
+    ".changes/msrv-1.75.md",
+    ".changes/tauri-beta-4.md"
+  ]
 }
