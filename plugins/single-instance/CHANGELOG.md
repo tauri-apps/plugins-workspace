@@ -19,7 +19,7 @@
 
 ## \[2.0.0-alpha.3]
 
-- [`5c13736`](https://github.com/tauri-apps/plugins-workspace/commit/5c137365c60790e8d4037d449e8237aa3fffdab0)([#673](https://github.com/tauri-apps/plugins-workspace/pull/673)) Update MSRV to 1.70.
+- [`5c13736`](https://github.com/tauri-apps/plugins-workspace/commit/5c137365c60790e8d4037d449e8237aa3fffdab0)([#673](https://github.com/tauri-apps/plugins-workspace/pull/673)) Update MSRV to 1.75.
 
 ## \[2.0.0-alpha.2]
 
