@@ -127,6 +127,8 @@ impl<R: Runtime> From<FileDialogBuilder<R>> for FileDialog {
             builder = builder.set_parent(&WindowHandle(parent));
         }
 
+        builder = builder.set_can_create_directories(d.can_create_directories.unwrap_or(true));
+
         builder
     }
 }
