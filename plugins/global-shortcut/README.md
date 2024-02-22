@@ -52,22 +52,26 @@ First you need to register the core plugin with Tauri:
 `src-tauri/src/main.rs`
 
 ```rust
-
 fn main() {
-  tauri::Builder::default()
+    tauri::Builder::default()
         .setup(|app| {
-          #[cfg(desktop)]
+            #[cfg(desktop)]
             {
-              use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
-              use tauri::Manager;
+                use tauri::Manager;
+                use tauri_plugin_global_shortcut::{Code, Modifiers};
 
-                app.handle().plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
-                app.global_shortcut().register(
-                    Shortcut::new(Some(Modifiers::ALT), Code::KeyD),
-                    Some(|app, shortcut| {
-                        println!("Shortcut: {:?}", shortcut);
-                        app.emit("custom-global-shortcut-event", "Alt-D triggered!");
-                    }),
+                app.handle().plugin(
+                    tauri_plugin_global_shortcut::Builder::new()
+                        .with_shortcuts(["ctrl+d", "alt+space"])?
+                        .with_handler(|app, shortcut| {
+                            if shortcut.matches(Modifiers::CONTROL, Code::KeyD) {
+                                let _ = app.emit("shortcut-event", "Ctrl+D triggered");
+                            }
+                            if shortcut.matches(Modifiers::ALT, Code::Space) {
+                                let _ = app.emit("shortcut-event", "Alt+Space triggered");
+                            }
+                        })
+                        .build(),
                 )?;
             }
 
