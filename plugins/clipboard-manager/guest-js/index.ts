@@ -91,23 +91,9 @@ async function writeHtml(
  * ```
  * @since 2.0.0
  */
-async function readHtml(): Promise<object> {
-  const kind: ClipHtmlResponse = await invoke("plugin:clipboard-manager|read_html");
-  return kind.html
-}
-
-/**
- * Gets the clipboard content as HTML text.
- * @example
- * ```typescript
- * import { readHtml } from '@tauri-apps/plugin-clipboard-manager';
- * const clipboardHtml = await readHtml();
- * ```
- * @since 2.0.0
- */
 async function clear(): Promise<void> {
   await invoke("plugin:clipboard-manager|clear");
   return;
 }
 
-export { writeText, readText, writeHtml, readHtml, clear };
+export { writeText, readText, writeHtml, clear };
