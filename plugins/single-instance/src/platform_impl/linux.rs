@@ -10,7 +10,7 @@ use tauri::{
     AppHandle, Config, Manager, RunEvent, Runtime,
 };
 use zbus::{
-    blocking::{Builder, Connection},
+    blocking::{connection::Builder, Connection},
     interface,
 };
 
