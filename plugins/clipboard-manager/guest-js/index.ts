@@ -70,13 +70,13 @@ async function readText(): Promise<string> {
  */
 async function writeHtml(
     html: string,
-    alt_html: string
+    altHtml?: string
 ): Promise<void> {
   return invoke("plugin:clipboard-manager|write_html", {
     data: {
       html: {
         html,
-        alt_html
+        altHtml
       },
     },
   });
