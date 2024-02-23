@@ -115,6 +115,21 @@ export async function fetch(
 
   const signal = init?.signal;
 
+  const headers = !init?.headers
+    ? []
+    : init.headers instanceof Headers
+      ? Array.from(init.headers.entries())
+      : Array.isArray(init.headers)
+        ? init.headers
+        : Object.entries(init.headers);
+
+  const mappedHeaders: [string, string][] = headers.map(([name, val]) => [
+    name,
+    // we need to ensure we have all values as strings
+    // eslint-disable-next-line
+    typeof val === "string" ? val : (val as any).toString(),
+  ]);
+
   const req = new Request(input, init);
   const buffer = await req.arrayBuffer();
   const reqData = buffer.byteLength ? Array.from(new Uint8Array(buffer)) : null;
@@ -123,7 +138,7 @@ export async function fetch(
     clientConfig: {
       method: req.method,
       url: req.url,
-      headers: Array.from(req.headers.entries()),
+      headers: mappedHeaders,
       data: reqData,
       maxRedirections,
       connectTimeout,
@@ -149,7 +164,7 @@ export async function fetch(
     status,
     statusText,
     url,
-    headers,
+    headers: responseHeaders,
     rid: responseRid,
   } = await invoke<FetchSendResponse>("plugin:http|fetch_send", {
     rid,
@@ -169,7 +184,7 @@ export async function fetch(
         ? new Uint8Array(body)
         : null,
     {
-      headers,
+      headers: responseHeaders,
       status,
       statusText,
     },

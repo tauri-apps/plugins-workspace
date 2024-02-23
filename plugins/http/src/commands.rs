@@ -192,11 +192,33 @@ pub async fn fetch<R: Runtime>(
 
                 let mut request = builder.build()?.request(method.clone(), url);
 
-                for (key, value) in &headers {
-                    let name = HeaderName::from_bytes(key.as_bytes())?;
-                    let v = HeaderValue::from_bytes(value.as_bytes())?;
-                    if !matches!(name, header::HOST | header::CONTENT_LENGTH) {
-                        request = request.header(name, v);
+                for (name, value) in &headers {
+                    let name = HeaderName::from_bytes(name.as_bytes())?;
+                    let value = HeaderValue::from_bytes(value.as_bytes())?;
+                    if !matches!(
+                        name,
+                        // forbidden headers per fetch spec https://fetch.spec.whatwg.org/#terminology-headers
+                        header::ACCEPT_CHARSET
+                            | header::ACCEPT_ENCODING
+                            | header::ACCESS_CONTROL_REQUEST_HEADERS
+                            | header::ACCESS_CONTROL_REQUEST_METHOD
+                            | header::CONNECTION
+                            | header::CONTENT_LENGTH
+                            | header::COOKIE
+                            | header::DATE
+                            | header::DNT
+                            | header::EXPECT
+                            | header::HOST
+                            | header::ORIGIN
+                            | header::REFERER
+                            | header::SET_COOKIE
+                            | header::TE
+                            | header::TRAILER
+                            | header::TRANSFER_ENCODING
+                            | header::UPGRADE
+                            | header::VIA
+                    ) {
+                        request = request.header(name, value);
                     }
                 }
 
