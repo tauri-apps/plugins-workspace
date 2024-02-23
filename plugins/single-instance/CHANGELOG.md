@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.2]
+
+- [`6d1e621`](https://github.com/tauri-apps/plugins-workspace/commit/6d1e6218b5877ef91f589f790f7251acda9c9605)([#981](https://github.com/tauri-apps/plugins-workspace/pull/981)) Fix `zbus::blocking::connection::Builder` import.
+
 ## \[2.0.0-beta.1]
 
 - [`14f381a`](https://github.com/tauri-apps/plugins-workspace/commit/14f381acf8fe690acecc676922c6f05939b95734) Update MSRV to 1.75.
