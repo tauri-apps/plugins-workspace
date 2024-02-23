@@ -73,8 +73,7 @@ impl<R: Runtime> Clipboard<R> {
     pub fn clear(&self) -> crate::Result<()> {
         match &self.clipboard {
             Ok(clipboard) => {
-                clipboard.lock().unwrap().clear().unwrap();
-                Ok(())
+                clipboard.lock().unwrap().clear().map_err(Into::into)
             }
             Err(e) => Err(crate::Error::Clipboard(e.to_string())),
         }
