@@ -33,14 +33,6 @@ pub(crate) async fn write_html<R: Runtime>(
 }
 
 #[command]
-pub(crate) async fn read_html<R: Runtime>(
-    _app: AppHandle<R>,
-    clipboard: State<'_, Clipboard<R>>,
-) -> Result<ClipboardContents> {
-    clipboard.read()
-}
-
-#[command]
 pub(crate) async fn clear<R: Runtime>(
     _app: AppHandle<R>,
     clipboard: State<'_, Clipboard<R>>,

@@ -59,17 +59,6 @@ impl<R: Runtime> Clipboard<R> {
             }
         }
 
-    pub fn read_html(&self) -> crate::Result<ClipboardContents> {
-        match &self.clipboard {
-            Ok(clipboard) => {
-                let html = clipboard.lock().unwrap().get_text()?;
-                // arboard does not have read_html() as its just text, therefor unable to populate alt_html in this case
-                Ok(ClipboardContents::Html { html, alt_html: None })
-            }
-            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
-        }
-    }
-
     pub fn clear(&self) -> crate::Result<()> {
         match &self.clipboard {
             Ok(clipboard) => {
