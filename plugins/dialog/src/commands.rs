@@ -51,6 +51,8 @@ pub struct OpenDialogOptions {
     #[serde(default)]
     #[cfg_attr(mobile, allow(dead_code))]
     recursive: bool,
+    /// Whether to allow creating directories in the dialog **macOS Only**
+    can_create_directories: Option<bool>,
 }
 
 /// The options for the save dialog API.
@@ -65,6 +67,8 @@ pub struct SaveDialogOptions {
     filters: Vec<DialogFilter>,
     /// The initial path of the dialog.
     default_path: Option<PathBuf>,
+    /// Whether to allow creating directories in the dialog **macOS Only**
+    can_create_directories: Option<bool>,
 }
 
 fn set_default_path<R: Runtime>(
@@ -104,6 +108,9 @@ pub(crate) async fn open<R: Runtime>(
     }
     if let Some(default_path) = options.default_path {
         dialog_builder = set_default_path(dialog_builder, default_path);
+    }
+    if let Some(can) = options.can_create_directories {
+        dialog_builder = dialog_builder.set_can_create_directories(can);
     }
     for filter in options.filters {
         let extensions: Vec<&str> = filter.extensions.iter().map(|s| &**s).collect();
@@ -184,6 +191,9 @@ pub(crate) async fn save<R: Runtime>(
         }
         if let Some(default_path) = options.default_path {
             dialog_builder = set_default_path(dialog_builder, default_path);
+        }
+        if let Some(can) = options.can_create_directories {
+            dialog_builder = dialog_builder.set_can_create_directories(can);
         }
         for filter in options.filters {
             let extensions: Vec<&str> = filter.extensions.iter().map(|s| &**s).collect();

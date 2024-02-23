@@ -267,6 +267,7 @@ pub struct FileDialogBuilder<R: Runtime> {
     pub(crate) starting_directory: Option<PathBuf>,
     pub(crate) file_name: Option<String>,
     pub(crate) title: Option<String>,
+    pub(crate) can_create_directories: Option<bool>,
     #[cfg(desktop)]
     pub(crate) parent: Option<raw_window_handle::RawWindowHandle>,
 }
@@ -291,6 +292,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
             starting_directory: None,
             file_name: None,
             title: None,
+            can_create_directories: None,
             #[cfg(desktop)]
             parent: None,
         }
@@ -342,6 +344,12 @@ impl<R: Runtime> FileDialogBuilder<R> {
     #[must_use]
     pub fn set_title(mut self, title: impl Into<String>) -> Self {
         self.title.replace(title.into());
+        self
+    }
+
+    /// Set whether it should be possible to create new directories in the dialog. Enabled by default. **macOS only**.
+    pub fn set_can_create_directories(mut self, can: bool) -> Self {
+        self.can_create_directories.replace(can);
         self
     }
 

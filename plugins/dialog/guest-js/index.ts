@@ -55,6 +55,8 @@ interface OpenDialogOptions {
    * Defines whether subdirectories will be allowed on the scope or not.
    */
   recursive?: boolean;
+  /** Whether to allow creating directories in the dialog. Enabled by default. **macOS Only** */
+  canCreateDirectories?: boolean;
 }
 
 /**
@@ -73,6 +75,8 @@ interface SaveDialogOptions {
    * If it's not an existing directory, the file name will be set to the dialog's file name input and the dialog will be set to the parent folder.
    */
   defaultPath?: string;
+  /** Whether to allow creating directories in the dialog. Enabled by default. **macOS Only** */
+  canCreateDirectories?: boolean;
 }
 
 /**
