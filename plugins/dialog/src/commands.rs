@@ -51,7 +51,7 @@ pub struct OpenDialogOptions {
     #[serde(default)]
     #[cfg_attr(mobile, allow(dead_code))]
     recursive: bool,
-    ///  Whether to allow creating directories in the dialog **macOS Only**
+    /// Whether to allow creating directories in the dialog **macOS Only**
     can_create_directories: Option<bool>,
 }
 
