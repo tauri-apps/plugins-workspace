@@ -55,7 +55,7 @@ interface OpenDialogOptions {
    * Defines whether subdirectories will be allowed on the scope or not.
    */
   recursive?: boolean;
-  /** Whether to allow creating directories in the dialog **macOS Only** */
+  /** Whether to allow creating directories in the dialog. Enabled by default. **macOS Only** */
   canCreateDirectories?: boolean;
 }
 
