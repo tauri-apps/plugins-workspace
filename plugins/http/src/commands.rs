@@ -205,12 +205,10 @@ pub async fn fetch<R: Runtime>(
                             | header::CONNECTION
                             | header::CONTENT_LENGTH
                             | header::COOKIE
-                            | header::COOKIE2
                             | header::DATE
                             | header::DNT
                             | header::EXPECT
                             | header::HOST
-                            | header::KEEP_ALIVE
                             | header::ORIGIN
                             | header::REFERER
                             | header::SET_COOKIE
