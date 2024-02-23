@@ -67,7 +67,7 @@ pub struct SaveDialogOptions {
     filters: Vec<DialogFilter>,
     /// The initial path of the dialog.
     default_path: Option<PathBuf>,
-    ///  Whether to allow creating directories in the dialog **macOS Only**
+    /// Whether to allow creating directories in the dialog **macOS Only**
     can_create_directories: Option<bool>,
 }
 
