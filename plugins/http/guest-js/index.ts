@@ -100,7 +100,7 @@ export interface ClientOptions {
  */
 export async function fetch(
   input: URL | Request | string,
-  init?: RequestInit & ClientOptions,
+  init?: RequestInit & ClientOptions
 ): Promise<Response> {
   const maxRedirections = init?.maxRedirections;
   const connectTimeout = init?.connectTimeout;
@@ -115,6 +115,19 @@ export async function fetch(
 
   const signal = init?.signal;
 
+  const headers = !init?.headers
+    ? []
+    : init.headers instanceof Headers
+      ? Array.from(init.headers.entries())
+      : Array.isArray(init.headers)
+        ? init.headers
+        : Object.entries(init.headers);
+
+  const mappedHeaders: [string, string][] = headers.map(([name, val]) => [
+    name,
+    typeof val === "string" ? val : (val as any).toString(),
+  ]);
+
   const req = new Request(input, init);
   const buffer = await req.arrayBuffer();
   const reqData = buffer.byteLength ? Array.from(new Uint8Array(buffer)) : null;
@@ -123,7 +136,7 @@ export async function fetch(
     clientConfig: {
       method: req.method,
       url: req.url,
-      headers: Array.from(req.headers.entries()),
+      headers: mappedHeaders,
       data: reqData,
       maxRedirections,
       connectTimeout,
@@ -149,7 +162,7 @@ export async function fetch(
     status,
     statusText,
     url,
-    headers,
+    headers: responseHeaders,
     rid: responseRid,
   } = await invoke<FetchSendResponse>("plugin:http|fetch_send", {
     rid,
@@ -159,7 +172,7 @@ export async function fetch(
     "plugin:http|fetch_read_body",
     {
       rid: responseRid,
-    },
+    }
   );
 
   const res = new Response(
@@ -169,10 +182,10 @@ export async function fetch(
         ? new Uint8Array(body)
         : null,
     {
-      headers,
+      headers: responseHeaders,
       status,
       statusText,
-    },
+    }
   );
 
   // url is read only but seems like we can do this
