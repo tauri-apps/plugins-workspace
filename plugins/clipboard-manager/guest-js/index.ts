@@ -11,7 +11,7 @@
 import { invoke } from "@tauri-apps/api/core";
 
 type ClipResponse = Record<"plainText", { text: string }>;
-type ClipHtmlResponse = Record<"html", { html: string, alt_html: string }>;
+type ClipHtmlResponse = Record<"html", { html: string, altHtml: string }>;
 
 /**
  * Writes plain text to the clipboard.
