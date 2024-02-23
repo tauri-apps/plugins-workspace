@@ -347,7 +347,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
         self
     }
 
-    /// Set whether dialog should all creating new directories in the dialog  **macOS only**.
+    /// Set whether it should be possible to create new directories in the dialog. Enabled by default. **macOS only**.
     pub fn set_can_create_directories(mut self, can: bool) -> Self {
         self.can_create_directories.replace(can);
         self
