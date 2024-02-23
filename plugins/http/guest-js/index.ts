@@ -100,7 +100,7 @@ export interface ClientOptions {
  */
 export async function fetch(
   input: URL | Request | string,
-  init?: RequestInit & ClientOptions
+  init?: RequestInit & ClientOptions,
 ): Promise<Response> {
   const maxRedirections = init?.maxRedirections;
   const connectTimeout = init?.connectTimeout;
@@ -125,6 +125,8 @@ export async function fetch(
 
   const mappedHeaders: [string, string][] = headers.map(([name, val]) => [
     name,
+    // we need to ensure we have all values as strings
+    // eslint-disable-next-line
     typeof val === "string" ? val : (val as any).toString(),
   ]);
 
@@ -172,7 +174,7 @@ export async function fetch(
     "plugin:http|fetch_read_body",
     {
       rid: responseRid,
-    }
+    },
   );
 
   const res = new Response(
@@ -185,7 +187,7 @@ export async function fetch(
       headers: responseHeaders,
       status,
       statusText,
-    }
+    },
   );
 
   // url is read only but seems like we can do this
