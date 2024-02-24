@@ -14,6 +14,5 @@ pub enum ClipKind {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ClipboardContents {
-    PlainText { text: String },
-    Html { html: String, alt_html: Option<String> }
+    PlainText { text: String }
 }

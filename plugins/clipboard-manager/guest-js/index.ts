@@ -11,8 +11,6 @@
 import { invoke } from "@tauri-apps/api/core";
 
 type ClipResponse = Record<"plainText", { text: string }>;
-// Commented this type out as it can come in handy to stay
-//type ClipHtmlResponse = Record<"html", { html: string, altHtml: string }>;
 
 /**
  * Writes plain text to the clipboard.
@@ -62,7 +60,7 @@ async function readText(): Promise<string> {
  * import { writeHtml, readHtml } from '@tauri-apps/plugin-clipboard-manager';
  * await writeHtml('<h1>Tauri is awesome!</h1>', 'plaintext');
  * await writeHtml('<h1>Tauri is awesome!</h1>', '<h1>Tauri is awesome</h1>'); // Will write "<h1>Tauri is awesome</h1>" as plain text
- * assert(await readHtml(), '<h1>Tauri is awesome!</h1>');
+ * assert(await readText(), '<h1>Tauri is awesome!</h1>');
  * ```
  *
  * @returns A promise indicating the success or failure of the operation.
@@ -84,11 +82,11 @@ async function writeHtml(
 }
 
 /**
- * Gets the clipboard content as HTML text.
+ * Clears the clipboard.
  * @example
  * ```typescript
- * import { readHtml } from '@tauri-apps/plugin-clipboard-manager';
- * const clipboardHtml = await readHtml();
+ * import { clear } from '@tauri-apps/plugin-clipboard-manager';
+ * await clear();
  * ```
  * @since 2.0.0
  */
