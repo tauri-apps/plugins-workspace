@@ -209,6 +209,10 @@ impl<R: Runtime> Default for Builder<R> {
 }
 
 impl<R: Runtime> Builder<R> {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     /// Registers a store with the plugin.
     ///
     /// # Examples

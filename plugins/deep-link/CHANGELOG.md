@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.1]
+
+- [`569defb`](https://github.com/tauri-apps/plugins-workspace/commit/569defbe9492e38938554bb7bdc1be9151456d21) Update to tauri beta.4.
+
 ## \[2.0.0-beta.0]
 
 - [`d198c01`](https://github.com/tauri-apps/plugins-workspace/commit/d198c014863ee260cb0de88a14b7fc4356ef7474)([#862](https://github.com/tauri-apps/plugins-workspace/pull/862)) Update to tauri beta.
@@ -30,4 +34,6 @@
   0.0-alpha.0]
 
 - [`eccd6f9`](https://github.com/tauri-apps/plugins-workspace/commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
+
 - [`eccd6f9`](https://github.com/tauri-apps/plugins-workspace/commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
+commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.

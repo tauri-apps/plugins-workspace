@@ -55,6 +55,8 @@ interface OpenDialogOptions {
    * Defines whether subdirectories will be allowed on the scope or not.
    */
   recursive?: boolean;
+  /** Whether to allow creating directories in the dialog. Enabled by default. **macOS Only** */
+  canCreateDirectories?: boolean;
 }
 
 /**
@@ -73,6 +75,8 @@ interface SaveDialogOptions {
    * If it's not an existing directory, the file name will be set to the dialog's file name input and the dialog will be set to the parent folder.
    */
   defaultPath?: string;
+  /** Whether to allow creating directories in the dialog. Enabled by default. **macOS Only** */
+  canCreateDirectories?: boolean;
 }
 
 /**
@@ -81,8 +85,8 @@ interface SaveDialogOptions {
 interface MessageDialogOptions {
   /** The title of the dialog. Defaults to the app name. */
   title?: string;
-  /** The type of the dialog. Defaults to `info`. */
-  type?: "info" | "warning" | "error";
+  /** The kind of the dialog. Defaults to `info`. */
+  kind?: "info" | "warning" | "error";
   /** The label of the confirm button. */
   okLabel?: string;
 }
@@ -90,8 +94,8 @@ interface MessageDialogOptions {
 interface ConfirmDialogOptions {
   /** The title of the dialog. Defaults to the app name. */
   title?: string;
-  /** The type of the dialog. Defaults to `info`. */
-  type?: "info" | "warning" | "error";
+  /** The kind of the dialog. Defaults to `info`. */
+  kind?: "info" | "warning" | "error";
   /** The label of the confirm button. */
   okLabel?: string;
   /** The label of the cancel button. */
@@ -206,7 +210,7 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
  * ```typescript
  * import { message } from '@tauri-apps/plugin-dialog';
  * await message('Tauri is awesome', 'Tauri');
- * await message('File not found', { title: 'Tauri', type: 'error' });
+ * await message('File not found', { title: 'Tauri', kind: 'error' });
  * ```
  *
  * @param message The message to show.
@@ -225,7 +229,7 @@ async function message(
   return invoke("plugin:dialog|message", {
     message: message.toString(),
     title: opts?.title?.toString(),
-    type_: opts?.type,
+    kind: opts?.kind,
     okButtonLabel: opts?.okLabel?.toString(),
   });
 }
@@ -236,7 +240,7 @@ async function message(
  * ```typescript
  * import { ask } from '@tauri-apps/plugin-dialog';
  * const yes = await ask('Are you sure?', 'Tauri');
- * const yes2 = await ask('This action cannot be reverted. Are you sure?', { title: 'Tauri', type: 'warning' });
+ * const yes2 = await ask('This action cannot be reverted. Are you sure?', { title: 'Tauri', kind: 'warning' });
  * ```
  *
  * @param message The message to show.
@@ -254,7 +258,7 @@ async function ask(
   return invoke("plugin:dialog|ask", {
     message: message.toString(),
     title: opts?.title?.toString(),
-    type_: opts?.type,
+    kind: opts?.kind,
     okButtonLabel: opts?.okLabel?.toString() ?? "Yes",
     cancelButtonLabel: opts?.cancelLabel?.toString() ?? "No",
   });
@@ -266,7 +270,7 @@ async function ask(
  * ```typescript
  * import { confirm } from '@tauri-apps/plugin-dialog';
  * const confirmed = await confirm('Are you sure?', 'Tauri');
- * const confirmed2 = await confirm('This action cannot be reverted. Are you sure?', { title: 'Tauri', type: 'warning' });
+ * const confirmed2 = await confirm('This action cannot be reverted. Are you sure?', { title: 'Tauri', kind: 'warning' });
  * ```
  *
  * @param message The message to show.
@@ -284,7 +288,7 @@ async function confirm(
   return invoke("plugin:dialog|confirm", {
     message: message.toString(),
     title: opts?.title?.toString(),
-    type_: opts?.type,
+    kind: opts?.kind,
     okButtonLabel: opts?.okLabel?.toString() ?? "Ok",
     cancelButtonLabel: opts?.cancelLabel?.toString() ?? "Cancel",
   });

@@ -73,8 +73,8 @@ pub struct BaseOptions {
 #[tauri::command]
 pub fn create<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
@@ -123,8 +123,8 @@ fn default_true() -> bool {
 #[tauri::command]
 pub fn open<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<OpenOptions>,
 ) -> CommandResult<ResourceId> {
@@ -184,8 +184,8 @@ pub struct CopyFileOptions {
 #[tauri::command]
 pub fn copy_file<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     from_path: SafePathBuf,
     to_path: SafePathBuf,
     options: Option<CopyFileOptions>,
@@ -226,8 +226,8 @@ pub struct MkdirOptions {
 #[tauri::command]
 pub fn mkdir<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<MkdirOptions>,
 ) -> CommandResult<()> {
@@ -293,8 +293,8 @@ fn read_dir_inner<P: AsRef<Path>>(path: P) -> crate::Result<Vec<DirEntry>> {
 #[tauri::command]
 pub fn read_dir<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<Vec<DirEntry>> {
@@ -332,8 +332,8 @@ pub fn read<R: Runtime>(
 #[tauri::command]
 pub fn read_file<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<Vec<u8>> {
@@ -357,8 +357,8 @@ pub fn read_file<R: Runtime>(
 #[tauri::command]
 pub fn read_text_file<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<String> {
@@ -382,8 +382,8 @@ pub fn read_text_file<R: Runtime>(
 #[tauri::command]
 pub fn read_text_file_lines<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
@@ -438,8 +438,8 @@ pub struct RemoveOptions {
 #[tauri::command]
 pub fn remove<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<RemoveOptions>,
 ) -> CommandResult<()> {
@@ -506,8 +506,8 @@ pub struct RenameOptions {
 #[tauri::command]
 pub fn rename<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     old_path: SafePathBuf,
     new_path: SafePathBuf,
     options: Option<RenameOptions>,
@@ -568,8 +568,8 @@ pub fn seek<R: Runtime>(
 #[tauri::command]
 pub fn stat<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
@@ -592,8 +592,8 @@ pub fn stat<R: Runtime>(
 #[tauri::command]
 pub fn lstat<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
@@ -624,8 +624,8 @@ pub fn fstat<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> CommandResult<Fi
 #[tauri::command]
 pub fn truncate<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     len: Option<u64>,
     options: Option<BaseOptions>,
@@ -701,8 +701,8 @@ fn default_create_value() -> bool {
 
 fn write_file_inner<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: &GlobalScope<'_, Entry>,
-    command_scope: &CommandScope<'_, Entry>,
+    global_scope: &GlobalScope<Entry>,
+    command_scope: &CommandScope<Entry>,
     path: SafePathBuf,
     data: &[u8],
     options: Option<WriteFileOptions>,
@@ -754,8 +754,8 @@ fn write_file_inner<R: Runtime>(
 #[tauri::command]
 pub fn write_file<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     data: Vec<u8>,
     options: Option<WriteFileOptions>,
@@ -766,8 +766,8 @@ pub fn write_file<R: Runtime>(
 #[tauri::command]
 pub fn write_text_file<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     data: String,
     options: Option<WriteFileOptions>,
@@ -785,8 +785,8 @@ pub fn write_text_file<R: Runtime>(
 #[tauri::command]
 pub fn exists<R: Runtime>(
     app: AppHandle<R>,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<bool> {
@@ -802,8 +802,8 @@ pub fn exists<R: Runtime>(
 
 pub fn resolve_path<R: Runtime>(
     app: &AppHandle<R>,
-    global_scope: &GlobalScope<'_, Entry>,
-    command_scope: &CommandScope<'_, Entry>,
+    global_scope: &GlobalScope<Entry>,
+    command_scope: &CommandScope<Entry>,
     path: SafePathBuf,
     base_dir: Option<BaseDirectory>,
 ) -> CommandResult<PathBuf> {

@@ -27,12 +27,13 @@ const ignore = [
   "api-iife.js",
   "init-iife.js",
   ".build",
+  "notify_rust",
 ];
 
 async function checkFile(file) {
   if (
     extensions.some((e) => file.endsWith(e)) &&
-    !ignore.some((i) => file.endsWith(i))
+    !ignore.some((i) => file.includes(`${path.sep}${i}`))
   ) {
     const fileStream = fs.createReadStream(file);
     const rl = readline.createInterface({

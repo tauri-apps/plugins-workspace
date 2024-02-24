@@ -32,6 +32,9 @@ mod commands;
 mod error;
 mod models;
 
+#[allow(dead_code, unused_imports, deprecated, clippy::derivable_impls)]
+mod notify_rust;
+
 pub use error::{Error, Result};
 
 #[cfg(desktop)]

@@ -4,3 +4,7 @@
 
 # cargo-mobile
 .cargo/
+
+gen/schemas/*.json
+!gen/schemas/desktop-schema.json
+!gen/schemas/mobile-schema.json

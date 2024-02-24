@@ -120,7 +120,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
                     if path.is_file() {
                         scope.allow_file(path);
                     } else {
-                        scope.allow_directory(path, false);
+                        scope.allow_directory(path, true);
                     }
                 }
             }

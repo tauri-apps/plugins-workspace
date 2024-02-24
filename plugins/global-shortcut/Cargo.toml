@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-global-shortcut"
-version = "2.0.0-beta.0"
+version = "2.0.0-beta.1"
 description = "Register global hotkeys listeners on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }

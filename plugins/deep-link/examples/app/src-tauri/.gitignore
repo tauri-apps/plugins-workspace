@@ -2,6 +2,6 @@
 # will have compiled files and executables
 /target/
 
-/capabilities/schemas
+/gen/schemas
 
 .cargo

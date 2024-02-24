@@ -2,6 +2,7 @@
   import { writable } from "svelte/store";
   import { open } from "@tauri-apps/plugin-shell";
   import { getCurrent } from "@tauri-apps/api/window";
+  import { getCurrent as getCurrentWebview } from "@tauri-apps/api/webview";
   import * as os from "@tauri-apps/plugin-os";
 
   import Welcome from "./views/Welcome.svelte";
@@ -35,7 +36,7 @@
     });
   }
 
-  appWindow.onFileDropEvent((event) => {
+  getCurrentWebview().onFileDropEvent((event) => {
     onMessage(`File drop: ${JSON.stringify(event.payload)}`);
   });
 
