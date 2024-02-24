@@ -86,8 +86,8 @@ pub async fn watch<R: Runtime>(
     paths: Vec<SafePathBuf>,
     options: WatchOptions,
     on_event: Channel,
-    global_scope: GlobalScope<'_, Entry>,
-    command_scope: CommandScope<'_, Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
 ) -> CommandResult<ResourceId> {
     let mut resolved_paths = Vec::with_capacity(paths.capacity());
     for path in paths {

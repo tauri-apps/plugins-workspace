@@ -1,5 +1,14 @@
 # Changelog
 
+## \[2.0.0-beta.1]
+
+- [`14f381a`](https://github.com/tauri-apps/plugins-workspace/commit/14f381acf8fe690acecc676922c6f05939b95734) Update MSRV to 1.75.
+- [`569defb`](https://github.com/tauri-apps/plugins-workspace/commit/569defbe9492e38938554bb7bdc1be9151456d21) Update to tauri beta.4.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.1`
+
 ## \[2.0.0-beta.0]
 
 - [`d198c01`](https://github.com/tauri-apps/plugins-workspace/commit/d198c014863ee260cb0de88a14b7fc4356ef7474)([#862](https://github.com/tauri-apps/plugins-workspace/pull/862)) Update to tauri beta.
@@ -42,7 +51,7 @@
 
 ## \[2.0.0-alpha.3]
 
-- [`5c13736`](https://github.com/tauri-apps/plugins-workspace/commit/5c137365c60790e8d4037d449e8237aa3fffdab0)([#673](https://github.com/tauri-apps/plugins-workspace/pull/673)) Update MSRV to 1.70.
+- [`5c13736`](https://github.com/tauri-apps/plugins-workspace/commit/5c137365c60790e8d4037d449e8237aa3fffdab0)([#673](https://github.com/tauri-apps/plugins-workspace/pull/673)) Update MSRV to 1.75.
 - [`5de23e7`](https://github.com/tauri-apps/plugins-workspace/commit/5de23e79f9880921b62e4b7a8819bc0dbc833216)([#649](https://github.com/tauri-apps/plugins-workspace/pull/649)) Update to tauri@alpha.15.
 
 ### Dependencies

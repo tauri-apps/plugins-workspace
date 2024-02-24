@@ -1,5 +1,5 @@
 {
-  "$schema": "./schemas/mobile-schema.json",
+  "$schema": "../gen/schemas/mobile-schema.json",
   "identifier": "run-app-mobile",
   "description": "Permissions to run the app (mobile only)",
   "windows": ["main"],

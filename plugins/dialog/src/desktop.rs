@@ -10,7 +10,7 @@
 
 use std::path::PathBuf;
 
-use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
+use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 use serde::de::DeserializeOwned;
 use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
@@ -97,9 +97,11 @@ impl From<MessageDialogKind> for rfd::MessageLevel {
 
 struct WindowHandle(RawWindowHandle);
 
-unsafe impl HasRawWindowHandle for WindowHandle {
-    fn raw_window_handle(&self) -> RawWindowHandle {
-        self.0
+impl HasWindowHandle for WindowHandle {
+    fn window_handle(
+        &self,
+    ) -> Result<raw_window_handle::WindowHandle<'_>, raw_window_handle::HandleError> {
+        Ok(unsafe { raw_window_handle::WindowHandle::borrow_raw(self.0) })
     }
 }
 
@@ -124,6 +126,8 @@ impl<R: Runtime> From<FileDialogBuilder<R>> for FileDialog {
         if let Some(parent) = d.parent {
             builder = builder.set_parent(&WindowHandle(parent));
         }
+
+        builder = builder.set_can_create_directories(d.can_create_directories.unwrap_or(true));
 
         builder
     }
