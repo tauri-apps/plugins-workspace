@@ -202,7 +202,7 @@ impl From<ProcedureDto> for StrongholdProcedure {
                 output,
             } => StrongholdProcedure::Slip10Derive(Slip10Derive {
                 curve: Curve::Ed25519,
-                chain: chain,
+                chain,
                 input: input.into(),
                 output: output.into(),
             }),
