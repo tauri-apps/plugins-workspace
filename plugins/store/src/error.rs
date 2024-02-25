@@ -5,10 +5,16 @@
 use serde::{Serialize, Serializer};
 use std::path::PathBuf;
 
+pub type Result<T> = std::result::Result<T, Error>;
+
 /// The error types.
 #[derive(thiserror::Error, Debug)]
 #[non_exhaustive]
 pub enum Error {
+    // TODO figure out why
+    #[cfg(mobile)]
+    #[error(transparent)]
+    PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
     #[error("Failed to serialize store. {0}")]
     Serialize(Box<dyn std::error::Error + Send + Sync>),
     #[error("Failed to deserialize store. {0}")]

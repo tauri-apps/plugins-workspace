@@ -25,9 +25,15 @@ use tauri::{
     plugin::{self, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime, State,
 };
+#[cfg(mobile)]
+use crate::mobile::PLUGIN_IDENTIFIER;
+use crate::plugin::PluginHandle;
 
+mod desktop;
 mod error;
 mod store;
+mod mobile;
+mod models;
 
 #[derive(Serialize, Clone)]
 struct ChangePayload<'a> {
@@ -40,6 +46,9 @@ struct ChangePayload<'a> {
 pub struct StoreCollection<R: Runtime> {
     stores: Mutex<HashMap<PathBuf, Store<R>>>,
     frozen: bool,
+
+    #[cfg(mobile)]
+    mobile_plugin: Option<PluginHandle<R>>,
 }
 
 pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T, Error>>(
@@ -55,7 +64,11 @@ pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T, Error>>(
         if collection.frozen {
             return Err(Error::NotFound(path.to_path_buf()));
         }
-        let mut store = StoreBuilder::new(path).build(app);
+        #[cfg(mobile)]
+        let mut store = StoreBuilder::new(path).build(app,     /* TODO figure out why */ &collection.mobile_plugin);
+        #[cfg(desktop)]
+        let mut store = StoreBuilder::new(path).build(app,     /* TODO figure out why */ &None);
+
         // ignore loading errors, just use the default
         if let Err(err) = store.load() {
             warn!(
@@ -306,9 +319,18 @@ impl<R: Runtime> Builder<R> {
                     }
                 }
 
+                #[cfg(target_os = "android")]
+                let handle = _api.register_android_plugin(PLUGIN_IDENTIFIER, "StorePlugin")?;
+                #[cfg(target_os = "ios")]
+                let handle = _api.register_ios_plugin(init_plugin_store)?;
+
                 app_handle.manage(StoreCollection {
                     stores: Mutex::new(self.stores),
                     frozen: self.frozen,
+
+                    #[cfg(mobile)]
+                    // TODO Figure out why
+                    mobile_plugin: Some(handle)
                 });
 
                 Ok(())
