@@ -46,4 +46,10 @@ impl<R: Runtime> Clipboard<R> {
             "Unsupported on this platform".to_string(),
         ))
     }
+
+    pub fn clear(&self) -> crate::Result<()> {
+        Err(crate::Error::Clipboard(
+            "Unsupported on this platform".to_string(),
+        ))
+    }
 }
