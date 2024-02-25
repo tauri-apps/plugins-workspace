@@ -67,15 +67,12 @@ async function readText(): Promise<string> {
  *
  * @since 2.0.0
  */
-async function writeHtml(
-    html: string,
-    altHtml?: string
-): Promise<void> {
+async function writeHtml(html: string, altHtml?: string): Promise<void> {
   return invoke("plugin:clipboard-manager|write_html", {
     data: {
       html: {
         html,
-        altHtml
+        altHtml,
       },
     },
   });
