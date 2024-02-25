@@ -29,12 +29,10 @@ pub struct Clipboard<R: Runtime> {
 impl<R: Runtime> Clipboard<R> {
     pub fn write(&self, kind: ClipKind) -> crate::Result<()> {
         match kind {
-            ClipKind::PlainText { text, .. } => {
-                match &self.clipboard {
-                    Ok(clipboard) => clipboard.lock().unwrap().set_text(text).map_err(Into::into),
-                    Err(e) => Err(crate::Error::Clipboard(e.to_string())),
-                }
-            }
+            ClipKind::PlainText { text, .. } => match &self.clipboard {
+                Ok(clipboard) => clipboard.lock().unwrap().set_text(text).map_err(Into::into),
+                Err(e) => Err(crate::Error::Clipboard(e.to_string())),
+            },
             _ => Err(crate::Error::Clipboard("Invalid clip kind!".to_string())),
         }
     }
@@ -52,18 +50,20 @@ impl<R: Runtime> Clipboard<R> {
     pub fn write_html(&self, kind: ClipKind) -> crate::Result<()> {
         match kind {
             ClipKind::Html { html, alt_html, .. } => match &self.clipboard {
-                Ok(clipboard) => clipboard.lock().unwrap().set_html(html, alt_html).map_err(Into::into),
+                Ok(clipboard) => clipboard
+                    .lock()
+                    .unwrap()
+                    .set_html(html, alt_html)
+                    .map_err(Into::into),
                 Err(e) => Err(crate::Error::Clipboard(e.to_string())),
-            }
+            },
             _ => Err(crate::Error::Clipboard("Invalid clip kind!".to_string())),
-            }
         }
+    }
 
     pub fn clear(&self) -> crate::Result<()> {
         match &self.clipboard {
-            Ok(clipboard) => {
-                clipboard.lock().unwrap().clear().map_err(Into::into)
-            }
+            Ok(clipboard) => clipboard.lock().unwrap().clear().map_err(Into::into),
             Err(e) => Err(crate::Error::Clipboard(e.to_string())),
         }
     }

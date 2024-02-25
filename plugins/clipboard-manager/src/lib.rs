@@ -55,8 +55,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             #[cfg(desktop)]
             commands::write_html,
             #[cfg(desktop)]
-            commands::read_html,
-            #[cfg(desktop)]
             commands::clear
         ])
         .setup(|app, api| {
