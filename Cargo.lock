@@ -6723,7 +6723,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-beta.1"
+version = "2.0.0-beta.2"
 dependencies = [
  "log",
  "serde",
