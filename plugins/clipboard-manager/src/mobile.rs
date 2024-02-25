@@ -46,10 +46,4 @@ impl<R: Runtime> Clipboard<R> {
             "Unsupported on this platform".to_string(),
         ))
     }
-
-    pub fn read_html(&self) -> crate::Result<ClipboardContents> {
-        Err(crate::Error::Clipboard(
-            "Unsupported on this platform".to_string(),
-        ))
-    }
 }
