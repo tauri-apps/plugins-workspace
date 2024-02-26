@@ -91,7 +91,7 @@ fn main() {
 }
 ```
 
-As you may have noticed, the Store crated above isn't accessible to the frontend. To interoperate with stores created by JS use the exported `with_store` method:
+As you may have noticed, the Store created above isn't accessible to the frontend. To interoperate with stores created by JS use the exported `with_store` method:
 
 ```rust
 use tauri::Wry;
