@@ -1,5 +1,5 @@
 [package]
-name = "AppSettingsManager"
+name = "app_settings_manager"
 version = "0.0.0"
 description = "A Tauri App"
 authors = ["you"]

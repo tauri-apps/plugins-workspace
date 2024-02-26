@@ -3,17 +3,6 @@
 version = 3
 
 [[package]]
-name = "AppSettingsManager"
-version = "0.0.0"
-dependencies = [
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-store",
-]
-
-[[package]]
 name = "addr2line"
 version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -149,6 +138,17 @@ dependencies = [
  "tauri-plugin-websocket",
  "tokio",
  "tokio-tungstenite",
+]
+
+[[package]]
+name = "app_settings_manager"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-store",
 ]
 
 [[package]]

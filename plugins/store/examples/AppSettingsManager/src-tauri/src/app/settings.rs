@@ -7,23 +7,19 @@ pub struct AppSettings {
 }
 
 impl AppSettings {
-
-    pub fn load_from_store<R: tauri::Runtime>(store: &Store<R>) -> Result<Self, Box<dyn std::error::Error>> {
-
+    pub fn load_from_store<R: tauri::Runtime>(
+        store: &Store<R>,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
         let launch_at_login = store
-            .get("appSettings.launchAtLogin".to_string())
+            .get("appSettings.launchAtLogin")
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
 
         let theme = store
-            .get("appSettings.theme".to_string())
+            .get("appSettings.theme")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
-            .unwrap_or_default();
-
-        println!("Debug Info:");
-        println!("Launch at login: {}", launch_at_login);
-        println!("Theme: {}", theme);
+            .unwrap_or_else(|| "dark".to_string());
 
         Ok(AppSettings {
             launch_at_login,

@@ -1,7 +1,5 @@
 {
-  "name": "AppSettingsManager",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,10 +8,10 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.4.0"
+    "@tauri-apps/api": "^1.5"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.4.0",
+    "@tauri-apps/cli": "^1.5",
     "vite": "^4.4.4",
     "typescript": "^5.0.2"
   }
