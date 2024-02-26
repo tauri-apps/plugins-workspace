@@ -15,4 +15,4 @@ serde_json.workspace = true
 tauri.workspace = true
 log.workspace = true
 thiserror.workspace = true
-auto-launch = "0.4"
+auto-launch = "0.5"

@@ -19,8 +19,10 @@ authenticator = "0.3.1"
 once_cell = "1"
 sha2 = "0.10"
 base64 = "0.21"
-u2f = "0.2"
 chrono = "0.4"
+bytes = "1"
+byteorder = "1"
+openssl = "0.10"
 
 [dev-dependencies]
 rand = "0.8"

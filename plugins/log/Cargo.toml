@@ -14,7 +14,7 @@ serde.workspace = true
 serde_json.workspace = true
 tauri.workspace = true
 serde_repr = "0.1"
-byte-unit = "4.0"
+byte-unit = "5"
 fern = "0.6"
 log = { workspace = true, features = ["kv_unstable"] }
 time = { version = "0.3", features = ["formatting", "local-offset"] }

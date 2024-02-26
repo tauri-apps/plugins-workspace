@@ -7,7 +7,7 @@ pub enum Error {
     #[error(transparent)]
     JSON(#[from] serde_json::Error),
     #[error(transparent)]
-    U2F(#[from] u2f::u2ferror::U2fError),
+    U2F(#[from] crate::u2f_crate::u2ferror::U2fError),
     #[error(transparent)]
     Auth(#[from] authenticator::errors::AuthenticatorError),
 }

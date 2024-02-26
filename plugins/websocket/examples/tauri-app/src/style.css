@@ -66,3 +66,7 @@ button:not(:disabled):active {
 button:focus {
   border-color: #666;
 }
+
+p {
+  margin: 3px 0;
+}
