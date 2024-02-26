@@ -8,12 +8,10 @@ use tauri_plugin_store::StoreBuilder;
 mod app;
 use app::settings::AppSettings;
 
-
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
         .setup(|app| {
-
             //start settings store
             let store = StoreBuilder::new(app.handle(), "settings.json".parse()?).build();
             let store_arc = Arc::new(store);
