@@ -1,6 +1,9 @@
 #![cfg(target_os = "windows")]
 
-use crate::{semver_compat::semver_compat_string, SingleInstanceCallback};
+#[cfg(feature = "semver")]
+use crate::semver_compat::semver_compat_string;
+
+use crate::SingleInstanceCallback;
 use std::ffi::CStr;
 use tauri::{
     plugin::{self, TauriPlugin},
@@ -29,9 +32,13 @@ const WMCOPYDATA_SINGLE_INSTANCE_DATA: usize = 1542;
 pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(|app| {
-            let mut id = (&app.config().tauri.bundle.identifier).to_owned();
-            id.push('_');
-            id.push_str(semver_compat_string(app.package_info().version.clone()).as_str());
+            #[allow(unused_mut)]
+            let mut id = app.config().tauri.bundle.identifier.clone();
+            #[cfg(feature = "semver")]
+            {
+                id.push('_');
+                id.push_str(semver_compat_string(app.package_info().version.clone()).as_str());
+            }
 
             let class_name = encode_wide(format!("{id}-sic"));
             let window_name = encode_wide(format!("{id}-siw"));
@@ -117,7 +124,7 @@ unsafe extern "system" fn single_instance_window_proc<R: Runtime>(
                 let data = CStr::from_ptr((*cds_ptr).lpData as _).to_string_lossy();
                 let mut s = data.split('|');
                 let cwd = s.next().unwrap();
-                let args = s.into_iter().map(|s| s.to_string()).collect();
+                let args = s.map(|s| s.to_string()).collect();
                 callback(app_handle, args, cwd.to_string());
             }
             1
