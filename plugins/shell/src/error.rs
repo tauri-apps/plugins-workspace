@@ -27,6 +27,15 @@ pub enum Error {
     /// JSON error.
     #[error(transparent)]
     Json(#[from] serde_json::Error),
+    /// API not supported on the current platform
+    #[error("API not supported on the current platform")]
+    UnsupportedPlatform,
+    #[error(transparent)]
+    #[cfg(windows)]
+    Win32Error(#[from] windows::core::Error),
+    /// Path doesn't have a parent.
+    #[error("Path doesn't have a parent: {0}")]
+    NoParent(PathBuf),
 }
 
 impl Serialize for Error {

@@ -64,6 +64,10 @@ impl<R: Runtime> Shell<R> {
     pub fn open(&self, path: impl Into<String>, with: Option<open::Program>) -> Result<()> {
         open::open(&self.open_scope, path.into(), with).map_err(Into::into)
     }
+
+    pub fn show_item_in_directory<P: AsRef<Path>>(&self, p: P) -> Result<()> {
+        open::show_item_in_directory(p)
+    }
 }
 
 pub trait ShellExt<R: Runtime> {

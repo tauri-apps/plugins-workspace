@@ -9,6 +9,22 @@ use serde::{Deserialize, Deserializer};
 use crate::scope::OpenScope;
 use std::str::FromStr;
 
+#[cfg(windows)]
+#[path = "windows.rs"]
+mod platform;
+#[cfg(target_os = "macos")]
+#[path = "macos.rs"]
+mod platform;
+#[cfg(any(
+    target_os = "linux",
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "netbsd",
+    target_os = "openbsd"
+))]
+#[path = "linux.rs"]
+mod platform;
+
 /// Program to use on the [`open()`] call.
 pub enum Program {
     /// Use the `open` program.
@@ -119,4 +135,30 @@ impl Program {
 /// ```
 pub fn open<P: AsRef<str>>(scope: &OpenScope, path: P, with: Option<Program>) -> crate::Result<()> {
     scope.open(path.as_ref(), with).map_err(Into::into)
+}
+
+pub fn show_item_in_directory<P: AsRef<std::path::Path>>(p: P) -> crate::Result<()> {
+    let p = p.as_ref().canonicalize()?;
+
+    #[cfg(any(
+        windows,
+        target_os = "maco",
+        target_os = "linux",
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "openbsd"
+    ))]
+    return platform::show_item_in_directory(p);
+
+    #[cfg(not(any(
+        windows,
+        target_os = "maco",
+        target_os = "linux",
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "openbsd"
+    )))]
+    Err(crate::Error::UnsupportedPlatform)
 }
