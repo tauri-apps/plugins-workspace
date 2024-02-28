@@ -102,9 +102,12 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
     if let Some(connection) = manager.try_state::<ConnectionHandle>() {
         #[cfg(feature = "semver")]
-        let id = dbus_id(app.config(), app.package_info().version.clone());
+        let id = dbus_id(
+            manager.config(),
+            manager.app_handle().package_info().version.clone(),
+        );
         #[cfg(not(feature = "semver"))]
-        let id = dbus_id(app.config());
+        let id = dbus_id(manager.config());
 
         let dbus_name = format!("org.{id}.SingleInstance",);
         let _ = connection.0.release_name(dbus_name);
