@@ -96,10 +96,14 @@ async fn upload<R: Runtime>(
 ) -> Result<String> {
     // Read the file
     let file = File::open(file_path).await?;
+    let file_len = file.metadata().await.unwrap().len();
 
     // Create the request and attach the file to the body
     let client = reqwest::Client::new();
-    let mut request = client.post(url).body(file_to_body(id, window, file));
+    let mut request = client
+        .post(url)
+        .header(reqwest::header::CONTENT_LENGTH, file_len)
+        .body(file_to_body(id, window, file));
 
     // Loop trought the headers keys and values
     // and add them to the request object.
