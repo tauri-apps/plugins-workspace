@@ -6,6 +6,8 @@
 //!
 //! Access the HTTP client written in Rust.
 
+#[cfg(feature = "cookies")]
+use std::sync::Arc;
 pub use reqwest;
 use tauri::{
     plugin::{Builder, TauriPlugin},
@@ -21,6 +23,8 @@ mod scope;
 struct Http<R: Runtime> {
     #[allow(dead_code)]
     app: AppHandle<R>,
+	#[cfg(feature = "cookies")]
+	jar: Arc<reqwest::cookie::Jar>
 }
 
 trait HttpExt<R: Runtime> {
@@ -43,7 +47,11 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::fetch_read_body,
         ])
         .setup(|app, _api| {
-            app.manage(Http { app: app.clone() });
+            app.manage(Http {
+	            app: app.clone(),
+	            #[cfg(feature = "cookies")]
+	            jar: Arc::new(reqwest::cookie::Jar::default()),
+            });
             Ok(())
         })
         .build()

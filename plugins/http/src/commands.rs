@@ -192,7 +192,7 @@ pub async fn fetch<R: Runtime>(
 
 	            #[cfg(feature = "cookies")]
 	            {
-		            builder = builder.cookie_store(true);
+		            builder = builder.cookie_provider(app.http().jar.clone());
 	            }
 
                 let mut request = builder.build()?.request(method.clone(), url);
