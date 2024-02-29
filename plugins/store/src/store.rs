@@ -6,11 +6,10 @@ use crate::{ChangePayload, Error};
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
-    fs::{create_dir_all, read, File},
-    io::Write,
     path::{Path, PathBuf},
 };
 use tauri::{AppHandle, Manager, Runtime};
+#[cfg(mobile)]
 use crate::plugin::PluginHandle;
 
 type SerializeFn =
@@ -31,15 +30,20 @@ fn default_deserialize(
 }
 
 /// Builds a [`Store`]
-pub struct StoreBuilder {
+pub struct StoreBuilder<R: Runtime> {
     path: PathBuf,
     defaults: Option<HashMap<String, JsonValue>>,
     cache: HashMap<String, JsonValue>,
     serialize: SerializeFn,
     deserialize: DeserializeFn,
+
+    #[cfg(mobile)]
+    mobile_plugin_handle: Option<PluginHandle<R>>,
+    #[cfg(not(mobile))]
+    _marker: std::marker::PhantomData<R>
 }
 
-impl StoreBuilder {
+impl<R: Runtime> StoreBuilder<R> {
     /// Creates a new [`StoreBuilder`].
     ///
     /// # Examples
@@ -59,7 +63,17 @@ impl StoreBuilder {
             cache: Default::default(),
             serialize: default_serialize,
             deserialize: default_deserialize,
+            #[cfg(mobile)]
+            mobile_plugin_handle: None,
+            #[cfg(not(mobile))]
+            _marker: std::marker::PhantomData
         }
+    }
+
+    #[cfg(mobile)]
+    pub fn mobile_plugin_handle(mut self, handle: PluginHandle<R>) -> Self {
+        self.mobile_plugin_handle = Some(handle);
+        self
     }
 
     /// Inserts a default key-value pair.
@@ -78,7 +92,7 @@ impl StoreBuilder {
     ///   .defaults(defaults);
     ///
     /// # Ok(())
-    /// # }
+    /// # }Store
     pub fn defaults(mut self, defaults: HashMap<String, JsonValue>) -> Self {
         self.cache = defaults.clone();
         self.defaults = Some(defaults);
@@ -149,7 +163,7 @@ impl StoreBuilder {
     ///     Ok(())
     ///   });
     /// ```
-    pub fn build<R: Runtime>(self, app: AppHandle<R>, /* TODO Figure out */ mobile_plugin: &Option<PluginHandle<R>>) -> Store<R> {
+    pub fn build(self, app: AppHandle<R>) -> Store<R> {
         Store {
             app,
             path: self.path,
@@ -159,22 +173,22 @@ impl StoreBuilder {
             deserialize: self.deserialize,
 
             #[cfg(mobile)]
-            mobile_plugin: mobile_plugin.clone() // TODO Figure out
+            mobile_plugin_handle: self.mobile_plugin_handle
         }
     }
 }
 
 #[derive(Clone)]
 pub struct Store<R: Runtime> {
-    pub app: AppHandle<R>,
+    pub(crate) app: AppHandle<R>,
     pub(crate) path: PathBuf,
     defaults: Option<HashMap<String, JsonValue>>,
-    pub cache: HashMap<String, JsonValue>,
-    pub serialize: SerializeFn,
-    pub deserialize: DeserializeFn,
+    pub(crate) cache: HashMap<String, JsonValue>,
+    pub(crate) serialize: SerializeFn,
+    pub(crate) deserialize: DeserializeFn,
 
     #[cfg(mobile)]
-    pub mobile_plugin: Option<PluginHandle<R>>,
+    pub(crate) mobile_plugin_handle: Option<PluginHandle<R>>,
 }
 
 impl<R: Runtime> Store<R> {

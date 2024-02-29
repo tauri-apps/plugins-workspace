@@ -11,20 +11,32 @@ tauri::ios_plugin_binding!(init_plugin_store);
 use tauri::Runtime;
 
 use crate::error::Result;
-use crate::models::*;
 use crate::Store;
+use std::collections::HashMap;
+use serde_json::Value;
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LoadStore {
+    pub cache: HashMap<String, Value>
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SaveStore {
+    pub store: String,
+    pub cache: HashMap<String, Value>
+}
 
 #[cfg(mobile)]
 impl<R: Runtime> Store<R> {
     pub fn save(&self) -> Result<()> {
-        self.mobile_plugin
+        self.mobile_plugin_handle
             .as_ref()
-            .unwrap()
+            .ok_or_else(||crate::error::Error::MobilePluginHandleUnInitialized)?
             .run_mobile_plugin(
-                "save",
                 SaveStore {
-                    // TODO Figure out why
-                    store: self.path.to_str().unwrap().to_string(),
+                    store: self.path.to_string_lossy().to_string(),
                     cache: self.cache.clone(),
                 },
             )
@@ -32,15 +44,14 @@ impl<R: Runtime> Store<R> {
     }
 
     pub fn load(&mut self) -> Result<()> {
-        let result: Result<LoadStore> = self
-            .mobile_plugin
+        let result: Value = self
+            .mobile_plugin_handle
             .as_ref()
-            .unwrap()
-            .run_mobile_plugin("load", self.path.to_str().unwrap().to_string())
-            .map_err(Into::into);
+            .ok_or_else(||crate::error::Error::MobilePluginHandleUnInitialized)?
+            .run_mobile_plugin("load", self.path.to_string_lossy().to_string())?;
 
-            // TODO is unwrap safe ?
-        self.cache.extend(result.unwrap().cache);
+        let map = serde_json::from_value::<HashMap<String, Value>>(result).unwrap();
+        self.cache.extend(map);
 
         Ok(())
     }
