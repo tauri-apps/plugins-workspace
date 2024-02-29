@@ -29,6 +29,8 @@ pub enum Error {
     Request(#[from] reqwest::Error),
     #[error("{0}")]
     ContentLength(String),
+    #[error("{0}")]
+    HttpErrorCode(u16),
 }
 
 impl Serialize for Error {
@@ -100,7 +102,8 @@ async fn upload<R: Runtime>(
 
     // Create the request and attach the file to the body
     let client = reqwest::Client::new();
-    let mut request = client.post(url)
+    let mut request = client
+        .post(url)
         .header(reqwest::header::CONTENT_LENGTH, file_len)
         .body(file_to_body(id, window, file));
 
@@ -114,10 +117,7 @@ async fn upload<R: Runtime>(
     if response.status().is_success() {
         return response.text().await.map_err(Error::from);
     }
-    Err(Error::ContentLength(format!(
-        "invalid status code: {}",
-        response.status().as_u16()
-    )))
+    Err(Error::HttpErrorCode(response.status().as_u16()))
 }
 
 fn file_to_body<R: Runtime>(id: u32, window: Window<R>, file: File) -> reqwest::Body {
