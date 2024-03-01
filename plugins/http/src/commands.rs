@@ -14,10 +14,7 @@ use tauri::{
     AppHandle, Manager, ResourceId, Runtime,
 };
 
-use crate::{
-    scope::{Entry, Scope},
-    Error, Result,
-};
+use crate::{scope::{Entry, Scope}, Error, Result, HttpExt};
 
 struct ReqwestResponse(reqwest::Response);
 
