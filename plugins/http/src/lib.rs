@@ -8,6 +8,9 @@
 
 #[cfg(feature = "cookies")]
 use std::sync::Arc;
+#[cfg(feature = "cookies")]
+use tauri_plugin_store::StoreBuilder;
+
 pub use reqwest;
 use tauri::{
     plugin::{Builder, TauriPlugin},
@@ -47,6 +50,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::fetch_read_body,
         ])
         .setup(|app, _api| {
+	        #[cfg(feature = "cookies")]
+	        let mut store = StoreBuilder::new("http/cookies.bin".parse()?).build(app);
+
             app.manage(Http {
 	            app: app.clone(),
 	            #[cfg(feature = "cookies")]

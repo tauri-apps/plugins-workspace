@@ -30,6 +30,7 @@ http = "0.2"
 reqwest = { version = "0.11", default-features = false }
 url = { workspace = true }
 data-url = "0.3"
+tauri-plugin-store = { path = "../store", version = "2.0.0-beta.1", optional = true }
 
 [features]
 multipart = [ "reqwest/multipart" ]
@@ -44,7 +45,7 @@ rustls-tls-manual-roots = [ "reqwest/rustls-tls-manual-roots" ]
 rustls-tls-webpki-roots = [ "reqwest/rustls-tls-webpki-roots" ]
 rustls-tls-native-roots = [ "reqwest/rustls-tls-native-roots" ]
 blocking = [ "reqwest/blocking" ]
-cookies = [ "reqwest/cookies" ]
+cookies = [ "reqwest/cookies", "tauri-plugin-store" ]
 gzip = [ "reqwest/gzip" ]
 brotli = [ "reqwest/brotli" ]
 deflate = [ "reqwest/deflate" ]
