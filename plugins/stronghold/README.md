@@ -73,9 +73,57 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Stronghold, Location } from "tauri-plugin-stronghold-api";
+import { Stronghold, Location, Client } from "tauri-plugin-stronghold-api";
+import { appDataDir } from "@tauri-apps/api/path";
 
-// TODO
+const initStrongHold = async () => {
+  const vaultPath = `${await appDataDir()}/vault.hold`;
+
+  const vaultKey = "The key to the vault";
+
+  const stronghold = await Stronghold.load(vaultPath, vaultKey);
+
+  let client: Client;
+
+  const clientName = "name your client";
+
+  try {
+    client = await hold.loadClient(clientName);
+  } catch {
+    client = await hold.createClient(clientName);
+  }
+
+  return {
+    stronghold,
+    client,
+  };
+};
+
+const { stronghold, client } = await initStrongHold();
+
+const store = client.getStore();
+
+const key = "my_key";
+
+// Insert a record to the store
+
+const data = Array.from(new TextEncoder().encode("Hello, World!"));
+
+await store.insert(key, data);
+
+// Read a record from store
+
+const data = await store.get(key);
+
+const value = new TextDecoder().decode(new Uint8Array(data));
+
+// Save your updates
+
+await stronghold.save();
+
+// Remove a record from store
+
+await store.remove(key);
 ```
 
 ## Contributing
