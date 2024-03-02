@@ -75,8 +75,7 @@ fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T>>(
 
         #[cfg(mobile)]
         {
-            builder = builder
-                .mobile_plugin_handle(collection.mobile_plugin_handle.clone());
+            builder = builder.mobile_plugin_handle(collection.mobile_plugin_handle.clone());
         }
 
         let mut store = builder.build(app);
@@ -341,7 +340,7 @@ impl<R: Runtime> Builder<R> {
                     frozen: self.frozen,
 
                     #[cfg(mobile)]
-                    mobile_plugin_handle: handle
+                    mobile_plugin_handle: handle,
                 });
 
                 Ok(())

@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+#[cfg(mobile)]
+use crate::plugin::PluginHandle;
 use crate::{ChangePayload, Error};
 use serde_json::Value as JsonValue;
 use std::{
@@ -9,8 +11,6 @@ use std::{
     path::{Path, PathBuf},
 };
 use tauri::{AppHandle, Manager, Runtime};
-#[cfg(mobile)]
-use crate::plugin::PluginHandle;
 
 type SerializeFn =
     fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>>;
@@ -40,7 +40,7 @@ pub struct StoreBuilder<R: Runtime> {
     #[cfg(mobile)]
     mobile_plugin_handle: Option<PluginHandle<R>>,
     #[cfg(not(mobile))]
-    _marker: std::marker::PhantomData<R>
+    _marker: std::marker::PhantomData<R>,
 }
 
 impl<R: Runtime> StoreBuilder<R> {
@@ -66,7 +66,7 @@ impl<R: Runtime> StoreBuilder<R> {
             #[cfg(mobile)]
             mobile_plugin_handle: None,
             #[cfg(not(mobile))]
-            _marker: std::marker::PhantomData
+            _marker: std::marker::PhantomData,
         }
     }
 
@@ -173,7 +173,7 @@ impl<R: Runtime> StoreBuilder<R> {
             deserialize: self.deserialize,
 
             #[cfg(mobile)]
-            mobile_plugin_handle: self.mobile_plugin_handle
+            mobile_plugin_handle: self.mobile_plugin_handle,
         }
     }
 }
