@@ -2,12 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-#[cfg(target_os = "android")]
-pub const PLUGIN_IDENTIFIER: &str = "app.tauri.store";
-
-#[cfg(target_os = "ios")]
-tauri::ios_plugin_binding!(init_plugin_store);
-
 use tauri::Runtime;
 
 use crate::error::Result;
@@ -35,6 +29,7 @@ impl<R: Runtime> Store<R> {
             .as_ref()
             .ok_or_else(||crate::error::Error::MobilePluginHandleUnInitialized)?
             .run_mobile_plugin(
+                "save",
                 SaveStore {
                     store: self.path.to_string_lossy().to_string(),
                     cache: self.cache.clone(),

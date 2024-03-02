@@ -25,16 +25,19 @@ use tauri::{
     plugin::{self, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime, State,
 };
-#[cfg(mobile)]
-use crate::mobile::PLUGIN_IDENTIFIER;
-#[cfg(mobile)]
-use crate::plugin::PluginHandle;
 
 mod error;
 mod store;
 
 #[cfg(mobile)]
 mod mobile;
+#[cfg(mobile)]
+use crate::plugin::PluginHandle;
+#[cfg(target_os = "android")]
+const PLUGIN_IDENTIFIER: &str = "app.tauri.store";
+#[cfg(target_os = "ios")]
+tauri::ios_plugin_binding!(init_plugin_store);
+
 #[cfg(desktop)]
 mod desktop;
 
