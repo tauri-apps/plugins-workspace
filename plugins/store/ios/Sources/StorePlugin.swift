@@ -46,15 +46,10 @@ class StorePlugin: Plugin {
                     for: .applicationSupportDirectory,
                     in: .userDomainMask,
                     appropriateFor: nil,
-                    create: true
+                    create: false
                 )
                 .appendingPathComponent(path)
-            if !FileManager.default.fileExists(atPath: fileURL.path) {
-                let x = try FileManager.default.createFile(
-                    atPath: fileURL.path,
-                    contents: "{}".data(using: String.Encoding.utf8)
-                )
-            }
+
             let data = try String(contentsOfFile: fileURL.path)
             let passData = dictionary(text: data)
 
