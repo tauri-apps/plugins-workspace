@@ -21,17 +21,9 @@ class StorePlugin: Plugin {
             let args = try invoke.parseArgs(SaveStore.self)
             let store = args.store
             let cache = args.cache
-            let fileURL = try FileManager.default
-                .url(
-                    for: .applicationSupportDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: true
-                )
-                .appendingPathComponent(store)
-
-            try JSONEncoder().encode(cache).write(to: fileURL)
+            let fileURL = getUrlFromPath(path: store)
             
+            try JSONEncoder().encode(cache).write(to: fileURL)
             invoke.resolve()
         } catch {
             invoke.reject(error.localizedDescription)
@@ -41,18 +33,10 @@ class StorePlugin: Plugin {
     @objc public func load(_ invoke: Invoke) throws {
         do {
             let path = try invoke.parseArgs(String.self)
-            let fileURL = try FileManager.default
-                .url(
-                    for: .applicationSupportDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: false
-                )
-                .appendingPathComponent(path)
-
-            let data = try String(contentsOfFile: fileURL.path)
+            let fileURL = getUrlFromPath(path: path)
+            let data = try String(contentsOf: fileURL)
             let passData = dictionary(text: data)
-
+            
             invoke.resolve(passData)
         } catch {
             invoke.reject(error.localizedDescription)
@@ -60,9 +44,9 @@ class StorePlugin: Plugin {
     }
     
     func dictionary(text: String) -> [String: Any?] {
-         if let data = text.data(using: .utf8) {
-             do {
-                 return try JSONSerialization.jsonObject(with: data, options: []) as! [String: Any]
+        if let data = text.data(using: .utf8) {
+            do {
+                return try JSONSerialization.jsonObject(with: data, options: []) as! [String: Any]
             } catch {
                 fatalError(error.localizedDescription)
             }
@@ -70,11 +54,53 @@ class StorePlugin: Plugin {
         
         return [:]
     }
+    
+    func getUrlFromPath(path: String) -> URL {
+        do {
+            var url = try FileManager.default
+                .url(
+                    for: .applicationSupportDirectory,
+                    in: .userDomainMask,
+                    appropriateFor: nil,
+                    create: true
+                )
+            let components = path.split(separator: "/").map { element in String(element) }
+            
+            if components.count == 1 {
+                return url.appendPath(path: path)
+            }
+            
+            for i in 0..<components.count {
+                url = url.appendPath(path: components[i])
+            }
+            
+            if components.count > 1 {
+                try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+            }
+            
+            url = url.appendPath(path: components.last!)
+            
+            return url
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+    }
 }
+
 
 @_cdecl("init_plugin_store")
 func initPlugin() -> Plugin {
     return StorePlugin()
+}
+
+private extension URL {
+    func appendPath(path: String) -> URL {
+        if #available(iOS 16.0, *) {
+            return self.appending(path: path)
+        } else {
+            return self.appendingPathComponent(path)
+        }
+    }
 }
 
 public enum JSON : Codable {
@@ -165,17 +191,17 @@ public enum JSON : Codable {
         var container = encoder.singleValueContainer()
         
         switch self {
-            case .null: try container.encodeNil()
-            case .bool(let bool): try container.encode(bool)
-            case .number(let number):
-                if number.objCType.pointee == 0x64 /* 'd' */ {
-                    try container.encode(number.doubleValue)
-                } else {
-                    try container.encode(number.intValue)
-                }
-            case .string(let string): try container.encode(string)
-            case .array(let array): try container.encode(array)
-            case .dictionary(let dictionary): try container.encode(dictionary)
+        case .null: try container.encodeNil()
+        case .bool(let bool): try container.encode(bool)
+        case .number(let number):
+            if number.objCType.pointee == 0x64 /* 'd' */ {
+                try container.encode(number.doubleValue)
+            } else {
+                try container.encode(number.intValue)
+            }
+        case .string(let string): try container.encode(string)
+        case .array(let array): try container.encode(array)
+        case .dictionary(let dictionary): try container.encode(dictionary)
         }
     }
 }
