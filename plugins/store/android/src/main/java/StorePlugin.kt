@@ -21,12 +21,6 @@ class StorePlugin(private val activity: Activity) : Plugin(activity) {
             val path = invoke.parseArgs(String::class.java)
             val file = File(activity.applicationContext.getExternalFilesDir(null), path)
 
-            if (!file.exists()) {
-                file.parentFile?.mkdirs()
-                file.createNewFile()
-                file.writeText("{}")
-            }
-
             invoke.resolveObject(ObjectMapper().readTree(file))
         } catch (ex: Exception) {
             invoke.reject(ex.message)
@@ -39,9 +33,13 @@ class StorePlugin(private val activity: Activity) : Plugin(activity) {
             val args = invoke.parseArgs(JsonNode::class.java)
             val path = args.get("store").asText()
             val cache = args.get("cache")
-
             val file = File(activity.applicationContext.getExternalFilesDir(null), path)
-            file.parentFile?.mkdirs()
+
+            if (!file.exists()) {
+                file.parentFile?.mkdirs()
+                file.createNewFile()
+            }
+
             file.writeText(cache.toString())
 
             invoke.resolve()
