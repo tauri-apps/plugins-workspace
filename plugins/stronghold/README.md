@@ -43,9 +43,8 @@ First you need to register the core plugin with Tauri:
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_stronghold::Builder::new(|password| {
-            // TODO: hash the password here with e.g. argon2, blake2b or any other secure algorithm
-
-            // An example implementation using the rust-argon2 crate for hashing the password
+            // Hash the password here with e.g. argon2, blake2b or any other secure algorithm
+            // Here is an example implementation using the `rust-argon2` crate for hashing the password
 
             use argon2::{hash_raw, Config, Variant, Version};
 
