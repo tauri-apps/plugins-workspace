@@ -21,7 +21,7 @@ class StorePlugin: Plugin {
             let args = try invoke.parseArgs(SaveStore.self)
             let store = args.store
             let cache = args.cache
-            let fileURL = getUrlFromPath(path: store)
+            let fileURL = getUrlFromPath(path: store, createDirs: true)
             
             try JSONEncoder().encode(cache).write(to: fileURL)
             invoke.resolve()
@@ -33,7 +33,7 @@ class StorePlugin: Plugin {
     @objc public func load(_ invoke: Invoke) throws {
         do {
             let path = try invoke.parseArgs(String.self)
-            let fileURL = getUrlFromPath(path: path)
+            let fileURL = getUrlFromPath(path: path, createDirs: false)
             let data = try String(contentsOf: fileURL)
             let passData = dictionary(text: data)
             
@@ -55,7 +55,7 @@ class StorePlugin: Plugin {
         return [:]
     }
     
-    func getUrlFromPath(path: String) -> URL {
+    func getUrlFromPath(path: String, createDirs: Bool) -> URL {
         do {
             var url = try FileManager.default
                 .url(
@@ -67,18 +67,18 @@ class StorePlugin: Plugin {
             let components = path.split(separator: "/").map { element in String(element) }
             
             if components.count == 1 {
-                return url.appendPath(path: path)
+                return url.appendPath(path: path, isDirectory: false)
             }
             
             for i in 0..<components.count {
-                url = url.appendPath(path: components[i])
+                url = url.appendPath(path: components[i], isDirectory: true)
             }
             
-            if components.count > 1 {
+            if components.count > 1 && createDirs {
                 try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
             }
             
-            url = url.appendPath(path: components.last!)
+            url = url.appendPath(path: components.last!, isDirectory: false)
             
             return url
         } catch {
@@ -94,11 +94,11 @@ func initPlugin() -> Plugin {
 }
 
 private extension URL {
-    func appendPath(path: String) -> URL {
+    func appendPath(path: String, isDirectory: Bool) -> URL {
         if #available(iOS 16.0, *) {
-            return self.appending(path: path)
+            return self.appending(path: path, directoryHint: isDirectory ? .isDirectory : .notDirectory)
         } else {
-            return self.appendingPathComponent(path)
+            return self.appendingPathComponent(path, isDirectory: isDirectory)
         }
     }
 }
