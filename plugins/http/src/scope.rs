@@ -17,19 +17,23 @@ impl<'de> Deserialize<'de> for Entry {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        struct EntryRaw {
-            url: String,
+        #[serde(untagged)]
+        enum EntryRaw {
+            Value(String),
+            Object { url: String },
         }
 
         EntryRaw::deserialize(deserializer).and_then(|raw| {
-            Ok(Entry {
-                url: glob::Pattern::new(&raw.url).map_err(|e| {
-                    serde::de::Error::custom(format!(
-                        "URL `{}` is not a valid glob pattern: {e}",
-                        raw.url
-                    ))
-                })?,
-            })
+            let url = match raw {
+                EntryRaw::Value(url) => url,
+                EntryRaw::Object { url } => url,
+            };
+
+            let url = glob::Pattern::new(&url).map_err(|e| {
+                serde::de::Error::custom(format!("URL `{url}` is not a valid glob pattern: {e}"))
+            })?;
+
+            Ok(Entry { url })
         })
     }
 }
