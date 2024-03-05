@@ -75,7 +75,7 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 import { Stronghold, Location, Client } from "tauri-plugin-stronghold-api";
 import { appDataDir } from "@tauri-apps/api/path";
 
-const initStrongHold = async () => {
+const initStronghold = async () => {
   const vaultPath = `${await appDataDir()}/vault.hold`;
 
   const vaultKey = "The key to the vault";
@@ -98,7 +98,7 @@ const initStrongHold = async () => {
   };
 };
 
-const { stronghold, client } = await initStrongHold();
+const { stronghold, client } = await initStronghold();
 
 const store = client.getStore();
 
