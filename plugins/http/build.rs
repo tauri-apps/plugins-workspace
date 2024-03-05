@@ -12,11 +12,15 @@ const COMMANDS: &[&str] = &["fetch", "fetch_cancel", "fetch_send", "fetch_read_b
 #[derive(schemars::JsonSchema)]
 struct ScopeEntry {
     /// A URL that can be accessed by the webview when using the HTTP APIs.
-    /// The scoped URL is matched against the request URL using a glob pattern.
+    /// Wildcards can be used following the URL pattern standard.
+    ///
+    /// See [the URL Pattern spec](https://urlpattern.spec.whatwg.org/) for more information.
     ///
     /// Examples:
     ///
-    /// - "https://*" or "https://**" : allows all HTTPS urls
+    /// - "https://*" : allows all HTTPS origin on port 443
+    ///
+    /// - "https://*:*" : allows all HTTPS origin on any port
     ///
     /// - "https://*.github.com/tauri-apps/tauri": allows any subdomain of "github.com" with the "tauri-apps/api" path
     ///
@@ -28,7 +32,13 @@ struct ScopeEntry {
 impl From<ScopeEntry> for scope::Entry {
     fn from(value: ScopeEntry) -> Self {
         scope::Entry {
-            url: value.url.parse().unwrap(),
+            url: urlpattern::UrlPattern::parse(
+                urlpattern::UrlPatternInit::parse_constructor_string::<regex::Regex>(
+                    &value.url, None,
+                )
+                .unwrap(),
+            )
+            .unwrap(),
         }
     }
 }
