@@ -52,8 +52,25 @@ First you need to register the core plugin with Tauri:
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_stronghold::Builder::new(|password| {
-            // TODO: hash the password here with e.g. argon2, blake2b or any other secure algorithm
-            todo!()
+            // Hash the password here with e.g. argon2, blake2b or any other secure algorithm
+            // Here is an example implementation using the `rust-argon2` crate for hashing the password
+
+            use argon2::{hash_raw, Config, Variant, Version};
+
+            let config = Config {
+                lanes: 4,
+                mem_cost: 10_000,
+                time_cost: 10,
+                variant: Variant::Argon2id,
+                version: Version::Version13,
+                ..Default::default()
+            };
+
+            let salt = "your-salt".as_bytes();
+
+            let key = hash_raw(password.as_ref(), salt, &config).expect("failed to hash password");
+
+            key.to_vec()
         })
         .build())
         .run(tauri::generate_context!())
@@ -64,9 +81,57 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Stronghold, Location } from "@tauri-apps/plugin-stronghold";
+import { Stronghold, Location, Client } from "tauri-plugin-stronghold-api";
+import { appDataDir } from "@tauri-apps/api/path";
 
-// TODO
+const initStronghold = async () => {
+  const vaultPath = `${await appDataDir()}/vault.hold`;
+
+  const vaultKey = "The key to the vault";
+
+  const stronghold = await Stronghold.load(vaultPath, vaultKey);
+
+  let client: Client;
+
+  const clientName = "name your client";
+
+  try {
+    client = await hold.loadClient(clientName);
+  } catch {
+    client = await hold.createClient(clientName);
+  }
+
+  return {
+    stronghold,
+    client,
+  };
+};
+
+const { stronghold, client } = await initStronghold();
+
+const store = client.getStore();
+
+const key = "my_key";
+
+// Insert a record to the store
+
+const data = Array.from(new TextEncoder().encode("Hello, World!"));
+
+await store.insert(key, data);
+
+// Read a record from store
+
+const data = await store.get(key);
+
+const value = new TextDecoder().decode(new Uint8Array(data));
+
+// Save your updates
+
+await stronghold.save();
+
+// Remove a record from store
+
+await store.remove(key);
 ```
 
 ## Contributing

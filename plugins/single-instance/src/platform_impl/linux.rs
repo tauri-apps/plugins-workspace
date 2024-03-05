@@ -70,7 +70,8 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
                             ),
                         );
                     }
-                    std::process::exit(0)
+                    app.cleanup_before_exit();
+                    std::process::exit(0);
                 }
                 _ => {}
             }

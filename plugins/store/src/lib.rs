@@ -11,7 +11,7 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-pub use error::Error;
+pub use error::{Error, Result};
 use log::warn;
 use serde::Serialize;
 pub use serde_json::Value as JsonValue;
@@ -29,6 +29,18 @@ use tauri::{
 mod error;
 mod store;
 
+#[cfg(mobile)]
+mod mobile;
+#[cfg(mobile)]
+use crate::plugin::PluginHandle;
+#[cfg(target_os = "android")]
+const PLUGIN_IDENTIFIER: &str = "app.tauri.store";
+#[cfg(target_os = "ios")]
+tauri::ios_plugin_binding!(init_plugin_store);
+
+#[cfg(desktop)]
+mod desktop;
+
 #[derive(Serialize, Clone)]
 struct ChangePayload<'a> {
     path: &'a Path,
@@ -36,18 +48,20 @@ struct ChangePayload<'a> {
     value: &'a JsonValue,
 }
 
-#[derive(Default)]
-pub struct StoreCollection<R: Runtime> {
+struct StoreCollection<R: Runtime> {
     stores: Mutex<HashMap<PathBuf, Store<R>>>,
     frozen: bool,
+
+    #[cfg(mobile)]
+    mobile_plugin_handle: PluginHandle<R>,
 }
 
-pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T, Error>>(
+fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T>>(
     app: AppHandle<R>,
     collection: State<'_, StoreCollection<R>>,
     path: impl AsRef<Path>,
     f: F,
-) -> Result<T, Error> {
+) -> Result<T> {
     let mut stores = collection.stores.lock().expect("mutex poisoned");
 
     let path = path.as_ref();
@@ -55,7 +69,17 @@ pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T, Error>>(
         if collection.frozen {
             return Err(Error::NotFound(path.to_path_buf()));
         }
-        let mut store = StoreBuilder::new(path).build(app);
+
+        #[allow(unused_mut)]
+        let mut builder = StoreBuilder::new(path);
+
+        #[cfg(mobile)]
+        {
+            builder = builder.mobile_plugin_handle(collection.mobile_plugin_handle.clone());
+        }
+
+        let mut store = builder.build(app);
+
         // ignore loading errors, just use the default
         if let Err(err) = store.load() {
             warn!(
@@ -78,7 +102,7 @@ async fn set<R: Runtime>(
     path: PathBuf,
     key: String,
     value: JsonValue,
-) -> Result<(), Error> {
+) -> Result<()> {
     with_store(app, stores, path, |store| store.insert(key, value))
 }
 
@@ -88,7 +112,7 @@ async fn get<R: Runtime>(
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
     key: String,
-) -> Result<Option<JsonValue>, Error> {
+) -> Result<Option<JsonValue>> {
     with_store(app, stores, path, |store| Ok(store.get(key).cloned()))
 }
 
@@ -98,7 +122,7 @@ async fn has<R: Runtime>(
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
     key: String,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     with_store(app, stores, path, |store| Ok(store.has(key)))
 }
 
@@ -108,7 +132,7 @@ async fn delete<R: Runtime>(
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
     key: String,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     with_store(app, stores, path, |store| store.delete(key))
 }
 
@@ -117,7 +141,7 @@ async fn clear<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-) -> Result<(), Error> {
+) -> Result<()> {
     with_store(app, stores, path, |store| store.clear())
 }
 
@@ -126,7 +150,7 @@ async fn reset<R: Runtime>(
     app: AppHandle<R>,
     collection: State<'_, StoreCollection<R>>,
     path: PathBuf,
-) -> Result<(), Error> {
+) -> Result<()> {
     with_store(app, collection, path, |store| store.reset())
 }
 
@@ -135,7 +159,7 @@ async fn keys<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-) -> Result<Vec<String>, Error> {
+) -> Result<Vec<String>> {
     with_store(app, stores, path, |store| {
         Ok(store.keys().cloned().collect())
     })
@@ -146,7 +170,7 @@ async fn values<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-) -> Result<Vec<JsonValue>, Error> {
+) -> Result<Vec<JsonValue>> {
     with_store(app, stores, path, |store| {
         Ok(store.values().cloned().collect())
     })
@@ -157,7 +181,7 @@ async fn entries<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-) -> Result<Vec<(String, JsonValue)>, Error> {
+) -> Result<Vec<(String, JsonValue)>> {
     with_store(app, stores, path, |store| {
         Ok(store
             .entries()
@@ -171,7 +195,7 @@ async fn length<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-) -> Result<usize, Error> {
+) -> Result<usize> {
     with_store(app, stores, path, |store| Ok(store.len()))
 }
 
@@ -180,7 +204,7 @@ async fn load<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-) -> Result<(), Error> {
+) -> Result<()> {
     with_store(app, stores, path, |store| store.load())
 }
 
@@ -189,7 +213,7 @@ async fn save<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-) -> Result<(), Error> {
+) -> Result<()> {
     with_store(app, stores, path, |store| store.save())
 }
 
@@ -306,9 +330,17 @@ impl<R: Runtime> Builder<R> {
                     }
                 }
 
+                #[cfg(target_os = "android")]
+                let handle = _api.register_android_plugin(PLUGIN_IDENTIFIER, "StorePlugin")?;
+                #[cfg(target_os = "ios")]
+                let handle = _api.register_ios_plugin(init_plugin_store)?;
+
                 app_handle.manage(StoreCollection {
                     stores: Mutex::new(self.stores),
                     frozen: self.frozen,
+
+                    #[cfg(mobile)]
+                    mobile_plugin_handle: handle,
                 });
 
                 Ok(())
