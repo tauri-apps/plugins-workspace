@@ -154,8 +154,22 @@ permissions = [
 ]"###
         );
 
-        std::fs::write(base_dirs.join(format!("{lower}.toml")), toml)
-            .unwrap_or_else(|e| panic!("unable to autogenerate ${upper}: {e}"));
+        let target_file = base_dirs.join(format!("{lower}.toml"));
+
+        // If target_file already exists, it should only be written to if
+        // the newly auto-generated file isn't the same
+        if let Ok(_) = std::fs::metadata(&target_file) {
+            let prev_toml_binding = std::fs::read_to_string(&target_file)
+                .expect("Could not open {prev_toml_data}");
+
+            let prev_toml_data = prev_toml_binding.trim();
+
+            if prev_toml_data != toml.trim() {
+                // The file has changed, it should be updated
+                std::fs::write(&target_file, toml)
+                    .unwrap_or_else(|e| panic!("unable to autogenerate ${upper}: {e}"));
+            }
+        }
     }
 
     tauri_plugin::Builder::new(COMMANDS)
