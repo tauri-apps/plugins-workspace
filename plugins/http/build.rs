@@ -9,8 +9,10 @@ mod scope;
 const COMMANDS: &[&str] = &["fetch", "fetch_cancel", "fetch_send", "fetch_read_body"];
 
 /// HTTP scope entry object definition.
+#[allow(unused)]
 #[derive(schemars::JsonSchema)]
-struct ScopeEntry {
+#[serde(untagged)]
+enum ScopeEntry {
     /// A URL that can be accessed by the webview when using the HTTP APIs.
     /// The scoped URL is matched against the request URL using a glob pattern.
     ///
@@ -21,14 +23,33 @@ struct ScopeEntry {
     /// - "https://*.github.com/tauri-apps/tauri": allows any subdomain of "github.com" with the "tauri-apps/api" path
     ///
     /// - "https://myapi.service.com/users/*": allows access to any URLs that begins with "https://myapi.service.com/users/"
-    url: String,
+    Value(String),
+
+    Object {
+        /// A URL that can be accessed by the webview when using the HTTP APIs.
+        /// The scoped URL is matched against the request URL using a glob pattern.
+        ///
+        /// Examples:
+        ///
+        /// - "https://*" or "https://**" : allows all HTTPS urls
+        ///
+        /// - "https://*.github.com/tauri-apps/tauri": allows any subdomain of "github.com" with the "tauri-apps/api" path
+        ///
+        /// - "https://myapi.service.com/users/*": allows access to any URLs that begins with "https://myapi.service.com/users/"
+        url: String,
+    },
 }
 
 // ensure scope entry is up to date
 impl From<ScopeEntry> for scope::Entry {
     fn from(value: ScopeEntry) -> Self {
+        let url = match value {
+            ScopeEntry::Value(url) => url,
+            ScopeEntry::Object { url } => url,
+        };
+
         scope::Entry {
-            url: value.url.parse().unwrap(),
+            url: url.parse().unwrap(),
         }
     }
 }
