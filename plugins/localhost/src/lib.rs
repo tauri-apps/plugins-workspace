@@ -102,16 +102,6 @@ impl Builder {
                                 on_request(&request, &mut response);
                             }
 
-                            #[cfg(target_os = "linux")]
-                            if let Some(response_csp) =
-                                response.headers.get("Content-Security-Policy")
-                            {
-                                let html = String::from_utf8_lossy(&asset.bytes);
-                                let body =
-                                    html.replacen(tauri::utils::html::CSP_TOKEN, response_csp, 1);
-                                asset.bytes = body.as_bytes().to_vec();
-                            }
-
                             let mut resp = HttpResponse::from_data(asset.bytes);
                             for (header, value) in response.headers {
                                 if let Ok(h) = Header::from_bytes(header.as_bytes(), value) {

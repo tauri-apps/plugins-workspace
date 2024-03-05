@@ -11,7 +11,6 @@ pub enum Error {
     #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
-    #[cfg(desktop)]
     #[error("{0}")]
     Clipboard(String),
 }

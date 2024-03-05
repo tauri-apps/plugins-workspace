@@ -26,6 +26,6 @@ log = { workspace = true }
 thiserror = { workspace = true }
 shared_child = "1"
 regex = "1"
-open = "4"
+open = { version = "5", features = [ "shellexecute-on-windows" ] }
 encoding_rs = "0.8"
 os_pipe = "1"

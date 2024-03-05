@@ -39,4 +39,17 @@ impl<R: Runtime> Clipboard<R> {
     pub fn read(&self) -> crate::Result<ClipboardContents> {
         self.0.run_mobile_plugin("read", ()).map_err(Into::into)
     }
+
+    // Treat HTML as unsupported on mobile until tested
+    pub fn write_html(&self, _kind: ClipKind) -> crate::Result<()> {
+        Err(crate::Error::Clipboard(
+            "Unsupported on this platform".to_string(),
+        ))
+    }
+
+    pub fn clear(&self) -> crate::Result<()> {
+        Err(crate::Error::Clipboard(
+            "Unsupported on this platform".to_string(),
+        ))
+    }
 }

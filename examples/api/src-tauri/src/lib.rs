@@ -132,7 +132,7 @@ pub fn run() {
             cmd::log_operation,
             cmd::perform_request,
         ])
-        .build(tauri::tauri_build_context!())
+        .build(tauri::generate_context!())
         .expect("error while building tauri application");
 
     #[cfg(target_os = "macos")]
