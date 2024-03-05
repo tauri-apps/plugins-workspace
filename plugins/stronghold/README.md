@@ -23,16 +23,9 @@ tauri-plugin-stronghold = { git = "https://github.com/tauri-apps/plugins-workspa
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
+> Note: If your JavaScript package manager cannot install packages from git monorepos, you can still use the code by manually copying the [Guest bindings](./guest-js/index.ts) into your source files.
 
 ```sh
-pnpm add @tauri-apps/plugin-stronghold
-# or
-npm add @tauri-apps/plugin-stronghold
-# or
-yarn add @tauri-apps/plugin-stronghold
-
-# alternatively with Git:
 pnpm add https://github.com/tauri-apps/tauri-plugin-stronghold#v1
 # or
 npm add https://github.com/tauri-apps/tauri-plugin-stronghold#v1
