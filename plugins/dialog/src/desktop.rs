@@ -11,22 +11,13 @@
 use std::path::PathBuf;
 
 use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+use rfd::{AsyncFileDialog, AsyncMessageDialog};
 use serde::de::DeserializeOwned;
 use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
 use crate::{models::*, FileDialogBuilder, MessageDialogBuilder};
 
 const OK: &str = "Ok";
-
-#[cfg(target_os = "linux")]
-type FileDialog = rfd::FileDialog;
-#[cfg(not(target_os = "linux"))]
-type FileDialog = rfd::AsyncFileDialog;
-
-#[cfg(target_os = "linux")]
-type MessageDialog = rfd::MessageDialog;
-#[cfg(not(target_os = "linux"))]
-type MessageDialog = rfd::AsyncMessageDialog;
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
@@ -51,37 +42,15 @@ impl<R: Runtime> Dialog<R> {
     }
 }
 
-#[cfg(not(target_os = "linux"))]
 macro_rules! run_dialog {
     ($e:expr, $h: expr) => {{
         std::thread::spawn(move || $h(tauri::async_runtime::block_on($e)));
     }};
 }
 
-#[cfg(target_os = "linux")]
-macro_rules! run_dialog {
-    ($e:expr, $h: ident) => {{
-        std::thread::spawn(move || {
-            let context = glib::MainContext::default();
-            context.invoke_with_priority(glib::PRIORITY_HIGH, move || $h($e));
-        });
-    }};
-}
-
-#[cfg(not(target_os = "linux"))]
 macro_rules! run_file_dialog {
     ($e:expr, $h: ident) => {{
         std::thread::spawn(move || $h(tauri::async_runtime::block_on($e)));
-    }};
-}
-
-#[cfg(target_os = "linux")]
-macro_rules! run_file_dialog {
-    ($e:expr, $h: ident) => {{
-        std::thread::spawn(move || {
-            let context = glib::MainContext::default();
-            context.invoke_with_priority(glib::PRIORITY_HIGH, move || $h($e));
-        });
     }};
 }
 
@@ -105,9 +74,9 @@ impl HasWindowHandle for WindowHandle {
     }
 }
 
-impl<R: Runtime> From<FileDialogBuilder<R>> for FileDialog {
+impl<R: Runtime> From<FileDialogBuilder<R>> for AsyncFileDialog {
     fn from(d: FileDialogBuilder<R>) -> Self {
-        let mut builder = FileDialog::new();
+        let mut builder = AsyncFileDialog::new();
 
         if let Some(title) = d.title {
             builder = builder.set_title(title);
@@ -133,9 +102,9 @@ impl<R: Runtime> From<FileDialogBuilder<R>> for FileDialog {
     }
 }
 
-impl<R: Runtime> From<MessageDialogBuilder<R>> for MessageDialog {
+impl<R: Runtime> From<MessageDialogBuilder<R>> for AsyncMessageDialog {
     fn from(d: MessageDialogBuilder<R>) -> Self {
-        let mut dialog = MessageDialog::new()
+        let mut dialog = AsyncMessageDialog::new()
             .set_title(&d.title)
             .set_description(&d.message)
             .set_level(d.kind.into());
@@ -162,49 +131,44 @@ pub fn pick_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
-    #[cfg(not(target_os = "linux"))]
     let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf()));
-    run_file_dialog!(FileDialog::from(dialog).pick_file(), f)
+    run_file_dialog!(AsyncFileDialog::from(dialog).pick_file(), f)
 }
 
 pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
-    #[cfg(not(target_os = "linux"))]
     let f = |paths: Option<Vec<rfd::FileHandle>>| {
         f(paths.map(|list| list.into_iter().map(|p| p.path().to_path_buf()).collect()))
     };
-    run_file_dialog!(FileDialog::from(dialog).pick_files(), f)
+    run_file_dialog!(AsyncFileDialog::from(dialog).pick_files(), f)
 }
 
 pub fn pick_folder<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
-    #[cfg(not(target_os = "linux"))]
     let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf()));
-    run_file_dialog!(FileDialog::from(dialog).pick_folder(), f)
+    run_file_dialog!(AsyncFileDialog::from(dialog).pick_folder(), f)
 }
 
 pub fn pick_folders<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
-    #[cfg(not(target_os = "linux"))]
     let f = |paths: Option<Vec<rfd::FileHandle>>| {
         f(paths.map(|list| list.into_iter().map(|p| p.path().to_path_buf()).collect()))
     };
-    run_file_dialog!(FileDialog::from(dialog).pick_folders(), f)
+    run_file_dialog!(AsyncFileDialog::from(dialog).pick_folders(), f)
 }
 
 pub fn save_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
-    #[cfg(not(target_os = "linux"))]
     let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf()));
-    run_file_dialog!(FileDialog::from(dialog).save_file(), f)
+    run_file_dialog!(AsyncFileDialog::from(dialog).save_file(), f)
 }
 
 /// Shows a message dialog
@@ -223,5 +187,5 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
         });
     };
 
-    run_dialog!(MessageDialog::from(dialog).show(), f);
+    run_dialog!(AsyncMessageDialog::from(dialog).show(), f);
 }
