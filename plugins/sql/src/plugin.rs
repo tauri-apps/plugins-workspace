@@ -5,12 +5,15 @@
 use futures_core::future::BoxFuture;
 use serde::{ser::Serializer, Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
 use sqlx::{
-    error::BoxDynError, migrate::{
+    error::BoxDynError,
+    migrate::{
         MigrateDatabase, Migration as SqlxMigration, MigrationSource, MigrationType, Migrator,
-    }, Column, Pool, Row
+    },
+    Column, Pool, Row,
 };
-use sqlx::sqlite::{SqliteConnectOptions};
+use std::collections::HashMap;
 use std::str::FromStr;
 use tauri::{
     command,
@@ -18,7 +21,6 @@ use tauri::{
     AppHandle, Manager, RunEvent, Runtime, State,
 };
 use tokio::sync::Mutex;
-use std::collections::HashMap;
 
 #[cfg(feature = "sqlite")]
 use std::{fs::create_dir_all, path::PathBuf};
@@ -84,21 +86,63 @@ fn path_mapper(mut app_path: PathBuf, connection_string: &str) -> String {
     )
 }
 
+
+
 #[derive(Default)]
 struct DbInstances(Mutex<HashMap<String, Pool<Db>>>);
 
 struct Migrations(Mutex<HashMap<String, MigrationList>>);
 
 
-#[derive(Default)]
-struct Store(Mutex<HashMap<String, String>>);
+
+#[derive(Clone, Deserialize)]
+pub struct SqliteConfig {
+    key: Option<String>,
+    cipher_page_size: Option<i32>,
+    cipher_plaintext_header_size:  Option<i32>,
+    kdf_iter:  Option<i32>,
+    cipher_kdf_algorithm:  Option<String>,
+    cipher_hmac_algorithm:  Option<String>,
+    journal_mode:  Option<String>, // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
+    foreign_keys:  Option<bool>,
+}
+
+
+impl Default for SqliteConfig {
+    fn default() -> Self {
+       SqliteConfig {
+            key: Some("".into()),
+            cipher_page_size: Some(4096),
+            cipher_plaintext_header_size: Some(0),
+            kdf_iter: Some(256000),
+            cipher_kdf_algorithm: Some("PBKDF2_HMAC_SHA512".into()),
+            cipher_hmac_algorithm: Some("HMAC_SHA512".into()),
+            journal_mode: Some("DELETE".into()),
+            foreign_keys: Some(true),
+        }
+    }
+}
+
+pub fn sqlite_config_to_options(config:SqliteConfig) -> SqliteConnectOptions{
+    SqliteConnectOptions::new()
+    .pragma("key", config.key.unwrap_or_default())
+    .pragma("cipher_kdf_algorithm", config.cipher_kdf_algorithm.unwrap_or_default())
+    .pragma("cipher_plaintext_header_size", config.cipher_plaintext_header_size.unwrap_or_default().to_string())
+    .pragma("cipher_page_size", config.cipher_page_size.unwrap_or_default().to_string())
+    .pragma("kdf_iter", config.kdf_iter.unwrap_or_default().to_string())
+    .pragma("cipher_hmac_algorithm", config.cipher_hmac_algorithm.unwrap_or_default())         
+    .foreign_keys(config.foreign_keys.unwrap_or_default())
+    .journal_mode(SqliteJournalMode::from_str(config.journal_mode.unwrap_or_default().as_str()).unwrap())
+}
+
+struct SqlLiteOptionStore(Mutex<HashMap<String, SqliteConfig>>);
 
 #[derive(Default, Clone, Deserialize)]
 pub struct PluginConfig {
     #[serde(default)]
-    preload: Vec<String>,
-    key:String,
+    preload: Vec<String>
 }
+
 
 #[derive(Debug)]
 pub enum MigrationKind {
@@ -151,31 +195,35 @@ async fn load<R: Runtime>(
     #[allow(unused_variables)] app: AppHandle<R>,
     db_instances: State<'_, DbInstances>,
     migrations: State<'_, Migrations>,
+    sqlite_options_store: State<'_, SqlLiteOptionStore>,
     db: String,
 ) -> Result<String> {
-    let store = app.state::<Store>();
-    let store_lock = store.0.lock().await;
-    let db_key = store_lock.get("key").unwrap().clone();
+
     #[cfg(feature = "sqlite")]
     let fqdb = path_mapper(app_path(&app), &db);
     #[cfg(not(feature = "sqlite"))]
     let fqdb = db.clone();
 
     #[cfg(feature = "sqlite")]
+    let sqlite_options = if let Some(options) = sqlite_options_store.0.lock().await.remove(&db) {
+        options
+    }else{
+        SqliteConfig::default()
+    };
+      
+
+    #[cfg(feature = "sqlite")]
     create_dir_all(app_path(&app)).expect("Problem creating App directory!");
-    #[cfg(not(feature = "sqlite"))]
     if !Db::database_exists(&fqdb).await.unwrap_or(false) {
         Db::create_database(&fqdb).await?;
     }
 
-    
     #[cfg(not(feature = "sqlite"))]
     let pool = Pool::connect(&fqdb).await?;
-    
+
     #[cfg(feature = "sqlite")]
-    let pool = Pool::connect_with(SqliteConnectOptions::from_str(&fqdb)?
-    .pragma("key", db_key)
-    .create_if_missing(true)).await?;
+    let pool =
+        Pool::connect_with(sqlite_config_to_options(sqlite_options)).await?;
 
     if let Some(migrations) = migrations.0.lock().await.remove(&db) {
         let migrator = Migrator::new(migrations).await?;
@@ -281,10 +329,14 @@ async fn select(
     Ok(values)
 }
 
+
+
+
 /// Tauri SQL plugin builder.
 #[derive(Default)]
 pub struct Builder {
     migrations: Option<HashMap<String, MigrationList>>,
+    sqlite_options: Option<HashMap<String, SqliteConfig>>,
 }
 
 impl Builder {
@@ -301,39 +353,53 @@ impl Builder {
         self
     }
 
+    /// Add sqlite options to a database.
+    #[must_use]
+    pub fn add_sqlite_options(mut self, db_url: &str, options: SqliteConfig) -> Self {
+        self.sqlite_options
+            .get_or_insert(Default::default())
+            .insert(db_url.to_string(), options);
+        self
+    }
+
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R, Option<PluginConfig>> {
         PluginBuilder::<R, Option<PluginConfig>>::new("sql")
             .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![load, execute, select, close])
             .setup(|app, api| {
-                let config = api.config().clone().unwrap_or_default();
-                let db_key = config.key;
-                
+                let config = api.config().clone().unwrap_or_default();               
+               
                 #[cfg(feature = "sqlite")]
-                create_dir_all(app_path(app)).expect("problems creating App directory!");
+                create_dir_all(app_path(app)).expect("problems creating App directory!");                    
 
-                tauri::async_runtime::block_on(async move {
-                    let store: Store = Store::default();
-                    let mut store_lock = store.0.lock().await;
-                    store_lock.insert("key".to_string(), db_key.clone());
-                    drop(store_lock);
+                tauri::async_runtime::block_on(async move {                    
+
                     let instances = DbInstances::default();
                     let mut lock = instances.0.lock().await;
                     for db in config.preload {
+
+                        #[cfg(feature = "sqlite")]
+                        let sqlite_options = if let Some(options) = self.sqlite_options.as_mut().unwrap().remove(&db) {
+                           options
+                        }else{
+                            SqliteConfig::default()
+                        };
+
                         #[cfg(feature = "sqlite")]
                         let fqdb = path_mapper(app_path(app), &db);
+
                         #[cfg(not(feature = "sqlite"))]
                         let fqdb = db.clone();
-                        #[cfg(not(feature = "sqlite"))]
+                        
                         if !Db::database_exists(&fqdb).await.unwrap_or(false) {
                             Db::create_database(&fqdb).await?;
                         }
                         #[cfg(not(feature = "sqlite"))]
                         let pool = Pool::connect(&fqdb).await?;
-                        
+
                         #[cfg(feature = "sqlite")]
-                        let pool = Pool::connect_with(SqliteConnectOptions::from_str(&fqdb)?
-                        .pragma("key", db_key.clone()).create_if_missing(true)).await?;                        
+                        let pool = Pool::connect_with(
+                            sqlite_config_to_options(sqlite_options).clone().filename(&fqdb)).await?;
 
                         if let Some(migrations) = self.migrations.as_mut().unwrap().remove(&db) {
                             let migrator = Migrator::new(migrations).await?;
@@ -342,8 +408,10 @@ impl Builder {
                         lock.insert(db, pool);
                     }
                     drop(lock);
-                    app.manage(store);
                     app.manage(instances);
+                    app.manage(SqlLiteOptionStore(Mutex::new(
+                        self.sqlite_options.take().unwrap_or_default(),
+                    )));
                     app.manage(Migrations(Mutex::new(
                         self.migrations.take().unwrap_or_default(),
                     )));
