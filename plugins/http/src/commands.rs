@@ -163,11 +163,13 @@ pub async fn fetch<R: Runtime>(
                     .allows()
                     .iter()
                     .chain(global_scope.allows())
+                    .map(|arc| &**arc)
                     .collect(),
                 command_scope
                     .denies()
                     .iter()
                     .chain(global_scope.denies())
+                    .map(|arc| &**arc)
                     .collect(),
             )
             .is_allowed(&url)
