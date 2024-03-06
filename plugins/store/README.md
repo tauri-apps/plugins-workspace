@@ -105,9 +105,7 @@ fn main() {
             let mut store = StoreBuilder::new("app_data.bin").build(app.handle().clone());
 
             // Attempt to load the store, if it's saved already.
-            if let Err(error) = store.load() {
-                println!("Failed to load store from disk: {error}.");
-            }
+            store.load().expect("Failed to load store from disk");
 
             // Note that values must be serde_json::Value instances,
             // otherwise, they will not be compatible with the JavaScript bindings.
@@ -137,9 +135,7 @@ Rather than silently continuing like you may expect.
 You should always handle the error appropriately rather than unwrapping, or you may experience unexpected app crashes:
 
 ```rust
-if let Err(error) = store.load() {
-    println!("Failed to load store from disk: {error}.");
-}
+store.load().expect("Failed to load store from disk");
 ```
 
 ### Frontend Interoperability
