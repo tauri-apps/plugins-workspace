@@ -154,8 +154,11 @@ permissions = [
 ]"###
         );
 
-        std::fs::write(base_dirs.join(format!("{lower}.toml")), toml)
-            .unwrap_or_else(|e| panic!("unable to autogenerate ${upper}: {e}"));
+        let permission_path = base_dirs.join(format!("{lower}.toml"));
+        if toml != std::fs::read_to_string(&permission_path).unwrap_or_default() {
+            std::fs::write(permission_path, toml)
+                .unwrap_or_else(|e| panic!("unable to autogenerate ${lower}: {e}"));
+        }
     }
 
     tauri_plugin::Builder::new(COMMANDS)
