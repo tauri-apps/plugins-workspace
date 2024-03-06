@@ -160,7 +160,7 @@ permissions = [
         // the newly auto-generated file isn't the same
         if let Ok(_) = std::fs::metadata(&target_file) {
             let prev_toml_binding = std::fs::read_to_string(&target_file)
-                .expect("Could not open {prev_toml_data}");
+                .unwrap_or_else(|e| panic!("unable to read {target_file:?} to string: {e}"));
 
             let prev_toml_data = prev_toml_binding.trim();
 
@@ -169,6 +169,11 @@ permissions = [
                 std::fs::write(&target_file, toml)
                     .unwrap_or_else(|e| panic!("unable to autogenerate ${upper}: {e}"));
             }
+        } else {
+            // If it doesn't exist we can just create a new file and write to
+            // it
+            std::fs::write(&target_file, toml)
+                .unwrap_or_else(|e| panic!("unable to autogenerate ${upper}: {e}"));
         }
     }
 
