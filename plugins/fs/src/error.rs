@@ -17,7 +17,7 @@ pub enum Error {
     #[error("forbidden path: {0}")]
     PathForbidden(PathBuf),
     #[error("failed to resolve path: {0}")]
-    CannotResolvePath(tauri::path::Error),
+    CannotResolvePath(tauri::Error),
     /// Invalid glob pattern.
     #[error("invalid glob pattern: {0}")]
     GlobPattern(#[from] glob::PatternError),
