@@ -154,26 +154,10 @@ permissions = [
 ]"###
         );
 
-        let target_file = base_dirs.join(format!("{lower}.toml"));
-
-        // If target_file already exists, it should only be written to if
-        // the newly auto-generated file isn't the same
-        if let Ok(_) = std::fs::metadata(&target_file) {
-            let prev_toml_binding = std::fs::read_to_string(&target_file)
-                .unwrap_or_else(|e| panic!("unable to read {target_file:?} to string: {e}"));
-
-            let prev_toml_data = prev_toml_binding.trim();
-
-            if prev_toml_data != toml.trim() {
-                // The file has changed, it should be updated
-                std::fs::write(&target_file, toml)
-                    .unwrap_or_else(|e| panic!("unable to autogenerate ${upper}: {e}"));
-            }
-        } else {
-            // If it doesn't exist we can just create a new file and write to
-            // it
-            std::fs::write(&target_file, toml)
-                .unwrap_or_else(|e| panic!("unable to autogenerate ${upper}: {e}"));
+        let permission_path = base_dirs.join(format!("{lower}.toml"));
+        if toml != std::fs::read_to_string(&permission_path).unwrap_or_default() {
+            std::fs::write(permission_path, toml)
+                .unwrap_or_else(|e| panic!("unable to autogenerate ${lower}: {e}"));
         }
     }
 
