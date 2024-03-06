@@ -83,7 +83,7 @@ You can manually save a store with:
 await store.save();
 ```
 
-Stores are loaded automatically on creation when using the JavaScript bindings.  
+Stores are loaded automatically when used from the JavaScript bindings.  
 However, you can also load them manually later like so:
 
 ```javascript
@@ -139,20 +139,6 @@ You should always handle the error appropriately rather than unwrapping, or you 
 ```rust
 if let Err(error) = store.load() {
     println!("Failed to load store from disk: {error}.");
-}
-```
-
-Additionally, there is more than one kind of possible error when loading a store.
-
-If you want to ignore only the "file not found" error case, while propogating the rest, you can do this:
-
-```rust
-if let Err(error) = store.load() {
-    if let tauri_plugin_store::Error::NotFound(path) = error {
-        println!("File not found for store: {path:?}");
-    } else {
-        return Err(error)?;
-    }
 }
 ```
 
