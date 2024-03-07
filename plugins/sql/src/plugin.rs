@@ -118,8 +118,8 @@ impl Default for SqliteConfig {
     }
 }
 
-pub fn sqlite_config_to_options(config: SqliteConfig) -> SqliteConnectOptions {
-    let mut options = SqliteConnectOptions::new();
+pub fn sqlite_config_to_options(db:&str, config: SqliteConfig) -> SqliteConnectOptions {
+    let mut options = SqliteConnectOptions::from_str(db).unwrap();
     if config.key != "" {
         options = options
             .pragma("key", config.key)
@@ -201,7 +201,11 @@ async fn load<R: Runtime>(
     db: String,
 ) -> Result<String> {
     #[cfg(feature = "sqlite")]
-    let fqdb = path_mapper(app_path(&app), &db);
+    let fqdb = {
+        create_dir_all(app_path(&app)).expect("Problem creating App directory!");
+        path_mapper(app_path(&app), &db)
+    };
+
     #[cfg(not(feature = "sqlite"))]
     let fqdb = db.clone();
 
@@ -210,16 +214,13 @@ async fn load<R: Runtime>(
         options
     } else {
         SqliteConfig::default()
-    };
-
-    #[cfg(feature = "sqlite")]
-    create_dir_all(app_path(&app)).expect("Problem creating App directory!");
+    };   
 
     #[cfg(not(feature = "sqlite"))]
     let pool = Pool::connect(&fqdb).await?;
 
     #[cfg(feature = "sqlite")]
-    let pool = Pool::connect_with(sqlite_config_to_options(sqlite_options).filename(&fqdb)).await?;
+    let pool = Pool::connect_with(sqlite_config_to_options(&fqdb, sqlite_options)).await?;
 
     if let Some(migrations) = migrations.0.lock().await.remove(&db) {
         let migrator = Migrator::new(migrations).await?;
@@ -394,7 +395,7 @@ impl Builder {
 
                         #[cfg(feature = "sqlite")]
                         let pool = Pool::connect_with(
-                            sqlite_config_to_options(sqlite_options).filename(&fqdb),
+                            sqlite_config_to_options(&fqdb, sqlite_options),
                         )
                         .await?;
 
