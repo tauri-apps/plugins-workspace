@@ -6560,6 +6560,7 @@ dependencies = [
  "tauri",
  "tauri-plugin",
  "tauri-plugin-fs",
+ "tauri-plugin-store",
  "thiserror",
  "url",
  "urlpattern",

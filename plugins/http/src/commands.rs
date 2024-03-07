@@ -14,10 +14,7 @@ use tauri::{
     AppHandle, Manager, ResourceId, Runtime,
 };
 
-use crate::{
-    scope::{Entry, Scope},
-    Error, Result,
-};
+use crate::{scope::{Entry, Scope}, Error, Result, HttpExt};
 
 struct ReqwestResponse(reqwest::Response);
 
@@ -189,6 +186,11 @@ pub async fn fetch<R: Runtime>(
                 if let Some(proxy_config) = proxy {
                     builder = attach_proxy(proxy_config, builder)?;
                 }
+
+	            #[cfg(feature = "cookies")]
+	            {
+		            builder = builder.cookie_provider(app.http().jar.clone());
+	            }
 
                 let mut request = builder.build()?.request(method.clone(), url);
 
