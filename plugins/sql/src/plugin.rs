@@ -97,42 +97,44 @@ struct Migrations(Mutex<HashMap<String, MigrationList>>);
 
 #[derive(Clone, Deserialize)]
 pub struct SqliteConfig {
-    pub key: Option<&'static str>,
-    pub cipher_page_size: Option<i32>,
-    pub cipher_plaintext_header_size:  Option<i32>,
-    pub kdf_iter:  Option<i32>,
-    pub cipher_kdf_algorithm:  Option<&'static str>,
-    pub cipher_hmac_algorithm:  Option<&'static str>,
-    pub journal_mode:  Option<&'static str>, // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
-    pub foreign_keys:  Option<bool>,
+    pub key: &'static str,
+    pub cipher_page_size: i32,
+    pub cipher_plaintext_header_size:  i32,
+    pub kdf_iter:  i32,
+    pub cipher_kdf_algorithm:  &'static str,
+    pub cipher_hmac_algorithm:  &'static str,
+    pub journal_mode:  &'static str, // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
+    pub foreign_keys:  bool,
 }
 
 
 impl Default for SqliteConfig {
     fn default() -> Self {
        SqliteConfig {
-            key: Some(""),
-            cipher_page_size: Some(4096),
-            cipher_plaintext_header_size: Some(0),
-            kdf_iter: Some(256000),
-            cipher_kdf_algorithm: Some("PBKDF2_HMAC_SHA512"),
-            cipher_hmac_algorithm: Some("HMAC_SHA512"),
-            journal_mode: Some("DELETE"),
-            foreign_keys: Some(true),
+            key: "",
+            cipher_page_size: 4096,
+            cipher_plaintext_header_size: 0,
+            kdf_iter: 256000,
+            cipher_kdf_algorithm: "PBKDF2_HMAC_SHA512",
+            cipher_hmac_algorithm: "HMAC_SHA512",
+            journal_mode: "DELETE",
+            foreign_keys: true,
         }
     }
 }
 
 pub fn sqlite_config_to_options(config:SqliteConfig) -> SqliteConnectOptions{
-    SqliteConnectOptions::new()
-    .pragma("key", config.key.unwrap_or_default())
-    .pragma("cipher_kdf_algorithm", config.cipher_kdf_algorithm.unwrap_or_default())
-    .pragma("cipher_plaintext_header_size", config.cipher_plaintext_header_size.unwrap_or_default().to_string())
-    .pragma("cipher_page_size", config.cipher_page_size.unwrap_or_default().to_string())
-    .pragma("kdf_iter", config.kdf_iter.unwrap_or_default().to_string())
-    .pragma("cipher_hmac_algorithm", config.cipher_hmac_algorithm.unwrap_or_default())         
-    .foreign_keys(config.foreign_keys.unwrap_or_default())
-    .journal_mode(SqliteJournalMode::from_str(config.journal_mode.unwrap_or_default()).unwrap())
+    let mut options = SqliteConnectOptions::new();
+    if(config.key != ""){
+        options = options.pragma("key", config.key)
+        .pragma("cipher_kdf_algorithm", config.cipher_kdf_algorithm)
+        .pragma("cipher_plaintext_header_size", config.cipher_plaintext_header_size.to_string())
+        .pragma("cipher_page_size", config.cipher_page_size.to_string())
+        .pragma("kdf_iter", config.kdf_iter.to_string())
+        .pragma("cipher_hmac_algorithm", config.cipher_hmac_algorithm)   
+    }          
+    options.foreign_keys(config.foreign_keys)
+    .journal_mode(SqliteJournalMode::from_str(config.journal_mode).unwrap())
 }
 
 struct SqlLiteOptionStore(Mutex<HashMap<String, SqliteConfig>>);
