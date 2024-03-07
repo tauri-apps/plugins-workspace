@@ -57,20 +57,22 @@ fn main() {
         .setup(|app| {
             #[cfg(desktop)]
             {
-                use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
+                use tauri::Manager;
+                use tauri_plugin_global_shortcut::{Code, Modifiers};
 
-                let ctrl_n_shortcut = Shortcut::new(Some(Modifiers::CONTROL), Code::KeyN);
                 app.handle().plugin(
-                    tauri_plugin_global_shortcut::Builder::with_handler(move |_app, shortcut| {
-                        println!("{:?}", shortcut);
-                        if shortcut == &ctrl_n_shortcut {
-                            println!("Ctrl-N Detected!");
-                        }
-                    })
-                    .build(),
+                    tauri_plugin_global_shortcut::Builder::new()
+                        .with_shortcuts(["ctrl+d", "alt+space"])?
+                        .with_handler(|app, shortcut| {
+                            if shortcut.matches(Modifiers::CONTROL, Code::KeyD) {
+                                let _ = app.emit("shortcut-event", "Ctrl+D triggered");
+                            }
+                            if shortcut.matches(Modifiers::ALT, Code::Space) {
+                                let _ = app.emit("shortcut-event", "Alt+Space triggered");
+                            }
+                        })
+                        .build(),
                 )?;
-
-                app.global_shortcut().register(ctrl_n_shortcut)?;
             }
 
             Ok(())
