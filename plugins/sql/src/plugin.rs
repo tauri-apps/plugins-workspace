@@ -86,31 +86,26 @@ fn path_mapper(mut app_path: PathBuf, connection_string: &str) -> String {
     )
 }
 
-
-
 #[derive(Default)]
 struct DbInstances(Mutex<HashMap<String, Pool<Db>>>);
 
 struct Migrations(Mutex<HashMap<String, MigrationList>>);
 
-
-
 #[derive(Clone, Deserialize)]
 pub struct SqliteConfig {
     pub key: &'static str,
     pub cipher_page_size: i32,
-    pub cipher_plaintext_header_size:  i32,
-    pub kdf_iter:  i32,
-    pub cipher_kdf_algorithm:  &'static str,
-    pub cipher_hmac_algorithm:  &'static str,
-    pub journal_mode:  &'static str, // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
-    pub foreign_keys:  bool,
+    pub cipher_plaintext_header_size: i32,
+    pub kdf_iter: i32,
+    pub cipher_kdf_algorithm: &'static str,
+    pub cipher_hmac_algorithm: &'static str,
+    pub journal_mode: &'static str, // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
+    pub foreign_keys: bool,
 }
-
 
 impl Default for SqliteConfig {
     fn default() -> Self {
-       SqliteConfig {
+        SqliteConfig {
             key: "",
             cipher_page_size: 4096,
             cipher_plaintext_header_size: 0,
@@ -118,23 +113,28 @@ impl Default for SqliteConfig {
             cipher_kdf_algorithm: "PBKDF2_HMAC_SHA512",
             cipher_hmac_algorithm: "HMAC_SHA512",
             journal_mode: "DELETE",
-            foreign_keys: true,
+            foreign_keys: false,
         }
     }
 }
 
-pub fn sqlite_config_to_options(config:SqliteConfig) -> SqliteConnectOptions{
+pub fn sqlite_config_to_options(config: SqliteConfig) -> SqliteConnectOptions {
     let mut options = SqliteConnectOptions::new();
-    if(config.key != ""){
-        options = options.pragma("key", config.key)
-        .pragma("cipher_kdf_algorithm", config.cipher_kdf_algorithm)
-        .pragma("cipher_plaintext_header_size", config.cipher_plaintext_header_size.to_string())
-        .pragma("cipher_page_size", config.cipher_page_size.to_string())
-        .pragma("kdf_iter", config.kdf_iter.to_string())
-        .pragma("cipher_hmac_algorithm", config.cipher_hmac_algorithm)   
-    }          
-    options.foreign_keys(config.foreign_keys)
-    .journal_mode(SqliteJournalMode::from_str(config.journal_mode).unwrap())
+    if config.key != "" {
+        options = options
+            .pragma("key", config.key)
+            .pragma("cipher_kdf_algorithm", config.cipher_kdf_algorithm)
+            .pragma(
+                "cipher_plaintext_header_size",
+                config.cipher_plaintext_header_size.to_string(),
+            )
+            .pragma("cipher_page_size", config.cipher_page_size.to_string())
+            .pragma("kdf_iter", config.kdf_iter.to_string())
+            .pragma("cipher_hmac_algorithm", config.cipher_hmac_algorithm)
+    }
+    options
+        .foreign_keys(config.foreign_keys)
+        .journal_mode(SqliteJournalMode::from_str(config.journal_mode).unwrap())
 }
 
 struct SqlLiteOptionStore(Mutex<HashMap<String, SqliteConfig>>);
@@ -142,9 +142,8 @@ struct SqlLiteOptionStore(Mutex<HashMap<String, SqliteConfig>>);
 #[derive(Default, Clone, Deserialize)]
 pub struct PluginConfig {
     #[serde(default)]
-    preload: Vec<String>
+    preload: Vec<String>,
 }
-
 
 #[derive(Debug)]
 pub enum MigrationKind {
@@ -200,7 +199,6 @@ async fn load<R: Runtime>(
     sqlite_options_store: State<'_, SqlLiteOptionStore>,
     db: String,
 ) -> Result<String> {
-
     #[cfg(feature = "sqlite")]
     let fqdb = path_mapper(app_path(&app), &db);
     #[cfg(not(feature = "sqlite"))]
@@ -209,10 +207,9 @@ async fn load<R: Runtime>(
     #[cfg(feature = "sqlite")]
     let sqlite_options = if let Some(options) = sqlite_options_store.0.lock().await.remove(&db) {
         options
-    }else{
+    } else {
         SqliteConfig::default()
     };
-      
 
     #[cfg(feature = "sqlite")]
     create_dir_all(app_path(&app)).expect("Problem creating App directory!");
@@ -224,8 +221,7 @@ async fn load<R: Runtime>(
     let pool = Pool::connect(&fqdb).await?;
 
     #[cfg(feature = "sqlite")]
-    let pool =
-        Pool::connect_with(sqlite_config_to_options(sqlite_options)).await?;
+    let pool = Pool::connect_with(sqlite_config_to_options(sqlite_options).filename(&fqdb)).await?;
 
     if let Some(migrations) = migrations.0.lock().await.remove(&db) {
         let migrator = Migrator::new(migrations).await?;
@@ -331,9 +327,6 @@ async fn select(
     Ok(values)
 }
 
-
-
-
 /// Tauri SQL plugin builder.
 #[derive(Default)]
 pub struct Builder {
@@ -369,21 +362,21 @@ impl Builder {
             .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![load, execute, select, close])
             .setup(|app, api| {
-                let config = api.config().clone().unwrap_or_default();               
-               
+                let config = api.config().clone().unwrap_or_default();
+
                 #[cfg(feature = "sqlite")]
-                create_dir_all(app_path(app)).expect("problems creating App directory!");                    
+                create_dir_all(app_path(app)).expect("problems creating App directory!");
 
-                tauri::async_runtime::block_on(async move {                    
-
+                tauri::async_runtime::block_on(async move {
                     let instances = DbInstances::default();
                     let mut lock = instances.0.lock().await;
                     for db in config.preload {
-
                         #[cfg(feature = "sqlite")]
-                        let sqlite_options = if let Some(options) = self.sqlite_options.as_mut().unwrap().remove(&db) {
-                           options
-                        }else{
+                        let sqlite_options = if let Some(options) =
+                            self.sqlite_options.as_mut().unwrap().remove(&db)
+                        {
+                            options
+                        } else {
                             SqliteConfig::default()
                         };
 
@@ -392,7 +385,7 @@ impl Builder {
 
                         #[cfg(not(feature = "sqlite"))]
                         let fqdb = db.clone();
-                        
+
                         if !Db::database_exists(&fqdb).await.unwrap_or(false) {
                             Db::create_database(&fqdb).await?;
                         }
@@ -401,7 +394,9 @@ impl Builder {
 
                         #[cfg(feature = "sqlite")]
                         let pool = Pool::connect_with(
-                            sqlite_config_to_options(sqlite_options).clone().filename(&fqdb)).await?;
+                            sqlite_config_to_options(sqlite_options).filename(&fqdb),
+                        )
+                        .await?;
 
                         if let Some(migrations) = self.migrations.as_mut().unwrap().remove(&db) {
                             let migrator = Migrator::new(migrations).await?;
