@@ -97,14 +97,14 @@ struct Migrations(Mutex<HashMap<String, MigrationList>>);
 
 #[derive(Clone, Deserialize)]
 pub struct SqliteConfig {
-    key: Option<&'static str>,
-    cipher_page_size: Option<i32>,
-    cipher_plaintext_header_size:  Option<i32>,
-    kdf_iter:  Option<i32>,
-    cipher_kdf_algorithm:  Option<&'static str>,
-    cipher_hmac_algorithm:  Option<&'static str>,
-    journal_mode:  Option<&'static str>, // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
-    foreign_keys:  Option<bool>,
+    pub key: Option<&'static str>,
+    pub cipher_page_size: Option<i32>,
+    pub cipher_plaintext_header_size:  Option<i32>,
+    pub kdf_iter:  Option<i32>,
+    pub cipher_kdf_algorithm:  Option<&'static str>,
+    pub cipher_hmac_algorithm:  Option<&'static str>,
+    pub journal_mode:  Option<&'static str>, // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
+    pub foreign_keys:  Option<bool>,
 }
 
 
