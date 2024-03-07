@@ -135,6 +135,7 @@ pub fn sqlite_config_to_options(config: SqliteConfig) -> SqliteConnectOptions {
     options
         .foreign_keys(config.foreign_keys)
         .journal_mode(SqliteJournalMode::from_str(config.journal_mode).unwrap())
+        .create_if_missing(true)
 }
 
 struct SqlLiteOptionStore(Mutex<HashMap<String, SqliteConfig>>);
@@ -212,13 +213,7 @@ async fn load<R: Runtime>(
     };
 
     #[cfg(feature = "sqlite")]
-    print!("{:?}",sqlite_config_to_options(sqlite_options.clone()).filename(&fqdb));
-
-    #[cfg(feature = "sqlite")]
     create_dir_all(app_path(&app)).expect("Problem creating App directory!");
-    if !Db::database_exists(&fqdb).await.unwrap_or(false) {
-        Db::create_database(&fqdb).await?;
-    }
 
     #[cfg(not(feature = "sqlite"))]
     let pool = Pool::connect(&fqdb).await?;
@@ -387,11 +382,13 @@ impl Builder {
                         let fqdb = path_mapper(app_path(app), &db);
 
                         #[cfg(not(feature = "sqlite"))]
-                        let fqdb = db.clone();
+                        let fqdb = {
+                            if !Db::database_exists(&fqdb).await.unwrap_or(false) {
+                                Db::create_database(&fqdb).await?;
+                            }
+                            db.clone();
+                        };
 
-                        if !Db::database_exists(&fqdb).await.unwrap_or(false) {
-                            Db::create_database(&fqdb).await?;
-                        }
                         #[cfg(not(feature = "sqlite"))]
                         let pool = Pool::connect(&fqdb).await?;
 
@@ -408,7 +405,7 @@ impl Builder {
                         lock.insert(db, pool);
                     }
                     drop(lock);
-                    app.manage(instances);                    
+                    app.manage(instances);
                     app.manage(Migrations(Mutex::new(
                         self.migrations.take().unwrap_or_default(),
                     )));
