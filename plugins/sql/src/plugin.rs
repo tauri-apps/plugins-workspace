@@ -212,9 +212,7 @@ async fn load<R: Runtime>(
     };
 
     #[cfg(feature = "sqlite")]
-<<<<<<< HEAD
     print!("{:?}",sqlite_config_to_options(sqlite_options.clone()).filename(&fqdb));
->>>>>>> 4af0e44d812f53223945903def7812c886c54ad0
 
     #[cfg(feature = "sqlite")]
     create_dir_all(app_path(&app)).expect("Problem creating App directory!");
