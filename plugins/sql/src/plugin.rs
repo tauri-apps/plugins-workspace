@@ -97,13 +97,13 @@ struct Migrations(Mutex<HashMap<String, MigrationList>>);
 
 #[derive(Clone, Deserialize)]
 pub struct SqliteConfig {
-    key: Option<String>,
+    key: Option<&'static str>,
     cipher_page_size: Option<i32>,
     cipher_plaintext_header_size:  Option<i32>,
     kdf_iter:  Option<i32>,
-    cipher_kdf_algorithm:  Option<String>,
-    cipher_hmac_algorithm:  Option<String>,
-    journal_mode:  Option<String>, // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
+    cipher_kdf_algorithm:  Option<&'static str>,
+    cipher_hmac_algorithm:  Option<&'static str>,
+    journal_mode:  Option<&'static str>, // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
     foreign_keys:  Option<bool>,
 }
 
@@ -111,13 +111,13 @@ pub struct SqliteConfig {
 impl Default for SqliteConfig {
     fn default() -> Self {
        SqliteConfig {
-            key: Some("".into()),
+            key: Some(""),
             cipher_page_size: Some(4096),
             cipher_plaintext_header_size: Some(0),
             kdf_iter: Some(256000),
-            cipher_kdf_algorithm: Some("PBKDF2_HMAC_SHA512".into()),
-            cipher_hmac_algorithm: Some("HMAC_SHA512".into()),
-            journal_mode: Some("DELETE".into()),
+            cipher_kdf_algorithm: Some("PBKDF2_HMAC_SHA512"),
+            cipher_hmac_algorithm: Some("HMAC_SHA512"),
+            journal_mode: Some("DELETE"),
             foreign_keys: Some(true),
         }
     }
@@ -132,7 +132,7 @@ pub fn sqlite_config_to_options(config:SqliteConfig) -> SqliteConnectOptions{
     .pragma("kdf_iter", config.kdf_iter.unwrap_or_default().to_string())
     .pragma("cipher_hmac_algorithm", config.cipher_hmac_algorithm.unwrap_or_default())         
     .foreign_keys(config.foreign_keys.unwrap_or_default())
-    .journal_mode(SqliteJournalMode::from_str(config.journal_mode.unwrap_or_default().as_str()).unwrap())
+    .journal_mode(SqliteJournalMode::from_str(config.journal_mode.unwrap_or_default()).unwrap())
 }
 
 struct SqlLiteOptionStore(Mutex<HashMap<String, SqliteConfig>>);
