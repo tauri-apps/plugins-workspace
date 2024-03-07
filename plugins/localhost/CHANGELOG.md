@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.2]
+
+- [`99bea25`](https://github.com/tauri-apps/plugins-workspace/commit/99bea2559c2c0648c2519c50a18cd124dacef57b)([#1005](https://github.com/tauri-apps/plugins-workspace/pull/1005)) Update to tauri beta.8.
+
 ## \[2.0.0-beta.1]
 
 - [`14f381a`](https://github.com/tauri-apps/plugins-workspace/commit/14f381acf8fe690acecc676922c6f05939b95734) Update MSRV to 1.75.

@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.0.0-beta.3]
+
+- [`2397ec5`](https://github.com/tauri-apps/plugins-workspace/commit/2397ec5937e594397e533925ccd257cae30b4cd1)([#1019](https://github.com/tauri-apps/plugins-workspace/pull/1019)) Fix doesn't shutdown immediately.
+- [`99bea25`](https://github.com/tauri-apps/plugins-workspace/commit/99bea2559c2c0648c2519c50a18cd124dacef57b)([#1005](https://github.com/tauri-apps/plugins-workspace/pull/1005)) Update to tauri beta.8.
+
 ## \[2.0.0-beta.2]
 
 - [`6d1e621`](https://github.com/tauri-apps/plugins-workspace/commit/6d1e6218b5877ef91f589f790f7251acda9c9605)([#981](https://github.com/tauri-apps/plugins-workspace/pull/981)) Fix `zbus::blocking::connection::Builder` import.
