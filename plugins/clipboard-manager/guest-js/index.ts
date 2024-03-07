@@ -68,7 +68,9 @@ async function readText(): Promise<string> {
  * @since 2.0.0
  */
 async function readImage(): Promise<Uint8Array> {
-  const kind: ClipImageResponse = await invoke("plugin:clipboard-manager|read_image");
+  const kind: ClipImageResponse = await invoke(
+    "plugin:clipboard-manager|read_image",
+  );
   return Uint8Array.from(kind.image.buffer);
 }
 
