@@ -25,17 +25,20 @@ impl<'de> Deserialize<'de> for Entry {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        struct EntryRaw {
-            url: String,
+        #[serde(untagged)]
+        enum EntryRaw {
+            Value(String),
+            Object { url: String },
         }
 
         EntryRaw::deserialize(deserializer).and_then(|raw| {
+            let url = match raw {
+                EntryRaw::Value(url) => url,
+                EntryRaw::Object { url } => url,
+            };
             Ok(Entry {
-                url: parse_url_pattern(&raw.url).map_err(|e| {
-                    serde::de::Error::custom(format!(
-                        "`{}` is not a valid URL pattern: {e}",
-                        raw.url
-                    ))
+                url: parse_url_pattern(&url).map_err(|e| {
+                    serde::de::Error::custom(format!("`{}` is not a valid URL pattern: {e}", url))
                 })?,
             })
         })
