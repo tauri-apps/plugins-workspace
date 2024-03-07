@@ -1,36 +1,3 @@
-# Fork implementing simple sqlcipher password.
-
-To use this needs to be added to you .toml:
-```toml
-[dependencies]
-...
-openssl = "0.10.63"
-libsqlite3-sys = { version = "0.27", features = ["bundled-sqlcipher"] }
-
-[dependencies.tauri-plugin-sql]
-features = ["sqlite"] # or "postgres", or "mysql"
-git = "https://github.com/eleroy/plugins-workspace"
-branch = "v2"
-```
-
-You will also need to fill in the key in you tauri.config.json
-```json
-"plugins": {
-  "sql": {
-        "permission":["allow-load", "allow-execute", "allow-select"],
-        "key":"MyPassword"
-      }
-}
-```
-
-On windows, you may experience some problems to build everything because of ssl. I recommand building and installing openssl using vcpkg https://github.com/Microsoft/vcpkg
-- Clone vcpkg to C:\src\vcpkg for example
-- Bootstrap vcpkg C:\src\vcpkg\bootstrap-vcpkg.bat
-- C:\src\vcpkg\vcpkg.exe integrate install
-- C:\src\vcpkg\vcpkg.exe install openssl:x64-windows
-- Add OPENSSL_DIR env variable C:\src\vcpkg\installed\x64-windows
-- You may set it to the current powershell for test purposes $Env:OPENSSL_DIR="C:\src\vcpkg\installed\x64-windows"
-
 ![plugin-sql](https://github.com/tauri-apps/plugins-workspace/raw/v1/plugins/sql/banner.png)
 
 Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx). It supports the `sqlite`, `mysql` and `postgres` drivers, enabled by a Cargo feature.
@@ -192,9 +159,79 @@ Migrations are applied automatically when the plugin is initialized. The plugin 
 
 ## Sqlite options
 
+### Adding Sqlite options
+
+Similarly as adding migrations, it is possible to add Sqlite options such as database encryption or regular Sqlite options.
+
+```rust
+use tauri_plugin_sql::{Builder, Migration, MigrationKind, SqliteConfig};
+
+fn main() {
+    let migrations = vec![
+        // Define your migrations here
+        Migration {
+            version: 1,
+            description: "create_initial_tables",
+            sql: "CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT);",
+            kind: MigrationKind::Up,
+        }
+    ];
+
+    tauri::Builder::default()
+        .plugin(
+            tauri_plugin_sql::Builder::default()
+                .add_migrations("sqlite:mydatabase.db", migrations)
+                .add_sqlite_options("sqlite:mydatabase.db", SqliteConfig{key:"my_database_key", journal_mode:"OFF", foreign_keys:true, read_only:false,..Default::default()})
+                .build(),
+        )
+        ...
+}
+```
+
+All the options are specified in the struct definition 
+
+```rust
+pub struct SqliteConfig {
+    pub key: &'static str, // Database key
+    pub cipher_page_size: i32, // Page size of encrypted database. Default for SQLCipher v4 is 4096.
+    pub cipher_plaintext_header_size: i32,
+    pub kdf_iter: i32, // Number of iterations used in PBKDF2 key derivation. Default for SQLCipher v4 is 256000
+    pub cipher_kdf_algorithm: &'static str,  // Define KDF algorithm to be used. Default for SQLCipher v4 is PBKDF2_HMAC_SHA512.
+    pub cipher_hmac_algorithm: &'static str, // Choose algorithm used for HMAC. Default for SQLCipher v4 is HMAC_SHA512.                                        
+    pub cipher_salt: Option<&'static str>, // Allows to provide salt manually. By default SQLCipher sets salt automatically, use only in conjunction with 'cipher_plaintext_header_size' pragma
+    pub cipher_compatibility: Option<i32>, // 1, 2, 3, 4
+    pub journal_mode: &'static str,        // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
+    pub foreign_keys: bool,
+    pub synchronous: &'static str,  // EXTRA | FULL | NORMAL |  OFF
+    pub locking_mode: &'static str, // NORMAL | EXCLUSIVE
+    pub read_only: bool, // NORMAL | EXCLUSIVE
+}
+```
+
+### In memory
+
+A database name containing :memory will be loaded as an in-memory database.
+
 ### SqlCipher
 
-Sqlx provide the option to bundle SqlCipher 
+To make it work with SqlCipher, you'll need to make additionnal changes to you cargo.toml:
+
+```toml
+[dependencies]
+...
+libsqlite3-sys = { version = "*", features = ["bundled-sqlcipher"] }
+```
+
+You'll also need openssl to build. Please refer to libsqlite3-sys documentation to understand how to build.
+
+On windows, I recommend building and installing openssl using vcpkg https://github.com/Microsoft/vcpkg
+- Clone vcpkg to C:\src\vcpkg for example
+- Bootstrap vcpkg C:\src\vcpkg\bootstrap-vcpkg.bat
+- C:\src\vcpkg\vcpkg.exe integrate install
+- C:\src\vcpkg\vcpkg.exe install openssl:x64-windows
+- Add  env variable OPENSSL_DIR = C:\src\vcpkg\installed\x64-windows
+
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.

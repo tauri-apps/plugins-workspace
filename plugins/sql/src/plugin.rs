@@ -5,7 +5,9 @@
 use futures_core::future::BoxFuture;
 use serde::{ser::Serializer, Deserialize, Serialize};
 use serde_json::Value as JsonValue;
-use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
+use sqlx::sqlite::{
+    SqliteConnectOptions, SqliteJournalMode, SqliteLockingMode, SqliteSynchronous,
+};
 use sqlx::{
     error::BoxDynError,
     migrate::{
@@ -93,14 +95,19 @@ struct Migrations(Mutex<HashMap<String, MigrationList>>);
 
 #[derive(Clone, Deserialize)]
 pub struct SqliteConfig {
-    pub key: &'static str,
-    pub cipher_page_size: i32,
+    pub key: &'static str, // Database key
+    pub cipher_page_size: i32, // Page size of encrypted database. Default for SQLCipher v4 is 4096.
     pub cipher_plaintext_header_size: i32,
-    pub kdf_iter: i32,
-    pub cipher_kdf_algorithm: &'static str,
-    pub cipher_hmac_algorithm: &'static str,
-    pub journal_mode: &'static str, // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
+    pub kdf_iter: i32, // Number of iterations used in PBKDF2 key derivation. Default for SQLCipher v4 is 256000
+    pub cipher_kdf_algorithm: &'static str,  // Define KDF algorithm to be used. Default for SQLCipher v4 is PBKDF2_HMAC_SHA512.
+    pub cipher_hmac_algorithm: &'static str, // Choose algorithm used for HMAC. Default for SQLCipher v4 is HMAC_SHA512.                                        
+    pub cipher_salt: Option<&'static str>, // Allows to provide salt manually. By default SQLCipher sets salt automatically, use only in conjunction with 'cipher_plaintext_header_size' pragma
+    pub cipher_compatibility: Option<i32>, // 1, 2, 3, 4
+    pub journal_mode: &'static str,        // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
     pub foreign_keys: bool,
+    pub synchronous: &'static str,  // EXTRA | FULL | NORMAL |  OFF
+    pub locking_mode: &'static str, // NORMAL | EXCLUSIVE
+    pub read_only: bool, // NORMAL | EXCLUSIVE
 }
 
 impl Default for SqliteConfig {
@@ -110,16 +117,26 @@ impl Default for SqliteConfig {
             cipher_page_size: 4096,
             cipher_plaintext_header_size: 0,
             kdf_iter: 256000,
+            cipher_salt: None,
+            cipher_compatibility: None,
             cipher_kdf_algorithm: "PBKDF2_HMAC_SHA512",
             cipher_hmac_algorithm: "HMAC_SHA512",
             journal_mode: "DELETE",
-            foreign_keys: false,
+            foreign_keys: true,
+            synchronous: "FULL",
+            locking_mode: "NORMAL",
+            read_only: false
         }
     }
 }
 
-pub fn sqlite_config_to_options(db:&str, config: SqliteConfig) -> SqliteConnectOptions {
-    let mut options = SqliteConnectOptions::from_str(db).unwrap();
+pub fn sqlite_config_to_options(db: &str, config: SqliteConfig) -> SqliteConnectOptions {
+    let is_in_memory = db.contains(":memory") || db.contains("mode=memory");
+    let mut options = if is_in_memory {
+        SqliteConnectOptions::from_str("sqlite::memory:").unwrap()
+    }else{
+        SqliteConnectOptions::from_str(db).unwrap()
+    };
     if config.key != "" {
         options = options
             .pragma("key", config.key)
@@ -130,11 +147,25 @@ pub fn sqlite_config_to_options(db:&str, config: SqliteConfig) -> SqliteConnectO
             )
             .pragma("cipher_page_size", config.cipher_page_size.to_string())
             .pragma("kdf_iter", config.kdf_iter.to_string())
-            .pragma("cipher_hmac_algorithm", config.cipher_hmac_algorithm)
+            .pragma("cipher_hmac_algorithm", config.cipher_hmac_algorithm);
+        if let Some(cipher_salt) = config.cipher_salt {
+            options = options.pragma("cipher_hmac_algorithm", cipher_salt.to_string())
+        };
+        if let Some(cipher_compatibility) = config.cipher_compatibility {
+            options = options.pragma("cipher_compatibility", cipher_compatibility.to_string())
+        };
     }
     options
         .foreign_keys(config.foreign_keys)
-        .journal_mode(SqliteJournalMode::from_str(config.journal_mode).unwrap())
+        .journal_mode(
+            SqliteJournalMode::from_str(config.journal_mode).unwrap_or(SqliteJournalMode::Delete),
+        )
+        .synchronous(
+            SqliteSynchronous::from_str(config.synchronous).unwrap_or(SqliteSynchronous::Full),
+        )
+        .locking_mode(
+            SqliteLockingMode::from_str(config.locking_mode).unwrap_or(SqliteLockingMode::Normal),
+        )
         .create_if_missing(true)
 }
 
@@ -214,7 +245,7 @@ async fn load<R: Runtime>(
         options
     } else {
         SqliteConfig::default()
-    };   
+    };
 
     #[cfg(not(feature = "sqlite"))]
     let pool = Pool::connect(&fqdb).await?;
@@ -394,10 +425,9 @@ impl Builder {
                         let pool = Pool::connect(&fqdb).await?;
 
                         #[cfg(feature = "sqlite")]
-                        let pool = Pool::connect_with(
-                            sqlite_config_to_options(&fqdb, sqlite_options),
-                        )
-                        .await?;
+                        let pool =
+                            Pool::connect_with(sqlite_config_to_options(&fqdb, sqlite_options))
+                                .await?;
 
                         if let Some(migrations) = self.migrations.as_mut().unwrap().remove(&db) {
                             let migrator = Migrator::new(migrations).await?;
