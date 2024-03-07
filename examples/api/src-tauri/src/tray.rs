@@ -79,11 +79,14 @@ pub fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<()> {
             }
             i @ "icon-1" | i @ "icon-2" => {
                 if let Some(tray) = app.tray_by_id("tray-1") {
-                    let _ = tray.set_icon(Some(tauri::Icon::Raw(if i == "icon-1" {
-                        include_bytes!("../icons/icon.ico").to_vec()
+                    let _ = tray.set_icon(Some(if i == "icon-1" {
+                        tauri::Image::from_ico_bytes(include_bytes!("../icons/icon.ico")).unwrap()
                     } else {
-                        include_bytes!("../icons/tray_icon_with_transparency.png").to_vec()
-                    })));
+                        tauri::Image::from_png_bytes(include_bytes!(
+                            "../icons/tray_icon_with_transparency.png"
+                        ))
+                        .unwrap()
+                    }));
                 }
             }
             "switch-menu" => {

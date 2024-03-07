@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use std::sync::Arc;
+
 use serde::{Deserialize, Deserializer};
 use url::Url;
 use urlpattern::{UrlPattern, UrlPatternInit, UrlPatternMatchInput};
@@ -43,13 +45,13 @@ impl<'de> Deserialize<'de> for Entry {
 /// Scope for filesystem access.
 #[derive(Debug)]
 pub struct Scope<'a> {
-    allowed: Vec<&'a Entry>,
-    denied: Vec<&'a Entry>,
+    allowed: Vec<&'a Arc<Entry>>,
+    denied: Vec<&'a Arc<Entry>>,
 }
 
 impl<'a> Scope<'a> {
     /// Creates a new scope from the scope configuration.
-    pub(crate) fn new(allowed: Vec<&'a Entry>, denied: Vec<&'a Entry>) -> Self {
+    pub(crate) fn new(allowed: Vec<&'a Arc<Entry>>, denied: Vec<&'a Arc<Entry>>) -> Self {
         Self { allowed, denied }
     }
 
@@ -76,7 +78,7 @@ impl<'a> Scope<'a> {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
+    use std::{str::FromStr, sync::Arc};
 
     use super::Entry;
 
@@ -91,8 +93,8 @@ mod tests {
 
     #[test]
     fn denied_takes_precedence() {
-        let allow = "http://localhost:8080/file.png".parse().unwrap();
-        let deny = "http://localhost:8080/*".parse().unwrap();
+        let allow = Arc::new("http://localhost:8080/file.png".parse().unwrap());
+        let deny = Arc::new("http://localhost:8080/*".parse().unwrap());
         let scope = super::Scope::new(vec![&allow], vec![&deny]);
         assert!(!scope.is_allowed(&"http://localhost:8080/file.png".parse().unwrap()));
     }
@@ -100,7 +102,7 @@ mod tests {
     #[test]
     fn fixed_url() {
         // plain URL
-        let entry = "http://localhost:8080".parse().unwrap();
+        let entry = Arc::new("http://localhost:8080".parse().unwrap());
         let scope = super::Scope::new(vec![&entry], Vec::new());
         assert!(scope.is_allowed(&"http://localhost:8080".parse().unwrap()));
         assert!(scope.is_allowed(&"http://localhost:8080/".parse().unwrap()));
@@ -115,7 +117,7 @@ mod tests {
     #[test]
     fn fixed_path() {
         // URL with fixed path
-        let entry = "http://localhost:8080/file.png".parse().unwrap();
+        let entry = Arc::new("http://localhost:8080/file.png".parse().unwrap());
         let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://localhost:8080/file.png".parse().unwrap()));
@@ -127,7 +129,7 @@ mod tests {
 
     #[test]
     fn pattern_wildcard() {
-        let entry = "http://localhost:8080/*.png".parse().unwrap();
+        let entry = Arc::new("http://localhost:8080/*.png".parse().unwrap());
         let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://localhost:8080/file.png".parse().unwrap()));
@@ -138,14 +140,14 @@ mod tests {
 
     #[test]
     fn domain_wildcard() {
-        let entry = "http://*".parse().unwrap();
+        let entry = Arc::new("http://*".parse().unwrap());
         let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://something.else".parse().unwrap()));
         assert!(!scope.is_allowed(&"http://something.else/path/to/file".parse().unwrap()));
         assert!(!scope.is_allowed(&"https://something.else".parse().unwrap()));
 
-        let entry = "http://*/*".parse().unwrap();
+        let entry = Arc::new("http://*/*".parse().unwrap());
         let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://something.else".parse().unwrap()));
@@ -154,7 +156,7 @@ mod tests {
 
     #[test]
     fn scheme_wildcard() {
-        let entry = "*://*".parse().unwrap();
+        let entry = Arc::new("*://*".parse().unwrap());
         let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://something.else".parse().unwrap()));
@@ -163,7 +165,7 @@ mod tests {
         assert!(!scope.is_allowed(&"file://path/to/file".parse().unwrap()));
         assert!(scope.is_allowed(&"https://something.else".parse().unwrap()));
 
-        let entry = "*://*/*".parse().unwrap();
+        let entry = Arc::new("*://*/*".parse().unwrap());
         let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://something.else".parse().unwrap()));

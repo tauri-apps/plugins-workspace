@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use std::sync::Arc;
+
 use crate::open::Program;
 use crate::process::Command;
 
@@ -141,7 +143,7 @@ pub struct OpenScope {
 #[derive(Clone)]
 pub struct ShellScope<'a> {
     /// All allowed commands, using their unique command name as the keys.
-    pub scopes: Vec<&'a ScopeAllowedCommand>,
+    pub scopes: Vec<&'a Arc<ScopeAllowedCommand>>,
 }
 
 /// All errors that can happen while validating a scoped command.
