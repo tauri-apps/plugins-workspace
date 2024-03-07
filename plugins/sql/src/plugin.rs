@@ -5,9 +5,7 @@
 use futures_core::future::BoxFuture;
 use serde::{ser::Serializer, Deserialize, Serialize};
 use serde_json::Value as JsonValue;
-use sqlx::sqlite::{
-    SqliteConnectOptions, SqliteJournalMode, SqliteLockingMode, SqliteSynchronous,
-};
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqliteLockingMode, SqliteSynchronous};
 use sqlx::{
     error::BoxDynError,
     migrate::{
@@ -95,19 +93,19 @@ struct Migrations(Mutex<HashMap<String, MigrationList>>);
 
 #[derive(Clone, Deserialize)]
 pub struct SqliteConfig {
-    pub key: &'static str, // Database key
+    pub key: &'static str,     // Database key
     pub cipher_page_size: i32, // Page size of encrypted database. Default for SQLCipher v4 is 4096.
     pub cipher_plaintext_header_size: i32,
     pub kdf_iter: i32, // Number of iterations used in PBKDF2 key derivation. Default for SQLCipher v4 is 256000
-    pub cipher_kdf_algorithm: &'static str,  // Define KDF algorithm to be used. Default for SQLCipher v4 is PBKDF2_HMAC_SHA512.
-    pub cipher_hmac_algorithm: &'static str, // Choose algorithm used for HMAC. Default for SQLCipher v4 is HMAC_SHA512.                                        
+    pub cipher_kdf_algorithm: &'static str, // Define KDF algorithm to be used. Default for SQLCipher v4 is PBKDF2_HMAC_SHA512.
+    pub cipher_hmac_algorithm: &'static str, // Choose algorithm used for HMAC. Default for SQLCipher v4 is HMAC_SHA512.
     pub cipher_salt: Option<&'static str>, // Allows to provide salt manually. By default SQLCipher sets salt automatically, use only in conjunction with 'cipher_plaintext_header_size' pragma
     pub cipher_compatibility: Option<i32>, // 1, 2, 3, 4
     pub journal_mode: &'static str,        // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
     pub foreign_keys: bool,
     pub synchronous: &'static str,  // EXTRA | FULL | NORMAL |  OFF
     pub locking_mode: &'static str, // NORMAL | EXCLUSIVE
-    pub read_only: bool, // NORMAL | EXCLUSIVE
+    pub read_only: bool,            // NORMAL | EXCLUSIVE
 }
 
 impl Default for SqliteConfig {
@@ -125,7 +123,7 @@ impl Default for SqliteConfig {
             foreign_keys: true,
             synchronous: "FULL",
             locking_mode: "NORMAL",
-            read_only: false
+            read_only: false,
         }
     }
 }
@@ -134,7 +132,7 @@ pub fn sqlite_config_to_options(db: &str, config: SqliteConfig) -> SqliteConnect
     let is_in_memory = db.contains(":memory") || db.contains("mode=memory");
     let mut options = if is_in_memory {
         SqliteConnectOptions::from_str("sqlite::memory:").unwrap()
-    }else{
+    } else {
         SqliteConnectOptions::from_str(db).unwrap()
     };
     if config.key != "" {
