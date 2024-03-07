@@ -11,6 +11,7 @@
     ".changes/fix-zbus-import.md",
     ".changes/http-user-agent.md",
     ".changes/msrv-1.75.md",
+    ".changes/public-with-store.md",
     ".changes/shell-shellexcute.md",
     ".changes/tauri-beta-4.md",
     ".changes/tauri-beta-8.md",
