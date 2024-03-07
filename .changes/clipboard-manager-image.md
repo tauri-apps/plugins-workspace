@@ -3,4 +3,4 @@
 "clipboard-manager-js": "minor"
 ---
 
-Add support for `read_image` and `write_image` to the clipboard plugin.
+Add support for `read_image` and `write_image` to the clipboard plugin (desktop).
