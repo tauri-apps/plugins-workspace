@@ -260,7 +260,7 @@ fn register_all<R: Runtime>(
         hotkeys,
         Some(move |_app: &AppHandle<R>, shortcut: &Shortcut| {
             if let Some(shortcut_str) = shortcut_map.get(&shortcut.id()) {
-                let _ = handler.send(&shortcut_str);
+                let _ = handler.send(shortcut_str);
             }
         }),
     )
