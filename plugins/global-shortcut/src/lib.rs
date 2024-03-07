@@ -87,13 +87,7 @@ impl<R: Runtime> GlobalShortcut<R> {
         handler: Option<F>,
     ) -> Result<()> {
         let id = shortcut.id();
-        // For some reason, using `handler.map(|h| Arc::new(Box::new(h)))`
-        // resutls in `Option<Arc<F>>` instead of the needed type
-        #[allow(clippy::manual_map)]
-        let handler: Option<Arc<HandlerFn<R>>> = match handler {
-            Some(h) => Some(Arc::new(Box::new(h))),
-            None => None,
-        };
+        let handler = handler.map(|h| Arc::new(Box::new(h) as HandlerFn<R>));
 
         self.manager.register(shortcut)?;
         self.shortcuts.lock().unwrap().insert(
@@ -118,13 +112,7 @@ impl<R: Runtime> GlobalShortcut<R> {
         S: IntoIterator<Item = (Shortcut, Option<String>)>,
         F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static,
     {
-        // For some reason, using `handler.map(|h| Arc::new(Box::new(h)))`
-        // resutls in `Option<Arc<F>>` instead of the needed type
-        #[allow(clippy::manual_map)]
-        let handler: Option<Arc<HandlerFn<R>>> = match handler {
-            Some(h) => Some(Arc::new(Box::new(h))),
-            None => None,
-        };
+        let handler = handler.map(|h| Arc::new(Box::new(h) as HandlerFn<R>));
 
         let hotkeys = shortcuts
             .into_iter()
