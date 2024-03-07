@@ -35,20 +35,6 @@ type Result<T> = std::result::Result<T, Error>;
 type HotKeyId = u32;
 type HandlerFn<R> = Box<dyn Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static>;
 
-enum ShortcutSource {
-    Ipc(Channel),
-    Rust,
-}
-
-impl Clone for ShortcutSource {
-    fn clone(&self) -> Self {
-        match self {
-            Self::Ipc(channel) => Self::Ipc(channel.clone()),
-            Self::Rust => Self::Rust,
-        }
-    }
-}
-
 pub struct ShortcutWrapper(Shortcut);
 
 impl From<Shortcut> for ShortcutWrapper {
@@ -65,9 +51,7 @@ impl TryFrom<&str> for ShortcutWrapper {
 }
 
 struct RegisteredShortcut<R: Runtime> {
-    source: ShortcutSource,
     shortcut: Shortcut,
-    channel_id: Option<String>,
     handler: Option<Arc<HandlerFn<R>>>,
 }
 
@@ -82,51 +66,35 @@ impl<R: Runtime> GlobalShortcut<R> {
     fn register_internal<F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static>(
         &self,
         shortcut: Shortcut,
-        channel_id: Option<String>,
-        source: ShortcutSource,
         handler: Option<F>,
     ) -> Result<()> {
         let id = shortcut.id();
         let handler = handler.map(|h| Arc::new(Box::new(h) as HandlerFn<R>));
 
         self.manager.register(shortcut)?;
-        self.shortcuts.lock().unwrap().insert(
-            id,
-            RegisteredShortcut {
-                source,
-                shortcut,
-                channel_id,
-                handler,
-            },
-        );
+        self.shortcuts
+            .lock()
+            .unwrap()
+            .insert(id, RegisteredShortcut { shortcut, handler });
         Ok(())
     }
 
-    fn register_all_internal<S, F>(
-        &self,
-        shortcuts: S,
-        source: ShortcutSource,
-        handler: Option<F>,
-    ) -> Result<()>
+    fn register_all_internal<S, F>(&self, shortcuts: S, handler: Option<F>) -> Result<()>
     where
-        S: IntoIterator<Item = (Shortcut, Option<String>)>,
+        S: IntoIterator<Item = Shortcut>,
         F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static,
     {
         let handler = handler.map(|h| Arc::new(Box::new(h) as HandlerFn<R>));
 
-        let hotkeys = shortcuts
-            .into_iter()
-            .collect::<Vec<(Shortcut, Option<String>)>>();
+        let hotkeys = shortcuts.into_iter().collect::<Vec<_>>();
 
         let mut shortcuts = self.shortcuts.lock().unwrap();
-        for (shortcut, channel_id) in hotkeys {
+        for shortcut in hotkeys {
             self.manager.register(shortcut)?;
             shortcuts.insert(
                 shortcut.id(),
                 RegisteredShortcut {
-                    source: source.clone(),
                     shortcut,
-                    channel_id,
                     handler: handler.clone(),
                 },
             );
@@ -143,8 +111,6 @@ impl<R: Runtime> GlobalShortcut<R> {
     {
         self.register_internal(
             try_into_shortcut(shortcut)?,
-            None,
-            ShortcutSource::Rust,
             None::<fn(&AppHandle<R>, &Shortcut)>,
         )
     }
@@ -156,12 +122,7 @@ impl<R: Runtime> GlobalShortcut<R> {
         S::Error: std::error::Error,
         F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static,
     {
-        self.register_internal(
-            try_into_shortcut(shortcut)?,
-            None,
-            ShortcutSource::Rust,
-            Some(handler),
-        )
+        self.register_internal(try_into_shortcut(shortcut)?, Some(handler))
     }
 
     /// Register multiple shortcuts.
@@ -173,13 +134,9 @@ impl<R: Runtime> GlobalShortcut<R> {
     {
         let mut s = Vec::new();
         for shortcut in shortcuts {
-            s.push((try_into_shortcut(shortcut)?, None));
+            s.push(try_into_shortcut(shortcut)?);
         }
-        self.register_all_internal(
-            s,
-            ShortcutSource::Rust,
-            None::<fn(&AppHandle<R>, &Shortcut)>,
-        )
+        self.register_all_internal(s, None::<fn(&AppHandle<R>, &Shortcut)>)
     }
 
     /// Register multiple shortcuts with a handler.
@@ -192,9 +149,9 @@ impl<R: Runtime> GlobalShortcut<R> {
     {
         let mut s = Vec::new();
         for shortcut in shortcuts {
-            s.push((try_into_shortcut(shortcut)?, None));
+            s.push(try_into_shortcut(shortcut)?);
         }
-        self.register_all_internal(s, ShortcutSource::Rust, Some(handler))
+        self.register_all_internal(s, Some(handler))
     }
 
     pub fn unregister<S: TryInto<ShortcutWrapper>>(&self, shortcut: S) -> Result<()>
@@ -277,9 +234,9 @@ fn register<R: Runtime>(
 ) -> Result<()> {
     global_shortcut.register_internal(
         parse_shortcut(&shortcut)?,
-        Some(shortcut),
-        ShortcutSource::Ipc(handler),
-        None::<fn(&AppHandle<R>, &Shortcut)>,
+        Some(move |_app: &AppHandle<R>, _shortcut: &Shortcut| {
+            let _ = handler.send(&shortcut);
+        }),
     )
 }
 
@@ -291,13 +248,21 @@ fn register_all<R: Runtime>(
     handler: Channel,
 ) -> Result<()> {
     let mut hotkeys = Vec::new();
+
+    let mut shortcut_map = HashMap::new();
     for shortcut in shortcuts {
-        hotkeys.push((parse_shortcut(&shortcut)?, Some(shortcut)));
+        let hotkey = parse_shortcut(&shortcut)?;
+        shortcut_map.insert(hotkey.id(), shortcut);
+        hotkeys.push(hotkey);
     }
+
     global_shortcut.register_all_internal(
         hotkeys,
-        ShortcutSource::Ipc(handler),
-        None::<fn(&AppHandle<R>, &Shortcut)>,
+        Some(move |_app: &AppHandle<R>, shortcut: &Shortcut| {
+            if let Some(shortcut_str) = shortcut_map.get(&shortcut.id()) {
+                let _ = handler.send(&shortcut_str);
+            }
+        }),
     )
 }
 
@@ -405,8 +370,6 @@ impl<R: Runtime> Builder<R> {
                         shortcut.id(),
                         RegisteredShortcut {
                             shortcut,
-                            source: ShortcutSource::Rust,
-                            channel_id: None,
                             handler: None,
                         },
                     );
@@ -418,18 +381,11 @@ impl<R: Runtime> Builder<R> {
                 let app_handle = app.clone();
                 GlobalHotKeyEvent::set_event_handler(Some(move |e: GlobalHotKeyEvent| {
                     if let Some(shortcut) = shortcuts_.lock().unwrap().get(&e.id) {
-                        match &shortcut.source {
-                            ShortcutSource::Ipc(channel) => {
-                                let _ = channel.send(&shortcut.channel_id);
-                            }
-                            ShortcutSource::Rust => {
-                                if let Some(handler) = &shortcut.handler {
-                                    handler(&app_handle, &shortcut.shortcut);
-                                }
-                                if let Some(handler) = &handler {
-                                    handler(&app_handle, &shortcut.shortcut);
-                                }
-                            }
+                        if let Some(handler) = &shortcut.handler {
+                            handler(&app_handle, &shortcut.shortcut);
+                        }
+                        if let Some(handler) = &handler {
+                            handler(&app_handle, &shortcut.shortcut);
                         }
                     }
                 }));
