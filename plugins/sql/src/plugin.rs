@@ -212,6 +212,9 @@ async fn load<R: Runtime>(
     };
 
     #[cfg(feature = "sqlite")]
+    print!("{}",sqlite_config_to_options(sqlite_options).filename(&fqdb))
+
+    #[cfg(feature = "sqlite")]
     create_dir_all(app_path(&app)).expect("Problem creating App directory!");
     if !Db::database_exists(&fqdb).await.unwrap_or(false) {
         Db::create_database(&fqdb).await?;
@@ -405,14 +408,13 @@ impl Builder {
                         lock.insert(db, pool);
                     }
                     drop(lock);
-                    app.manage(instances);
-                    app.manage(SqlLiteOptionStore(Mutex::new(
-                        self.sqlite_options.take().unwrap_or_default(),
-                    )));
+                    app.manage(instances);                    
                     app.manage(Migrations(Mutex::new(
                         self.migrations.take().unwrap_or_default(),
                     )));
-
+                    app.manage(SqlLiteOptionStore(Mutex::new(
+                        self.sqlite_options.take().unwrap_or_default(),
+                    )));
                     Ok(())
                 })
             })
