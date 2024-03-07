@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-save-window-state"
+description = "Enables the save_window_state command without any pre-configured scope."
+commands.allow = ["save_window_state"]
+
+[[permission]]
+identifier = "deny-save-window-state"
+description = "Denies the save_window_state command without any pre-configured scope."
+commands.deny = ["save_window_state"]

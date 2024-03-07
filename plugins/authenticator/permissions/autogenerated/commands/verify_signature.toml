@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-verify-signature"
+description = "Enables the verify_signature command without any pre-configured scope."
+commands.allow = ["verify_signature"]
+
+[[permission]]
+identifier = "deny-verify-signature"
+description = "Denies the verify_signature command without any pre-configured scope."
+commands.deny = ["verify_signature"]

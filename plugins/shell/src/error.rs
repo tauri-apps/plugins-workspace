@@ -24,6 +24,9 @@ pub enum Error {
     ProgramNotAllowed(PathBuf),
     #[error("unknown encoding {0}")]
     UnknownEncoding(String),
+    /// JSON error.
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
 }
 
 impl Serialize for Error {

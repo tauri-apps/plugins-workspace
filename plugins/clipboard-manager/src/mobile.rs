@@ -51,4 +51,17 @@ impl<R: Runtime> Clipboard<R> {
             "Unsupported on this platform".to_string(),
         ))
     }
+
+    // Treat HTML as unsupported on mobile until tested
+    pub fn write_html(&self, _kind: ClipKind) -> crate::Result<()> {
+        Err(crate::Error::Clipboard(
+            "Unsupported on this platform".to_string(),
+        ))
+    }
+
+    pub fn clear(&self) -> crate::Result<()> {
+        Err(crate::Error::Clipboard(
+            "Unsupported on this platform".to_string(),
+        ))
+    }
 }

@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-init-auth"
+description = "Enables the init_auth command without any pre-configured scope."
+commands.allow = ["init_auth"]
+
+[[permission]]
+identifier = "deny-init-auth"
+description = "Denies the init_auth command without any pre-configured scope."
+commands.deny = ["init_auth"]

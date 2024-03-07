@@ -6,7 +6,7 @@ In-app updates for Tauri applications.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.70**_
+_This plugin requires a Rust version of at least **1.75**_
 
 There are three general methods of installation that we can recommend.
 
@@ -21,7 +21,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 # you can add the dependencies on the `[dependencies]` section if you do not target mobile
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
-tauri-plugin-updater = "2.0.0-alpha"
+tauri-plugin-updater = "2.0.0-beta"
 # alternatively with Git:
 tauri-plugin-updater = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -70,7 +70,7 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 import { check } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 const update = await check();
-if (update.response.available) {
+if (update?.available) {
   await update.downloadAndInstall();
   await relaunch();
 }

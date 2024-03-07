@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-restore-window-state"
+description = "Enables the restore_window_state command without any pre-configured scope."
+commands.allow = ["restore_window_state"]
+
+[[permission]]
+identifier = "deny-restore-window-state"
+description = "Denies the restore_window_state command without any pre-configured scope."
+commands.deny = ["restore_window_state"]

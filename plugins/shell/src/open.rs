@@ -6,7 +6,7 @@
 
 use serde::{Deserialize, Deserializer};
 
-use crate::scope::Scope;
+use crate::scope::OpenScope;
 use std::str::FromStr;
 
 /// Program to use on the [`open()`] call.
@@ -117,6 +117,6 @@ impl Program {
 ///     Ok(())
 ///   });
 /// ```
-pub fn open<P: AsRef<str>>(scope: &Scope, path: P, with: Option<Program>) -> crate::Result<()> {
+pub fn open<P: AsRef<str>>(scope: &OpenScope, path: P, with: Option<Program>) -> crate::Result<()> {
     scope.open(path.as_ref(), with).map_err(Into::into)
 }

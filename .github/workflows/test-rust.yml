@@ -42,6 +42,7 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: filter
         with:
+          base: v2
           filters: |
             tauri-plugin-authenticator:
               - .github/workflows/test-rust.yml
@@ -175,7 +176,7 @@ jobs:
           echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
           vcpkg install openssl:x64-windows-static-md
 
-      - uses: dtolnay/rust-toolchain@1.70.0
+      - uses: dtolnay/rust-toolchain@1.75.0
         with:
           targets: ${{ matrix.platform.target }}
 
@@ -189,7 +190,7 @@ jobs:
 
       - name: install cross
         if: ${{ matrix.platform.runner == 'cross' }}
-        run: cargo install cross --git https://github.com/cross-rs/cross
+        run: cargo +stable install cross --git https://github.com/cross-rs/cross
 
       - name: test ${{ matrix.package }}
         if: matrix.package != 'tauri-plugin-sql' && matrix.package != 'tauri-plugin-http'

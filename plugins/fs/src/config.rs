@@ -3,9 +3,16 @@
 // SPDX-License-Identifier: MIT
 
 use serde::Deserialize;
-use tauri::utils::config::FsScope;
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct Config {
-    pub scope: FsScope,
+    /// Whether or not paths that contain components that start with a `.`
+    /// will require that `.` appears literally in the pattern; `*`, `?`, `**`,
+    /// or `[...]` will not match. This is useful because such files are
+    /// conventionally considered hidden on Unix systems and it might be
+    /// desirable to skip them when listing files.
+    ///
+    /// Defaults to `true` on Unix systems and `false` on Windows
+    // dotfiles are not supposed to be exposed by default on unix
+    pub require_literal_leading_dot: Option<bool>,
 }

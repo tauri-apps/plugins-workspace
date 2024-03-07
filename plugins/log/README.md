@@ -4,7 +4,7 @@ Configurable logging for your Tauri app.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.70**_
+_This plugin requires a Rust version of at least **1.75**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-log = "2.0.0-alpha"
+tauri-plugin-log = "2.0.0-beta"
 # alternatively with Git:
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -49,14 +49,14 @@ First you need to register the core plugin with Tauri:
 `src-tauri/src/main.rs`
 
 ```rust
-use tauri_plugin_log::{LogTarget};
+use tauri_plugin_log::{Target, TargetKind};
 
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_log::Builder::default().targets([
-            LogTarget::LogDir,
-            LogTarget::Stdout,
-            LogTarget::Webview,
+        .plugin(tauri_plugin_log::Builder::new().targets([
+            Target::new(TargetKind::Stdout),
+            Target::new(TargetKind::LogDir { file_name: None }),
+            Target::new(TargetKind::Webview),
         ]).build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -68,7 +68,7 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 ```javascript
 import { trace, info, error, attachConsole } from "@tauri-apps/plugin-log";
 
-// with LogTarget::Webview enabled this function will print logs to the browser console
+// with TargetKind::Webview enabled this function will print logs to the browser console
 const detach = await attachConsole();
 
 trace("Trace");

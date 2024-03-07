@@ -1,0 +1,28 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = """
+# Tauri `fs` default permissions
+
+This configuration file defines the default permissions granted
+to the filesystem.
+
+### Granted Permissions
+
+This default permission set enables all read-related commands and
+allows access to the `$APP` folder and sub directories created in it.
+The location of the `$APP` folder depends on the operating system,
+where the application is run.
+
+In general the `$APP` folder needs to be manually created
+by the application at runtime, before accessing files or folders
+in it is possible.
+
+### Denied Permissions
+
+This default permission set prevents access to critical components
+of the Tauri application by default.
+On Windows the webview data folder access is denied.
+
+"""
+permissions = ["read-all", "scope-app-recursive", "deny-default"]

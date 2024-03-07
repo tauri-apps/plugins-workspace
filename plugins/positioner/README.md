@@ -6,7 +6,7 @@ This plugin is a port of [electron-positioner](https://github.com/jenslind/elect
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.70**_
+_This plugin requires a Rust version of at least **1.75**_
 
 There are three general methods of installation that we can recommend.
 
@@ -20,7 +20,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-positioner = "2.0.0-alpha"
+tauri-plugin-positioner = "2.0.0-beta"
 # alternatively with Git:
 tauri-plugin-positioner = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -51,12 +51,19 @@ First you need to register the core plugin with Tauri:
 `src-tauri/src/main.rs`
 
 ```rust
+use tauri::tray::TrayIconBuilder;
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_positioner::init())
         // This is required to get tray-relative positions to work
-        .on_system_tray_event(|app, event| {
-           tauri_plugin_positioner::on_tray_event(app, &event);
+        .setup(|app| {
+            TrayIconBuilder::new()
+                .on_tray_icon_event(|app, event| {
+                    tauri_plugin_positioner::on_tray_event(app.app_handle(), &event);
+                })
+                .build(app)?;
+            Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

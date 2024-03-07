@@ -4,7 +4,7 @@ Simple, persistent key-value store.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.70**_
+_This plugin requires a Rust version of at least **1.75**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-store = "2.0.0-alpha"
+tauri-plugin-store = "2.0.0-beta"
 # alternatively with Git:
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -69,19 +69,30 @@ await store.set("some-key", { value: 5 });
 const val = await store.get("some-key");
 assert(val, { value: 5 });
 
-await store.save(); // this manually saves the store, otherwise the store is only saved when your app is closed
+// This manually saves the store.
+await store.save();
 ```
 
-### Persisting values
+### Persisting Values
 
-Values added to the store are not persisted between application loads unless:
+As seen above, values added to the store are not persisted between application loads unless the application is closed gracefully.
 
-1. The application is closed gracefully (plugin automatically saves)
-2. The store is manually saved (using `store.save()`)
+You can manually save a store with:
+
+```javascript
+await store.save();
+```
+
+Stores are loaded automatically when used from the JavaScript bindings.  
+However, you can also load them manually later like so:
+
+```javascript
+await store.load();
+```
 
 ## Usage from Rust
 
-You can also access Stores from Rust, you can create new stores:
+You can also create `Store` instances directly in Rust:
 
 ```rust
 use tauri_plugin_store::StoreBuilder;
@@ -91,23 +102,52 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
         .setup(|app| {
-            let mut store = StoreBuilder::new(app.handle(), "path/to/store.bin".parse()?).build();
+            let mut store = StoreBuilder::new("app_data.bin").build(app.handle().clone());
 
-            store.insert("a".to_string(), json!("b")) // note that values must be serd_json::Value to be compatible with JS
+            // Attempt to load the store, if it's saved already.
+            store.load().expect("Failed to load store from disk");
+
+            // Note that values must be serde_json::Value instances,
+            // otherwise, they will not be compatible with the JavaScript bindings.
+            store.insert("a".to_string(), json!("b"));
+
+            // You can manually save the store after making changes.
+            // Otherwise, it will save upon graceful exit as described above.
+            store.save()
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 ```
 
-As you may have noticed, the Store crated above isn't accessible to the frontend. To interoperate with stores created by JS use the exported `with_store` method:
+### Loading Gracefully
+
+If you call `load` on a `Store` that hasn't yet been written to the desk, it will return an error. You must handle this error if you want to gracefully continue and use the default store until you save it to the disk. The example above shows how to do this.
+
+For example, this would cause a panic if the store has not yet been created:
+
+```rust
+store.load().unwrap();
+```
+
+Rather than silently continuing like you may expect.
+
+You should always handle the error appropriately rather than unwrapping, or you may experience unexpected app crashes:
+
+```rust
+store.load().expect("Failed to load store from disk");
+```
+
+### Frontend Interoperability
+
+As you may have noticed, the `Store` crated above isn't accessible to the frontend. To interoperate with stores created by JavaScript use the exported `with_store` method:
 
 ```rust
 use tauri::Wry;
 use tauri_plugin_store::with_store;
 
 let stores = app.state::<StoreCollection<Wry>>();
-let path = PathBuf::from("path/to/the/storefile");
+let path = PathBuf::from("app_data.bin");
 
 with_store(app_handle, stores, path, |store| store.insert("a".to_string(), json!("b")))
 ```

@@ -53,7 +53,7 @@
     const form = new FormData();
     form.append("foo", foo);
     form.append("bar", bar);
-    const response = await tauriFetch("http://localhost:3003", {
+    const response = await tauriFetch("http://localhost:3003/tauri", {
       method: "POST",
       body: form,
     });

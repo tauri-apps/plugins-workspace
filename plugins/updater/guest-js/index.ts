@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke, Channel } from "@tauri-apps/api/core";
+import { invoke, Channel, Resource } from "@tauri-apps/api/core";
 
 /** Options used to check for updates */
 interface CheckOptions {
@@ -15,12 +15,17 @@ interface CheckOptions {
    */
   timeout?: number;
   /**
+   * A proxy url to be used when checking and downloading updates.
+   */
+  proxy?: string;
+  /**
    * Target identifier for the running application. This is sent to the backend.
    */
   target?: string;
 }
 
 interface UpdateMetadata {
+  rid: number;
   available: boolean;
   currentVersion: string;
   version: string;
@@ -34,13 +39,16 @@ type DownloadEvent =
   | { event: "Progress"; data: { chunkLength: number } }
   | { event: "Finished" };
 
-class Update {
+class Update extends Resource {
+  available: boolean;
   currentVersion: string;
   version: string;
   date?: string;
   body?: string;
 
   constructor(metadata: UpdateMetadata) {
+    super(metadata.rid);
+    this.available = metadata.available;
     this.currentVersion = metadata.currentVersion;
     this.version = metadata.version;
     this.date = metadata.date;
@@ -52,11 +60,12 @@ class Update {
     onEvent?: (progress: DownloadEvent) => void,
   ): Promise<void> {
     const channel = new Channel<DownloadEvent>();
-    if (onEvent != null) {
+    if (onEvent) {
       channel.onmessage = onEvent;
     }
     return invoke("plugin:updater|download_and_install", {
       onEvent: channel,
+      rid: this.rid,
     });
   }
 }
@@ -67,9 +76,9 @@ async function check(options?: CheckOptions): Promise<Update | null> {
     options.headers = Array.from(new Headers(options.headers).entries());
   }
 
-  return invoke<UpdateMetadata>("plugin:updater|check", { ...options }).then(
-    (meta) => (meta.available ? new Update(meta) : null),
-  );
+  return invoke<UpdateMetadata>("plugin:updater|check", {
+    ...options,
+  }).then((meta) => (meta.available ? new Update(meta) : null));
 }
 
 export type { CheckOptions, DownloadEvent };

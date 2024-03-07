@@ -37,3 +37,5 @@ jobs:
       - uses: rustsec/audit-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          # https://github.com/tauri-apps/plugins-workspace/issues/774
+          ignore: ${{ github.event_name != 'schedule' && 'RUSTSEC-2023-0071' || '' }}

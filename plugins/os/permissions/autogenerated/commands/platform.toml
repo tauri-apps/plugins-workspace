@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-platform"
+description = "Enables the platform command without any pre-configured scope."
+commands.allow = ["platform"]
+
+[[permission]]
+identifier = "deny-platform"
+description = "Denies the platform command without any pre-configured scope."
+commands.deny = ["platform"]

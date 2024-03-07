@@ -1,0 +1,6 @@
+"$schema" = "schemas/schema.json"
+
+[[set]]
+identifier = "deny-default"
+description = "This denies access to dangerous Tauri relevant files and folders by default."
+permissions = ["deny-webview-data-linux", "deny-webview-data-windows"]

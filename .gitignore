@@ -1,4 +1,8 @@
 target
 node_modules
-dist
 dist-js
+dist
+.idea
+.vscode
+.gradle
+**/capabilities/schemas

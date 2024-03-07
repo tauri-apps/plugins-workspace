@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use crate::u2f_crate::messages::*;
+use crate::u2f_crate::protocol::*;
+use crate::u2f_crate::register::*;
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use chrono::prelude::*;
 use serde::Serialize;
 use std::convert::Into;
-use u2f::messages::*;
-use u2f::protocol::*;
-use u2f::register::*;
 
 static VERSION: &str = "U2F_V2";
 

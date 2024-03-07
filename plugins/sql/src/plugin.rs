@@ -273,6 +273,10 @@ pub struct Builder {
 }
 
 impl Builder {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     /// Add migrations to a database.
     #[must_use]
     pub fn add_migrations(mut self, db_url: &str, migrations: Vec<Migration>) -> Self {

@@ -4,7 +4,7 @@ Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx)
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.70**_
+_This plugin requires a Rust version of at least **1.75**_
 
 There are three general methods of installation that we can recommend.
 
@@ -19,7 +19,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 [dependencies.tauri-plugin-sql]
 features = ["sqlite"] # or "postgres", or "mysql"
-version = "2.0.0-alpha"
+version = "2.0.0-beta"
 # alternatively with Git
 git = "https://github.com/tauri-apps/plugins-workspace"
 branch = "v2"
@@ -104,6 +104,67 @@ const result = await db.execute(
   [todos.title, todos.status, todos.id],
 );
 ```
+
+## Migrations
+
+This plugin supports database migrations, allowing you to manage database schema evolution over time.
+
+### Defining Migrations
+
+Migrations are defined in Rust using the `Migration` struct. Each migration should include a unique version number, a description, the SQL to be executed, and the type of migration (Up or Down).
+
+Example of a migration:
+
+```rust
+use tauri_plugin_sql::{Migration, MigrationKind};
+
+let migration = Migration {
+    version: 1,
+    description: "create_initial_tables",
+    sql: "CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT);",
+    kind: MigrationKind::Up,
+};
+```
+
+### Adding Migrations to the Plugin Builder
+
+Migrations are registered with the `Builder` struct provided by the plugin. Use the `add_migrations` method to add your migrations to the plugin for a specific database connection.
+
+Example of adding migrations:
+
+```rust
+use tauri_plugin_sql::{Builder, Migration, MigrationKind};
+
+fn main() {
+    let migrations = vec![
+        // Define your migrations here
+        Migration {
+            version: 1,
+            description: "create_initial_tables",
+            sql: "CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT);",
+            kind: MigrationKind::Up,
+        }
+    ];
+
+    tauri::Builder::default()
+        .plugin(
+            tauri_plugin_sql::Builder::default()
+                .add_migrations("sqlite:mydatabase.db", migrations)
+                .build(),
+        )
+        ...
+}
+```
+
+### Applying Migrations
+
+Migrations are applied automatically when the plugin is initialized. The plugin runs these migrations against the database specified by the connection string. Ensure that the migrations are defined in the correct order and are idempotent (safe to run multiple times).
+
+### Migration Management
+
+- **Version Control**: Each migration must have a unique version number. This is crucial for ensuring the migrations are applied in the correct order.
+- **Idempotency**: Write migrations in a way that they can be safely re-run without causing errors or unintended consequences.
+- **Testing**: Thoroughly test migrations to ensure they work as expected and do not compromise the integrity of your database.
 
 ## Contributing
 

@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-alpha.6"
+version = "2.0.0-beta.3"
 description = "Ensure a single instance of your tauri app is running."
 authors = { workspace = true }
 license = { workspace = true }
@@ -32,4 +32,4 @@ features = [
 ]
 
 [target."cfg(target_os = \"linux\")".dependencies]
-zbus = "3"
+zbus = "4"

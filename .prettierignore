@@ -9,3 +9,4 @@ build
 api-iife.js
 init-iife.js
 intermediates/
+*schema.json

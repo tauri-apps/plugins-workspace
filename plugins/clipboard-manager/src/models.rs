@@ -7,8 +7,17 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ClipKind {
-    PlainText { label: Option<String>, text: String },
-    Image { buffer: Vec<u8> },
+    PlainText {
+        label: Option<String>,
+        text: String,
+    },
+    Image {
+        buffer: Vec<u8>,
+    },
+    Html {
+        html: String,
+        alt_html: Option<String>,
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize)]

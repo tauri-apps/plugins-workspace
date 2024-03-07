@@ -31,7 +31,7 @@ async function writeText(
   text: string,
   opts?: { label?: string },
 ): Promise<void> {
-  return invoke("plugin:clipboard|write_text", {
+  return invoke("plugin:clipboard-manager|write_text", {
     data: {
       plainText: {
         label: opts?.label,
@@ -51,7 +51,7 @@ async function writeText(
  * @since 2.0.0
  */
 async function readText(): Promise<string> {
-  const kind: ClipResponse = await invoke("plugin:clipboard|read_text");
+  const kind: ClipResponse = await invoke("plugin:clipboard-manager|read_text");
   return kind.plainText.text;
 }
 
@@ -85,7 +85,6 @@ async function readImage(): Promise<Uint8Array> {
  *   0, 255, 0, 255,
  * ];
  * await writeImage(buffer);
- * ```
  *
  * @returns A promise indicating the success or failure of the operation.
  *
@@ -101,4 +100,43 @@ async function writeImage(buffer: Uint8Array | Array<number>): Promise<void> {
   });
 }
 
-export { writeText, readText, readImage, writeImage };
+/**
+ * * Writes HTML or fallbacks to write provided plain text to the clipboard.
+ * @example
+ * ```typescript
+ * import { writeHtml, readHtml } from '@tauri-apps/plugin-clipboard-manager';
+ * await writeHtml('<h1>Tauri is awesome!</h1>', 'plaintext');
+ * await writeHtml('<h1>Tauri is awesome!</h1>', '<h1>Tauri is awesome</h1>'); // Will write "<h1>Tauri is awesome</h1>" as plain text
+ * assert(await readText(), '<h1>Tauri is awesome!</h1>');
+ * ```
+ *
+ * @returns A promise indicating the success or failure of the operation.
+ *
+ * @since 2.0.0
+ */
+async function writeHtml(html: string, altHtml?: string): Promise<void> {
+  return invoke("plugin:clipboard-manager|write_html", {
+    data: {
+      html: {
+        html,
+        altHtml,
+      },
+    },
+  });
+}
+
+/**
+ * Clears the clipboard.
+ * @example
+ * ```typescript
+ * import { clear } from '@tauri-apps/plugin-clipboard-manager';
+ * await clear();
+ * ```
+ * @since 2.0.0
+ */
+async function clear(): Promise<void> {
+  await invoke("plugin:clipboard-manager|clear");
+  return;
+}
+
+export { writeText, readText, writeHtml, clear, readImage, writeImage };

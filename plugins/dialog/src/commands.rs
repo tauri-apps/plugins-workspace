@@ -51,6 +51,8 @@ pub struct OpenDialogOptions {
     #[serde(default)]
     #[cfg_attr(mobile, allow(dead_code))]
     recursive: bool,
+    /// Whether to allow creating directories in the dialog **macOS Only**
+    can_create_directories: Option<bool>,
 }
 
 /// The options for the save dialog API.
@@ -65,6 +67,8 @@ pub struct SaveDialogOptions {
     filters: Vec<DialogFilter>,
     /// The initial path of the dialog.
     default_path: Option<PathBuf>,
+    /// Whether to allow creating directories in the dialog **macOS Only**
+    can_create_directories: Option<bool>,
 }
 
 fn set_default_path<R: Runtime>(
@@ -105,6 +109,9 @@ pub(crate) async fn open<R: Runtime>(
     if let Some(default_path) = options.default_path {
         dialog_builder = set_default_path(dialog_builder, default_path);
     }
+    if let Some(can) = options.can_create_directories {
+        dialog_builder = dialog_builder.set_can_create_directories(can);
+    }
     for filter in options.filters {
         let extensions: Vec<&str> = filter.extensions.iter().map(|s| &**s).collect();
         dialog_builder = dialog_builder.add_filter(filter.name, &extensions);
@@ -118,7 +125,7 @@ pub(crate) async fn open<R: Runtime>(
                 if let Some(folders) = &folders {
                     for folder in folders {
                         if let Some(s) = window.try_fs_scope() {
-                            s.allow_directory(folder, options.recursive)?;
+                            s.allow_directory(folder, options.recursive);
                         }
                     }
                 }
@@ -127,7 +134,7 @@ pub(crate) async fn open<R: Runtime>(
                 let folder = dialog_builder.blocking_pick_folder();
                 if let Some(path) = &folder {
                     if let Some(s) = window.try_fs_scope() {
-                        s.allow_directory(path, options.recursive)?;
+                        s.allow_directory(path, options.recursive);
                     }
                 }
                 OpenResponse::Folder(folder)
@@ -140,7 +147,7 @@ pub(crate) async fn open<R: Runtime>(
         if let Some(files) = &files {
             for file in files {
                 if let Some(s) = window.try_fs_scope() {
-                    s.allow_file(&file.path)?;
+                    s.allow_file(&file.path);
                 }
                 window
                     .state::<tauri::scope::Scopes>()
@@ -152,7 +159,7 @@ pub(crate) async fn open<R: Runtime>(
         let file = dialog_builder.blocking_pick_file();
         if let Some(file) = &file {
             if let Some(s) = window.try_fs_scope() {
-                s.allow_file(&file.path)?;
+                s.allow_file(&file.path);
             }
             window
                 .state::<tauri::scope::Scopes>()
@@ -185,6 +192,9 @@ pub(crate) async fn save<R: Runtime>(
         if let Some(default_path) = options.default_path {
             dialog_builder = set_default_path(dialog_builder, default_path);
         }
+        if let Some(can) = options.can_create_directories {
+            dialog_builder = dialog_builder.set_can_create_directories(can);
+        }
         for filter in options.filters {
             let extensions: Vec<&str> = filter.extensions.iter().map(|s| &**s).collect();
             dialog_builder = dialog_builder.add_filter(filter.name, &extensions);
@@ -193,7 +203,7 @@ pub(crate) async fn save<R: Runtime>(
         let path = dialog_builder.blocking_save_file();
         if let Some(p) = &path {
             if let Some(s) = window.try_fs_scope() {
-                s.allow_file(p)?;
+                s.allow_file(p);
             }
             window.state::<tauri::scope::Scopes>().allow_file(p)?;
         }
@@ -207,7 +217,7 @@ fn message_dialog<R: Runtime>(
     dialog: State<'_, Dialog<R>>,
     title: Option<String>,
     message: String,
-    type_: Option<MessageDialogKind>,
+    kind: Option<MessageDialogKind>,
     ok_button_label: Option<String>,
     cancel_button_label: Option<String>,
 ) -> bool {
@@ -222,8 +232,8 @@ fn message_dialog<R: Runtime>(
         builder = builder.parent(&window);
     }
 
-    if let Some(type_) = type_ {
-        builder = builder.kind(type_);
+    if let Some(kind) = kind {
+        builder = builder.kind(kind);
     }
 
     if let Some(ok) = ok_button_label {
@@ -243,7 +253,7 @@ pub(crate) async fn message<R: Runtime>(
     dialog: State<'_, Dialog<R>>,
     title: Option<String>,
     message: String,
-    type_: Option<MessageDialogKind>,
+    kind: Option<MessageDialogKind>,
     ok_button_label: Option<String>,
 ) -> Result<bool> {
     Ok(message_dialog(
@@ -251,7 +261,7 @@ pub(crate) async fn message<R: Runtime>(
         dialog,
         title,
         message,
-        type_,
+        kind,
         ok_button_label,
         None,
     ))
@@ -263,7 +273,7 @@ pub(crate) async fn ask<R: Runtime>(
     dialog: State<'_, Dialog<R>>,
     title: Option<String>,
     message: String,
-    type_: Option<MessageDialogKind>,
+    kind: Option<MessageDialogKind>,
     ok_button_label: Option<String>,
     cancel_button_label: Option<String>,
 ) -> Result<bool> {
@@ -272,7 +282,7 @@ pub(crate) async fn ask<R: Runtime>(
         dialog,
         title,
         message,
-        type_,
+        kind,
         Some(ok_button_label.unwrap_or_else(|| "Yes".into())),
         Some(cancel_button_label.unwrap_or_else(|| "No".into())),
     ))
@@ -284,7 +294,7 @@ pub(crate) async fn confirm<R: Runtime>(
     dialog: State<'_, Dialog<R>>,
     title: Option<String>,
     message: String,
-    type_: Option<MessageDialogKind>,
+    kind: Option<MessageDialogKind>,
     ok_button_label: Option<String>,
     cancel_button_label: Option<String>,
 ) -> Result<bool> {
@@ -293,7 +303,7 @@ pub(crate) async fn confirm<R: Runtime>(
         dialog,
         title,
         message,
-        type_,
+        kind,
         Some(ok_button_label.unwrap_or_else(|| "Ok".into())),
         Some(cancel_button_label.unwrap_or_else(|| "Cancel".into())),
     ))

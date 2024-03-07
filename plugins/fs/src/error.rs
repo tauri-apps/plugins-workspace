@@ -9,11 +9,13 @@ use serde::{Serialize, Serializer};
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error(transparent)]
+    Json(#[from] serde_json::Error),
+    #[error(transparent)]
+    Tauri(#[from] tauri::Error),
+    #[error(transparent)]
     Io(#[from] std::io::Error),
     #[error("forbidden path: {0}")]
     PathForbidden(PathBuf),
-    #[error("failed to resolve path: {0}")]
-    CannotResolvePath(tauri::path::Error),
     /// Invalid glob pattern.
     #[error("invalid glob pattern: {0}")]
     GlobPattern(#[from] glob::PatternError),

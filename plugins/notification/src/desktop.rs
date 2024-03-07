@@ -19,13 +19,12 @@ pub struct Notification<R: Runtime>(AppHandle<R>);
 
 impl<R: Runtime> crate::NotificationBuilder<R> {
     pub fn show(self) -> crate::Result<()> {
-        let mut notification =
-            imp::Notification::new(self.app.config().tauri.bundle.identifier.clone());
+        let mut notification = imp::Notification::new(self.app.config().identifier.clone());
 
         if let Some(title) = self
             .data
             .title
-            .or_else(|| self.app.config().package.product_name.clone())
+            .or_else(|| self.app.config().product_name.clone())
         {
             notification = notification.title(title);
         }
@@ -161,7 +160,7 @@ mod imp {
             deprecated = "This function does not work on Windows 7. Use `Self::notify` instead."
         )]
         pub fn show(self) -> crate::Result<()> {
-            let mut notification = notify_rust::Notification::new();
+            let mut notification = crate::notify_rust::Notification::new();
             if let Some(body) = self.body {
                 notification.body(&body);
             }
@@ -187,7 +186,7 @@ mod imp {
             }
             #[cfg(target_os = "macos")]
             {
-                let _ = notify_rust::set_application(if cfg!(feature = "custom-protocol") {
+                let _ = crate::notify_rust::set_application(if cfg!(feature = "custom-protocol") {
                     &self.identifier
                 } else {
                     "com.apple.Terminal"
@@ -248,9 +247,8 @@ mod imp {
 
         #[cfg(all(windows, feature = "windows7-compat"))]
         fn notify_win7<R: tauri::Runtime>(self, app: &tauri::AppHandle<R>) -> crate::Result<()> {
-            let app = app.clone();
-            let default_window_icon = app.default_window_icon().cloned();
-            let _ = app.run_on_main_thread(move || {
+            let app_ = app.clone();
+            let _ = app.clone().run_on_main_thread(move || {
                 let mut notification = win7_notifications::Notification::new();
                 if let Some(body) = self.body {
                     notification.body(&body);
@@ -258,13 +256,8 @@ mod imp {
                 if let Some(title) = self.title {
                     notification.summary(&title);
                 }
-                if let Some(tauri::Icon::Rgba {
-                    rgba,
-                    width,
-                    height,
-                }) = default_window_icon
-                {
-                    notification.icon(rgba, width, height);
+                if let Some(icon) = app_.default_window_icon() {
+                    notification.icon(icon.rgba().to_vec(), icon.width(), icon.height());
                 }
                 let _ = notification.show();
             });
