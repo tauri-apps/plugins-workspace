@@ -2,7 +2,7 @@
 name = "single-instance-example"
 version = "0.1.0"
 description = "A Tauri App"
-authors = [ "You" ]
+authors = ["You"]
 repository = ""
 edition = "2021"
 rust-version = "1.75"
@@ -17,4 +17,4 @@ tauri-plugin-single-instance = { path = "../../../" }
 tauri-build = { workspace = true }
 
 [features]
-custom-protocol = [ "tauri/custom-protocol" ]
+prod = ["tauri/custom-protocol"]

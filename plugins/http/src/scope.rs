@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use std::sync::Arc;
+
 use serde::{Deserialize, Deserializer};
 use url::Url;
 use urlpattern::{UrlPattern, UrlPatternInit, UrlPatternMatchInput};
@@ -43,13 +45,13 @@ impl<'de> Deserialize<'de> for Entry {
 /// Scope for filesystem access.
 #[derive(Debug)]
 pub struct Scope<'a> {
-    allowed: Vec<&'a Entry>,
-    denied: Vec<&'a Entry>,
+    allowed: Vec<&'a Arc<Entry>>,
+    denied: Vec<&'a Arc<Entry>>,
 }
 
 impl<'a> Scope<'a> {
     /// Creates a new scope from the scope configuration.
-    pub(crate) fn new(allowed: Vec<&'a Entry>, denied: Vec<&'a Entry>) -> Self {
+    pub(crate) fn new(allowed: Vec<&'a Arc<Entry>>, denied: Vec<&'a Arc<Entry>>) -> Self {
         Self { allowed, denied }
     }
 

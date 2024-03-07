@@ -15,4 +15,4 @@ tiny_http = "0.11"
 time = { version = "0.3", features = ["formatting"] }
 
 [features]
-custom-protocol = ["tauri/custom-protocol"]
+prod = ["tauri/custom-protocol"]

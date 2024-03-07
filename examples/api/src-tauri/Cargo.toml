@@ -9,10 +9,10 @@ license = "Apache-2.0 OR MIT"
 
 [lib]
 name = "api_lib"
-crate-type = [ "staticlib", "cdylib", "rlib" ]
+crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { workspace = true, features = [ "codegen", "isolation" ] }
+tauri-build = { workspace = true, features = ["codegen", "isolation"] }
 
 [dependencies]
 serde_json = { workspace = true }
@@ -20,24 +20,30 @@ serde = { workspace = true }
 tiny_http = "0.11"
 log = { workspace = true }
 tauri-plugin-log = { path = "../../../plugins/log", version = "2.0.0-beta.1" }
-tauri-plugin-fs = { path = "../../../plugins/fs", version = "2.0.0-beta.1", features = [ "watch" ] }
+tauri-plugin-fs = { path = "../../../plugins/fs", version = "2.0.0-beta.1", features = [
+  "watch",
+] }
 tauri-plugin-clipboard-manager = { path = "../../../plugins/clipboard-manager", version = "2.0.0-beta.1" }
 tauri-plugin-dialog = { path = "../../../plugins/dialog", version = "2.0.0-beta.1" }
-tauri-plugin-http = { path = "../../../plugins/http", features = [ "multipart" ], version = "2.0.0-beta.1" }
-tauri-plugin-notification = { path = "../../../plugins/notification", version = "2.0.0-beta.1", features = [ "windows7-compat" ] }
+tauri-plugin-http = { path = "../../../plugins/http", features = [
+  "multipart",
+], version = "2.0.0-beta.1" }
+tauri-plugin-notification = { path = "../../../plugins/notification", version = "2.0.0-beta.1", features = [
+  "windows7-compat",
+] }
 tauri-plugin-os = { path = "../../../plugins/os", version = "2.0.0-beta.1" }
 tauri-plugin-process = { path = "../../../plugins/process", version = "2.0.0-beta.1" }
 tauri-plugin-shell = { path = "../../../plugins/shell", version = "2.0.0-beta.1" }
 
-  [dependencies.tauri]
-  workspace = true
-  features = [
-  "icon-ico",
-  "icon-png",
+[dependencies.tauri]
+workspace = true
+features = [
+  "image-ico",
+  "image-png",
   "isolation",
   "macos-private-api",
   "tray-icon",
-  "protocol-asset"
+  "protocol-asset",
 ]
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
@@ -54,4 +60,4 @@ tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "2.0.
 window-shadows = "0.2"
 
 [features]
-custom-protocol = [ "tauri/custom-protocol" ]
+prod = ["tauri/custom-protocol"]

@@ -809,9 +809,7 @@ pub fn resolve_path<R: Runtime>(
 ) -> CommandResult<PathBuf> {
     let path = file_url_to_safe_pathbuf(path)?;
     let path = if let Some(base_dir) = base_dir {
-        app.path()
-            .resolve(&path, base_dir)
-            .map_err(Error::CannotResolvePath)?
+        app.path().resolve(&path, base_dir)?
     } else {
         path.as_ref().to_path_buf()
     };
