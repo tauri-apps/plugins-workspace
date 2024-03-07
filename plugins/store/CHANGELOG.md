@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.3]
+
+- [`79691e9`](https://github.com/tauri-apps/plugins-workspace/commit/79691e93e04b820e44dce1c7d91b8865fa6ccb14)([#1040](https://github.com/tauri-apps/plugins-workspace/pull/1040)) Fix `with_store` and `StoreCollection` changed to private in #1011
+
 ## \[2.0.0-beta.2]
 
 - [`99bea25`](https://github.com/tauri-apps/plugins-workspace/commit/99bea2559c2c0648c2519c50a18cd124dacef57b)([#1005](https://github.com/tauri-apps/plugins-workspace/pull/1005)) Update to tauri beta.8.
