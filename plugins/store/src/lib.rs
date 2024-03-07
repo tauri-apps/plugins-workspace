@@ -48,7 +48,7 @@ struct ChangePayload<'a> {
     value: &'a JsonValue,
 }
 
-struct StoreCollection<R: Runtime> {
+pub struct StoreCollection<R: Runtime> {
     stores: Mutex<HashMap<PathBuf, Store<R>>>,
     frozen: bool,
 
@@ -56,7 +56,7 @@ struct StoreCollection<R: Runtime> {
     mobile_plugin_handle: PluginHandle<R>,
 }
 
-fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T>>(
+pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T>>(
     app: AppHandle<R>,
     collection: State<'_, StoreCollection<R>>,
     path: impl AsRef<Path>,
