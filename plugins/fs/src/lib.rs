@@ -11,14 +11,9 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use std::path::PathBuf;
-
-use serde::Deserialize;
 use tauri::{
-    ipc::ScopeObject,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    utils::acl::Value,
-    AppHandle, FileDropEvent, Manager, RunEvent, Runtime, WindowEvent,
+    FileDropEvent, Manager, RunEvent, Runtime, WindowEvent,
 };
 
 mod commands;
@@ -45,25 +40,6 @@ impl<R: Runtime, T: Manager<R>> FsExt<R> for T {
 
     fn try_fs_scope(&self) -> Option<&Scope> {
         self.try_state::<Scope>().map(|s| s.inner())
-    }
-}
-
-impl ScopeObject for scope::Entry {
-    type Error = Error;
-    fn deserialize<R: Runtime>(
-        app: &AppHandle<R>,
-        raw: Value,
-    ) -> std::result::Result<Self, Self::Error> {
-        #[derive(Deserialize)]
-        struct EntryRaw {
-            path: PathBuf,
-        }
-
-        let entry = serde_json::from_value::<EntryRaw>(raw.into())?;
-
-        Ok(Self {
-            path: app.path().parse(entry.path)?,
-        })
     }
 }
 

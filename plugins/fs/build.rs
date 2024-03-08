@@ -2,11 +2,39 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{fs::create_dir_all, path::Path};
+use std::{
+    fs::create_dir_all,
+    path::{Path, PathBuf},
+};
 
 #[path = "src/scope.rs"]
 #[allow(dead_code)]
 mod scope;
+
+/// FS scope entry.
+#[derive(schemars::JsonSchema)]
+#[serde(untagged)]
+#[allow(unused)]
+enum FsScopeEntry {
+    /// FS scope path.
+    Value(PathBuf),
+    Object {
+        /// FS scope path.
+        path: PathBuf,
+    },
+}
+
+// Ensure scope entry is kept up to date
+impl From<FsScopeEntry> for scope::Entry {
+    fn from(value: FsScopeEntry) -> Self {
+        let path = match value {
+            FsScopeEntry::Value(path) => path,
+            FsScopeEntry::Object { path } => path,
+        };
+
+        scope::Entry { path }
+    }
+}
 
 const BASE_DIR_VARS: &[&str] = &[
     "AUDIO",
@@ -162,6 +190,6 @@ permissions = [
     }
 
     tauri_plugin::Builder::new(COMMANDS)
-        .global_scope_schema(schemars::schema_for!(scope::Entry))
+        .global_scope_schema(schemars::schema_for!(FsScopeEntry))
         .build();
 }

@@ -11,9 +11,33 @@ use std::{
     },
 };
 
-#[derive(Debug, schemars::JsonSchema)]
+use serde::{Deserialize, Deserializer};
+
+#[derive(Debug)]
 pub struct Entry {
     pub path: PathBuf,
+}
+
+impl<'de> Deserialize<'de> for Entry {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum EntryRaw {
+            Value(PathBuf),
+            Object { path: PathBuf },
+        }
+
+        EntryRaw::deserialize(deserializer).and_then(|raw| {
+            let path = match raw {
+                EntryRaw::Value(path) => path,
+                EntryRaw::Object { path } => path,
+            };
+            Ok(Entry { path })
+        })
+    }
 }
 
 pub type EventId = u32;

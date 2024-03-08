@@ -41,8 +41,7 @@
       "type": "object",
       "required": [
         "identifier",
-        "permissions",
-        "windows"
+        "permissions"
       ],
       "properties": {
         "identifier": {
@@ -93,14 +92,10 @@
         },
         "platforms": {
           "description": "Target platforms this capability applies. By default all platforms are affected by this capability.",
-          "default": [
-            "linux",
-            "macOS",
-            "windows",
-            "android",
-            "iOS"
+          "type": [
+            "array",
+            "null"
           ],
-          "type": "array",
           "items": {
             "$ref": "#/definitions/Target"
           }
@@ -115,7 +110,7 @@
       ],
       "properties": {
         "urls": {
-          "description": "Remote domains this capability refers to. Can use glob patterns.",
+          "description": "Remote domains this capability refers to using the [URLPattern standard](https://urlpattern.spec.whatwg.org/).",
           "type": "array",
           "items": {
             "type": "string"
@@ -2138,30 +2133,50 @@
                 },
                 "allow": {
                   "items": {
-                    "title": "Entry",
-                    "type": "object",
-                    "required": [
-                      "path"
-                    ],
-                    "properties": {
-                      "path": {
+                    "title": "FsScopeEntry",
+                    "description": "FS scope entry.",
+                    "anyOf": [
+                      {
+                        "description": "FS scope path.",
                         "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "path"
+                        ],
+                        "properties": {
+                          "path": {
+                            "description": "FS scope path.",
+                            "type": "string"
+                          }
+                        }
                       }
-                    }
+                    ]
                   }
                 },
                 "deny": {
                   "items": {
-                    "title": "Entry",
-                    "type": "object",
-                    "required": [
-                      "path"
-                    ],
-                    "properties": {
-                      "path": {
+                    "title": "FsScopeEntry",
+                    "description": "FS scope entry.",
+                    "anyOf": [
+                      {
+                        "description": "FS scope path.",
                         "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "path"
+                        ],
+                        "properties": {
+                          "path": {
+                            "description": "FS scope path.",
+                            "type": "string"
+                          }
+                        }
                       }
-                    }
+                    ]
                   }
                 }
               }
@@ -2241,8 +2256,8 @@
                 },
                 "allow": {
                   "items": {
-                    "title": "ScopeEntry",
-                    "description": "HTTP scope entry object definition.",
+                    "title": "HttpScopeEntry",
+                    "description": "HTTP scope entry.",
                     "anyOf": [
                       {
                         "description": "A URL that can be accessed by the webview when using the HTTP APIs. Wildcards can be used following the URL pattern standard.\n\nSee [the URL Pattern spec](https://urlpattern.spec.whatwg.org/) for more information.\n\nExamples:\n\n- \"https://*\" : allows all HTTPS origin on port 443\n\n- \"https://*:*\" : allows all HTTPS origin on any port\n\n- \"https://*.github.com/tauri-apps/tauri\": allows any subdomain of \"github.com\" with the \"tauri-apps/api\" path\n\n- \"https://myapi.service.com/users/*\": allows access to any URLs that begins with \"https://myapi.service.com/users/\"",
@@ -2265,8 +2280,8 @@
                 },
                 "deny": {
                   "items": {
-                    "title": "ScopeEntry",
-                    "description": "HTTP scope entry object definition.",
+                    "title": "HttpScopeEntry",
+                    "description": "HTTP scope entry.",
                     "anyOf": [
                       {
                         "description": "A URL that can be accessed by the webview when using the HTTP APIs. Wildcards can be used following the URL pattern standard.\n\nSee [the URL Pattern spec](https://urlpattern.spec.whatwg.org/) for more information.\n\nExamples:\n\n- \"https://*\" : allows all HTTPS origin on port 443\n\n- \"https://*:*\" : allows all HTTPS origin on any port\n\n- \"https://*.github.com/tauri-apps/tauri\": allows any subdomain of \"github.com\" with the \"tauri-apps/api\" path\n\n- \"https://myapi.service.com/users/*\": allows access to any URLs that begins with \"https://myapi.service.com/users/\"",
