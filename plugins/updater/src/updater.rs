@@ -517,6 +517,8 @@ impl Update {
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
         use std::{fs, process::Command};
 
+        use crate::config::WindowsUpdateInstallMode;
+
         // FIXME: We need to create a memory buffer with the MSI and then run it.
         //        (instead of extracting the MSI to a temp path)
         //
@@ -543,6 +545,13 @@ impl Update {
             |p| format!("{p}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"),
         );
 
+        let install_mode = self
+            .config
+            .windows
+            .as_ref()
+            .map(|w| w.install_mode.clone())
+            .unwrap_or_else(WindowsUpdateInstallMode::default);
+
         for path in paths {
             let found_path = path?.path();
             // we support 2 type of files exe & msi for now
@@ -555,17 +564,11 @@ impl Update {
                 installer_path.push("\"");
 
                 let installer_args = [
-                    self.config
-                        .windows
-                        .as_ref()
-                        .map(|w| {
-                            w.install_mode
-                                .nsis_args()
-                                .iter()
-                                .map(|a| OsStr::new(a))
-                                .collect::<Vec<_>>()
-                        })
-                        .unwrap_or_default(),
+                    install_mode
+                        .nsis_args()
+                        .iter()
+                        .map(|a| OsStr::new(a))
+                        .collect::<Vec<_>>(),
                     self.installer_args
                         .iter()
                         .map(|a| OsStr::new(a))
@@ -600,17 +603,11 @@ impl Update {
                 msi_path.push("\"\"\"");
 
                 let installer_args = [
-                    self.config
-                        .windows
-                        .as_ref()
-                        .map(|w| {
-                            w.install_mode
-                                .msiexec_args()
-                                .iter()
-                                .map(|a| OsStr::new(a))
-                                .collect::<Vec<_>>()
-                        })
-                        .unwrap_or_default(),
+                    install_mode
+                        .msiexec_args()
+                        .iter()
+                        .map(|a| OsStr::new(a))
+                        .collect::<Vec<_>>(),
                     self.installer_args
                         .iter()
                         .map(|a| OsStr::new(a))
