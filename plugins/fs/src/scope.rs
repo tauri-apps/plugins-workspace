@@ -30,12 +30,12 @@ impl<'de> Deserialize<'de> for Entry {
             Object { path: PathBuf },
         }
 
-        EntryRaw::deserialize(deserializer).and_then(|raw| {
+        EntryRaw::deserialize(deserializer).map(|raw| {
             let path = match raw {
                 EntryRaw::Value(path) => path,
                 EntryRaw::Object { path } => path,
             };
-            Ok(Entry { path })
+            Entry { path }
         })
     }
 }
