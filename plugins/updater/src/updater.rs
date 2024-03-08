@@ -4,7 +4,7 @@
 
 use std::{
     collections::HashMap,
-    ffi::{OsStr, OsString},
+    ffi::OsStr,
     io::{Cursor, Read},
     path::{Path, PathBuf},
     str::FromStr,
@@ -98,13 +98,17 @@ pub struct UpdaterBuilder {
     headers: HeaderMap,
     timeout: Option<Duration>,
     proxy: Option<Url>,
-    installer_args: Vec<OsString>,
+    installer_args: Vec<String>,
 }
 
 impl UpdaterBuilder {
     pub fn new(current_version: Version, config: crate::Config) -> Self {
         Self {
-            installer_args: config.windows.installer_args.clone(),
+            installer_args: config
+                .windows
+                .as_ref()
+                .map(|w| w.installer_args.clone())
+                .unwrap_or_default(),
             current_version,
             config,
             version_comparator: None,
@@ -172,20 +176,20 @@ impl UpdaterBuilder {
 
     pub fn installer_arg<S>(mut self, arg: S) -> Self
     where
-        S: AsRef<OsStr>,
+        S: AsRef<str>,
     {
-        self.installer_args.push(arg.as_ref().to_os_string());
+        self.installer_args.push(arg.as_ref().to_string());
         self
     }
 
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
-        S: AsRef<OsStr>,
+        S: AsRef<str>,
     {
         let args = args
             .into_iter()
-            .map(|a| a.as_ref().to_os_string())
+            .map(|a| a.as_ref().to_string())
             .collect::<Vec<_>>();
         self.installer_args.extend_from_slice(&args);
         self
@@ -247,7 +251,7 @@ pub struct Updater {
     proxy: Option<Url>,
     endpoints: Vec<Url>,
     #[allow(dead_code)]
-    installer_args: Vec<OsString>,
+    installer_args: Vec<String>,
     arch: &'static str,
     // The `{{target}}` variable we replace in the endpoint
     target: String,
@@ -391,7 +395,7 @@ pub struct Update {
     #[allow(unused)]
     extract_path: PathBuf,
     #[allow(unused)]
-    installer_args: Vec<OsString>,
+    installer_args: Vec<String>,
     /// Download URL announced
     pub download_url: Url,
     /// Signature announced
@@ -553,14 +557,18 @@ impl Update {
                 let installer_args = [
                     self.config
                         .windows
-                        .install_mode
-                        .nsis_args()
-                        .iter()
-                        .map(|a| OsStr::new(a))
-                        .collect::<Vec<_>>(),
+                        .as_ref()
+                        .map(|w| {
+                            w.install_mode
+                                .nsis_args()
+                                .iter()
+                                .map(|a| OsStr::new(a))
+                                .collect::<Vec<_>>()
+                        })
+                        .unwrap_or_default(),
                     self.installer_args
                         .iter()
-                        .map(|a| a.as_os_str())
+                        .map(|a| OsStr::new(a))
                         .collect::<Vec<_>>(),
                 ]
                 .concat();
@@ -594,14 +602,18 @@ impl Update {
                 let installer_args = [
                     self.config
                         .windows
-                        .install_mode
-                        .msiexec_args()
-                        .iter()
-                        .map(|a| OsStr::new(a))
-                        .collect::<Vec<_>>(),
+                        .as_ref()
+                        .map(|w| {
+                            w.install_mode
+                                .msiexec_args()
+                                .iter()
+                                .map(|a| OsStr::new(a))
+                                .collect::<Vec<_>>()
+                        })
+                        .unwrap_or_default(),
                     self.installer_args
                         .iter()
-                        .map(|a| a.as_os_str())
+                        .map(|a| OsStr::new(a))
                         .collect::<Vec<_>>(),
                 ]
                 .concat();

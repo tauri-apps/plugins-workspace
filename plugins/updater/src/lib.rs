@@ -13,8 +13,6 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use std::ffi::{OsStr, OsString};
-
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, Runtime,
@@ -81,7 +79,9 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
 
         let args = self.env().args_os;
         if !args.is_empty() {
-            builder = builder.installer_arg("/ARGS").installer_args(args);
+            builder = builder
+                .installer_arg("/ARGS")
+                .installer_args(args.iter().map(|a| a.to_string_lossy()));
         }
 
         #[cfg(any(
@@ -115,7 +115,7 @@ struct UpdaterState {
 pub struct Builder {
     target: Option<String>,
     pubkey: Option<String>,
-    installer_args: Vec<OsString>,
+    installer_args: Vec<String>,
 }
 
 impl Builder {
@@ -136,21 +136,18 @@ impl Builder {
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
-        S: AsRef<OsStr>,
+        S: AsRef<str>,
     {
         let args = args
             .into_iter()
-            .map(|a| a.as_ref().to_os_string())
+            .map(|a| a.as_ref().to_string())
             .collect::<Vec<_>>();
         self.installer_args.extend_from_slice(&args);
         self
     }
 
-    pub fn installer_arg<S>(mut self, arg: S) -> Self
-    where
-        S: AsRef<OsStr>,
-    {
-        self.installer_args.push(arg.as_ref().to_os_string());
+    pub fn installer_arg<S>(mut self, arg: impl Into<String>) -> Self {
+        self.installer_args.push(arg.into());
         self
     }
 
@@ -170,10 +167,9 @@ impl Builder {
                 if let Some(pubkey) = pubkey {
                     config.pubkey = pubkey;
                 }
-                config
-                    .windows
-                    .installer_args
-                    .extend_from_slice(&installer_args);
+                if let Some(windows) = &mut config.windows {
+                    windows.installer_args.extend_from_slice(&installer_args);
+                }
                 app.manage(UpdaterState { target, config });
                 Ok(())
             })
