@@ -141,7 +141,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
         fileResult.put("modifiedAt", modifiedAt)
       }
       fileResult.put("name", FilePickerUtils.getNameFromUri(activity, uri))
-      fileResult.put("path", FilePickerUtils.getPathFromUri(uri))
+      fileResult.put("path", FilePickerUtils.getPathFromUri(activity, uri))
       fileResult.put("size", FilePickerUtils.getSizeFromUri(activity, uri))
       filesResultList.add(fileResult)
     }
