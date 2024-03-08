@@ -21,6 +21,7 @@
     "tray:default",
     "event:default",
     "window:default",
+    "image:default",
     "notification:default",
     "os:allow-platform",
     "dialog:allow-open",

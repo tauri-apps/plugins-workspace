@@ -13,6 +13,13 @@
     },
     {
       "description": "A list of capabilities.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Capability"
+      }
+    },
+    {
+      "description": "A list of capabilities.",
       "type": "object",
       "required": [
         "capabilities"
@@ -34,8 +41,7 @@
       "type": "object",
       "required": [
         "identifier",
-        "permissions",
-        "windows"
+        "permissions"
       ],
       "properties": {
         "identifier": {
@@ -86,14 +92,10 @@
         },
         "platforms": {
           "description": "Target platforms this capability applies. By default all platforms are affected by this capability.",
-          "default": [
-            "linux",
-            "macOS",
-            "windows",
-            "android",
-            "iOS"
+          "type": [
+            "array",
+            "null"
           ],
-          "type": "array",
           "items": {
             "$ref": "#/definitions/Target"
           }
@@ -108,7 +110,7 @@
       ],
       "properties": {
         "urls": {
-          "description": "Remote domains this capability refers to. Can use glob patterns.",
+          "description": "Remote domains this capability refers to using the [URLPattern standard](https://urlpattern.spec.whatwg.org/).",
           "type": "array",
           "items": {
             "type": "string"
@@ -2616,31 +2618,87 @@
           ]
         },
         {
-          "description": "clipboard-manager:allow-read -> Enables the read command without any pre-configured scope.",
+          "description": "clipboard-manager:allow-clear -> Enables the clear command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "clipboard-manager:allow-read"
+            "clipboard-manager:allow-clear"
           ]
         },
         {
-          "description": "clipboard-manager:allow-write -> Enables the write command without any pre-configured scope.",
+          "description": "clipboard-manager:allow-read-image -> Enables the read_image command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "clipboard-manager:allow-write"
+            "clipboard-manager:allow-read-image"
           ]
         },
         {
-          "description": "clipboard-manager:deny-read -> Denies the read command without any pre-configured scope.",
+          "description": "clipboard-manager:allow-read-text -> Enables the read_text command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "clipboard-manager:deny-read"
+            "clipboard-manager:allow-read-text"
           ]
         },
         {
-          "description": "clipboard-manager:deny-write -> Denies the write command without any pre-configured scope.",
+          "description": "clipboard-manager:allow-write-html -> Enables the write_html command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "clipboard-manager:deny-write"
+            "clipboard-manager:allow-write-html"
+          ]
+        },
+        {
+          "description": "clipboard-manager:allow-write-image -> Enables the write_image command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:allow-write-image"
+          ]
+        },
+        {
+          "description": "clipboard-manager:allow-write-text -> Enables the write_text command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:allow-write-text"
+          ]
+        },
+        {
+          "description": "clipboard-manager:deny-clear -> Denies the clear command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:deny-clear"
+          ]
+        },
+        {
+          "description": "clipboard-manager:deny-read-image -> Denies the read_image command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:deny-read-image"
+          ]
+        },
+        {
+          "description": "clipboard-manager:deny-read-text -> Denies the read_text command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:deny-read-text"
+          ]
+        },
+        {
+          "description": "clipboard-manager:deny-write-html -> Denies the write_html command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:deny-write-html"
+          ]
+        },
+        {
+          "description": "clipboard-manager:deny-write-image -> Denies the write_image command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:deny-write-image"
+          ]
+        },
+        {
+          "description": "clipboard-manager:deny-write-text -> Denies the write_text command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:deny-write-text"
           ]
         },
         {
@@ -4825,6 +4883,125 @@
           "type": "string",
           "enum": [
             "http:deny-fetch-send"
+          ]
+        },
+        {
+          "description": "image:default -> Default permissions for the plugin.",
+          "type": "string",
+          "enum": [
+            "image:default"
+          ]
+        },
+        {
+          "description": "image:allow-from-bytes -> Enables the from_bytes command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:allow-from-bytes"
+          ]
+        },
+        {
+          "description": "image:allow-from-ico-bytes -> Enables the from_ico_bytes command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:allow-from-ico-bytes"
+          ]
+        },
+        {
+          "description": "image:allow-from-path -> Enables the from_path command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:allow-from-path"
+          ]
+        },
+        {
+          "description": "image:allow-from-png-bytes -> Enables the from_png_bytes command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:allow-from-png-bytes"
+          ]
+        },
+        {
+          "description": "image:allow-height -> Enables the height command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:allow-height"
+          ]
+        },
+        {
+          "description": "image:allow-new -> Enables the new command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:allow-new"
+          ]
+        },
+        {
+          "description": "image:allow-rgba -> Enables the rgba command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:allow-rgba"
+          ]
+        },
+        {
+          "description": "image:allow-width -> Enables the width command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:allow-width"
+          ]
+        },
+        {
+          "description": "image:deny-from-bytes -> Denies the from_bytes command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:deny-from-bytes"
+          ]
+        },
+        {
+          "description": "image:deny-from-ico-bytes -> Denies the from_ico_bytes command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:deny-from-ico-bytes"
+          ]
+        },
+        {
+          "description": "image:deny-from-path -> Denies the from_path command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:deny-from-path"
+          ]
+        },
+        {
+          "description": "image:deny-from-png-bytes -> Denies the from_png_bytes command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:deny-from-png-bytes"
+          ]
+        },
+        {
+          "description": "image:deny-height -> Denies the height command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:deny-height"
+          ]
+        },
+        {
+          "description": "image:deny-new -> Denies the new command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:deny-new"
+          ]
+        },
+        {
+          "description": "image:deny-rgba -> Denies the rgba command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:deny-rgba"
+          ]
+        },
+        {
+          "description": "image:deny-width -> Denies the width command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "image:deny-width"
           ]
         },
         {

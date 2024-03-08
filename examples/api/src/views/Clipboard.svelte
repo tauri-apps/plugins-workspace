@@ -1,8 +1,9 @@
 <script>
   import * as clipboard from "@tauri-apps/plugin-clipboard-manager";
-  import { readFile } from "@tauri-apps/plugin-fs";
   import { open } from "@tauri-apps/plugin-dialog";
   import { arrayBufferToBase64 } from "../lib/utils";
+  import { Image } from "@tauri-apps/api/image";
+  import { readFile } from "@tauri-apps/plugin-fs";
 
   export let onMessage;
   export let insecureRenderHtml;
@@ -28,8 +29,8 @@
           },
         ],
       });
-      const image = await readFile(res.path);
-      await clipboard.writeImage(image);
+      const bytes = await readFile(res.path);
+      await clipboard.writeImage(bytes);
       onMessage("wrote image");
     } catch (e) {
       onMessage(e);
@@ -39,7 +40,7 @@
   async function read() {
     try {
       const image = await clipboard.readImage();
-      arrayBufferToBase64(image, function (base64) {
+      arrayBufferToBase64(image.bytes, function (base64) {
         const src = "data:image/png;base64," + base64;
         insecureRenderHtml('<img src="' + src + '"></img>');
       });

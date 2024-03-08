@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 
 use arboard::ImageData;
-use image::{GenericImageView, ImageEncoder};
 use serde::de::DeserializeOwned;
 use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
@@ -41,13 +40,17 @@ impl<R: Runtime> Clipboard<R> {
 
     pub fn write_image(&self, kind: ClipKind) -> crate::Result<()> {
         match kind {
-            ClipKind::Image { buffer, .. } => match &self.clipboard {
+            ClipKind::Image { image, .. } => match &self.clipboard {
                 Ok(clipboard) => {
-                    let image = buffer_to_image_data(&buffer)?;
+                    let image = image.into_img(&self.app)?;
                     clipboard
                         .lock()
                         .unwrap()
-                        .set_image(image)
+                        .set_image(ImageData {
+                            bytes: Cow::Borrowed(image.rgba()),
+                            width: image.width() as usize,
+                            height: image.height() as usize,
+                        })
                         .map_err(Into::into)
                 }
                 Err(e) => Err(crate::Error::Clipboard(e.to_string())),
@@ -91,37 +94,13 @@ impl<R: Runtime> Clipboard<R> {
         match &self.clipboard {
             Ok(clipboard) => {
                 let image = clipboard.lock().unwrap().get_image()?;
-                let buffer = image_data_to_buffer(&image)?;
-                Ok(ClipboardContents::Image { buffer })
+                Ok(ClipboardContents::Image {
+                    bytes: image.bytes.to_vec(),
+                    width: image.width,
+                    height: image.height,
+                })
             }
             Err(e) => Err(crate::Error::Clipboard(e.to_string())),
         }
     }
-}
-
-fn buffer_to_image_data(buffer: &[u8]) -> crate::Result<ImageData> {
-    let loaded = image::load_from_memory(buffer)?;
-
-    let pixels = loaded
-        .pixels()
-        .flat_map(|(_, _, pixel)| pixel.0)
-        .collect::<Vec<_>>();
-
-    Ok(ImageData {
-        width: loaded.width() as usize,
-        height: loaded.height() as usize,
-        bytes: Cow::Owned(pixels),
-    })
-}
-
-// copied from https://github.com/CrossCopy/tauri-plugin-clipboard/blob/main/src/util.rs
-fn image_data_to_buffer(img: &ImageData) -> crate::Result<Vec<u8>> {
-    let mut buffer: Vec<u8> = Vec::new();
-    image::codecs::png::PngEncoder::new(&mut buffer).write_image(
-        &img.bytes,
-        img.width as u32,
-        img.height as u32,
-        image::ColorType::Rgba8,
-    )?;
-    Ok(buffer)
 }

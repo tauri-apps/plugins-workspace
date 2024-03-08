@@ -9,10 +9,13 @@
  */
 
 import { invoke } from "@tauri-apps/api/core";
+import { Image, transformImage } from "@tauri-apps/api/image";
 
 type ClipResponse = Record<"plainText", { text: string }>;
 
-type ClipImageResponse = Record<"image", { buffer: number[] }>;
+type ClipboardImage<B> = { bytes: B; width: number; height: number };
+
+type ClipImageResponse = Record<"image", ClipboardImage<number[]>>;
 
 /**
  * Writes plain text to the clipboard.
@@ -62,16 +65,20 @@ async function readText(): Promise<string> {
  * import { readImage } from '@tauri-apps/plugin-clipboard-manager';
  *
  * const clipboardImage = await readImage();
- * const blob = new Blob([clipboardImage.buffer], { type: 'image' })
+ * const blob = new Blob([clipboardImage.bytes], { type: 'image' })
  * const url = URL.createObjectURL(blob)
  * ```
  * @since 2.0.0
  */
-async function readImage(): Promise<Uint8Array> {
+async function readImage(): Promise<ClipboardImage<Uint8Array>> {
   const kind: ClipImageResponse = await invoke(
     "plugin:clipboard-manager|read_image",
   );
-  return Uint8Array.from(kind.image.buffer);
+  return {
+    bytes: Uint8Array.from(kind.image.bytes),
+    width: kind.image.width,
+    height: kind.image.height,
+  };
 }
 
 /**
@@ -92,11 +99,13 @@ async function readImage(): Promise<Uint8Array> {
  *
  * @since 2.0.0
  */
-async function writeImage(buffer: Uint8Array | Array<number>): Promise<void> {
+async function writeImage(
+  image: string | Image | Uint8Array | ArrayBuffer | number[],
+): Promise<void> {
   return invoke("plugin:clipboard-manager|write_image", {
     data: {
       image: {
-        buffer: Array.isArray(buffer) ? buffer : Array.from(buffer),
+        image: transformImage(image),
       },
     },
   });

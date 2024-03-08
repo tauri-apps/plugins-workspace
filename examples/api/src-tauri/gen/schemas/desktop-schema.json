@@ -41,8 +41,7 @@
       "type": "object",
       "required": [
         "identifier",
-        "permissions",
-        "windows"
+        "permissions"
       ],
       "properties": {
         "identifier": {
@@ -93,14 +92,10 @@
         },
         "platforms": {
           "description": "Target platforms this capability applies. By default all platforms are affected by this capability.",
-          "default": [
-            "linux",
-            "macOS",
-            "windows",
-            "android",
-            "iOS"
+          "type": [
+            "array",
+            "null"
           ],
-          "type": "array",
           "items": {
             "$ref": "#/definitions/Target"
           }
@@ -115,7 +110,7 @@
       ],
       "properties": {
         "urls": {
-          "description": "Remote domains this capability refers to. Can use glob patterns.",
+          "description": "Remote domains this capability refers to using the [URLPattern standard](https://urlpattern.spec.whatwg.org/).",
           "type": "array",
           "items": {
             "type": "string"
