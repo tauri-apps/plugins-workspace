@@ -4,7 +4,6 @@
 
 use std::{
     collections::HashMap,
-    ffi::OsStr,
     io::{Cursor, Read},
     path::{Path, PathBuf},
     str::FromStr,
@@ -515,7 +514,7 @@ impl Update {
     // Update server can provide a custom EXE (installer) who can run any task.
     #[cfg(windows)]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
-        use std::{fs, process::Command};
+        use std::{ffi::OsStr, fs, process::Command};
 
         use crate::config::WindowsUpdateInstallMode;
 
