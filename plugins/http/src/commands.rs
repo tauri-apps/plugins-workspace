@@ -221,7 +221,7 @@ pub async fn fetch<R: Runtime>(
                     ) {
                         continue;
                     }
-                    
+
                     request = request.header(name, value);
                 }
 
