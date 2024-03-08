@@ -104,11 +104,7 @@ pub struct UpdaterBuilder {
 impl UpdaterBuilder {
     pub fn new(current_version: Version, config: crate::Config) -> Self {
         Self {
-            installer_args: config
-                .windows
-                .as_ref()
-                .map(|w| w.installer_args.clone())
-                .unwrap_or_default(),
+            installer_args: config.windows.installer_args.clone(),
             current_version,
             config,
             version_comparator: None,
@@ -557,15 +553,11 @@ impl Update {
                 let installer_args = [
                     self.config
                         .windows
-                        .as_ref()
-                        .map(|w| {
-                            w.install_mode
-                                .nsis_args()
-                                .iter()
-                                .map(|a| OsStr::new(a))
-                                .collect::<Vec<_>>()
-                        })
-                        .unwrap_or_default(),
+                        .install_mode
+                        .nsis_args()
+                        .iter()
+                        .map(|a| OsStr::new(a))
+                        .collect::<Vec<_>>(),
                     self.installer_args
                         .iter()
                         .map(|a| a.as_os_str())
@@ -602,15 +594,11 @@ impl Update {
                 let installer_args = [
                     self.config
                         .windows
-                        .as_ref()
-                        .map(|w| {
-                            w.install_mode
-                                .msiexec_args()
-                                .iter()
-                                .map(|a| OsStr::new(a))
-                                .collect::<Vec<_>>()
-                        })
-                        .unwrap_or_default(),
+                        .install_mode
+                        .msiexec_args()
+                        .iter()
+                        .map(|a| OsStr::new(a))
+                        .collect::<Vec<_>>(),
                     self.installer_args
                         .iter()
                         .map(|a| a.as_os_str())

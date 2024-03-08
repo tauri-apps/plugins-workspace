@@ -64,7 +64,11 @@ impl Default for WindowsUpdateInstallMode {
 #[serde(rename_all = "camelCase")]
 pub struct WindowsConfig {
     /// Additional arguments given to the NSIS or WiX installer.
-    #[serde(default, alias = "installer-args")]
+    #[serde(
+        default,
+        alias = "installer-args",
+        deserialize_with = "deserialize_os_string"
+    )]
     pub installer_args: Vec<OsString>,
     /// Updating mode, see [`WindowsUpdateInstallMode`] for more info.
     #[serde(default, alias = "install-mode")]
@@ -81,7 +85,8 @@ pub struct Config {
     /// Signature public key.
     pub pubkey: String,
     /// The Windows configuration for the updater.
-    pub windows: Option<WindowsConfig>,
+    #[serde(default)]
+    pub windows: WindowsConfig,
 }
 
 /// A URL to an updater server.
@@ -112,4 +117,14 @@ impl<'de> Deserialize<'de> for UpdaterEndpoint {
         }
         Ok(Self(url))
     }
+}
+
+fn deserialize_os_string<'de, D>(deserializer: D) -> Result<Vec<OsString>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Ok(Vec::<String>::deserialize(deserializer)?
+        .into_iter()
+        .map(OsString::from)
+        .collect::<Vec<_>>())
 }

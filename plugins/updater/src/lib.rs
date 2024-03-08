@@ -170,9 +170,10 @@ impl Builder {
                 if let Some(pubkey) = pubkey {
                     config.pubkey = pubkey;
                 }
-                if let Some(windows) = &mut config.windows {
-                    windows.installer_args.extend_from_slice(&installer_args);
-                }
+                config
+                    .windows
+                    .installer_args
+                    .extend_from_slice(&installer_args);
                 app.manage(UpdaterState { target, config });
                 Ok(())
             })
