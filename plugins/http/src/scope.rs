@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Deserializer};
 use url::Url;
-use urlpattern::{UrlPattern, UrlPatternInit, UrlPatternMatchInput};
+use urlpattern::{UrlPattern, UrlPatternMatchInput};
 
 #[allow(rustdoc::bare_urls)]
 #[derive(Debug)]
@@ -15,7 +15,21 @@ pub struct Entry {
 }
 
 fn parse_url_pattern(s: &str) -> Result<UrlPattern, urlpattern::quirks::Error> {
-    let init = UrlPatternInit::parse_constructor_string::<regex::Regex>(s, None)?;
+    let mut init = urlpattern::UrlPatternInit::parse_constructor_string::<regex::Regex>(s, None)?;
+    if init.search.as_ref().map(|p| p.is_empty()).unwrap_or(true) {
+        init.search.replace("*".to_string());
+    }
+    if init.hash.as_ref().map(|p| p.is_empty()).unwrap_or(true) {
+        init.hash.replace("*".to_string());
+    }
+    if init
+        .pathname
+        .as_ref()
+        .map(|p| p.is_empty() || p == "/")
+        .unwrap_or(true)
+    {
+        init.pathname.replace("*".to_string());
+    }
     UrlPattern::parse(init)
 }
 
