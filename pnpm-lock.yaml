@@ -122,8 +122,8 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1(svelte@4.2.8)(vite@5.0.12)
       '@tauri-apps/cli':
-        specifier: 2.0.0-beta.7
-        version: 2.0.0-beta.7
+        specifier: 2.0.0-beta.8
+        version: 2.0.0-beta.8
       '@unocss/extractor-svelte':
         specifier: ^0.58.0
         version: 0.58.0
@@ -135,7 +135,7 @@ importers:
         version: 4.2.8
       unocss:
         specifier: ^0.58.0
-        version: 0.58.0(postcss@8.4.32)(vite@5.0.12)
+        version: 0.58.0(postcss@8.4.32)(rollup@4.9.6)(vite@5.0.12)
       vite:
         specifier: ^5.0.12
         version: 5.0.12
@@ -196,8 +196,8 @@ importers:
         version: link:../..
     devDependencies:
       '@tauri-apps/cli':
-        specifier: 2.0.0-beta.7
-        version: 2.0.0-beta.7
+        specifier: 2.0.0-beta.8
+        version: 2.0.0-beta.8
       internal-ip:
         specifier: ^8.0.0
         version: 8.0.0
@@ -281,8 +281,8 @@ importers:
   plugins/single-instance/examples/vanilla:
     devDependencies:
       '@tauri-apps/cli':
-        specifier: 2.0.0-beta.7
-        version: 2.0.0-beta.7
+        specifier: 2.0.0-beta.8
+        version: 2.0.0-beta.8
 
   plugins/sql:
     dependencies:
@@ -327,8 +327,8 @@ importers:
         version: link:../..
     devDependencies:
       '@tauri-apps/cli':
-        specifier: 2.0.0-beta.7
-        version: 2.0.0-beta.7
+        specifier: 2.0.0-beta.8
+        version: 2.0.0-beta.8
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -395,7 +395,7 @@ packages:
       '@babel/traverse': 7.23.5
       '@babel/types': 7.23.5
       convert-source-map: 2.0.0
-      debug: 4.3.4
+      debug: 4.3.4(supports-color@8.1.1)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 7.5.4
@@ -665,7 +665,7 @@ packages:
       '@babel/helper-split-export-declaration': 7.22.6
       '@babel/parser': 7.23.5
       '@babel/types': 7.23.5
-      debug: 4.3.4
+      debug: 4.3.4(supports-color@8.1.1)
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -799,7 +799,7 @@ packages:
     peerDependencies:
       mocha: ^10.0.0
     dependencies:
-      effection: 2.0.8
+      effection: 2.0.8(mocha@10.2.0)
       mocha: 10.2.0
     dev: true
 
@@ -1046,7 +1046,7 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
       ajv: 6.12.6
-      debug: 4.3.4
+      debug: 4.3.4(supports-color@8.1.1)
       espree: 9.6.1
       globals: 13.23.0
       ignore: 5.3.0
@@ -1068,7 +1068,7 @@ packages:
     engines: {node: '>=10.10.0'}
     dependencies:
       '@humanwhocodes/object-schema': 2.0.1
-      debug: 4.3.4
+      debug: 4.3.4(supports-color@8.1.1)
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -1109,7 +1109,7 @@ packages:
       '@antfu/install-pkg': 0.1.1
       '@antfu/utils': 0.7.6
       '@iconify/types': 2.0.0
-      debug: 4.3.4
+      debug: 4.3.4(supports-color@8.1.1)
       kolorist: 1.8.0
       local-pkg: 0.4.3
     transitivePeerDependencies:
@@ -1223,20 +1223,6 @@ packages:
       resolve: 1.22.8
       rollup: 4.9.6
       typescript: 5.3.3
-    dev: true
-
-  /@rollup/pluginutils@5.1.0:
-    resolution: {integrity: sha512-XTIWOPPcpvyKI6L1NHo0lFlCyznUEyPmPY1mc3KpPVDYulHSTvyeLNVW00QTLIAFNhR3kYnJTQHeGqU4M3n09g==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
-    peerDependenciesMeta:
-      rollup:
-        optional: true
-    dependencies:
-      '@types/estree': 1.0.5
-      estree-walker: 2.0.2
-      picomatch: 2.3.1
     dev: true
 
   /@rollup/pluginutils@5.1.0(rollup@4.9.6):
@@ -1463,7 +1449,7 @@ packages:
       vite: ^5.0.0
     dependencies:
       '@sveltejs/vite-plugin-svelte': 3.0.1(svelte@4.2.8)(vite@5.0.12)
-      debug: 4.3.4
+      debug: 4.3.4(supports-color@8.1.1)
       svelte: 4.2.8
       vite: 5.0.12
     transitivePeerDependencies:
@@ -1478,7 +1464,7 @@ packages:
       vite: ^5.0.0
     dependencies:
       '@sveltejs/vite-plugin-svelte-inspector': 2.0.0(@sveltejs/vite-plugin-svelte@3.0.1)(svelte@4.2.8)(vite@5.0.12)
-      debug: 4.3.4
+      debug: 4.3.4(supports-color@8.1.1)
       deepmerge: 4.3.1
       kleur: 4.1.5
       magic-string: 0.30.5
@@ -1495,8 +1481,8 @@ packages:
     engines: {node: '>= 18', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
     dev: false
 
-  /@tauri-apps/cli-darwin-arm64@2.0.0-beta.7:
-    resolution: {integrity: sha512-pwPkYEmIKRWbjxTCzPob67ecH8BrdYuE40chTRKudKCOgSahxW3oRHXnF8f7MU1pd34XpMG0vjwbETc0NA4DJw==}
+  /@tauri-apps/cli-darwin-arm64@2.0.0-beta.8:
+    resolution: {integrity: sha512-mE+4uA9ZWkZqzr51V+wybFfsbYh6748IAcbpUM7C78H0vIgdm0lQe4jKK7rp1UCFQvpqRBv7OBq5cCKKK0I0Tg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
@@ -1504,8 +1490,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-darwin-x64@2.0.0-beta.7:
-    resolution: {integrity: sha512-GP0u+CQxS9bRzxECtiFpAaEmhxibyCKRNhXVzbUwKkqbYtPKHnL5ZkppaQGZ+72aU+ezN2wyUGJM2JywGO6WrA==}
+  /@tauri-apps/cli-darwin-x64@2.0.0-beta.8:
+    resolution: {integrity: sha512-+9GeV1Wkfx5p8x4yD1BCyUnuANLEiGUILmN75Nt8cGfjMc9VupExW4qiqebcOcJ+M7iddmYauS9PsOAmmJx9VQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
@@ -1513,8 +1499,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-linux-arm-gnueabihf@2.0.0-beta.7:
-    resolution: {integrity: sha512-oFMPnELZaXav3BzJimezP7gNxH44MHdBn2uOO1GkS8aV5P3GRBdu2xqwz2jr1awxfu0MAqTFj2ed9MsjiDDLhw==}
+  /@tauri-apps/cli-linux-arm-gnueabihf@2.0.0-beta.8:
+    resolution: {integrity: sha512-SvI8RX4h/e9mnxWST1BYG9mvYwsZzC7OcG5iVWlWQ0VGE+4dBVhVAT6blHw1ZP/MMKHmJUYWKeB7+baNXOCLSg==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
@@ -1522,8 +1508,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-linux-arm64-gnu@2.0.0-beta.7:
-    resolution: {integrity: sha512-89MoAIRlIA8+qMpOEZZQ2+Q4LBUY1kwMGNS3mg5OJDU0+vSfNUkLr17Zvjwqizd/tVUp/vTWNWtSPthm8wliHQ==}
+  /@tauri-apps/cli-linux-arm64-gnu@2.0.0-beta.8:
+    resolution: {integrity: sha512-KxpUxWPXZNNob2hHmPFjKR7c3IRyIyurDgVVQnrNmrokTKInch4sSZgAAyFt2U65D7UKI7OGl8D5ZBF3wqQlwg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -1531,8 +1517,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-linux-arm64-musl@2.0.0-beta.7:
-    resolution: {integrity: sha512-3TM4YapftA+VU555CQ8xxZhkcGDCGuJ+2X3qaHY4XEgC2viyke7MybbA6duHhb1HY64rZhSx6y5cqi9SE/AsSg==}
+  /@tauri-apps/cli-linux-arm64-musl@2.0.0-beta.8:
+    resolution: {integrity: sha512-6arbz0HcYtWp9wpA4CizYlYuLW3XzeLJmkF7ntWFTqLkUHfgcv731bodb7jVwt/Tx00OAcitGvMVM7cpHS6UlA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -1540,8 +1526,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-linux-x64-gnu@2.0.0-beta.7:
-    resolution: {integrity: sha512-+NbQOJheRZGTm5EF8h0y7JB1sW5qi1kTwqSCVeePJJStQX8QG2RmWdDbo44/PGLOwy8iJlGH/Tlo+ZaHuWtV9A==}
+  /@tauri-apps/cli-linux-x64-gnu@2.0.0-beta.8:
+    resolution: {integrity: sha512-mKwIEyrzBTwMDNpfd/6F/+tyWcu13hbXreEK31FX197zkLvWD+W3R6H2RU1vkC/sp3wfnsgpgX6R7lA2w4zoUw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -1549,8 +1535,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-linux-x64-musl@2.0.0-beta.7:
-    resolution: {integrity: sha512-1uDMC3Uh8yFWsKRkwrwLWY9pQ1uQ008lAimNedlGnuSJ3dW3SViNGbhdmvKw/lrXL24183ppGv2z/B6c/DydBg==}
+  /@tauri-apps/cli-linux-x64-musl@2.0.0-beta.8:
+    resolution: {integrity: sha512-TqcH16NClAf2BQugkznXXM+CBlZ21WJG+OLJoWCYg1IjDfp7yqiUDXSkMR0N4xAFu68yzjjMkOAvBmB41X/Nxg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -1558,8 +1544,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-win32-arm64-msvc@2.0.0-beta.7:
-    resolution: {integrity: sha512-166jg+BfgFw22Hj0oZgU1ujWb5Gzf0+4p8L9Vuzu0Ne7U8flHfvlFpFKdf6uCa61cxS0sfmEnAi5r2Fh8VOA4w==}
+  /@tauri-apps/cli-win32-arm64-msvc@2.0.0-beta.8:
+    resolution: {integrity: sha512-88OgkwOsvpBzF4MzNX9fUAsn0uk/jRL77H7fBqlLnuFJyHAcrnzi34eWV65yEuRs0ZpXVKnxOFd5LrQRcsfn7w==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
@@ -1567,8 +1553,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-win32-ia32-msvc@2.0.0-beta.7:
-    resolution: {integrity: sha512-NuR1AkZlNwcu/Jv9qRKA0yguvJIW4aLEhZG6sWssMGhJGRzxZssZfHiBVfDCDQgfprbtOXXnshy7rFjNe0IEgA==}
+  /@tauri-apps/cli-win32-ia32-msvc@2.0.0-beta.8:
+    resolution: {integrity: sha512-iCkT0vE58WjUAWJoxVrt4u38/xXJYLx4sZX57uVyPl/ZG2OBNsKFxaREfLCyrPcqueeJyfKUq+t7ZMoyFK+rfQ==}
     engines: {node: '>= 10'}
     cpu: [ia32]
     os: [win32]
@@ -1576,8 +1562,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-win32-x64-msvc@2.0.0-beta.7:
-    resolution: {integrity: sha512-BVlwb6fRRCOaQPZWYIee8Z37NEHkceVmFDSQhrmLhF9E60/M09UCTrj0J5IOrDSj7t5/h5aWlYmDTASaJJRzKg==}
+  /@tauri-apps/cli-win32-x64-msvc@2.0.0-beta.8:
+    resolution: {integrity: sha512-8j2P9dB+snwUCOL9sPi71+645xqcphx79W36uN+gmS+FJXgxbhMS56QxLD2SxruwQVhSGQBI4H4Ja9ys9Ye/TA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
@@ -1585,21 +1571,21 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli@2.0.0-beta.7:
-    resolution: {integrity: sha512-ZaXvF46H+bSkP31C3ygFMhH3RAkdUnmxsGe5YKPublOnsWkyEvj9OLafBt2rTedF5Ko6HsIFqtgp4MqT9K9mHg==}
+  /@tauri-apps/cli@2.0.0-beta.8:
+    resolution: {integrity: sha512-2JdNevdgV9XS0NYUv3prZgXBbfVkTo++Ku0fy3adzgWJl47hZi2TFrLzKdjNHdr3N44Vb4dfbvTIScqQUM5t9w==}
     engines: {node: '>= 10'}
     hasBin: true
     optionalDependencies:
-      '@tauri-apps/cli-darwin-arm64': 2.0.0-beta.7
-      '@tauri-apps/cli-darwin-x64': 2.0.0-beta.7
-      '@tauri-apps/cli-linux-arm-gnueabihf': 2.0.0-beta.7
-      '@tauri-apps/cli-linux-arm64-gnu': 2.0.0-beta.7
-      '@tauri-apps/cli-linux-arm64-musl': 2.0.0-beta.7
-      '@tauri-apps/cli-linux-x64-gnu': 2.0.0-beta.7
-      '@tauri-apps/cli-linux-x64-musl': 2.0.0-beta.7
-      '@tauri-apps/cli-win32-arm64-msvc': 2.0.0-beta.7
-      '@tauri-apps/cli-win32-ia32-msvc': 2.0.0-beta.7
-      '@tauri-apps/cli-win32-x64-msvc': 2.0.0-beta.7
+      '@tauri-apps/cli-darwin-arm64': 2.0.0-beta.8
+      '@tauri-apps/cli-darwin-x64': 2.0.0-beta.8
+      '@tauri-apps/cli-linux-arm-gnueabihf': 2.0.0-beta.8
+      '@tauri-apps/cli-linux-arm64-gnu': 2.0.0-beta.8
+      '@tauri-apps/cli-linux-arm64-musl': 2.0.0-beta.8
+      '@tauri-apps/cli-linux-x64-gnu': 2.0.0-beta.8
+      '@tauri-apps/cli-linux-x64-musl': 2.0.0-beta.8
+      '@tauri-apps/cli-win32-arm64-msvc': 2.0.0-beta.8
+      '@tauri-apps/cli-win32-ia32-msvc': 2.0.0-beta.8
+      '@tauri-apps/cli-win32-x64-msvc': 2.0.0-beta.8
     dev: true
 
   /@tauri-apps/toml@2.2.4:
@@ -1652,7 +1638,7 @@ packages:
       '@typescript-eslint/type-utils': 6.20.0(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/utils': 6.20.0(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/visitor-keys': 6.20.0
-      debug: 4.3.4
+      debug: 4.3.4(supports-color@8.1.1)
       eslint: 8.56.0
       graphemer: 1.4.0
       ignore: 5.3.0
@@ -1678,7 +1664,7 @@ packages:
       '@typescript-eslint/types': 6.20.0
       '@typescript-eslint/typescript-estree': 6.20.0(typescript@5.3.3)
       '@typescript-eslint/visitor-keys': 6.20.0
-      debug: 4.3.4
+      debug: 4.3.4(supports-color@8.1.1)
       eslint: 8.56.0
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -1705,7 +1691,7 @@ packages:
     dependencies:
       '@typescript-eslint/typescript-estree': 6.20.0(typescript@5.3.3)
       '@typescript-eslint/utils': 6.20.0(eslint@8.56.0)(typescript@5.3.3)
-      debug: 4.3.4
+      debug: 4.3.4(supports-color@8.1.1)
       eslint: 8.56.0
       ts-api-utils: 1.0.3(typescript@5.3.3)
       typescript: 5.3.3
@@ -1729,7 +1715,7 @@ packages:
     dependencies:
       '@typescript-eslint/types': 6.20.0
       '@typescript-eslint/visitor-keys': 6.20.0
-      debug: 4.3.4
+      debug: 4.3.4(supports-color@8.1.1)
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.3
@@ -1771,7 +1757,7 @@ packages:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
     dev: true
 
-  /@unocss/astro@0.58.0(vite@5.0.12):
+  /@unocss/astro@0.58.0(rollup@4.9.6)(vite@5.0.12):
     resolution: {integrity: sha512-df+tEFO5eKXjQOwSWQhS9IdjD0sfLHLtn8U09sEKR2Nmh5CvpwyBxmvLQgOCilPou7ehmyKfsyGRLZg7IMp+Ew==}
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0
@@ -1781,19 +1767,19 @@ packages:
     dependencies:
       '@unocss/core': 0.58.0
       '@unocss/reset': 0.58.0
-      '@unocss/vite': 0.58.0(vite@5.0.12)
+      '@unocss/vite': 0.58.0(rollup@4.9.6)(vite@5.0.12)
       vite: 5.0.12
     transitivePeerDependencies:
       - rollup
     dev: true
 
-  /@unocss/cli@0.58.0:
+  /@unocss/cli@0.58.0(rollup@4.9.6):
     resolution: {integrity: sha512-rhsrDBxAVueygMcAbMkbuvsHbBL2rG6N96LllYwHn16FLgOE3Sf4JW1/LlNjQje3BtwMMtbSCCAeu2SryFhzbw==}
     engines: {node: '>=14'}
     hasBin: true
     dependencies:
       '@ampproject/remapping': 2.2.1
-      '@rollup/pluginutils': 5.1.0
+      '@rollup/pluginutils': 5.1.0(rollup@4.9.6)
       '@unocss/config': 0.58.0
       '@unocss/core': 0.58.0
       '@unocss/preset-uno': 0.58.0
@@ -1969,13 +1955,13 @@ packages:
       '@unocss/core': 0.58.0
     dev: true
 
-  /@unocss/vite@0.58.0(vite@5.0.12):
+  /@unocss/vite@0.58.0(rollup@4.9.6)(vite@5.0.12):
     resolution: {integrity: sha512-OCUOLMSOBEtXOEyBbAvMI3/xdR175BWRzmvV9Wc34ANZclEvCdVH8+WU725ibjY4VT0gVIuX68b13fhXdHV41A==}
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0
     dependencies:
       '@ampproject/remapping': 2.2.1
-      '@rollup/pluginutils': 5.1.0
+      '@rollup/pluginutils': 5.1.0(rollup@4.9.6)
       '@unocss/config': 0.58.0
       '@unocss/core': 0.58.0
       '@unocss/inspector': 0.58.0
@@ -2478,18 +2464,6 @@ packages:
       ms: 2.1.3
     dev: true
 
-  /debug@4.3.4:
-    resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}
-    engines: {node: '>=6.0'}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
-    dependencies:
-      ms: 2.1.2
-    dev: true
-
   /debug@4.3.4(supports-color@8.1.1):
     resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}
     engines: {node: '>=6.0'}
@@ -2588,18 +2562,6 @@ packages:
 
   /duplexer@0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
-    dev: true
-
-  /effection@2.0.8:
-    resolution: {integrity: sha512-/v7cbPIXGGylInQgHHjJutzqUn6VIfcP13hh2X0hXf04wwAlSI+lVjUBKpr5TX3+v9dXV/JLHO/pqQ9Cp1QAnQ==}
-    dependencies:
-      '@effection/channel': 2.0.6
-      '@effection/core': 2.2.3
-      '@effection/events': 2.0.6
-      '@effection/fetch': 2.0.7(mocha@10.2.0)
-      '@effection/main': 2.1.2
-      '@effection/stream': 2.0.6
-      '@effection/subscription': 2.0.6
     dev: true
 
   /effection@2.0.8(mocha@10.2.0):
@@ -2944,7 +2906,7 @@ packages:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.3
-      debug: 4.3.4
+      debug: 4.3.4(supports-color@8.1.1)
       doctrine: 3.0.0
       escape-string-regexp: 4.0.0
       eslint-scope: 7.2.2
@@ -3866,7 +3828,7 @@ packages:
   /micromark@2.11.4:
     resolution: {integrity: sha512-+WoovN/ppKolQOFIAajxi7Lu9kInbPxFuTBVEavFcL8eAfVstoc5MocPmqBeAdBOJV00uaVjegzH4+MA0DN/uA==}
     dependencies:
-      debug: 4.3.4
+      debug: 4.3.4(supports-color@8.1.1)
       parse-entities: 2.0.0
     transitivePeerDependencies:
       - supports-color
@@ -4893,7 +4855,7 @@ packages:
       '@types/unist': 2.0.10
     dev: true
 
-  /unocss@0.58.0(postcss@8.4.32)(vite@5.0.12):
+  /unocss@0.58.0(postcss@8.4.32)(rollup@4.9.6)(vite@5.0.12):
     resolution: {integrity: sha512-MSPRHxBqWN+1AHGV+J5uUy4//e6ZBK6O+ISzD0qrXcCD/GNtxk1+lYjOK2ltkUiKX539+/KF91vNxzhhwEf+xA==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -4905,8 +4867,8 @@ packages:
       vite:
         optional: true
     dependencies:
-      '@unocss/astro': 0.58.0(vite@5.0.12)
-      '@unocss/cli': 0.58.0
+      '@unocss/astro': 0.58.0(rollup@4.9.6)(vite@5.0.12)
+      '@unocss/cli': 0.58.0(rollup@4.9.6)
       '@unocss/core': 0.58.0
       '@unocss/extractor-arbitrary-variants': 0.58.0
       '@unocss/postcss': 0.58.0(postcss@8.4.32)
@@ -4924,7 +4886,7 @@ packages:
       '@unocss/transformer-compile-class': 0.58.0
       '@unocss/transformer-directives': 0.58.0
       '@unocss/transformer-variant-group': 0.58.0
-      '@unocss/vite': 0.58.0(vite@5.0.12)
+      '@unocss/vite': 0.58.0(rollup@4.9.6)(vite@5.0.12)
       vite: 5.0.12
     transitivePeerDependencies:
       - postcss

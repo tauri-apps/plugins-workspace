@@ -95,7 +95,7 @@ impl U2f {
         challenge: Challenge,
         response: RegisterResponse,
     ) -> Result<Registration> {
-        if expiration(challenge.timestamp) > Duration::seconds(300) {
+        if expiration(challenge.timestamp) > Duration::try_seconds(300).unwrap() {
             return Err(U2fError::ChallengeExpired);
         }
 
@@ -152,7 +152,7 @@ impl U2f {
         sign_resp: SignResponse,
         counter: u32,
     ) -> Result<u32> {
-        if expiration(challenge.timestamp) > Duration::seconds(300) {
+        if expiration(challenge.timestamp) > Duration::try_seconds(300).unwrap() {
             return Err(U2fError::ChallengeExpired);
         }
 
