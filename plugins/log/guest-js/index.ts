@@ -189,13 +189,14 @@ type LoggerFn = (fn: RecordPayload) => void;
 /**
  * Attaches a listener for the log, and calls the passed function for each log entry.
  * @param fn
- * 
+ *
  * @returns a function to cancel the listener.
  */
 export async function attachLogger(fn: LoggerFn): Promise<UnlistenFn> {
   return await listen("log://log", (event: Event<RecordPayload>) => {
-    let { message, level } = event.payload;
-  
+    const { level } = event.payload;
+    let { message } = event.payload;
+
     // Strip ANSI escape codes
     message = message.replace(
       // TODO: Investigate security/detect-unsafe-regex
@@ -209,7 +210,7 @@ export async function attachLogger(fn: LoggerFn): Promise<UnlistenFn> {
 
 /**
  * Attaches a listener that writes log entries to the console as they come in.
- * 
+ *
  * @returns a function to cancel the listener.
  */
 export async function attachConsole(): Promise<UnlistenFn> {
