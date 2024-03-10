@@ -213,13 +213,13 @@ pub struct SqliteConfig {
     pub foreign_keys: bool,
     pub synchronous: &'static str,  // EXTRA | FULL | NORMAL |  OFF
     pub locking_mode: &'static str, // NORMAL | EXCLUSIVE
-    pub read_only: bool, // NORMAL | EXCLUSIVE
+    pub read_only: bool, // Open database in read-only mode
 }
 ```
 
 ### In memory
 
-A database name containing :memory will be loaded as an in-memory database.
+A database name containing :memory (e.g. sqlite:mydatabase:memory:) will be loaded as an in-memory database.
 
 ### SqlCipher
 
