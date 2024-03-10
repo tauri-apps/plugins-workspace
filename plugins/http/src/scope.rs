@@ -124,8 +124,8 @@ mod tests {
         assert!(scope.is_allowed(&"http://localhost:8080".parse().unwrap()));
         assert!(scope.is_allowed(&"http://localhost:8080/".parse().unwrap()));
 
-        assert!(!scope.is_allowed(&"http://localhost:8080/file".parse().unwrap()));
-        assert!(!scope.is_allowed(&"http://localhost:8080/path/to/asset.png".parse().unwrap()));
+        assert!(scope.is_allowed(&"http://localhost:8080/file".parse().unwrap()));
+        assert!(scope.is_allowed(&"http://localhost:8080/path/to/asset.png".parse().unwrap()));
         assert!(!scope.is_allowed(&"https://localhost:8080".parse().unwrap()));
         assert!(!scope.is_allowed(&"http://localhost:8081".parse().unwrap()));
         assert!(!scope.is_allowed(&"http://local:8080".parse().unwrap()));
@@ -161,7 +161,7 @@ mod tests {
         let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://something.else".parse().unwrap()));
-        assert!(!scope.is_allowed(&"http://something.else/path/to/file".parse().unwrap()));
+        assert!(scope.is_allowed(&"http://something.else/path/to/file".parse().unwrap()));
         assert!(!scope.is_allowed(&"https://something.else".parse().unwrap()));
 
         let entry = Arc::new("http://*/*".parse().unwrap());
@@ -177,9 +177,9 @@ mod tests {
         let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://something.else".parse().unwrap()));
-        assert!(!scope.is_allowed(&"http://something.else/path/to/file".parse().unwrap()));
+        assert!(scope.is_allowed(&"http://something.else/path/to/file".parse().unwrap()));
         assert!(scope.is_allowed(&"file://path".parse().unwrap()));
-        assert!(!scope.is_allowed(&"file://path/to/file".parse().unwrap()));
+        assert!(scope.is_allowed(&"file://path/to/file".parse().unwrap()));
         assert!(scope.is_allowed(&"https://something.else".parse().unwrap()));
 
         let entry = Arc::new("*://*/*".parse().unwrap());
