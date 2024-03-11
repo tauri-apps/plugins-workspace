@@ -562,11 +562,11 @@ impl Update {
                     install_mode
                         .nsis_args()
                         .iter()
-                        .map(|a| OsStr::new(a))
+                        .map(OsStr::new)
                         .collect::<Vec<_>>(),
                     self.installer_args
                         .iter()
-                        .map(|a| OsStr::new(a))
+                        .map(OsStr::new)
                         .collect::<Vec<_>>(),
                 ]
                 .concat();
@@ -601,11 +601,11 @@ impl Update {
                     install_mode
                         .msiexec_args()
                         .iter()
-                        .map(|a| OsStr::new(a))
+                        .map(OsStr::new)
                         .collect::<Vec<_>>(),
                     self.installer_args
                         .iter()
-                        .map(|a| OsStr::new(a))
+                        .map(OsStr::new)
                         .collect::<Vec<_>>(),
                 ]
                 .concat();
