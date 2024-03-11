@@ -95,7 +95,7 @@ impl U2f {
         challenge: Challenge,
         response: RegisterResponse,
     ) -> Result<Registration> {
-        // Safet to unwrap since 300 is within the constraints of Duration::try_seconds
+        // Safe to unwrap since 300 is within the constraints of Duration::try_seconds
         if expiration(challenge.timestamp) > Duration::try_seconds(300).unwrap() {
             return Err(U2fError::ChallengeExpired);
         }
@@ -153,7 +153,7 @@ impl U2f {
         sign_resp: SignResponse,
         counter: u32,
     ) -> Result<u32> {
-        // Safet to unwrap since 300 is within the constraints of Duration::try_seconds
+        // Safe to unwrap since 300 is within the constraints of Duration::try_seconds
         if expiration(challenge.timestamp) > Duration::try_seconds(300).unwrap() {
             return Err(U2fError::ChallengeExpired);
         }
