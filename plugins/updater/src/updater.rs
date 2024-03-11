@@ -176,21 +176,18 @@ impl UpdaterBuilder {
 
     pub fn installer_arg<S>(mut self, arg: S) -> Self
     where
-        S: AsRef<OsStr>,
+        S: Into<OsString>,
     {
-        self.installer_args.push(arg.as_ref().to_os_string());
+        self.installer_args.push(arg.into());
         self
     }
 
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
-        S: AsRef<OsStr>,
+        S: Into<OsString>,
     {
-        let args = args
-            .into_iter()
-            .map(|a| a.as_ref().to_os_string())
-            .collect::<Vec<_>>();
+        let args = args.into_iter().map(|a| a.into()).collect::<Vec<_>>();
         self.installer_args.extend_from_slice(&args);
         self
     }
@@ -543,6 +540,13 @@ impl Update {
             |p| format!("{p}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"),
         );
 
+        let install_mode = self
+            .config
+            .windows
+            .as_ref()
+            .map(|w| w.install_mode.clone())
+            .unwrap_or_default();
+
         for path in paths {
             let found_path = path?.path();
             // we support 2 type of files exe & msi for now
@@ -555,17 +559,11 @@ impl Update {
                 installer_path.push("\"");
 
                 let installer_args = [
-                    self.config
-                        .windows
-                        .as_ref()
-                        .map(|w| {
-                            w.install_mode
-                                .nsis_args()
-                                .iter()
-                                .map(|a| OsStr::new(a))
-                                .collect::<Vec<_>>()
-                        })
-                        .unwrap_or_default(),
+                    install_mode
+                        .nsis_args()
+                        .iter()
+                        .map(OsStr::new)
+                        .collect::<Vec<_>>(),
                     self.installer_args
                         .iter()
                         .map(|a| a.as_os_str())
@@ -600,17 +598,11 @@ impl Update {
                 msi_path.push("\"\"\"");
 
                 let installer_args = [
-                    self.config
-                        .windows
-                        .as_ref()
-                        .map(|w| {
-                            w.install_mode
-                                .msiexec_args()
-                                .iter()
-                                .map(|a| OsStr::new(a))
-                                .collect::<Vec<_>>()
-                        })
-                        .unwrap_or_default(),
+                    install_mode
+                        .msiexec_args()
+                        .iter()
+                        .map(OsStr::new)
+                        .collect::<Vec<_>>(),
                     self.installer_args
                         .iter()
                         .map(|a| a.as_os_str())

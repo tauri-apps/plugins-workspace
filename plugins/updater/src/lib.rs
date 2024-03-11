@@ -13,7 +13,7 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use std::ffi::{OsStr, OsString};
+use std::ffi::OsString;
 
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
@@ -136,21 +136,18 @@ impl Builder {
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
-        S: AsRef<OsStr>,
+        S: Into<OsString>,
     {
-        let args = args
-            .into_iter()
-            .map(|a| a.as_ref().to_os_string())
-            .collect::<Vec<_>>();
+        let args = args.into_iter().map(|a| a.into()).collect::<Vec<_>>();
         self.installer_args.extend_from_slice(&args);
         self
     }
 
     pub fn installer_arg<S>(mut self, arg: S) -> Self
     where
-        S: AsRef<OsStr>,
+        S: Into<OsString>,
     {
-        self.installer_args.push(arg.as_ref().to_os_string());
+        self.installer_args.push(arg.into());
         self
     }
 
