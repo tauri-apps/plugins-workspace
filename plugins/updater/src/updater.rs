@@ -566,7 +566,7 @@ impl Update {
                         .collect::<Vec<_>>(),
                     self.installer_args
                         .iter()
-                        .map(OsStr::new)
+                        .map(|a| a.as_os_str())
                         .collect::<Vec<_>>(),
                 ]
                 .concat();
@@ -605,7 +605,7 @@ impl Update {
                         .collect::<Vec<_>>(),
                     self.installer_args
                         .iter()
-                        .map(OsStr::new)
+                        .map(|a| a.as_os_str())
                         .collect::<Vec<_>>(),
                 ]
                 .concat();
