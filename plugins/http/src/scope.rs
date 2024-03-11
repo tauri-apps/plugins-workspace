@@ -114,6 +114,7 @@ mod tests {
         let deny = Arc::new("http://localhost:8080/*".parse().unwrap());
         let scope = super::Scope::new(vec![&allow], vec![&deny]);
         assert!(!scope.is_allowed(&"http://localhost:8080/file.png".parse().unwrap()));
+        assert!(!scope.is_allowed(&"http://localhost:8080?framework=tauri".parse().unwrap()));
     }
 
     #[test]
@@ -123,9 +124,10 @@ mod tests {
         let scope = super::Scope::new(vec![&entry], Vec::new());
         assert!(scope.is_allowed(&"http://localhost:8080".parse().unwrap()));
         assert!(scope.is_allowed(&"http://localhost:8080/".parse().unwrap()));
-
         assert!(scope.is_allowed(&"http://localhost:8080/file".parse().unwrap()));
         assert!(scope.is_allowed(&"http://localhost:8080/path/to/asset.png".parse().unwrap()));
+        assert!(scope.is_allowed(&"http://localhost:8080/path/list?limit=50".parse().unwrap()));
+
         assert!(!scope.is_allowed(&"https://localhost:8080".parse().unwrap()));
         assert!(!scope.is_allowed(&"http://localhost:8081".parse().unwrap()));
         assert!(!scope.is_allowed(&"http://local:8080".parse().unwrap()));
@@ -138,6 +140,7 @@ mod tests {
         let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://localhost:8080/file.png".parse().unwrap()));
+        assert!(scope.is_allowed(&"http://localhost:8080/file.png?q=1".parse().unwrap()));
 
         assert!(!scope.is_allowed(&"http://localhost:8080".parse().unwrap()));
         assert!(!scope.is_allowed(&"http://localhost:8080/file".parse().unwrap()));
@@ -150,7 +153,13 @@ mod tests {
         let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://localhost:8080/file.png".parse().unwrap()));
+        assert!(scope.is_allowed(&"http://localhost:8080/file.png#head".parse().unwrap()));
         assert!(scope.is_allowed(&"http://localhost:8080/assets/file.png".parse().unwrap()));
+        assert!(scope.is_allowed(
+            &"http://localhost:8080/assets/file.png?width=100&height=200"
+                .parse()
+                .unwrap()
+        ));
 
         assert!(!scope.is_allowed(&"http://localhost:8080/file.jpeg".parse().unwrap()));
     }
@@ -161,7 +170,15 @@ mod tests {
         let scope = super::Scope::new(vec![&entry], Vec::new());
 
         assert!(scope.is_allowed(&"http://something.else".parse().unwrap()));
+        assert!(scope.is_allowed(&"http://something.else#tauri".parse().unwrap()));
         assert!(scope.is_allowed(&"http://something.else/path/to/file".parse().unwrap()));
+        assert!(scope.is_allowed(&"http://something.else?rel=tauri".parse().unwrap()));
+        assert!(scope.is_allowed(
+            &"http://something.else/path/to/file.mp4?start=500"
+                .parse()
+                .unwrap()
+        ));
+
         assert!(!scope.is_allowed(&"https://something.else".parse().unwrap()));
 
         let entry = Arc::new("http://*/*".parse().unwrap());
@@ -181,6 +198,7 @@ mod tests {
         assert!(scope.is_allowed(&"file://path".parse().unwrap()));
         assert!(scope.is_allowed(&"file://path/to/file".parse().unwrap()));
         assert!(scope.is_allowed(&"https://something.else".parse().unwrap()));
+        assert!(scope.is_allowed(&"https://something.else?x=1#frag".parse().unwrap()));
 
         let entry = Arc::new("*://*/*".parse().unwrap());
         let scope = super::Scope::new(vec![&entry], Vec::new());
@@ -189,5 +207,25 @@ mod tests {
         assert!(scope.is_allowed(&"http://something.else/path/to/file".parse().unwrap()));
         assert!(scope.is_allowed(&"file://path/to/file".parse().unwrap()));
         assert!(scope.is_allowed(&"https://something.else".parse().unwrap()));
+    }
+
+    #[test]
+    fn validate_query() {
+        let entry = Arc::new("https://tauri.app/path?x=*".parse().unwrap());
+        let scope = super::Scope::new(vec![&entry], Vec::new());
+
+        assert!(scope.is_allowed(&"https://tauri.app/path?x=5".parse().unwrap()));
+
+        assert!(!scope.is_allowed(&"https://tauri.app/path?y=5".parse().unwrap()));
+    }
+
+    #[test]
+    fn validate_hash() {
+        let entry = Arc::new("https://tauri.app/path#frame*".parse().unwrap());
+        let scope = super::Scope::new(vec![&entry], Vec::new());
+
+        assert!(scope.is_allowed(&"https://tauri.app/path#frame".parse().unwrap()));
+
+        assert!(!scope.is_allowed(&"https://tauri.app/path#work".parse().unwrap()));
     }
 }
