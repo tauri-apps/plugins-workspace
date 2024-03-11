@@ -16,6 +16,8 @@ pub enum Error {
     #[cfg(desktop)]
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+    #[error("invalid image: {0}")]
+    Image(#[from] image::ImageError),
 }
 
 impl Serialize for Error {

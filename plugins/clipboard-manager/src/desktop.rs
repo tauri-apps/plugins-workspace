@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use arboard::ImageData;
+use image::ImageEncoder;
 use serde::de::DeserializeOwned;
 use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
@@ -94,8 +95,17 @@ impl<R: Runtime> Clipboard<R> {
         match &self.clipboard {
             Ok(clipboard) => {
                 let image = clipboard.lock().unwrap().get_image()?;
+
+                let mut buffer: Vec<u8> = Vec::new();
+                image::codecs::png::PngEncoder::new(&mut buffer).write_image(
+                    &image.bytes,
+                    image.width as u32,
+                    image.height as u32,
+                    image::ColorType::Rgba8,
+                )?;
+
                 Ok(ClipboardContents::Image {
-                    bytes: image.bytes.to_vec(),
+                    bytes: buffer,
                     width: image.width,
                     height: image.height,
                 })

@@ -2,7 +2,6 @@
   import * as clipboard from "@tauri-apps/plugin-clipboard-manager";
   import { open } from "@tauri-apps/plugin-dialog";
   import { arrayBufferToBase64 } from "../lib/utils";
-  import { Image } from "@tauri-apps/api/image";
   import { readFile } from "@tauri-apps/plugin-fs";
 
   export let onMessage;
@@ -53,7 +52,6 @@
         onMessage(`Clipboard contents: ${contents}`);
       })
       .catch((e) => {
-        console.error(e);
         onMessage(e);
       });
   }
