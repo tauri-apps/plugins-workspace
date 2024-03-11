@@ -4,6 +4,7 @@
 
 use std::{
     collections::HashMap,
+    ffi::{OsStr, OsString},
     io::{Cursor, Read},
     path::{Path, PathBuf},
     str::FromStr,
@@ -97,7 +98,7 @@ pub struct UpdaterBuilder {
     headers: HeaderMap,
     timeout: Option<Duration>,
     proxy: Option<Url>,
-    installer_args: Vec<String>,
+    installer_args: Vec<OsString>,
 }
 
 impl UpdaterBuilder {
@@ -175,21 +176,18 @@ impl UpdaterBuilder {
 
     pub fn installer_arg<S>(mut self, arg: S) -> Self
     where
-        S: AsRef<str>,
+        S: Into<OsString>,
     {
-        self.installer_args.push(arg.as_ref().to_string());
+        self.installer_args.push(arg.into());
         self
     }
 
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
-        S: AsRef<str>,
+        S: Into<OsString>,
     {
-        let args = args
-            .into_iter()
-            .map(|a| a.as_ref().to_string())
-            .collect::<Vec<_>>();
+        let args = args.into_iter().map(|a| a.into()).collect::<Vec<_>>();
         self.installer_args.extend_from_slice(&args);
         self
     }
@@ -250,7 +248,7 @@ pub struct Updater {
     proxy: Option<Url>,
     endpoints: Vec<Url>,
     #[allow(dead_code)]
-    installer_args: Vec<String>,
+    installer_args: Vec<OsString>,
     arch: &'static str,
     // The `{{target}}` variable we replace in the endpoint
     target: String,
@@ -394,7 +392,7 @@ pub struct Update {
     #[allow(unused)]
     extract_path: PathBuf,
     #[allow(unused)]
-    installer_args: Vec<String>,
+    installer_args: Vec<OsString>,
     /// Download URL announced
     pub download_url: Url,
     /// Signature announced
@@ -514,9 +512,7 @@ impl Update {
     // Update server can provide a custom EXE (installer) who can run any task.
     #[cfg(windows)]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
-        use std::{ffi::OsStr, fs, process::Command};
-
-        use crate::config::WindowsUpdateInstallMode;
+        use std::{fs, process::Command};
 
         // FIXME: We need to create a memory buffer with the MSI and then run it.
         //        (instead of extracting the MSI to a temp path)
@@ -549,7 +545,7 @@ impl Update {
             .windows
             .as_ref()
             .map(|w| w.install_mode.clone())
-            .unwrap_or_else(WindowsUpdateInstallMode::default);
+            .unwrap_or_default();
 
         for path in paths {
             let found_path = path?.path();

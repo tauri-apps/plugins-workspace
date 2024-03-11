@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::fmt::Display;
+use std::{ffi::OsString, fmt::Display};
 
 use serde::{Deserialize, Deserializer};
 use url::Url;
@@ -64,11 +64,27 @@ impl Default for WindowsUpdateInstallMode {
 #[serde(rename_all = "camelCase")]
 pub struct WindowsConfig {
     /// Additional arguments given to the NSIS or WiX installer.
-    #[serde(default, alias = "installer-args")]
-    pub installer_args: Vec<String>,
-    /// Updating mode, see [`WindowsUpdateInstallMode`] for more info.
+    #[serde(
+        default,
+        alias = "installer-args",
+        deserialize_with = "deserialize_os_string"
+    )]
+    pub installer_args: Vec<OsString>,
+    /// Updating mode, defaults to `passive` mode.
+    ///
+    /// See [`WindowsUpdateInstallMode`] for more info.
     #[serde(default, alias = "install-mode")]
     pub install_mode: WindowsUpdateInstallMode,
+}
+
+fn deserialize_os_string<'de, D>(deserializer: D) -> Result<Vec<OsString>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Ok(Vec::<String>::deserialize(deserializer)?
+        .into_iter()
+        .map(OsString::from)
+        .collect::<Vec<_>>())
 }
 
 /// Updater configuration.
