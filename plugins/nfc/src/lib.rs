@@ -71,7 +71,6 @@ impl<R: Runtime, T: Manager<R>> crate::NfcExt<R> for T {
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("nfc")
-        .js_init_script(include_str!("api-iife.js").to_string())
         .setup(|app, api| {
             #[cfg(target_os = "android")]
             let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "NfcPlugin")?;

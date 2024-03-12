@@ -396,7 +396,6 @@ impl Builder {
 
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R> {
         plugin::Builder::new("log")
-            .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![log])
             .setup(move |app_handle, _api| {
                 let app_name = &app_handle.package_info().name;

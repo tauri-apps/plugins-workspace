@@ -8,5 +8,3 @@ Object.defineProperty(window, "__TAURI_OS_PLUGIN_INTERNALS__", {
     eol: __TEMPLATE_eol__,
   },
 });
-
-__RAW_global_os_api__;

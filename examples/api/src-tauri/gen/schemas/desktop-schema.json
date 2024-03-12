@@ -41,8 +41,7 @@
       "type": "object",
       "required": [
         "identifier",
-        "permissions",
-        "windows"
+        "permissions"
       ],
       "properties": {
         "identifier": {
@@ -93,14 +92,10 @@
         },
         "platforms": {
           "description": "Target platforms this capability applies. By default all platforms are affected by this capability.",
-          "default": [
-            "linux",
-            "macOS",
-            "windows",
-            "android",
-            "iOS"
+          "type": [
+            "array",
+            "null"
           ],
-          "type": "array",
           "items": {
             "$ref": "#/definitions/Target"
           }
@@ -115,7 +110,7 @@
       ],
       "properties": {
         "urls": {
-          "description": "Remote domains this capability refers to. Can use glob patterns.",
+          "description": "Remote domains this capability refers to using the [URLPattern standard](https://urlpattern.spec.whatwg.org/).\n\n# Examples\n\n- \"https://*.mydomain.dev\": allows subdomains of mydomain.dev - \"https://mydomain.dev/api/*\": allows any subpath of mydomain.dev/api",
           "type": "array",
           "items": {
             "type": "string"
@@ -4828,24 +4823,10 @@
           ]
         },
         {
-          "description": "image:allow-from-ico-bytes -> Enables the from_ico_bytes command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "image:allow-from-ico-bytes"
-          ]
-        },
-        {
           "description": "image:allow-from-path -> Enables the from_path command without any pre-configured scope.",
           "type": "string",
           "enum": [
             "image:allow-from-path"
-          ]
-        },
-        {
-          "description": "image:allow-from-png-bytes -> Enables the from_png_bytes command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "image:allow-from-png-bytes"
           ]
         },
         {
@@ -4884,24 +4865,10 @@
           ]
         },
         {
-          "description": "image:deny-from-ico-bytes -> Denies the from_ico_bytes command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "image:deny-from-ico-bytes"
-          ]
-        },
-        {
           "description": "image:deny-from-path -> Denies the from_path command without any pre-configured scope.",
           "type": "string",
           "enum": [
             "image:deny-from-path"
-          ]
-        },
-        {
-          "description": "image:deny-from-png-bytes -> Denies the from_png_bytes command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "image:deny-from-png-bytes"
           ]
         },
         {

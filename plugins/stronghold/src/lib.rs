@@ -456,19 +456,17 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let password_hash_function = self.password_hash_function;
 
-        let plugin_builder = PluginBuilder::new("stronghold")
-            .js_init_script(include_str!("api-iife.js").to_string())
-            .setup(move |app, _api| {
-                app.manage(StrongholdCollection::default());
-                app.manage(PasswordHashFunction(match password_hash_function {
-                    #[cfg(feature = "kdf")]
-                    PasswordHashFunctionKind::Argon2(path) => {
-                        Box::new(move |p| kdf::KeyDerivation::argon2(p, &path))
-                    }
-                    PasswordHashFunctionKind::Custom(f) => f,
-                }));
-                Ok(())
-            });
+        let plugin_builder = PluginBuilder::new("stronghold").setup(move |app, _api| {
+            app.manage(StrongholdCollection::default());
+            app.manage(PasswordHashFunction(match password_hash_function {
+                #[cfg(feature = "kdf")]
+                PasswordHashFunctionKind::Argon2(path) => {
+                    Box::new(move |p| kdf::KeyDerivation::argon2(p, &path))
+                }
+                PasswordHashFunctionKind::Custom(f) => f,
+            }));
+            Ok(())
+        });
 
         Builder::invoke_stronghold_handlers_and_build(plugin_builder)
     }

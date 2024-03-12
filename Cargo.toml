@@ -10,9 +10,9 @@ resolver = "2"
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
 log = "0.4"
-tauri = "2.0.0-beta.9"
-tauri-build = "2.0.0-beta.7"
-tauri-plugin = "2.0.0-beta.7"
+tauri = "2.0.0-beta.11"
+tauri-build = "2.0.0-beta.9"
+tauri-plugin = "2.0.0-beta.9"
 serde_json = "1"
 thiserror = "1"
 url = "2"
@@ -31,3 +31,8 @@ codegen-units = 1
 lto = true
 incremental = false
 opt-level = "s"
+
+[patch.crates-io]
+tauri = { git = "https://github.com/tauri-apps/tauri", branch = "dev" }
+tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "dev" }
+tauri-plugin = { git = "https://github.com/tauri-apps/tauri", branch = "dev" }
