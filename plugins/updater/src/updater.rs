@@ -586,7 +586,7 @@ impl Update {
             let ret = unsafe {
                 ShellExecuteW(
                     0,
-                    w!("runas"),
+                    w!("open"),
                     file as _,
                     parameters as _,
                     std::ptr::null(),
