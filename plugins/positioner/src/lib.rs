@@ -51,8 +51,11 @@ pub fn on_tray_event<R: Runtime>(app: &AppHandle<R>, event: &TrayIconEvent) {
 }
 
 #[tauri::command]
-async fn move_window<R: Runtime>(window: tauri::Window<R>, position: Position) -> Result<()> {
-    window.move_window(position)
+async fn move_window<R: Runtime>(
+    webview_window: tauri::WebviewWindow<R>,
+    position: Position,
+) -> Result<()> {
+    webview_window.move_window(position)
 }
 
 /// The Tauri plugin that exposes [`WindowExt::move_window`] to the webview.

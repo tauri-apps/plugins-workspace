@@ -1,5 +1,5 @@
 // Copyright 2021 Jonas Kruckenberg
-// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// Copyright 2019-2024 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
@@ -8,7 +8,7 @@ use crate::Tray;
 use serde_repr::Deserialize_repr;
 #[cfg(feature = "tray-icon")]
 use tauri::Manager;
-use tauri::{PhysicalPosition, PhysicalSize, Result, Runtime, Window};
+use tauri::{PhysicalPosition, PhysicalSize, Result, Runtime, WebviewWindow};
 
 /// Well known window positions.
 #[derive(Debug, Deserialize_repr)]
@@ -37,15 +37,15 @@ pub enum Position {
     TrayBottomCenter,
 }
 
-/// A [`Window`] extension that provides extra methods related to positioning.
-pub trait WindowExt {
-    /// Moves the [`Window`] to the given [`Position`]
+/// A [`WebviewWindow`] extension that provides extra methods related to positioning.
+pub trait WebviewWindowExt {
+    /// Moves the [`WebviewWindow`] to the given [`Position`]
     ///
     /// All positions are relative to the **current** screen.
     fn move_window(&self, position: Position) -> Result<()>;
 }
 
-impl<R: Runtime> WindowExt for Window<R> {
+impl<R: Runtime> WebviewWindowExt for WebviewWindow<R> {
     fn move_window(&self, pos: Position) -> Result<()> {
         use Position::*;
 
