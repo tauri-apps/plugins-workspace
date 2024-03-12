@@ -37,15 +37,15 @@ pub enum Position {
     TrayBottomCenter,
 }
 
-/// A [`WebviewWindow`] extension that provides extra methods related to positioning.
-pub trait WebviewWindowExt {
-    /// Moves the [`WebviewWindow`] to the given [`Position`]
+/// A [`Window`] extension that provides extra methods related to positioning.
+pub trait WindowExt {
+    /// Moves the [`Window`] to the given [`Position`]
     ///
     /// All positions are relative to the **current** screen.
     fn move_window(&self, position: Position) -> Result<()>;
 }
 
-impl<R: Runtime> WebviewWindowExt for WebviewWindow<R> {
+impl<R: Runtime> WindowExt for WebviewWindow<R> {
     fn move_window(&self, pos: Position) -> Result<()> {
         use Position::*;
 
