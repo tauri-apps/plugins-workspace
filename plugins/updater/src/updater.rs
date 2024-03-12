@@ -21,7 +21,7 @@ use reqwest::{
 };
 use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
-use tauri::{utils::platform::current_exe, Resource};
+use tauri::{utils::platform::current_exe, AppHandle, Resource};
 use time::OffsetDateTime;
 use url::Url;
 
@@ -475,22 +475,27 @@ impl Update {
     }
 
     /// Installs the updater package downloaded by [`Update::download`]
-    pub fn install(&self, bytes: Vec<u8>) -> Result<()> {
-        self.install_inner(bytes)
+    pub fn install<R: tauri::Runtime>(&self, app: &AppHandle<R>, bytes: Vec<u8>) -> Result<()> {
+        self.install_inner(app, bytes)
     }
 
     /// Downloads and installs the updater package
-    pub async fn download_and_install<C: FnMut(usize, Option<u64>), D: FnOnce()>(
+    pub async fn download_and_install<
+        R: tauri::Runtime,
+        C: FnMut(usize, Option<u64>),
+        D: FnOnce(),
+    >(
         &self,
+        app: &AppHandle<R>,
         on_chunk: C,
         on_download_finish: D,
     ) -> Result<()> {
         let bytes = self.download(on_chunk, on_download_finish).await?;
-        self.install(bytes)
+        self.install(app, bytes)
     }
 
     #[cfg(mobile)]
-    fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
+    fn install_inner<R: tauri::Runtime>(&self, _app: &AppHandle<R>, _bytes: Vec<u8>) -> Result<()> {
         Ok(())
     }
 
@@ -511,7 +516,7 @@ impl Update {
     // ## EXE
     // Update server can provide a custom EXE (installer) who can run any task.
     #[cfg(windows)]
-    fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
+    fn install_inner<R: tauri::Runtime>(&self, app: &AppHandle<R>, bytes: Vec<u8>) -> Result<()> {
         use std::fs;
         use windows_sys::{
             w,
@@ -557,9 +562,11 @@ impl Update {
                 continue;
             }
 
+            app.cleanup_before_exit();
+
             let file = encode_wide(found_path.as_os_str());
             let parameters = encode_wide(installer_args.join(OsStr::new(" ")).as_os_str());
-            let ret = unsafe {
+            unsafe {
                 ShellExecuteW(
                     0,
                     w!("open"),
@@ -569,9 +576,7 @@ impl Update {
                     SW_SHOW,
                 )
             };
-            if ret <= 32 {
-                return Err(Error::Io(std::io::Error::last_os_error()));
-            }
+
             std::process::exit(0);
         }
 
@@ -595,7 +600,7 @@ impl Update {
         target_os = "netbsd",
         target_os = "openbsd"
     ))]
-    fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
+    fn install_inner<R: tauri::Runtime>(&self, _app: &AppHandle<R>, bytes: Vec<u8>) -> Result<()> {
         use flate2::read::GzDecoder;
         use std::os::unix::fs::{MetadataExt, PermissionsExt};
         let archive = Cursor::new(bytes);
@@ -661,7 +666,7 @@ impl Update {
     // │          └── ...
     // └── ...
     #[cfg(target_os = "macos")]
-    fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
+    fn install_inner<R: tauri::Runtime>(&self, _app: &AppHandle<R>, bytes: Vec<u8>) -> Result<()> {
         use flate2::read::GzDecoder;
 
         let cursor = Cursor::new(bytes);

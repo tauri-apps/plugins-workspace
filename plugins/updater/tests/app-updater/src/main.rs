@@ -4,6 +4,7 @@
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use tauri::Manager;
 use tauri_plugin_updater::UpdaterExt;
 
 fn main() {
@@ -35,7 +36,10 @@ fn main() {
 
                 match updater.check().await {
                     Ok(Some(update)) => {
-                        if let Err(e) = update.download_and_install(|_, _| {}, || {}).await {
+                        if let Err(e) = update
+                            .download_and_install(handle.app_handle(), |_, _| {}, || {})
+                            .await
+                        {
                             println!("{e}");
                             std::process::exit(1);
                         }
