@@ -512,14 +512,12 @@ impl Update {
     // Update server can provide a custom EXE (installer) who can run any task.
     #[cfg(windows)]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
-        use std::{fs, process::Command};
+        use std::fs;
 
         use windows::{
             core::{w, HSTRING},
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
         };
-
-        use crate::config::WindowsUpdateInstallMode;
 
         // FIXME: We need to create a memory buffer with the MSI and then run it.
         //        (instead of extracting the MSI to a temp path)
