@@ -512,7 +512,11 @@ impl Update {
     // Update server can provide a custom EXE (installer) who can run any task.
     #[cfg(windows)]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
-        use std::{fs, process::Command};
+        use std::fs;
+        use windows_sys::{
+            w,
+            Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
+        };
 
         // FIXME: We need to create a memory buffer with the MSI and then run it.
         //        (instead of extracting the MSI to a temp path)
@@ -521,24 +525,12 @@ impl Update {
         // shouldn't drop but we should be able to pass the reference so we can drop it once the installation
         // is done, otherwise we have a huge memory leak.
 
-        let archive = Cursor::new(bytes);
-
         let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
-
-        // extract the buffer to the tmp_dir
-        // we extract our signed archive into our final directory without any temp file
+        let archive = Cursor::new(bytes);
         let mut extractor = zip::ZipArchive::new(archive)?;
-
-        // extract the msi
         extractor.extract(&tmp_dir)?;
 
         let paths = fs::read_dir(&tmp_dir)?;
-
-        let system_root = std::env::var("SYSTEMROOT");
-        let powershell_path = system_root.as_ref().map_or_else(
-            |_| "powershell.exe".to_string(),
-            |p| format!("{p}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"),
-        );
 
         let install_mode = self
             .config
@@ -546,106 +538,41 @@ impl Update {
             .as_ref()
             .map(|w| w.install_mode.clone())
             .unwrap_or_default();
+        let mut installer_args = self
+            .installer_args
+            .iter()
+            .map(|a| OsStr::new(a))
+            .collect::<Vec<_>>();
 
         for path in paths {
             let found_path = path?.path();
             // we support 2 type of files exe & msi for now
-            // If it's an `exe` we expect an installer not a runtime.
+            // If it's an `exe` we expect an NSIS installer.
             if found_path.extension() == Some(OsStr::new("exe")) {
-                // we need to wrap the installer path in quotes for Start-Process
-                let mut installer_path = std::ffi::OsString::new();
-                installer_path.push("\"");
-                installer_path.push(&found_path);
-                installer_path.push("\"");
-
-                let installer_args = [
-                    install_mode
-                        .nsis_args()
-                        .iter()
-                        .map(OsStr::new)
-                        .collect::<Vec<_>>(),
-                    self.installer_args
-                        .iter()
-                        .map(|a| a.as_os_str())
-                        .collect::<Vec<_>>(),
-                ]
-                .concat();
-
-                // Run the installer
-                let mut cmd = Command::new(powershell_path);
-
-                cmd.args(["-NoProfile", "-WindowStyle", "Hidden"])
-                    .args(["Start-Process"])
-                    .arg(installer_path);
-
-                if !installer_args.is_empty() {
-                    cmd.arg("-ArgumentList")
-                        .arg(installer_args.join(OsStr::new(", ")));
-                }
-                cmd.spawn().expect("installer failed to start");
-
-                std::process::exit(0);
+                installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
             } else if found_path.extension() == Some(OsStr::new("msi")) {
-                // we need to wrap the current exe path in quotes for Start-Process
-                let mut current_exe_arg = std::ffi::OsString::new();
-                current_exe_arg.push("\"");
-                current_exe_arg.push(current_exe()?);
-                current_exe_arg.push("\"");
-
-                let mut msi_path = std::ffi::OsString::new();
-                msi_path.push("\"\"\"");
-                msi_path.push(&found_path);
-                msi_path.push("\"\"\"");
-
-                let installer_args = [
-                    install_mode
-                        .msiexec_args()
-                        .iter()
-                        .map(OsStr::new)
-                        .collect::<Vec<_>>(),
-                    self.installer_args
-                        .iter()
-                        .map(|a| a.as_os_str())
-                        .collect::<Vec<_>>(),
-                ]
-                .concat();
-
-                // run the installer and relaunch the application
-                let powershell_install_res = Command::new(powershell_path)
-                    .args(["-NoProfile", "-WindowStyle", "Hidden"])
-                    .args([
-                        "Start-Process",
-                        "-Wait",
-                        "-FilePath",
-                        "$Env:SYSTEMROOT\\System32\\msiexec.exe",
-                        "-ArgumentList",
-                    ])
-                    .arg("/i,")
-                    .arg(&msi_path)
-                    .arg(format!(
-                        ", {}, /promptrestart;",
-                        installer_args.join(OsStr::new(", ")).to_string_lossy()
-                    ))
-                    .arg("Start-Process")
-                    .arg(current_exe_arg)
-                    .spawn();
-                if powershell_install_res.is_err() {
-                    // fallback to running msiexec directly - relaunch won't be available
-                    // we use this here in case powershell fails in an older machine somehow
-                    let msiexec_path = system_root.as_ref().map_or_else(
-                        |_| "msiexec.exe".to_string(),
-                        |p| format!("{p}\\System32\\msiexec.exe"),
-                    );
-                    let _ = Command::new(msiexec_path)
-                        .arg("/i")
-                        .arg(msi_path)
-                        .args(installer_args)
-                        .arg("/promptrestart")
-                        .spawn();
-                }
-
-                std::process::exit(0);
+                installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
+                installer_args.push(OsStr::new("/promptrestart"));
+            } else {
+                continue;
             }
+
+            let file = encode_wide(found_path.as_os_str());
+            let parameters = encode_wide(installer_args.join(OsStr::new(" ")).as_os_str());
+            let ret = unsafe {
+                ShellExecuteW(
+                    0,
+                    w!("open"),
+                    file.as_ptr(),
+                    parameters.as_ptr(),
+                    std::ptr::null(),
+                    SW_SHOW,
+                )
+            };
+            if ret <= 32 {
+                return Err(Error::Io(std::io::Error::last_os_error()));
+            }
+            std::process::exit(0);
         }
 
         Ok(())
@@ -943,4 +870,15 @@ fn base64_to_string(base64_string: &str) -> Result<String> {
         .map_err(|_| Error::SignatureUtf8(base64_string.into()))?
         .to_string();
     Ok(result)
+}
+
+#[cfg(target_os = "windows")]
+fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
+    use std::os::windows::ffi::OsStrExt;
+
+    string
+        .as_ref()
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect()
 }
