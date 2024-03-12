@@ -514,8 +514,9 @@ impl Update {
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
         use std::fs;
 
-        use windows::{
-            core::{w, HSTRING},
+        use windows_sys::{
+            core::HSTRING,
+            w,
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
         };
 
@@ -575,12 +576,25 @@ impl Update {
             } else {
                 continue;
             }
-            let file = HSTRING::from(found_path.as_os_str());
-            let parameters = HSTRING::from(installer_args.join(OsStr::new(" ")));
-            let ret =
-                unsafe { ShellExecuteW(None, w!("runas"), &file, &parameters, None, SW_SHOW) };
-            if ret.0 <= 32 {
-                return Err(Error::Io(windows::core::Error::from_win32().into()));
+            let file = HSTRING::from(found_path.as_os_str().as_encoded_bytes().as_ptr() as _);
+            let parameters = HSTRING::from(
+                installer_args
+                    .join(OsStr::new(" "))
+                    .as_encoded_bytes()
+                    .as_ptr() as _,
+            );
+            let ret = unsafe {
+                ShellExecuteW(
+                    0,
+                    w!("runas"),
+                    file as _,
+                    parameters as _,
+                    std::ptr::null(),
+                    SW_SHOW,
+                )
+            };
+            if ret <= 32 {
+                return Err(Error::Io(std::io::Error::last_os_error()));
             }
             std::process::exit(0);
         }
