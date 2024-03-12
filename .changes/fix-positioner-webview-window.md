@@ -2,4 +2,4 @@
 "positioner": patch
 ---
 
-Migrate `Window` to `WebviewWindow` for Tarui 2.0.
+Migrate `Window` to `WebviewWindow` for Tauri 2.0.
