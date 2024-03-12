@@ -515,7 +515,6 @@ impl Update {
         use std::fs;
 
         use windows_sys::{
-            core::HSTRING,
             w,
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
         };
@@ -576,19 +575,14 @@ impl Update {
             } else {
                 continue;
             }
-            let file = HSTRING::from(found_path.as_os_str().as_encoded_bytes().as_ptr() as _);
-            let parameters = HSTRING::from(
-                installer_args
-                    .join(OsStr::new(" "))
-                    .as_encoded_bytes()
-                    .as_ptr() as _,
-            );
+            let file = encode_wide(found_path.as_os_str());
+            let parameters = encode_wide(installer_args.join(OsStr::new(" ")).as_os_str());
             let ret = unsafe {
                 ShellExecuteW(
                     0,
                     w!("open"),
-                    file as _,
-                    parameters as _,
+                    file.as_ptr(),
+                    parameters.as_ptr(),
                     std::ptr::null(),
                     SW_SHOW,
                 )
@@ -894,4 +888,15 @@ fn base64_to_string(base64_string: &str) -> Result<String> {
         .map_err(|_| Error::SignatureUtf8(base64_string.into()))?
         .to_string();
     Ok(result)
+}
+
+#[cfg(target_os = "windows")]
+fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
+    use std::os::windows::ffi::OsStrExt;
+
+    string
+        .as_ref()
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect()
 }
