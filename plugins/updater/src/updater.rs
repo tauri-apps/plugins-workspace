@@ -513,7 +513,6 @@ impl Update {
     #[cfg(windows)]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
         use std::fs;
-
         use windows_sys::{
             w,
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
@@ -526,15 +525,9 @@ impl Update {
         // shouldn't drop but we should be able to pass the reference so we can drop it once the installation
         // is done, otherwise we have a huge memory leak.
 
-        let archive = Cursor::new(bytes);
-
         let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
-
-        // extract the buffer to the tmp_dir
-        // we extract our signed archive into our final directory without any temp file
+        let archive = Cursor::new(bytes);
         let mut extractor = zip::ZipArchive::new(archive)?;
-
-        // extract the msi
         extractor.extract(&tmp_dir)?;
 
         let paths = fs::read_dir(&tmp_dir)?;
@@ -554,27 +547,16 @@ impl Update {
         for path in paths {
             let found_path = path?.path();
             // we support 2 type of files exe & msi for now
-            // If it's an `exe` we expect an installer not a runtime.
+            // If it's an `exe` we expect an NSIS installer.
             if found_path.extension() == Some(OsStr::new("exe")) {
-                installer_args.extend(
-                    install_mode
-                        .nsis_args()
-                        .iter()
-                        .map(OsStr::new)
-                        .collect::<Vec<_>>(),
-                );
+                installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
             } else if found_path.extension() == Some(OsStr::new("msi")) {
-                installer_args.extend(
-                    install_mode
-                        .msiexec_args()
-                        .iter()
-                        .map(OsStr::new)
-                        .collect::<Vec<_>>(),
-                );
+                installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
                 installer_args.push(OsStr::new("/promptrestart"));
             } else {
                 continue;
             }
+
             let file = encode_wide(found_path.as_os_str());
             let parameters = encode_wide(installer_args.join(OsStr::new(" ")).as_os_str());
             let ret = unsafe {
