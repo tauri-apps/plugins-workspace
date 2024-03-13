@@ -391,6 +391,7 @@ impl Updater {
 #[derive(Clone)]
 pub struct Update {
     config: Config,
+    #[allow(unused)]
     on_before_exit: Option<OnBeforeExit>,
     /// Update description
     pub body: Option<String>,
