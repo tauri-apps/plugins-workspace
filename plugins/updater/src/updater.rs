@@ -556,7 +556,7 @@ impl Update {
         let mut installer_args = self
             .installer_args
             .iter()
-            .map(|a| OsStr::new(a))
+            .map(OsStr::new)
             .collect::<Vec<_>>();
 
         for path in paths {
