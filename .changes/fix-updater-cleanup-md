@@ -1,0 +1,7 @@
+---
+"updater": patch
+---
+
+Fix updater doesn't shutdown the app gracefully on update
+
+**Breaking change** `Update::download_and_install` now takes `AppHandle` as its first parameter
