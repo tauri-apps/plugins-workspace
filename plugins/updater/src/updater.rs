@@ -89,7 +89,7 @@ impl RemoteRelease {
     }
 }
 
-pub type OnBeforeExit = Arc<dyn Fn() -> () + Send + Sync + 'static>;
+pub type OnBeforeExit = Arc<dyn Fn() + Send + Sync + 'static>;
 
 pub struct UpdaterBuilder {
     current_version: Version,
@@ -202,7 +202,7 @@ impl UpdaterBuilder {
         self
     }
 
-    pub fn on_before_exit<F: Fn() -> () + Send + Sync + 'static>(mut self, f: F) -> Self {
+    pub fn on_before_exit<F: Fn() + Send + Sync + 'static>(mut self, f: F) -> Self {
         self.on_before_exit.replace(Arc::new(f));
         self
     }
