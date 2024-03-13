@@ -42,18 +42,6 @@ impl<R: Runtime> Dialog<R> {
     }
 }
 
-macro_rules! run_dialog {
-    ($e:expr, $h: expr) => {{
-        std::thread::spawn(move || $h(tauri::async_runtime::block_on($e)));
-    }};
-}
-
-macro_rules! run_file_dialog {
-    ($e:expr, $h: ident) => {{
-        std::thread::spawn(move || $h(tauri::async_runtime::block_on($e)));
-    }};
-}
-
 impl From<MessageDialogKind> for rfd::MessageLevel {
     fn from(kind: MessageDialogKind) -> Self {
         match kind {
@@ -132,7 +120,11 @@ pub fn pick_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
     f: F,
 ) {
     let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf()));
-    run_file_dialog!(AsyncFileDialog::from(dialog).pick_file(), f)
+    let handle = dialog.dialog.app_handle().to_owned();
+    let _ = handle.run_on_main_thread(move || {
+        let dialog = AsyncFileDialog::from(dialog).pick_file();
+        std::thread::spawn(move || f(tauri::async_runtime::block_on(dialog)));
+    });
 }
 
 pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(
@@ -142,7 +134,11 @@ pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(
     let f = |paths: Option<Vec<rfd::FileHandle>>| {
         f(paths.map(|list| list.into_iter().map(|p| p.path().to_path_buf()).collect()))
     };
-    run_file_dialog!(AsyncFileDialog::from(dialog).pick_files(), f)
+    let handle = dialog.dialog.app_handle().to_owned();
+    let _ = handle.run_on_main_thread(move || {
+        let dialog = AsyncFileDialog::from(dialog).pick_files();
+        std::thread::spawn(move || f(tauri::async_runtime::block_on(dialog)));
+    });
 }
 
 pub fn pick_folder<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
@@ -150,7 +146,11 @@ pub fn pick_folder<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
     f: F,
 ) {
     let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf()));
-    run_file_dialog!(AsyncFileDialog::from(dialog).pick_folder(), f)
+    let handle = dialog.dialog.app_handle().to_owned();
+    let _ = handle.run_on_main_thread(move || {
+        let dialog = AsyncFileDialog::from(dialog).pick_folder();
+        std::thread::spawn(move || f(tauri::async_runtime::block_on(dialog)));
+    });
 }
 
 pub fn pick_folders<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(
@@ -160,7 +160,11 @@ pub fn pick_folders<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static
     let f = |paths: Option<Vec<rfd::FileHandle>>| {
         f(paths.map(|list| list.into_iter().map(|p| p.path().to_path_buf()).collect()))
     };
-    run_file_dialog!(AsyncFileDialog::from(dialog).pick_folders(), f)
+    let handle = dialog.dialog.app_handle().to_owned();
+    let _ = handle.run_on_main_thread(move || {
+        let dialog = AsyncFileDialog::from(dialog).pick_folders();
+        std::thread::spawn(move || f(tauri::async_runtime::block_on(dialog)));
+    });
 }
 
 pub fn save_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
@@ -168,7 +172,11 @@ pub fn save_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
     f: F,
 ) {
     let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf()));
-    run_file_dialog!(AsyncFileDialog::from(dialog).save_file(), f)
+    let handle = dialog.dialog.app_handle().to_owned();
+    let _ = handle.run_on_main_thread(move || {
+        let dialog = AsyncFileDialog::from(dialog).save_file();
+        std::thread::spawn(move || f(tauri::async_runtime::block_on(dialog)));
+    });
 }
 
 /// Shows a message dialog
@@ -187,5 +195,9 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
         });
     };
 
-    run_dialog!(AsyncMessageDialog::from(dialog).show(), f);
+    let handle = dialog.dialog.app_handle().to_owned();
+    let _ = handle.run_on_main_thread(move || {
+        let dialog = AsyncMessageDialog::from(dialog).show();
+        std::thread::spawn(move || f(tauri::async_runtime::block_on(dialog)));
+    });
 }
