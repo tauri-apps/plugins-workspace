@@ -8,6 +8,7 @@ use std::{
     io::{Cursor, Read},
     path::{Path, PathBuf},
     str::FromStr,
+    sync::Arc,
     time::Duration,
 };
 
@@ -88,6 +89,8 @@ impl RemoteRelease {
     }
 }
 
+pub type OnBeforeExit = Arc<dyn Fn() + Send + Sync + 'static>;
+
 pub struct UpdaterBuilder {
     current_version: Version,
     config: Config,
@@ -99,6 +102,7 @@ pub struct UpdaterBuilder {
     timeout: Option<Duration>,
     proxy: Option<Url>,
     installer_args: Vec<OsString>,
+    on_before_exit: Option<OnBeforeExit>,
 }
 
 impl UpdaterBuilder {
@@ -118,6 +122,7 @@ impl UpdaterBuilder {
             headers: Default::default(),
             timeout: None,
             proxy: None,
+            on_before_exit: None,
         }
     }
 
@@ -197,6 +202,11 @@ impl UpdaterBuilder {
         self
     }
 
+    pub fn on_before_exit<F: Fn() + Send + Sync + 'static>(mut self, f: F) -> Self {
+        self.on_before_exit.replace(Arc::new(f));
+        self
+    }
+
     pub fn build(self) -> Result<Updater> {
         let endpoints = self
             .endpoints
@@ -236,6 +246,7 @@ impl UpdaterBuilder {
             json_target,
             headers: self.headers,
             extract_path,
+            on_before_exit: self.on_before_exit,
         })
     }
 }
@@ -256,6 +267,7 @@ pub struct Updater {
     json_target: String,
     headers: HeaderMap,
     extract_path: PathBuf,
+    on_before_exit: Option<OnBeforeExit>,
 }
 
 impl Updater {
@@ -354,6 +366,7 @@ impl Updater {
         let update = if should_update {
             Some(Update {
                 config: self.config.clone(),
+                on_before_exit: self.on_before_exit.clone(),
                 current_version: self.current_version.to_string(),
                 target: self.target.clone(),
                 extract_path: self.extract_path.clone(),
@@ -375,9 +388,11 @@ impl Updater {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Update {
     config: Config,
+    #[allow(unused)]
+    on_before_exit: Option<OnBeforeExit>,
     /// Update description
     pub body: Option<String>,
     /// Version used to check for update
@@ -490,7 +505,7 @@ impl Update {
     }
 
     #[cfg(mobile)]
-    fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
+    fn install_inner(&self, _bytes: Vec<u8>) -> Result<()> {
         Ok(())
     }
 
@@ -541,7 +556,7 @@ impl Update {
         let mut installer_args = self
             .installer_args
             .iter()
-            .map(|a| OsStr::new(a))
+            .map(OsStr::new)
             .collect::<Vec<_>>();
 
         for path in paths {
@@ -557,9 +572,13 @@ impl Update {
                 continue;
             }
 
+            if let Some(on_before_exit) = self.on_before_exit.as_ref() {
+                on_before_exit();
+            }
+
             let file = encode_wide(found_path.as_os_str());
             let parameters = encode_wide(installer_args.join(OsStr::new(" ")).as_os_str());
-            let ret = unsafe {
+            unsafe {
                 ShellExecuteW(
                     0,
                     w!("open"),
@@ -569,9 +588,7 @@ impl Update {
                     SW_SHOW,
                 )
             };
-            if ret <= 32 {
-                return Err(Error::Io(std::io::Error::last_os_error()));
-            }
+
             std::process::exit(0);
         }
 
