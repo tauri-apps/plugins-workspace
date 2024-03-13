@@ -98,6 +98,11 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
             }
         }
 
+        let app_handle = app.app_handle().clone();
+        builder = builder.on_before_exit(move || {
+            app_handle.cleanup_before_exit();
+        });
+
         builder
     }
 

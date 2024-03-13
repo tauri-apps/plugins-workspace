@@ -2,6 +2,4 @@
 "updater": patch
 ---
 
-Fix updater doesn't shutdown the app gracefully on update
-
-**Breaking change** `Update::download_and_install` now takes `AppHandle` as its first parameter
+Add a `on_before_exit` hook for cleanup before spawning the updater on Windows, defaults to `app.cleanup_before_exit`

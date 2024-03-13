@@ -87,7 +87,6 @@ pub(crate) async fn download_and_install<R: Runtime>(
 
     update
         .download_and_install(
-            app.app_handle(),
             |chunk_length, content_length| {
                 if first_chunk {
                     first_chunk = !first_chunk;
