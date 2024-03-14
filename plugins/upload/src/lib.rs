@@ -115,9 +115,10 @@ async fn upload<R: Runtime>(
 
     let response = request.send().await?;
     if response.status().is_success() {
-        return response.text().await.map_err(Error::from);
+        response.text().await.map_err(Into::into)
+    } else {
+        Err(Error::HttpErrorCode(response.status().as_u16()))
     }
-    Err(Error::HttpErrorCode(response.status().as_u16()))
 }
 
 fn file_to_body<R: Runtime>(id: u32, window: Window<R>, file: File) -> reqwest::Body {
