@@ -29,7 +29,9 @@ use std::{
 
 mod cmd;
 
-pub const STATE_FILENAME: &str = ".window-state";
+pub const DEFAULT_STATE_FILENAME: &str = ".window-state";
+static STATE_FILENAME: OnceLock<String> = OnceLock::new();
+
 static USE_JSON: OnceLock<bool> = OnceLock::new();
 
 #[derive(Debug, thiserror::Error)]
@@ -106,7 +108,7 @@ pub trait AppHandleExt {
 impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
     fn save_window_state(&self, flags: StateFlags) -> Result<()> {
         if let Ok(app_dir) = self.path().app_config_dir() {
-            let state_path = app_dir.join(STATE_FILENAME);
+            let state_path = app_dir.join(STATE_FILENAME.get_or_init(|| DEFAULT_STATE_FILENAME.into()));
             let cache = self.state::<WindowStateCache>();
             let mut state = cache.0.lock().unwrap();
             for (label, s) in state.iter_mut() {
@@ -322,6 +324,11 @@ impl Builder {
         self
     }
 
+    pub fn with_filename(self, filename: String) -> Self {
+        STATE_FILENAME.set(filename).unwrap();
+        self
+    }
+
     /// Adds the given window label to a list of windows to skip initial state restore.
     pub fn skip_initial_state(mut self, label: &str) -> Self {
         self.skip_initial_state.insert(label.into());
@@ -340,7 +347,7 @@ impl Builder {
                 let cache: Arc<Mutex<HashMap<String, WindowState>>> = if let Ok(app_dir) =
                     app.path().app_config_dir()
                 {
-                    let state_path = app_dir.join(STATE_FILENAME);
+                    let state_path = app_dir.join(STATE_FILENAME.get_or_init(|| DEFAULT_STATE_FILENAME.into()));
                     if state_path.exists() {
                         Arc::new(Mutex::new(
                                 std::fs::read(state_path)
