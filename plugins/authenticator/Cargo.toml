@@ -2,19 +2,19 @@
 name = "tauri-plugin-authenticator"
 version = "0.0.0"
 description = "Use hardware security-keys in your Tauri App."
-authors.workspace = true
-license.workspace = true
-edition.workspace = true
-rust-version.workspace = true
+authors = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde.workspace = true
-serde_json.workspace = true
-tauri.workspace = true
-log.workspace = true
-thiserror.workspace = true
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
 authenticator = "0.3.1"
 once_cell = "1"
 sha2 = "0.10"

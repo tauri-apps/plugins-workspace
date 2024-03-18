@@ -8,13 +8,13 @@ edition = "2021"
 rust-version = "1.57"
 
 [dependencies]
-serde.workspace = true
-serde_json.workspace = true
-tauri.workspace = true
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
 tauri-plugin-single-instance = { path = "../../../" }
 
 [build-dependencies]
-tauri-build.workspace = true
+tauri-build = { workspace = true }
 
 [features]
 custom-protocol = [ "tauri/custom-protocol" ]

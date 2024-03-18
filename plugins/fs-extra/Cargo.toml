@@ -2,16 +2,16 @@
 name = "tauri-plugin-fs-extra"
 version = "0.0.0"
 description = "Additional file system methods not included in the core API."
-authors.workspace = true
-license.workspace = true
-edition.workspace = true
-rust-version.workspace = true
+authors = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde.workspace = true
-serde_json.workspace = true
-tauri.workspace = true
-log.workspace = true
-thiserror.workspace = true
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
