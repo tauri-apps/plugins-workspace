@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-beta.3]
+
+- [`62dafda`](https://github.com/tauri-apps/plugins-workspace/commit/62dafda6526899b407a7c5a1bb269c5c0dfb2630)([#969](https://github.com/tauri-apps/plugins-workspace/pull/969)) **Breaking change** Refactored the plugin Rust APIs for better DX and flexibility:
+
+  - Changed `Builder::with_handler` to be a method instead of a static method, it will also be triggered for any and all shortcuts even if the shortcut is registered through JS.
+  - Added `Builder::with_shortcut` and `Builder::with_shortcuts` to register shortcuts on the plugin builder.
+  - Added `on_shortcut` and `on_all_shortcuts` to register shortcuts with a handler.
+
 ## \[2.0.0-beta.2]
 
 - [`99bea25`](https://github.com/tauri-apps/plugins-workspace/commit/99bea2559c2c0648c2519c50a18cd124dacef57b)([#1005](https://github.com/tauri-apps/plugins-workspace/pull/1005)) Update to tauri beta.8.

@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.3]
+
+- [`040004a`](https://github.com/tauri-apps/plugins-workspace/commit/040004a6b9fbb89161d1b5764d79428dfe693776)([#1069](https://github.com/tauri-apps/plugins-workspace/pull/1069)) Change shell's schema property name `command` to `cmd`.
+
 ## \[2.0.0-beta.2]
 
 - [`9586eab`](https://github.com/tauri-apps/plugins-workspace/commit/9586eabd5a96673e4d976757777f470ae358d68a)([#1021](https://github.com/tauri-apps/plugins-workspace/pull/1021)) On Windows, fix `open` can't open file if the file is being used by a program.
@@ -55,5 +59,5 @@
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   .com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
