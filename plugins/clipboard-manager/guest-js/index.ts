@@ -13,10 +13,6 @@ import { Image, transformImage } from "@tauri-apps/api/image";
 
 type ClipResponse = Record<"plainText", { text: string }>;
 
-type ClipboardImage<B> = { bytes: B; width: number; height: number };
-
-type ClipImageResponse = Record<"image", ClipboardImage<number[]>>;
-
 /**
  * Writes plain text to the clipboard.
  * @example
@@ -70,15 +66,10 @@ async function readText(): Promise<string> {
  * ```
  * @since 2.0.0
  */
-async function readImage(): Promise<ClipboardImage<Uint8Array>> {
-  const kind: ClipImageResponse = await invoke(
-    "plugin:clipboard-manager|read_image",
+async function readImage(): Promise<Image> {
+  return await invoke<number>("plugin:clipboard-manager|read_image").then(
+    (rid) => new Image(rid),
   );
-  return {
-    bytes: Uint8Array.from(kind.image.bytes),
-    width: kind.image.width,
-    height: kind.image.height,
-  };
 }
 
 /**

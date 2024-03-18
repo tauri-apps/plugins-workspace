@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use tauri::{command, AppHandle, Runtime, State};
+use tauri::{command, AppHandle, Manager, ResourceId, Runtime, State};
 
 use crate::{ClipKind, Clipboard, ClipboardContents, Result};
 
@@ -34,10 +34,13 @@ pub(crate) async fn read_text<R: Runtime>(
 
 #[command]
 pub(crate) async fn read_image<R: Runtime>(
-    _app: AppHandle<R>,
+    app: AppHandle<R>,
     clipboard: State<'_, Clipboard<R>>,
-) -> Result<ClipboardContents> {
-    clipboard.read_image()
+) -> Result<ResourceId> {
+    let image = clipboard.read_image()?.to_owned();
+    let mut resources_table = app.resources_table();
+    let rid = resources_table.add(image);
+    Ok(rid)
 }
 
 #[command]

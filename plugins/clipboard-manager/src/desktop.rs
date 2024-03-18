@@ -5,7 +5,7 @@
 use arboard::ImageData;
 use image::ImageEncoder;
 use serde::de::DeserializeOwned;
-use tauri::{plugin::PluginApi, AppHandle, Runtime};
+use tauri::{image::Image, plugin::PluginApi, AppHandle, Runtime};
 
 use crate::models::*;
 
@@ -91,7 +91,7 @@ impl<R: Runtime> Clipboard<R> {
         }
     }
 
-    pub fn read_image(&self) -> crate::Result<ClipboardContents> {
+    pub fn read_image(&self) -> crate::Result<Image<'_>> {
         match &self.clipboard {
             Ok(clipboard) => {
                 let image = clipboard.lock().unwrap().get_image()?;
@@ -104,11 +104,8 @@ impl<R: Runtime> Clipboard<R> {
                     image::ColorType::Rgba8,
                 )?;
 
-                Ok(ClipboardContents::Image {
-                    bytes: buffer,
-                    width: image.width,
-                    height: image.height,
-                })
+                let image = Image::new_owned(buffer, image.width as u32, image.height as u32);
+                Ok(image)
             }
             Err(e) => Err(crate::Error::Clipboard(e.to_string())),
         }
