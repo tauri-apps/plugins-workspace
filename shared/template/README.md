@@ -1,4 +1,4 @@
-![{{plugin name}}](https://github.com/tauri-apps/plugins-workspace/raw/v1/plugins/{{plugin name}}/banner.png)
+![PLUGIN_NAME](https://github.com/tauri-apps/plugins-workspace/raw/v1/plugins/PLUGIN_NAME/banner.png)
 
 <!-- description -->
 
