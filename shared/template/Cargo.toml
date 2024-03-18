@@ -1,15 +1,15 @@
 [package]
 name = "tauri-plugin-PLUGIN_NAME"
 version = "0.0.0"
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde.workspace = true
-serde_json.workspace = true
-tauri.workspace = true
-log.workspace = true
-thiserror.workspace = true
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
