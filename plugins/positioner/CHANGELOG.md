@@ -1,5 +1,10 @@
 # Changelog
 
+## \[1.0.5]
+
+- `TrayLeft`, `TrayRight` and `TrayCenter` will now position the window according to the tray position relative to the monitor dimensions to prevent windows being displayed partially off-screen.
+  - [3d27909](https://github.com/tauri-apps/plugins-workspace/commit/3d279094d44be78cdc5d1de3938f1414e13db6b0) fix(positioner): Prevent tray relative windows from being moved off-screen ([#291](https://github.com/tauri-apps/plugins-workspace/pull/291)) on 2023-09-27
+
 ## \[0.2.7]
 
 - Update Tauri to v1.0.0
