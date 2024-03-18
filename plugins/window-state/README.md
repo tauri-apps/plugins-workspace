@@ -22,6 +22,14 @@ tauri-plugin-window-state = "2.0.0-beta"
 # alternatively with Git:
 tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
+Enable unstable features in tauri to ensure this plugin works appropriately in tauri v2 beta in macOS
+
+`src-tauri/Cargo.toml`
+
+```toml
+# features = ["unstable"] is required
+tauri = { version = "2.0.0-beta", features = ["unstable"] }
+```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
