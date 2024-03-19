@@ -69,7 +69,6 @@ impl ScopeObject for scope::Entry {
 
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
     PluginBuilder::<R, Option<config::Config>>::new("fs")
-        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
             commands::create,
             commands::open,

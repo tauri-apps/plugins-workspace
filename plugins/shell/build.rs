@@ -9,6 +9,7 @@ const COMMANDS: &[&str] = &["execute", "stdin_write", "kill", "open"];
 
 fn main() {
     tauri_plugin::Builder::new(COMMANDS)
+        .global_api_script_path("./api-iife.js")
         .global_scope_schema(schemars::schema_for!(scope_entry::Entry))
         .build();
 }

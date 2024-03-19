@@ -353,7 +353,6 @@ impl<R: Runtime> Builder<R> {
         let handler = self.handler;
         let shortcuts = self.shortcuts;
         PluginBuilder::new("global-shortcut")
-            .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![
                 register,
                 register_all,
