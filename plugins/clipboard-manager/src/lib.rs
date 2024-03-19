@@ -49,11 +49,11 @@ impl<R: Runtime, T: Manager<R>> crate::ClipboardExt<R> for T {
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("clipboard-manager")
         .invoke_handler(tauri::generate_handler![
-            commands::write,
-            commands::read,
-            #[cfg(desktop)]
+            commands::write_text,
+            commands::read_text,
+            commands::read_image,
+            commands::write_image,
             commands::write_html,
-            #[cfg(desktop)]
             commands::clear
         ])
         .setup(|app, api| {

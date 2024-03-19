@@ -1,5 +1,5 @@
 {
-  "name": "@tauri-apps/plugin-{{name}}",
+  "name": "@tauri-apps/plugin-PLUGIN_NAME",
   "version": "1.0.0",
   "license": "MIT or APACHE-2.0",
   "authors": [
@@ -23,6 +23,6 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-beta.4"
+    "@tauri-apps/api": "2.0.0-beta.6"
   }
 }
