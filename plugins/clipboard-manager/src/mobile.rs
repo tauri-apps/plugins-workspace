@@ -4,6 +4,7 @@
 
 use serde::de::DeserializeOwned;
 use tauri::{
+    image::Image,
     plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
 };
@@ -46,7 +47,7 @@ impl<R: Runtime> Clipboard<R> {
         self.0.run_mobile_plugin("read", ()).map_err(Into::into)
     }
 
-    pub fn read_image(&self) -> crate::Result<ClipboardContents> {
+    pub fn read_image(&self) -> crate::Result<Image<'_>> {
         Err(crate::Error::Clipboard(
             "Unsupported on this platform".to_string(),
         ))

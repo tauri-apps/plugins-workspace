@@ -39,7 +39,7 @@
   async function read() {
     try {
       const image = await clipboard.readImage();
-      arrayBufferToBase64(image.bytes, function (base64) {
+      arrayBufferToBase64(await image.rgba(), function (base64) {
         const src = "data:image/png;base64," + base64;
         insecureRenderHtml('<img src="' + src + '"></img>');
       });
