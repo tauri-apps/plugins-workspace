@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.4]
+
+- [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.
+
 ## \[2.0.0-beta.3]
 
 - [`79691e9`](https://github.com/tauri-apps/plugins-workspace/commit/79691e93e04b820e44dce1c7d91b8865fa6ccb14)([#1040](https://github.com/tauri-apps/plugins-workspace/pull/1040)) Fix `with_store` and `StoreCollection` changed to private in #1011

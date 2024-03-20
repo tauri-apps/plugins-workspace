@@ -1,5 +1,14 @@
 # Changelog
 
+## \[2.0.0-beta.3]
+
+- [`35ea595`](https://github.com/tauri-apps/plugins-workspace/commit/35ea5956d060f0bdafd140f2541c607bb811805b)([#1073](https://github.com/tauri-apps/plugins-workspace/pull/1073)) Fixed an issue where the dialog apis panicked when they were called with no application windows open.
+- [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.3`
+
 ## \[2.0.0-beta.2]
 
 - [`aa25c91`](https://github.com/tauri-apps/plugins-workspace/commit/aa25c91bb01e957872fb2b606a3acaf2f2c4ef3a)([#978](https://github.com/tauri-apps/plugins-workspace/pull/978)) Allow configuring `canCreateDirectories` for open and save dialogs on macOS, if not configured, it will be set to `true` by default.
@@ -94,7 +103,7 @@
   pull/371)) First v2 alpha release!
   kspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   pull/371)) First v2 alpha release!
-71](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  71]\(https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   pull/371)) First v2 alpha release!
   kspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   pull/371)) First v2 alpha release!
