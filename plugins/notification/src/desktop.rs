@@ -186,10 +186,10 @@ mod imp {
             }
             #[cfg(target_os = "macos")]
             {
-                let _ = crate::notify_rust::set_application(if cfg!(feature = "custom-protocol") {
-                    &self.identifier
-                } else {
+                let _ = crate::notify_rust::set_application(if tauri::dev() {
                     "com.apple.Terminal"
+                } else {
+                    &self.identifier
                 });
             }
 
