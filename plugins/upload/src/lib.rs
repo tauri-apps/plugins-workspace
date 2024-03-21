@@ -29,8 +29,8 @@ pub enum Error {
     Request(#[from] reqwest::Error),
     #[error("{0}")]
     ContentLength(String),
-    #[error("{0}")]
-    HttpErrorCode(u16),
+    #[error("request failed with status code {0}: {1}")]
+    HttpErrorCode(u16, String),
 }
 
 impl Serialize for Error {
