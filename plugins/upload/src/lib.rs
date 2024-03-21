@@ -117,7 +117,10 @@ async fn upload<R: Runtime>(
     if response.status().is_success() {
         response.text().await.map_err(Into::into)
     } else {
-        Err(Error::HttpErrorCode(response.status().as_u16()))
+        Err(Error::HttpErrorCode(
+            response.status().as_u16(),
+            response.text().await.unwrap_or_default(),
+        ))
     }
 }
 
