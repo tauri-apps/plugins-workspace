@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.4]
+
+- [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.
+
 ## \[2.0.0-beta.3]
 
 - [`2397ec5`](https://github.com/tauri-apps/plugins-workspace/commit/2397ec5937e594397e533925ccd257cae30b4cd1)([#1019](https://github.com/tauri-apps/plugins-workspace/pull/1019)) Fix doesn't shutdown immediately.
