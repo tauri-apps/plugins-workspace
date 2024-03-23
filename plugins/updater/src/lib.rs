@@ -166,7 +166,6 @@ impl Builder {
         let target = self.target;
         let installer_args = self.installer_args;
         PluginBuilder::<R, Config>::new("updater")
-            .js_init_script(include_str!("api-iife.js").to_string())
             .setup(move |app, api| {
                 let mut config = api.config().clone();
                 if let Some(pubkey) = pubkey {

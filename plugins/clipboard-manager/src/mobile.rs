@@ -4,6 +4,7 @@
 
 use serde::de::DeserializeOwned;
 use tauri::{
+    image::Image,
     plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
 };
@@ -32,12 +33,24 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Clipboard<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Clipboard<R> {
-    pub fn write(&self, kind: ClipKind) -> crate::Result<()> {
+    pub fn write_text(&self, kind: ClipKind) -> crate::Result<()> {
         self.0.run_mobile_plugin("write", kind).map_err(Into::into)
     }
 
-    pub fn read(&self) -> crate::Result<ClipboardContents> {
+    pub fn write_image(&self, kind: ClipKind) -> crate::Result<()> {
+        Err(crate::Error::Clipboard(
+            "Unsupported on this platform".to_string(),
+        ))
+    }
+
+    pub fn read_text(&self) -> crate::Result<ClipboardContents> {
         self.0.run_mobile_plugin("read", ()).map_err(Into::into)
+    }
+
+    pub fn read_image(&self) -> crate::Result<Image<'_>> {
+        Err(crate::Error::Clipboard(
+            "Unsupported on this platform".to_string(),
+        ))
     }
 
     // Treat HTML as unsupported on mobile until tested

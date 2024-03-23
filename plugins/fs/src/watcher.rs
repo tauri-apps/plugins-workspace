@@ -75,7 +75,7 @@ fn watch_debounced(on_event: Channel, rx: Receiver<DebounceEventResult>) {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WatchOptions {
-    dir: Option<BaseDirectory>,
+    base_dir: Option<BaseDirectory>,
     recursive: bool,
     delay_ms: Option<u64>,
 }
@@ -96,7 +96,7 @@ pub async fn watch<R: Runtime>(
             &global_scope,
             &command_scope,
             path,
-            options.dir,
+            options.base_dir,
         )?);
     }
 

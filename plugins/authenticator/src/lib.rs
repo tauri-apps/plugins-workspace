@@ -78,7 +78,6 @@ fn verify_signature(
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     PluginBuilder::new("authenticator")
-        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
             init_auth,
             register,

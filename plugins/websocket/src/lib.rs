@@ -200,7 +200,6 @@ async fn send(
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     PluginBuilder::new("websocket")
-        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![connect, send])
         .setup(|app, _api| {
             app.manage(ConnectionManager::default());

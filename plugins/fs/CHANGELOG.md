@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.0.0-beta.3]
+
+- [`cb96aa0`](https://github.com/tauri-apps/plugins-workspace/commit/cb96aa06277f7b864952827ec9fb1e74c8a1f761)([#1082](https://github.com/tauri-apps/plugins-workspace/pull/1082)) Fixes `watch` and `watchImmediate` which previously ignored the `baseDir` parameter.
+- [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.
+
 ## \[2.0.0-beta.2]
 
 - [`7358102`](https://github.com/tauri-apps/plugins-workspace/commit/735810237e21504a027a65a7b3c25fd7e594288a)([#1029](https://github.com/tauri-apps/plugins-workspace/pull/1029)) Fix infinite loop on cargo build operations
@@ -61,5 +66,5 @@
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   ae67\`]\(https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!

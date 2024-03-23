@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.0.0-beta.3]
+
+- [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.
+- [`62ce5df`](https://github.com/tauri-apps/plugins-workspace/commit/62ce5df52ca3c86786e711ef193a206e7b0dc0cf)([#1096](https://github.com/tauri-apps/plugins-workspace/pull/1096)) Fix development mode check to set the app ID on macOS.
+
 ## \[2.0.0-beta.2]
 
 - [`99bea25`](https://github.com/tauri-apps/plugins-workspace/commit/99bea2559c2c0648c2519c50a18cd124dacef57b)([#1005](https://github.com/tauri-apps/plugins-workspace/pull/1005)) Update to tauri beta.8.

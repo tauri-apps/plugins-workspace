@@ -1,6 +1,7 @@
 <script>
   import * as fs from "@tauri-apps/plugin-fs";
   import { convertFileSrc } from "@tauri-apps/api/core";
+  import { arrayBufferToBase64 } from "../lib/utils";
 
   export let onMessage;
   export let insecureRenderHtml;
@@ -18,18 +19,6 @@
   function getDir() {
     const dirSelect = document.getElementById("dir");
     return dirSelect.value ? parseInt(dir.value) : null;
-  }
-
-  function arrayBufferToBase64(buffer, callback) {
-    const blob = new Blob([buffer], {
-      type: "application/octet-binary",
-    });
-    const reader = new FileReader();
-    reader.onload = function (evt) {
-      const dataurl = evt.target.result;
-      callback(dataurl.substr(dataurl.indexOf(",") + 1));
-    };
-    reader.readAsDataURL(blob);
   }
 
   const DirOptions = Object.keys(fs.BaseDirectory)
@@ -215,7 +204,7 @@
       <button class="btn" on:click={stat}>Stat</button>
     </div>
   {/if}
-  
+
   <h3>Watch</h3>
 
   <input
@@ -225,7 +214,9 @@
   />
   <br />
   <div>
-    <label for="watch-debounce-delay">Debounce delay in milliseconds (`0` disables the debouncer)</label>
+    <label for="watch-debounce-delay"
+      >Debounce delay in milliseconds (`0` disables the debouncer)</label
+    >
     <input
       class="input"
       id="watch-debounce-delay"
