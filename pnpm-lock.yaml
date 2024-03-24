@@ -154,7 +154,7 @@ importers:
         version: 5.4.3
       vite:
         specifier: ^5.0.12
-        version: 5.2.4
+        version: 5.2.5
 
   plugins/stronghold:
     dependencies:
@@ -200,7 +200,7 @@ importers:
         version: 5.4.3
       vite:
         specifier: ^5.0.12
-        version: 5.2.4
+        version: 5.2.5
 
   plugins/window-state:
     dependencies:
@@ -2740,8 +2740,8 @@ packages:
       punycode: 2.3.0
     dev: true
 
-  /vite@5.2.4:
-    resolution: {integrity: sha512-vjFghvHWidBTinu5TCymJk/lRHlR5ljqB83yugr0HA1xspUPdOZHqbqDLnZ8f9/jINrtFHTCYYyIUi+o+Q5iyg==}
+  /vite@5.2.5:
+    resolution: {integrity: sha512-a+rTAqkMmJ2hQpC6dfAyyc5M0YLH3BGZKLpA6pU9AhzlcK1YZS8P/ov9OcdHxaf+j0sM0DIh/txH7ydTHUpISg==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
