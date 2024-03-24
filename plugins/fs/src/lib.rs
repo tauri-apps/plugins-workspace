@@ -18,7 +18,7 @@ use tauri::{
     ipc::ScopeObject,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     utils::acl::Value,
-    AppHandle, FileDropEvent, Manager, RunEvent, Runtime, WindowEvent,
+    AppHandle, DragDropEvent, Manager, RunEvent, Runtime, WindowEvent,
 };
 
 mod commands;
@@ -110,7 +110,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
         .on_event(|app, event| {
             if let RunEvent::WindowEvent {
                 label: _,
-                event: WindowEvent::FileDrop(FileDropEvent::Dropped { paths, position: _ }),
+                event: WindowEvent::DragDrop(DragDropEvent::Dropped { paths, position: _ }),
                 ..
             } = event
             {
