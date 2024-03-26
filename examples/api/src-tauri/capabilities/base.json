@@ -8,6 +8,7 @@
     {
       "identifier": "http:default",
       "allow": [
+        "https://tauri.app",
         {
           "url": "http://localhost:3003"
         }
@@ -72,11 +73,7 @@
           "path": "$APPDATA/db/**"
         }
       ],
-      "deny": [
-        {
-          "path": "$APPDATA/db/*.stronghold"
-        }
-      ]
+      "deny": ["$APPDATA/db/*.stronghold"]
     }
   ]
 }
