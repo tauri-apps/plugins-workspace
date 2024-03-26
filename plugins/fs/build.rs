@@ -115,7 +115,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-{lower}-write-recursive"
-description = "This allows full recusrive write access to the complete `${upper}` folder, files and subdirectories."
+description = "This allows full recursive write access to the complete `${upper}` folder, files and subdirectories."
 permissions = [
     "write-all",
     "scope-{lower}-recursive"
