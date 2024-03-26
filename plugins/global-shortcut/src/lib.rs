@@ -227,22 +227,7 @@ where
 
 #[tauri::command]
 fn register<R: Runtime>(
-    _window: Window<R>,
-    global_shortcut: State<'_, GlobalShortcut<R>>,
-    shortcut: String,
-    handler: Channel,
-) -> Result<()> {
-    global_shortcut.register_internal(
-        parse_shortcut(&shortcut)?,
-        Some(move |_app: &AppHandle<R>, _shortcut: &Shortcut| {
-            let _ = handler.send(&shortcut);
-        }),
-    )
-}
-
-#[tauri::command]
-fn register_all<R: Runtime>(
-    _window: Window<R>,
+    _app: AppHandle<R>,
     global_shortcut: State<'_, GlobalShortcut<R>>,
     shortcuts: Vec<String>,
     handler: Channel,
@@ -268,15 +253,6 @@ fn register_all<R: Runtime>(
 
 #[tauri::command]
 fn unregister<R: Runtime>(
-    _app: AppHandle<R>,
-    global_shortcut: State<'_, GlobalShortcut<R>>,
-    shortcut: String,
-) -> Result<()> {
-    global_shortcut.unregister(parse_shortcut(shortcut)?)
-}
-
-#[tauri::command]
-fn unregister_all<R: Runtime>(
     _app: AppHandle<R>,
     global_shortcut: State<'_, GlobalShortcut<R>>,
     shortcuts: Vec<String>,
@@ -355,9 +331,7 @@ impl<R: Runtime> Builder<R> {
         PluginBuilder::new("global-shortcut")
             .invoke_handler(tauri::generate_handler![
                 register,
-                register_all,
                 unregister,
-                unregister_all,
                 is_registered
             ])
             .setup(move |app, _api| {

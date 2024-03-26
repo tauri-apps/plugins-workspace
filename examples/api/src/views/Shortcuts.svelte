@@ -1,9 +1,8 @@
 <script>
-  import { writable } from "svelte/store";
+  import { writable, get } from "svelte/store";
   import {
     register as registerShortcut,
     unregister as unregisterShortcut,
-    unregisterAll as unregisterAllShortcuts,
   } from "@tauri-apps/plugin-global-shortcut";
 
   export let onMessage;
@@ -35,7 +34,7 @@
   }
 
   function unregisterAll() {
-    unregisterAllShortcuts()
+    unregisterShortcut(get(shortcuts))
       .then(() => {
         shortcuts.update(() => []);
         onMessage(`Unregistered all shortcuts`);
