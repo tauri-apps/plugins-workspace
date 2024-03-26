@@ -12,8 +12,10 @@
 )]
 
 use tauri::{
+    ipc::ScopeObject,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    FileDropEvent, Manager, RunEvent, Runtime, WindowEvent,
+    utils::acl::Value,
+    AppHandle, FileDropEvent, Manager, RunEvent, Runtime, WindowEvent,
 };
 
 mod commands;
@@ -27,6 +29,28 @@ pub use error::Error;
 pub use scope::{Event as ScopeEvent, Scope};
 
 type Result<T> = std::result::Result<T, Error>;
+
+// implement ScopeObject here instead of in the scope module because it is also used on the build script
+// and we don't want to add tauri as a build dependency
+impl ScopeObject for scope::Entry {
+    type Error = Error;
+    fn deserialize<R: Runtime>(
+        app: &AppHandle<R>,
+        raw: Value,
+    ) -> std::result::Result<Self, Self::Error> {
+        let entry = serde_json::from_value(raw.into()).map(|raw| {
+            let path = match raw {
+                scope::EntryRaw::Value(path) => path,
+                scope::EntryRaw::Object { path } => path,
+            };
+            Self { path }
+        })?;
+
+        Ok(Self {
+            path: app.path().parse(entry.path)?,
+        })
+    }
+}
 
 pub trait FsExt<R: Runtime> {
     fn fs_scope(&self) -> &Scope;

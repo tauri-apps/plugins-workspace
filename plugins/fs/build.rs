@@ -25,14 +25,12 @@ enum FsScopeEntry {
 }
 
 // Ensure scope entry is kept up to date
-impl From<FsScopeEntry> for scope::Entry {
+impl From<FsScopeEntry> for scope::EntryRaw {
     fn from(value: FsScopeEntry) -> Self {
-        let path = match value {
-            FsScopeEntry::Value(path) => path,
-            FsScopeEntry::Object { path } => path,
-        };
-
-        scope::Entry { path }
+        match value {
+            FsScopeEntry::Value(path) => scope::EntryRaw::Value(path),
+            FsScopeEntry::Object { path } => scope::EntryRaw::Object { path },
+        }
     }
 }
 

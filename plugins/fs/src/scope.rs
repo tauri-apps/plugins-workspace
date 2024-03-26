@@ -11,33 +11,19 @@ use std::{
     },
 };
 
-use serde::{Deserialize, Deserializer};
+use serde::Deserialize;
+
+#[doc(hidden)]
+#[derive(Deserialize)]
+#[serde(untagged)]
+pub enum EntryRaw {
+    Value(PathBuf),
+    Object { path: PathBuf },
+}
 
 #[derive(Debug)]
 pub struct Entry {
     pub path: PathBuf,
-}
-
-impl<'de> Deserialize<'de> for Entry {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        #[serde(untagged)]
-        enum EntryRaw {
-            Value(PathBuf),
-            Object { path: PathBuf },
-        }
-
-        EntryRaw::deserialize(deserializer).map(|raw| {
-            let path = match raw {
-                EntryRaw::Value(path) => path,
-                EntryRaw::Object { path } => path,
-            };
-            Entry { path }
-        })
-    }
 }
 
 pub type EventId = u32;
