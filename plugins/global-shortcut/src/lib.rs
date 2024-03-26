@@ -25,7 +25,7 @@ use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager};
 use tauri::{
     ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    AppHandle, Manager, Runtime, State, Window,
+    AppHandle, Manager, Runtime, State,
 };
 
 mod error;
