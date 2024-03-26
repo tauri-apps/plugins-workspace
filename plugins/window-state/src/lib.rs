@@ -319,7 +319,6 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let flags = self.state_flags;
         PluginBuilder::new("window-state")
-            .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![
                 cmd::save_window_state,
                 cmd::restore_state

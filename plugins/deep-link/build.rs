@@ -33,6 +33,7 @@ fn intent_filter(domain: &AssociatedDomain) -> String {
 
 fn main() {
     if let Err(error) = tauri_plugin::Builder::new(COMMANDS)
+        .global_api_script_path("./api-iife.js")
         .android_path("android")
         .try_build()
     {

@@ -1,5 +1,15 @@
 # Changelog
 
+## \[2.0.0-beta.3]
+
+- [`c873e4d`](https://github.com/tauri-apps/plugins-workspace/commit/c873e4d6c74e759742f7c9a88e35cff10a75122a)([#1059](https://github.com/tauri-apps/plugins-workspace/pull/1059)) Fixes scope not allowing subpaths, query parameters and hash when those values are empty.
+- [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.
+- [`753c7be`](https://github.com/tauri-apps/plugins-workspace/commit/753c7be0a6a78121d2e88ea0efc3040580c885b4)([#1050](https://github.com/tauri-apps/plugins-workspace/pull/1050)) Add `unsafe-headers` cargo feature flag to allow using [forbidden headers](https://fetch.spec.whatwg.org/#terminology-headers).
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.3`
+
 ## \[2.0.0-beta.2]
 
 - [`ae56b13`](https://github.com/tauri-apps/plugins-workspace/commit/ae56b13a4d49dbf922b8a0fbb0d557bb63c1d72b)([#983](https://github.com/tauri-apps/plugins-workspace/pull/983)) Allow `User-Agent` header to be set.
@@ -85,7 +95,7 @@
   371\)) First v2 alpha release!
   !
   371\)) First v2 alpha release!
-2 alpha release!
+  2 alpha release!
   !
   371\)) First v2 alpha release!
   /717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!

@@ -71,5 +71,5 @@ jobs:
           title: "Publish New Versions (v2)"
           commit-message: "publish new versions"
           labels: "version updates"
-          branch: "release-v2"
+          branch: "ci/release-v2"
           body: ${{ steps.covector.outputs.change }}

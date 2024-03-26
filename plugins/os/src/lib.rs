@@ -103,14 +103,11 @@ pub fn hostname() -> String {
 #[derive(Template)]
 #[default_template("./init.js")]
 struct InitJavascript {
-    #[raw]
-    global_os_api: &'static str,
     eol: &'static str,
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     let init_js = InitJavascript {
-        global_os_api: include_str!("api-iife.js"),
         #[cfg(windows)]
         eol: "\r\n",
         #[cfg(not(windows))]

@@ -22,6 +22,7 @@ pub struct Entry {
     /// `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$APP`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`,
     /// `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.
     // use default just so the schema doesn't flag it as required
+    #[serde(rename = "cmd")]
     pub command: PathBuf,
 
     /// The allowed arguments for the command execution.
