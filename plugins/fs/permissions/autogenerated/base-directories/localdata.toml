@@ -39,7 +39,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-localdata-write-recursive"
-description = "This allows full recusrive write access to the complete `$LOCALDATA` folder, files and subdirectories."
+description = "This allows full recursive write access to the complete `$LOCALDATA` folder, files and subdirectories."
 permissions = [
     "write-all",
     "scope-localdata-recursive"
