@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.1.0-beta.0]
+
+- [`9dec960`](https://github.com/tauri-apps/plugins-workspace/commit/9dec9605ed1ce19dbef697e55debddf9008ecba1)([#845](https://github.com/tauri-apps/plugins-workspace/pull/845)) Add support for `read_image` and `write_image` to the clipboard plugin (desktop).
+
 ## \[2.0.0-beta.2]
 
 - [`dc6d332`](https://github.com/tauri-apps/plugins-workspace/commit/dc6d3321e5305fa8b7250553bd179cbee995998a)([#977](https://github.com/tauri-apps/plugins-workspace/pull/977)) Add support for writing HTML content to the clipboard.
@@ -41,6 +45,13 @@
 ## \[2.0.0-alpha.0]
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  te to alpha.11.
+
+## \[2.0.0-alpha.0]
+
+- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   te to alpha.11.
 
 ## \[2.0.0-alpha.0]

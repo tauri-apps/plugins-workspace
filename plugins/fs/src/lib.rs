@@ -11,9 +11,6 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use std::path::PathBuf;
-
-use serde::Deserialize;
 use tauri::{
     ipc::ScopeObject,
     plugin::{Builder as PluginBuilder, TauriPlugin},
@@ -33,6 +30,28 @@ pub use scope::{Event as ScopeEvent, Scope};
 
 type Result<T> = std::result::Result<T, Error>;
 
+// implement ScopeObject here instead of in the scope module because it is also used on the build script
+// and we don't want to add tauri as a build dependency
+impl ScopeObject for scope::Entry {
+    type Error = Error;
+    fn deserialize<R: Runtime>(
+        app: &AppHandle<R>,
+        raw: Value,
+    ) -> std::result::Result<Self, Self::Error> {
+        let entry = serde_json::from_value(raw.into()).map(|raw| {
+            let path = match raw {
+                scope::EntryRaw::Value(path) => path,
+                scope::EntryRaw::Object { path } => path,
+            };
+            Self { path }
+        })?;
+
+        Ok(Self {
+            path: app.path().parse(entry.path)?,
+        })
+    }
+}
+
 pub trait FsExt<R: Runtime> {
     fn fs_scope(&self) -> &Scope;
     fn try_fs_scope(&self) -> Option<&Scope>;
@@ -48,28 +67,8 @@ impl<R: Runtime, T: Manager<R>> FsExt<R> for T {
     }
 }
 
-impl ScopeObject for scope::Entry {
-    type Error = Error;
-    fn deserialize<R: Runtime>(
-        app: &AppHandle<R>,
-        raw: Value,
-    ) -> std::result::Result<Self, Self::Error> {
-        #[derive(Deserialize)]
-        struct EntryRaw {
-            path: PathBuf,
-        }
-
-        let entry = serde_json::from_value::<EntryRaw>(raw.into())?;
-
-        Ok(Self {
-            path: app.path().parse(entry.path)?,
-        })
-    }
-}
-
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
     PluginBuilder::<R, Option<config::Config>>::new("fs")
-        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
             commands::create,
             commands::open,

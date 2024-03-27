@@ -48,7 +48,7 @@ struct ChangePayload<'a> {
     value: &'a JsonValue,
 }
 
-struct StoreCollection<R: Runtime> {
+pub struct StoreCollection<R: Runtime> {
     stores: Mutex<HashMap<PathBuf, Store<R>>>,
     frozen: bool,
 
@@ -56,7 +56,7 @@ struct StoreCollection<R: Runtime> {
     mobile_plugin_handle: PluginHandle<R>,
 }
 
-fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T>>(
+pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T>>(
     app: AppHandle<R>,
     collection: State<'_, StoreCollection<R>>,
     path: impl AsRef<Path>,
@@ -315,7 +315,6 @@ impl<R: Runtime> Builder<R> {
     /// ```
     pub fn build(mut self) -> TauriPlugin<R> {
         plugin::Builder::new("store")
-            .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![
                 set, get, has, delete, clear, reset, keys, values, length, entries, load, save
             ])

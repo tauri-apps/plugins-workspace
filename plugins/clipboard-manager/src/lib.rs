@@ -48,13 +48,12 @@ impl<R: Runtime, T: Manager<R>> crate::ClipboardExt<R> for T {
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("clipboard-manager")
-        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
-            commands::write,
-            commands::read,
-            #[cfg(desktop)]
+            commands::write_text,
+            commands::read_text,
+            commands::read_image,
+            commands::write_image,
             commands::write_html,
-            #[cfg(desktop)]
             commands::clear
         ])
         .setup(|app, api| {

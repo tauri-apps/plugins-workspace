@@ -51,12 +51,19 @@ First you need to register the core plugin with Tauri:
 `src-tauri/src/main.rs`
 
 ```rust
+use tauri::tray::TrayIconBuilder;
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_positioner::init())
         // This is required to get tray-relative positions to work
-        .on_system_tray_event(|app, event| {
-           tauri_plugin_positioner::on_tray_event(app, &event);
+        .setup(|app| {
+            TrayIconBuilder::new()
+                .on_tray_icon_event(|app, event| {
+                    tauri_plugin_positioner::on_tray_event(app.app_handle(), &event);
+                })
+                .build(app)?;
+            Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -66,9 +73,9 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { move_window, Position } from "@tauri-apps/plugin-positioner";
+import { moveWindow, Position } from "@tauri-apps/plugin-positioner";
 
-move_window(Position.TopRight);
+moveWindow(Position.TopRight);
 ```
 
 If you only intend on moving the window from rust code, you can import the Window trait extension instead of registering the plugin:

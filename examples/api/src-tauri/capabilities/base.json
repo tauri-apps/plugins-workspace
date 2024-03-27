@@ -8,6 +8,7 @@
     {
       "identifier": "http:default",
       "allow": [
+        "https://tauri.app",
         {
           "url": "http://localhost:3003"
         }
@@ -21,6 +22,7 @@
     "tray:default",
     "event:default",
     "window:default",
+    "image:default",
     "notification:default",
     "os:allow-platform",
     "dialog:allow-open",
@@ -54,8 +56,10 @@
     },
     "shell:allow-kill",
     "shell:allow-stdin-write",
-    "clipboard-manager:allow-read",
-    "clipboard-manager:allow-write",
+    "clipboard-manager:allow-read-text",
+    "clipboard-manager:allow-write-text",
+    "clipboard-manager:allow-read-image",
+    "clipboard-manager:allow-write-image",
     "fs:allow-rename",
     "fs:allow-mkdir",
     "fs:allow-remove",
@@ -69,11 +73,7 @@
           "path": "$APPDATA/db/**"
         }
       ],
-      "deny": [
-        {
-          "path": "$APPDATA/db/*.stronghold"
-        }
-      ]
+      "deny": ["$APPDATA/db/*.stronghold"]
     }
   ]
 }

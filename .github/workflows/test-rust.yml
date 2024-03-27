@@ -42,6 +42,7 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: filter
         with:
+          base: v2
           filters: |
             tauri-plugin-authenticator:
               - .github/workflows/test-rust.yml

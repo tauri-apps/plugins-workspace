@@ -11,7 +11,17 @@ use std::{
     },
 };
 
-#[derive(Debug, schemars::JsonSchema)]
+use serde::Deserialize;
+
+#[doc(hidden)]
+#[derive(Deserialize)]
+#[serde(untagged)]
+pub enum EntryRaw {
+    Value(PathBuf),
+    Object { path: PathBuf },
+}
+
+#[derive(Debug)]
 pub struct Entry {
     pub path: PathBuf,
 }

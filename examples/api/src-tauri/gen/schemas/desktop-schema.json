@@ -41,8 +41,7 @@
       "type": "object",
       "required": [
         "identifier",
-        "permissions",
-        "windows"
+        "permissions"
       ],
       "properties": {
         "identifier": {
@@ -93,14 +92,10 @@
         },
         "platforms": {
           "description": "Target platforms this capability applies. By default all platforms are affected by this capability.",
-          "default": [
-            "linux",
-            "macOS",
-            "windows",
-            "android",
-            "iOS"
+          "type": [
+            "array",
+            "null"
           ],
-          "type": "array",
           "items": {
             "$ref": "#/definitions/Target"
           }
@@ -115,7 +110,7 @@
       ],
       "properties": {
         "urls": {
-          "description": "Remote domains this capability refers to. Can use glob patterns.",
+          "description": "Remote domains this capability refers to using the [URLPattern standard](https://urlpattern.spec.whatwg.org/).\n\n# Examples\n\n- \"https://*.mydomain.dev\": allows subdomains of mydomain.dev - \"https://mydomain.dev/api/*\": allows any subpath of mydomain.dev/api",
           "type": "array",
           "items": {
             "type": "string"
@@ -189,7 +184,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-app-write-recursive -> This allows full recusrive write access to the complete `$APP` folder, files and subdirectories.",
+                      "description": "fs:allow-app-write-recursive -> This allows full recursive write access to the complete `$APP` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-app-write-recursive"
@@ -231,7 +226,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-appcache-write-recursive -> This allows full recusrive write access to the complete `$APPCACHE` folder, files and subdirectories.",
+                      "description": "fs:allow-appcache-write-recursive -> This allows full recursive write access to the complete `$APPCACHE` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-appcache-write-recursive"
@@ -273,7 +268,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-appconfig-write-recursive -> This allows full recusrive write access to the complete `$APPCONFIG` folder, files and subdirectories.",
+                      "description": "fs:allow-appconfig-write-recursive -> This allows full recursive write access to the complete `$APPCONFIG` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-appconfig-write-recursive"
@@ -315,7 +310,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-appdata-write-recursive -> This allows full recusrive write access to the complete `$APPDATA` folder, files and subdirectories.",
+                      "description": "fs:allow-appdata-write-recursive -> This allows full recursive write access to the complete `$APPDATA` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-appdata-write-recursive"
@@ -357,7 +352,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-applocaldata-write-recursive -> This allows full recusrive write access to the complete `$APPLOCALDATA` folder, files and subdirectories.",
+                      "description": "fs:allow-applocaldata-write-recursive -> This allows full recursive write access to the complete `$APPLOCALDATA` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-applocaldata-write-recursive"
@@ -399,7 +394,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-applog-write-recursive -> This allows full recusrive write access to the complete `$APPLOG` folder, files and subdirectories.",
+                      "description": "fs:allow-applog-write-recursive -> This allows full recursive write access to the complete `$APPLOG` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-applog-write-recursive"
@@ -441,7 +436,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-audio-write-recursive -> This allows full recusrive write access to the complete `$AUDIO` folder, files and subdirectories.",
+                      "description": "fs:allow-audio-write-recursive -> This allows full recursive write access to the complete `$AUDIO` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-audio-write-recursive"
@@ -483,7 +478,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-cache-write-recursive -> This allows full recusrive write access to the complete `$CACHE` folder, files and subdirectories.",
+                      "description": "fs:allow-cache-write-recursive -> This allows full recursive write access to the complete `$CACHE` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-cache-write-recursive"
@@ -525,7 +520,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-config-write-recursive -> This allows full recusrive write access to the complete `$CONFIG` folder, files and subdirectories.",
+                      "description": "fs:allow-config-write-recursive -> This allows full recursive write access to the complete `$CONFIG` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-config-write-recursive"
@@ -567,7 +562,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-data-write-recursive -> This allows full recusrive write access to the complete `$DATA` folder, files and subdirectories.",
+                      "description": "fs:allow-data-write-recursive -> This allows full recursive write access to the complete `$DATA` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-data-write-recursive"
@@ -609,7 +604,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-desktop-write-recursive -> This allows full recusrive write access to the complete `$DESKTOP` folder, files and subdirectories.",
+                      "description": "fs:allow-desktop-write-recursive -> This allows full recursive write access to the complete `$DESKTOP` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-desktop-write-recursive"
@@ -651,7 +646,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-document-write-recursive -> This allows full recusrive write access to the complete `$DOCUMENT` folder, files and subdirectories.",
+                      "description": "fs:allow-document-write-recursive -> This allows full recursive write access to the complete `$DOCUMENT` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-document-write-recursive"
@@ -693,7 +688,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-download-write-recursive -> This allows full recusrive write access to the complete `$DOWNLOAD` folder, files and subdirectories.",
+                      "description": "fs:allow-download-write-recursive -> This allows full recursive write access to the complete `$DOWNLOAD` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-download-write-recursive"
@@ -735,7 +730,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-exe-write-recursive -> This allows full recusrive write access to the complete `$EXE` folder, files and subdirectories.",
+                      "description": "fs:allow-exe-write-recursive -> This allows full recursive write access to the complete `$EXE` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-exe-write-recursive"
@@ -777,7 +772,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-font-write-recursive -> This allows full recusrive write access to the complete `$FONT` folder, files and subdirectories.",
+                      "description": "fs:allow-font-write-recursive -> This allows full recursive write access to the complete `$FONT` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-font-write-recursive"
@@ -819,7 +814,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-home-write-recursive -> This allows full recusrive write access to the complete `$HOME` folder, files and subdirectories.",
+                      "description": "fs:allow-home-write-recursive -> This allows full recursive write access to the complete `$HOME` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-home-write-recursive"
@@ -861,7 +856,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-localdata-write-recursive -> This allows full recusrive write access to the complete `$LOCALDATA` folder, files and subdirectories.",
+                      "description": "fs:allow-localdata-write-recursive -> This allows full recursive write access to the complete `$LOCALDATA` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-localdata-write-recursive"
@@ -903,7 +898,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-log-write-recursive -> This allows full recusrive write access to the complete `$LOG` folder, files and subdirectories.",
+                      "description": "fs:allow-log-write-recursive -> This allows full recursive write access to the complete `$LOG` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-log-write-recursive"
@@ -945,7 +940,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-picture-write-recursive -> This allows full recusrive write access to the complete `$PICTURE` folder, files and subdirectories.",
+                      "description": "fs:allow-picture-write-recursive -> This allows full recursive write access to the complete `$PICTURE` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-picture-write-recursive"
@@ -987,7 +982,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-public-write-recursive -> This allows full recusrive write access to the complete `$PUBLIC` folder, files and subdirectories.",
+                      "description": "fs:allow-public-write-recursive -> This allows full recursive write access to the complete `$PUBLIC` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-public-write-recursive"
@@ -1029,7 +1024,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-resource-write-recursive -> This allows full recusrive write access to the complete `$RESOURCE` folder, files and subdirectories.",
+                      "description": "fs:allow-resource-write-recursive -> This allows full recursive write access to the complete `$RESOURCE` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-resource-write-recursive"
@@ -1071,7 +1066,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-runtime-write-recursive -> This allows full recusrive write access to the complete `$RUNTIME` folder, files and subdirectories.",
+                      "description": "fs:allow-runtime-write-recursive -> This allows full recursive write access to the complete `$RUNTIME` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-runtime-write-recursive"
@@ -1113,7 +1108,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-temp-write-recursive -> This allows full recusrive write access to the complete `$TEMP` folder, files and subdirectories.",
+                      "description": "fs:allow-temp-write-recursive -> This allows full recursive write access to the complete `$TEMP` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-temp-write-recursive"
@@ -1155,7 +1150,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-template-write-recursive -> This allows full recusrive write access to the complete `$TEMPLATE` folder, files and subdirectories.",
+                      "description": "fs:allow-template-write-recursive -> This allows full recursive write access to the complete `$TEMPLATE` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-template-write-recursive"
@@ -1197,7 +1192,7 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-video-write-recursive -> This allows full recusrive write access to the complete `$VIDEO` folder, files and subdirectories.",
+                      "description": "fs:allow-video-write-recursive -> This allows full recursive write access to the complete `$VIDEO` folder, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-video-write-recursive"
@@ -2138,30 +2133,50 @@
                 },
                 "allow": {
                   "items": {
-                    "title": "Entry",
-                    "type": "object",
-                    "required": [
-                      "path"
-                    ],
-                    "properties": {
-                      "path": {
+                    "title": "FsScopeEntry",
+                    "description": "FS scope entry.",
+                    "anyOf": [
+                      {
+                        "description": "FS scope path.",
                         "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "path"
+                        ],
+                        "properties": {
+                          "path": {
+                            "description": "FS scope path.",
+                            "type": "string"
+                          }
+                        }
                       }
-                    }
+                    ]
                   }
                 },
                 "deny": {
                   "items": {
-                    "title": "Entry",
-                    "type": "object",
-                    "required": [
-                      "path"
-                    ],
-                    "properties": {
-                      "path": {
+                    "title": "FsScopeEntry",
+                    "description": "FS scope entry.",
+                    "anyOf": [
+                      {
+                        "description": "FS scope path.",
                         "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "path"
+                        ],
+                        "properties": {
+                          "path": {
+                            "description": "FS scope path.",
+                            "type": "string"
+                          }
+                        }
                       }
-                    }
+                    ]
                   }
                 }
               }
@@ -2241,8 +2256,8 @@
                 },
                 "allow": {
                   "items": {
-                    "title": "ScopeEntry",
-                    "description": "HTTP scope entry object definition.",
+                    "title": "HttpScopeEntry",
+                    "description": "HTTP scope entry.",
                     "anyOf": [
                       {
                         "description": "A URL that can be accessed by the webview when using the HTTP APIs. Wildcards can be used following the URL pattern standard.\n\nSee [the URL Pattern spec](https://urlpattern.spec.whatwg.org/) for more information.\n\nExamples:\n\n- \"https://*\" : allows all HTTPS origin on port 443\n\n- \"https://*:*\" : allows all HTTPS origin on any port\n\n- \"https://*.github.com/tauri-apps/tauri\": allows any subdomain of \"github.com\" with the \"tauri-apps/api\" path\n\n- \"https://myapi.service.com/users/*\": allows access to any URLs that begins with \"https://myapi.service.com/users/\"",
@@ -2265,8 +2280,8 @@
                 },
                 "deny": {
                   "items": {
-                    "title": "ScopeEntry",
-                    "description": "HTTP scope entry object definition.",
+                    "title": "HttpScopeEntry",
+                    "description": "HTTP scope entry.",
                     "anyOf": [
                       {
                         "description": "A URL that can be accessed by the webview when using the HTTP APIs. Wildcards can be used following the URL pattern standard.\n\nSee [the URL Pattern spec](https://urlpattern.spec.whatwg.org/) for more information.\n\nExamples:\n\n- \"https://*\" : allows all HTTPS origin on port 443\n\n- \"https://*:*\" : allows all HTTPS origin on any port\n\n- \"https://*.github.com/tauri-apps/tauri\": allows any subdomain of \"github.com\" with the \"tauri-apps/api\" path\n\n- \"https://myapi.service.com/users/*\": allows access to any URLs that begins with \"https://myapi.service.com/users/\"",
@@ -2297,6 +2312,12 @@
               "properties": {
                 "identifier": {
                   "oneOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "shell:default"
+                      ]
+                    },
                     {
                       "description": "shell:allow-execute -> Enables the execute command without any pre-configured scope.",
                       "type": "string",
@@ -2362,7 +2383,7 @@
                     "type": "object",
                     "required": [
                       "args",
-                      "command",
+                      "cmd",
                       "name",
                       "sidecar"
                     ],
@@ -2375,7 +2396,7 @@
                           }
                         ]
                       },
-                      "command": {
+                      "cmd": {
                         "description": "The command name. It can start with a variable that resolves to a system base directory. The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`, `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`, `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$APP`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`, `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.",
                         "type": "string"
                       },
@@ -2397,7 +2418,7 @@
                     "type": "object",
                     "required": [
                       "args",
-                      "command",
+                      "cmd",
                       "name",
                       "sidecar"
                     ],
@@ -2410,7 +2431,7 @@
                           }
                         ]
                       },
-                      "command": {
+                      "cmd": {
                         "description": "The command name. It can start with a variable that resolves to a system base directory. The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`, `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`, `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$APP`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`, `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.",
                         "type": "string"
                       },
@@ -2532,31 +2553,99 @@
           ]
         },
         {
-          "description": "clipboard-manager:allow-read -> Enables the read command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "clipboard-manager:allow-read"
+            "clipboard-manager:default"
           ]
         },
         {
-          "description": "clipboard-manager:allow-write -> Enables the write command without any pre-configured scope.",
+          "description": "clipboard-manager:allow-clear -> Enables the clear command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "clipboard-manager:allow-write"
+            "clipboard-manager:allow-clear"
           ]
         },
         {
-          "description": "clipboard-manager:deny-read -> Denies the read command without any pre-configured scope.",
+          "description": "clipboard-manager:allow-read-image -> Enables the read_image command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "clipboard-manager:deny-read"
+            "clipboard-manager:allow-read-image"
           ]
         },
         {
-          "description": "clipboard-manager:deny-write -> Denies the write command without any pre-configured scope.",
+          "description": "clipboard-manager:allow-read-text -> Enables the read_text command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "clipboard-manager:deny-write"
+            "clipboard-manager:allow-read-text"
+          ]
+        },
+        {
+          "description": "clipboard-manager:allow-write-html -> Enables the write_html command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:allow-write-html"
+          ]
+        },
+        {
+          "description": "clipboard-manager:allow-write-image -> Enables the write_image command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:allow-write-image"
+          ]
+        },
+        {
+          "description": "clipboard-manager:allow-write-text -> Enables the write_text command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:allow-write-text"
+          ]
+        },
+        {
+          "description": "clipboard-manager:deny-clear -> Denies the clear command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:deny-clear"
+          ]
+        },
+        {
+          "description": "clipboard-manager:deny-read-image -> Denies the read_image command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:deny-read-image"
+          ]
+        },
+        {
+          "description": "clipboard-manager:deny-read-text -> Denies the read_text command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:deny-read-text"
+          ]
+        },
+        {
+          "description": "clipboard-manager:deny-write-html -> Denies the write_html command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:deny-write-html"
+          ]
+        },
+        {
+          "description": "clipboard-manager:deny-write-image -> Denies the write_image command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:deny-write-image"
+          ]
+        },
+        {
+          "description": "clipboard-manager:deny-write-text -> Denies the write_text command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "clipboard-manager:deny-write-text"
+          ]
+        },
+        {
+          "type": "string",
+          "enum": [
+            "dialog:default"
           ]
         },
         {
@@ -2728,7 +2817,7 @@
           ]
         },
         {
-          "description": "fs:allow-app-write-recursive -> This allows full recusrive write access to the complete `$APP` folder, files and subdirectories.",
+          "description": "fs:allow-app-write-recursive -> This allows full recursive write access to the complete `$APP` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-app-write-recursive"
@@ -2770,7 +2859,7 @@
           ]
         },
         {
-          "description": "fs:allow-appcache-write-recursive -> This allows full recusrive write access to the complete `$APPCACHE` folder, files and subdirectories.",
+          "description": "fs:allow-appcache-write-recursive -> This allows full recursive write access to the complete `$APPCACHE` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-appcache-write-recursive"
@@ -2812,7 +2901,7 @@
           ]
         },
         {
-          "description": "fs:allow-appconfig-write-recursive -> This allows full recusrive write access to the complete `$APPCONFIG` folder, files and subdirectories.",
+          "description": "fs:allow-appconfig-write-recursive -> This allows full recursive write access to the complete `$APPCONFIG` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-appconfig-write-recursive"
@@ -2854,7 +2943,7 @@
           ]
         },
         {
-          "description": "fs:allow-appdata-write-recursive -> This allows full recusrive write access to the complete `$APPDATA` folder, files and subdirectories.",
+          "description": "fs:allow-appdata-write-recursive -> This allows full recursive write access to the complete `$APPDATA` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-appdata-write-recursive"
@@ -2896,7 +2985,7 @@
           ]
         },
         {
-          "description": "fs:allow-applocaldata-write-recursive -> This allows full recusrive write access to the complete `$APPLOCALDATA` folder, files and subdirectories.",
+          "description": "fs:allow-applocaldata-write-recursive -> This allows full recursive write access to the complete `$APPLOCALDATA` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-applocaldata-write-recursive"
@@ -2938,7 +3027,7 @@
           ]
         },
         {
-          "description": "fs:allow-applog-write-recursive -> This allows full recusrive write access to the complete `$APPLOG` folder, files and subdirectories.",
+          "description": "fs:allow-applog-write-recursive -> This allows full recursive write access to the complete `$APPLOG` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-applog-write-recursive"
@@ -2980,7 +3069,7 @@
           ]
         },
         {
-          "description": "fs:allow-audio-write-recursive -> This allows full recusrive write access to the complete `$AUDIO` folder, files and subdirectories.",
+          "description": "fs:allow-audio-write-recursive -> This allows full recursive write access to the complete `$AUDIO` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-audio-write-recursive"
@@ -3022,7 +3111,7 @@
           ]
         },
         {
-          "description": "fs:allow-cache-write-recursive -> This allows full recusrive write access to the complete `$CACHE` folder, files and subdirectories.",
+          "description": "fs:allow-cache-write-recursive -> This allows full recursive write access to the complete `$CACHE` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-cache-write-recursive"
@@ -3064,7 +3153,7 @@
           ]
         },
         {
-          "description": "fs:allow-config-write-recursive -> This allows full recusrive write access to the complete `$CONFIG` folder, files and subdirectories.",
+          "description": "fs:allow-config-write-recursive -> This allows full recursive write access to the complete `$CONFIG` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-config-write-recursive"
@@ -3106,7 +3195,7 @@
           ]
         },
         {
-          "description": "fs:allow-data-write-recursive -> This allows full recusrive write access to the complete `$DATA` folder, files and subdirectories.",
+          "description": "fs:allow-data-write-recursive -> This allows full recursive write access to the complete `$DATA` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-data-write-recursive"
@@ -3148,7 +3237,7 @@
           ]
         },
         {
-          "description": "fs:allow-desktop-write-recursive -> This allows full recusrive write access to the complete `$DESKTOP` folder, files and subdirectories.",
+          "description": "fs:allow-desktop-write-recursive -> This allows full recursive write access to the complete `$DESKTOP` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-desktop-write-recursive"
@@ -3190,7 +3279,7 @@
           ]
         },
         {
-          "description": "fs:allow-document-write-recursive -> This allows full recusrive write access to the complete `$DOCUMENT` folder, files and subdirectories.",
+          "description": "fs:allow-document-write-recursive -> This allows full recursive write access to the complete `$DOCUMENT` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-document-write-recursive"
@@ -3232,7 +3321,7 @@
           ]
         },
         {
-          "description": "fs:allow-download-write-recursive -> This allows full recusrive write access to the complete `$DOWNLOAD` folder, files and subdirectories.",
+          "description": "fs:allow-download-write-recursive -> This allows full recursive write access to the complete `$DOWNLOAD` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-download-write-recursive"
@@ -3274,7 +3363,7 @@
           ]
         },
         {
-          "description": "fs:allow-exe-write-recursive -> This allows full recusrive write access to the complete `$EXE` folder, files and subdirectories.",
+          "description": "fs:allow-exe-write-recursive -> This allows full recursive write access to the complete `$EXE` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-exe-write-recursive"
@@ -3316,7 +3405,7 @@
           ]
         },
         {
-          "description": "fs:allow-font-write-recursive -> This allows full recusrive write access to the complete `$FONT` folder, files and subdirectories.",
+          "description": "fs:allow-font-write-recursive -> This allows full recursive write access to the complete `$FONT` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-font-write-recursive"
@@ -3358,7 +3447,7 @@
           ]
         },
         {
-          "description": "fs:allow-home-write-recursive -> This allows full recusrive write access to the complete `$HOME` folder, files and subdirectories.",
+          "description": "fs:allow-home-write-recursive -> This allows full recursive write access to the complete `$HOME` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-home-write-recursive"
@@ -3400,7 +3489,7 @@
           ]
         },
         {
-          "description": "fs:allow-localdata-write-recursive -> This allows full recusrive write access to the complete `$LOCALDATA` folder, files and subdirectories.",
+          "description": "fs:allow-localdata-write-recursive -> This allows full recursive write access to the complete `$LOCALDATA` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-localdata-write-recursive"
@@ -3442,7 +3531,7 @@
           ]
         },
         {
-          "description": "fs:allow-log-write-recursive -> This allows full recusrive write access to the complete `$LOG` folder, files and subdirectories.",
+          "description": "fs:allow-log-write-recursive -> This allows full recursive write access to the complete `$LOG` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-log-write-recursive"
@@ -3484,7 +3573,7 @@
           ]
         },
         {
-          "description": "fs:allow-picture-write-recursive -> This allows full recusrive write access to the complete `$PICTURE` folder, files and subdirectories.",
+          "description": "fs:allow-picture-write-recursive -> This allows full recursive write access to the complete `$PICTURE` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-picture-write-recursive"
@@ -3526,7 +3615,7 @@
           ]
         },
         {
-          "description": "fs:allow-public-write-recursive -> This allows full recusrive write access to the complete `$PUBLIC` folder, files and subdirectories.",
+          "description": "fs:allow-public-write-recursive -> This allows full recursive write access to the complete `$PUBLIC` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-public-write-recursive"
@@ -3568,7 +3657,7 @@
           ]
         },
         {
-          "description": "fs:allow-resource-write-recursive -> This allows full recusrive write access to the complete `$RESOURCE` folder, files and subdirectories.",
+          "description": "fs:allow-resource-write-recursive -> This allows full recursive write access to the complete `$RESOURCE` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-resource-write-recursive"
@@ -3610,7 +3699,7 @@
           ]
         },
         {
-          "description": "fs:allow-runtime-write-recursive -> This allows full recusrive write access to the complete `$RUNTIME` folder, files and subdirectories.",
+          "description": "fs:allow-runtime-write-recursive -> This allows full recursive write access to the complete `$RUNTIME` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-runtime-write-recursive"
@@ -3652,7 +3741,7 @@
           ]
         },
         {
-          "description": "fs:allow-temp-write-recursive -> This allows full recusrive write access to the complete `$TEMP` folder, files and subdirectories.",
+          "description": "fs:allow-temp-write-recursive -> This allows full recursive write access to the complete `$TEMP` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-temp-write-recursive"
@@ -3694,7 +3783,7 @@
           ]
         },
         {
-          "description": "fs:allow-template-write-recursive -> This allows full recusrive write access to the complete `$TEMPLATE` folder, files and subdirectories.",
+          "description": "fs:allow-template-write-recursive -> This allows full recursive write access to the complete `$TEMPLATE` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-template-write-recursive"
@@ -3736,7 +3825,7 @@
           ]
         },
         {
-          "description": "fs:allow-video-write-recursive -> This allows full recusrive write access to the complete `$VIDEO` folder, files and subdirectories.",
+          "description": "fs:allow-video-write-recursive -> This allows full recursive write access to the complete `$VIDEO` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-video-write-recursive"
@@ -4681,6 +4770,12 @@
           ]
         },
         {
+          "type": "string",
+          "enum": [
+            "global-shortcut:default"
+          ]
+        },
+        {
           "description": "global-shortcut:allow-is-registered -> Enables the is_registered command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -4828,31 +4923,10 @@
           ]
         },
         {
-          "description": "image:allow-from-ico-bytes -> Enables the from_ico_bytes command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "image:allow-from-ico-bytes"
-          ]
-        },
-        {
           "description": "image:allow-from-path -> Enables the from_path command without any pre-configured scope.",
           "type": "string",
           "enum": [
             "image:allow-from-path"
-          ]
-        },
-        {
-          "description": "image:allow-from-png-bytes -> Enables the from_png_bytes command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "image:allow-from-png-bytes"
-          ]
-        },
-        {
-          "description": "image:allow-height -> Enables the height command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "image:allow-height"
           ]
         },
         {
@@ -4870,10 +4944,10 @@
           ]
         },
         {
-          "description": "image:allow-width -> Enables the width command without any pre-configured scope.",
+          "description": "image:allow-size -> Enables the size command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "image:allow-width"
+            "image:allow-size"
           ]
         },
         {
@@ -4884,31 +4958,10 @@
           ]
         },
         {
-          "description": "image:deny-from-ico-bytes -> Denies the from_ico_bytes command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "image:deny-from-ico-bytes"
-          ]
-        },
-        {
           "description": "image:deny-from-path -> Denies the from_path command without any pre-configured scope.",
           "type": "string",
           "enum": [
             "image:deny-from-path"
-          ]
-        },
-        {
-          "description": "image:deny-from-png-bytes -> Denies the from_png_bytes command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "image:deny-from-png-bytes"
-          ]
-        },
-        {
-          "description": "image:deny-height -> Denies the height command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "image:deny-height"
           ]
         },
         {
@@ -4926,10 +4979,10 @@
           ]
         },
         {
-          "description": "image:deny-width -> Denies the width command without any pre-configured scope.",
+          "description": "image:deny-size -> Denies the size command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "image:deny-width"
+            "image:deny-size"
           ]
         },
         {
@@ -5318,6 +5371,12 @@
           ]
         },
         {
+          "type": "string",
+          "enum": [
+            "os:default"
+          ]
+        },
+        {
           "description": "os:allow-arch -> Enables the arch command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -5549,6 +5608,12 @@
           ]
         },
         {
+          "type": "string",
+          "enum": [
+            "process:default"
+          ]
+        },
+        {
           "description": "process:allow-exit -> Enables the exit command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -5595,6 +5660,12 @@
           "type": "string",
           "enum": [
             "resources:deny-close"
+          ]
+        },
+        {
+          "type": "string",
+          "enum": [
+            "shell:default"
           ]
         },
         {
@@ -5661,10 +5732,24 @@
           ]
         },
         {
+          "description": "tray:allow-get-by-id -> Enables the get_by_id command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "tray:allow-get-by-id"
+          ]
+        },
+        {
           "description": "tray:allow-new -> Enables the new command without any pre-configured scope.",
           "type": "string",
           "enum": [
             "tray:allow-new"
+          ]
+        },
+        {
+          "description": "tray:allow-remove-by-id -> Enables the remove_by_id command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "tray:allow-remove-by-id"
           ]
         },
         {
@@ -5724,10 +5809,24 @@
           ]
         },
         {
+          "description": "tray:deny-get-by-id -> Denies the get_by_id command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "tray:deny-get-by-id"
+          ]
+        },
+        {
           "description": "tray:deny-new -> Denies the new command without any pre-configured scope.",
           "type": "string",
           "enum": [
             "tray:deny-new"
+          ]
+        },
+        {
+          "description": "tray:deny-remove-by-id -> Denies the remove_by_id command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "tray:deny-remove-by-id"
           ]
         },
         {

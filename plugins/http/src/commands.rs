@@ -195,7 +195,8 @@ pub async fn fetch<R: Runtime>(
                 for (name, value) in &headers {
                     let name = HeaderName::from_bytes(name.as_bytes())?;
                     let value = HeaderValue::from_bytes(value.as_bytes())?;
-                    if !matches!(
+                    #[cfg(not(feature = "unsafe-headers"))]
+                    if matches!(
                         name,
                         // forbidden headers per fetch spec https://fetch.spec.whatwg.org/#terminology-headers
                         header::ACCEPT_CHARSET
@@ -218,8 +219,10 @@ pub async fn fetch<R: Runtime>(
                             | header::UPGRADE
                             | header::VIA
                     ) {
-                        request = request.header(name, value);
+                        continue;
                     }
+
+                    request = request.header(name, value);
                 }
 
                 // POST and PUT requests should always have a 0 length content-length,
