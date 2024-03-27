@@ -4,8 +4,6 @@
 
 // This module is also imported in build.rs!
 
-#![allow(dead_code)]
-
 use serde::{Deserialize, Deserializer};
 use tauri::utils::config::DeepLinkProtocol;
 

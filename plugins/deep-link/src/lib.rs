@@ -103,7 +103,7 @@ mod imp {
         io::Write,
         process::Command,
     };
-    use tauri::{AppHandle, Manager, Runtime};
+    use tauri::{AppHandle, Runtime};
     #[cfg(windows)]
     use winreg::{enums::HKEY_CURRENT_USER, RegKey};
 
@@ -147,7 +147,7 @@ mod imp {
                 let (key, _) = hkcu.create_subkey(&base)?;
                 key.set_value(
                     "",
-                    &format!("URL:{} protocol", self.app.config().tauri.bundle.identifier),
+                    &format!("URL:{} protocol", self.app.config().identifier),
                 )?;
                 key.set_value("URL Protocol", &"")?;
 
@@ -186,7 +186,7 @@ mod imp {
                         file.write_all(
                             format!(
                                 include_str!("template.desktop"),
-                                name = self.app.config().tauri.bundle.identifier,
+                                name = self.app.config().identifier,
                                 exec = exec
                             )
                             .as_bytes(),
@@ -251,7 +251,7 @@ mod imp {
                     .to_string()
                     .replace("\\\\?\\", "");
 
-                return Ok(registered_cmd == format!("{} \"%1\"", &exe));
+                Ok(registered_cmd == format!("{} \"%1\"", &exe))
             }
             #[cfg(target_os = "linux")]
             {
@@ -267,7 +267,7 @@ mod imp {
                     .args(["default", &file_name, _protocol.as_ref()])
                     .output()?;
 
-                return Ok(String::from_utf8_lossy(&output.stdout).contains(&file_name));
+                Ok(String::from_utf8_lossy(&output.stdout).contains(&file_name))
             }
 
             #[cfg(not(any(windows, target_os = "linux")))]
