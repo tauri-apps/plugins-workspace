@@ -1,6 +1,6 @@
 ---
-"shell": "patch"
-"shell-js": "patch"
+"global-shortcut": "patch"
+"global-shortcut-js": "patch"
 ---
 
 Refactored the JS APIs:

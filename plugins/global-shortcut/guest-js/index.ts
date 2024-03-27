@@ -13,7 +13,13 @@ import { invoke, Channel } from "@tauri-apps/api/core";
 export type ShortcutHandler = (shortcut: string) => void;
 
 /**
- * Register a global shortcut.
+ * Register a global shortcut or a list of shortcuts.
+ *
+ * The handler is called when any of the registered shortcuts are pressed by the user.
+ *
+ * If the shortcut is already taken by another application, the handler will not be triggered.
+ * Make sure the shortcut is as unique as possible while still taking user experience into consideration.
+ *
  * @example
  * ```typescript
  * import { register } from '@tauri-apps/plugin-global-shortcut';
@@ -48,7 +54,8 @@ async function register(
 }
 
 /**
- * Unregister a global shortcut.
+ * Unregister a global shortcut or a list of shortcuts.
+ *
  * @example
  * ```typescript
  * import { unregister } from '@tauri-apps/plugin-global-shortcut';
@@ -60,7 +67,7 @@ async function register(
  * await unregister(['CmdOrControl+Space', 'Alt+A']);
  * ```
  *
- * @param shortcut shortcut definition, modifiers and key separated by "+" e.g. CmdOrControl+Q
+ * @param shortcut shortcut definition (modifiers and key separated by "+" e.g. CmdOrControl+Q), also accepts a list of shortcuts
  *
  * @since 2.0.0
  */
