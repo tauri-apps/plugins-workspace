@@ -5,7 +5,7 @@
 // This module is also imported in build.rs!
 
 use serde::{Deserialize, Deserializer};
-use tauri::utils::config::DeepLinkProtocol;
+use tauri_utils::config::DeepLinkProtocol;
 
 #[derive(Deserialize)]
 pub struct AssociatedDomain {

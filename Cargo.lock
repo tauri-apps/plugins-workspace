@@ -6503,6 +6503,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin",
+ "tauri-utils",
  "thiserror",
  "url",
  "winreg 0.52.0",
