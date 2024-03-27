@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: MIT
 
 use serde::de::DeserializeOwned;
+#[cfg(target_os = "linux")]
+use tauri::Manager;
 use tauri::{
     plugin::{Builder, PluginApi, TauriPlugin},
     AppHandle, Manager, Runtime,
