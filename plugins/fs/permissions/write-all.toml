@@ -1,0 +1,17 @@
+"$schema" = "schemas/schema.json"
+
+[[permission]]
+identifier = "write-all"
+description = "This enables all write related commands without any pre-configured accessible paths."
+commands.allow = [
+    "mkdir",
+    "create",
+    "copy_file",
+    "remove",
+    "rename",
+    "truncate",
+    "ftruncate",
+    "write",
+    "write_file",
+    "write_text_file",
+]

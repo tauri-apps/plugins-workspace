@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-sign"
+description = "Enables the sign command without any pre-configured scope."
+commands.allow = ["sign"]
+
+[[permission]]
+identifier = "deny-sign"
+description = "Denies the sign command without any pre-configured scope."
+commands.deny = ["sign"]

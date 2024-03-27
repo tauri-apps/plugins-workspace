@@ -1,0 +1,19 @@
+"$schema" = "schemas/schema.json"
+
+[[permission]]
+identifier = "read-files"
+description = "This enables file read related commands without any pre-configured accessible paths."
+commands.allow = [
+    "read_file",
+    "read",
+    "open",
+    "read_text_file",
+    "read_text_file_lines",
+    "read_text_file_lines_next",
+    "seek",
+    "stat",
+    "lstat",
+    "fstat",
+    "exists",
+
+]

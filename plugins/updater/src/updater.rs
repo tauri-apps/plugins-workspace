@@ -4,9 +4,11 @@
 
 use std::{
     collections::HashMap,
+    ffi::{OsStr, OsString},
     io::{Cursor, Read},
     path::{Path, PathBuf},
     str::FromStr,
+    sync::Arc,
     time::Duration,
 };
 
@@ -20,14 +22,14 @@ use reqwest::{
 };
 use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
-use tauri::{
-    utils::{config::UpdaterConfig, platform::current_exe},
-    Resource,
-};
+use tauri::{utils::platform::current_exe, Resource};
 use time::OffsetDateTime;
 use url::Url;
 
-use crate::error::{Error, Result};
+use crate::{
+    error::{Error, Result},
+    Config,
+};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ReleaseManifestPlatform {
@@ -87,10 +89,11 @@ impl RemoteRelease {
     }
 }
 
+pub type OnBeforeExit = Arc<dyn Fn() + Send + Sync + 'static>;
+
 pub struct UpdaterBuilder {
     current_version: Version,
-    config: crate::Config,
-    updater_config: UpdaterConfig,
+    config: Config,
     version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
     executable_path: Option<PathBuf>,
     target: Option<String>,
@@ -98,19 +101,20 @@ pub struct UpdaterBuilder {
     headers: HeaderMap,
     timeout: Option<Duration>,
     proxy: Option<Url>,
-    installer_args: Option<Vec<String>>,
+    installer_args: Vec<OsString>,
+    on_before_exit: Option<OnBeforeExit>,
 }
 
 impl UpdaterBuilder {
-    pub fn new(
-        current_version: Version,
-        config: crate::Config,
-        updater_config: UpdaterConfig,
-    ) -> Self {
+    pub fn new(current_version: Version, config: crate::Config) -> Self {
         Self {
+            installer_args: config
+                .windows
+                .as_ref()
+                .map(|w| w.installer_args.clone())
+                .unwrap_or_default(),
             current_version,
             config,
-            updater_config,
             version_comparator: None,
             executable_path: None,
             target: None,
@@ -118,7 +122,7 @@ impl UpdaterBuilder {
             headers: Default::default(),
             timeout: None,
             proxy: None,
-            installer_args: None,
+            on_before_exit: None,
         }
     }
 
@@ -170,20 +174,43 @@ impl UpdaterBuilder {
         self
     }
 
+    pub fn pubkey<S: Into<String>>(mut self, pubkey: S) -> Self {
+        self.config.pubkey = pubkey.into();
+        self
+    }
+
+    pub fn installer_arg<S>(mut self, arg: S) -> Self
+    where
+        S: Into<OsString>,
+    {
+        self.installer_args.push(arg.into());
+        self
+    }
+
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
-        S: Into<String>,
+        S: Into<OsString>,
     {
-        self.installer_args
-            .replace(args.into_iter().map(Into::into).collect());
+        let args = args.into_iter().map(|a| a.into()).collect::<Vec<_>>();
+        self.installer_args.extend_from_slice(&args);
+        self
+    }
+
+    pub fn clear_installer_args(mut self) -> Self {
+        self.installer_args.clear();
+        self
+    }
+
+    pub fn on_before_exit<F: Fn() + Send + Sync + 'static>(mut self, f: F) -> Self {
+        self.on_before_exit.replace(Arc::new(f));
         self
     }
 
     pub fn build(self) -> Result<Updater> {
         let endpoints = self
             .endpoints
-            .unwrap_or_else(|| self.config.endpoints.into_iter().map(|e| e.0).collect());
+            .unwrap_or_else(|| self.config.endpoints.iter().map(|e| e.0.clone()).collect());
 
         if endpoints.is_empty() {
             return Err(Error::EmptyEndpoints);
@@ -207,31 +234,32 @@ impl UpdaterBuilder {
         };
 
         Ok(Updater {
-            config: self.updater_config,
+            config: self.config,
             current_version: self.current_version,
             version_comparator: self.version_comparator,
             timeout: self.timeout,
             proxy: self.proxy,
             endpoints,
-            installer_args: self.installer_args.unwrap_or(self.config.installer_args),
+            installer_args: self.installer_args,
             arch,
             target,
             json_target,
             headers: self.headers,
             extract_path,
+            on_before_exit: self.on_before_exit,
         })
     }
 }
 
 pub struct Updater {
-    config: UpdaterConfig,
+    config: Config,
     current_version: Version,
     version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
     timeout: Option<Duration>,
     proxy: Option<Url>,
     endpoints: Vec<Url>,
     #[allow(dead_code)]
-    installer_args: Vec<String>,
+    installer_args: Vec<OsString>,
     arch: &'static str,
     // The `{{target}}` variable we replace in the endpoint
     target: String,
@@ -239,6 +267,7 @@ pub struct Updater {
     json_target: String,
     headers: HeaderMap,
     extract_path: PathBuf,
+    on_before_exit: Option<OnBeforeExit>,
 }
 
 impl Updater {
@@ -336,8 +365,9 @@ impl Updater {
 
         let update = if should_update {
             Some(Update {
-                current_version: self.current_version.to_string(),
                 config: self.config.clone(),
+                on_before_exit: self.on_before_exit.clone(),
+                current_version: self.current_version.to_string(),
                 target: self.target.clone(),
                 extract_path: self.extract_path.clone(),
                 installer_args: self.installer_args.clone(),
@@ -358,9 +388,11 @@ impl Updater {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Update {
-    config: UpdaterConfig,
+    config: Config,
+    #[allow(unused)]
+    on_before_exit: Option<OnBeforeExit>,
     /// Update description
     pub body: Option<String>,
     /// Version used to check for update
@@ -375,7 +407,7 @@ pub struct Update {
     #[allow(unused)]
     extract_path: PathBuf,
     #[allow(unused)]
-    installer_args: Vec<String>,
+    installer_args: Vec<OsString>,
     /// Download URL announced
     pub download_url: Url,
     /// Signature announced
@@ -473,7 +505,7 @@ impl Update {
     }
 
     #[cfg(mobile)]
-    fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
+    fn install_inner(&self, _bytes: Vec<u8>) -> Result<()> {
         Ok(())
     }
 
@@ -495,7 +527,11 @@ impl Update {
     // Update server can provide a custom EXE (installer) who can run any task.
     #[cfg(windows)]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
-        use std::{ffi::OsStr, fs, process::Command};
+        use std::fs;
+        use windows_sys::{
+            w,
+            Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
+        };
 
         // FIXME: We need to create a memory buffer with the MSI and then run it.
         //        (instead of extracting the MSI to a temp path)
@@ -504,114 +540,56 @@ impl Update {
         // shouldn't drop but we should be able to pass the reference so we can drop it once the installation
         // is done, otherwise we have a huge memory leak.
 
-        let archive = Cursor::new(bytes);
-
         let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
-
-        // extract the buffer to the tmp_dir
-        // we extract our signed archive into our final directory without any temp file
+        let archive = Cursor::new(bytes);
         let mut extractor = zip::ZipArchive::new(archive)?;
-
-        // extract the msi
         extractor.extract(&tmp_dir)?;
 
         let paths = fs::read_dir(&tmp_dir)?;
 
-        let system_root = std::env::var("SYSTEMROOT");
-        let powershell_path = system_root.as_ref().map_or_else(
-            |_| "powershell.exe".to_string(),
-            |p| format!("{p}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"),
-        );
+        let install_mode = self
+            .config
+            .windows
+            .as_ref()
+            .map(|w| w.install_mode.clone())
+            .unwrap_or_default();
+        let mut installer_args = self
+            .installer_args
+            .iter()
+            .map(OsStr::new)
+            .collect::<Vec<_>>();
 
         for path in paths {
             let found_path = path?.path();
             // we support 2 type of files exe & msi for now
-            // If it's an `exe` we expect an installer not a runtime.
+            // If it's an `exe` we expect an NSIS installer.
             if found_path.extension() == Some(OsStr::new("exe")) {
-                // we need to wrap the installer path in quotes for Start-Process
-                let mut installer_path = std::ffi::OsString::new();
-                installer_path.push("\"");
-                installer_path.push(&found_path);
-                installer_path.push("\"");
-
-                let installer_args = [
-                    self.config.windows.install_mode.nsis_args(),
-                    self.installer_args
-                        .iter()
-                        .map(AsRef::as_ref)
-                        .collect::<Vec<_>>()
-                        .as_slice(),
-                ]
-                .concat();
-
-                // Run the installer
-                let mut cmd = Command::new(powershell_path);
-
-                cmd.args(["-NoProfile", "-WindowStyle", "Hidden"])
-                    .args(["Start-Process"])
-                    .arg(installer_path);
-
-                if !installer_args.is_empty() {
-                    cmd.arg("-ArgumentList").arg(installer_args.join(", "));
-                }
-                cmd.spawn().expect("installer failed to start");
-
-                std::process::exit(0);
+                installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
             } else if found_path.extension() == Some(OsStr::new("msi")) {
-                // we need to wrap the current exe path in quotes for Start-Process
-                let mut current_exe_arg = std::ffi::OsString::new();
-                current_exe_arg.push("\"");
-                current_exe_arg.push(current_exe()?);
-                current_exe_arg.push("\"");
-
-                let mut msi_path = std::ffi::OsString::new();
-                msi_path.push("\"\"\"");
-                msi_path.push(&found_path);
-                msi_path.push("\"\"\"");
-
-                let installer_args = [
-                    self.config.windows.install_mode.msiexec_args(),
-                    self.installer_args
-                        .iter()
-                        .map(AsRef::as_ref)
-                        .collect::<Vec<_>>()
-                        .as_slice(),
-                ]
-                .concat();
-
-                // run the installer and relaunch the application
-                let powershell_install_res = Command::new(powershell_path)
-                    .args(["-NoProfile", "-WindowStyle", "Hidden"])
-                    .args([
-                        "Start-Process",
-                        "-Wait",
-                        "-FilePath",
-                        "$Env:SYSTEMROOT\\System32\\msiexec.exe",
-                        "-ArgumentList",
-                    ])
-                    .arg("/i,")
-                    .arg(&msi_path)
-                    .arg(format!(", {}, /promptrestart;", installer_args.join(", ")))
-                    .arg("Start-Process")
-                    .arg(current_exe_arg)
-                    .spawn();
-                if powershell_install_res.is_err() {
-                    // fallback to running msiexec directly - relaunch won't be available
-                    // we use this here in case powershell fails in an older machine somehow
-                    let msiexec_path = system_root.as_ref().map_or_else(
-                        |_| "msiexec.exe".to_string(),
-                        |p| format!("{p}\\System32\\msiexec.exe"),
-                    );
-                    let _ = Command::new(msiexec_path)
-                        .arg("/i")
-                        .arg(msi_path)
-                        .args(installer_args)
-                        .arg("/promptrestart")
-                        .spawn();
-                }
-
-                std::process::exit(0);
+                installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
+                installer_args.push(OsStr::new("/promptrestart"));
+            } else {
+                continue;
             }
+
+            if let Some(on_before_exit) = self.on_before_exit.as_ref() {
+                on_before_exit();
+            }
+
+            let file = encode_wide(found_path.as_os_str());
+            let parameters = encode_wide(installer_args.join(OsStr::new(" ")).as_os_str());
+            unsafe {
+                ShellExecuteW(
+                    0,
+                    w!("open"),
+                    file.as_ptr(),
+                    parameters.as_ptr(),
+                    std::ptr::null(),
+                    SW_SHOW,
+                )
+            };
+
+            std::process::exit(0);
         }
 
         Ok(())
@@ -636,10 +614,7 @@ impl Update {
     ))]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
         use flate2::read::GzDecoder;
-        use std::{
-            ffi::OsStr,
-            os::unix::fs::{MetadataExt, PermissionsExt},
-        };
+        use std::os::unix::fs::{MetadataExt, PermissionsExt};
         let archive = Cursor::new(bytes);
         let extract_path_metadata = self.extract_path.metadata()?;
 
@@ -912,4 +887,15 @@ fn base64_to_string(base64_string: &str) -> Result<String> {
         .map_err(|_| Error::SignatureUtf8(base64_string.into()))?
         .to_string();
     Ok(result)
+}
+
+#[cfg(target_os = "windows")]
+fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
+    use std::os::windows::ffi::OsStrExt;
+
+    string
+        .as_ref()
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect()
 }

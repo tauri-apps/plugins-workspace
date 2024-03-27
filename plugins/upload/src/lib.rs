@@ -130,7 +130,6 @@ fn file_to_body(channel: Channel, file: File) -> reqwest::Body {
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     PluginBuilder::new("upload")
-        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![download, upload])
         .build()
 }

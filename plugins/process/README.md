@@ -4,7 +4,7 @@ This plugin provides APIs to access the current process. To spawn child processe
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.70**_
+_This plugin requires a Rust version of at least **1.75**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-process = "2.0.0-alpha"
+tauri-plugin-process = "2.0.0-beta"
 # alternatively with Git:
 tauri-plugin-process = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```

@@ -32,6 +32,9 @@ mod commands;
 mod error;
 mod models;
 
+#[allow(dead_code, unused_imports, deprecated, clippy::derivable_impls)]
+mod notify_rust;
+
 pub use error::{Error, Result};
 
 #[cfg(desktop)]
@@ -221,15 +224,13 @@ impl<R: Runtime, T: Manager<R>> crate::NotificationExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    let mut init_script = include_str!("init-iife.js").to_string();
-    init_script.push_str(include_str!("api-iife.js"));
     Builder::new("notification")
         .invoke_handler(tauri::generate_handler![
             commands::notify,
             commands::request_permission,
             commands::is_permission_granted
         ])
-        .js_init_script(init_script)
+        .js_init_script(include_str!("init-iife.js").to_string())
         .setup(|app, api| {
             #[cfg(mobile)]
             let notification = mobile::init(app, api)?;

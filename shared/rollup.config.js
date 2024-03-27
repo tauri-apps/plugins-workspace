@@ -73,7 +73,7 @@ export function createConfig(options = {}) {
         banner: "if ('__TAURI__' in window) {",
         // the last `}` closes the if in the banner
         footer: `Object.defineProperty(window.__TAURI__, '${pluginJsName}', { value: ${iifeVarName} }) }`,
-        file: "src/api-iife.js",
+        file: "api-iife.js",
       },
       // and var is not guaranteed to assign to the global `window` object so we make sure to assign it
       plugins: [typescript(), terser(), nodeResolve()],

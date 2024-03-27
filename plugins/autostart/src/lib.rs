@@ -107,7 +107,6 @@ pub fn init<R: Runtime>(
     args: Option<Vec<&'static str>>,
 ) -> TauriPlugin<R> {
     Builder::new("autostart")
-        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![enable, disable, is_enabled])
         .setup(move |app, _api| {
             let mut builder = AutoLaunchBuilder::new();
@@ -130,11 +129,12 @@ pub fn init<R: Runtime>(
                 // exe path to not break it.
                 let exe_path = current_exe.canonicalize()?.display().to_string();
                 let parts: Vec<&str> = exe_path.split(".app/").collect();
-                let app_path = if parts.len() == 2 {
-                    format!("{}.app", parts.first().unwrap())
-                } else {
-                    exe_path
-                };
+                let app_path =
+                    if parts.len() == 2 && matches!(macos_launcher, MacosLauncher::AppleScript) {
+                        format!("{}.app", parts.first().unwrap())
+                    } else {
+                        exe_path
+                    };
                 info!("auto_start path {}", &app_path);
                 builder.set_app_path(&app_path);
             }

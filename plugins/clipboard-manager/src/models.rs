@@ -4,14 +4,33 @@
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Deserialize)]
+#[cfg_attr(mobile, derive(Serialize))]
 #[serde(rename_all = "camelCase")]
 pub enum ClipKind {
-    PlainText { label: Option<String>, text: String },
+    PlainText {
+        label: Option<String>,
+        text: String,
+    },
+    #[cfg(desktop)]
+    Image {
+        image: tauri::image::JsImage,
+    },
+    Html {
+        html: String,
+        alt_html: Option<String>,
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ClipboardContents {
-    PlainText { text: String },
+    PlainText {
+        text: String,
+    },
+    Image {
+        bytes: Vec<u8>,
+        width: usize,
+        height: usize,
+    },
 }

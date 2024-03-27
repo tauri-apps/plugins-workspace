@@ -110,7 +110,7 @@ class BiometricPlugin(private val activity: Activity): Plugin(activity) {
      * Check the device's availability and type of biometric authentication.
      */
     @Command
-    fun getStatus(invoke: Invoke) {
+    fun status(invoke: Invoke) {
         val manager = BiometricManager.from(activity)
         val biometryResult = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             manager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)

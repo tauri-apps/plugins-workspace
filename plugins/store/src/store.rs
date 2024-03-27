@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+#[cfg(mobile)]
+use crate::plugin::PluginHandle;
 use crate::{ChangePayload, Error};
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
-    fs::{create_dir_all, read, File},
-    io::Write,
     path::{Path, PathBuf},
 };
 use tauri::{AppHandle, Manager, Runtime};
@@ -30,15 +30,20 @@ fn default_deserialize(
 }
 
 /// Builds a [`Store`]
-pub struct StoreBuilder {
+pub struct StoreBuilder<R: Runtime> {
     path: PathBuf,
     defaults: Option<HashMap<String, JsonValue>>,
     cache: HashMap<String, JsonValue>,
     serialize: SerializeFn,
     deserialize: DeserializeFn,
+
+    #[cfg(mobile)]
+    mobile_plugin_handle: Option<PluginHandle<R>>,
+    #[cfg(not(mobile))]
+    _marker: std::marker::PhantomData<R>,
 }
 
-impl StoreBuilder {
+impl<R: Runtime> StoreBuilder<R> {
     /// Creates a new [`StoreBuilder`].
     ///
     /// # Examples
@@ -58,7 +63,17 @@ impl StoreBuilder {
             cache: Default::default(),
             serialize: default_serialize,
             deserialize: default_deserialize,
+            #[cfg(mobile)]
+            mobile_plugin_handle: None,
+            #[cfg(not(mobile))]
+            _marker: std::marker::PhantomData,
         }
+    }
+
+    #[cfg(mobile)]
+    pub fn mobile_plugin_handle(mut self, handle: PluginHandle<R>) -> Self {
+        self.mobile_plugin_handle = Some(handle);
+        self
     }
 
     /// Inserts a default key-value pair.
@@ -148,7 +163,7 @@ impl StoreBuilder {
     ///     Ok(())
     ///   });
     /// ```
-    pub fn build<R: Runtime>(self, app: AppHandle<R>) -> Store<R> {
+    pub fn build(self, app: AppHandle<R>) -> Store<R> {
         Store {
             app,
             path: self.path,
@@ -156,56 +171,27 @@ impl StoreBuilder {
             cache: self.cache,
             serialize: self.serialize,
             deserialize: self.deserialize,
+
+            #[cfg(mobile)]
+            mobile_plugin_handle: self.mobile_plugin_handle,
         }
     }
 }
 
 #[derive(Clone)]
 pub struct Store<R: Runtime> {
-    app: AppHandle<R>,
+    pub(crate) app: AppHandle<R>,
     pub(crate) path: PathBuf,
     defaults: Option<HashMap<String, JsonValue>>,
-    cache: HashMap<String, JsonValue>,
-    serialize: SerializeFn,
-    deserialize: DeserializeFn,
+    pub(crate) cache: HashMap<String, JsonValue>,
+    pub(crate) serialize: SerializeFn,
+    pub(crate) deserialize: DeserializeFn,
+
+    #[cfg(mobile)]
+    pub(crate) mobile_plugin_handle: Option<PluginHandle<R>>,
 }
 
 impl<R: Runtime> Store<R> {
-    /// Update the store from the on-disk state
-    pub fn load(&mut self) -> Result<(), Error> {
-        let app_dir = self
-            .app
-            .path()
-            .app_data_dir()
-            .expect("failed to resolve app dir");
-        let store_path = app_dir.join(&self.path);
-
-        let bytes = read(store_path)?;
-
-        self.cache
-            .extend((self.deserialize)(&bytes).map_err(Error::Deserialize)?);
-
-        Ok(())
-    }
-
-    /// Saves the store to disk
-    pub fn save(&self) -> Result<(), Error> {
-        let app_dir = self
-            .app
-            .path()
-            .app_data_dir()
-            .expect("failed to resolve app dir");
-        let store_path = app_dir.join(&self.path);
-
-        create_dir_all(store_path.parent().expect("invalid store path"))?;
-
-        let bytes = (self.serialize)(&self.cache).map_err(Error::Serialize)?;
-        let mut f = File::create(&store_path)?;
-        f.write_all(&bytes)?;
-
-        Ok(())
-    }
-
     pub fn insert(&mut self, key: String, value: JsonValue) -> Result<(), Error> {
         self.cache.insert(key.clone(), value.clone());
         self.app.emit(

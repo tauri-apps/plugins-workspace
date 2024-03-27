@@ -34,7 +34,7 @@ async function register(
   const h = new Channel<string>();
   h.onmessage = handler;
 
-  return await invoke("plugin:globalShortcut|register", {
+  return await invoke("plugin:global-shortcut|register", {
     shortcut,
     handler: h,
   });
@@ -62,7 +62,7 @@ async function registerAll(
   const h = new Channel<string>();
   h.onmessage = handler;
 
-  return await invoke("plugin:globalShortcut|register_all", {
+  return await invoke("plugin:global-shortcut|register_all", {
     shortcuts,
     handler: h,
   });
@@ -84,7 +84,7 @@ async function registerAll(
  * @since 2.0.0
  */
 async function isRegistered(shortcut: string): Promise<boolean> {
-  return await invoke("plugin:globalShortcut|is_registered", {
+  return await invoke("plugin:global-shortcut|is_registered", {
     shortcut,
   });
 }
@@ -102,7 +102,7 @@ async function isRegistered(shortcut: string): Promise<boolean> {
  * @since 2.0.0
  */
 async function unregister(shortcut: string): Promise<void> {
-  return await invoke("plugin:globalShortcut|unregister", {
+  return await invoke("plugin:global-shortcut|unregister", {
     shortcut,
   });
 }
@@ -118,7 +118,7 @@ async function unregister(shortcut: string): Promise<void> {
  * @since 2.0.0
  */
 async function unregisterAll(): Promise<void> {
-  return await invoke("plugin:globalShortcut|unregister_all");
+  return await invoke("plugin:global-shortcut|unregister_all");
 }
 
 export { register, registerAll, isRegistered, unregister, unregisterAll };

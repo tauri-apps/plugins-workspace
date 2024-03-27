@@ -7,7 +7,10 @@ mod cmd;
 mod tray;
 
 use serde::Serialize;
-use tauri::{window::WindowBuilder, App, AppHandle, Manager, RunEvent, WindowUrl};
+use tauri::{
+    webview::{PageLoadEvent, WebviewWindowBuilder},
+    App, AppHandle, Manager, RunEvent, WebviewUrl,
+};
 
 #[derive(Clone, Serialize)]
 struct Reply {
@@ -51,10 +54,11 @@ pub fn run() {
                 app.handle().plugin(tauri_plugin_biometric::init())?;
             }
 
-            let mut window_builder = WindowBuilder::new(app, "main", WindowUrl::default());
+            let mut webview_window_builder =
+                WebviewWindowBuilder::new(app, "main", WebviewUrl::default());
             #[cfg(desktop)]
             {
-                window_builder = window_builder
+                webview_window_builder = webview_window_builder
                     .user_agent(&format!("Tauri API - {}", std::env::consts::OS))
                     .title("Tauri API Validation")
                     .inner_size(1000., 800.)
@@ -64,7 +68,7 @@ pub fn run() {
 
             #[cfg(target_os = "windows")]
             {
-                window_builder = window_builder
+                webview_window_builder = webview_window_builder
                     .transparent(true)
                     .shadow(true)
                     .decorations(false);
@@ -72,15 +76,14 @@ pub fn run() {
 
             #[cfg(target_os = "macos")]
             {
-                window_builder = window_builder.transparent(true);
+                webview_window_builder = webview_window_builder.transparent(true);
             }
 
-            let window = window_builder.build().unwrap();
+            let webview = webview_window_builder.build().unwrap();
 
             #[cfg(debug_assertions)]
-            window.open_devtools();
+            webview.open_devtools();
 
-            #[cfg(desktop)]
             std::thread::spawn(|| {
                 let server = match tiny_http::Server::http("localhost:3003") {
                     Ok(s) => s,
@@ -107,18 +110,20 @@ pub fn run() {
 
             Ok(())
         })
-        .on_page_load(|window, _| {
-            let window_ = window.clone();
-            window.listen("js-event", move |event| {
-                println!("got js-event with message '{:?}'", event.payload());
-                let reply = Reply {
-                    data: "something else".to_string(),
-                };
+        .on_page_load(|webview, payload| {
+            if payload.event() == PageLoadEvent::Finished {
+                let webview_ = webview.clone();
+                webview.listen("js-event", move |event| {
+                    println!("got js-event with message '{:?}'", event.payload());
+                    let reply = Reply {
+                        data: "something else".to_string(),
+                    };
 
-                window_
-                    .emit("rust-event", Some(reply))
-                    .expect("failed to emit");
-            });
+                    webview_
+                        .emit("rust-event", Some(reply))
+                        .expect("failed to emit");
+                });
+            }
         });
 
     #[cfg(target_os = "macos")]
@@ -132,7 +137,7 @@ pub fn run() {
             cmd::log_operation,
             cmd::perform_request,
         ])
-        .build(tauri::tauri_build_context!())
+        .build(tauri::generate_context!())
         .expect("error while building tauri application");
 
     #[cfg(target_os = "macos")]

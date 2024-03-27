@@ -47,9 +47,15 @@ impl<R: Runtime, T: Manager<R>> crate::ClipboardExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("clipboard")
-        .js_init_script(include_str!("api-iife.js").to_string())
-        .invoke_handler(tauri::generate_handler![commands::write, commands::read])
+    Builder::new("clipboard-manager")
+        .invoke_handler(tauri::generate_handler![
+            commands::write_text,
+            commands::read_text,
+            commands::read_image,
+            commands::write_image,
+            commands::write_html,
+            commands::clear
+        ])
         .setup(|app, api| {
             #[cfg(mobile)]
             let clipboard = mobile::init(app, api)?;

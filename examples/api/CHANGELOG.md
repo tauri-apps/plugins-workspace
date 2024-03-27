@@ -1,5 +1,71 @@
 # Changelog
 
+## \[2.0.0-beta.3]
+
+### Dependencies
+
+- Upgraded to `clipboard-manager-js@2.1.0-beta.0`
+
+## \[2.0.0-beta.2]
+
+### Dependencies
+
+- Upgraded to `clipboard-manager-js@2.0.0-beta.2`
+- Upgraded to `dialog-js@2.0.0-beta.2`
+- Upgraded to `fs-js@2.0.0-beta.2`
+- Upgraded to `http-js@2.0.0-beta.2`
+- Upgraded to `shell-js@2.0.0-beta.2`
+- Upgraded to `barcode-scanner-js@2.0.0-beta.2`
+- Upgraded to `biometric-js@2.0.0-beta.2`
+- Upgraded to `cli-js@2.0.0-beta.2`
+- Upgraded to `global-shortcut-js@2.0.0-beta.2`
+- Upgraded to `log-js@2.0.0-beta.2`
+- Upgraded to `nfc-js@2.0.0-beta.2`
+- Upgraded to `notification-js@2.0.0-beta.2`
+- Upgraded to `os-js@2.0.0-beta.2`
+- Upgraded to `process-js@2.0.0-beta.2`
+- Upgraded to `updater-js@2.0.0-beta.2`
+
+## \[2.0.0-beta.1]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@2.0.0-beta.1`
+- Upgraded to `biometric-js@2.0.0-beta.1`
+- Upgraded to `cli-js@2.0.0-beta.1`
+- Upgraded to `clipboard-manager-js@2.0.0-beta.1`
+- Upgraded to `dialog-js@2.0.0-beta.1`
+- Upgraded to `fs-js@2.0.0-beta.1`
+- Upgraded to `global-shortcut-js@2.0.0-beta.1`
+- Upgraded to `http-js@2.0.0-beta.1`
+- Upgraded to `log-js@2.0.0-beta.1`
+- Upgraded to `nfc-js@2.0.0-beta.1`
+- Upgraded to `notification-js@2.0.0-beta.1`
+- Upgraded to `os-js@2.0.0-beta.1`
+- Upgraded to `process-js@2.0.0-beta.1`
+- Upgraded to `shell-js@2.0.0-beta.1`
+- Upgraded to `updater-js@2.0.0-beta.1`
+
+## \[2.0.0-beta.0]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@2.0.0-beta.0`
+- Upgraded to `biometric-js@2.0.0-beta.0`
+- Upgraded to `cli-js@2.0.0-beta.0`
+- Upgraded to `clipboard-manager-js@2.0.0-beta.0`
+- Upgraded to `dialog-js@2.0.0-beta.0`
+- Upgraded to `fs-js@2.0.0-beta.0`
+- Upgraded to `global-shortcut-js@2.0.0-beta.0`
+- Upgraded to `http-js@2.0.0-beta.0`
+- Upgraded to `log-js@2.0.0-beta.0`
+- Upgraded to `nfc-js@2.0.0-beta.0`
+- Upgraded to `notification-js@2.0.0-beta.0`
+- Upgraded to `os-js@2.0.0-beta.0`
+- Upgraded to `process-js@2.0.0-beta.0`
+- Upgraded to `shell-js@2.0.0-beta.0`
+- Upgraded to `updater-js@2.0.0-beta.0`
+
 ## \[2.0.0-alpha.9]
 
 ### Dependencies

@@ -9,7 +9,11 @@ import readline from "readline";
 const header = `Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 SPDX-License-Identifier: Apache-2.0
 SPDX-License-Identifier: MIT`;
-const ignoredLicense = "// Copyright 2021 Jonas Kruckenberg";
+const ignoredLicenses = [
+  "// Copyright 2021 Flavio Oliveira",
+  "// Copyright 2021 Jonas Kruckenberg",
+  "// Copyright 2018-2023 the Deno authors.",
+];
 
 const extensions = [".rs", ".js", ".ts", ".yml", ".swift", ".kt"];
 const ignore = [
@@ -23,12 +27,13 @@ const ignore = [
   "api-iife.js",
   "init-iife.js",
   ".build",
+  "notify_rust",
 ];
 
 async function checkFile(file) {
   if (
     extensions.some((e) => file.endsWith(e)) &&
-    !ignore.some((i) => file.endsWith(i))
+    !ignore.some((i) => file.includes(`${path.sep}${i}`))
   ) {
     const fileStream = fs.createReadStream(file);
     const rl = readline.createInterface({
@@ -44,7 +49,7 @@ async function checkFile(file) {
         line.length === 0 ||
         line.startsWith("#!") ||
         line.startsWith("// swift-tools-version:") ||
-        line === ignoredLicense
+        ignoredLicenses.includes(line)
       ) {
         continue;
       }

@@ -273,6 +273,10 @@ pub struct Builder {
 }
 
 impl Builder {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     /// Add migrations to a database.
     #[must_use]
     pub fn add_migrations(mut self, db_url: &str, migrations: Vec<Migration>) -> Self {
@@ -284,7 +288,6 @@ impl Builder {
 
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R, Option<PluginConfig>> {
         PluginBuilder::<R, Option<PluginConfig>>::new("sql")
-            .js_init_script(include_str!("api-iife.js").to_string())
             .invoke_handler(tauri::generate_handler![load, execute, select, close])
             .setup(|app, api| {
                 let config = api.config().clone().unwrap_or_default();

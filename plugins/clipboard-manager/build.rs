@@ -2,11 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+const COMMANDS: &[&str] = &[
+    "write_text",
+    "read_text",
+    "write_image",
+    "read_image",
+    "write_html",
+    "clear",
+];
+
 fn main() {
-    if let Err(error) = tauri_build::mobile::PluginBuilder::new()
+    if let Err(error) = tauri_plugin::Builder::new(COMMANDS)
+        .global_api_script_path("./api-iife.js")
         .android_path("android")
         .ios_path("ios")
-        .run()
+        .try_build()
     {
         println!("{error:#}");
         // when building documentation for Android the plugin build result is irrelevant to the crate itself

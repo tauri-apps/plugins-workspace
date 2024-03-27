@@ -4,7 +4,7 @@ Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx)
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.70**_
+_This plugin requires a Rust version of at least **1.75**_
 
 There are three general methods of installation that we can recommend.
 
@@ -19,7 +19,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 [dependencies.tauri-plugin-sql]
 features = ["sqlite"] # or "postgres", or "mysql"
-version = "2.0.0-alpha"
+version = "2.0.0-beta"
 # alternatively with Git
 git = "https://github.com/tauri-apps/plugins-workspace"
 branch = "v2"
@@ -89,7 +89,7 @@ const result = await db.execute(
 );
 
 const result = await db.execute(
-  "UPDATE todos SET title = $1, completed = $2 WHERE id = $3",
+  "UPDATE todos SET title = $1, status = $2 WHERE id = $3",
   [todos.title, todos.status, todos.id],
 );
 
@@ -100,7 +100,7 @@ const result = await db.execute(
 );
 
 const result = await db.execute(
-  "UPDATE todos SET title = ?, completed = ? WHERE id = ?",
+  "UPDATE todos SET title = ?, status = ? WHERE id = ?",
   [todos.title, todos.status, todos.id],
 );
 ```
@@ -147,7 +147,6 @@ fn main() {
     ];
 
     tauri::Builder::default()
-        .plugin(tauri_plugin_shell::init())
         .plugin(
             tauri_plugin_sql::Builder::default()
                 .add_migrations("sqlite:mydatabase.db", migrations)

@@ -4,7 +4,7 @@ Read and write to the system clipboard.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.70**_
+_This plugin requires a Rust version of at least **1.75**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-clipboard-manager = "2.0.0-alpha"
+tauri-plugin-clipboard-manager = "2.0.0-beta"
 # alternatively with Git:
 tauri-plugin-clipboard-manager = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -60,7 +60,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
+import { writeText, readText, writeHtml, readHtml, clear } from "@tauri-apps/plugin-clipboard-manager";
 await writeText("Tauri is awesome!");
 assert(await readText(), "Tauri is awesome!");
 ```

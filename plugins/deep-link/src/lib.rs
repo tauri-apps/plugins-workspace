@@ -43,6 +43,7 @@ fn init_deep_link<R: Runtime, C: DeserializeOwned>(
                     };
 
                     let _ = app_handle.emit("deep-link://new-url", vec![url]);
+
                     Ok(())
                 }),
             },
@@ -291,7 +292,6 @@ impl<R: Runtime, T: Manager<R>> crate::DeepLinkExt<R> for T {
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
     Builder::new("deep-link")
-        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![commands::get_current])
         .setup(|app, api| {
             app.manage(init_deep_link(app, api)?);

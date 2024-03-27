@@ -84,13 +84,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     // Dialogs are implemented natively on Android
     #[cfg(not(target_os = "android"))]
     {
-        let mut init_script = include_str!("init-iife.js").to_string();
-        init_script.push_str(include_str!("api-iife.js"));
-        builder = builder.js_init_script(init_script);
-    }
-    #[cfg(target_os = "android")]
-    {
-        builder = builder.js_init_script(include_str!("api-iife.js").to_string());
+        builder = builder.js_init_script(include_str!("init-iife.js").to_string());
     }
 
     builder
@@ -178,8 +172,10 @@ impl<R: Runtime> MessageDialogBuilder<R> {
     ///
     /// - **Linux:** Unsupported.
     #[cfg(desktop)]
-    pub fn parent<W: raw_window_handle::HasRawWindowHandle>(mut self, parent: &W) -> Self {
-        self.parent.replace(parent.raw_window_handle());
+    pub fn parent<W: raw_window_handle::HasWindowHandle>(mut self, parent: &W) -> Self {
+        if let Ok(h) = parent.window_handle() {
+            self.parent.replace(h.as_raw());
+        }
         self
     }
 
@@ -265,6 +261,7 @@ pub struct FileDialogBuilder<R: Runtime> {
     pub(crate) starting_directory: Option<PathBuf>,
     pub(crate) file_name: Option<String>,
     pub(crate) title: Option<String>,
+    pub(crate) can_create_directories: Option<bool>,
     #[cfg(desktop)]
     pub(crate) parent: Option<raw_window_handle::RawWindowHandle>,
 }
@@ -289,6 +286,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
             starting_directory: None,
             file_name: None,
             title: None,
+            can_create_directories: None,
             #[cfg(desktop)]
             parent: None,
         }
@@ -329,8 +327,10 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// Sets the parent window of the dialog.
     #[cfg(desktop)]
     #[must_use]
-    pub fn set_parent<W: raw_window_handle::HasRawWindowHandle>(mut self, parent: &W) -> Self {
-        self.parent.replace(parent.raw_window_handle());
+    pub fn set_parent<W: raw_window_handle::HasWindowHandle>(mut self, parent: &W) -> Self {
+        if let Ok(h) = parent.window_handle() {
+            self.parent.replace(h.as_raw());
+        }
         self
     }
 
@@ -338,6 +338,12 @@ impl<R: Runtime> FileDialogBuilder<R> {
     #[must_use]
     pub fn set_title(mut self, title: impl Into<String>) -> Self {
         self.title.replace(title.into());
+        self
+    }
+
+    /// Set whether it should be possible to create new directories in the dialog. Enabled by default. **macOS only**.
+    pub fn set_can_create_directories(mut self, can: bool) -> Self {
+        self.can_create_directories.replace(can);
         self
     }
 

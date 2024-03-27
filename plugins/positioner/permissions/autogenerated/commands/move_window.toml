@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-move-window"
+description = "Enables the move_window command without any pre-configured scope."
+commands.allow = ["move_window"]
+
+[[permission]]
+identifier = "deny-move-window"
+description = "Denies the move_window command without any pre-configured scope."
+commands.deny = ["move_window"]

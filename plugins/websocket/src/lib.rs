@@ -12,6 +12,7 @@
 )]
 
 use futures_util::{stream::SplitSink, SinkExt, StreamExt};
+use http::header::{HeaderName, HeaderValue};
 use serde::{ser::Serializer, Deserialize, Serialize};
 use tauri::{
     ipc::Channel,
@@ -22,6 +23,7 @@ use tokio::{net::TcpStream, sync::Mutex};
 use tokio_tungstenite::{
     connect_async_with_config,
     tungstenite::{
+        client::IntoClientRequest,
         protocol::{CloseFrame as ProtocolCloseFrame, WebSocketConfig},
         Message,
     },
@@ -30,8 +32,6 @@ use tokio_tungstenite::{
 
 use std::collections::HashMap;
 use std::str::FromStr;
-use tauri::http::header::{HeaderName, HeaderValue};
-use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 
 type Id = u32;
 type WebSocket = WebSocketStream<MaybeTlsStream<TcpStream>>;
@@ -200,7 +200,6 @@ async fn send(
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     PluginBuilder::new("websocket")
-        .js_init_script(include_str!("api-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![connect, send])
         .setup(|app, _api| {
             app.manage(ConnectionManager::default());

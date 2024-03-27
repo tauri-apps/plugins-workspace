@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-verify-registration"
+description = "Enables the verify_registration command without any pre-configured scope."
+commands.allow = ["verify_registration"]
+
+[[permission]]
+identifier = "deny-verify-registration"
+description = "Denies the verify_registration command without any pre-configured scope."
+commands.deny = ["verify_registration"]

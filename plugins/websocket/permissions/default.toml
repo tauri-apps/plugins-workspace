@@ -1,0 +1,4 @@
+"$schema" = "schemas/schema.json"
+[default]
+description = "Allows connecting and sending data to a WebSocket server"
+permissions = ["allow-connect", "allow-send"]
