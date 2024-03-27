@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: MIT
 
 use serde::de::DeserializeOwned;
-#[cfg(target_os = "linux")]
-use tauri::Manager;
 use tauri::{
     plugin::{Builder, PluginApi, TauriPlugin},
     AppHandle, Manager, Runtime,
@@ -105,6 +103,8 @@ mod imp {
         io::Write,
         process::Command,
     };
+    #[cfg(target_os = "linux")]
+    use tauri::Manager;
     use tauri::{AppHandle, Runtime};
     #[cfg(windows)]
     use winreg::{enums::HKEY_CURRENT_USER, RegKey};
