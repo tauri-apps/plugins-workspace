@@ -6789,7 +6789,6 @@ dependencies = [
  "http 0.2.12",
  "minisign-verify",
  "mockito",
- "percent-encoding",
  "reqwest",
  "semver",
  "serde",
