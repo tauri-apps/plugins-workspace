@@ -72,7 +72,7 @@ upload(
 ```
 
 ```javascript
-import { download } from "tauri-plugin-upload-api";
+import { download } from "@tauri-apps/plugin-upload";
 
 download(
   "https://example.com/file-download-link",
