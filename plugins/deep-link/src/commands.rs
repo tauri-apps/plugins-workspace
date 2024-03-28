@@ -22,7 +22,6 @@ pub(crate) async fn register<R: Runtime>(
     deep_link: State<'_, DeepLink<R>>,
     protocol: String,
 ) -> Result<()> {
-    #[cfg(desktop)]
     deep_link.register(protocol)
 }
 
@@ -33,7 +32,6 @@ pub(crate) async fn unregister<R: Runtime>(
     deep_link: State<'_, DeepLink<R>>,
     protocol: String,
 ) -> Result<()> {
-    #[cfg(desktop)]
     deep_link.unregister(protocol)
 }
 
