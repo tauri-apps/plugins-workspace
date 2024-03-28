@@ -23,14 +23,12 @@ use tauri::{
 use std::{
     collections::{HashMap, HashSet},
     fs::{create_dir_all, File},
-    io::Write,
-    sync::{Arc,Mutex,OnceLock},
+    sync::{Arc, Mutex},
 };
 
 mod cmd;
 
 pub const STATE_FILENAME: &str = ".window-state";
-static USE_JSON: OnceLock<bool> = OnceLock::new();
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -39,8 +37,7 @@ pub enum Error {
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
     #[error(transparent)]
-    Bincode(#[from] Box<bincode::ErrorKind>),
-    #[error(transparent)] SerdeJson(#[from] serde_json::Error),
+    SerdeJson(#[from] serde_json::Error)
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -119,12 +116,7 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
                 .map_err(Error::Io)
                 .and_then(|_| File::create(state_path).map_err(Into::into))
                 .and_then(|mut f| {
-                    if *USE_JSON.get_or_init(|| false) {
-                        return serde_json::to_writer(&mut f, &*state).map_err(Into::into);
-                    }
-                    f.write_all(&bincode::serialize(&*state).map_err(Error::Bincode)?).map_err(
-                        Into::into
-                    )
+                    serde_json::to_writer_pretty(&mut f, &*state).map_err(Into::into)
                 })
         } else {
             Ok(())
@@ -316,12 +308,6 @@ impl Builder {
         self
     }
 
-    /// Configures the plugin to write the state file in JSON format instead of binary format.
-    pub fn with_json(self, flag: bool) -> Self {
-        USE_JSON.set(flag).unwrap();
-        self
-    }
-
     /// Adds the given window label to a list of windows to skip initial state restore.
     pub fn skip_initial_state(mut self, label: &str) -> Self {
         self.skip_initial_state.insert(label.into());
@@ -343,15 +329,10 @@ impl Builder {
                     let state_path = app_dir.join(STATE_FILENAME);
                     if state_path.exists() {
                         Arc::new(Mutex::new(
-                                std::fs::read(state_path)
+                            std::fs::read(state_path)
                                 .map_err(Error::from)
-                                    .and_then(|state| {
-                                        if *USE_JSON.get_or_init(|| false) {
-                                            return serde_json::from_slice(&state).map_err(Into::into);
-                                        }
-                                        bincode::deserialize(&state).map_err(Into::into)
-                                    })
-                                .unwrap_or_default()
+                                .and_then(|state| serde_json::from_slice(&state).map_err(Into::into))
+                                .unwrap_or_default(),
                         ))
                     } else {
                         Default::default()
