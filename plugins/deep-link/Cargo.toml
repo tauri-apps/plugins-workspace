@@ -16,12 +16,17 @@ targets = [ "x86_64-linux-android" ]
 [build-dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
+tauri-utils = { workspace = true }
 tauri-plugin = { workspace = true, features = [ "build" ] }
 
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
+tauri-utils = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 url = { workspace = true }
+
+[target."cfg(windows)".dependencies]
+winreg = "0.52"
