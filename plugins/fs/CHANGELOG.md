@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.4]
+
+- [`9c2fb93`](https://github.com/tauri-apps/plugins-workspace/commit/9c2fb9306ecd3936a2aef56b3c012899036db098) Enhance the scope type to also allow a plain string representing the path to allow or deny.
+
 ## \[2.0.0-beta.3]
 
 - [`cb96aa0`](https://github.com/tauri-apps/plugins-workspace/commit/cb96aa06277f7b864952827ec9fb1e74c8a1f761)([#1082](https://github.com/tauri-apps/plugins-workspace/pull/1082)) Fixes `watch` and `watchImmediate` which previously ignored the `baseDir` parameter.

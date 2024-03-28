@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.4]
+
+- [`a233919`](https://github.com/tauri-apps/plugins-workspace/commit/a2339195aa940bff86d76375fd05087595bf06ce)([#1118](https://github.com/tauri-apps/plugins-workspace/pull/1118)) Fix LaunchAgent-based autostart for macOS.
+
 ## \[2.0.0-beta.3]
 
 - [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.

@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-beta.4]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.4`
+
 ## \[2.0.0-beta.3]
 
 - [`c873e4d`](https://github.com/tauri-apps/plugins-workspace/commit/c873e4d6c74e759742f7c9a88e35cff10a75122a)([#1059](https://github.com/tauri-apps/plugins-workspace/pull/1059)) Fixes scope not allowing subpaths, query parameters and hash when those values are empty.
