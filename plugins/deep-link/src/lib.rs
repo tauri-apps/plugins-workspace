@@ -122,9 +122,9 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// -**macOS / Android / iOS**: Unsupported, always returns `Ok(false)`
+        /// -**macOS / Android / iOS**: Unsupported, always returns `Ok(true)`
         pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
-            Ok(false)
+            Ok(true)
         }
     }
 }
@@ -272,7 +272,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// -**macOS / Android / iOS**: Unsupported, always returns `Ok(false)`
+        /// -**macOS / Android / iOS**: Unsupported, always returns `Ok(true)`
         pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
             #[cfg(windows)]
             {
@@ -310,7 +310,7 @@ mod imp {
             }
 
             #[cfg(not(any(windows, target_os = "linux")))]
-            Ok(false)
+            Ok(true)
         }
     }
 }
