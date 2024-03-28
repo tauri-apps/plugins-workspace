@@ -83,11 +83,48 @@ mod imp {
 
     impl<R: Runtime> DeepLink<R> {
         /// Get the current URLs that triggered the deep link.
+        ///
+        /// ## Platform-specific:
+        ///
+        /// -**Windows / Linux**: Unsupported.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
             self.0
                 .run_mobile_plugin::<GetCurrentResponse>("getCurrent", ())
                 .map(|v| v.url.map(|url| vec![url]))
                 .map_err(Into::into)
+        }
+
+        /// Register the app as the default handler for the specified protocol.
+        ///
+        /// - `protocol`: The name of the protocol without `://`. For example, if you want your app to handle `tauri://` links, call this method with `tauri` as the protocol.
+        ///
+        /// ## Platform-specific:
+        ///
+        /// -**macOS / Android / iOS**: Unsupported.
+        pub fn register<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
+            Ok(())
+        }
+
+        /// Unregister the app as the default handler for the specified protocol.
+        ///
+        /// - `protocol`: The name of the protocol without `://`.
+        ///
+        /// ## Platform-specific:
+        ///
+        /// -**macOS / Linux / Android / iOS**: Unsupported.
+        pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
+            Ok(())
+        }
+
+        /// Check whether the app is the default handler for the specified protocol.
+        ///
+        /// - `protocol`: The name of the protocol without `://`.
+        ///
+        /// ## Platform-specific:
+        ///
+        /// -**macOS / Android / iOS**: Unsupported, always returns `Ok(false)`
+        pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
+            Ok(false)
         }
     }
 }
