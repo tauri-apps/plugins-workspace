@@ -42,7 +42,7 @@ export type ShortcutHandler = (shortcut: string) => void;
  */
 async function register(
   shortcuts: string | string[],
-  handler: ShortcutHandler
+  handler: ShortcutHandler,
 ): Promise<void> {
   const h = new Channel<string>();
   h.onmessage = handler;
