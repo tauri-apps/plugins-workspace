@@ -4797,6 +4797,13 @@
           ]
         },
         {
+          "description": "global-shortcut:allow-unregister-all -> Enables the unregister_all command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "global-shortcut:allow-unregister-all"
+          ]
+        },
+        {
           "description": "global-shortcut:deny-is-registered -> Denies the is_registered command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -4815,6 +4822,13 @@
           "type": "string",
           "enum": [
             "global-shortcut:deny-unregister"
+          ]
+        },
+        {
+          "description": "global-shortcut:deny-unregister-all -> Denies the unregister_all command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "global-shortcut:deny-unregister-all"
           ]
         },
         {

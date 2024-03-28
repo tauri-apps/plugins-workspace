@@ -42,7 +42,7 @@ export type ShortcutHandler = (shortcut: string) => void;
  */
 async function register(
   shortcuts: string | string[],
-  handler: ShortcutHandler,
+  handler: ShortcutHandler
 ): Promise<void> {
   const h = new Channel<string>();
   h.onmessage = handler;
@@ -78,6 +78,23 @@ async function unregister(shortcuts: string | string[]): Promise<void> {
 }
 
 /**
+ * Unregister all global shortcuts.
+ *
+ * @example
+ * ```typescript
+ * import { unregisterAll } from '@tauri-apps/plugin-global-shortcut';
+ * await unregisterAll();
+ * ```
+ *
+ * @param shortcut shortcut definition (modifiers and key separated by "+" e.g. CmdOrControl+Q), also accepts a list of shortcuts
+ *
+ * @since 2.0.0
+ */
+async function unregisterAll(): Promise<void> {
+  return await invoke("plugin:global-shortcut|unregister_all", {});
+}
+
+/**
  * Determines whether the given shortcut is registered by this application or not.
  *
  * If the shortcut is registered by another application, it will still return `false`.
@@ -98,4 +115,4 @@ async function isRegistered(shortcut: string): Promise<boolean> {
   });
 }
 
-export { register, unregister, isRegistered };
+export { register, unregister, unregisterAll, isRegistered };
