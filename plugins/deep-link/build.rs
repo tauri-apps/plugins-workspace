@@ -6,7 +6,7 @@
 mod config;
 use config::{AssociatedDomain, Config};
 
-const COMMANDS: &[&str] = &["get_current"];
+const COMMANDS: &[&str] = &["get_current", "register", "unregister", "is_registered"];
 
 // TODO: Consider using activity-alias in case users may have multiple activities in their app.
 // TODO: Do we want to support the other path* configs too?

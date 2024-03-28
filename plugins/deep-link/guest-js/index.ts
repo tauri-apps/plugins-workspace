@@ -6,9 +6,19 @@ import { invoke } from "@tauri-apps/api/core";
 import { UnlistenFn, listen } from "@tauri-apps/api/event";
 
 export async function getCurrent(): Promise<string[] | null> {
-  return await invoke<string[] | null>("plugin:deep-link|get_current");
+  return await invoke("plugin:deep-link|get_current");
+}
 
-  // return await invoke("plugin:deep-link|get_current");
+export async function register(): Promise<null> {
+  return await invoke("plugin:deep-link|register");
+}
+
+export async function unregister(): Promise<null> {
+  return await invoke("plugin:deep-link|unregister");
+}
+
+export async function isRegistered(): Promise<boolean> {
+  return await invoke("plugin:deep-link|i_registered");
 }
 
 export async function onOpenUrl(

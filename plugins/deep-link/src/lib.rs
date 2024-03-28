@@ -294,7 +294,12 @@ impl<R: Runtime, T: Manager<R>> crate::DeepLinkExt<R> for T {
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
     Builder::new("deep-link")
-        .invoke_handler(tauri::generate_handler![commands::get_current])
+        .invoke_handler(tauri::generate_handler![
+            commands::get_current,
+            commands::register,
+            commands::unregister,
+            commands::is_registered
+        ])
         .setup(|app, api| {
             app.manage(init_deep_link(app, api)?);
             Ok(())
