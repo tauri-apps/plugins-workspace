@@ -747,6 +747,10 @@ pub(crate) fn get_updater_target() -> Option<&'static str> {
         Some("darwin")
     } else if cfg!(target_os = "windows") {
         Some("windows")
+    } else if cfg!(target_os = "ios") {
+        Some("ios")
+    } else if cfg!(target_os = "android") {
+        Some("android")
     } else {
         None
     }
