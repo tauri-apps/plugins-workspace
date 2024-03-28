@@ -82,11 +82,11 @@ mod imp {
     pub struct DeepLink<R: Runtime>(pub(crate) PluginHandle<R>);
 
     impl<R: Runtime> DeepLink<R> {
-        /// Get the current URLs that triggered the deep link.
+        /// Get the current URLs that triggered the deep link. Use this on app load to check whether your app was started via a deep link.
         ///
         /// ## Platform-specific:
         ///
-        /// -**Windows / Linux**: Unsupported.
+        /// - **Windows / Linux**: Unsupported.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
             self.0
                 .run_mobile_plugin::<GetCurrentResponse>("getCurrent", ())
@@ -100,7 +100,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// -**macOS / Android / iOS**: Unsupported.
+        /// - **macOS / Android / iOS**: Unsupported.
         pub fn register<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             Ok(())
         }
@@ -111,7 +111,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// -**macOS / Linux / Android / iOS**: Unsupported.
+        /// - **macOS / Linux / Android / iOS**: Unsupported.
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             Ok(())
         }
@@ -122,7 +122,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// -**macOS / Android / iOS**: Unsupported, always returns `Ok(true)`
+        /// - **macOS / Android / iOS**: Unsupported, always returns `Ok(true)`.
         pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
             Ok(true)
         }
@@ -154,11 +154,11 @@ mod imp {
     }
 
     impl<R: Runtime> DeepLink<R> {
-        /// Get the current URLs that triggered the deep link.
+        /// Get the current URLs that triggered the deep link. Use this on app load to check whether your app was started via a deep link.
         ///
         /// ## Platform-specific:
         ///
-        /// -**Windows / Linux**: Unsupported.
+        /// - **Windows / Linux**: Unsupported.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
             Ok(self.current.lock().unwrap().clone())
         }
@@ -169,7 +169,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// -**macOS / Android / iOS**: Unsupported.
+        /// - **macOS / Android / iOS**: Unsupported.
         pub fn register<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
             {
@@ -251,7 +251,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// -**macOS / Linux / Android / iOS**: Unsupported.
+        /// - **macOS / Linux / Android / iOS**: Unsupported.
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
             {
@@ -272,7 +272,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// -**macOS / Android / iOS**: Unsupported, always returns `Ok(true)`
+        /// - **macOS / Android / iOS**: Unsupported, always returns `Ok(true)`.
         pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
             #[cfg(windows)]
             {
