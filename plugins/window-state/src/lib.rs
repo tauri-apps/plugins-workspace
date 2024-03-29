@@ -37,7 +37,7 @@ pub enum Error {
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
     #[error(transparent)]
-    SerdeJson(#[from] serde_json::Error)
+    SerdeJson(#[from] serde_json::Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -115,9 +115,7 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
             create_dir_all(&app_dir)
                 .map_err(Error::Io)
                 .and_then(|_| File::create(state_path).map_err(Into::into))
-                .and_then(|mut f| {
-                    serde_json::to_writer_pretty(&mut f, &*state).map_err(Into::into)
-                })
+                .and_then(|mut f| serde_json::to_writer_pretty(&mut f, &*state).map_err(Into::into))
         } else {
             Ok(())
         }
@@ -323,23 +321,24 @@ impl Builder {
                 cmd::restore_state
             ])
             .setup(|app, _api| {
-                let cache: Arc<Mutex<HashMap<String, WindowState>>> = if let Ok(app_dir) =
-                    app.path().app_config_dir()
-                {
-                    let state_path = app_dir.join(STATE_FILENAME);
-                    if state_path.exists() {
-                        Arc::new(Mutex::new(
-                            std::fs::read(state_path)
-                                .map_err(Error::from)
-                                .and_then(|state| serde_json::from_slice(&state).map_err(Into::into))
-                                .unwrap_or_default(),
-                        ))
+                let cache: Arc<Mutex<HashMap<String, WindowState>>> =
+                    if let Ok(app_dir) = app.path().app_config_dir() {
+                        let state_path = app_dir.join(STATE_FILENAME);
+                        if state_path.exists() {
+                            Arc::new(Mutex::new(
+                                std::fs::read(state_path)
+                                    .map_err(Error::from)
+                                    .and_then(|state| {
+                                        serde_json::from_slice(&state).map_err(Into::into)
+                                    })
+                                    .unwrap_or_default(),
+                            ))
+                        } else {
+                            Default::default()
+                        }
                     } else {
                         Default::default()
-                    }
-                } else {
-                    Default::default()
-                };
+                    };
                 app.manage(WindowStateCache(cache));
                 Ok(())
             })
