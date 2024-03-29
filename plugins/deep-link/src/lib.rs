@@ -178,10 +178,9 @@ mod imp {
                     .join("Classes")
                     .join(_protocol.as_ref());
 
-                let exe = tauri::utils::platform::current_exe()?
+                let exe = dunce::simplified(&tauri::utils::platform::current_exe()?)
                     .display()
-                    .to_string()
-                    .replace("\\\\?\\", "");
+                    .to_string();
 
                 let (key, _) = hkcu.create_subkey(&base)?;
                 key.set_value(
@@ -285,10 +284,9 @@ mod imp {
 
                 let registered_cmd: String = cmd_reg.get_value("")?;
 
-                let exe = tauri::utils::platform::current_exe()?
+                let exe = dunce::simplified(&tauri::utils::platform::current_exe()?)
                     .display()
-                    .to_string()
-                    .replace("\\\\?\\", "");
+                    .to_string();
 
                 Ok(registered_cmd == format!("{} \"%1\"", &exe))
             }

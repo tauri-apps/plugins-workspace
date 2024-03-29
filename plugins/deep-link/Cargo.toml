@@ -29,4 +29,5 @@ thiserror = { workspace = true }
 url = { workspace = true }
 
 [target."cfg(windows)".dependencies]
+dunce = "1"
 winreg = "0.52"
