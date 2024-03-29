@@ -36,8 +36,8 @@ struct Tray(std::sync::Mutex<Option<(PhysicalPosition<f64>, PhysicalSize<f64>)>>
 #[cfg(feature = "tray-icon")]
 pub fn on_tray_event<R: Runtime>(app: &AppHandle<R>, event: &TrayIconEvent) {
     let position = PhysicalPosition {
-        x: event.x,
-        y: event.y,
+        x: event.icon_rect.left,
+        y: event.icon_rect.top,
     };
     let size = PhysicalSize {
         width: event.icon_rect.right - event.icon_rect.left,
