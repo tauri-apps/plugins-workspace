@@ -28,7 +28,7 @@ use std::{
 
 mod cmd;
 
-pub const STATE_FILENAME: &str = ".window-state";
+pub const STATE_FILENAME: &str = ".window-state.json";
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
