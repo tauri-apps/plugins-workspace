@@ -12,6 +12,9 @@ pub enum Error {
     Io(#[from] std::io::Error),
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+    #[cfg(target_os = "windows")]
+    #[error(transparent)]
+    Windows(#[from] windows_result::Error),
     #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),

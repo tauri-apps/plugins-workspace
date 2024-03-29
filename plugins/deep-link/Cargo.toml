@@ -30,4 +30,5 @@ url = { workspace = true }
 
 [target."cfg(windows)".dependencies]
 dunce = "1"
-winreg = "0.52"
+windows-registry = "0.1"
+windows-result = "0.1"

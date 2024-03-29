@@ -131,8 +131,6 @@ mod imp {
 
 #[cfg(not(target_os = "android"))]
 mod imp {
-    #[cfg(windows)]
-    use std::path::Path;
     use std::sync::Mutex;
     #[cfg(target_os = "linux")]
     use std::{
@@ -144,7 +142,7 @@ mod imp {
     use tauri::Manager;
     use tauri::{AppHandle, Runtime};
     #[cfg(windows)]
-    use winreg::{enums::HKEY_CURRENT_USER, RegKey};
+    use windows_registry::CURRENT_USER;
 
     /// Access to the deep-link APIs.
     pub struct DeepLink<R: Runtime> {
@@ -173,29 +171,25 @@ mod imp {
         pub fn register<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
             {
-                let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-                let base = Path::new("Software")
-                    .join("Classes")
-                    .join(_protocol.as_ref());
+                let key_base = format!("Software\\Classes\\{}", _protocol.as_ref());
 
                 let exe = dunce::simplified(&tauri::utils::platform::current_exe()?)
                     .display()
                     .to_string();
 
-                let (key, _) = hkcu.create_subkey(&base)?;
-                key.set_value(
+                let key_reg = CURRENT_USER.create(&key_base)?;
+                key_reg.set_string(
                     "",
                     &format!("URL:{} protocol", self.app.config().identifier),
                 )?;
-                key.set_value("URL Protocol", &"")?;
+                key_reg.set_string("URL Protocol", "")?;
 
-                let (icon, _) = hkcu.create_subkey(base.join("DefaultIcon"))?;
-                icon.set_value("", &format!("{},0", &exe))?;
+                let icon_reg = CURRENT_USER.create(format!("{key_base}\\DefaultIcon"))?;
+                icon_reg.set_string("", &format!("{},0", &exe))?;
 
-                let (cmd, _) =
-                    hkcu.create_subkey(base.join("shell").join("open").join("command"))?;
+                let cmd_reg = CURRENT_USER.create(format!("{key_base}\\shell\\open\\command"))?;
 
-                cmd.set_value("", &format!("{} \"%1\"", &exe))?;
+                cmd_reg.set_string("", &format!("{} \"%1\"", &exe))?;
             }
 
             #[cfg(target_os = "linux")]
@@ -254,12 +248,7 @@ mod imp {
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
             {
-                let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-                let base = Path::new("Software")
-                    .join("Classes")
-                    .join(_protocol.as_ref());
-
-                hkcu.delete_subkey_all(base)?;
+                CURRENT_USER.remove_tree(format!("Software\\Classes\\{}", _protocol.as_ref()))?;
             }
 
             Ok(())
@@ -275,14 +264,12 @@ mod imp {
         pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
             #[cfg(windows)]
             {
-                let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-
-                let cmd_reg = hkcu.open_subkey(format!(
+                let cmd_reg = CURRENT_USER.open(format!(
                     "Software\\Classes\\{}\\shell\\open\\command",
                     _protocol.as_ref()
                 ))?;
 
-                let registered_cmd: String = cmd_reg.get_value("")?;
+                let registered_cmd: String = cmd_reg.get_string("")?;
 
                 let exe = dunce::simplified(&tauri::utils::platform::current_exe()?)
                     .display()
