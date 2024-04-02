@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-beta.4]
+
+- [`4cd8112`](https://github.com/tauri-apps/plugins-workspace/commit/4cd81126fdf25e1847546f8fdbd924aa4bfeabb5)([#1056](https://github.com/tauri-apps/plugins-workspace/pull/1056)) Fixed an issue where dialogs on android would return the Content URI instead of the file path
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.4`
+
 ## \[2.0.0-beta.3]
 
 - [`35ea595`](https://github.com/tauri-apps/plugins-workspace/commit/35ea5956d060f0bdafd140f2541c607bb811805b)([#1073](https://github.com/tauri-apps/plugins-workspace/pull/1073)) Fixed an issue where the dialog apis panicked when they were called with no application windows open.

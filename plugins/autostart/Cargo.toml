@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-autostart"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 description = "Automatically launch your application at startup."
 authors = { workspace = true }
 license = { workspace = true }
