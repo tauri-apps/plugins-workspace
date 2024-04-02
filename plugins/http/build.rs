@@ -8,11 +8,11 @@ mod scope;
 
 const COMMANDS: &[&str] = &["fetch", "fetch_cancel", "fetch_send", "fetch_read_body"];
 
-/// HTTP scope entry object definition.
-#[allow(unused)]
+/// HTTP scope entry.
 #[derive(schemars::JsonSchema)]
 #[serde(untagged)]
-enum ScopeEntry {
+#[allow(unused)]
+enum HttpScopeEntry {
     /// A URL that can be accessed by the webview when using the HTTP APIs.
     /// Wildcards can be used following the URL pattern standard.
     ///
@@ -28,7 +28,6 @@ enum ScopeEntry {
     ///
     /// - "https://myapi.service.com/users/*": allows access to any URLs that begins with "https://myapi.service.com/users/"
     Value(String),
-
     Object {
         /// A URL that can be accessed by the webview when using the HTTP APIs.
         /// Wildcards can be used following the URL pattern standard.
@@ -48,12 +47,12 @@ enum ScopeEntry {
     },
 }
 
-// ensure scope entry is up to date
-impl From<ScopeEntry> for scope::Entry {
-    fn from(value: ScopeEntry) -> Self {
+// Ensure scope entry is kept up to date
+impl From<HttpScopeEntry> for scope::Entry {
+    fn from(value: HttpScopeEntry) -> Self {
         let url = match value {
-            ScopeEntry::Value(url) => url,
-            ScopeEntry::Object { url } => url,
+            HttpScopeEntry::Value(url) => url,
+            HttpScopeEntry::Object { url } => url,
         };
 
         scope::Entry {
@@ -69,6 +68,6 @@ impl From<ScopeEntry> for scope::Entry {
 fn main() {
     tauri_plugin::Builder::new(COMMANDS)
         .global_api_script_path("./api-iife.js")
-        .global_scope_schema(schemars::schema_for!(ScopeEntry))
+        .global_scope_schema(schemars::schema_for!(HttpScopeEntry))
         .build();
 }

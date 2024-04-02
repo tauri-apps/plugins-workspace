@@ -4054,9 +4054,9 @@ checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
 
 [[package]]
 name = "open"
-version = "5.1.1"
+version = "5.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68b3fbb0d52bf0cbb5225ba3d2c303aa136031d43abff98284332a9981ecddec"
+checksum = "449f0ff855d85ddbf1edd5b646d65249ead3f5e422aaa86b7d2d0b049b103e32"
 dependencies = [
  "is-wsl",
  "libc",
@@ -5690,6 +5690,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin-cli",
  "tauri-plugin-single-instance",
 ]
 
@@ -6826,7 +6827,6 @@ dependencies = [
  "http 0.2.12",
  "minisign-verify",
  "mockito",
- "percent-encoding",
  "reqwest 0.11.24",
  "semver",
  "serde",
@@ -6881,7 +6881,6 @@ dependencies = [
 name = "tauri-plugin-window-state"
 version = "2.0.0-beta.3"
 dependencies = [
- "bincode",
  "bitflags 2.4.2",
  "log",
  "serde",

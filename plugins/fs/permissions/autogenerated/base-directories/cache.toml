@@ -39,7 +39,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-cache-write-recursive"
-description = "This allows full recusrive write access to the complete `$CACHE` folder, files and subdirectories."
+description = "This allows full recursive write access to the complete `$CACHE` folder, files and subdirectories."
 permissions = [
     "write-all",
     "scope-cache-recursive"

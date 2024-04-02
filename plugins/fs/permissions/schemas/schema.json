@@ -302,7 +302,7 @@
           ]
         },
         {
-          "description": "allow-app-write-recursive -> This allows full recusrive write access to the complete `$APP` folder, files and subdirectories.",
+          "description": "allow-app-write-recursive -> This allows full recursive write access to the complete `$APP` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-app-write-recursive"
@@ -365,7 +365,7 @@
           ]
         },
         {
-          "description": "allow-appcache-write-recursive -> This allows full recusrive write access to the complete `$APPCACHE` folder, files and subdirectories.",
+          "description": "allow-appcache-write-recursive -> This allows full recursive write access to the complete `$APPCACHE` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-appcache-write-recursive"
@@ -428,7 +428,7 @@
           ]
         },
         {
-          "description": "allow-appconfig-write-recursive -> This allows full recusrive write access to the complete `$APPCONFIG` folder, files and subdirectories.",
+          "description": "allow-appconfig-write-recursive -> This allows full recursive write access to the complete `$APPCONFIG` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-appconfig-write-recursive"
@@ -491,7 +491,7 @@
           ]
         },
         {
-          "description": "allow-appdata-write-recursive -> This allows full recusrive write access to the complete `$APPDATA` folder, files and subdirectories.",
+          "description": "allow-appdata-write-recursive -> This allows full recursive write access to the complete `$APPDATA` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-appdata-write-recursive"
@@ -554,7 +554,7 @@
           ]
         },
         {
-          "description": "allow-applocaldata-write-recursive -> This allows full recusrive write access to the complete `$APPLOCALDATA` folder, files and subdirectories.",
+          "description": "allow-applocaldata-write-recursive -> This allows full recursive write access to the complete `$APPLOCALDATA` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-applocaldata-write-recursive"
@@ -617,7 +617,7 @@
           ]
         },
         {
-          "description": "allow-applog-write-recursive -> This allows full recusrive write access to the complete `$APPLOG` folder, files and subdirectories.",
+          "description": "allow-applog-write-recursive -> This allows full recursive write access to the complete `$APPLOG` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-applog-write-recursive"
@@ -680,7 +680,7 @@
           ]
         },
         {
-          "description": "allow-audio-write-recursive -> This allows full recusrive write access to the complete `$AUDIO` folder, files and subdirectories.",
+          "description": "allow-audio-write-recursive -> This allows full recursive write access to the complete `$AUDIO` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-audio-write-recursive"
@@ -743,7 +743,7 @@
           ]
         },
         {
-          "description": "allow-cache-write-recursive -> This allows full recusrive write access to the complete `$CACHE` folder, files and subdirectories.",
+          "description": "allow-cache-write-recursive -> This allows full recursive write access to the complete `$CACHE` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-cache-write-recursive"
@@ -806,7 +806,7 @@
           ]
         },
         {
-          "description": "allow-config-write-recursive -> This allows full recusrive write access to the complete `$CONFIG` folder, files and subdirectories.",
+          "description": "allow-config-write-recursive -> This allows full recursive write access to the complete `$CONFIG` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-config-write-recursive"
@@ -869,7 +869,7 @@
           ]
         },
         {
-          "description": "allow-data-write-recursive -> This allows full recusrive write access to the complete `$DATA` folder, files and subdirectories.",
+          "description": "allow-data-write-recursive -> This allows full recursive write access to the complete `$DATA` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-data-write-recursive"
@@ -932,7 +932,7 @@
           ]
         },
         {
-          "description": "allow-desktop-write-recursive -> This allows full recusrive write access to the complete `$DESKTOP` folder, files and subdirectories.",
+          "description": "allow-desktop-write-recursive -> This allows full recursive write access to the complete `$DESKTOP` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-desktop-write-recursive"
@@ -995,7 +995,7 @@
           ]
         },
         {
-          "description": "allow-document-write-recursive -> This allows full recusrive write access to the complete `$DOCUMENT` folder, files and subdirectories.",
+          "description": "allow-document-write-recursive -> This allows full recursive write access to the complete `$DOCUMENT` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-document-write-recursive"
@@ -1058,7 +1058,7 @@
           ]
         },
         {
-          "description": "allow-download-write-recursive -> This allows full recusrive write access to the complete `$DOWNLOAD` folder, files and subdirectories.",
+          "description": "allow-download-write-recursive -> This allows full recursive write access to the complete `$DOWNLOAD` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-download-write-recursive"
@@ -1121,7 +1121,7 @@
           ]
         },
         {
-          "description": "allow-exe-write-recursive -> This allows full recusrive write access to the complete `$EXE` folder, files and subdirectories.",
+          "description": "allow-exe-write-recursive -> This allows full recursive write access to the complete `$EXE` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-exe-write-recursive"
@@ -1184,7 +1184,7 @@
           ]
         },
         {
-          "description": "allow-font-write-recursive -> This allows full recusrive write access to the complete `$FONT` folder, files and subdirectories.",
+          "description": "allow-font-write-recursive -> This allows full recursive write access to the complete `$FONT` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-font-write-recursive"
@@ -1247,7 +1247,7 @@
           ]
         },
         {
-          "description": "allow-home-write-recursive -> This allows full recusrive write access to the complete `$HOME` folder, files and subdirectories.",
+          "description": "allow-home-write-recursive -> This allows full recursive write access to the complete `$HOME` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-home-write-recursive"
@@ -1310,7 +1310,7 @@
           ]
         },
         {
-          "description": "allow-localdata-write-recursive -> This allows full recusrive write access to the complete `$LOCALDATA` folder, files and subdirectories.",
+          "description": "allow-localdata-write-recursive -> This allows full recursive write access to the complete `$LOCALDATA` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-localdata-write-recursive"
@@ -1373,7 +1373,7 @@
           ]
         },
         {
-          "description": "allow-log-write-recursive -> This allows full recusrive write access to the complete `$LOG` folder, files and subdirectories.",
+          "description": "allow-log-write-recursive -> This allows full recursive write access to the complete `$LOG` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-log-write-recursive"
@@ -1436,7 +1436,7 @@
           ]
         },
         {
-          "description": "allow-picture-write-recursive -> This allows full recusrive write access to the complete `$PICTURE` folder, files and subdirectories.",
+          "description": "allow-picture-write-recursive -> This allows full recursive write access to the complete `$PICTURE` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-picture-write-recursive"
@@ -1499,7 +1499,7 @@
           ]
         },
         {
-          "description": "allow-public-write-recursive -> This allows full recusrive write access to the complete `$PUBLIC` folder, files and subdirectories.",
+          "description": "allow-public-write-recursive -> This allows full recursive write access to the complete `$PUBLIC` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-public-write-recursive"
@@ -1562,7 +1562,7 @@
           ]
         },
         {
-          "description": "allow-resource-write-recursive -> This allows full recusrive write access to the complete `$RESOURCE` folder, files and subdirectories.",
+          "description": "allow-resource-write-recursive -> This allows full recursive write access to the complete `$RESOURCE` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-resource-write-recursive"
@@ -1625,7 +1625,7 @@
           ]
         },
         {
-          "description": "allow-runtime-write-recursive -> This allows full recusrive write access to the complete `$RUNTIME` folder, files and subdirectories.",
+          "description": "allow-runtime-write-recursive -> This allows full recursive write access to the complete `$RUNTIME` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-runtime-write-recursive"
@@ -1688,7 +1688,7 @@
           ]
         },
         {
-          "description": "allow-temp-write-recursive -> This allows full recusrive write access to the complete `$TEMP` folder, files and subdirectories.",
+          "description": "allow-temp-write-recursive -> This allows full recursive write access to the complete `$TEMP` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-temp-write-recursive"
@@ -1751,7 +1751,7 @@
           ]
         },
         {
-          "description": "allow-template-write-recursive -> This allows full recusrive write access to the complete `$TEMPLATE` folder, files and subdirectories.",
+          "description": "allow-template-write-recursive -> This allows full recursive write access to the complete `$TEMPLATE` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-template-write-recursive"
@@ -1814,7 +1814,7 @@
           ]
         },
         {
-          "description": "allow-video-write-recursive -> This allows full recusrive write access to the complete `$VIDEO` folder, files and subdirectories.",
+          "description": "allow-video-write-recursive -> This allows full recursive write access to the complete `$VIDEO` folder, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-video-write-recursive"
