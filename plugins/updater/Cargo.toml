@@ -21,13 +21,13 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 tokio = "1"
-reqwest = { version = "0.11", default-features = false, features = [ "json", "stream" ] }
+reqwest = { version = "0.12", default-features = false, features = [ "json", "stream" ] }
 url = { workspace = true }
-http = "0.2"
+http = "1"
 dirs-next = "2"
 minisign-verify = "0.2"
 time = { version = "0.3", features = [ "parsing", "formatting" ] }
-base64 = "0.21"
+base64 = "0.22"
 semver = { version = "1", features = [ "serde" ] }
 futures-util = "0.3"
 tempfile = "3"
