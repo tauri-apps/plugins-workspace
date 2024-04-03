@@ -28,7 +28,10 @@ use std::{
 
 mod cmd;
 
-pub const STATE_FILENAME: &str = ".window-state.json";
+/// Default filename used to store window state.
+///
+/// If using a custom filename, you should probably use [`AppHandleExt::filename`] instead.
+pub const DEFAULT_FILENAME: &str = ".window-state.json";
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -58,6 +61,10 @@ impl Default for StateFlags {
     fn default() -> Self {
         Self::all()
     }
+}
+
+struct PluginState {
+    filename: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
@@ -98,12 +105,15 @@ struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
 pub trait AppHandleExt {
     /// Saves all open windows state to disk
     fn save_window_state(&self, flags: StateFlags) -> Result<()>;
+    /// Get the name of the file used to store window state.
+    fn filename(&self) -> String;
 }
 
 impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
     fn save_window_state(&self, flags: StateFlags) -> Result<()> {
         if let Ok(app_dir) = self.path().app_config_dir() {
-            let state_path = app_dir.join(STATE_FILENAME);
+            let plugin_state = self.state::<PluginState>();
+            let state_path = app_dir.join(&plugin_state.filename);
             let cache = self.state::<WindowStateCache>();
             let mut state = cache.0.lock().unwrap();
             for (label, s) in state.iter_mut() {
@@ -119,6 +129,10 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
         } else {
             Ok(())
         }
+    }
+
+    fn filename(&self) -> String {
+        self.state::<PluginState>().filename.clone()
     }
 }
 
@@ -286,6 +300,7 @@ pub struct Builder {
     denylist: HashSet<String>,
     skip_initial_state: HashSet<String>,
     state_flags: StateFlags,
+    filename: Option<String>,
 }
 
 impl Builder {
@@ -296,6 +311,12 @@ impl Builder {
     /// Sets the state flags to control what state gets restored and saved.
     pub fn with_state_flags(mut self, flags: StateFlags) -> Self {
         self.state_flags = flags;
+        self
+    }
+
+    /// Sets a custom filename to use when saving and restoring window states from disk.
+    pub fn with_filename(mut self, filename: impl Into<String>) -> Self {
+        self.filename.replace(filename.into());
         self
     }
 
@@ -314,15 +335,18 @@ impl Builder {
 
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let flags = self.state_flags;
+        let filename = self.filename.unwrap_or_else(|| DEFAULT_FILENAME.into());
+
         PluginBuilder::new("window-state")
             .invoke_handler(tauri::generate_handler![
                 cmd::save_window_state,
-                cmd::restore_state
+                cmd::restore_state,
+                cmd::filename
             ])
             .setup(|app, _api| {
                 let cache: Arc<Mutex<HashMap<String, WindowState>>> =
                     if let Ok(app_dir) = app.path().app_config_dir() {
-                        let state_path = app_dir.join(STATE_FILENAME);
+                        let state_path = app_dir.join(&filename);
                         if state_path.exists() {
                             Arc::new(Mutex::new(
                                 std::fs::read(state_path)
@@ -339,6 +363,7 @@ impl Builder {
                         Default::default()
                     };
                 app.manage(WindowStateCache(cache));
+                app.manage(PluginState { filename });
                 Ok(())
             })
             .on_window_ready(move |window| {

@@ -27,7 +27,7 @@ async function saveWindowState(flags: StateFlags): Promise<void> {
  */
 async function restoreState(
   label: WindowLabel,
-  flags: StateFlags,
+  flags: StateFlags
 ): Promise<void> {
   return invoke("plugin:window-state|restore_state", { label, flags });
 }
@@ -38,5 +38,11 @@ async function restoreState(
 async function restoreStateCurrent(flags: StateFlags): Promise<void> {
   return restoreState(getCurrent().label, flags);
 }
+/**
+ *  Get the name of the file used to store window state.
+ */
+async function filename(): Promise<string> {
+  return invoke("plugin:window-state|filename");
+}
 
-export { restoreState, restoreStateCurrent, saveWindowState };
+export { restoreState, restoreStateCurrent, saveWindowState, filename };

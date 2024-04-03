@@ -230,7 +230,7 @@ checksum = "5ad32ce52e4161730f7098c077cd2ed6229b5804ccf99e5366be1ab72a98b4e1"
 
 [[package]]
 name = "api"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 dependencies = [
  "log",
  "serde",
@@ -6470,7 +6470,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-autostart"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 dependencies = [
  "auto-launch",
  "log",
@@ -6548,7 +6548,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 dependencies = [
  "glib 0.16.9",
  "log",
@@ -6564,7 +6564,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 dependencies = [
  "anyhow",
  "glob",
@@ -6596,7 +6596,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 dependencies = [
  "data-url",
  "http 0.2.12",
@@ -6703,7 +6703,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6756,7 +6756,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 dependencies = [
  "log",
  "serde",
@@ -6879,7 +6879,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 dependencies = [
  "bitflags 2.4.2",
  "log",
