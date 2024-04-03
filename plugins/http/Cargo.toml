@@ -28,8 +28,8 @@ thiserror = { workspace = true }
 tauri-plugin-fs = { path = "../fs", version = "2.0.0-beta.4" }
 urlpattern = "0.2"
 regex = "1"
-http = "0.2"
-reqwest = { version = "0.11", default-features = false }
+http = "1"
+reqwest = { version = "0.12", default-features = false }
 url = { workspace = true }
 data-url = "0.3"
 
@@ -52,5 +52,5 @@ brotli = [ "reqwest/brotli" ]
 deflate = [ "reqwest/deflate" ]
 trust-dns = [ "reqwest/trust-dns" ]
 socks = [ "reqwest/socks" ]
-http3 = [ "reqwest/http3" ]
+http2 = [ "reqwest/http2" ]
 unsafe-headers = [ ]
