@@ -57,7 +57,7 @@ impl<R: Runtime> Nfc<R> {
     }
 }
 
-/// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the nfc APIs.
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::webview::WebviewWindow`] and [`tauri::Window`] to access the nfc APIs.
 pub trait NfcExt<R: Runtime> {
     fn nfc(&self) -> &Nfc<R>;
 }

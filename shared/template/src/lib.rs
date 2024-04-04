@@ -25,7 +25,7 @@ use desktop::{{ plugin_name_pascal_case }};
 #[cfg(mobile)]
 use mobile::{{ plugin_name_pascal_case }};
 
-/// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the {{ plugin_name }} APIs.
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::webview::WebviewWindow`] and [`tauri::Window`] to access the {{ plugin_name }} APIs.
 pub trait {{ plugin_name_pascal_case }}Ext<R: Runtime> {
   fn {{ plugin_name_snake_case }}(&self) -> &{{ plugin_name_pascal_case }}<R>;
 }
