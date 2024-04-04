@@ -6,6 +6,7 @@ authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace =  true }
 exclude = [ "/examples" ]
 
 [package.metadata.docs.rs]

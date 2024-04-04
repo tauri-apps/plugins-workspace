@@ -6,15 +6,16 @@ edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-notification"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
-targets = [ "x86_64-unknown-linux-gnu", "x86_64-linux-android" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+targets = ["x86_64-unknown-linux-gnu", "x86_64-linux-android"]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }
@@ -23,8 +24,8 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 rand = "0.8"
-time = { version = "0.3", features = [ "serde", "parsing", "formatting" ] }
-url = { version = "2", features = [ "serde" ] }
+time = { version = "0.3", features = ["serde", "parsing", "formatting"] }
+url = { version = "2", features = ["serde"] }
 serde_repr = "0.1"
 
 [target."cfg(windows)".dependencies]
@@ -50,6 +51,6 @@ ctor = "0.2"
 maplit = "1.0"
 
 [features]
-default = [ "zbus", "async" ]
-async = [ ]
-windows7-compat = [ "win7-notifications", "windows-version" ]
+default = ["zbus", "async"]
+async = []
+windows7-compat = ["win7-notifications", "windows-version"]

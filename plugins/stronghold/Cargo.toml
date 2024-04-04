@@ -6,14 +6,15 @@ authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-stronghold"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }
@@ -24,15 +25,15 @@ thiserror = { workspace = true }
 iota_stronghold = "1"
 iota-crypto = "0.23"
 hex = "0.4"
-zeroize = { version = "1", features = [ "zeroize_derive" ] }
+zeroize = { version = "1", features = ["zeroize_derive"] }
 rust-argon2 = { version = "1", optional = true }
 rand_chacha = { version = "0.3.1", optional = true }
-rand_core = { version = "0.6.4", features = [ "getrandom" ], optional = true }
+rand_core = { version = "0.6.4", features = ["getrandom"], optional = true }
 
 [dev-dependencies]
 rand = "0.8"
 rusty-fork = "0.3"
 
 [features]
-default = [ "kdf" ]
-kdf = [ "dep:rust-argon2", "dep:rand_chacha", "dep:rand_core" ]
+default = ["kdf"]
+kdf = ["dep:rust-argon2", "dep:rand_chacha", "dep:rand_core"]

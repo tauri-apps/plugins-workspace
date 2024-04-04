@@ -23,6 +23,7 @@ edition = "2021"
 authors = ["Tauri Programme within The Commons Conservancy"]
 license = "Apache-2.0 OR MIT"
 rust-version = "1.75"
+repository = "https://github.com/tauri-apps/plugins-workspace"
 
 # default to small, optimized release binaries
 [profile.release]

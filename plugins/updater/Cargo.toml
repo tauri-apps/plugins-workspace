@@ -6,14 +6,15 @@ edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-updater"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 tauri = { workspace = true }
@@ -21,20 +22,26 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 tokio = "1"
-reqwest = { version = "0.12", default-features = false, features = [ "json", "stream" ] }
+reqwest = { version = "0.12", default-features = false, features = [
+    "json",
+    "stream",
+] }
 url = { workspace = true }
 http = "1"
 dirs-next = "2"
 minisign-verify = "0.2"
-time = { version = "0.3", features = [ "parsing", "formatting" ] }
+time = { version = "0.3", features = ["parsing", "formatting"] }
 base64 = "0.22"
-semver = { version = "1", features = [ "serde" ] }
+semver = { version = "1", features = ["serde"] }
 futures-util = "0.3"
 tempfile = "3"
 zip = "0.6"
 
 [target."cfg(target_os = \"windows\")".dependencies]
-windows-sys = { version = "0.52.0", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.52.0", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+] }
 
 [target."cfg(any(target_os = \"macos\", target_os = \"linux\"))".dependencies]
 tar = "0.4"
@@ -44,6 +51,6 @@ flate2 = "1.0.27"
 mockito = "0.31"
 
 [features]
-native-tls = [ "reqwest/native-tls" ]
-native-tls-vendored = [ "reqwest/native-tls-vendored" ]
-rustls-tls = [ "reqwest/rustls-tls" ]
+native-tls = ["reqwest/native-tls"]
+native-tls-vendored = ["reqwest/native-tls-vendored"]
+rustls-tls = ["reqwest/rustls-tls"]
