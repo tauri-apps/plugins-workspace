@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.4]
+
+- [`c013fa5`](https://github.com/tauri-apps/plugins-workspace/commit/c013fa52cd66885cf457a64e75373cb2066bc849)([#1078](https://github.com/tauri-apps/plugins-workspace/pull/1078)) **Breaking change**: Changed the format of the state file from bincode to json. Also changed the filename to from `.window-state` to `.window-state.json`.
+
 ## \[2.0.0-beta.3]
 
 - [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.

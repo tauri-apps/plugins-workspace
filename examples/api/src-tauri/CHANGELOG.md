@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-beta.4]
+
+### Dependencies
+
+- Upgraded to `dialog@2.0.0-beta.4`
+- Upgraded to `fs@2.0.0-beta.4`
+- Upgraded to `http@2.0.0-beta.4`
+
 ## \[2.0.0-beta.3]
 
 ### Dependencies

@@ -6,14 +6,15 @@ edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-shell"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
 
@@ -26,6 +27,6 @@ log = { workspace = true }
 thiserror = { workspace = true }
 shared_child = "1"
 regex = "1"
-open = { version = "5", features = [ "shellexecute-on-windows" ] }
+open = { version = "5", features = ["shellexecute-on-windows"] }
 encoding_rs = "0.8"
 os_pipe = "1"

@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.5]
+
+- [`dabac0e`](https://github.com/tauri-apps/plugins-workspace/commit/dabac0eedfd6e6d192c6c5a214e708b3c0223f6f)([#1035](https://github.com/tauri-apps/plugins-workspace/pull/1035)) Added implementation for MacOS.
+
 ## \[2.0.0-beta.4]
 
 - [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.
