@@ -24,6 +24,7 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 tauri-plugin-fs = { path = "../fs", version = "2.0.0-beta.4" }
+dunce = "1"
 
 [target."cfg(any(target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 glib = "0.16"
@@ -35,4 +36,3 @@ rfd = { version = "0.14", default-features = false, features = [
     "common-controls-v6",
 ] }
 raw-window-handle = "0.6"
-dunce = "1"
