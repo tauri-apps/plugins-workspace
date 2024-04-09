@@ -6285,6 +6285,7 @@ dependencies = [
 name = "tauri-plugin-dialog"
 version = "2.0.0-beta.4"
 dependencies = [
+ "dunce",
  "glib 0.16.9",
  "log",
  "raw-window-handle 0.6.0",
@@ -6522,6 +6523,7 @@ dependencies = [
 name = "tauri-plugin-store"
 version = "2.0.0-beta.4"
 dependencies = [
+ "dunce",
  "log",
  "serde",
  "serde_json",

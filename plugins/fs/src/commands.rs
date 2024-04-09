@@ -336,7 +336,7 @@ pub fn read_file<R: Runtime>(
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
-) -> CommandResult<Vec<u8>> {
+) -> CommandResult<tauri::ipc::Response> {
     let resolved_path = resolve_path(
         &app,
         &global_scope,
@@ -345,6 +345,7 @@ pub fn read_file<R: Runtime>(
         options.as_ref().and_then(|o| o.base_dir),
     )?;
     std::fs::read(&resolved_path)
+        .map(tauri::ipc::Response::new)
         .map_err(|e| {
             format!(
                 "failed to read file at path: {} with error: {e}",

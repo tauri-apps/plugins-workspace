@@ -35,3 +35,4 @@ rfd = { version = "0.14", default-features = false, features = [
     "common-controls-v6",
 ] }
 raw-window-handle = "0.6"
+dunce = "1"
