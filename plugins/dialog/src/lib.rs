@@ -51,7 +51,7 @@ macro_rules! blocking_fn {
     }};
 }
 
-/// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the dialog APIs.
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the dialog APIs.
 pub trait DialogExt<R: Runtime> {
     fn dialog(&self) -> &Dialog<R>;
 }

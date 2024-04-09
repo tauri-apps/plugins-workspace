@@ -211,7 +211,7 @@ impl<R: Runtime> NotificationBuilder<R> {
     }
 }
 
-/// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the notification APIs.
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the notification APIs.
 pub trait NotificationExt<R: Runtime> {
     fn notification(&self) -> &Notification<R>;
 }
