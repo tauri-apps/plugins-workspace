@@ -45,7 +45,7 @@ impl<R: Runtime> Biometric<R> {
     }
 }
 
-/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`] and [`tauri::Window`] to access the biometric APIs.
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the biometric APIs.
 pub trait BiometricExt<R: Runtime> {
     fn biometric(&self) -> &Biometric<R>;
 }
