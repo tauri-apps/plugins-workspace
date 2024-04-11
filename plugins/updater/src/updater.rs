@@ -527,7 +527,7 @@ impl Update {
     // Update server can provide a custom EXE (installer) who can run any task.
     #[cfg(windows)]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
-        use std::fs;
+        use std::io::Write;
         use windows_sys::{
             w,
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
@@ -540,43 +540,86 @@ impl Update {
         // shouldn't drop but we should be able to pass the reference so we can drop it once the installation
         // is done, otherwise we have a huge memory leak.
 
-        let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
-        let archive = Cursor::new(bytes);
-        let mut extractor = zip::ZipArchive::new(archive)?;
-        extractor.extract(&tmp_dir)?;
+        // we support 2 type of files exe & msi for now
+        // If it's an `exe` we expect an NSIS installer.
+        enum UpdaterType {
+            Nsis { path: PathBuf },
+            Msi { path: PathBuf },
+        }
 
-        let paths = fs::read_dir(&tmp_dir)?;
+        // For extending temp file's life time
+        let mut temp_file: Option<tempfile::NamedTempFile> = None;
+        let updater = if is_zip(&bytes) {
+            #[cfg(feature = "zip")]
+            {
+                let archive = Cursor::new(bytes.clone());
+                let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
+                let mut extractor = zip::ZipArchive::new(archive)?;
+                extractor.extract(&tmp_dir)?;
 
-        let install_mode = self
-            .config
-            .windows
-            .as_ref()
-            .map(|w| w.install_mode.clone())
-            .unwrap_or_default();
-        let mut installer_args = self
-            .installer_args
-            .iter()
-            .map(OsStr::new)
-            .collect::<Vec<_>>();
+                let paths = std::fs::read_dir(&tmp_dir)?;
 
-        for path in paths {
-            let found_path = path?.path();
-            // we support 2 type of files exe & msi for now
-            // If it's an `exe` we expect an NSIS installer.
-            if found_path.extension() == Some(OsStr::new("exe")) {
-                installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
-            } else if found_path.extension() == Some(OsStr::new("msi")) {
-                installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
-                installer_args.push(OsStr::new("/promptrestart"));
-            } else {
-                continue;
+                let mut ret: Option<UpdaterType> = None;
+                for path in paths {
+                    let found_path = path?.path();
+                    if found_path.extension() == Some(OsStr::new("exe")) {
+                        ret = Some(UpdaterType::Nsis { path: found_path });
+                        break;
+                    } else if found_path.extension() == Some(OsStr::new("msi")) {
+                        ret = Some(UpdaterType::Msi { path: found_path });
+                        break;
+                    } else {
+                        continue;
+                    }
+                }
+                ret
             }
+            #[cfg(not(feature = "zip"))]
+            None
+        } else if is_exe(&bytes) {
+            let mut new_file = tempfile::NamedTempFile::new()?;
+            new_file.write_all(&bytes)?;
+            let path = new_file.path().to_path_buf();
+            temp_file = Some(new_file);
+            Some(UpdaterType::Nsis { path })
+        } else if is_msi(&bytes) {
+            let mut new_file = tempfile::NamedTempFile::new()?;
+            new_file.write_all(&bytes)?;
+            let path = new_file.path().to_path_buf();
+            temp_file = Some(new_file);
+            Some(UpdaterType::Msi { path })
+        } else {
+            None
+        };
 
+        if let Some(updater) = updater {
+            let install_mode = self
+                .config
+                .windows
+                .as_ref()
+                .map(|w| w.install_mode.clone())
+                .unwrap_or_default();
+            let mut installer_args = self
+                .installer_args
+                .iter()
+                .map(OsStr::new)
+                .collect::<Vec<_>>();
+            let path = match updater {
+                UpdaterType::Nsis { path } => {
+                    installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
+                    path
+                }
+                UpdaterType::Msi { path } => {
+                    installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
+                    installer_args.push(OsStr::new("/promptrestart"));
+                    path
+                }
+            };
             if let Some(on_before_exit) = self.on_before_exit.as_ref() {
                 on_before_exit();
             }
 
-            let file = encode_wide(found_path.as_os_str());
+            let file = encode_wide(path.as_os_str());
             let parameters = encode_wide(installer_args.join(OsStr::new(" ")).as_os_str());
             unsafe {
                 ShellExecuteW(
@@ -589,10 +632,14 @@ impl Update {
                 )
             };
 
+            if let Some(temp_file) = temp_file {
+                drop(temp_file);
+            }
+
             std::process::exit(0);
         }
 
-        Ok(())
+        Err(crate::Error::BinaryNotFoundInArchive)
     }
 
     // Linux (AppImage)
@@ -898,4 +945,45 @@ fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
         .encode_wide()
         .chain(std::iter::once(0))
         .collect()
+}
+
+// Taken from infer crate https://github.com/bojand/infer (MIT License)
+#[cfg(target_os = "windows")]
+pub fn is_zip(buf: &[u8]) -> bool {
+    buf.len() > 3
+        && buf[0] == 0x50
+        && buf[1] == 0x4B
+        && (((buf[2] == 0x3 && buf[3] == 0x4)
+            || (buf[2] == 0x5 && buf[3] == 0x6)
+            || (buf[2] == 0x7 && buf[3] == 0x8))
+            || (
+                // winzip
+                buf.len() > 7
+                    && (buf[2] == 0x30
+                        && buf[3] == 0x30
+                        && buf[4] == 0x50
+                        && buf[5] == 0x4B
+                        && buf[6] == 0x3
+                        && buf[7] == 0x4)
+            ))
+}
+
+// Taken from infer crate https://github.com/bojand/infer (MIT License)
+#[cfg(target_os = "windows")]
+pub fn is_exe(buf: &[u8]) -> bool {
+    buf.len() > 1 && buf[0] == 0x4D && buf[1] == 0x5A
+}
+
+// Taken from infer crate https://github.com/bojand/infer (MIT License)
+#[cfg(target_os = "windows")]
+pub fn is_msi(buf: &[u8]) -> bool {
+    buf.len() > 7
+        && buf[0] == 0xD0
+        && buf[1] == 0xCF
+        && buf[2] == 0x11
+        && buf[3] == 0xE0
+        && buf[4] == 0xA1
+        && buf[5] == 0xB1
+        && buf[6] == 0x1A
+        && buf[7] == 0xE1
 }
