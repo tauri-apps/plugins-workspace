@@ -577,13 +577,13 @@ impl Update {
             #[cfg(not(feature = "zip"))]
             None
         } else if is_exe(&bytes) {
-            let mut new_file = tempfile::NamedTempFile::new()?;
+            let mut new_file = tempfile::Builder::new().suffix(".exe").tempfile()?;
             new_file.write_all(&bytes)?;
             let path = new_file.path().to_path_buf();
             temp_file = Some(new_file);
             Some(UpdaterType::Nsis { path })
         } else if is_msi(&bytes) {
-            let mut new_file = tempfile::NamedTempFile::new()?;
+            let mut new_file = tempfile::Builder::new().suffix(".msi").tempfile()?;
             new_file.write_all(&bytes)?;
             let path = new_file.path().to_path_buf();
             temp_file = Some(new_file);
