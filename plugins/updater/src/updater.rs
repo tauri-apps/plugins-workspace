@@ -552,8 +552,8 @@ impl Update {
         let updater = if is_zip(&bytes) {
             #[cfg(feature = "zip")]
             {
-                let archive = Cursor::new(bytes.clone());
                 let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
+                let archive = Cursor::new(&bytes);
                 let mut extractor = zip::ZipArchive::new(archive)?;
                 extractor.extract(&tmp_dir)?;
 
