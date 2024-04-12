@@ -295,6 +295,34 @@
       "type": "string",
       "oneOf": [
         {
+          "description": "allow-filename -> Enables the filename command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-filename"
+          ]
+        },
+        {
+          "description": "deny-filename -> Denies the filename command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-filename"
+          ]
+        },
+        {
+          "description": "allow-restore-state -> Enables the restore_state command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-restore-state"
+          ]
+        },
+        {
+          "description": "deny-restore-state -> Denies the restore_state command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-restore-state"
+          ]
+        },
+        {
           "description": "allow-restore-window-state -> Enables the restore_window_state command without any pre-configured scope.",
           "type": "string",
           "enum": [
