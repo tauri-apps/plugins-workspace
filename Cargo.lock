@@ -324,16 +324,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "assert-json-diff"
-version = "2.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47e4f2b81832e72834d7518d8487a0396a28cc408186a2e8854c0f98011faf12"
-dependencies = [
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "async-broadcast"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1164,16 +1154,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "colored"
-version = "2.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cbf2150cce219b664a8a70df7a1f933836724b503f8a413af9365b4dcc4d90b8"
-dependencies = [
- "lazy_static",
- "windows-sys 0.48.0",
-]
-
-[[package]]
 name = "combine"
 version = "4.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1923,7 +1903,7 @@ version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9f0c14694cbd524c8720dd69b0e3179344f04ebb5f90f2e4a440c6ea3b2f1ee"
 dependencies = [
- "colored 1.9.4",
+ "colored",
  "log",
 ]
 
@@ -3587,24 +3567,6 @@ dependencies = [
  "log",
  "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "mockito"
-version = "0.31.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80f9fece9bd97ab74339fe19f4bcaf52b76dcc18e5364c7977c1838f76b38de9"
-dependencies = [
- "assert-json-diff",
- "colored 2.1.0",
- "httparse",
- "lazy_static",
- "log",
- "rand 0.8.5",
- "regex",
- "serde_json",
- "serde_urlencoded",
- "similar",
 ]
 
 [[package]]
@@ -5435,12 +5397,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f27f6278552951f1f2b8cf9da965d10969b2efdea95a6ec47987ab46edfe263a"
 
 [[package]]
-name = "similar"
-version = "2.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32fea41aca09ee824cc9724996433064c89f7777e60762749a4170a14abbfa21"
-
-[[package]]
 name = "single-instance-example"
 version = "0.1.0"
 dependencies = [
@@ -6584,7 +6540,6 @@ dependencies = [
  "futures-util",
  "http",
  "minisign-verify",
- "mockito",
  "reqwest",
  "semver",
  "serde",

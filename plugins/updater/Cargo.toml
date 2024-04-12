@@ -51,9 +51,6 @@ flate2 = { version = "1", optional = true }
 tar = "0.4"
 flate2 = "1"
 
-[dev-dependencies]
-mockito = "0.31"
-
 [features]
 default = ["zip"]
 zip = ["dep:zip", "dep:tar", "dep:flate2"]
