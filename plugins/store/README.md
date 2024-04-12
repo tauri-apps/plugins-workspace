@@ -60,7 +60,7 @@ await store.set("some-key", { value: 5 });
 const val = await store.get<{value:number}>("some-key");
 
 if (val){
-    console.assert(val.value == 5 );;
+    console.assert(val.value == 5 );
 }else{
     console.log("val is null");
 }
