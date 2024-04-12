@@ -615,6 +615,7 @@ impl Update {
                     path
                 }
             };
+
             if let Some(on_before_exit) = self.on_before_exit.as_ref() {
                 on_before_exit();
             }
@@ -660,9 +661,7 @@ impl Update {
         target_os = "openbsd"
     ))]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
-        use flate2::read::GzDecoder;
         use std::os::unix::fs::{MetadataExt, PermissionsExt};
-        let archive = Cursor::new(bytes);
         let extract_path_metadata = self.extract_path.metadata()?;
 
         let tmp_dir_locations = vec![
@@ -688,22 +687,38 @@ impl Update {
                     // create a backup of our current app image
                     std::fs::rename(&self.extract_path, tmp_app_image)?;
 
-                    // extract the buffer to the tmp_dir
-                    // we extract our signed archive into our final directory without any temp file
-                    let decoder = GzDecoder::new(archive);
-                    let mut archive = tar::Archive::new(decoder);
-                    for mut entry in archive.entries()?.flatten() {
-                        if let Ok(path) = entry.path() {
-                            if path.extension() == Some(OsStr::new("AppImage")) {
-                                // if something went wrong during the extraction, we should restore previous app
-                                if let Err(err) = entry.unpack(&self.extract_path) {
-                                    std::fs::rename(tmp_app_image, &self.extract_path)?;
-                                    return Err(err.into());
+                    if is_gz(&bytes) {
+                        #[cfg(feature = "zip")]
+                        {
+                            // extract the buffer to the tmp_dir
+                            // we extract our signed archive into our final directory without any temp file
+                            let archive = Cursor::new(bytes);
+                            let decoder = flate2::read::GzDecoder::new(archive);
+                            let mut archive = tar::Archive::new(decoder);
+                            for mut entry in archive.entries()?.flatten() {
+                                if let Ok(path) = entry.path() {
+                                    if path.extension() == Some(OsStr::new("AppImage")) {
+                                        // if something went wrong during the extraction, we should restore previous app
+                                        if let Err(err) = entry.unpack(&self.extract_path) {
+                                            std::fs::rename(tmp_app_image, &self.extract_path)?;
+                                            return Err(err.into());
+                                        }
+                                        // early finish we have everything we need here
+                                        return Ok(());
+                                    }
                                 }
-                                // early finish we have everything we need here
-                                return Ok(());
                             }
                         }
+                        #[cfg(not(feature = "zip"))]
+                        return Err(Error::BinaryNotFoundInArchive);
+                    } else {
+                        // if something went wrong during the extraction, we should restore previous app
+                        if let Err(err) = std::fs::write(self.extract_path, bytes) {
+                            std::fs::rename(tmp_app_image, &self.extract_path)?;
+                            return Err(err.into());
+                        }
+                        // early finish we have everything we need here
+                        return Ok(());
                     }
                     // if we have not returned early we should restore the backup
                     std::fs::rename(tmp_app_image, &self.extract_path)?;
@@ -949,7 +964,7 @@ fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
 
 // Taken from infer crate https://github.com/bojand/infer (MIT License)
 #[cfg(target_os = "windows")]
-pub fn is_zip(buf: &[u8]) -> bool {
+fn is_zip(buf: &[u8]) -> bool {
     buf.len() > 3
         && buf[0] == 0x50
         && buf[1] == 0x4B
@@ -970,13 +985,13 @@ pub fn is_zip(buf: &[u8]) -> bool {
 
 // Taken from infer crate https://github.com/bojand/infer (MIT License)
 #[cfg(target_os = "windows")]
-pub fn is_exe(buf: &[u8]) -> bool {
+fn is_exe(buf: &[u8]) -> bool {
     buf.len() > 1 && buf[0] == 0x4D && buf[1] == 0x5A
 }
 
 // Taken from infer crate https://github.com/bojand/infer (MIT License)
 #[cfg(target_os = "windows")]
-pub fn is_msi(buf: &[u8]) -> bool {
+fn is_msi(buf: &[u8]) -> bool {
     buf.len() > 7
         && buf[0] == 0xD0
         && buf[1] == 0xCF
@@ -986,4 +1001,10 @@ pub fn is_msi(buf: &[u8]) -> bool {
         && buf[5] == 0xB1
         && buf[6] == 0x1A
         && buf[7] == 0xE1
+}
+
+// Taken from infer crate https://github.com/bojand/infer (MIT License)
+#[cfg(target_os = "linux")]
+fn is_gz(buf: &[u8]) -> bool {
+    buf.len() > 2 && buf[0] == 0x1F && buf[1] == 0x8B && buf[2] == 0x8
 }
