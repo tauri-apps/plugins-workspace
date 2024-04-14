@@ -713,7 +713,7 @@ impl Update {
                         return Err(Error::BinaryNotFoundInArchive);
                     } else {
                         // if something went wrong during the extraction, we should restore previous app
-                        if let Err(err) = std::fs::write(self.extract_path, bytes) {
+                        if let Err(err) = std::fs::write(&self.extract_path, bytes) {
                             std::fs::rename(tmp_app_image, &self.extract_path)?;
                             return Err(err.into());
                         }
