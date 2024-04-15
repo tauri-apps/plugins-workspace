@@ -10,6 +10,8 @@ use std::{
     path::PathBuf,
 };
 
+#[cfg(feature = "semver")]
+use crate::semver_compat::semver_compat_string;
 use crate::SingleInstanceCallback;
 use tauri::{
     plugin::{self, TauriPlugin},
@@ -19,7 +21,7 @@ use tauri::{
 pub fn init<R: Runtime>(cb: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(|app, _api| {
-            let socket = socket_path(app.config());
+            let socket = socket_path(app.config(), app.package_info());
 
             // Notify the singleton which may or may not exist.
             match notify_singleton(&socket) {
@@ -53,12 +55,19 @@ pub fn init<R: Runtime>(cb: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
 }
 
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
-    let socket = socket_path(manager.config());
+    let socket = socket_path(manager.config(), manager.package_info());
     socket_cleanup(&socket);
 }
 
-fn socket_path(config: &Config) -> PathBuf {
+fn socket_path(config: &Config, _package_info: &tauri::PackageInfo) -> PathBuf {
     let identifier = config.identifier.replace(['.', '-'].as_ref(), "_");
+
+    #[cfg(feature = "semver")]
+    let identifier = format!(
+        "{identifier}_{}",
+        semver_compat_string(_package_info.version.clone()),
+    );
+
     // Use /tmp as socket path must be shorter than 100 chars.
     PathBuf::from(format!("/tmp/{}_si.sock", identifier))
 }

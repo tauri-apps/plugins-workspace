@@ -30,6 +30,8 @@ tokio = { version = "1", features = ["net", "sync"] }
 tokio-tungstenite = { version = "0.21" }
 
 [features]
+default = ["rustls-tls"]
 native-tls = ["tokio-tungstenite/native-tls"]
-native-tls-vendored = ["tokio-tungstenite/native-tls-vendored"]
-rustls-tls-webpki-roots = ["tokio-tungstenite/rustls-tls-webpki-roots"]
+native-tls-vendored = ["native-tls", "tokio-tungstenite/native-tls-vendored"]
+rustls-tls = ["tokio-tungstenite/rustls-tls-webpki-roots"]
+rustls-tls-native-roots = ["tokio-tungstenite/rustls-tls-native-roots"]
