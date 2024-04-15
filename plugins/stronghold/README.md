@@ -1,4 +1,4 @@
-![plugin-stronghold](banner.png)
+![plugin-stronghold](https://github.com/tauri-apps/plugins-workspace/raw/v1/plugins/stronghold/banner.png)
 
 Store secrets and keys using the [IOTA Stronghold](https://github.com/iotaledger/stronghold.rs) encrypted database and secure runtime.
 
@@ -23,7 +23,7 @@ tauri-plugin-stronghold = { git = "https://github.com/tauri-apps/plugins-workspa
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
+> Note: If your JavaScript package manager cannot install packages from git monorepos, you can still use the code by manually copying the [Guest bindings](./guest-js/index.ts) into your source files.
 
 ```sh
 pnpm add https://github.com/tauri-apps/tauri-plugin-stronghold#v1
@@ -43,8 +43,25 @@ First you need to register the core plugin with Tauri:
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_stronghold::Builder::new(|password| {
-            // TODO: hash the password here with e.g. argon2, blake2b or any other secure algorithm
-            todo!()
+            // Hash the password here with e.g. argon2, blake2b or any other secure algorithm
+            // Here is an example implementation using the `rust-argon2` crate for hashing the password
+
+            use argon2::{hash_raw, Config, Variant, Version};
+
+            let config = Config {
+                lanes: 4,
+                mem_cost: 10_000,
+                time_cost: 10,
+                variant: Variant::Argon2id,
+                version: Version::Version13,
+                ..Default::default()
+            };
+
+            let salt = "your-salt".as_bytes();
+
+            let key = hash_raw(password.as_ref(), salt, &config).expect("failed to hash password");
+
+            key.to_vec()
         })
         .build())
         .run(tauri::generate_context!())
@@ -55,14 +72,78 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Stronghold, Location } from "tauri-plugin-stronghold-api";
+import { Stronghold, Location, Client } from "tauri-plugin-stronghold-api";
+import { appDataDir } from "@tauri-apps/api/path";
 
-// TODO
+const initStronghold = async () => {
+  const vaultPath = `${await appDataDir()}/vault.hold`;
+
+  const vaultKey = "The key to the vault";
+
+  const stronghold = await Stronghold.load(vaultPath, vaultKey);
+
+  let client: Client;
+
+  const clientName = "name your client";
+
+  try {
+    client = await hold.loadClient(clientName);
+  } catch {
+    client = await hold.createClient(clientName);
+  }
+
+  return {
+    stronghold,
+    client,
+  };
+};
+
+const { stronghold, client } = await initStronghold();
+
+const store = client.getStore();
+
+const key = "my_key";
+
+// Insert a record to the store
+
+const data = Array.from(new TextEncoder().encode("Hello, World!"));
+
+await store.insert(key, data);
+
+// Read a record from store
+
+const data = await store.get(key);
+
+const value = new TextDecoder().decode(new Uint8Array(data));
+
+// Save your updates
+
+await stronghold.save();
+
+// Remove a record from store
+
+await store.remove(key);
 ```
 
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
+
+## Partners
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v1/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+For the complete list of sponsors please visit our [website](https://tauri.app#sponsors) and [Open Collective](https://opencollective.com/tauri).
 
 ## License
 

@@ -1,20 +1,18 @@
 [package]
 name = "tauri-plugin-positioner"
-version = "1.0.4"
+version = "1.0.5"
 description = "Position your windows at well-known locations."
-authors.workspace = true
-license.workspace = true
-edition.workspace = true
-rust-version.workspace = true
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
 
 [dependencies]
-serde.workspace = true
-serde_json.workspace = true
-tauri.workspace = true
-log.workspace = true
-thiserror.workspace = true
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
 serde_repr = "0.1"
 
 [features]

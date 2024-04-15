@@ -1,5 +1,5 @@
 {
-  "name": "tauri-plugin-{{name}}-api",
+  "name": "tauri-plugin-PLUGIN_NAME-api",
   "version": "0.0.0",
   "license": "MIT or APACHE-2.0",
   "authors": [
@@ -24,9 +24,9 @@
     "LICENSE"
   ],
   "devDependencies": {
-    "tslib": "2.6.0"
+    "tslib": "2.6.2"
   },
   "dependencies": {
-    "@tauri-apps/api": "1.4.0"
+    "@tauri-apps/api": "1.5.3"
   }
 }

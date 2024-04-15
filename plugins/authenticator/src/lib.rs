@@ -5,6 +5,7 @@
 mod auth;
 mod error;
 mod u2f;
+mod u2f_crate;
 
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},

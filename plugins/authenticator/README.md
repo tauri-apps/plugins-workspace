@@ -1,4 +1,4 @@
-![plugin-authenticator](banner.png)
+![plugin-authenticator](https://github.com/tauri-apps/plugins-workspace/raw/v1/plugins/authenticator/banner.png)
 
 Use hardware security-keys in your Tauri App.
 
@@ -8,11 +8,11 @@ _This plugin requires a Rust version of at least **1.64**_
 
 There are three general methods of installation that we can recommend.
 
-1. Use crates.io and npm (easiest, and requires you to trust that our publishing pipeline worked)
+1. Use crates.io and npm (easiest and requires you to trust that our publishing pipeline worked)
 2. Pull sources directly from Github using git tags / revision hashes (most secure)
-3. Git submodule install this repo in your tauri project and then use file protocol to ingest the source (most secure, but inconvenient to use)
+3. Git submodule install this repo in your tauri project and then use the file protocol to ingest the source (most secure, but inconvenient to use)
 
-Install the Core plugin by adding the following to your `Cargo.toml` file:
+Install the authenticator plugin by adding the following lines to your `Cargo.toml` file:
 
 `src-tauri/Cargo.toml`
 
@@ -37,7 +37,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-authenticator#v1
 
 ## Usage
 
-First you need to register the core plugin with Tauri:
+First, you need to register the authenticator plugin with Tauri:
 
 `src-tauri/src/main.rs`
 
@@ -50,7 +50,7 @@ fn main() {
 }
 ```
 
-Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
+Afterwards, all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
 import { Authenticator } from "tauri-plugin-authenticator-api";
@@ -71,7 +71,7 @@ const domain = "https://tauri.app";
 const json = await auth.register(challenge, domain);
 const registerResult = JSON.parse(json);
 
-// verify te registration was successfull
+// verify the registration was successful
 const r2 = await auth.verifyRegistration(
   challenge,
   app,
@@ -102,6 +102,22 @@ if (counter && counter > 0) {
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
+
+## Partners
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v1/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+For the complete list of sponsors please visit our [website](https://tauri.app#sponsors) and [Open Collective](https://opencollective.com/tauri).
 
 ## License
 

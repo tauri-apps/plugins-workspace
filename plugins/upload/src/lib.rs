@@ -9,7 +9,10 @@ use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
     Runtime, Window,
 };
-use tokio::{fs::File, io::AsyncWriteExt};
+use tokio::{
+    fs::File,
+    io::{AsyncWriteExt, BufWriter},
+};
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 use read_progress_stream::ReadProgressStream;
@@ -26,6 +29,8 @@ pub enum Error {
     Request(#[from] reqwest::Error),
     #[error("{0}")]
     ContentLength(String),
+    #[error("request failed with status code {0}: {1}")]
+    HttpErrorCode(u16, String),
 }
 
 impl Serialize for Error {
@@ -64,7 +69,7 @@ async fn download<R: Runtime>(
     let response = request.send().await?;
     let total = response.content_length().unwrap_or(0);
 
-    let mut file = File::create(file_path).await?;
+    let mut file = BufWriter::new(File::create(file_path).await?);
     let mut stream = response.bytes_stream();
 
     while let Some(chunk) = stream.try_next().await? {
@@ -78,6 +83,7 @@ async fn download<R: Runtime>(
             },
         );
     }
+    file.flush().await?;
 
     Ok(id)
 }
@@ -89,13 +95,17 @@ async fn upload<R: Runtime>(
     url: &str,
     file_path: &str,
     headers: HashMap<String, String>,
-) -> Result<serde_json::Value> {
+) -> Result<String> {
     // Read the file
     let file = File::open(file_path).await?;
+    let file_len = file.metadata().await.unwrap().len();
 
     // Create the request and attach the file to the body
     let client = reqwest::Client::new();
-    let mut request = client.post(url).body(file_to_body(id, window, file));
+    let mut request = client
+        .post(url)
+        .header(reqwest::header::CONTENT_LENGTH, file_len)
+        .body(file_to_body(id, window, file));
 
     // Loop trought the headers keys and values
     // and add them to the request object.
@@ -104,8 +114,14 @@ async fn upload<R: Runtime>(
     }
 
     let response = request.send().await?;
-
-    response.json().await.map_err(Into::into)
+    if response.status().is_success() {
+        response.text().await.map_err(Into::into)
+    } else {
+        Err(Error::HttpErrorCode(
+            response.status().as_u16(),
+            response.text().await.unwrap_or_default(),
+        ))
+    }
 }
 
 fn file_to_body<R: Runtime>(id: u32, window: Window<R>, file: File) -> reqwest::Body {

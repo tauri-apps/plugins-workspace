@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { listen, type UnlistenFn, type Event } from "@tauri-apps/api/event";
 
 export type LogOptions = {
   file?: string;
@@ -184,19 +184,38 @@ interface RecordPayload {
   message: string;
 }
 
-export async function attachConsole(): Promise<UnlistenFn> {
-  return await listen("log://log", (event) => {
-    const payload = event.payload as RecordPayload;
+type LoggerFn = (fn: RecordPayload) => void;
+
+/**
+ * Attaches a listener for the log, and calls the passed function for each log entry.
+ * @param fn
+ *
+ * @returns a function to cancel the listener.
+ */
+export async function attachLogger(fn: LoggerFn): Promise<UnlistenFn> {
+  return await listen("log://log", (event: Event<RecordPayload>) => {
+    const { level } = event.payload;
+    let { message } = event.payload;
 
     // Strip ANSI escape codes
-    const message = payload.message.replace(
+    message = message.replace(
       // TODO: Investigate security/detect-unsafe-regex
       // eslint-disable-next-line no-control-regex, security/detect-unsafe-regex
       /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
       "",
     );
+    fn({ message, level });
+  });
+}
 
-    switch (payload.level) {
+/**
+ * Attaches a listener that writes log entries to the console as they come in.
+ *
+ * @returns a function to cancel the listener.
+ */
+export async function attachConsole(): Promise<UnlistenFn> {
+  return attachLogger(({ level, message }: RecordPayload) => {
+    switch (level) {
       case LogLevel.Trace:
         console.log(message);
         break;
@@ -214,7 +233,7 @@ export async function attachConsole(): Promise<UnlistenFn> {
         break;
       default:
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        throw new Error(`unknown log level ${payload.level}`);
+        throw new Error(`unknown log level ${level}`);
     }
   });
 }

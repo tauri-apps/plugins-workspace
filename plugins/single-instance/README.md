@@ -1,4 +1,4 @@
-![tauri-plugin-single-instance](banner.png)
+![plugin-single-instance](https://github.com/tauri-apps/plugins-workspace/raw/v1/plugins/single-instance/banner.png)
 
 Ensure a single instance of your tauri app is running.
 
@@ -51,6 +51,22 @@ fn main() {
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
+
+## Partners
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v1/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+For the complete list of sponsors please visit our [website](https://tauri.app#sponsors) and [Open Collective](https://opencollective.com/tauri).
 
 ## License
 
