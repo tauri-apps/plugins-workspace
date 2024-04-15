@@ -5,6 +5,10 @@
   "windows": ["main"],
   "platforms": ["linux", "macOS", "windows"],
   "permissions": [
+    "window:allow-minimize",
+    "window:allow-maximize",
+    "window:allow-close",
+    "dialog:allow-ask",
     "cli:default",
     "updater:default",
     "global-shortcut:allow-unregister",
