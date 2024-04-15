@@ -707,13 +707,14 @@ impl Update {
                         #[cfg(not(feature = "zip"))]
                         return Err(Error::InvalidUpdaterFormat);
                     } else {
-                        // if something went wrong during the extraction, we should restore previous app
-                        if let Err(err) = std::fs::write(&self.extract_path, bytes) {
-                            std::fs::rename(tmp_app_image, &self.extract_path)?;
-                            return Err(err.into());
-                        }
-                        // early finish we have everything we need here
-                        return Ok(());
+                        return match std::fs::write(&self.extract_path, bytes) {
+                            Err(err) => {
+                                // if something went wrong during the extraction, we should restore previous app
+                                std::fs::rename(tmp_app_image, &self.extract_path)?;
+                                return Err(err.into());
+                            }
+                            Ok(_) => Ok(()),
+                        };
                     }
                 }
             }
