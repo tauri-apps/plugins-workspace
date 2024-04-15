@@ -49,6 +49,8 @@ impl Serialize for Error {
 #[derive(Default)]
 struct ConnectionManager(Mutex<HashMap<Id, WebSocketWriter>>);
 
+struct TlsConnector(Mutex<Option<Connector>>);
+
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectionConfig {
@@ -59,24 +61,6 @@ pub struct ConnectionConfig {
     #[serde(default)]
     pub accept_unmasked_frames: bool,
     pub headers: Option<Vec<(String, String)>>,
-}
-
-#[derive(Default)]
-pub struct TlsConfig {
-    connector: Mutex<Option<Connector>>,
-}
-
-impl TlsConfig {
-    pub fn from_connector(connector: Option<Connector>) -> Self {
-        Self {
-            connector: Mutex::new(connector),
-        }
-    }
-
-    pub async fn set_connector(&self, connector: Option<Connector>) {
-        let mut inner = self.connector.lock().await;
-        *inner = connector;
-    }
 }
 
 impl From<ConnectionConfig> for WebSocketConfig {
@@ -121,8 +105,8 @@ async fn connect<R: Runtime>(
 ) -> Result<Id> {
     let id = rand::random();
     let mut request = url.into_client_request()?;
-    let tls_connector = match (window.try_state::<TlsConfig>()) {
-        Some(tls_config) => tls_config.connector.lock().await.clone(),
+    let tls_connector = match window.try_state::<TlsConnector>() {
+        Some(tls_connector) => tls_connector.0.lock().await.clone(),
         None => None,
     };
 
@@ -210,12 +194,34 @@ async fn send(
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    PluginBuilder::new("websocket")
-        .invoke_handler(tauri::generate_handler![connect, send])
-        .setup(|app| {
-            app.manage(ConnectionManager::default());
-            app.manage(TlsConfig::default());
-            Ok(())
-        })
-        .build()
+    Builder::default().build()
+}
+
+#[derive(Default)]
+pub struct Builder {
+    tls_connector: Option<Connector>,
+}
+
+impl Builder {
+    pub fn new() -> Self {
+        Self {
+            tls_connector: None,
+        }
+    }
+
+    pub fn tls_connector(mut self, connector: Connector) -> Self {
+        self.tls_connector.replace(connector);
+        self
+    }
+
+    pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
+        PluginBuilder::new("websocket")
+            .invoke_handler(tauri::generate_handler![connect, send])
+            .setup(|app| {
+                app.manage(ConnectionManager::default());
+                app.manage(TlsConnector(Mutex::new(self.tls_connector)));
+                Ok(())
+            })
+            .build()
+    }
 }
