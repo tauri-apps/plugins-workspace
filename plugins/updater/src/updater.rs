@@ -549,98 +549,90 @@ impl Update {
 
         // For extending temp file's life time
         let mut temp_file: Option<tempfile::NamedTempFile> = None;
-        let updater = if is_zip(&bytes) {
+        let updater = 'updater: {
             #[cfg(feature = "zip")]
             {
-                let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
-                let archive = Cursor::new(&bytes);
-                let mut extractor = zip::ZipArchive::new(archive)?;
-                extractor.extract(&tmp_dir)?;
+                if is_zip(&bytes) {
+                    let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
+                    let archive = Cursor::new(&bytes);
+                    let mut extractor = zip::ZipArchive::new(archive)?;
+                    extractor.extract(&tmp_dir)?;
 
-                let paths = std::fs::read_dir(&tmp_dir)?;
+                    let paths = std::fs::read_dir(&tmp_dir)?;
 
-                let mut ret: Option<UpdaterType> = None;
-                for path in paths {
-                    let found_path = path?.path();
-                    if found_path.extension() == Some(OsStr::new("exe")) {
-                        ret = Some(UpdaterType::Nsis { path: found_path });
-                        break;
-                    } else if found_path.extension() == Some(OsStr::new("msi")) {
-                        ret = Some(UpdaterType::Msi { path: found_path });
-                        break;
-                    } else {
-                        continue;
+                    for path in paths {
+                        let found_path = path?.path();
+                        if found_path.extension() == Some(OsStr::new("exe")) {
+                            break 'updater UpdaterType::Nsis { path: found_path };
+                        } else if found_path.extension() == Some(OsStr::new("msi")) {
+                            break 'updater UpdaterType::Msi { path: found_path };
+                        }
                     }
+                    return Err(crate::Error::BinaryNotFoundInArchive);
                 }
-                ret
             }
-            #[cfg(not(feature = "zip"))]
-            None
-        } else if is_exe(&bytes) {
-            let mut new_file = tempfile::Builder::new().suffix(".exe").tempfile()?;
-            new_file.write_all(&bytes)?;
-            let path = new_file.path().to_path_buf();
-            temp_file = Some(new_file);
-            Some(UpdaterType::Nsis { path })
-        } else if is_msi(&bytes) {
-            let mut new_file = tempfile::Builder::new().suffix(".msi").tempfile()?;
-            new_file.write_all(&bytes)?;
-            let path = new_file.path().to_path_buf();
-            temp_file = Some(new_file);
-            Some(UpdaterType::Msi { path })
-        } else {
-            None
+            if is_exe(&bytes) {
+                let mut new_file = tempfile::Builder::new().suffix(".exe").tempfile()?;
+                new_file.write_all(&bytes)?;
+                let path = new_file.path().to_path_buf();
+                temp_file = Some(new_file);
+                break 'updater UpdaterType::Nsis { path };
+            }
+            if is_msi(&bytes) {
+                let mut new_file = tempfile::Builder::new().suffix(".msi").tempfile()?;
+                new_file.write_all(&bytes)?;
+                let path = new_file.path().to_path_buf();
+                temp_file = Some(new_file);
+                break 'updater UpdaterType::Msi { path };
+            }
+            return Err(crate::Error::InvalidUpdaterFormat);
         };
 
-        if let Some(updater) = updater {
-            let install_mode = self
-                .config
-                .windows
-                .as_ref()
-                .map(|w| w.install_mode.clone())
-                .unwrap_or_default();
-            let mut installer_args = self
-                .installer_args
-                .iter()
-                .map(OsStr::new)
-                .collect::<Vec<_>>();
-            let path = match updater {
-                UpdaterType::Nsis { path } => {
-                    installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
-                    path
-                }
-                UpdaterType::Msi { path } => {
-                    installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
-                    installer_args.push(OsStr::new("/promptrestart"));
-                    path
-                }
-            };
-
-            if let Some(on_before_exit) = self.on_before_exit.as_ref() {
-                on_before_exit();
+        let install_mode = self
+            .config
+            .windows
+            .as_ref()
+            .map(|w| w.install_mode.clone())
+            .unwrap_or_default();
+        let mut installer_args = self
+            .installer_args
+            .iter()
+            .map(OsStr::new)
+            .collect::<Vec<_>>();
+        let path = match updater {
+            UpdaterType::Nsis { path } => {
+                installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
+                path
             }
-
-            let file = encode_wide(path.as_os_str());
-            let parameters = encode_wide(installer_args.join(OsStr::new(" ")).as_os_str());
-            unsafe {
-                ShellExecuteW(
-                    0,
-                    w!("open"),
-                    file.as_ptr(),
-                    parameters.as_ptr(),
-                    std::ptr::null(),
-                    SW_SHOW,
-                )
-            };
-
-            if let Some(temp_file) = temp_file {
-                drop(temp_file);
+            UpdaterType::Msi { path } => {
+                installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
+                installer_args.push(OsStr::new("/promptrestart"));
+                path
             }
+        };
 
-            std::process::exit(0);
+        if let Some(on_before_exit) = self.on_before_exit.as_ref() {
+            on_before_exit();
         }
 
-        Err(crate::Error::BinaryNotFoundInArchive)
+        let file = encode_wide(path.as_os_str());
+        let parameters = encode_wide(installer_args.join(OsStr::new(" ")).as_os_str());
+        unsafe {
+            ShellExecuteW(
+                0,
+                w!("open"),
+                file.as_ptr(),
+                parameters.as_ptr(),
+                std::ptr::null(),
+                SW_SHOW,
+            )
+        };
+
+        if let Some(temp_file) = temp_file {
+            drop(temp_file);
+        }
+
+        std::process::exit(0);
     }
 
     // Linux (AppImage)
@@ -708,9 +700,12 @@ impl Update {
                                     }
                                 }
                             }
+                            // if we have not returned early we should restore the backup
+                            std::fs::rename(tmp_app_image, &self.extract_path)?;
+                            return Err(Error::BinaryNotFoundInArchive);
                         }
                         #[cfg(not(feature = "zip"))]
-                        return Err(Error::BinaryNotFoundInArchive);
+                        return Err(Error::InvalidUpdaterFormat);
                     } else {
                         // if something went wrong during the extraction, we should restore previous app
                         if let Err(err) = std::fs::write(&self.extract_path, bytes) {
@@ -720,10 +715,6 @@ impl Update {
                         // early finish we have everything we need here
                         return Ok(());
                     }
-                    // if we have not returned early we should restore the backup
-                    std::fs::rename(tmp_app_image, &self.extract_path)?;
-
-                    return Err(Error::BinaryNotFoundInArchive);
                 }
             }
         }
