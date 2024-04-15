@@ -35,7 +35,7 @@ url = { workspace = true }
 data-url = "0.3"
 
 [features]
-default = ["rustls-tls", "http2", "charset", "macos-system-configuration"]
+default = ["rustls-tls", "http2", "charset", "macos-system-configuration", "cookies"]
 multipart = ["reqwest/multipart"]
 json = ["reqwest/json"]
 stream = ["reqwest/stream"]

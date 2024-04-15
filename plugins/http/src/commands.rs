@@ -4,14 +4,14 @@
 
 use std::{collections::HashMap, future::Future, pin::Pin, sync::Arc, time::Duration};
 
-use http::{header, HeaderName, HeaderValue, Method, StatusCode};
+use http::{header, HeaderName, Method, StatusCode};
 use reqwest::{redirect::Policy, NoProxy};
 use serde::{Deserialize, Serialize};
 use tauri::{
     async_runtime::Mutex,
     command,
     ipc::{CommandScope, GlobalScope},
-    AppHandle, Manager, ResourceId, Runtime,
+    AppHandle, Manager, ResourceId, Runtime, Webview,
 };
 
 use crate::{
@@ -138,6 +138,7 @@ fn attach_proxy(
 #[command]
 pub async fn fetch<R: Runtime>(
     app: AppHandle<R>,
+    webview: Webview<R>,
     client_config: ClientConfig,
     command_scope: CommandScope<Entry>,
     global_scope: GlobalScope<Entry>,
@@ -194,7 +195,6 @@ pub async fn fetch<R: Runtime>(
 
                 for (name, value) in &headers {
                     let name = HeaderName::from_bytes(name.as_bytes())?;
-                    let value = HeaderValue::from_bytes(value.as_bytes())?;
                     #[cfg(not(feature = "unsafe-headers"))]
                     if matches!(
                         name,
@@ -228,21 +228,20 @@ pub async fn fetch<R: Runtime>(
                 // POST and PUT requests should always have a 0 length content-length,
                 // if there is no body. https://fetch.spec.whatwg.org/#http-network-or-cache-fetch
                 if data.is_none() && matches!(method, Method::POST | Method::PUT) {
-                    request = request.header(header::CONTENT_LENGTH, HeaderValue::from(0));
+                    request = request.header(header::CONTENT_LENGTH, 0);
                 }
 
                 if headers.contains_key(header::RANGE.as_str()) {
                     // https://fetch.spec.whatwg.org/#http-network-or-cache-fetch step 18
                     // If httpRequest’s header list contains `Range`, then append (`Accept-Encoding`, `identity`)
-                    request = request.header(
-                        header::ACCEPT_ENCODING,
-                        HeaderValue::from_static("identity"),
-                    );
+                    request = request.header(header::ACCEPT_ENCODING, "identity");
                 }
 
                 if !headers.contains_key(header::USER_AGENT.as_str()) {
-                    request = request.header(header::USER_AGENT, HeaderValue::from_static("tauri"));
+                    request = request.header(header::USER_AGENT, "tauri-plugin-http");
                 }
+
+                request = request.header(header::ORIGIN, webview.url().as_str());
 
                 if let Some(data) = data {
                     request = request.body(data);
