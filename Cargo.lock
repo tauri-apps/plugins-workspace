@@ -270,6 +270,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "app_settings_manager"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-store",
+]
+
+[[package]]
 name = "arboard"
 version = "3.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6517,6 +6528,7 @@ name = "tauri-plugin-single-instance"
 version = "2.0.0-beta.5"
 dependencies = [
  "log",
+ "semver",
  "serde",
  "serde_json",
  "tauri",
@@ -6973,6 +6985,7 @@ dependencies = [
  "log",
  "native-tls",
  "rustls 0.22.2",
+ "rustls-native-certs",
  "rustls-pki-types",
  "tokio",
  "tokio-native-tls",
