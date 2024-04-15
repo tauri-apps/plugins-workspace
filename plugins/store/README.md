@@ -57,11 +57,11 @@ const store = new Store(".settings.dat");
 
 await store.set("some-key", { value: 5 });
 
-const val = await store.get<{value:number}>("some-key");
+const val = await store.get<{ value: number }>("some-key");
 
-if (val){
+if (val) {
     console.log(val);
-}else{
+} else {
     console.log("val is null");
 }
 
