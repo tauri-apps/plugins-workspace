@@ -33,7 +33,7 @@
     "optionator": ">=0.9.3"
   },
   "engines": {
-    "pnpm": ">=7.33.1"
+    "pnpm": "^8.0.0"
   },
   "pnpm": {
     "auditConfig": {
