@@ -121,16 +121,20 @@ pub(crate) async fn open<R: Runtime>(
         #[cfg(desktop)]
         {
             if options.multiple {
-                let mut folders = dialog_builder.blocking_pick_folders();
-                if let Some(folders) = &mut folders {
+                let folders = dialog_builder.blocking_pick_folders();
+                if let Some(folders) = &folders {
                     for folder in folders {
                         if let Some(s) = window.try_fs_scope() {
-                            s.allow_directory(&folder, options.recursive);
+                            s.allow_directory(folder, options.recursive);
                         }
-                        *folder = dunce::simplified(folder).to_path_buf();
                     }
                 }
-                OpenResponse::Folders(folders)
+                OpenResponse::Folders(folders.map(|folders| {
+                    folders
+                        .iter()
+                        .map(|p| dunce::simplified(p).to_path_buf())
+                        .collect()
+                }))
             } else {
                 let folder = dialog_builder.blocking_pick_folder();
                 if let Some(path) = &folder {
@@ -144,8 +148,8 @@ pub(crate) async fn open<R: Runtime>(
         #[cfg(mobile)]
         return Err(crate::Error::FolderPickerNotImplemented);
     } else if options.multiple {
-        let mut files = dialog_builder.blocking_pick_files();
-        if let Some(files) = &mut files {
+        let files = dialog_builder.blocking_pick_files();
+        if let Some(files) = &files {
             for file in files {
                 if let Some(s) = window.try_fs_scope() {
                     s.allow_file(&file.path);
@@ -153,22 +157,31 @@ pub(crate) async fn open<R: Runtime>(
                 window
                     .state::<tauri::scope::Scopes>()
                     .allow_file(&file.path)?;
-                file.path = dunce::simplified(&file.path).to_path_buf();
             }
         }
-        OpenResponse::Files(files)
+        OpenResponse::Files(files.map(|files| {
+            files
+                .into_iter()
+                .map(|mut f| {
+                    f.path = dunce::simplified(&f.path).to_path_buf();
+                    f
+                })
+                .collect()
+        }))
     } else {
-        let mut file = dialog_builder.blocking_pick_file();
-        if let Some(file) = &mut file {
+        let file = dialog_builder.blocking_pick_file();
+        if let Some(file) = &file {
             if let Some(s) = window.try_fs_scope() {
                 s.allow_file(&file.path);
             }
             window
                 .state::<tauri::scope::Scopes>()
                 .allow_file(&file.path)?;
-            file.path = dunce::simplified(&file.path).to_path_buf();
         }
-        OpenResponse::File(file)
+        OpenResponse::File(file.map(|mut f| {
+            f.path = dunce::simplified(&f.path).to_path_buf();
+            f
+        }))
     };
     Ok(res)
 }
