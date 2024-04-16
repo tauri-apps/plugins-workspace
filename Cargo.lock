@@ -7722,12 +7722,12 @@ dependencies = [
 
 [[package]]
 name = "win7-notifications"
-version = "0.3.1"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "210952d7163b9ed83a6fd9754ab2a101d14480f8491b5f1d6292771d88dbee70"
+checksum = "82bdf2850c73df6ab8d3284759951a2a8cc4024b06c7d1507d47e19b6127ad79"
 dependencies = [
  "once_cell",
- "windows-sys 0.36.1",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -7887,19 +7887,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cd19df78e5168dfb0aedc343d1d1b8d422ab2db6756d2dc3fef75035402a3f64"
 dependencies = [
  "windows-targets 0.52.4",
-]
-
-[[package]]
-name = "windows-sys"
-version = "0.36.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea04155a16a59f9eab786fe12a4a450e75cdb175f9e0d80da1e17db09f55b8d2"
-dependencies = [
- "windows_aarch64_msvc 0.36.1",
- "windows_i686_gnu 0.36.1",
- "windows_i686_msvc 0.36.1",
- "windows_x86_64_gnu 0.36.1",
- "windows_x86_64_msvc 0.36.1",
 ]
 
 [[package]]
