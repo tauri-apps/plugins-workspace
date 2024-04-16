@@ -22,4 +22,4 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
-dunce = "1"
+dunce = { workspace = true }
