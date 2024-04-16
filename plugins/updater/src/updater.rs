@@ -543,12 +543,20 @@ impl Update {
         // we support 2 type of files exe & msi for now
         // If it's an `exe` we expect an NSIS installer.
         enum UpdaterType {
-            Nsis { path: PathBuf },
-            Msi { path: PathBuf },
+            Nsis {
+                path: PathBuf,
+                // For extending temp file's life time
+                #[allow(unused)]
+                temp_file: Option<tempfile::NamedTempFile>,
+            },
+            Msi {
+                path: PathBuf,
+                // For extending temp file's life time
+                #[allow(unused)]
+                temp_file: Option<tempfile::NamedTempFile>,
+            },
         }
 
-        // For extending temp file's life time
-        let mut temp_file: Option<tempfile::NamedTempFile> = None;
         let updater = 'updater: {
             #[cfg(feature = "zip")]
             {
@@ -563,27 +571,35 @@ impl Update {
                     for path in paths {
                         let found_path = path?.path();
                         if found_path.extension() == Some(OsStr::new("exe")) {
-                            break 'updater UpdaterType::Nsis { path: found_path };
+                            break 'updater UpdaterType::Nsis {
+                                path: found_path,
+                                temp_file: None,
+                            };
                         } else if found_path.extension() == Some(OsStr::new("msi")) {
-                            break 'updater UpdaterType::Msi { path: found_path };
+                            break 'updater UpdaterType::Msi {
+                                path: found_path,
+                                temp_file: None,
+                            };
                         }
                     }
                     return Err(crate::Error::BinaryNotFoundInArchive);
                 }
             }
             if is_exe(&bytes) {
-                let mut new_file = tempfile::Builder::new().suffix(".exe").tempfile()?;
-                new_file.write_all(&bytes)?;
-                let path = new_file.path().to_path_buf();
-                temp_file = Some(new_file);
-                break 'updater UpdaterType::Nsis { path };
+                let mut temp_file = tempfile::Builder::new().suffix(".exe").tempfile()?;
+                temp_file.write_all(&bytes)?;
+                break 'updater UpdaterType::Nsis {
+                    path: temp_file.path().to_path_buf(),
+                    temp_file: Some(temp_file),
+                };
             }
             if is_msi(&bytes) {
-                let mut new_file = tempfile::Builder::new().suffix(".msi").tempfile()?;
-                new_file.write_all(&bytes)?;
-                let path = new_file.path().to_path_buf();
-                temp_file = Some(new_file);
-                break 'updater UpdaterType::Msi { path };
+                let mut temp_file = tempfile::Builder::new().suffix(".msi").tempfile()?;
+                temp_file.write_all(&bytes)?;
+                break 'updater UpdaterType::Msi {
+                    path: temp_file.path().to_path_buf(),
+                    temp_file: Some(temp_file),
+                };
             }
             return Err(crate::Error::InvalidUpdaterFormat);
         };
@@ -600,11 +616,11 @@ impl Update {
             .map(OsStr::new)
             .collect::<Vec<_>>();
         let path = match updater {
-            UpdaterType::Nsis { path } => {
+            UpdaterType::Nsis { path, .. } => {
                 installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
                 path
             }
-            UpdaterType::Msi { path } => {
+            UpdaterType::Msi { path, .. } => {
                 installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
                 installer_args.push(OsStr::new("/promptrestart"));
                 path
@@ -627,11 +643,6 @@ impl Update {
                 SW_SHOW,
             )
         };
-
-        if let Some(temp_file) = temp_file {
-            drop(temp_file);
-        }
-
         std::process::exit(0);
     }
 
@@ -955,7 +966,7 @@ fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
 }
 
 // Taken from infer crate https://github.com/bojand/infer (MIT License)
-#[cfg(target_os = "windows")]
+#[cfg(all(target_os = "windows", feature = "zip"))]
 fn is_zip(buf: &[u8]) -> bool {
     buf.len() > 3
         && buf[0] == 0x50
