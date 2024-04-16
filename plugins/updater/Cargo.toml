@@ -48,7 +48,7 @@ tar = "0.4"
 flate2 = "1"
 
 [dev-dependencies]
-mockito = "0.31"
+mockito = "0.32"
 
 [features]
 native-tls = ["reqwest/native-tls"]
