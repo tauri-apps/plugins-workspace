@@ -29,7 +29,7 @@ importers:
         version: 7.6.0(eslint@8.57.0)(typescript@5.4.5)
       covector:
         specifier: ^0.10.2
-        version: 0.10.2(mocha@10.2.0)
+        version: 0.10.2(mocha@10.4.0)
       eslint:
         specifier: 8.57.0
         version: 8.57.0
@@ -117,7 +117,7 @@ importers:
     devDependencies:
       '@iconify-json/codicon':
         specifier: ^1.1.37
-        version: 1.1.37
+        version: 1.1.46
       '@iconify-json/ph':
         specifier: ^1.1.8
         version: 1.1.8
@@ -694,23 +694,23 @@ packages:
       event-target-shim: 5.0.1
     dev: true
 
-  /@covector/apply@0.9.2(mocha@10.2.0):
+  /@covector/apply@0.9.2(mocha@10.4.0):
     resolution: {integrity: sha512-XrNujG6ERUq8bwPCQgOEzuwBCSLKV5nC4AuO+QBpuC0xA9Qz9w025YKYNMIsXxVf0SBscMXKzhBAo9iUDTzKFw==}
     dependencies:
       '@covector/files': 0.7.1
-      effection: 2.0.8(mocha@10.2.0)
+      effection: 2.0.8(mocha@10.4.0)
       semver: 7.5.4
     transitivePeerDependencies:
       - encoding
       - mocha
     dev: true
 
-  /@covector/assemble@0.10.3(mocha@10.2.0):
+  /@covector/assemble@0.10.3(mocha@10.4.0):
     resolution: {integrity: sha512-LcltbmTDHeCouIGvDJ268UQ2T/JGOjt/vE4lT15BOq3F+RjTdE3B+1XmhhkFzP6Ebp6hnU5mZXFDmWqqrQKWFA==}
     dependencies:
-      '@covector/command': 0.7.0(mocha@10.2.0)
+      '@covector/command': 0.7.0(mocha@10.4.0)
       '@covector/files': 0.7.1
-      effection: 2.0.8(mocha@10.2.0)
+      effection: 2.0.8(mocha@10.4.0)
       js-yaml: 4.1.0
       lodash: 4.17.21
       remark-frontmatter: 3.0.0
@@ -723,11 +723,11 @@ packages:
       - supports-color
     dev: true
 
-  /@covector/changelog@0.10.1(mocha@10.2.0):
+  /@covector/changelog@0.10.1(mocha@10.4.0):
     resolution: {integrity: sha512-p1kDf6abq8TAKIzLMcieMD+hoP4RamykoPpk3PYHUhZnz0xi1+8sVGEPByCQGb3SI9PCg8CZPuyIA91YtuiTsQ==}
     dependencies:
       '@covector/files': 0.7.1
-      effection: 2.0.8(mocha@10.2.0)
+      effection: 2.0.8(mocha@10.4.0)
       lodash: 4.17.21
       remark-parse: 9.0.0
       remark-stringify: 9.0.1
@@ -738,11 +738,11 @@ packages:
       - supports-color
     dev: true
 
-  /@covector/command@0.7.0(mocha@10.2.0):
+  /@covector/command@0.7.0(mocha@10.4.0):
     resolution: {integrity: sha512-9DGx4tOY9Fkd4AlYbOE0rnesYAYJm7Wr6BUBJlRxErtA0vDAejZ0+jVHZbemB1MbLOaYWXkDf/wD7SLnf06gfw==}
     dependencies:
-      '@effection/process': 2.1.4(mocha@10.2.0)
-      effection: 2.0.8(mocha@10.2.0)
+      '@effection/process': 2.1.4(mocha@10.4.0)
+      effection: 2.0.8(mocha@10.4.0)
       strip-ansi: 6.0.1
     transitivePeerDependencies:
       - encoding
@@ -782,11 +782,11 @@ packages:
       '@effection/stream': 2.0.6
     dev: true
 
-  /@effection/fetch@2.0.7(mocha@10.2.0):
+  /@effection/fetch@2.0.7(mocha@10.4.0):
     resolution: {integrity: sha512-1lZTmhhtaGjEOMPS6UNhmKjXoJXh8n5hmSAM2d1oZUOPGMnuJaYlyqjCusdlnJF8SgJbwuek9Hux3TEyLV3c1g==}
     dependencies:
       '@effection/core': 2.2.3
-      '@effection/mocha': 2.0.8(mocha@10.2.0)
+      '@effection/mocha': 2.0.8(mocha@10.4.0)
       cross-fetch: 3.1.5
     transitivePeerDependencies:
       - encoding
@@ -801,21 +801,21 @@ packages:
       stacktrace-parser: 0.1.10
     dev: true
 
-  /@effection/mocha@2.0.8(mocha@10.2.0):
+  /@effection/mocha@2.0.8(mocha@10.4.0):
     resolution: {integrity: sha512-XXL3Vhhu6w8tQNv4EJI6H0+JZBzzi8FI6caCbQdiS7M3FOON9WI3EnorpIsOtZyZoKXaH+8d9543+ufRGzyP+Q==}
     peerDependencies:
       mocha: ^10.0.0
     dependencies:
-      effection: 2.0.8(mocha@10.2.0)
-      mocha: 10.2.0
+      effection: 2.0.8(mocha@10.4.0)
+      mocha: 10.4.0
     dev: true
 
-  /@effection/process@2.1.4(mocha@10.2.0):
+  /@effection/process@2.1.4(mocha@10.4.0):
     resolution: {integrity: sha512-MBvcCwUzxma2Luk+JSc8we3qDeFEf7rt6XYg6krpytICODHs6VMp1xl8YJhfLqGFza7/WR70FPAoK34BidiIIA==}
     dependencies:
       cross-spawn: 7.0.3
       ctrlc-windows: 2.1.0
-      effection: 2.0.8(mocha@10.2.0)
+      effection: 2.0.8(mocha@10.4.0)
       shellwords: 0.1.1
     transitivePeerDependencies:
       - encoding
@@ -1103,8 +1103,8 @@ packages:
     resolution: {integrity: sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==}
     dev: true
 
-  /@iconify-json/codicon@1.1.37:
-    resolution: {integrity: sha512-S8nJQeP9VGdPO+XtuyM+HfGKCAkGXY4qteYW5PKzz1S9s73PdBTLuLTSW342HqqYhuUaiF8S+w8SAkkPZnOnpg==}
+  /@iconify-json/codicon@1.1.46:
+    resolution: {integrity: sha512-efAc2tFRrLJguNktAWza8pLhLCYhwWjQzUm6CXzXzxU18uCW2Mqzn2rJ+WhdLl+VQVxLFtvXcMMg9Gq5UOw1jA==}
     dependencies:
       '@iconify/types': 2.0.0
     dev: true
@@ -2628,16 +2628,16 @@ packages:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
     dev: true
 
-  /covector@0.10.2(mocha@10.2.0):
+  /covector@0.10.2(mocha@10.4.0):
     resolution: {integrity: sha512-Nbz2x5cnS7F0fTT/raNKo0UYbI6rjaDoCrAJNoOpsSHdztnlFi7Bb6lU6kOBEeEH1zHVJk5F3ChBs0VNAuf5mg==}
     hasBin: true
     dependencies:
-      '@covector/apply': 0.9.2(mocha@10.2.0)
-      '@covector/assemble': 0.10.3(mocha@10.2.0)
-      '@covector/changelog': 0.10.1(mocha@10.2.0)
-      '@covector/command': 0.7.0(mocha@10.2.0)
+      '@covector/apply': 0.9.2(mocha@10.4.0)
+      '@covector/assemble': 0.10.3(mocha@10.4.0)
+      '@covector/changelog': 0.10.1(mocha@10.4.0)
+      '@covector/command': 0.7.0(mocha@10.4.0)
       '@covector/files': 0.7.1
-      effection: 2.0.8(mocha@10.2.0)
+      effection: 2.0.8(mocha@10.4.0)
       globby: 11.1.0
       inquirer: 8.2.6
       yargs: 17.7.2
@@ -2786,13 +2786,13 @@ packages:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
     dev: true
 
-  /effection@2.0.8(mocha@10.2.0):
+  /effection@2.0.8(mocha@10.4.0):
     resolution: {integrity: sha512-/v7cbPIXGGylInQgHHjJutzqUn6VIfcP13hh2X0hXf04wwAlSI+lVjUBKpr5TX3+v9dXV/JLHO/pqQ9Cp1QAnQ==}
     dependencies:
       '@effection/channel': 2.0.6
       '@effection/core': 2.2.3
       '@effection/events': 2.0.6
-      '@effection/fetch': 2.0.7(mocha@10.2.0)
+      '@effection/fetch': 2.0.7(mocha@10.4.0)
       '@effection/main': 2.1.2
       '@effection/stream': 2.0.6
       '@effection/subscription': 2.0.6
@@ -2917,8 +2917,8 @@ packages:
       '@esbuild/win32-x64': 0.20.2
     dev: true
 
-  /escalade@3.1.1:
-    resolution: {integrity: sha512-k0er2gUkLf8O0zKJiAhmkTnJlTvINGv7ygDNPbeIsX/TJjGJZHuh9B2UxbsaEkmlEo9MfhrSzmhIlhRlI2GXnw==}
+  /escalade@3.1.2:
+    resolution: {integrity: sha512-ErCHMCae19vR8vQGe50xIsVomy19rg6gFu3+r3jkEO46suLMWBksvVyoGgQV+jOfl84ZSOSlmv6Gxa89PmTGmA==}
     engines: {node: '>=6'}
     dev: true
 
@@ -2952,6 +2952,7 @@ packages:
 
   /eslint-config-standard-with-typescript@43.0.1(@typescript-eslint/eslint-plugin@7.6.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@17.2.1)(eslint-plugin-promise@6.1.1)(eslint@8.57.0)(typescript@5.4.5):
     resolution: {integrity: sha512-WfZ986+qzIzX6dcr4yGUyVb/l9N3Z8wPXCc5z/70fljs3UbWhhV+WxrfgsqMToRzuuyX9MqZ974pq2UPhDTOcA==}
+    deprecated: Please use eslint-config-love, instead.
     peerDependencies:
       '@typescript-eslint/eslint-plugin': ^6.4.0
       eslint: ^8.0.1
@@ -3436,17 +3437,6 @@ packages:
       is-glob: 4.0.3
     dev: true
 
-  /glob@7.2.0:
-    resolution: {integrity: sha512-lmLf6gtyrPq8tTjSmrO94wBeQbFR3HbLHbuyD69wuyQkImp2hWqMGB47OX65FBkPffO641IP9jWa1z4ivqG26Q==}
-    dependencies:
-      fs.realpath: 1.0.0
-      inflight: 1.0.6
-      inherits: 2.0.4
-      minimatch: 3.1.2
-      once: 1.4.0
-      path-is-absolute: 1.0.1
-    dev: true
-
   /glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
     dependencies:
@@ -3456,6 +3446,17 @@ packages:
       minimatch: 3.1.2
       once: 1.4.0
       path-is-absolute: 1.0.1
+    dev: true
+
+  /glob@8.1.0:
+    resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
+    engines: {node: '>=12'}
+    dependencies:
+      fs.realpath: 1.0.0
+      inflight: 1.0.6
+      inherits: 2.0.4
+      minimatch: 5.0.1
+      once: 1.4.0
     dev: true
 
   /globals@11.12.0:
@@ -4123,8 +4124,8 @@ packages:
       ufo: 1.3.1
     dev: true
 
-  /mocha@10.2.0:
-    resolution: {integrity: sha512-IDY7fl/BecMwFHzoqF2sg/SHHANeBoMMXFlS9r0OXKDssYE1M5O43wUY/9BVPeIvfH2zmEbBfseqN9gBQZzXkg==}
+  /mocha@10.4.0:
+    resolution: {integrity: sha512-eqhGB8JKapEYcC4ytX/xrzKforgEc3j1pGlAXVy3eRwrtAy5/nIfT1SvgGzfN0XZZxeLq0aQWkOUAmqIJiv+bA==}
     engines: {node: '>= 14.0.0'}
     hasBin: true
     dependencies:
@@ -4135,13 +4136,12 @@ packages:
       diff: 5.0.0
       escape-string-regexp: 4.0.0
       find-up: 5.0.0
-      glob: 7.2.0
+      glob: 8.1.0
       he: 1.2.0
       js-yaml: 4.1.0
       log-symbols: 4.1.0
       minimatch: 5.0.1
       ms: 2.1.3
-      nanoid: 3.3.3
       serialize-javascript: 6.0.0
       strip-json-comments: 3.1.1
       supports-color: 8.1.1
@@ -4166,12 +4166,6 @@ packages:
 
   /mute-stream@0.0.8:
     resolution: {integrity: sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==}
-    dev: true
-
-  /nanoid@3.3.3:
-    resolution: {integrity: sha512-p1sjXuopFs0xg+fPASzQ28agW1oHD7xDsd9Xkf3T15H3c/cifrFHVwrh74PdoklAPi+i7MdRsE47vm2r6JoB+w==}
-    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
     dev: true
 
   /nanoid@3.3.7:
@@ -5121,7 +5115,7 @@ packages:
       browserslist: '>= 4.21.0'
     dependencies:
       browserslist: 4.22.2
-      escalade: 3.1.1
+      escalade: 3.1.2
       picocolors: 1.0.0
     dev: true
 
@@ -5307,7 +5301,7 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       cliui: 7.0.4
-      escalade: 3.1.1
+      escalade: 3.1.2
       get-caller-file: 2.0.5
       require-directory: 2.1.1
       string-width: 4.2.3
@@ -5320,7 +5314,7 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       cliui: 8.0.1
-      escalade: 3.1.1
+      escalade: 3.1.2
       get-caller-file: 2.0.5
       require-directory: 2.1.1
       string-width: 4.2.3
