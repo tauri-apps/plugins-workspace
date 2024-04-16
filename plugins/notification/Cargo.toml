@@ -46,7 +46,7 @@ chrono = { version = "0.4", optional = true }
 winrt-notification = { package = "tauri-winrt-notification", version = "0.1" }
 
 [dev-dependencies]
-color-backtrace = "0.5"
+color-backtrace = "0.6"
 ctor = "0.2"
 maplit = "1.0"
 
