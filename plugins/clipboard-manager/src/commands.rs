@@ -17,11 +17,12 @@ pub(crate) async fn write_text<R: Runtime>(
 
 #[command]
 pub(crate) async fn write_image<R: Runtime>(
-    _app: AppHandle<R>,
+    webview: Webview<R>,
     clipboard: State<'_, Clipboard<R>>,
     data: ClipKind,
 ) -> Result<()> {
-    clipboard.write_image(data)
+    let resources_table = webview.resources_table();
+    clipboard.write_image_inner(data, &resources_table)
 }
 
 #[command]
