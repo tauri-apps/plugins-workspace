@@ -195,8 +195,10 @@ mod imp {
             #[cfg(target_os = "linux")]
             {
                 let bin = tauri::utils::platform::current_exe()?;
-                // TODO: Research if this conflicts with appimage integrations somehow. If it does, re-add a `-handler` suffix if running in an appimage.
-                let file_name = format!("{}.desktop", bin.file_name().unwrap().to_string_lossy());
+                let file_name = format!(
+                    "{}-handler.desktop",
+                    bin.file_name().unwrap().to_string_lossy()
+                );
                 let appimage = self.app.env().appimage;
                 let exec = appimage
                     .clone()
@@ -280,7 +282,7 @@ mod imp {
             #[cfg(target_os = "linux")]
             {
                 let file_name = format!(
-                    "{}.desktop",
+                    "{}-handler.desktop",
                     tauri::utils::platform::current_exe()?
                         .file_name()
                         .unwrap()
