@@ -290,7 +290,11 @@ mod imp {
                 );
 
                 let output = Command::new("xdg-mime")
-                    .args(["default", &file_name, _protocol.as_ref()])
+                    .args([
+                        "query",
+                        "default",
+                        &format!("x-scheme-handler/{}", _protocol.as_ref()),
+                    ])
                     .output()?;
 
                 Ok(String::from_utf8_lossy(&output.stdout).contains(&file_name))
