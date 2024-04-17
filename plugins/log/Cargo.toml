@@ -27,10 +27,10 @@ time = { version = "0.3", features = ["formatting", "local-offset"] }
 fern = "0.6"
 
 [target."cfg(target_os = \"android\")".dependencies]
-android_logger = "0.11"
+android_logger = "0.13"
 
 [target."cfg(target_os = \"ios\")".dependencies]
-swift-rs = "1.0.1"
+swift-rs = "1"
 objc = "0.2"
 cocoa = "0.24"
 
