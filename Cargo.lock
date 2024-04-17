@@ -252,7 +252,7 @@ dependencies = [
  "tauri-plugin-process",
  "tauri-plugin-shell",
  "tauri-plugin-updater",
- "tiny_http 0.11.0",
+ "tiny_http",
  "window-shadows",
 ]
 
@@ -266,7 +266,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-updater",
  "time",
- "tiny_http 0.11.0",
+ "tiny_http",
 ]
 
 [[package]]
@@ -6299,7 +6299,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "thiserror",
- "tiny_http 0.12.0",
+ "tiny_http",
 ]
 
 [[package]]
@@ -6779,19 +6779,6 @@ checksum = "7ba3a3ef41e6672a2f0f001392bb5dcd3ff0a9992d618ca761a11c3121547774"
 dependencies = [
  "num-conv",
  "time-core",
-]
-
-[[package]]
-name = "tiny_http"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0d6ef4e10d23c1efb862eecad25c5054429a71958b4eeef85eb5e7170b477ca"
-dependencies = [
- "ascii",
- "chunked_transfer",
- "log",
- "time",
- "url",
 ]
 
 [[package]]

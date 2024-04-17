@@ -11,7 +11,7 @@ tauri = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri-plugin-updater = { path = "../.." }
-tiny_http = "0.11"
+tiny_http = "0.12"
 time = { version = "0.3", features = ["formatting"] }
 
 [features]
