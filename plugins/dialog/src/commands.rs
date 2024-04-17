@@ -129,7 +129,12 @@ pub(crate) async fn open<R: Runtime>(
                         }
                     }
                 }
-                OpenResponse::Folders(folders)
+                OpenResponse::Folders(folders.map(|folders| {
+                    folders
+                        .iter()
+                        .map(|p| dunce::simplified(p).to_path_buf())
+                        .collect()
+                }))
             } else {
                 let folder = dialog_builder.blocking_pick_folder();
                 if let Some(path) = &folder {
@@ -137,7 +142,7 @@ pub(crate) async fn open<R: Runtime>(
                         s.allow_directory(path, options.recursive);
                     }
                 }
-                OpenResponse::Folder(folder)
+                OpenResponse::Folder(folder.map(|p| dunce::simplified(&p).to_path_buf()))
             }
         }
         #[cfg(mobile)]
@@ -154,7 +159,15 @@ pub(crate) async fn open<R: Runtime>(
                     .allow_file(&file.path)?;
             }
         }
-        OpenResponse::Files(files)
+        OpenResponse::Files(files.map(|files| {
+            files
+                .into_iter()
+                .map(|mut f| {
+                    f.path = dunce::simplified(&f.path).to_path_buf();
+                    f
+                })
+                .collect()
+        }))
     } else {
         let file = dialog_builder.blocking_pick_file();
         if let Some(file) = &file {
@@ -165,7 +178,10 @@ pub(crate) async fn open<R: Runtime>(
                 .state::<tauri::scope::Scopes>()
                 .allow_file(&file.path)?;
         }
-        OpenResponse::File(file)
+        OpenResponse::File(file.map(|mut f| {
+            f.path = dunce::simplified(&f.path).to_path_buf();
+            f
+        }))
     };
     Ok(res)
 }
@@ -208,7 +224,7 @@ pub(crate) async fn save<R: Runtime>(
             window.state::<tauri::scope::Scopes>().allow_file(p)?;
         }
 
-        Ok(path)
+        Ok(path.map(|p| dunce::simplified(&p).to_path_buf()))
     }
 }
 
