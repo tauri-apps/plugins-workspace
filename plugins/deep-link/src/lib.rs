@@ -206,35 +206,48 @@ mod imp {
                     .to_string_lossy()
                     .to_string();
 
-                // If the app is an appimage it's likely that there is no desktop file yet.
-                // If that's the case we create a non-integrated one that only registers the scheme.
-                if appimage.is_some() {
-                    let target = self.app.path().data_dir()?.join("applications");
+                let target = self.app.path().data_dir()?.join("applications");
 
-                    create_dir_all(&target)?;
+                create_dir_all(&target)?;
 
-                    let target_file = target.join(&file_name);
+                let target_file = target.join(&file_name);
 
-                    if !target_file.exists() {
-                        let mut file = File::create(target_file)?;
-                        file.write_all(
-                            format!(
-                                include_str!("template.desktop"),
-                                name = self.app.config().identifier,
-                                exec = exec
-                            )
-                            .as_bytes(),
-                        )?;
+                let mime_type = format!("x-scheme-handler/{};", _protocol.as_ref());
 
-                        Command::new("update-desktop-database")
-                            .arg(target)
-                            .status()?;
+                if let Ok(mut desktop_file) = ini::Ini::load_from_file(&target_file) {
+                    if let Some(section) = desktop_file.section_mut(Some("Desktop Entry")) {
+                        if let Some(mimes) = section.remove("MimeType") {
+                            section.append("MimeType", format!("{mimes};{mime_type};"))
+                        } else {
+                            section.append("MimeType", format!("{mime_type};"))
+                        }
+                        desktop_file.write_to_file(&target_file)?;
                     }
-
-                    Command::new("xdg-mime")
-                        .args(["default", &file_name, _protocol.as_ref()])
-                        .status()?;
+                } else {
+                    let mut file = File::create(target_file)?;
+                    file.write_all(
+                        format!(
+                            include_str!("template.desktop"),
+                            name = self
+                                .app
+                                .config()
+                                .product_name
+                                .clone()
+                                .unwrap_or_else(|| file_name.clone()),
+                            exec = exec,
+                            mime_type = mime_type
+                        )
+                        .as_bytes(),
+                    )?;
                 }
+
+                Command::new("update-desktop-database")
+                    .arg(target)
+                    .status()?;
+
+                Command::new("xdg-mime")
+                    .args(["default", &file_name, _protocol.as_ref()])
+                    .status()?;
             }
 
             Ok(())
@@ -246,11 +259,36 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **macOS / Linux / Android / iOS**: Unsupported.
+        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`]. May not work on older distros.
+        /// - **macOS / Android / iOS**: Unsupported.
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
             {
                 CURRENT_USER.remove_tree(format!("Software\\Classes\\{}", _protocol.as_ref()))?;
+            }
+
+            #[cfg(target_os = "linux")]
+            {
+                let mimeapps_path = self.app.path().config_dir()?.join("mimeapps.list");
+                let mut mimeapps = ini::Ini::load_from_file(&mimeapps_path)?;
+
+                let file_name = format!(
+                    "{}-handler.desktop",
+                    tauri::utils::platform::current_exe()?
+                        .file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                );
+
+                if let Some(section) = mimeapps.section_mut(Some("Default Applications")) {
+                    let scheme = format!("x-scheme-handler/{}", _protocol.as_ref());
+
+                    if section.get(&scheme).unwrap_or_default() == file_name {
+                        section.remove(scheme);
+                    }
+                }
+
+                mimeapps.write_to_file(mimeapps_path)?;
             }
 
             Ok(())
