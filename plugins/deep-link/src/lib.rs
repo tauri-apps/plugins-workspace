@@ -123,7 +123,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
+        /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
             Err(crate::Error::UnsupportedPlatform)
         }
@@ -311,7 +311,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
+        /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
             #[cfg(windows)]
             {
@@ -350,9 +350,7 @@ mod imp {
             }
 
             #[cfg(target_os = "macos")]
-            {
-                Ok("TODO")
-            }
+            Err(crate::Error::UnsupportedPlatform)
         }
     }
 }
