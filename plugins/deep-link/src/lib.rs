@@ -86,7 +86,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Windows / Linux**: Unsupported.
+        /// - **Windows / Linux**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
             self.0
                 .run_mobile_plugin::<GetCurrentResponse>("getCurrent", ())
@@ -100,9 +100,9 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **macOS / Android / iOS**: Unsupported.
+        /// - **Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn register<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
-            Ok(())
+            Err(crate::Error::UnsupportedPlatform)
         }
 
         /// Unregister the app as the default handler for the specified protocol.
@@ -111,9 +111,10 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **macOS / Linux / Android / iOS**: Unsupported.
+        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
+        /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
-            Ok(())
+            Err(crate::Error::UnsupportedPlatform)
         }
 
         /// Check whether the app is the default handler for the specified protocol.
@@ -122,9 +123,9 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **macOS / Android / iOS**: Unsupported, always returns `Ok(true)`.
+        /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
-            Ok(true)
+            Err(crate::Error::UnsupportedPlatform)
         }
     }
 }
@@ -148,6 +149,7 @@ mod imp {
     pub struct DeepLink<R: Runtime> {
         #[allow(dead_code)]
         pub(crate) app: AppHandle<R>,
+        #[allow(dead_code)]
         pub(crate) current: Mutex<Option<Vec<url::Url>>>,
     }
 
@@ -156,9 +158,12 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Windows / Linux**: Unsupported.
+        /// - **Windows / Linux**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
-            Ok(self.current.lock().unwrap().clone())
+            #[cfg(target_os = "macos")]
+            return Ok(self.current.lock().unwrap().clone());
+            #[cfg(not(target_os = "macos"))]
+            Err(crate::Error::UnsupportedPlatform)
         }
 
         /// Register the app as the default handler for the specified protocol.
@@ -167,7 +172,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **macOS / Android / iOS**: Unsupported.
+        /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn register<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
             {
@@ -250,6 +255,9 @@ mod imp {
                     .status()?;
             }
 
+            #[cfg(target_os = "macos")]
+            return Err(crate::Error::UnsupportedPlatform);
+            #[cfg(not(target_os = "macos"))]
             Ok(())
         }
 
@@ -259,8 +267,8 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`]. May not work on older distros.
-        /// - **macOS / Android / iOS**: Unsupported.
+        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
+        /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
             {
@@ -291,6 +299,9 @@ mod imp {
                 mimeapps.write_to_file(mimeapps_path)?;
             }
 
+            #[cfg(target_os = "macos")]
+            return Err(crate::Error::UnsupportedPlatform);
+            #[cfg(not(target_os = "macos"))]
             Ok(())
         }
 
@@ -300,7 +311,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **macOS / Android / iOS**: Unsupported, always returns `Ok(true)`.
+        /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
             #[cfg(windows)]
             {
@@ -338,8 +349,10 @@ mod imp {
                 Ok(String::from_utf8_lossy(&output.stdout).contains(&file_name))
             }
 
-            #[cfg(not(any(windows, target_os = "linux")))]
-            Ok(true)
+            #[cfg(target_os = "macos")]
+            {
+                Ok("TODO")
+            }
         }
     }
 }
