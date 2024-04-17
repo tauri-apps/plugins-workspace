@@ -302,7 +302,7 @@ mod imp {
 
 pub use imp::DeepLink;
 
-/// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the deep-link APIs.
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the deep-link APIs.
 pub trait DeepLinkExt<R: Runtime> {
     fn deep_link(&self) -> &DeepLink<R>;
 }

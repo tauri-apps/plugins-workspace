@@ -8,8 +8,11 @@
     ".changes/dialog-can-create-directories.md",
     ".changes/dialog-linux-freeze.md",
     ".changes/dialog-main-thread.md",
+    ".changes/dialog-path-return-mismatch.md",
+    ".changes/enhance-fs-scope-type.md",
     ".changes/enhance-http-scope.md",
     ".changes/file-autogen-fix.md",
+    ".changes/fix-autolaunch-macos.md",
     ".changes/fix-fs-watcher-basedir.md",
     ".changes/fix-http-scope-url-match.md",
     ".changes/fix-shutdown-timing.md",
@@ -26,8 +29,11 @@
     ".changes/public-with-store.md",
     ".changes/shell-fix-schema-command-property-name.md",
     ".changes/shell-shellexcute.md",
+    ".changes/single-instance.macos.md",
+    ".changes/tauri-beta-14.md",
     ".changes/tauri-beta-4.md",
     ".changes/tauri-beta-8.md",
-    ".changes/tauri-beta-9.md"
+    ".changes/tauri-beta-9.md",
+    ".changes/window-state-json.md"
   ]
 }

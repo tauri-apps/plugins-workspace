@@ -6,14 +6,15 @@ authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-authenticator"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }
@@ -26,7 +27,7 @@ thiserror = { workspace = true }
 authenticator = "0.3.1"
 once_cell = "1"
 sha2 = "0.10"
-base64 = "0.21"
+base64 = "0.22"
 chrono = "0.4"
 bytes = "1"
 byteorder = "1"

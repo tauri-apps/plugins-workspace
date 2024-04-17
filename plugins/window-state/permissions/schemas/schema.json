@@ -295,17 +295,31 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-restore-window-state -> Enables the restore_window_state command without any pre-configured scope.",
+          "description": "allow-filename -> Enables the filename command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "allow-restore-window-state"
+            "allow-filename"
           ]
         },
         {
-          "description": "deny-restore-window-state -> Denies the restore_window_state command without any pre-configured scope.",
+          "description": "deny-filename -> Denies the filename command without any pre-configured scope.",
           "type": "string",
           "enum": [
-            "deny-restore-window-state"
+            "deny-filename"
+          ]
+        },
+        {
+          "description": "allow-restore-state -> Enables the restore_state command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-restore-state"
+          ]
+        },
+        {
+          "description": "deny-restore-state -> Denies the restore_state command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-restore-state"
           ]
         },
         {

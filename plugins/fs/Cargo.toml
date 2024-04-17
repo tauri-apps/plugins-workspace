@@ -1,19 +1,20 @@
 [package]
 name = "tauri-plugin-fs"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 description = "Access the file system."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-fs"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
 
@@ -25,10 +26,10 @@ tauri = { workspace = true }
 thiserror = { workspace = true }
 url = { workspace = true }
 anyhow = "1"
-uuid = { version = "1", features = [ "v4" ] }
+uuid = { version = "1", features = ["v4"] }
 glob = "0.3"
-notify = { version = "6", optional = true, features = [ "serde" ] }
+notify = { version = "6", optional = true, features = ["serde"] }
 notify-debouncer-full = { version = "0.3", optional = true }
 
 [features]
-watch = [ "notify", "notify-debouncer-full" ]
+watch = ["notify", "notify-debouncer-full"]

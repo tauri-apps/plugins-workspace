@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.4]
+
+- [`c013fa5`](https://github.com/tauri-apps/plugins-workspace/commit/c013fa52cd66885cf457a64e75373cb2066bc849)([#1078](https://github.com/tauri-apps/plugins-workspace/pull/1078)) **Breaking change**: Changed the format of the state file from bincode to json. Also changed the filename to from `.window-state` to `.window-state.json`.
+
 ## \[2.0.0-beta.3]
 
 - [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.
@@ -54,3 +58,13 @@
   /pull/371)) First v2 alpha release!
   lugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+
+## \[0.1.1]
+
+- Address a couple of issues with restoring positions:
+
+- Fix restoring window positions correctly when the top-left corner of the window was outside of the monitor.
+
+- Fix restore maximization state only maximized on main monitor.
+
+- [70d9908](https://github.com/tauri-apps/plugins-workspace/commit/70d99086de3a58189d65c49954a3495972880725) fix(window-state): restore window position if the one of the window corners intersects with monitor ([#898](https://github.com/tauri-apps/plugins-workspace/pull/898)) on 2024-01-25

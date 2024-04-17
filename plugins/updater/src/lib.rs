@@ -29,7 +29,7 @@ pub use config::Config;
 pub use error::{Error, Result};
 pub use updater::*;
 
-/// Extension trait to use the updater on [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`].
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the updater APIs.
 pub trait UpdaterExt<R: Runtime> {
     /// Gets the updater builder to build and updater
     /// that can manually check if an update is available.

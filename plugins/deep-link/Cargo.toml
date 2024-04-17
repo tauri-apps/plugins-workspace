@@ -6,12 +6,13 @@ authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-deep-link"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
-targets = [ "x86_64-linux-android" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+targets = ["x86_64-linux-android"]
 
 [build-dependencies]
 serde = { workspace = true }
