@@ -37,6 +37,16 @@ impl<R: Runtime> Clipboard<R> {
         self.0.run_mobile_plugin("write", kind).map_err(Into::into)
     }
 
+    pub(crate) fn write_image_inner(
+        &self,
+        kind: ClipKind,
+        resources_table: &tauri::ResourceTable,
+    ) -> crate::Result<()> {
+        Err(crate::Error::Clipboard(
+            "Unsupported on this platform".to_string(),
+        ))
+    }
+
     pub fn write_image(&self, kind: ClipKind) -> crate::Result<()> {
         Err(crate::Error::Clipboard(
             "Unsupported on this platform".to_string(),
