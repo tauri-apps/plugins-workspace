@@ -160,9 +160,9 @@ mod imp {
         ///
         /// - **Windows / Linux**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
-            #[cfg(target_os = "macos")]
+            #[cfg(not(any(windows, target_os = "linux")))]
             return Ok(self.current.lock().unwrap().clone());
-            #[cfg(not(target_os = "macos"))]
+            #[cfg(any(windows, target_os = "linux"))]
             Err(crate::Error::UnsupportedPlatform)
         }
 
@@ -195,6 +195,8 @@ mod imp {
                 let cmd_reg = CURRENT_USER.create(format!("{key_base}\\shell\\open\\command"))?;
 
                 cmd_reg.set_string("", &format!("{} \"%1\"", &exe))?;
+
+                Ok(())
             }
 
             #[cfg(target_os = "linux")]
@@ -253,12 +255,12 @@ mod imp {
                 Command::new("xdg-mime")
                     .args(["default", &file_name, _protocol.as_ref()])
                     .status()?;
+
+                Ok(())
             }
 
-            #[cfg(target_os = "macos")]
-            return Err(crate::Error::UnsupportedPlatform);
-            #[cfg(not(target_os = "macos"))]
-            Ok(())
+            #[cfg(not(any(windows, target_os = "linux")))]
+            Err(crate::Error::UnsupportedPlatform)
         }
 
         /// Unregister the app as the default handler for the specified protocol.
@@ -273,6 +275,8 @@ mod imp {
             #[cfg(windows)]
             {
                 CURRENT_USER.remove_tree(format!("Software\\Classes\\{}", _protocol.as_ref()))?;
+
+                Ok(())
             }
 
             #[cfg(target_os = "linux")]
@@ -297,12 +301,12 @@ mod imp {
                 }
 
                 mimeapps.write_to_file(mimeapps_path)?;
+
+                Ok(())
             }
 
-            #[cfg(target_os = "macos")]
-            return Err(crate::Error::UnsupportedPlatform);
-            #[cfg(not(target_os = "macos"))]
-            Ok(())
+            #[cfg(not(any(windows, target_os = "linux")))]
+            Err(crate::Error::UnsupportedPlatform)
         }
 
         /// Check whether the app is the default handler for the specified protocol.
@@ -349,7 +353,7 @@ mod imp {
                 Ok(String::from_utf8_lossy(&output.stdout).contains(&file_name))
             }
 
-            #[cfg(target_os = "macos")]
+            #[cfg(not(any(windows, target_os = "linux")))]
             Err(crate::Error::UnsupportedPlatform)
         }
     }
