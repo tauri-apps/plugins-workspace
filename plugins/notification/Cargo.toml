@@ -29,7 +29,7 @@ url = { version = "2", features = ["serde"] }
 serde_repr = "0.1"
 
 [target."cfg(windows)".dependencies]
-win7-notifications = { version = "0.3.1", optional = true }
+win7-notifications = { version = "0.4.3", optional = true }
 windows-version = { version = "0.1", optional = true }
 
 [target."cfg(all(unix, not(target_os = \"macos\")))".dependencies]
@@ -43,10 +43,10 @@ mac-notification-sys = "0.6"
 chrono = { version = "0.4", optional = true }
 
 [target."cfg(target_os=\"windows\")".dependencies]
-winrt-notification = { package = "tauri-winrt-notification", version = "0.1" }
+winrt-notification = { package = "tauri-winrt-notification", version = "0.2" }
 
 [dev-dependencies]
-color-backtrace = "0.5"
+color-backtrace = "0.6"
 ctor = "0.2"
 maplit = "1.0"
 

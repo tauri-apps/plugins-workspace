@@ -45,7 +45,7 @@ windows-sys = { version = "0.52.0", features = [
 
 [target."cfg(any(target_os = \"macos\", target_os = \"linux\"))".dependencies]
 tar = "0.4"
-flate2 = "1.0.27"
+flate2 = "1"
 
 [dev-dependencies]
 mockito = "0.31"

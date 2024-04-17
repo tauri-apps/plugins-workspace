@@ -30,9 +30,9 @@ mod models;
 pub use error::{Error, Result};
 
 #[cfg(desktop)]
-use desktop::Clipboard;
+pub use desktop::Clipboard;
 #[cfg(mobile)]
-use mobile::Clipboard;
+pub use mobile::Clipboard;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the clipboard APIs.
 pub trait ClipboardExt<R: Runtime> {
