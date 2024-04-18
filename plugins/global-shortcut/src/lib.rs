@@ -44,7 +44,7 @@ impl From<Shortcut> for ShortcutWrapper {
 }
 
 impl TryFrom<&str> for ShortcutWrapper {
-    type Error = global_hotkey::Error;
+    type Error = global_hotkey::hotkey::HotKeyParseError;
     fn try_from(value: &str) -> std::result::Result<Self, Self::Error> {
         Shortcut::from_str(value).map(ShortcutWrapper)
     }
