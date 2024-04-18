@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.6]
+
+- [`ed46dca`](https://github.com/tauri-apps/plugins-workspace/commit/ed46dca74ff3947dbbcb26a7b571c129bf925698) Added the `semver` feature flag to make the single instance mechanism only trigger for semver compatible versions.
+
 ## \[2.0.0-beta.5]
 
 - [`dabac0e`](https://github.com/tauri-apps/plugins-workspace/commit/dabac0eedfd6e6d192c6c5a214e708b3c0223f6f)([#1035](https://github.com/tauri-apps/plugins-workspace/pull/1035)) Added implementation for MacOS.
