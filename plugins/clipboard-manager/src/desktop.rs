@@ -5,7 +5,7 @@
 use arboard::ImageData;
 use image::ImageEncoder;
 use serde::de::DeserializeOwned;
-use tauri::{image::Image, plugin::PluginApi, AppHandle, Runtime};
+use tauri::{image::Image, plugin::PluginApi, AppHandle, Manager, ResourceTable, Runtime};
 
 use crate::models::*;
 
@@ -39,11 +39,15 @@ impl<R: Runtime> Clipboard<R> {
         }
     }
 
-    pub fn write_image(&self, kind: ClipKind) -> crate::Result<()> {
+    pub(crate) fn write_image_inner(
+        &self,
+        kind: ClipKind,
+        resources_table: &ResourceTable,
+    ) -> crate::Result<()> {
         match kind {
             ClipKind::Image { image, .. } => match &self.clipboard {
                 Ok(clipboard) => {
-                    let image = image.into_img(&self.app)?;
+                    let image = image.into_img(resources_table)?;
                     clipboard
                         .lock()
                         .unwrap()
@@ -58,6 +62,11 @@ impl<R: Runtime> Clipboard<R> {
             },
             _ => Err(crate::Error::Clipboard("Invalid clip kind".to_string())),
         }
+    }
+
+    pub fn write_image(&self, kind: ClipKind) -> crate::Result<()> {
+        let resources_table = self.app.resources_table();
+        self.write_image_inner(kind, &resources_table)
     }
 
     pub fn read_text(&self) -> crate::Result<ClipboardContents> {

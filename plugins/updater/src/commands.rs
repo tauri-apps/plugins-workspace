@@ -5,7 +5,7 @@
 use crate::{Result, Update, UpdaterExt};
 
 use serde::Serialize;
-use tauri::{ipc::Channel, AppHandle, Manager, ResourceId, Runtime};
+use tauri::{ipc::Channel, Manager, ResourceId, Runtime, Webview};
 
 use std::time::Duration;
 use url::Url;
@@ -37,13 +37,13 @@ pub(crate) struct Metadata {
 
 #[tauri::command]
 pub(crate) async fn check<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     headers: Option<Vec<(String, String)>>,
     timeout: Option<u64>,
     proxy: Option<String>,
     target: Option<String>,
 ) -> Result<Metadata> {
-    let mut builder = app.updater_builder();
+    let mut builder = webview.updater_builder();
     if let Some(headers) = headers {
         for (k, v) in headers {
             builder = builder.header(k, v)?;
@@ -69,7 +69,7 @@ pub(crate) async fn check<R: Runtime>(
         metadata.version = update.version.clone();
         metadata.date = update.date.map(|d| d.to_string());
         metadata.body = update.body.clone();
-        metadata.rid = Some(app.resources_table().add(update));
+        metadata.rid = Some(webview.resources_table().add(update));
     }
 
     Ok(metadata)
@@ -77,11 +77,11 @@ pub(crate) async fn check<R: Runtime>(
 
 #[tauri::command]
 pub(crate) async fn download_and_install<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     rid: ResourceId,
     on_event: Channel,
 ) -> Result<()> {
-    let update = app.resources_table().get::<Update>(rid)?;
+    let update = webview.resources_table().get::<Update>(rid)?;
 
     let mut first_chunk = true;
 

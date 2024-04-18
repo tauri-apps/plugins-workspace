@@ -17,7 +17,7 @@ tauri-build = { workspace = true, features = [ "codegen", "isolation" ] }
 [dependencies]
 serde_json = { workspace = true }
 serde = { workspace = true }
-tiny_http = "0.11"
+tiny_http = "0.12"
 log = { workspace = true }
 tauri-plugin-log = { path = "../../../plugins/log", version = "2.0.0-beta.3" }
 tauri-plugin-fs = { path = "../../../plugins/fs", version = "2.0.0-beta.4", features = [ "watch" ] }

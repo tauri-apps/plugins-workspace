@@ -52,7 +52,7 @@ tar = "0.4"
 flate2 = "1"
 
 [features]
-default = ["zip"]
+default = ["rustls-tls", "zip"]
 zip = ["dep:zip", "dep:tar", "dep:flate2"]
 native-tls = ["reqwest/native-tls"]
 native-tls-vendored = ["reqwest/native-tls-vendored"]

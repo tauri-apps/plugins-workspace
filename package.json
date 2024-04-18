@@ -13,27 +13,27 @@
     "@rollup/plugin-node-resolve": "15.2.3",
     "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-typescript": "11.1.6",
-    "@typescript-eslint/eslint-plugin": "6.20.0",
-    "@typescript-eslint/parser": "6.20.0",
+    "@typescript-eslint/eslint-plugin": "7.7.0",
+    "@typescript-eslint/parser": "7.7.0",
     "covector": "^0.10.2",
-    "eslint": "8.56.0",
+    "eslint": "8.57.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-config-standard-with-typescript": "43.0.1",
     "eslint-plugin-import": "2.29.1",
-    "eslint-plugin-n": "16.6.2",
+    "eslint-plugin-n": "17.2.1",
     "eslint-plugin-promise": "6.1.1",
-    "eslint-plugin-security": "2.1.0",
-    "prettier": "3.2.2",
-    "rollup": "4.9.6",
+    "eslint-plugin-security": "3.0.0",
+    "prettier": "3.2.5",
+    "rollup": "4.14.3",
     "tslib": "2.6.2",
-    "typescript": "5.3.3"
+    "typescript": "5.4.5"
   },
   "resolutions": {
     "semver": ">=7.5.2",
     "optionator": ">=0.9.3"
   },
   "engines": {
-    "pnpm": ">=7.33.1"
+    "pnpm": "^8.0.0"
   },
   "pnpm": {
     "auditConfig": {
