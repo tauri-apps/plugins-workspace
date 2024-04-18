@@ -55,10 +55,11 @@ impl Scope {
     pub fn allow_directory<P: AsRef<Path>>(&self, path: P, recursive: bool) {
         let path = path.as_ref();
 
-        let mut allowed = self.allowed.lock().unwrap();
-        allowed.push(path.to_path_buf());
-        allowed.push(path.join(if recursive { "**" } else { "*" }));
-        drop(allowed);
+        {
+            let mut allowed = self.allowed.lock().unwrap();
+            allowed.push(path.to_path_buf());
+            allowed.push(path.join(if recursive { "**" } else { "*" }));
+        }
 
         self.emit(Event::PathAllowed(path.to_path_buf()));
     }
@@ -80,10 +81,11 @@ impl Scope {
     pub fn forbid_directory<P: AsRef<Path>>(&self, path: P, recursive: bool) {
         let path = path.as_ref();
 
-        let mut denied = self.denied.lock().unwrap();
-        denied.push(path.to_path_buf());
-        denied.push(path.join(if recursive { "**" } else { "*" }));
-        drop(denied);
+        {
+            let mut denied = self.denied.lock().unwrap();
+            denied.push(path.to_path_buf());
+            denied.push(path.join(if recursive { "**" } else { "*" }));
+        }
 
         self.emit(Event::PathForbidden(path.to_path_buf()));
     }
