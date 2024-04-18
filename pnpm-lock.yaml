@@ -117,7 +117,7 @@ importers:
     devDependencies:
       '@iconify-json/codicon':
         specifier: ^1.1.37
-        version: 1.1.46
+        version: 1.1.47
       '@iconify-json/ph':
         specifier: ^1.1.8
         version: 1.1.12
@@ -1104,8 +1104,8 @@ packages:
     resolution: {integrity: sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==}
     dev: true
 
-  /@iconify-json/codicon@1.1.46:
-    resolution: {integrity: sha512-efAc2tFRrLJguNktAWza8pLhLCYhwWjQzUm6CXzXzxU18uCW2Mqzn2rJ+WhdLl+VQVxLFtvXcMMg9Gq5UOw1jA==}
+  /@iconify-json/codicon@1.1.47:
+    resolution: {integrity: sha512-dsAtFbBBP3t9NhFIwxy3DhnunT3Shgpx5lK2eg2hOjuCVsIKT4XpClMsEQfQ11ZL81cVV/iIcxjCfcm8rY+fsg==}
     dependencies:
       '@iconify/types': 2.0.0
     dev: true
