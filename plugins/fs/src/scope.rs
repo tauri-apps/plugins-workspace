@@ -58,6 +58,7 @@ impl Scope {
         let mut allowed = self.allowed.lock().unwrap();
         allowed.push(path.to_path_buf());
         allowed.push(path.join(if recursive { "**" } else { "*" }));
+        drop(allowed);
 
         self.emit(Event::PathAllowed(path.to_path_buf()));
     }
@@ -82,6 +83,7 @@ impl Scope {
         let mut denied = self.denied.lock().unwrap();
         denied.push(path.to_path_buf());
         denied.push(path.join(if recursive { "**" } else { "*" }));
+        drop(denied);
 
         self.emit(Event::PathForbidden(path.to_path_buf()));
     }

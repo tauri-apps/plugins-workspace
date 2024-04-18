@@ -230,7 +230,7 @@ checksum = "5ad32ce52e4161730f7098c077cd2ed6229b5804ccf99e5366be1ab72a98b4e1"
 
 [[package]]
 name = "api"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 dependencies = [
  "log",
  "serde",
@@ -6126,7 +6126,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-authenticator"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 dependencies = [
  "authenticator",
  "base64 0.22.0",
@@ -6199,7 +6199,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-clipboard-manager"
-version = "2.1.0-beta.0"
+version = "2.1.0-beta.1"
 dependencies = [
  "arboard",
  "image",
@@ -6226,7 +6226,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 dependencies = [
  "dunce",
  "log",
@@ -6242,7 +6242,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 dependencies = [
  "anyhow",
  "glob",
@@ -6274,7 +6274,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 dependencies = [
  "data-url",
  "http",
@@ -6381,7 +6381,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6434,7 +6434,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "log",
  "semver",
@@ -6464,7 +6464,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-store"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 dependencies = [
  "dunce",
  "log",
@@ -6498,7 +6498,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 dependencies = [
  "base64 0.22.0",
  "dirs-next",
@@ -6525,7 +6525,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-upload"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 dependencies = [
  "futures-util",
  "log",
@@ -6542,7 +6542,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-websocket"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 dependencies = [
  "futures-util",
  "http",
@@ -6559,7 +6559,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 dependencies = [
  "bitflags 2.4.2",
  "log",
