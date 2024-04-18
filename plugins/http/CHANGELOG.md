@@ -1,5 +1,16 @@
 # Changelog
 
+## \[2.0.0-beta.5]
+
+- [`500ff10`](https://github.com/tauri-apps/plugins-workspace/commit/500ff10fbd89fdfc73caf9d153029dad567b4ff1)([#1166](https://github.com/tauri-apps/plugins-workspace/pull/1166)) **Breaking change:** Removed the `default-tls` feature flag. The `rustls-tls`, `http2`, `macos-system-configuration`, and `charset` feature flags are now enabled by default.
+- [`e3d41f4`](https://github.com/tauri-apps/plugins-workspace/commit/e3d41f4011bd3ea3ce281bb38bbe31d3709f8e0f)([#1191](https://github.com/tauri-apps/plugins-workspace/pull/1191)) Internally use the webview scoped resources table instead of the app one, so other webviews can't access other webviews resources.
+- [`7e2fcc5`](https://github.com/tauri-apps/plugins-workspace/commit/7e2fcc5e74df7c3c718e40f75bfb0eafc7d69d8d)([#1146](https://github.com/tauri-apps/plugins-workspace/pull/1146)) Update dependencies to align with tauri 2.0.0-beta.14.
+- [`e3d41f4`](https://github.com/tauri-apps/plugins-workspace/commit/e3d41f4011bd3ea3ce281bb38bbe31d3709f8e0f)([#1191](https://github.com/tauri-apps/plugins-workspace/pull/1191)) Update for tauri 2.0.0-beta.15.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.5`
+
 ## \[2.0.0-beta.4]
 
 ### Dependencies
