@@ -51,6 +51,7 @@ flate2 = "1"
 mockito = "0.31"
 
 [features]
+default = [ "rustls-tls" ]
 native-tls = ["reqwest/native-tls"]
 native-tls-vendored = ["reqwest/native-tls-vendored"]
 rustls-tls = ["reqwest/rustls-tls"]
