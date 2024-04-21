@@ -4,7 +4,7 @@
 
 use std::{
     ffi::OsStr,
-    io::{BufReader, Write},
+    io::{BufRead, BufReader, Write},
     path::{Path, PathBuf},
     process::{Command as StdCommand, Stdio},
     sync::{Arc, RwLock},
@@ -53,7 +53,10 @@ pub enum CommandEvent {
 
 /// The type to spawn commands.
 #[derive(Debug)]
-pub struct Command(StdCommand);
+pub struct Command {
+    cmd: StdCommand,
+    raw_out: bool
+}
 
 /// Spawned child process.
 #[derive(Debug)]
@@ -122,7 +125,7 @@ fn relative_command_path(command: &Path) -> crate::Result<PathBuf> {
 
 impl From<Command> for StdCommand {
     fn from(cmd: Command) -> StdCommand {
-        cmd.0
+        cmd.cmd
     }
 }
 
@@ -136,7 +139,7 @@ impl Command {
         #[cfg(windows)]
         command.creation_flags(CREATE_NO_WINDOW);
 
-        Self(command)
+        Self{ cmd: command, raw_out: false }
     }
 
     pub(crate) fn new_sidecar<S: AsRef<Path>>(program: S) -> crate::Result<Self> {
@@ -146,7 +149,7 @@ impl Command {
     /// Appends an argument to the command.
     #[must_use]
     pub fn arg<S: AsRef<OsStr>>(mut self, arg: S) -> Self {
-        self.0.arg(arg);
+        self.cmd.arg(arg);
         self
     }
 
@@ -157,14 +160,14 @@ impl Command {
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
-        self.0.args(args);
+        self.cmd.args(args);
         self
     }
 
     /// Clears the entire environment map for the child process.
     #[must_use]
     pub fn env_clear(mut self) -> Self {
-        self.0.env_clear();
+        self.cmd.env_clear();
         self
     }
 
@@ -175,7 +178,7 @@ impl Command {
         K: AsRef<OsStr>,
         V: AsRef<OsStr>,
     {
-        self.0.env(key, value);
+        self.cmd.env(key, value);
         self
     }
 
@@ -187,14 +190,19 @@ impl Command {
         K: AsRef<OsStr>,
         V: AsRef<OsStr>,
     {
-        self.0.envs(envs);
+        self.cmd.envs(envs);
         self
     }
 
     /// Sets the working directory for the child process.
     #[must_use]
     pub fn current_dir<P: AsRef<Path>>(mut self, current_dir: P) -> Self {
-        self.0.current_dir(current_dir);
+        self.cmd.current_dir(current_dir);
+        self
+    }
+    
+    pub fn set_raw_out(mut self, raw_out: bool) -> Self {
+        self.raw_out = raw_out;
         self
     }
 
@@ -229,6 +237,7 @@ impl Command {
     /// });
     /// ```
     pub fn spawn(self) -> crate::Result<(Receiver<CommandEvent>, CommandChild)> {
+        let raw = self.raw_out;
         let mut command: StdCommand = self.into();
         let (stdout_reader, stdout_writer) = pipe()?;
         let (stderr_reader, stderr_writer) = pipe()?;
@@ -249,12 +258,14 @@ impl Command {
             guard.clone(),
             stdout_reader,
             CommandEvent::Stdout,
+            raw
         );
         spawn_pipe_reader(
             tx.clone(),
             guard.clone(),
             stderr_reader,
             CommandEvent::Stderr,
+            raw
         );
 
         spawn(move || {
@@ -364,10 +375,31 @@ fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
     guard: Arc<RwLock<()>>,
     pipe_reader: PipeReader,
     wrapper: F,
+    raw_out: bool
 ) {
     spawn(move || {
         let _lock = guard.read().unwrap();
         let mut reader = BufReader::new(pipe_reader);
+
+        if raw_out {
+            loop {
+                let result = reader.fill_buf();
+                match result {
+                    Ok(buf) => {
+                        let length = buf.len();
+                        if length == 0 { break; }
+                        let tx_ = tx.clone();
+                        let _ = block_on_task(async move { tx_.send(wrapper(buf.to_vec())).await });
+                        reader.consume(length);
+                    }
+                    Err(e) => {
+                        let tx_ = tx.clone();
+                        let _ = block_on_task( async move { tx_.send(CommandEvent::Error(e.to_string())).await });
+                    }
+                }
+            }
+            return;
+        } 
 
         loop {
             let mut buf = Vec::new();
