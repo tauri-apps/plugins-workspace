@@ -30,7 +30,7 @@ async function writeText(
   text: string,
   opts?: { label?: string },
 ): Promise<void> {
-  return invoke("plugin:clipboard-manager|write_text", {
+  await invoke("plugin:clipboard-manager|write_text", {
     data: {
       plainText: {
         label: opts?.label,
@@ -93,7 +93,7 @@ async function readImage(): Promise<Image> {
 async function writeImage(
   image: string | Image | Uint8Array | ArrayBuffer | number[],
 ): Promise<void> {
-  return invoke("plugin:clipboard-manager|write_image", {
+  await invoke("plugin:clipboard-manager|write_image", {
     data: {
       image: {
         image: transformImage(image),
@@ -117,7 +117,7 @@ async function writeImage(
  * @since 2.0.0
  */
 async function writeHtml(html: string, altHtml?: string): Promise<void> {
-  return invoke("plugin:clipboard-manager|write_html", {
+  await invoke("plugin:clipboard-manager|write_html", {
     data: {
       html: {
         html,
@@ -138,7 +138,6 @@ async function writeHtml(html: string, altHtml?: string): Promise<void> {
  */
 async function clear(): Promise<void> {
   await invoke("plugin:clipboard-manager|clear");
-  return;
 }
 
 export { writeText, readText, writeHtml, clear, readImage, writeImage };

@@ -46,7 +46,7 @@ export async function scan(options?: ScanOptions): Promise<Scanned> {
  * Cancel the current scan process.
  */
 export async function cancel(): Promise<void> {
-  return await invoke("plugin:barcode-scanner|cancel");
+  await invoke("plugin:barcode-scanner|cancel");
 }
 
 /**
@@ -71,5 +71,5 @@ export async function requestPermissions(): Promise<PermissionState> {
  * Open application settings. Useful if permission was denied and the user must manually enable it.
  */
 export async function openAppSettings(): Promise<void> {
-  return await invoke("plugin:barcode-scanner|open_app_settings");
+  await invoke("plugin:barcode-scanner|open_app_settings");
 }

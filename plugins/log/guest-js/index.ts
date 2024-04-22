@@ -5,11 +5,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn, type Event } from "@tauri-apps/api/event";
 
-export type LogOptions = {
+export interface LogOptions {
   file?: string;
   line?: number;
   keyValues?: Record<string, string | undefined>;
-};
+}
 
 enum LogLevel {
   /**
@@ -218,7 +218,7 @@ export async function attachLogger(fn: LoggerFn): Promise<UnlistenFn> {
  * @returns a function to cancel the listener.
  */
 export async function attachConsole(): Promise<UnlistenFn> {
-  return attachLogger(({ level, message }: RecordPayload) => {
+  return await attachLogger(({ level, message }: RecordPayload) => {
     switch (level) {
       case LogLevel.Trace:
         console.log(message);

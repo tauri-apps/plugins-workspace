@@ -134,7 +134,7 @@ export function textRecord(
 ): NFCRecord {
   const payload = Array.from(new TextEncoder().encode(language + text));
   payload.unshift(language.length);
-  return record(NFCTypeNameFormat.NfcWellKnown, RTD_TEXT, id || [], payload);
+  return record(NFCTypeNameFormat.NfcWellKnown, RTD_TEXT, id ?? [], payload);
 }
 
 const protocols = [
@@ -180,12 +180,15 @@ function encodeURI(uri: string): number[] {
   let prefix = "";
 
   protocols.slice(1).forEach(function (protocol) {
-    if ((!prefix || prefix === "urn:") && uri.indexOf(protocol) === 0) {
+    if (
+      (prefix.length === 0 || prefix === "urn:") &&
+      uri.indexOf(protocol) === 0
+    ) {
       prefix = protocol;
     }
   });
 
-  if (!prefix) {
+  if (prefix.length === 0) {
     prefix = "";
   }
 
@@ -203,7 +206,7 @@ export function uriRecord(uri: string, id?: string | number[]): NFCRecord {
   return record(
     NFCTypeNameFormat.NfcWellKnown,
     RTD_URI,
-    id || [],
+    id ?? [],
     encodeURI(uri),
   );
 }
@@ -256,12 +259,12 @@ export async function write(
   records: NFCRecord[],
   options?: WriteOptions,
 ): Promise<void> {
-  const { kind, ...opts } = options || {};
-  if (kind) {
+  const { kind, ...opts } = options ?? {};
+  if (kind != null) {
     // @ts-expect-error map the property
     opts.kind = mapScanKind(kind);
   }
-  return await invoke("plugin:nfc|write", {
+  await invoke("plugin:nfc|write", {
     records,
     ...opts,
   });

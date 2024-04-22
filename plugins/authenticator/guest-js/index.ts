@@ -6,7 +6,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 export class Authenticator {
   async init(): Promise<void> {
-    return await invoke("plugin:authenticator|init_auth");
+    await invoke("plugin:authenticator|init_auth");
   }
 
   async register(challenge: string, application: string): Promise<string> {
