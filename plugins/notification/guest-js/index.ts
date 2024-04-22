@@ -11,7 +11,7 @@
 
 import {
   invoke,
-  PluginListener,
+  type PluginListener,
   addPluginListener,
 } from "@tauri-apps/api/core";
 
@@ -103,7 +103,7 @@ interface Options {
   /**
    * Extra payload to store in the notification.
    */
-  extra?: { [key: string]: unknown };
+  extra?: Record<string, unknown>;
   /**
    * If true, the notification cannot be dismissed by the user on Android.
    *
@@ -130,7 +130,7 @@ interface Options {
   number?: number;
 }
 
-type ScheduleInterval = {
+interface ScheduleInterval {
   year?: number;
   month?: number;
   day?: number;
@@ -147,7 +147,7 @@ type ScheduleInterval = {
   hour?: number;
   minute?: number;
   second?: number;
-};
+}
 
 enum ScheduleEvery {
   Year = "year",
@@ -171,12 +171,14 @@ class Schedule {
         allowWhileIdle: boolean;
       }
     | undefined;
+
   interval:
     | {
         interval: ScheduleInterval;
         allowWhileIdle: boolean;
       }
     | undefined;
+
   every:
     | {
         interval: ScheduleEvery;
@@ -317,9 +319,9 @@ type Permission = "granted" | "denied" | "default";
  */
 async function isPermissionGranted(): Promise<boolean> {
   if (window.Notification.permission !== "default") {
-    return Promise.resolve(window.Notification.permission === "granted");
+    return await Promise.resolve(window.Notification.permission === "granted");
   }
-  return invoke("plugin:notification|is_permission_granted");
+  return await invoke("plugin:notification|is_permission_granted");
 }
 
 /**
@@ -339,7 +341,7 @@ async function isPermissionGranted(): Promise<boolean> {
  * @since 2.0.0
  */
 async function requestPermission(): Promise<Permission> {
-  return window.Notification.requestPermission();
+  return await window.Notification.requestPermission();
 }
 
 /**
@@ -390,7 +392,7 @@ function sendNotification(options: Options | string): void {
  * @since 2.0.0
  */
 async function registerActionTypes(types: ActionType[]): Promise<void> {
-  return invoke("plugin:notification|register_action_types", { types });
+  await invoke("plugin:notification|register_action_types", { types });
 }
 
 /**
@@ -407,7 +409,7 @@ async function registerActionTypes(types: ActionType[]): Promise<void> {
  * @since 2.0.0
  */
 async function pending(): Promise<PendingNotification[]> {
-  return invoke("plugin:notification|get_pending");
+  return await invoke("plugin:notification|get_pending");
 }
 
 /**
@@ -424,7 +426,7 @@ async function pending(): Promise<PendingNotification[]> {
  * @since 2.0.0
  */
 async function cancel(notifications: number[]): Promise<void> {
-  return invoke("plugin:notification|cancel", { notifications });
+  await invoke("plugin:notification|cancel", { notifications });
 }
 
 /**
@@ -441,7 +443,7 @@ async function cancel(notifications: number[]): Promise<void> {
  * @since 2.0.0
  */
 async function cancelAll(): Promise<void> {
-  return invoke("plugin:notification|cancel");
+  await invoke("plugin:notification|cancel");
 }
 
 /**
@@ -458,7 +460,7 @@ async function cancelAll(): Promise<void> {
  * @since 2.0.0
  */
 async function active(): Promise<ActiveNotification[]> {
-  return invoke("plugin:notification|get_active");
+  return await invoke("plugin:notification|get_active");
 }
 
 /**
@@ -475,9 +477,9 @@ async function active(): Promise<ActiveNotification[]> {
  * @since 2.0.0
  */
 async function removeActive(
-  notifications: { id: number; tag?: string }[],
+  notifications: Array<{ id: number; tag?: string }>,
 ): Promise<void> {
-  return invoke("plugin:notification|remove_active", { notifications });
+  await invoke("plugin:notification|remove_active", { notifications });
 }
 
 /**
@@ -494,7 +496,7 @@ async function removeActive(
  * @since 2.0.0
  */
 async function removeAllActive(): Promise<void> {
-  return invoke("plugin:notification|remove_active");
+  await invoke("plugin:notification|remove_active");
 }
 
 /**
@@ -518,7 +520,7 @@ async function removeAllActive(): Promise<void> {
  * @since 2.0.0
  */
 async function createChannel(channel: Channel): Promise<void> {
-  return invoke("plugin:notification|create_channel", { ...channel });
+  await invoke("plugin:notification|create_channel", { ...channel });
 }
 
 /**
@@ -535,7 +537,7 @@ async function createChannel(channel: Channel): Promise<void> {
  * @since 2.0.0
  */
 async function removeChannel(id: string): Promise<void> {
-  return invoke("plugin:notification|delete_channel", { id });
+  await invoke("plugin:notification|delete_channel", { id });
 }
 
 /**
@@ -552,19 +554,19 @@ async function removeChannel(id: string): Promise<void> {
  * @since 2.0.0
  */
 async function channels(): Promise<Channel[]> {
-  return invoke("plugin:notification|listChannels");
+  return await invoke("plugin:notification|listChannels");
 }
 
 async function onNotificationReceived(
   cb: (notification: Options) => void,
 ): Promise<PluginListener> {
-  return addPluginListener("notification", "notification", cb);
+  return await addPluginListener("notification", "notification", cb);
 }
 
 async function onAction(
   cb: (notification: Options) => void,
 ): Promise<PluginListener> {
-  return addPluginListener("notification", "actionPerformed", cb);
+  return await addPluginListener("notification", "actionPerformed", cb);
 }
 
 export type {
