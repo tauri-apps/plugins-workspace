@@ -100,6 +100,12 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
             .dialog
             .0
             .run_mobile_plugin::<ShowMessageDialogResponse>("showMessageDialog", dialog.payload());
-        f(res.map(|r| r.value).unwrap_or_default())
+        f(res
+            .map(|r| r.value)
+            .map_err(|e| {
+                println!("GOT ERROR {e}");
+                e
+            })
+            .unwrap_or_default())
     });
 }
