@@ -2,6 +2,10 @@
 
 ## \[2.0.0-beta.3]
 
+- [`ed46dca`](https://github.com/tauri-apps/plugins-workspace/commit/ed46dca74ff3947dbbcb26a7b571c129bf925698) Added `attachLogger` helper function to register a function that should be called for each log entry.
+
+## \[2.0.0-beta.3]
+
 - [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.
 
 ## \[2.0.0-beta.2]

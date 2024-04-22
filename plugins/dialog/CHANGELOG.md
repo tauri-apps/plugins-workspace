@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-beta.5]
+
+- [`bb51a41`](https://github.com/tauri-apps/plugins-workspace/commit/bb51a41d67ebf989e8aedf10c4b1a7f9514d1bdf)([#1168](https://github.com/tauri-apps/plugins-workspace/pull/1168)) **Breaking Change:** All apis that return paths to the frontend will now remove the `\\?\` UNC prefix on Windows.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.5`
+
 ## \[2.0.0-beta.4]
 
 - [`4cd8112`](https://github.com/tauri-apps/plugins-workspace/commit/4cd81126fdf25e1847546f8fdbd924aa4bfeabb5)([#1056](https://github.com/tauri-apps/plugins-workspace/pull/1056)) Fixed an issue where dialogs on android would return the Content URI instead of the file path

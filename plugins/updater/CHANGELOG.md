@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-beta.4]
+
+- [`293f363`](https://github.com/tauri-apps/plugins-workspace/commit/293f363c0dccc43e8403729fdc8cc2b4311c2d5b)([#1175](https://github.com/tauri-apps/plugins-workspace/pull/1175)) Add a `on_before_exit` hook for cleanup before spawning the updater on Windows, defaults to `app.cleanup_before_exit` when used through `UpdaterExt`
+- [`293f363`](https://github.com/tauri-apps/plugins-workspace/commit/293f363c0dccc43e8403729fdc8cc2b4311c2d5b)([#1175](https://github.com/tauri-apps/plugins-workspace/pull/1175)) **Breaking change:** The `rustls-tls` feature flag is now enabled by default.
+- [`e3d41f4`](https://github.com/tauri-apps/plugins-workspace/commit/e3d41f4011bd3ea3ce281bb38bbe31d3709f8e0f)([#1191](https://github.com/tauri-apps/plugins-workspace/pull/1191)) Internally use the webview scoped resources table instead of the app one, so other webviews can't access other webviews resources.
+- [`7e2fcc5`](https://github.com/tauri-apps/plugins-workspace/commit/7e2fcc5e74df7c3c718e40f75bfb0eafc7d69d8d)([#1146](https://github.com/tauri-apps/plugins-workspace/pull/1146)) Update dependencies to align with tauri 2.0.0-beta.14.
+- [`e3d41f4`](https://github.com/tauri-apps/plugins-workspace/commit/e3d41f4011bd3ea3ce281bb38bbe31d3709f8e0f)([#1191](https://github.com/tauri-apps/plugins-workspace/pull/1191)) Update for tauri 2.0.0-beta.15.
+
 ## \[2.0.0-beta.3]
 
 - [`4e37316`](https://github.com/tauri-apps/plugins-workspace/commit/4e37316af0d6532bf9a9bd0e712b5b14b0598285)([#1051](https://github.com/tauri-apps/plugins-workspace/pull/1051)) Fix deserialization of `windows > installerArgs` config field.
