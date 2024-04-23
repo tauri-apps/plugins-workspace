@@ -1,5 +1,15 @@
 # Changelog
 
+## \[2.0.0-beta.6]
+
+### Dependencies
+
+- Upgraded to `notification@2.0.0-beta.4`
+- Upgraded to `barcode-scanner@2.0.0-beta.4`
+- Upgraded to `dialog@2.0.0-beta.6`
+- Upgraded to `fs@2.0.0-beta.6`
+- Upgraded to `http@2.0.0-beta.6`
+
 ## \[2.0.0-beta.5]
 
 ### Dependencies

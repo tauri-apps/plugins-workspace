@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.6]
+
+- [`b115fd22`](https://github.com/tauri-apps/plugins-workspace/commit/b115fd22e0da073f5d758c13474ec2106cf78163)([#1221](https://github.com/tauri-apps/plugins-workspace/pull/1221)) Fixes an issue that caused the app to freeze when the `dialog`, `fs`, and `persisted-scope` plugins were used together.
+
 ## \[2.0.0-beta.5]
 
 - [`bb51a41`](https://github.com/tauri-apps/plugins-workspace/commit/bb51a41d67ebf989e8aedf10c4b1a7f9514d1bdf)([#1168](https://github.com/tauri-apps/plugins-workspace/pull/1168)) **Breaking Change:** All apis that return paths to the frontend will now remove the `\\?\` UNC prefix on Windows.

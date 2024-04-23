@@ -17,6 +17,8 @@
     ".changes/feat-websocket-tls-connector.md",
     ".changes/file-autogen-fix.md",
     ".changes/fix-autolaunch-macos.md",
+    ".changes/fix-default-arg-value.md",
+    ".changes/fix-fs-scope-deadlock.md",
     ".changes/fix-fs-watcher-basedir.md",
     ".changes/fix-http-default-features.md",
     ".changes/fix-http-scope-url-match.md",
