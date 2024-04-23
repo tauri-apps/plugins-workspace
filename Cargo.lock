@@ -230,7 +230,7 @@ checksum = "5ad32ce52e4161730f7098c077cd2ed6229b5804ccf99e5366be1ab72a98b4e1"
 
 [[package]]
 name = "api"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "log",
  "serde",
@@ -3274,12 +3274,9 @@ dependencies = [
 
 [[package]]
 name = "line-wrap"
-version = "0.1.1"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f30344350a2a51da54c1d53be93fade8a237e545dbcc4bdbe635413f2117cab9"
-dependencies = [
- "safemem",
-]
+checksum = "dd1bc4d24ad230d21fb898d1116b1801d7adfc449d42026475862ab48b11e70e"
 
 [[package]]
 name = "linux-raw-sys"
@@ -4208,9 +4205,9 @@ checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 
 [[package]]
 name = "plist"
-version = "1.6.0"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5699cc8a63d1aa2b1ee8e12b9ad70ac790d65788cd36101fa37f87ea46c4cef"
+checksum = "d9d34169e64b3c7a80c8621a48adaf44e0cf62c78a9b25dd9dd35f1881a17cf9"
 dependencies = [
  "base64 0.21.7",
  "indexmap 2.2.5",
@@ -4961,12 +4958,6 @@ name = "ryu"
 version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e86697c916019a8588c99b5fac3cead74ec0b4b819707a682fd4d23fa0ce1ba1"
-
-[[package]]
-name = "safemem"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef703b7cb59335eae2eb93ceb664c0eb7ea6bf567079d843e09420219668e072"
 
 [[package]]
 name = "same-file"
@@ -6121,7 +6112,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-barcode-scanner"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 dependencies = [
  "log",
  "serde",
@@ -6186,7 +6177,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "dunce",
  "log",
@@ -6202,7 +6193,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "anyhow",
  "glob",
@@ -6234,7 +6225,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "data-url",
  "http",
@@ -6298,7 +6289,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 dependencies = [
  "chrono",
  "color-backtrace",
@@ -6341,7 +6332,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "aho-corasick",
  "bincode",
