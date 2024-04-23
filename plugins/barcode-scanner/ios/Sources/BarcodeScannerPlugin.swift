@@ -8,7 +8,7 @@ import UIKit
 import WebKit
 
 struct ScanOptions: Decodable {
-  var formats: [SupportedFormat] = []
+  var formats: [SupportedFormat]?
   let windowed: Bool?
   let cameraDirection: String?
 }
@@ -241,7 +241,7 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
   private func runScanner(_ invoke: Invoke, args: ScanOptions) {
     scanFormats = [AVMetadataObject.ObjectType]()
 
-    args.formats.forEach { format in
+    (args.formats ?? []).forEach { format in
       scanFormats.append(format.value)
     }
 
