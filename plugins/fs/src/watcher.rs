@@ -100,7 +100,7 @@ pub async fn watch<R: Runtime>(
         )?);
     }
 
-    let mode = if options.recursive {
+    let recursive_mode = if options.recursive {
         RecursiveMode::Recursive
     } else {
         RecursiveMode::NonRecursive
@@ -110,7 +110,8 @@ pub async fn watch<R: Runtime>(
         let (tx, rx) = channel();
         let mut debouncer = new_debouncer(Duration::from_millis(delay), None, tx)?;
         for path in &resolved_paths {
-            debouncer.watcher().watch(path.as_ref(), mode)?;
+            debouncer.watcher().watch(path.as_ref(), recursive_mode)?;
+            debouncer.cache().add_root(path, recursive_mode);
         }
         watch_debounced(on_event, rx);
         WatcherKind::Debouncer(debouncer)
@@ -118,7 +119,7 @@ pub async fn watch<R: Runtime>(
         let (tx, rx) = channel();
         let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
         for path in &resolved_paths {
-            watcher.watch(path.as_ref(), mode)?;
+            watcher.watch(path.as_ref(), recursive_mode)?;
         }
         watch_raw(on_event, rx);
         WatcherKind::Watcher(watcher)
