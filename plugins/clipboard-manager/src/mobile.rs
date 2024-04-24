@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: MIT
 
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
 use tauri::{
     image::Image,
     plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
 };
 
-use crate::models::*;
+use std::borrow::Cow;
 
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "app.tauri.clipboard";
@@ -33,28 +34,44 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Clipboard<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Clipboard<R> {
-    pub fn write_text(&self, kind: ClipKind) -> crate::Result<()> {
-        self.0.run_mobile_plugin("write", kind).map_err(Into::into)
+    pub fn write_text<'a, T: Into<Cow<'a, str>>>(&self, text: T) -> crate::Result<()> {
+        let text = text.into().to_string();
+        self.0
+            .run_mobile_plugin("write", ClipKind::PlainText { text, label: None })
+            .map_err(Into::into)
     }
 
-    pub(crate) fn write_image_inner(
+    pub fn write_text_with_label<'a, T: Into<Cow<'a, str>>>(
         &self,
-        kind: ClipKind,
-        resources_table: &tauri::ResourceTable,
+        text: T,
+        label: T,
     ) -> crate::Result<()> {
+        let text = text.into().to_string();
+        let label = label.into().to_string();
+        self.0
+            .run_mobile_plugin(
+                "write",
+                ClipKind::PlainText {
+                    text,
+                    label: Some(label),
+                },
+            )
+            .map_err(Into::into)
+    }
+
+    pub fn write_image(&self, _image: &Image<'_>) -> crate::Result<()> {
         Err(crate::Error::Clipboard(
             "Unsupported on this platform".to_string(),
         ))
     }
 
-    pub fn write_image(&self, kind: ClipKind) -> crate::Result<()> {
-        Err(crate::Error::Clipboard(
-            "Unsupported on this platform".to_string(),
-        ))
-    }
-
-    pub fn read_text(&self) -> crate::Result<ClipboardContents> {
-        self.0.run_mobile_plugin("read", ()).map_err(Into::into)
+    pub fn read_text(&self) -> crate::Result<String> {
+        self.0
+            .run_mobile_plugin("read", ())
+            .map(|c| match c {
+                ClipboardContents::PlainText { text } => text,
+            })
+            .map_err(Into::into)
     }
 
     pub fn read_image(&self) -> crate::Result<Image<'_>> {
@@ -64,7 +81,11 @@ impl<R: Runtime> Clipboard<R> {
     }
 
     // Treat HTML as unsupported on mobile until tested
-    pub fn write_html(&self, _kind: ClipKind) -> crate::Result<()> {
+    pub fn write_html<'a, T: Into<Cow<'a, str>>>(
+        &self,
+        _html: T,
+        _alt_text: Option<T>,
+    ) -> crate::Result<()> {
         Err(crate::Error::Clipboard(
             "Unsupported on this platform".to_string(),
         ))
@@ -75,4 +96,16 @@ impl<R: Runtime> Clipboard<R> {
             "Unsupported on this platform".to_string(),
         ))
     }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+enum ClipKind {
+    PlainText { label: Option<String>, text: String },
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+enum ClipboardContents {
+    PlainText { text: String },
 }
