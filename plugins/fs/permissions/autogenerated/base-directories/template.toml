@@ -63,7 +63,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-template-meta-recursive"
-description = "This allows read access to metadata of the `$TEMPLATE` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$TEMPLATE` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-template-recursive"
@@ -71,7 +71,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-template-meta"
-description = "This allows read access to metadata of the `$TEMPLATE` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$TEMPLATE` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-template-index"

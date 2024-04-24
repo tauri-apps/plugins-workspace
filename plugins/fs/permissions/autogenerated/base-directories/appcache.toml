@@ -63,7 +63,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-appcache-meta-recursive"
-description = "This allows read access to metadata of the `$APPCACHE` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$APPCACHE` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-appcache-recursive"
@@ -71,7 +71,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-appcache-meta"
-description = "This allows read access to metadata of the `$APPCACHE` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$APPCACHE` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-appcache-index"
