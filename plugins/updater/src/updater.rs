@@ -4,7 +4,7 @@
 
 use std::{
     collections::HashMap,
-    ffi::{OsStr, OsString},
+    ffi::OsString,
     io::{Cursor, Read},
     path::{Path, PathBuf},
     str::FromStr,
@@ -556,18 +556,18 @@ impl Update {
         let mut installer_args = self
             .installer_args
             .iter()
-            .map(OsStr::new)
+            .map(std::ffi::OsStr::new)
             .collect::<Vec<_>>();
 
         for path in paths {
             let found_path = path?.path();
             // we support 2 type of files exe & msi for now
             // If it's an `exe` we expect an NSIS installer.
-            if found_path.extension() == Some(OsStr::new("exe")) {
-                installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
-            } else if found_path.extension() == Some(OsStr::new("msi")) {
-                installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
-                installer_args.push(OsStr::new("/promptrestart"));
+            if found_path.extension() == Some(std::ffi::OsStr::new("exe")) {
+                installer_args.extend(install_mode.nsis_args().iter().map(std::ffi::OsStr::new));
+            } else if found_path.extension() == Some(std::ffi::OsStr::new("msi")) {
+                installer_args.extend(install_mode.msiexec_args().iter().map(std::ffi::OsStr::new));
+                installer_args.push(std::ffi::OsStr::new("/promptrestart"));
             } else {
                 continue;
             }
@@ -577,7 +577,8 @@ impl Update {
             }
 
             let file = encode_wide(found_path.as_os_str());
-            let parameters = encode_wide(installer_args.join(OsStr::new(" ")).as_os_str());
+            let parameters =
+                encode_wide(installer_args.join(std::ffi::OsStr::new(" ")).as_os_str());
             unsafe {
                 ShellExecuteW(
                     0,
@@ -647,7 +648,7 @@ impl Update {
                     let mut archive = tar::Archive::new(decoder);
                     for mut entry in archive.entries()?.flatten() {
                         if let Ok(path) = entry.path() {
-                            if path.extension() == Some(OsStr::new("AppImage")) {
+                            if path.extension() == Some(std::ffi::OsStr::new("AppImage")) {
                                 // if something went wrong during the extraction, we should restore previous app
                                 if let Err(err) = entry.unpack(&self.extract_path) {
                                     std::fs::rename(tmp_app_image, &self.extract_path)?;
