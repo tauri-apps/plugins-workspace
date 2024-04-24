@@ -1,5 +1,17 @@
 # Changelog
 
+## \[2.0.0-beta.6]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.6`
+
+## \[2.0.0-beta.5]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.5`
+
 ## \[2.0.0-beta.4]
 
 ### Dependencies

@@ -10,7 +10,13 @@
 
 import { invoke, Channel } from "@tauri-apps/api/core";
 
-export type ShortcutHandler = (shortcut: string) => void;
+export interface ShortcutEvent {
+  shortcut: string;
+  id: number;
+  state: "Released" | "Pressed";
+}
+
+export type ShortcutHandler = (event: ShortcutEvent) => void;
 
 /**
  * Register a global shortcut.
@@ -31,10 +37,10 @@ async function register(
   shortcut: string,
   handler: ShortcutHandler,
 ): Promise<void> {
-  const h = new Channel<string>();
+  const h = new Channel<ShortcutEvent>();
   h.onmessage = handler;
 
-  return await invoke("plugin:global-shortcut|register", {
+  await invoke("plugin:global-shortcut|register", {
     shortcut,
     handler: h,
   });
@@ -59,10 +65,10 @@ async function registerAll(
   shortcuts: string[],
   handler: ShortcutHandler,
 ): Promise<void> {
-  const h = new Channel<string>();
+  const h = new Channel<ShortcutEvent>();
   h.onmessage = handler;
 
-  return await invoke("plugin:global-shortcut|register_all", {
+  await invoke("plugin:global-shortcut|register_all", {
     shortcuts,
     handler: h,
   });
@@ -102,7 +108,7 @@ async function isRegistered(shortcut: string): Promise<boolean> {
  * @since 2.0.0
  */
 async function unregister(shortcut: string): Promise<void> {
-  return await invoke("plugin:global-shortcut|unregister", {
+  await invoke("plugin:global-shortcut|unregister", {
     shortcut,
   });
 }
@@ -118,7 +124,7 @@ async function unregister(shortcut: string): Promise<void> {
  * @since 2.0.0
  */
 async function unregisterAll(): Promise<void> {
-  return await invoke("plugin:global-shortcut|unregister_all");
+  await invoke("plugin:global-shortcut|unregister_all");
 }
 
 export { register, registerAll, isRegistered, unregister, unregisterAll };

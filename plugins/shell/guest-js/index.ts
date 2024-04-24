@@ -124,7 +124,7 @@ async function execute<O extends IOPayload>(
   const onEvent = new Channel<CommandEvent<O>>();
   onEvent.onmessage = onEventHandler;
 
-  return invoke<number>("plugin:shell|execute", {
+  return await invoke<number>("plugin:shell|execute", {
     program,
     args,
     options,
@@ -237,6 +237,7 @@ class EventEmitter<E extends Record<string, any>> {
    * @since 2.0.0
    */
   removeAllListeners<N extends keyof E>(event?: N): this {
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (event) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete,security/detect-object-injection
       delete this.eventListeners[event];
@@ -354,7 +355,7 @@ class Child {
    * @since 2.0.0
    */
   async write(data: IOPayload): Promise<void> {
-    return invoke("plugin:shell|stdin_write", {
+    await invoke("plugin:shell|stdin_write", {
       pid: this.pid,
       // correctly serialize Uint8Arrays
       buffer: typeof data === "string" ? data : Array.from(data),
@@ -369,7 +370,7 @@ class Child {
    * @since 2.0.0
    */
   async kill(): Promise<void> {
-    return invoke("plugin:shell|kill", {
+    await invoke("plugin:shell|kill", {
       cmd: "killChild",
       pid: this.pid,
     });
@@ -512,7 +513,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * @since 2.0.0
    */
   async spawn(): Promise<Child> {
-    return execute<O>(
+    return await execute<O>(
       (event) => {
         switch (event.event) {
           case "Error":
@@ -552,7 +553,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * @since 2.0.0
    */
   async execute(): Promise<ChildProcess<O>> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.on("error", reject);
 
       const stdout: O[] = [];
@@ -644,7 +645,7 @@ type CommandEvent<O extends IOPayload> =
  * @since 2.0.0
  */
 async function open(path: string, openWith?: string): Promise<void> {
-  return invoke("plugin:shell|open", {
+  await invoke("plugin:shell|open", {
     path,
     with: openWith,
   });

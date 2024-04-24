@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.4]
+
+- [`ed46dca`](https://github.com/tauri-apps/plugins-workspace/commit/ed46dca74ff3947dbbcb26a7b571c129bf925698) **Breaking change:** Enable rustls by default and added a method to configure the TLS Connector for tungstenite.
+
 ## \[2.0.0-beta.3]
 
 - [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.

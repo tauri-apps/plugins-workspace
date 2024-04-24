@@ -20,8 +20,12 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-pub use global_hotkey::hotkey::{Code, HotKey as Shortcut, Modifiers};
+pub use global_hotkey::{
+    hotkey::{Code, HotKey as Shortcut, Modifiers},
+    GlobalHotKeyEvent as ShortcutEvent, HotKeyState as ShortcutState,
+};
 use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager};
+use serde::Serialize;
 use tauri::{
     ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
@@ -32,8 +36,9 @@ mod error;
 
 pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
+
 type HotKeyId = u32;
-type HandlerFn<R> = Box<dyn Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static>;
+type HandlerFn<R> = Box<dyn Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static>;
 
 pub struct ShortcutWrapper(Shortcut);
 
@@ -44,7 +49,7 @@ impl From<Shortcut> for ShortcutWrapper {
 }
 
 impl TryFrom<&str> for ShortcutWrapper {
-    type Error = global_hotkey::Error;
+    type Error = global_hotkey::hotkey::HotKeyParseError;
     fn try_from(value: &str) -> std::result::Result<Self, Self::Error> {
         Shortcut::from_str(value).map(ShortcutWrapper)
     }
@@ -63,7 +68,7 @@ pub struct GlobalShortcut<R: Runtime> {
 }
 
 impl<R: Runtime> GlobalShortcut<R> {
-    fn register_internal<F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static>(
+    fn register_internal<F: Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static>(
         &self,
         shortcut: Shortcut,
         handler: Option<F>,
@@ -82,7 +87,7 @@ impl<R: Runtime> GlobalShortcut<R> {
     fn register_all_internal<S, F>(&self, shortcuts: S, handler: Option<F>) -> Result<()>
     where
         S: IntoIterator<Item = Shortcut>,
-        F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static,
+        F: Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static,
     {
         let handler = handler.map(|h| Arc::new(Box::new(h) as HandlerFn<R>));
 
@@ -111,7 +116,7 @@ impl<R: Runtime> GlobalShortcut<R> {
     {
         self.register_internal(
             try_into_shortcut(shortcut)?,
-            None::<fn(&AppHandle<R>, &Shortcut)>,
+            None::<fn(&AppHandle<R>, &Shortcut, ShortcutEvent)>,
         )
     }
 
@@ -120,7 +125,7 @@ impl<R: Runtime> GlobalShortcut<R> {
     where
         S: TryInto<ShortcutWrapper>,
         S::Error: std::error::Error,
-        F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static,
+        F: Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static,
     {
         self.register_internal(try_into_shortcut(shortcut)?, Some(handler))
     }
@@ -136,7 +141,7 @@ impl<R: Runtime> GlobalShortcut<R> {
         for shortcut in shortcuts {
             s.push(try_into_shortcut(shortcut)?);
         }
-        self.register_all_internal(s, None::<fn(&AppHandle<R>, &Shortcut)>)
+        self.register_all_internal(s, None::<fn(&AppHandle<R>, &Shortcut, ShortcutEvent)>)
     }
 
     /// Register multiple shortcuts with a handler.
@@ -145,7 +150,7 @@ impl<R: Runtime> GlobalShortcut<R> {
         S: IntoIterator<Item = T>,
         T: TryInto<ShortcutWrapper>,
         T::Error: std::error::Error,
-        F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static,
+        F: Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static,
     {
         let mut s = Vec::new();
         for shortcut in shortcuts {
@@ -225,6 +230,13 @@ where
         .map_err(|e| Error::GlobalHotkey(e.to_string()))
 }
 
+#[derive(Serialize)]
+struct ShortcutJsEvent {
+    shortcut: String,
+    id: u32,
+    state: ShortcutState,
+}
+
 #[tauri::command]
 fn register<R: Runtime>(
     _window: Window<R>,
@@ -233,10 +245,17 @@ fn register<R: Runtime>(
     handler: Channel,
 ) -> Result<()> {
     global_shortcut.register_internal(
-        parse_shortcut(&shortcut)?,
-        Some(move |_app: &AppHandle<R>, _shortcut: &Shortcut| {
-            let _ = handler.send(&shortcut);
-        }),
+        parse_shortcut(shortcut)?,
+        Some(
+            move |_app: &AppHandle<R>, shortcut: &Shortcut, e: ShortcutEvent| {
+                let js_event = ShortcutJsEvent {
+                    id: e.id,
+                    state: e.state,
+                    shortcut: shortcut.into_string(),
+                };
+                let _ = handler.send(js_event);
+            },
+        ),
     )
 }
 
@@ -258,11 +277,16 @@ fn register_all<R: Runtime>(
 
     global_shortcut.register_all_internal(
         hotkeys,
-        Some(move |_app: &AppHandle<R>, shortcut: &Shortcut| {
-            if let Some(shortcut_str) = shortcut_map.get(&shortcut.id()) {
-                let _ = handler.send(shortcut_str);
-            }
-        }),
+        Some(
+            move |_app: &AppHandle<R>, shortcut: &Shortcut, e: ShortcutEvent| {
+                let js_event = ShortcutJsEvent {
+                    id: e.id,
+                    state: e.state,
+                    shortcut: shortcut.into_string(),
+                };
+                let _ = handler.send(js_event);
+            },
+        ),
     )
 }
 
@@ -341,7 +365,7 @@ impl<R: Runtime> Builder<R> {
     }
 
     /// Specify a global shortcut handler that will be triggered for any and all shortcuts.
-    pub fn with_handler<F: Fn(&AppHandle<R>, &Shortcut) + Send + Sync + 'static>(
+    pub fn with_handler<F: Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static>(
         mut self,
         handler: F,
     ) -> Self {
@@ -381,10 +405,10 @@ impl<R: Runtime> Builder<R> {
                 GlobalHotKeyEvent::set_event_handler(Some(move |e: GlobalHotKeyEvent| {
                     if let Some(shortcut) = shortcuts_.lock().unwrap().get(&e.id) {
                         if let Some(handler) = &shortcut.handler {
-                            handler(&app_handle, &shortcut.shortcut);
+                            handler(&app_handle, &shortcut.shortcut, e);
                         }
                         if let Some(handler) = &handler {
-                            handler(&app_handle, &shortcut.shortcut);
+                            handler(&app_handle, &shortcut.shortcut, e);
                         }
                     }
                 }));
