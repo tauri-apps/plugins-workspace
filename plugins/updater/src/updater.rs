@@ -891,7 +891,7 @@ fn base64_to_string(base64_string: &str) -> Result<String> {
 }
 
 #[cfg(target_os = "windows")]
-fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
+fn encode_wide(string: impl AsRef<std::ffi::OsStr>) -> Vec<u16> {
     use std::os::windows::ffi::OsStrExt;
 
     string
