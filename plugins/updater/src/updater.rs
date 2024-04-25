@@ -559,31 +559,29 @@ impl Update {
 
         let updater = 'updater: {
             #[cfg(feature = "zip")]
-            {
-                if is_zip(&bytes) {
-                    let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
-                    let archive = Cursor::new(&bytes);
-                    let mut extractor = zip::ZipArchive::new(archive)?;
-                    extractor.extract(&tmp_dir)?;
+            if is_zip(&bytes) {
+                let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
+                let archive = Cursor::new(&bytes);
+                let mut extractor = zip::ZipArchive::new(archive)?;
+                extractor.extract(&tmp_dir)?;
 
-                    let paths = std::fs::read_dir(&tmp_dir)?;
+                let paths = std::fs::read_dir(&tmp_dir)?;
 
-                    for path in paths {
-                        let found_path = path?.path();
-                        if found_path.extension() == Some(OsStr::new("exe")) {
-                            break 'updater UpdaterType::Nsis {
-                                path: found_path,
-                                temp_path: None,
-                            };
-                        } else if found_path.extension() == Some(OsStr::new("msi")) {
-                            break 'updater UpdaterType::Msi {
-                                path: found_path,
-                                temp_path: None,
-                            };
-                        }
+                for path in paths {
+                    let found_path = path?.path();
+                    if found_path.extension() == Some(OsStr::new("exe")) {
+                        break 'updater UpdaterType::Nsis {
+                            path: found_path,
+                            temp_path: None,
+                        };
+                    } else if found_path.extension() == Some(OsStr::new("msi")) {
+                        break 'updater UpdaterType::Msi {
+                            path: found_path,
+                            temp_path: None,
+                        };
                     }
-                    return Err(crate::Error::BinaryNotFoundInArchive);
                 }
+                return Err(crate::Error::BinaryNotFoundInArchive);
             }
             if is_exe(&bytes) {
                 let mut temp_file = tempfile::Builder::new().suffix(".exe").tempfile()?;
