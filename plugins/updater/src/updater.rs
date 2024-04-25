@@ -963,7 +963,7 @@ fn base64_to_string(base64_string: &str) -> Result<String> {
     Ok(result)
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(windows)]
 fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
     use std::os::windows::ffi::OsStrExt;
 
@@ -975,7 +975,7 @@ fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
 }
 
 // Taken from infer crate https://github.com/bojand/infer (MIT License)
-#[cfg(all(target_os = "windows", feature = "zip"))]
+#[cfg(windows)]
 fn is_zip(buf: &[u8]) -> bool {
     buf.len() > 3
         && buf[0] == 0x50
@@ -996,13 +996,13 @@ fn is_zip(buf: &[u8]) -> bool {
 }
 
 // Taken from infer crate https://github.com/bojand/infer (MIT License)
-#[cfg(target_os = "windows")]
+#[cfg(windows)]
 fn is_exe(buf: &[u8]) -> bool {
     buf.len() > 1 && buf[0] == 0x4D && buf[1] == 0x5A
 }
 
 // Taken from infer crate https://github.com/bojand/infer (MIT License)
-#[cfg(target_os = "windows")]
+#[cfg(windows)]
 fn is_msi(buf: &[u8]) -> bool {
     buf.len() > 7
         && buf[0] == 0xD0
