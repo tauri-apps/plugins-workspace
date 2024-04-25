@@ -547,13 +547,13 @@ impl Update {
                 path: PathBuf,
                 // For extending temp file's life time
                 #[allow(unused)]
-                temp_file: Option<tempfile::NamedTempFile>,
+                temp_path: Option<tempfile::TempPath>,
             },
             Msi {
                 path: PathBuf,
                 // For extending temp file's life time
                 #[allow(unused)]
-                temp_file: Option<tempfile::NamedTempFile>,
+                temp_path: Option<tempfile::TempPath>,
             },
         }
 
@@ -573,12 +573,12 @@ impl Update {
                         if found_path.extension() == Some(OsStr::new("exe")) {
                             break 'updater UpdaterType::Nsis {
                                 path: found_path,
-                                temp_file: None,
+                                temp_path: None,
                             };
                         } else if found_path.extension() == Some(OsStr::new("msi")) {
                             break 'updater UpdaterType::Msi {
                                 path: found_path,
-                                temp_file: None,
+                                temp_path: None,
                             };
                         }
                     }
@@ -588,17 +588,19 @@ impl Update {
             if is_exe(&bytes) {
                 let mut temp_file = tempfile::Builder::new().suffix(".exe").tempfile()?;
                 temp_file.write_all(&bytes)?;
+                let temp_path = temp_file.into_temp_path();
                 break 'updater UpdaterType::Nsis {
-                    path: temp_file.path().to_path_buf(),
-                    temp_file: Some(temp_file),
+                    path: temp_path.to_path_buf(),
+                    temp_path: Some(temp_path),
                 };
             }
             if is_msi(&bytes) {
                 let mut temp_file = tempfile::Builder::new().suffix(".msi").tempfile()?;
                 temp_file.write_all(&bytes)?;
+                let temp_path = temp_file.into_temp_path();
                 break 'updater UpdaterType::Msi {
-                    path: temp_file.path().to_path_buf(),
-                    temp_file: Some(temp_file),
+                    path: temp_path.to_path_buf(),
+                    temp_path: Some(temp_path),
                 };
             }
             return Err(crate::Error::InvalidUpdaterFormat);
