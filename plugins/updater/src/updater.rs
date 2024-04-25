@@ -560,7 +560,7 @@ impl Update {
         let updater = if infer::archive::is_zip(&bytes) {
             Self::extract_zip(&bytes)?
         } else {
-            Self::extract_bin(&bytes)?
+            Self::extract_executable(&bytes)?
         };
 
         let install_mode = self
@@ -637,7 +637,7 @@ impl Update {
     }
 
     #[cfg(windows)]
-    fn extract_bin(bytes: &Vec<u8>) -> Result<WindowsUpdaterType> {
+    fn extract_executable(bytes: &Vec<u8>) -> Result<WindowsUpdaterType> {
         use std::io::Write;
         if infer::app::is_exe(&bytes) {
             let mut temp_file = tempfile::Builder::new().suffix(".exe").tempfile()?;
