@@ -557,7 +557,7 @@ impl Update {
         // shouldn't drop but we should be able to pass the reference so we can drop it once the installation
         // is done, otherwise we have a huge memory leak.
 
-        let updater = if is_zip(&bytes) {
+        let updater = if infer::archive::is_zip(&bytes) {
             Self::extract_zip(&bytes)?
         } else {
             Self::extract_bin(&bytes)?
@@ -639,7 +639,7 @@ impl Update {
     #[cfg(windows)]
     fn extract_bin(bytes: &Vec<u8>) -> Result<WindowsUpdaterType> {
         use std::io::Write;
-        if is_exe(&bytes) {
+        if infer::app::is_exe(&bytes) {
             let mut temp_file = tempfile::Builder::new().suffix(".exe").tempfile()?;
             temp_file.write_all(&bytes)?;
             let temp_path = temp_file.into_temp_path();
@@ -648,7 +648,7 @@ impl Update {
                 temp_path: Some(temp_path),
             });
         }
-        if is_msi(&bytes) {
+        if infer::archive::is_msi(&bytes) {
             let mut temp_file = tempfile::Builder::new().suffix(".msi").tempfile()?;
             temp_file.write_all(&bytes)?;
             let temp_path = temp_file.into_temp_path();
@@ -705,7 +705,7 @@ impl Update {
                     std::fs::rename(&self.extract_path, tmp_app_image)?;
 
                     #[cfg(feature = "zip")]
-                    if is_gz(&bytes) {
+                    if infer::archive::is_gz(&bytes) {
                         // extract the buffer to the tmp_dir
                         // we extract our signed archive into our final directory without any temp file
                         let archive = Cursor::new(bytes);
@@ -972,51 +972,4 @@ fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
         .encode_wide()
         .chain(std::iter::once(0))
         .collect()
-}
-
-// Taken from infer crate https://github.com/bojand/infer (MIT License)
-#[cfg(windows)]
-fn is_zip(buf: &[u8]) -> bool {
-    buf.len() > 3
-        && buf[0] == 0x50
-        && buf[1] == 0x4B
-        && (((buf[2] == 0x3 && buf[3] == 0x4)
-            || (buf[2] == 0x5 && buf[3] == 0x6)
-            || (buf[2] == 0x7 && buf[3] == 0x8))
-            || (
-                // winzip
-                buf.len() > 7
-                    && (buf[2] == 0x30
-                        && buf[3] == 0x30
-                        && buf[4] == 0x50
-                        && buf[5] == 0x4B
-                        && buf[6] == 0x3
-                        && buf[7] == 0x4)
-            ))
-}
-
-// Taken from infer crate https://github.com/bojand/infer (MIT License)
-#[cfg(windows)]
-fn is_exe(buf: &[u8]) -> bool {
-    buf.len() > 1 && buf[0] == 0x4D && buf[1] == 0x5A
-}
-
-// Taken from infer crate https://github.com/bojand/infer (MIT License)
-#[cfg(windows)]
-fn is_msi(buf: &[u8]) -> bool {
-    buf.len() > 7
-        && buf[0] == 0xD0
-        && buf[1] == 0xCF
-        && buf[2] == 0x11
-        && buf[3] == 0xE0
-        && buf[4] == 0xA1
-        && buf[5] == 0xB1
-        && buf[6] == 0x1A
-        && buf[7] == 0xE1
-}
-
-// Taken from infer crate https://github.com/bojand/infer (MIT License)
-#[cfg(target_os = "linux")]
-fn is_gz(buf: &[u8]) -> bool {
-    buf.len() > 2 && buf[0] == 0x1F && buf[1] == 0x8B && buf[2] == 0x8
 }

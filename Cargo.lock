@@ -6416,6 +6416,7 @@ dependencies = [
  "flate2",
  "futures-util",
  "http",
+ "infer",
  "minisign-verify",
  "reqwest",
  "semver",
