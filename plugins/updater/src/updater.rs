@@ -690,43 +690,38 @@ impl Update {
                     // create a backup of our current app image
                     std::fs::rename(&self.extract_path, tmp_app_image)?;
 
+                    #[cfg(feature = "zip")]
                     if is_gz(&bytes) {
-                        #[cfg(feature = "zip")]
-                        {
-                            // extract the buffer to the tmp_dir
-                            // we extract our signed archive into our final directory without any temp file
-                            let archive = Cursor::new(bytes);
-                            let decoder = flate2::read::GzDecoder::new(archive);
-                            let mut archive = tar::Archive::new(decoder);
-                            for mut entry in archive.entries()?.flatten() {
-                                if let Ok(path) = entry.path() {
-                                    if path.extension() == Some(OsStr::new("AppImage")) {
-                                        // if something went wrong during the extraction, we should restore previous app
-                                        if let Err(err) = entry.unpack(&self.extract_path) {
-                                            std::fs::rename(tmp_app_image, &self.extract_path)?;
-                                            return Err(err.into());
-                                        }
-                                        // early finish we have everything we need here
-                                        return Ok(());
+                        // extract the buffer to the tmp_dir
+                        // we extract our signed archive into our final directory without any temp file
+                        let archive = Cursor::new(bytes);
+                        let decoder = flate2::read::GzDecoder::new(archive);
+                        let mut archive = tar::Archive::new(decoder);
+                        for mut entry in archive.entries()?.flatten() {
+                            if let Ok(path) = entry.path() {
+                                if path.extension() == Some(OsStr::new("AppImage")) {
+                                    // if something went wrong during the extraction, we should restore previous app
+                                    if let Err(err) = entry.unpack(&self.extract_path) {
+                                        std::fs::rename(tmp_app_image, &self.extract_path)?;
+                                        return Err(err.into());
                                     }
+                                    // early finish we have everything we need here
+                                    return Ok(());
                                 }
                             }
-                            // if we have not returned early we should restore the backup
-                            std::fs::rename(tmp_app_image, &self.extract_path)?;
-                            return Err(Error::BinaryNotFoundInArchive);
                         }
-                        #[cfg(not(feature = "zip"))]
-                        return Err(Error::InvalidUpdaterFormat);
-                    } else {
-                        return match std::fs::write(&self.extract_path, bytes) {
-                            Err(err) => {
-                                // if something went wrong during the extraction, we should restore previous app
-                                std::fs::rename(tmp_app_image, &self.extract_path)?;
-                                return Err(err.into());
-                            }
-                            Ok(_) => Ok(()),
-                        };
+                        // if we have not returned early we should restore the backup
+                        std::fs::rename(tmp_app_image, &self.extract_path)?;
+                        return Err(Error::BinaryNotFoundInArchive);
                     }
+                    return match std::fs::write(&self.extract_path, bytes) {
+                        Err(err) => {
+                            // if something went wrong during the extraction, we should restore previous app
+                            std::fs::rename(tmp_app_image, &self.extract_path)?;
+                            return Err(err.into());
+                        }
+                        Ok(_) => Ok(()),
+                    };
                 }
             }
         }
