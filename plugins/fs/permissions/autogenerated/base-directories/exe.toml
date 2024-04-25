@@ -63,7 +63,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-exe-meta-recursive"
-description = "This allows read access to metadata of the `$EXE` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$EXE` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-exe-recursive"
@@ -71,7 +71,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-exe-meta"
-description = "This allows read access to metadata of the `$EXE` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$EXE` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-exe-index"

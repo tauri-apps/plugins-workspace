@@ -163,13 +163,14 @@ type OpenDialogReturn<T extends OpenDialogOptions> = T["directory"] extends true
  * @since 2.0.0
  */
 async function open<T extends OpenDialogOptions>(
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   options: T = {} as T,
 ): Promise<OpenDialogReturn<T>> {
   if (typeof options === "object") {
     Object.freeze(options);
   }
 
-  return invoke("plugin:dialog|open", { options });
+  return await invoke("plugin:dialog|open", { options });
 }
 
 /**
@@ -201,7 +202,7 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
     Object.freeze(options);
   }
 
-  return invoke("plugin:dialog|save", { options });
+  return await invoke("plugin:dialog|save", { options });
 }
 
 /**
@@ -226,7 +227,7 @@ async function message(
   options?: string | MessageDialogOptions,
 ): Promise<void> {
   const opts = typeof options === "string" ? { title: options } : options;
-  return invoke("plugin:dialog|message", {
+  await invoke("plugin:dialog|message", {
     message: message.toString(),
     title: opts?.title?.toString(),
     kind: opts?.kind,
@@ -255,7 +256,7 @@ async function ask(
   options?: string | ConfirmDialogOptions,
 ): Promise<boolean> {
   const opts = typeof options === "string" ? { title: options } : options;
-  return invoke("plugin:dialog|ask", {
+  return await invoke("plugin:dialog|ask", {
     message: message.toString(),
     title: opts?.title?.toString(),
     kind: opts?.kind,
@@ -285,7 +286,7 @@ async function confirm(
   options?: string | ConfirmDialogOptions,
 ): Promise<boolean> {
   const opts = typeof options === "string" ? { title: options } : options;
-  return invoke("plugin:dialog|confirm", {
+  return await invoke("plugin:dialog|confirm", {
     message: message.toString(),
     title: opts?.title?.toString(),
     kind: opts?.kind,

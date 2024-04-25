@@ -85,7 +85,7 @@ export interface NetworkConfig {
 export interface Duration {
   /** The number of whole seconds contained by this Duration. */
   secs: number;
-  /** The fractional part of this Duration, in nanoseconds. Must be greater or equal to 0 and smaller than 1e+9 (the max number of nanoseoncds in a second)*/
+  /** The fractional part of this Duration, in nanoseconds. Must be greater or equal to 0 and smaller than 1e+9 (the max number of nanoseoncds in a second) */
   nanos: number;
 }
 
@@ -314,7 +314,7 @@ export class Store {
     value: number[],
     lifetime?: Duration,
   ): Promise<void> {
-    return await invoke("plugin:stronghold|save_store_record", {
+    await invoke("plugin:stronghold|save_store_record", {
       snapshotPath: this.path,
       client: this.client,
       key: toBytesDto(key),
@@ -366,7 +366,7 @@ export class Vault extends ProcedureExecutor {
    * @returns
    */
   async insert(recordPath: RecordPath, secret: number[]): Promise<void> {
-    return await invoke("plugin:stronghold|save_secret", {
+    await invoke("plugin:stronghold|save_secret", {
       snapshotPath: this.path,
       client: this.client,
       vault: this.name,
@@ -382,7 +382,7 @@ export class Vault extends ProcedureExecutor {
    * @returns
    */
   async remove(location: Location): Promise<void> {
-    return await invoke("plugin:stronghold|remove_secret", {
+    await invoke("plugin:stronghold|remove_secret", {
       snapshotPath: this.path,
       client: this.client,
       vault: this.name,
@@ -423,7 +423,7 @@ export class Stronghold {
    * Remove this instance from the cache.
    */
   async unload(): Promise<void> {
-    return await invoke("plugin:stronghold|destroy", {
+    await invoke("plugin:stronghold|destroy", {
       snapshotPath: this.path,
     });
   }
@@ -447,7 +447,7 @@ export class Stronghold {
    * @returns
    */
   async save(): Promise<void> {
-    return await invoke("plugin:stronghold|save", {
+    await invoke("plugin:stronghold|save", {
       snapshotPath: this.path,
     });
   }

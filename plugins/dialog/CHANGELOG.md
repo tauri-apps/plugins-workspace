@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-beta.6]
+
+- [`326df688`](https://github.com/tauri-apps/plugins-workspace/commit/326df6883998d416fc0837583ed972854628bb52)([#1236](https://github.com/tauri-apps/plugins-workspace/pull/1236)) Fixes command argument parsing on iOS.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.6`
+
 ## \[2.0.0-beta.5]
 
 - [`bb51a41`](https://github.com/tauri-apps/plugins-workspace/commit/bb51a41d67ebf989e8aedf10c4b1a7f9514d1bdf)([#1168](https://github.com/tauri-apps/plugins-workspace/pull/1168)) **Breaking Change:** All apis that return paths to the frontend will now remove the `\\?\` UNC prefix on Windows.

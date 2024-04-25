@@ -12,8 +12,8 @@
 
   function register() {
     const shortcut_ = shortcut;
-    registerShortcut(shortcut_, () => {
-      onMessage(`Shortcut ${shortcut_} triggered`);
+    registerShortcut(shortcut_, (e) => {
+      onMessage(`Shortcut ${shortcut_} triggered ${e.state}`);
     })
       .then(() => {
         shortcuts.update((shortcuts_) => [...shortcuts_, shortcut_]);

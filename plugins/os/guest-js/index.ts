@@ -53,7 +53,7 @@ type Arch =
  *
  * @since 2.0.0
  * */
-function eol() {
+function eol(): string {
   return window.__TAURI_OS_PLUGIN_INTERNALS__.eol;
 }
 
@@ -71,7 +71,7 @@ function eol() {
  *
  */
 async function platform(): Promise<Platform> {
-  return invoke("plugin:os|platform");
+  return await invoke("plugin:os|platform");
 }
 
 /**
@@ -85,7 +85,7 @@ async function platform(): Promise<Platform> {
  * @since 2.0.0
  */
 async function version(): Promise<string> {
-  return invoke("plugin:os|version");
+  return await invoke("plugin:os|version");
 }
 
 type Family = "unix" | "windows";
@@ -101,7 +101,7 @@ type Family = "unix" | "windows";
  * @since 2.0.0
  */
 async function family(): Promise<Family> {
-  return invoke("plugin:os|family");
+  return await invoke("plugin:os|family");
 }
 
 /**
@@ -115,7 +115,7 @@ async function family(): Promise<Family> {
  * @since 2.0.0
  */
 async function type(): Promise<OsType> {
-  return invoke("plugin:os|os_type");
+  return await invoke("plugin:os|os_type");
 }
 
 /**
@@ -130,7 +130,7 @@ async function type(): Promise<OsType> {
  * @since 2.0.0
  */
 async function arch(): Promise<Arch> {
-  return invoke("plugin:os|arch");
+  return await invoke("plugin:os|arch");
 }
 
 /**
@@ -147,7 +147,7 @@ async function arch(): Promise<Arch> {
  * @since 2.0.0
  */
 async function locale(): Promise<string | null> {
-  return invoke("plugin:os|locale");
+  return await invoke("plugin:os|locale");
 }
 
 /**
@@ -161,7 +161,7 @@ async function locale(): Promise<string | null> {
  * @since 2.0.0
  */
 async function exeExtension(): Promise<string | null> {
-  return invoke("plugin:os|exe_extension");
+  return await invoke("plugin:os|exe_extension");
 }
 
 /**
@@ -173,7 +173,7 @@ async function exeExtension(): Promise<string | null> {
  * ```
  */
 async function hostname(): Promise<string | null> {
-  return invoke("plugin:os|hostname");
+  return await invoke("plugin:os|hostname");
 }
 
 export {
