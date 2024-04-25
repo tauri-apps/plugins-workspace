@@ -422,6 +422,24 @@ pub struct Update {
 
 impl Resource for Update {}
 
+// we support 2 type of files exe & msi for now
+// If it's an `exe` we expect an NSIS installer.
+#[cfg(windows)]
+enum WindowsUpdaterType {
+    Nsis {
+        path: PathBuf,
+        // For extending temp file's life time
+        #[allow(unused)]
+        temp_path: Option<tempfile::TempPath>,
+    },
+    Msi {
+        path: PathBuf,
+        // For extending temp file's life time
+        #[allow(unused)]
+        temp_path: Option<tempfile::TempPath>,
+    },
+}
+
 impl Update {
     /// Downloads the updater package, verifies it then return it as bytes.
     ///
@@ -527,7 +545,6 @@ impl Update {
     // Update server can provide a custom EXE (installer) who can run any task.
     #[cfg(windows)]
     fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
-        use std::io::Write;
         use windows_sys::{
             w,
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
@@ -540,68 +557,10 @@ impl Update {
         // shouldn't drop but we should be able to pass the reference so we can drop it once the installation
         // is done, otherwise we have a huge memory leak.
 
-        // we support 2 type of files exe & msi for now
-        // If it's an `exe` we expect an NSIS installer.
-        enum UpdaterType {
-            Nsis {
-                path: PathBuf,
-                // For extending temp file's life time
-                #[allow(unused)]
-                temp_path: Option<tempfile::TempPath>,
-            },
-            Msi {
-                path: PathBuf,
-                // For extending temp file's life time
-                #[allow(unused)]
-                temp_path: Option<tempfile::TempPath>,
-            },
-        }
-
-        let updater = 'updater: {
-            #[cfg(feature = "zip")]
-            if is_zip(&bytes) {
-                let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
-                let archive = Cursor::new(&bytes);
-                let mut extractor = zip::ZipArchive::new(archive)?;
-                extractor.extract(&tmp_dir)?;
-
-                let paths = std::fs::read_dir(&tmp_dir)?;
-
-                for path in paths {
-                    let found_path = path?.path();
-                    if found_path.extension() == Some(OsStr::new("exe")) {
-                        break 'updater UpdaterType::Nsis {
-                            path: found_path,
-                            temp_path: None,
-                        };
-                    } else if found_path.extension() == Some(OsStr::new("msi")) {
-                        break 'updater UpdaterType::Msi {
-                            path: found_path,
-                            temp_path: None,
-                        };
-                    }
-                }
-                return Err(crate::Error::BinaryNotFoundInArchive);
-            }
-            if is_exe(&bytes) {
-                let mut temp_file = tempfile::Builder::new().suffix(".exe").tempfile()?;
-                temp_file.write_all(&bytes)?;
-                let temp_path = temp_file.into_temp_path();
-                break 'updater UpdaterType::Nsis {
-                    path: temp_path.to_path_buf(),
-                    temp_path: Some(temp_path),
-                };
-            }
-            if is_msi(&bytes) {
-                let mut temp_file = tempfile::Builder::new().suffix(".msi").tempfile()?;
-                temp_file.write_all(&bytes)?;
-                let temp_path = temp_file.into_temp_path();
-                break 'updater UpdaterType::Msi {
-                    path: temp_path.to_path_buf(),
-                    temp_path: Some(temp_path),
-                };
-            }
-            return Err(crate::Error::InvalidUpdaterFormat);
+        let updater = if is_zip(&bytes) {
+            Self::extract_zip(&bytes)?
+        } else {
+            Self::extract_bin(&bytes)?
         };
 
         let install_mode = self
@@ -616,11 +575,11 @@ impl Update {
             .map(OsStr::new)
             .collect::<Vec<_>>();
         let path = match updater {
-            UpdaterType::Nsis { path, .. } => {
+            WindowsUpdaterType::Nsis { path, .. } => {
                 installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
                 path
             }
-            UpdaterType::Msi { path, .. } => {
+            WindowsUpdaterType::Msi { path, .. } => {
                 installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
                 installer_args.push(OsStr::new("/promptrestart"));
                 path
@@ -644,6 +603,61 @@ impl Update {
             )
         };
         std::process::exit(0);
+    }
+
+    #[cfg(windows)]
+    fn extract_zip(bytes: &Vec<u8>) -> Result<WindowsUpdaterType> {
+        #[cfg(feature = "zip")]
+        {
+            let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
+            let archive = Cursor::new(bytes);
+            let mut extractor = zip::ZipArchive::new(archive)?;
+            extractor.extract(&tmp_dir)?;
+
+            let paths = std::fs::read_dir(&tmp_dir)?;
+
+            for path in paths {
+                let found_path = path?.path();
+                if found_path.extension() == Some(OsStr::new("exe")) {
+                    return Ok(WindowsUpdaterType::Nsis {
+                        path: found_path,
+                        temp_path: None,
+                    });
+                } else if found_path.extension() == Some(OsStr::new("msi")) {
+                    return Ok(WindowsUpdaterType::Msi {
+                        path: found_path,
+                        temp_path: None,
+                    });
+                }
+            }
+            return Err(crate::Error::BinaryNotFoundInArchive);
+        }
+        #[cfg(not(feature = "zip"))]
+        return Err(crate::Error::InvalidUpdaterFormat);
+    }
+
+    #[cfg(windows)]
+    fn extract_bin(bytes: &Vec<u8>) -> Result<WindowsUpdaterType> {
+        use std::io::Write;
+        if is_exe(&bytes) {
+            let mut temp_file = tempfile::Builder::new().suffix(".exe").tempfile()?;
+            temp_file.write_all(&bytes)?;
+            let temp_path = temp_file.into_temp_path();
+            return Ok(WindowsUpdaterType::Nsis {
+                path: temp_path.to_path_buf(),
+                temp_path: Some(temp_path),
+            });
+        }
+        if is_msi(&bytes) {
+            let mut temp_file = tempfile::Builder::new().suffix(".msi").tempfile()?;
+            temp_file.write_all(&bytes)?;
+            let temp_path = temp_file.into_temp_path();
+            return Ok(WindowsUpdaterType::Msi {
+                path: temp_path.to_path_buf(),
+                temp_path: Some(temp_path),
+            });
+        }
+        return Err(crate::Error::InvalidUpdaterFormat);
     }
 
     // Linux (AppImage)
