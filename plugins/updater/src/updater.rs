@@ -493,9 +493,8 @@ impl Update {
         let mut stream = response.bytes_stream();
         while let Some(chunk) = stream.next().await {
             let chunk = chunk?;
-            let bytes = chunk.as_ref().to_vec();
-            on_chunk(bytes.len(), content_length);
-            buffer.extend(bytes);
+            on_chunk(chunk.len(), content_length);
+            buffer.extend(chunk);
         }
 
         on_download_finish();
