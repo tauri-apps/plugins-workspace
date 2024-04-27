@@ -148,12 +148,10 @@ impl<R: Runtime> WindowExt for Window<R> {
 
         let mut should_show = true;
 
-        if let Some(state) = c.get(self.label()) {
-            // avoid restoring the default zeroed state
-            if *state == WindowState::default() {
-                return Ok(());
-            }
-
+        if let Some(state) = c
+            .get(self.label())
+            .filter(|state| state != &&WindowState::default())
+        {
             if flags.contains(StateFlags::DECORATIONS) {
                 self.set_decorations(state.decorated)?;
             }
