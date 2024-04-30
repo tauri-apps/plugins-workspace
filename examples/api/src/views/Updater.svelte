@@ -12,8 +12,8 @@
     isChecking = true;
     try {
       const update = await check();
-      onMessage(`Should update: ${update.response.available}`);
-      onMessage(update.response);
+      onMessage(`Should update: ${update.available}`);
+      onMessage(update);
 
       newUpdate = update;
     } catch (e) {

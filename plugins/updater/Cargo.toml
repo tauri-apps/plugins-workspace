@@ -25,27 +25,33 @@ tokio = "1"
 reqwest = { version = "0.12", default-features = false, features = [ "json", "stream" ] }
 url = { workspace = true }
 http = "1"
-dirs-next = "2"
 minisign-verify = "0.2"
 time = { version = "0.3", features = [ "parsing", "formatting" ] }
 base64 = "0.22"
 semver = { version = "1", features = [ "serde" ] }
 futures-util = "0.3"
 tempfile = "3"
-zip = "0.6"
+infer = "0.15"
 
-[target."cfg(target_os = \"windows\")".dependencies]
-windows-sys = { version = "0.52.0", features = [ "Win32_Foundation", "Win32_UI_WindowsAndMessaging" ] }
+[target.'cfg(target_os = "windows")'.dependencies]
+zip = { version = "0.6", optional = true }
+windows-sys = { version = "0.52.0", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+] }
 
-[target."cfg(any(target_os = \"macos\", target_os = \"linux\"))".dependencies]
+[target.'cfg(target_os = "linux")'.dependencies]
+dirs-next = "2"
+tar = { version = "0.4", optional = true }
+flate2 = { version = "1", optional = true }
+
+[target.'cfg(target_os = "macos")'.dependencies]
 tar = "0.4"
 flate2 = "1"
 
-[dev-dependencies]
-mockito = "0.31"
-
 [features]
-default = [ "rustls-tls" ]
-native-tls = [ "reqwest/native-tls" ]
-native-tls-vendored = [ "reqwest/native-tls-vendored" ]
-rustls-tls = [ "reqwest/rustls-tls" ]
+default = ["rustls-tls", "zip"]
+zip = ["dep:zip", "dep:tar", "dep:flate2"]
+native-tls = ["reqwest/native-tls"]
+native-tls-vendored = ["reqwest/native-tls-vendored"]
+rustls-tls = ["reqwest/rustls-tls"]
