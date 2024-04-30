@@ -642,21 +642,21 @@ impl Update {
             let mut temp_file = tempfile::Builder::new().suffix(".exe").tempfile()?;
             temp_file.write_all(&bytes)?;
             let temp_path = temp_file.into_temp_path();
-            return Ok(WindowsUpdaterType::Nsis {
+            Ok(WindowsUpdaterType::Nsis {
                 path: temp_path.to_path_buf(),
                 temp_path: Some(temp_path),
-            });
-        }
-        if infer::archive::is_msi(&bytes) {
+            })
+        } else if infer::archive::is_msi(&bytes) {
             let mut temp_file = tempfile::Builder::new().suffix(".msi").tempfile()?;
             temp_file.write_all(&bytes)?;
             let temp_path = temp_file.into_temp_path();
-            return Ok(WindowsUpdaterType::Msi {
+            Ok(WindowsUpdaterType::Msi {
                 path: temp_path.to_path_buf(),
                 temp_path: Some(temp_path),
-            });
+            })
+        } else {
+            Err(crate::Error::InvalidUpdaterFormat)
         }
-        return Err(crate::Error::InvalidUpdaterFormat);
     }
 
     // Linux (AppImage)
@@ -727,11 +727,11 @@ impl Update {
                         std::fs::rename(tmp_app_image, &self.extract_path)?;
                         return Err(Error::BinaryNotFoundInArchive);
                     }
-                    return match std::fs::write(&self.extract_path, bytes) {
+                    match std::fs::write(&self.extract_path, bytes) {
                         Err(err) => {
                             // if something went wrong during the extraction, we should restore previous app
                             std::fs::rename(tmp_app_image, &self.extract_path)?;
-                            return Err(err.into());
+                            Err(err.into());
                         }
                         Ok(_) => Ok(()),
                     };
