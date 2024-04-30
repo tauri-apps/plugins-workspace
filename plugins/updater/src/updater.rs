@@ -23,12 +23,10 @@ use reqwest::{
 use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
 use tauri::{utils::platform::current_exe, Resource};
-use tempfile::TempPath;
 use time::OffsetDateTime;
 use url::Url;
 
 use crate::{
-    config::WindowsUpdateInstallMode,
     error::{Error, Result},
     Config,
 };
@@ -529,7 +527,7 @@ impl WindowsUpdaterType {
 
 #[cfg(windows)]
 impl Config {
-    fn install_mode(&self) -> WindowsUpdateInstallMode {
+    fn install_mode(&self) -> crate::config::WindowsUpdateInstallMode {
         self.windows
             .as_ref()
             .map(|w| w.install_mode.clone())
@@ -595,7 +593,7 @@ impl Update {
             .collect::<Vec<_>>()
     }
 
-    fn extract(bytes: &[u8]) -> Result<(WindowsUpdaterType, PathBuf, Option<TempPath>)> {
+    fn extract(bytes: &[u8]) -> Result<(WindowsUpdaterType, PathBuf, Option<tempfile::TempPath>)> {
         #[cfg(feature = "zip")]
         if infer::archive::is_zip(bytes) {
             return Self::extract_zip(bytes);
@@ -605,7 +603,9 @@ impl Update {
     }
 
     #[cfg(feature = "zip")]
-    fn extract_zip(bytes: &[u8]) -> Result<(WindowsUpdaterType, PathBuf, Option<TempPath>)> {
+    fn extract_zip(
+        bytes: &[u8],
+    ) -> Result<(WindowsUpdaterType, PathBuf, Option<tempfile::TempPath>)> {
         let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
 
         let archive = Cursor::new(bytes);
@@ -626,7 +626,9 @@ impl Update {
         Err(crate::Error::BinaryNotFoundInArchive)
     }
 
-    fn extract_exe(bytes: &[u8]) -> Result<(WindowsUpdaterType, PathBuf, Option<TempPath>)> {
+    fn extract_exe(
+        bytes: &[u8],
+    ) -> Result<(WindowsUpdaterType, PathBuf, Option<tempfile::TempPath>)> {
         use std::io::Write;
 
         let updater_type = if infer::app::is_exe(bytes) {
