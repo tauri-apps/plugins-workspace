@@ -42,7 +42,7 @@ tar = "0.4"
 flate2 = "1"
 
 [dev-dependencies]
-mockito = "0.31"
+mockito = "1.4"
 
 [features]
 default = [ "rustls-tls" ]
