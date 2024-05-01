@@ -11,7 +11,7 @@
 "global-shortcut": patch
 "http": patch
 "localhost": patch
-"log": patch
+"log-plugin": patch
 "nfc": patch
 "notification": patch
 "os": patch

@@ -48,7 +48,7 @@ winrt-notification = { package = "tauri-winrt-notification", version = "0.2" }
 [dev-dependencies]
 color-backtrace = "0.6"
 ctor = "0.2"
-maplit = "1.0"
+maplit = "1"
 
 [features]
 default = [ "zbus", "async" ]
