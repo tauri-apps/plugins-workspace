@@ -30,6 +30,13 @@
       "matchUpdateTypes": ["minor", "patch"],
       "matchCurrentVersion": "!/^0/",
       "enabled": false
+    },
+    {
+      "description": "Prevent spammy patch Cargo.lock updates for 0.x deps",
+      "matchManagers": ["cargo"],
+      "matchUpdateTypes": ["patch"],
+      "matchCurrentVersion": "/^0/",
+      "enabled": false
     }
   ],
   "postUpdateOptions": ["pnpmDedupe"]
