@@ -23,6 +23,13 @@
       "description": "Prevent unwanted minor/patch Cargo.toml updates",
       "matchManagers": ["cargo"],
       "rangeStrategy": "update-lockfile"
+    },
+    {
+      "description": "Prevent spammy minor/patch Cargo.lock updates",
+      "matchManagers": ["cargo"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchCurrentVersion": "!/^0/",
+      "enabled": false
     }
   ],
   "postUpdateOptions": ["pnpmDedupe"]
