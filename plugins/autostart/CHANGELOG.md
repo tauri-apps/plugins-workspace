@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.3]
+
+- [`bd1ed590`](https://github.com/tauri-apps/plugins-workspace/commit/bd1ed5903ffcce5500310dac1e59e8c67674ef1e)([#1237](https://github.com/tauri-apps/plugins-workspace/pull/1237)) Update to tauri beta.17.
+
 ## \[2.0.0-beta.4]
 
 - [`a233919`](https://github.com/tauri-apps/plugins-workspace/commit/a2339195aa940bff86d76375fd05087595bf06ce)([#1118](https://github.com/tauri-apps/plugins-workspace/pull/1118)) Fix LaunchAgent-based autostart for macOS.

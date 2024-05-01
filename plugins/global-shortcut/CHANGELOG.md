@@ -2,6 +2,16 @@
 
 ## \[2.0.0-beta.3]
 
+- [`9c7eb359`](https://github.com/tauri-apps/plugins-workspace/commit/9c7eb35967ad10659eb4976bd6f77d9d270bfeed)([#1244](https://github.com/tauri-apps/plugins-workspace/pull/1244)) Refactored APIs to introduce new pressed and released events:
+
+  - Added `ShortcutEvent` and `ShortcutState` types in Rust.
+  - Changed the handler function passed to `GlobalShortcut::on_shortcut`, `GlobalShortcut::on_all_shortcuts` and `Builder::with_handler` to take a 3rd argument of type `ShortcutEvent`.
+  - Added `ShortcutEvent` interface in JS.
+  - Changed `ShortcutHandler` type alias (which affects the JS `register` and `registerAll` APIs) to take `ShortcutEvent` instead of a string.
+- [`bd1ed590`](https://github.com/tauri-apps/plugins-workspace/commit/bd1ed5903ffcce5500310dac1e59e8c67674ef1e)([#1237](https://github.com/tauri-apps/plugins-workspace/pull/1237)) Update to tauri beta.17.
+
+## \[2.0.0-beta.3]
+
 - [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.
 - [`62dafda`](https://github.com/tauri-apps/plugins-workspace/commit/62dafda6526899b407a7c5a1bb269c5c0dfb2630)([#969](https://github.com/tauri-apps/plugins-workspace/pull/969)) **Breaking change** Refactored the plugin Rust APIs for better DX and flexibility:
 
