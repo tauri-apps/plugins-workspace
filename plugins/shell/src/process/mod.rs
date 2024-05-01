@@ -41,11 +41,13 @@ pub struct TerminatedPayload {
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub enum CommandEvent {
-    /// Stderr bytes until a newline (\n) or carriage return (\r) is found.
+    /// If configured for raw output, all bytes written to stderr.
+    /// Otherwise, bytes until a newline (\n) or carriage return (\r) is found.
     Stderr(Vec<u8>),
-    /// Stdout bytes until a newline (\n) or carriage return (\r) is found.
+    /// If configured for raw output, all bytes written to stdout.
+    /// Otherwise, bytes until a newline (\n) or carriage return (\r) is found.
     Stdout(Vec<u8>),
-    /// An error happened waiting for the command to finish or converting the stdout/stderr bytes to an UTF-8 string.
+    /// An error happened waiting for the command to finish or converting the stdout/stderr bytes to a UTF-8 string.
     Error(String),
     /// Command process terminated.
     Terminated(TerminatedPayload),
@@ -201,6 +203,7 @@ impl Command {
         self
     }
     
+    /// Configures the reader to output bytes from the child process exactly as received
     pub fn set_raw_out(mut self, raw_out: bool) -> Self {
         self.raw_out = raw_out;
         self
@@ -370,6 +373,58 @@ impl Command {
     }
 }
 
+fn read_raw_bytes<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
+    mut reader: BufReader<PipeReader>,
+    tx: Sender<CommandEvent>, 
+    wrapper: F
+) {
+    loop {
+        let result = reader.fill_buf();
+        match result {
+            Ok(buf) => {
+                let length = buf.len();
+                if length == 0 { 
+                    break; 
+                }
+                let tx_ = tx.clone();
+                let _ = block_on_task(async move { tx_.send(wrapper(buf.to_vec())).await });
+                reader.consume(length);
+            }
+            Err(e) => {
+                let tx_ = tx.clone();
+                let _ = block_on_task( async move { tx_.send(CommandEvent::Error(e.to_string())).await });
+            }
+        }
+    }
+}
+
+fn read_line<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
+    mut reader: BufReader<PipeReader>,
+    tx: Sender<CommandEvent>,
+    wrapper: F
+) {
+    loop {
+        let mut buf = Vec::new();
+        match tauri::utils::io::read_line(&mut reader, &mut buf) {
+            Ok(n) => {
+                if n == 0 {
+                    break;
+                }
+                let tx_ = tx.clone();
+                let _ = block_on_task(async move { tx_.send(wrapper(buf)).await });
+            }
+            Err(e) => {
+                let tx_ = tx.clone();
+                let _ =
+                    block_on_task(
+                        async move { tx_.send(CommandEvent::Error(e.to_string())).await },
+                    );
+                break;
+            }
+        }
+    }
+}
+
 fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
     tx: Sender<CommandEvent>,
     guard: Arc<RwLock<()>>,
@@ -379,48 +434,14 @@ fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
 ) {
     spawn(move || {
         let _lock = guard.read().unwrap();
-        let mut reader = BufReader::new(pipe_reader);
-
+        let reader = BufReader::new(pipe_reader);
+        
         if raw_out {
-            loop {
-                let result = reader.fill_buf();
-                match result {
-                    Ok(buf) => {
-                        let length = buf.len();
-                        if length == 0 { break; }
-                        let tx_ = tx.clone();
-                        let _ = block_on_task(async move { tx_.send(wrapper(buf.to_vec())).await });
-                        reader.consume(length);
-                    }
-                    Err(e) => {
-                        let tx_ = tx.clone();
-                        let _ = block_on_task( async move { tx_.send(CommandEvent::Error(e.to_string())).await });
-                    }
-                }
-            }
-            return;
-        } 
-
-        loop {
-            let mut buf = Vec::new();
-            match tauri::utils::io::read_line(&mut reader, &mut buf) {
-                Ok(n) => {
-                    if n == 0 {
-                        break;
-                    }
-                    let tx_ = tx.clone();
-                    let _ = block_on_task(async move { tx_.send(wrapper(buf)).await });
-                }
-                Err(e) => {
-                    let tx_ = tx.clone();
-                    let _ =
-                        block_on_task(
-                            async move { tx_.send(CommandEvent::Error(e.to_string())).await },
-                        );
-                    break;
-                }
-            }
+            read_raw_bytes(reader, tx, wrapper);
+        } else {
+            read_line(reader, tx, wrapper);
         }
+
     });
 }
 
