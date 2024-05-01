@@ -47,7 +47,7 @@ winrt-notification = { package = "tauri-winrt-notification", version = "0.2" }
 
 [dev-dependencies]
 color-backtrace = "0.6"
-ctor = "0.2"
+ctor = "0.2.8"
 maplit = "1.0"
 
 [features]
