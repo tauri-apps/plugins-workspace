@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-updater"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 description = "In-app updates for Tauri applications."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -33,25 +33,22 @@ futures-util = "0.3"
 tempfile = "3"
 infer = "0.15"
 
-[target.'cfg(target_os = "windows")'.dependencies]
+[target."cfg(target_os = \"windows\")".dependencies]
 zip = { version = "0.6", optional = true }
-windows-sys = { version = "0.52.0", features = [
-    "Win32_Foundation",
-    "Win32_UI_WindowsAndMessaging",
-] }
+windows-sys = { version = "0.52.0", features = [ "Win32_Foundation", "Win32_UI_WindowsAndMessaging" ] }
 
-[target.'cfg(target_os = "linux")'.dependencies]
+[target."cfg(target_os = \"linux\")".dependencies]
 dirs-next = "2"
 tar = { version = "0.4", optional = true }
 flate2 = { version = "1", optional = true }
 
-[target.'cfg(target_os = "macos")'.dependencies]
+[target."cfg(target_os = \"macos\")".dependencies]
 tar = "0.4"
 flate2 = "1"
 
 [features]
-default = ["rustls-tls", "zip"]
-zip = ["dep:zip", "dep:tar", "dep:flate2"]
-native-tls = ["reqwest/native-tls"]
-native-tls-vendored = ["reqwest/native-tls-vendored"]
-rustls-tls = ["reqwest/rustls-tls"]
+default = [ "rustls-tls", "zip" ]
+zip = [ "dep:zip", "dep:tar", "dep:flate2" ]
+native-tls = [ "reqwest/native-tls" ]
+native-tls-vendored = [ "reqwest/native-tls-vendored" ]
+rustls-tls = [ "reqwest/rustls-tls" ]
