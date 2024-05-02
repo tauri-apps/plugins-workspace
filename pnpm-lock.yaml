@@ -123,7 +123,7 @@ importers:
         version: 1.1.12
       '@sveltejs/vite-plugin-svelte':
         specifier: ^3.0.1
-        version: 3.1.0(svelte@4.2.15)(vite@5.2.10)
+        version: 3.1.0(svelte@4.2.15)(vite@5.2.11)
       '@tauri-apps/cli':
         specifier: 2.0.0-beta.15
         version: 2.0.0-beta.15
@@ -138,10 +138,10 @@ importers:
         version: 4.2.15
       unocss:
         specifier: ^0.59.0
-        version: 0.59.4(postcss@8.4.38)(rollup@4.17.2)(vite@5.2.10)
+        version: 0.59.4(postcss@8.4.38)(rollup@4.17.2)(vite@5.2.11)
       vite:
         specifier: ^5.0.13
-        version: 5.2.10
+        version: 5.2.11
 
   plugins/authenticator:
     dependencies:
@@ -205,7 +205,7 @@ importers:
         version: 5.4.5
       vite:
         specifier: ^5.0.13
-        version: 5.2.10
+        version: 5.2.11
 
   plugins/dialog:
     dependencies:
@@ -301,7 +301,7 @@ importers:
         version: 5.4.5
       vite:
         specifier: ^5.0.12
-        version: 5.2.10
+        version: 5.2.11
 
   plugins/stronghold:
     dependencies:
@@ -341,7 +341,7 @@ importers:
         version: 5.4.5
       vite:
         specifier: ^5.0.13
-        version: 5.2.10
+        version: 5.2.11
 
   plugins/window-state:
     dependencies:
@@ -1387,7 +1387,7 @@ packages:
     dev: true
     optional: true
 
-  /@sveltejs/vite-plugin-svelte-inspector@2.1.0(@sveltejs/vite-plugin-svelte@3.1.0)(svelte@4.2.15)(vite@5.2.10):
+  /@sveltejs/vite-plugin-svelte-inspector@2.1.0(@sveltejs/vite-plugin-svelte@3.1.0)(svelte@4.2.15)(vite@5.2.11):
     resolution: {integrity: sha512-9QX28IymvBlSCqsCll5t0kQVxipsfhFFL+L2t3nTWfXnddYwxBuAEtTtlaVQpRz9c37BhJjltSeY4AJSC03SSg==}
     engines: {node: ^18.0.0 || >=20}
     peerDependencies:
@@ -1395,30 +1395,30 @@ packages:
       svelte: ^4.0.0 || ^5.0.0-next.0
       vite: ^5.0.0
     dependencies:
-      '@sveltejs/vite-plugin-svelte': 3.1.0(svelte@4.2.15)(vite@5.2.10)
+      '@sveltejs/vite-plugin-svelte': 3.1.0(svelte@4.2.15)(vite@5.2.11)
       debug: 4.3.4(supports-color@8.1.1)
       svelte: 4.2.15
-      vite: 5.2.10
+      vite: 5.2.11
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@sveltejs/vite-plugin-svelte@3.1.0(svelte@4.2.15)(vite@5.2.10):
+  /@sveltejs/vite-plugin-svelte@3.1.0(svelte@4.2.15)(vite@5.2.11):
     resolution: {integrity: sha512-sY6ncCvg+O3njnzbZexcVtUqOBE3iYmQPJ9y+yXSkOwG576QI/xJrBnQSRXFLGwJNBa0T78JEKg5cIR0WOAuUw==}
     engines: {node: ^18.0.0 || >=20}
     peerDependencies:
       svelte: ^4.0.0 || ^5.0.0-next.0
       vite: ^5.0.0
     dependencies:
-      '@sveltejs/vite-plugin-svelte-inspector': 2.1.0(@sveltejs/vite-plugin-svelte@3.1.0)(svelte@4.2.15)(vite@5.2.10)
+      '@sveltejs/vite-plugin-svelte-inspector': 2.1.0(@sveltejs/vite-plugin-svelte@3.1.0)(svelte@4.2.15)(vite@5.2.11)
       debug: 4.3.4(supports-color@8.1.1)
       deepmerge: 4.3.1
       kleur: 4.1.5
       magic-string: 0.30.10
       svelte: 4.2.15
       svelte-hmr: 0.16.0(svelte@4.2.15)
-      vite: 5.2.10
-      vitefu: 0.2.5(vite@5.2.10)
+      vite: 5.2.11
+      vitefu: 0.2.5(vite@5.2.11)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -1704,7 +1704,7 @@ packages:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
     dev: true
 
-  /@unocss/astro@0.59.4(rollup@4.17.2)(vite@5.2.10):
+  /@unocss/astro@0.59.4(rollup@4.17.2)(vite@5.2.11):
     resolution: {integrity: sha512-DU3OR5MMR1Uvvec4/wB9EetDASHRg19Moy6z/MiIhn8JWJ0QzWYgSeJcfUX8exomMYv6WUEQJL+CyLI34Wmn8w==}
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0
@@ -1714,8 +1714,8 @@ packages:
     dependencies:
       '@unocss/core': 0.59.4
       '@unocss/reset': 0.59.4
-      '@unocss/vite': 0.59.4(rollup@4.17.2)(vite@5.2.10)
-      vite: 5.2.10
+      '@unocss/vite': 0.59.4(rollup@4.17.2)(vite@5.2.11)
+      vite: 5.2.11
     transitivePeerDependencies:
       - rollup
     dev: true
@@ -1902,7 +1902,7 @@ packages:
       '@unocss/core': 0.59.4
     dev: true
 
-  /@unocss/vite@0.59.4(rollup@4.17.2)(vite@5.2.10):
+  /@unocss/vite@0.59.4(rollup@4.17.2)(vite@5.2.11):
     resolution: {integrity: sha512-q7GN7vkQYn79n7vYIUlaa7gXGwc7pk0Qo3z3ZFwWGE43/DtZnn2Hwl5UjgBAgi9McA+xqHJEHRsJnI7HJPHUYA==}
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0
@@ -1917,7 +1917,7 @@ packages:
       chokidar: 3.6.0
       fast-glob: 3.3.2
       magic-string: 0.30.10
-      vite: 5.2.10
+      vite: 5.2.11
     transitivePeerDependencies:
       - rollup
     dev: true
@@ -4781,7 +4781,7 @@ packages:
       '@types/unist': 2.0.10
     dev: true
 
-  /unocss@0.59.4(postcss@8.4.38)(rollup@4.17.2)(vite@5.2.10):
+  /unocss@0.59.4(postcss@8.4.38)(rollup@4.17.2)(vite@5.2.11):
     resolution: {integrity: sha512-QmCVjRObvVu/gsGrJGVt0NnrdhFFn314BUZn2WQyXV9rIvHLRmG5bIu0j5vibJkj7ZhFchTrnTM1pTFXP1xt5g==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -4793,7 +4793,7 @@ packages:
       vite:
         optional: true
     dependencies:
-      '@unocss/astro': 0.59.4(rollup@4.17.2)(vite@5.2.10)
+      '@unocss/astro': 0.59.4(rollup@4.17.2)(vite@5.2.11)
       '@unocss/cli': 0.59.4(rollup@4.17.2)
       '@unocss/core': 0.59.4
       '@unocss/extractor-arbitrary-variants': 0.59.4
@@ -4812,8 +4812,8 @@ packages:
       '@unocss/transformer-compile-class': 0.59.4
       '@unocss/transformer-directives': 0.59.4
       '@unocss/transformer-variant-group': 0.59.4
-      '@unocss/vite': 0.59.4(rollup@4.17.2)(vite@5.2.10)
-      vite: 5.2.10
+      '@unocss/vite': 0.59.4(rollup@4.17.2)(vite@5.2.11)
+      vite: 5.2.11
     transitivePeerDependencies:
       - postcss
       - rollup
@@ -4857,8 +4857,8 @@ packages:
       vfile-message: 2.0.4
     dev: true
 
-  /vite@5.2.10:
-    resolution: {integrity: sha512-PAzgUZbP7msvQvqdSD+ErD5qGnSFiGOoWmV5yAKUEI0kdhjbH6nMWVyZQC/hSc4aXwc0oJ9aEdIiF9Oje0JFCw==}
+  /vite@5.2.11:
+    resolution: {integrity: sha512-HndV31LWW05i1BLPMUCE1B9E9GFbOu1MbenhS58FuK6owSO5qHm7GiCotrNY1YE5rMeQSFBGmT5ZaLEjFizgiQ==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
@@ -4892,7 +4892,7 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vitefu@0.2.5(vite@5.2.10):
+  /vitefu@0.2.5(vite@5.2.11):
     resolution: {integrity: sha512-SgHtMLoqaeeGnd2evZ849ZbACbnwQCIwRH57t18FxcXoZop0uQu0uzlIhJBlF/eWVzuce0sHeqPcDo+evVcg8Q==}
     peerDependencies:
       vite: ^3.0.0 || ^4.0.0 || ^5.0.0
@@ -4900,7 +4900,7 @@ packages:
       vite:
         optional: true
     dependencies:
-      vite: 5.2.10
+      vite: 5.2.11
     dev: true
 
   /wcwidth@1.0.1:
