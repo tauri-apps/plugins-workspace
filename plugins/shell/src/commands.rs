@@ -157,7 +157,7 @@ pub fn execute<R: Runtime>(
             "raw" => {
                 command = command.set_raw_out(true);
                 EncodingWrapper::Raw
-            },
+            }
             _ => {
                 if let Some(text_encoding) = Encoding::for_label(encoding.as_bytes()) {
                     EncodingWrapper::Text(Some(text_encoding))

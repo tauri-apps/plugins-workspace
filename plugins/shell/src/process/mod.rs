@@ -57,7 +57,7 @@ pub enum CommandEvent {
 #[derive(Debug)]
 pub struct Command {
     cmd: StdCommand,
-    raw_out: bool
+    raw_out: bool,
 }
 
 /// Spawned child process.
@@ -141,7 +141,10 @@ impl Command {
         #[cfg(windows)]
         command.creation_flags(CREATE_NO_WINDOW);
 
-        Self{ cmd: command, raw_out: false }
+        Self {
+            cmd: command,
+            raw_out: false,
+        }
     }
 
     pub(crate) fn new_sidecar<S: AsRef<Path>>(program: S) -> crate::Result<Self> {
@@ -202,7 +205,7 @@ impl Command {
         self.cmd.current_dir(current_dir);
         self
     }
-    
+
     /// Configures the reader to output bytes from the child process exactly as received
     pub fn set_raw_out(mut self, raw_out: bool) -> Self {
         self.raw_out = raw_out;
@@ -261,14 +264,14 @@ impl Command {
             guard.clone(),
             stdout_reader,
             CommandEvent::Stdout,
-            raw
+            raw,
         );
         spawn_pipe_reader(
             tx.clone(),
             guard.clone(),
             stderr_reader,
             CommandEvent::Stderr,
-            raw
+            raw,
         );
 
         spawn(move || {
@@ -375,16 +378,16 @@ impl Command {
 
 fn read_raw_bytes<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
     mut reader: BufReader<PipeReader>,
-    tx: Sender<CommandEvent>, 
-    wrapper: F
+    tx: Sender<CommandEvent>,
+    wrapper: F,
 ) {
     loop {
         let result = reader.fill_buf();
         match result {
             Ok(buf) => {
                 let length = buf.len();
-                if length == 0 { 
-                    break; 
+                if length == 0 {
+                    break;
                 }
                 let tx_ = tx.clone();
                 let _ = block_on_task(async move { tx_.send(wrapper(buf.to_vec())).await });
@@ -392,7 +395,9 @@ fn read_raw_bytes<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
             }
             Err(e) => {
                 let tx_ = tx.clone();
-                let _ = block_on_task( async move { tx_.send(CommandEvent::Error(e.to_string())).await });
+                let _ = block_on_task(
+                    async move { tx_.send(CommandEvent::Error(e.to_string())).await },
+                );
             }
         }
     }
@@ -401,7 +406,7 @@ fn read_raw_bytes<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
 fn read_line<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
     mut reader: BufReader<PipeReader>,
     tx: Sender<CommandEvent>,
-    wrapper: F
+    wrapper: F,
 ) {
     loop {
         let mut buf = Vec::new();
@@ -415,10 +420,9 @@ fn read_line<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
             }
             Err(e) => {
                 let tx_ = tx.clone();
-                let _ =
-                    block_on_task(
-                        async move { tx_.send(CommandEvent::Error(e.to_string())).await },
-                    );
+                let _ = block_on_task(
+                    async move { tx_.send(CommandEvent::Error(e.to_string())).await },
+                );
                 break;
             }
         }
@@ -430,18 +434,17 @@ fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
     guard: Arc<RwLock<()>>,
     pipe_reader: PipeReader,
     wrapper: F,
-    raw_out: bool
+    raw_out: bool,
 ) {
     spawn(move || {
         let _lock = guard.read().unwrap();
         let reader = BufReader::new(pipe_reader);
-        
+
         if raw_out {
             read_raw_bytes(reader, tx, wrapper);
         } else {
             read_line(reader, tx, wrapper);
         }
-
     });
 }
 
