@@ -120,7 +120,7 @@ importers:
         version: 1.1.47
       '@iconify-json/ph':
         specifier: ^1.1.8
-        version: 1.1.12
+        version: 1.1.13
       '@sveltejs/vite-plugin-svelte':
         specifier: ^3.0.1
         version: 3.1.0(svelte@4.2.15)(vite@5.2.11)
@@ -1110,8 +1110,8 @@ packages:
       '@iconify/types': 2.0.0
     dev: true
 
-  /@iconify-json/ph@1.1.12:
-    resolution: {integrity: sha512-m+rXTW084YaQQHT+F8TxdkCoAh+i/5MWRoSuPmxCWPlxwMAaLT/QfyVsbEiV95HM5806U/jKpBV6F1b7Pmr3Vg==}
+  /@iconify-json/ph@1.1.13:
+    resolution: {integrity: sha512-xtM4JJ63HCKj09WRqrBswXiHrpliBlqboWSZH8odcmqYXbvIFceU9/Til4V+MQr6+MoUC+KB72cxhky2+A6r/g==}
     dependencies:
       '@iconify/types': 2.0.0
     dev: true
