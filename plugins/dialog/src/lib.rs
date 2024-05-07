@@ -18,6 +18,7 @@ use tauri::{
 };
 
 use std::{
+    fs,
     path::{Path, PathBuf},
     sync::mpsc::sync_channel,
 };
@@ -230,6 +231,8 @@ pub struct FileResponse {
 impl FileResponse {
     #[cfg(desktop)]
     fn new(path: PathBuf) -> Self {
+        let metadata = fs::metadata(&path).unwrap();
+
         Self {
             base64_data: None,
             duration: None,
@@ -239,7 +242,7 @@ impl FileResponse {
             modified_at: None,
             name: path.file_name().map(|f| f.to_string_lossy().into_owned()),
             path,
-            size: 0,
+            size: metadata.len(),
         }
     }
 }
