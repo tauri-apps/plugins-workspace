@@ -63,12 +63,14 @@ fn main() {
                 app.handle().plugin(
                     tauri_plugin_global_shortcut::Builder::new()
                         .with_shortcuts(["ctrl+d", "alt+space"])?
-                        .with_handler(|app, shortcut| {
-                            if shortcut.matches(Modifiers::CONTROL, Code::KeyD) {
-                                let _ = app.emit("shortcut-event", "Ctrl+D triggered");
-                            }
-                            if shortcut.matches(Modifiers::ALT, Code::Space) {
-                                let _ = app.emit("shortcut-event", "Alt+Space triggered");
+                        .with_handler(|app, shortcut, event| {
+                            if event.state == ShortcutState::Preseed  {
+                                if shortcut.matches(Modifiers::CONTROL, Code::KeyD) {
+                                    let _ = app.emit("shortcut-event", "Ctrl+D triggered");
+                                }
+                                if shortcut.matches(Modifiers::ALT, Code::Space) {
+                                    let _ = app.emit("shortcut-event", "Alt+Space triggered");
+                                }
                             }
                         })
                         .build(),
@@ -86,8 +88,10 @@ Afterwards all the plugin's APIs are available through the JavaScript bindings:
 
 ```javascript
 import { register } from "@tauri-apps/plugin-global-shortcut";
-await register("CommandOrControl+Shift+C", () => {
-  console.log("Shortcut triggered");
+await register("CommandOrControl+Shift+C", (event) => {
+  if (event.state === "Pressed") {
+    console.log("Shortcut triggered");
+  }
 });
 ```
 
