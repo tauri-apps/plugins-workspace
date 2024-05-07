@@ -73,6 +73,7 @@ const DEFAULT_LOG_TARGETS: [Target; 2] = [
     Target::new(TargetKind::Stdout),
     Target::new(TargetKind::LogDir { file_name: None }),
 ];
+const LOG_DATE_FORMAT: &str = "[year]-[month]-[day]_[hour]-[minute]-[second]";
 
 /// An enum representing the available verbosity levels of the logger.
 ///
@@ -127,8 +128,12 @@ impl From<log::Level> for LogLevel {
 }
 
 pub enum RotationStrategy {
+    // Will keep all the logs, renaming them to include the date
     KeepAll,
+    // Will only keep the most recent log up to its maximal size
     KeepOne,
+    // Will keep some of the most recent logs, renaming them to include the date.
+    KeepSome(usize),
 }
 
 #[derive(Debug, Clone)]
@@ -492,6 +497,35 @@ impl Builder {
     }
 }
 
+
+fn rename_file_to_dated(
+    path: &impl AsRef<Path>,
+    dir: &impl AsRef<Path>,
+    file_name: &str,
+    timezone_strategy: &TimezoneStrategy,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let to = dir.as_ref().join(format!(
+        "{}_{}.log",
+        file_name,
+        timezone_strategy
+            .get_now()
+            .format(&time::format_description::parse(LOG_DATE_FORMAT).unwrap())
+            .unwrap(),
+    ));
+    if to.is_file() {
+        // designated rotated log file name already exists
+        // highly unlikely but defensively handle anyway by adding .bak to filename
+        let mut to_bak = to.clone();
+        to_bak.set_file_name(format!(
+            "{}.bak",
+            to_bak.file_name().unwrap().to_string_lossy()
+        ));
+        fs::rename(&to, to_bak)?;
+    }
+    fs::rename(path, to)?;
+    Ok(())
+}
+
 fn get_log_file_path(
     dir: &impl AsRef<Path>,
     file_name: &str,
@@ -506,30 +540,35 @@ fn get_log_file_path(
         if log_size > max_file_size {
             match rotation_strategy {
                 RotationStrategy::KeepAll => {
-                    let to = dir.as_ref().join(format!(
-                        "{}_{}.log",
-                        file_name,
-                        timezone_strategy
-                            .get_now()
-                            .format(
-                                &time::format_description::parse(
-                                    "[year]-[month]-[day]_[hour]-[minute]-[second]"
-                                )
-                                .unwrap()
-                            )
-                            .unwrap(),
-                    ));
-                    if to.is_file() {
-                        // designated rotated log file name already exists
-                        // highly unlikely but defensively handle anyway by adding .bak to filename
-                        let mut to_bak = to.clone();
-                        to_bak.set_file_name(format!(
-                            "{}.bak",
-                            to_bak.file_name().unwrap().to_string_lossy()
-                        ));
-                        fs::rename(&to, to_bak)?;
+                    rename_file_to_dated(&path, dir, file_name, timezone_strategy)?;
+                }
+                RotationStrategy::KeepSome(how_many) => {
+                    let mut files = fs::read_dir(dir)?
+                        .filter_map(|entry| {
+                            let entry = entry.ok()?;
+                            let path = entry.path();
+                            let old_file_name = path.file_name()?.to_string_lossy().into_owned();
+                            if old_file_name.starts_with(&file_name) {
+                                let date =
+                                    old_file_name.strip_prefix(&file_name)?.strip_prefix("_")?.strip_suffix(".log")?;
+                                Some((path, date.to_string()))
+                            } else {
+                                None
+                            }
+                        })
+                        .collect::<Vec<_>>();
+                    // Regular sorting, so the oldest files are first. Lexicographical
+                    // sorting is fine due to the date format.
+                    files.sort_by(|a, b| a.1.cmp(&b.1));
+                    // We want to make space for the file we will be soon renaming, AND
+                    // the file we will be creating. Thus we need to keep how_many - 2 files.
+                    if files.len() > (*how_many - 2) {
+                        files.truncate(files.len() + 2 - *how_many);
+                        for (old_log_path, _) in files {
+                            fs::remove_file(old_log_path)?;
+                        }
                     }
-                    fs::rename(&path, to)?;
+                    rename_file_to_dated(&path, dir, file_name, timezone_strategy)?;
                 }
                 RotationStrategy::KeepOne => {
                     fs::remove_file(&path)?;
@@ -537,6 +576,5 @@ fn get_log_file_path(
             }
         }
     }
-
     Ok(path)
 }
