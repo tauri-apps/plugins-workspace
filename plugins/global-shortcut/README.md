@@ -58,7 +58,7 @@ fn main() {
             #[cfg(desktop)]
             {
                 use tauri::Manager;
-                use tauri_plugin_global_shortcut::{Code, Modifiers};
+                use tauri_plugin_global_shortcut::{Code, Modifiers, ShortcutState};
 
                 app.handle().plugin(
                     tauri_plugin_global_shortcut::Builder::new()
