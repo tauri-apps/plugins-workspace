@@ -94,9 +94,126 @@ fn default_env() -> Option<HashMap<String, String>> {
     Some(HashMap::default())
 }
 
+#[derive(Serialize)]
+enum Output {
+    String(String),
+    Raw(Vec<u8>),
+}
+
+#[derive(Serialize)]
+pub struct ChildProcessReturn {
+    code: Option<i32>,
+    signal: Option<i32>,
+    #[serde(flatten)]
+    stdout: Output,
+    #[serde(flatten)]
+    stderr: Output,
+}
+
 #[allow(clippy::too_many_arguments)]
 #[tauri::command]
 pub fn execute<R: Runtime>(
+    window: Window<R>,
+    program: String,
+    args: ExecuteArgs,
+    options: CommandOptions,
+    command_scope: CommandScope<crate::scope::ScopeAllowedCommand>,
+    global_scope: GlobalScope<crate::scope::ScopeAllowedCommand>,
+) -> crate::Result<ChildProcessReturn> {
+    let scope = crate::scope::ShellScope {
+        scopes: command_scope
+            .allows()
+            .iter()
+            .chain(global_scope.allows())
+            .collect(),
+    };
+
+    let mut command = if options.sidecar {
+        let program = PathBuf::from(program);
+        let program_as_string = program.display().to_string();
+        let program_no_ext_as_string = program.with_extension("").display().to_string();
+        let configured_sidecar = window
+            .config()
+            .bundle
+            .external_bin
+            .as_ref()
+            .and_then(|bins| {
+                bins.iter()
+                    .find(|b| b == &&program_as_string || b == &&program_no_ext_as_string)
+            })
+            .cloned();
+        if let Some(sidecar) = configured_sidecar {
+            scope.prepare_sidecar(&program.to_string_lossy(), &sidecar, args)?
+        } else {
+            return Err(crate::Error::SidecarNotAllowed(program));
+        }
+    } else {
+        match scope.prepare(&program, args) {
+            Ok(cmd) => cmd,
+            Err(e) => {
+                #[cfg(debug_assertions)]
+                eprintln!("{e}");
+                return Err(crate::Error::ProgramNotAllowed(PathBuf::from(program)));
+            }
+        }
+    };
+    if let Some(cwd) = options.cwd {
+        command = command.current_dir(cwd);
+    }
+    if let Some(env) = options.env {
+        command = command.envs(env);
+    } else {
+        command = command.env_clear();
+    }
+    let encoding = match options.encoding {
+        Option::None => EncodingWrapper::Text(None),
+        Some(encoding) => match encoding.as_str() {
+            "raw" => {
+                command = command.set_raw_out(true);
+                EncodingWrapper::Raw
+            }
+            _ => {
+                if let Some(text_encoding) = Encoding::for_label(encoding.as_bytes()) {
+                    EncodingWrapper::Text(Some(text_encoding))
+                } else {
+                    return Err(crate::Error::UnknownEncoding(encoding));
+                }
+            }
+        },
+    };
+
+    let mut command: std::process::Command = command.into();
+    let output = command.output()?;
+
+    let (stdout, stderr) = match encoding {
+        EncodingWrapper::Text(Some(encoding)) => (
+            Output::String(encoding.decode_with_bom_removal(&output.stdout).0.into()),
+            Output::String(encoding.decode_with_bom_removal(&output.stderr).0.into()),
+        ),
+        EncodingWrapper::Text(None) => (
+            Output::String(String::from_utf8(output.stdout)?),
+            Output::String(String::from_utf8(output.stderr)?),
+        ),
+        EncodingWrapper::Raw => (Output::Raw(output.stdout), Output::Raw(output.stderr)),
+    };
+
+    #[cfg(unix)]
+    use std::os::unix::process::ExitStatusExt;
+
+    Ok(ChildProcessReturn {
+        code: output.status.code(),
+        #[cfg(windows)]
+        signal: None,
+        #[cfg(unix)]
+        signal: output.status.signal(),
+        stdout,
+        stderr,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+#[tauri::command]
+pub fn spawn<R: Runtime>(
     window: Window<R>,
     shell: State<'_, Shell<R>>,
     program: String,

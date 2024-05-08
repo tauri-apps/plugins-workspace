@@ -100,39 +100,6 @@ interface ChildProcess<O extends IOPayload> {
 }
 
 /**
- * Spawns a process.
- *
- * @ignore
- * @param program The name of the scoped command.
- * @param onEventHandler Event handler.
- * @param args Program arguments.
- * @param options Configuration for the process spawn.
- * @returns A promise resolving to the process id.
- *
- * @since 2.0.0
- */
-async function execute<O extends IOPayload>(
-  onEventHandler: (event: CommandEvent<O>) => void,
-  program: string,
-  args: string | string[] = [],
-  options?: InternalSpawnOptions,
-): Promise<number> {
-  if (typeof args === "object") {
-    Object.freeze(args);
-  }
-
-  const onEvent = new Channel<CommandEvent<O>>();
-  onEvent.onmessage = onEventHandler;
-
-  return await invoke<number>("plugin:shell|execute", {
-    program,
-    args,
-    options,
-    onEvent,
-  });
-}
-
-/**
  * @since 2.0.0
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -149,7 +116,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   addListener<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void,
+    listener: (arg: E[typeof eventName]) => void
   ): this {
     return this.on(eventName, listener);
   }
@@ -161,7 +128,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   removeListener<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void,
+    listener: (arg: E[typeof eventName]) => void
   ): this {
     return this.off(eventName, listener);
   }
@@ -178,7 +145,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   on<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void,
+    listener: (arg: E[typeof eventName]) => void
   ): this {
     if (eventName in this.eventListeners) {
       // eslint-disable-next-line security/detect-object-injection
@@ -200,7 +167,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   once<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void,
+    listener: (arg: E[typeof eventName]) => void
   ): this {
     const wrapper = (arg: E[typeof eventName]): void => {
       this.removeListener(eventName, wrapper);
@@ -218,12 +185,12 @@ class EventEmitter<E extends Record<string, any>> {
    */
   off<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void,
+    listener: (arg: E[typeof eventName]) => void
   ): this {
     if (eventName in this.eventListeners) {
       // eslint-disable-next-line security/detect-object-injection
       this.eventListeners[eventName] = this.eventListeners[eventName].filter(
-        (l) => l !== listener,
+        (l) => l !== listener
       );
     }
     return this;
@@ -292,7 +259,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   prependListener<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void,
+    listener: (arg: E[typeof eventName]) => void
   ): this {
     if (eventName in this.eventListeners) {
       // eslint-disable-next-line security/detect-object-injection
@@ -314,7 +281,7 @@ class EventEmitter<E extends Record<string, any>> {
    */
   prependOnceListener<N extends keyof E>(
     eventName: N,
-    listener: (arg: E[typeof eventName]) => void,
+    listener: (arg: E[typeof eventName]) => void
   ): this {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapper = (arg: any): void => {
@@ -431,7 +398,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   private constructor(
     program: string,
     args: string | string[] = [],
-    options?: SpawnOptions,
+    options?: SpawnOptions
   ) {
     super();
     this.program = program;
@@ -443,12 +410,12 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   static create(
     program: string,
     args?: string | string[],
-    options?: SpawnOptions & { encoding: "raw" },
+    options?: SpawnOptions & { encoding: "raw" }
   ): Command<Uint8Array>;
   static create(
     program: string,
     args?: string | string[],
-    options?: SpawnOptions,
+    options?: SpawnOptions
   ): Command<string>;
 
   /**
@@ -466,7 +433,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   static create<O extends IOPayload>(
     program: string,
     args: string | string[] = [],
-    options?: SpawnOptions,
+    options?: SpawnOptions
   ): Command<O> {
     return new Command(program, args, options);
   }
@@ -475,12 +442,12 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   static sidecar(
     program: string,
     args?: string | string[],
-    options?: SpawnOptions & { encoding: "raw" },
+    options?: SpawnOptions & { encoding: "raw" }
   ): Command<Uint8Array>;
   static sidecar(
     program: string,
     args?: string | string[],
-    options?: SpawnOptions,
+    options?: SpawnOptions
   ): Command<string>;
 
   /**
@@ -498,7 +465,7 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   static sidecar<O extends IOPayload>(
     program: string,
     args: string | string[] = [],
-    options?: SpawnOptions,
+    options?: SpawnOptions
   ): Command<O> {
     const instance = new Command<O>(program, args, options);
     instance.options.sidecar = true;
@@ -513,27 +480,38 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * @since 2.0.0
    */
   async spawn(): Promise<Child> {
-    return await execute<O>(
-      (event) => {
-        switch (event.event) {
-          case "Error":
-            this.emit("error", event.payload);
-            break;
-          case "Terminated":
-            this.emit("close", event.payload);
-            break;
-          case "Stdout":
-            this.stdout.emit("data", event.payload);
-            break;
-          case "Stderr":
-            this.stderr.emit("data", event.payload);
-            break;
-        }
-      },
-      this.program,
-      this.args,
-      this.options,
-    ).then((pid) => new Child(pid));
+    const program = this.program;
+    const args = this.args;
+    const options = this.options;
+
+    if (typeof args === "object") {
+      Object.freeze(args);
+    }
+
+    const onEvent = new Channel<CommandEvent<O>>();
+    onEvent.onmessage = (event) => {
+      switch (event.event) {
+        case "Error":
+          this.emit("error", event.payload);
+          break;
+        case "Terminated":
+          this.emit("close", event.payload);
+          break;
+        case "Stdout":
+          this.stdout.emit("data", event.payload);
+          break;
+        case "Stderr":
+          this.stderr.emit("data", event.payload);
+          break;
+      }
+    };
+
+    return await invoke<number>("plugin:shell|spawn", {
+      program,
+      args,
+      options,
+      onEvent,
+    }).then((pid) => new Child(pid));
   }
 
   /**
@@ -553,40 +531,19 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * @since 2.0.0
    */
   async execute(): Promise<ChildProcess<O>> {
-    return await new Promise((resolve, reject) => {
-      this.on("error", reject);
+    const program = this.program;
+    const args = this.args;
+    const options = this.options;
 
-      const stdout: O[] = [];
-      const stderr: O[] = [];
-      this.stdout.on("data", (line: O) => {
-        stdout.push(line);
-      });
-      this.stderr.on("data", (line: O) => {
-        stderr.push(line);
-      });
-
-      this.on("close", (payload: TerminatedPayload) => {
-        resolve({
-          code: payload.code,
-          signal: payload.signal,
-          stdout: this.collectOutput(stdout) as O,
-          stderr: this.collectOutput(stderr) as O,
-        });
-      });
-
-      this.spawn().catch(reject);
-    });
-  }
-
-  /** @ignore */
-  private collectOutput(events: O[]): string | Uint8Array {
-    if (this.options.encoding === "raw") {
-      return events.reduce<Uint8Array>((p, c) => {
-        return new Uint8Array([...p, ...(c as Uint8Array), 10]);
-      }, new Uint8Array());
-    } else {
-      return events.join("\n");
+    if (typeof args === "object") {
+      Object.freeze(args);
     }
+
+    return await invoke<ChildProcess<O>>("plugin:shell|execute", {
+      program,
+      args,
+      options,
+    });
   }
 }
 
