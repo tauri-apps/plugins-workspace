@@ -9,7 +9,7 @@
 pub use reqwest;
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    Runtime
+    Runtime,
 };
 
 pub use error::{Error, Result};
