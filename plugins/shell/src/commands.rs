@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{collections::HashMap, path::PathBuf, string::FromUtf8Error};
+use std::{collections::HashMap, future::Future, path::PathBuf, pin::Pin, string::FromUtf8Error};
 
 use encoding_rs::Encoding;
 use serde::{Deserialize, Serialize};
@@ -180,7 +180,21 @@ pub fn execute<R: Runtime>(
                 children.lock().unwrap().remove(&pid);
             };
             let js_event = JSCommandEvent::new(event, encoding);
-            let _ = on_event.send(&js_event);
+
+            if on_event.send(&js_event).is_err() {
+                fn send<'a>(
+                    on_event: &'a Channel,
+                    js_event: &'a JSCommandEvent,
+                ) -> Pin<Box<dyn Future<Output = ()> + Send + 'a>> {
+                    Box::pin(async move {
+                        tokio::time::sleep(std::time::Duration::from_millis(15)).await;
+                        if on_event.send(js_event).is_err() {
+                            send(on_event, js_event).await;
+                        }
+                    })
+                }
+                send(&on_event, &js_event).await;
+            }
         }
     });
 

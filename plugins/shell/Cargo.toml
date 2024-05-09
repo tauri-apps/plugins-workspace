@@ -23,6 +23,7 @@ serde = { workspace = true }
 schemars = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
+tokio = { version = "1", features = [ "time" ] }
 log = { workspace = true }
 thiserror = { workspace = true }
 shared_child = "1"
