@@ -94,18 +94,15 @@ fn default_env() -> Option<HashMap<String, String>> {
     Some(HashMap::default())
 }
 
-#[allow(clippy::too_many_arguments)]
-#[tauri::command]
-pub fn execute<R: Runtime>(
+#[inline(always)]
+fn prepare_cmd<R: Runtime>(
     window: Window<R>,
-    shell: State<'_, Shell<R>>,
     program: String,
     args: ExecuteArgs,
-    on_event: Channel,
     options: CommandOptions,
     command_scope: CommandScope<crate::scope::ScopeAllowedCommand>,
     global_scope: GlobalScope<crate::scope::ScopeAllowedCommand>,
-) -> crate::Result<ChildId> {
+) -> crate::Result<(crate::process::Command, EncodingWrapper)> {
     let scope = crate::scope::ShellScope {
         scopes: command_scope
             .allows()
@@ -151,6 +148,7 @@ pub fn execute<R: Runtime>(
     } else {
         command = command.env_clear();
     }
+
     let encoding = match options.encoding {
         Option::None => EncodingWrapper::Text(None),
         Some(encoding) => match encoding.as_str() {
@@ -167,6 +165,82 @@ pub fn execute<R: Runtime>(
             }
         },
     };
+
+    Ok((command, encoding))
+}
+
+#[derive(Serialize)]
+enum Output {
+    String(String),
+    Raw(Vec<u8>),
+}
+
+#[derive(Serialize)]
+pub struct ChildProcessReturn {
+    code: Option<i32>,
+    signal: Option<i32>,
+    #[serde(flatten)]
+    stdout: Output,
+    #[serde(flatten)]
+    stderr: Output,
+}
+
+#[allow(clippy::too_many_arguments)]
+#[tauri::command]
+pub fn execute<R: Runtime>(
+    window: Window<R>,
+    program: String,
+    args: ExecuteArgs,
+    options: CommandOptions,
+    command_scope: CommandScope<crate::scope::ScopeAllowedCommand>,
+    global_scope: GlobalScope<crate::scope::ScopeAllowedCommand>,
+) -> crate::Result<ChildProcessReturn> {
+    let (command, encoding) =
+        prepare_cmd(window, program, args, options, command_scope, global_scope)?;
+
+    let mut command: std::process::Command = command.into();
+    let output = command.output()?;
+
+    let (stdout, stderr) = match encoding {
+        EncodingWrapper::Text(Some(encoding)) => (
+            Output::String(encoding.decode_with_bom_removal(&output.stdout).0.into()),
+            Output::String(encoding.decode_with_bom_removal(&output.stderr).0.into()),
+        ),
+        EncodingWrapper::Text(None) => (
+            Output::String(String::from_utf8(output.stdout)?),
+            Output::String(String::from_utf8(output.stderr)?),
+        ),
+        EncodingWrapper::Raw => (Output::Raw(output.stdout), Output::Raw(output.stderr)),
+    };
+
+    #[cfg(unix)]
+    use std::os::unix::process::ExitStatusExt;
+
+    Ok(ChildProcessReturn {
+        code: output.status.code(),
+        #[cfg(windows)]
+        signal: None,
+        #[cfg(unix)]
+        signal: output.status.signal(),
+        stdout,
+        stderr,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+#[tauri::command]
+pub fn spawn<R: Runtime>(
+    window: Window<R>,
+    shell: State<'_, Shell<R>>,
+    program: String,
+    args: ExecuteArgs,
+    on_event: Channel,
+    options: CommandOptions,
+    command_scope: CommandScope<crate::scope::ScopeAllowedCommand>,
+    global_scope: GlobalScope<crate::scope::ScopeAllowedCommand>,
+) -> crate::Result<ChildId> {
+    let (command, encoding) =
+        prepare_cmd(window, program, args, options, command_scope, global_scope)?;
 
     let (mut rx, child) = command.spawn()?;
 
