@@ -18,7 +18,6 @@ mod commands;
 mod error;
 mod scope;
 
-
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::<R>::new("http")
         .invoke_handler(tauri::generate_handler![
