@@ -2,6 +2,14 @@
 
 ## \[2.0.0-beta.3]
 
+- [`bd1ed590`](https://github.com/tauri-apps/plugins-workspace/commit/bd1ed5903ffcce5500310dac1e59e8c67674ef1e)([#1237](https://github.com/tauri-apps/plugins-workspace/pull/1237)) Update to tauri beta.17.
+
+## \[2.0.0-beta.4]
+
+- [`326df688`](https://github.com/tauri-apps/plugins-workspace/commit/326df6883998d416fc0837583ed972854628bb52)([#1236](https://github.com/tauri-apps/plugins-workspace/pull/1236)) Fixes command argument parsing on iOS.
+
+## \[2.0.0-beta.3]
+
 - [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.
 - [`62ce5df`](https://github.com/tauri-apps/plugins-workspace/commit/62ce5df52ca3c86786e711ef193a206e7b0dc0cf)([#1096](https://github.com/tauri-apps/plugins-workspace/pull/1096)) Fix development mode check to set the app ID on macOS.
 

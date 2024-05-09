@@ -5,7 +5,7 @@
 #[path = "src/scope_entry.rs"]
 mod scope_entry;
 
-const COMMANDS: &[&str] = &["execute", "stdin_write", "kill", "open"];
+const COMMANDS: &[&str] = &["execute", "spawn", "stdin_write", "kill", "open"];
 
 fn main() {
     tauri_plugin::Builder::new(COMMANDS)

@@ -81,6 +81,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
         .js_init_script(include_str!("init-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
             commands::execute,
+            commands::spawn,
             commands::stdin_write,
             commands::kill,
             commands::open

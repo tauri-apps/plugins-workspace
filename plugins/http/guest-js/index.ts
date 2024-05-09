@@ -31,7 +31,7 @@ import { invoke } from "@tauri-apps/api/core";
  *
  * @since 2.0.0
  */
-export type Proxy = {
+export interface Proxy {
   /**
    * Proxy all traffic to the passed URL.
    */
@@ -44,7 +44,7 @@ export type Proxy = {
    * Proxy all HTTPS traffic to the passed URL.
    */
   https?: string | ProxyConfig;
-};
+}
 
 export interface ProxyConfig {
   /**
@@ -59,7 +59,7 @@ export interface ProxyConfig {
     password: string;
   };
   /**
-   * A configuration for filtering out requests that shouldn’t be proxied.
+   * A configuration for filtering out requests that shouldn't be proxied.
    * Entries are expected to be comma-separated (whitespace between entries is ignored)
    */
   noProxy?: string;
@@ -107,7 +107,7 @@ export async function fetch(
   const proxy = init?.proxy;
 
   // Remove these fields before creating the request
-  if (init) {
+  if (init != null) {
     delete init.maxRedirections;
     delete init.connectTimeout;
     delete init.proxy;
@@ -115,15 +115,16 @@ export async function fetch(
 
   const signal = init?.signal;
 
-  const headers = !init?.headers
-    ? []
-    : init.headers instanceof Headers
-      ? Array.from(init.headers.entries())
-      : Array.isArray(init.headers)
-        ? init.headers
-        : Object.entries(init.headers);
+  const headers =
+    init?.headers == null
+      ? []
+      : init.headers instanceof Headers
+        ? Array.from(init.headers.entries())
+        : Array.isArray(init.headers)
+          ? init.headers
+          : Object.entries(init.headers);
 
-  const mappedHeaders: [string, string][] = headers.map(([name, val]) => [
+  const mappedHeaders: Array<[string, string]> = headers.map(([name, val]) => [
     name,
     // we need to ensure we have all values as strings
     // eslint-disable-next-line
@@ -132,7 +133,8 @@ export async function fetch(
 
   const req = new Request(input, init);
   const buffer = await req.arrayBuffer();
-  const reqData = buffer.byteLength ? Array.from(new Uint8Array(buffer)) : null;
+  const reqData =
+    buffer.byteLength !== 0 ? Array.from(new Uint8Array(buffer)) : null;
 
   const rid = await invoke<number>("plugin:http|fetch", {
     clientConfig: {
@@ -147,7 +149,7 @@ export async function fetch(
   });
 
   signal?.addEventListener("abort", () => {
-    invoke("plugin:http|fetch_cancel", {
+    void invoke("plugin:http|fetch_cancel", {
       rid,
     });
   });
@@ -178,9 +180,9 @@ export async function fetch(
   );
 
   const res = new Response(
-    body instanceof ArrayBuffer && body.byteLength
+    body instanceof ArrayBuffer && body.byteLength !== 0
       ? body
-      : body instanceof Array && body.length
+      : body instanceof Array && body.length > 0
         ? new Uint8Array(body)
         : null,
     {

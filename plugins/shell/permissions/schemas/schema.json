@@ -337,6 +337,20 @@
           ]
         },
         {
+          "description": "allow-spawn -> Enables the spawn command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-spawn"
+          ]
+        },
+        {
+          "description": "deny-spawn -> Denies the spawn command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-spawn"
+          ]
+        },
+        {
           "description": "allow-stdin-write -> Enables the stdin_write command without any pre-configured scope.",
           "type": "string",
           "enum": [

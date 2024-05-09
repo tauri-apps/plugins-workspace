@@ -2,6 +2,14 @@
 
 ## \[2.0.0-beta.4]
 
+- [`bd1ed590`](https://github.com/tauri-apps/plugins-workspace/commit/bd1ed5903ffcce5500310dac1e59e8c67674ef1e)([#1237](https://github.com/tauri-apps/plugins-workspace/pull/1237)) Update to tauri beta.17.
+
+## \[2.0.0-beta.3]
+
+- [`0e9541f`](https://github.com/tauri-apps/plugins-workspace/commit/0e9541fe8990395de7cc8887bc46b3f3665b44e1)([#1138](https://github.com/tauri-apps/plugins-workspace/pull/1138)) Add `Builder::with_filename` to support using a custom filename. Also add `AppHandleExt::file_name` and a similar function in JS, to retrieve it later.
+
+## \[2.0.0-beta.4]
+
 - [`c013fa5`](https://github.com/tauri-apps/plugins-workspace/commit/c013fa52cd66885cf457a64e75373cb2066bc849)([#1078](https://github.com/tauri-apps/plugins-workspace/pull/1078)) **Breaking change**: Changed the format of the state file from bincode to json. Also changed the filename to from `.window-state` to `.window-state.json`.
 
 ## \[2.0.0-beta.3]
@@ -58,3 +66,21 @@
   /pull/371)) First v2 alpha release!
   lugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+
+## \[0.1.1]
+
+- Address a couple of issues with restoring positions:
+
+- Fix restoring window positions correctly when the top-left corner of the window was outside of the monitor.
+
+- Fix restore maximization state only maximized on main monitor.
+
+- [70d9908](https://github.com/tauri-apps/plugins-workspace/commit/70d99086de3a58189d65c49954a3495972880725) fix(window-state): restore window position if the one of the window corners intersects with monitor ([#898](https://github.com/tauri-apps/plugins-workspace/pull/898)) on 2024-01-25
+  sues with restoring positions:
+
+- Fix restoring window positions correctly when the top-left corner of the window was outside of the monitor.
+
+- Fix restore maximization state only maximized on main monitor.
+
+- [70d9908](https://github.com/tauri-apps/plugins-workspace/commit/70d99086de3a58189d65c49954a3495972880725) fix(window-state): restore window position if the one of the window corners intersects with monitor ([#898](https://github.com/tauri-apps/plugins-workspace/pull/898)) on 2024-01-25
+://github.com/tauri-apps/plugins-workspace/commit/70d99086de3a58189d65c49954a3495972880725) fix(window-state): restore window position if the one of the window corners intersects with monitor ([#898](https://github.com/tauri-apps/plugins-workspace/pull/898)) on 2024-01-25

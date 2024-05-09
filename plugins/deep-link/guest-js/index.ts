@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import { invoke } from "@tauri-apps/api/core";
-import { UnlistenFn, listen } from "@tauri-apps/api/event";
+import { type UnlistenFn, listen } from "@tauri-apps/api/event";
 
 export async function getCurrent(): Promise<string[] | null> {
   return await invoke<string[] | null>("plugin:deep-link|get_current");
@@ -19,7 +19,7 @@ export async function onOpenUrl(
     handler(current);
   }
 
-  return await listen<string[]>("deep-link://new-url", (event) =>
-    handler(event.payload),
-  );
+  return await listen<string[]>("deep-link://new-url", (event) => {
+    handler(event.payload);
+  });
 }

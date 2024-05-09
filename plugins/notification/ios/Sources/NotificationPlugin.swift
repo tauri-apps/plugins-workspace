@@ -64,9 +64,9 @@ struct NotificationAttachment: Codable {
 
 struct Notification: Decodable {
   let id: Int
-  var title: String = ""
-  var body: String = ""
-  var extra: [String: String] = [:]
+  var title: String
+  var body: String
+  var extra: [String: String]?
   let schedule: NotificationSchedule?
   let attachments: [NotificationAttachment]?
   let sound: String?
@@ -126,10 +126,10 @@ struct CancelArgs: Decodable {
 struct Action: Decodable {
   let id: String
   let title: String
-  var requiresAuthentication: Bool = false
-  var foreground: Bool = false
-  var destructive: Bool = false
-  var input: Bool = false
+  var requiresAuthentication: Bool?
+  var foreground: Bool?
+  var destructive: Bool?
+  var input: Bool?
   let inputButtonTitle: String?
   let inputPlaceholder: String?
 }
@@ -138,10 +138,10 @@ struct ActionType: Decodable {
   let id: String
   let actions: [Action]
   let hiddenPreviewsBodyPlaceholder: String?
-  var customDismissAction = false
-  var allowInCarPlay = false
-  var hiddenPreviewsShowTitle = false
-  var hiddenPreviewsShowSubtitle = false
+  var customDismissAction: Bool?
+  var allowInCarPlay: Bool?
+  var hiddenPreviewsShowTitle: Bool?
+  var hiddenPreviewsShowSubtitle: Bool?
   let hiddenBodyPlaceholder: String?
 }
 

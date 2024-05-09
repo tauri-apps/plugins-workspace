@@ -1,5 +1,25 @@
 # Changelog
 
+## \[2.0.0-beta.3]
+
+- [`bd1ed590`](https://github.com/tauri-apps/plugins-workspace/commit/bd1ed5903ffcce5500310dac1e59e8c67674ef1e)([#1237](https://github.com/tauri-apps/plugins-workspace/pull/1237)) Update to tauri beta.17.
+
+## \[2.0.0-beta.6]
+
+- [`326df688`](https://github.com/tauri-apps/plugins-workspace/commit/326df6883998d416fc0837583ed972854628bb52)([#1236](https://github.com/tauri-apps/plugins-workspace/pull/1236)) Fixes command argument parsing on iOS.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.6`
+
+## \[2.0.0-beta.5]
+
+- [`bb51a41`](https://github.com/tauri-apps/plugins-workspace/commit/bb51a41d67ebf989e8aedf10c4b1a7f9514d1bdf)([#1168](https://github.com/tauri-apps/plugins-workspace/pull/1168)) **Breaking Change:** All apis that return paths to the frontend will now remove the `\\?\` UNC prefix on Windows.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.5`
+
 ## \[2.0.0-beta.4]
 
 - [`4cd8112`](https://github.com/tauri-apps/plugins-workspace/commit/4cd81126fdf25e1847546f8fdbd924aa4bfeabb5)([#1056](https://github.com/tauri-apps/plugins-workspace/pull/1056)) Fixed an issue where dialogs on android would return the Content URI instead of the file path
@@ -114,4 +134,6 @@
   71]\(https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   pull/371)) First v2 alpha release!
   kspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  pull/371)) First v2 alpha release!
+lpha release!
   pull/371)) First v2 alpha release!

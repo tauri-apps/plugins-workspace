@@ -59,15 +59,20 @@ fn main() {
 
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
-```javascript
-import { Store } from "@tauri-apps/plugin-store";
+```typescript
+import { Store } from "tauri-plugin-store-api";
 
 const store = new Store(".settings.dat");
 
 await store.set("some-key", { value: 5 });
 
-const val = await store.get("some-key");
-assert(val, { value: 5 });
+const val = await store.get<{ value: number }>("some-key");
+
+if (val) {
+  console.log(val);
+} else {
+  console.log("val is null");
+}
 
 // This manually saves the store.
 await store.save();
