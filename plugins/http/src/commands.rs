@@ -137,7 +137,6 @@ fn attach_proxy(
 
 #[command]
 pub async fn fetch<R: Runtime>(
-    app: AppHandle<R>,
     webview: Webview<R>,
     client_config: ClientConfig,
     command_scope: CommandScope<Entry>,
@@ -145,7 +144,7 @@ pub async fn fetch<R: Runtime>(
 ) -> crate::Result<ResourceId> {
     let ClientConfig {
         method,
-        url
+        url,
         headers,
         data,
         connect_timeout,
