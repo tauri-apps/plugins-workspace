@@ -7,7 +7,10 @@
 //! Access the HTTP client written in Rust.
 
 pub use reqwest;
-use tauri::{plugin::{Builder, TauriPlugin}, Runtime};
+use tauri::{
+    plugin::{Builder, TauriPlugin},
+    Runtime
+};
 
 pub use error::{Error, Result};
 
