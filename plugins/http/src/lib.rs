@@ -18,20 +18,6 @@ mod commands;
 mod error;
 mod scope;
 
-struct Http<R: Runtime> {
-    #[allow(dead_code)]
-    app: AppHandle<R>,
-}
-
-trait HttpExt<R: Runtime> {
-    fn http(&self) -> &Http<R>;
-}
-
-impl<R: Runtime, T: Manager<R>> HttpExt<R> for T {
-    fn http(&self) -> &Http<R> {
-        self.state::<Http<R>>().inner()
-    }
-}
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::<R>::new("http")
@@ -41,9 +27,5 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::fetch_send,
             commands::fetch_read_body,
         ])
-        .setup(|app, _api| {
-            app.manage(Http { app: app.clone() });
-            Ok(())
-        })
         .build()
 }
