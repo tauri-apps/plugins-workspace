@@ -144,7 +144,7 @@ jobs:
               command: "test",
             }
           - {
-              target: x86_64-apple-darwin,
+              target: aarch64-apple-darwin,
               os: macos-latest,
               runner: "cargo",
               command: "test",

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
 import { invoke } from "@tauri-apps/api/core";
 
@@ -29,7 +29,7 @@ export class Store {
    * @returns
    */
   async set(key: string, value: unknown): Promise<void> {
-    return await invoke("plugin:store|set", {
+    await invoke("plugin:store|set", {
       path: this.path,
       key,
       value,
@@ -82,7 +82,7 @@ export class Store {
    * @returns
    */
   async clear(): Promise<void> {
-    return await invoke("plugin:store|clear", {
+    await invoke("plugin:store|clear", {
       path: this.path,
     });
   }
@@ -94,7 +94,7 @@ export class Store {
    * @returns
    */
   async reset(): Promise<void> {
-    return await invoke("plugin:store|reset", {
+    await invoke("plugin:store|reset", {
       path: this.path,
     });
   }
@@ -152,7 +152,7 @@ export class Store {
    * @returns
    */
   async load(): Promise<void> {
-    return await invoke("plugin:store|load", {
+    await invoke("plugin:store|load", {
       path: this.path,
     });
   }
@@ -165,7 +165,7 @@ export class Store {
    * @returns
    */
   async save(): Promise<void> {
-    return await invoke("plugin:store|save", {
+    await invoke("plugin:store|save", {
       path: this.path,
     });
   }

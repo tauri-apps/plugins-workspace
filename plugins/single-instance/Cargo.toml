@@ -1,12 +1,12 @@
 [package]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.7"
 description = "Ensure a single instance of your tauri app is running."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
-repository = { workspace =  true }
+repository = { workspace = true }
 exclude = [ "/examples" ]
 
 [package.metadata.docs.rs]
@@ -37,4 +37,4 @@ features = [
 zbus = "4"
 
 [features]
-semver = ["dep:semver"]
+semver = [ "dep:semver" ]

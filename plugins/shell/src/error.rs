@@ -27,6 +27,9 @@ pub enum Error {
     /// JSON error.
     #[error(transparent)]
     Json(#[from] serde_json::Error),
+    /// Utf8 error.
+    #[error(transparent)]
+    Utf8(#[from] std::string::FromUtf8Error),
 }
 
 impl Serialize for Error {

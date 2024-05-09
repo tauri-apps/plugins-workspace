@@ -24,3 +24,9 @@ impl From<global_hotkey::Error> for Error {
         Self::GlobalHotkey(value.to_string())
     }
 }
+
+impl From<global_hotkey::hotkey::HotKeyParseError> for Error {
+    fn from(value: global_hotkey::hotkey::HotKeyParseError) -> Self {
+        Self::GlobalHotkey(value.to_string())
+    }
+}

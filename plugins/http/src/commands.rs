@@ -11,7 +11,7 @@ use tauri::{
     async_runtime::Mutex,
     command,
     ipc::{CommandScope, GlobalScope},
-    AppHandle, Manager, ResourceId, Runtime,
+    Manager, ResourceId, Runtime, Webview,
 };
 
 use crate::{
@@ -137,7 +137,7 @@ fn attach_proxy(
 
 #[command]
 pub async fn fetch<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     client_config: ClientConfig,
     command_scope: CommandScope<Entry>,
     global_scope: GlobalScope<Entry>,
@@ -249,7 +249,7 @@ pub async fn fetch<R: Runtime>(
                 }
 
                 let fut = async move { Ok(request.send().await.map_err(Into::into)) };
-                let mut resources_table = app.resources_table();
+                let mut resources_table = webview.resources_table();
                 let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
 
                 Ok(rid)
@@ -270,7 +270,7 @@ pub async fn fetch<R: Runtime>(
                 .body(reqwest::Body::from(body))?;
 
             let fut = async move { Ok(Ok(reqwest::Response::from(response))) };
-            let mut resources_table = app.resources_table();
+            let mut resources_table = webview.resources_table();
             let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
             Ok(rid)
         }
@@ -279,9 +279,9 @@ pub async fn fetch<R: Runtime>(
 }
 
 #[command]
-pub async fn fetch_cancel<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> crate::Result<()> {
+pub async fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::Result<()> {
     let req = {
-        let resources_table = app.resources_table();
+        let resources_table = webview.resources_table();
         resources_table.get::<FetchRequest>(rid)?
     };
     let mut req = req.0.lock().await;
@@ -292,11 +292,11 @@ pub async fn fetch_cancel<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> cra
 
 #[tauri::command]
 pub async fn fetch_send<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     rid: ResourceId,
 ) -> crate::Result<FetchResponse> {
     let req = {
-        let mut resources_table = app.resources_table();
+        let mut resources_table = webview.resources_table();
         resources_table.take::<FetchRequest>(rid)?
     };
 
@@ -315,7 +315,7 @@ pub async fn fetch_send<R: Runtime>(
         ));
     }
 
-    let mut resources_table = app.resources_table();
+    let mut resources_table = webview.resources_table();
     let rid = resources_table.add(ReqwestResponse(res));
 
     Ok(FetchResponse {
@@ -329,11 +329,11 @@ pub async fn fetch_send<R: Runtime>(
 
 #[tauri::command]
 pub(crate) async fn fetch_read_body<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     rid: ResourceId,
 ) -> crate::Result<tauri::ipc::Response> {
     let res = {
-        let mut resources_table = app.resources_table();
+        let mut resources_table = webview.resources_table();
         resources_table.take::<ReqwestResponse>(rid)?
     };
     let res = Arc::into_inner(res).unwrap().0;

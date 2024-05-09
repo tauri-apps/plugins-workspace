@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import { invoke } from "@tauri-apps/api/core";
-import { UnlistenFn, listen } from "@tauri-apps/api/event";
+import { type UnlistenFn, listen } from "@tauri-apps/api/event";
 
 /**
  * Get the current URLs that triggered the deep link. Use this on app load to check whether your app was started via a deep link.
@@ -102,7 +102,7 @@ export async function onOpenUrl(
     handler(current);
   }
 
-  return await listen<string[]>("deep-link://new-url", (event) =>
-    handler(event.payload),
-  );
+  return await listen<string[]>("deep-link://new-url", (event) => {
+    handler(event.payload);
+  });
 }

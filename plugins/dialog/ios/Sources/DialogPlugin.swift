@@ -19,18 +19,18 @@ enum FilePickerEvent {
 struct MessageDialogOptions: Decodable {
   let title: String?
   let message: String
-  var okButtonLabel = "OK"
-  var cancelButtonLabel = "Cancel"
+  let okButtonLabel: String?
+  let cancelButtonLabel: String?
 }
 
 struct Filter: Decodable {
-  var extensions: [String] = []
+  var extensions: [String]?
 }
 
 struct FilePickerOptions: Decodable {
-  var multiple = false
-  var readData = false
-  var filters: [Filter] = []
+  var multiple: Bool?
+  var readData: Bool?
+  var filters: [Filter]?
 }
 
 class DialogPlugin: Plugin {
@@ -47,7 +47,7 @@ class DialogPlugin: Plugin {
   @objc public func showFilePicker(_ invoke: Invoke) throws {
     let args = try invoke.parseArgs(FilePickerOptions.self)
 
-    let parsedTypes = parseFiltersOption(args.filters)
+    let parsedTypes = parseFiltersOption(args.filters ?? [])
 
     var isMedia = true
     var uniqueMimeType: Bool? = nil
@@ -74,7 +74,7 @@ class DialogPlugin: Plugin {
       DispatchQueue.main.async {
         if #available(iOS 14, *) {
           var configuration = PHPickerConfiguration(photoLibrary: PHPhotoLibrary.shared())
-          configuration.selectionLimit = args.multiple ? 0 : 1
+          configuration.selectionLimit = (args.multiple ?? false) ? 0 : 1
 
           if uniqueMimeType == true {
             if mimeKind == "image" {
@@ -106,7 +106,7 @@ class DialogPlugin: Plugin {
       DispatchQueue.main.async {
         let picker = UIDocumentPickerViewController(documentTypes: documentTypes, in: .import)
         picker.delegate = self.filePickerController
-        picker.allowsMultipleSelection = args.multiple
+        picker.allowsMultipleSelection = args.multiple ?? false
         picker.modalPresentationStyle = .fullScreen
         self.presentViewController(picker)
       }
@@ -120,7 +120,7 @@ class DialogPlugin: Plugin {
   private func parseFiltersOption(_ filters: [Filter]) -> [String] {
     var parsedTypes: [String] = []
     for filter in filters {
-      for ext in filter.extensions {
+      for ext in filter.extensions ?? [] {
         guard
           let utType: String = UTTypeCreatePreferredIdentifierForTag(
             kUTTagClassMIMEType, ext as CFString, nil)?.takeRetainedValue() as String?
@@ -197,24 +197,36 @@ class DialogPlugin: Plugin {
     DispatchQueue.main.async { [] in
       let alert = UIAlertController(
         title: args.title, message: args.message, preferredStyle: UIAlertController.Style.alert)
-      alert.addAction(
-        UIAlertAction(
-          title: args.cancelButtonLabel, style: UIAlertAction.Style.default,
-          handler: { (_) -> Void in
-            invoke.resolve([
-              "value": false,
-              "cancelled": false,
-            ])
-          }))
-      alert.addAction(
-        UIAlertAction(
-          title: args.okButtonLabel, style: UIAlertAction.Style.default,
-          handler: { (_) -> Void in
-            invoke.resolve([
-              "value": true,
-              "cancelled": false,
-            ])
-          }))
+
+      let cancelButtonLabel = args.cancelButtonLabel ?? ""
+      if !cancelButtonLabel.isEmpty {
+        alert.addAction(
+          UIAlertAction(
+            title: cancelButtonLabel, style: UIAlertAction.Style.default,
+            handler: { (_) -> Void in
+              Logger.error("cancel")
+
+              invoke.resolve([
+                "value": false,
+                "cancelled": false,
+              ])
+            }))
+      }
+
+      let okButtonLabel = args.okButtonLabel ?? (cancelButtonLabel.isEmpty ? "OK" : "")
+      if !okButtonLabel.isEmpty {
+        alert.addAction(
+          UIAlertAction(
+            title: okButtonLabel, style: UIAlertAction.Style.default,
+            handler: { (_) -> Void in
+              Logger.error("ok")
+
+              invoke.resolve([
+                "value": true,
+                "cancelled": false,
+              ])
+            }))
+      }
 
       manager.viewController?.present(alert, animated: true, completion: nil)
     }

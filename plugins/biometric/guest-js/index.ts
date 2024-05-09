@@ -51,7 +51,7 @@ export interface AuthOptions {
  * @returns a promise resolving to an object containing all the information about the status of the biometry.
  */
 export async function checkStatus(): Promise<Status> {
-  return invoke("plugin:biometric|status");
+  return await invoke("plugin:biometric|status");
 }
 
 /**
@@ -70,7 +70,7 @@ export async function authenticate(
   reason: string,
   options?: AuthOptions,
 ): Promise<void> {
-  return invoke("plugin:biometric|authenticate", {
+  await invoke("plugin:biometric|authenticate", {
     reason,
     ...options,
   });
