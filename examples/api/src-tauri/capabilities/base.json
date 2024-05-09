@@ -8,9 +8,9 @@
     {
       "identifier": "http:default",
       "allow": [
-        "https://*:*",
+        "https://tauri.app",
         {
-          "url": "http://*:*"
+          "url": "http://localhost:3003"
         }
       ]
     },
