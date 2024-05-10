@@ -33,4 +33,3 @@ indexmap = { version = "2.2.6", features = ["serde"] }
 sqlite = [ "sqlx/sqlite", "sqlx/runtime-tokio" ]
 mysql = [ "sqlx/mysql", "sqlx/runtime-tokio-rustls" ]
 postgres = [ "sqlx/postgres", "sqlx/runtime-tokio-rustls" ]
-default = ["sqlite"]
