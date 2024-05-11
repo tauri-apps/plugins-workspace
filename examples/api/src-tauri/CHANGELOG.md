@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-beta.8]
+
+### Dependencies
+
+- Upgraded to `shell@2.0.0-beta.5`
+
 ## \[2.0.0-beta.7]
 
 ### Dependencies

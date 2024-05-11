@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-beta.6]
+
+### Dependencies
+
+- Upgraded to `shell-js@2.0.0-beta.4`
+
 ## \[2.0.0-beta.5]
 
 ### Dependencies
