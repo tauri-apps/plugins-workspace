@@ -18,6 +18,7 @@ use tauri::{
 };
 
 use std::{
+    fs,
     path::{Path, PathBuf},
     sync::mpsc::sync_channel,
 };
@@ -213,7 +214,7 @@ impl<R: Runtime> MessageDialogBuilder<R> {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct FileResponse {
     pub base64_data: Option<String>,
@@ -230,16 +231,18 @@ pub struct FileResponse {
 impl FileResponse {
     #[cfg(desktop)]
     fn new(path: PathBuf) -> Self {
+        let metadata = fs::metadata(&path);
+        let metadata = metadata.as_ref();
         Self {
             base64_data: None,
             duration: None,
             height: None,
             width: None,
             mime_type: None,
-            modified_at: None,
+            modified_at: metadata.ok().and_then(|m| to_msec(m.modified())),
             name: path.file_name().map(|f| f.to_string_lossy().into_owned()),
             path,
-            size: 0,
+            size: metadata.map(|m| m.len()).unwrap_or(0),
         }
     }
 }
@@ -572,5 +575,20 @@ impl<R: Runtime> FileDialogBuilder<R> {
     #[cfg(desktop)]
     pub fn blocking_save_file(self) -> Option<PathBuf> {
         blocking_fn!(self, save_file)
+    }
+}
+
+// taken from deno source code: https://github.com/denoland/deno/blob/ffffa2f7c44bd26aec5ae1957e0534487d099f48/runtime/ops/fs.rs#L913
+#[inline]
+fn to_msec(maybe_time: std::result::Result<std::time::SystemTime, std::io::Error>) -> Option<u64> {
+    match maybe_time {
+        Ok(time) => {
+            let msec = time
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|t| t.as_millis() as u64)
+                .unwrap_or_else(|err| err.duration().as_millis() as u64);
+            Some(msec)
+        }
+        Err(_) => None,
     }
 }
