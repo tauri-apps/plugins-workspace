@@ -11,12 +11,12 @@ use tauri::{
     async_runtime::Mutex,
     command,
     ipc::{CommandScope, GlobalScope},
-    Manager, ResourceId, Runtime, Webview,
+    Manager, ResourceId, Runtime, State, Webview,
 };
 
 use crate::{
     scope::{Entry, Scope},
-    Error, Result,
+    Error, Http, Result,
 };
 
 struct ReqwestResponse(reqwest::Response);
@@ -138,6 +138,7 @@ fn attach_proxy(
 #[command]
 pub async fn fetch<R: Runtime>(
     webview: Webview<R>,
+    state: State<'_, Http>,
     client_config: ClientConfig,
     command_scope: CommandScope<Entry>,
     global_scope: GlobalScope<Entry>,
@@ -192,7 +193,7 @@ pub async fn fetch<R: Runtime>(
 
                 #[cfg(feature = "cookies")]
                 {
-                    builder = builder.cookie_store(true);
+                    builder = builder.cookie_provider(state.cookies_jar.clone());
                 }
 
                 let mut request = builder.build()?.request(method.clone(), url);

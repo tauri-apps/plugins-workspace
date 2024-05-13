@@ -9,7 +9,7 @@
 pub use reqwest;
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    Runtime,
+    Manager, Runtime,
 };
 
 pub use error::{Error, Result};
@@ -18,8 +18,23 @@ mod commands;
 mod error;
 mod scope;
 
+pub(crate) struct Http {
+    #[cfg(feature = "cookies")]
+    cookies_jar: std::sync::Arc<reqwest::cookie::Jar>,
+}
+
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::<R>::new("http")
+        .setup(|app, _| {
+            let state = Http {
+                #[cfg(feature = "cookies")]
+                cookies_jar: std::sync::Arc::new(reqwest::cookie::Jar::default()),
+            };
+
+            app.manage(state);
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             commands::fetch,
             commands::fetch_cancel,
