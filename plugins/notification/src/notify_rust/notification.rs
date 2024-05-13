@@ -116,7 +116,7 @@ impl Notification {
     /// # Platform Support
     /// Please note that this method has no effect on macOS. Here you can only set the application via [`set_application()`](fn.set_application.html)
     pub fn appname(&mut self, appname: &str) -> &mut Notification {
-        self.appname = appname.to_owned();
+        appname.clone_into(&mut self.appname);
         self
     }
 
@@ -124,7 +124,7 @@ impl Notification {
     ///
     /// Often acts as title of the notification. For more elaborate content use the `body` field.
     pub fn summary(&mut self, summary: &str) -> &mut Notification {
-        self.summary = summary.to_owned();
+        summary.clone_into(&mut self.summary);
         self
     }
 
@@ -195,7 +195,7 @@ impl Notification {
     /// Each line should be treated as a paragraph.
     /// Simple html markup should be supported, depending on the server implementation.
     pub fn body(&mut self, body: &str) -> &mut Notification {
-        self.body = body.to_owned();
+        body.clone_into(&mut self.body);
         self
     }
 
@@ -208,7 +208,7 @@ impl Notification {
     /// # Platform support
     /// macOS does not have support manually setting the icon. However you can pretend to be another app using [`set_application()`](fn.set_application.html)
     pub fn icon(&mut self, icon: &str) -> &mut Notification {
-        self.icon = icon.to_owned();
+        icon.clone_into(&mut self.icon);
         self
     }
 
@@ -390,8 +390,8 @@ impl Notification {
     #[cfg(feature = "async")]
     // #[cfg(test)]
     pub async fn show_async_at_bus(&self, sub_bus: &str) -> Result<xdg::NotificationHandle> {
-        let bus = super::xdg::NotificationBus::custom(sub_bus).ok_or("invalid subpath")?;
-        super::xdg::show_notification_async_at_bus(self, bus).await
+        let bus = xdg::NotificationBus::custom(sub_bus).ok_or("invalid subpath")?;
+        xdg::show_notification_async_at_bus(self, bus).await
     }
 
     /// Sends Notification to `NSUserNotificationCenter`.
