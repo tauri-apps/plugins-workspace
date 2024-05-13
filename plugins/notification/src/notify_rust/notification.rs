@@ -390,8 +390,8 @@ impl Notification {
     #[cfg(feature = "async")]
     // #[cfg(test)]
     pub async fn show_async_at_bus(&self, sub_bus: &str) -> Result<xdg::NotificationHandle> {
-        let bus = super::xdg::NotificationBus::custom(sub_bus).ok_or("invalid subpath")?;
-        super::xdg::show_notification_async_at_bus(self, bus).await
+        let bus = xdg::NotificationBus::custom(sub_bus).ok_or("invalid subpath")?;
+        xdg::show_notification_async_at_bus(self, bus).await
     }
 
     /// Sends Notification to `NSUserNotificationCenter`.

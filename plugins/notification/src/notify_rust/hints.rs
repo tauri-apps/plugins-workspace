@@ -154,7 +154,7 @@ fn test_hints_to_map() {
 
     // custom value should only be there once if the names are identical
 
-    let n1 = super::Notification::new()
+    let n1 = Notification::new()
         .hint(Hint::Custom("foo".into(), "bar1".into()))
         .hint(Hint::Custom("foo".into(), "bar2".into()))
         .hint(Hint::Custom("f00".into(), "bar3".into()))
