@@ -190,6 +190,11 @@ pub async fn fetch<R: Runtime>(
                     builder = attach_proxy(proxy_config, builder)?;
                 }
 
+                #[cfg(feature = "cookies")]
+                {
+                    builder = builder.cookie_store(true);
+                }
+
                 let mut request = builder.build()?.request(method.clone(), url);
 
                 for (name, value) in &headers {
