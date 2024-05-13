@@ -230,7 +230,7 @@ checksum = "5ad32ce52e4161730f7098c077cd2ed6229b5804ccf99e5366be1ab72a98b4e1"
 
 [[package]]
 name = "api"
-version = "2.0.0-beta.7"
+version = "2.0.0-beta.8"
 dependencies = [
  "log",
  "serde",
@@ -6180,7 +6180,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 dependencies = [
  "dunce",
  "log",
@@ -6367,7 +6367,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-positioner"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 dependencies = [
  "log",
  "serde",
@@ -6388,7 +6388,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-shell"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 dependencies = [
  "encoding_rs",
  "log",
@@ -6532,7 +6532,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "2.0.0-beta.6"
+version = "2.0.0-beta.7"
 dependencies = [
  "bitflags 2.4.2",
  "log",

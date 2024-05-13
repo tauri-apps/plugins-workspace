@@ -49,7 +49,7 @@ jobs:
           node-version: "lts/*"
       - uses: pnpm/action-setup@v2
         with:
-          version: 8.x.x
+          version: 9.x.x
           run_install: true
       - name: eslint
         run: pnpm lint
@@ -69,7 +69,7 @@ jobs:
           node-version: "lts/*"
       - uses: pnpm/action-setup@v2
         with:
-          version: 8.x.x
+          version: 9.x.x
           run_install: true
       - name: prettier check
         run: pnpm format-check
