@@ -35,15 +35,13 @@ jobs:
           fetch-depth: 0
 
       - name: install stable
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
+        uses: dtolnay/rust-toolchain@stable
 
       - name: install Linux dependencies
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y webkit2gtk-4.1 libayatana-appindicator3-dev libfuse2
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev libfuse2
 
       - uses: Swatinem/rust-cache@v2
 
