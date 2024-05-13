@@ -23,7 +23,7 @@ struct Http<R: Runtime> {
     app: AppHandle<R>,
 }
 
-trait HttpExt<R: Runtime> {
+/* trait HttpExt<R: Runtime> {
     fn http(&self) -> &Http<R>;
 }
 
@@ -31,7 +31,7 @@ impl<R: Runtime, T: Manager<R>> HttpExt<R> for T {
     fn http(&self) -> &Http<R> {
         self.state::<Http<R>>().inner()
     }
-}
+} */
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::<R>::new("http")

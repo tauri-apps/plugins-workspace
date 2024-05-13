@@ -48,7 +48,7 @@ pub enum Hint {
     /// * <https://developer.gnome.org/notification-spec/#categories>
     Category(String),
 
-    /// Name of the DesktopEntry representing the calling application. In case of "firefox.desktop"
+    /// Name of the `DesktopEntry` representing the calling application. In case of "firefox.desktop"
     /// use "firefox". May be used to retrieve the correct icon.
     DesktopEntry(String),
 
@@ -91,7 +91,7 @@ pub enum Hint {
     /// A custom numerical (integer) hint
     CustomInt(String, i32),
 
-    /// Only used by this NotificationServer implementation
+    /// Only used by this `NotificationServer` implementation
     Invalid // TODO find a better solution to this
 }
 
