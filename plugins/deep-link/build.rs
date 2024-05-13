@@ -6,7 +6,7 @@
 mod config;
 use config::{AssociatedDomain, Config};
 
-const COMMANDS: &[&str] = &["get_current"];
+const COMMANDS: &[&str] = &["get_current", "register", "unregister", "is_registered"];
 
 // TODO: Consider using activity-alias in case users may have multiple activities in their app.
 // TODO: Do we want to support the other path* configs too?
@@ -48,7 +48,7 @@ fn main() {
             "DEEP LINK PLUGIN",
             "activity",
             config
-                .domains
+                .mobile
                 .iter()
                 .map(intent_filter)
                 .collect::<Vec<_>>()
@@ -62,7 +62,7 @@ fn main() {
                 entitlements.insert(
                     "com.apple.developer.associated-domains".into(),
                     config
-                        .domains
+                        .mobile
                         .into_iter()
                         .map(|d| format!("applinks:{}", d.host).into())
                         .collect::<Vec<_>>()

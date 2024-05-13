@@ -93,16 +93,19 @@ See [supporting associated domains](https://developer.apple.com/documentation/xc
 
 ## Configuration
 
-Under `tauri.conf.json > plugins > deep-link`, configure the domains you want to associate with your application:
+Under `tauri.conf.json > plugins > deep-link`, configure the domains (mobile) and schemes (desktop) you want to associate with your application:
 
 ```json
 {
   "plugins": {
     "deep-link": {
-      "domains": [
+      "mobile": [
         { "host": "your.website.com", "pathPrefix": ["/open"] },
         { "host": "another.site.br" }
-      ]
+      ],
+      "desktop": {
+        "schemes": ["something", "my-tauri-app"]
+      }
     }
   }
 }
@@ -128,9 +131,11 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 ```javascript
 import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 await onOpenUrl((urls) => {
-  console.log('deep link:', urls);
+  console.log("deep link:", urls);
 });
 ```
+
+Note that the Plugin will only emit events on macOS, iOS and Android. On Windows and Linux the OS will spawn a new instance of your app with the URL as a CLI argument. If you want your app to behave on Windows & Linux similar to the other platforms you can use the [single-instance](../single-instance/) plugin.
 
 ## Contributing
 

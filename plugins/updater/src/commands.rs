@@ -65,10 +65,10 @@ pub(crate) async fn check<R: Runtime>(
     let mut metadata = Metadata::default();
     if let Some(update) = update {
         metadata.available = true;
-        metadata.current_version = update.current_version.clone();
-        metadata.version = update.version.clone();
+        metadata.current_version.clone_from(&update.current_version);
+        metadata.version.clone_from(&update.version);
         metadata.date = update.date.map(|d| d.to_string());
-        metadata.body = update.body.clone();
+        metadata.body.clone_from(&update.body);
         metadata.rid = Some(webview.resources_table().add(update));
     }
 
