@@ -39,7 +39,8 @@ default = [
   "rustls-tls",
   "http2",
   "charset",
-  "macos-system-configuration"
+  "macos-system-configuration",
+  "cookies"
 ]
 multipart = [ "reqwest/multipart" ]
 json = [ "reqwest/json" ]
