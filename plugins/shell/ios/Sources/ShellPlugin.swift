@@ -15,8 +15,9 @@ class ShellPlugin: Plugin {
     @objc public func load(_ invoke: Invoke) throws {
         do {
             let urlString = try invoke.parseArgs(String.self)
-            let url = URL(string: urlString)
-            UIApplication.shared.openURL(url)
+            if let url = URL(string: urlString) {
+                UIApplication.shared.openURL(url)
+            }
             invoke.resolve()
         } catch {
             invoke.reject(error.localizedDescription)
