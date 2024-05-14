@@ -117,7 +117,7 @@ importers:
     devDependencies:
       '@iconify-json/codicon':
         specifier: ^1.1.37
-        version: 1.1.47
+        version: 1.1.48
       '@iconify-json/ph':
         specifier: ^1.1.8
         version: 1.1.13
@@ -732,8 +732,8 @@ packages:
   '@iarna/toml@2.2.5':
     resolution: {integrity: sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==}
 
-  '@iconify-json/codicon@1.1.47':
-    resolution: {integrity: sha512-dsAtFbBBP3t9NhFIwxy3DhnunT3Shgpx5lK2eg2hOjuCVsIKT4XpClMsEQfQ11ZL81cVV/iIcxjCfcm8rY+fsg==}
+  '@iconify-json/codicon@1.1.48':
+    resolution: {integrity: sha512-z/ULPstYHblIGNytxgYCovewNuXoqMx2GDQgme9eubwxl6uGiZ+aCU3hVoVCv/qZggQ+CtR2JHfebMZLUH1LBA==}
 
   '@iconify-json/ph@1.1.13':
     resolution: {integrity: sha512-xtM4JJ63HCKj09WRqrBswXiHrpliBlqboWSZH8odcmqYXbvIFceU9/Til4V+MQr6+MoUC+KB72cxhky2+A6r/g==}
@@ -3251,7 +3251,7 @@ snapshots:
 
   '@iarna/toml@2.2.5': {}
 
-  '@iconify-json/codicon@1.1.47':
+  '@iconify-json/codicon@1.1.48':
     dependencies:
       '@iconify/types': 2.0.0
 
