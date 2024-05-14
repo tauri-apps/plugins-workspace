@@ -10,12 +10,7 @@ import UIKit
 import WebKit
 
 
-struct SaveStore: Codable {
-    let store: String
-    let cache: [String: JSON]
-}
-
-class StorePlugin: Plugin {
+class ShellPlugin: Plugin {
 
     @objc public func load(_ invoke: Invoke) throws {
         do {
