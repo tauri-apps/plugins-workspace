@@ -9,14 +9,17 @@ import Tauri
 import UIKit
 import WebKit
 
-
 class ShellPlugin: Plugin {
 
     @objc public func open(_ invoke: Invoke) throws {
         do {
             let urlString = try invoke.parseArgs(String.self)
             if let url = URL(string: urlString) {
-                UIApplication.shared.openURL(url)
+                if #available(iOS 10, *) {
+                    UIApplication.shared.open(url, options: [:])
+                } else {
+                    UIApplication.shared.openURL(url)
+                }
             }
             invoke.resolve()
         } catch {
@@ -25,8 +28,7 @@ class ShellPlugin: Plugin {
     }
 }
 
-
 @_cdecl("init_plugin_shell")
 func initPlugin() -> Plugin {
-    return ShellPlugin()
+  return ShellPlugin()
 }
