@@ -27,6 +27,7 @@ futures-core = "0.3"
 sqlx = { version = "0.7", features = [ "json", "time" ] }
 time = "0.3"
 tokio = { version = "1", features = [ "sync" ] }
+indexmap = { version = "2.2.6", features = ["serde"] }
 
 [features]
 sqlite = [ "sqlx/sqlite", "sqlx/runtime-tokio" ]
