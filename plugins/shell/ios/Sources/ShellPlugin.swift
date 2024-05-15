@@ -12,7 +12,7 @@ import WebKit
 
 class ShellPlugin: Plugin {
 
-    @objc public func load(_ invoke: Invoke) throws {
+    @objc public func open(_ invoke: Invoke) throws {
         do {
             let urlString = try invoke.parseArgs(String.self)
             if let url = URL(string: urlString) {
