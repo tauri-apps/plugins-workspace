@@ -246,7 +246,7 @@ pub async fn fetch<R: Runtime>(
                     request = request.header(header::USER_AGENT, "tauri-plugin-http");
                 }
 
-                request = request.header(header::ORIGIN, webview.url().as_str());
+                request = request.header(header::ORIGIN, webview.url()?.as_str());
 
                 if let Some(data) = data {
                     request = request.body(data);
