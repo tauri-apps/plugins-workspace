@@ -67,7 +67,7 @@ class Update extends Resource {
       onEvent: channel,
       rid: this.rid,
     });
-    return new DownloadedBytes(rid, this)
+    return new DownloadedBytes(rid, this);
   }
 
   /** Downloads the updater package and installs it */
@@ -86,8 +86,11 @@ class Update extends Resource {
 }
 
 class DownloadedBytes extends Resource {
-  constructor(rid: number, private readonly update: Update) {
-    super(rid)
+  constructor(
+    rid: number,
+    private readonly update: Update,
+  ) {
+    super(rid);
   }
 
   /** Install downloaded updater package */
