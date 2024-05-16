@@ -8313,7 +8313,6 @@ dependencies = [
  "crc32fast",
  "crossbeam-utils",
  "displaydoc",
- "flate2",
  "indexmap 2.2.6",
  "thiserror",
 ]
