@@ -924,7 +924,7 @@ fn verify_signature(data: &[u8], release_signature: &str, pub_key: &str) -> Resu
     let signature = Signature::decode(&signature_base64_decoded)?;
 
     // Validate signature or bail out
-    public_key.verify(&data, &signature, true)?;
+    public_key.verify(data, &signature, true)?;
     Ok(true)
 }
 
