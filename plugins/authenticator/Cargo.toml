@@ -33,6 +33,9 @@ bytes = "1"
 byteorder = "1"
 openssl = "0.10"
 
+[target."cfg(target_os = \"windows\")".dependencies]
+winapi-util = "=0.1.6"
+
 [dev-dependencies]
 rand = "0.8"
 rusty-fork = "0.3"
