@@ -55,17 +55,46 @@ class Update extends Resource {
     this.body = metadata.body;
   }
 
+  /** Download the updater package */
+  async download(
+    onEvent?: (progress: DownloadEvent) => void,
+  ): Promise<DownloadedBytes> {
+    const channel = new Channel<DownloadEvent>();
+    if (onEvent !== undefined) {
+      channel.onmessage = onEvent;
+    }
+    const rid = await invoke<number>("plugin:updater|download", {
+      onEvent: channel,
+      rid: this.rid,
+    });
+    return new DownloadedBytes(rid, this)
+  }
+
   /** Downloads the updater package and installs it */
   async downloadAndInstall(
     onEvent?: (progress: DownloadEvent) => void,
   ): Promise<void> {
     const channel = new Channel<DownloadEvent>();
-    if (onEvent != null) {
+    if (onEvent !== undefined) {
       channel.onmessage = onEvent;
     }
     await invoke("plugin:updater|download_and_install", {
       onEvent: channel,
       rid: this.rid,
+    });
+  }
+}
+
+class DownloadedBytes extends Resource {
+  constructor(rid: number, private readonly update: Update) {
+    super(rid)
+  }
+
+  /** Install downloaded updater package */
+  async install(): Promise<void> {
+    await invoke("plugin:updater|install", {
+      updateRid: this.update.rid,
+      bytesRid: this.rid,
     });
   }
 }
@@ -82,4 +111,4 @@ async function check(options?: CheckOptions): Promise<Update | null> {
 }
 
 export type { CheckOptions, DownloadEvent };
-export { check, Update };
+export { check, Update, DownloadedBytes };
