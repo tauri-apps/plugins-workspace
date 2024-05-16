@@ -170,6 +170,7 @@ fn prepare_cmd<R: Runtime>(
 }
 
 #[derive(Serialize)]
+#[serde(untagged)]
 enum Output {
     String(String),
     Raw(Vec<u8>),
@@ -179,9 +180,7 @@ enum Output {
 pub struct ChildProcessReturn {
     code: Option<i32>,
     signal: Option<i32>,
-    #[serde(flatten)]
     stdout: Output,
-    #[serde(flatten)]
     stderr: Output,
 }
 
