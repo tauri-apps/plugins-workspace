@@ -45,6 +45,7 @@ class Update extends Resource {
   version: string;
   date?: string;
   body?: string;
+  downloadedBytesRid?: number;
 
   constructor(metadata: UpdateMetadata) {
     super(metadata.rid);
@@ -56,18 +57,24 @@ class Update extends Resource {
   }
 
   /** Download the updater package */
-  async download(
-    onEvent?: (progress: DownloadEvent) => void,
-  ): Promise<DownloadedBytes> {
+  async download(onEvent?: (progress: DownloadEvent) => void): Promise<void> {
     const channel = new Channel<DownloadEvent>();
     if (onEvent !== undefined) {
       channel.onmessage = onEvent;
     }
-    const rid = await invoke<number>("plugin:updater|download", {
+    this.downloadedBytesRid = await invoke<number>("plugin:updater|download", {
       onEvent: channel,
       rid: this.rid,
     });
-    return new DownloadedBytes(rid, this);
+  }
+
+  /** Install downloaded updater package */
+  async install(): Promise<void> {
+    await invoke("plugin:updater|install", {
+      updateRid: this.rid,
+      bytesRid: this.downloadedBytesRid,
+    });
+    this.downloadedBytesRid = undefined;
   }
 
   /** Downloads the updater package and installs it */
@@ -83,22 +90,14 @@ class Update extends Resource {
       rid: this.rid,
     });
   }
-}
 
-class DownloadedBytes extends Resource {
-  constructor(
-    rid: number,
-    private readonly update: Update,
-  ) {
-    super(rid);
-  }
-
-  /** Install downloaded updater package */
-  async install(): Promise<void> {
-    await invoke("plugin:updater|install", {
-      updateRid: this.update.rid,
-      bytesRid: this.rid,
-    });
+  async close(): Promise<void> {
+    if (this.downloadedBytesRid !== undefined) {
+      await invoke("plugin:resources|close", {
+        rid: this.rid,
+      });
+    }
+    await super.close();
   }
 }
 
@@ -114,4 +113,4 @@ async function check(options?: CheckOptions): Promise<Update | null> {
 }
 
 export type { CheckOptions, DownloadEvent };
-export { check, Update, DownloadedBytes };
+export { check, Update };
