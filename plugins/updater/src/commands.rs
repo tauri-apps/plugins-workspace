@@ -114,6 +114,7 @@ pub(crate) async fn install<R: Runtime>(
         .resources_table()
         .get::<DownloadedBytes>(bytes_rid)?;
     update.install(&bytes.0)?;
+    let _ = webview.resources_table().close(bytes_rid);
     Ok(())
 }
 
