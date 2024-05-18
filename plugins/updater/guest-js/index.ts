@@ -59,7 +59,7 @@ class Update extends Resource {
   /** Download the updater package */
   async download(onEvent?: (progress: DownloadEvent) => void): Promise<void> {
     const channel = new Channel<DownloadEvent>();
-    if (onEvent !== undefined) {
+    if (onEvent) {
       channel.onmessage = onEvent;
     }
     this.downloadedBytesRid = await invoke<number>("plugin:updater|download", {
