@@ -22,7 +22,7 @@ async function upload(
   const id = ids[0];
 
   const onProgress = new Channel<ProgressPayload>();
-  if (progressHandler != null) {
+  if (progressHandler) {
     onProgress.onmessage = progressHandler;
   }
 
@@ -50,7 +50,7 @@ async function download(
   const id = ids[0];
 
   const onProgress = new Channel<ProgressPayload>();
-  if (progressHandler != null) {
+  if (progressHandler) {
     onProgress.onmessage = progressHandler;
   }
 

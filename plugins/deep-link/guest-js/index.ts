@@ -98,7 +98,7 @@ export async function onOpenUrl(
   handler: (urls: string[]) => void,
 ): Promise<UnlistenFn> {
   const current = await getCurrent();
-  if (current != null) {
+  if (current) {
     handler(current);
   }
 

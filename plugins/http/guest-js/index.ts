@@ -107,7 +107,7 @@ export async function fetch(
   const proxy = init?.proxy;
 
   // Remove these fields before creating the request
-  if (init != null) {
+  if (init) {
     delete init.maxRedirections;
     delete init.connectTimeout;
     delete init.proxy;
@@ -115,14 +115,13 @@ export async function fetch(
 
   const signal = init?.signal;
 
-  const headers =
-    init?.headers == null
-      ? []
-      : init.headers instanceof Headers
-        ? Array.from(init.headers.entries())
-        : Array.isArray(init.headers)
-          ? init.headers
-          : Object.entries(init.headers);
+  const headers = init?.headers
+    ? init.headers instanceof Headers
+      ? Array.from(init.headers.entries())
+      : Array.isArray(init.headers)
+        ? init.headers
+        : Object.entries(init.headers)
+    : [];
 
   const mappedHeaders: Array<[string, string]> = headers.map(([name, val]) => [
     name,
