@@ -8,7 +8,7 @@ import { invoke } from "@tauri-apps/api/core";
 function openLinks(): void {
   document.querySelector("body")?.addEventListener("click", function (e) {
     let target: HTMLElement | null = e.target as HTMLElement;
-    while (target != null) {
+    while (target) {
       if (target.matches("a")) {
         const t = target as HTMLAnchorElement;
         if (

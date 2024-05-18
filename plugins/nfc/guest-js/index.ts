@@ -260,7 +260,7 @@ export async function write(
   options?: WriteOptions,
 ): Promise<void> {
   const { kind, ...opts } = options ?? {};
-  if (kind != null) {
+  if (kind) {
     // @ts-expect-error map the property
     opts.kind = mapScanKind(kind);
   }

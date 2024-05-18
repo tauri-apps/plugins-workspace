@@ -302,11 +302,11 @@ export class Store {
   }
 
   async get(key: StoreKey): Promise<Uint8Array | null> {
-    return await invoke<number[]>("plugin:stronghold|get_store_record", {
+    return await invoke<number[] | null>("plugin:stronghold|get_store_record", {
       snapshotPath: this.path,
       client: this.client,
       key: toBytesDto(key),
-    }).then((v) => (v != null ? Uint8Array.from(v) : null));
+    }).then((v) => v && Uint8Array.from(v));
   }
 
   async insert(
@@ -331,7 +331,7 @@ export class Store {
         client: this.client,
         key: toBytesDto(key),
       },
-    ).then((v) => (v != null ? Uint8Array.from(v) : null));
+    ).then((v) => v && Uint8Array.from(v));
   }
 }
 
