@@ -60,7 +60,7 @@ class Update extends Resource {
     onEvent?: (progress: DownloadEvent) => void,
   ): Promise<void> {
     const channel = new Channel<DownloadEvent>();
-    if (onEvent != null) {
+    if (onEvent) {
       channel.onmessage = onEvent;
     }
     await invoke("plugin:updater|download_and_install", {
@@ -72,7 +72,7 @@ class Update extends Resource {
 
 /** Check for updates, resolves to `null` if no updates are available */
 async function check(options?: CheckOptions): Promise<Update | null> {
-  if (options?.headers != null) {
+  if (options?.headers) {
     options.headers = Array.from(new Headers(options.headers).entries());
   }
 

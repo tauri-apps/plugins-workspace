@@ -107,7 +107,7 @@ export async function fetch(
   const proxy = init?.proxy;
 
   // Remove these fields before creating the request
-  if (init != null) {
+  if (init) {
     delete init.maxRedirections;
     delete init.connectTimeout;
     delete init.proxy;
