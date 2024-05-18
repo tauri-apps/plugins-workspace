@@ -115,14 +115,13 @@ export async function fetch(
 
   const signal = init?.signal;
 
-  const headers =
-    init?.headers == null
-      ? []
-      : init.headers instanceof Headers
-        ? Array.from(init.headers.entries())
-        : Array.isArray(init.headers)
-          ? init.headers
-          : Object.entries(init.headers);
+  const headers = init?.headers
+    ? init.headers instanceof Headers
+      ? Array.from(init.headers.entries())
+      : Array.isArray(init.headers)
+        ? init.headers
+        : Object.entries(init.headers)
+    : [];
 
   const mappedHeaders: Array<[string, string]> = headers.map(([name, val]) => [
     name,
