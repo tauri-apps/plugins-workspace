@@ -219,15 +219,15 @@ mod imp {
 
                 let target_file = target.join(&file_name);
 
-                let mime_type = format!("x-scheme-handler/{};", _protocol.as_ref());
+                let mime_type = format!("x-scheme-handler/{}", _protocol.as_ref());
 
                 if let Ok(mut desktop_file) = ini::Ini::load_from_file(&target_file) {
                     if let Some(section) = desktop_file.section_mut(Some("Desktop Entry")) {
-                        if let Some(mimes) = section.remove("MimeType") {
-                            section.append("MimeType", format!("{mimes};{mime_type};"))
-                        } else {
-                            section.append("MimeType", format!("{mime_type};"))
-                        }
+                        let old_mimes = section.remove("MimeType");
+                        section.append(
+                            "MimeType",
+                            format!("{mime_type};{}", old_mimes.unwrap_or_default()),
+                        );
                         desktop_file.write_to_file(&target_file)?;
                     }
                 } else {
