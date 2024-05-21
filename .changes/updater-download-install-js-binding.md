@@ -3,4 +3,4 @@
 "updater-js": "patch"
 ---
 
-Add separated `download` and `install` functions to JavaScript side
+Add `Update.download` and `Update.install` functions to the JavaScript API
