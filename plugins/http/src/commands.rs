@@ -45,7 +45,7 @@ pub struct FetchResponse {
     rid: ResourceId,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientConfig {
     method: String,
@@ -57,7 +57,7 @@ pub struct ClientConfig {
     proxy: Option<Proxy>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Proxy {
     all: Option<UrlOrConfig>,
@@ -65,7 +65,7 @@ pub struct Proxy {
     https: Option<UrlOrConfig>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(untagged)]
 pub enum UrlOrConfig {
@@ -73,7 +73,7 @@ pub enum UrlOrConfig {
     Config(ProxyConfig),
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProxyConfig {
     url: String,
@@ -81,7 +81,7 @@ pub struct ProxyConfig {
     no_proxy: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct BasicAuth {
     username: String,
     password: String,
