@@ -39,13 +39,15 @@ type DownloadEvent =
   | { event: "Progress"; data: { chunkLength: number } }
   | { event: "Finished" };
 
+class DownloadedBytes extends Resource {}
+
 class Update extends Resource {
   available: boolean;
   currentVersion: string;
   version: string;
   date?: string;
   body?: string;
-  downloadedBytesRid?: number;
+  private downloadedBytes?: DownloadedBytes;
 
   constructor(metadata: UpdateMetadata) {
     super(metadata.rid);
@@ -62,19 +64,24 @@ class Update extends Resource {
     if (onEvent) {
       channel.onmessage = onEvent;
     }
-    this.downloadedBytesRid = await invoke<number>("plugin:updater|download", {
+    const downloadedBytesRid = await invoke<number>("plugin:updater|download", {
       onEvent: channel,
       rid: this.rid,
     });
+    this.downloadedBytes = new DownloadedBytes(downloadedBytesRid);
   }
 
   /** Install downloaded updater package */
   async install(): Promise<void> {
+    if (!this.downloadedBytes) {
+      throw "Update not downloaded yet";
+    }
     await invoke("plugin:updater|install", {
       updateRid: this.rid,
-      bytesRid: this.downloadedBytesRid,
+      bytesRid: this.downloadedBytes.rid,
     });
-    this.downloadedBytesRid = undefined;
+    // Don't need to call close, we did it in rust side already
+    this.downloadedBytes = undefined;
   }
 
   /** Downloads the updater package and installs it */
@@ -92,11 +99,7 @@ class Update extends Resource {
   }
 
   async close(): Promise<void> {
-    if (this.downloadedBytesRid !== undefined) {
-      await invoke("plugin:resources|close", {
-        rid: this.rid,
-      });
-    }
+    await this.downloadedBytes?.close();
     await super.close();
   }
 }
