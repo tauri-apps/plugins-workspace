@@ -39,15 +39,13 @@ type DownloadEvent =
   | { event: "Progress"; data: { chunkLength: number } }
   | { event: "Finished" };
 
-class DownloadedBytes extends Resource {}
-
 class Update extends Resource {
   available: boolean;
   currentVersion: string;
   version: string;
   date?: string;
   body?: string;
-  private downloadedBytes?: DownloadedBytes;
+  private downloadedBytes?: Resource;
 
   constructor(metadata: UpdateMetadata) {
     super(metadata.rid);
@@ -68,7 +66,7 @@ class Update extends Resource {
       onEvent: channel,
       rid: this.rid,
     });
-    this.downloadedBytes = new DownloadedBytes(downloadedBytesRid);
+    this.downloadedBytes = new Resource(downloadedBytesRid);
   }
 
   /** Install downloaded updater package */
