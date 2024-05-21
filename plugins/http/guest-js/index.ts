@@ -128,7 +128,7 @@ export async function fetch(
 
   // append new headers created by the browser `Request` implementation,
   // if not already declared by the caller of this function
-  for (let [key, value] of req.headers) {
+  for (const [key, value] of req.headers) {
     if (!headers.get(key)) {
       headers.set(key, value);
     }
@@ -145,6 +145,7 @@ export async function fetch(
     ([name, val]) => [
       name,
       // we need to ensure we have all header values as strings
+      // eslint-disable-next-line
       typeof val === "string" ? val : (val as any).toString(),
     ],
   );
