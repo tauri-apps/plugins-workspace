@@ -501,7 +501,7 @@ impl Update {
     }
 
     #[cfg(mobile)]
-    fn install_inner(&self, _bytes: Vec<u8>) -> Result<()> {
+    fn install_inner(&self, _bytes: &[u8]) -> Result<()> {
         Ok(())
     }
 }
