@@ -12,6 +12,10 @@
     "**/tests/**",
     "**/__fixtures__/**"
   ],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "rangeStrategy": "replace",
   "packageRules": [
     {
       "description": "Disable node/pnpm version updates",
