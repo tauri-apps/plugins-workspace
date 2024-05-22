@@ -186,7 +186,7 @@ pub struct ChildProcessReturn {
 
 #[allow(clippy::too_many_arguments)]
 #[tauri::command]
-pub fn execute<R: Runtime>(
+pub async fn execute<R: Runtime>(
     window: Window<R>,
     program: String,
     args: ExecuteArgs,
