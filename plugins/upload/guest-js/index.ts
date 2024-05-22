@@ -54,14 +54,14 @@ async function download(
   if (progressHandler) {
     onProgress.onmessage = progressHandler;
   }
-
+  
   await invoke("plugin:upload|download", {
     id,
     url,
     filePath,
     headers: headers ?? {},
     onProgress,
-    body: body ?? "",
+    body: body ?? null,
   });
 }
 

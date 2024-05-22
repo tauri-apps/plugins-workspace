@@ -66,7 +66,7 @@ async fn download(
     file_path: &str,
     headers: HashMap<String, String>,
     on_progress: Channel,
-    body: &str,
+    body: String,
 ) -> Result<()> {
     let client = reqwest::Client::new();
     let mut request = if !body.is_empty() {
