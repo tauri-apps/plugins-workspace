@@ -565,6 +565,9 @@ impl Update {
             // If it's an `exe` we expect an NSIS installer.
             if found_path.extension() == Some(OsStr::new("exe")) {
                 installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
+                installer_args.push(OsStr::new("/R"));
+                installer_args.push(OsStr::new("/NS"));
+                installer_args.push(OsStr::new("/UPDATE"));
             } else if found_path.extension() == Some(OsStr::new("msi")) {
                 installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
                 installer_args.push(OsStr::new("/promptrestart"));
