@@ -556,6 +556,8 @@ impl Update {
         match updater_type {
             WindowsUpdaterType::Nsis => {
                 installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
+                installer_args.push(OsStr::new("/NS"));
+                installer_args.push(OsStr::new("/UPDATE"));
             }
             WindowsUpdaterType::Msi => {
                 installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
