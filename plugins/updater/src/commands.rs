@@ -5,7 +5,7 @@
 use crate::{Result, Update, UpdaterExt};
 
 use serde::Serialize;
-use tauri::{ipc::Channel, AppHandle, Manager, ResourceId, Runtime};
+use tauri::{ipc::Channel, Manager, Resource, ResourceId, Runtime, Webview};
 
 use std::time::Duration;
 use url::Url;
@@ -35,15 +35,18 @@ pub(crate) struct Metadata {
     body: Option<String>,
 }
 
+struct DownloadedBytes(pub Vec<u8>);
+impl Resource for DownloadedBytes {}
+
 #[tauri::command]
 pub(crate) async fn check<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     headers: Option<Vec<(String, String)>>,
     timeout: Option<u64>,
     proxy: Option<String>,
     target: Option<String>,
 ) -> Result<Metadata> {
-    let mut builder = app.updater_builder();
+    let mut builder = webview.updater_builder();
     if let Some(headers) = headers {
         for (k, v) in headers {
             builder = builder.header(k, v)?;
@@ -65,23 +68,63 @@ pub(crate) async fn check<R: Runtime>(
     let mut metadata = Metadata::default();
     if let Some(update) = update {
         metadata.available = true;
-        metadata.current_version = update.current_version.clone();
-        metadata.version = update.version.clone();
+        metadata.current_version.clone_from(&update.current_version);
+        metadata.version.clone_from(&update.version);
         metadata.date = update.date.map(|d| d.to_string());
-        metadata.body = update.body.clone();
-        metadata.rid = Some(app.resources_table().add(update));
+        metadata.body.clone_from(&update.body);
+        metadata.rid = Some(webview.resources_table().add(update));
     }
 
     Ok(metadata)
 }
 
 #[tauri::command]
+pub(crate) async fn download<R: Runtime>(
+    webview: Webview<R>,
+    rid: ResourceId,
+    on_event: Channel,
+) -> Result<ResourceId> {
+    let update = webview.resources_table().get::<Update>(rid)?;
+    let mut first_chunk = true;
+    let bytes = update
+        .download(
+            |chunk_length, content_length| {
+                if first_chunk {
+                    first_chunk = !first_chunk;
+                    let _ = on_event.send(DownloadEvent::Started { content_length });
+                }
+                let _ = on_event.send(DownloadEvent::Progress { chunk_length });
+            },
+            || {
+                let _ = on_event.send(&DownloadEvent::Finished);
+            },
+        )
+        .await?;
+    Ok(webview.resources_table().add(DownloadedBytes(bytes)))
+}
+
+#[tauri::command]
+pub(crate) async fn install<R: Runtime>(
+    webview: Webview<R>,
+    update_rid: ResourceId,
+    bytes_rid: ResourceId,
+) -> Result<()> {
+    let update = webview.resources_table().get::<Update>(update_rid)?;
+    let bytes = webview
+        .resources_table()
+        .get::<DownloadedBytes>(bytes_rid)?;
+    update.install(&bytes.0)?;
+    let _ = webview.resources_table().close(bytes_rid);
+    Ok(())
+}
+
+#[tauri::command]
 pub(crate) async fn download_and_install<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     rid: ResourceId,
     on_event: Channel,
 ) -> Result<()> {
-    let update = app.resources_table().get::<Update>(rid)?;
+    let update = webview.resources_table().get::<Update>(rid)?;
 
     let mut first_chunk = true;
 

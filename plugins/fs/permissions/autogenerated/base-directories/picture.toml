@@ -63,7 +63,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-picture-meta-recursive"
-description = "This allows read access to metadata of the `$PICTURE` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$PICTURE` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-picture-recursive"
@@ -71,7 +71,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-picture-meta"
-description = "This allows read access to metadata of the `$PICTURE` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$PICTURE` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-picture-index"

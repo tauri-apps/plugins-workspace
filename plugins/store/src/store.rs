@@ -58,7 +58,8 @@ impl<R: Runtime> StoreBuilder<R> {
     /// ```
     pub fn new<P: AsRef<Path>>(path: P) -> Self {
         Self {
-            path: path.as_ref().to_path_buf(),
+            // Since Store.path is only exposed to the user in emit calls we may as well simplify it here already.
+            path: dunce::simplified(path.as_ref()).to_path_buf(),
             defaults: None,
             cache: Default::default(),
             serialize: default_serialize,
@@ -94,7 +95,7 @@ impl<R: Runtime> StoreBuilder<R> {
     /// # Ok(())
     /// # }
     pub fn defaults(mut self, defaults: HashMap<String, JsonValue>) -> Self {
-        self.cache = defaults.clone();
+        self.cache.clone_from(&defaults);
         self.defaults = Some(defaults);
         self
     }
@@ -262,7 +263,7 @@ impl<R: Runtime> Store<R> {
                         );
                     }
                 }
-                self.cache = defaults.clone();
+                self.cache.clone_from(defaults);
             }
             Ok(())
         } else {

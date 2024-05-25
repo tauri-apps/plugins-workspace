@@ -118,9 +118,13 @@ impl<'de> Deserialize<'de> for UpdaterEndpoint {
         D: Deserializer<'de>,
     {
         let url = Url::deserialize(deserializer)?;
-        #[cfg(all(not(debug_assertions), not(feature = "schema")))]
+        #[cfg(not(feature = "schema"))]
         {
             if url.scheme() != "https" {
+                #[cfg(debug_assertions)]
+                eprintln!("[\x1b[33mWARNING\x1b[0m] The configured updater endpoint doesn't use `https` protocol. This is allowed in development but will fail in release builds.");
+
+                #[cfg(not(debug_assertions))]
                 return Err(serde::de::Error::custom(
                     "The configured updater endpoint must use the `https` protocol.",
                 ));

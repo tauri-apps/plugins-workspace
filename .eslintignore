@@ -6,3 +6,5 @@ dist-js
 api-iife.js
 init-iife.js
 init.js
+rollup.config.js
+examples/

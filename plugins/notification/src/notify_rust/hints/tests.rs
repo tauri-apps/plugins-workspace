@@ -1,12 +1,11 @@
 #![cfg(all(test, unix, not(target_os = "macos")))]
 
-use dbus::arg::messageitem::MessageItem as Item;
 use ctor::ctor;
+use dbus::arg::messageitem::MessageItem as Item;
 
-use super::*;
-use self::Hint as Hint;
+use self::Hint;
 use super::Urgency::*;
-
+use super::*;
 
 #[ctor]
 fn init_color_backtrace() {
@@ -61,12 +60,14 @@ fn imagedata_hint_to_item() {
             Item::Bool(false),
             Item::Int32(8),
             Item::Int32(3),
-            Item::Array(dbus::MessageItemArray::new(vec![
-                Item::Byte(0),
-                Item::Byte(0),
-                Item::Byte(0),
-            ],"ay".into()).unwrap())
-        ]))))
+            Item::Array(
+                dbus::MessageItemArray::new(
+                    vec![Item::Byte(0), Item::Byte(0), Item::Byte(0)],
+                    "ay".into(),
+                )
+                .unwrap(),
+            ),
+        ])))),
     );
     assert_eq!(item, test_item);
 }

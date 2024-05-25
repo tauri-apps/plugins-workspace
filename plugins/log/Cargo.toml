@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-log"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 description = "Configurable logging for your Tauri app."
 authors = { workspace = true }
 license = { workspace = true }
@@ -10,11 +10,11 @@ repository = { workspace = true }
 links = "tauri-plugin-log"
 
 [package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
+rustc-args = [ "--cfg", "docsrs" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = ["build"] }
+tauri-plugin = { workspace = true, features = [ "build" ] }
 
 [dependencies]
 serde = { workspace = true }
@@ -22,17 +22,17 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 serde_repr = "0.1"
 byte-unit = "5"
-log = { workspace = true, features = ["kv_unstable"] }
-time = { version = "0.3", features = ["formatting", "local-offset"] }
+log = { workspace = true, features = [ "kv_unstable" ] }
+time = { version = "0.3", features = [ "formatting", "local-offset" ] }
 fern = "0.6"
 
 [target."cfg(target_os = \"android\")".dependencies]
-android_logger = "0.11"
+android_logger = "0.13"
 
 [target."cfg(target_os = \"ios\")".dependencies]
-swift-rs = "1.0.1"
+swift-rs = "1"
 objc = "0.2"
-cocoa = "0.24"
+cocoa = "0.25"
 
 [features]
-colored = ["fern/colored"]
+colored = [ "fern/colored" ]

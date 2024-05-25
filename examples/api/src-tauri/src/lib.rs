@@ -145,10 +145,12 @@ pub fn run() {
 
     app.run(move |_app_handle, _event| {
         #[cfg(desktop)]
-        if let RunEvent::ExitRequested { api, .. } = &_event {
-            // Keep the event loop running even if all windows are closed
-            // This allow us to catch system tray events when there is no window
-            api.prevent_exit();
+        if let RunEvent::ExitRequested { code, api, .. } = &_event {
+            if code.is_none() {
+                // Keep the event loop running even if all windows are closed
+                // This allow us to catch system tray events when there is no window
+                api.prevent_exit();
+            }
         }
     })
 }

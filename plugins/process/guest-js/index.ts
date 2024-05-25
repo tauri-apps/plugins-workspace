@@ -23,7 +23,7 @@ import { invoke } from "@tauri-apps/api/core";
  * @since 2.0.0
  */
 async function exit(code = 0): Promise<void> {
-  return invoke("plugin:process|exit", { code });
+  await invoke("plugin:process|exit", { code });
 }
 
 /**
@@ -39,7 +39,7 @@ async function exit(code = 0): Promise<void> {
  * @since 2.0.0
  */
 async function relaunch(): Promise<void> {
-  return invoke("plugin:process|restart");
+  await invoke("plugin:process|restart");
 }
 
 export { exit, relaunch };

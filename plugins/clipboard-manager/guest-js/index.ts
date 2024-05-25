@@ -11,8 +11,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { Image, transformImage } from "@tauri-apps/api/image";
 
-type ClipResponse = Record<"plainText", { text: string }>;
-
 /**
  * Writes plain text to the clipboard.
  * @example
@@ -30,13 +28,9 @@ async function writeText(
   text: string,
   opts?: { label?: string },
 ): Promise<void> {
-  return invoke("plugin:clipboard-manager|write_text", {
-    data: {
-      plainText: {
-        label: opts?.label,
-        text,
-      },
-    },
+  await invoke("plugin:clipboard-manager|write_text", {
+    label: opts?.label,
+    text,
   });
 }
 
@@ -50,26 +44,7 @@ async function writeText(
  * @since 2.0.0
  */
 async function readText(): Promise<string> {
-  const kind: ClipResponse = await invoke("plugin:clipboard-manager|read_text");
-  return kind.plainText.text;
-}
-
-/**
- * Gets the clipboard content as Uint8Array image.
- * @example
- * ```typescript
- * import { readImage } from '@tauri-apps/plugin-clipboard-manager';
- *
- * const clipboardImage = await readImage();
- * const blob = new Blob([clipboardImage.bytes], { type: 'image' })
- * const url = URL.createObjectURL(blob)
- * ```
- * @since 2.0.0
- */
-async function readImage(): Promise<Image> {
-  return await invoke<number>("plugin:clipboard-manager|read_image").then(
-    (rid) => new Image(rid),
-  );
+  return await invoke("plugin:clipboard-manager|read_text");
 }
 
 /**
@@ -93,13 +68,27 @@ async function readImage(): Promise<Image> {
 async function writeImage(
   image: string | Image | Uint8Array | ArrayBuffer | number[],
 ): Promise<void> {
-  return invoke("plugin:clipboard-manager|write_image", {
-    data: {
-      image: {
-        image: transformImage(image),
-      },
-    },
+  await invoke("plugin:clipboard-manager|write_image", {
+    image: transformImage(image),
   });
+}
+
+/**
+ * Gets the clipboard content as Uint8Array image.
+ * @example
+ * ```typescript
+ * import { readImage } from '@tauri-apps/plugin-clipboard-manager';
+ *
+ * const clipboardImage = await readImage();
+ * const blob = new Blob([clipboardImage.bytes], { type: 'image' })
+ * const url = URL.createObjectURL(blob)
+ * ```
+ * @since 2.0.0
+ */
+async function readImage(): Promise<Image> {
+  return await invoke<number>("plugin:clipboard-manager|read_image").then(
+    (rid) => new Image(rid),
+  );
 }
 
 /**
@@ -117,13 +106,9 @@ async function writeImage(
  * @since 2.0.0
  */
 async function writeHtml(html: string, altHtml?: string): Promise<void> {
-  return invoke("plugin:clipboard-manager|write_html", {
-    data: {
-      html: {
-        html,
-        altHtml,
-      },
-    },
+  await invoke("plugin:clipboard-manager|write_html", {
+    html,
+    altHtml,
   });
 }
 
@@ -138,7 +123,6 @@ async function writeHtml(html: string, altHtml?: string): Promise<void> {
  */
 async function clear(): Promise<void> {
   await invoke("plugin:clipboard-manager|clear");
-  return;
 }
 
 export { writeText, readText, writeHtml, clear, readImage, writeImage };

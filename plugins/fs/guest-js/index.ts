@@ -226,9 +226,9 @@ function parseFileInfo(r: UnparsedFileInfo): FileInfo {
     isDirectory: r.isDirectory,
     isSymlink: r.isSymlink,
     size: r.size,
-    mtime: r.mtime != null ? new Date(r.mtime) : null,
-    atime: r.atime != null ? new Date(r.atime) : null,
-    birthtime: r.birthtime != null ? new Date(r.birthtime) : null,
+    mtime: r.mtime !== null ? new Date(r.mtime) : null,
+    atime: r.atime !== null ? new Date(r.atime) : null,
+    birthtime: r.birthtime !== null ? new Date(r.birthtime) : null,
     readonly: r.readonly,
     fileAttributes: r.fileAttributes,
     dev: r.dev,
@@ -249,10 +249,6 @@ function parseFileInfo(r: UnparsedFileInfo): FileInfo {
  * @since 2.0.0
  */
 class FileHandle extends Resource {
-  constructor(rid: number) {
-    super(rid);
-  }
-
   /**
    * Reads up to `p.byteLength` bytes into `p`. It resolves to the number of
    * bytes read (`0` < `n` <= `p.byteLength`) and rejects if any error
@@ -330,7 +326,7 @@ class FileHandle extends Resource {
    * @since 2.0.0
    */
   async seek(offset: number, whence: SeekMode): Promise<number> {
-    return invoke("plugin:fs|seek", {
+    return await invoke("plugin:fs|seek", {
       rid: this.rid,
       offset,
       whence,
@@ -382,7 +378,7 @@ class FileHandle extends Resource {
    * @since 2.0.0
    */
   async truncate(len?: number): Promise<void> {
-    return invoke("plugin:fs|ftruncate", {
+    await invoke("plugin:fs|ftruncate", {
       rid: this.rid,
       len,
     });
@@ -409,7 +405,7 @@ class FileHandle extends Resource {
    * @since 2.0.0
    */
   async write(data: Uint8Array): Promise<number> {
-    return invoke("plugin:fs|write", {
+    return await invoke("plugin:fs|write", {
       rid: this.rid,
       data: Array.from(data),
     });
@@ -569,7 +565,7 @@ async function copyFile(
     throw new TypeError("Must be a file URL.");
   }
 
-  return invoke("plugin:fs|copy_file", {
+  await invoke("plugin:fs|copy_file", {
     fromPath: fromPath instanceof URL ? fromPath.toString() : fromPath,
     toPath: toPath instanceof URL ? toPath.toString() : toPath,
     options,
@@ -608,7 +604,7 @@ async function mkdir(
     throw new TypeError("Must be a file URL.");
   }
 
-  return invoke("plugin:fs|mkdir", {
+  await invoke("plugin:fs|mkdir", {
     path: path instanceof URL ? path.toString() : path,
     options,
   });
@@ -669,7 +665,7 @@ async function readDir(
     throw new TypeError("Must be a file URL.");
   }
 
-  return invoke("plugin:fs|read_dir", {
+  return await invoke("plugin:fs|read_dir", {
     path: path instanceof URL ? path.toString() : path,
     options,
   });
@@ -728,7 +724,7 @@ async function readTextFile(
     throw new TypeError("Must be a file URL.");
   }
 
-  return invoke<string>("plugin:fs|read_text_file", {
+  return await invoke<string>("plugin:fs|read_text_file", {
     path: path instanceof URL ? path.toString() : path,
     options,
   });
@@ -759,11 +755,11 @@ async function readTextFileLines(
 
   const pathStr = path instanceof URL ? path.toString() : path;
 
-  return Promise.resolve({
+  return await Promise.resolve({
     path: pathStr,
     rid: null as number | null,
     async next(): Promise<IteratorResult<string>> {
-      if (!this.rid) {
+      if (this.rid === null) {
         this.rid = await invoke<number>("plugin:fs|read_text_file_lines", {
           path: pathStr,
           options,
@@ -779,7 +775,8 @@ async function readTextFileLines(
       if (done) this.rid = null;
 
       return {
-        value: done ? "" : (line as string),
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        value: done ? "" : line!,
         done,
       };
     },
@@ -819,7 +816,7 @@ async function remove(
     throw new TypeError("Must be a file URL.");
   }
 
-  return invoke("plugin:fs|remove", {
+  await invoke("plugin:fs|remove", {
     path: path instanceof URL ? path.toString() : path,
     options,
   });
@@ -862,7 +859,7 @@ async function rename(
     throw new TypeError("Must be a file URL.");
   }
 
-  return invoke("plugin:fs|rename", {
+  await invoke("plugin:fs|rename", {
     oldPath: oldPath instanceof URL ? oldPath.toString() : oldPath,
     newPath: newPath instanceof URL ? newPath.toString() : newPath,
     options,
@@ -965,7 +962,7 @@ async function truncate(
     throw new TypeError("Must be a file URL.");
   }
 
-  return invoke("plugin:fs|truncate", {
+  await invoke("plugin:fs|truncate", {
     path: path instanceof URL ? path.toString() : path,
     len,
     options,
@@ -1010,7 +1007,7 @@ async function writeFile(
     throw new TypeError("Must be a file URL.");
   }
 
-  return invoke("plugin:fs|write_file", {
+  await invoke("plugin:fs|write_file", {
     path: path instanceof URL ? path.toString() : path,
     data: Array.from(data),
     options,
@@ -1037,7 +1034,7 @@ async function writeTextFile(
     throw new TypeError("Must be a file URL.");
   }
 
-  return invoke("plugin:fs|write_text_file", {
+  await invoke("plugin:fs|write_text_file", {
     path: path instanceof URL ? path.toString() : path,
     data,
     options,
@@ -1071,7 +1068,7 @@ async function exists(
     throw new TypeError("Must be a file URL.");
   }
 
-  return invoke("plugin:fs|exists", {
+  return await invoke("plugin:fs|exists", {
     path: path instanceof URL ? path.toString() : path,
     options,
   });
@@ -1098,11 +1095,11 @@ interface DebouncedWatchOptions extends WatchOptions {
 /**
  * @since 2.0.0
  */
-type WatchEvent = {
+interface WatchEvent {
   type: WatchEventKind;
   paths: string[];
   attrs: unknown;
-};
+}
 
 /**
  * @since 2.0.0

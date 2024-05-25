@@ -4,19 +4,19 @@
 
 use std::{collections::HashMap, future::Future, pin::Pin, sync::Arc, time::Duration};
 
-use http::{header, HeaderName, HeaderValue, Method, StatusCode};
+use http::{header, HeaderName, Method, StatusCode};
 use reqwest::{redirect::Policy, NoProxy};
 use serde::{Deserialize, Serialize};
 use tauri::{
     async_runtime::Mutex,
     command,
     ipc::{CommandScope, GlobalScope},
-    AppHandle, Manager, ResourceId, Runtime,
+    Manager, ResourceId, Runtime, State, Webview,
 };
 
 use crate::{
     scope::{Entry, Scope},
-    Error, Result,
+    Error, Http, Result,
 };
 
 struct ReqwestResponse(reqwest::Response);
@@ -45,7 +45,7 @@ pub struct FetchResponse {
     rid: ResourceId,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientConfig {
     method: String,
@@ -57,7 +57,7 @@ pub struct ClientConfig {
     proxy: Option<Proxy>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Proxy {
     all: Option<UrlOrConfig>,
@@ -65,7 +65,7 @@ pub struct Proxy {
     https: Option<UrlOrConfig>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(untagged)]
 pub enum UrlOrConfig {
@@ -73,7 +73,7 @@ pub enum UrlOrConfig {
     Config(ProxyConfig),
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProxyConfig {
     url: String,
@@ -81,7 +81,7 @@ pub struct ProxyConfig {
     no_proxy: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct BasicAuth {
     username: String,
     password: String,
@@ -137,7 +137,8 @@ fn attach_proxy(
 
 #[command]
 pub async fn fetch<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
+    state: State<'_, Http>,
     client_config: ClientConfig,
     command_scope: CommandScope<Entry>,
     global_scope: GlobalScope<Entry>,
@@ -190,11 +191,15 @@ pub async fn fetch<R: Runtime>(
                     builder = attach_proxy(proxy_config, builder)?;
                 }
 
+                #[cfg(feature = "cookies")]
+                {
+                    builder = builder.cookie_provider(state.cookies_jar.clone());
+                }
+
                 let mut request = builder.build()?.request(method.clone(), url);
 
                 for (name, value) in &headers {
                     let name = HeaderName::from_bytes(name.as_bytes())?;
-                    let value = HeaderValue::from_bytes(value.as_bytes())?;
                     #[cfg(not(feature = "unsafe-headers"))]
                     if matches!(
                         name,
@@ -228,28 +233,27 @@ pub async fn fetch<R: Runtime>(
                 // POST and PUT requests should always have a 0 length content-length,
                 // if there is no body. https://fetch.spec.whatwg.org/#http-network-or-cache-fetch
                 if data.is_none() && matches!(method, Method::POST | Method::PUT) {
-                    request = request.header(header::CONTENT_LENGTH, HeaderValue::from(0));
+                    request = request.header(header::CONTENT_LENGTH, 0);
                 }
 
                 if headers.contains_key(header::RANGE.as_str()) {
                     // https://fetch.spec.whatwg.org/#http-network-or-cache-fetch step 18
                     // If httpRequest’s header list contains `Range`, then append (`Accept-Encoding`, `identity`)
-                    request = request.header(
-                        header::ACCEPT_ENCODING,
-                        HeaderValue::from_static("identity"),
-                    );
+                    request = request.header(header::ACCEPT_ENCODING, "identity");
                 }
 
                 if !headers.contains_key(header::USER_AGENT.as_str()) {
-                    request = request.header(header::USER_AGENT, HeaderValue::from_static("tauri"));
+                    request = request.header(header::USER_AGENT, "tauri-plugin-http");
                 }
+
+                request = request.header(header::ORIGIN, webview.url()?.as_str());
 
                 if let Some(data) = data {
                     request = request.body(data);
                 }
 
                 let fut = async move { Ok(request.send().await.map_err(Into::into)) };
-                let mut resources_table = app.resources_table();
+                let mut resources_table = webview.resources_table();
                 let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
 
                 Ok(rid)
@@ -270,7 +274,7 @@ pub async fn fetch<R: Runtime>(
                 .body(reqwest::Body::from(body))?;
 
             let fut = async move { Ok(Ok(reqwest::Response::from(response))) };
-            let mut resources_table = app.resources_table();
+            let mut resources_table = webview.resources_table();
             let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
             Ok(rid)
         }
@@ -279,9 +283,9 @@ pub async fn fetch<R: Runtime>(
 }
 
 #[command]
-pub async fn fetch_cancel<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> crate::Result<()> {
+pub async fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::Result<()> {
     let req = {
-        let resources_table = app.resources_table();
+        let resources_table = webview.resources_table();
         resources_table.get::<FetchRequest>(rid)?
     };
     let mut req = req.0.lock().await;
@@ -292,11 +296,11 @@ pub async fn fetch_cancel<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> cra
 
 #[tauri::command]
 pub async fn fetch_send<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     rid: ResourceId,
 ) -> crate::Result<FetchResponse> {
     let req = {
-        let mut resources_table = app.resources_table();
+        let mut resources_table = webview.resources_table();
         resources_table.take::<FetchRequest>(rid)?
     };
 
@@ -315,7 +319,7 @@ pub async fn fetch_send<R: Runtime>(
         ));
     }
 
-    let mut resources_table = app.resources_table();
+    let mut resources_table = webview.resources_table();
     let rid = resources_table.add(ReqwestResponse(res));
 
     Ok(FetchResponse {
@@ -329,11 +333,11 @@ pub async fn fetch_send<R: Runtime>(
 
 #[tauri::command]
 pub(crate) async fn fetch_read_body<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     rid: ResourceId,
 ) -> crate::Result<tauri::ipc::Response> {
     let res = {
-        let mut resources_table = app.resources_table();
+        let mut resources_table = webview.resources_table();
         resources_table.take::<ReqwestResponse>(rid)?
     };
     let res = Arc::into_inner(res).unwrap().0;

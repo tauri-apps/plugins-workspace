@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-authenticator",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.3",
   "description": "Use hardware security-keys in your Tauri App.",
   "license": "MIT or APACHE-2.0",
   "authors": [
@@ -24,6 +24,6 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-beta.6"
+    "@tauri-apps/api": "2.0.0-beta.12"
   }
 }

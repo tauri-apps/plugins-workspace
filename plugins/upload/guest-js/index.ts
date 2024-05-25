@@ -16,17 +16,17 @@ async function upload(
   filePath: string,
   progressHandler?: ProgressHandler,
   headers?: Map<string, string>,
-): Promise<void> {
+): Promise<string> {
   const ids = new Uint32Array(1);
   window.crypto.getRandomValues(ids);
   const id = ids[0];
 
   const onProgress = new Channel<ProgressPayload>();
-  if (progressHandler != null) {
+  if (progressHandler) {
     onProgress.onmessage = progressHandler;
   }
 
-  await invoke("plugin:upload|upload", {
+  return await invoke("plugin:upload|upload", {
     id,
     url,
     filePath,
@@ -50,7 +50,7 @@ async function download(
   const id = ids[0];
 
   const onProgress = new Channel<ProgressPayload>();
-  if (progressHandler != null) {
+  if (progressHandler) {
     onProgress.onmessage = progressHandler;
   }
 

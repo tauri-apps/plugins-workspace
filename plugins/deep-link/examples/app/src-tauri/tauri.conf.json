@@ -28,15 +28,13 @@
       "hello": "world"
     },
     "deep-link": {
-      "domains": [
-        {
-          "host": "fabianlars.de",
-          "pathPrefix": ["/intent"]
-        },
-        {
-          "host": "tauri.app"
-        }
-      ]
+      "mobile": [
+        { "host": "fabianlars.de", "pathPrefix": ["/intent"] },
+        { "host": "tauri.app" }
+      ],
+      "desktop": {
+        "schemes": ["fabianlars", "my-tauri-app"]
+      }
     }
   },
   "bundle": {

@@ -47,7 +47,9 @@ export default class WebSocket {
 
     const onMessage = new Channel<Message>();
     onMessage.onmessage = (message: Message): void => {
-      listeners.forEach((l) => l(message));
+      listeners.forEach((l) => {
+        l(message);
+      });
     };
 
     if (config?.headers) {
@@ -78,14 +80,14 @@ export default class WebSocket {
         "invalid `message` type, expected a `{ type: string, data: any }` object, a string or a numeric array",
       );
     }
-    return await invoke("plugin:websocket|send", {
+    await invoke("plugin:websocket|send", {
       id: this.id,
       message: m,
     });
   }
 
   async disconnect(): Promise<void> {
-    return await this.send({
+    await this.send({
       type: "Close",
       data: {
         code: 1000,
