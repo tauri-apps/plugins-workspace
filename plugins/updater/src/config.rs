@@ -33,8 +33,8 @@ impl WindowsUpdateInstallMode {
     /// Returns the associated nsis arguments.
     pub fn nsis_args(&self) -> &'static [&'static str] {
         match self {
-            Self::Passive => &["/P"],
-            Self::Quiet => &["/S"],
+            Self::Passive => &["/P", "/R"],
+            Self::Quiet => &["/S", "/R"],
             _ => &[],
         }
     }
