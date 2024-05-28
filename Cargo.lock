@@ -6686,9 +6686,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-winrt-notification"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13966ea9e4bd4a3b86c332a93b70cc129a950e31c5f2212014c7ee5ebd110884"
+checksum = "36778770f6c7f9a60ec08fcd2d923915a4e9015ea36d4dde80ba573345312f0a"
 dependencies = [
  "quick-xml",
  "windows 0.56.0",
