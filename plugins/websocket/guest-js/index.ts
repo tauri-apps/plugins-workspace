@@ -32,9 +32,10 @@ export type Message =
 
 export default class WebSocket {
   id: number;
-  private readonly listeners: Array<(arg: Message) => void>;
+  private readonly listeners: Array<{listener:(arg: Message) => void, id: number}>;
+  private nextListenerId: number = 0;
 
-  constructor(id: number, listeners: Array<(arg: Message) => void>) {
+  constructor(id: number, listeners: Array<{listener:(arg: Message) => void, id: number}>) {
     this.id = id;
     this.listeners = listeners;
   }
@@ -43,12 +44,12 @@ export default class WebSocket {
     url: string,
     config?: ConnectionConfig,
   ): Promise<WebSocket> {
-    const listeners: Array<(arg: Message) => void> = [];
+    const listeners: Array<{listener:(arg: Message) => void, id: number}>)
 
     const onMessage = new Channel<Message>();
     onMessage.onmessage = (message: Message): void => {
       listeners.forEach((l) => {
-        l(message);
+        l.listener(message);
       });
     };
 
@@ -63,8 +64,20 @@ export default class WebSocket {
     }).then((id) => new WebSocket(id, listeners));
   }
 
-  addListener(cb: (arg: Message) => void): void {
-    this.listeners.push(cb);
+  addListener(cb: (arg: Message) => void): number {
+    this.listeners.push({listener: cb, id: this.nextListenerId});
+    this.nextListenerId+=1;
+    return this.nextListenerId-1;
+  }
+
+  removeListener(id: number): boolean {
+    if (this.listeners.findIndex(e=>e.id===id)===-1) return false;
+    let tempListeners = this.listeners.filter(e => e.id !== id);
+    while (this.listeners.length!==0) this.listeners.pop();
+    for (const element of tempListeners) {
+      this.listeners.push(element);
+    }
+    return true;
   }
 
   async send(message: Message | string | number[]): Promise<void> {
