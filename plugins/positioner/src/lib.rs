@@ -33,8 +33,8 @@ use tauri::{tray::TrayIconEvent, AppHandle, Manager, PhysicalPosition, PhysicalS
 #[cfg(feature = "tray-icon")]
 struct Tray(std::sync::Mutex<Option<(PhysicalPosition<f64>, PhysicalSize<f64>)>>);
 
+#[cfg(feature = "tray-icon")]
 pub fn on_tray_event<R: Runtime>(app: &AppHandle<R>, event: &TrayIconEvent) {
-    use tauri::tray::TrayIconEvent;
     let (position, size) = {
         match event {
             TrayIconEvent::Click { position, rect, .. }
