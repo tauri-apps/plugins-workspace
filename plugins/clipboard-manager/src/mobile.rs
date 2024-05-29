@@ -37,7 +37,7 @@ impl<R: Runtime> Clipboard<R> {
     pub fn write_text<'a, T: Into<Cow<'a, str>>>(&self, text: T) -> crate::Result<()> {
         let text = text.into().to_string();
         self.0
-            .run_mobile_plugin("write", ClipKind::PlainText { text, label: None })
+            .run_mobile_plugin("writeText", ClipKind::PlainText { text, label: None })
             .map_err(Into::into)
     }
 
@@ -50,7 +50,7 @@ impl<R: Runtime> Clipboard<R> {
         let label = label.into().to_string();
         self.0
             .run_mobile_plugin(
-                "write",
+                "writeText",
                 ClipKind::PlainText {
                     text,
                     label: Some(label),
@@ -67,7 +67,7 @@ impl<R: Runtime> Clipboard<R> {
 
     pub fn read_text(&self) -> crate::Result<String> {
         self.0
-            .run_mobile_plugin("read", ())
+            .run_mobile_plugin("readText", ())
             .map(|c| match c {
                 ClipboardContents::PlainText { text } => text,
             })
