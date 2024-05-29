@@ -47,6 +47,7 @@ pub fn on_tray_event<R: Runtime>(app: &AppHandle<R>, event: &TrayIconEvent) {
                 };
                 // tray-icon emits PhysicalSize so the scale factor should not matter.
                 let size = event.icon_rect.size.to_physical(1.0);
+                (position, size)
             }
 
             _ => return,
