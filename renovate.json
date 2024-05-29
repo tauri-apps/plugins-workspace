@@ -10,7 +10,8 @@
     "**/__tests__/**",
     "**/test/**",
     "**/tests/**",
-    "**/__fixtures__/**"
+    "**/__fixtures__/**",
+    "shared/**"
   ],
   "lockFileMaintenance": {
     "enabled": true
