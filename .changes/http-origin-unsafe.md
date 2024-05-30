@@ -3,4 +3,4 @@
 "http-js": "patch"
 ---
 
-Allow setting `Oigin` header when `unsafe-headers` feature flag is active.
+Allow setting `Origin` header when `unsafe-headers` feature flag is active.
