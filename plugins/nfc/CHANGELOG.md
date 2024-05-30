@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.5]
+
+- [`9013854f`](https://github.com/tauri-apps/plugins-workspace/commit/9013854f42a49a230b9dbb9d02774765528a923f)([#1382](https://github.com/tauri-apps/plugins-workspace/pull/1382)) Update to tauri beta.22.
+
 ## \[2.0.0-beta.4]
 
 - [`430bd6f4`](https://github.com/tauri-apps/plugins-workspace/commit/430bd6f4f379bee5d232ae6b098ae131db7f178a)([#1363](https://github.com/tauri-apps/plugins-workspace/pull/1363)) Update to tauri beta.20.
@@ -29,5 +33,7 @@
 
 - [`fe79adb`](https://github.com/tauri-apps/plugins-workspace/commit/fe79adb5c7febd0e912efb5581264d671709fbb0)([#830](https://github.com/tauri-apps/plugins-workspace/pull/830)) Initial release.
   commit/fe79adb5c7febd0e912efb5581264d671709fbb0)([#830](https://github.com/tauri-apps/plugins-workspace/pull/830)) Initial release.
-30](https://github.com/tauri-apps/plugins-workspace/pull/830)) Initial release.
+  30]\(https://github.com/tauri-apps/plugins-workspace/pull/830)) Initial release.
+  commit/fe79adb5c7febd0e912efb5581264d671709fbb0)([#830](https://github.com/tauri-apps/plugins-workspace/pull/830)) Initial release.
+.
   commit/fe79adb5c7febd0e912efb5581264d671709fbb0)([#830](https://github.com/tauri-apps/plugins-workspace/pull/830)) Initial release.
