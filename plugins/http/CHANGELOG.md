@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.5]
+
+- [`9013854f`](https://github.com/tauri-apps/plugins-workspace/commit/9013854f42a49a230b9dbb9d02774765528a923f)([#1382](https://github.com/tauri-apps/plugins-workspace/pull/1382)) Update to tauri beta.22.
+
 ## \[2.0.0-beta.4]
 
 - [`9d7ae45b`](https://github.com/tauri-apps/plugins-workspace/commit/9d7ae45b0edf9b22c73e7d7c413a784bb35c3d77)([#1354](https://github.com/tauri-apps/plugins-workspace/pull/1354)) Include headers created by browser if not declared by user, which fixes missing headers like `Content-Type` when using `FormData`.
@@ -149,7 +153,7 @@
   lpha release!
   !
   371\)) First v2 alpha release!
-ub.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  ub.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   371\)) First v2 alpha release!
   !
   371\)) First v2 alpha release!
@@ -166,5 +170,8 @@ ub.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   !
   371\)) First v2 alpha release!
   lpha release!
+  !
+  371\)) First v2 alpha release!
+lpha release!
   !
   371\)) First v2 alpha release!
