@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-positioner",
-  "version": "2.0.0-beta.3",
+  "version": "2.0.0-beta.4",
   "description": "Position your windows at well-known locations.",
   "license": "MIT or APACHE-2.0",
   "authors": [

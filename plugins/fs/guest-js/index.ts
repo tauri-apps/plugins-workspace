@@ -698,12 +698,14 @@ async function readFile(
     throw new TypeError("Must be a file URL.");
   }
 
-  const arr = await invoke<number[]>("plugin:fs|read_file", {
+  const arr = await invoke<ArrayBuffer | number[]>("plugin:fs|read_file", {
     path: path instanceof URL ? path.toString() : path,
     options,
   });
 
-  return Uint8Array.from(arr);
+  return arr instanceof ArrayBuffer
+    ? new Uint8Array(arr)
+    : Uint8Array.from(arr);
 }
 
 /**
@@ -1007,10 +1009,11 @@ async function writeFile(
     throw new TypeError("Must be a file URL.");
   }
 
-  await invoke("plugin:fs|write_file", {
-    path: path instanceof URL ? path.toString() : path,
-    data: Array.from(data),
-    options,
+  await invoke("plugin:fs|write_file", data, {
+    headers: {
+      path: path instanceof URL ? path.toString() : path,
+      options: JSON.stringify(options),
+    },
   });
 }
 

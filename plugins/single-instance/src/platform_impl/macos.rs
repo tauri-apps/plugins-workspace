@@ -77,7 +77,7 @@ fn socket_cleanup(socket: &PathBuf) {
 }
 
 fn notify_singleton(socket: &PathBuf) -> Result<(), Error> {
-    let stream = UnixStream::connect(&socket)?;
+    let stream = UnixStream::connect(socket)?;
     let mut bf = BufWriter::new(&stream);
     let args_joined = std::env::args().collect::<Vec<String>>().join("\0");
     bf.write_all(args_joined.as_bytes())?;
@@ -91,7 +91,7 @@ fn listen_for_other_instances<A: Runtime>(
     app: AppHandle<A>,
     mut cb: Box<SingleInstanceCallback<A>>,
 ) {
-    match UnixListener::bind(&socket) {
+    match UnixListener::bind(socket) {
         Ok(listener) => {
             let cwd = std::env::current_dir()
                 .unwrap_or_default()
@@ -108,7 +108,7 @@ fn listen_for_other_instances<A: Runtime>(
                                 Ok(_) => {
                                     let args: Vec<String> =
                                         s.split('\0').map(String::from).collect();
-                                    cb(&app.clone().app_handle(), args, cwd.clone());
+                                    cb(app.app_handle(), args, cwd.clone());
                                 }
                                 Err(e) => log::debug!("single_instance failed to be notified: {e}"),
                             }

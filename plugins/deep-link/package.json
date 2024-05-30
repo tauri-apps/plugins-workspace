@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-deep-link",
-  "version": "2.0.0-beta.4",
+  "version": "2.0.0-beta.5",
   "description": "Set your Tauri application as the default handler for an URL",
   "license": "MIT or APACHE-2.0",
   "authors": [
