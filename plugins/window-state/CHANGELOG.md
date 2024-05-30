@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.5]
+
+- [`430bd6f4`](https://github.com/tauri-apps/plugins-workspace/commit/430bd6f4f379bee5d232ae6b098ae131db7f178a)([#1363](https://github.com/tauri-apps/plugins-workspace/pull/1363)) Update to tauri beta.20.
+
 ## \[2.0.0-beta.7]
 
 - [`d9de5b19`](https://github.com/tauri-apps/plugins-workspace/commit/d9de5b19d1e950c06f0915ae92a862acb266d108)([#1283](https://github.com/tauri-apps/plugins-workspace/pull/1283)) Implement `WindowExt` for `WebviewWindow`.

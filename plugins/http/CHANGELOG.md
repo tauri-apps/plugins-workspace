@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.0.0-beta.4]
+
+- [`9d7ae45b`](https://github.com/tauri-apps/plugins-workspace/commit/9d7ae45b0edf9b22c73e7d7c413a784bb35c3d77)([#1354](https://github.com/tauri-apps/plugins-workspace/pull/1354)) Include headers created by browser if not declared by user, which fixes missing headers like `Content-Type` when using `FormData`.
+- [`430bd6f4`](https://github.com/tauri-apps/plugins-workspace/commit/430bd6f4f379bee5d232ae6b098ae131db7f178a)([#1363](https://github.com/tauri-apps/plugins-workspace/pull/1363)) Update to tauri beta.20.
+
 ## \[2.0.0-beta.3]
 
 - [`bd1ed590`](https://github.com/tauri-apps/plugins-workspace/commit/bd1ed5903ffcce5500310dac1e59e8c67674ef1e)([#1237](https://github.com/tauri-apps/plugins-workspace/pull/1237)) Update to tauri beta.17.
@@ -141,6 +146,25 @@
   371\)) First v2 alpha release!
   !
   371\)) First v2 alpha release!
-lpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+ub.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  ace/pull/371)) First v2 alpha release!
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
   !
   371\)) First v2 alpha release!

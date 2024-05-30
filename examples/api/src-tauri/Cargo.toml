@@ -1,7 +1,7 @@
 [package]
 name = "api"
 publish = false
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 description = "An example Tauri Application showcasing the api"
 edition = "2021"
 rust-version = { workspace = true }
@@ -19,15 +19,15 @@ serde_json = { workspace = true }
 serde = { workspace = true }
 tiny_http = "0.12"
 log = { workspace = true }
-tauri-plugin-log = { path = "../../../plugins/log", version = "2.0.0-beta.4" }
-tauri-plugin-fs = { path = "../../../plugins/fs", version = "2.0.0-beta.7", features = [ "watch" ] }
-tauri-plugin-clipboard-manager = { path = "../../../plugins/clipboard-manager", version = "2.1.0-beta.2" }
-tauri-plugin-dialog = { path = "../../../plugins/dialog", version = "2.0.0-beta.7" }
-tauri-plugin-http = { path = "../../../plugins/http", features = [ "multipart" ], version = "2.0.0-beta.7" }
-tauri-plugin-notification = { path = "../../../plugins/notification", version = "2.0.0-beta.5", features = [ "windows7-compat" ] }
-tauri-plugin-os = { path = "../../../plugins/os", version = "2.0.0-beta.4" }
-tauri-plugin-process = { path = "../../../plugins/process", version = "2.0.0-beta.4" }
-tauri-plugin-shell = { path = "../../../plugins/shell", version = "2.0.0-beta.5" }
+tauri-plugin-log = { path = "../../../plugins/log", version = "2.0.0-beta.5" }
+tauri-plugin-fs = { path = "../../../plugins/fs", version = "2.0.0-beta.8", features = [ "watch" ] }
+tauri-plugin-clipboard-manager = { path = "../../../plugins/clipboard-manager", version = "2.1.0-beta.3" }
+tauri-plugin-dialog = { path = "../../../plugins/dialog", version = "2.0.0-beta.8" }
+tauri-plugin-http = { path = "../../../plugins/http", features = [ "multipart" ], version = "2.0.0-beta.8" }
+tauri-plugin-notification = { path = "../../../plugins/notification", version = "2.0.0-beta.6", features = [ "windows7-compat" ] }
+tauri-plugin-os = { path = "../../../plugins/os", version = "2.0.0-beta.5" }
+tauri-plugin-process = { path = "../../../plugins/process", version = "2.0.0-beta.5" }
+tauri-plugin-shell = { path = "../../../plugins/shell", version = "2.0.0-beta.6" }
 
   [dependencies.tauri]
   workspace = true
@@ -41,14 +41,14 @@ tauri-plugin-shell = { path = "../../../plugins/shell", version = "2.0.0-beta.5"
 ]
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
-tauri-plugin-cli = { path = "../../../plugins/cli", version = "2.0.0-beta.4" }
-tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", version = "2.0.0-beta.4" }
-tauri-plugin-updater = { path = "../../../plugins/updater", version = "2.0.0-beta.5" }
+tauri-plugin-cli = { path = "../../../plugins/cli", version = "2.0.0-beta.5" }
+tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", version = "2.0.0-beta.5" }
+tauri-plugin-updater = { path = "../../../plugins/updater", version = "2.0.0-beta.6" }
 
 [target."cfg(any(target_os = \"android\", target_os = \"ios\"))".dependencies]
-tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", version = "2.0.0-beta.5" }
-tauri-plugin-nfc = { path = "../../../plugins/nfc", version = "2.0.0-beta.4" }
-tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "2.0.0-beta.4" }
+tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", version = "2.0.0-beta.6" }
+tauri-plugin-nfc = { path = "../../../plugins/nfc", version = "2.0.0-beta.5" }
+tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "2.0.0-beta.5" }
 
 [target."cfg(target_os = \"windows\")".dependencies]
 window-shadows = "0.2"

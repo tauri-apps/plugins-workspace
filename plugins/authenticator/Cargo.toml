@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-authenticator"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 description = "Use hardware security-keys in your Tauri App."
 authors = { workspace = true }
 license = { workspace = true }

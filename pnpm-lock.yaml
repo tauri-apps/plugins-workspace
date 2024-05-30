@@ -67,46 +67,46 @@ importers:
         specifier: 2.0.0-beta.12
         version: 2.0.0-beta.12
       '@tauri-apps/plugin-barcode-scanner':
-        specifier: 2.0.0-beta.3
+        specifier: 2.0.0-beta.4
         version: link:../../plugins/barcode-scanner
       '@tauri-apps/plugin-biometric':
-        specifier: 2.0.0-beta.3
+        specifier: 2.0.0-beta.4
         version: link:../../plugins/biometric
       '@tauri-apps/plugin-cli':
-        specifier: 2.0.0-beta.3
+        specifier: 2.0.0-beta.4
         version: link:../../plugins/cli
       '@tauri-apps/plugin-clipboard-manager':
-        specifier: 2.1.0-beta.1
+        specifier: 2.1.0-beta.2
         version: link:../../plugins/clipboard-manager
       '@tauri-apps/plugin-dialog':
-        specifier: 2.0.0-beta.3
+        specifier: 2.0.0-beta.4
         version: link:../../plugins/dialog
       '@tauri-apps/plugin-fs':
-        specifier: 2.0.0-beta.3
+        specifier: 2.0.0-beta.4
         version: link:../../plugins/fs
       '@tauri-apps/plugin-global-shortcut':
-        specifier: 2.0.0-beta.3
+        specifier: 2.0.0-beta.4
         version: link:../../plugins/global-shortcut
       '@tauri-apps/plugin-http':
-        specifier: 2.0.0-beta.3
+        specifier: 2.0.0-beta.4
         version: link:../../plugins/http
       '@tauri-apps/plugin-nfc':
-        specifier: 2.0.0-beta.3
+        specifier: 2.0.0-beta.4
         version: link:../../plugins/nfc
       '@tauri-apps/plugin-notification':
-        specifier: 2.0.0-beta.3
+        specifier: 2.0.0-beta.4
         version: link:../../plugins/notification
       '@tauri-apps/plugin-os':
-        specifier: 2.0.0-beta.3
+        specifier: 2.0.0-beta.4
         version: link:../../plugins/os
       '@tauri-apps/plugin-process':
-        specifier: 2.0.0-beta.3
+        specifier: 2.0.0-beta.4
         version: link:../../plugins/process
       '@tauri-apps/plugin-shell':
-        specifier: 2.0.0-beta.4
+        specifier: 2.0.0-beta.5
         version: link:../../plugins/shell
       '@tauri-apps/plugin-updater':
-        specifier: 2.0.0-beta.3
+        specifier: 2.0.0-beta.4
         version: link:../../plugins/updater
       '@zerodevx/svelte-json-view':
         specifier: 1.0.9
@@ -188,7 +188,7 @@ importers:
         specifier: 2.0.0-beta.12
         version: 2.0.0-beta.12
       '@tauri-apps/plugin-deep-link':
-        specifier: 2.0.0-beta.4
+        specifier: 2.0.0-beta.5
         version: link:../..
     devDependencies:
       '@tauri-apps/cli':
