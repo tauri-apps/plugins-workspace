@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-notification"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 description = "Send desktop and mobile notifications on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -43,12 +43,12 @@ mac-notification-sys = "0.6"
 chrono = { version = "0.4", optional = true }
 
 [target."cfg(target_os=\"windows\")".dependencies]
-winrt-notification = { package = "tauri-winrt-notification", version = "0.2" }
+winrt-notification = { package = "tauri-winrt-notification", version = "0.3" }
 
 [dev-dependencies]
 color-backtrace = "0.6"
 ctor = "0.2"
-maplit = "1.0"
+maplit = "1"
 
 [features]
 default = [ "zbus", "async" ]

@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-authenticator"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 description = "Use hardware security-keys in your Tauri App."
 authors = { workspace = true }
 license = { workspace = true }
@@ -32,6 +32,9 @@ chrono = "0.4"
 bytes = "1"
 byteorder = "1"
 openssl = "0.10"
+
+[target."cfg(target_os = \"windows\")".dependencies]
+winapi-util = "=0.1.6"
 
 [dev-dependencies]
 rand = "0.8"

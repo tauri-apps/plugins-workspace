@@ -309,6 +309,20 @@
           ]
         },
         {
+          "description": "allow-download -> Enables the download command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-download"
+          ]
+        },
+        {
+          "description": "deny-download -> Denies the download command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-download"
+          ]
+        },
+        {
           "description": "allow-download-and-install -> Enables the download_and_install command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -320,6 +334,20 @@
           "type": "string",
           "enum": [
             "deny-download-and-install"
+          ]
+        },
+        {
+          "description": "allow-install -> Enables the install command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-install"
+          ]
+        },
+        {
+          "description": "deny-install -> Denies the install command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-install"
           ]
         },
         {

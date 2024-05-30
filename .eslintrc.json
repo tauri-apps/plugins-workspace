@@ -4,7 +4,6 @@
     "es2021": true
   },
   "extends": [
-    "love",
     "prettier",
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",

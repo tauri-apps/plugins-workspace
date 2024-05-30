@@ -8,6 +8,9 @@ use serde::{Serialize, Serializer};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    #[cfg(mobile)]
+    #[error(transparent)]
+    PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
     #[error(transparent)]
     Io(#[from] std::io::Error),
     #[error("current executable path has no parent")]
@@ -27,6 +30,9 @@ pub enum Error {
     /// JSON error.
     #[error(transparent)]
     Json(#[from] serde_json::Error),
+    /// Utf8 error.
+    #[error(transparent)]
+    Utf8(#[from] std::string::FromUtf8Error),
 }
 
 impl Serialize for Error {

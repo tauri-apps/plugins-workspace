@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.3]
+
+- [`bd1ed590`](https://github.com/tauri-apps/plugins-workspace/commit/bd1ed5903ffcce5500310dac1e59e8c67674ef1e)([#1237](https://github.com/tauri-apps/plugins-workspace/pull/1237)) Update to tauri beta.17.
+
 ## \[2.0.0-beta.6]
 
 - [`b115fd22`](https://github.com/tauri-apps/plugins-workspace/commit/b115fd22e0da073f5d758c13474ec2106cf78163)([#1221](https://github.com/tauri-apps/plugins-workspace/pull/1221)) Fixes an issue that caused the app to freeze when the `dialog`, `fs`, and `persisted-scope` plugins were used together.
@@ -81,5 +85,8 @@
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   ae67\`]\(https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+ac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!

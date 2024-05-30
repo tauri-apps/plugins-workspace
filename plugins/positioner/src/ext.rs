@@ -8,7 +8,7 @@ use crate::Tray;
 use serde_repr::Deserialize_repr;
 #[cfg(feature = "tray-icon")]
 use tauri::Manager;
-use tauri::{PhysicalPosition, PhysicalSize, Result, Runtime, Window};
+use tauri::{PhysicalPosition, PhysicalSize, Result, Runtime, WebviewWindow, Window};
 
 /// Well known window positions.
 #[derive(Debug, Deserialize_repr)]
@@ -45,6 +45,11 @@ pub trait WindowExt {
     fn move_window(&self, position: Position) -> Result<()>;
 }
 
+impl<R: Runtime> WindowExt for WebviewWindow<R> {
+    fn move_window(&self, pos: Position) -> Result<()> {
+        self.as_ref().window().move_window(pos)
+    }
+}
 impl<R: Runtime> WindowExt for Window<R> {
     fn move_window(&self, pos: Position) -> Result<()> {
         use Position::*;

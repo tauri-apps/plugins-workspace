@@ -1,12 +1,12 @@
 [package]
 name = "tauri-plugin-localhost"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.4"
 description = "Expose your apps assets through a localhost server instead of the default custom protocol."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
-repository = { workspace =  true }
+repository = { workspace = true }
 
 [package.metadata.docs.rs]
 rustc-args = [ "--cfg", "docsrs" ]

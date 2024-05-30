@@ -179,7 +179,9 @@ impl Builder {
             })
             .invoke_handler(tauri::generate_handler![
                 commands::check,
-                commands::download_and_install
+                commands::download,
+                commands::install,
+                commands::download_and_install,
             ])
             .build()
     }

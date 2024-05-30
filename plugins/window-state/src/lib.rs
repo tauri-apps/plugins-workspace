@@ -16,8 +16,8 @@ use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, Window,
-    WindowEvent,
+    LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime,
+    WebviewWindow, Window, WindowEvent,
 };
 
 use std::{
@@ -118,7 +118,7 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
             let mut state = cache.0.lock().unwrap();
             for (label, s) in state.iter_mut() {
                 if let Some(window) = self.get_webview_window(label) {
-                    window.as_ref().window().update_state(s, flags)?;
+                    window.update_state(s, flags)?;
                 }
             }
 
@@ -141,6 +141,11 @@ pub trait WindowExt {
     fn restore_state(&self, flags: StateFlags) -> tauri::Result<()>;
 }
 
+impl<R: Runtime> WindowExt for WebviewWindow<R> {
+    fn restore_state(&self, flags: StateFlags) -> tauri::Result<()> {
+        self.as_ref().window().restore_state(flags)
+    }
+}
 impl<R: Runtime> WindowExt for Window<R> {
     fn restore_state(&self, flags: StateFlags) -> tauri::Result<()> {
         let cache = self.state::<WindowStateCache>();
@@ -148,12 +153,10 @@ impl<R: Runtime> WindowExt for Window<R> {
 
         let mut should_show = true;
 
-        if let Some(state) = c.get(self.label()) {
-            // avoid restoring the default zeroed state
-            if *state == WindowState::default() {
-                return Ok(());
-            }
-
+        if let Some(state) = c
+            .get(self.label())
+            .filter(|state| state != &&WindowState::default())
+        {
             if flags.contains(StateFlags::DECORATIONS) {
                 self.set_decorations(state.decorated)?;
             }
@@ -246,6 +249,12 @@ impl<R: Runtime> WindowExt for Window<R> {
 
 trait WindowExtInternal {
     fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()>;
+}
+
+impl<R: Runtime> WindowExtInternal for WebviewWindow<R> {
+    fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()> {
+        self.as_ref().window().update_state(state, flags)
+    }
 }
 
 impl<R: Runtime> WindowExtInternal for Window<R> {

@@ -45,6 +45,7 @@ class Update extends Resource {
   version: string;
   date?: string;
   body?: string;
+  private downloadedBytes?: Resource;
 
   constructor(metadata: UpdateMetadata) {
     super(metadata.rid);
@@ -55,12 +56,40 @@ class Update extends Resource {
     this.body = metadata.body;
   }
 
+  /** Download the updater package */
+  async download(onEvent?: (progress: DownloadEvent) => void): Promise<void> {
+    const channel = new Channel<DownloadEvent>();
+    if (onEvent) {
+      channel.onmessage = onEvent;
+    }
+    const downloadedBytesRid = await invoke<number>("plugin:updater|download", {
+      onEvent: channel,
+      rid: this.rid,
+    });
+    this.downloadedBytes = new Resource(downloadedBytesRid);
+  }
+
+  /** Install downloaded updater package */
+  async install(): Promise<void> {
+    if (!this.downloadedBytes) {
+      throw "Update.install called before Update.download";
+    }
+
+    await invoke("plugin:updater|install", {
+      updateRid: this.rid,
+      bytesRid: this.downloadedBytes.rid,
+    });
+
+    // Don't need to call close, we did it in rust side already
+    this.downloadedBytes = undefined;
+  }
+
   /** Downloads the updater package and installs it */
   async downloadAndInstall(
     onEvent?: (progress: DownloadEvent) => void,
   ): Promise<void> {
     const channel = new Channel<DownloadEvent>();
-    if (onEvent != null) {
+    if (onEvent) {
       channel.onmessage = onEvent;
     }
     await invoke("plugin:updater|download_and_install", {
@@ -68,11 +97,16 @@ class Update extends Resource {
       rid: this.rid,
     });
   }
+
+  async close(): Promise<void> {
+    await this.downloadedBytes?.close();
+    await super.close();
+  }
 }
 
 /** Check for updates, resolves to `null` if no updates are available */
 async function check(options?: CheckOptions): Promise<Update | null> {
-  if (options?.headers != null) {
+  if (options?.headers) {
     options.headers = Array.from(new Headers(options.headers).entries());
   }
 

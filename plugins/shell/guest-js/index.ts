@@ -100,39 +100,6 @@ interface ChildProcess<O extends IOPayload> {
 }
 
 /**
- * Spawns a process.
- *
- * @ignore
- * @param program The name of the scoped command.
- * @param onEventHandler Event handler.
- * @param args Program arguments.
- * @param options Configuration for the process spawn.
- * @returns A promise resolving to the process id.
- *
- * @since 2.0.0
- */
-async function execute<O extends IOPayload>(
-  onEventHandler: (event: CommandEvent<O>) => void,
-  program: string,
-  args: string | string[] = [],
-  options?: InternalSpawnOptions,
-): Promise<number> {
-  if (typeof args === "object") {
-    Object.freeze(args);
-  }
-
-  const onEvent = new Channel<CommandEvent<O>>();
-  onEvent.onmessage = onEventHandler;
-
-  return await invoke<number>("plugin:shell|execute", {
-    program,
-    args,
-    options,
-    onEvent,
-  });
-}
-
-/**
  * @since 2.0.0
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -513,27 +480,38 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * @since 2.0.0
    */
   async spawn(): Promise<Child> {
-    return await execute<O>(
-      (event) => {
-        switch (event.event) {
-          case "Error":
-            this.emit("error", event.payload);
-            break;
-          case "Terminated":
-            this.emit("close", event.payload);
-            break;
-          case "Stdout":
-            this.stdout.emit("data", event.payload);
-            break;
-          case "Stderr":
-            this.stderr.emit("data", event.payload);
-            break;
-        }
-      },
-      this.program,
-      this.args,
-      this.options,
-    ).then((pid) => new Child(pid));
+    const program = this.program;
+    const args = this.args;
+    const options = this.options;
+
+    if (typeof args === "object") {
+      Object.freeze(args);
+    }
+
+    const onEvent = new Channel<CommandEvent<O>>();
+    onEvent.onmessage = (event) => {
+      switch (event.event) {
+        case "Error":
+          this.emit("error", event.payload);
+          break;
+        case "Terminated":
+          this.emit("close", event.payload);
+          break;
+        case "Stdout":
+          this.stdout.emit("data", event.payload);
+          break;
+        case "Stderr":
+          this.stderr.emit("data", event.payload);
+          break;
+      }
+    };
+
+    return await invoke<number>("plugin:shell|spawn", {
+      program,
+      args,
+      options,
+      onEvent,
+    }).then((pid) => new Child(pid));
   }
 
   /**
@@ -553,40 +531,19 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * @since 2.0.0
    */
   async execute(): Promise<ChildProcess<O>> {
-    return await new Promise((resolve, reject) => {
-      this.on("error", reject);
+    const program = this.program;
+    const args = this.args;
+    const options = this.options;
 
-      const stdout: O[] = [];
-      const stderr: O[] = [];
-      this.stdout.on("data", (line: O) => {
-        stdout.push(line);
-      });
-      this.stderr.on("data", (line: O) => {
-        stderr.push(line);
-      });
-
-      this.on("close", (payload: TerminatedPayload) => {
-        resolve({
-          code: payload.code,
-          signal: payload.signal,
-          stdout: this.collectOutput(stdout) as O,
-          stderr: this.collectOutput(stderr) as O,
-        });
-      });
-
-      this.spawn().catch(reject);
-    });
-  }
-
-  /** @ignore */
-  private collectOutput(events: O[]): string | Uint8Array {
-    if (this.options.encoding === "raw") {
-      return events.reduce<Uint8Array>((p, c) => {
-        return new Uint8Array([...p, ...(c as Uint8Array), 10]);
-      }, new Uint8Array());
-    } else {
-      return events.join("\n");
+    if (typeof args === "object") {
+      Object.freeze(args);
     }
+
+    return await invoke<ChildProcess<O>>("plugin:shell|execute", {
+      program,
+      args,
+      options,
+    });
   }
 }
 
