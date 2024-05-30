@@ -10,14 +10,25 @@
     "**/__tests__/**",
     "**/test/**",
     "**/tests/**",
-    "**/__fixtures__/**"
+    "**/__fixtures__/**",
+    "shared/**"
   ],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "rangeStrategy": "replace",
   "packageRules": [
     {
       "description": "Disable node/pnpm version updates",
       "matchPackageNames": ["node", "pnpm"],
       "matchDepTypes": ["engines", "packageManager"],
       "enabled": false
+    },
+    {
+      "description": "Prevent Renovate from replacing 2.0.0-beta.10 with 2.0.0-beta - REMOVE ONCE TAURI IS STABLE",
+      "matchManagers": ["cargo"],
+      "matchPackagePatterns": ["^tauri"],
+      "rangeStrategy": "bump"
     }
   ],
   "postUpdateOptions": ["pnpmDedupe"]

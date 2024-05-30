@@ -186,7 +186,7 @@ mod imp {
             }
             #[cfg(target_os = "macos")]
             {
-                let _ = crate::notify_rust::set_application(if tauri::dev() {
+                let _ = crate::notify_rust::set_application(if tauri::is_dev() {
                     "com.apple.Terminal"
                 } else {
                     &self.identifier
