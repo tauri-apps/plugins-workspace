@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.4]
+
+- [`430bd6f4`](https://github.com/tauri-apps/plugins-workspace/commit/430bd6f4f379bee5d232ae6b098ae131db7f178a)([#1363](https://github.com/tauri-apps/plugins-workspace/pull/1363)) Update to tauri beta.20.
+
 ## \[2.0.0-beta.3]
 
 - [`9c7eb359`](https://github.com/tauri-apps/plugins-workspace/commit/9c7eb35967ad10659eb4976bd6f77d9d270bfeed)([#1244](https://github.com/tauri-apps/plugins-workspace/pull/1244)) Refactored APIs to introduce new pressed and released events:

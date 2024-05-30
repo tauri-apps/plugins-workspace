@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-store",
-  "version": "2.0.0-beta.3",
+  "version": "2.0.0-beta.4",
   "description": "Simple, persistent key-value store.",
   "license": "MIT or APACHE-2.0",
   "authors": [

@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-localhost"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.5"
 description = "Expose your apps assets through a localhost server instead of the default custom protocol."
 authors = { workspace = true }
 license = { workspace = true }
