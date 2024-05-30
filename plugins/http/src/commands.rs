@@ -201,29 +201,7 @@ pub async fn fetch<R: Runtime>(
                 for (name, value) in &headers {
                     let name = HeaderName::from_bytes(name.as_bytes())?;
                     #[cfg(not(feature = "unsafe-headers"))]
-                    if matches!(
-                        name,
-                        // forbidden headers per fetch spec https://fetch.spec.whatwg.org/#terminology-headers
-                        header::ACCEPT_CHARSET
-                            | header::ACCEPT_ENCODING
-                            | header::ACCESS_CONTROL_REQUEST_HEADERS
-                            | header::ACCESS_CONTROL_REQUEST_METHOD
-                            | header::CONNECTION
-                            | header::CONTENT_LENGTH
-                            | header::COOKIE
-                            | header::DATE
-                            | header::DNT
-                            | header::EXPECT
-                            | header::HOST
-                            | header::ORIGIN
-                            | header::REFERER
-                            | header::SET_COOKIE
-                            | header::TE
-                            | header::TRAILER
-                            | header::TRANSFER_ENCODING
-                            | header::UPGRADE
-                            | header::VIA
-                    ) {
+                    if is_unsafe_header(&name) {
                         continue;
                     }
 
@@ -246,7 +224,14 @@ pub async fn fetch<R: Runtime>(
                     request = request.header(header::USER_AGENT, "tauri-plugin-http");
                 }
 
-                request = request.header(header::ORIGIN, webview.url()?.as_str());
+                if !(cfg!(feature = "unsafe-headers")
+                    && headers.contains_key(header::ORIGIN.as_str()))
+                {
+                    if let Ok(url) = webview.url() {
+                        request =
+                            request.header(header::ORIGIN, url.origin().ascii_serialization());
+                    }
+                }
 
                 if let Some(data) = data {
                     request = request.body(data);
@@ -342,4 +327,34 @@ pub(crate) async fn fetch_read_body<R: Runtime>(
     };
     let res = Arc::into_inner(res).unwrap().0;
     Ok(tauri::ipc::Response::new(res.bytes().await?.to_vec()))
+}
+
+// forbidden headers per fetch spec https://fetch.spec.whatwg.org/#terminology-headers
+#[cfg(not(feature = "unsafe-headers"))]
+fn is_unsafe_header(header: &HeaderName) -> bool {
+    matches!(
+        *header,
+        header::ACCEPT_CHARSET
+            | header::ACCEPT_ENCODING
+            | header::ACCESS_CONTROL_REQUEST_HEADERS
+            | header::ACCESS_CONTROL_REQUEST_METHOD
+            | header::CONNECTION
+            | header::CONTENT_LENGTH
+            | header::COOKIE
+            | header::DATE
+            | header::DNT
+            | header::EXPECT
+            | header::HOST
+            | header::ORIGIN
+            | header::REFERER
+            | header::SET_COOKIE
+            | header::TE
+            | header::TRAILER
+            | header::TRANSFER_ENCODING
+            | header::UPGRADE
+            | header::VIA
+    ) || {
+        let lower = header.as_str().to_lowercase();
+        lower.starts_with("proxy-") || lower.starts_with("sec-")
+    }
 }
