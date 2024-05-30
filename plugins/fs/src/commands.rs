@@ -336,7 +336,7 @@ pub fn read_file<R: Runtime>(
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
-) -> CommandResult<Vec<u8>> {
+) -> CommandResult<tauri::ipc::Response> {
     let resolved_path = resolve_path(
         &webview,
         &global_scope,
@@ -345,6 +345,7 @@ pub fn read_file<R: Runtime>(
         options.as_ref().and_then(|o| o.base_dir),
     )?;
     std::fs::read(&resolved_path)
+        .map(tauri::ipc::Response::new)
         .map_err(|e| {
             format!(
                 "failed to read file at path: {} with error: {e}",
@@ -756,11 +757,27 @@ pub fn write_file<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
-    data: Vec<u8>,
-    options: Option<WriteFileOptions>,
+    request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
-    write_file_inner(webview, &global_scope, &command_scope, path, &data, options)
+    if let tauri::ipc::InvokeBody::Raw(data) = request.body() {
+        let path = request
+            .headers()
+            .get("path")
+            .ok_or_else(|| anyhow::anyhow!("missing file path").into())
+            .and_then(|p| {
+                p.to_str()
+                    .map_err(|e| anyhow::anyhow!("invalid path: {e}").into())
+            })
+            .and_then(|p| SafePathBuf::new(p.into()).map_err(CommandError::from))?;
+        let options = request
+            .headers()
+            .get("options")
+            .and_then(|p| p.to_str().ok())
+            .and_then(|opts| serde_json::from_str(opts).ok());
+        write_file_inner(webview, &global_scope, &command_scope, path, data, options)
+    } else {
+        Err(anyhow::anyhow!("unexpected invoke body").into())
+    }
 }
 
 #[tauri::command]
