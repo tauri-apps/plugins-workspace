@@ -774,7 +774,7 @@ pub fn write_file<R: Runtime>(
             .get("options")
             .and_then(|p| p.to_str().ok())
             .and_then(|opts| serde_json::from_str(opts).ok());
-        write_file_inner(webview, &global_scope, &command_scope, path, &data, options)
+        write_file_inner(webview, &global_scope, &command_scope, path, data, options)
     } else {
         Err(anyhow::anyhow!("unexpected invoke body").into())
     }
