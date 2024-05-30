@@ -231,7 +231,7 @@ checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
 
 [[package]]
 name = "api"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 dependencies = [
  "log",
  "serde",
@@ -369,9 +369,9 @@ dependencies = [
 
 [[package]]
 name = "async-compression"
-version = "0.4.10"
+version = "0.4.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c90a406b4495d129f00461241616194cb8a032c8d1c53c657f0961d5f8e0498"
+checksum = "cd066d0b4ef8ecb03a55319dc13aa6910616d0f44008a045bb1835af830abff5"
 dependencies = [
  "brotli 6.0.0",
  "flate2",
@@ -6200,7 +6200,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-authenticator"
-version = "2.0.0-beta.6"
+version = "2.0.0-beta.7"
 dependencies = [
  "authenticator",
  "base64 0.22.1",
@@ -6223,7 +6223,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-autostart"
-version = "2.0.0-beta.6"
+version = "2.0.0-beta.7"
 dependencies = [
  "auto-launch",
  "log",
@@ -6236,7 +6236,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-barcode-scanner"
-version = "2.0.0-beta.6"
+version = "2.0.0-beta.7"
 dependencies = [
  "log",
  "serde",
@@ -6248,7 +6248,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-biometric"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "log",
  "serde",
@@ -6261,7 +6261,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-cli"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "clap",
  "log",
@@ -6274,7 +6274,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-clipboard-manager"
-version = "2.1.0-beta.3"
+version = "2.1.0-beta.4"
 dependencies = [
  "arboard",
  "image 0.24.9",
@@ -6288,7 +6288,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.0.0-beta.6"
+version = "2.0.0-beta.7"
 dependencies = [
  "dunce",
  "log",
@@ -6306,7 +6306,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 dependencies = [
  "dunce",
  "log",
@@ -6322,7 +6322,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 dependencies = [
  "anyhow",
  "glob",
@@ -6341,7 +6341,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-global-shortcut"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "global-hotkey",
  "log",
@@ -6354,7 +6354,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 dependencies = [
  "data-url",
  "http",
@@ -6367,13 +6367,14 @@ dependencies = [
  "tauri-plugin",
  "tauri-plugin-fs",
  "thiserror",
+ "tokio",
  "url",
  "urlpattern",
 ]
 
 [[package]]
 name = "tauri-plugin-localhost"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "http",
  "log",
@@ -6386,7 +6387,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-log"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "android_logger",
  "byte-unit",
@@ -6405,7 +6406,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-nfc"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "log",
  "serde",
@@ -6418,7 +6419,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "2.0.0-beta.6"
+version = "2.0.0-beta.7"
 dependencies = [
  "chrono",
  "color-backtrace",
@@ -6445,7 +6446,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-os"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "gethostname",
  "log",
@@ -6461,7 +6462,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6475,7 +6476,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-positioner"
-version = "2.0.0-beta.6"
+version = "2.0.0-beta.7"
 dependencies = [
  "log",
  "serde",
@@ -6488,7 +6489,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-process"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "tauri",
  "tauri-plugin",
@@ -6496,7 +6497,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-shell"
-version = "2.0.0-beta.6"
+version = "2.0.0-beta.7"
 dependencies = [
  "encoding_rs",
  "log",
@@ -6515,7 +6516,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 dependencies = [
  "log",
  "semver",
@@ -6529,7 +6530,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-sql"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "futures-core",
  "indexmap 2.2.6",
@@ -6546,7 +6547,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-store"
-version = "2.0.0-beta.7"
+version = "2.0.0-beta.8"
 dependencies = [
  "dunce",
  "log",
@@ -6559,7 +6560,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-stronghold"
-version = "2.0.0-beta.5"
+version = "2.0.0-beta.6"
 dependencies = [
  "hex",
  "iota-crypto 0.23.1",
@@ -6580,7 +6581,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.0.0-beta.6"
+version = "2.0.0-beta.7"
 dependencies = [
  "base64 0.22.1",
  "dirs-next",
@@ -6607,7 +6608,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-upload"
-version = "2.0.0-beta.6"
+version = "2.0.0-beta.7"
 dependencies = [
  "futures-util",
  "log",
@@ -6624,7 +6625,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-websocket"
-version = "2.0.0-beta.6"
+version = "2.0.0-beta.7"
 dependencies = [
  "futures-util",
  "http",
@@ -6641,7 +6642,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 dependencies = [
  "bitflags 2.5.0",
  "log",
@@ -6915,8 +6916,20 @@ dependencies = [
  "pin-project-lite",
  "signal-hook-registry",
  "socket2",
+ "tokio-macros",
  "tracing",
  "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "tokio-macros"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b8a1e28f2deaa14e508979454cb3a223b10b938b45af148bc0986de36f1923b"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.66",
 ]
 
 [[package]]

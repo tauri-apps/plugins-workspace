@@ -13,6 +13,7 @@ use tauri::{
     ipc::{CommandScope, GlobalScope},
     Manager, ResourceId, Runtime, State, Webview,
 };
+use tokio::sync::oneshot::{channel, Receiver, Sender};
 
 use crate::{
     scope::{Entry, Scope},
@@ -21,14 +22,28 @@ use crate::{
 
 struct ReqwestResponse(reqwest::Response);
 
-type CancelableResponseResult = Result<Result<reqwest::Response>>;
+type CancelableResponseResult = Result<reqwest::Response>;
 type CancelableResponseFuture =
     Pin<Box<dyn Future<Output = CancelableResponseResult> + Send + Sync>>;
 
-struct FetchRequest(Mutex<CancelableResponseFuture>);
+struct FetchRequest {
+    fut: Mutex<CancelableResponseFuture>,
+    abort_tx: std::sync::Mutex<Option<Sender<()>>>,
+    abort_rx: std::sync::Mutex<Option<Receiver<()>>>,
+}
+
 impl FetchRequest {
     fn new(f: CancelableResponseFuture) -> Self {
-        Self(Mutex::new(f))
+        let (tx, rx) = channel::<()>();
+        Self {
+            fut: Mutex::new(f),
+            abort_tx: std::sync::Mutex::new(Some(tx)),
+            abort_rx: std::sync::Mutex::new(Some(rx)),
+        }
+    }
+
+    fn abort(&self) {
+        let _ = self.abort_tx.lock().unwrap().take().map(|tx| tx.send(()));
     }
 }
 
@@ -252,7 +267,7 @@ pub async fn fetch<R: Runtime>(
                     request = request.body(data);
                 }
 
-                let fut = async move { Ok(request.send().await.map_err(Into::into)) };
+                let fut = async move { request.send().await.map_err(Into::into) };
                 let mut resources_table = webview.resources_table();
                 let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
 
@@ -273,7 +288,7 @@ pub async fn fetch<R: Runtime>(
                 .header(header::CONTENT_TYPE, data_url.mime_type().to_string())
                 .body(reqwest::Body::from(body))?;
 
-            let fut = async move { Ok(Ok(reqwest::Response::from(response))) };
+            let fut = async move { Ok(reqwest::Response::from(response)) };
             let mut resources_table = webview.resources_table();
             let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
             Ok(rid)
@@ -283,14 +298,10 @@ pub async fn fetch<R: Runtime>(
 }
 
 #[command]
-pub async fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::Result<()> {
-    let req = {
-        let resources_table = webview.resources_table();
-        resources_table.get::<FetchRequest>(rid)?
-    };
-    let mut req = req.0.lock().await;
-    *req = Box::pin(async { Err(Error::RequestCanceled) });
-
+pub fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::Result<()> {
+    let resources_table = webview.resources_table();
+    let req = resources_table.get::<FetchRequest>(rid)?;
+    req.abort();
     Ok(())
 }
 
@@ -300,13 +311,22 @@ pub async fn fetch_send<R: Runtime>(
     rid: ResourceId,
 ) -> crate::Result<FetchResponse> {
     let req = {
-        let mut resources_table = webview.resources_table();
-        resources_table.take::<FetchRequest>(rid)?
+        let resources_table = webview.resources_table();
+        resources_table.get::<FetchRequest>(rid)?
     };
 
-    let res = match req.0.lock().await.as_mut().await {
-        Ok(Ok(res)) => res,
-        Ok(Err(e)) | Err(e) => return Err(e),
+    let mut fut = req.fut.lock().await;
+    let fut = async { fut.as_mut().await };
+
+    let abort = req.abort_rx.lock().unwrap().take().unwrap();
+
+    let res = tokio::select! {
+        res = fut => res?,
+        _ = abort => {
+            let mut resources_table = webview.resources_table();
+            resources_table.close(rid)?;
+            return Err(Error::RequestCanceled);
+        }
     };
 
     let status = res.status();
