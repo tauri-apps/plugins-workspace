@@ -228,7 +228,8 @@ pub async fn fetch<R: Runtime>(
                     && headers.contains_key(header::ORIGIN.as_str()))
                 {
                     if let Ok(url) = webview.url() {
-                        request = request.header(header::ORIGIN, url.as_str());
+                        request =
+                            request.header(header::ORIGIN, url.origin().ascii_serialization());
                     }
                 }
 
