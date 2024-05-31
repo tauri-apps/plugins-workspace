@@ -84,7 +84,7 @@ export interface ClientOptions {
   proxy?: Proxy;
 }
 
-const ERROR_REQUEST_CANCELLED = "Request Cancelled";
+const ERROR_REQUEST_CANCELLED = "Request canceled";
 
 /**
  * Fetch a resource from the network. It returns a `Promise` that resolves to the

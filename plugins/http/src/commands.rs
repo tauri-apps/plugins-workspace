@@ -11,7 +11,7 @@ use tauri::{
     async_runtime::Mutex,
     command,
     ipc::{CommandScope, GlobalScope},
-    Manager, ResourceId, Runtime, State, Webview,
+    Manager, ResourceId, ResourceTable, Runtime, State, Webview,
 };
 use tokio::sync::oneshot::{channel, Receiver, Sender};
 
@@ -21,6 +21,7 @@ use crate::{
 };
 
 struct ReqwestResponse(reqwest::Response);
+impl tauri::Resource for ReqwestResponse {}
 
 type CancelableResponseResult = Result<reqwest::Response>;
 type CancelableResponseFuture =
@@ -28,27 +29,49 @@ type CancelableResponseFuture =
 
 struct FetchRequest {
     fut: Mutex<CancelableResponseFuture>,
-    abort_tx: std::sync::Mutex<Option<Sender<()>>>,
-    abort_rx: std::sync::Mutex<Option<Receiver<()>>>,
+    abort_tx_rid: ResourceId,
+    abort_rx_rid: ResourceId,
 }
+impl tauri::Resource for FetchRequest {}
 
 impl FetchRequest {
-    fn new(f: CancelableResponseFuture) -> Self {
-        let (tx, rx) = channel::<()>();
+    fn new(
+        fut: CancelableResponseFuture,
+        abort_tx_rid: ResourceId,
+        abort_rx_rid: ResourceId,
+    ) -> Self {
         Self {
-            fut: Mutex::new(f),
-            abort_tx: std::sync::Mutex::new(Some(tx)),
-            abort_rx: std::sync::Mutex::new(Some(rx)),
+            fut: Mutex::new(fut),
+            abort_tx_rid,
+            abort_rx_rid,
         }
-    }
-
-    fn abort(&self) {
-        let _ = self.abort_tx.lock().unwrap().take().map(|tx| tx.send(()));
     }
 }
 
-impl tauri::Resource for FetchRequest {}
-impl tauri::Resource for ReqwestResponse {}
+struct AbortSender(Sender<()>);
+impl tauri::Resource for AbortRecveiver {}
+
+impl AbortSender {
+    fn abort(self) {
+        let _ = self.0.send(());
+    }
+}
+
+struct AbortRecveiver(Receiver<()>);
+impl tauri::Resource for AbortSender {}
+
+trait AddRequest {
+    fn add_request(&mut self, fut: CancelableResponseFuture) -> ResourceId;
+}
+
+impl AddRequest for ResourceTable {
+    fn add_request(&mut self, fut: CancelableResponseFuture) -> ResourceId {
+        let (tx, rx) = channel::<()>();
+        let (tx, rx) = (AbortSender(tx), AbortRecveiver(rx));
+        let req = FetchRequest::new(fut, self.add(tx), self.add(rx));
+        self.add(req)
+    }
+}
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -269,7 +292,7 @@ pub async fn fetch<R: Runtime>(
 
                 let fut = async move { request.send().await.map_err(Into::into) };
                 let mut resources_table = webview.resources_table();
-                let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
+                let rid = resources_table.add_request(Box::pin(fut));
 
                 Ok(rid)
             } else {
@@ -290,7 +313,7 @@ pub async fn fetch<R: Runtime>(
 
             let fut = async move { Ok(reqwest::Response::from(response)) };
             let mut resources_table = webview.resources_table();
-            let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
+            let rid = resources_table.add_request(Box::pin(fut));
             Ok(rid)
         }
         _ => Err(Error::SchemeNotSupport(scheme.to_string())),
@@ -299,9 +322,12 @@ pub async fn fetch<R: Runtime>(
 
 #[command]
 pub fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::Result<()> {
-    let resources_table = webview.resources_table();
+    let mut resources_table = webview.resources_table();
     let req = resources_table.get::<FetchRequest>(rid)?;
-    req.abort();
+    let abort_tx = resources_table.take::<AbortSender>(req.abort_tx_rid)?;
+    if let Some(abort_tx) = Arc::into_inner(abort_tx) {
+        abort_tx.abort();
+    }
     Ok(())
 }
 
@@ -310,19 +336,22 @@ pub async fn fetch_send<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
 ) -> crate::Result<FetchResponse> {
-    let req = {
-        let resources_table = webview.resources_table();
-        resources_table.get::<FetchRequest>(rid)?
+    let (req, abort_rx) = {
+        let mut resources_table = webview.resources_table();
+        let req = resources_table.get::<FetchRequest>(rid)?;
+        let abort_rx = resources_table.take::<AbortRecveiver>(req.abort_rx_rid)?;
+        (req, abort_rx)
+    };
+
+    let Some(abort_rx) = Arc::into_inner(abort_rx) else {
+        return Err(Error::RequestCanceled);
     };
 
     let mut fut = req.fut.lock().await;
-    let fut = async { fut.as_mut().await };
-
-    let abort = req.abort_rx.lock().unwrap().take().unwrap();
 
     let res = tokio::select! {
-        res = fut => res?,
-        _ = abort => {
+        res = fut.as_mut() => res?,
+        _ = abort_rx.0 => {
             let mut resources_table = webview.resources_table();
             resources_table.close(rid)?;
             return Err(Error::RequestCanceled);
