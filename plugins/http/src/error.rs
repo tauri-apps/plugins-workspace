@@ -29,7 +29,7 @@ pub enum Error {
     HttpMethod(#[from] http::method::InvalidMethod),
     #[error("scheme {0} not supported")]
     SchemeNotSupport(String),
-    #[error("Request canceled")]
+    #[error("Request cancelled")]
     RequestCanceled,
     #[error(transparent)]
     FsError(#[from] tauri_plugin_fs::Error),
