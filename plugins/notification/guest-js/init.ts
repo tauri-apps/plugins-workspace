@@ -57,11 +57,12 @@ import type { Options } from "./index";
 
   // @ts-expect-error unfortunately we can't implement the whole type, so we overwrite it with our own version
   window.Notification = function (title, options) {
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const opts = options || {};
     void sendNotification(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       Object.assign(opts, {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         title,
       }),
     );
@@ -77,6 +78,7 @@ import type { Options } from "./index";
       if (!permissionSettable) {
         throw new Error("Readonly property");
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       permissionValue = v;
     },
   });
