@@ -43,7 +43,7 @@ mac-notification-sys = "0.6"
 chrono = { version = "0.4", optional = true }
 
 [target."cfg(target_os=\"windows\")".dependencies]
-winrt-notification = { package = "tauri-winrt-notification", version = "0.3.1" }
+winrt-notification = { package = "tauri-winrt-notification", version = "0.4.0" }
 
 [dev-dependencies]
 color-backtrace = "0.6"
