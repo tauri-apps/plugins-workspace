@@ -81,7 +81,7 @@ impl<R: Runtime> StoreBuilder<R> {
     /// # Ok(())
     /// # }
     pub fn defaults(mut self, defaults: HashMap<String, JsonValue>) -> Self {
-        self.cache = defaults.clone();
+        self.cache.clone_from(&defaults);
         self.defaults = Some(defaults);
         self
     }
@@ -279,7 +279,7 @@ impl<R: Runtime> Store<R> {
                         );
                     }
                 }
-                self.cache = defaults.clone();
+                self.cache.clone_from(defaults);
             }
             Ok(())
         } else {
