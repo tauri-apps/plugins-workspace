@@ -1,3 +1,4 @@
+/* eslint-disable */
 import WebSocket from "tauri-plugin-websocket-api";
 import "./style.css";
 

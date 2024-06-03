@@ -200,7 +200,7 @@ export async function attachLogger(fn: LoggerFn): Promise<UnlistenFn> {
     // Strip ANSI escape codes
     message = message.replace(
       // TODO: Investigate security/detect-unsafe-regex
-      // eslint-disable-next-line no-control-regex, security/detect-unsafe-regex
+      // eslint-disable-next-line no-control-regex
       /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
       "",
     );
