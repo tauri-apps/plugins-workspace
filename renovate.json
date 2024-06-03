@@ -1,5 +1,6 @@
 {
   "extends": ["config:base"],
+  "baseBranches": ["v1", "v2"],
   "enabledManagers": ["cargo", "npm"],
   "semanticCommitType": "chore",
   "labels": ["dependencies"],
