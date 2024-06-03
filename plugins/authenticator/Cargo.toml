@@ -34,7 +34,7 @@ byteorder = "1"
 openssl = "0.10"
 
 [target."cfg(target_os = \"windows\")".dependencies]
-winapi-util = "=0.1.6"
+winapi-util = "=0.1.8"
 
 [dev-dependencies]
 rand = "0.8"
