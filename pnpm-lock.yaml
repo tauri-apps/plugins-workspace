@@ -28,8 +28,8 @@ importers:
         specifier: 7.11.0
         version: 7.11.0(eslint@8.57.0)(typescript@5.4.5)
       covector:
-        specifier: ^0.10.2
-        version: 0.10.2(mocha@10.4.0)
+        specifier: ^0.11.0
+        version: 0.11.0(mocha@10.4.0)
       eslint:
         specifier: 8.57.0
         version: 8.57.0
@@ -515,20 +515,23 @@ packages:
     resolution: {integrity: sha512-oyq0qgFJDIIgLpyPwTv4j/sHX/MITatFzY3/b42VSldyZfnUC1lYBx5RwFvzBv1Sq4APOj2VCZO23pDRwy5kew==}
     engines: {node: '>=6.5'}
 
-  '@covector/apply@0.9.2':
-    resolution: {integrity: sha512-XrNujG6ERUq8bwPCQgOEzuwBCSLKV5nC4AuO+QBpuC0xA9Qz9w025YKYNMIsXxVf0SBscMXKzhBAo9iUDTzKFw==}
+  '@covector/apply@0.9.3':
+    resolution: {integrity: sha512-mX4ygF0p2wtUpCV4j1zdjylfKLwYnPNtZ63tIt/uWC9VynFN9Xt8EYf15SbwO0yJ4VBCAARsgQmIoR+PQKTjgQ==}
 
-  '@covector/assemble@0.10.3':
-    resolution: {integrity: sha512-LcltbmTDHeCouIGvDJ268UQ2T/JGOjt/vE4lT15BOq3F+RjTdE3B+1XmhhkFzP6Ebp6hnU5mZXFDmWqqrQKWFA==}
+  '@covector/assemble@0.11.0':
+    resolution: {integrity: sha512-ELQf+xnsxtuy8+b/d58y4Jx0nPCmQpctP1mldY3PT13UUUoQG0AhxRbIWSNVlHT4mLwBEefrMT7jQL5E6oXd1w==}
 
-  '@covector/changelog@0.10.1':
-    resolution: {integrity: sha512-p1kDf6abq8TAKIzLMcieMD+hoP4RamykoPpk3PYHUhZnz0xi1+8sVGEPByCQGb3SI9PCg8CZPuyIA91YtuiTsQ==}
+  '@covector/changelog@0.11.0':
+    resolution: {integrity: sha512-QCQTJzr4tM/PJhwiO5r08tZZN44VeNTz3KsIJsp6G8kvrIkAHdhud4K8Udc9lqmkq0v4jM/4K1+2Ioad+QRi7g==}
 
-  '@covector/command@0.7.0':
-    resolution: {integrity: sha512-9DGx4tOY9Fkd4AlYbOE0rnesYAYJm7Wr6BUBJlRxErtA0vDAejZ0+jVHZbemB1MbLOaYWXkDf/wD7SLnf06gfw==}
+  '@covector/command@0.7.1':
+    resolution: {integrity: sha512-YNXWo713yzecKZOZrHynzxMor+L17PGTuUa1XJZSmtRd4Hk4a5g2EzUNbgDeVLKDLisNbZZ3VleDtZt2R4ScqQ==}
 
-  '@covector/files@0.7.1':
-    resolution: {integrity: sha512-fGMNfTkjTvgXyj5ctfGxPhxW05SNlLK3V0eiSjP2nMVLEapPtp9ZMJNGqvvoHIs1R2IxURh0iUOjA8O2zQaCfQ==}
+  '@covector/files@0.7.2':
+    resolution: {integrity: sha512-Fs2WwFqSBPSWDzdkdznSLpIgw3Ts8SLlrxzK2AzzJ2LLGK1/foTKzp/IETNKoxJftoAueXq6n+YIlFRJsLRH1Q==}
+
+  '@covector/toml@0.1.0':
+    resolution: {integrity: sha512-K/QMl7DGDH06jWxjX4zlmLL+ZjXnonoCHMeEqpCAPo9vTUNU3QYJakE4+8dld3n01g3aZswIGTNCHOHQeDaPEw==}
 
   '@effection/channel@2.0.6':
     resolution: {integrity: sha512-ugBR6GfhUo1Ltqz472h+48k+s72hkU8x8QI9Zd7FZRuS4z1xdv8I795QgQWD5hBTgl8o36zMVCzyICQpfwwkMw==}
@@ -725,9 +728,6 @@ packages:
 
   '@humanwhocodes/object-schema@2.0.3':
     resolution: {integrity: sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==}
-
-  '@iarna/toml@2.2.5':
-    resolution: {integrity: sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==}
 
   '@iconify-json/codicon@1.1.49':
     resolution: {integrity: sha512-/yr92AVZ/uJHDgO8JcnJodXfikvjJSUwr4yEqV5LxnXxy+L64GkwY7HroqOGLpB2ljvGAGShMSswZa1bbr7Abg==}
@@ -980,9 +980,6 @@ packages:
     resolution: {integrity: sha512-707q9uIc2oNrYHd2dtMvxTrpZXVpart5EIktnRymNOpphkLlB6WUBjHD+ga45WqTU6cNGKbYvkKqTNfshNul9Q==}
     engines: {node: '>= 10'}
     hasBin: true
-
-  '@tauri-apps/toml@2.2.4':
-    resolution: {integrity: sha512-NJV/pdgJObDlDWi5+MTHZ2qyNvdL0dlHqQ72nzQYXWbW1LHMPXgCJYl0pLqL1XxxLtxtInYbtVCGVAcwhGxdkw==}
 
   '@types/estree@1.0.5':
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
@@ -1379,8 +1376,8 @@ packages:
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
-  covector@0.10.2:
-    resolution: {integrity: sha512-Nbz2x5cnS7F0fTT/raNKo0UYbI6rjaDoCrAJNoOpsSHdztnlFi7Bb6lU6kOBEeEH1zHVJk5F3ChBs0VNAuf5mg==}
+  covector@0.11.0:
+    resolution: {integrity: sha512-XDLErG6ZQxtMxxWCLW8FE1d9glZLxWhOkUACi0IQ79U3p3Ku4y/iMgTo2h9/GZ1KQTJNtndGkGaIq2XdFjwwqw==}
     hasBin: true
 
   cross-fetch@3.1.5:
@@ -2973,19 +2970,19 @@ snapshots:
     dependencies:
       event-target-shim: 5.0.1
 
-  '@covector/apply@0.9.2(mocha@10.4.0)':
+  '@covector/apply@0.9.3(mocha@10.4.0)':
     dependencies:
-      '@covector/files': 0.7.1
+      '@covector/files': 0.7.2
       effection: 2.0.8(mocha@10.4.0)
       semver: 7.6.2
     transitivePeerDependencies:
       - encoding
       - mocha
 
-  '@covector/assemble@0.10.3':
+  '@covector/assemble@0.11.0':
     dependencies:
-      '@covector/command': 0.7.0
-      '@covector/files': 0.7.1
+      '@covector/command': 0.7.1
+      '@covector/files': 0.7.2
       effection: 2.0.8(mocha@10.4.0)
       js-yaml: 4.1.0
       lodash: 4.17.21
@@ -2997,9 +2994,9 @@ snapshots:
       - encoding
       - supports-color
 
-  '@covector/changelog@0.10.1':
+  '@covector/changelog@0.11.0':
     dependencies:
-      '@covector/files': 0.7.1
+      '@covector/files': 0.7.2
       effection: 2.0.8(mocha@10.4.0)
       lodash: 4.17.21
       remark-parse: 9.0.0
@@ -3009,23 +3006,23 @@ snapshots:
       - encoding
       - supports-color
 
-  '@covector/command@0.7.0':
+  '@covector/command@0.7.1':
     dependencies:
       '@effection/process': 2.1.4
       effection: 2.0.8(mocha@10.4.0)
-      strip-ansi: 6.0.1
     transitivePeerDependencies:
       - encoding
 
-  '@covector/files@0.7.1':
+  '@covector/files@0.7.2':
     dependencies:
-      '@iarna/toml': 2.2.5
-      '@tauri-apps/toml': 2.2.4
+      '@covector/toml': 0.1.0
       globby: 11.1.0
       js-yaml: 4.1.0
       semver: 7.6.2
       zod: 3.22.4
       zod-validation-error: 1.5.0(zod@3.22.4)
+
+  '@covector/toml@0.1.0': {}
 
   '@effection/channel@2.0.6':
     dependencies:
@@ -3185,8 +3182,6 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/object-schema@2.0.3': {}
-
-  '@iarna/toml@2.2.5': {}
 
   '@iconify-json/codicon@1.1.49':
     dependencies:
@@ -3397,8 +3392,6 @@ snapshots:
       '@tauri-apps/cli-win32-arm64-msvc': 2.0.0-beta.20
       '@tauri-apps/cli-win32-ia32-msvc': 2.0.0-beta.20
       '@tauri-apps/cli-win32-x64-msvc': 2.0.0-beta.20
-
-  '@tauri-apps/toml@2.2.4': {}
 
   '@types/estree@1.0.5': {}
 
@@ -3903,16 +3896,18 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  covector@0.10.2(mocha@10.4.0):
+  covector@0.11.0(mocha@10.4.0):
     dependencies:
-      '@covector/apply': 0.9.2(mocha@10.4.0)
-      '@covector/assemble': 0.10.3
-      '@covector/changelog': 0.10.1
-      '@covector/command': 0.7.0
-      '@covector/files': 0.7.1
+      '@covector/apply': 0.9.3(mocha@10.4.0)
+      '@covector/assemble': 0.11.0
+      '@covector/changelog': 0.11.0
+      '@covector/command': 0.7.1
+      '@covector/files': 0.7.2
       effection: 2.0.8(mocha@10.4.0)
       globby: 11.1.0
       inquirer: 8.2.6
+      lodash: 4.17.21
+      strip-ansi: 6.0.1
       yargs: 17.7.2
     transitivePeerDependencies:
       - encoding
