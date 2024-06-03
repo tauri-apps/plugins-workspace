@@ -1,9 +1,9 @@
+/* eslint-disable */
 import WebSocket from "tauri-plugin-websocket-api";
 import "./style.css";
 
 let ws: WebSocket;
 
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
 document.addEventListener("DOMContentLoaded", async () => {
   document.querySelector("#send")?.addEventListener("click", send);
   document.querySelector("#disconnect")?.addEventListener("click", disconnect);
