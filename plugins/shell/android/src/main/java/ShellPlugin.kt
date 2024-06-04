@@ -21,7 +21,7 @@ class ShellPlugin(private val activity: Activity) : Plugin(activity) {
             val url = invoke.parseArgs(String::class.java)
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            activity?.applicationContext?.startActivity(intent)
+            activity.applicationContext?.startActivity(intent)
             invoke.resolve()
         } catch (ex: Exception) {
             invoke.reject(ex.message)

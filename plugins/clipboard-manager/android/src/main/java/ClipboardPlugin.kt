@@ -59,7 +59,6 @@ internal class ReadClipDataSerializer @JvmOverloads constructor(t: Class<ReadCli
 
         jgen.writeEndObject()
       }
-      else -> {}
     }
 
     jgen.writeEndObject()
@@ -93,10 +92,6 @@ class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
     val clipData = when (args) {
       is WriteOptions.PlainText -> {
         ClipData.newPlainText(args.label, args.text)
-      }
-      else -> {
-        invoke.reject("unimplemented clip data")
-        return
       }
     }
 

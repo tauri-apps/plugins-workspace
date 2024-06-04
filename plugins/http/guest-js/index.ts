@@ -141,6 +141,7 @@ export async function fetch(
         ? headers
         : Object.entries(headers);
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const mappedHeaders: Array<[string, string]> = headersArray.map(
     ([name, val]) => [
       name,
