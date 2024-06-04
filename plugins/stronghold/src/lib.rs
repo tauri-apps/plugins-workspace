@@ -19,9 +19,10 @@ use std::{
     time::Duration,
 };
 
+use crypto::keys::bip39;
 use iota_stronghold::{
     procedures::{
-        BIP39Generate, BIP39Recover, Chain, Ed25519Sign, KeyType as StrongholdKeyType,
+        BIP39Generate, BIP39Recover, Curve, Ed25519Sign, KeyType as StrongholdKeyType,
         MnemonicLanguage, PublicKey, Slip10Derive, Slip10DeriveInput, Slip10Generate,
         StrongholdProcedure,
     },
@@ -33,7 +34,7 @@ use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, Runtime, State,
 };
-use zeroize::Zeroize;
+use zeroize::{Zeroize, Zeroizing};
 
 #[cfg(feature = "kdf")]
 pub mod kdf;
@@ -199,7 +200,8 @@ impl From<ProcedureDto> for StrongholdProcedure {
                 input,
                 output,
             } => StrongholdProcedure::Slip10Derive(Slip10Derive {
-                chain: Chain::from_u32_hardened(chain),
+                curve: Curve::Ed25519,
+                chain,
                 input: input.into(),
                 output: output.into(),
             }),
@@ -208,13 +210,13 @@ impl From<ProcedureDto> for StrongholdProcedure {
                 passphrase,
                 output,
             } => StrongholdProcedure::BIP39Recover(BIP39Recover {
-                mnemonic,
-                passphrase,
+                mnemonic: bip39::Mnemonic::from(mnemonic),
+                passphrase: bip39::Passphrase::from(passphrase.unwrap_or_default()),
                 output: output.into(),
             }),
             ProcedureDto::BIP39Generate { passphrase, output } => {
                 StrongholdProcedure::BIP39Generate(BIP39Generate {
-                    passphrase,
+                    passphrase: bip39::Passphrase::from(passphrase.unwrap_or_default()),
                     output: output.into(),
                     language: MnemonicLanguage::English,
                 })
@@ -351,7 +353,10 @@ async fn save_secret(
     let client = get_client(collection, snapshot_path, client)?;
     client
         .vault(&vault)
-        .write_secret(Location::generic(vault, record_path), secret)
+        .write_secret(
+            Location::generic(vault, record_path),
+            Zeroizing::new(secret),
+        )
         .map_err(Into::into)
 }
 
