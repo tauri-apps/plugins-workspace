@@ -1,17 +1,37 @@
 [workspace]
-members = ["plugins/*", "plugins/*/examples/*/src-tauri"]
+# Listed without globs to prevent issues with renovate's baseBranches config.
+members = [
+  "plugins/authenticator",
+  "plugins/autostart",
+  "plugins/fs-extra",
+  "plugins/fs-watch",
+  "plugins/localhost",
+  "plugins/log",
+  "plugins/persisted-scope",
+  "plugins/positioner",
+  "plugins/single-instance",
+  "plugins/sql",
+  "plugins/store",
+  "plugins/stronghold",
+  "plugins/upload",
+  "plugins/websocket",
+  "plugins/window-state",
+  "plugins/single-instance/examples/vanilla/src-tauri",
+  "plugins/store/examples/AppSettingsManager/src-tauri",
+  "plugins/websocket/examples/tauri-app/src-tauri",
+]
 resolver = "2"
 
 [workspace.dependencies]
-serde = { version = "1", features = ["derive"] }
 log = "0.4"
+serde = {version = "1", features = ["derive"]}
+serde_json = "1"
 tauri = "1"
 tauri-build = "1"
-serde_json = "1"
 thiserror = "1"
 
 [workspace.package]
+authors = ["Tauri Programme within The Commons Conservancy"]
 edition = "2021"
-authors = [ "Tauri Programme within The Commons Conservancy" ]
 license = "Apache-2.0 OR MIT"
 rust-version = "1.64"
