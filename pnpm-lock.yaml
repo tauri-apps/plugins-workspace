@@ -23,7 +23,7 @@ importers:
         version: 0.4.4(rollup@4.18.0)
       '@rollup/plugin-typescript':
         specifier: 11.1.6
-        version: 11.1.6(rollup@4.18.0)(tslib@2.6.2)(typescript@5.4.5)
+        version: 11.1.6(rollup@4.18.0)(tslib@2.6.3)(typescript@5.4.5)
       '@types/eslint__js':
         specifier: 8.42.3
         version: 8.42.3
@@ -53,8 +53,8 @@ importers:
         version: 1.5.6
     devDependencies:
       tslib:
-        specifier: 2.6.2
-        version: 2.6.2
+        specifier: 2.6.3
+        version: 2.6.3
 
   plugins/autostart:
     dependencies:
@@ -63,8 +63,8 @@ importers:
         version: 1.5.6
     devDependencies:
       tslib:
-        specifier: 2.6.2
-        version: 2.6.2
+        specifier: 2.6.3
+        version: 2.6.3
 
   plugins/fs-extra:
     dependencies:
@@ -73,8 +73,8 @@ importers:
         version: 1.5.6
     devDependencies:
       tslib:
-        specifier: 2.6.2
-        version: 2.6.2
+        specifier: 2.6.3
+        version: 2.6.3
 
   plugins/fs-watch:
     dependencies:
@@ -83,8 +83,8 @@ importers:
         version: 1.5.6
     devDependencies:
       tslib:
-        specifier: 2.6.2
-        version: 2.6.2
+        specifier: 2.6.3
+        version: 2.6.3
 
   plugins/log:
     dependencies:
@@ -93,8 +93,8 @@ importers:
         version: 1.5.6
     devDependencies:
       tslib:
-        specifier: 2.6.2
-        version: 2.6.2
+        specifier: 2.6.3
+        version: 2.6.3
 
   plugins/positioner:
     dependencies:
@@ -103,8 +103,8 @@ importers:
         version: 1.5.6
     devDependencies:
       tslib:
-        specifier: 2.6.2
-        version: 2.6.2
+        specifier: 2.6.3
+        version: 2.6.3
 
   plugins/single-instance/examples/vanilla:
     devDependencies:
@@ -119,8 +119,8 @@ importers:
         version: 1.5.6
     devDependencies:
       tslib:
-        specifier: 2.6.2
-        version: 2.6.2
+        specifier: 2.6.3
+        version: 2.6.3
 
   plugins/store:
     dependencies:
@@ -129,8 +129,8 @@ importers:
         version: 1.5.6
     devDependencies:
       tslib:
-        specifier: 2.6.2
-        version: 2.6.2
+        specifier: 2.6.3
+        version: 2.6.3
 
   plugins/store/examples/AppSettingsManager:
     devDependencies:
@@ -151,8 +151,8 @@ importers:
         version: 1.5.6
     devDependencies:
       tslib:
-        specifier: 2.6.2
-        version: 2.6.2
+        specifier: 2.6.3
+        version: 2.6.3
 
   plugins/upload:
     dependencies:
@@ -161,8 +161,8 @@ importers:
         version: 1.5.6
     devDependencies:
       tslib:
-        specifier: 2.6.2
-        version: 2.6.2
+        specifier: 2.6.3
+        version: 2.6.3
 
   plugins/websocket:
     dependencies:
@@ -171,8 +171,8 @@ importers:
         version: 1.5.6
     devDependencies:
       tslib:
-        specifier: 2.6.2
-        version: 2.6.2
+        specifier: 2.6.3
+        version: 2.6.3
 
   plugins/websocket/examples/tauri-app:
     dependencies:
@@ -197,8 +197,8 @@ importers:
         version: 1.5.6
     devDependencies:
       tslib:
-        specifier: 2.6.2
-        version: 2.6.2
+        specifier: 2.6.3
+        version: 2.6.3
 
 packages:
 
@@ -1135,8 +1135,8 @@ packages:
     peerDependencies:
       typescript: '>=4.2.0'
 
-  tslib@2.6.2:
-    resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
+  tslib@2.6.3:
+    resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
 
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
@@ -1363,14 +1363,14 @@ snapshots:
     optionalDependencies:
       rollup: 4.18.0
 
-  '@rollup/plugin-typescript@11.1.6(rollup@4.18.0)(tslib@2.6.2)(typescript@5.4.5)':
+  '@rollup/plugin-typescript@11.1.6(rollup@4.18.0)(tslib@2.6.3)(typescript@5.4.5)':
     dependencies:
       '@rollup/pluginutils': 5.1.0(rollup@4.18.0)
       resolve: 1.22.8
       typescript: 5.4.5
     optionalDependencies:
       rollup: 4.18.0
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   '@rollup/pluginutils@5.1.0(rollup@4.18.0)':
     dependencies:
@@ -2036,7 +2036,7 @@ snapshots:
     dependencies:
       typescript: 5.4.5
 
-  tslib@2.6.2: {}
+  tslib@2.6.3: {}
 
   type-check@0.4.0:
     dependencies:
