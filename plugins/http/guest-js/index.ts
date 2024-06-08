@@ -7,16 +7,18 @@
  *
  * ## Security
  *
- * This API has a scope configuration that forces you to restrict the URLs and paths that can be accessed using glob patterns.
+ * This API has a scope configuration that forces you to restrict the URLs that can be accessed using glob patterns.
  *
- * For instance, this scope configuration only allows making HTTP requests to the GitHub API for the `tauri-apps` organization:
+ * For instance, this scope configuration only allows making HTTP requests to all subdomains for `tauri.app` except for `https://private.tauri.app`:
  * ```json
  * {
- *   "plugins": {
- *     "http": {
- *       "scope": ["https://api.github.com/repos/tauri-apps/*"]
+ *   "permissions": [
+ *     {
+ *       "identifier": "http:default",
+ *       "allow": [{ "url": "https://*.tauri.app" }],
+ *       "deny": [{ "url": "https://private.tauri.app" }]
  *     }
- *   }
+ *   ]
  * }
  * ```
  * Trying to execute any API with a URL not configured on the scope results in a promise rejection due to denied access.
@@ -100,7 +102,7 @@ export interface ClientOptions {
  */
 export async function fetch(
   input: URL | Request | string,
-  init?: RequestInit & ClientOptions,
+  init?: RequestInit & ClientOptions
 ): Promise<Response> {
   const maxRedirections = init?.maxRedirections;
   const connectTimeout = init?.connectTimeout;
@@ -148,7 +150,7 @@ export async function fetch(
       // we need to ensure we have all header values as strings
       // eslint-disable-next-line
       typeof val === "string" ? val : (val as any).toString(),
-    ],
+    ]
   );
 
   const rid = await invoke<number>("plugin:http|fetch", {
@@ -191,7 +193,7 @@ export async function fetch(
     "plugin:http|fetch_read_body",
     {
       rid: responseRid,
-    },
+    }
   );
 
   const res = new Response(
@@ -204,7 +206,7 @@ export async function fetch(
       headers: responseHeaders,
       status,
       statusText,
-    },
+    }
   );
 
   // url is read only but seems like we can do this
