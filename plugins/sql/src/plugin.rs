@@ -87,7 +87,7 @@ fn path_mapper(mut app_path: PathBuf, connection_string: &str) -> String {
 }
 
 #[derive(Default)]
-struct DbInstances(Mutex<HashMap<String, Pool<Db>>>);
+pub struct DbInstances(pub Mutex<HashMap<String, Pool<Db>>>);
 
 struct Migrations(Mutex<HashMap<String, MigrationList>>);
 
