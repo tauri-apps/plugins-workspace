@@ -6,7 +6,6 @@ use std::{
     collections::HashMap,
     ffi::{OsStr, OsString},
     io::Cursor,
-    iter::once,
     path::{Path, PathBuf},
     str::FromStr,
     sync::Arc,
@@ -447,6 +446,7 @@ pub struct Update {
     extract_path: PathBuf,
     #[allow(unused)]
     installer_args: Vec<OsString>,
+    #[allow(unused)]
     nsis_installer_args: Vec<OsString>,
 }
 
@@ -578,6 +578,7 @@ impl Update {
             w,
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
         };
+        use std::iter::once;
 
         let (updater_type, path, _temp) = Self::extract(bytes)?;
 
