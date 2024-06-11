@@ -32,18 +32,8 @@ serde_repr = "0.1"
 win7-notifications = { version = "0.4.3", optional = true }
 windows-version = { version = "0.1", optional = true }
 
-[target."cfg(all(unix, not(target_os = \"macos\")))".dependencies]
-lazy_static = { version = "1", optional = true }
-zbus = { version = "4", optional = true }
-log = "0.4"
-env_logger = { version = "0.10", optional = true }
-
-[target."cfg(target_os=\"macos\")".dependencies]
-mac-notification-sys = "0.6"
-chrono = { version = "0.4", optional = true }
-
-[target."cfg(target_os=\"windows\")".dependencies]
-winrt-notification = { package = "tauri-winrt-notification", version = "0.4.0" }
+[target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
+notify-rust = "4.11"
 
 [dev-dependencies]
 color-backtrace = "0.6"
@@ -51,6 +41,4 @@ ctor = "0.2"
 maplit = "1"
 
 [features]
-default = [ "zbus", "async" ]
-async = [ ]
 windows7-compat = [ "win7-notifications", "windows-version" ]
