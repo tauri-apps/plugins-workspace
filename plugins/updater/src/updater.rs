@@ -574,11 +574,11 @@ impl Update {
     /// │   └──[AppName]_[version]_x64-setup.exe           # NSIS installer
     /// └── ...
     fn install_inner(&self, bytes: &[u8]) -> Result<()> {
+        use std::iter::once;
         use windows_sys::{
             w,
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
         };
-        use std::iter::once;
 
         let (updater_type, path, _temp) = Self::extract(bytes)?;
 
