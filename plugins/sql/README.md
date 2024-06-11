@@ -173,7 +173,7 @@ Migrations are applied automatically when the plugin is initialized. The plugin 
 Similarly as adding migrations, it is possible to add Sqlite options such as database encryption or regular Sqlite options.
 
 ```rust
-use tauri_plugin_sql::{Builder, Migration, MigrationKind, SqliteConfig};
+use tauri_plugin_sql::{Builder, Migration, MigrationKind, SqliteConnectOptions, SqliteJournalMode};
 
 fn main() {
     let migrations = vec![
@@ -190,48 +190,53 @@ fn main() {
         .plugin(
             tauri_plugin_sql::Builder::default()
                 .add_migrations("sqlite:mydatabase.db", migrations)
-                .add_sqlite_options("sqlite:mydatabase.db", SqliteConfig{key:"my_database_key", journal_mode:"OFF", foreign_keys:true, read_only:false,..Default::default()})
+                .add_sqlite_options("sqlite:mydatabase.db", SqliteConnectOptions::new().pragma("key", "my_database_key").journal_mode(SqliteJournalMode::Off))
                 .build(),
         )
         ...
 }
 ```
 
-All the options are specified in the struct definition 
-
-```rust
-pub struct SqliteConfig {
-    pub key: &'static str, // Database key
-    pub cipher_page_size: i32, // Page size of encrypted database. Default for SQLCipher v4 is 4096.
-    pub cipher_plaintext_header_size: i32,
-    pub kdf_iter: i32, // Number of iterations used in PBKDF2 key derivation. Default for SQLCipher v4 is 256000
-    pub cipher_kdf_algorithm: &'static str,  // Define KDF algorithm to be used. Default for SQLCipher v4 is PBKDF2_HMAC_SHA512.
-    pub cipher_hmac_algorithm: &'static str, // Choose algorithm used for HMAC. Default for SQLCipher v4 is HMAC_SHA512.                                        
-    pub cipher_salt: Option<&'static str>, // Allows to provide salt manually. By default SQLCipher sets salt automatically, use only in conjunction with 'cipher_plaintext_header_size' pragma
-    pub cipher_compatibility: Option<i32>, // 1, 2, 3, 4
-    pub journal_mode: &'static str,        // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
-    pub foreign_keys: bool,
-    pub synchronous: &'static str,  // EXTRA | FULL | NORMAL |  OFF
-    pub locking_mode: &'static str, // NORMAL | EXCLUSIVE
-    pub read_only: bool, // Open database in read-only mode
-}
-```
+Refer to the SqliteConnectOptions doc of the sqlx crate to view all possible options.
 
 ### In memory
 
-A database name containing :memory (e.g. sqlite:mydatabase:memory:) will be loaded as an in-memory database.
+It is possible to use an in-memory database using SqliteConnectOptions::from_url with `sqlite::memory:` as url.
 
+```rust
+use tauri_plugin_sql::{Builder, Migration, MigrationKind, SqliteConnectOptions, SqliteJournalMode};
+
+fn main() {
+    let migrations = vec![
+        // Define your migrations here
+        Migration {
+            version: 1,
+            description: "create_initial_tables",
+            sql: "CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT);",
+            kind: MigrationKind::Up,
+        }
+    ];
+
+    tauri::Builder::default()
+        .plugin(
+            tauri_plugin_sql::Builder::default()
+                .add_migrations("sqlite:mydatabase.db", migrations)
+                .add_sqlite_options("sqlite:mydatabase.db", SqliteConnectOptions::from_url("sqlite::memory:"))
+                .build(),
+        )
+        ...
+}
+```
 ### SqlCipher
 
-To make it work with SqlCipher, you'll need to make additionnal changes to you cargo.toml:
+To make it work with SqlCipher, you'll need to use the bundled-sqlcipher or bundled-sqlcipher-vendored-openssl instead of the sqlite feature depending on your system.
 
 ```toml
-[dependencies]
-...
-libsqlite3-sys = { version = "*", features = ["bundled-sqlcipher"] }
+[dependencies.tauri-plugin-sql]
+features = ["bundled-sqlcipher"]
 ```
 
-You'll also need openssl to build. Please refer to libsqlite3-sys documentation to understand how to build.
+You'll also need openssl to build. Please refer to libsqlite3-sys documentation to understand how to install openssl.
 
 On windows, I recommend building and installing openssl using vcpkg https://github.com/Microsoft/vcpkg
 - Clone vcpkg to C:\src\vcpkg for example
