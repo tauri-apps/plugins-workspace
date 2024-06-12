@@ -121,41 +121,56 @@ export default class Database {
   }
 
   /**
-     * **insertMultiple**
-     *
-     * Insert multiple entry in a single request
-     *
-     * @example
-     * ```ts
-     * // BATCH INSERT example
-     * const result = await db.batchInsert(
-     *    "INSERT into todos (id, title, status) ",
-     *    [ 
-     *        [0, "TODO 0", "Done"], 
-     *        [1, "TODO 1", "Done"],
-     *        [2, "TODO 2", "Done"],
-     *    ]
-     * );     
-     * ```
-     */
-  async batchInsert(query: string, bindValues?: unknown[]): Promise<QueryResult> {
-    if (bindValues?.length == 0 || !bindValues)
-      return false
-  const values_length = bindValues[0].length
-  const chunkSize = Math.floor(999 / values_length);
-  for (let i = 0; i < bindValues.length; i += chunkSize) {
+   * **insertMultiple**
+   *
+   * Insert multiple entry in a single request
+   *
+   * @example
+   * ```ts
+   * // BATCH INSERT example
+   * const result = await db.batchInsert(
+   *    "INSERT into todos (id, title, status) ",
+   *    [
+   *        [0, "TODO 0", "Done"],
+   *        [1, "TODO 1", "Done"],
+   *        [2, "TODO 2", "Done"],
+   *    ]
+   * );
+   * ```
+   */
+  async batchInsert(
+    query: string,
+    bindValues?: unknown[][],
+  ): Promise<QueryResult> {
+    if (bindValues?.length == 0 || !bindValues) {
+      console.warn("Batch insert does not contains any values");
+      return {
+        lastInsertId: 0,
+        rowsAffected: 0,
+      };
+    }
+    const values_length = bindValues[0].length;
+    const chunkSize = Math.floor(999 / values_length);
+    let rowsAffected = 0;
+    let lastInsertId = 0;
+    for (let i = 0; i < bindValues.length; i += chunkSize) {
       const chunk = bindValues.slice(i, i + chunkSize);
-      const [_rowsAffected, _lastInsertId] = await invoke<[number, number]>(
-          "plugin:sql|execute_multiple",
-          {
-              db: db.path,
-              query,
-              values: chunk ?? [],
-          },
-      );
+      const [rowsAffectedQuery, lastInsertIdQuery] = await invoke<
+        [number, number]
+      >("plugin:sql|batch_insert", {
+        db: this.path,
+        query,
+        values: chunk ?? [],
+      });
+      rowsAffected += rowsAffectedQuery;
+      lastInsertId = lastInsertIdQuery;
       // do whatever
+    }
+    return {
+      lastInsertId: lastInsertId,
+      rowsAffected: rowsAffected,
+    };
   }
-  
 
   /**
    * **select**

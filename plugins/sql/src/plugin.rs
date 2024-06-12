@@ -6,9 +6,11 @@ use futures_core::future::BoxFuture;
 use serde::{ser::Serializer, Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use sqlx::{
-    error::BoxDynError, migrate::{
+    error::BoxDynError,
+    migrate::{
         MigrateDatabase, Migration as SqlxMigration, MigrationSource, MigrationType, Migrator,
-    }, Column, Pool, QueryBuilder, Row
+    },
+    Column, Pool, QueryBuilder, Row,
 };
 use tauri::{
     command,
@@ -251,7 +253,7 @@ async fn batch_insert(
             }
         }
     });
-    let mut query = builder.build();
+    let query = builder.build();
     let result = query.execute(&*db).await?;
     #[cfg(feature = "sqlite")]
     let r = Ok((result.rows_affected(), result.last_insert_rowid()));
@@ -323,7 +325,13 @@ impl Builder {
 
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R, Option<PluginConfig>> {
         PluginBuilder::<R, Option<PluginConfig>>::new("sql")
-            .invoke_handler(tauri::generate_handler![load, execute, select, close])
+            .invoke_handler(tauri::generate_handler![
+                load,
+                execute,
+                select,
+                close,
+                batch_insert
+            ])
             .setup(|app, api| {
                 let config = api.config().clone().unwrap_or_default();
 
