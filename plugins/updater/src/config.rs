@@ -49,7 +49,7 @@ impl Display for WindowsUpdateInstallMode {
             f,
             "{}",
             match self {
-                Self::BasicUi => "basicUI",
+                Self::BasicUi => "basicUi",
                 Self::Quiet => "quiet",
                 Self::Passive => "passive",
             }

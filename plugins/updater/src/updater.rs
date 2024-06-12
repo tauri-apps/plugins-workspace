@@ -31,6 +31,8 @@ use crate::{
     Config,
 };
 
+const UPDATER_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
+
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ReleaseManifestPlatform {
     /// Download URL for the platform
@@ -102,6 +104,7 @@ pub struct UpdaterBuilder {
     timeout: Option<Duration>,
     proxy: Option<Url>,
     installer_args: Vec<OsString>,
+    nsis_installer_args: Vec<OsString>,
     on_before_exit: Option<OnBeforeExit>,
 }
 
@@ -113,6 +116,7 @@ impl UpdaterBuilder {
                 .as_ref()
                 .map(|w| w.installer_args.clone())
                 .unwrap_or_default(),
+            nsis_installer_args: Vec::new(),
             current_version,
             config,
             version_comparator: None,
@@ -241,6 +245,7 @@ impl UpdaterBuilder {
             proxy: self.proxy,
             endpoints,
             installer_args: self.installer_args,
+            nsis_installer_args: self.nsis_installer_args,
             arch,
             target,
             json_target,
@@ -251,6 +256,26 @@ impl UpdaterBuilder {
     }
 }
 
+impl UpdaterBuilder {
+    pub(crate) fn nsis_installer_arg<S>(mut self, arg: S) -> Self
+    where
+        S: Into<OsString>,
+    {
+        self.nsis_installer_args.push(arg.into());
+        self
+    }
+
+    pub(crate) fn nsis_installer_args<I, S>(mut self, args: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<OsString>,
+    {
+        let args = args.into_iter().map(|a| a.into()).collect::<Vec<_>>();
+        self.nsis_installer_args.extend_from_slice(&args);
+        self
+    }
+}
+
 pub struct Updater {
     config: Config,
     current_version: Version,
@@ -258,8 +283,6 @@ pub struct Updater {
     timeout: Option<Duration>,
     proxy: Option<Url>,
     endpoints: Vec<Url>,
-    #[allow(dead_code)]
-    installer_args: Vec<OsString>,
     arch: &'static str,
     // The `{{target}}` variable we replace in the endpoint
     target: String,
@@ -268,6 +291,10 @@ pub struct Updater {
     headers: HeaderMap,
     extract_path: PathBuf,
     on_before_exit: Option<OnBeforeExit>,
+    #[allow(unused)]
+    installer_args: Vec<OsString>,
+    #[allow(unused)]
+    nsis_installer_args: Vec<OsString>,
 }
 
 impl Updater {
@@ -312,7 +339,7 @@ impl Updater {
                 .replace("{{arch}}", self.arch)
                 .parse()?;
 
-            let mut request = ClientBuilder::new();
+            let mut request = ClientBuilder::new().user_agent(UPDATER_USER_AGENT);
             if let Some(timeout) = self.timeout {
                 request = request.timeout(timeout);
             }
@@ -370,7 +397,6 @@ impl Updater {
                 current_version: self.current_version.to_string(),
                 target: self.target.clone(),
                 extract_path: self.extract_path.clone(),
-                installer_args: self.installer_args.clone(),
                 version: release.version.to_string(),
                 date: release.pub_date,
                 download_url: release.download_url(&self.json_target)?.to_owned(),
@@ -379,6 +405,8 @@ impl Updater {
                 timeout: self.timeout,
                 proxy: self.proxy.clone(),
                 headers: self.headers.clone(),
+                installer_args: self.installer_args.clone(),
+                nsis_installer_args: self.nsis_installer_args.clone(),
             })
         } else {
             None
@@ -403,11 +431,6 @@ pub struct Update {
     pub date: Option<OffsetDateTime>,
     /// Target
     pub target: String,
-    /// Extract path
-    #[allow(unused)]
-    extract_path: PathBuf,
-    #[allow(unused)]
-    installer_args: Vec<OsString>,
     /// Download URL announced
     pub download_url: Url,
     /// Signature announced
@@ -418,6 +441,13 @@ pub struct Update {
     pub proxy: Option<Url>,
     /// Request headers
     pub headers: HeaderMap,
+    /// Extract path
+    #[allow(unused)]
+    extract_path: PathBuf,
+    #[allow(unused)]
+    installer_args: Vec<OsString>,
+    #[allow(unused)]
+    nsis_installer_args: Vec<OsString>,
 }
 
 impl Resource for Update {}
@@ -442,7 +472,7 @@ impl Update {
             HeaderValue::from_str("tauri-updater").unwrap(),
         );
 
-        let mut request = ClientBuilder::new();
+        let mut request = ClientBuilder::new().user_agent(UPDATER_USER_AGENT);
         if let Some(timeout) = self.timeout {
             request = request.timeout(timeout);
         }
@@ -544,6 +574,7 @@ impl Update {
     /// │   └──[AppName]_[version]_x64-setup.exe           # NSIS installer
     /// └── ...
     fn install_inner(&self, bytes: &[u8]) -> Result<()> {
+        use std::iter::once;
         use windows_sys::{
             w,
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
@@ -552,24 +583,39 @@ impl Update {
         let (updater_type, path, _temp) = Self::extract(bytes)?;
 
         let install_mode = self.config.install_mode();
-        let mut installer_args = self.installer_args();
-        match updater_type {
-            WindowsUpdaterType::Nsis => {
-                installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
-                installer_args.push(OsStr::new("/UPDATE"));
-            }
-            WindowsUpdaterType::Msi => {
-                installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
-                installer_args.push(OsStr::new("/promptrestart"));
-            }
+        let installer_args: Vec<&OsStr> = match updater_type {
+            WindowsUpdaterType::Nsis => install_mode
+                .nsis_args()
+                .iter()
+                .map(OsStr::new)
+                .chain(once(OsStr::new("/UPDATE")))
+                .chain(self.nsis_installer_args())
+                .chain(self.installer_args())
+                .collect(),
+            WindowsUpdaterType::Msi => [OsStr::new("/i"), path.as_os_str()]
+                .into_iter()
+                .chain(install_mode.msiexec_args().iter().map(OsStr::new))
+                .chain(once(OsStr::new("/promptrestart")))
+                .chain(self.installer_args())
+                .collect(),
         };
 
         if let Some(on_before_exit) = self.on_before_exit.as_ref() {
             on_before_exit();
         }
 
+        let parameters = installer_args.join(OsStr::new(" "));
+        let parameters = encode_wide(parameters);
+
+        let path = match updater_type {
+            WindowsUpdaterType::Msi => std::env::var("SYSTEMROOT").as_ref().map_or_else(
+                |_| OsString::from("msiexec.exe"),
+                |p| OsString::from(format!("{p}\\System32\\msiexec.exe")),
+            ),
+            WindowsUpdaterType::Nsis => path.as_os_str().to_os_string(),
+        };
         let file = encode_wide(path);
-        let parameters = encode_wide(installer_args.join(OsStr::new(" ")));
+
         unsafe {
             ShellExecuteW(
                 0,
@@ -586,6 +632,13 @@ impl Update {
 
     fn installer_args(&self) -> Vec<&OsStr> {
         self.installer_args
+            .iter()
+            .map(OsStr::new)
+            .collect::<Vec<_>>()
+    }
+
+    fn nsis_installer_args(&self) -> Vec<&OsStr> {
+        self.nsis_installer_args
             .iter()
             .map(OsStr::new)
             .collect::<Vec<_>>()
