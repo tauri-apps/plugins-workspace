@@ -5357,6 +5357,20 @@
           ]
         },
         {
+          "description": "notification:allow-register-action-types -> Enables the register_action_types command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:allow-register-action-types"
+          ]
+        },
+        {
+          "description": "notification:allow-register-listener -> Enables the register_listener command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:allow-register-listener"
+          ]
+        },
+        {
           "description": "notification:allow-request-permission -> Enables the request_permission command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -5375,6 +5389,20 @@
           "type": "string",
           "enum": [
             "notification:deny-notify"
+          ]
+        },
+        {
+          "description": "notification:deny-register-action-types -> Denies the register_action_types command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:deny-register-action-types"
+          ]
+        },
+        {
+          "description": "notification:deny-register-listener -> Denies the register_listener command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:deny-register-listener"
           ]
         },
         {
