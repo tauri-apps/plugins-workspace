@@ -1,0 +1,19 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = """
+# Tauri Process Default Permissions
+
+This permission set configures which
+process feeatures are by default exposed.
+
+### Granted Permissions
+
+This enables to quit via `allow-exit` and restart via `allow-restart`
+the application.
+"""
+
+permissions = [
+    "allow-exit",
+    "allow-restart",
+]
