@@ -670,7 +670,7 @@ pub fn ftruncate<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn write<R: Runtime>(
+pub async fn write<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
     data: Vec<u8>,
@@ -753,7 +753,7 @@ fn write_file_inner<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn write_file<R: Runtime>(
+pub async fn write_file<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
@@ -781,7 +781,7 @@ pub fn write_file<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn write_text_file<R: Runtime>(
+pub async fn write_text_file<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
