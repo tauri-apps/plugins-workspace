@@ -37,8 +37,8 @@ importers:
         specifier: 9.1.0
         version: 9.1.0(eslint@9.5.0)
       eslint-plugin-security:
-        specifier: 3.0.0
-        version: 3.0.0
+        specifier: 3.0.1
+        version: 3.0.1
       prettier:
         specifier: 3.3.2
         version: 3.3.2
@@ -1450,8 +1450,8 @@ packages:
     peerDependencies:
       eslint: '>=7.0.0'
 
-  eslint-plugin-security@3.0.0:
-    resolution: {integrity: sha512-2Ij7PkmXIF2cKwoVkEgemwoXbOnxg5UfdhdcpNxZwJxC/10dbsdhHISrTyJ/n8DUkt3yiN6P1ywEgcMGjIwHIw==}
+  eslint-plugin-security@3.0.1:
+    resolution: {integrity: sha512-XjVGBhtDZJfyuhIxnQ/WMm385RbX3DBu7H1J7HNNhmB2tnGxMeqVSnYv79oAj992ayvIBZghsymwkYFS6cGH4Q==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   eslint-scope@8.0.1:
@@ -3669,7 +3669,7 @@ snapshots:
     dependencies:
       eslint: 9.5.0
 
-  eslint-plugin-security@3.0.0:
+  eslint-plugin-security@3.0.1:
     dependencies:
       safe-regex: 2.1.1
 
