@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.7]
+
+- [`4216c051`](https://github.com/tauri-apps/plugins-workspace/commit/4216c0517fd1dcb29d0162dc2fc15291472a2b00) ([#1381](https://github.com/tauri-apps/plugins-workspace/pull/1381) by [@thewh1teagle](https://github.com/tauri-apps/plugins-workspace/../../thewh1teagle)) Made `DbInstances` public for managing database instances directly from `Rust`.
+
 ## \[2.0.0-beta.5]
 
 - [`9013854f`](https://github.com/tauri-apps/plugins-workspace/commit/9013854f42a49a230b9dbb9d02774765528a923f)([#1382](https://github.com/tauri-apps/plugins-workspace/pull/1382)) Update to tauri beta.22.
