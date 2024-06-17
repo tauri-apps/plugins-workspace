@@ -81,7 +81,9 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
 
         let args = self.env().args_os;
         if !args.is_empty() {
-            builder = builder.installer_arg("/ARGS").installer_args(args);
+            builder = builder
+                .nsis_installer_arg("/ARGS")
+                .nsis_installer_args(args);
         }
 
         #[cfg(any(

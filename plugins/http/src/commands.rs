@@ -224,8 +224,8 @@ pub async fn fetch<R: Runtime>(
                     request = request.header(header::USER_AGENT, "tauri-plugin-http");
                 }
 
-                if !(cfg!(feature = "unsafe-headers")
-                    && headers.contains_key(header::ORIGIN.as_str()))
+                if cfg!(feature = "unsafe-headers")
+                    && !headers.contains_key(header::ORIGIN.as_str())
                 {
                     if let Ok(url) = webview.url() {
                         request =
