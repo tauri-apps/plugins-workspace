@@ -102,30 +102,42 @@ pub fn hostname() -> String {
 
 #[derive(Template)]
 #[default_template("./init.js")]
-struct InitJavascript {
+struct InitJavascript<'a> {
     eol: &'static str,
+    os_type: String,
+    platform: &'a str,
+    family: &'a str,
+    version: String,
+    arch: &'a str,
+    exe_extension: &'a str,
+}
+
+impl<'a> InitJavascript<'a> {
+    fn new() -> Self {
+        Self {
+            #[cfg(windows)]
+            eol: "\r\n",
+            #[cfg(not(windows))]
+            eol: "\n",
+            os_type: crate::type_().to_string(),
+            platform: crate::platform(),
+            family: crate::family(),
+            version: crate::version().to_string(),
+            arch: crate::arch(),
+            exe_extension: crate::exe_extension(),
+        }
+    }
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    let init_js = InitJavascript {
-        #[cfg(windows)]
-        eol: "\r\n",
-        #[cfg(not(windows))]
-        eol: "\n",
-    }
-    .render_default(&Default::default())
-    // this will never fail with the above global_os_api eol values
-    .unwrap();
+    let init_js = InitJavascript::new()
+        .render_default(&Default::default())
+        // this will never fail with the above global_os_api values
+        .unwrap();
 
     Builder::new("os")
         .js_init_script(init_js.to_string())
         .invoke_handler(tauri::generate_handler![
-            commands::platform,
-            commands::version,
-            commands::os_type,
-            commands::family,
-            commands::arch,
-            commands::exe_extension,
             commands::locale,
             commands::hostname
         ])
