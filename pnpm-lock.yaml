@@ -82,7 +82,7 @@ importers:
         specifier: 2.0.0-beta.5
         version: link:../../plugins/global-shortcut
       '@tauri-apps/plugin-http':
-        specifier: 2.0.0-beta.5
+        specifier: 2.0.0-beta.6
         version: link:../../plugins/http
       '@tauri-apps/plugin-nfc':
         specifier: 2.0.0-beta.5
@@ -182,7 +182,7 @@ importers:
         specifier: 2.0.0-beta.13
         version: 2.0.0-beta.13
       '@tauri-apps/plugin-deep-link':
-        specifier: 2.0.0-beta.6
+        specifier: 2.0.0-beta.7
         version: link:../..
     devDependencies:
       '@tauri-apps/cli':
@@ -2659,14 +2659,13 @@ snapshots:
     dependencies:
       event-target-shim: 5.0.1
 
-  '@covector/apply@0.9.3(mocha@10.4.0)':
+  '@covector/apply@0.9.3':
     dependencies:
       '@covector/files': 0.7.2
       effection: 2.0.8(mocha@10.4.0)
       semver: 7.6.2
     transitivePeerDependencies:
       - encoding
-      - mocha
 
   '@covector/assemble@0.11.0':
     dependencies:
@@ -2683,7 +2682,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@covector/changelog@0.11.0':
+  '@covector/changelog@0.11.0(mocha@10.4.0)':
     dependencies:
       '@covector/files': 0.7.2
       effection: 2.0.8(mocha@10.4.0)
@@ -2693,6 +2692,7 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
+      - mocha
       - supports-color
 
   '@covector/command@0.7.1':
@@ -3543,9 +3543,9 @@ snapshots:
 
   covector@0.11.0(mocha@10.4.0):
     dependencies:
-      '@covector/apply': 0.9.3(mocha@10.4.0)
+      '@covector/apply': 0.9.3
       '@covector/assemble': 0.11.0
-      '@covector/changelog': 0.11.0
+      '@covector/changelog': 0.11.0(mocha@10.4.0)
       '@covector/command': 0.7.1
       '@covector/files': 0.7.2
       effection: 2.0.8(mocha@10.4.0)

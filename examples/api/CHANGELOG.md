@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-beta.9]
+
+### Dependencies
+
+- Upgraded to `http-js@2.0.0-beta.6`
+
 ## \[2.0.0-beta.8]
 
 ### Dependencies

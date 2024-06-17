@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.7]
+
+- [`0b008882`](https://github.com/tauri-apps/plugins-workspace/commit/0b0088821e50e33825f7d573b1c826cfeb38dda0) ([#1404](https://github.com/tauri-apps/plugins-workspace/pull/1404) by [@simonhyll](https://github.com/tauri-apps/plugins-workspace/../../simonhyll)) Fixed a typo in the `deep-link` js bindings causing `isRegistered` to not work.
+
 ## \[2.0.0-beta.6]
 
 - [`9013854f`](https://github.com/tauri-apps/plugins-workspace/commit/9013854f42a49a230b9dbb9d02774765528a923f)([#1382](https://github.com/tauri-apps/plugins-workspace/pull/1382)) Update to tauri beta.22.
