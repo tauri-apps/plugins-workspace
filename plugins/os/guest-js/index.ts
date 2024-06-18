@@ -15,6 +15,12 @@ declare global {
   interface Window {
     __TAURI_OS_PLUGIN_INTERNALS__: {
       eol: string;
+      os_type: OsType;
+      platform: Platform;
+      family: Family;
+      version: string;
+      arch: Arch;
+      exe_extension: string;
     };
   }
 }
@@ -70,8 +76,8 @@ function eol(): string {
  * @since 2.0.0
  *
  */
-async function platform(): Promise<Platform> {
-  return await invoke("plugin:os|platform");
+function platform(): Platform {
+  return window.__TAURI_OS_PLUGIN_INTERNALS__.platform;
 }
 
 /**
@@ -84,8 +90,8 @@ async function platform(): Promise<Platform> {
  *
  * @since 2.0.0
  */
-async function version(): Promise<string> {
-  return await invoke("plugin:os|version");
+function version(): string {
+  return window.__TAURI_OS_PLUGIN_INTERNALS__.version;
 }
 
 type Family = "unix" | "windows";
@@ -100,8 +106,8 @@ type Family = "unix" | "windows";
  *
  * @since 2.0.0
  */
-async function family(): Promise<Family> {
-  return await invoke("plugin:os|family");
+function family(): Family {
+  return window.__TAURI_OS_PLUGIN_INTERNALS__.family;
 }
 
 /**
@@ -114,8 +120,8 @@ async function family(): Promise<Family> {
  *
  * @since 2.0.0
  */
-async function type(): Promise<OsType> {
-  return await invoke("plugin:os|os_type");
+function type(): OsType {
+  return window.__TAURI_OS_PLUGIN_INTERNALS__.os_type;
 }
 
 /**
@@ -129,8 +135,22 @@ async function type(): Promise<OsType> {
  *
  * @since 2.0.0
  */
-async function arch(): Promise<Arch> {
-  return await invoke("plugin:os|arch");
+function arch(): Arch {
+  return window.__TAURI_OS_PLUGIN_INTERNALS__.arch;
+}
+
+/**
+ * Returns the file extension, if any, used for executable binaries on this platform. Possible values are `'exe'` and `''` (empty string).
+ * @example
+ * ```typescript
+ * import { exeExtension } from '@tauri-apps/plugin-os';
+ * const exeExt = await exeExtension();
+ * ```
+ *
+ * @since 2.0.0
+ */
+function exeExtension(): string {
+  return window.__TAURI_OS_PLUGIN_INTERNALS__.exe_extension;
 }
 
 /**
@@ -148,20 +168,6 @@ async function arch(): Promise<Arch> {
  */
 async function locale(): Promise<string | null> {
   return await invoke("plugin:os|locale");
-}
-
-/**
- * Returns the file extension, if any, used for executable binaries on this platform. Possible values are `'exe'` and `''` (empty string).
- * @example
- * ```typescript
- * import { exeExtension } from '@tauri-apps/plugin-os';
- * const exeExt = await exeExtension();
- * ```
- *
- * @since 2.0.0
- */
-async function exeExtension(): Promise<string | null> {
-  return await invoke("plugin:os|exe_extension");
 }
 
 /**
