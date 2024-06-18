@@ -2,12 +2,10 @@
 
 [default]
 description = """
-# Tauri Dialog Default Permissions
-
 This permission set configures the types of dialogs
 available from the dialog plugin.
 
-### Granted Permissions
+#### Granted Permissions
 
 All dialog types are enabled.
 

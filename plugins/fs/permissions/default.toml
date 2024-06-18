@@ -2,12 +2,10 @@
 
 [default]
 description = """
-# Tauri `fs` default permissions
-
 This set of permissions describes the what kind of
 file system access the `fs` plugin has enabled or denied by default.
 
-### Granted Permissions
+#### Granted Permissions
 
 This default permission set enables read access to the
 application specific directories (AppConfig, AppData, AppLocalData, AppCache,
@@ -22,7 +20,7 @@ in it is possible.
 Therefore, it is also allowed to create all of these folders via
 the `mkdir` command.
 
-### Denied Permissions
+#### Denied Permissions
 
 This default permission set prevents access to critical components
 of the Tauri application by default.

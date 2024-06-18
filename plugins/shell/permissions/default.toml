@@ -2,12 +2,10 @@
 
 [default]
 description = """
-# Tauri Shell Default Permissions
-
 This permission set configures which
 shell functionality is exposed by default.
 
-### Granted Permissions
+#### Granted Permissions
 
 It allows to use the `open` functionality without any specific
 scope pre-configured. It will allow opening `http(s)://`,

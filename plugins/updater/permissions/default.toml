@@ -1,12 +1,10 @@
 "$schema" = "schemas/schema.json"
 [default]
 description = """
-# Tauri Updater Default Permissions
-
 This permission set configures which kind of
 updater functions are exposed to the frontend.
 
-### Granted Permissions
+#### Granted Permissions
 
 The full workflow from checking for updates to installing them
 is enabled.

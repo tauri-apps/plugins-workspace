@@ -3,7 +3,7 @@
 [default]
 description = """
 This permission set configures what kind of
-operations are available from the window state plugin.
+operations are available from the upload plugin.
 
 #### Granted Permissions
 
@@ -11,7 +11,6 @@ All operations are enabled by default.
 
 """
 permissions = [
-  "allow-filename",
-  "allow-restore-state",
-  "allow-save-window-state",
+  "allow-upload",
+  "allow-download"
 ]

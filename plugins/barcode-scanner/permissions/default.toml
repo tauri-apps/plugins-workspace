@@ -1,12 +1,10 @@
 "$schema" = "schemas/schema.json"
 [default]
 description = """
-# Tauri Barcode Default Permissions
-
 This permission set configures which
 barcode scanning features are by default exposed.
 
-### Granted Permissions
+#### Granted Permissions
 
 It allows all barcode related features.
 

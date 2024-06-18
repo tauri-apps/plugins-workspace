@@ -2,12 +2,10 @@
 
 [default]
 description = """
-# Tauri Store Default Permissions
-
 This permission set configures what kind of
 operations are available from the store plugin.
 
-### Granted Permissions
+#### Granted Permissions
 
 All operations are enabled by default.
 

@@ -2,13 +2,11 @@
 
 [default]
 description = """
-# Tauri OS Default Permissions
-
 This permission set configures which
 operating system information are available
 to gather from the frontend.
 
-### Granted Permissions
+#### Granted Permissions
 
 All information except the host name are available.
 

@@ -2,8 +2,6 @@
 
 [default]
 description = """
-# Tauri HTTP Default Permissions
-
 This permission set configures what kind of
 fetch operations are available from the http plugin.
 
@@ -11,7 +9,7 @@ This enables all fetch operations but does not
 allow explicitly any origins to be fetched. This needs to
 be manually configured before usage.
 
-### Granted Permissions
+#### Granted Permissions
 
 All fetch operations are enabled.
 
