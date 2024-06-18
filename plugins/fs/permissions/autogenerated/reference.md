@@ -273,23 +273,27 @@
 |`deny-write-file`|Denies the write_file command without any pre-configured scope.|
 |`allow-write-text-file`|Enables the write_text_file command without any pre-configured scope.|
 |`deny-write-text-file`|Denies the write_text_file command without any pre-configured scope.|
-|`default`|# Tauri `fs` default permissions
+|`create-app-specific-dirs`|This permissions allows to create the application specific directories.
+|
+|`default`|This set of permissions describes the what kind of
+file system access the `fs` plugin has enabled or denied by default.
 
-This configuration file defines the default permissions granted
-to the filesystem.
+#### Granted Permissions
 
-### Granted Permissions
-
-This default permission set enables all read-related commands and
-allows access to the `$APP` folder and sub directories created in it.
-The location of the `$APP` folder depends on the operating system,
+This default permission set enables read access to the
+application specific directories (AppConfig, AppData, AppLocalData, AppCache,
+AppLog) and all files and sub directories created in it.
+The location of these directories depends on the operating system,
 where the application is run.
 
-In general the `$APP` folder needs to be manually created
+In general these directories need to be manually created
 by the application at runtime, before accessing files or folders
 in it is possible.
 
-### Denied Permissions
+Therefore, it is also allowed to create all of these folders via
+the `mkdir` command.
+
+#### Denied Permissions
 
 This default permission set prevents access to critical components
 of the Tauri application by default.
@@ -304,6 +308,9 @@ Allowing access can lead to sensitive information disclosure and should be well 
 `$APPLOCALDATA/EBWebView` folder on windows as the webview data and configuration values are stored here.
 Allowing access can lead to sensitive information disclosure and should be well considered.|
 |`read-all`|This enables all read related commands without any pre-configured accessible paths.|
+|`read-app-specific-dirs-recursive`|This permission allows recursive read functionality on the application
+specific base directories. 
+|
 |`read-dirs`|This enables directory read and file metadata related commands without any pre-configured accessible paths.|
 |`read-files`|This enables file read related commands without any pre-configured accessible paths.|
 |`read-meta`|This enables all index or metadata related commands without any pre-configured accessible paths.|

@@ -12,3 +12,11 @@
 |`deny-scan`|Denies the scan command without any pre-configured scope.|
 |`allow-vibrate`|Enables the vibrate command without any pre-configured scope.|
 |`deny-vibrate`|Denies the vibrate command without any pre-configured scope.|
+|`default`|This permission set configures which
+barcode scanning features are by default exposed.
+
+#### Granted Permissions
+
+It allows all barcode related features.
+
+|

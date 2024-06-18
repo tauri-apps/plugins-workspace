@@ -405,6 +405,13 @@
           "enum": [
             "deny-version"
           ]
+        },
+        {
+          "description": "default -> This permission set configures which\noperating system information are available\nto gather from the frontend.\n\n#### Granted Permissions\n\nAll information except the host name are available.\n\n",
+          "type": "string",
+          "enum": [
+            "default"
+          ]
         }
       ]
     }

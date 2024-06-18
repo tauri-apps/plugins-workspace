@@ -16,4 +16,15 @@ permissions = [
   "allow-notify",
   "allow-register-action-types",
   "allow-register-listener",
+  "allow-cancel",
+  "allow-get-pending",
+  "allow-remove-active",
+  "allow-get-active",
+  "allow-check-permissions",
+  "allow-show",
+  "allow-batch",
+  "allow-list-channels",
+  "allow-delete-channel",
+  "allow-create-channel",
+  "allow-permission-state"
 ]

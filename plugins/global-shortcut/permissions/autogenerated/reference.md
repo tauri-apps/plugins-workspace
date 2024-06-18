@@ -10,3 +10,8 @@
 |`deny-unregister`|Denies the unregister command without any pre-configured scope.|
 |`allow-unregister-all`|Enables the unregister_all command without any pre-configured scope.|
 |`deny-unregister-all`|Denies the unregister_all command without any pre-configured scope.|
+|`default`|No features are enabled by default, as we believe
+the shortcuts can be inherently dangerous and it is 
+application specific if specific shortcuts should be
+registered or unregistered.
+|

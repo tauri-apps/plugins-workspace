@@ -335,6 +335,13 @@
           "enum": [
             "deny-save-window-state"
           ]
+        },
+        {
+          "description": "default -> This permission set configures what kind of\noperations are available from the window state plugin.\n\n#### Granted Permissions\n\nAll operations are enabled by default.\n\n",
+          "type": "string",
+          "enum": [
+            "default"
+          ]
         }
       ]
     }

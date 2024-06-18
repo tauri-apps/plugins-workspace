@@ -351,7 +351,7 @@
           ]
         },
         {
-          "description": "default -> Allows checking for new updates and installing them",
+          "description": "default -> This permission set configures which kind of\nupdater functions are exposed to the frontend.\n\n#### Granted Permissions\n\nThe full workflow from checking for updates to installing them\nis enabled.\n\n",
           "type": "string",
           "enum": [
             "default"

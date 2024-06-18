@@ -12,3 +12,9 @@
 |`deny-write-image`|Denies the write_image command without any pre-configured scope.|
 |`allow-write-text`|Enables the write_text command without any pre-configured scope.|
 |`deny-write-text`|Denies the write_text command without any pre-configured scope.|
+|`default`|No features are enabled by default, as we believe
+the clipboard can be inherently dangerous and it is 
+application specific if read and/or write access is needed.
+
+Clipboard interaction needs to be explicitly enabled.
+|
