@@ -323,6 +323,34 @@
           ]
         },
         {
+          "description": "allow-register-action-types -> Enables the register_action_types command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-register-action-types"
+          ]
+        },
+        {
+          "description": "deny-register-action-types -> Denies the register_action_types command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-register-action-types"
+          ]
+        },
+        {
+          "description": "allow-register-listener -> Enables the register_listener command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-register-listener"
+          ]
+        },
+        {
+          "description": "deny-register-listener -> Denies the register_listener command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-register-listener"
+          ]
+        },
+        {
           "description": "allow-request-permission -> Enables the request_permission command without any pre-configured scope.",
           "type": "string",
           "enum": [
