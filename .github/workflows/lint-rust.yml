@@ -60,6 +60,9 @@ jobs:
             tauri-plugin-fs:
               - .github/workflows/lint-rust.yml
               - plugins/fs/**
+            tauri-plugin-geolocation:
+              - .github/workflows/lint-rust.yml
+              - plugins/geolocation/**
             tauri-plugin-global-shortcut:
               - .github/workflows/lint-rust.yml
               - plugins/global-shortcut/**

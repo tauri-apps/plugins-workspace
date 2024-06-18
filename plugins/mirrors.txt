@@ -4,6 +4,7 @@ cli
 clipboard-manager
 dialog
 fs
+geolocation
 global-shortcut
 http
 log

@@ -210,6 +210,12 @@ importers:
         specifier: 2.0.0-beta.13
         version: 2.0.0-beta.13
 
+  plugins/geolocation:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: 2.0.0-beta.12
+        version: 2.0.0-beta.12
+
   plugins/global-shortcut:
     dependencies:
       '@tauri-apps/api':
@@ -907,6 +913,10 @@ packages:
       svelte: ^4.0.0 || ^5.0.0-next.0
       vite: ^5.0.0
 
+  '@tauri-apps/api@2.0.0-beta.12':
+    resolution: {integrity: sha512-77OvAnsExtiprnjQcvmDyZGfnIvMF/zVL5+8Vkl1R8o8E3iDtvEJZpbbH1F4dPtNa3gr4byp/5dm8hAa1+r3AA==}
+    engines: {node: '>= 18', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
+
   '@tauri-apps/api@2.0.0-beta.13':
     resolution: {integrity: sha512-Np1opKANzRMF3lgJ9gDquBCB9SxlE2lRmNpVx1+L6RyzAmigkuh0ZulT5jMnDA3JLsuSDU135r/s4t/Pmx4atg==}
     engines: {node: '>= 18', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
@@ -1596,7 +1606,6 @@ packages:
   glob@8.1.0:
     resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
     engines: {node: '>=12'}
-    deprecated: Glob versions prior to v9 are no longer supported
 
   globals@11.12.0:
     resolution: {integrity: sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==}
@@ -2659,13 +2668,14 @@ snapshots:
     dependencies:
       event-target-shim: 5.0.1
 
-  '@covector/apply@0.9.3':
+  '@covector/apply@0.9.3(mocha@10.4.0)':
     dependencies:
       '@covector/files': 0.7.2
       effection: 2.0.8(mocha@10.4.0)
       semver: 7.6.2
     transitivePeerDependencies:
       - encoding
+      - mocha
 
   '@covector/assemble@0.11.0':
     dependencies:
@@ -2682,7 +2692,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@covector/changelog@0.11.0(mocha@10.4.0)':
+  '@covector/changelog@0.11.0':
     dependencies:
       '@covector/files': 0.7.2
       effection: 2.0.8(mocha@10.4.0)
@@ -2692,7 +2702,6 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
-      - mocha
       - supports-color
 
   '@covector/command@0.7.1':
@@ -3038,6 +3047,8 @@ snapshots:
       vitefu: 0.2.5(vite@5.3.1(terser@5.31.1))
     transitivePeerDependencies:
       - supports-color
+
+  '@tauri-apps/api@2.0.0-beta.12': {}
 
   '@tauri-apps/api@2.0.0-beta.13': {}
 
@@ -3543,9 +3554,9 @@ snapshots:
 
   covector@0.11.0(mocha@10.4.0):
     dependencies:
-      '@covector/apply': 0.9.3
+      '@covector/apply': 0.9.3(mocha@10.4.0)
       '@covector/assemble': 0.11.0
-      '@covector/changelog': 0.11.0(mocha@10.4.0)
+      '@covector/changelog': 0.11.0
       '@covector/command': 0.7.1
       '@covector/files': 0.7.2
       effection: 2.0.8(mocha@10.4.0)

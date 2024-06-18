@@ -49,6 +49,10 @@ jobs:
               - .github/workflows/check-generated-files.yml
               - plugins/fs/guest-js/**
               - plugins/fs/src/api-iife.js
+            fs:
+              - .github/workflows/check-generated-files.yml
+              - plugins/geolocation/guest-js/**
+              - plugins/geolocation/src/api-iife.js
             global-shortcut:
               - .github/workflows/check-generated-files.yml
               - plugins/global-shortcut/guest-js/**

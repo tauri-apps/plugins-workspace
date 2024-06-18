@@ -73,6 +73,10 @@ jobs:
               - .github/workflows/test-rust.yml
               - Cargo.toml
               - plugins/fs/**
+            tauri-plugin-geolocation:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/geolocation/**
             tauri-plugin-global-shortcut:
               - .github/workflows/test-rust.yml
               - Cargo.toml
