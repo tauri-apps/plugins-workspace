@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use serde::de::DeserializeOwned;
+use serde::{de::DeserializeOwned, Serialize};
 use tauri::{
+    ipc::Channel,
     plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
 };
@@ -31,10 +32,65 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 /// Access to the geolocation APIs.
 pub struct Geolocation<R: Runtime>(PluginHandle<R>);
 
+// TODO: Position instead of Value
 impl<R: Runtime> Geolocation<R> {
-    pub fn ping(&self, payload: PingRequest) -> crate::Result<PingResponse> {
+    pub fn get_current_position(
+        &self,
+        options: Option<PositionOptions>,
+    ) -> crate::Result<Position> {
+        // TODO: We may have to send over None if that's better on Android
         self.0
-            .run_mobile_plugin("ping", payload)
+            .run_mobile_plugin("getCurrentPosition", options.unwrap_or_default())
             .map_err(Into::into)
     }
+
+    // TODO: <F: FnMut(Position) + Send + Sync + 'static>
+    pub fn watch_position(
+        &self,
+        options: PositionOptions,
+        callback_channel: Channel,
+    ) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin(
+                "watchPosition",
+                WatchPayload {
+                    options,
+                    channel: callback_channel,
+                },
+            )
+            .map_err(Into::into)
+    }
+
+    pub fn clear_watch(&self, channel_id: u32) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin("clearWatch", ClearWatchPayload { channel_id })
+            .map_err(Into::into)
+    }
+
+    pub fn check_permissions(&self) -> crate::Result<PermissionStatus> {
+        self.0
+            .run_mobile_plugin("checkPermissions", ())
+            .map_err(Into::into)
+    }
+
+    pub fn request_permissions(
+        &self,
+        permissions: Option<Vec<PermissionType>>,
+    ) -> crate::Result<PermissionStatus> {
+        self.0
+            .run_mobile_plugin("requestPermissions", permissions)
+            .map_err(Into::into)
+    }
+}
+
+#[derive(Serialize)]
+struct WatchPayload {
+    options: PositionOptions,
+    channel: Channel,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ClearWatchPayload {
+    channel_id: u32,
 }
