@@ -19,6 +19,8 @@ tauri-plugin = { workspace = true, features = ["build"] }
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
-tauri = { workspace = true }
+tauri = { workspace = true, features=["specta"] }
 log = { workspace = true }
 thiserror = { workspace = true }
+specta = "=2.0.0-rc.12"
+tauri-specta = { version = "=2.0.0-rc.11", features = ["javascript", "typescript"] }

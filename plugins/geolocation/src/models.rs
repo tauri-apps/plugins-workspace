@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: MIT
 
 use serde::{Deserialize, Serialize};
+use specta::Type;
 
-#[derive(Debug, Clone, Default, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct PermissionStatus {
     /// Permission state for the location alias.
@@ -24,7 +25,7 @@ pub struct PermissionStatus {
 }
 
 /// Permission state.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub enum PermissionState {
     /// Permission access has been granted.
@@ -36,7 +37,7 @@ pub enum PermissionState {
     Prompt,
 }
 
-#[derive(Debug, Clone, Default, Serialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct PositionOptions {
     /// High accuracy mode (such as GPS, if available)
@@ -49,22 +50,24 @@ pub struct PositionOptions {
     // TODO: validate Android behavior
     // TODO: Handle Infinity
     // TODO: Should default to Infinity
-    pub timeout: u64,
+    // TODO: Should be u64 or something but specta doesn't like that.
+    pub timeout: u32,
     /// The maximum age in milliseconds of a possible cached position that is acceptable to return.
     /// Default: 0
     /// Ignored on iOS
     // TODO: Handle Infinity
-    pub maximum_age: u64,
+    // TODO: Should be u64 or something but specta doesn't like that.
+    pub maximum_age: u32,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub enum PermissionType {
     Location,
     CoarseLocation,
 }
 
-#[derive(Debug, Clone, Default, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct Coordinates {
     /// Latitude in decimal degrees.
@@ -73,7 +76,8 @@ pub struct Coordinates {
     pub longitude: f64,
     /// Accuracy level of the latitude and longitude coordinates in meters.
     // TODO: May has to be f64 because it's Double in swift
-    pub accuracy: u64,
+    // TODO: Should be u64 or something but specta doesn't like that.
+    pub accuracy: u32,
     /// Accuracy level of the altitude coordinate in meters, if available.
     /// Available on all iOS versions and on Android 8 and above.
     pub altitude_accuracy: Option<f64>,
@@ -81,16 +85,18 @@ pub struct Coordinates {
     pub altitude: Option<f64>,
     // The speed the user is traveling, if available.
     pub speed: Option<f64>,
-    // TODO: May has to be f64 because it's Double in swift
     /// The heading the user is facing, if available.
-    pub heading: Option<i64>,
+    // TODO: May has to be f64 because it's Double in swift
+    // TODO: Should be u64 or something but specta doesn't like that.
+    pub heading: Option<i32>,
 }
 
-#[derive(Debug, Clone, Default, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct Position {
     /// Creation time for these coordinates.
-    pub timestamp: u64,
+    // TODO: Should be u64 or something but specta doesn't like that.
+    pub timestamp: u32,
     /// The GPD coordinates along with the accuracy of the data.
     pub coords: Coordinates,
 }

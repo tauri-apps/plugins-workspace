@@ -20,6 +20,7 @@ export default tseslint.config(
       "**/init-iife.js",
       "**/init.js",
       "**/rollup.config.js",
+      "**/bindings.ts",
       ".scripts",
       "eslint.config.js",
     ],
@@ -32,5 +33,5 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: { project: true, tsconfigRootDir: import.meta.dirname },
     },
-  },
+  }
 );

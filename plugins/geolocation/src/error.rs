@@ -3,16 +3,19 @@
 // SPDX-License-Identifier: MIT
 
 use serde::{ser::Serializer, Serialize};
+use specta::Type;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, Type)]
 pub enum Error {
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
     #[cfg(mobile)]
     #[error(transparent)]
-    PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
+    PluginInvoke(
+        #[serde(skip)]
+        #[from]
+        tauri::plugin::mobile::PluginInvokeError,
+    ),
 }
 
 impl Serialize for Error {

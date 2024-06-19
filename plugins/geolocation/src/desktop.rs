@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use serde::de::DeserializeOwned;
-use tauri::{plugin::PluginApi, AppHandle, Runtime};
+use serde::{de::DeserializeOwned, Serialize};
+use tauri::{
+    ipc::Channel,
+    plugin::{PluginApi, PluginHandle},
+    AppHandle, Runtime,
+};
 
 use crate::models::*;
 
@@ -17,10 +21,48 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 /// Access to the geolocation APIs.
 pub struct Geolocation<R: Runtime>(AppHandle<R>);
 
+// TODO: Position instead of Value
 impl<R: Runtime> Geolocation<R> {
-    pub fn ping(&self, payload: PingRequest) -> crate::Result<PingResponse> {
-        Ok(PingResponse {
-            value: payload.value,
-        })
+    pub fn get_current_position(
+        &self,
+        options: Option<PositionOptions>,
+    ) -> crate::Result<Position> {
+        Ok(Position::default())
     }
+
+    // TODO: <F: FnMut(Position) + Send + Sync + 'static>
+    pub fn watch_position(
+        &self,
+        options: PositionOptions,
+        callback_channel: Channel,
+    ) -> crate::Result<()> {
+        Ok(())
+    }
+
+    pub fn clear_watch(&self, channel_id: u32) -> crate::Result<()> {
+        Ok(())
+    }
+
+    pub fn check_permissions(&self) -> crate::Result<PermissionStatus> {
+        Ok(PermissionStatus::default())
+    }
+
+    pub fn request_permissions(
+        &self,
+        permissions: Option<Vec<PermissionType>>,
+    ) -> crate::Result<PermissionStatus> {
+        Ok(PermissionStatus::default())
+    }
+}
+
+#[derive(Serialize)]
+struct WatchPayload {
+    options: PositionOptions,
+    channel: Channel,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ClearWatchPayload {
+    channel_id: u32,
 }

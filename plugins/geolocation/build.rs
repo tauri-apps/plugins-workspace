@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-const COMMANDS: &[&str] = &["execute"];
+const COMMANDS: &[&str] = &[
+    "get_current_position",
+    "watch_position",
+    "clear_watch",
+    "check_permissions",
+    "clear_permissions",
+];
 
 fn main() {
     if let Err(error) = tauri_plugin::Builder::new(COMMANDS)
