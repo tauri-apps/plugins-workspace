@@ -36,4 +36,4 @@ incremental = false
 opt-level = "s"
 
 [patch.crates-io]
-tauri = { git="https://github.com/crabnebula-dev/tauri", branch="brendan/specta-impls" }
+tauri = { git = "https://github.com/crabnebula-dev/tauri", rev = "b9cb272a8935b7a076e778b02a11e4c40930006e" } # branch="brendan/specta-impls"

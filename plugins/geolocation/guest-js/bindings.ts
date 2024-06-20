@@ -21,13 +21,14 @@ export const commands = {
   },
   async watchPosition(
     options: PositionOptions,
-    channel: Channel<Position>
+    channel: any
   ): Promise<Result<null, Error>> {
     try {
       return {
         status: "ok",
         data: await TAURI_INVOKE("plugin:geolocation|watch_position", {
           options,
+          channel,
         }),
       };
     } catch (e) {
@@ -187,7 +188,7 @@ export type RandomNumber = number;
 
 /** tauri-specta globals **/
 
-import { Channel, invoke as TAURI_INVOKE } from "@tauri-apps/api/core";
+import { invoke as TAURI_INVOKE } from "@tauri-apps/api/core";
 import * as TAURI_API_EVENT from "@tauri-apps/api/event";
 import { type WebviewWindow as __WebviewWindow__ } from "@tauri-apps/api/webviewWindow";
 
