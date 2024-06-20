@@ -86,9 +86,7 @@ pub struct Coordinates {
     // The speed the user is traveling, if available.
     pub speed: Option<f64>,
     /// The heading the user is facing, if available.
-    // TODO: May has to be f64 because it's Double in swift
-    // TODO: Should be u64 or something but specta doesn't like that.
-    pub heading: Option<i32>,
+    pub heading: Option<f64>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Type)]
