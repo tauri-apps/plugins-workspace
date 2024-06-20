@@ -74,7 +74,8 @@ class GeolocationPlugin: Plugin, CLLocationManagerDelegate {
       if CLLocationManager.authorizationStatus() == .notDetermined {
         self.locationManager.requestWhenInUseAuthorization()
       } else {
-        self.locationManager.requestLocation()
+        self.locationManager.startUpdatingLocation()
+        self.isUpdatingLocation = true
       }
     }
 
