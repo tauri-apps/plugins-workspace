@@ -42,6 +42,7 @@ macro_rules! specta_builder {
             ])
             .events(collect_events![RandomNumber])
             .header("// @ts-nocheck")
+            .config(specta::ts::ExportConfig::default().bigint(specta::ts::BigIntExportBehavior::Number))
     };
 }
 
@@ -84,7 +85,7 @@ mod test {
     fn export_types() {
         specta_builder!()
             .path("./guest-js/bindings.ts")
-            .config(specta::ts::ExportConfig::default().formatter(specta::ts::formatter::prettier))
+            .config(specta::ts::ExportConfig::default().formatter(specta::ts::formatter::prettier).bigint(specta::ts::BigIntExportBehavior::Number))
             .export_for_plugin("geolocation")
             .expect("failed to export specta types");
     }

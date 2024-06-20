@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use tauri::{command, ipc::Channel, AppHandle, Runtime, Window};
+use tauri::{command, ipc::Channel, AppHandle};
 
 use crate::{GeolocationExt, PermissionStatus, PermissionType, Position, PositionOptions, Result};
 

@@ -2,7 +2,9 @@
   "name": "@tauri-apps/plugin-geolocation",
   "version": "1.0.0",
   "license": "MIT or APACHE-2.0",
-  "authors": ["Tauri Programme within The Commons Conservancy"],
+  "authors": [
+    "Tauri Programme within The Commons Conservancy"
+  ],
   "type": "module",
   "types": "./dist-js/index.d.ts",
   "main": "./dist-js/index.cjs",
@@ -15,7 +17,11 @@
   "scripts": {
     "build": "rollup -c"
   },
-  "files": ["dist-js", "README.md", "LICENSE"],
+  "files": [
+    "dist-js",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "@tauri-apps/api": "2.0.0-beta.12"
   }

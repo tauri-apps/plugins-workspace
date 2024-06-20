@@ -76,7 +76,6 @@ pub struct Coordinates {
     pub longitude: f64,
     /// Accuracy level of the latitude and longitude coordinates in meters.
     // TODO: May has to be f64 because it's Double in swift
-    // TODO: Should be u64 or something but specta doesn't like that.
     pub accuracy: u32,
     /// Accuracy level of the altitude coordinate in meters, if available.
     /// Available on all iOS versions and on Android 8 and above.
@@ -93,8 +92,8 @@ pub struct Coordinates {
 #[serde(rename_all = "camelCase")]
 pub struct Position {
     /// Creation time for these coordinates.
-    // TODO: Should be u64 or something but specta doesn't like that.
-    pub timestamp: u32,
+    // TODO: Check if we're actually losing precision.
+    pub timestamp: u64,
     /// The GPD coordinates along with the accuracy of the data.
     pub coords: Coordinates,
 }
