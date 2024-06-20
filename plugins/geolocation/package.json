@@ -13,10 +13,9 @@
     "require": "./dist-js/index.cjs"
   },
   "scripts": {
-    "build": "rollup -c",
-    "postinstall": "npm run build"
+    "build": "rollup -c"
   },
-  "files": ["dist-js", "README.md", "LICENSE", "guest-js", "rollup.config.js"],
+  "files": ["dist-js", "README.md", "LICENSE"],
   "dependencies": {
     "@tauri-apps/api": "2.0.0-beta.12"
   }
