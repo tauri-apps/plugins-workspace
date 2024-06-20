@@ -16,7 +16,7 @@
     "build": "rollup -c",
     "postinstall": "npm run build"
   },
-  "files": ["dist-js", "README.md", "LICENSE", "src", "rollup.config.js"],
+  "files": ["dist-js", "README.md", "LICENSE", "guest-js", "rollup.config.js"],
   "dependencies": {
     "@tauri-apps/api": "2.0.0-beta.12"
   }
