@@ -19,8 +19,6 @@ class PingArgs {
 
 @TauriPlugin
 class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
-    private val implementation = Example()
-
     @Command
     fun ping(invoke: Invoke) {
         val args = invoke.parseArgs(PingArgs::class.java)
