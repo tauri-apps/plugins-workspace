@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: MIT
 
 import { invoke } from "@tauri-apps/api/core";
-import { listen, type UnlistenFn, type Event } from "@tauri-apps/api/event";
+//@ts-expect-error its js
+import * as console from "./console.js";
 
 export interface LogOptions {
   file?: string;
@@ -183,61 +184,28 @@ export async function trace(
   await log(LogLevel.Trace, message, options);
 }
 
-interface RecordPayload {
-  level: LogLevel;
-  message: string;
-}
-
-type LoggerFn = (fn: RecordPayload) => void;
-
-/**
- * Attaches a listener for the log, and calls the passed function for each log entry.
- * @param fn
- *
- * @returns a function to cancel the listener.
- */
-export async function attachLogger(fn: LoggerFn): Promise<UnlistenFn> {
-  return await listen("log://log", (event: Event<RecordPayload>) => {
-    const { level } = event.payload;
-    let { message } = event.payload;
-
-    // Strip ANSI escape codes
-    message = message.replace(
-      // TODO: Investigate security/detect-unsafe-regex
-      // eslint-disable-next-line no-control-regex, security/detect-unsafe-regex
-      /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
-      "",
-    );
-    fn({ message, level });
-  });
-}
-
-/**
- * Attaches a listener that writes log entries to the console as they come in.
- *
- * @returns a function to cancel the listener.
- */
-export async function attachConsole(): Promise<UnlistenFn> {
-  return await attachLogger(({ level, message }: RecordPayload) => {
+Object.defineProperty(globalThis, "console", {
+  value: new console.Console((msg: string, level: number) => {
+    let lvl;
     switch (level) {
-      case LogLevel.Trace:
-        console.log(message);
+      case 0:
+        lvl = LogLevel.Debug;
         break;
-      case LogLevel.Debug:
-        console.debug(message);
+      case 1:
+        lvl = LogLevel.Info;
         break;
-      case LogLevel.Info:
-        console.info(message);
+      case 2:
+        lvl = LogLevel.Warn;
         break;
-      case LogLevel.Warn:
-        console.warn(message);
-        break;
-      case LogLevel.Error:
-        console.error(message);
+      case 3:
+        lvl = LogLevel.Error;
         break;
       default:
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        throw new Error(`unknown log level ${level}`);
+        lvl = LogLevel.Info;
     }
-  });
-}
+    void log(lvl, msg);
+  }),
+  enumerable: false,
+  configurable: true,
+  writable: true,
+});
