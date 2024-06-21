@@ -4,7 +4,7 @@
 
 use serde::{de::DeserializeOwned, Serialize};
 use tauri::{
-    ipc::Channel,
+    ipc::{Channel, InvokeBody},
     plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
 };
@@ -32,7 +32,6 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 /// Access to the geolocation APIs.
 pub struct Geolocation<R: Runtime>(PluginHandle<R>);
 
-// TODO: Position instead of Value
 impl<R: Runtime> Geolocation<R> {
     pub fn get_current_position(
         &self,
@@ -44,20 +43,41 @@ impl<R: Runtime> Geolocation<R> {
             .map_err(Into::into)
     }
 
-    // TODO: <F: FnMut(Position) + Send + Sync + 'static>
-    pub fn watch_position(
+    /// Register a position watcher. This method returns an id to use in `clear_watch`.
+    pub fn watch_position<F: Fn(WatchEvent) + Send + Sync + 'static>(
         &self,
         options: PositionOptions,
-        callback_channel: Channel,
+        callback: F,
+    ) -> crate::Result<u32> {
+        let channel = Channel::new(move |event| {
+            let payload = match event {
+                InvokeBody::Json(payload) => serde_json::from_value::<WatchEvent>(payload)
+                    .unwrap_or_else(|error| {
+                        WatchEvent::Error(format!(
+                            "Couldn't deserialize watch event payload: `{error}`"
+                        ))
+                    }),
+                _ => WatchEvent::Error("Unexpected watch event payload.".to_string()),
+            };
+
+            callback(payload);
+
+            Ok(())
+        });
+        let id = channel.id();
+
+        self.watch_position_inner(options, channel)?;
+
+        Ok(id)
+    }
+
+    pub(crate) fn watch_position_inner(
+        &self,
+        options: PositionOptions,
+        channel: Channel,
     ) -> crate::Result<()> {
         self.0
-            .run_mobile_plugin(
-                "watchPosition",
-                WatchPayload {
-                    options,
-                    channel: callback_channel,
-                },
-            )
+            .run_mobile_plugin("watchPosition", WatchPayload { options, channel })
             .map_err(Into::into)
     }
 

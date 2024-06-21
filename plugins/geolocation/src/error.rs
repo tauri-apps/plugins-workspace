@@ -7,6 +7,8 @@ use specta::Type;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+// TODO: Improve Error handling (different typed errors instead of one (stringified) PluginInvokeError for all mobile errors)
+
 #[derive(Debug, thiserror::Error, Type)]
 pub enum Error {
     #[cfg(mobile)]

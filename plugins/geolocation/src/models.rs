@@ -97,3 +97,10 @@ pub struct Position {
     /// The GPD coordinates along with the accuracy of the data.
     pub coords: Coordinates,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(untagged)]
+pub enum WatchEvent {
+    Position(Position),
+    Error(String),
+}

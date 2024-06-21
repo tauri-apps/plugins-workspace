@@ -22,7 +22,7 @@ pub(crate) async fn watch_position(
     options: PositionOptions,
     channel: Channel,
 ) -> Result<()> {
-    app.geolocation().watch_position(options, channel)
+    app.geolocation().watch_position_inner(options, channel)
 }
 
 #[command]

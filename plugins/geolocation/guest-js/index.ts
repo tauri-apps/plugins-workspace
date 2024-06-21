@@ -10,7 +10,7 @@ import { commands, type PositionOptions, type Position } from "./bindings";
 export async function watchPosition(
   options: PositionOptions,
   // TODO: This can receive errors too
-  cb: (location: Position) => void,
+  cb: (location: Position | string) => void
 ): Promise<number> {
   const channel = new Channel<Position>();
   channel.onmessage = cb;
