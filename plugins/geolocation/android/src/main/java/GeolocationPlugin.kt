@@ -16,6 +16,7 @@ import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.Permission
 import app.tauri.annotation.PermissionCallback
 import app.tauri.annotation.TauriPlugin
+import app.tauri.plugin.Channel
 import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
@@ -23,8 +24,19 @@ import app.tauri.plugin.Plugin
 @InvokeArg
 class PositionOptions {
   var enableHighAccuracy: Boolean = false
-  var maximumAge: Int = 0
-  var timeout: Int = 10000
+  var maximumAge: Long = 0
+  var timeout: Long = 10000
+}
+
+@InvokeArg
+class WatchArgs {
+    var options: PositionOptions = PositionOptions()
+    lateinit var channel: Channel
+}
+
+@InvokeArg
+class ClearWatchArgs {
+    var channelId: Long = 0
 }
 
 // TODO: App requires a reload after permissions were granted
@@ -52,11 +64,24 @@ private const val ALIAS_COARSE_LOCATION: String = "coarseLocation"
 )
 class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
     private lateinit var implementation: Geolocation// = Geolocation(activity.applicationContext)
+    private var watchers = hashMapOf<Long, Invoke>()
 
     override fun load(webView: WebView) {
         super.load(webView)
-
         implementation = Geolocation(activity.applicationContext)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Clear all location updates on pause to avoid possible background location calls
+        implementation.clearLocationUpdates()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        for (watcher in watchers.values) {
+            startWatch(watcher)
+        }
     }
 
     @Command
@@ -107,6 +132,56 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
         }
     }
 
+    @Command
+    fun watchPosition(invoke: Invoke) {
+        val args = invoke.parseArgs(WatchArgs::class.java)
+        val alias = getAlias(args.options.enableHighAccuracy)
+
+        if (getPermissionState(alias) != PermissionState.GRANTED) {
+            requestPermissionForAlias(alias, invoke, "watchPositionCallback")
+        } else {
+            startWatch(invoke)
+        }
+    }
+
+    @PermissionCallback
+    private fun watchPositionCallback(invoke: Invoke) {
+        Logger.error("WATCHPOS CALLBACK")
+        // TODO: capacitor only checks for coarse here
+        if (getPermissionState(ALIAS_COARSE_LOCATION) == PermissionState.GRANTED) {
+            Logger.error("WATCHPOS CALLBACK GRANTED")
+            startWatch(invoke)
+        } else {
+            Logger.error("WATCHPOS CALLBACK DENIED")
+            invoke.reject("Location permissions was denied.")
+        }
+    }
+
+    private fun startWatch(invoke: Invoke) {
+        val args = invoke.parseArgs(WatchArgs::class.java)
+
+        implementation.requestLocationUpdates(
+            args.options.enableHighAccuracy,
+            args.options.timeout,
+            { location -> args.channel.send(convertLocation(location)) },
+            { error -> args.channel.sendObject(error) })
+
+        watchers[args.channel.id] = invoke
+    }
+
+    @Command
+    fun clearWatch(invoke: Invoke) {
+        val args = invoke.parseArgs(ClearWatchArgs::class.java)
+
+        watchers.remove(args.channelId)
+
+        if (watchers.isEmpty()) {
+            implementation.clearLocationUpdates()
+        }
+
+        invoke.resolve()
+    }
+
     private fun getPosition(invoke: Invoke, options: PositionOptions) {
         val location = implementation.getLastLocation(options.maximumAge)
         if (location != null) {
@@ -121,8 +196,8 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
     }
 
     private fun convertLocation(location: Location): JSObject {
-        var ret = JSObject()
-        var coords = JSObject()
+        val ret = JSObject()
+        val coords = JSObject()
 
         coords.put("latitude", location.latitude)
         coords.put("longitude", location.longitude)

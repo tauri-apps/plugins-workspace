@@ -75,8 +75,7 @@ pub struct Coordinates {
     /// Longitude in decimal degrees.
     pub longitude: f64,
     /// Accuracy level of the latitude and longitude coordinates in meters.
-    // TODO: May has to be f64 because it's Double in swift
-    pub accuracy: u32,
+    pub accuracy: f64,
     /// Accuracy level of the altitude coordinate in meters, if available.
     /// Available on all iOS versions and on Android 8 and above.
     pub altitude_accuracy: Option<f64>,
