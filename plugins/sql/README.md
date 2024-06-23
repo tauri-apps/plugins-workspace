@@ -105,6 +105,30 @@ const result = await db.execute(
 );
 ```
 
+### Batch Insert
+
+It is possible to insert a lot of data in a single query using the batchInsert method. This method is based on the QueryBuilder module of sqlx and takes two arguments. The first one is the insert query string without the VALUES part and with a trailing space at the end (e.g. `INSERT into users (name) `). The second argument is an Array of Arrays with values to insert.
+Checkout the docs for QueryBuilder push_values method here :https://docs.rs/sqlx/latest/sqlx/struct.QueryBuilder.html#method.push_values.
+
+Please note that the number of values par query is usually limited. For sqlite it can be limited to 999 by default, so that you'll need to split your query in chunk of 999 values max. Here is an example on how to do that:
+
+```js
+import Database from "@tauri-apps/plugin-sql";
+let db = await Database.load('sqlite:mydatabase.db')
+const valuesToInsert = [...Array(10000)].map(v=>[`User ${v}`, Math.round(Math.random()*100)])
+const values_length = valuesToInsert[0].length;
+const chunkSize = Math.floor(999 / values_length); //Each query is limited to 999 values
+let rowsAffected = 0;
+let lastInsertId = 0;
+for (let i = 0; i < valuesToInsert.length; i += chunkSize) {
+  const chunk = valuesToInsert.slice(i, i + chunkSize);
+  const [rowsAffectedQuery, lastInsertIdQuery] = await db.batchInsert(`INSERT into users (name,age) `, chunk)
+  rowsAffected += rowsAffectedQuery;
+  lastInsertId = lastInsertIdQuery;
+  // do whatever
+}
+```
+
 ## Migrations
 
 This plugin supports database migrations, allowing you to manage database schema evolution over time.
