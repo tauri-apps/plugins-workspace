@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-const COMMANDS: &[&str] = &["vibrate"];
+const COMMANDS: &[&str] = &[
+    "vibrate",
+    "impact_feedback",
+    "notification_feedback",
+    "selection_feedback",
+];
 
 fn main() {
     if let Err(error) = tauri_plugin::Builder::new(COMMANDS)

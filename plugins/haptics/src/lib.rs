@@ -33,7 +33,12 @@ struct RandomNumber(i32);
 macro_rules! specta_builder {
     () => {
         ts::builder()
-            .commands(collect_commands![commands::vibrate])
+            .commands(collect_commands![
+                commands::vibrate,
+                commands::impact_feedback,
+                commands::notification_feedback,
+                commands::selection_feedback
+            ])
             .events(collect_events![RandomNumber])
             .header("// @ts-nocheck")
             .config(

@@ -295,6 +295,48 @@
       "type": "string",
       "oneOf": [
         {
+          "description": "allow-impact-feedback -> Enables the impact_feedback command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-impact-feedback"
+          ]
+        },
+        {
+          "description": "deny-impact-feedback -> Denies the impact_feedback command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-impact-feedback"
+          ]
+        },
+        {
+          "description": "allow-notification-feedback -> Enables the notification_feedback command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-notification-feedback"
+          ]
+        },
+        {
+          "description": "deny-notification-feedback -> Denies the notification_feedback command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-notification-feedback"
+          ]
+        },
+        {
+          "description": "allow-selection-feedback -> Enables the selection_feedback command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-selection-feedback"
+          ]
+        },
+        {
+          "description": "deny-selection-feedback -> Denies the selection_feedback command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-selection-feedback"
+          ]
+        },
+        {
           "description": "allow-vibrate -> Enables the vibrate command without any pre-configured scope.",
           "type": "string",
           "enum": [

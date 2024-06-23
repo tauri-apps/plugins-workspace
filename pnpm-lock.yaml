@@ -213,10 +213,16 @@ importers:
   plugins/geolocation:
     dependencies:
       '@tauri-apps/api':
-        specifier: 2.0.0-beta.12
-        version: 2.0.0-beta.12
+        specifier: 2.0.0-beta.13
+        version: 2.0.0-beta.13
 
   plugins/global-shortcut:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: 2.0.0-beta.13
+        version: 2.0.0-beta.13
+
+  plugins/haptics:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-beta.13
@@ -912,10 +918,6 @@ packages:
     peerDependencies:
       svelte: ^4.0.0 || ^5.0.0-next.0
       vite: ^5.0.0
-
-  '@tauri-apps/api@2.0.0-beta.12':
-    resolution: {integrity: sha512-77OvAnsExtiprnjQcvmDyZGfnIvMF/zVL5+8Vkl1R8o8E3iDtvEJZpbbH1F4dPtNa3gr4byp/5dm8hAa1+r3AA==}
-    engines: {node: '>= 18', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
 
   '@tauri-apps/api@2.0.0-beta.13':
     resolution: {integrity: sha512-Np1opKANzRMF3lgJ9gDquBCB9SxlE2lRmNpVx1+L6RyzAmigkuh0ZulT5jMnDA3JLsuSDU135r/s4t/Pmx4atg==}
@@ -3047,8 +3049,6 @@ snapshots:
       vitefu: 0.2.5(vite@5.3.1(terser@5.31.1))
     transitivePeerDependencies:
       - supports-color
-
-  '@tauri-apps/api@2.0.0-beta.12': {}
 
   '@tauri-apps/api@2.0.0-beta.13': {}
 

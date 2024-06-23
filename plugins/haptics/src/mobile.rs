@@ -33,9 +33,45 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Haptics<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Haptics<R> {
-    pub fn vibrate(&self, duration: u32) -> crate::Result<Position> {
+    pub fn vibrate(&self, duration: u32) -> crate::Result<()> {
         self.0
-            .run_mobile_plugin("vibrate", HapticsOptions { duration })
+            .run_mobile_plugin("vibrate", VibratePayload { duration })
             .map_err(Into::into)
     }
+
+    pub fn impact_feedback(&self, style: ImpactFeedbackStyle) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin("impactFeedback", ImpactFeedbackPayload { style })
+            .map_err(Into::into)
+    }
+
+    pub fn notification_feedback(&self, r#type: NotificationFeedbackType) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin(
+                "notificationFeedback",
+                NotificationFeedbackPayload { r#type },
+            )
+            .map_err(Into::into)
+    }
+
+    pub fn selection_feedback(&self) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin("selectionFeedback", ())
+            .map_err(Into::into)
+    }
+}
+
+#[derive(Serialize)]
+struct VibratePayload {
+    duration: u32,
+}
+
+#[derive(Serialize)]
+struct ImpactFeedbackPayload {
+    style: ImpactFeedbackStyle,
+}
+
+#[derive(Serialize)]
+struct NotificationFeedbackPayload {
+    r#type: NotificationFeedbackType,
 }

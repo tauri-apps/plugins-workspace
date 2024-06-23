@@ -18,8 +18,19 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Haptics<R: Runtime>(AppHandle<R>);
 
 impl<R: Runtime> Haptics<R> {
-    pub fn vibrate(&self, duration: u32) -> crate::Result<()> {
-        let _ = HapticsOptions { duration };
+    pub fn vibrate(&self, _duration: u32) -> crate::Result<()> {
+        Ok(())
+    }
+
+    pub fn impact_feedback(&self, _style: ImpactFeedbackStyle) -> crate::Result<()> {
+        Ok(())
+    }
+
+    pub fn notification_feedback(&self, _type: NotificationFeedbackType) -> crate::Result<()> {
+        Ok(())
+    }
+
+    pub fn selection_feedback(&self) -> crate::Result<()> {
         Ok(())
     }
 }

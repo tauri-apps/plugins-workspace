@@ -28,7 +28,10 @@ var TAURI_API_EVENT__namespace = /*#__PURE__*/_interopNamespaceDefault(TAURI_API
 const commands = {
     async vibrate(duration) {
         try {
-            return { status: "ok", data: await core.invoke("plugin:haptics|vibrate", { duration }) };
+            return {
+                status: "ok",
+                data: await core.invoke("plugin:haptics|vibrate", { duration }),
+            };
         }
         catch (e) {
             if (e instanceof Error)
@@ -36,11 +39,56 @@ const commands = {
             else
                 return { status: "error", error: e };
         }
-    }
+    },
+    async impactFeedback(style) {
+        try {
+            return {
+                status: "ok",
+                data: await core.invoke("plugin:haptics|impact_feedback", { style }),
+            };
+        }
+        catch (e) {
+            if (e instanceof Error)
+                throw e;
+            else
+                return { status: "error", error: e };
+        }
+    },
+    // TODO: After regenerating, change rType to type!
+    async notificationFeedback(type) {
+        try {
+            return {
+                status: "ok",
+                data: await core.invoke("plugin:haptics|notification_feedback", {
+                    type,
+                }),
+            };
+        }
+        catch (e) {
+            if (e instanceof Error)
+                throw e;
+            else
+                return { status: "error", error: e };
+        }
+    },
+    async selectionFeedback() {
+        try {
+            return {
+                status: "ok",
+                data: await core.invoke("plugin:haptics|selection_feedback"),
+            };
+        }
+        catch (e) {
+            if (e instanceof Error)
+                throw e;
+            else
+                return { status: "error", error: e };
+        }
+    },
 };
 /** user-defined events **/
 __makeEvents__({
-    randomNumber: "plugin:haptics:random-number"
+    randomNumber: "plugin:haptics:random-number",
 });
 function __makeEvents__(mappings) {
     return new Proxy({}, {
@@ -71,7 +119,10 @@ function __makeEvents__(mappings) {
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 /* eslint-disable @typescript-eslint/unbound-method */
-const { vibrate } = commands;
+const { vibrate, impactFeedback, notificationFeedback, selectionFeedback, } = commands;
 // export { events };
 
+exports.impactFeedback = impactFeedback;
+exports.notificationFeedback = notificationFeedback;
+exports.selectionFeedback = selectionFeedback;
 exports.vibrate = vibrate;

@@ -1,1 +1,2 @@
-export declare const vibrate: (duration: number) => Promise<import("./bindings").Result<null, never>>;
+export declare const vibrate: (duration: number) => Promise<import("./bindings").Result<null, never>>, impactFeedback: (style: import("./bindings").ImpactFeedbackStyle) => Promise<import("./bindings").Result<null, never>>, notificationFeedback: (type: import("./bindings").NotificationFeedbackType) => Promise<import("./bindings").Result<null, never>>, selectionFeedback: () => Promise<import("./bindings").Result<null, never>>;
+export { ImpactFeedbackStyle, NotificationFeedbackType } from "./bindings";

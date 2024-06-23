@@ -6,6 +6,13 @@
 
 import { commands } from "./bindings";
 
-export const { vibrate } = commands;
+export const {
+  vibrate,
+  impactFeedback,
+  notificationFeedback,
+  selectionFeedback,
+} = commands;
+
+export { ImpactFeedbackStyle, NotificationFeedbackType } from "./bindings";
 
 // export { events };
