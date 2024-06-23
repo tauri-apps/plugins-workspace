@@ -6656,6 +6656,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-haptics"
+version = "1.0.0"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "specta",
+ "tauri",
+ "tauri-plugin",
+ "tauri-specta",
+ "thiserror",
+]
+
+[[package]]
 name = "tauri-plugin-http"
 version = "2.0.0-beta.10"
 dependencies = [

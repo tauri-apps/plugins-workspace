@@ -1,0 +1,26 @@
+[package]
+name = "tauri-plugin-haptics"
+version = "1.0.0"
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+links = "tauri-plugin-haptics"
+
+[package.metadata.docs.rs]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[build-dependencies]
+tauri-plugin = { workspace = true, features = ["build"] }
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true, features=["specta"] }
+log = { workspace = true }
+thiserror = { workspace = true }
+specta = "=2.0.0-rc.12"
+tauri-specta = { version = "=2.0.0-rc.11", features = ["javascript", "typescript"] }
