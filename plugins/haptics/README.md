@@ -2,6 +2,10 @@
 
 <!-- description -->
 
+TODO: docs
+
+There are no standards/requirements for vibration support on Android, so the `feedback` APIs often do not work correctly on more affordable phones, including recently released ones.
+
 ## Install
 
 _This plugin requires a Rust version of at least **1.75**_

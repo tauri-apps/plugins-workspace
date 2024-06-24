@@ -117,6 +117,7 @@ class HapticsPlugin: Plugin {
     invoke.resolve()
   }
 
+  // TODO: Consider breaking this up into Start,Change,End like capacitor
   @objc public func selectionFeedback(_ invoke: Invoke) throws {
     let generator = UISelectionFeedbackGenerator()
     generator.prepare()
