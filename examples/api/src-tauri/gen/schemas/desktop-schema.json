@@ -1605,7 +1605,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-app-recursive -> This scope recursive access to the complete `$APP` folder, including sub directories and files.",
+                      "description": "fs:scope-app-recursive -> This scope permits recursive access to the complete `$APP` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-app-recursive"
@@ -1626,7 +1626,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-appcache-recursive -> This scope recursive access to the complete `$APPCACHE` folder, including sub directories and files.",
+                      "description": "fs:scope-appcache-recursive -> This scope permits recursive access to the complete `$APPCACHE` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-appcache-recursive"
@@ -1647,7 +1647,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-appconfig-recursive -> This scope recursive access to the complete `$APPCONFIG` folder, including sub directories and files.",
+                      "description": "fs:scope-appconfig-recursive -> This scope permits recursive access to the complete `$APPCONFIG` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-appconfig-recursive"
@@ -1668,7 +1668,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-appdata-recursive -> This scope recursive access to the complete `$APPDATA` folder, including sub directories and files.",
+                      "description": "fs:scope-appdata-recursive -> This scope permits recursive access to the complete `$APPDATA` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-appdata-recursive"
@@ -1689,7 +1689,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-applocaldata-recursive -> This scope recursive access to the complete `$APPLOCALDATA` folder, including sub directories and files.",
+                      "description": "fs:scope-applocaldata-recursive -> This scope permits recursive access to the complete `$APPLOCALDATA` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-applocaldata-recursive"
@@ -1710,7 +1710,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-applog-recursive -> This scope recursive access to the complete `$APPLOG` folder, including sub directories and files.",
+                      "description": "fs:scope-applog-recursive -> This scope permits recursive access to the complete `$APPLOG` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-applog-recursive"
@@ -1731,7 +1731,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-audio-recursive -> This scope recursive access to the complete `$AUDIO` folder, including sub directories and files.",
+                      "description": "fs:scope-audio-recursive -> This scope permits recursive access to the complete `$AUDIO` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-audio-recursive"
@@ -1752,7 +1752,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-cache-recursive -> This scope recursive access to the complete `$CACHE` folder, including sub directories and files.",
+                      "description": "fs:scope-cache-recursive -> This scope permits recursive access to the complete `$CACHE` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-cache-recursive"
@@ -1773,7 +1773,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-config-recursive -> This scope recursive access to the complete `$CONFIG` folder, including sub directories and files.",
+                      "description": "fs:scope-config-recursive -> This scope permits recursive access to the complete `$CONFIG` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-config-recursive"
@@ -1794,7 +1794,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-data-recursive -> This scope recursive access to the complete `$DATA` folder, including sub directories and files.",
+                      "description": "fs:scope-data-recursive -> This scope permits recursive access to the complete `$DATA` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-data-recursive"
@@ -1815,7 +1815,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-desktop-recursive -> This scope recursive access to the complete `$DESKTOP` folder, including sub directories and files.",
+                      "description": "fs:scope-desktop-recursive -> This scope permits recursive access to the complete `$DESKTOP` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-desktop-recursive"
@@ -1836,7 +1836,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-document-recursive -> This scope recursive access to the complete `$DOCUMENT` folder, including sub directories and files.",
+                      "description": "fs:scope-document-recursive -> This scope permits recursive access to the complete `$DOCUMENT` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-document-recursive"
@@ -1857,7 +1857,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-download-recursive -> This scope recursive access to the complete `$DOWNLOAD` folder, including sub directories and files.",
+                      "description": "fs:scope-download-recursive -> This scope permits recursive access to the complete `$DOWNLOAD` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-download-recursive"
@@ -1878,7 +1878,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-exe-recursive -> This scope recursive access to the complete `$EXE` folder, including sub directories and files.",
+                      "description": "fs:scope-exe-recursive -> This scope permits recursive access to the complete `$EXE` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-exe-recursive"
@@ -1899,7 +1899,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-font-recursive -> This scope recursive access to the complete `$FONT` folder, including sub directories and files.",
+                      "description": "fs:scope-font-recursive -> This scope permits recursive access to the complete `$FONT` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-font-recursive"
@@ -1920,7 +1920,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-home-recursive -> This scope recursive access to the complete `$HOME` folder, including sub directories and files.",
+                      "description": "fs:scope-home-recursive -> This scope permits recursive access to the complete `$HOME` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-home-recursive"
@@ -1941,7 +1941,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-localdata-recursive -> This scope recursive access to the complete `$LOCALDATA` folder, including sub directories and files.",
+                      "description": "fs:scope-localdata-recursive -> This scope permits recursive access to the complete `$LOCALDATA` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-localdata-recursive"
@@ -1962,7 +1962,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-log-recursive -> This scope recursive access to the complete `$LOG` folder, including sub directories and files.",
+                      "description": "fs:scope-log-recursive -> This scope permits recursive access to the complete `$LOG` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-log-recursive"
@@ -1983,7 +1983,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-picture-recursive -> This scope recursive access to the complete `$PICTURE` folder, including sub directories and files.",
+                      "description": "fs:scope-picture-recursive -> This scope permits recursive access to the complete `$PICTURE` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-picture-recursive"
@@ -2004,7 +2004,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-public-recursive -> This scope recursive access to the complete `$PUBLIC` folder, including sub directories and files.",
+                      "description": "fs:scope-public-recursive -> This scope permits recursive access to the complete `$PUBLIC` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-public-recursive"
@@ -2025,7 +2025,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-resource-recursive -> This scope recursive access to the complete `$RESOURCE` folder, including sub directories and files.",
+                      "description": "fs:scope-resource-recursive -> This scope permits recursive access to the complete `$RESOURCE` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-resource-recursive"
@@ -2046,7 +2046,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-runtime-recursive -> This scope recursive access to the complete `$RUNTIME` folder, including sub directories and files.",
+                      "description": "fs:scope-runtime-recursive -> This scope permits recursive access to the complete `$RUNTIME` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-runtime-recursive"
@@ -2067,7 +2067,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-temp-recursive -> This scope recursive access to the complete `$TEMP` folder, including sub directories and files.",
+                      "description": "fs:scope-temp-recursive -> This scope permits recursive access to the complete `$TEMP` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-temp-recursive"
@@ -2088,7 +2088,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-template-recursive -> This scope recursive access to the complete `$TEMPLATE` folder, including sub directories and files.",
+                      "description": "fs:scope-template-recursive -> This scope permits recursive access to the complete `$TEMPLATE` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-template-recursive"
@@ -2109,7 +2109,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-video-recursive -> This scope recursive access to the complete `$VIDEO` folder, including sub directories and files.",
+                      "description": "fs:scope-video-recursive -> This scope permits recursive access to the complete `$VIDEO` folder, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-video-recursive"
@@ -4259,7 +4259,7 @@
           ]
         },
         {
-          "description": "fs:scope-app-recursive -> This scope recursive access to the complete `$APP` folder, including sub directories and files.",
+          "description": "fs:scope-app-recursive -> This scope permits recursive access to the complete `$APP` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-app-recursive"
@@ -4280,7 +4280,7 @@
           ]
         },
         {
-          "description": "fs:scope-appcache-recursive -> This scope recursive access to the complete `$APPCACHE` folder, including sub directories and files.",
+          "description": "fs:scope-appcache-recursive -> This scope permits recursive access to the complete `$APPCACHE` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-appcache-recursive"
@@ -4301,7 +4301,7 @@
           ]
         },
         {
-          "description": "fs:scope-appconfig-recursive -> This scope recursive access to the complete `$APPCONFIG` folder, including sub directories and files.",
+          "description": "fs:scope-appconfig-recursive -> This scope permits recursive access to the complete `$APPCONFIG` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-appconfig-recursive"
@@ -4322,7 +4322,7 @@
           ]
         },
         {
-          "description": "fs:scope-appdata-recursive -> This scope recursive access to the complete `$APPDATA` folder, including sub directories and files.",
+          "description": "fs:scope-appdata-recursive -> This scope permits recursive access to the complete `$APPDATA` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-appdata-recursive"
@@ -4343,7 +4343,7 @@
           ]
         },
         {
-          "description": "fs:scope-applocaldata-recursive -> This scope recursive access to the complete `$APPLOCALDATA` folder, including sub directories and files.",
+          "description": "fs:scope-applocaldata-recursive -> This scope permits recursive access to the complete `$APPLOCALDATA` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-applocaldata-recursive"
@@ -4364,7 +4364,7 @@
           ]
         },
         {
-          "description": "fs:scope-applog-recursive -> This scope recursive access to the complete `$APPLOG` folder, including sub directories and files.",
+          "description": "fs:scope-applog-recursive -> This scope permits recursive access to the complete `$APPLOG` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-applog-recursive"
@@ -4385,7 +4385,7 @@
           ]
         },
         {
-          "description": "fs:scope-audio-recursive -> This scope recursive access to the complete `$AUDIO` folder, including sub directories and files.",
+          "description": "fs:scope-audio-recursive -> This scope permits recursive access to the complete `$AUDIO` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-audio-recursive"
@@ -4406,7 +4406,7 @@
           ]
         },
         {
-          "description": "fs:scope-cache-recursive -> This scope recursive access to the complete `$CACHE` folder, including sub directories and files.",
+          "description": "fs:scope-cache-recursive -> This scope permits recursive access to the complete `$CACHE` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-cache-recursive"
@@ -4427,7 +4427,7 @@
           ]
         },
         {
-          "description": "fs:scope-config-recursive -> This scope recursive access to the complete `$CONFIG` folder, including sub directories and files.",
+          "description": "fs:scope-config-recursive -> This scope permits recursive access to the complete `$CONFIG` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-config-recursive"
@@ -4448,7 +4448,7 @@
           ]
         },
         {
-          "description": "fs:scope-data-recursive -> This scope recursive access to the complete `$DATA` folder, including sub directories and files.",
+          "description": "fs:scope-data-recursive -> This scope permits recursive access to the complete `$DATA` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-data-recursive"
@@ -4469,7 +4469,7 @@
           ]
         },
         {
-          "description": "fs:scope-desktop-recursive -> This scope recursive access to the complete `$DESKTOP` folder, including sub directories and files.",
+          "description": "fs:scope-desktop-recursive -> This scope permits recursive access to the complete `$DESKTOP` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-desktop-recursive"
@@ -4490,7 +4490,7 @@
           ]
         },
         {
-          "description": "fs:scope-document-recursive -> This scope recursive access to the complete `$DOCUMENT` folder, including sub directories and files.",
+          "description": "fs:scope-document-recursive -> This scope permits recursive access to the complete `$DOCUMENT` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-document-recursive"
@@ -4511,7 +4511,7 @@
           ]
         },
         {
-          "description": "fs:scope-download-recursive -> This scope recursive access to the complete `$DOWNLOAD` folder, including sub directories and files.",
+          "description": "fs:scope-download-recursive -> This scope permits recursive access to the complete `$DOWNLOAD` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-download-recursive"
@@ -4532,7 +4532,7 @@
           ]
         },
         {
-          "description": "fs:scope-exe-recursive -> This scope recursive access to the complete `$EXE` folder, including sub directories and files.",
+          "description": "fs:scope-exe-recursive -> This scope permits recursive access to the complete `$EXE` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-exe-recursive"
@@ -4553,7 +4553,7 @@
           ]
         },
         {
-          "description": "fs:scope-font-recursive -> This scope recursive access to the complete `$FONT` folder, including sub directories and files.",
+          "description": "fs:scope-font-recursive -> This scope permits recursive access to the complete `$FONT` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-font-recursive"
@@ -4574,7 +4574,7 @@
           ]
         },
         {
-          "description": "fs:scope-home-recursive -> This scope recursive access to the complete `$HOME` folder, including sub directories and files.",
+          "description": "fs:scope-home-recursive -> This scope permits recursive access to the complete `$HOME` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-home-recursive"
@@ -4595,7 +4595,7 @@
           ]
         },
         {
-          "description": "fs:scope-localdata-recursive -> This scope recursive access to the complete `$LOCALDATA` folder, including sub directories and files.",
+          "description": "fs:scope-localdata-recursive -> This scope permits recursive access to the complete `$LOCALDATA` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-localdata-recursive"
@@ -4616,7 +4616,7 @@
           ]
         },
         {
-          "description": "fs:scope-log-recursive -> This scope recursive access to the complete `$LOG` folder, including sub directories and files.",
+          "description": "fs:scope-log-recursive -> This scope permits recursive access to the complete `$LOG` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-log-recursive"
@@ -4637,7 +4637,7 @@
           ]
         },
         {
-          "description": "fs:scope-picture-recursive -> This scope recursive access to the complete `$PICTURE` folder, including sub directories and files.",
+          "description": "fs:scope-picture-recursive -> This scope permits recursive access to the complete `$PICTURE` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-picture-recursive"
@@ -4658,7 +4658,7 @@
           ]
         },
         {
-          "description": "fs:scope-public-recursive -> This scope recursive access to the complete `$PUBLIC` folder, including sub directories and files.",
+          "description": "fs:scope-public-recursive -> This scope permits recursive access to the complete `$PUBLIC` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-public-recursive"
@@ -4679,7 +4679,7 @@
           ]
         },
         {
-          "description": "fs:scope-resource-recursive -> This scope recursive access to the complete `$RESOURCE` folder, including sub directories and files.",
+          "description": "fs:scope-resource-recursive -> This scope permits recursive access to the complete `$RESOURCE` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-resource-recursive"
@@ -4700,7 +4700,7 @@
           ]
         },
         {
-          "description": "fs:scope-runtime-recursive -> This scope recursive access to the complete `$RUNTIME` folder, including sub directories and files.",
+          "description": "fs:scope-runtime-recursive -> This scope permits recursive access to the complete `$RUNTIME` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-runtime-recursive"
@@ -4721,7 +4721,7 @@
           ]
         },
         {
-          "description": "fs:scope-temp-recursive -> This scope recursive access to the complete `$TEMP` folder, including sub directories and files.",
+          "description": "fs:scope-temp-recursive -> This scope permits recursive access to the complete `$TEMP` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-temp-recursive"
@@ -4742,7 +4742,7 @@
           ]
         },
         {
-          "description": "fs:scope-template-recursive -> This scope recursive access to the complete `$TEMPLATE` folder, including sub directories and files.",
+          "description": "fs:scope-template-recursive -> This scope permits recursive access to the complete `$TEMPLATE` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-template-recursive"
@@ -4763,7 +4763,7 @@
           ]
         },
         {
-          "description": "fs:scope-video-recursive -> This scope recursive access to the complete `$VIDEO` folder, including sub directories and files.",
+          "description": "fs:scope-video-recursive -> This scope permits recursive access to the complete `$VIDEO` folder, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-video-recursive"
