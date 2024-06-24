@@ -19,6 +19,8 @@ thiserror = "1"
 url = "2"
 schemars = "0.8"
 dunce = "1"
+tauri-specta = { git = "https://github.com/oscartbeaumont/tauri-specta", rev = "92c640d80e1dd4003adcd6000927a0af297e4c40" }
+# tauri-specta = { version = "=2.0.0-rc.11" }
 
 [workspace.package]
 edition = "2021"

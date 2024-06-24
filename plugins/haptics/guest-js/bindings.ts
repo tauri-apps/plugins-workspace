@@ -28,7 +28,6 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
-  // TODO: After regenerating, change rType to type!
   async notificationFeedback(
     type: NotificationFeedbackType
   ): Promise<Result<null, Error>> {

@@ -7008,8 +7008,7 @@ dependencies = [
 [[package]]
 name = "tauri-specta"
 version = "2.0.0-rc.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85f26e4ded13fbeab2216dcb5a59b5cf8b475740afea932918888402bcc62a02"
+source = "git+https://github.com/oscartbeaumont/tauri-specta?rev=92c640d80e1dd4003adcd6000927a0af297e4c40#92c640d80e1dd4003adcd6000927a0af297e4c40"
 dependencies = [
  "heck 0.5.0",
  "indoc",
@@ -7024,8 +7023,7 @@ dependencies = [
 [[package]]
 name = "tauri-specta-macros"
 version = "2.0.0-rc.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6f9e90bf2012877e2c4029a1bf756277183e9c7c77b850ef965711553998012"
+source = "git+https://github.com/oscartbeaumont/tauri-specta?rev=92c640d80e1dd4003adcd6000927a0af297e4c40#92c640d80e1dd4003adcd6000927a0af297e4c40"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
