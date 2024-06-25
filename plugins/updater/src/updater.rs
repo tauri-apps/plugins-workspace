@@ -587,6 +587,27 @@ impl Update {
         msi_path.push(&path);
         msi_path.push("\"");
 
+        let mut msi_args = Vec::new();
+        for arg in self.nsis_installer_args()[2..].iter() {
+            let arg = arg.to_string_lossy();
+
+            if !arg.contains(' ') {
+                msi_args.push(arg.to_string());
+                continue;
+            }
+
+            if arg.starts_with('-') {
+                if let Some((a1, a2)) = arg.split_once('=') {
+                    msi_args.push(format!("{a1}=\"\"{a2}\"\""));
+                } else {
+                    msi_args.push(format!("\"\"{arg}\"\""));
+                }
+            } else {
+                msi_args.push(format!("\"\"{arg}\"\""));
+            }
+        }
+        let msi_args = OsString::from(format!("LAUNCHAPPARGS=\"{}\"", msi_args.join(" ")));
+
         let install_mode = self.config.install_mode();
         let installer_args: Vec<&OsStr> = match updater_type {
             WindowsUpdaterType::Nsis => install_mode
@@ -602,6 +623,8 @@ impl Update {
                 .chain(install_mode.msiexec_args().iter().map(OsStr::new))
                 .chain(once(OsStr::new("/promptrestart")))
                 .chain(self.installer_args())
+                .chain(once(OsStr::new("AUTOLAUNCHAPP=True")))
+                .chain(once(msi_args.as_os_str()))
                 .collect(),
         };
 
