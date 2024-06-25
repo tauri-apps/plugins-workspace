@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-const COMMANDS: &[&str] = &["notify", "request_permission", "is_permission_granted", "register_action_types", "register_listener"];
+const COMMANDS: &[&str] = &[
+    "notify",
+    "request_permission",
+    "is_permission_granted",
+    "register_action_types",
+    "register_listener",
+];
 
 fn main() {
     if let Err(error) = tauri_plugin::Builder::new(COMMANDS)
