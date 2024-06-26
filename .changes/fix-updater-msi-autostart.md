@@ -2,4 +2,4 @@
 updater: patch
 ---
 
-Fixed an issue that caused the app to not be started automatically after an update if installed via `.msi`.
+Automatically launch app after updates using `.msi`, to match NSIS `.exe` installer behaviour.
