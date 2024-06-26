@@ -613,6 +613,7 @@ impl Update {
                 msi_args.push(format!("\"\"{arg}\"\""));
             }
         }
+        let msi_args = escape_msi_property_args(&self.nsis_installer_args()[2..]);
         let msi_args = OsString::from(format!("LAUNCHAPPARGS=\"{}\"", msi_args.join(" ")));
 
         let install_mode = self.config.install_mode();
@@ -1049,6 +1050,40 @@ impl PathExt for PathBuf {
     }
 }
 
+#[cfg(windows)]
+fn escape_msi_property_args(args: &[&OsStr]) -> Vec<String> {
+    let mut msi_args = Vec::new();
+    for arg in args {
+        let mut arg = arg.to_string_lossy().to_string();
+
+        // Otherwise this argument will get lost in ShellExecute
+        if arg.is_empty() {
+            msi_args.push("\"\"\"\"".to_string());
+            continue;
+        }
+
+        if !arg.contains(' ') && !arg.contains('"') {
+            msi_args.push(arg);
+            continue;
+        }
+
+        if arg.contains('"') {
+            arg = arg.replace('"', r#""""""#);
+        }
+
+        if arg.starts_with('-') {
+            if let Some((a1, a2)) = arg.split_once('=') {
+                msi_args.push(format!("{a1}=\"\"{a2}\"\""));
+            } else {
+                msi_args.push(format!("\"\"{arg}\"\""));
+            }
+        } else {
+            msi_args.push(format!("\"\"{arg}\"\""));
+        }
+    }
+    msi_args
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -1062,5 +1097,56 @@ mod tests {
             PathBuf::from("C:\\Users\\Some User\\AppData\\tauri-example.exe").wrap_in_quotes(),
             PathBuf::from("\"C:\\Users\\Some User\\AppData\\tauri-example.exe\"")
         )
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn it_escapes_correctly() {
+        use std::ffi::OsStr;
+
+        use crate::updater::escape_msi_property_args;
+
+        // Explanation for quotes:
+        // The output of escape_msi_property_args() will be used in `LAUNCHAPPARGS=\"{HERE}\"`. This is the first quote level.
+        // To escape a quotation mark we use a second quotation mark, so "" is interpreted as " later.
+        // This means that the escaped strings can't ever have a single quotation mark!
+        // Now there are 3 major things to look out for to not break the msiexec call:
+        //   1) Wrap spaces in quotation marks, otherwise it will be interpreted as the end of the msiexec argument.
+        //   2) Escape escaping quotation marks, otherwise they will either end the msiexec argument or be ignored.
+        //   3) Escape emtpy args in quotation marks, otherwise the argument will get lost.
+        let cases = [
+            OsStr::new("something"),
+            OsStr::new("--flag"),
+            OsStr::new("--empty="),
+            OsStr::new("--arg=value"),
+            OsStr::new("some space"),
+            OsStr::new("--arg=unwrapped space"),
+            OsStr::new("--arg=\"wrapped\""),
+            OsStr::new("--arg=\"wrapped space\""),
+            OsStr::new("--arg=midword\"wrapped space\""),
+            OsStr::new(""),
+        ];
+        let cases_escaped = [
+            "something",
+            "--flag",
+            "--empty=",
+            "--arg=value",
+            "\"\"some space\"\"",
+            "--arg=\"\"unwrapped space\"\"",
+            r#"--arg=""""""wrapped"""""""#,
+            r#"--arg=""""""wrapped space"""""""#,
+            r#"--arg=""midword""""wrapped space"""""""#,
+            "\"\"\"\"",
+        ];
+
+        // Just to be sure we didn't mess that up
+        assert_eq!(cases.len(), cases_escaped.len());
+
+        for (orig, escaped) in cases.iter().zip(cases_escaped) {
+            assert_eq!(*escape_msi_property_args(&[orig])[0], *escaped);
+        }
+
+        // Lastly, let's check the whole array at once
+        assert_eq!(escape_msi_property_args(&cases), cases_escaped);
     }
 }
