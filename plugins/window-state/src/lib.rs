@@ -65,7 +65,7 @@ impl Default for StateFlags {
 
 struct PluginState {
     filename: String,
-    map_label: Option<Box<dyn (Fn(&str) -> &str) + Send + Sync>>,
+    map_label: Option<Box<dyn Fn(&str) -> &str + Send + Sync>>,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
@@ -115,10 +115,22 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
         if let Ok(app_dir) = self.path().app_config_dir() {
             let plugin_state = self.state::<PluginState>();
             let state_path = app_dir.join(&plugin_state.filename);
+            let windows = self.webview_windows();
             let cache = self.state::<WindowStateCache>();
             let mut state = cache.0.lock().unwrap();
+
             for (label, s) in state.iter_mut() {
-                if let Some(window) = self.get_webview_window(label) {
+                let window = match &plugin_state.map_label {
+                    Some(map) => {
+                        windows
+                            .iter()
+                            .find(|(l, _)| map(l) == label)
+                            .map(|(_, window)| window)
+                    },
+                    None => windows.get(label)
+                };
+
+                if let Some(window) = window {
                     window.update_state(s, flags)?;
                 }
             }
@@ -317,7 +329,7 @@ pub struct Builder {
     denylist: HashSet<String>,
     skip_initial_state: HashSet<String>,
     state_flags: StateFlags,
-    map_label: Option<Box<dyn (Fn(&str) -> &str) + Send + Sync>>,
+    map_label: Option<Box<dyn Fn(&str) -> &str + Send + Sync>>,
     filename: Option<String>,
 }
 
@@ -351,7 +363,13 @@ impl Builder {
         self
     }
 
-    pub fn map_label(mut self, map_fn: fn(&str) -> &str) -> Self {
+    /// Transforms the window label when saving the window state.
+    /// 
+    /// This can be used to group different windows to use the same state.
+    pub fn map_label<F>(mut self, map_fn: F) -> Self
+    where  
+        F: Fn(&str) -> &str + Sync + Send + 'static
+    {
         self.map_label = Some(Box::new(map_fn));
         self
     }
