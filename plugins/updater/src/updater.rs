@@ -582,6 +582,11 @@ impl Update {
 
         let (updater_type, path, _temp) = Self::extract(bytes)?;
 
+        let mut msi_path = std::ffi::OsString::new();
+        msi_path.push("\"");
+        msi_path.push(&path);
+        msi_path.push("\"");
+
         let install_mode = self.config.install_mode();
         let installer_args: Vec<&OsStr> = match updater_type {
             WindowsUpdaterType::Nsis => install_mode
@@ -592,7 +597,7 @@ impl Update {
                 .chain(self.nsis_installer_args())
                 .chain(self.installer_args())
                 .collect(),
-            WindowsUpdaterType::Msi => [OsStr::new("/i"), path.as_os_str()]
+            WindowsUpdaterType::Msi => [OsStr::new("/i"), msi_path.as_os_str()]
                 .into_iter()
                 .chain(install_mode.msiexec_args().iter().map(OsStr::new))
                 .chain(once(OsStr::new("/promptrestart")))

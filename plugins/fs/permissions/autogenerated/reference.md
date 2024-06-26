@@ -6,7 +6,7 @@
 |`allow-app-write`|This allows non-recursive write access to the `$APP` folder.|
 |`allow-app-meta-recursive`|This allows full recursive read access to metadata of the `$APP` folder, including file listing and statistics.|
 |`allow-app-meta`|This allows non-recursive read access to metadata of the `$APP` folder, including file listing and statistics.|
-|`scope-app-recursive`|This scope recursive access to the complete `$APP` folder, including sub directories and files.|
+|`scope-app-recursive`|This scope permits recursive access to the complete `$APP` folder, including sub directories and files.|
 |`scope-app`|This scope permits access to all files and list content of top level directories in the `$APP`folder.|
 |`scope-app-index`|This scope permits to list all files and folders in the `$APP`folder.|
 |`allow-appcache-read-recursive`|This allows full recursive read access to the complete `$APPCACHE` folder, files and subdirectories.|
@@ -15,7 +15,7 @@
 |`allow-appcache-write`|This allows non-recursive write access to the `$APPCACHE` folder.|
 |`allow-appcache-meta-recursive`|This allows full recursive read access to metadata of the `$APPCACHE` folder, including file listing and statistics.|
 |`allow-appcache-meta`|This allows non-recursive read access to metadata of the `$APPCACHE` folder, including file listing and statistics.|
-|`scope-appcache-recursive`|This scope recursive access to the complete `$APPCACHE` folder, including sub directories and files.|
+|`scope-appcache-recursive`|This scope permits recursive access to the complete `$APPCACHE` folder, including sub directories and files.|
 |`scope-appcache`|This scope permits access to all files and list content of top level directories in the `$APPCACHE`folder.|
 |`scope-appcache-index`|This scope permits to list all files and folders in the `$APPCACHE`folder.|
 |`allow-appconfig-read-recursive`|This allows full recursive read access to the complete `$APPCONFIG` folder, files and subdirectories.|
@@ -24,7 +24,7 @@
 |`allow-appconfig-write`|This allows non-recursive write access to the `$APPCONFIG` folder.|
 |`allow-appconfig-meta-recursive`|This allows full recursive read access to metadata of the `$APPCONFIG` folder, including file listing and statistics.|
 |`allow-appconfig-meta`|This allows non-recursive read access to metadata of the `$APPCONFIG` folder, including file listing and statistics.|
-|`scope-appconfig-recursive`|This scope recursive access to the complete `$APPCONFIG` folder, including sub directories and files.|
+|`scope-appconfig-recursive`|This scope permits recursive access to the complete `$APPCONFIG` folder, including sub directories and files.|
 |`scope-appconfig`|This scope permits access to all files and list content of top level directories in the `$APPCONFIG`folder.|
 |`scope-appconfig-index`|This scope permits to list all files and folders in the `$APPCONFIG`folder.|
 |`allow-appdata-read-recursive`|This allows full recursive read access to the complete `$APPDATA` folder, files and subdirectories.|
@@ -33,7 +33,7 @@
 |`allow-appdata-write`|This allows non-recursive write access to the `$APPDATA` folder.|
 |`allow-appdata-meta-recursive`|This allows full recursive read access to metadata of the `$APPDATA` folder, including file listing and statistics.|
 |`allow-appdata-meta`|This allows non-recursive read access to metadata of the `$APPDATA` folder, including file listing and statistics.|
-|`scope-appdata-recursive`|This scope recursive access to the complete `$APPDATA` folder, including sub directories and files.|
+|`scope-appdata-recursive`|This scope permits recursive access to the complete `$APPDATA` folder, including sub directories and files.|
 |`scope-appdata`|This scope permits access to all files and list content of top level directories in the `$APPDATA`folder.|
 |`scope-appdata-index`|This scope permits to list all files and folders in the `$APPDATA`folder.|
 |`allow-applocaldata-read-recursive`|This allows full recursive read access to the complete `$APPLOCALDATA` folder, files and subdirectories.|
@@ -42,7 +42,7 @@
 |`allow-applocaldata-write`|This allows non-recursive write access to the `$APPLOCALDATA` folder.|
 |`allow-applocaldata-meta-recursive`|This allows full recursive read access to metadata of the `$APPLOCALDATA` folder, including file listing and statistics.|
 |`allow-applocaldata-meta`|This allows non-recursive read access to metadata of the `$APPLOCALDATA` folder, including file listing and statistics.|
-|`scope-applocaldata-recursive`|This scope recursive access to the complete `$APPLOCALDATA` folder, including sub directories and files.|
+|`scope-applocaldata-recursive`|This scope permits recursive access to the complete `$APPLOCALDATA` folder, including sub directories and files.|
 |`scope-applocaldata`|This scope permits access to all files and list content of top level directories in the `$APPLOCALDATA`folder.|
 |`scope-applocaldata-index`|This scope permits to list all files and folders in the `$APPLOCALDATA`folder.|
 |`allow-applog-read-recursive`|This allows full recursive read access to the complete `$APPLOG` folder, files and subdirectories.|
@@ -51,7 +51,7 @@
 |`allow-applog-write`|This allows non-recursive write access to the `$APPLOG` folder.|
 |`allow-applog-meta-recursive`|This allows full recursive read access to metadata of the `$APPLOG` folder, including file listing and statistics.|
 |`allow-applog-meta`|This allows non-recursive read access to metadata of the `$APPLOG` folder, including file listing and statistics.|
-|`scope-applog-recursive`|This scope recursive access to the complete `$APPLOG` folder, including sub directories and files.|
+|`scope-applog-recursive`|This scope permits recursive access to the complete `$APPLOG` folder, including sub directories and files.|
 |`scope-applog`|This scope permits access to all files and list content of top level directories in the `$APPLOG`folder.|
 |`scope-applog-index`|This scope permits to list all files and folders in the `$APPLOG`folder.|
 |`allow-audio-read-recursive`|This allows full recursive read access to the complete `$AUDIO` folder, files and subdirectories.|
@@ -60,7 +60,7 @@
 |`allow-audio-write`|This allows non-recursive write access to the `$AUDIO` folder.|
 |`allow-audio-meta-recursive`|This allows full recursive read access to metadata of the `$AUDIO` folder, including file listing and statistics.|
 |`allow-audio-meta`|This allows non-recursive read access to metadata of the `$AUDIO` folder, including file listing and statistics.|
-|`scope-audio-recursive`|This scope recursive access to the complete `$AUDIO` folder, including sub directories and files.|
+|`scope-audio-recursive`|This scope permits recursive access to the complete `$AUDIO` folder, including sub directories and files.|
 |`scope-audio`|This scope permits access to all files and list content of top level directories in the `$AUDIO`folder.|
 |`scope-audio-index`|This scope permits to list all files and folders in the `$AUDIO`folder.|
 |`allow-cache-read-recursive`|This allows full recursive read access to the complete `$CACHE` folder, files and subdirectories.|
@@ -69,7 +69,7 @@
 |`allow-cache-write`|This allows non-recursive write access to the `$CACHE` folder.|
 |`allow-cache-meta-recursive`|This allows full recursive read access to metadata of the `$CACHE` folder, including file listing and statistics.|
 |`allow-cache-meta`|This allows non-recursive read access to metadata of the `$CACHE` folder, including file listing and statistics.|
-|`scope-cache-recursive`|This scope recursive access to the complete `$CACHE` folder, including sub directories and files.|
+|`scope-cache-recursive`|This scope permits recursive access to the complete `$CACHE` folder, including sub directories and files.|
 |`scope-cache`|This scope permits access to all files and list content of top level directories in the `$CACHE`folder.|
 |`scope-cache-index`|This scope permits to list all files and folders in the `$CACHE`folder.|
 |`allow-config-read-recursive`|This allows full recursive read access to the complete `$CONFIG` folder, files and subdirectories.|
@@ -78,7 +78,7 @@
 |`allow-config-write`|This allows non-recursive write access to the `$CONFIG` folder.|
 |`allow-config-meta-recursive`|This allows full recursive read access to metadata of the `$CONFIG` folder, including file listing and statistics.|
 |`allow-config-meta`|This allows non-recursive read access to metadata of the `$CONFIG` folder, including file listing and statistics.|
-|`scope-config-recursive`|This scope recursive access to the complete `$CONFIG` folder, including sub directories and files.|
+|`scope-config-recursive`|This scope permits recursive access to the complete `$CONFIG` folder, including sub directories and files.|
 |`scope-config`|This scope permits access to all files and list content of top level directories in the `$CONFIG`folder.|
 |`scope-config-index`|This scope permits to list all files and folders in the `$CONFIG`folder.|
 |`allow-data-read-recursive`|This allows full recursive read access to the complete `$DATA` folder, files and subdirectories.|
@@ -87,7 +87,7 @@
 |`allow-data-write`|This allows non-recursive write access to the `$DATA` folder.|
 |`allow-data-meta-recursive`|This allows full recursive read access to metadata of the `$DATA` folder, including file listing and statistics.|
 |`allow-data-meta`|This allows non-recursive read access to metadata of the `$DATA` folder, including file listing and statistics.|
-|`scope-data-recursive`|This scope recursive access to the complete `$DATA` folder, including sub directories and files.|
+|`scope-data-recursive`|This scope permits recursive access to the complete `$DATA` folder, including sub directories and files.|
 |`scope-data`|This scope permits access to all files and list content of top level directories in the `$DATA`folder.|
 |`scope-data-index`|This scope permits to list all files and folders in the `$DATA`folder.|
 |`allow-desktop-read-recursive`|This allows full recursive read access to the complete `$DESKTOP` folder, files and subdirectories.|
@@ -96,7 +96,7 @@
 |`allow-desktop-write`|This allows non-recursive write access to the `$DESKTOP` folder.|
 |`allow-desktop-meta-recursive`|This allows full recursive read access to metadata of the `$DESKTOP` folder, including file listing and statistics.|
 |`allow-desktop-meta`|This allows non-recursive read access to metadata of the `$DESKTOP` folder, including file listing and statistics.|
-|`scope-desktop-recursive`|This scope recursive access to the complete `$DESKTOP` folder, including sub directories and files.|
+|`scope-desktop-recursive`|This scope permits recursive access to the complete `$DESKTOP` folder, including sub directories and files.|
 |`scope-desktop`|This scope permits access to all files and list content of top level directories in the `$DESKTOP`folder.|
 |`scope-desktop-index`|This scope permits to list all files and folders in the `$DESKTOP`folder.|
 |`allow-document-read-recursive`|This allows full recursive read access to the complete `$DOCUMENT` folder, files and subdirectories.|
@@ -105,7 +105,7 @@
 |`allow-document-write`|This allows non-recursive write access to the `$DOCUMENT` folder.|
 |`allow-document-meta-recursive`|This allows full recursive read access to metadata of the `$DOCUMENT` folder, including file listing and statistics.|
 |`allow-document-meta`|This allows non-recursive read access to metadata of the `$DOCUMENT` folder, including file listing and statistics.|
-|`scope-document-recursive`|This scope recursive access to the complete `$DOCUMENT` folder, including sub directories and files.|
+|`scope-document-recursive`|This scope permits recursive access to the complete `$DOCUMENT` folder, including sub directories and files.|
 |`scope-document`|This scope permits access to all files and list content of top level directories in the `$DOCUMENT`folder.|
 |`scope-document-index`|This scope permits to list all files and folders in the `$DOCUMENT`folder.|
 |`allow-download-read-recursive`|This allows full recursive read access to the complete `$DOWNLOAD` folder, files and subdirectories.|
@@ -114,7 +114,7 @@
 |`allow-download-write`|This allows non-recursive write access to the `$DOWNLOAD` folder.|
 |`allow-download-meta-recursive`|This allows full recursive read access to metadata of the `$DOWNLOAD` folder, including file listing and statistics.|
 |`allow-download-meta`|This allows non-recursive read access to metadata of the `$DOWNLOAD` folder, including file listing and statistics.|
-|`scope-download-recursive`|This scope recursive access to the complete `$DOWNLOAD` folder, including sub directories and files.|
+|`scope-download-recursive`|This scope permits recursive access to the complete `$DOWNLOAD` folder, including sub directories and files.|
 |`scope-download`|This scope permits access to all files and list content of top level directories in the `$DOWNLOAD`folder.|
 |`scope-download-index`|This scope permits to list all files and folders in the `$DOWNLOAD`folder.|
 |`allow-exe-read-recursive`|This allows full recursive read access to the complete `$EXE` folder, files and subdirectories.|
@@ -123,7 +123,7 @@
 |`allow-exe-write`|This allows non-recursive write access to the `$EXE` folder.|
 |`allow-exe-meta-recursive`|This allows full recursive read access to metadata of the `$EXE` folder, including file listing and statistics.|
 |`allow-exe-meta`|This allows non-recursive read access to metadata of the `$EXE` folder, including file listing and statistics.|
-|`scope-exe-recursive`|This scope recursive access to the complete `$EXE` folder, including sub directories and files.|
+|`scope-exe-recursive`|This scope permits recursive access to the complete `$EXE` folder, including sub directories and files.|
 |`scope-exe`|This scope permits access to all files and list content of top level directories in the `$EXE`folder.|
 |`scope-exe-index`|This scope permits to list all files and folders in the `$EXE`folder.|
 |`allow-font-read-recursive`|This allows full recursive read access to the complete `$FONT` folder, files and subdirectories.|
@@ -132,7 +132,7 @@
 |`allow-font-write`|This allows non-recursive write access to the `$FONT` folder.|
 |`allow-font-meta-recursive`|This allows full recursive read access to metadata of the `$FONT` folder, including file listing and statistics.|
 |`allow-font-meta`|This allows non-recursive read access to metadata of the `$FONT` folder, including file listing and statistics.|
-|`scope-font-recursive`|This scope recursive access to the complete `$FONT` folder, including sub directories and files.|
+|`scope-font-recursive`|This scope permits recursive access to the complete `$FONT` folder, including sub directories and files.|
 |`scope-font`|This scope permits access to all files and list content of top level directories in the `$FONT`folder.|
 |`scope-font-index`|This scope permits to list all files and folders in the `$FONT`folder.|
 |`allow-home-read-recursive`|This allows full recursive read access to the complete `$HOME` folder, files and subdirectories.|
@@ -141,7 +141,7 @@
 |`allow-home-write`|This allows non-recursive write access to the `$HOME` folder.|
 |`allow-home-meta-recursive`|This allows full recursive read access to metadata of the `$HOME` folder, including file listing and statistics.|
 |`allow-home-meta`|This allows non-recursive read access to metadata of the `$HOME` folder, including file listing and statistics.|
-|`scope-home-recursive`|This scope recursive access to the complete `$HOME` folder, including sub directories and files.|
+|`scope-home-recursive`|This scope permits recursive access to the complete `$HOME` folder, including sub directories and files.|
 |`scope-home`|This scope permits access to all files and list content of top level directories in the `$HOME`folder.|
 |`scope-home-index`|This scope permits to list all files and folders in the `$HOME`folder.|
 |`allow-localdata-read-recursive`|This allows full recursive read access to the complete `$LOCALDATA` folder, files and subdirectories.|
@@ -150,7 +150,7 @@
 |`allow-localdata-write`|This allows non-recursive write access to the `$LOCALDATA` folder.|
 |`allow-localdata-meta-recursive`|This allows full recursive read access to metadata of the `$LOCALDATA` folder, including file listing and statistics.|
 |`allow-localdata-meta`|This allows non-recursive read access to metadata of the `$LOCALDATA` folder, including file listing and statistics.|
-|`scope-localdata-recursive`|This scope recursive access to the complete `$LOCALDATA` folder, including sub directories and files.|
+|`scope-localdata-recursive`|This scope permits recursive access to the complete `$LOCALDATA` folder, including sub directories and files.|
 |`scope-localdata`|This scope permits access to all files and list content of top level directories in the `$LOCALDATA`folder.|
 |`scope-localdata-index`|This scope permits to list all files and folders in the `$LOCALDATA`folder.|
 |`allow-log-read-recursive`|This allows full recursive read access to the complete `$LOG` folder, files and subdirectories.|
@@ -159,7 +159,7 @@
 |`allow-log-write`|This allows non-recursive write access to the `$LOG` folder.|
 |`allow-log-meta-recursive`|This allows full recursive read access to metadata of the `$LOG` folder, including file listing and statistics.|
 |`allow-log-meta`|This allows non-recursive read access to metadata of the `$LOG` folder, including file listing and statistics.|
-|`scope-log-recursive`|This scope recursive access to the complete `$LOG` folder, including sub directories and files.|
+|`scope-log-recursive`|This scope permits recursive access to the complete `$LOG` folder, including sub directories and files.|
 |`scope-log`|This scope permits access to all files and list content of top level directories in the `$LOG`folder.|
 |`scope-log-index`|This scope permits to list all files and folders in the `$LOG`folder.|
 |`allow-picture-read-recursive`|This allows full recursive read access to the complete `$PICTURE` folder, files and subdirectories.|
@@ -168,7 +168,7 @@
 |`allow-picture-write`|This allows non-recursive write access to the `$PICTURE` folder.|
 |`allow-picture-meta-recursive`|This allows full recursive read access to metadata of the `$PICTURE` folder, including file listing and statistics.|
 |`allow-picture-meta`|This allows non-recursive read access to metadata of the `$PICTURE` folder, including file listing and statistics.|
-|`scope-picture-recursive`|This scope recursive access to the complete `$PICTURE` folder, including sub directories and files.|
+|`scope-picture-recursive`|This scope permits recursive access to the complete `$PICTURE` folder, including sub directories and files.|
 |`scope-picture`|This scope permits access to all files and list content of top level directories in the `$PICTURE`folder.|
 |`scope-picture-index`|This scope permits to list all files and folders in the `$PICTURE`folder.|
 |`allow-public-read-recursive`|This allows full recursive read access to the complete `$PUBLIC` folder, files and subdirectories.|
@@ -177,7 +177,7 @@
 |`allow-public-write`|This allows non-recursive write access to the `$PUBLIC` folder.|
 |`allow-public-meta-recursive`|This allows full recursive read access to metadata of the `$PUBLIC` folder, including file listing and statistics.|
 |`allow-public-meta`|This allows non-recursive read access to metadata of the `$PUBLIC` folder, including file listing and statistics.|
-|`scope-public-recursive`|This scope recursive access to the complete `$PUBLIC` folder, including sub directories and files.|
+|`scope-public-recursive`|This scope permits recursive access to the complete `$PUBLIC` folder, including sub directories and files.|
 |`scope-public`|This scope permits access to all files and list content of top level directories in the `$PUBLIC`folder.|
 |`scope-public-index`|This scope permits to list all files and folders in the `$PUBLIC`folder.|
 |`allow-resource-read-recursive`|This allows full recursive read access to the complete `$RESOURCE` folder, files and subdirectories.|
@@ -186,7 +186,7 @@
 |`allow-resource-write`|This allows non-recursive write access to the `$RESOURCE` folder.|
 |`allow-resource-meta-recursive`|This allows full recursive read access to metadata of the `$RESOURCE` folder, including file listing and statistics.|
 |`allow-resource-meta`|This allows non-recursive read access to metadata of the `$RESOURCE` folder, including file listing and statistics.|
-|`scope-resource-recursive`|This scope recursive access to the complete `$RESOURCE` folder, including sub directories and files.|
+|`scope-resource-recursive`|This scope permits recursive access to the complete `$RESOURCE` folder, including sub directories and files.|
 |`scope-resource`|This scope permits access to all files and list content of top level directories in the `$RESOURCE`folder.|
 |`scope-resource-index`|This scope permits to list all files and folders in the `$RESOURCE`folder.|
 |`allow-runtime-read-recursive`|This allows full recursive read access to the complete `$RUNTIME` folder, files and subdirectories.|
@@ -195,7 +195,7 @@
 |`allow-runtime-write`|This allows non-recursive write access to the `$RUNTIME` folder.|
 |`allow-runtime-meta-recursive`|This allows full recursive read access to metadata of the `$RUNTIME` folder, including file listing and statistics.|
 |`allow-runtime-meta`|This allows non-recursive read access to metadata of the `$RUNTIME` folder, including file listing and statistics.|
-|`scope-runtime-recursive`|This scope recursive access to the complete `$RUNTIME` folder, including sub directories and files.|
+|`scope-runtime-recursive`|This scope permits recursive access to the complete `$RUNTIME` folder, including sub directories and files.|
 |`scope-runtime`|This scope permits access to all files and list content of top level directories in the `$RUNTIME`folder.|
 |`scope-runtime-index`|This scope permits to list all files and folders in the `$RUNTIME`folder.|
 |`allow-temp-read-recursive`|This allows full recursive read access to the complete `$TEMP` folder, files and subdirectories.|
@@ -204,7 +204,7 @@
 |`allow-temp-write`|This allows non-recursive write access to the `$TEMP` folder.|
 |`allow-temp-meta-recursive`|This allows full recursive read access to metadata of the `$TEMP` folder, including file listing and statistics.|
 |`allow-temp-meta`|This allows non-recursive read access to metadata of the `$TEMP` folder, including file listing and statistics.|
-|`scope-temp-recursive`|This scope recursive access to the complete `$TEMP` folder, including sub directories and files.|
+|`scope-temp-recursive`|This scope permits recursive access to the complete `$TEMP` folder, including sub directories and files.|
 |`scope-temp`|This scope permits access to all files and list content of top level directories in the `$TEMP`folder.|
 |`scope-temp-index`|This scope permits to list all files and folders in the `$TEMP`folder.|
 |`allow-template-read-recursive`|This allows full recursive read access to the complete `$TEMPLATE` folder, files and subdirectories.|
@@ -213,7 +213,7 @@
 |`allow-template-write`|This allows non-recursive write access to the `$TEMPLATE` folder.|
 |`allow-template-meta-recursive`|This allows full recursive read access to metadata of the `$TEMPLATE` folder, including file listing and statistics.|
 |`allow-template-meta`|This allows non-recursive read access to metadata of the `$TEMPLATE` folder, including file listing and statistics.|
-|`scope-template-recursive`|This scope recursive access to the complete `$TEMPLATE` folder, including sub directories and files.|
+|`scope-template-recursive`|This scope permits recursive access to the complete `$TEMPLATE` folder, including sub directories and files.|
 |`scope-template`|This scope permits access to all files and list content of top level directories in the `$TEMPLATE`folder.|
 |`scope-template-index`|This scope permits to list all files and folders in the `$TEMPLATE`folder.|
 |`allow-video-read-recursive`|This allows full recursive read access to the complete `$VIDEO` folder, files and subdirectories.|
@@ -222,7 +222,7 @@
 |`allow-video-write`|This allows non-recursive write access to the `$VIDEO` folder.|
 |`allow-video-meta-recursive`|This allows full recursive read access to metadata of the `$VIDEO` folder, including file listing and statistics.|
 |`allow-video-meta`|This allows non-recursive read access to metadata of the `$VIDEO` folder, including file listing and statistics.|
-|`scope-video-recursive`|This scope recursive access to the complete `$VIDEO` folder, including sub directories and files.|
+|`scope-video-recursive`|This scope permits recursive access to the complete `$VIDEO` folder, including sub directories and files.|
 |`scope-video`|This scope permits access to all files and list content of top level directories in the `$VIDEO`folder.|
 |`scope-video-index`|This scope permits to list all files and folders in the `$VIDEO`folder.|
 |`allow-copy-file`|Enables the copy_file command without any pre-configured scope.|
