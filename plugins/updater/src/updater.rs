@@ -613,8 +613,12 @@ impl Update {
                 msi_args.push(format!("\"\"{arg}\"\""));
             }
         }
-        let msi_args = escape_msi_property_args(&self.nsis_installer_args()[2..]);
-        let msi_args = OsString::from(format!("LAUNCHAPPARGS=\"{}\"", msi_args.join(" ")));
+        let msi_args = self.nsis_installer_args()[2..]
+            .iter()
+            .map(escape_msi_property_arg)
+            .collect::<Vec<_>>()
+            .join(" ");
+        let msi_args = OsString::from(format!("LAUNCHAPPARGS=\"{msi_args}\""));
 
         let install_mode = self.config.install_mode();
         let installer_args: Vec<&OsStr> = match &updater_type {
@@ -1051,37 +1055,29 @@ impl PathExt for PathBuf {
 }
 
 #[cfg(windows)]
-fn escape_msi_property_args(args: &[&OsStr]) -> Vec<String> {
-    let mut msi_args = Vec::new();
-    for arg in args {
-        let mut arg = arg.to_string_lossy().to_string();
+fn escape_msi_property_arg(arg: impl AsRef<OsStr>) -> String {
+    let mut arg = arg.as_ref().to_string_lossy().to_string();
 
-        // Otherwise this argument will get lost in ShellExecute
-        if arg.is_empty() {
-            msi_args.push("\"\"\"\"".to_string());
-            continue;
-        }
-
-        if !arg.contains(' ') && !arg.contains('"') {
-            msi_args.push(arg);
-            continue;
-        }
-
-        if arg.contains('"') {
-            arg = arg.replace('"', r#""""""#);
-        }
-
-        if arg.starts_with('-') {
-            if let Some((a1, a2)) = arg.split_once('=') {
-                msi_args.push(format!("{a1}=\"\"{a2}\"\""));
-            } else {
-                msi_args.push(format!("\"\"{arg}\"\""));
-            }
-        } else {
-            msi_args.push(format!("\"\"{arg}\"\""));
-        }
+    // Otherwise this argument will get lost in ShellExecute
+    if arg.is_empty() {
+        return "\"\"\"\"".to_string();
+    } else if !arg.contains(' ') && !arg.contains('"') {
+        return arg;
     }
-    msi_args
+
+    if arg.contains('"') {
+        arg = arg.replace('"', r#""""""#)
+    }
+
+    if arg.starts_with('-') {
+        if let Some((a1, a2)) = arg.split_once('=') {
+            format!("{a1}=\"\"{a2}\"\"")
+        } else {
+            format!("\"\"{arg}\"\"")
+        }
+    } else {
+        format!("\"\"{arg}\"\"")
+    }
 }
 
 #[cfg(test)]
@@ -1102,9 +1098,7 @@ mod tests {
     #[test]
     #[cfg(windows)]
     fn it_escapes_correctly() {
-        use std::ffi::OsStr;
-
-        use crate::updater::escape_msi_property_args;
+        use crate::updater::escape_msi_property_arg;
 
         // Explanation for quotes:
         // The output of escape_msi_property_args() will be used in `LAUNCHAPPARGS=\"{HERE}\"`. This is the first quote level.
@@ -1115,16 +1109,17 @@ mod tests {
         //   2) Escape escaping quotation marks, otherwise they will either end the msiexec argument or be ignored.
         //   3) Escape emtpy args in quotation marks, otherwise the argument will get lost.
         let cases = [
-            OsStr::new("something"),
-            OsStr::new("--flag"),
-            OsStr::new("--empty="),
-            OsStr::new("--arg=value"),
-            OsStr::new("some space"),
-            OsStr::new("--arg=unwrapped space"),
-            OsStr::new("--arg=\"wrapped\""),
-            OsStr::new("--arg=\"wrapped space\""),
-            OsStr::new("--arg=midword\"wrapped space\""),
-            OsStr::new(""),
+            "something",
+            "--flag",
+            "--empty=",
+            "--arg=value",
+            "some space",                     // This simulates `./my-app "some string"`.
+            "--arg value", // -> This simulates `./my-app "--arg value"`. Same as above but it triggers the startsWith(`-`) logic.
+            "--arg=unwrapped space", // `./my-app --arg="unwrapped space"`
+            "--arg=\"wrapped\"", // `./my-app --args=""wrapped""`
+            "--arg=\"wrapped space\"", // `./my-app --args=""wrapped space""`
+            "--arg=midword\"wrapped space\"", // `./my-app --args=midword""wrapped""`
+            "",
         ];
         let cases_escaped = [
             "something",
@@ -1132,6 +1127,7 @@ mod tests {
             "--empty=",
             "--arg=value",
             "\"\"some space\"\"",
+            "\"\"--arg value\"\"",
             "--arg=\"\"unwrapped space\"\"",
             r#"--arg=""""""wrapped"""""""#,
             r#"--arg=""""""wrapped space"""""""#,
@@ -1143,10 +1139,7 @@ mod tests {
         assert_eq!(cases.len(), cases_escaped.len());
 
         for (orig, escaped) in cases.iter().zip(cases_escaped) {
-            assert_eq!(*escape_msi_property_args(&[orig])[0], *escaped);
+            assert_eq!(escape_msi_property_arg(orig), escaped);
         }
-
-        // Lastly, let's check the whole array at once
-        assert_eq!(escape_msi_property_args(&cases), cases_escaped);
     }
 }
