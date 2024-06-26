@@ -1,0 +1,16 @@
+"$schema" = "schemas/schema.json"
+[default]
+description = """
+This permission set configures which
+biometric features are by default exposed.
+
+#### Granted Permissions
+
+It allows acccess to all biometric commands.
+
+"""
+
+permissions = [
+  "allow-authenticate",
+  "allow-status",
+]

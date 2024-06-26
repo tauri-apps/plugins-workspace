@@ -351,7 +351,7 @@
           ]
         },
         {
-          "description": "default -> Allows all fetch operations",
+          "description": "default -> This permission set configures what kind of\nfetch operations are available from the http plugin.\n\nThis enables all fetch operations but does not\nallow explicitly any origins to be fetched. This needs to\nbe manually configured before usage.\n\n#### Granted Permissions\n\nAll fetch operations are enabled.\n\n",
           "type": "string",
           "enum": [
             "default"

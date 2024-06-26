@@ -142,7 +142,7 @@
                 "identifier": {
                   "oneOf": [
                     {
-                      "description": "fs:default -> # Tauri `fs` default permissions\n\nThis configuration file defines the default permissions granted\nto the filesystem.\n\n### Granted Permissions\n\nThis default permission set enables all read-related commands and\nallows access to the `$APP` folder and sub directories created in it.\nThe location of the `$APP` folder depends on the operating system,\nwhere the application is run.\n\nIn general the `$APP` folder needs to be manually created\nby the application at runtime, before accessing files or folders\nin it is possible.\n\n### Denied Permissions\n\nThis default permission set prevents access to critical components\nof the Tauri application by default.\nOn Windows the webview data folder access is denied.\n\n",
+                      "description": "fs:default -> This set of permissions describes the what kind of\nfile system access the `fs` plugin has enabled or denied by default.\n\n#### Granted Permissions\n\nThis default permission set enables read access to the\napplication specific directories (AppConfig, AppData, AppLocalData, AppCache,\nAppLog) and all files and sub directories created in it.\nThe location of these directories depends on the operating system,\nwhere the application is run.\n\nIn general these directories need to be manually created\nby the application at runtime, before accessing files or folders\nin it is possible.\n\nTherefore, it is also allowed to create all of these folders via\nthe `mkdir` command.\n\n#### Denied Permissions\n\nThis default permission set prevents access to critical components\nof the Tauri application by default.\nOn Windows the webview data folder access is denied.\n\n",
                       "type": "string",
                       "enum": [
                         "fs:default"
@@ -1374,6 +1374,13 @@
                       ]
                     },
                     {
+                      "description": "fs:create-app-specific-dirs -> This permissions allows to create the application specific directories.\n",
+                      "type": "string",
+                      "enum": [
+                        "fs:create-app-specific-dirs"
+                      ]
+                    },
+                    {
                       "description": "fs:deny-copy-file -> Denies the copy_file command without any pre-configured scope.",
                       "type": "string",
                       "enum": [
@@ -1560,6 +1567,13 @@
                       "type": "string",
                       "enum": [
                         "fs:read-all"
+                      ]
+                    },
+                    {
+                      "description": "fs:read-app-specific-dirs-recursive -> This permission allows recursive read functionality on the application\nspecific base directories. \n",
+                      "type": "string",
+                      "enum": [
+                        "fs:read-app-specific-dirs-recursive"
                       ]
                     },
                     {
@@ -2190,7 +2204,7 @@
                 "identifier": {
                   "oneOf": [
                     {
-                      "description": "http:default -> Allows all fetch operations",
+                      "description": "http:default -> This permission set configures what kind of\nfetch operations are available from the http plugin.\n\nThis enables all fetch operations but does not\nallow explicitly any origins to be fetched. This needs to\nbe manually configured before usage.\n\n#### Granted Permissions\n\nAll fetch operations are enabled.\n\n",
                       "type": "string",
                       "enum": [
                         "http:default"
@@ -2313,6 +2327,7 @@
                 "identifier": {
                   "oneOf": [
                     {
+                      "description": "shell:default -> This permission set configures which\nshell functionality is exposed by default.\n\n#### Granted Permissions\n\nIt allows to use the `open` functionality without any specific\nscope pre-configured. It will allow opening `http(s)://`,\n`tel:` and `mailto:` links.\n",
                       "type": "string",
                       "enum": [
                         "shell:default"
@@ -2567,6 +2582,7 @@
           ]
         },
         {
+          "description": "clipboard-manager:default -> No features are enabled by default, as we believe\nthe clipboard can be inherently dangerous and it is \napplication specific if read and/or write access is needed.\n\nClipboard interaction needs to be explicitly enabled.\n",
           "type": "string",
           "enum": [
             "clipboard-manager:default"
@@ -2657,6 +2673,7 @@
           ]
         },
         {
+          "description": "dialog:default -> This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n",
           "type": "string",
           "enum": [
             "dialog:default"
@@ -3853,7 +3870,7 @@
           ]
         },
         {
-          "description": "fs:default -> # Tauri `fs` default permissions\n\nThis configuration file defines the default permissions granted\nto the filesystem.\n\n### Granted Permissions\n\nThis default permission set enables all read-related commands and\nallows access to the `$APP` folder and sub directories created in it.\nThe location of the `$APP` folder depends on the operating system,\nwhere the application is run.\n\nIn general the `$APP` folder needs to be manually created\nby the application at runtime, before accessing files or folders\nin it is possible.\n\n### Denied Permissions\n\nThis default permission set prevents access to critical components\nof the Tauri application by default.\nOn Windows the webview data folder access is denied.\n\n",
+          "description": "fs:default -> This set of permissions describes the what kind of\nfile system access the `fs` plugin has enabled or denied by default.\n\n#### Granted Permissions\n\nThis default permission set enables read access to the\napplication specific directories (AppConfig, AppData, AppLocalData, AppCache,\nAppLog) and all files and sub directories created in it.\nThe location of these directories depends on the operating system,\nwhere the application is run.\n\nIn general these directories need to be manually created\nby the application at runtime, before accessing files or folders\nin it is possible.\n\nTherefore, it is also allowed to create all of these folders via\nthe `mkdir` command.\n\n#### Denied Permissions\n\nThis default permission set prevents access to critical components\nof the Tauri application by default.\nOn Windows the webview data folder access is denied.\n\n",
           "type": "string",
           "enum": [
             "fs:default"
@@ -4025,6 +4042,13 @@
           "type": "string",
           "enum": [
             "fs:allow-write-text-file"
+          ]
+        },
+        {
+          "description": "fs:create-app-specific-dirs -> This permissions allows to create the application specific directories.\n",
+          "type": "string",
+          "enum": [
+            "fs:create-app-specific-dirs"
           ]
         },
         {
@@ -4214,6 +4238,13 @@
           "type": "string",
           "enum": [
             "fs:read-all"
+          ]
+        },
+        {
+          "description": "fs:read-app-specific-dirs-recursive -> This permission allows recursive read functionality on the application\nspecific base directories. \n",
+          "type": "string",
+          "enum": [
+            "fs:read-app-specific-dirs-recursive"
           ]
         },
         {
@@ -4784,6 +4815,7 @@
           ]
         },
         {
+          "description": "global-shortcut:default -> No features are enabled by default, as we believe\nthe shortcuts can be inherently dangerous and it is \napplication specific if specific shortcuts should be\nregistered or unregistered.\n",
           "type": "string",
           "enum": [
             "global-shortcut:default"
@@ -4860,7 +4892,7 @@
           ]
         },
         {
-          "description": "http:default -> Allows all fetch operations",
+          "description": "http:default -> This permission set configures what kind of\nfetch operations are available from the http plugin.\n\nThis enables all fetch operations but does not\nallow explicitly any origins to be fetched. This needs to\nbe manually configured before usage.\n\n#### Granted Permissions\n\nAll fetch operations are enabled.\n\n",
           "type": "string",
           "enum": [
             "http:default"
@@ -5336,10 +5368,59 @@
           ]
         },
         {
-          "description": "notification:default -> Allows requesting permission, checking permission state and sending notifications",
+          "description": "notification:default -> This permission set configures which\nnotification features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all notification related features.\n\n",
           "type": "string",
           "enum": [
             "notification:default"
+          ]
+        },
+        {
+          "description": "notification:allow-batch -> Enables the batch command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:allow-batch"
+          ]
+        },
+        {
+          "description": "notification:allow-cancel -> Enables the cancel command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:allow-cancel"
+          ]
+        },
+        {
+          "description": "notification:allow-check-permissions -> Enables the check_permissions command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:allow-check-permissions"
+          ]
+        },
+        {
+          "description": "notification:allow-create-channel -> Enables the create_channel command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:allow-create-channel"
+          ]
+        },
+        {
+          "description": "notification:allow-delete-channel -> Enables the delete_channel command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:allow-delete-channel"
+          ]
+        },
+        {
+          "description": "notification:allow-get-active -> Enables the get_active command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:allow-get-active"
+          ]
+        },
+        {
+          "description": "notification:allow-get-pending -> Enables the get_pending command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:allow-get-pending"
           ]
         },
         {
@@ -5350,10 +5431,24 @@
           ]
         },
         {
+          "description": "notification:allow-list-channels -> Enables the list_channels command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:allow-list-channels"
+          ]
+        },
+        {
           "description": "notification:allow-notify -> Enables the notify command without any pre-configured scope.",
           "type": "string",
           "enum": [
             "notification:allow-notify"
+          ]
+        },
+        {
+          "description": "notification:allow-permission-state -> Enables the permission_state command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:allow-permission-state"
           ]
         },
         {
@@ -5371,10 +5466,73 @@
           ]
         },
         {
+          "description": "notification:allow-remove-active -> Enables the remove_active command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:allow-remove-active"
+          ]
+        },
+        {
           "description": "notification:allow-request-permission -> Enables the request_permission command without any pre-configured scope.",
           "type": "string",
           "enum": [
             "notification:allow-request-permission"
+          ]
+        },
+        {
+          "description": "notification:allow-show -> Enables the show command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:allow-show"
+          ]
+        },
+        {
+          "description": "notification:deny-batch -> Denies the batch command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:deny-batch"
+          ]
+        },
+        {
+          "description": "notification:deny-cancel -> Denies the cancel command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:deny-cancel"
+          ]
+        },
+        {
+          "description": "notification:deny-check-permissions -> Denies the check_permissions command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:deny-check-permissions"
+          ]
+        },
+        {
+          "description": "notification:deny-create-channel -> Denies the create_channel command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:deny-create-channel"
+          ]
+        },
+        {
+          "description": "notification:deny-delete-channel -> Denies the delete_channel command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:deny-delete-channel"
+          ]
+        },
+        {
+          "description": "notification:deny-get-active -> Denies the get_active command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:deny-get-active"
+          ]
+        },
+        {
+          "description": "notification:deny-get-pending -> Denies the get_pending command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:deny-get-pending"
           ]
         },
         {
@@ -5385,10 +5543,24 @@
           ]
         },
         {
+          "description": "notification:deny-list-channels -> Denies the list_channels command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:deny-list-channels"
+          ]
+        },
+        {
           "description": "notification:deny-notify -> Denies the notify command without any pre-configured scope.",
           "type": "string",
           "enum": [
             "notification:deny-notify"
+          ]
+        },
+        {
+          "description": "notification:deny-permission-state -> Denies the permission_state command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:deny-permission-state"
           ]
         },
         {
@@ -5406,6 +5578,13 @@
           ]
         },
         {
+          "description": "notification:deny-remove-active -> Denies the remove_active command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:deny-remove-active"
+          ]
+        },
+        {
           "description": "notification:deny-request-permission -> Denies the request_permission command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -5413,6 +5592,14 @@
           ]
         },
         {
+          "description": "notification:deny-show -> Denies the show command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "notification:deny-show"
+          ]
+        },
+        {
+          "description": "os:default -> This permission set configures which\noperating system information are available\nto gather from the frontend.\n\n#### Granted Permissions\n\nAll information except the host name are available.\n\n",
           "type": "string",
           "enum": [
             "os:default"
@@ -5650,6 +5837,7 @@
           ]
         },
         {
+          "description": "process:default -> This permission set configures which\nprocess feeatures are by default exposed.\n\n#### Granted Permissions\n\nThis enables to quit via `allow-exit` and restart via `allow-restart`\nthe application.\n",
           "type": "string",
           "enum": [
             "process:default"
@@ -5705,6 +5893,7 @@
           ]
         },
         {
+          "description": "shell:default -> This permission set configures which\nshell functionality is exposed by default.\n\n#### Granted Permissions\n\nIt allows to use the `open` functionality without any specific\nscope pre-configured. It will allow opening `http(s)://`,\n`tel:` and `mailto:` links.\n",
           "type": "string",
           "enum": [
             "shell:default"
@@ -5942,7 +6131,7 @@
           ]
         },
         {
-          "description": "updater:default -> Allows checking for new updates and installing them",
+          "description": "updater:default -> This permission set configures which kind of\nupdater functions are exposed to the frontend.\n\n#### Granted Permissions\n\nThe full workflow from checking for updates to installing them\nis enabled.\n\n",
           "type": "string",
           "enum": [
             "updater:default"

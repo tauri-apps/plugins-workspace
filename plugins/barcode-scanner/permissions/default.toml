@@ -1,0 +1,20 @@
+"$schema" = "schemas/schema.json"
+[default]
+description = """
+This permission set configures which
+barcode scanning features are by default exposed.
+
+#### Granted Permissions
+
+It allows all barcode related features.
+
+"""
+
+permissions = [
+  "allow-cancel",
+  "allow-check-permissions",
+  "allow-open-app-settings",
+  "allow-request-permissions",
+  "allow-scan",
+  "allow-vibrate",
+]

@@ -1,0 +1,18 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = """
+This permission set configures what kind of
+operations are available from the nfc plugin.
+
+#### Granted Permissions
+
+Checking if the NFC functionality is available
+and scanning nearby tags is allowed.
+Writing to tags needs to be manually enabled.
+
+"""
+permissions = [
+  "allow-is-available",
+  "allow-scan",
+]

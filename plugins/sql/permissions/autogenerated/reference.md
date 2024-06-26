@@ -8,3 +8,14 @@
 |`deny-load`|Denies the load command without any pre-configured scope.|
 |`allow-select`|Enables the select command without any pre-configured scope.|
 |`deny-select`|Denies the select command without any pre-configured scope.|
+|`default`|# Tauri SQL Default Permissions
+
+This permission set configures what kind of
+database operations are available from the sql plugin.
+
+### Granted Permissions
+
+All reading related operations are enabled.
+Also allows to load or close a connection.
+
+|

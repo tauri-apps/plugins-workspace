@@ -1,8 +1,30 @@
 "$schema" = "schemas/schema.json"
 [default]
-description = "Allows requesting permission, checking permission state and sending notifications"
+description = """
+This permission set configures which
+notification features are by default exposed.
+
+#### Granted Permissions
+
+It allows all notification related features.
+
+"""
+
 permissions = [
   "allow-is-permission-granted",
   "allow-request-permission",
   "allow-notify",
+  "allow-register-action-types",
+  "allow-register-listener",
+  "allow-cancel",
+  "allow-get-pending",
+  "allow-remove-active",
+  "allow-get-active",
+  "allow-check-permissions",
+  "allow-show",
+  "allow-batch",
+  "allow-list-channels",
+  "allow-delete-channel",
+  "allow-create-channel",
+  "allow-permission-state"
 ]

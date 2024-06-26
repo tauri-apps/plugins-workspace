@@ -22,3 +22,11 @@
 |`deny-save-secret`|Denies the save_secret command without any pre-configured scope.|
 |`allow-save-store-record`|Enables the save_store_record command without any pre-configured scope.|
 |`deny-save-store-record`|Denies the save_store_record command without any pre-configured scope.|
+|`default`|This permission set configures what kind of
+operations are available from the stronghold plugin.
+
+#### Granted Permissions
+
+All non-destructive operations are enabled by default.
+
+|

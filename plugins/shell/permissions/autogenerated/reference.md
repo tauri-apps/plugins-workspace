@@ -10,3 +10,12 @@
 |`deny-spawn`|Denies the spawn command without any pre-configured scope.|
 |`allow-stdin-write`|Enables the stdin_write command without any pre-configured scope.|
 |`deny-stdin-write`|Denies the stdin_write command without any pre-configured scope.|
+|`default`|This permission set configures which
+shell functionality is exposed by default.
+
+#### Granted Permissions
+
+It allows to use the `open` functionality without any specific
+scope pre-configured. It will allow opening `http(s)://`,
+`tel:` and `mailto:` links.
+|

@@ -349,6 +349,13 @@
           "enum": [
             "deny-select"
           ]
+        },
+        {
+          "description": "default -> # Tauri SQL Default Permissions\n\nThis permission set configures what kind of\ndatabase operations are available from the sql plugin.\n\n### Granted Permissions\n\nAll reading related operations are enabled.\nAlso allows to load or close a connection.\n\n",
+          "type": "string",
+          "enum": [
+            "default"
+          ]
         }
       ]
     }

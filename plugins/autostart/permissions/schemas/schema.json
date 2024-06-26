@@ -335,6 +335,13 @@
           "enum": [
             "deny-is-enabled"
           ]
+        },
+        {
+          "description": "default -> This permission set configures if your\napplication can enable or disable auto\nstarting the application on boot.\n\n#### Granted Permissions\n\nIt allows all to check, enable and\ndisable the automatic start on boot.\n\n",
+          "type": "string",
+          "enum": [
+            "default"
+          ]
         }
       ]
     }
