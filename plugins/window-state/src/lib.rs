@@ -67,7 +67,7 @@ impl Default for StateFlags {
 
 struct PluginState {
     filename: String,
-    map_label: Option<Box<dyn LabelMapperFn>,
+    map_label: Option<Box<dyn LabelMapperFn>>,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
