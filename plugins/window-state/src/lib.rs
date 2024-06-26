@@ -121,13 +121,10 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
 
             for (label, s) in state.iter_mut() {
                 let window = match &plugin_state.map_label {
-                    Some(map) => {
-                        windows
-                            .iter()
-                            .find(|(l, _)| map(l) == label)
-                            .map(|(_, window)| window)
-                    },
-                    None => windows.get(label)
+                    Some(map) => windows
+                        .iter()
+                        .find_map(|(l, window)| (map(l) == label).then_some(window)),
+                    None => windows.get(label),
                 };
 
                 if let Some(window) = window {
@@ -364,11 +361,11 @@ impl Builder {
     }
 
     /// Transforms the window label when saving the window state.
-    /// 
+    ///
     /// This can be used to group different windows to use the same state.
     pub fn map_label<F>(mut self, map_fn: F) -> Self
-    where  
-        F: Fn(&str) -> &str + Sync + Send + 'static
+    where
+        F: Fn(&str) -> &str + Sync + Send + 'static,
     {
         self.map_label = Some(Box::new(map_fn));
         self
@@ -405,7 +402,10 @@ impl Builder {
                         Default::default()
                     };
                 app.manage(WindowStateCache(cache));
-                app.manage(PluginState { filename, map_label });
+                app.manage(PluginState {
+                    filename,
+                    map_label,
+                });
                 Ok(())
             })
             .on_window_ready(move |window| {
