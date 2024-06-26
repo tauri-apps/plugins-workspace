@@ -28,6 +28,8 @@ use std::{
 
 mod cmd;
 
+type LabelMapperFn = Fn(&str) -> &str + Send + Sync;
+
 /// Default filename used to store window state.
 ///
 /// If using a custom filename, you should probably use [`AppHandleExt::filename`] instead.
@@ -65,7 +67,7 @@ impl Default for StateFlags {
 
 struct PluginState {
     filename: String,
-    map_label: Option<Box<dyn Fn(&str) -> &str + Send + Sync>>,
+    map_label: Option<Box<dyn LabelMapperFn>,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
@@ -326,7 +328,7 @@ pub struct Builder {
     denylist: HashSet<String>,
     skip_initial_state: HashSet<String>,
     state_flags: StateFlags,
-    map_label: Option<Box<dyn Fn(&str) -> &str + Send + Sync>>,
+    map_label: Option<Box<dyn LabelMapperFn>>,
     filename: Option<String>,
 }
 
