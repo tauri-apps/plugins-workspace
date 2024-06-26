@@ -10,3 +10,12 @@
 |`deny-open`|Denies the open command without any pre-configured scope.|
 |`allow-save`|Enables the save command without any pre-configured scope.|
 |`deny-save`|Denies the save command without any pre-configured scope.|
+|`default`|This permission set configures the types of dialogs
+available from the dialog plugin.
+
+#### Granted Permissions
+
+All dialog types are enabled.
+
+
+|

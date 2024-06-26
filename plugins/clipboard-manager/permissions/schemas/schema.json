@@ -377,6 +377,13 @@
           "enum": [
             "deny-write-text"
           ]
+        },
+        {
+          "description": "default -> No features are enabled by default, as we believe\nthe clipboard can be inherently dangerous and it is \napplication specific if read and/or write access is needed.\n\nClipboard interaction needs to be explicitly enabled.\n",
+          "type": "string",
+          "enum": [
+            "default"
+          ]
         }
       ]
     }

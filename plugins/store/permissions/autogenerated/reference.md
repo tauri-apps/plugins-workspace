@@ -24,3 +24,11 @@
 |`deny-set`|Denies the set command without any pre-configured scope.|
 |`allow-values`|Enables the values command without any pre-configured scope.|
 |`deny-values`|Denies the values command without any pre-configured scope.|
+|`default`|This permission set configures what kind of
+operations are available from the store plugin.
+
+#### Granted Permissions
+
+All operations are enabled by default.
+
+|

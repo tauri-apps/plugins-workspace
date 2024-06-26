@@ -321,6 +321,13 @@
           "enum": [
             "deny-status"
           ]
+        },
+        {
+          "description": "default -> This permission set configures which\nbiometric features are by default exposed.\n\n#### Granted Permissions\n\nIt allows acccess to all biometric commands.\n\n",
+          "type": "string",
+          "enum": [
+            "default"
+          ]
         }
       ]
     }

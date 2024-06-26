@@ -2,27 +2,33 @@
 
 [default]
 description = """
-# Tauri `fs` default permissions
+This set of permissions describes the what kind of
+file system access the `fs` plugin has enabled or denied by default.
 
-This configuration file defines the default permissions granted
-to the filesystem.
+#### Granted Permissions
 
-### Granted Permissions
-
-This default permission set enables all read-related commands and
-allows access to the `$APP` folder and sub directories created in it.
-The location of the `$APP` folder depends on the operating system,
+This default permission set enables read access to the
+application specific directories (AppConfig, AppData, AppLocalData, AppCache,
+AppLog) and all files and sub directories created in it.
+The location of these directories depends on the operating system,
 where the application is run.
 
-In general the `$APP` folder needs to be manually created
+In general these directories need to be manually created
 by the application at runtime, before accessing files or folders
 in it is possible.
 
-### Denied Permissions
+Therefore, it is also allowed to create all of these folders via
+the `mkdir` command.
+
+#### Denied Permissions
 
 This default permission set prevents access to critical components
 of the Tauri application by default.
 On Windows the webview data folder access is denied.
 
 """
-permissions = ["read-all", "scope-app-recursive", "deny-default"]
+permissions = [
+    "create-app-specific-dirs",
+    "read-app-specific-dirs-recursive",
+    "deny-default",
+]

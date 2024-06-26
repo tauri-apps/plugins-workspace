@@ -295,6 +295,104 @@
       "type": "string",
       "oneOf": [
         {
+          "description": "allow-batch -> Enables the batch command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-batch"
+          ]
+        },
+        {
+          "description": "deny-batch -> Denies the batch command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-batch"
+          ]
+        },
+        {
+          "description": "allow-cancel -> Enables the cancel command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-cancel"
+          ]
+        },
+        {
+          "description": "deny-cancel -> Denies the cancel command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-cancel"
+          ]
+        },
+        {
+          "description": "allow-check-permissions -> Enables the check_permissions command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-check-permissions"
+          ]
+        },
+        {
+          "description": "deny-check-permissions -> Denies the check_permissions command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-check-permissions"
+          ]
+        },
+        {
+          "description": "allow-create-channel -> Enables the create_channel command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-create-channel"
+          ]
+        },
+        {
+          "description": "deny-create-channel -> Denies the create_channel command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-create-channel"
+          ]
+        },
+        {
+          "description": "allow-delete-channel -> Enables the delete_channel command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-delete-channel"
+          ]
+        },
+        {
+          "description": "deny-delete-channel -> Denies the delete_channel command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-delete-channel"
+          ]
+        },
+        {
+          "description": "allow-get-active -> Enables the get_active command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-get-active"
+          ]
+        },
+        {
+          "description": "deny-get-active -> Denies the get_active command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-get-active"
+          ]
+        },
+        {
+          "description": "allow-get-pending -> Enables the get_pending command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-get-pending"
+          ]
+        },
+        {
+          "description": "deny-get-pending -> Denies the get_pending command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-get-pending"
+          ]
+        },
+        {
           "description": "allow-is-permission-granted -> Enables the is_permission_granted command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -309,6 +407,20 @@
           ]
         },
         {
+          "description": "allow-list-channels -> Enables the list_channels command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-list-channels"
+          ]
+        },
+        {
+          "description": "deny-list-channels -> Denies the list_channels command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-list-channels"
+          ]
+        },
+        {
           "description": "allow-notify -> Enables the notify command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -320,6 +432,20 @@
           "type": "string",
           "enum": [
             "deny-notify"
+          ]
+        },
+        {
+          "description": "allow-permission-state -> Enables the permission_state command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-permission-state"
+          ]
+        },
+        {
+          "description": "deny-permission-state -> Denies the permission_state command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-permission-state"
           ]
         },
         {
@@ -351,6 +477,20 @@
           ]
         },
         {
+          "description": "allow-remove-active -> Enables the remove_active command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-remove-active"
+          ]
+        },
+        {
+          "description": "deny-remove-active -> Denies the remove_active command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-remove-active"
+          ]
+        },
+        {
           "description": "allow-request-permission -> Enables the request_permission command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -365,7 +505,21 @@
           ]
         },
         {
-          "description": "default -> Allows requesting permission, checking permission state and sending notifications",
+          "description": "allow-show -> Enables the show command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-show"
+          ]
+        },
+        {
+          "description": "deny-show -> Denies the show command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-show"
+          ]
+        },
+        {
+          "description": "default -> This permission set configures which\nnotification features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all notification related features.\n\n",
           "type": "string",
           "enum": [
             "default"

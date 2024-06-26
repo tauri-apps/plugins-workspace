@@ -363,6 +363,13 @@
           "enum": [
             "deny-save"
           ]
+        },
+        {
+          "description": "default -> This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n",
+          "type": "string",
+          "enum": [
+            "default"
+          ]
         }
       ]
     }

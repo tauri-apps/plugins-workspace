@@ -16,3 +16,12 @@
 |`deny-platform`|Denies the platform command without any pre-configured scope.|
 |`allow-version`|Enables the version command without any pre-configured scope.|
 |`deny-version`|Denies the version command without any pre-configured scope.|
+|`default`|This permission set configures which
+operating system information are available
+to gather from the frontend.
+
+#### Granted Permissions
+
+All information except the host name are available.
+
+|

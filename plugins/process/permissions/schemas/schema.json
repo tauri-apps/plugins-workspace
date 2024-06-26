@@ -321,6 +321,13 @@
           "enum": [
             "deny-restart"
           ]
+        },
+        {
+          "description": "default -> This permission set configures which\nprocess feeatures are by default exposed.\n\n#### Granted Permissions\n\nThis enables to quit via `allow-exit` and restart via `allow-restart`\nthe application.\n",
+          "type": "string",
+          "enum": [
+            "default"
+          ]
         }
       ]
     }

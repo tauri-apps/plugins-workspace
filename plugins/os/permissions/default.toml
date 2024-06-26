@@ -1,0 +1,23 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = """
+This permission set configures which
+operating system information are available
+to gather from the frontend.
+
+#### Granted Permissions
+
+All information except the host name are available.
+
+"""
+
+permissions = [
+    "allow-arch",
+    "allow-exe-extension",
+    "allow-family",
+    "allow-locale",
+    "allow-os-type",
+    "allow-platform",
+    "allow-version",
+]
