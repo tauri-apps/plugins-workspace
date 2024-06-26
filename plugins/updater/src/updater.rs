@@ -538,16 +538,28 @@ impl Update {
 
 #[cfg(windows)]
 enum WindowsUpdaterType {
-    Nsis,
-    Msi,
+    Nsis {
+        path: PathBuf,
+        #[allow(unused)]
+        temp: Option<tempfile::TempPath>,
+    },
+    Msi {
+        path: PathBuf,
+        #[allow(unused)]
+        temp: Option<tempfile::TempPath>,
+    },
 }
 
 #[cfg(windows)]
 impl WindowsUpdaterType {
-    fn extension(&self) -> &str {
-        match self {
-            WindowsUpdaterType::Nsis => ".exe",
-            WindowsUpdaterType::Msi => ".msi",
+    fn nsis(path: PathBuf, temp: Option<tempfile::TempPath>) -> Self {
+        Self::Nsis { path, temp }
+    }
+
+    fn msi(path: PathBuf, temp: Option<tempfile::TempPath>) -> Self {
+        Self::Msi {
+            path: path.wrap_in_quotes(),
+            temp,
         }
     }
 }
@@ -580,16 +592,11 @@ impl Update {
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
         };
 
-        let (updater_type, path, _temp) = Self::extract(bytes)?;
-
-        let mut msi_path = std::ffi::OsString::new();
-        msi_path.push("\"");
-        msi_path.push(&path);
-        msi_path.push("\"");
+        let updater_type = Self::extract(bytes)?;
 
         let install_mode = self.config.install_mode();
-        let installer_args: Vec<&OsStr> = match updater_type {
-            WindowsUpdaterType::Nsis => install_mode
+        let installer_args: Vec<&OsStr> = match &updater_type {
+            WindowsUpdaterType::Nsis { .. } => install_mode
                 .nsis_args()
                 .iter()
                 .map(OsStr::new)
@@ -597,7 +604,7 @@ impl Update {
                 .chain(self.nsis_installer_args())
                 .chain(self.installer_args())
                 .collect(),
-            WindowsUpdaterType::Msi => [OsStr::new("/i"), msi_path.as_os_str()]
+            WindowsUpdaterType::Msi { path, .. } => [OsStr::new("/i"), path.as_os_str()]
                 .into_iter()
                 .chain(install_mode.msiexec_args().iter().map(OsStr::new))
                 .chain(once(OsStr::new("/promptrestart")))
@@ -609,17 +616,17 @@ impl Update {
             on_before_exit();
         }
 
-        let parameters = installer_args.join(OsStr::new(" "));
-        let parameters = encode_wide(parameters);
-
-        let path = match updater_type {
-            WindowsUpdaterType::Msi => std::env::var("SYSTEMROOT").as_ref().map_or_else(
+        let file = match &updater_type {
+            WindowsUpdaterType::Nsis { path, .. } => path.as_os_str().to_os_string(),
+            WindowsUpdaterType::Msi { .. } => std::env::var("SYSTEMROOT").as_ref().map_or_else(
                 |_| OsString::from("msiexec.exe"),
                 |p| OsString::from(format!("{p}\\System32\\msiexec.exe")),
             ),
-            WindowsUpdaterType::Nsis => path.as_os_str().to_os_string(),
         };
-        let file = encode_wide(path);
+        let file = encode_wide(file);
+
+        let parameters = installer_args.join(OsStr::new(" "));
+        let parameters = encode_wide(parameters);
 
         unsafe {
             ShellExecuteW(
@@ -649,7 +656,7 @@ impl Update {
             .collect::<Vec<_>>()
     }
 
-    fn extract(bytes: &[u8]) -> Result<(WindowsUpdaterType, PathBuf, Option<tempfile::TempPath>)> {
+    fn extract(bytes: &[u8]) -> Result<WindowsUpdaterType> {
         #[cfg(feature = "zip")]
         if infer::archive::is_zip(bytes) {
             return Self::extract_zip(bytes);
@@ -659,9 +666,7 @@ impl Update {
     }
 
     #[cfg(feature = "zip")]
-    fn extract_zip(
-        bytes: &[u8],
-    ) -> Result<(WindowsUpdaterType, PathBuf, Option<tempfile::TempPath>)> {
+    fn extract_zip(bytes: &[u8]) -> Result<WindowsUpdaterType> {
         let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
 
         let archive = Cursor::new(bytes);
@@ -670,38 +675,38 @@ impl Update {
 
         let paths = std::fs::read_dir(&tmp_dir)?;
         for path in paths {
-            let found_path = path?.path();
-            let ext = found_path.extension();
+            let path = path?.path();
+            let ext = path.extension();
             if ext == Some(OsStr::new("exe")) {
-                return Ok((WindowsUpdaterType::Nsis, found_path, None));
+                return Ok(WindowsUpdaterType::nsis(path, None));
             } else if ext == Some(OsStr::new("msi")) {
-                return Ok((WindowsUpdaterType::Msi, found_path, None));
+                return Ok(WindowsUpdaterType::msi(path, None));
             }
         }
 
         Err(crate::Error::BinaryNotFoundInArchive)
     }
 
-    fn extract_exe(
-        bytes: &[u8],
-    ) -> Result<(WindowsUpdaterType, PathBuf, Option<tempfile::TempPath>)> {
-        use std::io::Write;
-
-        let updater_type = if infer::app::is_exe(bytes) {
-            WindowsUpdaterType::Nsis
+    fn extract_exe(bytes: &[u8]) -> Result<WindowsUpdaterType> {
+        if infer::app::is_exe(bytes) {
+            let (path, temp) = Self::write_to_temp(bytes, ".exe")?;
+            Ok(WindowsUpdaterType::nsis(path, temp))
         } else if infer::archive::is_msi(bytes) {
-            WindowsUpdaterType::Msi
+            let (path, temp) = Self::write_to_temp(bytes, ".msi")?;
+            Ok(WindowsUpdaterType::msi(path, temp))
         } else {
-            return Err(crate::Error::InvalidUpdaterFormat);
-        };
+            Err(crate::Error::InvalidUpdaterFormat)
+        }
+    }
 
-        let ext = updater_type.extension();
+    fn write_to_temp(bytes: &[u8], ext: &str) -> Result<(PathBuf, Option<tempfile::TempPath>)> {
+        use std::io::Write;
 
         let mut temp_file = tempfile::Builder::new().suffix(ext).tempfile()?;
         temp_file.write_all(bytes)?;
-        let temp_path = temp_file.into_temp_path();
 
-        Ok((updater_type, temp_path.to_path_buf(), Some(temp_path)))
+        let temp = temp_file.into_temp_path();
+        Ok((temp.to_path_buf(), Some(temp)))
     }
 }
 
@@ -1004,4 +1009,35 @@ fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
         .encode_wide()
         .chain(std::iter::once(0))
         .collect()
+}
+
+#[cfg(windows)]
+trait PathExt {
+    fn wrap_in_quotes(&self) -> Self;
+}
+
+#[cfg(windows)]
+impl PathExt for PathBuf {
+    fn wrap_in_quotes(&self) -> Self {
+        let mut msi_path = OsString::from("\"");
+        msi_path.push(self.as_os_str());
+        msi_path.push("\"");
+        PathBuf::from(msi_path)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    #[cfg(windows)]
+    fn it_wraps_correctly() {
+        use super::PathExt;
+        use std::path::PathBuf;
+
+        assert_eq!(
+            PathBuf::from("C:\\Users\\Some User\\AppData\\tauri-example.exe").wrap_in_quotes(),
+            PathBuf::from("\"C:\\Users\\Some User\\AppData\\tauri-example.exe\"")
+        )
+    }
 }
