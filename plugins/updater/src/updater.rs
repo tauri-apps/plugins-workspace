@@ -594,25 +594,6 @@ impl Update {
 
         let updater_type = Self::extract(bytes)?;
 
-        let mut msi_args = Vec::new();
-        for arg in self.nsis_installer_args()[2..].iter() {
-            let arg = arg.to_string_lossy();
-
-            if !arg.contains(' ') {
-                msi_args.push(arg.to_string());
-                continue;
-            }
-
-            if arg.starts_with('-') {
-                if let Some((a1, a2)) = arg.split_once('=') {
-                    msi_args.push(format!("{a1}=\"\"{a2}\"\""));
-                } else {
-                    msi_args.push(format!("\"\"{arg}\"\""));
-                }
-            } else {
-                msi_args.push(format!("\"\"{arg}\"\""));
-            }
-        }
         let msi_args = self.nsis_installer_args()[2..]
             .iter()
             .map(escape_msi_property_arg)
@@ -1119,7 +1100,7 @@ mod tests {
             "--arg=\"wrapped\"", // `./my-app --args=""wrapped""`
             "--arg=\"wrapped space\"", // `./my-app --args=""wrapped space""`
             "--arg=midword\"wrapped space\"", // `./my-app --args=midword""wrapped""`
-            "",
+            "",            // `./my-app '""'`
         ];
         let cases_escaped = [
             "something",
