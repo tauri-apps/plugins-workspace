@@ -62,9 +62,6 @@ impl<R: Runtime> Notification<R> {
 mod imp {
     //! Types and functions related to desktop notifications.
 
-    #[cfg(windows)]
-    use std::path::MAIN_SEPARATOR as SEP;
-
     /// The desktop notification definition.
     ///
     /// Allows you to construct a Notification data and send it.
@@ -176,12 +173,25 @@ mod imp {
             {
                 let exe = tauri::utils::platform::current_exe()?;
                 let exe_dir = exe.parent().expect("failed to get exe directory");
-                let curr_dir = exe_dir.display().to_string();
-                // set the notification's System.AppUserModel.ID only when running the installed app
-                if !(curr_dir.ends_with(format!("{SEP}target{SEP}debug").as_str())
-                    || curr_dir.ends_with(format!("{SEP}target{SEP}release").as_str()))
-                {
+                // Set the notification's System.AppUserModel.ID only when running the installed app.
+                // We check for an `uninstall.exe`` (nsis) or `Uninstall <productName>.lnk` (msi) file next to the app.
+                //
+                // Not using a registry lookup because we'd have to at least iterate through
+                // HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\<productName or GUID>
+                // HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\<productName or GUID>
+                // HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\<productName or GUID>
+                // and maybe more for arm to compare the InstallLocation with the currently running app.
+
+                if exe_dir.join("uninstall.exe").exists() {
                     notification.app_id(&self.identifier);
+                } else if let Ok(readdir) = std::fs::read_dir(exe_dir) {
+                    for file in readdir.flatten() {
+                        let fname = file.file_name();
+                        let fname = fname.to_string_lossy();
+                        if fname.starts_with("Uninstall ") && fname.ends_with(".lnk") {
+                            notification.app_id(&self.identifier);
+                        }
+                    }
                 }
             }
             #[cfg(target_os = "macos")]
