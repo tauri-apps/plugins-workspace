@@ -129,9 +129,7 @@ class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
   fun clear(invoke: Invoke) {
       if (manager.hasPrimaryClip()) {
           manager.clearPrimaryClip()
-          invoke.resolve()
-      } else {
-          invoke.reject("Clipboard is empty")
       }
+      invoke.resolve()
   }
 }

@@ -41,12 +41,8 @@ class ClipboardPlugin: Plugin {
     
   @objc public func clear(_ invoke: Invoke) throws {
       let clipboard = UIPasteboard.general
-      if clipboard.items.isEmpty {
-          invoke.reject("Clipboard is empty")
-      } else {
-          clipboard.items = []
-          invoke.resolve()
-      }
+      clipboard.items = []
+      invoke.resolve()
     }
 }
 
