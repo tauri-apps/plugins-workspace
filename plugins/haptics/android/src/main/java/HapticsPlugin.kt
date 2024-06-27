@@ -40,7 +40,7 @@ class NotificationFeedbackArgs {
 
 @InvokeArg
 enum class NotificationFeedbackType {
-    @JsonProperty
+    @JsonProperty("success")
     Success,
     @JsonProperty("warning")
     Warning,
