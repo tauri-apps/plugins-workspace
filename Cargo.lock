@@ -6758,7 +6758,7 @@ name = "tauri-plugin-updater"
 version = "2.0.0-beta.8"
 dependencies = [
  "base64 0.22.1",
- "dirs-next",
+ "dirs 5.0.1",
  "flate2",
  "futures-util",
  "http",
