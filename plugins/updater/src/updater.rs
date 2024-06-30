@@ -733,7 +733,7 @@ impl Update {
 
         let tmp_dir_locations = vec![
             Box::new(|| Some(std::env::temp_dir())) as Box<dyn FnOnce() -> Option<PathBuf>>,
-            Box::new(dirs_next::cache_dir),
+            Box::new(dirs::cache_dir),
             Box::new(|| Some(self.extract_path.parent().unwrap().to_path_buf())),
         ];
 
