@@ -321,7 +321,7 @@ impl Builder {
                         LogTarget::Stderr => fern::Output::from(std::io::stderr()),
                         LogTarget::Folder(path) => {
                             if !path.exists() {
-                                fs::create_dir_all(path).unwrap();
+                                fs::create_dir_all(path)?;
                             }
 
                             fern::log_file(get_log_file_path(
@@ -334,9 +334,12 @@ impl Builder {
                             .into()
                         }
                         LogTarget::LogDir => {
-                            let path = app_handle.path_resolver().app_log_dir().unwrap();
+                            let path = app_handle
+                                .path_resolver()
+                                .app_log_dir()
+                                .ok_or("app_log_dir is None")?;
                             if !path.exists() {
-                                fs::create_dir_all(&path).unwrap();
+                                fs::create_dir_all(&path)?;
                             }
 
                             fern::log_file(get_log_file_path(
@@ -358,7 +361,7 @@ impl Builder {
                                 };
                                 let app_handle = app_handle.clone();
                                 tauri::async_runtime::spawn(async move {
-                                    app_handle.emit_all("log://log", payload).unwrap();
+                                    let _ = app_handle.emit_all("log://log", payload);
                                 });
                             })
                         }
@@ -392,13 +395,9 @@ fn get_log_file_path(
                         log_name,
                         timezone_strategy
                             .get_now()
-                            .format(
-                                &time::format_description::parse(
-                                    "[year]-[month]-[day]_[hour]-[minute]-[second]"
-                                )
-                                .unwrap()
-                            )
-                            .unwrap(),
+                            .format(&time::format_description::parse(
+                                "[year]-[month]-[day]_[hour]-[minute]-[second]"
+                            )?)?,
                     ));
                     if to.is_file() {
                         // designated rotated log file name already exists
@@ -406,7 +405,10 @@ fn get_log_file_path(
                         let mut to_bak = to.clone();
                         to_bak.set_file_name(format!(
                             "{}.bak",
-                            to_bak.file_name().unwrap().to_string_lossy()
+                            to_bak
+                                .file_name()
+                                .map(|n| n.to_string_lossy())
+                                .unwrap_or_default()
                         ));
                         fs::rename(&to, to_bak)?;
                     }
