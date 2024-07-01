@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import { invoke } from "@tauri-apps/api/core";
-//@ts-expect-error its js
-import * as console from "./console.js";
+import * as console from "./console";
 
 export interface LogOptions {
   file?: string;
