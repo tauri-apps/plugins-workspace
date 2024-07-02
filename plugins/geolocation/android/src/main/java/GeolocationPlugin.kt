@@ -70,6 +70,11 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
     // So we'll store all requests ourselves instead of using the callback argument.
     private var positionRequests = mutableListOf<Invoke>()
     private var watchRequests = mutableListOf<Invoke>()
+    // If getCurrentPosition or watchPosition are called before a prior call is done requesting permission,
+    // the callback will be called with denied for the prior call(s) so we keep track of them to make sure
+    // to only run the logic on the last request.
+    // TODO: Find a better solution after switching to explicit requestPermissions call - likely needs changes in Tauri
+    private var ongoingPermissionRequests = 0;
 
     override fun load(webView: WebView) {
         super.load(webView)
@@ -115,6 +120,7 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
         if (getPermissionState(alias) != PermissionState.GRANTED) {
             Logger.error("NOT GRANTED");
             this.positionRequests.add(invoke)
+            this.ongoingPermissionRequests += 1
             requestPermissionForAlias(alias, invoke, "positionPermissionCallback")
         } else {
             Logger.error("GRANTED");
@@ -124,7 +130,13 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
 
     @PermissionCallback
     private fun positionPermissionCallback(invoke: Invoke) {
-        Logger.error("positionPermissionCallback")
+        Logger.error("positionPermissionCallback - ongoingRequests: " + this.ongoingPermissionRequests.toString())
+
+        this.ongoingPermissionRequests -= 1
+
+        if (this.ongoingPermissionRequests > 0) {
+            return
+        }
 
         val pRequests = this.positionRequests.toTypedArray()
         val wRequests = this.watchRequests.toTypedArray()
@@ -163,6 +175,7 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
 
         if (getPermissionState(alias) != PermissionState.GRANTED) {
             this.watchRequests.add(invoke)
+            this.ongoingPermissionRequests += 1
             requestPermissionForAlias(alias, invoke, "positionPermissionCallback")
         } else {
             startWatch(invoke)
