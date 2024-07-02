@@ -1,14 +1,6 @@
-| Permission | Description |
-|------|-----|
-|`allow-fetch`|Enables the fetch command without any pre-configured scope.|
-|`deny-fetch`|Denies the fetch command without any pre-configured scope.|
-|`allow-fetch-cancel`|Enables the fetch_cancel command without any pre-configured scope.|
-|`deny-fetch-cancel`|Denies the fetch_cancel command without any pre-configured scope.|
-|`allow-fetch-read-body`|Enables the fetch_read_body command without any pre-configured scope.|
-|`deny-fetch-read-body`|Denies the fetch_read_body command without any pre-configured scope.|
-|`allow-fetch-send`|Enables the fetch_send command without any pre-configured scope.|
-|`deny-fetch-send`|Denies the fetch_send command without any pre-configured scope.|
-|`default`|This permission set configures what kind of
+## Default Permission
+
+This permission set configures what kind of
 fetch operations are available from the http plugin.
 
 This enables all fetch operations but does not
@@ -19,4 +11,123 @@ be manually configured before usage.
 
 All fetch operations are enabled.
 
-|
+
+
+- `allow-fetch`
+- `allow-fetch-cancel`
+- `allow-fetch-read-body`
+- `allow-fetch-send`
+
+### Permission Table 
+
+<table>
+<tr>
+<th>Identifier</th>
+<th>Description</th>
+</tr>
+
+
+<tr>
+<td>
+
+`http:allow-fetch`
+
+</td>
+<td>
+
+Enables the fetch command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`http:deny-fetch`
+
+</td>
+<td>
+
+Denies the fetch command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`http:allow-fetch-cancel`
+
+</td>
+<td>
+
+Enables the fetch_cancel command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`http:deny-fetch-cancel`
+
+</td>
+<td>
+
+Denies the fetch_cancel command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`http:allow-fetch-read-body`
+
+</td>
+<td>
+
+Enables the fetch_read_body command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`http:deny-fetch-read-body`
+
+</td>
+<td>
+
+Denies the fetch_read_body command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`http:allow-fetch-send`
+
+</td>
+<td>
+
+Enables the fetch_send command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`http:deny-fetch-send`
+
+</td>
+<td>
+
+Denies the fetch_send command without any pre-configured scope.
+
+</td>
+</tr>
+</table>
