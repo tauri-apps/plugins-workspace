@@ -104,7 +104,7 @@ pub struct UpdaterBuilder {
     timeout: Option<Duration>,
     proxy: Option<Url>,
     installer_args: Vec<OsString>,
-    nsis_installer_args: Vec<OsString>,
+    current_exe_args: Vec<OsString>,
     on_before_exit: Option<OnBeforeExit>,
 }
 
@@ -116,7 +116,7 @@ impl UpdaterBuilder {
                 .as_ref()
                 .map(|w| w.installer_args.clone())
                 .unwrap_or_default(),
-            nsis_installer_args: Vec::new(),
+            current_exe_args: Vec::new(),
             current_version,
             config,
             version_comparator: None,
@@ -245,7 +245,7 @@ impl UpdaterBuilder {
             proxy: self.proxy,
             endpoints,
             installer_args: self.installer_args,
-            nsis_installer_args: self.nsis_installer_args,
+            current_exe_args: self.current_exe_args,
             arch,
             target,
             json_target,
@@ -257,21 +257,13 @@ impl UpdaterBuilder {
 }
 
 impl UpdaterBuilder {
-    pub(crate) fn nsis_installer_arg<S>(mut self, arg: S) -> Self
-    where
-        S: Into<OsString>,
-    {
-        self.nsis_installer_args.push(arg.into());
-        self
-    }
-
-    pub(crate) fn nsis_installer_args<I, S>(mut self, args: I) -> Self
+    pub(crate) fn current_exe_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
         S: Into<OsString>,
     {
         let args = args.into_iter().map(|a| a.into()).collect::<Vec<_>>();
-        self.nsis_installer_args.extend_from_slice(&args);
+        self.current_exe_args.extend_from_slice(&args);
         self
     }
 }
@@ -294,7 +286,7 @@ pub struct Updater {
     #[allow(unused)]
     installer_args: Vec<OsString>,
     #[allow(unused)]
-    nsis_installer_args: Vec<OsString>,
+    current_exe_args: Vec<OsString>,
 }
 
 impl Updater {
@@ -406,7 +398,7 @@ impl Updater {
                 proxy: self.proxy.clone(),
                 headers: self.headers.clone(),
                 installer_args: self.installer_args.clone(),
-                nsis_installer_args: self.nsis_installer_args.clone(),
+                current_exe_args: self.current_exe_args.clone(),
             })
         } else {
             None
@@ -447,7 +439,7 @@ pub struct Update {
     #[allow(unused)]
     installer_args: Vec<OsString>,
     #[allow(unused)]
-    nsis_installer_args: Vec<OsString>,
+    current_exe_args: Vec<OsString>,
 }
 
 impl Resource for Update {}
@@ -595,21 +587,36 @@ impl Update {
         let updater_type = Self::extract(bytes)?;
 
         let install_mode = self.config.install_mode();
+        let current_args = &self.current_exe_args()[1..];
+        let msi_args;
+
         let installer_args: Vec<&OsStr> = match &updater_type {
             WindowsUpdaterType::Nsis { .. } => install_mode
                 .nsis_args()
                 .iter()
                 .map(OsStr::new)
                 .chain(once(OsStr::new("/UPDATE")))
-                .chain(self.nsis_installer_args())
+                .chain(once(OsStr::new("/ARGS")))
+                .chain(current_args.to_vec())
                 .chain(self.installer_args())
                 .collect(),
-            WindowsUpdaterType::Msi { path, .. } => [OsStr::new("/i"), path.as_os_str()]
-                .into_iter()
-                .chain(install_mode.msiexec_args().iter().map(OsStr::new))
-                .chain(once(OsStr::new("/promptrestart")))
-                .chain(self.installer_args())
-                .collect(),
+            WindowsUpdaterType::Msi { path, .. } => {
+                let escaped_args = current_args
+                    .iter()
+                    .map(escape_msi_property_arg)
+                    .collect::<Vec<_>>()
+                    .join(" ");
+                msi_args = OsString::from(format!("LAUNCHAPPARGS=\"{escaped_args}\""));
+
+                [OsStr::new("/i"), path.as_os_str()]
+                    .into_iter()
+                    .chain(install_mode.msiexec_args().iter().map(OsStr::new))
+                    .chain(once(OsStr::new("/promptrestart")))
+                    .chain(self.installer_args())
+                    .chain(once(OsStr::new("AUTOLAUNCHAPP=True")))
+                    .chain(once(msi_args.as_os_str()))
+                    .collect()
+            }
         };
 
         if let Some(on_before_exit) = self.on_before_exit.as_ref() {
@@ -649,8 +656,8 @@ impl Update {
             .collect::<Vec<_>>()
     }
 
-    fn nsis_installer_args(&self) -> Vec<&OsStr> {
-        self.nsis_installer_args
+    fn current_exe_args(&self) -> Vec<&OsStr> {
+        self.current_exe_args
             .iter()
             .map(OsStr::new)
             .collect::<Vec<_>>()
@@ -1026,6 +1033,32 @@ impl PathExt for PathBuf {
     }
 }
 
+#[cfg(windows)]
+fn escape_msi_property_arg(arg: impl AsRef<OsStr>) -> String {
+    let mut arg = arg.as_ref().to_string_lossy().to_string();
+
+    // Otherwise this argument will get lost in ShellExecute
+    if arg.is_empty() {
+        return "\"\"\"\"".to_string();
+    } else if !arg.contains(' ') && !arg.contains('"') {
+        return arg;
+    }
+
+    if arg.contains('"') {
+        arg = arg.replace('"', r#""""""#)
+    }
+
+    if arg.starts_with('-') {
+        if let Some((a1, a2)) = arg.split_once('=') {
+            format!("{a1}=\"\"{a2}\"\"")
+        } else {
+            format!("\"\"{arg}\"\"")
+        }
+    } else {
+        format!("\"\"{arg}\"\"")
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -1039,5 +1072,53 @@ mod tests {
             PathBuf::from("C:\\Users\\Some User\\AppData\\tauri-example.exe").wrap_in_quotes(),
             PathBuf::from("\"C:\\Users\\Some User\\AppData\\tauri-example.exe\"")
         )
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn it_escapes_correctly() {
+        use crate::updater::escape_msi_property_arg;
+
+        // Explanation for quotes:
+        // The output of escape_msi_property_args() will be used in `LAUNCHAPPARGS=\"{HERE}\"`. This is the first quote level.
+        // To escape a quotation mark we use a second quotation mark, so "" is interpreted as " later.
+        // This means that the escaped strings can't ever have a single quotation mark!
+        // Now there are 3 major things to look out for to not break the msiexec call:
+        //   1) Wrap spaces in quotation marks, otherwise it will be interpreted as the end of the msiexec argument.
+        //   2) Escape escaping quotation marks, otherwise they will either end the msiexec argument or be ignored.
+        //   3) Escape emtpy args in quotation marks, otherwise the argument will get lost.
+        let cases = [
+            "something",
+            "--flag",
+            "--empty=",
+            "--arg=value",
+            "some space",                     // This simulates `./my-app "some string"`.
+            "--arg value", // -> This simulates `./my-app "--arg value"`. Same as above but it triggers the startsWith(`-`) logic.
+            "--arg=unwrapped space", // `./my-app --arg="unwrapped space"`
+            "--arg=\"wrapped\"", // `./my-app --args=""wrapped""`
+            "--arg=\"wrapped space\"", // `./my-app --args=""wrapped space""`
+            "--arg=midword\"wrapped space\"", // `./my-app --args=midword""wrapped""`
+            "",            // `./my-app '""'`
+        ];
+        let cases_escaped = [
+            "something",
+            "--flag",
+            "--empty=",
+            "--arg=value",
+            "\"\"some space\"\"",
+            "\"\"--arg value\"\"",
+            "--arg=\"\"unwrapped space\"\"",
+            r#"--arg=""""""wrapped"""""""#,
+            r#"--arg=""""""wrapped space"""""""#,
+            r#"--arg=""midword""""wrapped space"""""""#,
+            "\"\"\"\"",
+        ];
+
+        // Just to be sure we didn't mess that up
+        assert_eq!(cases.len(), cases_escaped.len());
+
+        for (orig, escaped) in cases.iter().zip(cases_escaped) {
+            assert_eq!(escape_msi_property_arg(orig), escaped);
+        }
     }
 }
