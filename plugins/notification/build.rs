@@ -18,7 +18,7 @@ const COMMANDS: &[&str] = &[
     "list_channels",
     "delete_channel",
     "create_channel",
-    "permission_state"
+    "permission_state",
 ];
 
 fn main() {
