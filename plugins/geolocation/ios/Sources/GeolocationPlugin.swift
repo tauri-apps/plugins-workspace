@@ -175,7 +175,7 @@ class GeolocationPlugin: Plugin, CLLocationManagerDelegate {
     }
 
     for channel in self.watcherChannels {
-      // The capacitor plugin uses locations.first but .last should be the most current one
+      // The capacitor plugin uses locations.first but .last should be the most recent one
       // and i don't see a reason to use old locations
       if let location = locations.last {
         let result = convertLocation(location)

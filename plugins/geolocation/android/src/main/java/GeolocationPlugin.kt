@@ -66,6 +66,11 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
     private lateinit var implementation: Geolocation// = Geolocation(activity.applicationContext)
     private var watchers = hashMapOf<Long, Invoke>()
 
+    // If multiple permissions get requested in quick succession not all callbacks will be fired,
+    // So we'll store all requests ourselves instead of using the callback argument.
+    private var positionRequests = mutableListOf<Invoke>()
+    private var watchRequests = mutableListOf<Invoke>()
+
     override fun load(webView: WebView) {
         super.load(webView)
         implementation = Geolocation(activity.applicationContext)
@@ -109,7 +114,8 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
 
         if (getPermissionState(alias) != PermissionState.GRANTED) {
             Logger.error("NOT GRANTED");
-            requestPermissionForAlias(alias, invoke, "getCurrentPositionCallback")
+            this.positionRequests.add(invoke)
+            requestPermissionForAlias(alias, invoke, "positionPermissionCallback")
         } else {
             Logger.error("GRANTED");
             getPosition(invoke, args)
@@ -117,18 +123,36 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
     }
 
     @PermissionCallback
-    private fun getCurrentPositionCallback(invoke: Invoke) {
-        val args = invoke.parseArgs(PositionOptions::class.java)
-        Logger.error("CURPOS CALLBACK")
+    private fun positionPermissionCallback(invoke: Invoke) {
+        Logger.error("positionPermissionCallback")
+
+        val pRequests = this.positionRequests.toTypedArray()
+        val wRequests = this.watchRequests.toTypedArray()
+        this.positionRequests.clear()
+        this.watchRequests.clear()
+
         // TODO: capacitor only checks for coarse here
-        if (getPermissionState(ALIAS_COARSE_LOCATION) == PermissionState.GRANTED) {
-            Logger.error("CURPOS CALLBACK GRANTED")
-            implementation.sendLocation(args.enableHighAccuracy,
-                { location -> invoke.resolve(convertLocation(location)) },
-                { error -> invoke.reject(error) })
-        } else {
-            Logger.error("CURPOS CALLBACK DENIED")
-            invoke.reject("Location permission was denied.")
+        val permissionGranted = getPermissionState(ALIAS_COARSE_LOCATION) == PermissionState.GRANTED;
+        Logger.error("positionPermissionCallback - permissionGranted: $permissionGranted");
+
+        for (inv in pRequests) {
+            if (permissionGranted) {
+                val args = inv.parseArgs(PositionOptions::class.java)
+
+                implementation.sendLocation(args.enableHighAccuracy,
+                    { location -> inv.resolve(convertLocation(location)) },
+                    { error -> inv.reject(error) })
+            } else {
+                inv.reject("Location permission was denied.")
+            }
+        }
+
+        for (inv in wRequests) {
+            if (permissionGranted) {
+                startWatch(invoke)
+            } else {
+                inv.reject("Location permission was denied.")
+            }
         }
     }
 
@@ -138,22 +162,10 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
         val alias = getAlias(args.options.enableHighAccuracy)
 
         if (getPermissionState(alias) != PermissionState.GRANTED) {
-            requestPermissionForAlias(alias, invoke, "watchPositionCallback")
+            this.watchRequests.add(invoke)
+            requestPermissionForAlias(alias, invoke, "positionPermissionCallback")
         } else {
             startWatch(invoke)
-        }
-    }
-
-    @PermissionCallback
-    private fun watchPositionCallback(invoke: Invoke) {
-        Logger.error("WATCHPOS CALLBACK")
-        // TODO: capacitor only checks for coarse here
-        if (getPermissionState(ALIAS_COARSE_LOCATION) == PermissionState.GRANTED) {
-            Logger.error("WATCHPOS CALLBACK GRANTED")
-            startWatch(invoke)
-        } else {
-            Logger.error("WATCHPOS CALLBACK DENIED")
-            invoke.reject("Location permissions was denied.")
         }
     }
 
