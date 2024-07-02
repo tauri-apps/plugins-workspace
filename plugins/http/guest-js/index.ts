@@ -7,16 +7,18 @@
  *
  * ## Security
  *
- * This API has a scope configuration that forces you to restrict the URLs and paths that can be accessed using glob patterns.
+ * This API has a scope configuration that forces you to restrict the URLs that can be accessed using glob patterns.
  *
- * For instance, this scope configuration only allows making HTTP requests to the GitHub API for the `tauri-apps` organization:
+ * For instance, this scope configuration only allows making HTTP requests to all subdomains for `tauri.app` except for `https://private.tauri.app`:
  * ```json
  * {
- *   "plugins": {
- *     "http": {
- *       "scope": ["https://api.github.com/repos/tauri-apps/*"]
+ *   "permissions": [
+ *     {
+ *       "identifier": "http:default",
+ *       "allow": [{ "url": "https://*.tauri.app" }],
+ *       "deny": [{ "url": "https://private.tauri.app" }]
  *     }
- *   }
+ *   ]
  * }
  * ```
  * Trying to execute any API with a URL not configured on the scope results in a promise rejection due to denied access.
@@ -141,6 +143,7 @@ export async function fetch(
         ? headers
         : Object.entries(headers);
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const mappedHeaders: Array<[string, string]> = headersArray.map(
     ([name, val]) => [
       name,

@@ -7,7 +7,7 @@
 
 [[permission]]
 identifier = "scope-cache-recursive"
-description = "This scope recursive access to the complete `$CACHE` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$CACHE` folder, including sub directories and files."
 
 [[permission.scope.allow]]
 path = "$CACHE/**"

@@ -76,7 +76,7 @@ export async function unregister(protocol: string): Promise<null> {
  * @since 2.0.0
  */
 export async function isRegistered(protocol: string): Promise<boolean> {
-  return await invoke("plugin:deep-link|i_registered", { protocol });
+  return await invoke("plugin:deep-link|is_registered", { protocol });
 }
 
 /**
