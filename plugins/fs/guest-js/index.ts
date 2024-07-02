@@ -16,7 +16,7 @@
  *
  * The scope configuration is an array of glob patterns describing folder paths that are allowed.
  * For instance, this scope configuration only allows accessing files on the
- * *databases* folder of the {@link https://beta.tauri.app/2/reference/js/core/namespacepath/#appdatadir | `$APPDATA` directory}:
+ * *databases* folder of the {@link https://v2.tauri.app/reference/javascript/api/namespacepath/#appdatadir | `$APPDATA` directory}:
  * ```json
  * {
  *   "plugins": {
@@ -27,32 +27,32 @@
  * }
  * ```
  *
- * Notice the use of the `$APPDATA` variable. The value is injected at runtime, resolving to the {@link https://beta.tauri.app/2/reference/js/core/namespacepath/#appdatadir | app data directory}.
+ * Notice the use of the `$APPDATA` variable. The value is injected at runtime, resolving to the {@link https://v2.tauri.app/reference/javascript/api/namespacepath/#appdatadir | app data directory}.
  *
  * The available variables are:
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#appconfigdir | $APPCONFIG},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#appdatadir | $APPDATA},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#appLocaldatadir | $APPLOCALDATA},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#appcachedir | $APPCACHE},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#applogdir | $APPLOG},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#audiodir | $AUDIO},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#cachedir | $CACHE},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#configdir | $CONFIG},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#datadir | $DATA},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#localdatadir | $LOCALDATA},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#desktopdir | $DESKTOP},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#documentdir | $DOCUMENT},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#downloaddir | $DOWNLOAD},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#executabledir | $EXE},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#fontdir | $FONT},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#homedir | $HOME},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#picturedir | $PICTURE},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#publicdir | $PUBLIC},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#runtimedir | $RUNTIME},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#templatedir | $TEMPLATE},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#videodir | $VIDEO},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#resourcedir | $RESOURCE},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#tempdir | $TEMP}.
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#appconfigdir | $APPCONFIG},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#appdatadir | $APPDATA},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#appLocaldatadir | $APPLOCALDATA},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#appcachedir | $APPCACHE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#applogdir | $APPLOG},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#audiodir | $AUDIO},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#cachedir | $CACHE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#configdir | $CONFIG},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#datadir | $DATA},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#localdatadir | $LOCALDATA},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#desktopdir | $DESKTOP},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#documentdir | $DOCUMENT},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#downloaddir | $DOWNLOAD},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#executabledir | $EXE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#fontdir | $FONT},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#homedir | $HOME},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#picturedir | $PICTURE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#publicdir | $PUBLIC},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#runtimedir | $RUNTIME},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#templatedir | $TEMPLATE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#videodir | $VIDEO},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#resourcedir | $RESOURCE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#tempdir | $TEMP}.
  *
  * Trying to execute any API with a URL not configured on the scope results in a promise rejection due to denied access.
  *
@@ -641,6 +641,7 @@ interface DirEntry {
  * @example
  * ```typescript
  * import { readDir, BaseDirectory } from '@tauri-apps/plugin-fs';
+ * import { join } from '@tauri-apps/api/path';
  * const dir = "users"
  * const entries = await readDir('users', { baseDir: BaseDirectory.App });
  * processEntriesRecursive(dir, entries);
@@ -648,7 +649,7 @@ interface DirEntry {
  *   for (const entry of entries) {
  *     console.log(`Entry: ${entry.name}`);
  *     if (entry.isDirectory) {
- *        const dir = parent + entry.name;
+ *        const dir = await join(parent, entry.name);
  *       processEntriesRecursive(dir, await readDir(dir, { baseDir: BaseDirectory.App }))
  *     }
  *   }
