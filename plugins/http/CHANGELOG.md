@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.7]
+
+- [`76daee7a`](https://github.com/tauri-apps/plugins-workspace/commit/76daee7aafece34de3092c86e531cf9eb1138989) ([#1512](https://github.com/tauri-apps/plugins-workspace/pull/1512) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update to tauri beta.23.
+
 ## \[2.0.0-beta.6]
 
 - [`0f739dbc`](https://github.com/tauri-apps/plugins-workspace/commit/0f739dbc483a1f091977cbe575c3862fd39f8cf1) ([#1392](https://github.com/tauri-apps/plugins-workspace/pull/1392) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Allow setting `Origin` header when `unsafe-headers` feature flag is active.
@@ -179,7 +183,7 @@
   lpha release!
   !
   371\)) First v2 alpha release!
-t v2 alpha release!
+  t v2 alpha release!
   !
   371\)) First v2 alpha release!
   ace/pull/371)) First v2 alpha release!
@@ -188,6 +192,9 @@ t v2 alpha release!
   371\)) First v2 alpha release!
   !
   371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
   !
   371\)) First v2 alpha release!
   lpha release!
