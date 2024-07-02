@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-http"
-version = "2.0.0-beta.10"
+version = "2.0.0-beta.11"
 description = "Access an HTTP client written in Rust."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -26,7 +26,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
 thiserror = { workspace = true }
-tauri-plugin-fs = { path = "../fs", version = "2.0.0-beta.9" }
+tauri-plugin-fs = { path = "../fs", version = "2.0.0-beta.10" }
 urlpattern = "0.2"
 regex = "1"
 http = "1"
