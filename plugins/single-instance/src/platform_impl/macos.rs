@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-#![cfg(target_os = "macos")]
-
 use std::{
     io::{BufWriter, Error, ErrorKind, Read, Write},
     os::unix::net::{UnixListener, UnixStream},

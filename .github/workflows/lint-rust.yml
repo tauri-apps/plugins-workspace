@@ -53,6 +53,9 @@ jobs:
             tauri-plugin-clipboard-manager:
               - .github/workflows/lint-rust.yml
               - plugins/clipboard-manager/**
+            tauri-plugin-deep-link:
+              - .github/workflows/lint-rust.yml
+              - plugins/deep-link/**
             tauri-plugin-dialog:
               - .github/workflows/lint-rust.yml
               - plugins/dialog/**

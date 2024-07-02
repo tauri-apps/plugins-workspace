@@ -1,22 +1,6 @@
-| Permission | Description |
-|------|-----|
-|`allow-arch`|Enables the arch command without any pre-configured scope.|
-|`deny-arch`|Denies the arch command without any pre-configured scope.|
-|`allow-exe-extension`|Enables the exe_extension command without any pre-configured scope.|
-|`deny-exe-extension`|Denies the exe_extension command without any pre-configured scope.|
-|`allow-family`|Enables the family command without any pre-configured scope.|
-|`deny-family`|Denies the family command without any pre-configured scope.|
-|`allow-hostname`|Enables the hostname command without any pre-configured scope.|
-|`deny-hostname`|Denies the hostname command without any pre-configured scope.|
-|`allow-locale`|Enables the locale command without any pre-configured scope.|
-|`deny-locale`|Denies the locale command without any pre-configured scope.|
-|`allow-os-type`|Enables the os_type command without any pre-configured scope.|
-|`deny-os-type`|Denies the os_type command without any pre-configured scope.|
-|`allow-platform`|Enables the platform command without any pre-configured scope.|
-|`deny-platform`|Denies the platform command without any pre-configured scope.|
-|`allow-version`|Enables the version command without any pre-configured scope.|
-|`deny-version`|Denies the version command without any pre-configured scope.|
-|`default`|This permission set configures which
+## Default Permission
+
+This permission set configures which
 operating system information are available
 to gather from the frontend.
 
@@ -24,4 +8,230 @@ to gather from the frontend.
 
 All information except the host name are available.
 
-|
+
+
+- `allow-arch`
+- `allow-exe-extension`
+- `allow-family`
+- `allow-locale`
+- `allow-os-type`
+- `allow-platform`
+- `allow-version`
+
+### Permission Table 
+
+<table>
+<tr>
+<th>Identifier</th>
+<th>Description</th>
+</tr>
+
+
+<tr>
+<td>
+
+`os:allow-arch`
+
+</td>
+<td>
+
+Enables the arch command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:deny-arch`
+
+</td>
+<td>
+
+Denies the arch command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:allow-exe-extension`
+
+</td>
+<td>
+
+Enables the exe_extension command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:deny-exe-extension`
+
+</td>
+<td>
+
+Denies the exe_extension command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:allow-family`
+
+</td>
+<td>
+
+Enables the family command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:deny-family`
+
+</td>
+<td>
+
+Denies the family command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:allow-hostname`
+
+</td>
+<td>
+
+Enables the hostname command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:deny-hostname`
+
+</td>
+<td>
+
+Denies the hostname command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:allow-locale`
+
+</td>
+<td>
+
+Enables the locale command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:deny-locale`
+
+</td>
+<td>
+
+Denies the locale command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:allow-os-type`
+
+</td>
+<td>
+
+Enables the os_type command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:deny-os-type`
+
+</td>
+<td>
+
+Denies the os_type command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:allow-platform`
+
+</td>
+<td>
+
+Enables the platform command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:deny-platform`
+
+</td>
+<td>
+
+Denies the platform command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:allow-version`
+
+</td>
+<td>
+
+Enables the version command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:deny-version`
+
+</td>
+<td>
+
+Denies the version command without any pre-configured scope.
+
+</td>
+</tr>
+</table>
