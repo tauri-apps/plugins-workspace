@@ -109,7 +109,7 @@ fn main() {
 
 [[permission]]
 identifier = "scope-{lower}-recursive"
-description = "This scope recursive access to the complete `${upper}` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `${upper}` folder, including sub directories and files."
 
 [[permission.scope.allow]]
 path = "${upper}/**"

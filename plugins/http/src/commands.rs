@@ -19,6 +19,8 @@ use crate::{
     Error, Http, Result,
 };
 
+const HTTP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
+
 struct ReqwestResponse(reqwest::Response);
 
 type CancelableResponseResult = Result<Result<reqwest::Response>>;
@@ -221,11 +223,11 @@ pub async fn fetch<R: Runtime>(
                 }
 
                 if !headers.contains_key(header::USER_AGENT.as_str()) {
-                    request = request.header(header::USER_AGENT, "tauri-plugin-http");
+                    request = request.header(header::USER_AGENT, HTTP_USER_AGENT);
                 }
 
-                if !(cfg!(feature = "unsafe-headers")
-                    && headers.contains_key(header::ORIGIN.as_str()))
+                if cfg!(feature = "unsafe-headers")
+                    && !headers.contains_key(header::ORIGIN.as_str())
                 {
                     if let Ok(url) = webview.url() {
                         request =

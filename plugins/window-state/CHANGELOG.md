@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.7]
+
+- [`76daee7a`](https://github.com/tauri-apps/plugins-workspace/commit/76daee7aafece34de3092c86e531cf9eb1138989) ([#1512](https://github.com/tauri-apps/plugins-workspace/pull/1512) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update to tauri beta.23.
+
 ## \[2.0.0-beta.6]
 
 - [`9013854f`](https://github.com/tauri-apps/plugins-workspace/commit/9013854f42a49a230b9dbb9d02774765528a923f)([#1382](https://github.com/tauri-apps/plugins-workspace/pull/1382)) Update to tauri beta.22.
@@ -95,4 +99,6 @@
 - Fix restore maximization state only maximized on main monitor.
 
 - [70d9908](https://github.com/tauri-apps/plugins-workspace/commit/70d99086de3a58189d65c49954a3495972880725) fix(window-state): restore window position if the one of the window corners intersects with monitor ([#898](https://github.com/tauri-apps/plugins-workspace/pull/898)) on 2024-01-25
+  ://github.com/tauri-apps/plugins-workspace/commit/70d99086de3a58189d65c49954a3495972880725) fix(window-state): restore window position if the one of the window corners intersects with monitor ([#898](https://github.com/tauri-apps/plugins-workspace/pull/898)) on 2024-01-25
+indow position if the one of the window corners intersects with monitor ([#898](https://github.com/tauri-apps/plugins-workspace/pull/898)) on 2024-01-25
   ://github.com/tauri-apps/plugins-workspace/commit/70d99086de3a58189d65c49954a3495972880725) fix(window-state): restore window position if the one of the window corners intersects with monitor ([#898](https://github.com/tauri-apps/plugins-workspace/pull/898)) on 2024-01-25
