@@ -76,7 +76,7 @@ if (update?.available) {
 }
 ```
 
-Note: if you're migrating from v1 and are using `"bundler": { "createUpdaterArtifact": "v1Compatible" }` then you need to enable `zip` feature for it to be able to update from legacy v1 compatible zipped updaters
+Note: if you're migrating from v1 and are using `"bundle": { "createUpdaterArtifacts": "v1Compatible" }` then you need to enable `zip` feature for it to be able to update from legacy v1 compatible zipped updaters
 
 ## Contributing
 
