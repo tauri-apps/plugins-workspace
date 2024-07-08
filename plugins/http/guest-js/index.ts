@@ -86,6 +86,8 @@ export interface ClientOptions {
   proxy?: Proxy;
 }
 
+const ERROR_REQUEST_CANCELLED = "Request canceled";
+
 /**
  * Fetch a resource from the network. It returns a `Promise` that resolves to the
  * `Response` to that `Request`, whether it is successful or not.
@@ -104,6 +106,12 @@ export async function fetch(
   input: URL | Request | string,
   init?: RequestInit & ClientOptions,
 ): Promise<Response> {
+  // abort early here if needed
+  const signal = init?.signal;
+  if (signal?.aborted) {
+    throw new Error(ERROR_REQUEST_CANCELLED);
+  }
+
   const maxRedirections = init?.maxRedirections;
   const connectTimeout = init?.connectTimeout;
   const proxy = init?.proxy;
@@ -114,8 +122,6 @@ export async function fetch(
     delete init.connectTimeout;
     delete init.proxy;
   }
-
-  const signal = init?.signal;
 
   const headers = init?.headers
     ? init.headers instanceof Headers
@@ -153,6 +159,11 @@ export async function fetch(
     ],
   );
 
+  // abort early here if needed
+  if (signal?.aborted) {
+    throw new Error(ERROR_REQUEST_CANCELLED);
+  }
+
   const rid = await invoke<number>("plugin:http|fetch", {
     clientConfig: {
       method: req.method,
@@ -165,11 +176,17 @@ export async function fetch(
     },
   });
 
-  signal?.addEventListener("abort", () => {
-    void invoke("plugin:http|fetch_cancel", {
-      rid,
-    });
-  });
+  const abort = () => invoke("plugin:http|fetch_cancel", { rid });
+
+  // abort early here if needed
+  if (signal?.aborted) {
+    // we don't care about the result of this proimse
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    abort();
+    throw new Error(ERROR_REQUEST_CANCELLED);
+  }
+
+  signal?.addEventListener("abort", () => abort);
 
   interface FetchSendResponse {
     status: number;
@@ -203,7 +220,6 @@ export async function fetch(
         ? new Uint8Array(body)
         : null,
     {
-      headers: responseHeaders,
       status,
       statusText,
     },
