@@ -323,6 +323,20 @@
           ]
         },
         {
+          "description": "allow-register-all -> Enables the register_all command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-register-all"
+          ]
+        },
+        {
+          "description": "deny-register-all -> Denies the register_all command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-register-all"
+          ]
+        },
+        {
           "description": "allow-unregister -> Enables the unregister command without any pre-configured scope.",
           "type": "string",
           "enum": [

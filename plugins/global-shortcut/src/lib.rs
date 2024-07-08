@@ -143,7 +143,7 @@ impl<R: Runtime> GlobalShortcut<R> {
         for shortcut in shortcuts {
             s.push(try_into_shortcut(shortcut)?);
         }
-        self.register_multiple_internal(s, None::<fn(&AppHandle<R>, &Shortcut)>)
+        self.register_multiple_internal(s, None::<fn(&AppHandle<R>, &Shortcut, ShortcutEvent)>)
     }
 
     /// Register multiple shortcuts with a handler.
