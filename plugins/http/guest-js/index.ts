@@ -220,7 +220,6 @@ export async function fetch(
         ? new Uint8Array(body)
         : null,
     {
-      headers: responseHeaders,
       status,
       statusText,
     },
