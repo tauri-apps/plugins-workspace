@@ -109,7 +109,7 @@ export async function fetch(
   // abort early here if needed
   const signal = init?.signal;
   if (signal?.aborted) {
-    throw ERROR_REQUEST_CANCELLED;
+    throw new Error(ERROR_REQUEST_CANCELLED);
   }
 
   const maxRedirections = init?.maxRedirections;
@@ -161,7 +161,7 @@ export async function fetch(
 
   // abort early here if needed
   if (signal?.aborted) {
-    throw ERROR_REQUEST_CANCELLED;
+    throw new Error(ERROR_REQUEST_CANCELLED);
   }
 
   const rid = await invoke<number>("plugin:http|fetch", {
@@ -180,11 +180,13 @@ export async function fetch(
 
   // abort early here if needed
   if (signal?.aborted) {
+    // we don't care about the result of this proimse
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     abort();
-    throw ERROR_REQUEST_CANCELLED;
+    throw new Error(ERROR_REQUEST_CANCELLED);
   }
 
-  signal?.addEventListener("abort", abort);
+  signal?.addEventListener("abort", () => abort);
 
   interface FetchSendResponse {
     status: number;
