@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-#![cfg(target_os = "windows")]
+#[cfg(feature = "semver")]
+use crate::semver_compat::semver_compat_string;
 
 use crate::SingleInstanceCallback;
 use std::ffi::CStr;
@@ -33,7 +34,13 @@ const WMCOPYDATA_SINGLE_INSTANCE_DATA: usize = 1542;
 pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(|app, _api| {
-            let id = &app.config().identifier;
+            #[allow(unused_mut)]
+            let mut id = app.config().identifier.clone();
+            #[cfg(feature = "semver")]
+            {
+                id.push('_');
+                id.push_str(semver_compat_string(app.package_info().version.clone()).as_str());
+            }
 
             let class_name = encode_wide(format!("{id}-sic"));
             let window_name = encode_wide(format!("{id}-siw"));

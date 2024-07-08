@@ -5,7 +5,7 @@
 use std::{
     collections::HashMap,
     ffi::{OsStr, OsString},
-    io::{Cursor, Read},
+    io::Cursor,
     path::{Path, PathBuf},
     str::FromStr,
     sync::Arc,
@@ -30,6 +30,8 @@ use crate::{
     error::{Error, Result},
     Config,
 };
+
+const UPDATER_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ReleaseManifestPlatform {
@@ -102,6 +104,7 @@ pub struct UpdaterBuilder {
     timeout: Option<Duration>,
     proxy: Option<Url>,
     installer_args: Vec<OsString>,
+    current_exe_args: Vec<OsString>,
     on_before_exit: Option<OnBeforeExit>,
 }
 
@@ -113,6 +116,7 @@ impl UpdaterBuilder {
                 .as_ref()
                 .map(|w| w.installer_args.clone())
                 .unwrap_or_default(),
+            current_exe_args: Vec::new(),
             current_version,
             config,
             version_comparator: None,
@@ -241,6 +245,7 @@ impl UpdaterBuilder {
             proxy: self.proxy,
             endpoints,
             installer_args: self.installer_args,
+            current_exe_args: self.current_exe_args,
             arch,
             target,
             json_target,
@@ -251,6 +256,18 @@ impl UpdaterBuilder {
     }
 }
 
+impl UpdaterBuilder {
+    pub(crate) fn current_exe_args<I, S>(mut self, args: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<OsString>,
+    {
+        let args = args.into_iter().map(|a| a.into()).collect::<Vec<_>>();
+        self.current_exe_args.extend_from_slice(&args);
+        self
+    }
+}
+
 pub struct Updater {
     config: Config,
     current_version: Version,
@@ -258,8 +275,6 @@ pub struct Updater {
     timeout: Option<Duration>,
     proxy: Option<Url>,
     endpoints: Vec<Url>,
-    #[allow(dead_code)]
-    installer_args: Vec<OsString>,
     arch: &'static str,
     // The `{{target}}` variable we replace in the endpoint
     target: String,
@@ -268,6 +283,10 @@ pub struct Updater {
     headers: HeaderMap,
     extract_path: PathBuf,
     on_before_exit: Option<OnBeforeExit>,
+    #[allow(unused)]
+    installer_args: Vec<OsString>,
+    #[allow(unused)]
+    current_exe_args: Vec<OsString>,
 }
 
 impl Updater {
@@ -312,7 +331,7 @@ impl Updater {
                 .replace("{{arch}}", self.arch)
                 .parse()?;
 
-            let mut request = ClientBuilder::new();
+            let mut request = ClientBuilder::new().user_agent(UPDATER_USER_AGENT);
             if let Some(timeout) = self.timeout {
                 request = request.timeout(timeout);
             }
@@ -370,7 +389,6 @@ impl Updater {
                 current_version: self.current_version.to_string(),
                 target: self.target.clone(),
                 extract_path: self.extract_path.clone(),
-                installer_args: self.installer_args.clone(),
                 version: release.version.to_string(),
                 date: release.pub_date,
                 download_url: release.download_url(&self.json_target)?.to_owned(),
@@ -379,6 +397,8 @@ impl Updater {
                 timeout: self.timeout,
                 proxy: self.proxy.clone(),
                 headers: self.headers.clone(),
+                installer_args: self.installer_args.clone(),
+                current_exe_args: self.current_exe_args.clone(),
             })
         } else {
             None
@@ -403,11 +423,6 @@ pub struct Update {
     pub date: Option<OffsetDateTime>,
     /// Target
     pub target: String,
-    /// Extract path
-    #[allow(unused)]
-    extract_path: PathBuf,
-    #[allow(unused)]
-    installer_args: Vec<OsString>,
     /// Download URL announced
     pub download_url: Url,
     /// Signature announced
@@ -418,6 +433,13 @@ pub struct Update {
     pub proxy: Option<Url>,
     /// Request headers
     pub headers: HeaderMap,
+    /// Extract path
+    #[allow(unused)]
+    extract_path: PathBuf,
+    #[allow(unused)]
+    installer_args: Vec<OsString>,
+    #[allow(unused)]
+    current_exe_args: Vec<OsString>,
 }
 
 impl Resource for Update {}
@@ -442,7 +464,7 @@ impl Update {
             HeaderValue::from_str("tauri-updater").unwrap(),
         );
 
-        let mut request = ClientBuilder::new();
+        let mut request = ClientBuilder::new().user_agent(UPDATER_USER_AGENT);
         if let Some(timeout) = self.timeout {
             request = request.timeout(timeout);
         }
@@ -475,23 +497,19 @@ impl Update {
         let mut stream = response.bytes_stream();
         while let Some(chunk) = stream.next().await {
             let chunk = chunk?;
-            let bytes = chunk.as_ref().to_vec();
-            on_chunk(bytes.len(), content_length);
-            buffer.extend(bytes);
+            on_chunk(chunk.len(), content_length);
+            buffer.extend(chunk);
         }
-
         on_download_finish();
 
-        let mut update_buffer = Cursor::new(&buffer);
-
-        verify_signature(&mut update_buffer, &self.signature, &self.config.pubkey)?;
+        verify_signature(&buffer, &self.signature, &self.config.pubkey)?;
 
         Ok(buffer)
     }
 
     /// Installs the updater package downloaded by [`Update::download`]
-    pub fn install(&self, bytes: Vec<u8>) -> Result<()> {
-        self.install_inner(bytes)
+    pub fn install(&self, bytes: impl AsRef<[u8]>) -> Result<()> {
+        self.install_inner(bytes.as_ref())
     }
 
     /// Downloads and installs the updater package
@@ -505,122 +523,224 @@ impl Update {
     }
 
     #[cfg(mobile)]
-    fn install_inner(&self, _bytes: Vec<u8>) -> Result<()> {
+    fn install_inner(&self, _bytes: &[u8]) -> Result<()> {
         Ok(())
     }
+}
 
-    // Windows
-    //
-    // ### Expected structure:
-    // ├── [AppName]_[version]_x64.msi.zip          # ZIP generated by tauri-bundler
-    // │   └──[AppName]_[version]_x64.msi           # Application MSI
-    // ├── [AppName]_[version]_x64-setup.exe.zip          # ZIP generated by tauri-bundler
-    // │   └──[AppName]_[version]_x64-setup.exe           # NSIS installer
-    // └── ...
-    //
-    // ## MSI
-    // Update server can provide a MSI for Windows. (Generated with tauri-bundler from *Wix*)
-    // To replace current version of the application. In later version we'll offer
-    // incremental update to push specific binaries.
-    //
-    // ## EXE
-    // Update server can provide a custom EXE (installer) who can run any task.
-    #[cfg(windows)]
-    fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
-        use std::fs;
+#[cfg(windows)]
+enum WindowsUpdaterType {
+    Nsis {
+        path: PathBuf,
+        #[allow(unused)]
+        temp: Option<tempfile::TempPath>,
+    },
+    Msi {
+        path: PathBuf,
+        #[allow(unused)]
+        temp: Option<tempfile::TempPath>,
+    },
+}
+
+#[cfg(windows)]
+impl WindowsUpdaterType {
+    fn nsis(path: PathBuf, temp: Option<tempfile::TempPath>) -> Self {
+        Self::Nsis { path, temp }
+    }
+
+    fn msi(path: PathBuf, temp: Option<tempfile::TempPath>) -> Self {
+        Self::Msi {
+            path: path.wrap_in_quotes(),
+            temp,
+        }
+    }
+}
+
+#[cfg(windows)]
+impl Config {
+    fn install_mode(&self) -> crate::config::WindowsUpdateInstallMode {
+        self.windows
+            .as_ref()
+            .map(|w| w.install_mode.clone())
+            .unwrap_or_default()
+    }
+}
+
+/// Windows
+#[cfg(windows)]
+impl Update {
+    /// ### Expected structure:
+    /// ├── [AppName]_[version]_x64.msi              # Application MSI
+    /// ├── [AppName]_[version]_x64-setup.exe        # NSIS installer
+    /// ├── [AppName]_[version]_x64.msi.zip          # ZIP generated by tauri-bundler
+    /// │   └──[AppName]_[version]_x64.msi           # Application MSI
+    /// ├── [AppName]_[version]_x64-setup.exe.zip          # ZIP generated by tauri-bundler
+    /// │   └──[AppName]_[version]_x64-setup.exe           # NSIS installer
+    /// └── ...
+    fn install_inner(&self, bytes: &[u8]) -> Result<()> {
+        use std::iter::once;
         use windows_sys::{
             w,
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
         };
 
-        // FIXME: We need to create a memory buffer with the MSI and then run it.
-        //        (instead of extracting the MSI to a temp path)
-        //
-        // The tricky part is the MSI need to be exposed and spawned so the memory allocation
-        // shouldn't drop but we should be able to pass the reference so we can drop it once the installation
-        // is done, otherwise we have a huge memory leak.
+        let updater_type = Self::extract(bytes)?;
 
+        let install_mode = self.config.install_mode();
+        let current_args = &self.current_exe_args()[1..];
+        let msi_args;
+
+        let installer_args: Vec<&OsStr> = match &updater_type {
+            WindowsUpdaterType::Nsis { .. } => install_mode
+                .nsis_args()
+                .iter()
+                .map(OsStr::new)
+                .chain(once(OsStr::new("/UPDATE")))
+                .chain(once(OsStr::new("/ARGS")))
+                .chain(current_args.to_vec())
+                .chain(self.installer_args())
+                .collect(),
+            WindowsUpdaterType::Msi { path, .. } => {
+                let escaped_args = current_args
+                    .iter()
+                    .map(escape_msi_property_arg)
+                    .collect::<Vec<_>>()
+                    .join(" ");
+                msi_args = OsString::from(format!("LAUNCHAPPARGS=\"{escaped_args}\""));
+
+                [OsStr::new("/i"), path.as_os_str()]
+                    .into_iter()
+                    .chain(install_mode.msiexec_args().iter().map(OsStr::new))
+                    .chain(once(OsStr::new("/promptrestart")))
+                    .chain(self.installer_args())
+                    .chain(once(OsStr::new("AUTOLAUNCHAPP=True")))
+                    .chain(once(msi_args.as_os_str()))
+                    .collect()
+            }
+        };
+
+        if let Some(on_before_exit) = self.on_before_exit.as_ref() {
+            on_before_exit();
+        }
+
+        let file = match &updater_type {
+            WindowsUpdaterType::Nsis { path, .. } => path.as_os_str().to_os_string(),
+            WindowsUpdaterType::Msi { .. } => std::env::var("SYSTEMROOT").as_ref().map_or_else(
+                |_| OsString::from("msiexec.exe"),
+                |p| OsString::from(format!("{p}\\System32\\msiexec.exe")),
+            ),
+        };
+        let file = encode_wide(file);
+
+        let parameters = installer_args.join(OsStr::new(" "));
+        let parameters = encode_wide(parameters);
+
+        unsafe {
+            ShellExecuteW(
+                0,
+                w!("open"),
+                file.as_ptr(),
+                parameters.as_ptr(),
+                std::ptr::null(),
+                SW_SHOW,
+            )
+        };
+
+        std::process::exit(0);
+    }
+
+    fn installer_args(&self) -> Vec<&OsStr> {
+        self.installer_args
+            .iter()
+            .map(OsStr::new)
+            .collect::<Vec<_>>()
+    }
+
+    fn current_exe_args(&self) -> Vec<&OsStr> {
+        self.current_exe_args
+            .iter()
+            .map(OsStr::new)
+            .collect::<Vec<_>>()
+    }
+
+    fn extract(bytes: &[u8]) -> Result<WindowsUpdaterType> {
+        #[cfg(feature = "zip")]
+        if infer::archive::is_zip(bytes) {
+            return Self::extract_zip(bytes);
+        }
+
+        Self::extract_exe(bytes)
+    }
+
+    #[cfg(feature = "zip")]
+    fn extract_zip(bytes: &[u8]) -> Result<WindowsUpdaterType> {
         let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
+
         let archive = Cursor::new(bytes);
         let mut extractor = zip::ZipArchive::new(archive)?;
         extractor.extract(&tmp_dir)?;
 
-        let paths = fs::read_dir(&tmp_dir)?;
-
-        let install_mode = self
-            .config
-            .windows
-            .as_ref()
-            .map(|w| w.install_mode.clone())
-            .unwrap_or_default();
-        let mut installer_args = self
-            .installer_args
-            .iter()
-            .map(OsStr::new)
-            .collect::<Vec<_>>();
-
+        let paths = std::fs::read_dir(&tmp_dir)?;
         for path in paths {
-            let found_path = path?.path();
-            // we support 2 type of files exe & msi for now
-            // If it's an `exe` we expect an NSIS installer.
-            if found_path.extension() == Some(OsStr::new("exe")) {
-                installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
-            } else if found_path.extension() == Some(OsStr::new("msi")) {
-                installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
-                installer_args.push(OsStr::new("/promptrestart"));
-            } else {
-                continue;
+            let path = path?.path();
+            let ext = path.extension();
+            if ext == Some(OsStr::new("exe")) {
+                return Ok(WindowsUpdaterType::nsis(path, None));
+            } else if ext == Some(OsStr::new("msi")) {
+                return Ok(WindowsUpdaterType::msi(path, None));
             }
-
-            if let Some(on_before_exit) = self.on_before_exit.as_ref() {
-                on_before_exit();
-            }
-
-            let file = encode_wide(found_path.as_os_str());
-            let parameters = encode_wide(installer_args.join(OsStr::new(" ")).as_os_str());
-            unsafe {
-                ShellExecuteW(
-                    0,
-                    w!("open"),
-                    file.as_ptr(),
-                    parameters.as_ptr(),
-                    std::ptr::null(),
-                    SW_SHOW,
-                )
-            };
-
-            std::process::exit(0);
         }
 
-        Ok(())
+        Err(crate::Error::BinaryNotFoundInArchive)
     }
 
-    // Linux (AppImage)
-    //
-    // ### Expected structure:
-    // ├── [AppName]_[version]_amd64.AppImage.tar.gz    # GZ generated by tauri-bundler
-    // │   └──[AppName]_[version]_amd64.AppImage        # Application AppImage
-    // └── ...
-    //
-    // We should have an AppImage already installed to be able to copy and install
-    // the extract_path is the current AppImage path
-    // tmp_dir is where our new AppImage is found
-    #[cfg(any(
-        target_os = "linux",
-        target_os = "dragonfly",
-        target_os = "freebsd",
-        target_os = "netbsd",
-        target_os = "openbsd"
-    ))]
-    fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
-        use flate2::read::GzDecoder;
+    fn extract_exe(bytes: &[u8]) -> Result<WindowsUpdaterType> {
+        if infer::app::is_exe(bytes) {
+            let (path, temp) = Self::write_to_temp(bytes, ".exe")?;
+            Ok(WindowsUpdaterType::nsis(path, temp))
+        } else if infer::archive::is_msi(bytes) {
+            let (path, temp) = Self::write_to_temp(bytes, ".msi")?;
+            Ok(WindowsUpdaterType::msi(path, temp))
+        } else {
+            Err(crate::Error::InvalidUpdaterFormat)
+        }
+    }
+
+    fn write_to_temp(bytes: &[u8], ext: &str) -> Result<(PathBuf, Option<tempfile::TempPath>)> {
+        use std::io::Write;
+
+        let mut temp_file = tempfile::Builder::new().suffix(ext).tempfile()?;
+        temp_file.write_all(bytes)?;
+
+        let temp = temp_file.into_temp_path();
+        Ok((temp.to_path_buf(), Some(temp)))
+    }
+}
+
+/// Linux (AppImage)
+#[cfg(any(
+    target_os = "linux",
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "netbsd",
+    target_os = "openbsd"
+))]
+impl Update {
+    /// ### Expected structure:
+    /// ├── [AppName]_[version]_amd64.AppImage.tar.gz    # GZ generated by tauri-bundler
+    /// │   └──[AppName]_[version]_amd64.AppImage        # Application AppImage
+    /// └── ...
+    ///
+    /// We should have an AppImage already installed to be able to copy and install
+    /// the extract_path is the current AppImage path
+    /// tmp_dir is where our new AppImage is found
+    fn install_inner(&self, bytes: &[u8]) -> Result<()> {
         use std::os::unix::fs::{MetadataExt, PermissionsExt};
-        let archive = Cursor::new(bytes);
         let extract_path_metadata = self.extract_path.metadata()?;
 
         let tmp_dir_locations = vec![
             Box::new(|| Some(std::env::temp_dir())) as Box<dyn FnOnce() -> Option<PathBuf>>,
-            Box::new(dirs_next::cache_dir),
+            Box::new(dirs::cache_dir),
             Box::new(|| Some(self.extract_path.parent().unwrap().to_path_buf())),
         ];
 
@@ -641,44 +761,57 @@ impl Update {
                     // create a backup of our current app image
                     std::fs::rename(&self.extract_path, tmp_app_image)?;
 
-                    // extract the buffer to the tmp_dir
-                    // we extract our signed archive into our final directory without any temp file
-                    let decoder = GzDecoder::new(archive);
-                    let mut archive = tar::Archive::new(decoder);
-                    for mut entry in archive.entries()?.flatten() {
-                        if let Ok(path) = entry.path() {
-                            if path.extension() == Some(OsStr::new("AppImage")) {
-                                // if something went wrong during the extraction, we should restore previous app
-                                if let Err(err) = entry.unpack(&self.extract_path) {
-                                    std::fs::rename(tmp_app_image, &self.extract_path)?;
-                                    return Err(err.into());
+                    #[cfg(feature = "zip")]
+                    if infer::archive::is_gz(bytes) {
+                        // extract the buffer to the tmp_dir
+                        // we extract our signed archive into our final directory without any temp file
+                        let archive = Cursor::new(bytes);
+                        let decoder = flate2::read::GzDecoder::new(archive);
+                        let mut archive = tar::Archive::new(decoder);
+                        for mut entry in archive.entries()?.flatten() {
+                            if let Ok(path) = entry.path() {
+                                if path.extension() == Some(OsStr::new("AppImage")) {
+                                    // if something went wrong during the extraction, we should restore previous app
+                                    if let Err(err) = entry.unpack(&self.extract_path) {
+                                        std::fs::rename(tmp_app_image, &self.extract_path)?;
+                                        return Err(err.into());
+                                    }
+                                    // early finish we have everything we need here
+                                    return Ok(());
                                 }
-                                // early finish we have everything we need here
-                                return Ok(());
                             }
                         }
+                        // if we have not returned early we should restore the backup
+                        std::fs::rename(tmp_app_image, &self.extract_path)?;
+                        return Err(Error::BinaryNotFoundInArchive);
                     }
-                    // if we have not returned early we should restore the backup
-                    std::fs::rename(tmp_app_image, &self.extract_path)?;
 
-                    return Err(Error::BinaryNotFoundInArchive);
+                    return match std::fs::write(&self.extract_path, bytes) {
+                        Err(err) => {
+                            // if something went wrong during the extraction, we should restore previous app
+                            std::fs::rename(tmp_app_image, &self.extract_path)?;
+                            Err(err.into())
+                        }
+                        Ok(_) => Ok(()),
+                    };
                 }
             }
         }
 
         Err(Error::TempDirNotOnSameMountPoint)
     }
+}
 
-    // MacOS
-    //
-    // ### Expected structure:
-    // ├── [AppName]_[version]_x64.app.tar.gz       # GZ generated by tauri-bundler
-    // │   └──[AppName].app                         # Main application
-    // │      └── Contents                          # Application contents...
-    // │          └── ...
-    // └── ...
-    #[cfg(target_os = "macos")]
-    fn install_inner(&self, bytes: Vec<u8>) -> Result<()> {
+/// MacOS
+#[cfg(target_os = "macos")]
+impl Update {
+    /// ### Expected structure:
+    /// ├── [AppName]_[version]_x64.app.tar.gz       # GZ generated by tauri-bundler
+    /// │   └──[AppName].app                         # Main application
+    /// │      └── Contents                          # Application contents...
+    /// │          └── ...
+    /// └── ...
+    fn install_inner(&self, bytes: &[u8]) -> Result<()> {
         use flate2::read::GzDecoder;
 
         let cursor = Cursor::new(bytes);
@@ -854,30 +987,15 @@ where
 }
 
 // Validate signature
-// need to be public because its been used
-// by our tests in the bundler
-//
-// NOTE: The buffer position is not reset.
-pub fn verify_signature<R>(
-    archive_reader: &mut R,
-    release_signature: &str,
-    pub_key: &str,
-) -> Result<bool>
-where
-    R: Read,
-{
+fn verify_signature(data: &[u8], release_signature: &str, pub_key: &str) -> Result<bool> {
     // we need to convert the pub key
     let pub_key_decoded = base64_to_string(pub_key)?;
     let public_key = PublicKey::decode(&pub_key_decoded)?;
     let signature_base64_decoded = base64_to_string(release_signature)?;
     let signature = Signature::decode(&signature_base64_decoded)?;
 
-    // read all bytes until EOF in the buffer
-    let mut data = Vec::new();
-    archive_reader.read_to_end(&mut data)?;
-
     // Validate signature or bail out
-    public_key.verify(&data, &signature, true)?;
+    public_key.verify(data, &signature, true)?;
     Ok(true)
 }
 
@@ -889,7 +1007,7 @@ fn base64_to_string(base64_string: &str) -> Result<String> {
     Ok(result)
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(windows)]
 fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
     use std::os::windows::ffi::OsStrExt;
 
@@ -898,4 +1016,109 @@ fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
         .encode_wide()
         .chain(std::iter::once(0))
         .collect()
+}
+
+#[cfg(windows)]
+trait PathExt {
+    fn wrap_in_quotes(&self) -> Self;
+}
+
+#[cfg(windows)]
+impl PathExt for PathBuf {
+    fn wrap_in_quotes(&self) -> Self {
+        let mut msi_path = OsString::from("\"");
+        msi_path.push(self.as_os_str());
+        msi_path.push("\"");
+        PathBuf::from(msi_path)
+    }
+}
+
+#[cfg(windows)]
+fn escape_msi_property_arg(arg: impl AsRef<OsStr>) -> String {
+    let mut arg = arg.as_ref().to_string_lossy().to_string();
+
+    // Otherwise this argument will get lost in ShellExecute
+    if arg.is_empty() {
+        return "\"\"\"\"".to_string();
+    } else if !arg.contains(' ') && !arg.contains('"') {
+        return arg;
+    }
+
+    if arg.contains('"') {
+        arg = arg.replace('"', r#""""""#)
+    }
+
+    if arg.starts_with('-') {
+        if let Some((a1, a2)) = arg.split_once('=') {
+            format!("{a1}=\"\"{a2}\"\"")
+        } else {
+            format!("\"\"{arg}\"\"")
+        }
+    } else {
+        format!("\"\"{arg}\"\"")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    #[cfg(windows)]
+    fn it_wraps_correctly() {
+        use super::PathExt;
+        use std::path::PathBuf;
+
+        assert_eq!(
+            PathBuf::from("C:\\Users\\Some User\\AppData\\tauri-example.exe").wrap_in_quotes(),
+            PathBuf::from("\"C:\\Users\\Some User\\AppData\\tauri-example.exe\"")
+        )
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn it_escapes_correctly() {
+        use crate::updater::escape_msi_property_arg;
+
+        // Explanation for quotes:
+        // The output of escape_msi_property_args() will be used in `LAUNCHAPPARGS=\"{HERE}\"`. This is the first quote level.
+        // To escape a quotation mark we use a second quotation mark, so "" is interpreted as " later.
+        // This means that the escaped strings can't ever have a single quotation mark!
+        // Now there are 3 major things to look out for to not break the msiexec call:
+        //   1) Wrap spaces in quotation marks, otherwise it will be interpreted as the end of the msiexec argument.
+        //   2) Escape escaping quotation marks, otherwise they will either end the msiexec argument or be ignored.
+        //   3) Escape emtpy args in quotation marks, otherwise the argument will get lost.
+        let cases = [
+            "something",
+            "--flag",
+            "--empty=",
+            "--arg=value",
+            "some space",                     // This simulates `./my-app "some string"`.
+            "--arg value", // -> This simulates `./my-app "--arg value"`. Same as above but it triggers the startsWith(`-`) logic.
+            "--arg=unwrapped space", // `./my-app --arg="unwrapped space"`
+            "--arg=\"wrapped\"", // `./my-app --args=""wrapped""`
+            "--arg=\"wrapped space\"", // `./my-app --args=""wrapped space""`
+            "--arg=midword\"wrapped space\"", // `./my-app --args=midword""wrapped""`
+            "",            // `./my-app '""'`
+        ];
+        let cases_escaped = [
+            "something",
+            "--flag",
+            "--empty=",
+            "--arg=value",
+            "\"\"some space\"\"",
+            "\"\"--arg value\"\"",
+            "--arg=\"\"unwrapped space\"\"",
+            r#"--arg=""""""wrapped"""""""#,
+            r#"--arg=""""""wrapped space"""""""#,
+            r#"--arg=""midword""""wrapped space"""""""#,
+            "\"\"\"\"",
+        ];
+
+        // Just to be sure we didn't mess that up
+        assert_eq!(cases.len(), cases_escaped.len());
+
+        for (orig, escaped) in cases.iter().zip(cases_escaped) {
+            assert_eq!(escape_msi_property_arg(orig), escaped);
+        }
+    }
 }

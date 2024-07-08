@@ -1,11 +1,12 @@
 [package]
 name = "tauri-plugin-autostart"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.8"
 description = "Automatically launch your application at startup."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-autostart"
 
 [package.metadata.docs.rs]

@@ -7,7 +7,7 @@
 
 [[permission]]
 identifier = "scope-localdata-recursive"
-description = "This scope recursive access to the complete `$LOCALDATA` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$LOCALDATA` folder, including sub directories and files."
 
 [[permission.scope.allow]]
 path = "$LOCALDATA/**"
@@ -63,7 +63,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-localdata-meta-recursive"
-description = "This allows read access to metadata of the `$LOCALDATA` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$LOCALDATA` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-localdata-recursive"
@@ -71,7 +71,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-localdata-meta"
-description = "This allows read access to metadata of the `$LOCALDATA` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$LOCALDATA` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-localdata-index"

@@ -19,18 +19,18 @@ jobs:
       successfulPublish: ${{ steps.covector.outputs.successfulPublish }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # required for use of git history
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
           registry-url: "https://registry.npmjs.org"
 
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
         with:
-          version: 7.x.x
+          version: 9.x.x
           run_install: true
 
       - name: install webkit2gtk and libudev for [authenticator]
@@ -55,6 +55,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           command: "version-or-publish"
           createRelease: true
+          recognizeContributors: true
 
       - name: Create Pull Request With Versions Bumped
         id: cpr
@@ -64,5 +65,5 @@ jobs:
           title: "Publish New Versions"
           commit-message: "publish new versions"
           labels: "version updates"
-          branch: "release"
+          branch: "ci/release-v1"
           body: ${{ steps.covector.outputs.change }}

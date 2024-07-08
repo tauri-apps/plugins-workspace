@@ -7,7 +7,7 @@
 
 [[permission]]
 identifier = "scope-font-recursive"
-description = "This scope recursive access to the complete `$FONT` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$FONT` folder, including sub directories and files."
 
 [[permission.scope.allow]]
 path = "$FONT/**"
@@ -63,7 +63,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-font-meta-recursive"
-description = "This allows read access to metadata of the `$FONT` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$FONT` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-font-recursive"
@@ -71,7 +71,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-font-meta"
-description = "This allows read access to metadata of the `$FONT` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$FONT` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-font-index"

@@ -9,7 +9,7 @@ use tauri::{
     ipc::{CommandScope, GlobalScope},
     path::{BaseDirectory, SafePathBuf},
     utils::config::FsScope,
-    AppHandle, Manager, Resource, ResourceId, Runtime,
+    Manager, Resource, ResourceId, Runtime, Webview,
 };
 
 use std::{
@@ -72,14 +72,14 @@ pub struct BaseOptions {
 
 #[tauri::command]
 pub fn create<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
     let resolved_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         path,
@@ -91,7 +91,7 @@ pub fn create<R: Runtime>(
             resolved_path.display()
         )
     })?;
-    let rid = app.resources_table().add(StdFileResource::new(file));
+    let rid = webview.resources_table().add(StdFileResource::new(file));
     Ok(rid)
 }
 
@@ -122,14 +122,14 @@ fn default_true() -> bool {
 
 #[tauri::command]
 pub fn open<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<OpenOptions>,
 ) -> CommandResult<ResourceId> {
     let resolved_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         path,
@@ -164,14 +164,14 @@ pub fn open<R: Runtime>(
         )
     })?;
 
-    let rid = app.resources_table().add(StdFileResource::new(file));
+    let rid = webview.resources_table().add(StdFileResource::new(file));
 
     Ok(rid)
 }
 
 #[tauri::command]
-pub fn close<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> CommandResult<()> {
-    app.resources_table().close(rid).map_err(Into::into)
+pub fn close<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> CommandResult<()> {
+    webview.resources_table().close(rid).map_err(Into::into)
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -182,8 +182,8 @@ pub struct CopyFileOptions {
 }
 
 #[tauri::command]
-pub fn copy_file<R: Runtime>(
-    app: AppHandle<R>,
+pub async fn copy_file<R: Runtime>(
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     from_path: SafePathBuf,
@@ -191,14 +191,14 @@ pub fn copy_file<R: Runtime>(
     options: Option<CopyFileOptions>,
 ) -> CommandResult<()> {
     let resolved_from_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         from_path,
         options.as_ref().and_then(|o| o.from_path_base_dir),
     )?;
     let resolved_to_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         to_path,
@@ -225,14 +225,14 @@ pub struct MkdirOptions {
 
 #[tauri::command]
 pub fn mkdir<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<MkdirOptions>,
 ) -> CommandResult<()> {
     let resolved_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         path,
@@ -291,15 +291,15 @@ fn read_dir_inner<P: AsRef<Path>>(path: P) -> crate::Result<Vec<DirEntry>> {
 }
 
 #[tauri::command]
-pub fn read_dir<R: Runtime>(
-    app: AppHandle<R>,
+pub async fn read_dir<R: Runtime>(
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<Vec<DirEntry>> {
     let resolved_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         path,
@@ -317,34 +317,35 @@ pub fn read_dir<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn read<R: Runtime>(
-    app: AppHandle<R>,
+pub async fn read<R: Runtime>(
+    webview: Webview<R>,
     rid: ResourceId,
     len: u32,
 ) -> CommandResult<(Vec<u8>, usize)> {
     let mut data = vec![0; len as usize];
-    let file = app.resources_table().get::<StdFileResource>(rid)?;
+    let file = webview.resources_table().get::<StdFileResource>(rid)?;
     let nread = StdFileResource::with_lock(&file, |mut file| file.read(&mut data))
         .map_err(|e| format!("faied to read bytes from file with error: {e}"))?;
     Ok((data, nread))
 }
 
 #[tauri::command]
-pub fn read_file<R: Runtime>(
-    app: AppHandle<R>,
+pub async fn read_file<R: Runtime>(
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
-) -> CommandResult<Vec<u8>> {
+) -> CommandResult<tauri::ipc::Response> {
     let resolved_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         path,
         options.as_ref().and_then(|o| o.base_dir),
     )?;
     std::fs::read(&resolved_path)
+        .map(tauri::ipc::Response::new)
         .map_err(|e| {
             format!(
                 "failed to read file at path: {} with error: {e}",
@@ -355,15 +356,15 @@ pub fn read_file<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn read_text_file<R: Runtime>(
-    app: AppHandle<R>,
+pub async fn read_text_file<R: Runtime>(
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<String> {
     let resolved_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         path,
@@ -381,7 +382,7 @@ pub fn read_text_file<R: Runtime>(
 
 #[tauri::command]
 pub fn read_text_file_lines<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
@@ -390,7 +391,7 @@ pub fn read_text_file_lines<R: Runtime>(
     use std::io::BufRead;
 
     let resolved_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         path,
@@ -405,17 +406,17 @@ pub fn read_text_file_lines<R: Runtime>(
     })?;
 
     let lines = BufReader::new(file).lines();
-    let rid = app.resources_table().add(StdLinesResource::new(lines));
+    let rid = webview.resources_table().add(StdLinesResource::new(lines));
 
     Ok(rid)
 }
 
 #[tauri::command]
-pub fn read_text_file_lines_next<R: Runtime>(
-    app: AppHandle<R>,
+pub async fn read_text_file_lines_next<R: Runtime>(
+    webview: Webview<R>,
     rid: ResourceId,
 ) -> CommandResult<(Option<String>, bool)> {
-    let mut resource_table = app.resources_table();
+    let mut resource_table = webview.resources_table();
     let lines = resource_table.get::<StdLinesResource>(rid)?;
 
     let ret = StdLinesResource::with_lock(&lines, |lines| {
@@ -437,14 +438,14 @@ pub struct RemoveOptions {
 
 #[tauri::command]
 pub fn remove<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<RemoveOptions>,
 ) -> CommandResult<()> {
     let resolved_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         path,
@@ -505,7 +506,7 @@ pub struct RenameOptions {
 
 #[tauri::command]
 pub fn rename<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     old_path: SafePathBuf,
@@ -513,14 +514,14 @@ pub fn rename<R: Runtime>(
     options: Option<RenameOptions>,
 ) -> CommandResult<()> {
     let resolved_old_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         old_path,
         options.as_ref().and_then(|o| o.old_path_base_dir),
     )?;
     let resolved_new_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         new_path,
@@ -546,14 +547,14 @@ pub enum SeekMode {
 }
 
 #[tauri::command]
-pub fn seek<R: Runtime>(
-    app: AppHandle<R>,
+pub async fn seek<R: Runtime>(
+    webview: Webview<R>,
     rid: ResourceId,
     offset: i64,
     whence: SeekMode,
 ) -> CommandResult<u64> {
     use std::io::{Seek, SeekFrom};
-    let file = app.resources_table().get::<StdFileResource>(rid)?;
+    let file = webview.resources_table().get::<StdFileResource>(rid)?;
     StdFileResource::with_lock(&file, |mut file| {
         file.seek(match whence {
             SeekMode::Start => SeekFrom::Start(offset as u64),
@@ -567,14 +568,14 @@ pub fn seek<R: Runtime>(
 
 #[tauri::command]
 pub fn stat<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
     let resolved_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         path,
@@ -591,14 +592,14 @@ pub fn stat<R: Runtime>(
 
 #[tauri::command]
 pub fn lstat<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
     let resolved_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         path,
@@ -614,16 +615,16 @@ pub fn lstat<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn fstat<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> CommandResult<FileInfo> {
-    let file = app.resources_table().get::<StdFileResource>(rid)?;
+pub fn fstat<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> CommandResult<FileInfo> {
+    let file = webview.resources_table().get::<StdFileResource>(rid)?;
     let metadata = StdFileResource::with_lock(&file, |file| file.metadata())
         .map_err(|e| format!("failed to get metadata of file with error: {e}"))?;
     Ok(get_stat(metadata))
 }
 
 #[tauri::command]
-pub fn truncate<R: Runtime>(
-    app: AppHandle<R>,
+pub async fn truncate<R: Runtime>(
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
@@ -631,7 +632,7 @@ pub fn truncate<R: Runtime>(
     options: Option<BaseOptions>,
 ) -> CommandResult<()> {
     let resolved_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         path,
@@ -657,24 +658,24 @@ pub fn truncate<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn ftruncate<R: Runtime>(
-    app: AppHandle<R>,
+pub async fn ftruncate<R: Runtime>(
+    webview: Webview<R>,
     rid: ResourceId,
     len: Option<u64>,
 ) -> CommandResult<()> {
-    let file = app.resources_table().get::<StdFileResource>(rid)?;
+    let file = webview.resources_table().get::<StdFileResource>(rid)?;
     StdFileResource::with_lock(&file, |file| file.set_len(len.unwrap_or(0)))
         .map_err(|e| format!("failed to truncate file with error: {e}"))
         .map_err(Into::into)
 }
 
 #[tauri::command]
-pub fn write<R: Runtime>(
-    app: AppHandle<R>,
+pub async fn write<R: Runtime>(
+    webview: Webview<R>,
     rid: ResourceId,
     data: Vec<u8>,
 ) -> CommandResult<usize> {
-    let file = app.resources_table().get::<StdFileResource>(rid)?;
+    let file = webview.resources_table().get::<StdFileResource>(rid)?;
     StdFileResource::with_lock(&file, |mut file| file.write(&data))
         .map_err(|e| format!("failed to write bytes to file with error: {e}"))
         .map_err(Into::into)
@@ -700,7 +701,7 @@ fn default_create_value() -> bool {
 }
 
 fn write_file_inner<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     global_scope: &GlobalScope<Entry>,
     command_scope: &CommandScope<Entry>,
     path: SafePathBuf,
@@ -708,7 +709,7 @@ fn write_file_inner<R: Runtime>(
     options: Option<WriteFileOptions>,
 ) -> CommandResult<()> {
     let resolved_path = resolve_path(
-        &app,
+        &webview,
         global_scope,
         command_scope,
         path,
@@ -752,20 +753,36 @@ fn write_file_inner<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn write_file<R: Runtime>(
-    app: AppHandle<R>,
+pub async fn write_file<R: Runtime>(
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
-    data: Vec<u8>,
-    options: Option<WriteFileOptions>,
+    request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
-    write_file_inner(app, &global_scope, &command_scope, path, &data, options)
+    if let tauri::ipc::InvokeBody::Raw(data) = request.body() {
+        let path = request
+            .headers()
+            .get("path")
+            .ok_or_else(|| anyhow::anyhow!("missing file path").into())
+            .and_then(|p| {
+                p.to_str()
+                    .map_err(|e| anyhow::anyhow!("invalid path: {e}").into())
+            })
+            .and_then(|p| SafePathBuf::new(p.into()).map_err(CommandError::from))?;
+        let options = request
+            .headers()
+            .get("options")
+            .and_then(|p| p.to_str().ok())
+            .and_then(|opts| serde_json::from_str(opts).ok());
+        write_file_inner(webview, &global_scope, &command_scope, path, data, options)
+    } else {
+        Err(anyhow::anyhow!("unexpected invoke body").into())
+    }
 }
 
 #[tauri::command]
-pub fn write_text_file<R: Runtime>(
-    app: AppHandle<R>,
+pub async fn write_text_file<R: Runtime>(
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
@@ -773,7 +790,7 @@ pub fn write_text_file<R: Runtime>(
     options: Option<WriteFileOptions>,
 ) -> CommandResult<()> {
     write_file_inner(
-        app,
+        webview,
         &global_scope,
         &command_scope,
         path,
@@ -784,14 +801,14 @@ pub fn write_text_file<R: Runtime>(
 
 #[tauri::command]
 pub fn exists<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
 ) -> CommandResult<bool> {
     let resolved_path = resolve_path(
-        &app,
+        &webview,
         &global_scope,
         &command_scope,
         path,
@@ -801,7 +818,7 @@ pub fn exists<R: Runtime>(
 }
 
 pub fn resolve_path<R: Runtime>(
-    app: &AppHandle<R>,
+    app: &Webview<R>,
     global_scope: &GlobalScope<Entry>,
     command_scope: &CommandScope<Entry>,
     path: SafePathBuf,

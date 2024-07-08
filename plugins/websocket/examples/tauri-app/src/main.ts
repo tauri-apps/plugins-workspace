@@ -34,13 +34,17 @@ async function connect() {
 
 function send() {
   ws.send(document.querySelector("#msg-input")?.textContent || "")
-    .then(() => _updateResponse("Message sent"))
+    .then(() => {
+      _updateResponse("Message sent");
+    })
     .catch(_updateResponse);
 }
 
 function disconnect() {
   ws.disconnect()
-    .then(() => _updateResponse("Disconnected"))
+    .then(() => {
+      _updateResponse("Disconnected");
+    })
     .catch(_updateResponse);
 }
 

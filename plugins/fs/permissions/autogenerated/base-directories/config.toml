@@ -7,7 +7,7 @@
 
 [[permission]]
 identifier = "scope-config-recursive"
-description = "This scope recursive access to the complete `$CONFIG` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$CONFIG` folder, including sub directories and files."
 
 [[permission.scope.allow]]
 path = "$CONFIG/**"
@@ -63,7 +63,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-config-meta-recursive"
-description = "This allows read access to metadata of the `$CONFIG` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$CONFIG` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-config-recursive"
@@ -71,7 +71,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-config-meta"
-description = "This allows read access to metadata of the `$CONFIG` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$CONFIG` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-config-index"

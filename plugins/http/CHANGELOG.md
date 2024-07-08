@@ -1,5 +1,49 @@
 # Changelog
 
+## \[2.0.0-beta.7]
+
+- [`76daee7a`](https://github.com/tauri-apps/plugins-workspace/commit/76daee7aafece34de3092c86e531cf9eb1138989) ([#1512](https://github.com/tauri-apps/plugins-workspace/pull/1512) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update to tauri beta.23.
+
+## \[2.0.0-beta.6]
+
+- [`0f739dbc`](https://github.com/tauri-apps/plugins-workspace/commit/0f739dbc483a1f091977cbe575c3862fd39f8cf1) ([#1392](https://github.com/tauri-apps/plugins-workspace/pull/1392) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Allow setting `Origin` header when `unsafe-headers` feature flag is active.
+
+## \[2.0.0-beta.5]
+
+- [`9013854f`](https://github.com/tauri-apps/plugins-workspace/commit/9013854f42a49a230b9dbb9d02774765528a923f)([#1382](https://github.com/tauri-apps/plugins-workspace/pull/1382)) Update to tauri beta.22.
+
+## \[2.0.0-beta.4]
+
+- [`9d7ae45b`](https://github.com/tauri-apps/plugins-workspace/commit/9d7ae45b0edf9b22c73e7d7c413a784bb35c3d77)([#1354](https://github.com/tauri-apps/plugins-workspace/pull/1354)) Include headers created by browser if not declared by user, which fixes missing headers like `Content-Type` when using `FormData`.
+- [`430bd6f4`](https://github.com/tauri-apps/plugins-workspace/commit/430bd6f4f379bee5d232ae6b098ae131db7f178a)([#1363](https://github.com/tauri-apps/plugins-workspace/pull/1363)) Update to tauri beta.20.
+
+## \[2.0.0-beta.3]
+
+- [`bd1ed590`](https://github.com/tauri-apps/plugins-workspace/commit/bd1ed5903ffcce5500310dac1e59e8c67674ef1e)([#1237](https://github.com/tauri-apps/plugins-workspace/pull/1237)) Update to tauri beta.17.
+
+## \[2.0.0-beta.6]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.6`
+
+## \[2.0.0-beta.5]
+
+- [`500ff10`](https://github.com/tauri-apps/plugins-workspace/commit/500ff10fbd89fdfc73caf9d153029dad567b4ff1)([#1166](https://github.com/tauri-apps/plugins-workspace/pull/1166)) **Breaking change:** Removed the `default-tls` feature flag. The `rustls-tls`, `http2`, `macos-system-configuration`, and `charset` feature flags are now enabled by default.
+- [`e3d41f4`](https://github.com/tauri-apps/plugins-workspace/commit/e3d41f4011bd3ea3ce281bb38bbe31d3709f8e0f)([#1191](https://github.com/tauri-apps/plugins-workspace/pull/1191)) Internally use the webview scoped resources table instead of the app one, so other webviews can't access other webviews resources.
+- [`7e2fcc5`](https://github.com/tauri-apps/plugins-workspace/commit/7e2fcc5e74df7c3c718e40f75bfb0eafc7d69d8d)([#1146](https://github.com/tauri-apps/plugins-workspace/pull/1146)) Update dependencies to align with tauri 2.0.0-beta.14.
+- [`e3d41f4`](https://github.com/tauri-apps/plugins-workspace/commit/e3d41f4011bd3ea3ce281bb38bbe31d3709f8e0f)([#1191](https://github.com/tauri-apps/plugins-workspace/pull/1191)) Update for tauri 2.0.0-beta.15.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.5`
+
+## \[2.0.0-beta.4]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.4`
+
 ## \[2.0.0-beta.3]
 
 - [`c873e4d`](https://github.com/tauri-apps/plugins-workspace/commit/c873e4d6c74e759742f7c9a88e35cff10a75122a)([#1059](https://github.com/tauri-apps/plugins-workspace/pull/1059)) Fixes scope not allowing subpaths, query parameters and hash when those values are empty.
@@ -112,5 +156,50 @@
   371\)) First v2 alpha release!
   !
   371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+  ub.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  ace/pull/371)) First v2 alpha release!
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+  t v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  ace/pull/371)) First v2 alpha release!
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
   !
   371\)) First v2 alpha release!

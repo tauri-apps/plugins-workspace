@@ -36,7 +36,7 @@ jobs:
     outputs:
       packages: ${{ steps.filter.outputs.changes }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -53,6 +53,9 @@ jobs:
             tauri-plugin-clipboard-manager:
               - .github/workflows/lint-rust.yml
               - plugins/clipboard-manager/**
+            tauri-plugin-deep-link:
+              - .github/workflows/lint-rust.yml
+              - plugins/deep-link/**
             tauri-plugin-dialog:
               - .github/workflows/lint-rust.yml
               - plugins/dialog/**
@@ -127,7 +130,7 @@ jobs:
         package: ${{ fromJSON(needs.changes.outputs.packages) }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: install webkit2gtk and libudev for [authenticator]
         run: |
@@ -161,7 +164,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install rustfmt with nightly toolchain
         uses: dtolnay/rust-toolchain@nightly

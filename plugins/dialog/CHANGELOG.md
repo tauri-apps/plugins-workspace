@@ -1,5 +1,45 @@
 # Changelog
 
+## \[2.0.0-beta.6]
+
+- [`76daee7a`](https://github.com/tauri-apps/plugins-workspace/commit/76daee7aafece34de3092c86e531cf9eb1138989) ([#1512](https://github.com/tauri-apps/plugins-workspace/pull/1512) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update to tauri beta.23.
+
+## \[2.0.0-beta.5]
+
+- [`9013854f`](https://github.com/tauri-apps/plugins-workspace/commit/9013854f42a49a230b9dbb9d02774765528a923f)([#1382](https://github.com/tauri-apps/plugins-workspace/pull/1382)) Update to tauri beta.22.
+
+## \[2.0.0-beta.4]
+
+- [`430bd6f4`](https://github.com/tauri-apps/plugins-workspace/commit/430bd6f4f379bee5d232ae6b098ae131db7f178a)([#1363](https://github.com/tauri-apps/plugins-workspace/pull/1363)) Update to tauri beta.20.
+
+## \[2.0.0-beta.3]
+
+- [`bd1ed590`](https://github.com/tauri-apps/plugins-workspace/commit/bd1ed5903ffcce5500310dac1e59e8c67674ef1e)([#1237](https://github.com/tauri-apps/plugins-workspace/pull/1237)) Update to tauri beta.17.
+
+## \[2.0.0-beta.6]
+
+- [`326df688`](https://github.com/tauri-apps/plugins-workspace/commit/326df6883998d416fc0837583ed972854628bb52)([#1236](https://github.com/tauri-apps/plugins-workspace/pull/1236)) Fixes command argument parsing on iOS.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.6`
+
+## \[2.0.0-beta.5]
+
+- [`bb51a41`](https://github.com/tauri-apps/plugins-workspace/commit/bb51a41d67ebf989e8aedf10c4b1a7f9514d1bdf)([#1168](https://github.com/tauri-apps/plugins-workspace/pull/1168)) **Breaking Change:** All apis that return paths to the frontend will now remove the `\\?\` UNC prefix on Windows.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.5`
+
+## \[2.0.0-beta.4]
+
+- [`4cd8112`](https://github.com/tauri-apps/plugins-workspace/commit/4cd81126fdf25e1847546f8fdbd924aa4bfeabb5)([#1056](https://github.com/tauri-apps/plugins-workspace/pull/1056)) Fixed an issue where dialogs on android would return the Content URI instead of the file path
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-beta.4`
+
 ## \[2.0.0-beta.3]
 
 - [`35ea595`](https://github.com/tauri-apps/plugins-workspace/commit/35ea5956d060f0bdafd140f2541c607bb811805b)([#1073](https://github.com/tauri-apps/plugins-workspace/pull/1073)) Fixed an issue where the dialog apis panicked when they were called with no application windows open.
@@ -106,4 +146,18 @@
   71]\(https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   pull/371)) First v2 alpha release!
   kspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  pull/371)) First v2 alpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+  7ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  pull/371)) First v2 alpha release!
+  71]\(https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  pull/371)) First v2 alpha release!
+  kspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  pull/371)) First v2 alpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+  lpha release!
   pull/371)) First v2 alpha release!

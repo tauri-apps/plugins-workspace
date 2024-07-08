@@ -1,11 +1,12 @@
 [package]
 name = "tauri-plugin-clipboard-manager"
-version = "2.1.0-beta.0"
+version = "2.1.0-beta.5"
 description = "Read and write to the system clipboard."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-clipboard-manager"
 
 [package.metadata.docs.rs]

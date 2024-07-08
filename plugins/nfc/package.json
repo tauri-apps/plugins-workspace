@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-nfc",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.6",
   "license": "MIT or APACHE-2.0",
   "authors": [
     "Tauri Programme within The Commons Conservancy"
@@ -23,10 +23,7 @@
     "README.md",
     "LICENSE"
   ],
-  "devDependencies": {
-    "tslib": "2.6.0"
-  },
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-beta.6"
+    "@tauri-apps/api": "2.0.0-beta.14"
   }
 }

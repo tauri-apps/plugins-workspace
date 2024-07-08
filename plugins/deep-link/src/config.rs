@@ -4,9 +4,8 @@
 
 // This module is also imported in build.rs!
 
-#![allow(dead_code)]
-
 use serde::{Deserialize, Deserializer};
+use tauri_utils::config::DeepLinkProtocol;
 
 #[derive(Deserialize)]
 pub struct AssociatedDomain {
@@ -32,5 +31,18 @@ where
 
 #[derive(Deserialize)]
 pub struct Config {
-    pub domains: Vec<AssociatedDomain>,
+    /// Mobile requires `https://<host>` urls.
+    pub mobile: Vec<AssociatedDomain>,
+    /// Desktop requires urls starting with `<scheme>://`.
+    /// These urls are also active in dev mode on Android.
+    #[allow(unused)] // Used in tauri-bundler
+    pub desktop: DesktopProtocol,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+#[allow(unused)] // Used in tauri-bundler
+pub enum DesktopProtocol {
+    One(DeepLinkProtocol),
+    List(Vec<DeepLinkProtocol>),
 }

@@ -1,11 +1,12 @@
 [package]
 name = "tauri-plugin-fs"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.10"
 description = "Access the file system."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-fs"
 
 [package.metadata.docs.rs]

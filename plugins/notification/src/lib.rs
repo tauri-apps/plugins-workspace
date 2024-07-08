@@ -32,9 +32,6 @@ mod commands;
 mod error;
 mod models;
 
-#[allow(dead_code, unused_imports, deprecated, clippy::derivable_impls)]
-mod notify_rust;
-
 pub use error::{Error, Result};
 
 #[cfg(desktop)]
@@ -211,7 +208,7 @@ impl<R: Runtime> NotificationBuilder<R> {
     }
 }
 
-/// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the notification APIs.
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the notification APIs.
 pub trait NotificationExt<R: Runtime> {
     fn notification(&self) -> &Notification<R>;
 }

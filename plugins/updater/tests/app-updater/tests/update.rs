@@ -40,6 +40,8 @@ fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTa
         .args(["tauri", "build", "--debug", "--verbose"])
         .arg("--config")
         .arg(serde_json::to_string(config).unwrap())
+        .env("TAURI_SIGNING_PRIVATE_KEY", UPDATER_PRIVATE_KEY)
+        .env("TAURI_SIGNING_PRIVATE_KEY_PASSWORD", "")
         .current_dir(cwd);
 
     #[cfg(target_os = "linux")]
@@ -51,10 +53,7 @@ fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTa
         #[cfg(windows)]
         command.args(["--bundles", "msi", "nsis"]);
 
-        command
-            .env("TAURI_SIGNING_PRIVATE_KEY", UPDATER_PRIVATE_KEY)
-            .env("TAURI_SIGNING_PRIVATE_KEY_PASSWORD", "")
-            .args(["--bundles", "updater"]);
+        command.args(["--bundles", "updater"]);
     } else {
         #[cfg(windows)]
         command.args(["--bundles", target.name()]);
@@ -64,7 +63,7 @@ fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTa
         .status()
         .expect("failed to run Tauri CLI to bundle app");
 
-    if !status.code().map(|c| c == 0).unwrap_or(true) {
+    if !status.success() {
         panic!("failed to bundle app {:?}", status.code());
     }
 }

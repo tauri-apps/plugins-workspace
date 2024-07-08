@@ -1,11 +1,12 @@
 [package]
 name = "tauri-plugin-deep-link"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.8"
 description = "Set your Tauri application as the default handler for an URL"
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-deep-link"
 
 [package.metadata.docs.rs]
@@ -16,12 +17,22 @@ targets = [ "x86_64-linux-android" ]
 [build-dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
+tauri-utils = { workspace = true }
 tauri-plugin = { workspace = true, features = [ "build" ] }
 
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
+tauri-utils = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 url = { workspace = true }
+
+[target."cfg(windows)".dependencies]
+dunce = "1"
+windows-registry = "0.2"
+windows-result = "0.2"
+
+[target."cfg(target_os = \"linux\")".dependencies]
+rust-ini = "0.21"

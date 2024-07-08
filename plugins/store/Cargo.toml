@@ -1,11 +1,12 @@
 [package]
 name = "tauri-plugin-store"
-version = "2.0.0-beta.4"
+version = "2.0.0-beta.9"
 description = "Simple, persistent key-value store."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-store"
 
 [package.metadata.docs.rs]
@@ -21,3 +22,4 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
+dunce = { workspace = true }

@@ -10,7 +10,13 @@
 
 import { invoke, Channel } from "@tauri-apps/api/core";
 
-export type ShortcutHandler = (shortcut: string) => void;
+export interface ShortcutEvent {
+  shortcut: string;
+  id: number;
+  state: "Released" | "Pressed";
+}
+
+export type ShortcutHandler = (event: ShortcutEvent) => void;
 
 /**
  * Register a global shortcut or a list of shortcuts.
@@ -25,13 +31,15 @@ export type ShortcutHandler = (shortcut: string) => void;
  * import { register } from '@tauri-apps/plugin-global-shortcut';
  *
  * // register a single hotkey
- * await register('CommandOrControl+Shift+C', () => {
- *   console.log('Shortcut triggered');
+ * await register('CommandOrControl+Shift+C', (event) => {
+ *   if (event.state === "Pressed") {
+ *       console.log('Shortcut triggered');
+ *   }
  * });
  *
  * // or register multiple hotkeys at once
- * await register(['CommandOrControl+Shift+C', 'Alt+A'], (shortcut) => {
- *   console.log(`Shortcut ${shortcut} triggered`);
+ * await register(['CommandOrControl+Shift+C', 'Alt+A'], (event) => {
+ *   console.log(`Shortcut ${event.shortcut} triggered`);
  * });
  * ```
  *
@@ -44,7 +52,7 @@ async function register(
   shortcuts: string | string[],
   handler: ShortcutHandler,
 ): Promise<void> {
-  const h = new Channel<string>();
+  const h = new Channel<ShortcutEvent>();
   h.onmessage = handler;
 
   return await invoke("plugin:global-shortcut|register", {
@@ -85,9 +93,6 @@ async function unregister(shortcuts: string | string[]): Promise<void> {
  * import { unregisterAll } from '@tauri-apps/plugin-global-shortcut';
  * await unregisterAll();
  * ```
- *
- * @param shortcut shortcut definition (modifiers and key separated by "+" e.g. CmdOrControl+Q), also accepts a list of shortcuts
- *
  * @since 2.0.0
  */
 async function unregisterAll(): Promise<void> {

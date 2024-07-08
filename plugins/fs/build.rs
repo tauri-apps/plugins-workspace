@@ -109,7 +109,7 @@ fn main() {
 
 [[permission]]
 identifier = "scope-{lower}-recursive"
-description = "This scope recursive access to the complete `${upper}` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `${upper}` folder, including sub directories and files."
 
 [[permission.scope.allow]]
 path = "${upper}/**"
@@ -165,7 +165,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-{lower}-meta-recursive"
-description = "This allows read access to metadata of the `${upper}` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `${upper}` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-{lower}-recursive"
@@ -173,7 +173,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-{lower}-meta"
-description = "This allows read access to metadata of the `${upper}` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `${upper}` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-{lower}-index"

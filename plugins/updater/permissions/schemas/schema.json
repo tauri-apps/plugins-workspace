@@ -49,7 +49,7 @@
           "minimum": 1.0
         },
         "description": {
-          "description": "Human-readable description of what the permission does.",
+          "description": "Human-readable description of what the permission does. Tauri convention is to use <h4> headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -111,7 +111,7 @@
           "type": "string"
         },
         "description": {
-          "description": "Human-readable description of what the permission does.",
+          "description": "Human-readable description of what the permission does. Tauri internal convention is to use <h4> headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -172,7 +172,7 @@
       }
     },
     "Scopes": {
-      "description": "A restriction of the command/endpoint functionality.\n\nIt can be of any serde serializable type and is used for allowing or preventing certain actions inside a Tauri command.\n\nThe scope is passed to the command and handled/enforced by the command itself.",
+      "description": "An argument for fine grained behavior control of Tauri commands.\n\nIt can be of any serde serializable type and is used to allow or prevent certain actions inside a Tauri command. The configured scope is passed to the command and will be enforced by the command implementation.\n\n## Example\n\n```json { \"allow\": [{ \"path\": \"$HOME/**\" }], \"deny\": [{ \"path\": \"$HOME/secret.txt\" }] } ```",
       "type": "object",
       "properties": {
         "allow": {
@@ -186,7 +186,7 @@
           }
         },
         "deny": {
-          "description": "Data that defines what is denied by the scope.",
+          "description": "Data that defines what is denied by the scope. This should be prioritized by validation logic.",
           "type": [
             "array",
             "null"
@@ -309,6 +309,20 @@
           ]
         },
         {
+          "description": "allow-download -> Enables the download command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-download"
+          ]
+        },
+        {
+          "description": "deny-download -> Denies the download command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-download"
+          ]
+        },
+        {
           "description": "allow-download-and-install -> Enables the download_and_install command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -323,7 +337,21 @@
           ]
         },
         {
-          "description": "default -> Allows checking for new updates and installing them",
+          "description": "allow-install -> Enables the install command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-install"
+          ]
+        },
+        {
+          "description": "deny-install -> Denies the install command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-install"
+          ]
+        },
+        {
+          "description": "default -> This permission set configures which kind of\nupdater functions are exposed to the frontend.\n\n#### Granted Permissions\n\nThe full workflow from checking for updates to installing them\nis enabled.\n\n",
           "type": "string",
           "enum": [
             "default"

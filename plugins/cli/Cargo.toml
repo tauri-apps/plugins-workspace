@@ -1,11 +1,12 @@
 [package]
 name = "tauri-plugin-cli"
-version = "2.0.0-beta.3"
+version = "2.0.0-beta.7"
 description = "Parse arguments from your Tauri application's command line interface."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-cli"
 
 [package.metadata.docs.rs]

@@ -1,0 +1,20 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = """
+# Tauri SQL Default Permissions
+
+This permission set configures what kind of
+database operations are available from the sql plugin.
+
+### Granted Permissions
+
+All reading related operations are enabled.
+Also allows to load or close a connection.
+
+"""
+permissions = [
+  "allow-close",
+  "allow-load",
+  "allow-select",
+]

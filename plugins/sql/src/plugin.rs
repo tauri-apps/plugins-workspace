@@ -19,6 +19,7 @@ use tauri::{
 };
 use tokio::sync::Mutex;
 
+use indexmap::IndexMap;
 use std::collections::HashMap;
 
 #[cfg(feature = "sqlite")]
@@ -86,7 +87,7 @@ fn path_mapper(mut app_path: PathBuf, connection_string: &str) -> String {
 }
 
 #[derive(Default)]
-struct DbInstances(Mutex<HashMap<String, Pool<Db>>>);
+pub struct DbInstances(pub Mutex<HashMap<String, Pool<Db>>>);
 
 struct Migrations(Mutex<HashMap<String, MigrationList>>);
 
@@ -233,7 +234,7 @@ async fn select(
     db: String,
     query: String,
     values: Vec<JsonValue>,
-) -> Result<Vec<HashMap<String, JsonValue>>> {
+) -> Result<Vec<IndexMap<String, JsonValue>>> {
     let mut instances = db_instances.0.lock().await;
     let db = instances.get_mut(&db).ok_or(Error::DatabaseNotLoaded(db))?;
     let mut query = sqlx::query(&query);
@@ -251,7 +252,7 @@ async fn select(
     let rows = query.fetch_all(&*db).await?;
     let mut values = Vec::new();
     for row in rows {
-        let mut value = HashMap::default();
+        let mut value = IndexMap::default();
         for (i, column) in row.columns().iter().enumerate() {
             let v = row.try_get_raw(i)?;
 

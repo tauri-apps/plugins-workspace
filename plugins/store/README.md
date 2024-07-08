@@ -59,15 +59,20 @@ fn main() {
 
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
-```javascript
-import { Store } from "@tauri-apps/plugin-store";
+```typescript
+import { Store } from "tauri-plugin-store-api";
 
 const store = new Store(".settings.dat");
 
 await store.set("some-key", { value: 5 });
 
-const val = await store.get("some-key");
-assert(val, { value: 5 });
+const val = await store.get<{ value: number }>("some-key");
+
+if (val) {
+  console.log(val);
+} else {
+  console.log("val is null");
+}
 
 // This manually saves the store.
 await store.save();
@@ -122,7 +127,7 @@ fn main() {
 
 ### Loading Gracefully
 
-If you call `load` on a `Store` that hasn't yet been written to the desk, it will return an error. You must handle this error if you want to gracefully continue and use the default store until you save it to the disk. The example above shows how to do this.
+If you call `load` on a `Store` that hasn't yet been written to the disk, it will return an error. You must handle this error if you want to gracefully continue and use the default store until you save it to the disk. The example above shows how to do this.
 
 For example, this would cause a panic if the store has not yet been created:
 

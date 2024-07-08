@@ -29,7 +29,7 @@ pub use config::Config;
 pub use error::{Error, Result};
 pub use updater::*;
 
-/// Extension trait to use the updater on [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`].
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the updater APIs.
 pub trait UpdaterExt<R: Runtime> {
     /// Gets the updater builder to build and updater
     /// that can manually check if an update is available.
@@ -81,7 +81,7 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
 
         let args = self.env().args_os;
         if !args.is_empty() {
-            builder = builder.installer_arg("/ARGS").installer_args(args);
+            builder = builder.current_exe_args(args);
         }
 
         #[cfg(any(
@@ -179,7 +179,9 @@ impl Builder {
             })
             .invoke_handler(tauri::generate_handler![
                 commands::check,
-                commands::download_and_install
+                commands::download,
+                commands::install,
+                commands::download_and_install,
             ])
             .build()
     }

@@ -7,16 +7,18 @@
  *
  * ## Security
  *
- * This API has a scope configuration that forces you to restrict the URLs and paths that can be accessed using glob patterns.
+ * This API has a scope configuration that forces you to restrict the URLs that can be accessed using glob patterns.
  *
- * For instance, this scope configuration only allows making HTTP requests to the GitHub API for the `tauri-apps` organization:
+ * For instance, this scope configuration only allows making HTTP requests to all subdomains for `tauri.app` except for `https://private.tauri.app`:
  * ```json
  * {
- *   "plugins": {
- *     "http": {
- *       "scope": ["https://api.github.com/repos/tauri-apps/*"]
+ *   "permissions": [
+ *     {
+ *       "identifier": "http:default",
+ *       "allow": [{ "url": "https://*.tauri.app" }],
+ *       "deny": [{ "url": "https://private.tauri.app" }]
  *     }
- *   }
+ *   ]
  * }
  * ```
  * Trying to execute any API with a URL not configured on the scope results in a promise rejection due to denied access.
@@ -31,7 +33,7 @@ import { invoke } from "@tauri-apps/api/core";
  *
  * @since 2.0.0
  */
-export type Proxy = {
+export interface Proxy {
   /**
    * Proxy all traffic to the passed URL.
    */
@@ -44,7 +46,7 @@ export type Proxy = {
    * Proxy all HTTPS traffic to the passed URL.
    */
   https?: string | ProxyConfig;
-};
+}
 
 export interface ProxyConfig {
   /**
@@ -59,7 +61,7 @@ export interface ProxyConfig {
     password: string;
   };
   /**
-   * A configuration for filtering out requests that shouldn’t be proxied.
+   * A configuration for filtering out requests that shouldn't be proxied.
    * Entries are expected to be comma-separated (whitespace between entries is ignored)
    */
   noProxy?: string;
@@ -115,31 +117,48 @@ export async function fetch(
 
   const signal = init?.signal;
 
-  const headers = !init?.headers
-    ? []
-    : init.headers instanceof Headers
-      ? Array.from(init.headers.entries())
-      : Array.isArray(init.headers)
-        ? init.headers
-        : Object.entries(init.headers);
-
-  const mappedHeaders: [string, string][] = headers.map(([name, val]) => [
-    name,
-    // we need to ensure we have all values as strings
-    // eslint-disable-next-line
-    typeof val === "string" ? val : (val as any).toString(),
-  ]);
+  const headers = init?.headers
+    ? init.headers instanceof Headers
+      ? init.headers
+      : new Headers(init.headers)
+    : new Headers();
 
   const req = new Request(input, init);
   const buffer = await req.arrayBuffer();
-  const reqData = buffer.byteLength ? Array.from(new Uint8Array(buffer)) : null;
+  const data =
+    buffer.byteLength !== 0 ? Array.from(new Uint8Array(buffer)) : null;
+
+  // append new headers created by the browser `Request` implementation,
+  // if not already declared by the caller of this function
+  for (const [key, value] of req.headers) {
+    if (!headers.get(key)) {
+      headers.set(key, value);
+    }
+  }
+
+  const headersArray =
+    headers instanceof Headers
+      ? Array.from(headers.entries())
+      : Array.isArray(headers)
+        ? headers
+        : Object.entries(headers);
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const mappedHeaders: Array<[string, string]> = headersArray.map(
+    ([name, val]) => [
+      name,
+      // we need to ensure we have all header values as strings
+      // eslint-disable-next-line
+      typeof val === "string" ? val : (val as any).toString(),
+    ],
+  );
 
   const rid = await invoke<number>("plugin:http|fetch", {
     clientConfig: {
       method: req.method,
       url: req.url,
       headers: mappedHeaders,
-      data: reqData,
+      data,
       maxRedirections,
       connectTimeout,
       proxy,
@@ -147,7 +166,7 @@ export async function fetch(
   });
 
   signal?.addEventListener("abort", () => {
-    invoke("plugin:http|fetch_cancel", {
+    void invoke("plugin:http|fetch_cancel", {
       rid,
     });
   });
@@ -178,9 +197,9 @@ export async function fetch(
   );
 
   const res = new Response(
-    body instanceof ArrayBuffer && body.byteLength
+    body instanceof ArrayBuffer && body.byteLength !== 0
       ? body
-      : body instanceof Array && body.length
+      : body instanceof Array && body.length > 0
         ? new Uint8Array(body)
         : null,
     {
@@ -190,8 +209,16 @@ export async function fetch(
     },
   );
 
-  // url is read only but seems like we can do this
+  // url and headers are read only properties
+  // but seems like we can set them like this
+  //
+  // we define theme like this, because using `Response`
+  // constructor, it removes url and some headers
+  // like `set-cookie` headers
   Object.defineProperty(res, "url", { value: url });
+  Object.defineProperty(res, "headers", {
+    value: new Headers(responseHeaders),
+  });
 
   return res;
 }

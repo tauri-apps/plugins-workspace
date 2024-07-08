@@ -7,7 +7,7 @@
 
 [[permission]]
 identifier = "scope-audio-recursive"
-description = "This scope recursive access to the complete `$AUDIO` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$AUDIO` folder, including sub directories and files."
 
 [[permission.scope.allow]]
 path = "$AUDIO/**"
@@ -63,7 +63,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-audio-meta-recursive"
-description = "This allows read access to metadata of the `$AUDIO` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$AUDIO` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-audio-recursive"
@@ -71,7 +71,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-audio-meta"
-description = "This allows read access to metadata of the `$AUDIO` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$AUDIO` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-audio-index"

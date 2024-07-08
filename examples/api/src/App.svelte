@@ -36,7 +36,7 @@
     });
   }
 
-  getCurrentWebview().onFileDropEvent((event) => {
+  getCurrentWebview().onDragDropEvent((event) => {
     onMessage(`File drop: ${JSON.stringify(event.payload)}`);
   });
 

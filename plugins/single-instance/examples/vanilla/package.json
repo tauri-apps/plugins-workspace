@@ -4,11 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "tauri": "tauri"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@tauri-apps/cli": "2.0.0-beta.9"
+    "@tauri-apps/cli": "2.0.0-beta.21"
   }
 }

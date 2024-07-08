@@ -8,10 +8,11 @@ edition = "2021"
 rust-version = "1.75"
 
 [dependencies]
-serde_json = { workspace = true }
 serde = { workspace = true }
+serde_json = { workspace = true }
 tauri = { workspace = true }
 tauri-plugin-single-instance = { path = "../../../" }
+tauri-plugin-cli = { path = "../../../../cli" }
 
 [build-dependencies]
 tauri-build = { workspace = true }

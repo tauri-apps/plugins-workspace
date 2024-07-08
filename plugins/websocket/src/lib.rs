@@ -20,14 +20,17 @@ use tauri::{
     Manager, Runtime, State, Window,
 };
 use tokio::{net::TcpStream, sync::Mutex};
+#[cfg(any(feature = "rustls-tls", feature = "native-tls"))]
+use tokio_tungstenite::connect_async_tls_with_config;
+#[cfg(not(any(feature = "rustls-tls", feature = "native-tls")))]
+use tokio_tungstenite::connect_async_with_config;
 use tokio_tungstenite::{
-    connect_async_with_config,
     tungstenite::{
         client::IntoClientRequest,
         protocol::{CloseFrame as ProtocolCloseFrame, WebSocketConfig},
         Message,
     },
-    MaybeTlsStream, WebSocketStream,
+    Connector, MaybeTlsStream, WebSocketStream,
 };
 
 use std::collections::HashMap;
@@ -61,6 +64,9 @@ impl Serialize for Error {
 
 #[derive(Default)]
 struct ConnectionManager(Mutex<HashMap<Id, WebSocketWriter>>);
+
+#[cfg(any(feature = "rustls-tls", feature = "native-tls"))]
+struct TlsConnector(Mutex<Option<Connector>>);
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -125,6 +131,17 @@ async fn connect<R: Runtime>(
         }
     }
 
+    #[cfg(any(feature = "rustls-tls", feature = "native-tls"))]
+    let tls_connector = match window.try_state::<TlsConnector>() {
+        Some(tls_connector) => tls_connector.0.lock().await.clone(),
+        None => None,
+    };
+
+    #[cfg(any(feature = "rustls-tls", feature = "native-tls"))]
+    let (ws_stream, _) =
+        connect_async_tls_with_config(request, config.map(Into::into), false, tls_connector)
+            .await?;
+    #[cfg(not(any(feature = "rustls-tls", feature = "native-tls")))]
     let (ws_stream, _) = connect_async_with_config(request, config.map(Into::into), false).await?;
 
     tauri::async_runtime::spawn(async move {
@@ -199,11 +216,35 @@ async fn send(
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    PluginBuilder::new("websocket")
-        .invoke_handler(tauri::generate_handler![connect, send])
-        .setup(|app, _api| {
-            app.manage(ConnectionManager::default());
-            Ok(())
-        })
-        .build()
+    Builder::default().build()
+}
+
+#[derive(Default)]
+pub struct Builder {
+    tls_connector: Option<Connector>,
+}
+
+impl Builder {
+    pub fn new() -> Self {
+        Self {
+            tls_connector: None,
+        }
+    }
+
+    pub fn tls_connector(mut self, connector: Connector) -> Self {
+        self.tls_connector.replace(connector);
+        self
+    }
+
+    pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
+        PluginBuilder::new("websocket")
+            .invoke_handler(tauri::generate_handler![connect, send])
+            .setup(|app, _api| {
+                app.manage(ConnectionManager::default());
+                #[cfg(any(feature = "rustls-tls", feature = "native-tls"))]
+                app.manage(TlsConnector(Mutex::new(self.tls_connector)));
+                Ok(())
+            })
+            .build()
+    }
 }

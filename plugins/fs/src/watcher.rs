@@ -8,7 +8,7 @@ use serde::Deserialize;
 use tauri::{
     ipc::{Channel, CommandScope, GlobalScope},
     path::{BaseDirectory, SafePathBuf},
-    AppHandle, Manager, Resource, ResourceId, Runtime,
+    Manager, Resource, ResourceId, Runtime, Webview,
 };
 
 use std::{
@@ -82,7 +82,7 @@ pub struct WatchOptions {
 
 #[tauri::command]
 pub async fn watch<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     paths: Vec<SafePathBuf>,
     options: WatchOptions,
     on_event: Channel,
@@ -92,7 +92,7 @@ pub async fn watch<R: Runtime>(
     let mut resolved_paths = Vec::with_capacity(paths.capacity());
     for path in paths {
         resolved_paths.push(resolve_path(
-            &app,
+            &webview,
             &global_scope,
             &command_scope,
             path,
@@ -100,7 +100,7 @@ pub async fn watch<R: Runtime>(
         )?);
     }
 
-    let mode = if options.recursive {
+    let recursive_mode = if options.recursive {
         RecursiveMode::Recursive
     } else {
         RecursiveMode::NonRecursive
@@ -110,7 +110,8 @@ pub async fn watch<R: Runtime>(
         let (tx, rx) = channel();
         let mut debouncer = new_debouncer(Duration::from_millis(delay), None, tx)?;
         for path in &resolved_paths {
-            debouncer.watcher().watch(path.as_ref(), mode)?;
+            debouncer.watcher().watch(path.as_ref(), recursive_mode)?;
+            debouncer.cache().add_root(path, recursive_mode);
         }
         watch_debounced(on_event, rx);
         WatcherKind::Debouncer(debouncer)
@@ -118,13 +119,13 @@ pub async fn watch<R: Runtime>(
         let (tx, rx) = channel();
         let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
         for path in &resolved_paths {
-            watcher.watch(path.as_ref(), mode)?;
+            watcher.watch(path.as_ref(), recursive_mode)?;
         }
         watch_raw(on_event, rx);
         WatcherKind::Watcher(watcher)
     };
 
-    let rid = app
+    let rid = webview
         .resources_table()
         .add(WatcherResource::new(kind, resolved_paths));
 
@@ -132,8 +133,8 @@ pub async fn watch<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn unwatch<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> CommandResult<()> {
-    let watcher = app.resources_table().take::<WatcherResource>(rid)?;
+pub async fn unwatch<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> CommandResult<()> {
+    let watcher = webview.resources_table().take::<WatcherResource>(rid)?;
     WatcherResource::with_lock(&watcher, |watcher| {
         match &mut watcher.kind {
             WatcherKind::Debouncer(ref mut debouncer) => {

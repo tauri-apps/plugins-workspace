@@ -7,7 +7,7 @@
 
 [[permission]]
 identifier = "scope-cache-recursive"
-description = "This scope recursive access to the complete `$CACHE` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$CACHE` folder, including sub directories and files."
 
 [[permission.scope.allow]]
 path = "$CACHE/**"
@@ -63,7 +63,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-cache-meta-recursive"
-description = "This allows read access to metadata of the `$CACHE` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$CACHE` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-cache-recursive"
@@ -71,7 +71,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-cache-meta"
-description = "This allows read access to metadata of the `$CACHE` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$CACHE` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-cache-index"

@@ -115,6 +115,7 @@ class BiometricPlugin(private val activity: Activity): Plugin(activity) {
         val biometryResult = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             manager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
         } else {
+            @Suppress("DEPRECATION")
             manager.canAuthenticate()
         }
         val ret = JSObject()

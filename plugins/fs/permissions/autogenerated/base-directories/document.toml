@@ -7,7 +7,7 @@
 
 [[permission]]
 identifier = "scope-document-recursive"
-description = "This scope recursive access to the complete `$DOCUMENT` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$DOCUMENT` folder, including sub directories and files."
 
 [[permission.scope.allow]]
 path = "$DOCUMENT/**"
@@ -63,7 +63,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-document-meta-recursive"
-description = "This allows read access to metadata of the `$DOCUMENT` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$DOCUMENT` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-document-recursive"
@@ -71,7 +71,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-document-meta"
-description = "This allows read access to metadata of the `$DOCUMENT` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$DOCUMENT` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-document-index"

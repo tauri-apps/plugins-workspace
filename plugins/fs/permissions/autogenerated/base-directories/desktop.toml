@@ -7,7 +7,7 @@
 
 [[permission]]
 identifier = "scope-desktop-recursive"
-description = "This scope recursive access to the complete `$DESKTOP` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$DESKTOP` folder, including sub directories and files."
 
 [[permission.scope.allow]]
 path = "$DESKTOP/**"
@@ -63,7 +63,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-desktop-meta-recursive"
-description = "This allows read access to metadata of the `$DESKTOP` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$DESKTOP` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-desktop-recursive"
@@ -71,7 +71,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-desktop-meta"
-description = "This allows read access to metadata of the `$DESKTOP` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$DESKTOP` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-desktop-index"

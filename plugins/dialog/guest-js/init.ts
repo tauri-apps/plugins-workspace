@@ -5,14 +5,14 @@
 import { invoke } from "@tauri-apps/api/core";
 
 window.alert = function (message: string) {
-  invoke("plugin:dialog|message", {
+  void invoke("plugin:dialog|message", {
     message: message.toString(),
   });
 };
 
 // @ts-expect-error tauri does not have sync IPC :(
-window.confirm = function (message: string) {
-  return invoke("plugin:dialog|confirm", {
+window.confirm = async function (message: string) {
+  return await invoke("plugin:dialog|confirm", {
     message: message.toString(),
   });
 };

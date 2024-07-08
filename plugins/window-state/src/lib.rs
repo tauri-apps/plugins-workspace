@@ -16,20 +16,24 @@ use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, Window,
-    WindowEvent,
+    LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime,
+    WebviewWindow, Window, WindowEvent,
 };
 
 use std::{
     collections::{HashMap, HashSet},
     fs::{create_dir_all, File},
-    io::Write,
     sync::{Arc, Mutex},
 };
 
 mod cmd;
 
-pub const STATE_FILENAME: &str = ".window-state";
+type LabelMapperFn = dyn Fn(&str) -> &str + Send + Sync;
+
+/// Default filename used to store window state.
+///
+/// If using a custom filename, you should probably use [`AppHandleExt::filename`] instead.
+pub const DEFAULT_FILENAME: &str = ".window-state.json";
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -38,7 +42,7 @@ pub enum Error {
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
     #[error(transparent)]
-    Bincode(#[from] Box<bincode::ErrorKind>),
+    SerdeJson(#[from] serde_json::Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -59,6 +63,11 @@ impl Default for StateFlags {
     fn default() -> Self {
         Self::all()
     }
+}
+
+struct PluginState {
+    filename: String,
+    map_label: Option<Box<LabelMapperFn>>,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
@@ -99,30 +108,43 @@ struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
 pub trait AppHandleExt {
     /// Saves all open windows state to disk
     fn save_window_state(&self, flags: StateFlags) -> Result<()>;
+    /// Get the name of the file used to store window state.
+    fn filename(&self) -> String;
 }
 
 impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
     fn save_window_state(&self, flags: StateFlags) -> Result<()> {
         if let Ok(app_dir) = self.path().app_config_dir() {
-            let state_path = app_dir.join(STATE_FILENAME);
+            let plugin_state = self.state::<PluginState>();
+            let state_path = app_dir.join(&plugin_state.filename);
+            let windows = self.webview_windows();
             let cache = self.state::<WindowStateCache>();
             let mut state = cache.0.lock().unwrap();
+
             for (label, s) in state.iter_mut() {
-                if let Some(window) = self.get_webview_window(label) {
-                    window.as_ref().window().update_state(s, flags)?;
+                let window = match &plugin_state.map_label {
+                    Some(map) => windows
+                        .iter()
+                        .find_map(|(l, window)| (map(l) == label).then_some(window)),
+                    None => windows.get(label),
+                };
+
+                if let Some(window) = window {
+                    window.update_state(s, flags)?;
                 }
             }
 
             create_dir_all(&app_dir)
                 .map_err(Error::Io)
                 .and_then(|_| File::create(state_path).map_err(Into::into))
-                .and_then(|mut f| {
-                    f.write_all(&bincode::serialize(&*state).map_err(Error::Bincode)?)
-                        .map_err(Into::into)
-                })
+                .and_then(|mut f| serde_json::to_writer_pretty(&mut f, &*state).map_err(Into::into))
         } else {
             Ok(())
         }
+    }
+
+    fn filename(&self) -> String {
+        self.state::<PluginState>().filename.clone()
     }
 }
 
@@ -131,19 +153,29 @@ pub trait WindowExt {
     fn restore_state(&self, flags: StateFlags) -> tauri::Result<()>;
 }
 
+impl<R: Runtime> WindowExt for WebviewWindow<R> {
+    fn restore_state(&self, flags: StateFlags) -> tauri::Result<()> {
+        self.as_ref().window().restore_state(flags)
+    }
+}
 impl<R: Runtime> WindowExt for Window<R> {
     fn restore_state(&self, flags: StateFlags) -> tauri::Result<()> {
+        let plugin_state = self.app_handle().state::<PluginState>();
+        let label = plugin_state
+            .map_label
+            .as_ref()
+            .map(|map| map(self.label()))
+            .unwrap_or_else(|| self.label());
+
         let cache = self.state::<WindowStateCache>();
         let mut c = cache.0.lock().unwrap();
 
         let mut should_show = true;
 
-        if let Some(state) = c.get(self.label()) {
-            // avoid restoring the default zeroed state
-            if *state == WindowState::default() {
-                return Ok(());
-            }
-
+        if let Some(state) = c
+            .get(label)
+            .filter(|state| state != &&WindowState::default())
+        {
             if flags.contains(StateFlags::DECORATIONS) {
                 self.set_decorations(state.decorated)?;
             }
@@ -222,7 +254,7 @@ impl<R: Runtime> WindowExt for Window<R> {
                 metadata.fullscreen = self.is_fullscreen()?;
             }
 
-            c.insert(self.label().into(), metadata);
+            c.insert(label.into(), metadata);
         }
 
         if flags.contains(StateFlags::VISIBLE) && should_show {
@@ -236,6 +268,12 @@ impl<R: Runtime> WindowExt for Window<R> {
 
 trait WindowExtInternal {
     fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()>;
+}
+
+impl<R: Runtime> WindowExtInternal for WebviewWindow<R> {
+    fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()> {
+        self.as_ref().window().update_state(state, flags)
+    }
 }
 
 impl<R: Runtime> WindowExtInternal for Window<R> {
@@ -290,6 +328,8 @@ pub struct Builder {
     denylist: HashSet<String>,
     skip_initial_state: HashSet<String>,
     state_flags: StateFlags,
+    map_label: Option<Box<LabelMapperFn>>,
+    filename: Option<String>,
 }
 
 impl Builder {
@@ -300,6 +340,12 @@ impl Builder {
     /// Sets the state flags to control what state gets restored and saved.
     pub fn with_state_flags(mut self, flags: StateFlags) -> Self {
         self.state_flags = flags;
+        self
+    }
+
+    /// Sets a custom filename to use when saving and restoring window states from disk.
+    pub fn with_filename(mut self, filename: impl Into<String>) -> Self {
+        self.filename.replace(filename.into());
         self
     }
 
@@ -316,46 +362,73 @@ impl Builder {
         self
     }
 
+    /// Transforms the window label when saving the window state.
+    ///
+    /// This can be used to group different windows to use the same state.
+    pub fn map_label<F>(mut self, map_fn: F) -> Self
+    where
+        F: Fn(&str) -> &str + Sync + Send + 'static,
+    {
+        self.map_label = Some(Box::new(map_fn));
+        self
+    }
+
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let flags = self.state_flags;
+        let filename = self.filename.unwrap_or_else(|| DEFAULT_FILENAME.into());
+        let map_label = self.map_label;
+
         PluginBuilder::new("window-state")
             .invoke_handler(tauri::generate_handler![
                 cmd::save_window_state,
-                cmd::restore_state
+                cmd::restore_state,
+                cmd::filename
             ])
             .setup(|app, _api| {
-                let cache: Arc<Mutex<HashMap<String, WindowState>>> = if let Ok(app_dir) =
-                    app.path().app_config_dir()
-                {
-                    let state_path = app_dir.join(STATE_FILENAME);
-                    if state_path.exists() {
-                        Arc::new(Mutex::new(
-                            std::fs::read(state_path)
-                                .map_err(Error::from)
-                                .and_then(|state| bincode::deserialize(&state).map_err(Into::into))
-                                .unwrap_or_default(),
-                        ))
+                let cache: Arc<Mutex<HashMap<String, WindowState>>> =
+                    if let Ok(app_dir) = app.path().app_config_dir() {
+                        let state_path = app_dir.join(&filename);
+                        if state_path.exists() {
+                            Arc::new(Mutex::new(
+                                std::fs::read(state_path)
+                                    .map_err(Error::from)
+                                    .and_then(|state| {
+                                        serde_json::from_slice(&state).map_err(Into::into)
+                                    })
+                                    .unwrap_or_default(),
+                            ))
+                        } else {
+                            Default::default()
+                        }
                     } else {
                         Default::default()
-                    }
-                } else {
-                    Default::default()
-                };
+                    };
                 app.manage(WindowStateCache(cache));
+                app.manage(PluginState {
+                    filename,
+                    map_label,
+                });
                 Ok(())
             })
             .on_window_ready(move |window| {
-                if self.denylist.contains(window.label()) {
+                let plugin_state = window.app_handle().state::<PluginState>();
+                let label = plugin_state
+                    .map_label
+                    .as_ref()
+                    .map(|map| map(window.label()))
+                    .unwrap_or_else(|| window.label());
+
+                if self.denylist.contains(label) {
                     return;
                 }
 
-                if !self.skip_initial_state.contains(window.label()) {
+                if !self.skip_initial_state.contains(label) {
                     let _ = window.restore_state(self.state_flags);
                 }
 
                 let cache = window.state::<WindowStateCache>();
                 let cache = cache.0.clone();
-                let label = window.label().to_string();
+                let label = label.to_string();
                 let window_clone = window.clone();
                 let flags = self.state_flags;
 
