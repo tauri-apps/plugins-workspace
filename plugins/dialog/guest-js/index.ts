@@ -163,7 +163,6 @@ type OpenDialogReturn<T extends OpenDialogOptions> = T["directory"] extends true
  * @since 2.0.0
  */
 async function open<T extends OpenDialogOptions>(
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   options: T = {} as T,
 ): Promise<OpenDialogReturn<T>> {
   if (typeof options === "object") {

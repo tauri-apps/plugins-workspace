@@ -72,7 +72,7 @@ class Update extends Resource {
   /** Install downloaded updater package */
   async install(): Promise<void> {
     if (!this.downloadedBytes) {
-      throw "Update.install called before Update.download";
+      throw new Error("Update.install called before Update.download");
     }
 
     await invoke("plugin:updater|install", {

@@ -364,10 +364,8 @@ async function requestPermission(): Promise<Permission> {
  */
 function sendNotification(options: Options | string): void {
   if (typeof options === "string") {
-    // eslint-disable-next-line no-new
     new window.Notification(options);
   } else {
-    // eslint-disable-next-line no-new
     new window.Notification(options.title, options);
   }
 }

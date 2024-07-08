@@ -1,0 +1,31 @@
+"$schema" = "schemas/schema.json"
+
+[[permission]]
+identifier = "read-app-specific-dirs-recursive"
+description = """
+This permission allows recursive read functionality on the application
+specific base directories. 
+"""
+commands.allow = [
+    "read_dir",
+    "read_file",
+    "read_text_file",
+    "read_text_file_lines",
+    "read_text_file_lines_next",
+    "exists",
+]
+
+[[permission.scope.allow]]
+path = "$APPCONFIG/**"
+
+[[permission.scope.allow]]
+path = "$APPDATA/**"
+
+[[permission.scope.allow]]
+path = "$APPLOCALDATA/**"
+
+[[permission.scope.allow]]
+path = "$APPCACHE/**"
+
+[[permission.scope.allow]]
+path = "$APPLOG/**"

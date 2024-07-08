@@ -92,7 +92,11 @@ class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
     val clipData = when (args) {
       is WriteOptions.PlainText -> {
         ClipData.newPlainText(args.label, args.text)
+      } else -> {
+        invoke.reject("Invalid write options provided")
+        return
       }
+
     }
 
     manager.setPrimaryClip(clipData)
@@ -119,5 +123,13 @@ class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
     }
 
     invoke.resolveObject(data)
+  }
+
+  @Command
+  fun clear(invoke: Invoke) {
+      if (manager.hasPrimaryClip()) {
+          manager.clearPrimaryClip()
+      }
+      invoke.resolve()
   }
 }
