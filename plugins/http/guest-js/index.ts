@@ -209,8 +209,16 @@ export async function fetch(
     },
   );
 
-  // url is read only but seems like we can do this
+  // url and headers are read only properties
+  // but seems like we can set them like this
+  //
+  // we define theme like this, because using `Response`
+  // constructor, it removes url and some headers
+  // like `set-cookie` headers
   Object.defineProperty(res, "url", { value: url });
+  Object.defineProperty(res, "headers", {
+    value: new Headers(responseHeaders),
+  });
 
   return res;
 }
