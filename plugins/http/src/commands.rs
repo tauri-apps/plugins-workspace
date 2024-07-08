@@ -36,20 +36,6 @@ struct FetchRequest {
 }
 impl tauri::Resource for FetchRequest {}
 
-impl FetchRequest {
-    fn new(
-        fut: CancelableResponseFuture,
-        abort_tx_rid: ResourceId,
-        abort_rx_rid: ResourceId,
-    ) -> Self {
-        Self {
-            fut: Mutex::new(fut),
-            abort_tx_rid,
-            abort_rx_rid,
-        }
-    }
-}
-
 struct AbortSender(Sender<()>);
 impl tauri::Resource for AbortRecveiver {}
 
@@ -70,7 +56,11 @@ impl AddRequest for ResourceTable {
     fn add_request(&mut self, fut: CancelableResponseFuture) -> ResourceId {
         let (tx, rx) = channel::<()>();
         let (tx, rx) = (AbortSender(tx), AbortRecveiver(rx));
-        let req = FetchRequest::new(fut, self.add(tx), self.add(rx));
+        let req = FetchRequest {
+            fut: Mutex::new(fut),
+            abort_tx_rid: self.add(tx),
+            abort_rx_rid: self.add(rx),
+        };
         self.add(req)
     }
 }
