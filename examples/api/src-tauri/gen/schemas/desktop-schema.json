@@ -4830,7 +4830,7 @@
           ]
         },
         {
-          "description": "global-shortcut:default -> No features are enabled by default, as we believe\nthe shortcuts can be inherently dangerous and it is \napplication specific if specific shortcuts should be\nregistered or unregistered.\n",
+          "description": "global-shortcut:default -> No features are enabled by default, as we believe\nthe shortcuts can be inherently dangerous and it is\napplication specific if specific shortcuts should be\nregistered or unregistered.\n",
           "type": "string",
           "enum": [
             "global-shortcut:default"
@@ -4848,6 +4848,13 @@
           "type": "string",
           "enum": [
             "global-shortcut:allow-register"
+          ]
+        },
+        {
+          "description": "global-shortcut:allow-register-all -> Enables the register_all command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "global-shortcut:allow-register-all"
           ]
         },
         {
@@ -4876,6 +4883,13 @@
           "type": "string",
           "enum": [
             "global-shortcut:deny-register"
+          ]
+        },
+        {
+          "description": "global-shortcut:deny-register-all -> Denies the register_all command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "global-shortcut:deny-register-all"
           ]
         },
         {

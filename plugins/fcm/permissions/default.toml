@@ -1,0 +1,8 @@
+[default]
+description = "Default permissions for the plugin"
+permissions = [
+    "allow-register-listener",
+    "allow-get-latest-notification-data",
+    "allow-get-token",
+    "allow-subscribe-to-topic"
+]

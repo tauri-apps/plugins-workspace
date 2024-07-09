@@ -6524,6 +6524,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-fcm"
+version = "2.0.0-beta.0"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "thiserror",
+]
+
+[[package]]
 name = "tauri-plugin-fs"
 version = "2.0.0-beta.10"
 dependencies = [
