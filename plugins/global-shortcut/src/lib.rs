@@ -244,7 +244,7 @@ where
         .map_err(|e| Error::GlobalHotkey(e.to_string()))
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 struct ShortcutJsEvent {
     shortcut: String,
     id: u32,
@@ -256,7 +256,7 @@ fn register<R: Runtime>(
     _app: AppHandle<R>,
     global_shortcut: State<'_, GlobalShortcut<R>>,
     shortcuts: Vec<String>,
-    handler: Channel,
+    handler: Channel<ShortcutJsEvent>,
 ) -> Result<()> {
     let mut hotkeys = Vec::new();
 

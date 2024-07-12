@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import { invoke } from "@tauri-apps/api/core";
-import { type WindowLabel, getCurrent } from "@tauri-apps/api/window";
+import { type WindowLabel, getCurrentWindow } from "@tauri-apps/api/window";
 
 export enum StateFlags {
   SIZE = 1 << 0,
@@ -36,7 +36,7 @@ async function restoreState(
  *  Restore the state for the current window from disk.
  */
 async function restoreStateCurrent(flags: StateFlags): Promise<void> {
-  await restoreState(getCurrent().label, flags);
+  await restoreState(getCurrentWindow().label, flags);
 }
 /**
  *  Get the name of the file used to store window state.
