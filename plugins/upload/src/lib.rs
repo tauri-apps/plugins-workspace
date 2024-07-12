@@ -66,10 +66,14 @@ async fn download(
     file_path: &str,
     headers: HashMap<String, String>,
     on_progress: Channel,
+    body: String,
 ) -> Result<()> {
     let client = reqwest::Client::new();
-
-    let mut request = client.get(url);
+    let mut request = if !body.is_empty() {
+        client.post(url).body(body.to_owned())
+    } else {
+        client.get(url)
+    };
     // Loop trought the headers keys and values
     // and add them to the request object.
     for (key, value) in headers {
