@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-beta.7]
+
+- [`381a466d`](https://github.com/tauri-apps/plugins-workspace/commit/381a466db344e59a76b2a4d5785b2a0b64d4d373) ([#1117](https://github.com/tauri-apps/plugins-workspace/pull/1117) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Refactored the JS APIs:
+
+  - Enhanced `register` and `unregister` to take either a single shortcut or an array.
+  - Removed `registerAll` instead use `register` with an array.
+- [`22a17980`](https://github.com/tauri-apps/plugins-workspace/commit/22a17980ff4f6f8c40adb1b8f4ffc6dae2fe7e30) ([#1537](https://github.com/tauri-apps/plugins-workspace/pull/1537) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri beta.24.
+
 ## \[2.0.0-beta.6]
 
 - [`76daee7a`](https://github.com/tauri-apps/plugins-workspace/commit/76daee7aafece34de3092c86e531cf9eb1138989) ([#1512](https://github.com/tauri-apps/plugins-workspace/pull/1512) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update to tauri beta.23.
@@ -82,4 +90,6 @@
 ## \[2.0.0-alpha.0]
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
