@@ -110,7 +110,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
         .on_event(|app, event| {
             if let RunEvent::WindowEvent {
                 label: _,
-                event: WindowEvent::DragDrop(DragDropEvent::Dropped { paths, position: _ }),
+                event: WindowEvent::DragDrop(DragDropEvent::Drop { paths, position: _ }),
                 ..
             } = event
             {

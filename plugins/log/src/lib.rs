@@ -24,6 +24,7 @@ use std::{
     iter::FromIterator,
     path::{Path, PathBuf},
 };
+use tauri::Emitter;
 use tauri::{
     plugin::{self, TauriPlugin},
     Manager, Runtime,

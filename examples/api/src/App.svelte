@@ -1,8 +1,8 @@
 <script>
   import { writable } from "svelte/store";
   import { open } from "@tauri-apps/plugin-shell";
-  import { getCurrent } from "@tauri-apps/api/window";
-  import { getCurrent as getCurrentWebview } from "@tauri-apps/api/webview";
+  import { getCurrentWindow } from "@tauri-apps/api/window";
+  import { getCurrentWebview } from "@tauri-apps/api/webview";
   import * as os from "@tauri-apps/plugin-os";
 
   import Welcome from "./views/Welcome.svelte";
@@ -24,7 +24,7 @@
   import { ask } from "@tauri-apps/plugin-dialog";
   import Nfc from "./views/Nfc.svelte";
 
-  const appWindow = getCurrent();
+  const appWindow = getCurrentWindow();
 
   if (appWindow.label !== "main") {
     appWindow.onCloseRequested(async (event) => {
@@ -492,7 +492,10 @@
           <div class="i-codicon-clear-all" />
         </div>
       </div>
-      <div bind:this={consoleTextEl} class="px-2 overflow-y-auto all:font-mono code-block all:text-xs select-text mr-2">
+      <div
+        bind:this={consoleTextEl}
+        class="px-2 overflow-y-auto all:font-mono code-block all:text-xs select-text mr-2"
+      >
         {#each $messages as r}
           {@html r.html}
         {/each}
