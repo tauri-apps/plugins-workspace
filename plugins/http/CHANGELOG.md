@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-beta.8]
+
+- [`ac9a25cc`](https://github.com/tauri-apps/plugins-workspace/commit/ac9a25cc12ee2b325f00212ba74316da3369bde5) ([#1395](https://github.com/tauri-apps/plugins-workspace/pull/1395) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix cancelling requests using `AbortSignal`.
+- [`a6654932`](https://github.com/tauri-apps/plugins-workspace/commit/a66549329c60dea35e3a06a38c357e368c9053a1) ([#1526](https://github.com/tauri-apps/plugins-workspace/pull/1526) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix missing `Set-Cookie` headers in the response which meant `request.headers.getSetCookie()` always returned empty array.
+- [`22a17980`](https://github.com/tauri-apps/plugins-workspace/commit/22a17980ff4f6f8c40adb1b8f4ffc6dae2fe7e30) ([#1537](https://github.com/tauri-apps/plugins-workspace/pull/1537) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri beta.24.
+
 ## \[2.0.0-beta.7]
 
 - [`76daee7a`](https://github.com/tauri-apps/plugins-workspace/commit/76daee7aafece34de3092c86e531cf9eb1138989) ([#1512](https://github.com/tauri-apps/plugins-workspace/pull/1512) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update to tauri beta.23.
