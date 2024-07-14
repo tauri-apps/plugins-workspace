@@ -162,7 +162,7 @@ fn update_app() {
     // bundle app update
     build_app(&manifest_dir, &config, true, Default::default());
 
-    let updater_zip_ext = if cfg!(target = "macos") {
+    let updater_zip_ext = if cfg!(target_os = "macos") {
         Some("tar.gz")
     } else {
         None
