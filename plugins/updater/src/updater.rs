@@ -721,11 +721,12 @@ impl Update {
     ) -> Result<(PathBuf, Option<tempfile::TempPath>)> {
         use std::io::Write;
 
+        let temp_dir = tempfile::Builder::new().tempdir()?.into_path();
         let mut temp_file = tempfile::Builder::new()
             .prefix(&format!("{}-{}-installer", self.app_name, self.version))
             .suffix(ext)
             .rand_bytes(0)
-            .tempfile()?;
+            .tempfile_in(temp_dir)?;
         temp_file.write_all(bytes)?;
 
         let temp = temp_file.into_temp_path();
