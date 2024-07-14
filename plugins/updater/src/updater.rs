@@ -94,6 +94,7 @@ impl RemoteRelease {
 pub type OnBeforeExit = Arc<dyn Fn() + Send + Sync + 'static>;
 
 pub struct UpdaterBuilder {
+    app_name: String,
     current_version: Version,
     config: Config,
     version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
@@ -109,7 +110,7 @@ pub struct UpdaterBuilder {
 }
 
 impl UpdaterBuilder {
-    pub fn new(current_version: Version, config: crate::Config) -> Self {
+    pub fn new(app_name: String, current_version: Version, config: crate::Config) -> Self {
         Self {
             installer_args: config
                 .windows
@@ -117,6 +118,7 @@ impl UpdaterBuilder {
                 .map(|w| w.installer_args.clone())
                 .unwrap_or_default(),
             current_exe_args: Vec::new(),
+            app_name,
             current_version,
             config,
             version_comparator: None,
@@ -239,6 +241,7 @@ impl UpdaterBuilder {
 
         Ok(Updater {
             config: self.config,
+            app_name: self.app_name,
             current_version: self.current_version,
             version_comparator: self.version_comparator,
             timeout: self.timeout,
@@ -270,6 +273,7 @@ impl UpdaterBuilder {
 
 pub struct Updater {
     config: Config,
+    app_name: String,
     current_version: Version,
     version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
     timeout: Option<Duration>,
@@ -386,6 +390,7 @@ impl Updater {
             Some(Update {
                 config: self.config.clone(),
                 on_before_exit: self.on_before_exit.clone(),
+                app_name: self.app_name.clone(),
                 current_version: self.current_version.to_string(),
                 target: self.target.clone(),
                 extract_path: self.extract_path.clone(),
@@ -436,6 +441,9 @@ pub struct Update {
     /// Extract path
     #[allow(unused)]
     extract_path: PathBuf,
+    /// App name, used for creating named tempfiles on Windows
+    #[allow(unused)]
+    app_name: String,
     #[allow(unused)]
     installer_args: Vec<OsString>,
     #[allow(unused)]
@@ -584,7 +592,7 @@ impl Update {
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
         };
 
-        let updater_type = Self::extract(bytes)?;
+        let updater_type = self.extract(bytes)?;
 
         let install_mode = self.config.install_mode();
         let current_args = &self.current_exe_args()[1..];
@@ -663,13 +671,13 @@ impl Update {
             .collect::<Vec<_>>()
     }
 
-    fn extract(bytes: &[u8]) -> Result<WindowsUpdaterType> {
+    fn extract(&self, bytes: &[u8]) -> Result<WindowsUpdaterType> {
         #[cfg(feature = "zip")]
         if infer::archive::is_zip(bytes) {
             return Self::extract_zip(bytes);
         }
 
-        Self::extract_exe(bytes)
+        self.extract_exe(bytes)
     }
 
     #[cfg(feature = "zip")]
@@ -694,22 +702,30 @@ impl Update {
         Err(crate::Error::BinaryNotFoundInArchive)
     }
 
-    fn extract_exe(bytes: &[u8]) -> Result<WindowsUpdaterType> {
+    fn extract_exe(&self, bytes: &[u8]) -> Result<WindowsUpdaterType> {
         if infer::app::is_exe(bytes) {
-            let (path, temp) = Self::write_to_temp(bytes, ".exe")?;
+            let (path, temp) = self.write_to_temp(bytes, ".exe")?;
             Ok(WindowsUpdaterType::nsis(path, temp))
         } else if infer::archive::is_msi(bytes) {
-            let (path, temp) = Self::write_to_temp(bytes, ".msi")?;
+            let (path, temp) = self.write_to_temp(bytes, ".msi")?;
             Ok(WindowsUpdaterType::msi(path, temp))
         } else {
             Err(crate::Error::InvalidUpdaterFormat)
         }
     }
 
-    fn write_to_temp(bytes: &[u8], ext: &str) -> Result<(PathBuf, Option<tempfile::TempPath>)> {
+    fn write_to_temp(
+        &self,
+        bytes: &[u8],
+        ext: &str,
+    ) -> Result<(PathBuf, Option<tempfile::TempPath>)> {
         use std::io::Write;
 
-        let mut temp_file = tempfile::Builder::new().suffix(ext).tempfile()?;
+        let mut temp_file = tempfile::Builder::new()
+            .prefix(&format!("{}-{}", self.app_name, self.version))
+            .suffix(ext)
+            .rand_bytes(0)
+            .tempfile()?;
         temp_file.write_all(bytes)?;
 
         let temp = temp_file.into_temp_path();
