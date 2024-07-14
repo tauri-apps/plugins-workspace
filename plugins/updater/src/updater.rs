@@ -674,15 +674,22 @@ impl Update {
     fn extract(&self, bytes: &[u8]) -> Result<WindowsUpdaterType> {
         #[cfg(feature = "zip")]
         if infer::archive::is_zip(bytes) {
-            return Self::extract_zip(bytes);
+            return self.extract_zip(bytes);
         }
 
         self.extract_exe(bytes)
     }
 
+    fn make_temp_dir(&self) -> Result<PathBuf> {
+        Ok(tempfile::Builder::new()
+            .prefix(&format!("{}-{}-updater-", self.app_name, self.version))
+            .tempdir()?
+            .into_path())
+    }
+
     #[cfg(feature = "zip")]
-    fn extract_zip(bytes: &[u8]) -> Result<WindowsUpdaterType> {
-        let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
+    fn extract_zip(&self, bytes: &[u8]) -> Result<WindowsUpdaterType> {
+        let temp_dir = self.make_temp_dir()?;
 
         let archive = Cursor::new(bytes);
         let mut extractor = zip::ZipArchive::new(archive)?;
@@ -721,7 +728,7 @@ impl Update {
     ) -> Result<(PathBuf, Option<tempfile::TempPath>)> {
         use std::io::Write;
 
-        let temp_dir = tempfile::Builder::new().tempdir()?.into_path();
+        let temp_dir = self.make_temp_dir()?;
         let mut temp_file = tempfile::Builder::new()
             .prefix(&format!("{}-{}-installer", self.app_name, self.version))
             .suffix(ext)
