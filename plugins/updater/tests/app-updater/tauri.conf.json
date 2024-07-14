@@ -26,7 +26,7 @@
         "type": "skip"
       },
       "nsis": {
-				"compression": "none"
+        "compression": "none"
       }
     }
   }
