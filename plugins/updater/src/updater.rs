@@ -722,7 +722,7 @@ impl Update {
         use std::io::Write;
 
         let mut temp_file = tempfile::Builder::new()
-            .prefix(&format!("{}-{}", self.app_name, self.version))
+            .prefix(&format!("{}-{}-installer", self.app_name, self.version))
             .suffix(ext)
             .rand_bytes(0)
             .tempfile()?;
