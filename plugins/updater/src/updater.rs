@@ -693,9 +693,9 @@ impl Update {
 
         let archive = Cursor::new(bytes);
         let mut extractor = zip::ZipArchive::new(archive)?;
-        extractor.extract(&tmp_dir)?;
+        extractor.extract(&temp_dir)?;
 
-        let paths = std::fs::read_dir(&tmp_dir)?;
+        let paths = std::fs::read_dir(&temp_dir)?;
         for path in paths {
             let path = path?.path();
             let ext = path.extension();
