@@ -62,7 +62,7 @@ pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T>>(
     app: AppHandle<R>,
     collection: State<'_, StoreCollection<R>>,
     path: impl AsRef<Path>,
-    auto_save: Option<u32>,
+    auto_save: Option<u64>,
     f: F,
 ) -> Result<T> {
     let mut stores = collection.stores.lock().expect("mutex poisoned");
@@ -105,7 +105,7 @@ async fn set<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<u32>,
+    auto_save: Option<u64>,
     key: String,
     value: JsonValue,
 ) -> Result<()> {
@@ -123,7 +123,7 @@ async fn get<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<u32>,
+    auto_save: Option<u64>,
     key: String,
 ) -> Result<Option<JsonValue>> {
     with_store(
@@ -140,7 +140,7 @@ async fn has<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<u32>,
+    auto_save: Option<u64>,
     key: String,
 ) -> Result<bool> {
     with_store(
@@ -157,7 +157,7 @@ async fn delete<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<u32>,
+    auto_save: Option<u64>,
     key: String,
 ) -> Result<bool> {
     with_store(
@@ -174,7 +174,7 @@ async fn clear<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<u32>,
+    auto_save: Option<u64>,
 ) -> Result<()> {
     with_store(
         app,
@@ -190,7 +190,7 @@ async fn reset<R: Runtime>(
     app: AppHandle<R>,
     collection: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<u32>,
+    auto_save: Option<u64>,
 ) -> Result<()> {
     with_store(
         app,
@@ -206,7 +206,7 @@ async fn keys<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<u32>,
+    auto_save: Option<u64>,
 ) -> Result<Vec<String>> {
     with_store(
         app,
@@ -222,7 +222,7 @@ async fn values<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<u32>,
+    auto_save: Option<u64>,
 ) -> Result<Vec<JsonValue>> {
     with_store(
         app,
@@ -238,7 +238,7 @@ async fn entries<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<u32>,
+    auto_save: Option<u64>,
 ) -> Result<Vec<(String, JsonValue)>> {
     with_store(
         app,
@@ -259,7 +259,7 @@ async fn length<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<u32>,
+    auto_save: Option<u64>,
 ) -> Result<usize> {
     with_store(
         app,
@@ -275,7 +275,7 @@ async fn load<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<u32>,
+    auto_save: Option<u64>,
 ) -> Result<()> {
     with_store(
         app,
@@ -291,7 +291,7 @@ async fn save<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<u32>,
+    auto_save: Option<u64>,
 ) -> Result<()> {
     with_store(
         app,
