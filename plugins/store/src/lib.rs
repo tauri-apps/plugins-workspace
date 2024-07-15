@@ -19,6 +19,7 @@ use std::{
     collections::HashMap,
     path::{Path, PathBuf},
     sync::Mutex,
+    time::Duration,
 };
 pub use store::{Store, StoreBuilder};
 use tauri::{
@@ -60,6 +61,7 @@ pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T>>(
     app: AppHandle<R>,
     collection: State<'_, StoreCollection<R>>,
     path: impl AsRef<Path>,
+    auto_save: Option<Duration>,
     f: F,
 ) -> Result<T> {
     let mut stores = collection.stores.lock().expect("mutex poisoned");
@@ -72,6 +74,9 @@ pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T>>(
 
         #[allow(unused_mut)]
         let mut builder = StoreBuilder::new(path);
+        if let Some(debounce_duration) = auto_save {
+            builder = builder.auto_save(debounce_duration);
+        }
 
         #[cfg(mobile)]
         {
@@ -83,8 +88,7 @@ pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T>>(
         // ignore loading errors, just use the default
         if let Err(err) = store.load() {
             warn!(
-                "Failed to load store {:?} from disk: {}. Falling back to default values.",
-                path, err
+                "Failed to load store {path:?} from disk: {err}. Falling back to default values."
             );
         }
         stores.insert(path.to_path_buf(), store);
@@ -100,10 +104,13 @@ async fn set<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
+    auto_save: Option<Duration>,
     key: String,
     value: JsonValue,
 ) -> Result<()> {
-    with_store(app, stores, path, |store| store.insert(key, value))
+    with_store(app, stores, path, auto_save, |store| {
+        store.insert(key, value)
+    })
 }
 
 #[tauri::command]
@@ -111,9 +118,12 @@ async fn get<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
+    auto_save: Option<Duration>,
     key: String,
 ) -> Result<Option<JsonValue>> {
-    with_store(app, stores, path, |store| Ok(store.get(key).cloned()))
+    with_store(app, stores, path, auto_save, |store| {
+        Ok(store.get(key).cloned())
+    })
 }
 
 #[tauri::command]
@@ -121,9 +131,10 @@ async fn has<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
+    auto_save: Option<Duration>,
     key: String,
 ) -> Result<bool> {
-    with_store(app, stores, path, |store| Ok(store.has(key)))
+    with_store(app, stores, path, auto_save, |store| Ok(store.has(key)))
 }
 
 #[tauri::command]
@@ -131,9 +142,10 @@ async fn delete<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
+    auto_save: Option<Duration>,
     key: String,
 ) -> Result<bool> {
-    with_store(app, stores, path, |store| store.delete(key))
+    with_store(app, stores, path, auto_save, |store| store.delete(key))
 }
 
 #[tauri::command]
@@ -141,8 +153,9 @@ async fn clear<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
+    auto_save: Option<Duration>,
 ) -> Result<()> {
-    with_store(app, stores, path, |store| store.clear())
+    with_store(app, stores, path, auto_save, |store| store.clear())
 }
 
 #[tauri::command]
@@ -150,8 +163,9 @@ async fn reset<R: Runtime>(
     app: AppHandle<R>,
     collection: State<'_, StoreCollection<R>>,
     path: PathBuf,
+    auto_save: Option<Duration>,
 ) -> Result<()> {
-    with_store(app, collection, path, |store| store.reset())
+    with_store(app, collection, path, auto_save, |store| store.reset())
 }
 
 #[tauri::command]
@@ -159,8 +173,9 @@ async fn keys<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
+    auto_save: Option<Duration>,
 ) -> Result<Vec<String>> {
-    with_store(app, stores, path, |store| {
+    with_store(app, stores, path, auto_save, |store| {
         Ok(store.keys().cloned().collect())
     })
 }
@@ -170,8 +185,9 @@ async fn values<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
+    auto_save: Option<Duration>,
 ) -> Result<Vec<JsonValue>> {
-    with_store(app, stores, path, |store| {
+    with_store(app, stores, path, auto_save, |store| {
         Ok(store.values().cloned().collect())
     })
 }
@@ -181,8 +197,9 @@ async fn entries<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
+    auto_save: Option<Duration>,
 ) -> Result<Vec<(String, JsonValue)>> {
-    with_store(app, stores, path, |store| {
+    with_store(app, stores, path, auto_save, |store| {
         Ok(store
             .entries()
             .map(|(k, v)| (k.to_owned(), v.to_owned()))
@@ -195,8 +212,9 @@ async fn length<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
+    auto_save: Option<Duration>,
 ) -> Result<usize> {
-    with_store(app, stores, path, |store| Ok(store.len()))
+    with_store(app, stores, path, auto_save, |store| Ok(store.len()))
 }
 
 #[tauri::command]
@@ -204,8 +222,9 @@ async fn load<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
+    auto_save: Option<Duration>,
 ) -> Result<()> {
-    with_store(app, stores, path, |store| store.load())
+    with_store(app, stores, path, auto_save, |store| store.load())
 }
 
 #[tauri::command]
@@ -213,8 +232,9 @@ async fn save<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
+    auto_save: Option<Duration>,
 ) -> Result<()> {
-    with_store(app, stores, path, |store| store.save())
+    with_store(app, stores, path, auto_save, |store| store.save())
 }
 
 // #[derive(Default)]
@@ -323,9 +343,8 @@ impl<R: Runtime> Builder<R> {
                     // ignore loading errors, just use the default
                     if let Err(err) = store.load() {
                         warn!(
-              "Failed to load store {:?} from disk: {}. Falling back to default values.",
-              path, err
-            );
+                            "Failed to load store {path:?} from disk: {err}. Falling back to default values."
+                        );
                     }
                 }
 
@@ -348,7 +367,10 @@ impl<R: Runtime> Builder<R> {
                 if let RunEvent::Exit = event {
                     let collection = app_handle.state::<StoreCollection<R>>();
 
-                    for store in collection.stores.lock().expect("mutex poisoned").values() {
+                    for store in collection.stores.lock().expect("mutex poisoned").values_mut() {
+                        if let Some(sender) = store.auto_save_debounce_sender.take() {
+                            let _ = sender.send(false);
+                        }
                         if let Err(err) = store.save() {
                             eprintln!("failed to save store {:?} with error {:?}", store.path, err);
                         }

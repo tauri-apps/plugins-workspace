@@ -4,13 +4,19 @@
 
 #[cfg(mobile)]
 use crate::plugin::PluginHandle;
-use crate::{ChangePayload, Error};
+use crate::{ChangePayload, Error, StoreCollection};
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
+    time::Duration,
 };
-use tauri::{AppHandle, Emitter, Runtime};
+use tauri::{AppHandle, Emitter, Manager, Runtime};
+use tokio::{
+    select,
+    sync::mpsc::{unbounded_channel, UnboundedSender},
+    time::sleep,
+};
 
 type SerializeFn =
     fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>>;
@@ -36,6 +42,7 @@ pub struct StoreBuilder<R: Runtime> {
     cache: HashMap<String, JsonValue>,
     serialize: SerializeFn,
     deserialize: DeserializeFn,
+    auto_save: Option<Duration>,
 
     #[cfg(mobile)]
     mobile_plugin_handle: Option<PluginHandle<R>>,
@@ -64,6 +71,7 @@ impl<R: Runtime> StoreBuilder<R> {
             cache: Default::default(),
             serialize: default_serialize,
             deserialize: default_deserialize,
+            auto_save: None,
             #[cfg(mobile)]
             mobile_plugin_handle: None,
             #[cfg(not(mobile))]
@@ -154,6 +162,23 @@ impl<R: Runtime> StoreBuilder<R> {
         self
     }
 
+    /// Auto save on modified with a debounce duration
+    ///
+    /// # Examples
+    /// ```
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// use tauri_plugin_store::StoreBuilder;
+    ///
+    /// let builder = StoreBuilder::<tauri::Wry>::new("store.json")
+    ///   .auto_save(std::time::Duration::from_millis(100));
+    ///
+    /// # Ok(())
+    /// # }
+    pub fn auto_save(mut self, debounce_duration: Duration) -> Self {
+        self.auto_save = Some(debounce_duration);
+        self
+    }
+
     /// Builds the [`Store`].
     ///
     /// # Examples
@@ -172,6 +197,8 @@ impl<R: Runtime> StoreBuilder<R> {
             cache: self.cache,
             serialize: self.serialize,
             deserialize: self.deserialize,
+            auto_save: self.auto_save,
+            auto_save_debounce_sender: None,
 
             #[cfg(mobile)]
             mobile_plugin_handle: self.mobile_plugin_handle,
@@ -187,6 +214,8 @@ pub struct Store<R: Runtime> {
     pub(crate) cache: HashMap<String, JsonValue>,
     pub(crate) serialize: SerializeFn,
     pub(crate) deserialize: DeserializeFn,
+    pub(crate) auto_save: Option<Duration>,
+    pub(crate) auto_save_debounce_sender: Option<UnboundedSender<bool>>,
 
     #[cfg(mobile)]
     pub(crate) mobile_plugin_handle: Option<PluginHandle<R>>,
@@ -195,15 +224,8 @@ pub struct Store<R: Runtime> {
 impl<R: Runtime> Store<R> {
     pub fn insert(&mut self, key: String, value: JsonValue) -> Result<(), Error> {
         self.cache.insert(key.clone(), value.clone());
-        self.app.emit(
-            "store://change",
-            ChangePayload {
-                path: &self.path,
-                key: &key,
-                value: &value,
-            },
-        )?;
-
+        self.on_change(&key, &value)?;
+        let _ = self.trigger_auto_save();
         Ok(())
     }
 
@@ -218,14 +240,8 @@ impl<R: Runtime> Store<R> {
     pub fn delete(&mut self, key: impl AsRef<str>) -> Result<bool, Error> {
         let flag = self.cache.remove(key.as_ref()).is_some();
         if flag {
-            self.app.emit(
-                "store://change",
-                ChangePayload {
-                    path: &self.path,
-                    key: key.as_ref(),
-                    value: &JsonValue::Null,
-                },
-            )?;
+            self.on_change(key.as_ref(), &JsonValue::Null)?;
+            let _ = self.trigger_auto_save();
         }
         Ok(flag)
     }
@@ -233,38 +249,24 @@ impl<R: Runtime> Store<R> {
     pub fn clear(&mut self) -> Result<(), Error> {
         let keys: Vec<String> = self.cache.keys().cloned().collect();
         self.cache.clear();
-        for key in keys {
-            self.app.emit(
-                "store://change",
-                ChangePayload {
-                    path: &self.path,
-                    key: &key,
-                    value: &JsonValue::Null,
-                },
-            )?;
+        for key in &keys {
+            self.on_change(key, &JsonValue::Null)?;
+        }
+        if !keys.is_empty() {
+            let _ = self.trigger_auto_save();
         }
         Ok(())
     }
 
     pub fn reset(&mut self) -> Result<(), Error> {
-        let has_defaults = self.defaults.is_some();
-
-        if has_defaults {
-            if let Some(defaults) = &self.defaults {
-                for (key, value) in &self.cache {
-                    if defaults.get(key) != Some(value) {
-                        let _ = self.app.emit(
-                            "store://change",
-                            ChangePayload {
-                                path: &self.path,
-                                key,
-                                value: defaults.get(key).unwrap_or(&JsonValue::Null),
-                            },
-                        );
-                    }
+        if let Some(defaults) = &self.defaults {
+            for (key, value) in &self.cache {
+                if defaults.get(key) != Some(value) {
+                    let _ = self.on_change(&key, defaults.get(key).unwrap_or(&JsonValue::Null));
                 }
-                self.cache.clone_from(defaults);
             }
+            self.cache.clone_from(defaults);
+            let _ = self.trigger_auto_save();
             Ok(())
         } else {
             self.clear()
@@ -289,6 +291,69 @@ impl<R: Runtime> Store<R> {
 
     pub fn is_empty(&self) -> bool {
         self.cache.is_empty()
+    }
+
+    fn on_change(&self, key: &str, value: &JsonValue) -> Result<(), Error> {
+        self.app.emit(
+            "store://change",
+            ChangePayload {
+                path: &self.path,
+                key,
+                value,
+            },
+        )?;
+        Ok(())
+    }
+
+    fn trigger_auto_save(&mut self) -> Result<(), Error> {
+        let Some(auto_save_delay) = self.auto_save else {
+            return Ok(());
+        };
+        if auto_save_delay.is_zero() {
+            return self.save();
+        }
+        if let Some(sender) = &self.auto_save_debounce_sender {
+            let _ = sender.send(false);
+            return Ok(());
+        }
+        let (sender, mut receiver) = unbounded_channel();
+        self.auto_save_debounce_sender.replace(sender);
+        let app = self.app.clone();
+        let path = self.path.clone();
+        tokio::spawn(async move {
+            loop {
+                select! {
+                    should_cancel = receiver.recv() => {
+                        if should_cancel == Some(true) {
+                            return;
+                        }
+                    }
+                    _ = sleep(auto_save_delay) => {
+                        let collection = app.state::<StoreCollection<R>>();
+                        if let Some(store) = collection
+                            .stores
+                            .lock()
+                            .expect("mutex poisoned")
+                            .values_mut()
+                            .find(|store| store.path == path)
+                        {
+                            let _ = store.save();
+                            store.auto_save_debounce_sender = None;
+                        }
+                        return;
+                    }
+                };
+            }
+        });
+        Ok(())
+    }
+}
+
+impl<R: Runtime> Drop for Store<R> {
+    fn drop(&mut self) {
+        if let Some(sender) = &self.auto_save_debounce_sender {
+            let _ = sender.send(false);
+        }
     }
 }
 

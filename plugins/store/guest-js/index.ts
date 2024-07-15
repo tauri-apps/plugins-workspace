@@ -14,11 +14,16 @@ interface ChangePayload<T> {
 
 /**
  * A key-value store persisted by the backend layer.
+ *
+ * @param path: Path to save the store in `app_data_dir`
+ * @param autoSave: Auto save on modification with debounce duration
  */
 export class Store {
   path: string;
-  constructor(path: string) {
+  readonly autoSave?: number;
+  constructor(path: string, autoSave?: number) {
     this.path = path;
+    this.autoSave = autoSave;
   }
 
   /**
@@ -31,6 +36,7 @@ export class Store {
   async set(key: string, value: unknown): Promise<void> {
     await invoke("plugin:store|set", {
       path: this.path,
+      autoSave: this.autoSave,
       key,
       value,
     });
@@ -45,6 +51,7 @@ export class Store {
   async get<T>(key: string): Promise<T | null> {
     return await invoke("plugin:store|get", {
       path: this.path,
+      autoSave: this.autoSave,
       key,
     });
   }
@@ -58,6 +65,7 @@ export class Store {
   async has(key: string): Promise<boolean> {
     return await invoke("plugin:store|has", {
       path: this.path,
+      autoSave: this.autoSave,
       key,
     });
   }
@@ -71,6 +79,7 @@ export class Store {
   async delete(key: string): Promise<boolean> {
     return await invoke("plugin:store|delete", {
       path: this.path,
+      autoSave: this.autoSave,
       key,
     });
   }
@@ -84,6 +93,7 @@ export class Store {
   async clear(): Promise<void> {
     await invoke("plugin:store|clear", {
       path: this.path,
+      autoSave: this.autoSave,
     });
   }
 
@@ -96,6 +106,7 @@ export class Store {
   async reset(): Promise<void> {
     await invoke("plugin:store|reset", {
       path: this.path,
+      autoSave: this.autoSave,
     });
   }
 
@@ -107,6 +118,7 @@ export class Store {
   async keys(): Promise<string[]> {
     return await invoke("plugin:store|keys", {
       path: this.path,
+      autoSave: this.autoSave,
     });
   }
 
@@ -118,6 +130,7 @@ export class Store {
   async values<T>(): Promise<T[]> {
     return await invoke("plugin:store|values", {
       path: this.path,
+      autoSave: this.autoSave,
     });
   }
 
@@ -129,6 +142,7 @@ export class Store {
   async entries<T>(): Promise<Array<[key: string, value: T]>> {
     return await invoke("plugin:store|entries", {
       path: this.path,
+      autoSave: this.autoSave,
     });
   }
 
@@ -140,6 +154,7 @@ export class Store {
   async length(): Promise<number> {
     return await invoke("plugin:store|length", {
       path: this.path,
+      autoSave: this.autoSave,
     });
   }
 
@@ -154,6 +169,7 @@ export class Store {
   async load(): Promise<void> {
     await invoke("plugin:store|load", {
       path: this.path,
+      autoSave: this.autoSave,
     });
   }
 
@@ -167,6 +183,7 @@ export class Store {
   async save(): Promise<void> {
     await invoke("plugin:store|save", {
       path: this.path,
+      autoSave: this.autoSave,
     });
   }
 
