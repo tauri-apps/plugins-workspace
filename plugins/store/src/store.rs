@@ -262,7 +262,7 @@ impl<R: Runtime> Store<R> {
         if let Some(defaults) = &self.defaults {
             for (key, value) in &self.cache {
                 if defaults.get(key) != Some(value) {
-                    let _ = self.on_change(&key, defaults.get(key).unwrap_or(&JsonValue::Null));
+                    let _ = self.on_change(key, defaults.get(key).unwrap_or(&JsonValue::Null));
                 }
             }
             self.cache.clone_from(defaults);
