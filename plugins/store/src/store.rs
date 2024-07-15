@@ -271,7 +271,7 @@ impl<R: Runtime> Store<R> {
                         self.emit_change_event(key, defaults.get(key).unwrap_or(&JsonValue::Null));
                 }
             }
-            for (key, value) in &defaults {
+            for (key, value) in defaults {
                 if !self.cache.contains_key(key) {
                     let _ = self.emit_change_event(key, value);
                 }
@@ -331,7 +331,7 @@ impl<R: Runtime> Store<R> {
         self.auto_save_debounce_sender.replace(sender);
         let app = self.app.clone();
         let path = self.path.clone();
-        tokio::spawn(async move {
+        tauri::async_runtime::spawn(async move {
             loop {
                 select! {
                     should_cancel = receiver.recv() => {
