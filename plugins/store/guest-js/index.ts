@@ -21,7 +21,7 @@ export class Store {
   readonly autoSave?: number;
   /**
    * @param path: Path to save the store in `app_data_dir`
-   * @param autoSave: Auto save on modification with debounce duration
+   * @param autoSave: Auto save on modification with debounce duration in milliseconds
    */
   constructor(path: string, autoSave?: number) {
     this.path = path;

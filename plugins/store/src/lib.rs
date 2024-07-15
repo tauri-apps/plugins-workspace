@@ -62,7 +62,7 @@ pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T>>(
     app: AppHandle<R>,
     collection: State<'_, StoreCollection<R>>,
     path: impl AsRef<Path>,
-    auto_save: Option<Duration>,
+    auto_save: Option<u32>,
     f: F,
 ) -> Result<T> {
     let mut stores = collection.stores.lock().expect("mutex poisoned");
@@ -105,13 +105,17 @@ async fn set<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<Duration>,
+    auto_save: Option<u32>,
     key: String,
     value: JsonValue,
 ) -> Result<()> {
-    with_store(app, stores, path, auto_save, |store| {
-        store.insert(key, value)
-    })
+    with_store(
+        app,
+        stores,
+        path,
+        auto_save.map(Duration::from_millis),
+        |store| store.insert(key, value),
+    )
 }
 
 #[tauri::command]
@@ -119,12 +123,16 @@ async fn get<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<Duration>,
+    auto_save: Option<u32>,
     key: String,
 ) -> Result<Option<JsonValue>> {
-    with_store(app, stores, path, auto_save, |store| {
-        Ok(store.get(key).cloned())
-    })
+    with_store(
+        app,
+        stores,
+        path,
+        auto_save.map(Duration::from_millis),
+        |store| Ok(store.get(key).cloned()),
+    )
 }
 
 #[tauri::command]
@@ -132,10 +140,16 @@ async fn has<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<Duration>,
+    auto_save: Option<u32>,
     key: String,
 ) -> Result<bool> {
-    with_store(app, stores, path, auto_save, |store| Ok(store.has(key)))
+    with_store(
+        app,
+        stores,
+        path,
+        auto_save.map(Duration::from_millis),
+        |store| Ok(store.has(key)),
+    )
 }
 
 #[tauri::command]
@@ -143,10 +157,16 @@ async fn delete<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<Duration>,
+    auto_save: Option<u32>,
     key: String,
 ) -> Result<bool> {
-    with_store(app, stores, path, auto_save, |store| store.delete(key))
+    with_store(
+        app,
+        stores,
+        path,
+        auto_save.map(Duration::from_millis),
+        |store| store.delete(key),
+    )
 }
 
 #[tauri::command]
@@ -154,9 +174,15 @@ async fn clear<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<Duration>,
+    auto_save: Option<u32>,
 ) -> Result<()> {
-    with_store(app, stores, path, auto_save, |store| store.clear())
+    with_store(
+        app,
+        stores,
+        path,
+        auto_save.map(Duration::from_millis),
+        |store| store.clear(),
+    )
 }
 
 #[tauri::command]
@@ -164,9 +190,15 @@ async fn reset<R: Runtime>(
     app: AppHandle<R>,
     collection: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<Duration>,
+    auto_save: Option<u32>,
 ) -> Result<()> {
-    with_store(app, collection, path, auto_save, |store| store.reset())
+    with_store(
+        app,
+        collection,
+        path,
+        auto_save.map(Duration::from_millis),
+        |store| store.reset(),
+    )
 }
 
 #[tauri::command]
@@ -174,11 +206,15 @@ async fn keys<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<Duration>,
+    auto_save: Option<u32>,
 ) -> Result<Vec<String>> {
-    with_store(app, stores, path, auto_save, |store| {
-        Ok(store.keys().cloned().collect())
-    })
+    with_store(
+        app,
+        stores,
+        path,
+        auto_save.map(Duration::from_millis),
+        |store| Ok(store.keys().cloned().collect()),
+    )
 }
 
 #[tauri::command]
@@ -186,11 +222,15 @@ async fn values<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<Duration>,
+    auto_save: Option<u32>,
 ) -> Result<Vec<JsonValue>> {
-    with_store(app, stores, path, auto_save, |store| {
-        Ok(store.values().cloned().collect())
-    })
+    with_store(
+        app,
+        stores,
+        path,
+        auto_save.map(Duration::from_millis),
+        |store| Ok(store.values().cloned().collect()),
+    )
 }
 
 #[tauri::command]
@@ -198,14 +238,20 @@ async fn entries<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<Duration>,
+    auto_save: Option<u32>,
 ) -> Result<Vec<(String, JsonValue)>> {
-    with_store(app, stores, path, auto_save, |store| {
-        Ok(store
-            .entries()
-            .map(|(k, v)| (k.to_owned(), v.to_owned()))
-            .collect())
-    })
+    with_store(
+        app,
+        stores,
+        path,
+        auto_save.map(Duration::from_millis),
+        |store| {
+            Ok(store
+                .entries()
+                .map(|(k, v)| (k.to_owned(), v.to_owned()))
+                .collect())
+        },
+    )
 }
 
 #[tauri::command]
@@ -213,9 +259,15 @@ async fn length<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<Duration>,
+    auto_save: Option<u32>,
 ) -> Result<usize> {
-    with_store(app, stores, path, auto_save, |store| Ok(store.len()))
+    with_store(
+        app,
+        stores,
+        path,
+        auto_save.map(Duration::from_millis),
+        |store| Ok(store.len()),
+    )
 }
 
 #[tauri::command]
@@ -223,9 +275,15 @@ async fn load<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<Duration>,
+    auto_save: Option<u32>,
 ) -> Result<()> {
-    with_store(app, stores, path, auto_save, |store| store.load())
+    with_store(
+        app,
+        stores,
+        path,
+        auto_save.map(Duration::from_millis),
+        |store| store.load(),
+    )
 }
 
 #[tauri::command]
@@ -233,9 +291,15 @@ async fn save<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
     path: PathBuf,
-    auto_save: Option<Duration>,
+    auto_save: Option<u32>,
 ) -> Result<()> {
-    with_store(app, stores, path, auto_save, |store| store.save())
+    with_store(
+        app,
+        stores,
+        path,
+        auto_save.map(Duration::from_millis),
+        |store| store.save(),
+    )
 }
 
 // #[derive(Default)]
