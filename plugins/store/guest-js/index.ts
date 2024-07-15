@@ -14,7 +14,6 @@ interface ChangePayload<T> {
 
 /**
  * A key-value store persisted by the backend layer.
- *
  */
 export class Store {
   path: string;
