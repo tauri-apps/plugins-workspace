@@ -62,7 +62,7 @@ pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T>>(
     app: AppHandle<R>,
     collection: State<'_, StoreCollection<R>>,
     path: impl AsRef<Path>,
-    auto_save: Option<u64>,
+    auto_save: Option<Duration>,
     f: F,
 ) -> Result<T> {
     let mut stores = collection.stores.lock().expect("mutex poisoned");
