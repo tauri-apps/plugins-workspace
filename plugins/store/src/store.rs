@@ -164,15 +164,19 @@ impl<R: Runtime> StoreBuilder<R> {
 
     /// Auto save on modified with a debounce duration
     ///
+    /// Note: only works if this store is managed by the plugin (e.g. made using `with_store` or inserted into `tauri_plugin_store::Builder`)
+    ///
     /// # Examples
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::StoreBuilder;
+    /// use tauri_plugin_store::{Builder, StoreBuilder};
     ///
-    /// let builder = StoreBuilder::<tauri::Wry>::new("store.json")
-    ///   .auto_save(std::time::Duration::from_millis(100));
-    ///
-    /// # Ok(())
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let store = StoreBuilder::new("store.json")
+    ///         .auto_save(std::time::Duration::from_millis(100))
+    ///         .build(app.handle().clone());
+    ///     app.handle().plugin(Builder::default().store(store).build())
+    ///   });
     /// # }
     pub fn auto_save(mut self, debounce_duration: Duration) -> Self {
         self.auto_save = Some(debounce_duration);
