@@ -154,7 +154,7 @@ use tauri_plugin_store::with_store;
 let stores = app.state::<StoreCollection<Wry>>();
 let path = PathBuf::from("app_data.bin");
 
-with_store(app_handle, stores, path, |store| store.insert("a".to_string(), json!("b")))
+with_store(app_handle, stores, path, None, |store| store.insert("a".to_string(), json!("b")))
 ```
 
 ## Contributing
