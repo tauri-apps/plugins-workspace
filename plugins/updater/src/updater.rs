@@ -110,6 +110,8 @@ pub struct UpdaterBuilder {
 }
 
 impl UpdaterBuilder {
+    /// It's prefered to use [`crate::UpdaterExt::updater_builder`] instead of
+    /// constructing a [`UpdaterBuilder`] with this function yourself
     pub fn new(app_name: String, current_version: Version, config: crate::Config) -> Self {
         Self {
             installer_args: config
