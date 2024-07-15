@@ -15,12 +15,14 @@ interface ChangePayload<T> {
 /**
  * A key-value store persisted by the backend layer.
  *
- * @param path: Path to save the store in `app_data_dir`
- * @param autoSave: Auto save on modification with debounce duration
  */
 export class Store {
   path: string;
   readonly autoSave?: number;
+  /**
+   * @param path: Path to save the store in `app_data_dir`
+   * @param autoSave: Auto save on modification with debounce duration
+   */
   constructor(path: string, autoSave?: number) {
     this.path = path;
     this.autoSave = autoSave;
