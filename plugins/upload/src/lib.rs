@@ -65,7 +65,7 @@ async fn download(
     url: &str,
     file_path: &str,
     headers: HashMap<String, String>,
-    on_progress: Channel,
+    on_progress: Channel<ProgressPayload>,
 ) -> Result<()> {
     let client = reqwest::Client::new();
 
@@ -84,7 +84,7 @@ async fn download(
 
     while let Some(chunk) = stream.try_next().await? {
         file.write_all(&chunk).await?;
-        let _ = on_progress.send(&ProgressPayload {
+        let _ = on_progress.send(ProgressPayload {
             progress: chunk.len() as u64,
             total,
         });
@@ -99,7 +99,7 @@ async fn upload(
     url: &str,
     file_path: &str,
     headers: HashMap<String, String>,
-    on_progress: Channel,
+    on_progress: Channel<ProgressPayload>,
 ) -> Result<String> {
     // Read the file
     let file = File::open(file_path).await?;
@@ -129,7 +129,7 @@ async fn upload(
     }
 }
 
-fn file_to_body(channel: Channel, file: File) -> reqwest::Body {
+fn file_to_body(channel: Channel<ProgressPayload>, file: File) -> reqwest::Body {
     let stream = FramedRead::new(file, BytesCodec::new()).map_ok(|r| r.freeze());
 
     reqwest::Body::wrap_stream(ReadProgressStream::new(

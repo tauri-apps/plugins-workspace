@@ -9,7 +9,7 @@ mod tray;
 use serde::Serialize;
 use tauri::{
     webview::{PageLoadEvent, WebviewWindowBuilder},
-    App, AppHandle, Manager, RunEvent, WebviewUrl,
+    App, AppHandle, Emitter, Listener, RunEvent, WebviewUrl,
 };
 
 #[derive(Clone, Serialize)]

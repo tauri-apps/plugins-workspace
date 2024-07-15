@@ -5,7 +5,7 @@
 use serde::de::DeserializeOwned;
 use tauri::{
     plugin::{Builder, PluginApi, TauriPlugin},
-    AppHandle, Manager, Runtime,
+    AppHandle, Emitter, Manager, Runtime,
 };
 
 mod commands;

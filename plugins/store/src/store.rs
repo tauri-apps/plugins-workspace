@@ -10,7 +10,7 @@ use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
-use tauri::{AppHandle, Manager, Runtime};
+use tauri::{AppHandle, Emitter, Runtime};
 
 type SerializeFn =
     fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>>;
@@ -51,7 +51,7 @@ impl<R: Runtime> StoreBuilder<R> {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use tauri_plugin_store::StoreBuilder;
     ///
-    /// let builder = StoreBuilder::new("store.bin");
+    /// let builder = StoreBuilder::<tauri::Wry>::new("store.bin");
     ///
     /// # Ok(())
     /// # }
@@ -89,7 +89,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///
     /// defaults.insert("foo".to_string(), "bar".into());
     ///
-    /// let builder = StoreBuilder::new("store.bin")
+    /// let builder = StoreBuilder::<tauri::Wry>::new("store.bin")
     ///   .defaults(defaults);
     ///
     /// # Ok(())
@@ -107,7 +107,7 @@ impl<R: Runtime> StoreBuilder<R> {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use tauri_plugin_store::StoreBuilder;
     ///
-    /// let builder = StoreBuilder::new("store.bin")
+    /// let builder = StoreBuilder::<tauri::Wry>::new("store.bin")
     ///   .default("foo".to_string(), "bar".into());
     ///
     /// # Ok(())
@@ -127,7 +127,7 @@ impl<R: Runtime> StoreBuilder<R> {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use tauri_plugin_store::StoreBuilder;
     ///
-    /// let builder = StoreBuilder::new("store.json")
+    /// let builder = StoreBuilder::<tauri::Wry>::new("store.json")
     ///   .serialize(|cache| serde_json::to_vec(&cache).map_err(Into::into));
     ///
     /// # Ok(())
@@ -144,7 +144,7 @@ impl<R: Runtime> StoreBuilder<R> {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use tauri_plugin_store::StoreBuilder;
     ///
-    /// let builder = StoreBuilder::new("store.json")
+    /// let builder = StoreBuilder::<tauri::Wry>::new("store.json")
     ///   .deserialize(|bytes| serde_json::from_slice(&bytes).map_err(Into::into));
     ///
     /// # Ok(())

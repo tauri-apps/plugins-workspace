@@ -50,29 +50,29 @@ enum WatcherKind {
     Watcher(RecommendedWatcher),
 }
 
-fn watch_raw(on_event: Channel, rx: Receiver<notify::Result<Event>>) {
+fn watch_raw(on_event: Channel<Event>, rx: Receiver<notify::Result<Event>>) {
     spawn(move || {
         while let Ok(event) = rx.recv() {
             if let Ok(event) = event {
                 // TODO: Should errors be emitted too?
-                let _ = on_event.send(&event);
+                let _ = on_event.send(event);
             }
         }
     });
 }
 
-fn watch_debounced(on_event: Channel, rx: Receiver<DebounceEventResult>) {
+fn watch_debounced(on_event: Channel<Event>, rx: Receiver<DebounceEventResult>) {
     spawn(move || {
         while let Ok(Ok(events)) = rx.recv() {
             for event in events {
                 // TODO: Should errors be emitted too?
-                let _ = on_event.send(&event.event);
+                let _ = on_event.send(event.event);
             }
         }
     });
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WatchOptions {
     base_dir: Option<BaseDirectory>,
@@ -85,7 +85,7 @@ pub async fn watch<R: Runtime>(
     webview: Webview<R>,
     paths: Vec<SafePathBuf>,
     options: WatchOptions,
-    on_event: Channel,
+    on_event: Channel<Event>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
 ) -> CommandResult<ResourceId> {
