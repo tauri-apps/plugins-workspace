@@ -177,7 +177,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///         .build(app.handle().clone());
     ///     app.handle().plugin(Builder::default().store(store).build())
     ///   });
-    /// # }
+    /// ```
     pub fn auto_save(mut self, debounce_duration: Duration) -> Self {
         self.auto_save = Some(debounce_duration);
         self
