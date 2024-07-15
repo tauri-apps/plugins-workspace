@@ -229,7 +229,7 @@ pub struct Store<R: Runtime> {
 impl<R: Runtime> Store<R> {
     pub fn insert(&mut self, key: String, value: JsonValue) -> Result<(), Error> {
         self.cache.insert(key.clone(), value.clone());
-        self.on_change(&key, &value)?;
+        self.emit_on_change(&key, &value)?;
         let _ = self.trigger_auto_save();
         Ok(())
     }
@@ -245,7 +245,7 @@ impl<R: Runtime> Store<R> {
     pub fn delete(&mut self, key: impl AsRef<str>) -> Result<bool, Error> {
         let flag = self.cache.remove(key.as_ref()).is_some();
         if flag {
-            self.on_change(key.as_ref(), &JsonValue::Null)?;
+            self.emit_on_change(key.as_ref(), &JsonValue::Null)?;
             let _ = self.trigger_auto_save();
         }
         Ok(flag)
@@ -255,7 +255,7 @@ impl<R: Runtime> Store<R> {
         let keys: Vec<String> = self.cache.keys().cloned().collect();
         self.cache.clear();
         for key in &keys {
-            self.on_change(key, &JsonValue::Null)?;
+            self.emit_on_change(key, &JsonValue::Null)?;
         }
         if !keys.is_empty() {
             let _ = self.trigger_auto_save();
@@ -267,7 +267,7 @@ impl<R: Runtime> Store<R> {
         if let Some(defaults) = &self.defaults {
             for (key, value) in &self.cache {
                 if defaults.get(key) != Some(value) {
-                    let _ = self.on_change(key, defaults.get(key).unwrap_or(&JsonValue::Null));
+                    let _ = self.emit_on_change(key, defaults.get(key).unwrap_or(&JsonValue::Null));
                 }
             }
             self.cache.clone_from(defaults);
@@ -298,7 +298,7 @@ impl<R: Runtime> Store<R> {
         self.cache.is_empty()
     }
 
-    fn on_change(&self, key: &str, value: &JsonValue) -> Result<(), Error> {
+    fn emit_on_change(&self, key: &str, value: &JsonValue) -> Result<(), Error> {
         self.app.emit(
             "store://change",
             ChangePayload {
