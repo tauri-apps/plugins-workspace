@@ -329,7 +329,7 @@ impl<R: Runtime> Store<R> {
             loop {
                 select! {
                     should_cancel = receiver.recv() => {
-                        if matches!(should_cancel, AutoSaveMessage::Cancel) {
+                        if matches!(should_cancel, Some(AutoSaveMessage::Cancel) | None) {
                             return;
                         }
                     }
