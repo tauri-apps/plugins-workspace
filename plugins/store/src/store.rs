@@ -206,6 +206,11 @@ impl<R: Runtime> StoreBuilder<R> {
     }
 }
 
+pub(crate) enum AutoSaveMessage {
+    Reset,
+    Cancel,
+}
+
 #[derive(Clone)]
 pub struct Store<R: Runtime> {
     pub(crate) app: AppHandle<R>,
@@ -215,7 +220,7 @@ pub struct Store<R: Runtime> {
     pub(crate) serialize: SerializeFn,
     pub(crate) deserialize: DeserializeFn,
     pub(crate) auto_save: Option<Duration>,
-    pub(crate) auto_save_debounce_sender: Option<UnboundedSender<bool>>,
+    pub(crate) auto_save_debounce_sender: Option<UnboundedSender<AutoSaveMessage>>,
 
     #[cfg(mobile)]
     pub(crate) mobile_plugin_handle: Option<PluginHandle<R>>,
@@ -313,7 +318,7 @@ impl<R: Runtime> Store<R> {
             return self.save();
         }
         if let Some(sender) = &self.auto_save_debounce_sender {
-            let _ = sender.send(false);
+            let _ = sender.send(AutoSaveMessage::Reset);
             return Ok(());
         }
         let (sender, mut receiver) = unbounded_channel();
@@ -324,7 +329,7 @@ impl<R: Runtime> Store<R> {
             loop {
                 select! {
                     should_cancel = receiver.recv() => {
-                        if should_cancel == Some(true) {
+                        if matches!(should_cancel, AutoSaveMessage::Cancel) {
                             return;
                         }
                     }
@@ -352,7 +357,7 @@ impl<R: Runtime> Store<R> {
 impl<R: Runtime> Drop for Store<R> {
     fn drop(&mut self) {
         if let Some(sender) = &self.auto_save_debounce_sender {
-            let _ = sender.send(false);
+            let _ = sender.send(AutoSaveMessage::Cancel);
         }
     }
 }

@@ -21,6 +21,7 @@ use std::{
     sync::Mutex,
     time::Duration,
 };
+use store::AutoSaveMessage;
 pub use store::{Store, StoreBuilder};
 use tauri::{
     plugin::{self, TauriPlugin},
@@ -369,7 +370,7 @@ impl<R: Runtime> Builder<R> {
 
                     for store in collection.stores.lock().expect("mutex poisoned").values_mut() {
                         if let Some(sender) = store.auto_save_debounce_sender.take() {
-                            let _ = sender.send(false);
+                            let _ = sender.send(AutoSaveMessage::Cancel);
                         }
                         if let Err(err) = store.save() {
                             eprintln!("failed to save store {:?} with error {:?}", store.path, err);
