@@ -164,7 +164,7 @@ impl<R: Runtime> StoreBuilder<R> {
 
     /// Auto save on modified with a debounce duration
     ///
-    /// Note: only works if this store is managed by the plugin (e.g. made using `with_store` or inserted into `tauri_plugin_store::Builder`)
+    /// Note: only works if this store is managed by the plugin (e.g. made using [`crate::with_store`] or inserted into [`crate::Builder`])
     ///
     /// # Examples
     /// ```
