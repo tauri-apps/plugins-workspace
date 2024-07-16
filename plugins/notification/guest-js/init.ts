@@ -10,17 +10,16 @@ import type { Options } from "./index";
   let permissionValue = "default";
 
   async function isPermissionGranted(): Promise<boolean> {
-    // @ts-expect-error __TEMPLATE_windows__ will be replaced in rust before it's injected.
-    if (window.Notification.permission !== "default" || __TEMPLATE_windows__) {
+    if (window.Notification.permission !== "default") {
       return await Promise.resolve(
-        window.Notification.permission === "granted"
+        window.Notification.permission === "granted",
       );
     }
     return await invoke("plugin:notification|is_permission_granted");
   }
 
   function setNotificationPermission(
-    value: "granted" | "denied" | "default"
+    value: "granted" | "denied" | "default",
   ): void {
     permissionSettable = true;
     // @ts-expect-error we can actually set this value on the webview
@@ -32,10 +31,10 @@ import type { Options } from "./index";
     "default" | "denied" | "granted" | "prompt"
   > {
     return await invoke<"prompt" | "default" | "granted" | "denied">(
-      "plugin:notification|request_permission"
+      "plugin:notification|request_permission",
     ).then((permission) => {
       setNotificationPermission(
-        permission === "prompt" ? "default" : permission
+        permission === "prompt" ? "default" : permission,
       );
       return permission;
     });
@@ -65,7 +64,7 @@ import type { Options } from "./index";
       Object.assign(opts, {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         title,
-      })
+      }),
     );
   };
 
