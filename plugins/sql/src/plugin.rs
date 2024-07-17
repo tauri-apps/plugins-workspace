@@ -370,10 +370,10 @@ impl Builder {
                             let migrator = Migrator::new(migrations).await?;
                             migrator.run(&pool).await?;
                         }
-
                         lock.insert(db, pool);
                     }
                     drop(lock);
+
                     app.manage(instances);
                     app.manage(Migrations(Mutex::new(
                         self.migrations.take().unwrap_or_default(),
