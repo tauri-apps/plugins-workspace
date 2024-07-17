@@ -24,7 +24,7 @@ use std::collections::HashMap;
 
 #[cfg(feature = "sqlite")]
 use std::{fs::create_dir_all, path::PathBuf};
-use std::fs;
+use std::{fs, io};
 
 #[cfg(feature = "sqlite")]
 type Db = sqlx::sqlite::Sqlite;
@@ -48,6 +48,8 @@ pub enum Error {
     DatabaseNotLoaded(String),
     #[error("unsupported datatype: {0}")]
     UnsupportedDatatype(String),
+    Io(#[from] io::Error),
+
 }
 
 impl Serialize for Error {
