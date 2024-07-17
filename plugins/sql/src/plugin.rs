@@ -337,9 +337,9 @@ impl Builder {
     /// Add migrations to a database using a file based method.
     #[must_use]
     pub fn add_migration_directory(mut self, db_url: &str, directory: &str) -> Self {
-                self.migrations
-                    .get_or_insert(Default::default())
-                    .insert(db_url.to_string(), migrations_from_directory(directory).unwrap());
+        self.migrations
+            .get_or_insert(Default::default())
+            .insert(db_url.to_string(), migrations_from_directory(directory).unwrap());
         self
     }
 
@@ -374,7 +374,6 @@ impl Builder {
                         lock.insert(db, pool);
                     }
                     drop(lock);
-
                     app.manage(instances);
                     app.manage(Migrations(Mutex::new(
                         self.migrations.take().unwrap_or_default(),
