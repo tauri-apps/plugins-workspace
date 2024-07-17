@@ -24,6 +24,7 @@ use std::collections::HashMap;
 
 #[cfg(feature = "sqlite")]
 use std::{fs::create_dir_all, path::PathBuf};
+use std::fs;
 
 #[cfg(feature = "sqlite")]
 type Db = sqlx::sqlite::Sqlite;
@@ -141,6 +142,30 @@ impl MigrationSource<'static> for MigrationList {
             Ok(migrations)
         })
     }
+}
+
+fn load_migrations_from_directory(directory: &str) -> std::result::Result<Vec<Migration>, BoxDynError> {
+    let mut migrations = Vec::new();
+    for entry in fs::read_dir(directory)?{
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_file() {
+            let content = fs::read_to_string(&path)?;
+            let filename = path.file_name().unwrap().to_str().unwrap();
+            let version_and_desc:Vec<&str> = filename.splitn(2,'_').collect();
+            if version_and_desc.len() == 2 {
+                let version : i64 = version_and_desc[0].parse()?;
+                let description = version_and_desc[1].strip_suffix(".sql").unwrap_or("");
+                migrations.push(Migration {
+                    version,
+                    description,
+                    sql: Box::leak(content.into_boxed_str()),
+                    kind: MigrationKind::Up,
+                });
+            }
+        }
+    }
+    Ok(migrations)
 }
 
 #[command]
@@ -271,6 +296,7 @@ async fn select(
 #[derive(Default)]
 pub struct Builder {
     migrations: Option<HashMap<String, MigrationList>>,
+    migration_directories: Option<HashMap<String, String>>,
 }
 
 impl Builder {
@@ -286,6 +312,24 @@ impl Builder {
             .insert(db_url.to_string(), MigrationList(migrations));
         self
     }
+
+    /// Add migrations from a directory to a database.
+    #[must_use]
+    pub fn add_migration_directory(mut self, db_url: &str, directory: String) -> Self {
+        if !directory.ends_with('/') {
+            self.migration_directories
+                .get_or_insert(Default::default())
+                .insert(db_url.to_string(), format!("{}/", directory));
+            self
+        }
+        else {
+            self.migration_directories
+                .get_or_insert(Default::default())
+                .insert(db_url.to_string(), directory);
+            self
+        }
+    }
+
 
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R, Option<PluginConfig>> {
         PluginBuilder::<R, Option<PluginConfig>>::new("sql")
@@ -314,6 +358,13 @@ impl Builder {
                             let migrator = Migrator::new(migrations).await?;
                             migrator.run(&pool).await?;
                         }
+
+                        if let Some(directory) = self.migration_directories.as_ref().and_then(|dirs| dirs.get(&db)) {
+                            let file_migrations = load_migrations_from_directory(directory).unwrap();
+                            let migrator = Migrator::new(MigrationList(file_migrations)).await?;
+                            migrator.run(&pool).await?;
+                        }
+
                         lock.insert(db, pool);
                     }
                     drop(lock);
