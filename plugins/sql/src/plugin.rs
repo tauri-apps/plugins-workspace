@@ -48,9 +48,12 @@ pub enum Error {
     DatabaseNotLoaded(String),
     #[error("unsupported datatype: {0}")]
     UnsupportedDatatype(String),
-    #[error(transparent)]
+    #[error("io error: {0}")]
     Io(#[from] io::Error),
-
+    #[error("Invalid version number in filename: {0}")]
+    InvalidVersionNumber(String),
+    #[error("Invalid separator in filename: {0}")]
+    InvalidSeparator(String),
 }
 
 impl Serialize for Error {
@@ -146,27 +149,36 @@ impl MigrationSource<'static> for MigrationList {
         })
     }
 }
-
-fn load_migrations_from_directory(directory: &str) -> Result<MigrationList> {
+/// Allow to do migrations from a directory.
+/// Be sure to name your migration files with the following format:
+/// `{version}-{description}.sql`
+fn migrations_from_directory(directory: &str) -> Result<MigrationList> {
     let mut migrations = Vec::new();
-    let paths = fs::read_dir(directory).map_err(|e| Error::Io(e))?;
+    let paths = fs::read_dir(directory)
+        .map_err(Error::Io)?;
 
     for entry in paths {
-        let entry = entry.map_err(|e| Error::Io(e))?;
+        let entry = entry.map_err(Error::Io)?;
         let path = entry.path();
-        let filename = path.file_name().unwrap().to_str().unwrap().to_string();
+        let filename = path.file_name().and_then(|os_str| os_str.to_str()).unwrap();
+        let parts: Vec<&str> = filename.splitn(2, '-').collect();
 
-        // Assuming the file name format is `version_description.sql`
-        let parts: Vec<&str> = filename.splitn(2, '_').collect();
         if parts.len() != 2 {
-            continue;
+            return Err(Error::InvalidSeparator(filename.to_string()).into());
         }
 
-        let version: i64 = parts[0].parse().unwrap();
+        let version_str = parts[0];
         let description = parts[1].trim_end_matches(".sql");
-        let sql = fs::read_to_string(&path).map_err(|e| Error::Io(e))?;
-        println!("Loaded migration: {}", description);
-        println!("SQL: {}", sql);
+        let sql = fs::read_to_string(&path)
+            .map_err(Error::Io)?;
+
+        let version: i64 = match version_str.parse() {
+            Ok(v) => v,
+            Err(_) => {
+                return Err(Error::InvalidVersionNumber(filename.to_string()).into());
+            }
+        };
+
         migrations.push(Migration {
             version,
             description: Box::leak(Box::new(description.to_string())),
@@ -174,7 +186,6 @@ fn load_migrations_from_directory(directory: &str) -> Result<MigrationList> {
             kind: MigrationKind::Up,
         });
     }
-
     Ok(MigrationList(migrations))
 }
 
@@ -307,7 +318,6 @@ async fn select(
 #[derive(Default)]
 pub struct Builder {
     migrations: Option<HashMap<String, MigrationList>>,
-    migration_directories: Option<HashMap<String, String>>,
 }
 
 impl Builder {
@@ -327,19 +337,11 @@ impl Builder {
     /// Add migrations from a directory to a database.
     #[must_use]
     pub fn add_migration_directory(mut self, db_url: &str, directory: &str) -> Self {
-        match load_migrations_from_directory(directory) {
-            Ok(migrations) => {
                 self.migrations
-                    .get_or_insert_with(HashMap::new)
-                    .insert(db_url.to_string(), migrations);
-            }
-            Err(e) => {
-                eprintln!("Failed to load migrations from directory {}: {}", directory, e);
-            }
-        }
+                    .get_or_insert(Default::default())
+                    .insert(db_url.to_string(), migrations_from_directory(directory).unwrap());
         self
     }
-
 
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R, Option<PluginConfig>> {
         PluginBuilder::<R, Option<PluginConfig>>::new("sql")
@@ -366,15 +368,6 @@ impl Builder {
 
                         if let Some(migrations) = self.migrations.as_mut().unwrap().remove(&db) {
                             let migrator = Migrator::new(migrations).await?;
-                            migrator.run(&pool).await?;
-                        }
-
-                        if let Some(directory) = self.migration_directories.as_ref().and_then(|dirs| dirs.get(&db)) {
-                            let file_migrations = load_migrations_from_directory(directory).unwrap();
-                            println!("Running migrations from directory: {}", directory);
-                            let migrator = Migrator::new(file_migrations).await?;
-                            println!("Migrator created");
-
                             migrator.run(&pool).await?;
                         }
 
