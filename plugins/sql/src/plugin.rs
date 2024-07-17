@@ -370,7 +370,7 @@ impl Builder {
 
                         if let Some(directory) = self.migration_directories.as_ref().and_then(|dirs| dirs.get(&db)) {
                             let file_migrations = load_migrations_from_directory(directory).unwrap();
-                            let migrator = Migrator::new(MigrationList(file_migrations)).await?;
+                            let migrator = Migrator::new(file_migrations).await?;
                             migrator.run(&pool).await?;
                         }
 
