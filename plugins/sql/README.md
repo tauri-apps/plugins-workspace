@@ -177,7 +177,7 @@ import Database from "@tauri-apps/plugin-sql";
 const db = await Database.load("sqlite:mydatabase.db");
 ```
 
-Ensure that the migrations are defined in the correct order and are idempotent (safe to run multiple times).
+Ensure that the migrations are defined in the correct order and are safe to run multiple times.
 
 ### Migration Management
 
