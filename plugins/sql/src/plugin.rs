@@ -165,7 +165,8 @@ fn load_migrations_from_directory(directory: &str) -> Result<MigrationList> {
         let version: i64 = parts[0].parse().unwrap();
         let description = parts[1].trim_end_matches(".sql");
         let sql = fs::read_to_string(&path).map_err(|e| Error::Io(e))?;
-
+        println!("Loaded migration: {}", description);
+        println!("SQL: {}", sql);
         migrations.push(Migration {
             version,
             description: Box::leak(Box::new(description.to_string())),
@@ -370,7 +371,10 @@ impl Builder {
 
                         if let Some(directory) = self.migration_directories.as_ref().and_then(|dirs| dirs.get(&db)) {
                             let file_migrations = load_migrations_from_directory(directory).unwrap();
+                            println!("Running migrations from directory: {}", directory);
                             let migrator = Migrator::new(file_migrations).await?;
+                            println!("Migrator created");
+
                             migrator.run(&pool).await?;
                         }
 
