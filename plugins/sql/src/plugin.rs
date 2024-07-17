@@ -144,29 +144,37 @@ impl MigrationSource<'static> for MigrationList {
     }
 }
 
-fn load_migrations_from_directory(directory: &str) -> std::result::Result<Vec<Migration>, BoxDynError> {
+fn load_migrations_from_directory(directory: &str) -> Result<MigrationList> {
     let mut migrations = Vec::new();
-    for entry in fs::read_dir(directory)?{
-        let entry = entry?;
+    let paths = fs::read_dir(directory).map_err(|e| Error::from(e))?;
+
+    for entry in paths {
+        let entry = entry.map_err(|e| Error::from(e))?;
         let path = entry.path();
-        if path.is_file() {
-            let content = fs::read_to_string(&path)?;
-            let filename = path.file_name().unwrap().to_str().unwrap();
-            let version_and_desc:Vec<&str> = filename.splitn(2,'_').collect();
-            if version_and_desc.len() == 2 {
-                let version : i64 = version_and_desc[0].parse()?;
-                let description = version_and_desc[1].strip_suffix(".sql").unwrap_or("");
-                migrations.push(Migration {
-                    version,
-                    description,
-                    sql: Box::leak(content.into_boxed_str()),
-                    kind: MigrationKind::Up,
-                });
-            }
+        let filename = path.file_name().unwrap().to_str().unwrap().to_string();
+
+        // Assuming the file name format is `version_description.sql`
+        let parts: Vec<&str> = filename.splitn(2, '_').collect();
+        if parts.len() != 2 {
+            continue;
         }
+
+        let version: i64 = parts[0].parse().unwrap();
+        let description = parts[1].trim_end_matches(".sql");
+        let sql = fs::read_to_string(&path).map_err(|e| Error::from(e))?;
+
+        migrations.push(Migration {
+            version,
+            description: Box::leak(Box::new(description.to_string())),
+            sql: Box::leak(Box::new(sql)),
+            kind: MigrationKind::Up,
+        });
     }
-    Ok(migrations)
+
+    Ok(MigrationList(migrations))
 }
+
+
 
 #[command]
 async fn load<R: Runtime>(
@@ -315,19 +323,18 @@ impl Builder {
 
     /// Add migrations from a directory to a database.
     #[must_use]
-    pub fn add_migration_directory(mut self, db_url: &str, directory: String) -> Self {
-        if !directory.ends_with('/') {
-            self.migration_directories
-                .get_or_insert(Default::default())
-                .insert(db_url.to_string(), format!("{}/", directory));
-            self
+    pub fn add_migration_directory(mut self, db_url: &str, directory: &str) -> Self {
+        match load_migrations_from_directory(directory) {
+            Ok(migrations) => {
+                self.migrations
+                    .get_or_insert_with(HashMap::new)
+                    .insert(db_url.to_string(), migrations);
+            }
+            Err(e) => {
+                eprintln!("Failed to load migrations from directory {}: {}", directory, e);
+            }
         }
-        else {
-            self.migration_directories
-                .get_or_insert(Default::default())
-                .insert(db_url.to_string(), directory);
-            self
-        }
+        self
     }
 
 
