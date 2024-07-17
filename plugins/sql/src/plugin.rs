@@ -334,7 +334,7 @@ impl Builder {
         self
     }
 
-    /// Add migrations from a directory to a database.
+    /// Add migrations to a database using a file based method.
     #[must_use]
     pub fn add_migration_directory(mut self, db_url: &str, directory: &str) -> Self {
                 self.migrations
