@@ -349,8 +349,7 @@ impl<R: Runtime> Store<R> {
                             .stores
                             .lock()
                             .expect("mutex poisoned")
-                            .values_mut()
-                            .find(|store| store.path == path)
+                            .get_mut(&path)
                         {
                             let _ = store.save();
                             store.auto_save_debounce_sender = None;
