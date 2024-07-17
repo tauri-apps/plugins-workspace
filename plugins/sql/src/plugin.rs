@@ -48,6 +48,7 @@ pub enum Error {
     DatabaseNotLoaded(String),
     #[error("unsupported datatype: {0}")]
     UnsupportedDatatype(String),
+    #[error(transparent)]
     Io(#[from] io::Error),
 
 }
@@ -148,10 +149,10 @@ impl MigrationSource<'static> for MigrationList {
 
 fn load_migrations_from_directory(directory: &str) -> Result<MigrationList> {
     let mut migrations = Vec::new();
-    let paths = fs::read_dir(directory).map_err(|e| Error::from(e))?;
+    let paths = fs::read_dir(directory).map_err(|e| Error::Io(e))?;
 
     for entry in paths {
-        let entry = entry.map_err(|e| Error::from(e))?;
+        let entry = entry.map_err(|e| Error::Io(e))?;
         let path = entry.path();
         let filename = path.file_name().unwrap().to_str().unwrap().to_string();
 
@@ -163,7 +164,7 @@ fn load_migrations_from_directory(directory: &str) -> Result<MigrationList> {
 
         let version: i64 = parts[0].parse().unwrap();
         let description = parts[1].trim_end_matches(".sql");
-        let sql = fs::read_to_string(&path).map_err(|e| Error::from(e))?;
+        let sql = fs::read_to_string(&path).map_err(|e| Error::Io(e))?;
 
         migrations.push(Migration {
             version,
@@ -175,7 +176,6 @@ fn load_migrations_from_directory(directory: &str) -> Result<MigrationList> {
 
     Ok(MigrationList(migrations))
 }
-
 
 
 #[command]
