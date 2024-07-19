@@ -2,18 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use crate::Error;
-use crate::Runtime;
-use crate::Store;
-use std::fs::create_dir_all;
-use std::fs::read;
-use std::fs::File;
-use std::io::Write;
+use crate::{
+    store::{DeserializeFn, SerializeFn},
+    Error, Runtime, StoreInner,
+};
+use std::{
+    fs::{create_dir_all, read, File},
+    io::Write,
+};
 use tauri::Manager;
 
 #[cfg(desktop)]
-impl<R: Runtime> Store<R> {
-    pub fn save(&self) -> Result<(), Error> {
+impl<R: Runtime> StoreInner<R> {
+    pub fn save(&self, serialize_fn: SerializeFn) -> Result<(), Error> {
         let app_dir = self
             .app
             .path()
@@ -23,7 +24,7 @@ impl<R: Runtime> Store<R> {
 
         create_dir_all(store_path.parent().expect("invalid store path"))?;
 
-        let bytes = (self.serialize)(&self.cache).map_err(Error::Serialize)?;
+        let bytes = serialize_fn(&self.cache).map_err(Error::Serialize)?;
         let mut f = File::create(&store_path)?;
         f.write_all(&bytes)?;
 
@@ -31,7 +32,7 @@ impl<R: Runtime> Store<R> {
     }
 
     /// Update the store from the on-disk state
-    pub fn load(&mut self) -> Result<(), Error> {
+    pub fn load(&mut self, deserialize_fn: DeserializeFn) -> Result<(), Error> {
         let app_dir = self
             .app
             .path()
@@ -42,7 +43,7 @@ impl<R: Runtime> Store<R> {
         let bytes = read(store_path)?;
 
         self.cache
-            .extend((self.deserialize)(&bytes).map_err(Error::Deserialize)?);
+            .extend(deserialize_fn(&bytes).map_err(Error::Deserialize)?);
 
         Ok(())
     }

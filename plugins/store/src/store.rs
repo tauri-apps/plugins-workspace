@@ -4,23 +4,24 @@
 
 #[cfg(mobile)]
 use crate::plugin::PluginHandle;
-use crate::{ChangePayload, Error, StoreCollection};
+use crate::{ChangePayload, StoreCollection};
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
+    sync::{Arc, Mutex},
     time::Duration,
 };
-use tauri::{AppHandle, Emitter, Manager, Runtime};
+use tauri::{AppHandle, Emitter, Manager, Resource, Runtime};
 use tokio::{
     select,
     sync::mpsc::{unbounded_channel, UnboundedSender},
     time::sleep,
 };
 
-type SerializeFn =
+pub(crate) type SerializeFn =
     fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>>;
-type DeserializeFn =
+pub(crate) type DeserializeFn =
     fn(&[u8]) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>>;
 
 fn default_serialize(
@@ -37,6 +38,7 @@ fn default_deserialize(
 
 /// Builds a [`Store`]
 pub struct StoreBuilder<R: Runtime> {
+    app: AppHandle<R>,
     path: PathBuf,
     defaults: Option<HashMap<String, JsonValue>>,
     cache: HashMap<String, JsonValue>,
@@ -63,8 +65,9 @@ impl<R: Runtime> StoreBuilder<R> {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn new<P: AsRef<Path>>(path: P) -> Self {
+    pub fn new<P: AsRef<Path>>(app: AppHandle<R>, path: P) -> Self {
         Self {
+            app,
             // Since Store.path is only exposed to the user in emit calls we may as well simplify it here already.
             path: dunce::simplified(path.as_ref()).to_path_buf(),
             defaults: None,
@@ -193,16 +196,31 @@ impl<R: Runtime> StoreBuilder<R> {
     ///     Ok(())
     ///   });
     /// ```
-    pub fn build(self, app: AppHandle<R>) -> Store<R> {
+    pub fn build(self) -> Store<R> {
+        let collection = self.app.state::<StoreCollection<R>>();
+        let mut stores = collection.stores.lock().unwrap();
+        let store = stores
+            .get(&self.path)
+            .and_then(|store| store.upgrade())
+            .unwrap_or_else(|| {
+                let store = Arc::new(Mutex::new(StoreInner::new(
+                    self.app.clone(),
+                    self.path.clone(),
+                )));
+                stores.insert(
+                    self.path.clone(),
+                    Arc::<Mutex<StoreInner<R>>>::downgrade(&store),
+                );
+                store
+            });
+        drop(stores);
         Store {
-            app,
-            path: self.path,
             defaults: self.defaults,
-            cache: self.cache,
             serialize: self.serialize,
             deserialize: self.deserialize,
             auto_save: self.auto_save,
-            auto_save_debounce_sender: None,
+            auto_save_debounce_sender: Arc::new(Mutex::new(None)),
+            store,
 
             #[cfg(mobile)]
             mobile_plugin_handle: self.mobile_plugin_handle,
@@ -216,26 +234,28 @@ pub(crate) enum AutoSaveMessage {
 }
 
 #[derive(Clone)]
-pub struct Store<R: Runtime> {
+pub struct StoreInner<R: Runtime> {
     pub(crate) app: AppHandle<R>,
     pub(crate) path: PathBuf,
-    defaults: Option<HashMap<String, JsonValue>>,
     pub(crate) cache: HashMap<String, JsonValue>,
-    pub(crate) serialize: SerializeFn,
-    pub(crate) deserialize: DeserializeFn,
-    pub(crate) auto_save: Option<Duration>,
-    pub(crate) auto_save_debounce_sender: Option<UnboundedSender<AutoSaveMessage>>,
 
     #[cfg(mobile)]
     pub(crate) mobile_plugin_handle: Option<PluginHandle<R>>,
 }
 
-impl<R: Runtime> Store<R> {
-    pub fn insert(&mut self, key: String, value: JsonValue) -> Result<(), Error> {
+impl<R: Runtime> StoreInner<R> {
+    pub fn new(app: AppHandle<R>, path: PathBuf) -> Self {
+        Self {
+            app,
+            path,
+            cache: HashMap::new(),
+        }
+    }
+
+    pub fn insert(&mut self, key: String, value: JsonValue) {
         self.cache.insert(key.clone(), value.clone());
-        self.emit_change_event(&key, &value)?;
-        let _ = self.trigger_auto_save();
-        Ok(())
+        let _ = self.emit_change_event(&key, &value);
+        // let _ = self.trigger_auto_save();
     }
 
     pub fn get(&self, key: impl AsRef<str>) -> Option<&JsonValue> {
@@ -246,29 +266,28 @@ impl<R: Runtime> Store<R> {
         self.cache.contains_key(key.as_ref())
     }
 
-    pub fn delete(&mut self, key: impl AsRef<str>) -> Result<bool, Error> {
+    pub fn delete(&mut self, key: impl AsRef<str>) -> bool {
         let flag = self.cache.remove(key.as_ref()).is_some();
         if flag {
-            self.emit_change_event(key.as_ref(), &JsonValue::Null)?;
-            let _ = self.trigger_auto_save();
+            let _ = self.emit_change_event(key.as_ref(), &JsonValue::Null);
+            // let _ = self.trigger_auto_save();
         }
-        Ok(flag)
+        flag
     }
 
-    pub fn clear(&mut self) -> Result<(), Error> {
+    pub fn clear(&mut self) {
         let keys: Vec<String> = self.cache.keys().cloned().collect();
         self.cache.clear();
         for key in &keys {
-            self.emit_change_event(key, &JsonValue::Null)?;
+            let _ = self.emit_change_event(key, &JsonValue::Null);
         }
-        if !keys.is_empty() {
-            let _ = self.trigger_auto_save();
-        }
-        Ok(())
+        // if !keys.is_empty() {
+        //     let _ = self.trigger_auto_save();
+        // }
     }
 
-    pub fn reset(&mut self) -> Result<(), Error> {
-        if let Some(defaults) = &self.defaults {
+    pub fn reset(&mut self, defaults: &Option<HashMap<String, JsonValue>>) {
+        if let Some(defaults) = &defaults {
             for (key, value) in &self.cache {
                 if defaults.get(key) != Some(value) {
                     let _ =
@@ -281,8 +300,7 @@ impl<R: Runtime> Store<R> {
                 }
             }
             self.cache.clone_from(defaults);
-            let _ = self.trigger_auto_save();
-            Ok(())
+            // let _ = self.trigger_auto_save();
         } else {
             self.clear()
         }
@@ -308,7 +326,7 @@ impl<R: Runtime> Store<R> {
         self.cache.is_empty()
     }
 
-    fn emit_change_event(&self, key: &str, value: &JsonValue) -> Result<(), Error> {
+    fn emit_change_event(&self, key: &str, value: &JsonValue) -> crate::Result<()> {
         self.app.emit(
             "store://change",
             ChangePayload {
@@ -319,22 +337,115 @@ impl<R: Runtime> Store<R> {
         )?;
         Ok(())
     }
+}
 
-    fn trigger_auto_save(&mut self) -> Result<(), Error> {
+impl<R: Runtime> std::fmt::Debug for StoreInner<R> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Store")
+            .field("path", &self.path)
+            .field("cache", &self.cache)
+            .finish()
+    }
+}
+
+pub struct Store<R: Runtime> {
+    defaults: Option<HashMap<String, JsonValue>>,
+    serialize: SerializeFn,
+    deserialize: DeserializeFn,
+    auto_save: Option<Duration>,
+    auto_save_debounce_sender: Arc<Mutex<Option<UnboundedSender<AutoSaveMessage>>>>,
+    store: Arc<Mutex<StoreInner<R>>>,
+}
+
+impl<R: Runtime> Resource for Store<R> {}
+
+impl<R: Runtime> Store<R> {
+    pub fn with_store<T>(
+        &self,
+        f: impl FnOnce(&mut StoreInner<R>) -> crate::Result<T>,
+    ) -> crate::Result<T> {
+        let mut store = self.store.lock().unwrap();
+        f(&mut store)
+    }
+
+    pub fn set(&self, key: String, value: JsonValue) {
+        self.store.lock().unwrap().insert(key, value);
+        let _ = self.trigger_auto_save();
+    }
+
+    pub fn get(&self, key: String) -> Option<JsonValue> {
+        self.store.lock().unwrap().get(key).cloned()
+    }
+
+    pub fn has(&self, key: String) -> bool {
+        self.store.lock().unwrap().has(key)
+    }
+
+    pub fn delete(&self, key: String) -> bool {
+        let deleted = self.store.lock().unwrap().delete(key);
+        if deleted {
+            let _ = self.trigger_auto_save();
+        }
+        deleted
+    }
+
+    pub fn clear(&self) {
+        self.store.lock().unwrap().clear();
+        let _ = self.trigger_auto_save();
+    }
+
+    pub fn reset(&self) {
+        self.store.lock().unwrap().reset(&self.defaults);
+        let _ = self.trigger_auto_save();
+    }
+
+    pub fn keys(&self) -> Vec<String> {
+        self.store.lock().unwrap().keys().cloned().collect()
+    }
+
+    pub fn values(&self) -> Vec<JsonValue> {
+        self.store.lock().unwrap().values().cloned().collect()
+    }
+
+    pub fn entries(&self) -> Vec<(String, JsonValue)> {
+        self.store
+            .lock()
+            .unwrap()
+            .entries()
+            .map(|(k, v)| (k.to_owned(), v.to_owned()))
+            .collect()
+    }
+
+    pub fn length(&self) -> usize {
+        self.store.lock().unwrap().len()
+    }
+
+    pub fn load(&self) -> crate::Result<()> {
+        self.store.lock().unwrap().load(self.deserialize)
+    }
+
+    pub fn save(&self) -> crate::Result<()> {
+        self.store.lock().unwrap().save(self.serialize)
+    }
+
+    fn trigger_auto_save(&self) -> crate::Result<()> {
         let Some(auto_save_delay) = self.auto_save else {
             return Ok(());
         };
         if auto_save_delay.is_zero() {
             return self.save();
         }
-        if let Some(sender) = &self.auto_save_debounce_sender {
+        let mut auto_save_debounce_sender = self.auto_save_debounce_sender.lock().unwrap();
+        if let Some(ref sender) = *auto_save_debounce_sender {
             let _ = sender.send(AutoSaveMessage::Reset);
             return Ok(());
         }
         let (sender, mut receiver) = unbounded_channel();
-        self.auto_save_debounce_sender.replace(sender);
-        let app = self.app.clone();
-        let path = self.path.clone();
+        auto_save_debounce_sender.replace(sender);
+        drop(auto_save_debounce_sender);
+        let store = self.store.clone();
+        let serialize_fn = self.serialize;
+        let auto_save_debounce_sender = self.auto_save_debounce_sender.clone();
         tauri::async_runtime::spawn(async move {
             loop {
                 select! {
@@ -344,16 +455,8 @@ impl<R: Runtime> Store<R> {
                         }
                     }
                     _ = sleep(auto_save_delay) => {
-                        let collection = app.state::<StoreCollection<R>>();
-                        if let Some(store) = collection
-                            .stores
-                            .lock()
-                            .expect("mutex poisoned")
-                            .get_mut(&path)
-                        {
-                            let _ = store.save();
-                            store.auto_save_debounce_sender = None;
-                        }
+                        let _ = store.lock().unwrap().save(serialize_fn);
+                        auto_save_debounce_sender.lock().unwrap().take();
                         return;
                     }
                 };
@@ -365,18 +468,9 @@ impl<R: Runtime> Store<R> {
 
 impl<R: Runtime> Drop for Store<R> {
     fn drop(&mut self) {
-        if let Some(sender) = &self.auto_save_debounce_sender {
+        let auto_save_debounce_sender = self.auto_save_debounce_sender.lock().unwrap();
+        if let Some(ref sender) = *auto_save_debounce_sender {
             let _ = sender.send(AutoSaveMessage::Cancel);
         }
-    }
-}
-
-impl<R: Runtime> std::fmt::Debug for Store<R> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Store")
-            .field("path", &self.path)
-            .field("defaults", &self.defaults)
-            .field("cache", &self.cache)
-            .finish()
     }
 }

@@ -309,6 +309,20 @@
           ]
         },
         {
+          "description": "allow-create-store -> Enables the create_store command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-create-store"
+          ]
+        },
+        {
+          "description": "deny-create-store -> Denies the create_store command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-create-store"
+          ]
+        },
+        {
           "description": "allow-delete -> Enables the delete command without any pre-configured scope.",
           "type": "string",
           "enum": [

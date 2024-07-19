@@ -8,18 +8,21 @@
 use std::time::Duration;
 
 use serde_json::json;
-use tauri_plugin_store::{Builder, StoreBuilder};
+use tauri_plugin_store::{Builder, StoreExt};
 
 mod app;
 use app::settings::AppSettings;
 
 fn main() {
     tauri::Builder::default()
+        .plugin(Builder::new().build())
         .setup(|app| {
             // Init store and load it from disk
-            let mut store = StoreBuilder::new("settings.json")
+            let mut store = app
+                .handle()
+                .store_builder("settings.json")
                 .auto_save(Duration::from_millis(100))
-                .build(app.handle().clone());
+                .build();
 
             // If there are no saved settings yet, this will return an error so we ignore the return value.
             let _ = store.load();
@@ -33,10 +36,10 @@ fn main() {
 
                     println!("theme {theme}");
                     println!("launch_at_login {launch_at_login}");
-                    store.insert(
+                    store.set(
                         "appSettings".into(),
                         json!({ "theme": theme, "launchAtLogin": launch_at_login }),
-                    )?;
+                    );
                 }
                 Err(err) => {
                     eprintln!("Error loading settings: {err}");
@@ -44,8 +47,6 @@ fn main() {
                     return Err(err); // Convert the error to a Box<dyn Error> and return Err(err) here
                 }
             }
-            app.handle()
-                .plugin(Builder::default().store(store).build())?;
             Ok(())
         })
         .run(tauri::generate_context!())
