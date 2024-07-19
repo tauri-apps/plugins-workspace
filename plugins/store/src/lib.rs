@@ -53,7 +53,6 @@ struct ChangePayload<'a> {
 pub struct StoreCollection<R: Runtime> {
     stores: Mutex<HashMap<PathBuf, Weak<Mutex<StoreInner<R>>>>>,
     // frozen: bool,
-
     #[cfg(mobile)]
     mobile_plugin_handle: PluginHandle<R>,
 }
