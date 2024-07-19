@@ -203,10 +203,12 @@ impl<R: Runtime> StoreBuilder<R> {
             .get(&self.path)
             .and_then(|store| store.upgrade())
             .unwrap_or_else(|| {
-                let store = Arc::new(Mutex::new(StoreInner::new(
+                let mut store = StoreInner::new(
                     self.app.clone(),
                     self.path.clone(),
-                )));
+                );
+                let _ = store.load(self.deserialize);
+                let store = Arc::new(Mutex::new(store));
                 stores.insert(
                     self.path.clone(),
                     Arc::<Mutex<StoreInner<R>>>::downgrade(&store),
