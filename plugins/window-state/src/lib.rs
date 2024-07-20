@@ -278,7 +278,7 @@ impl<R: Runtime> WindowExtInternal for WebviewWindow<R> {
 
 impl<R: Runtime> WindowExtInternal for Window<R> {
     fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()> {
-        let is_maximized = match flags.intersects(StateFlags::MAXIMIZED | StateFlags::SIZE) {
+        let is_maximized = match flags.intersects(StateFlags::MAXIMIZED) {
             true => self.is_maximized()?,
             false => false,
         };
