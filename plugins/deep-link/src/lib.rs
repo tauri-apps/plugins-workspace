@@ -5,7 +5,7 @@
 use serde::de::DeserializeOwned;
 use tauri::{
     plugin::{Builder, PluginApi, TauriPlugin},
-    AppHandle, Emitter, Manager, Runtime,
+    AppHandle, Manager, Runtime,
 };
 
 mod commands;
@@ -23,7 +23,10 @@ fn init_deep_link<R: Runtime, C: DeserializeOwned>(
 ) -> crate::Result<DeepLink<R>> {
     #[cfg(target_os = "android")]
     {
-        use tauri::ipc::{Channel, InvokeBody};
+        use tauri::{
+            ipc::{Channel, InvokeBody},
+            Emitter,
+        };
 
         let handle = _api.register_android_plugin(PLUGIN_IDENTIFIER, "DeepLinkPlugin")?;
 
@@ -388,6 +391,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
         .on_event(|_app, _event| {
             #[cfg(any(target_os = "macos", target_os = "ios"))]
             if let tauri::RunEvent::Opened { urls } = _event {
+                use tauri::Emitter;
+
                 let _ = _app.emit("deep-link://new-url", urls);
                 _app.state::<DeepLink<R>>()
                     .current
