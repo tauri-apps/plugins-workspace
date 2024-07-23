@@ -24,7 +24,7 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 futures-core = "0.3"
-sqlx = { version = "0.7", features = [ "json", "time" ] }
+sqlx = { version = "0.8", features = [ "json", "time" ] }
 time = "0.3"
 tokio = { version = "1", features = [ "sync" ] }
 indexmap = { version = "2.2.6", features = [ "serde" ] }
