@@ -504,6 +504,7 @@ impl Builder {
         plugin::Builder::new("log").invoke_handler(tauri::generate_handler![log])
     }
 
+    #[allow(clippy::type_complexity)]
     pub fn split<R: Runtime>(
         self,
         app_handle: &AppHandle<R>,
