@@ -9,7 +9,17 @@
           "url": "https://registry.npmjs.com/${ pkg.pkgFile.pkg.name }/${ pkg.pkgFile.version }"
         }
       },
-      "publish": ["pnpm build", "pnpm publish --access public --no-git-checks"]
+      "publish": [
+        {
+          "command": "pnpm build",
+          "dryRunCommand": "pnpm build"
+        },
+        {
+          "command": "npm publish --provenance --access public",
+          "dryRunCommand": "npm publish --provenance --access public --dry-run",
+          "pipe": true
+        }
+      ]
     },
     "rust": {
       "version": true,
