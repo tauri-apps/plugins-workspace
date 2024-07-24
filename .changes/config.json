@@ -6,7 +6,7 @@
       "getPublishedVersion": {
         "use": "fetch:check",
         "options": {
-          "url": "https://registry.npmjs.com/${ pkg.pkg }/${ pkg.pkgFile.version }"
+          "url": "https://registry.npmjs.com/${ pkg.pkgFile.pkg.name }/${ pkg.pkgFile.version }"
         }
       },
       "publish": ["pnpm build", "pnpm publish --access public --no-git-checks"]
@@ -16,7 +16,7 @@
       "getPublishedVersion": {
         "use": "fetch:check",
         "options": {
-          "url": "https://crates.io/api/v1/crates/${ pkg.pkg }/${ pkg.pkgFile.version }"
+          "url": "https://crates.io/api/v1/crates/${ pkg.pkgFile.pkg.package.name }/${ pkg.pkgFile.version }"
         }
       },
       "publish": [
