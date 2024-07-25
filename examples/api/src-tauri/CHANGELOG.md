@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-beta.15]
+
+### Dependencies
+
+- Upgraded to `log-plugin@2.0.0-beta.9`
+
 ## \[2.0.0-beta.14]
 
 ### Dependencies

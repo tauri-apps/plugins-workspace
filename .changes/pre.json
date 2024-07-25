@@ -61,6 +61,7 @@
     ".changes/http-unsafe-headers.md",
     ".changes/http-user-agent.md",
     ".changes/impl-ext-for-webview-windows.md",
+    ".changes/log-split.md",
     ".changes/msrv-1.75.md",
     ".changes/named-tempfile-updater-windows.md",
     ".changes/notifcation-permission-commands.md",
