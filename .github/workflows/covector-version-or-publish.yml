@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - v1
+      - v2
 
 permissions:
   # required for npm provenance
@@ -41,11 +42,6 @@ jobs:
           version: 9.x.x
           run_install: true
 
-      - name: install webkit2gtk and libudev for [authenticator]
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libudev-dev
-
       - name: cargo login
         run: cargo login ${{ secrets.ORG_CRATES_IO_TOKEN }}
 
@@ -54,10 +50,18 @@ jobs:
           git config --global user.name "${{ github.event.pusher.name }}"
           git config --global user.email "${{ github.event.pusher.email }}"
 
+      - name: Setup target dir on /mnt
+        # This directory has a larger partition size
+        run: |
+          sudo mkdir /mnt/target
+          WORKSPACE_OWNER="$(stat -c '%U:%G' "${GITHUB_WORKSPACE}")"
+          sudo chown -R "${WORKSPACE_OWNER}" /mnt/target
+
       - name: covector version or publish (publish when no change files present)
         uses: jbolda/covector/packages/action@covector-v0
         id: covector
         env:
+          CARGO_TARGET_DIR: /mnt/target
           NODE_AUTH_TOKEN: ${{ secrets.ORG_NPM_TOKEN }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -65,13 +69,17 @@ jobs:
           createRelease: true
           recognizeContributors: true
 
+      - name: Sync Cargo.lock
+        if: steps.covector.outputs.commandRan == 'version'
+        run: cargo tree --depth 0
+
       - name: Create Pull Request With Versions Bumped
         id: cpr
         uses: tauri-apps/create-pull-request@v3
         if: steps.covector.outputs.commandRan == 'version'
         with:
-          title: "Publish New Versions"
+          title: "Publish New Versions (${{ github.ref_name }})"
           commit-message: "publish new versions"
           labels: "version updates"
-          branch: "ci/release-v1"
+          branch: "ci/release-${{ github.ref_name }}"
           body: ${{ steps.covector.outputs.change }}
