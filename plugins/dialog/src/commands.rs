@@ -193,9 +193,9 @@ pub(crate) async fn save<R: Runtime>(
     dialog: State<'_, Dialog<R>>,
     options: SaveDialogOptions,
 ) -> Result<Option<PathBuf>> {
-    #[cfg(mobile)]
+    #[cfg(any(target_os = "ios"))]
     return Err(crate::Error::FileSaveDialogNotImplemented);
-    #[cfg(desktop)]
+    #[cfg(any(desktop, target_os = "android"))]
     {
         let mut dialog_builder = dialog.file();
         #[cfg(any(windows, target_os = "macos"))]

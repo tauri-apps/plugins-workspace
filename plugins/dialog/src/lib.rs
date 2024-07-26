@@ -17,8 +17,10 @@ use tauri::{
     Manager, Runtime,
 };
 
+#[cfg(any(desktop, target_os = "ios"))]
+use std::fs;
+
 use std::{
-    fs,
     path::{Path, PathBuf},
     sync::mpsc::sync_channel,
 };
@@ -471,7 +473,6 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///     })
     ///   })
     /// ```
-    #[cfg(desktop)]
     pub fn save_file<F: FnOnce(Option<PathBuf>) + Send + 'static>(self, f: F) {
         save_file(self, f)
     }
@@ -572,14 +573,15 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   // the file path is `None` if the user closed the dialog
     /// }
     /// ```
-    #[cfg(desktop)]
     pub fn blocking_save_file(self) -> Option<PathBuf> {
         blocking_fn!(self, save_file)
     }
+
 }
 
 // taken from deno source code: https://github.com/denoland/deno/blob/ffffa2f7c44bd26aec5ae1957e0534487d099f48/runtime/ops/fs.rs#L913
 #[inline]
+#[allow(unused)]
 fn to_msec(maybe_time: std::result::Result<std::time::SystemTime, std::io::Error>) -> Option<u64> {
     match maybe_time {
         Ok(time) => {
