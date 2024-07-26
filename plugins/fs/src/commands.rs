@@ -9,7 +9,7 @@ use tauri::{
     ipc::{CommandScope, GlobalScope},
     path::{BaseDirectory, SafePathBuf},
     utils::config::FsScope,
-    Manager, Resource, ResourceId, Runtime, Webview,
+    AppHandle, Manager, Resource, ResourceId, Runtime, Webview,
 };
 
 use std::{
@@ -21,6 +21,9 @@ use std::{
 };
 
 use crate::{scope::Entry, Error, FsExt};
+
+#[cfg(target_os = "android")]
+use crate::models::WriteTextFilePayload;
 
 #[derive(Debug, thiserror::Error)]
 pub enum CommandError {
@@ -782,21 +785,35 @@ pub async fn write_file<R: Runtime>(
 
 #[tauri::command]
 pub async fn write_text_file<R: Runtime>(
+    #[allow(unused)]
+    app: AppHandle<R>,
+    #[allow(unused)]
     webview: Webview<R>,
+    #[allow(unused)]
     global_scope: GlobalScope<Entry>,
+    #[allow(unused)]
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     data: String,
+    #[allow(unused)]
     options: Option<WriteFileOptions>,
 ) -> CommandResult<()> {
-    write_file_inner(
-        webview,
-        &global_scope,
-        &command_scope,
-        path,
-        data.as_bytes(),
-        options,
-    )
+    #[cfg(any(desktop, target_os = "ios"))]
+    {
+        write_file_inner(
+            webview,
+            &global_scope,
+            &command_scope,
+            path,
+            data.as_bytes(),
+            options,
+        )
+    }
+    #[cfg(target_os = "android")]
+    {
+        app.fs().write_text_file(WriteTextFilePayload{uri: path.display().to_string(), content: data}).unwrap();
+        Ok(())
+    }
 }
 
 #[tauri::command]

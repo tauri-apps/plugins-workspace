@@ -21,9 +21,16 @@ use tauri::{
 mod commands;
 mod config;
 mod error;
+#[cfg(target_os = "android")]
+mod mobile;
 mod scope;
 #[cfg(feature = "watch")]
 mod watcher;
+#[cfg(target_os = "android")]
+mod models;
+
+#[cfg(target_os = "android")]
+use mobile::Fs;
 
 pub use error::Error;
 pub use scope::{Event as ScopeEvent, Scope};
@@ -55,6 +62,8 @@ impl ScopeObject for scope::Entry {
 pub trait FsExt<R: Runtime> {
     fn fs_scope(&self) -> &Scope;
     fn try_fs_scope(&self) -> Option<&Scope>;
+    #[cfg(target_os = "android")]
+    fn fs(&self) -> &Fs<R>;
 }
 
 impl<R: Runtime, T: Manager<R>> FsExt<R> for T {
@@ -64,6 +73,11 @@ impl<R: Runtime, T: Manager<R>> FsExt<R> for T {
 
     fn try_fs_scope(&self) -> Option<&Scope> {
         self.try_state::<Scope>().map(|s| s.inner())
+    }
+
+    #[cfg(target_os = "android")]
+    fn fs(&self) -> &Fs<R> {
+        self.state::<Fs<R>>().inner()
     }
 }
 
@@ -104,6 +118,13 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
                 .config()
                 .as_ref()
                 .and_then(|c| c.require_literal_leading_dot);
+
+            #[cfg(target_os = "android")]
+            {
+                let fs = mobile::init(app, api)?;
+                app.manage(fs);
+            }
+
             app.manage(scope);
             Ok(())
         })

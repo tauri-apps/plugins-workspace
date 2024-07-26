@@ -190,5 +190,6 @@ permissions = [
     tauri_plugin::Builder::new(COMMANDS)
         .global_api_script_path("./api-iife.js")
         .global_scope_schema(schemars::schema_for!(FsScopeEntry))
+        .android_path("android")
         .build();
 }

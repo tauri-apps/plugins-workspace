@@ -576,7 +576,6 @@ impl<R: Runtime> FileDialogBuilder<R> {
     pub fn blocking_save_file(self) -> Option<PathBuf> {
         blocking_fn!(self, save_file)
     }
-
 }
 
 // taken from deno source code: https://github.com/denoland/deno/blob/ffffa2f7c44bd26aec5ae1957e0534487d099f48/runtime/ops/fs.rs#L913
