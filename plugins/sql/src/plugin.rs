@@ -135,6 +135,7 @@ impl MigrationSource<'static> for MigrationList {
                         migration.description.into(),
                         migration.kind.into(),
                         migration.sql.into(),
+                        false,
                     ));
                 }
             }

@@ -10,7 +10,8 @@ import type { Options } from "./index";
   let permissionValue = "default";
 
   async function isPermissionGranted(): Promise<boolean> {
-    if (window.Notification.permission !== "default") {
+    // @ts-expect-error __TEMPLATE_windows__ will be replaced in rust before it's injected.
+    if (window.Notification.permission !== "default" || __TEMPLATE_windows__) {
       return await Promise.resolve(
         window.Notification.permission === "granted",
       );

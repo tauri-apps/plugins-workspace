@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-log"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 description = "Configurable logging for your Tauri app."
 authors = { workspace = true }
 license = { workspace = true }
@@ -25,6 +25,7 @@ byte-unit = "5"
 log = { workspace = true, features = [ "kv_unstable" ] }
 time = { version = "0.3", features = [ "formatting", "local-offset" ] }
 fern = "0.6"
+thiserror = "1"
 
 [target."cfg(target_os = \"android\")".dependencies]
 android_logger = "0.14"

@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-beta.11]
+
+- [`725ff429`](https://github.com/tauri-apps/plugins-workspace/commit/725ff4295e56df9c30c099813bd64b96fe61b945) ([#1556](https://github.com/tauri-apps/plugins-workspace/pull/1556) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed an issue that caused the `notification` plugin's initialization script to cause the WebView on Windows to throw a `STATUS_ACCESS_VIOLATION` error on remote websites.
+
 ## \[2.0.0-beta.7]
 
 - [`22a17980`](https://github.com/tauri-apps/plugins-workspace/commit/22a17980ff4f6f8c40adb1b8f4ffc6dae2fe7e30) ([#1537](https://github.com/tauri-apps/plugins-workspace/pull/1537) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri beta.24.
@@ -100,4 +104,3 @@
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   !
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-
