@@ -29,4 +29,4 @@
 "window-state": patch
 ---
 
-Use no default features on tauri for all plugins so that consumers can use `default-features = false` on tauri
+Use no default features on tauri for all plugins so that consumers can use `default-features = false` on tauri, note that this will still enable wry feature on iOS

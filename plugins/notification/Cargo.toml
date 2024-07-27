@@ -28,6 +28,9 @@ time = { version = "0.3", features = [ "serde", "parsing", "formatting" ] }
 url = { version = "2", features = [ "serde" ] }
 serde_repr = "0.1"
 
+[target.'cfg(target_os = "ios")'.dependencies]
+tauri = { workspace = true, features = ["wry"] }
+
 [target."cfg(windows)".dependencies]
 win7-notifications = { version = "0.4.4", optional = true }
 windows-version = { version = "0.1", optional = true }
