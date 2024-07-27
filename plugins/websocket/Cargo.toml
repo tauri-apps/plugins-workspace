@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-websocket"
-version = "2.0.0-beta.7"
+version = "2.0.0-beta.9"
 description = "Expose a WebSocket server to your Tauri frontend."
 authors = { workspace = true }
 license = { workspace = true }

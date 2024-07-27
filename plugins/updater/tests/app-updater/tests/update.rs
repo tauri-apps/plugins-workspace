@@ -162,22 +162,25 @@ fn update_app() {
     // bundle app update
     build_app(&manifest_dir, &config, true, Default::default());
 
-    let updater_zip_ext = if cfg!(windows) { "zip" } else { "tar.gz" };
+    let updater_zip_ext = if cfg!(target_os = "macos") {
+        Some("tar.gz")
+    } else {
+        None
+    };
 
     for (bundle_target, out_bundle_path) in bundle_paths(&root_dir, "1.0.0") {
-        let bundle_updater_ext = out_bundle_path
-            .extension()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .replace("exe", "nsis");
-        let signature_path =
-            out_bundle_path.with_extension(format!("{bundle_updater_ext}.{updater_zip_ext}.sig"));
+        let bundle_updater_ext = out_bundle_path.extension().unwrap().to_str().unwrap();
+        let updater_extension = if let Some(updater_zip_ext) = updater_zip_ext {
+            format!("{bundle_updater_ext}.{updater_zip_ext}")
+        } else {
+            format!("{bundle_updater_ext}")
+        };
+        let signature_extension = format!("{updater_extension}.sig");
+        let signature_path = out_bundle_path.with_extension(signature_extension);
         let signature = std::fs::read_to_string(&signature_path).unwrap_or_else(|_| {
             panic!("failed to read signature file {}", signature_path.display())
         });
-        let out_updater_path =
-            out_bundle_path.with_extension(format!("{}.{}", bundle_updater_ext, updater_zip_ext));
+        let out_updater_path = out_bundle_path.with_extension(updater_extension);
         let updater_path = root_dir.join(format!(
             "target/debug/{}",
             out_updater_path.file_name().unwrap().to_str().unwrap()

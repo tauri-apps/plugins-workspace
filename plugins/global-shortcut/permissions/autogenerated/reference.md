@@ -1,7 +1,7 @@
 ## Default Permission
 
 No features are enabled by default, as we believe
-the shortcuts can be inherently dangerous and it is 
+the shortcuts can be inherently dangerous and it is
 application specific if specific shortcuts should be
 registered or unregistered.
 

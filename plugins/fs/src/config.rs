@@ -5,6 +5,7 @@
 use serde::Deserialize;
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Config {
     /// Whether or not paths that contain components that start with a `.`
     /// will require that `.` appears literally in the pattern; `*`, `?`, `**`,

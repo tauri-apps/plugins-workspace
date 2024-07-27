@@ -1,9 +1,9 @@
 <script>
-  import { getCurrent } from "@tauri-apps/api/webview";
+  import { getCurrentWebview } from "@tauri-apps/api/webview";
   import { invoke } from "@tauri-apps/api/core";
   import { onMount, onDestroy } from "svelte";
 
-  const webview = getCurrent();
+  const webview = getCurrentWebview();
 
   export let onMessage;
   let unlisten;
