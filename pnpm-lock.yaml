@@ -210,11 +210,23 @@ importers:
         specifier: 2.0.0-beta.16
         version: 2.0.0-beta.16
 
+  plugins/geolocation:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: 2.0.0-beta.13
+        version: 2.0.0-beta.13
+
   plugins/global-shortcut:
     dependencies:
       '@tauri-apps/api':
         specifier: 2.0.0-beta.16
         version: 2.0.0-beta.16
+
+  plugins/haptics:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: 2.0.0-beta.13
+        version: 2.0.0-beta.13
 
   plugins/http:
     dependencies:
@@ -899,6 +911,10 @@ packages:
     peerDependencies:
       svelte: ^4.0.0 || ^5.0.0-next.0
       vite: ^5.0.0
+
+  '@tauri-apps/api@2.0.0-beta.13':
+    resolution: {integrity: sha512-Np1opKANzRMF3lgJ9gDquBCB9SxlE2lRmNpVx1+L6RyzAmigkuh0ZulT5jMnDA3JLsuSDU135r/s4t/Pmx4atg==}
+    engines: {node: '>= 18', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
 
   '@tauri-apps/api@2.0.0-beta.16':
     resolution: {integrity: sha512-YGjkR9HxS/YyIoqoXDkk8o9Yy5NW6u9YxzeqEodwwOUoeS0nac6mzLTW3VYIuSelHmyUQCgbyENVY6e5CJXA4Q==}
@@ -2603,9 +2619,9 @@ snapshots:
       - encoding
       - mocha
 
-  '@covector/assemble@0.12.0':
+  '@covector/assemble@0.12.0(mocha@10.7.0)':
     dependencies:
-      '@covector/command': 0.8.0
+      '@covector/command': 0.8.0(mocha@10.7.0)
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.0)
       js-yaml: 4.1.0
@@ -2616,9 +2632,10 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
+      - mocha
       - supports-color
 
-  '@covector/changelog@0.12.0':
+  '@covector/changelog@0.12.0(mocha@10.7.0)':
     dependencies:
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.0)
@@ -2628,14 +2645,16 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
+      - mocha
       - supports-color
 
-  '@covector/command@0.8.0':
+  '@covector/command@0.8.0(mocha@10.7.0)':
     dependencies:
       '@effection/process': 2.1.4
       effection: 2.0.8(mocha@10.7.0)
     transitivePeerDependencies:
       - encoding
+      - mocha
 
   '@covector/files@0.8.0':
     dependencies:
@@ -2682,8 +2701,6 @@ snapshots:
     dependencies:
       effection: 2.0.8(mocha@10.7.0)
       mocha: 10.7.0
-    transitivePeerDependencies:
-      - encoding
 
   '@effection/process@2.1.4':
     dependencies:
@@ -2691,8 +2708,6 @@ snapshots:
       ctrlc-windows: 2.1.0
       effection: 2.0.8(mocha@10.7.0)
       shellwords: 0.1.1
-    transitivePeerDependencies:
-      - encoding
 
   '@effection/stream@2.0.6':
     dependencies:
@@ -2973,6 +2988,8 @@ snapshots:
       vitefu: 0.2.5(vite@5.3.5(terser@5.31.3))
     transitivePeerDependencies:
       - supports-color
+
+  '@tauri-apps/api@2.0.0-beta.13': {}
 
   '@tauri-apps/api@2.0.0-beta.16': {}
 
@@ -3450,9 +3467,9 @@ snapshots:
     dependencies:
       '@clack/prompts': 0.7.0
       '@covector/apply': 0.10.0(mocha@10.7.0)
-      '@covector/assemble': 0.12.0
-      '@covector/changelog': 0.12.0
-      '@covector/command': 0.8.0
+      '@covector/assemble': 0.12.0(mocha@10.7.0)
+      '@covector/changelog': 0.12.0(mocha@10.7.0)
+      '@covector/command': 0.8.0(mocha@10.7.0)
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.0)
       globby: 11.1.0
