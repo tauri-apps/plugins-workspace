@@ -36,3 +36,6 @@ codegen-units = 1
 lto = true
 incremental = false
 opt-level = "s"
+
+[patch.crates-io]
+iota-crypto = { git = "https://github.com/iotaledger/crypto.rs", rev = "489aa0e7936d0e491503f778a83cfc6ed1b28fe7" }
