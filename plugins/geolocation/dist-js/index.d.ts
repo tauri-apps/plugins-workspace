@@ -1,4 +1,0 @@
-import { type PositionOptions, type Position } from "./bindings";
-export declare function watchPosition(options: PositionOptions, cb: (location: Position | string) => void): Promise<number>;
-export declare const getCurrentPosition: (options: PositionOptions | null) => Promise<import("./bindings").Result<Position, import("./bindings").Error>>, clearWatch: (channelId: number) => Promise<import("./bindings").Result<null, import("./bindings").Error>>, checkPermissions: () => Promise<import("./bindings").Result<import("./bindings").PermissionStatus, import("./bindings").Error>>, requestPermissions: (permissions: import("./bindings").PermissionType[] | null) => Promise<import("./bindings").Result<import("./bindings").PermissionStatus, import("./bindings").Error>>;
-export type { PermissionState, PermissionStatus, PermissionType, Position, PositionOptions, Coordinates, } from "./bindings";
