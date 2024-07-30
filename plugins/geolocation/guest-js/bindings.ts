@@ -9,7 +9,7 @@
 
 export const commands = {
   async getCurrentPosition(
-    options: PositionOptions | null
+    options: PositionOptions | null,
   ): Promise<Result<Position, Error>> {
     try {
       return {
@@ -25,7 +25,7 @@ export const commands = {
   },
   async watchPosition(
     options: PositionOptions,
-    channel: any
+    channel: any,
   ): Promise<Result<null, Error>> {
     try {
       return {
@@ -65,7 +65,7 @@ export const commands = {
     }
   },
   async requestPermissions(
-    permissions: PermissionType[] | null
+    permissions: PermissionType[] | null,
   ): Promise<Result<PermissionStatus, Error>> {
     try {
       return {
@@ -198,10 +198,10 @@ import { type WebviewWindow as __WebviewWindow__ } from "@tauri-apps/api/webview
 
 type __EventObj__<T> = {
   listen: (
-    cb: TAURI_API_EVENT.EventCallback<T>
+    cb: TAURI_API_EVENT.EventCallback<T>,
   ) => ReturnType<typeof TAURI_API_EVENT.listen<T>>;
   once: (
-    cb: TAURI_API_EVENT.EventCallback<T>
+    cb: TAURI_API_EVENT.EventCallback<T>,
   ) => ReturnType<typeof TAURI_API_EVENT.once<T>>;
   emit: T extends null
     ? (payload?: T) => ReturnType<typeof TAURI_API_EVENT.emit>
@@ -213,7 +213,7 @@ export type Result<T, E> =
   | { status: "error"; error: E };
 
 function __makeEvents__<T extends Record<string, any>>(
-  mappings: Record<keyof T, string>
+  mappings: Record<keyof T, string>,
 ) {
   return new Proxy(
     {} as unknown as {
@@ -243,6 +243,6 @@ function __makeEvents__<T extends Record<string, any>>(
           },
         });
       },
-    }
+    },
   );
 }

@@ -20,7 +20,7 @@ export const commands = {
     }
   },
   async impactFeedback(
-    style: ImpactFeedbackStyle
+    style: ImpactFeedbackStyle,
   ): Promise<Result<null, Error>> {
     try {
       return {
@@ -33,7 +33,7 @@ export const commands = {
     }
   },
   async notificationFeedback(
-    type: NotificationFeedbackType
+    type: NotificationFeedbackType,
   ): Promise<Result<null, Error>> {
     try {
       return {
@@ -90,10 +90,10 @@ import { type WebviewWindow as __WebviewWindow__ } from "@tauri-apps/api/webview
 
 type __EventObj__<T> = {
   listen: (
-    cb: TAURI_API_EVENT.EventCallback<T>
+    cb: TAURI_API_EVENT.EventCallback<T>,
   ) => ReturnType<typeof TAURI_API_EVENT.listen<T>>;
   once: (
-    cb: TAURI_API_EVENT.EventCallback<T>
+    cb: TAURI_API_EVENT.EventCallback<T>,
   ) => ReturnType<typeof TAURI_API_EVENT.once<T>>;
   emit: T extends null
     ? (payload?: T) => ReturnType<typeof TAURI_API_EVENT.emit>
@@ -105,7 +105,7 @@ export type Result<T, E> =
   | { status: "error"; error: E };
 
 function __makeEvents__<T extends Record<string, any>>(
-  mappings: Record<keyof T, string>
+  mappings: Record<keyof T, string>,
 ) {
   return new Proxy(
     {} as unknown as {
@@ -135,6 +135,6 @@ function __makeEvents__<T extends Record<string, any>>(
           },
         });
       },
-    }
+    },
   );
 }
