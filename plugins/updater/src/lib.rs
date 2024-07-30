@@ -70,10 +70,14 @@ pub trait UpdaterExt<R: Runtime> {
 impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
     fn updater_builder(&self) -> UpdaterBuilder {
         let app = self.app_handle();
-        let version = app.package_info().version.clone();
+        let package_info = app.package_info();
         let UpdaterState { config, target } = self.state::<UpdaterState>().inner();
 
-        let mut builder = UpdaterBuilder::new(version, config.clone());
+        let mut builder = UpdaterBuilder::new(
+            package_info.name.clone(),
+            package_info.version.clone(),
+            config.clone(),
+        );
 
         if let Some(target) = target {
             builder = builder.target(target);
@@ -81,9 +85,7 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
 
         let args = self.env().args_os;
         if !args.is_empty() {
-            builder = builder
-                .nsis_installer_arg("/ARGS")
-                .nsis_installer_args(args);
+            builder = builder.current_exe_args(args);
         }
 
         #[cfg(any(

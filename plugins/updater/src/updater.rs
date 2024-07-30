@@ -94,6 +94,7 @@ impl RemoteRelease {
 pub type OnBeforeExit = Arc<dyn Fn() + Send + Sync + 'static>;
 
 pub struct UpdaterBuilder {
+    app_name: String,
     current_version: Version,
     config: Config,
     version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
@@ -104,19 +105,22 @@ pub struct UpdaterBuilder {
     timeout: Option<Duration>,
     proxy: Option<Url>,
     installer_args: Vec<OsString>,
-    nsis_installer_args: Vec<OsString>,
+    current_exe_args: Vec<OsString>,
     on_before_exit: Option<OnBeforeExit>,
 }
 
 impl UpdaterBuilder {
-    pub fn new(current_version: Version, config: crate::Config) -> Self {
+    /// It's prefered to use [`crate::UpdaterExt::updater_builder`] instead of
+    /// constructing a [`UpdaterBuilder`] with this function yourself
+    pub fn new(app_name: String, current_version: Version, config: crate::Config) -> Self {
         Self {
             installer_args: config
                 .windows
                 .as_ref()
                 .map(|w| w.installer_args.clone())
                 .unwrap_or_default(),
-            nsis_installer_args: Vec::new(),
+            current_exe_args: Vec::new(),
+            app_name,
             current_version,
             config,
             version_comparator: None,
@@ -239,13 +243,14 @@ impl UpdaterBuilder {
 
         Ok(Updater {
             config: self.config,
+            app_name: self.app_name,
             current_version: self.current_version,
             version_comparator: self.version_comparator,
             timeout: self.timeout,
             proxy: self.proxy,
             endpoints,
             installer_args: self.installer_args,
-            nsis_installer_args: self.nsis_installer_args,
+            current_exe_args: self.current_exe_args,
             arch,
             target,
             json_target,
@@ -257,27 +262,20 @@ impl UpdaterBuilder {
 }
 
 impl UpdaterBuilder {
-    pub(crate) fn nsis_installer_arg<S>(mut self, arg: S) -> Self
-    where
-        S: Into<OsString>,
-    {
-        self.nsis_installer_args.push(arg.into());
-        self
-    }
-
-    pub(crate) fn nsis_installer_args<I, S>(mut self, args: I) -> Self
+    pub(crate) fn current_exe_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
         S: Into<OsString>,
     {
         let args = args.into_iter().map(|a| a.into()).collect::<Vec<_>>();
-        self.nsis_installer_args.extend_from_slice(&args);
+        self.current_exe_args.extend_from_slice(&args);
         self
     }
 }
 
 pub struct Updater {
     config: Config,
+    app_name: String,
     current_version: Version,
     version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
     timeout: Option<Duration>,
@@ -294,7 +292,7 @@ pub struct Updater {
     #[allow(unused)]
     installer_args: Vec<OsString>,
     #[allow(unused)]
-    nsis_installer_args: Vec<OsString>,
+    current_exe_args: Vec<OsString>,
 }
 
 impl Updater {
@@ -394,6 +392,7 @@ impl Updater {
             Some(Update {
                 config: self.config.clone(),
                 on_before_exit: self.on_before_exit.clone(),
+                app_name: self.app_name.clone(),
                 current_version: self.current_version.to_string(),
                 target: self.target.clone(),
                 extract_path: self.extract_path.clone(),
@@ -406,7 +405,7 @@ impl Updater {
                 proxy: self.proxy.clone(),
                 headers: self.headers.clone(),
                 installer_args: self.installer_args.clone(),
-                nsis_installer_args: self.nsis_installer_args.clone(),
+                current_exe_args: self.current_exe_args.clone(),
             })
         } else {
             None
@@ -444,10 +443,13 @@ pub struct Update {
     /// Extract path
     #[allow(unused)]
     extract_path: PathBuf,
+    /// App name, used for creating named tempfiles on Windows
+    #[allow(unused)]
+    app_name: String,
     #[allow(unused)]
     installer_args: Vec<OsString>,
     #[allow(unused)]
-    nsis_installer_args: Vec<OsString>,
+    current_exe_args: Vec<OsString>,
 }
 
 impl Resource for Update {}
@@ -538,16 +540,28 @@ impl Update {
 
 #[cfg(windows)]
 enum WindowsUpdaterType {
-    Nsis,
-    Msi,
+    Nsis {
+        path: PathBuf,
+        #[allow(unused)]
+        temp: Option<tempfile::TempPath>,
+    },
+    Msi {
+        path: PathBuf,
+        #[allow(unused)]
+        temp: Option<tempfile::TempPath>,
+    },
 }
 
 #[cfg(windows)]
 impl WindowsUpdaterType {
-    fn extension(&self) -> &str {
-        match self {
-            WindowsUpdaterType::Nsis => ".exe",
-            WindowsUpdaterType::Msi => ".msi",
+    fn nsis(path: PathBuf, temp: Option<tempfile::TempPath>) -> Self {
+        Self::Nsis { path, temp }
+    }
+
+    fn msi(path: PathBuf, temp: Option<tempfile::TempPath>) -> Self {
+        Self::Msi {
+            path: path.wrap_in_quotes(),
+            temp,
         }
     }
 }
@@ -580,41 +594,56 @@ impl Update {
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
         };
 
-        let (updater_type, path, _temp) = Self::extract(bytes)?;
+        let updater_type = self.extract(bytes)?;
 
         let install_mode = self.config.install_mode();
-        let installer_args: Vec<&OsStr> = match updater_type {
-            WindowsUpdaterType::Nsis => install_mode
+        let current_args = &self.current_exe_args()[1..];
+        let msi_args;
+
+        let installer_args: Vec<&OsStr> = match &updater_type {
+            WindowsUpdaterType::Nsis { .. } => install_mode
                 .nsis_args()
                 .iter()
                 .map(OsStr::new)
                 .chain(once(OsStr::new("/UPDATE")))
-                .chain(self.nsis_installer_args())
+                .chain(once(OsStr::new("/ARGS")))
+                .chain(current_args.to_vec())
                 .chain(self.installer_args())
                 .collect(),
-            WindowsUpdaterType::Msi => [OsStr::new("/i"), path.as_os_str()]
-                .into_iter()
-                .chain(install_mode.msiexec_args().iter().map(OsStr::new))
-                .chain(once(OsStr::new("/promptrestart")))
-                .chain(self.installer_args())
-                .collect(),
+            WindowsUpdaterType::Msi { path, .. } => {
+                let escaped_args = current_args
+                    .iter()
+                    .map(escape_msi_property_arg)
+                    .collect::<Vec<_>>()
+                    .join(" ");
+                msi_args = OsString::from(format!("LAUNCHAPPARGS=\"{escaped_args}\""));
+
+                [OsStr::new("/i"), path.as_os_str()]
+                    .into_iter()
+                    .chain(install_mode.msiexec_args().iter().map(OsStr::new))
+                    .chain(once(OsStr::new("/promptrestart")))
+                    .chain(self.installer_args())
+                    .chain(once(OsStr::new("AUTOLAUNCHAPP=True")))
+                    .chain(once(msi_args.as_os_str()))
+                    .collect()
+            }
         };
 
         if let Some(on_before_exit) = self.on_before_exit.as_ref() {
             on_before_exit();
         }
 
-        let parameters = installer_args.join(OsStr::new(" "));
-        let parameters = encode_wide(parameters);
-
-        let path = match updater_type {
-            WindowsUpdaterType::Msi => std::env::var("SYSTEMROOT").as_ref().map_or_else(
+        let file = match &updater_type {
+            WindowsUpdaterType::Nsis { path, .. } => path.as_os_str().to_os_string(),
+            WindowsUpdaterType::Msi { .. } => std::env::var("SYSTEMROOT").as_ref().map_or_else(
                 |_| OsString::from("msiexec.exe"),
                 |p| OsString::from(format!("{p}\\System32\\msiexec.exe")),
             ),
-            WindowsUpdaterType::Nsis => path.as_os_str().to_os_string(),
         };
-        let file = encode_wide(path);
+        let file = encode_wide(file);
+
+        let parameters = installer_args.join(OsStr::new(" "));
+        let parameters = encode_wide(parameters);
 
         unsafe {
             ShellExecuteW(
@@ -637,66 +666,80 @@ impl Update {
             .collect::<Vec<_>>()
     }
 
-    fn nsis_installer_args(&self) -> Vec<&OsStr> {
-        self.nsis_installer_args
+    fn current_exe_args(&self) -> Vec<&OsStr> {
+        self.current_exe_args
             .iter()
             .map(OsStr::new)
             .collect::<Vec<_>>()
     }
 
-    fn extract(bytes: &[u8]) -> Result<(WindowsUpdaterType, PathBuf, Option<tempfile::TempPath>)> {
+    fn extract(&self, bytes: &[u8]) -> Result<WindowsUpdaterType> {
         #[cfg(feature = "zip")]
         if infer::archive::is_zip(bytes) {
-            return Self::extract_zip(bytes);
+            return self.extract_zip(bytes);
         }
 
-        Self::extract_exe(bytes)
+        self.extract_exe(bytes)
+    }
+
+    fn make_temp_dir(&self) -> Result<PathBuf> {
+        Ok(tempfile::Builder::new()
+            .prefix(&format!("{}-{}-updater-", self.app_name, self.version))
+            .tempdir()?
+            .into_path())
     }
 
     #[cfg(feature = "zip")]
-    fn extract_zip(
-        bytes: &[u8],
-    ) -> Result<(WindowsUpdaterType, PathBuf, Option<tempfile::TempPath>)> {
-        let tmp_dir = tempfile::Builder::new().tempdir()?.into_path();
+    fn extract_zip(&self, bytes: &[u8]) -> Result<WindowsUpdaterType> {
+        let temp_dir = self.make_temp_dir()?;
 
         let archive = Cursor::new(bytes);
         let mut extractor = zip::ZipArchive::new(archive)?;
-        extractor.extract(&tmp_dir)?;
+        extractor.extract(&temp_dir)?;
 
-        let paths = std::fs::read_dir(&tmp_dir)?;
+        let paths = std::fs::read_dir(&temp_dir)?;
         for path in paths {
-            let found_path = path?.path();
-            let ext = found_path.extension();
+            let path = path?.path();
+            let ext = path.extension();
             if ext == Some(OsStr::new("exe")) {
-                return Ok((WindowsUpdaterType::Nsis, found_path, None));
+                return Ok(WindowsUpdaterType::nsis(path, None));
             } else if ext == Some(OsStr::new("msi")) {
-                return Ok((WindowsUpdaterType::Msi, found_path, None));
+                return Ok(WindowsUpdaterType::msi(path, None));
             }
         }
 
         Err(crate::Error::BinaryNotFoundInArchive)
     }
 
-    fn extract_exe(
+    fn extract_exe(&self, bytes: &[u8]) -> Result<WindowsUpdaterType> {
+        if infer::app::is_exe(bytes) {
+            let (path, temp) = self.write_to_temp(bytes, ".exe")?;
+            Ok(WindowsUpdaterType::nsis(path, temp))
+        } else if infer::archive::is_msi(bytes) {
+            let (path, temp) = self.write_to_temp(bytes, ".msi")?;
+            Ok(WindowsUpdaterType::msi(path, temp))
+        } else {
+            Err(crate::Error::InvalidUpdaterFormat)
+        }
+    }
+
+    fn write_to_temp(
+        &self,
         bytes: &[u8],
-    ) -> Result<(WindowsUpdaterType, PathBuf, Option<tempfile::TempPath>)> {
+        ext: &str,
+    ) -> Result<(PathBuf, Option<tempfile::TempPath>)> {
         use std::io::Write;
 
-        let updater_type = if infer::app::is_exe(bytes) {
-            WindowsUpdaterType::Nsis
-        } else if infer::archive::is_msi(bytes) {
-            WindowsUpdaterType::Msi
-        } else {
-            return Err(crate::Error::InvalidUpdaterFormat);
-        };
-
-        let ext = updater_type.extension();
-
-        let mut temp_file = tempfile::Builder::new().suffix(ext).tempfile()?;
+        let temp_dir = self.make_temp_dir()?;
+        let mut temp_file = tempfile::Builder::new()
+            .prefix(&format!("{}-{}-installer", self.app_name, self.version))
+            .suffix(ext)
+            .rand_bytes(0)
+            .tempfile_in(temp_dir)?;
         temp_file.write_all(bytes)?;
-        let temp_path = temp_file.into_temp_path();
 
-        Ok((updater_type, temp_path.to_path_buf(), Some(temp_path)))
+        let temp = temp_file.into_temp_path();
+        Ok((temp.to_path_buf(), Some(temp)))
     }
 }
 
@@ -723,7 +766,7 @@ impl Update {
 
         let tmp_dir_locations = vec![
             Box::new(|| Some(std::env::temp_dir())) as Box<dyn FnOnce() -> Option<PathBuf>>,
-            Box::new(dirs_next::cache_dir),
+            Box::new(dirs::cache_dir),
             Box::new(|| Some(self.extract_path.parent().unwrap().to_path_buf())),
         ];
 
@@ -999,4 +1042,109 @@ fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
         .encode_wide()
         .chain(std::iter::once(0))
         .collect()
+}
+
+#[cfg(windows)]
+trait PathExt {
+    fn wrap_in_quotes(&self) -> Self;
+}
+
+#[cfg(windows)]
+impl PathExt for PathBuf {
+    fn wrap_in_quotes(&self) -> Self {
+        let mut msi_path = OsString::from("\"");
+        msi_path.push(self.as_os_str());
+        msi_path.push("\"");
+        PathBuf::from(msi_path)
+    }
+}
+
+#[cfg(windows)]
+fn escape_msi_property_arg(arg: impl AsRef<OsStr>) -> String {
+    let mut arg = arg.as_ref().to_string_lossy().to_string();
+
+    // Otherwise this argument will get lost in ShellExecute
+    if arg.is_empty() {
+        return "\"\"\"\"".to_string();
+    } else if !arg.contains(' ') && !arg.contains('"') {
+        return arg;
+    }
+
+    if arg.contains('"') {
+        arg = arg.replace('"', r#""""""#)
+    }
+
+    if arg.starts_with('-') {
+        if let Some((a1, a2)) = arg.split_once('=') {
+            format!("{a1}=\"\"{a2}\"\"")
+        } else {
+            format!("\"\"{arg}\"\"")
+        }
+    } else {
+        format!("\"\"{arg}\"\"")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    #[cfg(windows)]
+    fn it_wraps_correctly() {
+        use super::PathExt;
+        use std::path::PathBuf;
+
+        assert_eq!(
+            PathBuf::from("C:\\Users\\Some User\\AppData\\tauri-example.exe").wrap_in_quotes(),
+            PathBuf::from("\"C:\\Users\\Some User\\AppData\\tauri-example.exe\"")
+        )
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn it_escapes_correctly() {
+        use crate::updater::escape_msi_property_arg;
+
+        // Explanation for quotes:
+        // The output of escape_msi_property_args() will be used in `LAUNCHAPPARGS=\"{HERE}\"`. This is the first quote level.
+        // To escape a quotation mark we use a second quotation mark, so "" is interpreted as " later.
+        // This means that the escaped strings can't ever have a single quotation mark!
+        // Now there are 3 major things to look out for to not break the msiexec call:
+        //   1) Wrap spaces in quotation marks, otherwise it will be interpreted as the end of the msiexec argument.
+        //   2) Escape escaping quotation marks, otherwise they will either end the msiexec argument or be ignored.
+        //   3) Escape emtpy args in quotation marks, otherwise the argument will get lost.
+        let cases = [
+            "something",
+            "--flag",
+            "--empty=",
+            "--arg=value",
+            "some space",                     // This simulates `./my-app "some string"`.
+            "--arg value", // -> This simulates `./my-app "--arg value"`. Same as above but it triggers the startsWith(`-`) logic.
+            "--arg=unwrapped space", // `./my-app --arg="unwrapped space"`
+            "--arg=\"wrapped\"", // `./my-app --args=""wrapped""`
+            "--arg=\"wrapped space\"", // `./my-app --args=""wrapped space""`
+            "--arg=midword\"wrapped space\"", // `./my-app --args=midword""wrapped""`
+            "",            // `./my-app '""'`
+        ];
+        let cases_escaped = [
+            "something",
+            "--flag",
+            "--empty=",
+            "--arg=value",
+            "\"\"some space\"\"",
+            "\"\"--arg value\"\"",
+            "--arg=\"\"unwrapped space\"\"",
+            r#"--arg=""""""wrapped"""""""#,
+            r#"--arg=""""""wrapped space"""""""#,
+            r#"--arg=""midword""""wrapped space"""""""#,
+            "\"\"\"\"",
+        ];
+
+        // Just to be sure we didn't mess that up
+        assert_eq!(cases.len(), cases_escaped.len());
+
+        for (orig, escaped) in cases.iter().zip(cases_escaped) {
+            assert_eq!(escape_msi_property_arg(orig), escaped);
+        }
+    }
 }

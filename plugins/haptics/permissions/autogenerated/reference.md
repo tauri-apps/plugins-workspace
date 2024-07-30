@@ -1,10 +1,114 @@
-| Permission | Description |
-|------|-----|
-|`allow-impact-feedback`|Enables the impact_feedback command without any pre-configured scope.|
-|`deny-impact-feedback`|Denies the impact_feedback command without any pre-configured scope.|
-|`allow-notification-feedback`|Enables the notification_feedback command without any pre-configured scope.|
-|`deny-notification-feedback`|Denies the notification_feedback command without any pre-configured scope.|
-|`allow-selection-feedback`|Enables the selection_feedback command without any pre-configured scope.|
-|`deny-selection-feedback`|Denies the selection_feedback command without any pre-configured scope.|
-|`allow-vibrate`|Enables the vibrate command without any pre-configured scope.|
-|`deny-vibrate`|Denies the vibrate command without any pre-configured scope.|
+
+### Permission Table 
+
+<table>
+<tr>
+<th>Identifier</th>
+<th>Description</th>
+</tr>
+
+
+<tr>
+<td>
+
+`haptics:allow-impact-feedback`
+
+</td>
+<td>
+
+Enables the impact_feedback command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`haptics:deny-impact-feedback`
+
+</td>
+<td>
+
+Denies the impact_feedback command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`haptics:allow-notification-feedback`
+
+</td>
+<td>
+
+Enables the notification_feedback command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`haptics:deny-notification-feedback`
+
+</td>
+<td>
+
+Denies the notification_feedback command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`haptics:allow-selection-feedback`
+
+</td>
+<td>
+
+Enables the selection_feedback command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`haptics:deny-selection-feedback`
+
+</td>
+<td>
+
+Denies the selection_feedback command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`haptics:allow-vibrate`
+
+</td>
+<td>
+
+Enables the vibrate command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`haptics:deny-vibrate`
+
+</td>
+<td>
+
+Denies the vibrate command without any pre-configured scope.
+
+</td>
+</tr>
+</table>

@@ -58,11 +58,11 @@ export const commands = {
 
 /** user-defined events **/
 
-export const events = __makeEvents__<{
+/* export const events = __makeEvents__<{
   randomNumber: RandomNumber;
 }>({
   randomNumber: "plugin:haptics:random-number",
-});
+}); */
 
 /** user-defined statics **/
 
@@ -76,7 +76,7 @@ export type ImpactFeedbackStyle =
   | "soft"
   | "rigid";
 export type NotificationFeedbackType = "success" | "warning" | "error";
-export type RandomNumber = number;
+//export type RandomNumber = number;
 
 /** tauri-specta globals **/
 

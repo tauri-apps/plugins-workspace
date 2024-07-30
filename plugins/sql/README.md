@@ -64,7 +64,7 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 ```javascript
 import Database from "@tauri-apps/plugin-sql";
 
-// sqlite. The path is relative to `tauri::api::path::BaseDirectory::App`.
+// sqlite. The path is relative to `tauri::api::path::BaseDirectory::AppConfig`.
 const db = await Database.load("sqlite:test.db");
 // mysql
 const db = await Database.load("mysql://user:pass@host/database");
@@ -158,7 +158,26 @@ fn main() {
 
 ### Applying Migrations
 
-Migrations are applied automatically when the plugin is initialized. The plugin runs these migrations against the database specified by the connection string. Ensure that the migrations are defined in the correct order and are idempotent (safe to run multiple times).
+To apply the migrations when the plugin is initialized, add the connection string to the `tauri.conf.json` file:
+
+```json
+{
+  "plugins": {
+    "sql": {
+      "preload": ["sqlite:mydatabase.db"]
+    }
+  }
+}
+```
+
+Alternatively, the client side `load()` also runs the migrations for a given connection string:
+
+```ts
+import Database from "@tauri-apps/plugin-sql";
+const db = await Database.load("sqlite:mydatabase.db");
+```
+
+Ensure that the migrations are defined in the correct order and are safe to run multiple times.
 
 ### Migration Management
 

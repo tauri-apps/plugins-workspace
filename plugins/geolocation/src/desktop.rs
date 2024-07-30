@@ -5,7 +5,7 @@
 use serde::{de::DeserializeOwned, Serialize};
 use tauri::{
     ipc::{Channel, InvokeBody},
-    plugin::{PluginApi, PluginHandle},
+    plugin::PluginApi,
     AppHandle, Runtime,
 };
 
@@ -24,7 +24,7 @@ pub struct Geolocation<R: Runtime>(AppHandle<R>);
 impl<R: Runtime> Geolocation<R> {
     pub fn get_current_position(
         &self,
-        options: Option<PositionOptions>,
+        _options: Option<PositionOptions>,
     ) -> crate::Result<Position> {
         Ok(Position::default())
     }
@@ -58,13 +58,13 @@ impl<R: Runtime> Geolocation<R> {
 
     pub(crate) fn watch_position_inner(
         &self,
-        options: PositionOptions,
-        callback_channel: Channel,
+        _options: PositionOptions,
+        _callback_channel: Channel,
     ) -> crate::Result<()> {
         Ok(())
     }
 
-    pub fn clear_watch(&self, channel_id: u32) -> crate::Result<()> {
+    pub fn clear_watch(&self, _channel_id: u32) -> crate::Result<()> {
         Ok(())
     }
 
@@ -74,13 +74,14 @@ impl<R: Runtime> Geolocation<R> {
 
     pub fn request_permissions(
         &self,
-        permissions: Option<Vec<PermissionType>>,
+        _permissions: Option<Vec<PermissionType>>,
     ) -> crate::Result<PermissionStatus> {
         Ok(PermissionStatus::default())
     }
 }
 
 #[derive(Serialize)]
+#[allow(unused)] // TODO:
 struct WatchPayload {
     options: PositionOptions,
     channel: Channel,
@@ -88,6 +89,7 @@ struct WatchPayload {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
+#[allow(unused)] // TODO:
 struct ClearWatchPayload {
     channel_id: u32,
 }

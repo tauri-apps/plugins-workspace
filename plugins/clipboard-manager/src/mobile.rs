@@ -92,9 +92,7 @@ impl<R: Runtime> Clipboard<R> {
     }
 
     pub fn clear(&self) -> crate::Result<()> {
-        Err(crate::Error::Clipboard(
-            "Unsupported on this platform".to_string(),
-        ))
+        self.0.run_mobile_plugin("clear", ()).map_err(Into::into)
     }
 }
 

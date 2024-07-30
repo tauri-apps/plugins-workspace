@@ -7,7 +7,7 @@ use tauri::{
     Manager, Runtime,
 };
 
-use tauri_specta::*;
+//use tauri_specta::*;
 
 pub use models::*;
 
@@ -27,10 +27,7 @@ use desktop::Geolocation;
 #[cfg(mobile)]
 use mobile::Geolocation;
 
-#[derive(Clone, serde::Serialize, specta::Type, Event)]
-struct RandomNumber(i32);
-
-macro_rules! specta_builder {
+/* macro_rules! specta_builder {
     () => {
         ts::builder()
             .commands(collect_commands![
@@ -40,11 +37,13 @@ macro_rules! specta_builder {
                 commands::check_permissions,
                 commands::request_permissions
             ])
-            .events(collect_events![RandomNumber])
             .header("// @ts-nocheck")
-            .config(specta::ts::ExportConfig::default().bigint(specta::ts::BigIntExportBehavior::Number))
+            .config(
+                specta::ts::ExportConfig::default()
+                    .bigint(specta::ts::BigIntExportBehavior::Number),
+            )
     };
-}
+} */
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the geolocation APIs.
 pub trait GeolocationExt<R: Runtime> {
@@ -58,15 +57,19 @@ impl<R: Runtime, T: Manager<R>> crate::GeolocationExt<R> for T {
 }
 
 /// Initializes the plugin.
-pub fn init() -> TauriPlugin<tauri::Wry> {
-    let (invoke_handler, register_events) =
-        specta_builder!().build_plugin_utils("geolocation").unwrap();
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    /*     let (invoke_handler, register_events) =
+    specta_builder!().build_plugin_utils("geolocation").unwrap(); */
 
     Builder::new("geolocation")
-        .invoke_handler(invoke_handler)
+        .invoke_handler(tauri::generate_handler![
+            commands::get_current_position,
+            commands::watch_position,
+            commands::clear_watch,
+            commands::check_permissions,
+            commands::request_permissions
+        ])
         .setup(|app, api| {
-            register_events(app);
-
             #[cfg(mobile)]
             let geolocation = mobile::init(app, api)?;
             #[cfg(desktop)]
@@ -77,7 +80,7 @@ pub fn init() -> TauriPlugin<tauri::Wry> {
         .build()
 }
 
-#[cfg(test)]
+/* #[cfg(test)]
 mod test {
     use super::*;
 
@@ -85,8 +88,13 @@ mod test {
     fn export_types() {
         specta_builder!()
             .path("./guest-js/bindings.ts")
-            .config(specta::ts::ExportConfig::default().formatter(specta::ts::formatter::prettier).bigint(specta::ts::BigIntExportBehavior::Number))
+            .config(
+                specta::ts::ExportConfig::default()
+                    .formatter(specta::ts::formatter::prettier)
+                    .bigint(specta::ts::BigIntExportBehavior::Number),
+            )
             .export_for_plugin("geolocation")
             .expect("failed to export specta types");
     }
 }
+ */

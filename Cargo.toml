@@ -10,17 +10,17 @@ resolver = "2"
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
 log = "0.4"
-tauri = "2.0.0-beta.22"
-tauri-build = "2.0.0-beta.17"
-tauri-plugin = "2.0.0-beta.17"
-tauri-utils = "2.0.0-beta.17"
+tauri = { version = "2.0.0-beta.25", default-features = false }
+tauri-build = "2.0.0-beta.19"
+tauri-plugin = "2.0.0-beta.19"
+tauri-utils = "2.0.0-beta.19"
 serde_json = "1"
 thiserror = "1"
 url = "2"
 schemars = "0.8"
 dunce = "1"
-tauri-specta = { git = "https://github.com/oscartbeaumont/tauri-specta", rev = "92c640d80e1dd4003adcd6000927a0af297e4c40" }
-# tauri-specta = { version = "=2.0.0-rc.11" }
+specta = "=2.0.0-rc.16"
+#tauri-specta = "=2.0.0-rc.11"
 
 [workspace.package]
 edition = "2021"
@@ -36,6 +36,3 @@ codegen-units = 1
 lto = true
 incremental = false
 opt-level = "s"
-
-[patch.crates-io]
-tauri = { git = "https://github.com/crabnebula-dev/tauri", rev = "b9cb272a8935b7a076e778b02a11e4c40930006e" } # branch="brendan/specta-impls"

@@ -40,6 +40,8 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
         invoke.resolve(ret)
     }
 
+    // This command should not be added to the `build.rs` and exposed as it is only
+    // used internally from the rust backend.
     @Command
     fun setEventHandler(invoke: Invoke) {
         val args = invoke.parseArgs(SetEventHandlerArgs::class.java)

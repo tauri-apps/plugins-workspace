@@ -1,5 +1,17 @@
 # Changelog
 
+## \[2.0.0-beta.9]
+
+- [`20a1d24e`](https://github.com/tauri-apps/plugins-workspace/commit/20a1d24ee004e77c2d12a0e20d258ce120216ed1) ([#1579](https://github.com/tauri-apps/plugins-workspace/pull/1579) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Added `Builder::split` which returns the raw logger implementation so you can pipe to other loggers such as `multi_log` or `tauri-plugin-devtools`.
+
+## \[2.0.0-beta.8]
+
+- [`22a17980`](https://github.com/tauri-apps/plugins-workspace/commit/22a17980ff4f6f8c40adb1b8f4ffc6dae2fe7e30) ([#1537](https://github.com/tauri-apps/plugins-workspace/pull/1537) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri beta.24.
+
+## \[2.0.0-beta.7]
+
+- [`76daee7a`](https://github.com/tauri-apps/plugins-workspace/commit/76daee7aafece34de3092c86e531cf9eb1138989) ([#1512](https://github.com/tauri-apps/plugins-workspace/pull/1512) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update to tauri beta.23.
+
 ## \[2.0.0-beta.6]
 
 - [`9013854f`](https://github.com/tauri-apps/plugins-workspace/commit/9013854f42a49a230b9dbb9d02774765528a923f)([#1382](https://github.com/tauri-apps/plugins-workspace/pull/1382)) Update to tauri beta.22.

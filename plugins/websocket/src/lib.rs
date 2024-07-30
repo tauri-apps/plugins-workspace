@@ -117,7 +117,7 @@ enum WebSocketMessage {
 async fn connect<R: Runtime>(
     window: Window<R>,
     url: String,
-    on_message: Channel,
+    on_message: Channel<serde_json::Value>,
     config: Option<ConnectionConfig>,
 ) -> Result<Id> {
     let id = rand::random();

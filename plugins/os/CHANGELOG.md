@@ -1,5 +1,15 @@
 # Changelog
 
+## \[2.0.0-beta.7]
+
+- [`40ef9a81`](https://github.com/tauri-apps/plugins-workspace/commit/40ef9a818fb03457819c1d72ea84de57fbf868ba) ([#1514](https://github.com/tauri-apps/plugins-workspace/pull/1514) by [@fynntang](https://github.com/tauri-apps/plugins-workspace/../../fynntang)) **Changed:** `platform`, `arch`, `type`, `family`, `version` and `exe_extension` functions in the documentation examples to better reflect that these functions are synchronous.
+- [`22a17980`](https://github.com/tauri-apps/plugins-workspace/commit/22a17980ff4f6f8c40adb1b8f4ffc6dae2fe7e30) ([#1537](https://github.com/tauri-apps/plugins-workspace/pull/1537) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri beta.24.
+
+## \[2.0.0-beta.6]
+
+- [`0959fe37`](https://github.com/tauri-apps/plugins-workspace/commit/0959fe3757250c6dea6247edb20e6ab468f20511) ([#1353](https://github.com/tauri-apps/plugins-workspace/pull/1353) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) **Breaking** Changed `platform`, `arch`, `type`, `family`, `version` and `exe_extension` functions to be sync.
+- [`76daee7a`](https://github.com/tauri-apps/plugins-workspace/commit/76daee7aafece34de3092c86e531cf9eb1138989) ([#1512](https://github.com/tauri-apps/plugins-workspace/pull/1512) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update to tauri beta.23.
+
 ## \[2.0.0-beta.5]
 
 - [`9013854f`](https://github.com/tauri-apps/plugins-workspace/commit/9013854f42a49a230b9dbb9d02774765528a923f)([#1382](https://github.com/tauri-apps/plugins-workspace/pull/1382)) Update to tauri beta.22.

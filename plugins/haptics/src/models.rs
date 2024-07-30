@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::default;
-
 use serde::{Deserialize, Serialize};
 use specta::Type;
 /*

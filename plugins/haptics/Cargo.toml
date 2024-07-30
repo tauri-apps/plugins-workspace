@@ -22,5 +22,5 @@ serde_json = { workspace = true }
 tauri = { workspace = true, features = ["specta"] }
 log = { workspace = true }
 thiserror = { workspace = true }
-specta = "=2.0.0-rc.12"
-tauri-specta = { workspace = true, features = ["javascript", "typescript"] }
+specta = { workspace = true }
+#tauri-specta = { workspace = true, features = ["javascript", "typescript"] }

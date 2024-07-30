@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use tauri::{command, ipc::Channel, AppHandle};
+use tauri::{command, ipc::Channel, AppHandle, Runtime};
 
 use crate::{GeolocationExt, PermissionStatus, PermissionType, Position, PositionOptions, Result};
 
 #[command]
 #[specta::specta]
-pub(crate) async fn get_current_position(
-    app: AppHandle,
+pub(crate) async fn get_current_position<R: Runtime>(
+    app: AppHandle<R>,
     options: Option<PositionOptions>,
 ) -> Result<Position> {
     app.geolocation().get_current_position(options)
@@ -17,8 +17,8 @@ pub(crate) async fn get_current_position(
 
 #[command]
 #[specta::specta]
-pub(crate) async fn watch_position(
-    app: AppHandle,
+pub(crate) async fn watch_position<R: Runtime>(
+    app: AppHandle<R>,
     options: PositionOptions,
     channel: Channel,
 ) -> Result<()> {
@@ -27,20 +27,20 @@ pub(crate) async fn watch_position(
 
 #[command]
 #[specta::specta]
-pub(crate) async fn clear_watch(app: AppHandle, channel_id: u32) -> Result<()> {
+pub(crate) async fn clear_watch<R: Runtime>(app: AppHandle<R>, channel_id: u32) -> Result<()> {
     app.geolocation().clear_watch(channel_id)
 }
 
 #[command]
 #[specta::specta]
-pub(crate) async fn check_permissions(app: AppHandle) -> Result<PermissionStatus> {
+pub(crate) async fn check_permissions<R: Runtime>(app: AppHandle<R>) -> Result<PermissionStatus> {
     app.geolocation().check_permissions()
 }
 
 #[command]
 #[specta::specta]
-pub(crate) async fn request_permissions(
-    app: AppHandle,
+pub(crate) async fn request_permissions<R: Runtime>(
+    app: AppHandle<R>,
     permissions: Option<Vec<PermissionType>>,
 ) -> Result<PermissionStatus> {
     app.geolocation().request_permissions(permissions)

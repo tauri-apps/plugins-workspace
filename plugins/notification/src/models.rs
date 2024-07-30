@@ -354,6 +354,7 @@ impl ActiveNotification {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
 pub struct ActionType {
     id: String,
     actions: Vec<Action>,
@@ -366,6 +367,7 @@ pub struct ActionType {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
 pub struct Action {
     id: String,
     title: String,

@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-shell"
-version = "2.0.0-beta.7"
+version = "2.0.0-beta.9"
 description = "Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -31,3 +31,6 @@ regex = "1"
 open = { version = "5", features = [ "shellexecute-on-windows" ] }
 encoding_rs = "0.8"
 os_pipe = "1"
+
+[target.'cfg(target_os = "ios")'.dependencies]
+tauri = { workspace = true, features = ["wry"] }
