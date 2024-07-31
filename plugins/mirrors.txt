@@ -6,6 +6,7 @@ dialog
 fs
 geolocation
 global-shortcut
+haptics
 http
 log
 notification
