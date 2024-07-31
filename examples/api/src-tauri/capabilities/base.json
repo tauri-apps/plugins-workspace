@@ -36,7 +36,7 @@
     "dialog:allow-confirm",
     "dialog:allow-message",
     {
-      "identifier": "shell:allow-execute",
+      "identifier": "shell:allow-spawn",
       "allow": [
         {
           "name": "sh",
@@ -44,7 +44,7 @@
           "args": [
             "-c",
             {
-              "validator": "\\S+"
+              "validator": ".+"
             }
           ]
         },
@@ -54,7 +54,7 @@
           "args": [
             "/C",
             {
-              "validator": "\\S+"
+              "validator": ".+"
             }
           ]
         }
