@@ -213,7 +213,7 @@ importers:
   plugins/geolocation:
     dependencies:
       '@tauri-apps/api':
-        specifier: 2.0.0-beta.16
+        specifier: ^2.0.0-beta.16
         version: 2.0.0-beta.16
 
   plugins/global-shortcut:
@@ -225,7 +225,7 @@ importers:
   plugins/haptics:
     dependencies:
       '@tauri-apps/api':
-        specifier: 2.0.0-beta.16
+        specifier: ^2.0.0-beta.16
         version: 2.0.0-beta.16
 
   plugins/http:
@@ -2606,14 +2606,13 @@ snapshots:
       picocolors: 1.0.1
       sisteransi: 1.0.5
 
-  '@covector/apply@0.10.0(mocha@10.7.0)':
+  '@covector/apply@0.10.0':
     dependencies:
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.0)
       semver: 7.6.3
     transitivePeerDependencies:
       - encoding
-      - mocha
 
   '@covector/assemble@0.12.0(mocha@10.7.0)':
     dependencies:
@@ -2631,7 +2630,7 @@ snapshots:
       - mocha
       - supports-color
 
-  '@covector/changelog@0.12.0(mocha@10.7.0)':
+  '@covector/changelog@0.12.0':
     dependencies:
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.0)
@@ -2641,12 +2640,11 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
-      - mocha
       - supports-color
 
   '@covector/command@0.8.0(mocha@10.7.0)':
     dependencies:
-      '@effection/process': 2.1.4(mocha@10.7.0)
+      '@effection/process': 2.1.4
       effection: 2.0.8(mocha@10.7.0)
     transitivePeerDependencies:
       - encoding
@@ -2697,8 +2695,10 @@ snapshots:
     dependencies:
       effection: 2.0.8(mocha@10.7.0)
       mocha: 10.7.0
+    transitivePeerDependencies:
+      - encoding
 
-  '@effection/process@2.1.4(mocha@10.7.0)':
+  '@effection/process@2.1.4':
     dependencies:
       cross-spawn: 7.0.3
       ctrlc-windows: 2.1.0
@@ -2706,7 +2706,6 @@ snapshots:
       shellwords: 0.1.1
     transitivePeerDependencies:
       - encoding
-      - mocha
 
   '@effection/stream@2.0.6':
     dependencies:
@@ -3463,9 +3462,9 @@ snapshots:
   covector@0.12.3(mocha@10.7.0):
     dependencies:
       '@clack/prompts': 0.7.0
-      '@covector/apply': 0.10.0(mocha@10.7.0)
+      '@covector/apply': 0.10.0
       '@covector/assemble': 0.12.0(mocha@10.7.0)
-      '@covector/changelog': 0.12.0(mocha@10.7.0)
+      '@covector/changelog': 0.12.0
       '@covector/command': 0.8.0(mocha@10.7.0)
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.0)
