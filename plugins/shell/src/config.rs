@@ -25,6 +25,9 @@ pub enum ShellAllowlistOpen {
 
     /// Enable the shell open API, with a custom regex that the opened path must match against.
     ///
+    /// The regex string is automatically surrounded by `^...$` to match the full string.
+    /// For example the `https?://\w+` regex would be registered as `^https?://\w+$`.
+    ///
     /// If using a custom regex to support a non-http(s) schema, care should be used to prevent values
     /// that allow flag-like strings to pass validation. e.g. `--enable-debugging`, `-i`, `/R`.
     Validate(String),
