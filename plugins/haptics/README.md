@@ -1,10 +1,8 @@
 ![haptics](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/haptics/banner.png)
 
-<!-- description -->
+Haptic feedback and vibrations on Android and iOS.
 
-TODO: docs
-
-There are no standards/requirements for vibration support on Android, so the `feedback` APIs often do not work correctly on more affordable phones, including recently released ones.
+There are no standards/requirements for vibration support on Android, so the `feedback` APIs may not work correctly on more affordable phones, including recently released ones.
 
 ## Install
 
@@ -66,12 +64,41 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
+import {
+  vibrate,
+  impactFeedback,
+  notificationFeedback,
+  selectionFeedback,
+} from "@tauri-apps/plugin-haptics";
 
+await vibrate(1);
+await impactFeedback("medium");
+await notificationFeedback("warning");
+await selectionFeedback();
 ```
 
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
+
+## Contributed By
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="contributors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://rescue.co" target="_blank">
+            <img src="contributors/rescue.png" alt="Rescue.co" width="283" height="90">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## Partners
 

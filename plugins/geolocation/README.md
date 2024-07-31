@@ -1,6 +1,6 @@
 ![geolocation](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/geolocation/banner.png)
 
-<!-- description -->
+This plugin provides APIs for getting and tracking the device's current position, including information about altitude, heading, and speed (if available).
 
 ## Install
 
@@ -44,6 +44,31 @@ npm add https://github.com/tauri-apps/tauri-plugin-geolocation#v2
 yarn add https://github.com/tauri-apps/tauri-plugin-geolocation#v2
 ```
 
+## Setting up
+
+### iOS
+
+Apple requires privacy descriptions to be specified in `Info.plist` for location information:
+
+- `NSLocationWhenInUseDescription`
+
+### Android
+
+This plugin automatically adds the following permissions to your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+```
+
+If your app requires GPS functionality to function, **you** should add the following to your `AndroidManifest.xml` file:
+
+```xml
+<uses-feature android:name="android.hardware.gps" android:required="true" />
+```
+
+The Google Play Store uses this property to decide whether it should show the app to devices without GPS capabilities.
+
 ## Usage
 
 First you need to register the core plugin with Tauri:
@@ -62,12 +87,40 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
+import { getCurrentPosition, watchPosition } from "@tauri-apps/plugin-log";
 
+const pos = await getCurrentPosition();
+
+await watchPosition(
+  { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+  (pos) => {
+    console.log(pos);
+  }
+);
 ```
 
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
+
+## Contributed By
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="contributors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://rescue.co" target="_blank">
+            <img src="contributors/rescue.png" alt="Rescue.co" width="283" height="90">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## Partners
 
