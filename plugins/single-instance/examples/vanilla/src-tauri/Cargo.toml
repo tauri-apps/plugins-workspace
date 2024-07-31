@@ -10,7 +10,7 @@ rust-version = "1.75"
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
-tauri = { workspace = true }
+tauri = { workspace = true, features = ["wry", "compression"] }
 tauri-plugin-single-instance = { path = "../../../" }
 tauri-plugin-cli = { path = "../../../../cli" }
 
