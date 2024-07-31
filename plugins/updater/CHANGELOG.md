@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.0.0-beta.8]
+
+- [`99d6ac0f`](https://github.com/tauri-apps/plugins-workspace/commit/99d6ac0f9506a6a4a1aa59c728157190a7441af6) ([#1606](https://github.com/tauri-apps/plugins-workspace/pull/1606) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) The JS packages now specify the *minimum* `@tauri-apps/api` version instead of a single exact version.
+- [`6de87966`](https://github.com/tauri-apps/plugins-workspace/commit/6de87966ecc00ad9d91c25be452f1f46bd2b7e1f) ([#1597](https://github.com/tauri-apps/plugins-workspace/pull/1597) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Update to tauri beta.25.
+
 ## \[2.0.0-beta.11]
 
 - [`f83b9e98`](https://github.com/tauri-apps/plugins-workspace/commit/f83b9e9813843df19b03b6af1018d848111b2a62) ([#1544](https://github.com/tauri-apps/plugins-workspace/pull/1544) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) On Windows, use a named tempfile with `<app name>-<version>-installer.exe` (or `.msi`) for v2 updater
@@ -150,3 +155,4 @@
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   92fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
