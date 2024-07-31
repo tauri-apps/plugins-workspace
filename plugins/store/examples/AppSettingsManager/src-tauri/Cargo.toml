@@ -13,7 +13,7 @@ edition = "2021"
 tauri-build = { workspace = true }
 
 [dependencies]
-tauri = { workspace = true }
+tauri = { workspace = true, features = ["wry", "compression"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri-plugin-store = { path = "../../../" }
