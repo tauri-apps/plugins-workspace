@@ -39,8 +39,7 @@ features = [
   "isolation",
   "macos-private-api",
   "tray-icon",
-  "protocol-asset",
-  "wry"
+  "protocol-asset"
 ]
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
