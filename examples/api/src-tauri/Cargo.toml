@@ -29,9 +29,11 @@ tauri-plugin-os = { path = "../../../plugins/os", version = "2.0.0-beta.8" }
 tauri-plugin-process = { path = "../../../plugins/process", version = "2.0.0-beta.8" }
 tauri-plugin-shell = { path = "../../../plugins/shell", version = "2.0.0-beta.9" }
 
-  [dependencies.tauri]
-  workspace = true
-  features = [
+[dependencies.tauri]
+workspace = true
+features = [
+  "wry",
+  "compression",
   "image-ico",
   "image-png",
   "isolation",
