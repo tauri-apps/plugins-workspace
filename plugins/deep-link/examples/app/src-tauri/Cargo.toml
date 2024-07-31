@@ -19,7 +19,7 @@ tauri-build = { workspace = true }
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
-tauri = { workspace = true }
+tauri = { workspace = true, features = ["wry"] }
 tauri-plugin-deep-link = { path = "../../../" }
 
 [features]
