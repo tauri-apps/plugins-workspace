@@ -44,19 +44,17 @@ pub struct PositionOptions {
     /// Will be ignored on Android 12+ if users didn't grant the ACCESS_FINE_LOCATION permission.
     pub enable_high_accuracy: bool,
     /// The maximum wait time in milliseconds for location updates.
+    /// Default: 10000
     /// On Android the timeout gets ignored for getCurrentPosition.
-    /// Ignored on iOS
-    // TODO: iOS behavior?
-    // TODO: validate Android behavior
-    // TODO: Handle Infinity
-    // TODO: Should default to Infinity
-    // TODO: Should be u64 or something but specta doesn't like that.
+    /// Ignored on iOS.
+    // TODO: Handle Infinity and default to it.
+    // TODO: Should be u64+ but specta doesn't like that?
     pub timeout: u32,
     /// The maximum age in milliseconds of a possible cached position that is acceptable to return.
     /// Default: 0
-    /// Ignored on iOS
-    // TODO: Handle Infinity
-    // TODO: Should be u64 or something but specta doesn't like that.
+    /// Ignored on iOS.
+    // TODO: Handle Infinity.
+    // TODO: Should be u64+ but specta doesn't like that?
     pub maximum_age: u32,
 }
 
@@ -93,7 +91,7 @@ pub struct Position {
     /// Creation time for these coordinates.
     // TODO: Check if we're actually losing precision.
     pub timestamp: u64,
-    /// The GPD coordinates along with the accuracy of the data.
+    /// The GPS coordinates along with the accuracy of the data.
     pub coords: Coordinates,
 }
 

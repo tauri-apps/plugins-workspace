@@ -39,9 +39,6 @@ class ClearWatchArgs {
     var channelId: Long = 0
 }
 
-// TODO: App requires a reload after permissions were granted
-// TODO: Check if above assumption is actually correct
-
 // TODO: Plugin does not ask user to enable google location services (like gmaps does)
 
 private const val ALIAS_LOCATION: String = "location"
