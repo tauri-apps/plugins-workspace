@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.0.0-beta.8]
+
+- [`99d6ac0f`](https://github.com/tauri-apps/plugins-workspace/commit/99d6ac0f9506a6a4a1aa59c728157190a7441af6) ([#1606](https://github.com/tauri-apps/plugins-workspace/pull/1606) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) The JS packages now specify the *minimum* `@tauri-apps/api` version instead of a single exact version.
+- [`6de87966`](https://github.com/tauri-apps/plugins-workspace/commit/6de87966ecc00ad9d91c25be452f1f46bd2b7e1f) ([#1597](https://github.com/tauri-apps/plugins-workspace/pull/1597) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Update to tauri beta.25.
+
 ## \[2.0.0-beta.7]
 
 - [`40ef9a81`](https://github.com/tauri-apps/plugins-workspace/commit/40ef9a818fb03457819c1d72ea84de57fbf868ba) ([#1514](https://github.com/tauri-apps/plugins-workspace/pull/1514) by [@fynntang](https://github.com/tauri-apps/plugins-workspace/../../fynntang)) **Changed:** `platform`, `arch`, `type`, `family`, `version` and `exe_extension` functions in the documentation examples to better reflect that these functions are synchronous.
@@ -84,3 +89,4 @@
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   ae67\`]\(https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+om/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
