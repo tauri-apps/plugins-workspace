@@ -23,7 +23,7 @@
     "rollup": "4.19.2",
     "tslib": "2.6.3",
     "typescript": "5.5.4",
-    "typescript-eslint": "rc-v8"
+    "typescript-eslint": "8.0.0"
   },
   "resolutions": {
     "semver": ">=7.5.2",
