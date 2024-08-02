@@ -200,7 +200,7 @@ checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
 
 [[package]]
 name = "api"
-version = "2.0.0-beta.15"
+version = "2.0.0-beta.16"
 dependencies = [
  "log",
  "serde",
@@ -2616,7 +2616,7 @@ dependencies = [
  "futures-core",
  "futures-sink",
  "http",
- "indexmap 2.2.6",
+ "indexmap 2.3.0",
  "slab",
  "tokio",
  "tokio-util",
@@ -2962,9 +2962,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.2.6"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "168fb715dda47215e360912c096649d23d58bf392ac62f73919e831745e40f26"
+checksum = "de3fc2e30ba82dd1b3911c8de1ffc143c74a914a14e99514d7637e3099df5ea0"
 dependencies = [
  "equivalent",
  "hashbrown 0.14.5",
@@ -4431,7 +4431,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42cf17e9a1800f5f396bc67d193dc9411b59012a5876445ef450d449881e1016"
 dependencies = [
  "base64 0.22.1",
- "indexmap 2.2.6",
+ "indexmap 2.3.0",
  "quick-xml 0.32.0",
  "serde",
  "time",
@@ -5514,7 +5514,7 @@ dependencies = [
  "chrono",
  "hex",
  "indexmap 1.9.3",
- "indexmap 2.2.6",
+ "indexmap 2.3.0",
  "serde",
  "serde_derive",
  "serde_json",
@@ -5796,7 +5796,7 @@ dependencies = [
  "hashbrown 0.14.5",
  "hashlink",
  "hex",
- "indexmap 2.2.6",
+ "indexmap 2.3.0",
  "log",
  "memchr",
  "once_cell",
@@ -6394,7 +6394,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-authenticator"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 dependencies = [
  "authenticator",
  "base64 0.22.1",
@@ -6417,7 +6417,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-autostart"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 dependencies = [
  "auto-launch",
  "log",
@@ -6430,7 +6430,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-barcode-scanner"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 dependencies = [
  "log",
  "serde",
@@ -6442,7 +6442,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-biometric"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 dependencies = [
  "log",
  "serde",
@@ -6455,7 +6455,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-cli"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 dependencies = [
  "clap",
  "log",
@@ -6468,7 +6468,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-clipboard-manager"
-version = "2.1.0-beta.6"
+version = "2.1.0-beta.7"
 dependencies = [
  "arboard",
  "image 0.24.9",
@@ -6482,7 +6482,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 dependencies = [
  "dunce",
  "log",
@@ -6500,7 +6500,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-beta.11"
+version = "2.0.0-beta.12"
 dependencies = [
  "dunce",
  "log",
@@ -6516,7 +6516,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-beta.11"
+version = "2.0.0-beta.12"
 dependencies = [
  "anyhow",
  "glob",
@@ -6535,7 +6535,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-global-shortcut"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 dependencies = [
  "global-hotkey",
  "log",
@@ -6548,7 +6548,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.0-beta.12"
+version = "2.0.0-beta.13"
 dependencies = [
  "data-url",
  "http",
@@ -6568,7 +6568,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-localhost"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 dependencies = [
  "http",
  "log",
@@ -6581,7 +6581,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-log"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 dependencies = [
  "android_logger",
  "byte-unit",
@@ -6601,7 +6601,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-nfc"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 dependencies = [
  "log",
  "serde",
@@ -6614,7 +6614,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "2.0.0-beta.11"
+version = "2.0.0-beta.12"
 dependencies = [
  "color-backtrace",
  "ctor",
@@ -6636,7 +6636,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-os"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 dependencies = [
  "gethostname",
  "log",
@@ -6652,7 +6652,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.0-beta.11"
+version = "2.0.0-beta.12"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6666,7 +6666,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-positioner"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 dependencies = [
  "log",
  "serde",
@@ -6679,7 +6679,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-process"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 dependencies = [
  "tauri",
  "tauri-plugin",
@@ -6687,7 +6687,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-shell"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 dependencies = [
  "encoding_rs",
  "log",
@@ -6706,7 +6706,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-beta.11"
+version = "2.0.0-beta.12"
 dependencies = [
  "log",
  "semver",
@@ -6720,10 +6720,10 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-sql"
-version = "2.0.0-beta.10"
+version = "2.0.0-beta.11"
 dependencies = [
  "futures-core",
- "indexmap 2.2.6",
+ "indexmap 2.3.0",
  "log",
  "serde",
  "serde_json",
@@ -6737,7 +6737,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-store"
-version = "2.0.0-beta.10"
+version = "2.0.0-beta.11"
 dependencies = [
  "dunce",
  "log",
@@ -6750,7 +6750,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-stronghold"
-version = "2.0.0-beta.8"
+version = "2.0.0-beta.9"
 dependencies = [
  "hex",
  "iota-crypto",
@@ -6771,7 +6771,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.0.0-beta.11"
+version = "2.0.0-beta.12"
 dependencies = [
  "base64 0.22.1",
  "dirs 5.0.1",
@@ -6798,7 +6798,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-upload"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 dependencies = [
  "futures-util",
  "log",
@@ -6815,7 +6815,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-websocket"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 dependencies = [
  "futures-util",
  "http",
@@ -6832,7 +6832,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "2.0.0-beta.11"
+version = "2.0.0-beta.12"
 dependencies = [
  "bitflags 2.6.0",
  "log",
@@ -7237,7 +7237,7 @@ version = "0.19.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1b5bb770da30e5cbfde35a2d7b9b8a2c4b8ef89548a7a6aeab5c9a576e3e7421"
 dependencies = [
- "indexmap 2.2.6",
+ "indexmap 2.3.0",
  "serde",
  "serde_spanned",
  "toml_datetime",
@@ -7250,7 +7250,7 @@ version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "396e4d48bbb2b7554c944bde63101b5ae446cff6ec4a24227428f15eb72ef338"
 dependencies = [
- "indexmap 2.2.6",
+ "indexmap 2.3.0",
  "serde",
  "serde_spanned",
  "toml_datetime",
@@ -8635,7 +8635,7 @@ dependencies = [
  "crossbeam-utils",
  "displaydoc",
  "flate2",
- "indexmap 2.2.6",
+ "indexmap 2.3.0",
  "memchr",
  "thiserror",
  "zopfli",
