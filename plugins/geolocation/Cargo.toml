@@ -21,4 +21,6 @@ tauri = { workspace = true, features = ["specta"] }
 log = { workspace = true }
 thiserror = { workspace = true }
 specta = { workspace = true }
-#tauri-specta = { workspace = true, features = ["javascript", "typescript"] }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+tauri = { workspace = true, features = ["wry"] }
