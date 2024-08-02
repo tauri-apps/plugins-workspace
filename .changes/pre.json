@@ -1,6 +1,7 @@
 {
   "tag": "beta",
   "changes": [
+    ".changes/all-use-range-for-apijs.md",
     ".changes/beta.md",
     ".changes/biometric-auth-options-docs.md",
     ".changes/browser-headers.md",
@@ -31,6 +32,7 @@
     ".changes/fix-deep-link-is-registered-typo.md",
     ".changes/fix-deep-link-linux.md",
     ".changes/fix-default-arg-value.md",
+    ".changes/fix-fs-apply-leading-dot-config.md",
     ".changes/fix-fs-async-cmds.md",
     ".changes/fix-fs-scope-deadlock.md",
     ".changes/fix-fs-watcher-basedir.md",
@@ -64,6 +66,7 @@
     ".changes/log-split.md",
     ".changes/msrv-1.75.md",
     ".changes/named-tempfile-updater-windows.md",
+    ".changes/no-default-tauri-features.md",
     ".changes/notifcation-permission-commands.md",
     ".changes/notification-fix-dev-check.md",
     ".changes/notification-fix-dev-name.md",
@@ -94,6 +97,7 @@
     ".changes/tauri-beta-22.md",
     ".changes/tauri-beta-23.md",
     ".changes/tauri-beta-24.md",
+    ".changes/tauri-beta-25.md",
     ".changes/tauri-beta-4.md",
     ".changes/tauri-beta-8.md",
     ".changes/tauri-beta-9.md",
