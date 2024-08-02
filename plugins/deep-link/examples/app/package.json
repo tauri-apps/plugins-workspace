@@ -15,7 +15,6 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "2.0.0-rc.0",
-    "internal-ip": "7.0.0",
     "typescript": "^5.2.2",
     "vite": "^5.0.13"
   }

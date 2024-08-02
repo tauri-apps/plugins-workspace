@@ -5,16 +5,12 @@
 import { defineConfig } from "vite";
 import Unocss from "unocss/vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
-import { internalIpV4 } from "internal-ip";
 import process from "process";
+
+const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => {
-  const host =
-    process.env.TAURI_ENV_PLATFORM === "android" ||
-    process.env.TAURI_ENV_PLATFORM === "ios"
-      ? await internalIpV4()
-      : "localhost";
   return {
     plugins: [Unocss(), svelte()],
     build: {
@@ -27,14 +23,16 @@ export default defineConfig(async () => {
       },
     },
     server: {
-      host: "0.0.0.0",
+      host: host || false,
       port: 5173,
       strictPort: true,
-      hmr: {
-        protocol: "ws",
-        host,
-        port: 5183,
-      },
+      hmr: host
+        ? {
+            protocol: "ws",
+            host,
+            port: 5183,
+          }
+        : undefined,
       fs: {
         allow: [".", "../../tooling/api/dist"],
       },
