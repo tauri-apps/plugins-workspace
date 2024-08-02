@@ -4,7 +4,6 @@
 
 use serde::{de::DeserializeOwned, Serialize};
 use tauri::{
-    ipc::{Channel, InvokeBody},
     plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
 };
