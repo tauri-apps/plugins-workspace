@@ -31,12 +31,5 @@
   },
   "engines": {
     "pnpm": "^9.0.0"
-  },
-  "pnpm": {
-    "auditConfig": {
-      "ignoreCves": [
-        "CVE-2023-46115"
-      ]
-    }
   }
 }
