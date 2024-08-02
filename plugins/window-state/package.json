@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-window-state",
-  "version": "2.0.0-beta.9",
+  "version": "2.0.0-rc.0",
   "description": "Save window positions and sizes and restore them when the app is reopened.",
   "license": "MIT or APACHE-2.0",
   "authors": [
@@ -25,6 +25,6 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@tauri-apps/api": "^2.0.0-beta.16"
+    "@tauri-apps/api": "^2.0.0-rc.0"
   }
 }

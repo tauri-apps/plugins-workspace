@@ -2,7 +2,9 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "run-app-base",
   "description": "Base permissions to run the app",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "log:default",
     {
@@ -14,20 +16,13 @@
         }
       ]
     },
-    "app:default",
-    "resources:default",
+    "core:default",
     "fs:default",
-    "menu:default",
-    "path:default",
-    "tray:default",
-    "event:default",
-    "window:default",
-    "window:allow-minimize",
-    "window:allow-maximize",
-    "window:allow-unmaximize",
-    "window:allow-close",
-    "window:allow-start-dragging",
-    "image:default",
+    "core:window:allow-minimize",
+    "core:window:allow-maximize",
+    "core:window:allow-unmaximize",
+    "core:window:allow-close",
+    "core:window:allow-start-dragging",
     "notification:default",
     "os:allow-platform",
     "dialog:allow-open",
@@ -81,7 +76,9 @@
           "path": "$APPDATA/db/**"
         }
       ],
-      "deny": ["$APPDATA/db/*.stronghold"]
+      "deny": [
+        "$APPDATA/db/*.stronghold"
+      ]
     }
   ]
 }

@@ -52,6 +52,10 @@
 "upload-js": patch
 "websocket-js": patch
 "window-state-js": patch
+"haptics": patch
+"haptics-js": patch
+"geolocation": patch
+"geolocation-js": patch
 ---
 
-Update to tauri beta.20.
+Update to tauri RC.

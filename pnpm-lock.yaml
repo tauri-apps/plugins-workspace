@@ -58,49 +58,49 @@ importers:
   examples/api:
     dependencies:
       '@tauri-apps/api':
-        specifier: 2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: 2.0.0-rc.0
+        version: 2.0.0-rc.0
       '@tauri-apps/plugin-barcode-scanner':
-        specifier: 2.0.0-beta.8
+        specifier: 2.0.0-rc.0
         version: link:../../plugins/barcode-scanner
       '@tauri-apps/plugin-biometric':
-        specifier: 2.0.0-beta.8
+        specifier: 2.0.0-rc.0
         version: link:../../plugins/biometric
       '@tauri-apps/plugin-cli':
-        specifier: 2.0.0-beta.8
+        specifier: 2.0.0-rc.0
         version: link:../../plugins/cli
       '@tauri-apps/plugin-clipboard-manager':
-        specifier: 2.1.0-beta.6
+        specifier: 2.0.0-rc.0
         version: link:../../plugins/clipboard-manager
       '@tauri-apps/plugin-dialog':
-        specifier: 2.0.0-beta.8
+        specifier: 2.0.0-rc.0
         version: link:../../plugins/dialog
       '@tauri-apps/plugin-fs':
-        specifier: 2.0.0-beta.8
+        specifier: 2.0.0-rc.0
         version: link:../../plugins/fs
       '@tauri-apps/plugin-global-shortcut':
-        specifier: 2.0.0-beta.8
+        specifier: 2.0.0-rc.0
         version: link:../../plugins/global-shortcut
       '@tauri-apps/plugin-http':
-        specifier: 2.0.0-beta.9
+        specifier: 2.0.0-rc.0
         version: link:../../plugins/http
       '@tauri-apps/plugin-nfc':
-        specifier: 2.0.0-beta.8
+        specifier: 2.0.0-rc.0
         version: link:../../plugins/nfc
       '@tauri-apps/plugin-notification':
-        specifier: 2.0.0-beta.8
+        specifier: 2.0.0-rc.0
         version: link:../../plugins/notification
       '@tauri-apps/plugin-os':
-        specifier: 2.0.0-beta.8
+        specifier: 2.0.0-rc.0
         version: link:../../plugins/os
       '@tauri-apps/plugin-process':
-        specifier: 2.0.0-beta.8
+        specifier: 2.0.0-rc.0
         version: link:../../plugins/process
       '@tauri-apps/plugin-shell':
-        specifier: 2.0.0-beta.9
+        specifier: 2.0.0-rc.0
         version: link:../../plugins/shell
       '@tauri-apps/plugin-updater':
-        specifier: 2.0.0-beta.8
+        specifier: 2.0.0-rc.0
         version: link:../../plugins/updater
       '@zerodevx/svelte-json-view':
         specifier: 1.0.9
@@ -116,8 +116,8 @@ importers:
         specifier: ^3.0.1
         version: 3.1.1(svelte@4.2.18)(vite@5.3.5(terser@5.31.3))
       '@tauri-apps/cli':
-        specifier: 2.0.0-beta.23
-        version: 2.0.0-beta.23
+        specifier: 2.0.0-rc.0
+        version: 2.0.0-rc.0
       '@unocss/extractor-svelte':
         specifier: ^0.61.0
         version: 0.61.6
@@ -137,57 +137,57 @@ importers:
   plugins/authenticator:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/autostart:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/barcode-scanner:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/biometric:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/cli:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/clipboard-manager:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/deep-link:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/deep-link/examples/app:
     dependencies:
       '@tauri-apps/api':
-        specifier: 2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: 2.0.0-rc.0
+        version: 2.0.0-rc.0
       '@tauri-apps/plugin-deep-link':
-        specifier: 2.0.0-beta.10
+        specifier: 2.0.0-rc.0
         version: link:../..
     devDependencies:
       '@tauri-apps/cli':
-        specifier: 2.0.0-beta.23
-        version: 2.0.0-beta.23
+        specifier: 2.0.0-rc.0
+        version: 2.0.0-rc.0
       internal-ip:
         specifier: 7.0.0
         version: 7.0.0
@@ -201,104 +201,104 @@ importers:
   plugins/dialog:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/fs:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/geolocation:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/global-shortcut:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/haptics:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/http:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/log:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/nfc:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/notification:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/os:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/positioner:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/process:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/shell:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/single-instance/examples/vanilla:
     devDependencies:
       '@tauri-apps/cli':
-        specifier: 2.0.0-beta.23
-        version: 2.0.0-beta.23
+        specifier: 2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/sql:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/store:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/store/examples/AppSettingsManager:
     devDependencies:
       '@tauri-apps/cli':
-        specifier: ^2.0.0-beta.15
-        version: 2.0.0-beta.23
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
       typescript:
         specifier: ^5.3.3
         version: 5.5.4
@@ -309,26 +309,26 @@ importers:
   plugins/stronghold:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/updater:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/upload:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/websocket:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
   plugins/websocket/examples/tauri-app:
     dependencies:
@@ -337,8 +337,8 @@ importers:
         version: link:../..
     devDependencies:
       '@tauri-apps/cli':
-        specifier: 2.0.0-beta.23
-        version: 2.0.0-beta.23
+        specifier: 2.0.0-rc.0
+        version: 2.0.0-rc.0
       typescript:
         specifier: ^5.3.3
         version: 5.5.4
@@ -349,8 +349,8 @@ importers:
   plugins/window-state:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: ^2.0.0-rc.0
+        version: 2.0.0-rc.0
 
 packages:
 
@@ -912,72 +912,72 @@ packages:
       svelte: ^4.0.0 || ^5.0.0-next.0
       vite: ^5.0.0
 
-  '@tauri-apps/api@2.0.0-beta.16':
-    resolution: {integrity: sha512-YGjkR9HxS/YyIoqoXDkk8o9Yy5NW6u9YxzeqEodwwOUoeS0nac6mzLTW3VYIuSelHmyUQCgbyENVY6e5CJXA4Q==}
+  '@tauri-apps/api@2.0.0-rc.0':
+    resolution: {integrity: sha512-v454Qs3REHc3Za59U+/eSmBsdmF+3NE5+76+lFDaitVqN4ZglDHENDaMARYKGJVZuxiSkzyqG0SeG7lLQjVkPA==}
     engines: {node: '>= 18.18', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
 
-  '@tauri-apps/cli-darwin-arm64@2.0.0-beta.23':
-    resolution: {integrity: sha512-Ppt76xF2SeXdkzgYdIo/UZwkvj76G33MCX9ouqqIlTVqj1FUWYLnHqUh9iCbav98NI3WzhMpNtxzRJq++7/qmw==}
+  '@tauri-apps/cli-darwin-arm64@2.0.0-rc.0':
+    resolution: {integrity: sha512-jpQc++6ESFUuBpoXvJNPTRtrmToMIByOynZ4K5SAwI9RkKUikSaDmlRZV0GisOVPT7TT08khk7MPtAQeFyjqwA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  '@tauri-apps/cli-darwin-x64@2.0.0-beta.23':
-    resolution: {integrity: sha512-mfj0NVN90JtluiGcupGy450Hn0YAHOjH1blA+4C3UniM0otmhdGMrbl5szhVFdWj6xmpaB8B2HmgUOgSuvVbzQ==}
+  '@tauri-apps/cli-darwin-x64@2.0.0-rc.0':
+    resolution: {integrity: sha512-EnqsgcNUwH29YjQ4JdBID5kILQQdIJgZ36VQgtju/BBvnd1lr+6Bswdk1/4y41hhAVz9WyHeMCnTH33CSKvNxw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  '@tauri-apps/cli-linux-arm-gnueabihf@2.0.0-beta.23':
-    resolution: {integrity: sha512-K8yZen+M4X8hPDiXlXi5tYHMeJ6A4tmmVDAA84iNJndMpTbI2Mrveprnjekzeu3l7qTMZd6W44TtMXUODH+4Tw==}
+  '@tauri-apps/cli-linux-arm-gnueabihf@2.0.0-rc.0':
+    resolution: {integrity: sha512-YKg/qThAmQYRToiV8lx/DvMf0VaUJAutIfv8ALq9Or4zdg7mZlAlKvF+7lZQQRmKhQ62+0gnoJS2HyN8feaagw==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  '@tauri-apps/cli-linux-arm64-gnu@2.0.0-beta.23':
-    resolution: {integrity: sha512-1+P1KVMNszPC2y6LXXAnm8i11rye/XjJYqNUoEIAp5jRiaQmm5xmaA61QeWSVWtbEmKM44kK9j1eOkZQWs6HzQ==}
+  '@tauri-apps/cli-linux-arm64-gnu@2.0.0-rc.0':
+    resolution: {integrity: sha512-UnflWuNhH/u41GSmG1jm6qhWUM4o1AB463QCaf2fAjLo5GWiI78U6rJOOXZvOOmWIQuzsmAUZjNDORWW13+osA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@tauri-apps/cli-linux-arm64-musl@2.0.0-beta.23':
-    resolution: {integrity: sha512-x9aH0t1liyL+fv2I22gd1XKR8v5St9x8t3d2Jcjw6IK3EUIiHY5KEdif/5UTHsmlkjLu/d40ssLgcaXH5rk+iQ==}
+  '@tauri-apps/cli-linux-arm64-musl@2.0.0-rc.0':
+    resolution: {integrity: sha512-sWRaDyb332gtHWHr0KvoLzkzvXqRpZ0vpQYxKF2/mIZtaUuMtU56GmRwFVX4VjQYgWb3yWmzTr+tEKjCjXbjng==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@tauri-apps/cli-linux-x64-gnu@2.0.0-beta.23':
-    resolution: {integrity: sha512-NMiU5Ep6aXSkaO2B023/XzoA0FTwuMqOpxUE+T4pvLld1zE+7brvHzSoQ0pXlppALyWMfH0CWX/2xnhVpQwJxA==}
+  '@tauri-apps/cli-linux-x64-gnu@2.0.0-rc.0':
+    resolution: {integrity: sha512-1dokW+9ZfhwzwYz42jYR5A0/VnGoEGVW7HyN1N6KvHeL1FpSbh0LoTsDODjVjZSjXd62+Aac/stbJqBZChQWbA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@tauri-apps/cli-linux-x64-musl@2.0.0-beta.23':
-    resolution: {integrity: sha512-iPLalS0zv2NwG8c0focKs1m90p2xpvI21vwYTp564G5K1RDJ7eOVCKQpKiHdanSruieRjA/o21dJ2DUAzQkQpA==}
+  '@tauri-apps/cli-linux-x64-musl@2.0.0-rc.0':
+    resolution: {integrity: sha512-7tb34p3vLEGS4pGRpmxcz7eq37yD7DVe4XFfgj8ZO0KsaRBVivzNK2snNDLnd0dVZcx/lJjZc8Cf0B5W1/x/Jw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@tauri-apps/cli-win32-arm64-msvc@2.0.0-beta.23':
-    resolution: {integrity: sha512-RUwrwhb/cVelqkq5/Isq9SeXk5PJ15TNNr+A3EMcWN+eNOtHQimNM9xqSzXMwwNPExuvSOIDpnHWBQPd7FQ+nw==}
+  '@tauri-apps/cli-win32-arm64-msvc@2.0.0-rc.0':
+    resolution: {integrity: sha512-Ilw3Gro8ZBew9yfBXcaET9lLj0g4jehWDMH6j2Wdje1rnvBbQShMaSn3WNMfJypyet5nqM88nGA3YipzmVcIBA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  '@tauri-apps/cli-win32-ia32-msvc@2.0.0-beta.23':
-    resolution: {integrity: sha512-hmICsj/E8tKSVqzjqLm6PuEeU9UjnhsagxK7Zun3lWsnVYNz2DS+AGO+vBn0TEFpVgJxl6kWCHcwerIPRpqdfQ==}
+  '@tauri-apps/cli-win32-ia32-msvc@2.0.0-rc.0':
+    resolution: {integrity: sha512-AWzgDlvv0BssWH3aNsDXLRkKbGynWdm5X6DenSQKtZm5dmDBZsNlZRMgkyPb8WSHK/7ARznKs2OdnkuHWuh9ww==}
     engines: {node: '>= 10'}
     cpu: [ia32]
     os: [win32]
 
-  '@tauri-apps/cli-win32-x64-msvc@2.0.0-beta.23':
-    resolution: {integrity: sha512-FKZyIPS8s+vSFxgzMoMUJP5portz3X/bwfh7bthAxr14qKCkM7Z7H59y7hF88gmRkeLvwxNDyDz4+bVi42XMhQ==}
+  '@tauri-apps/cli-win32-x64-msvc@2.0.0-rc.0':
+    resolution: {integrity: sha512-zmXDUkBmzZ6lk6jT6AoOAE2w+kmkLX5uf/vaJHHzE6WsrZ6UymH0HTLwbRXhaplvpnzXGVyLuSlv3/BK6Q69aQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
 
-  '@tauri-apps/cli@2.0.0-beta.23':
-    resolution: {integrity: sha512-6p15budG+2oZIlq/ZqgX08/v/afHTWug1cdf+r5FXCKnyK8HrLhqoRVDFTP8UmuG6INjl8V/6BhcKN01R8hXiw==}
+  '@tauri-apps/cli@2.0.0-rc.0':
+    resolution: {integrity: sha512-X9N/R7e3zeTpU0HgQi2kaNYncMFoSTzXstnUyGOcKrJcCkR4ebbA2nYqhGvIPfglLKHNFRTZwfPNhixx2Ftxxg==}
     engines: {node: '>= 10'}
     hasBin: true
 
@@ -2615,9 +2615,9 @@ snapshots:
       - encoding
       - mocha
 
-  '@covector/assemble@0.12.0(mocha@10.7.0)':
+  '@covector/assemble@0.12.0':
     dependencies:
-      '@covector/command': 0.8.0(mocha@10.7.0)
+      '@covector/command': 0.8.0
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.0)
       js-yaml: 4.1.0
@@ -2628,10 +2628,9 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
-      - mocha
       - supports-color
 
-  '@covector/changelog@0.12.0(mocha@10.7.0)':
+  '@covector/changelog@0.12.0':
     dependencies:
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.0)
@@ -2641,16 +2640,14 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
-      - mocha
       - supports-color
 
-  '@covector/command@0.8.0(mocha@10.7.0)':
+  '@covector/command@0.8.0':
     dependencies:
-      '@effection/process': 2.1.4(mocha@10.7.0)
+      '@effection/process': 2.1.4
       effection: 2.0.8(mocha@10.7.0)
     transitivePeerDependencies:
       - encoding
-      - mocha
 
   '@covector/files@0.8.0':
     dependencies:
@@ -2697,8 +2694,10 @@ snapshots:
     dependencies:
       effection: 2.0.8(mocha@10.7.0)
       mocha: 10.7.0
+    transitivePeerDependencies:
+      - encoding
 
-  '@effection/process@2.1.4(mocha@10.7.0)':
+  '@effection/process@2.1.4':
     dependencies:
       cross-spawn: 7.0.3
       ctrlc-windows: 2.1.0
@@ -2706,7 +2705,6 @@ snapshots:
       shellwords: 0.1.1
     transitivePeerDependencies:
       - encoding
-      - mocha
 
   '@effection/stream@2.0.6':
     dependencies:
@@ -2988,50 +2986,50 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tauri-apps/api@2.0.0-beta.16': {}
+  '@tauri-apps/api@2.0.0-rc.0': {}
 
-  '@tauri-apps/cli-darwin-arm64@2.0.0-beta.23':
+  '@tauri-apps/cli-darwin-arm64@2.0.0-rc.0':
     optional: true
 
-  '@tauri-apps/cli-darwin-x64@2.0.0-beta.23':
+  '@tauri-apps/cli-darwin-x64@2.0.0-rc.0':
     optional: true
 
-  '@tauri-apps/cli-linux-arm-gnueabihf@2.0.0-beta.23':
+  '@tauri-apps/cli-linux-arm-gnueabihf@2.0.0-rc.0':
     optional: true
 
-  '@tauri-apps/cli-linux-arm64-gnu@2.0.0-beta.23':
+  '@tauri-apps/cli-linux-arm64-gnu@2.0.0-rc.0':
     optional: true
 
-  '@tauri-apps/cli-linux-arm64-musl@2.0.0-beta.23':
+  '@tauri-apps/cli-linux-arm64-musl@2.0.0-rc.0':
     optional: true
 
-  '@tauri-apps/cli-linux-x64-gnu@2.0.0-beta.23':
+  '@tauri-apps/cli-linux-x64-gnu@2.0.0-rc.0':
     optional: true
 
-  '@tauri-apps/cli-linux-x64-musl@2.0.0-beta.23':
+  '@tauri-apps/cli-linux-x64-musl@2.0.0-rc.0':
     optional: true
 
-  '@tauri-apps/cli-win32-arm64-msvc@2.0.0-beta.23':
+  '@tauri-apps/cli-win32-arm64-msvc@2.0.0-rc.0':
     optional: true
 
-  '@tauri-apps/cli-win32-ia32-msvc@2.0.0-beta.23':
+  '@tauri-apps/cli-win32-ia32-msvc@2.0.0-rc.0':
     optional: true
 
-  '@tauri-apps/cli-win32-x64-msvc@2.0.0-beta.23':
+  '@tauri-apps/cli-win32-x64-msvc@2.0.0-rc.0':
     optional: true
 
-  '@tauri-apps/cli@2.0.0-beta.23':
+  '@tauri-apps/cli@2.0.0-rc.0':
     optionalDependencies:
-      '@tauri-apps/cli-darwin-arm64': 2.0.0-beta.23
-      '@tauri-apps/cli-darwin-x64': 2.0.0-beta.23
-      '@tauri-apps/cli-linux-arm-gnueabihf': 2.0.0-beta.23
-      '@tauri-apps/cli-linux-arm64-gnu': 2.0.0-beta.23
-      '@tauri-apps/cli-linux-arm64-musl': 2.0.0-beta.23
-      '@tauri-apps/cli-linux-x64-gnu': 2.0.0-beta.23
-      '@tauri-apps/cli-linux-x64-musl': 2.0.0-beta.23
-      '@tauri-apps/cli-win32-arm64-msvc': 2.0.0-beta.23
-      '@tauri-apps/cli-win32-ia32-msvc': 2.0.0-beta.23
-      '@tauri-apps/cli-win32-x64-msvc': 2.0.0-beta.23
+      '@tauri-apps/cli-darwin-arm64': 2.0.0-rc.0
+      '@tauri-apps/cli-darwin-x64': 2.0.0-rc.0
+      '@tauri-apps/cli-linux-arm-gnueabihf': 2.0.0-rc.0
+      '@tauri-apps/cli-linux-arm64-gnu': 2.0.0-rc.0
+      '@tauri-apps/cli-linux-arm64-musl': 2.0.0-rc.0
+      '@tauri-apps/cli-linux-x64-gnu': 2.0.0-rc.0
+      '@tauri-apps/cli-linux-x64-musl': 2.0.0-rc.0
+      '@tauri-apps/cli-win32-arm64-msvc': 2.0.0-rc.0
+      '@tauri-apps/cli-win32-ia32-msvc': 2.0.0-rc.0
+      '@tauri-apps/cli-win32-x64-msvc': 2.0.0-rc.0
 
   '@types/eslint@9.6.0':
     dependencies:
@@ -3464,9 +3462,9 @@ snapshots:
     dependencies:
       '@clack/prompts': 0.7.0
       '@covector/apply': 0.10.0(mocha@10.7.0)
-      '@covector/assemble': 0.12.0(mocha@10.7.0)
-      '@covector/changelog': 0.12.0(mocha@10.7.0)
-      '@covector/command': 0.8.0(mocha@10.7.0)
+      '@covector/assemble': 0.12.0
+      '@covector/changelog': 0.12.0
+      '@covector/command': 0.8.0
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.0)
       globby: 11.1.0

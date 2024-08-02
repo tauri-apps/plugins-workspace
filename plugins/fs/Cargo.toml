@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-fs"
-version = "2.0.0-beta.12"
+version = "2.0.0-rc.0"
 description = "Access the file system."
 authors = { workspace = true }
 license = { workspace = true }
@@ -26,10 +26,10 @@ tauri = { workspace = true }
 thiserror = { workspace = true }
 url = { workspace = true }
 anyhow = "1"
-uuid = { version = "1", features = [ "v4" ] }
+uuid = { version = "1", features = ["v4"] }
 glob = "0.3"
-notify = { version = "6", optional = true, features = [ "serde" ] }
+notify = { version = "6", optional = true, features = ["serde"] }
 notify-debouncer-full = { version = "0.3", optional = true }
 
 [features]
-watch = [ "notify", "notify-debouncer-full" ]
+watch = ["notify", "notify-debouncer-full"]

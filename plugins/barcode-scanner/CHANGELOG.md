@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-rc.0]
+
+- [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
+
 ## \[2.0.0-beta.8]
 
 - [`99d6ac0f`](https://github.com/tauri-apps/plugins-workspace/commit/99d6ac0f9506a6a4a1aa59c728157190a7441af6) ([#1606](https://github.com/tauri-apps/plugins-workspace/pull/1606) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) The JS packages now specify the *minimum* `@tauri-apps/api` version instead of a single exact version.
@@ -70,4 +74,4 @@
   commit/454428cd50ce4962f0bad8e355aebc68af8cc61f)([#536](https://github.com/tauri-apps/plugins-workspace/pull/536)) Initial release.
   .
   commit/454428cd50ce4962f0bad8e355aebc68af8cc61f)([#536](https://github.com/tauri-apps/plugins-workspace/pull/536)) Initial release.
-github.com/tauri-apps/plugins-workspace/pull/536)) Initial release.
+  github.com/tauri-apps/plugins-workspace/pull/536)) Initial release.

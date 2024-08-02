@@ -206,7 +206,7 @@ checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
 
 [[package]]
 name = "api"
-version = "2.0.0-beta.16"
+version = "2.0.0-beta.17"
 dependencies = [
  "log",
  "serde",
@@ -6266,9 +6266,9 @@ checksum = "4873307b7c257eddcb50c9bedf158eb669578359fb28428bef438fec8e6ba7c2"
 
 [[package]]
 name = "tauri"
-version = "2.0.0-beta.25"
+version = "2.0.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4339c67eb7700fe4a80ad6507e3b9af0b4159959f3d74aae48feed298baf4cbf"
+checksum = "255e746089a370802ec4eb896dccc6f27c1dd2a203c1dc484fd996db954e2300"
 dependencies = [
  "anyhow",
  "bytes",
@@ -6319,9 +6319,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-build"
-version = "2.0.0-beta.19"
+version = "2.0.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "498f587026501e4bbc5d6273b63f8956b03c37b3d3b2027f9c756fcd468e9c62"
+checksum = "85ceb8d082c3b17b4b2eb134a39363a22c696ddba473d6e5c0ab1caadad4cfca"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -6343,9 +6343,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-codegen"
-version = "2.0.0-beta.19"
+version = "2.0.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43bbc731067e319ef60601bf5716d1e706ee9ae28e38c0587f7165c7d6824cdf"
+checksum = "2407c7d37a491b16e530445c9611d91091cae198eea2ed424913b740215605f2"
 dependencies = [
  "base64 0.22.1",
  "brotli 3.5.0",
@@ -6370,9 +6370,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-macros"
-version = "2.0.0-beta.19"
+version = "2.0.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36b4a44346577ccde75a24c62405a4c3b4f7a3a76614ee6cf1ed14a0b756795c"
+checksum = "d210893b693be00f569b4f54456803debe104b7675f368205f2b6e94bac09b34"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -6384,9 +6384,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin"
-version = "2.0.0-beta.19"
+version = "2.0.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1abe0b85472516d1033ba251ac81b9f18f02725aadcaad697c8b727e6505a6ad"
+checksum = "b352e4478af27bd7c76724bb426ebb32fc51baafb2186afabed4e706dc9e39d4"
 dependencies = [
  "anyhow",
  "glob",
@@ -6401,7 +6401,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-authenticator"
-version = "2.0.0-beta.10"
+version = "2.0.0-rc.0"
 dependencies = [
  "authenticator",
  "base64 0.22.1",
@@ -6424,7 +6424,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-autostart"
-version = "2.0.0-beta.10"
+version = "2.0.0-rc.0"
 dependencies = [
  "auto-launch",
  "log",
@@ -6437,7 +6437,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-barcode-scanner"
-version = "2.0.0-beta.10"
+version = "2.0.0-rc.0"
 dependencies = [
  "log",
  "serde",
@@ -6449,7 +6449,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-biometric"
-version = "2.0.0-beta.9"
+version = "2.0.0-rc.0"
 dependencies = [
  "log",
  "serde",
@@ -6462,7 +6462,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-cli"
-version = "2.0.0-beta.9"
+version = "2.0.0-rc.0"
 dependencies = [
  "clap",
  "log",
@@ -6475,7 +6475,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-clipboard-manager"
-version = "2.1.0-beta.7"
+version = "2.0.0-rc.0"
 dependencies = [
  "arboard",
  "image 0.24.9",
@@ -6489,7 +6489,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.0.0-beta.10"
+version = "2.0.0-rc.0"
 dependencies = [
  "dunce",
  "log",
@@ -6507,7 +6507,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-beta.12"
+version = "2.0.0-rc.0"
 dependencies = [
  "dunce",
  "log",
@@ -6523,7 +6523,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-beta.12"
+version = "2.0.0-rc.0"
 dependencies = [
  "anyhow",
  "glob",
@@ -6542,7 +6542,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-geolocation"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "log",
  "serde",
@@ -6555,7 +6555,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-global-shortcut"
-version = "2.0.0-beta.9"
+version = "2.0.0-rc.0"
 dependencies = [
  "global-hotkey",
  "log",
@@ -6568,7 +6568,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-haptics"
-version = "2.0.0-beta.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "log",
  "serde",
@@ -6581,7 +6581,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.0-beta.13"
+version = "2.0.0-rc.0"
 dependencies = [
  "data-url",
  "http",
@@ -6601,7 +6601,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-localhost"
-version = "2.0.0-beta.9"
+version = "2.0.0-rc.0"
 dependencies = [
  "http",
  "log",
@@ -6614,7 +6614,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-log"
-version = "2.0.0-beta.10"
+version = "2.0.0-rc.0"
 dependencies = [
  "android_logger",
  "byte-unit",
@@ -6634,7 +6634,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-nfc"
-version = "2.0.0-beta.9"
+version = "2.0.0-rc.0"
 dependencies = [
  "log",
  "serde",
@@ -6647,7 +6647,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "2.0.0-beta.12"
+version = "2.0.0-rc.0"
 dependencies = [
  "color-backtrace",
  "ctor",
@@ -6669,7 +6669,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-os"
-version = "2.0.0-beta.9"
+version = "2.0.0-rc.0"
 dependencies = [
  "gethostname",
  "log",
@@ -6685,7 +6685,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.0-beta.12"
+version = "2.0.0-rc.0"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6699,7 +6699,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-positioner"
-version = "2.0.0-beta.10"
+version = "2.0.0-rc.0"
 dependencies = [
  "log",
  "serde",
@@ -6712,7 +6712,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-process"
-version = "2.0.0-beta.9"
+version = "2.0.0-rc.0"
 dependencies = [
  "tauri",
  "tauri-plugin",
@@ -6720,7 +6720,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-shell"
-version = "2.0.0-beta.10"
+version = "2.0.0-rc.0"
 dependencies = [
  "encoding_rs",
  "log",
@@ -6739,7 +6739,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-beta.12"
+version = "2.0.0-rc.0"
 dependencies = [
  "log",
  "semver",
@@ -6753,7 +6753,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-sql"
-version = "2.0.0-beta.11"
+version = "2.0.0-rc.0"
 dependencies = [
  "futures-core",
  "indexmap 2.3.0",
@@ -6770,7 +6770,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-store"
-version = "2.0.0-beta.11"
+version = "2.0.0-rc.0"
 dependencies = [
  "dunce",
  "log",
@@ -6783,7 +6783,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-stronghold"
-version = "2.0.0-beta.9"
+version = "2.0.0-rc.0"
 dependencies = [
  "hex",
  "iota-crypto",
@@ -6804,7 +6804,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.0.0-beta.12"
+version = "2.0.0-rc.0"
 dependencies = [
  "base64 0.22.1",
  "dirs 5.0.1",
@@ -6831,7 +6831,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-upload"
-version = "2.0.0-beta.10"
+version = "2.0.0-rc.0"
 dependencies = [
  "futures-util",
  "log",
@@ -6848,7 +6848,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-websocket"
-version = "2.0.0-beta.10"
+version = "2.0.0-rc.0"
 dependencies = [
  "futures-util",
  "http",
@@ -6865,7 +6865,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "2.0.0-beta.12"
+version = "2.0.0-rc.0"
 dependencies = [
  "bitflags 2.6.0",
  "log",
@@ -6878,9 +6878,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime"
-version = "2.0.0-beta.21"
+version = "2.0.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "189510033be50f6fde35cfa50b50c7ab4e0ced0c867ae0f643b4907b8385bbe5"
+checksum = "6624fdf383ccafc9e8ad9205fe6e5c976b318efcd6b3662dde658c74e4254792"
 dependencies = [
  "dpi",
  "gtk",
@@ -6897,9 +6897,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime-wry"
-version = "2.0.0-beta.21"
+version = "2.0.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6938bd63b6658e7b08f0fe2151390148ee5a8ccdba100d4dff961d2c8734d9a9"
+checksum = "9fd1a785c4281f8231b091593393b40cb3a800810c407b1ffed52de27ff1640a"
 dependencies = [
  "cocoa",
  "gtk",
@@ -6921,9 +6921,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-utils"
-version = "2.0.0-beta.19"
+version = "2.0.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e20e51856f343c503892749b27d34042e6ca83a0369a12de3c5552d9874d04e8"
+checksum = "6f435eeaae1e69cf93cf19da0f727989eed2e5eb6fc63a8d21432f59dd3ac4ac"
 dependencies = [
  "aes-gcm",
  "brotli 3.5.0",

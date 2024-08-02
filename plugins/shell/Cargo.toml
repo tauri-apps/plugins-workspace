@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-shell"
-version = "2.0.0-beta.10"
+version = "2.0.0-rc.0"
 description = "Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -23,12 +23,12 @@ serde = { workspace = true }
 schemars = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
-tokio = { version = "1", features = [ "time" ] }
+tokio = { version = "1", features = ["time"] }
 log = { workspace = true }
 thiserror = { workspace = true }
 shared_child = "1"
 regex = "1"
-open = { version = "5", features = [ "shellexecute-on-windows" ] }
+open = { version = "5", features = ["shellexecute-on-windows"] }
 encoding_rs = "0.8"
 os_pipe = "1"
 
