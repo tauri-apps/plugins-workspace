@@ -351,20 +351,6 @@
           ]
         },
         {
-          "description": "allow-execute -> Enables the execute command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "allow-execute"
-          ]
-        },
-        {
-          "description": "deny-execute -> Denies the execute command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "deny-execute"
-          ]
-        },
-        {
           "description": "allow-get-current-position -> Enables the get_current_position command without any pre-configured scope.",
           "type": "string",
           "enum": [

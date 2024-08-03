@@ -115,32 +115,6 @@ Denies the clear_watch command without any pre-configured scope.
 <tr>
 <td>
 
-`geolocation:allow-execute`
-
-</td>
-<td>
-
-Enables the execute command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`geolocation:deny-execute`
-
-</td>
-<td>
-
-Denies the execute command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
 `geolocation:allow-get-current-position`
 
 </td>
