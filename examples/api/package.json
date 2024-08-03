@@ -30,7 +30,7 @@
     "@iconify-json/codicon": "^1.1.37",
     "@iconify-json/ph": "^1.1.8",
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
-    "@tauri-apps/cli": "2.0.0-rc.0",
+    "@tauri-apps/cli": "2.0.0-rc.1",
     "@unocss/extractor-svelte": "^0.61.0",
     "svelte": "^4.2.8",
     "unocss": "^0.61.0",
