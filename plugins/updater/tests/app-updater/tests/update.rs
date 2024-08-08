@@ -295,7 +295,14 @@ fn update_app() {
             // bundle initial app version
             build_app(&manifest_dir, &config, false, bundle_target);
 
-            for expected_exit_code in [UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE] {
+            let status_checks = if matches!(bundle_target, BundleTarget::Msi) {
+                // for msi we can't really check if the app was updated, because we can't change the install path
+                vec![(UPDATED_EXIT_CODE, 1)]
+            } else {
+                vec![(UPDATED_EXIT_CODE, 1), (UP_TO_DATE_EXIT_CODE, 2)]
+            };
+
+            for expected_exit_code in status_checks {
                 let mut binary_cmd = if cfg!(windows) {
                     Command::new(root_dir.join("target/debug/app-updater.exe"))
                 } else if cfg!(target_os = "macos") {

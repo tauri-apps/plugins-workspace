@@ -383,9 +383,14 @@ fn update_app() {
         // bundle initial app version (tauri v1)
         v1::build_app(&v1_root_dir, &v1_config, false, bundle_target);
 
-        for (expected_exit_code, expected_tauri_version) in
-            [(UPDATED_EXIT_CODE, 1), (UP_TO_DATE_EXIT_CODE, 2)]
-        {
+        let status_checks = if matches!(bundle_target, BundleTarget::Msi) {
+            // for msi we can't really check if the app was updated, because we can't change the install path
+            vec![(UPDATED_EXIT_CODE, 1)]
+        } else {
+            vec![(UPDATED_EXIT_CODE, 1), (UP_TO_DATE_EXIT_CODE, 2)]
+        };
+
+        for (expected_exit_code, expected_tauri_version) in status_checks {
             let (expected_app_version, bundle_paths_fn, app_name_suffix) =
                 match expected_tauri_version {
                     1 => (
