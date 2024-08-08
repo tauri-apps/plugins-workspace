@@ -106,11 +106,15 @@ mod v1 {
         vec![
             (
                 BundleTarget::Nsis,
-                root_dir.join("target/debug/bundle/nsis/app-updater-v1_{version}_x64-setup.exe"),
+                root_dir.join(format!(
+                    "target/debug/bundle/nsis/app-updater-v1_{version}_x64-setup.exe"
+                )),
             ),
             (
                 BundleTarget::Msi,
-                root_dir.join("target/debug/bundle/msi/app-updater-v1_{version}_x64_en-US.msi"),
+                root_dir.join(format!(
+                    "target/debug/bundle/msi/app-updater-v1_{version}_x64_en-US.msi"
+                )),
             ),
         ]
     }
@@ -208,11 +212,15 @@ mod v2 {
         vec![
             (
                 BundleTarget::Nsis,
-                root_dir.join("target/debug/bundle/nsis/app-updater-v2{}_{version}_x64-setup.exe"),
+                root_dir.join(format!(
+                    "target/debug/bundle/nsis/app-updater-v2_{version}_x64-setup.exe"
+                )),
             ),
             (
                 BundleTarget::Msi,
-                root_dir.join("target/debug/bundle/msi/app-updater-v2{}_{version}_x64_en-US.msi"),
+                root_dir.join(format!(
+                    "target/debug/bundle/msi/app-updater-v2_{version}_x64_en-US.msi"
+                )),
             ),
         ]
     }
