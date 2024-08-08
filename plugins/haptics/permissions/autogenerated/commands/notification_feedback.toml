@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-notification-feedback"
+description = "Enables the notification_feedback command without any pre-configured scope."
+commands.allow = ["notification_feedback"]
+
+[[permission]]
+identifier = "deny-notification-feedback"
+description = "Denies the notification_feedback command without any pre-configured scope."
+commands.deny = ["notification_feedback"]

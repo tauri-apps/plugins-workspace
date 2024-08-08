@@ -1,13 +1,13 @@
 [package]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-beta.12"
+version = "2.0.0-rc.0"
 description = "Ensure a single instance of your tauri app is running."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
-exclude = [ "/examples" ]
+exclude = ["/examples"]
 
 [package.metadata.docs.rs]
 rustc-args = [ "--cfg", "docsrs" ]
@@ -30,11 +30,11 @@ features = [
   "Win32_UI_WindowsAndMessaging",
   "Win32_Security",
   "Win32_System_LibraryLoader",
-  "Win32_Graphics_Gdi"
+  "Win32_Graphics_Gdi",
 ]
 
 [target."cfg(target_os = \"linux\")".dependencies]
 zbus = "4"
 
 [features]
-semver = [ "dep:semver" ]
+semver = ["dep:semver"]

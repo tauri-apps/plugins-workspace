@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-rc.0]
+
+- [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-rc.0`
+
 ## \[2.0.0-beta.12]
 
 - [`e847cedc`](https://github.com/tauri-apps/plugins-workspace/commit/e847cedc1f46f3e7a2ad81ea579b620bc5b992d7) ([#1402](https://github.com/tauri-apps/plugins-workspace/pull/1402) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Use no default features on tauri for all plugins so that consumers can use `default-features = false` on tauri, note that this will still enable wry feature on iOS

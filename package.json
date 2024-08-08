@@ -20,10 +20,10 @@
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-security": "3.0.1",
     "prettier": "3.3.3",
-    "rollup": "4.19.1",
+    "rollup": "4.20.0",
     "tslib": "2.6.3",
     "typescript": "5.5.4",
-    "typescript-eslint": "rc-v8"
+    "typescript-eslint": "8.0.1"
   },
   "resolutions": {
     "semver": ">=7.5.2",
@@ -31,12 +31,5 @@
   },
   "engines": {
     "pnpm": "^9.0.0"
-  },
-  "pnpm": {
-    "auditConfig": {
-      "ignoreCves": [
-        "CVE-2023-46115"
-      ]
-    }
   }
 }

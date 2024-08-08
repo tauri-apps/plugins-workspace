@@ -1,0 +1,27 @@
+[package]
+name = "tauri-plugin-haptics"
+description = "Haptic feedback and vibrations on Android and iOS"
+version = "2.0.0-rc.0"
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+links = "tauri-plugin-haptics"
+
+[package.metadata.docs.rs]
+rustc-args = [ "--cfg", "docsrs" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
+
+[build-dependencies]
+tauri-plugin = { workspace = true, features = [ "build" ] }
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true, features = ["specta"] }
+log = { workspace = true }
+thiserror = { workspace = true }
+specta = { workspace = true }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+tauri = { workspace = true, features = ["wry"] }
