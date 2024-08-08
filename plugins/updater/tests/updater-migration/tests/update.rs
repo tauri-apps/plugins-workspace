@@ -19,8 +19,20 @@ const UPDATER_PRIVATE_KEY: &str = "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZ
 const UPDATED_EXIT_CODE: i32 = 0;
 const UP_TO_DATE_EXIT_CODE: i32 = 2;
 
+fn npm_command() -> Command {
+    #[cfg(target_os = "windows")]
+    let cmd = {
+        let mut cmd = Command::new("cmd");
+        cmd.arg("/c").arg("npm");
+        cmd
+    };
+    #[cfg(not(target_os = "windows"))]
+    let cmd = Command::new("npm");
+    cmd
+}
+
 mod v1 {
-    use crate::{BundleTarget, UPDATER_PRIVATE_KEY};
+    use super::{npm_command, BundleTarget, UPDATER_PRIVATE_KEY};
     use serde::Serialize;
     use std::{
         path::{Path, PathBuf},
@@ -38,7 +50,7 @@ mod v1 {
     }
 
     pub fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTarget) {
-        let mut command = Command::new("npm");
+        let mut command = npm_command();
         command
             .args(["run", "tauri", "--", "build", "--debug", "--verbose"])
             .arg("--config")
@@ -283,7 +295,7 @@ fn update_app() {
     let v1_root_dir = manifest_dir.join("v1-app");
     let v2_root_dir = manifest_dir.join("v2-app");
 
-    let status = Command::new("npm")
+    let status = npm_command()
         .arg("install")
         .current_dir(&v1_root_dir)
         .status()
