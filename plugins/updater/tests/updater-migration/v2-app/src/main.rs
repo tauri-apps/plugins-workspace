@@ -13,6 +13,7 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
+            println!("version={}", app.package_info().version);
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 let mut builder = handle.updater_builder();
