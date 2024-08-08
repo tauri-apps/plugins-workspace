@@ -297,9 +297,9 @@ fn update_app() {
 
             let status_checks = if matches!(bundle_target, BundleTarget::Msi) {
                 // for msi we can't really check if the app was updated, because we can't change the install path
-                vec![(UPDATED_EXIT_CODE, 1)]
+                vec![UPDATED_EXIT_CODE]
             } else {
-                vec![(UPDATED_EXIT_CODE, 1), (UP_TO_DATE_EXIT_CODE, 2)]
+                vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE]
             };
 
             for expected_exit_code in status_checks {
