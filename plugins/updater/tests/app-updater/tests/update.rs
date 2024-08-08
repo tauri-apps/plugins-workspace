@@ -9,6 +9,7 @@ use std::{
     fs::File,
     path::{Path, PathBuf},
     process::Command,
+    sync::Arc,
 };
 
 use serde::Serialize;
@@ -235,62 +236,56 @@ fn update_app() {
             std::fs::rename(&out_updater_path, &updater_path).expect("failed to rename bundle");
 
             let target = target.clone();
+
+            // start the updater server
+            let server = Arc::new(
+                tiny_http::Server::http("localhost:3007").expect("failed to start updater server"),
+            );
+
+            let server_ = server.clone();
             std::thread::spawn(move || {
-                // start the updater server
-                let server = tiny_http::Server::http("localhost:3007")
-                    .expect("failed to start updater server");
-                let mut update_request_count = 0;
+                for request in server_.incoming_requests() {
+                    match request.url() {
+                        "/" => {
+                            let mut platforms = HashMap::new();
 
-                loop {
-                    if let Ok(request) = server.recv() {
-                        match request.url() {
-                            "/" => {
-                                let mut platforms = HashMap::new();
-
-                                platforms.insert(
-                                    target.clone(),
-                                    PlatformUpdate {
-                                        signature: signature.clone(),
-                                        url: "http://localhost:3007/download",
-                                        with_elevated_task: false,
-                                    },
-                                );
-                                let body = serde_json::to_vec(&Update {
-                                    version: "1.0.0",
-                                    date: time::OffsetDateTime::now_utc()
-                                        .format(&time::format_description::well_known::Rfc3339)
-                                        .unwrap(),
-                                    platforms,
-                                })
-                                .unwrap();
-                                let len = body.len();
-                                let response = tiny_http::Response::new(
-                                    tiny_http::StatusCode(200),
-                                    Vec::new(),
-                                    std::io::Cursor::new(body),
-                                    Some(len),
-                                    None,
-                                );
-                                let _ = request.respond(response);
-
-                                update_request_count += 1;
-                                // we run the app twice, and can safely exit the server here
-                                if update_request_count == 2 {
-                                    return;
-                                }
-                            }
-                            "/download" => {
-                                let _ = request.respond(tiny_http::Response::from_file(
-                                    File::open(&updater_path).unwrap_or_else(|_| {
-                                        panic!(
-                                            "failed to open updater bundle {}",
-                                            updater_path.display()
-                                        )
-                                    }),
-                                ));
-                            }
-                            _ => (),
+                            platforms.insert(
+                                target.clone(),
+                                PlatformUpdate {
+                                    signature: signature.clone(),
+                                    url: "http://localhost:3007/download",
+                                    with_elevated_task: false,
+                                },
+                            );
+                            let body = serde_json::to_vec(&Update {
+                                version: "1.0.0",
+                                date: time::OffsetDateTime::now_utc()
+                                    .format(&time::format_description::well_known::Rfc3339)
+                                    .unwrap(),
+                                platforms,
+                            })
+                            .unwrap();
+                            let len = body.len();
+                            let response = tiny_http::Response::new(
+                                tiny_http::StatusCode(200),
+                                Vec::new(),
+                                std::io::Cursor::new(body),
+                                Some(len),
+                                None,
+                            );
+                            let _ = request.respond(response);
                         }
+                        "/download" => {
+                            let _ = request.respond(tiny_http::Response::from_file(
+                                File::open(&updater_path).unwrap_or_else(|_| {
+                                    panic!(
+                                        "failed to open updater bundle {}",
+                                        updater_path.display()
+                                    )
+                                }),
+                            ));
+                        }
+                        _ => (),
                     }
                 }
             });
@@ -330,7 +325,15 @@ fn update_app() {
                         "failed to run app, expected exit code {expected_exit_code}, got {code}"
                     );
                 }
+                #[cfg(windows)]
+                if code == UPDATED_EXIT_CODE {
+                    // wait for the update to finish
+                    std::thread::sleep(std::time::Duration::from_secs(5));
+                }
             }
+
+            // graceful shutdown
+            server.unblock();
         }
     }
 }
