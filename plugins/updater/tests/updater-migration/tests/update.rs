@@ -383,27 +383,44 @@ fn update_app() {
         // bundle initial app version (tauri v1)
         v1::build_app(&v1_root_dir, &v1_config, false, bundle_target);
 
-        for (expected_exit_code, expected_app_version) in [
-            (UPDATED_EXIT_CODE, v1_config.package.version),
-            (UP_TO_DATE_EXIT_CODE, v2_config.version),
-        ] {
+        for (expected_exit_code, expected_tauri_version) in
+            [(UPDATED_EXIT_CODE, 1), (UP_TO_DATE_EXIT_CODE, 2)]
+        {
+            let (expected_app_version, bundle_paths_fn, app_name_suffix) =
+                match expected_tauri_version {
+                    1 => (
+                        v1_config.package.version,
+                        Box::new(|| v1::bundle_paths(&v1_root_dir, v1_config.package.version))
+                            as Box<dyn Fn() -> Vec<(BundleTarget, PathBuf)>>,
+                        "-v1",
+                    ),
+                    2 => (
+                        v2_config.version,
+                        Box::new(|| v2::bundle_paths(&root_dir, &v2_config.version))
+                            as Box<dyn Fn() -> Vec<(BundleTarget, PathBuf)>>,
+                        "-v2",
+                    ),
+                    _ => panic!("unknown tauri version"),
+                };
             let mut binary_cmd = if cfg!(windows) {
-                Command::new(root_dir.join("target/debug/app-updater-v1.exe"))
+                Command::new(
+                    root_dir.join(format!("target/debug/app-updater{app_name_suffix}.exe")),
+                )
             } else if cfg!(target_os = "macos") {
                 Command::new(
-                    v1::bundle_paths(&v1_root_dir, "0.1.0")
+                    bundle_paths_fn()
                         .first()
                         .unwrap()
                         .1
-                        .join("Contents/MacOS/app-updater-v1"),
+                        .join(format!("Contents/MacOS/app-updater{app_name_suffix}")),
                 )
             } else if std::env::var("CI").map(|v| v == "true").unwrap_or_default() {
                 let mut c = Command::new("xvfb-run");
                 c.arg("--auto-servernum")
-                    .arg(&v1::bundle_paths(&v1_root_dir, "0.1.0").first().unwrap().1);
+                    .arg(&bundle_paths_fn().first().unwrap().1);
                 c
             } else {
-                Command::new(&v1::bundle_paths(&v1_root_dir, "0.1.0").first().unwrap().1)
+                Command::new(&bundle_paths_fn().first().unwrap().1)
             };
 
             binary_cmd.env("TARGET", bundle_target.name());
