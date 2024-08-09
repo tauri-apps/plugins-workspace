@@ -1009,6 +1009,10 @@ async function writeFile(
     throw new TypeError("Must be a file URL.");
   }
 
+  if (!options || !options.baseDir) {
+    path = path instanceof URL ? path : new URL(encodeURI(path))
+  }
+
   await invoke("plugin:fs|write_file", data, {
     headers: {
       path: path instanceof URL ? path.toString() : path,
