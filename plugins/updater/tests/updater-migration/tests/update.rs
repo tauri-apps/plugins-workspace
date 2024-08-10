@@ -420,8 +420,13 @@ fn update_app() {
                     _ => panic!("unknown tauri version"),
                 };
             let mut binary_cmd = if cfg!(windows) {
+                let app_root_dir = match expected_tauri_version {
+                    1 => &v1_root_dir,
+                    2 => &root_dir,
+                    _ => panic!("unknown tauri version"),
+                };
                 Command::new(
-                    root_dir.join(format!("target/debug/app-updater{app_name_suffix}.exe")),
+                    app_root_dir.join(format!("target/debug/app-updater{app_name_suffix}.exe")),
                 )
             } else if cfg!(target_os = "macos") {
                 Command::new(
