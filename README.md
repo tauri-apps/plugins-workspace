@@ -33,6 +33,10 @@
 
 _This repo and all plugins require a Rust version of at least **1.75**_
 
+## Contributing
+
+PRs accepted. Please make sure to read the [Contributing Guide](https://github.com/tauri-apps/tauri/blob/dev/.github/CONTRIBUTING.md) before making a pull request.
+
 ## Partners
 
 <table>
