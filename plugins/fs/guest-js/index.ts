@@ -7,10 +7,10 @@
  *
  * ## Security
  *
- * This module prevents path traversal, not allowing absolute paths or parent dir components
- * (i.e. "/usr/path/to/file" or "../path/to/file" paths are not allowed).
- * Paths accessed with this API must be relative to one of the {@link BaseDirectory | base directories}
- * so if you need access to arbitrary filesystem paths, you must write such logic on the core layer instead.
+ * This module prevents path traversal, not allowing parent directory accessors to be used
+ * (i.e. "/usr/path/to/../file" or "../path/to/file" paths are not allowed).
+ * Paths accessed with this API must be either relative to one of the {@link BaseDirectory | base directories}
+ * or created with the {@link https://v2.tauri.app/reference/javascript/api/namespacepath | path API}.
  *
  * The API has a scope configuration that forces you to restrict the paths that can be accessed using glob patterns.
  *
@@ -32,7 +32,7 @@
  * The available variables are:
  * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#appconfigdir | $APPCONFIG},
  * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#appdatadir | $APPDATA},
- * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#appLocaldatadir | $APPLOCALDATA},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#applocaldatadir | $APPLOCALDATA},
  * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#appcachedir | $APPCACHE},
  * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#applogdir | $APPLOG},
  * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#audiodir | $AUDIO},
@@ -269,13 +269,13 @@ class FileHandle extends Resource {
    *
    * @example
    * ```typescript
-   * import { open, read, close, BaseDirectory } from "@tauri-apps/plugin-fs"
+   * import { open, BaseDirectory } from "@tauri-apps/plugin-fs"
    * // if "$APP/foo/bar.txt" contains the text "hello world":
-   * const file = await open("foo/bar.txt", { baseDir: BaseDirectory.App });
+   * const file = await open("foo/bar.txt", { baseDir: BaseDirectory.AppConfig });
    * const buf = new Uint8Array(100);
    * const numberOfBytesRead = await file.read(buf); // 11 bytes
    * const text = new TextDecoder().decode(buf);  // "hello world"
-   * await close(file.rid);
+   * await file.close();
    * ```
    *
    * @since 2.0.0
@@ -309,11 +309,11 @@ class FileHandle extends Resource {
    *
    * @example
    * ```typescript
-   * import { open, seek, write, SeekMode, BaseDirectory } from '@tauri-apps/plugin-fs';
+   * import { open, SeekMode, BaseDirectory } from '@tauri-apps/plugin-fs';
    *
    * // Given hello.txt pointing to file with "Hello world", which is 11 bytes long:
-   * const file = await open('hello.txt', { read: true, write: true, truncate: true, create: true, baseDir: BaseDirectory.App });
-   * await file.write(new TextEncoder().encode("Hello world"), { baseDir: BaseDirectory.App });
+   * const file = await open('hello.txt', { read: true, write: true, truncate: true, create: true, baseDir: BaseDirectory.AppLocalData });
+   * await file.write(new TextEncoder().encode("Hello world"));
    *
    * // Seek 6 bytes from the start of the file
    * console.log(await file.seek(6, SeekMode.Start)); // "6"
@@ -321,6 +321,8 @@ class FileHandle extends Resource {
    * console.log(await file.seek(2, SeekMode.Current)); // "8"
    * // Seek backwards 2 bytes from the end of the file
    * console.log(await file.seek(-2, SeekMode.End)); // "9" (e.g. 11-2)
+   *
+   * await file.close();
    * ```
    *
    * @since 2.0.0
@@ -338,10 +340,11 @@ class FileHandle extends Resource {
    *
    * @example
    * ```typescript
-   * import { open, fstat, BaseDirectory } from '@tauri-apps/plugin-fs';
-   * const file = await open("file.txt", { read: true, baseDir: BaseDirectory.App });
-   * const fileInfo = await fstat(file.rid);
+   * import { open, BaseDirectory } from '@tauri-apps/plugin-fs';
+   * const file = await open("file.txt", { read: true, baseDir: BaseDirectory.AppLocalData });
+   * const fileInfo = await file.stat();
    * console.log(fileInfo.isFile); // true
+   * await file.close();
    * ```
    *
    * @since 2.0.0
@@ -360,19 +363,20 @@ class FileHandle extends Resource {
    *
    * @example
    * ```typescript
-   * import { ftruncate, open, write, read, BaseDirectory } from '@tauri-apps/plugin-fs';
+   * import { open, BaseDirectory } from '@tauri-apps/plugin-fs';
    *
    * // truncate the entire file
-   * const file = await open("my_file.txt", { read: true, write: true, create: true, baseDir: BaseDirectory.App });
-   * await ftruncate(file.rid);
+   * const file = await open("my_file.txt", { read: true, write: true, create: true, baseDir: BaseDirectory.AppLocalData });
+   * await file.truncate();
    *
    * // truncate part of the file
-   * const file = await open("my_file.txt", { read: true, write: true, create: true, baseDir: BaseDirectory.App });
-   * await write(file.rid, new TextEncoder().encode("Hello World"));
-   * await ftruncate(file.rid, 7);
+   * const file = await open("my_file.txt", { read: true, write: true, create: true, baseDir: BaseDirectory.AppLocalData });
+   * await file.write(new TextEncoder().encode("Hello World"));
+   * await file.truncate(7);
    * const data = new Uint8Array(32);
-   * await read(file.rid, data);
+   * await file.read(data);
    * console.log(new TextDecoder().decode(data)); // Hello W
+   * await file.close();
    * ```
    *
    * @since 2.0.0
@@ -394,12 +398,12 @@ class FileHandle extends Resource {
    *
    * @example
    * ```typescript
-   * import { open, write, close, BaseDirectory } from '@tauri-apps/plugin-fs';
+   * import { open, write, BaseDirectory } from '@tauri-apps/plugin-fs';
    * const encoder = new TextEncoder();
    * const data = encoder.encode("Hello world");
-   * const file = await open("bar.txt", { write: true, baseDir: BaseDirectory.App });
-   * const bytesWritten = await write(file.rid, data); // 11
-   * await close(file.rid);
+   * const file = await open("bar.txt", { write: true, baseDir: BaseDirectory.AppLocalData });
+   * const bytesWritten = await file.write(data); // 11
+   * await file.close();
    * ```
    *
    * @since 2.0.0
@@ -427,14 +431,16 @@ interface CreateOptions {
  * @example
  * ```typescript
  * import { create, BaseDirectory } from "@tauri-apps/plugin-fs"
- * const file = await create("foo/bar.txt", { baseDir: BaseDirectory.App });
+ * const file = await create("foo/bar.txt", { baseDir: BaseDirectory.AppConfig });
+ * await file.write(new TextEncoder().encode("Hello world"));
+ * await file.close();
  * ```
  *
  * @since 2.0.0
  */
 async function create(
   path: string | URL,
-  options?: CreateOptions,
+  options?: CreateOptions
 ): Promise<FileHandle> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -510,16 +516,16 @@ interface OpenOptions {
  * @example
  * ```typescript
  * import { open, BaseDirectory } from "@tauri-apps/plugin-fs"
- * const file = await open("foo/bar.txt", { read: true, write: true, baseDir: BaseDirectory.App });
+ * const file = await open("foo/bar.txt", { read: true, write: true, baseDir: BaseDirectory.AppLocalData });
  * // Do work with file
- * await close(file.rid);
+ * await file.close();
  * ```
  *
  * @since 2.0.0
  */
 async function open(
   path: string | URL,
-  options?: OpenOptions,
+  options?: OpenOptions
 ): Promise<FileHandle> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -548,7 +554,7 @@ interface CopyFileOptions {
  * @example
  * ```typescript
  * import { copyFile, BaseDirectory } from '@tauri-apps/plugin-fs';
- * await copyFile('app.conf', 'app.conf.bk', { fromPathBaseDir: BaseDirectory.App, toPathBaseDir: BaseDirectory.App });
+ * await copyFile('app.conf', 'app.conf.bk', { fromPathBaseDir: BaseDirectory.AppConfig, toPathBaseDir: BaseDirectory.AppConfig });
  * ```
  *
  * @since 2.0.0
@@ -556,7 +562,7 @@ interface CopyFileOptions {
 async function copyFile(
   fromPath: string | URL,
   toPath: string | URL,
-  options?: CopyFileOptions,
+  options?: CopyFileOptions
 ): Promise<void> {
   if (
     (fromPath instanceof URL && fromPath.protocol !== "file:") ||
@@ -591,14 +597,14 @@ interface MkdirOptions {
  * @example
  * ```typescript
  * import { mkdir, BaseDirectory } from '@tauri-apps/plugin-fs';
- * await mkdir('users', { baseDir: BaseDirectory.App });
+ * await mkdir('users', { baseDir: BaseDirectory.AppLocalData });
  * ```
  *
  * @since 2.0.0
  */
 async function mkdir(
   path: string | URL,
-  options?: MkdirOptions,
+  options?: MkdirOptions
 ): Promise<void> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -643,14 +649,14 @@ interface DirEntry {
  * import { readDir, BaseDirectory } from '@tauri-apps/plugin-fs';
  * import { join } from '@tauri-apps/api/path';
  * const dir = "users"
- * const entries = await readDir('users', { baseDir: BaseDirectory.App });
- * processEntriesRecursive(dir, entries);
- * async function processEntriesRecursive(parent, entries) {
+ * const entries = await readDir('users', { baseDir: BaseDirectory.AppLocalData });
+ * processEntriesRecursively(dir, entries);
+ * async function processEntriesRecursively(parent, entries) {
  *   for (const entry of entries) {
  *     console.log(`Entry: ${entry.name}`);
  *     if (entry.isDirectory) {
  *        const dir = await join(parent, entry.name);
- *       processEntriesRecursive(dir, await readDir(dir, { baseDir: BaseDirectory.App }))
+ *       processEntriesRecursively(dir, await readDir(dir, { baseDir: BaseDirectory.AppLocalData }))
  *     }
  *   }
  * }
@@ -660,7 +666,7 @@ interface DirEntry {
  */
 async function readDir(
   path: string | URL,
-  options?: ReadDirOptions,
+  options?: ReadDirOptions
 ): Promise<DirEntry[]> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -693,7 +699,7 @@ interface ReadFileOptions {
  */
 async function readFile(
   path: string | URL,
-  options?: ReadFileOptions,
+  options?: ReadFileOptions
 ): Promise<Uint8Array> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -714,14 +720,14 @@ async function readFile(
  * @example
  * ```typescript
  * import { readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
- * const contents = await readTextFile('app.conf', { baseDir: BaseDirectory.App });
+ * const contents = await readTextFile('app.conf', { baseDir: BaseDirectory.AppConfig });
  * ```
  *
  * @since 2.0.0
  */
 async function readTextFile(
   path: string | URL,
-  options?: ReadFileOptions,
+  options?: ReadFileOptions
 ): Promise<string> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -738,7 +744,7 @@ async function readTextFile(
  * @example
  * ```typescript
  * import { readTextFileLines, BaseDirectory } from '@tauri-apps/plugin-fs';
- * const lines = await readTextFileLines('app.conf', { baseDir: BaseDirectory.App });
+ * const lines = await readTextFileLines('app.conf', { baseDir: BaseDirectory.AppConfig });
  * for await (const line of lines) {
  *   console.log(line);
  * }
@@ -750,7 +756,7 @@ async function readTextFile(
  */
 async function readTextFileLines(
   path: string | URL,
-  options?: ReadFileOptions,
+  options?: ReadFileOptions
 ): Promise<AsyncIterableIterator<string>> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -771,7 +777,7 @@ async function readTextFileLines(
 
       const [line, done] = await invoke<[string | null, boolean]>(
         "plugin:fs|read_text_file_lines_next",
-        { rid: this.rid },
+        { rid: this.rid }
       );
 
       // an iteration is over, reset rid for next iteration
@@ -804,15 +810,15 @@ interface RemoveOptions {
  * @example
  * ```typescript
  * import { remove, BaseDirectory } from '@tauri-apps/plugin-fs';
- * await remove('users/file.txt', { baseDir: BaseDirectory.App });
- * await remove('users', { baseDir: BaseDirectory.App });
+ * await remove('users/file.txt', { baseDir: BaseDirectory.AppLocalData });
+ * await remove('users', { baseDir: BaseDirectory.AppLocalData });
  * ```
  *
  * @since 2.0.0
  */
 async function remove(
   path: string | URL,
-  options?: RemoveOptions,
+  options?: RemoveOptions
 ): Promise<void> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -844,7 +850,7 @@ interface RenameOptions {
  * @example
  * ```typescript
  * import { rename, BaseDirectory } from '@tauri-apps/plugin-fs';
- * await rename('avatar.png', 'deleted.png', { oldPathBaseDir: BaseDirectory.App, newPathBaseDir: BaseDirectory.App });
+ * await rename('avatar.png', 'deleted.png', { oldPathBaseDir: BaseDirectory.App, newPathBaseDir: BaseDirectory.AppLocalData });
  * ```
  *
  * @since 2.0.0
@@ -852,7 +858,7 @@ interface RenameOptions {
 async function rename(
   oldPath: string | URL,
   newPath: string | URL,
-  options?: RenameOptions,
+  options?: RenameOptions
 ): Promise<void> {
   if (
     (oldPath instanceof URL && oldPath.protocol !== "file:") ||
@@ -883,7 +889,7 @@ interface StatOptions {
  * @example
  * ```typescript
  * import { stat, BaseDirectory } from '@tauri-apps/plugin-fs';
- * const fileInfo = await stat("hello.txt", { baseDir: BaseDirectory.App });
+ * const fileInfo = await stat("hello.txt", { baseDir: BaseDirectory.AppLocalData });
  * console.log(fileInfo.isFile); // true
  * ```
  *
@@ -891,7 +897,7 @@ interface StatOptions {
  */
 async function stat(
   path: string | URL,
-  options?: StatOptions,
+  options?: StatOptions
 ): Promise<FileInfo> {
   const res = await invoke<UnparsedFileInfo>("plugin:fs|stat", {
     path: path instanceof URL ? path.toString() : path,
@@ -909,7 +915,7 @@ async function stat(
  * @example
  * ```typescript
  * import { lstat, BaseDirectory } from '@tauri-apps/plugin-fs';
- * const fileInfo = await lstat("hello.txt", { baseDir: BaseDirectory.App });
+ * const fileInfo = await lstat("hello.txt", { baseDir: BaseDirectory.AppLocalData });
  * console.log(fileInfo.isFile); // true
  * ```
  *
@@ -917,7 +923,7 @@ async function stat(
  */
 async function lstat(
   path: string | URL,
-  options?: StatOptions,
+  options?: StatOptions
 ): Promise<FileInfo> {
   const res = await invoke<UnparsedFileInfo>("plugin:fs|lstat", {
     path: path instanceof URL ? path.toString() : path,
@@ -941,16 +947,16 @@ interface TruncateOptions {
  *
  * @example
  * ```typescript
- * import { truncate, readFile, writeFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+ * import { truncate, readTextFile, writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // truncate the entire file
- * await truncate("my_file.txt", 0, { baseDir: BaseDirectory.App });
+ * await truncate("my_file.txt", 0, { baseDir: BaseDirectory.AppLocalData });
  *
  * // truncate part of the file
- * let file = "file.txt";
- * await writeFile(file, new TextEncoder().encode("Hello World"), { baseDir: BaseDirectory.App });
- * await truncate(file, 7);
- * const data = await readFile(file, { baseDir: BaseDirectory.App });
- * console.log(new TextDecoder().decode(data));  // "Hello W"
+ * const filePath = "file.txt";
+ * await writeTextFile(filePath, "Hello World", { baseDir: BaseDirectory.AppLocalData });
+ * await truncate(filePath, 7, { baseDir: BaseDirectory.AppLocalData });
+ * const data = await readTextFile(filePath, { baseDir: BaseDirectory.AppLocalData });
+ * console.log(data);  // "Hello W"
  * ```
  *
  * @since 2.0.0
@@ -958,7 +964,7 @@ interface TruncateOptions {
 async function truncate(
   path: string | URL,
   len?: number,
-  options?: TruncateOptions,
+  options?: TruncateOptions
 ): Promise<void> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -995,7 +1001,7 @@ interface WriteFileOptions {
  *
  * let encoder = new TextEncoder();
  * let data = encoder.encode("Hello World");
- * await writeFile('file.txt', data, { baseDir: BaseDirectory.App });
+ * await writeFile('file.txt', data, { baseDir: BaseDirectory.AppLocalData });
  * ```
  *
  * @since 2.0.0
@@ -1003,7 +1009,7 @@ interface WriteFileOptions {
 async function writeFile(
   path: string | URL,
   data: Uint8Array,
-  options?: WriteFileOptions,
+  options?: WriteFileOptions
 ): Promise<void> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -1023,7 +1029,7 @@ async function writeFile(
   * ```typescript
   * import { writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
   *
-  * await writeTextFile('file.txt', "Hello world", { baseDir: BaseDirectory.App });
+  * await writeTextFile('file.txt', "Hello world", { baseDir: BaseDirectory.AppLocalData });
   * ```
   *
   * @since 2.0.0
@@ -1031,7 +1037,7 @@ async function writeFile(
 async function writeTextFile(
   path: string | URL,
   data: string,
-  options?: WriteFileOptions,
+  options?: WriteFileOptions
 ): Promise<void> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -1065,7 +1071,7 @@ interface ExistsOptions {
  */
 async function exists(
   path: string | URL,
-  options?: ExistsOptions,
+  options?: ExistsOptions
 ): Promise<boolean> {
   if (path instanceof URL && path.protocol !== "file:") {
     throw new TypeError("Must be a file URL.");
@@ -1179,7 +1185,7 @@ async function unwatch(rid: number): Promise<void> {
 async function watch(
   paths: string | string[] | URL | URL[],
   cb: (event: WatchEvent) => void,
-  options?: DebouncedWatchOptions,
+  options?: DebouncedWatchOptions
 ): Promise<UnwatchFn> {
   const opts = {
     recursive: false,
@@ -1217,7 +1223,7 @@ async function watch(
 async function watchImmediate(
   paths: string | string[] | URL | URL[],
   cb: (event: WatchEvent) => void,
-  options?: WatchOptions,
+  options?: WatchOptions
 ): Promise<UnwatchFn> {
   const opts = {
     recursive: false,
