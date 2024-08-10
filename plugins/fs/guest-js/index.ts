@@ -1010,7 +1010,7 @@ async function writeFile(
   }
 
   if (!options || !options.baseDir) {
-    path = path instanceof URL ? path : new URL(encodeURI(path))
+    path = path instanceof URL ? path : new URL(encodeURI(path));
   }
 
   await invoke("plugin:fs|write_file", data, {
