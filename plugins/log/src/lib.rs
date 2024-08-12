@@ -184,11 +184,11 @@ pub enum TargetKind {
     ///
     /// ### Platform-specific
     ///
-    /// |Platform | Value                                         | Example                                        |
-    /// | ------- | --------------------------------------------- | ---------------------------------------------- |
-    /// | Linux   | `{configDir}/{bundleIdentifier}`              | `/home/alice/.config/com.tauri.dev`            |
-    /// | macOS   | `{homeDir}/Library/Logs/{bundleIdentifier}`   | `/Users/Alice/Library/Logs/com.tauri.dev`      |
-    /// | Windows | `{configDir}/{bundleIdentifier}`              | `C:\Users\Alice\AppData\Roaming\com.tauri.dev` |
+    /// |Platform | Value                                                                                     | Example                                                     |
+    /// | ------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+    /// | Linux   | `$XDG_DATA_HOME/{bundleIdentifier}/logs` or `$HOME/.local/share/{bundleIdentifier}/logs`  | `/home/alice/.local/share/com.tauri.dev/logs`               |
+    /// | macOS   | `{homeDir}/Library/Logs/{bundleIdentifier}`                                               | `/Users/Alice/Library/Logs/com.tauri.dev`                   |
+    /// | Windows | `{FOLDERID_LocalAppData}/{bundleIdentifier}/logs`                                         | `C:\Users\Alice\AppData\Local\com.tauri.dev\logs`           |
     LogDir { file_name: Option<String> },
     /// Forward logs to the webview (via the `log://log` event).
     ///
