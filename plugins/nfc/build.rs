@@ -5,11 +5,18 @@
 const COMMANDS: &[&str] = &["is_available", "write", "scan"];
 
 fn main() {
-    tauri_plugin::Builder::new(COMMANDS)
+    if let Err(error) = tauri_plugin::Builder::new(COMMANDS)
         .global_api_script_path("./api-iife.js")
         .android_path("android")
         .ios_path("ios")
-        .build();
+        .try_build()
+    {
+        println!("{error:#}");
+        // when building documentation for Android the plugin build result is irrelevant to the crate itself
+        if !(cfg!(docsrs) && std::env::var("TARGET").unwrap().contains("android")) {
+            std::process::exit(1);
+        }
+    }
 
     // TODO: triple check if this can reference the plugin's xml as it expects rn
     // TODO: This has to be configurable if we want to support handling nfc tags when the app is not open.
