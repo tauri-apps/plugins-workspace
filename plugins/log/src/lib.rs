@@ -180,7 +180,7 @@ pub enum TargetKind {
         path: PathBuf,
         file_name: Option<String>,
     },
-    /// Write logs to the OS specififc logs directory.
+    /// Write logs to the OS specific logs directory.
     ///
     /// ### Platform-specific
     ///
