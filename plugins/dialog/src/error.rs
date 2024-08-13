@@ -18,8 +18,8 @@ pub enum Error {
     #[cfg(mobile)]
     #[error("Folder picker is not implemented on mobile")]
     FolderPickerNotImplemented,
-    #[cfg(mobile)]
-    #[error("File save dialog is not implemented on mobile")]
+    #[cfg(target_os = "ios")]
+    #[error("File save dialog is not implemented on iOS")]
     FileSaveDialogNotImplemented,
     #[error(transparent)]
     Fs(#[from] tauri_plugin_fs::Error),
