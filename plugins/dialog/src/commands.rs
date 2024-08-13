@@ -71,6 +71,18 @@ pub struct SaveDialogOptions {
     can_create_directories: Option<bool>,
 }
 
+#[cfg(mobile)]
+fn set_default_path<R: Runtime>(
+    mut dialog_builder: FileDialogBuilder<R>,
+    default_path: PathBuf,
+) -> FileDialogBuilder<R> {
+    if let Some(file_name) = default_path.file_name() {
+        dialog_builder = dialog_builder.set_file_name(file_name.to_string_lossy());
+    }
+    dialog_builder
+}
+
+#[cfg(desktop)]
 fn set_default_path<R: Runtime>(
     mut dialog_builder: FileDialogBuilder<R>,
     default_path: PathBuf,
@@ -193,9 +205,9 @@ pub(crate) async fn save<R: Runtime>(
     dialog: State<'_, Dialog<R>>,
     options: SaveDialogOptions,
 ) -> Result<Option<PathBuf>> {
-    #[cfg(mobile)]
+    #[cfg(target_os = "ios")]
     return Err(crate::Error::FileSaveDialogNotImplemented);
-    #[cfg(desktop)]
+    #[cfg(any(desktop, target_os = "android"))]
     {
         let mut dialog_builder = dialog.file();
         #[cfg(any(windows, target_os = "macos"))]
