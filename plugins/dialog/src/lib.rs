@@ -275,6 +275,7 @@ pub struct FileDialogBuilder<R: Runtime> {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct FileDialogPayload<'a> {
+    file_name: &'a Option<String>,
     filters: &'a Vec<Filter>,
     multiple: bool,
 }
@@ -300,6 +301,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     #[cfg(mobile)]
     pub(crate) fn payload(&self, multiple: bool) -> FileDialogPayload<'_> {
         FileDialogPayload {
+            file_name: &self.file_name,
             filters: &self.filters,
             multiple,
         }
@@ -576,12 +578,11 @@ impl<R: Runtime> FileDialogBuilder<R> {
     pub fn blocking_save_file(self) -> Option<PathBuf> {
         blocking_fn!(self, save_file)
     }
-
 }
 
 // taken from deno source code: https://github.com/denoland/deno/blob/ffffa2f7c44bd26aec5ae1957e0534487d099f48/runtime/ops/fs.rs#L913
+#[cfg(desktop)]
 #[inline]
-#[allow(unused)]
 fn to_msec(maybe_time: std::result::Result<std::time::SystemTime, std::io::Error>) -> Option<u64> {
     match maybe_time {
         Ok(time) => {

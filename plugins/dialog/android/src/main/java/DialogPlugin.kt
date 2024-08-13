@@ -43,7 +43,7 @@ class MessageOptions {
 
 @InvokeArg
 class SaveFileDialogOptions {
-  var title: String = ""
+  var fileName: String? = null
 }
 
 @TauriPlugin
@@ -218,7 +218,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
       val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
       intent.addCategory(Intent.CATEGORY_OPENABLE)
       intent.setType("text/plain")
-      intent.putExtra(Intent.EXTRA_TITLE, args.title)
+      intent.putExtra(Intent.EXTRA_TITLE, args.fileName ?: "")
       startActivityForResult(invoke, intent, "saveFileDialogResult")
     } catch (ex: Exception) {
       val message = ex.message ?: "Failed to pick save file"

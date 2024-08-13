@@ -97,7 +97,7 @@ pub fn save_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
         let res = dialog
             .dialog
             .0
-            .run_mobile_plugin::<SaveFileResponse>("saveFileDialog", dialog.payload(true));
+            .run_mobile_plugin::<SaveFileResponse>("saveFileDialog", dialog.payload(false));
         if let Ok(response) = res {
             f(Some(response.file))
         } else {
