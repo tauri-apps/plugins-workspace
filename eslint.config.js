@@ -20,6 +20,7 @@ export default tseslint.config(
       "**/init-iife.js",
       "**/init.js",
       "**/rollup.config.js",
+      "**/bindings.ts",
       ".scripts",
       "eslint.config.js",
     ],

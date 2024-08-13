@@ -32,7 +32,10 @@ export function createConfig(options = {}) {
   const pluginJsName = pkg.name
     .replace("@tauri-apps/plugin-", "")
     .replace(/-./g, (x) => x[1].toUpperCase());
-  const iifeVarName = `__TAURI_PLUGIN_${pluginJsName.toUpperCase()}__`;
+  const iifeVarName = `__TAURI_PLUGIN_${pkg.name
+    .replace("@tauri-apps/plugin-", "")
+    .replace("-", (x) => "_")
+    .toUpperCase()}__`;
 
   return [
     {
