@@ -235,7 +235,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
           val callResult = JSObject()
           val intent: Intent? = result.data
           if (intent != null) {
-            val uri = intent.getData()
+            val uri = intent.data
             if (uri != null) {
               callResult.put("file", uri.toString())
             }
