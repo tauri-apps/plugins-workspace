@@ -218,6 +218,7 @@ impl<R: Runtime> MessageDialogBuilder<R> {
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub struct FileResponse {
     pub base64_data: Option<String>,
     pub duration: Option<u64>,
