@@ -35,7 +35,7 @@
  *
  * CLI: `git commit -m "the commit message"`
  *
- * Capabilitiy:
+ * Capability:
  * ```json
  * {
  *   "permissions": [
