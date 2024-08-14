@@ -1,0 +1,28 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
+import { invoke } from "@tauri-apps/api/core";
+
+export interface SharesheetOptions {}
+
+/**
+ * Opens the Sharesheet to share the specified text.
+ *
+ * ```javascript
+ * import { authenticate } from "@tauri-apps/plugin-sharesheet";
+ * await shareText('I am a shared message');
+ * ```
+ * @param text
+ * @param options
+ * @returns
+ */
+export async function shareText(
+  text: string,
+  options?: SharesheetOptions,
+): Promise<void> {
+  await invoke("plugin:sharesheet|share_text", {
+    text,
+    ...options,
+  });
+}

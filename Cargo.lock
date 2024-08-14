@@ -6694,6 +6694,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-sharesheet"
+version = "2.0.0-beta.1"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "serde_repr",
+ "tauri",
+ "tauri-plugin",
+ "thiserror",
+]
+
+[[package]]
 name = "tauri-plugin-shell"
 version = "2.0.0-beta.9"
 dependencies = [
