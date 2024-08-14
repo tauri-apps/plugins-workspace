@@ -3017,8 +3017,9 @@ dependencies = [
 
 [[package]]
 name = "iota-crypto"
-version = "0.23.1"
-source = "git+https://github.com/iotaledger/crypto.rs?rev=489aa0e7936d0e491503f778a83cfc6ed1b28fe7#489aa0e7936d0e491503f778a83cfc6ed1b28fe7"
+version = "0.23.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "98a38db844c910d78825e173c083f2ef416b69cb091bba8ac1055763c6db065b"
 dependencies = [
  "aead",
  "aes",
