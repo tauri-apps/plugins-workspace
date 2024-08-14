@@ -21,7 +21,9 @@ class ShareTextOptions {
     lateinit var text: String
     var mimeType: String = "text/plain"
     var title: String? = null
-    var dialogTitle: String? = "Share"
+}
+
+
 }
 
 @TauriPlugin
@@ -40,7 +42,10 @@ class SharesheetPlugin(private val activity: Activity): Plugin(activity) {
             type = args.mimeType
         }
 
-        val shareIntent = Intent.createChooser(sendIntent, args.dialogTitle);
+        val shareIntent = Intent.createChooser(sendIntent, null);
+        shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        activity.applicationContext?.startActivity(shareIntent);
+    }
         shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         activity.applicationContext?.startActivity(shareIntent);
     }
