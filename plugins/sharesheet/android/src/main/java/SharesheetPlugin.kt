@@ -24,8 +24,6 @@ class ShareTextOptions {
 }
 
 
-}
-
 @TauriPlugin
 class SharesheetPlugin(private val activity: Activity): Plugin(activity) {
     /**
@@ -43,9 +41,6 @@ class SharesheetPlugin(private val activity: Activity): Plugin(activity) {
         }
 
         val shareIntent = Intent.createChooser(sendIntent, null);
-        shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        activity.applicationContext?.startActivity(shareIntent);
-    }
         shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         activity.applicationContext?.startActivity(shareIntent);
     }
