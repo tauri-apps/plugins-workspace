@@ -469,10 +469,6 @@ impl Update {
             "Accept",
             HeaderValue::from_str("application/octet-stream").unwrap(),
         );
-        headers.insert(
-            "User-Agent",
-            HeaderValue::from_str("tauri-updater").unwrap(),
-        );
 
         let mut request = ClientBuilder::new().user_agent(UPDATER_USER_AGENT);
         if let Some(timeout) = self.timeout {
