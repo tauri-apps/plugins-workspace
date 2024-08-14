@@ -21,6 +21,7 @@ class ShareTextOptions {
     lateinit var text: String
     var mimeType: String = "text/plain"
     var title: String? = null
+    var thumbnailUri: Uri? = null
 }
 
 
@@ -38,6 +39,7 @@ class SharesheetPlugin(private val activity: Activity): Plugin(activity) {
             putExtra(Intent.EXTRA_TEXT, args.text)
             putExtra(Intent.EXTRA_TITLE, args.title)
             type = args.mimeType
+            data = args.thumbnailUri
         }
 
         val shareIntent = Intent.createChooser(sendIntent, null);
