@@ -40,6 +40,7 @@ class SharesheetPlugin(private val activity: Activity): Plugin(activity) {
             putExtra(Intent.EXTRA_TITLE, args.title)
             type = args.mimeType
             data = args.thumbnailUri
+            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
         }
 
         val shareIntent = Intent.createChooser(sendIntent, null);
