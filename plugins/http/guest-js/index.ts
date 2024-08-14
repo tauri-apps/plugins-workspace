@@ -186,7 +186,7 @@ export async function fetch(
     throw new Error(ERROR_REQUEST_CANCELLED);
   }
 
-  signal?.addEventListener("abort", () => void abort());
+  signal?.addEventListener("abort", abort);
 
   interface FetchSendResponse {
     status: number;
