@@ -16,4 +16,3 @@ pub struct WriteTextFilePayload {
 pub struct WriteTextFileResponse {
     pub error: Option<String>,
 }
-

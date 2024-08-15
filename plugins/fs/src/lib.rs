@@ -23,11 +23,11 @@ mod config;
 mod error;
 #[cfg(target_os = "android")]
 mod mobile;
+#[cfg(target_os = "android")]
+mod models;
 mod scope;
 #[cfg(feature = "watch")]
 mod watcher;
-#[cfg(target_os = "android")]
-mod models;
 
 #[cfg(target_os = "android")]
 use mobile::Fs;

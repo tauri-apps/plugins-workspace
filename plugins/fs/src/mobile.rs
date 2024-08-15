@@ -4,8 +4,8 @@
 
 use serde::de::DeserializeOwned;
 use tauri::{
-  plugin::{PluginApi, PluginHandle},
-  AppHandle, Runtime,
+    plugin::{PluginApi, PluginHandle},
+    AppHandle, Runtime,
 };
 
 #[cfg(target_os = "android")]
@@ -22,28 +22,33 @@ tauri::ios_plugin_binding!(init_plugin_fs);
 
 // initializes the Kotlin or Swift plugin classes
 pub fn init<R: Runtime, C: DeserializeOwned>(
-  _app: &AppHandle<R>,
-  api: PluginApi<R, C>,
+    _app: &AppHandle<R>,
+    api: PluginApi<R, C>,
 ) -> crate::Result<Fs<R>> {
-  #[cfg(target_os = "android")]
-  let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "FsPlugin").unwrap();
-  #[cfg(target_os = "ios")]
-  let handle = api.register_ios_plugin(init_plugin_android-intent-send)?;
-  Ok(Fs(handle))
+    #[cfg(target_os = "android")]
+    let handle = api
+        .register_android_plugin(PLUGIN_IDENTIFIER, "FsPlugin")
+        .unwrap();
+    #[cfg(target_os = "ios")]
+    let handle = api.register_ios_plugin(init_plugin_android - intent - send)?;
+    Ok(Fs(handle))
 }
 
 /// Access to the android-intent-send APIs.
 pub struct Fs<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Fs<R> {
-    pub fn write_text_file(&self, payload: WriteTextFilePayload) -> crate::Result<WriteTextFileResponse> {
+    pub fn write_text_file(
+        &self,
+        payload: WriteTextFilePayload,
+    ) -> crate::Result<WriteTextFileResponse> {
         #[cfg(target_os = "android")]
         {
             let result = self
                 .0
                 .run_mobile_plugin::<WriteTextFileResponse>("writeTextFile", payload);
             match result {
-                Ok(_) => Ok(WriteTextFileResponse{error: None}),
+                Ok(_) => Ok(WriteTextFileResponse { error: None }),
                 Err(_) => Err(Tauri(tauri::Error::InvokeKey)),
             }
         }

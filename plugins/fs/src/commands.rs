@@ -785,18 +785,13 @@ pub async fn write_file<R: Runtime>(
 
 #[tauri::command]
 pub async fn write_text_file<R: Runtime>(
-    #[allow(unused)]
-    app: AppHandle<R>,
-    #[allow(unused)]
-    webview: Webview<R>,
-    #[allow(unused)]
-    global_scope: GlobalScope<Entry>,
-    #[allow(unused)]
-    command_scope: CommandScope<Entry>,
+    #[allow(unused)] app: AppHandle<R>,
+    #[allow(unused)] webview: Webview<R>,
+    #[allow(unused)] global_scope: GlobalScope<Entry>,
+    #[allow(unused)] command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     data: String,
-    #[allow(unused)]
-    options: Option<WriteFileOptions>,
+    #[allow(unused)] options: Option<WriteFileOptions>,
 ) -> CommandResult<()> {
     #[cfg(any(desktop, target_os = "ios"))]
     {
@@ -811,7 +806,12 @@ pub async fn write_text_file<R: Runtime>(
     }
     #[cfg(target_os = "android")]
     {
-        app.fs().write_text_file(WriteTextFilePayload{uri: path.display().to_string(), content: data}).unwrap();
+        app.fs()
+            .write_text_file(WriteTextFilePayload {
+                uri: path.display().to_string(),
+                content: data,
+            })
+            .unwrap();
         Ok(())
     }
 }
