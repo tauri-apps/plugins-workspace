@@ -4,7 +4,14 @@
 
 import { invoke } from "@tauri-apps/api/core";
 
-export interface SharesheetOptions {}
+export interface SharesheetOptions {
+  // Android only
+  mimeType?: string;
+  thumbnailUri?: string;
+
+  // Android & iOS
+  title?: string;
+}
 
 /**
  * Opens the Sharesheet to share the specified text.
