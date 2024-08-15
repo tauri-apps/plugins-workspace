@@ -768,6 +768,15 @@ pub async fn write_file<R: Runtime>(
                 p.to_str()
                     .map_err(|e| anyhow::anyhow!("invalid path: {e}").into())
             })
+            .and_then(|p| {
+                let bytes: Vec<u8> = p
+                    .split(',')
+                    .map(str::trim)
+                    .filter_map(|n| n.parse().ok())
+                    .collect();
+                String::from_utf8(bytes)
+                    .map_err(|_| anyhow::anyhow!("Invalid UTF-8 sequence").into())
+            })
             .and_then(|p| SafePathBuf::new(p.into()).map_err(CommandError::from))?;
         let options = request
             .headers()
