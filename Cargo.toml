@@ -20,7 +20,7 @@ thiserror = "1"
 url = "2"
 schemars = "0.8"
 dunce = "1"
-specta = "=2.0.0-rc.16"
+specta = "=2.0.0-rc.20"
 #tauri-specta = "=2.0.0-rc.11"
 
 [workspace.package]
