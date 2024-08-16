@@ -19,7 +19,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 [dependencies.tauri-plugin-sql]
 features = ["sqlite"] # or "postgres", or "mysql"
-version = "2.0.0-beta"
+version = "2.0.0-rc"
 # alternatively with Git
 git = "https://github.com/tauri-apps/plugins-workspace"
 branch = "v2"
@@ -158,7 +158,26 @@ fn main() {
 
 ### Applying Migrations
 
-Migrations are applied automatically when the plugin is initialized. The plugin runs these migrations against the database specified by the connection string. Ensure that the migrations are defined in the correct order and are idempotent (safe to run multiple times).
+To apply the migrations when the plugin is initialized, add the connection string to the `tauri.conf.json` file:
+
+```json
+{
+  "plugins": {
+    "sql": {
+      "preload": ["sqlite:mydatabase.db"]
+    }
+  }
+}
+```
+
+Alternatively, the client side `load()` also runs the migrations for a given connection string:
+
+```ts
+import Database from "@tauri-apps/plugin-sql";
+const db = await Database.load("sqlite:mydatabase.db");
+```
+
+Ensure that the migrations are defined in the correct order and are safe to run multiple times.
 
 ### Migration Management
 

@@ -854,7 +854,7 @@ pub fn resolve_path<R: Runtime>(
                 .chain(global_scope.denies().iter().map(|e| e.path.clone()))
                 .chain(command_scope.denies().iter().map(|e| e.path.clone()))
                 .collect(),
-            require_literal_leading_dot: None,
+            require_literal_leading_dot: app.fs_scope().require_literal_leading_dot,
         },
     )?;
 
