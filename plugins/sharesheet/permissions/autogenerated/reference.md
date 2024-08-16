@@ -45,5 +45,4 @@ Denies the share_text command without any pre-configured scope.
 
 </td>
 </tr>
-
 </table>

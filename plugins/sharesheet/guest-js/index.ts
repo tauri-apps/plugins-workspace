@@ -17,7 +17,7 @@ export interface SharesheetOptions {
  * Opens the Sharesheet to share the specified text.
  *
  * ```javascript
- * import { authenticate } from "@tauri-apps/plugin-sharesheet";
+ * import { shareText } from "@tauri-apps/plugin-sharesheet";
  * await shareText('I am a shared message');
  * ```
  * @param text
