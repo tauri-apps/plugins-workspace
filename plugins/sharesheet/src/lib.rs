@@ -23,7 +23,7 @@ const PLUGIN_IDENTIFIER: &str = "app.tauri.sharesheet";
 #[cfg(target_os = "ios")]
 tauri::ios_plugin_binding!(init_plugin_sharesheet);
 
-/// Access to the shrae APIs.
+/// Access to the sharesheet APIs.
 pub struct Sharesheet<R: Runtime>(PluginHandle<R>);
 
 #[derive(Serialize)]
