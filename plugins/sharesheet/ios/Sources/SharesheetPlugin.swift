@@ -23,14 +23,14 @@ class SharesheetPlugin: Plugin {
 
     let content;
     if args.text.hasPrefix("http://") || args.text.hasPrefix("https://") {
-      content = Url(args.text);
+      content = Url(args.text)
     } else {
-      content = Text(args.text);
+      content = Text(args.text)
     }
 
     let title;
     if args.title != nil {
-      title = Text(args.title!)
+      title = Text(args.title)
     }
 
     ShareLink(item: content, message: title)
