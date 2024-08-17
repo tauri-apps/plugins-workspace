@@ -30,19 +30,22 @@ fn init_deep_link<R: Runtime, C: DeserializeOwned>(
 
         let handle = _api.register_android_plugin(PLUGIN_IDENTIFIER, "DeepLinkPlugin")?;
 
+        #[derive(serde::Deserialize)]
+        struct Event {
+            url: String,
+        }
+
         let app_handle = app.clone();
         handle.run_mobile_plugin::<()>(
             "setEventHandler",
             imp::EventHandler {
                 handler: Channel::new(move |event| {
                     let url = match event {
-                        InvokeResponseBody::Json(payload) => serde_json::from_str(&payload)
-                            .and_then(|payload| {
-                                payload
-                                    .get("url")
-                                    .and_then(|v| v.as_str())
-                                    .map(|s| s.to_owned())
-                            }),
+                        InvokeResponseBody::Json(payload) => {
+                            serde_json::from_str::<Event>(&payload)
+                                .ok()
+                                .map(|payload| payload.url)
+                        }
                         _ => None,
                     };
 
