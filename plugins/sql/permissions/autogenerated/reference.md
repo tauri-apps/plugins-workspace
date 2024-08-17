@@ -16,7 +16,7 @@ Also allows to load or close a connection.
 - `allow-load`
 - `allow-select`
 
-### Permission Table 
+## Permission Table 
 
 <table>
 <tr>
