@@ -206,7 +206,7 @@ checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
 
 [[package]]
 name = "api"
-version = "2.0.0-beta.17"
+version = "2.0.0-rc.0"
 dependencies = [
  "log",
  "serde",
@@ -6521,7 +6521,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-barcode-scanner"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "log",
  "serde",
@@ -6533,7 +6533,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-biometric"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "log",
  "serde",
@@ -6559,7 +6559,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-clipboard-manager"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "arboard",
  "image 0.24.9",
@@ -6573,7 +6573,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "dunce",
  "log",
@@ -6591,7 +6591,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "dunce",
  "log",
@@ -6626,7 +6626,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-geolocation"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "log",
  "serde",
@@ -6639,7 +6639,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-global-shortcut"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "global-hotkey",
  "log",
@@ -6652,7 +6652,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-haptics"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "log",
  "serde",
@@ -6718,7 +6718,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-nfc"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "log",
  "serde",
@@ -6731,7 +6731,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "color-backtrace",
  "ctor",
@@ -6804,7 +6804,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-shell"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "encoding_rs",
  "log",
@@ -6854,7 +6854,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-store"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "dunce",
  "log",
@@ -6888,7 +6888,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "base64 0.22.1",
  "dirs 5.0.1",
@@ -6949,7 +6949,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "bitflags 2.6.0",
  "log",

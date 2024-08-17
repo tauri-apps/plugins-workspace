@@ -1,10 +1,17 @@
 {
   "tag": "rc",
   "changes": [
+    ".changes/android-dialog-save.md",
+    ".changes/fix-http-plugin-abort.md",
+    ".changes/fix-linux-updater-permission-error.md",
     ".changes/geolocation-release.md",
     ".changes/haptics-release.md",
+    ".changes/iife-varname-spacing.md",
     ".changes/rc.md",
+    ".changes/remove-target-sdk.md",
     ".changes/shell-open-regex-match-string.md",
-    ".changes/shell-regex-match-string.md"
+    ".changes/shell-regex-match-string.md",
+    ".changes/update-fs-api-docs.md",
+    ".changes/update-tauri-rc-3.md"
   ]
 }

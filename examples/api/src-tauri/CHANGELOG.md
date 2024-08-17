@@ -1,5 +1,19 @@
 # Changelog
 
+## \[2.0.0-rc.0]
+
+### Dependencies
+
+- Upgraded to `dialog@2.0.0-rc.1`
+- Upgraded to `updater@2.0.0-rc.1`
+- Upgraded to `barcode-scanner@2.0.0-rc.1`
+- Upgraded to `clipboard-manager@2.0.0-rc.1`
+- Upgraded to `global-shortcut@2.0.0-rc.1`
+- Upgraded to `biometric@2.0.0-rc.1`
+- Upgraded to `nfc@2.0.0-rc.1`
+- Upgraded to `notification@2.0.0-rc.1`
+- Upgraded to `shell@2.0.0-rc.1`
+
 ## \[2.0.0-beta.17]
 
 ### Dependencies
