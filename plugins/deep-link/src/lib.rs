@@ -24,7 +24,7 @@ fn init_deep_link<R: Runtime, C: DeserializeOwned>(
     #[cfg(target_os = "android")]
     {
         use tauri::{
-            ipc::{Channel, InvokeBody},
+            ipc::{Channel, InvokeResponseBody},
             Emitter,
         };
 
@@ -35,13 +35,14 @@ fn init_deep_link<R: Runtime, C: DeserializeOwned>(
             "setEventHandler",
             imp::EventHandler {
                 handler: Channel::new(move |event| {
-                    println!("got channel event: {:?}", &event);
-
                     let url = match event {
-                        InvokeBody::Json(payload) => payload
-                            .get("url")
-                            .and_then(|v| v.as_str())
-                            .map(|s| s.to_owned()),
+                        InvokeResponseBody::Json(payload) => serde_json::from_str(&payload)
+                            .and_then(|payload| {
+                                payload
+                                    .get("url")
+                                    .and_then(|v| v.as_str())
+                                    .map(|s| s.to_owned())
+                            }),
                         _ => None,
                     };
 
