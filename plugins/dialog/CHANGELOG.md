@@ -1,5 +1,15 @@
 # Changelog
 
+## \[2.0.0-rc.1]
+
+### feat
+
+- [`bc7eecf4`](https://github.com/tauri-apps/plugins-workspace/commit/bc7eecf4202e7d23b987440c1cbd2da0f68c8bef) ([#1657](https://github.com/tauri-apps/plugins-workspace/pull/1657) by [@mikoto2000](https://github.com/tauri-apps/plugins-workspace/../../mikoto2000)) Implement `save` API on Android.
+
+### changes
+
+- [`6b079cfd`](https://github.com/tauri-apps/plugins-workspace/commit/6b079cfdd107c94abc2c7300f6af00bac3ff4040) ([#1649](https://github.com/tauri-apps/plugins-workspace/pull/1649) by [@ahqsoftwares](https://github.com/tauri-apps/plugins-workspace/../../ahqsoftwares)) Remove targetSdk from build.kts files as it is deprecated and will be removed from DSL v9.0
+
 ## \[2.0.0-rc.0]
 
 - [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
@@ -181,5 +191,5 @@
   pull/371)) First v2 alpha release!
   lpha release!
   pull/371)) First v2 alpha release!
-lpha release!
+  lpha release!
   pull/371)) First v2 alpha release!
