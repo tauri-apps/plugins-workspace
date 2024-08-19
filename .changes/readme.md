@@ -11,7 +11,7 @@ Use the following format:
 ```md
 ---
 "package-a": patch
-"package-b": minor
+"package-b": minor:feat
 ---
 
 Change summary goes here

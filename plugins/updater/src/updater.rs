@@ -647,7 +647,7 @@ impl Update {
 
         unsafe {
             ShellExecuteW(
-                0,
+                std::ptr::null_mut(),
                 w!("open"),
                 file.as_ptr(),
                 parameters.as_ptr(),

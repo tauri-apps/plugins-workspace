@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-notification"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 description = "Send desktop and mobile notifications on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -32,7 +32,7 @@ serde_repr = "0.1"
 tauri = { workspace = true, features = ["wry"] }
 
 [target."cfg(windows)".dependencies]
-win7-notifications = { version = "0.4.4", optional = true }
+win7-notifications = { version = "0.4.5", optional = true }
 windows-version = { version = "0.1", optional = true }
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]

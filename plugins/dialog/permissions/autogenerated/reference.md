@@ -16,7 +16,7 @@ All dialog types are enabled.
 - `allow-save`
 - `allow-open`
 
-### Permission Table 
+## Permission Table 
 
 <table>
 <tr>

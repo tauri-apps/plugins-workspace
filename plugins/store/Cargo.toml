@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-store"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 description = "Simple, persistent key-value store."
 authors = { workspace = true }
 license = { workspace = true }
