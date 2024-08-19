@@ -4,6 +4,7 @@
 
 package com.plugin.fs
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.net.Uri
 import android.util.Log
@@ -20,24 +21,22 @@ class WriteTextFileArgs {
   val content: String = ""
 }
 
+@InvokeArg
+class GetFileDescriptorArgs {
+    lateinit var uri: String
+    lateinit var mode: String
+}
+
 @TauriPlugin
 class FsPlugin(private val activity: Activity): Plugin(activity) {
+    @SuppressLint("Recycle")
     @Command
-    fun writeTextFile(invoke: Invoke) {
-        val args = invoke.parseArgs(WriteTextFileArgs::class.java)
-        val uri = Uri.parse(args.uri)
-        val content = args.content
-
-        if(uri != null){
-          activity.getContentResolver().openOutputStream(uri).use { ost ->
-            if(ost != null && content != null){
-              ost.write(content.toByteArray());
-            }
-          }
-        }
-
-        val ret = JSObject()
-        invoke.resolve(ret)
+    fun getFileDescriptor(invoke: Invoke) {
+        val args = invoke.parseArgs(GetFileDescriptorArgs::class.java)
+        val fd = activity.contentResolver.openAssetFileDescriptor(Uri.parse(args.uri), args.mode)?.parcelFileDescriptor?.detachFd()
+        val res = JSObject()
+        res.put("fd", fd)
+        invoke.resolve(res)
     }
 }
 

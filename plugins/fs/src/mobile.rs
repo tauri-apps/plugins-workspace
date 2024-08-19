@@ -8,11 +8,7 @@ use tauri::{
     AppHandle, Runtime,
 };
 
-#[cfg(target_os = "android")]
-use crate::models::{WriteTextFilePayload, WriteTextFileResponse};
-
-#[cfg(target_os = "android")]
-use crate::Error::Tauri;
+use crate::models::*;
 
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "com.plugin.fs";
@@ -38,30 +34,29 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Fs<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Fs<R> {
-    pub fn write_text_file(
+    #[cfg(target_os = "android")]
+    pub fn resolve_content_uri(
         &self,
-        payload: WriteTextFilePayload,
-    ) -> crate::Result<WriteTextFileResponse> {
+        uri: impl Into<String>,
+        mode: impl Into<String>,
+    ) -> crate::Result<std::fs::File> {
         #[cfg(target_os = "android")]
         {
-            let result = self
-                .0
-                .run_mobile_plugin::<WriteTextFileResponse>("writeTextFile", payload);
-            match result {
-                Ok(_) => Ok(WriteTextFileResponse { error: None }),
-                Err(_) => Err(Tauri(tauri::Error::InvokeKey)),
+            let result = self.0.run_mobile_plugin::<GetFileDescriptorResponse>(
+                "getFileDescriptor",
+                GetFileDescriptorPayload {
+                    uri: uri.into(),
+                    mode: mode.into(),
+                },
+            )?;
+            if let Some(fd) = result.fd {
+                Ok(unsafe {
+                    use std::os::fd::FromRawFd;
+                    std::fs::File::from_raw_fd(fd)
+                })
+            } else {
+                todo!()
             }
-        }
-        #[cfg(any(desktop, target_os = "ios"))]
-        {
-            write_file_inner(
-                webview,
-                &global_scope,
-                &command_scope,
-                path,
-                data.as_bytes(),
-                options,
-            )
         }
     }
 }

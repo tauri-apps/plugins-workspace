@@ -6,13 +6,13 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct WriteTextFilePayload {
+pub struct GetFileDescriptorPayload {
     pub uri: String,
-    pub content: String,
+    pub mode: String,
 }
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct WriteTextFileResponse {
-    pub error: Option<String>,
+pub struct GetFileDescriptorResponse {
+    pub fd: Option<i32>,
 }
