@@ -7,16 +7,16 @@
  *
  * ## Security
  *
- * This module prevents path traversal, not allowing absolute paths or parent dir components
- * (i.e. "/usr/path/to/file" or "../path/to/file" paths are not allowed).
- * Paths accessed with this API must be relative to one of the {@link BaseDirectory | base directories}
- * so if you need access to arbitrary filesystem paths, you must write such logic on the core layer instead.
+ * This module prevents path traversal, not allowing parent directory accessors to be used
+ * (i.e. "/usr/path/to/../file" or "../path/to/file" paths are not allowed).
+ * Paths accessed with this API must be either relative to one of the {@link BaseDirectory | base directories}
+ * or created with the {@link https://v2.tauri.app/reference/javascript/api/namespacepath | path API}.
  *
  * The API has a scope configuration that forces you to restrict the paths that can be accessed using glob patterns.
  *
  * The scope configuration is an array of glob patterns describing folder paths that are allowed.
  * For instance, this scope configuration only allows accessing files on the
- * *databases* folder of the {@link https://beta.tauri.app/2/reference/js/core/namespacepath/#appdatadir | `$APPDATA` directory}:
+ * *databases* folder of the {@link https://v2.tauri.app/reference/javascript/api/namespacepath/#appdatadir | `$APPDATA` directory}:
  * ```json
  * {
  *   "plugins": {
@@ -27,32 +27,32 @@
  * }
  * ```
  *
- * Notice the use of the `$APPDATA` variable. The value is injected at runtime, resolving to the {@link https://beta.tauri.app/2/reference/js/core/namespacepath/#appdatadir | app data directory}.
+ * Notice the use of the `$APPDATA` variable. The value is injected at runtime, resolving to the {@link https://v2.tauri.app/reference/javascript/api/namespacepath/#appdatadir | app data directory}.
  *
  * The available variables are:
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#appconfigdir | $APPCONFIG},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#appdatadir | $APPDATA},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#appLocaldatadir | $APPLOCALDATA},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#appcachedir | $APPCACHE},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#applogdir | $APPLOG},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#audiodir | $AUDIO},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#cachedir | $CACHE},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#configdir | $CONFIG},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#datadir | $DATA},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#localdatadir | $LOCALDATA},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#desktopdir | $DESKTOP},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#documentdir | $DOCUMENT},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#downloaddir | $DOWNLOAD},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#executabledir | $EXE},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#fontdir | $FONT},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#homedir | $HOME},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#picturedir | $PICTURE},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#publicdir | $PUBLIC},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#runtimedir | $RUNTIME},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#templatedir | $TEMPLATE},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#videodir | $VIDEO},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#resourcedir | $RESOURCE},
- * {@linkcode https://beta.tauri.app/2/reference/js/core/namespacepath/#tempdir | $TEMP}.
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#appconfigdir | $APPCONFIG},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#appdatadir | $APPDATA},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#applocaldatadir | $APPLOCALDATA},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#appcachedir | $APPCACHE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#applogdir | $APPLOG},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#audiodir | $AUDIO},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#cachedir | $CACHE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#configdir | $CONFIG},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#datadir | $DATA},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#localdatadir | $LOCALDATA},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#desktopdir | $DESKTOP},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#documentdir | $DOCUMENT},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#downloaddir | $DOWNLOAD},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#executabledir | $EXE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#fontdir | $FONT},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#homedir | $HOME},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#picturedir | $PICTURE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#publicdir | $PUBLIC},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#runtimedir | $RUNTIME},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#templatedir | $TEMPLATE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#videodir | $VIDEO},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#resourcedir | $RESOURCE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#tempdir | $TEMP}.
  *
  * Trying to execute any API with a URL not configured on the scope results in a promise rejection due to denied access.
  *
@@ -269,13 +269,13 @@ class FileHandle extends Resource {
    *
    * @example
    * ```typescript
-   * import { open, read, close, BaseDirectory } from "@tauri-apps/plugin-fs"
+   * import { open, BaseDirectory } from "@tauri-apps/plugin-fs"
    * // if "$APP/foo/bar.txt" contains the text "hello world":
-   * const file = await open("foo/bar.txt", { baseDir: BaseDirectory.App });
+   * const file = await open("foo/bar.txt", { baseDir: BaseDirectory.AppConfig });
    * const buf = new Uint8Array(100);
    * const numberOfBytesRead = await file.read(buf); // 11 bytes
    * const text = new TextDecoder().decode(buf);  // "hello world"
-   * await close(file.rid);
+   * await file.close();
    * ```
    *
    * @since 2.0.0
@@ -309,11 +309,11 @@ class FileHandle extends Resource {
    *
    * @example
    * ```typescript
-   * import { open, seek, write, SeekMode, BaseDirectory } from '@tauri-apps/plugin-fs';
+   * import { open, SeekMode, BaseDirectory } from '@tauri-apps/plugin-fs';
    *
    * // Given hello.txt pointing to file with "Hello world", which is 11 bytes long:
-   * const file = await open('hello.txt', { read: true, write: true, truncate: true, create: true, baseDir: BaseDirectory.App });
-   * await file.write(new TextEncoder().encode("Hello world"), { baseDir: BaseDirectory.App });
+   * const file = await open('hello.txt', { read: true, write: true, truncate: true, create: true, baseDir: BaseDirectory.AppLocalData });
+   * await file.write(new TextEncoder().encode("Hello world"));
    *
    * // Seek 6 bytes from the start of the file
    * console.log(await file.seek(6, SeekMode.Start)); // "6"
@@ -321,6 +321,8 @@ class FileHandle extends Resource {
    * console.log(await file.seek(2, SeekMode.Current)); // "8"
    * // Seek backwards 2 bytes from the end of the file
    * console.log(await file.seek(-2, SeekMode.End)); // "9" (e.g. 11-2)
+   *
+   * await file.close();
    * ```
    *
    * @since 2.0.0
@@ -338,10 +340,11 @@ class FileHandle extends Resource {
    *
    * @example
    * ```typescript
-   * import { open, fstat, BaseDirectory } from '@tauri-apps/plugin-fs';
-   * const file = await open("file.txt", { read: true, baseDir: BaseDirectory.App });
-   * const fileInfo = await fstat(file.rid);
+   * import { open, BaseDirectory } from '@tauri-apps/plugin-fs';
+   * const file = await open("file.txt", { read: true, baseDir: BaseDirectory.AppLocalData });
+   * const fileInfo = await file.stat();
    * console.log(fileInfo.isFile); // true
+   * await file.close();
    * ```
    *
    * @since 2.0.0
@@ -360,19 +363,20 @@ class FileHandle extends Resource {
    *
    * @example
    * ```typescript
-   * import { ftruncate, open, write, read, BaseDirectory } from '@tauri-apps/plugin-fs';
+   * import { open, BaseDirectory } from '@tauri-apps/plugin-fs';
    *
    * // truncate the entire file
-   * const file = await open("my_file.txt", { read: true, write: true, create: true, baseDir: BaseDirectory.App });
-   * await ftruncate(file.rid);
+   * const file = await open("my_file.txt", { read: true, write: true, create: true, baseDir: BaseDirectory.AppLocalData });
+   * await file.truncate();
    *
    * // truncate part of the file
-   * const file = await open("my_file.txt", { read: true, write: true, create: true, baseDir: BaseDirectory.App });
-   * await write(file.rid, new TextEncoder().encode("Hello World"));
-   * await ftruncate(file.rid, 7);
+   * const file = await open("my_file.txt", { read: true, write: true, create: true, baseDir: BaseDirectory.AppLocalData });
+   * await file.write(new TextEncoder().encode("Hello World"));
+   * await file.truncate(7);
    * const data = new Uint8Array(32);
-   * await read(file.rid, data);
+   * await file.read(data);
    * console.log(new TextDecoder().decode(data)); // Hello W
+   * await file.close();
    * ```
    *
    * @since 2.0.0
@@ -394,12 +398,12 @@ class FileHandle extends Resource {
    *
    * @example
    * ```typescript
-   * import { open, write, close, BaseDirectory } from '@tauri-apps/plugin-fs';
+   * import { open, write, BaseDirectory } from '@tauri-apps/plugin-fs';
    * const encoder = new TextEncoder();
    * const data = encoder.encode("Hello world");
-   * const file = await open("bar.txt", { write: true, baseDir: BaseDirectory.App });
-   * const bytesWritten = await write(file.rid, data); // 11
-   * await close(file.rid);
+   * const file = await open("bar.txt", { write: true, baseDir: BaseDirectory.AppLocalData });
+   * const bytesWritten = await file.write(data); // 11
+   * await file.close();
    * ```
    *
    * @since 2.0.0
@@ -427,7 +431,9 @@ interface CreateOptions {
  * @example
  * ```typescript
  * import { create, BaseDirectory } from "@tauri-apps/plugin-fs"
- * const file = await create("foo/bar.txt", { baseDir: BaseDirectory.App });
+ * const file = await create("foo/bar.txt", { baseDir: BaseDirectory.AppConfig });
+ * await file.write(new TextEncoder().encode("Hello world"));
+ * await file.close();
  * ```
  *
  * @since 2.0.0
@@ -510,9 +516,9 @@ interface OpenOptions {
  * @example
  * ```typescript
  * import { open, BaseDirectory } from "@tauri-apps/plugin-fs"
- * const file = await open("foo/bar.txt", { read: true, write: true, baseDir: BaseDirectory.App });
+ * const file = await open("foo/bar.txt", { read: true, write: true, baseDir: BaseDirectory.AppLocalData });
  * // Do work with file
- * await close(file.rid);
+ * await file.close();
  * ```
  *
  * @since 2.0.0
@@ -548,7 +554,7 @@ interface CopyFileOptions {
  * @example
  * ```typescript
  * import { copyFile, BaseDirectory } from '@tauri-apps/plugin-fs';
- * await copyFile('app.conf', 'app.conf.bk', { fromPathBaseDir: BaseDirectory.App, toPathBaseDir: BaseDirectory.App });
+ * await copyFile('app.conf', 'app.conf.bk', { fromPathBaseDir: BaseDirectory.AppConfig, toPathBaseDir: BaseDirectory.AppConfig });
  * ```
  *
  * @since 2.0.0
@@ -591,7 +597,7 @@ interface MkdirOptions {
  * @example
  * ```typescript
  * import { mkdir, BaseDirectory } from '@tauri-apps/plugin-fs';
- * await mkdir('users', { baseDir: BaseDirectory.App });
+ * await mkdir('users', { baseDir: BaseDirectory.AppLocalData });
  * ```
  *
  * @since 2.0.0
@@ -641,15 +647,16 @@ interface DirEntry {
  * @example
  * ```typescript
  * import { readDir, BaseDirectory } from '@tauri-apps/plugin-fs';
+ * import { join } from '@tauri-apps/api/path';
  * const dir = "users"
- * const entries = await readDir('users', { baseDir: BaseDirectory.App });
- * processEntriesRecursive(dir, entries);
- * async function processEntriesRecursive(parent, entries) {
+ * const entries = await readDir('users', { baseDir: BaseDirectory.AppLocalData });
+ * processEntriesRecursively(dir, entries);
+ * async function processEntriesRecursively(parent, entries) {
  *   for (const entry of entries) {
  *     console.log(`Entry: ${entry.name}`);
  *     if (entry.isDirectory) {
- *        const dir = parent + entry.name;
- *       processEntriesRecursive(dir, await readDir(dir, { baseDir: BaseDirectory.App }))
+ *        const dir = await join(parent, entry.name);
+ *       processEntriesRecursively(dir, await readDir(dir, { baseDir: BaseDirectory.AppLocalData }))
  *     }
  *   }
  * }
@@ -698,12 +705,14 @@ async function readFile(
     throw new TypeError("Must be a file URL.");
   }
 
-  const arr = await invoke<number[]>("plugin:fs|read_file", {
+  const arr = await invoke<ArrayBuffer | number[]>("plugin:fs|read_file", {
     path: path instanceof URL ? path.toString() : path,
     options,
   });
 
-  return Uint8Array.from(arr);
+  return arr instanceof ArrayBuffer
+    ? new Uint8Array(arr)
+    : Uint8Array.from(arr);
 }
 
 /**
@@ -711,7 +720,7 @@ async function readFile(
  * @example
  * ```typescript
  * import { readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
- * const contents = await readTextFile('app.conf', { baseDir: BaseDirectory.App });
+ * const contents = await readTextFile('app.conf', { baseDir: BaseDirectory.AppConfig });
  * ```
  *
  * @since 2.0.0
@@ -735,7 +744,7 @@ async function readTextFile(
  * @example
  * ```typescript
  * import { readTextFileLines, BaseDirectory } from '@tauri-apps/plugin-fs';
- * const lines = await readTextFileLines('app.conf', { baseDir: BaseDirectory.App });
+ * const lines = await readTextFileLines('app.conf', { baseDir: BaseDirectory.AppConfig });
  * for await (const line of lines) {
  *   console.log(line);
  * }
@@ -775,7 +784,6 @@ async function readTextFileLines(
       if (done) this.rid = null;
 
       return {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         value: done ? "" : line!,
         done,
       };
@@ -802,8 +810,8 @@ interface RemoveOptions {
  * @example
  * ```typescript
  * import { remove, BaseDirectory } from '@tauri-apps/plugin-fs';
- * await remove('users/file.txt', { baseDir: BaseDirectory.App });
- * await remove('users', { baseDir: BaseDirectory.App });
+ * await remove('users/file.txt', { baseDir: BaseDirectory.AppLocalData });
+ * await remove('users', { baseDir: BaseDirectory.AppLocalData });
  * ```
  *
  * @since 2.0.0
@@ -842,7 +850,7 @@ interface RenameOptions {
  * @example
  * ```typescript
  * import { rename, BaseDirectory } from '@tauri-apps/plugin-fs';
- * await rename('avatar.png', 'deleted.png', { oldPathBaseDir: BaseDirectory.App, newPathBaseDir: BaseDirectory.App });
+ * await rename('avatar.png', 'deleted.png', { oldPathBaseDir: BaseDirectory.App, newPathBaseDir: BaseDirectory.AppLocalData });
  * ```
  *
  * @since 2.0.0
@@ -881,7 +889,7 @@ interface StatOptions {
  * @example
  * ```typescript
  * import { stat, BaseDirectory } from '@tauri-apps/plugin-fs';
- * const fileInfo = await stat("hello.txt", { baseDir: BaseDirectory.App });
+ * const fileInfo = await stat("hello.txt", { baseDir: BaseDirectory.AppLocalData });
  * console.log(fileInfo.isFile); // true
  * ```
  *
@@ -907,7 +915,7 @@ async function stat(
  * @example
  * ```typescript
  * import { lstat, BaseDirectory } from '@tauri-apps/plugin-fs';
- * const fileInfo = await lstat("hello.txt", { baseDir: BaseDirectory.App });
+ * const fileInfo = await lstat("hello.txt", { baseDir: BaseDirectory.AppLocalData });
  * console.log(fileInfo.isFile); // true
  * ```
  *
@@ -939,16 +947,16 @@ interface TruncateOptions {
  *
  * @example
  * ```typescript
- * import { truncate, readFile, writeFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+ * import { truncate, readTextFile, writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
  * // truncate the entire file
- * await truncate("my_file.txt", 0, { baseDir: BaseDirectory.App });
+ * await truncate("my_file.txt", 0, { baseDir: BaseDirectory.AppLocalData });
  *
  * // truncate part of the file
- * let file = "file.txt";
- * await writeFile(file, new TextEncoder().encode("Hello World"), { baseDir: BaseDirectory.App });
- * await truncate(file, 7);
- * const data = await readFile(file, { baseDir: BaseDirectory.App });
- * console.log(new TextDecoder().decode(data));  // "Hello W"
+ * const filePath = "file.txt";
+ * await writeTextFile(filePath, "Hello World", { baseDir: BaseDirectory.AppLocalData });
+ * await truncate(filePath, 7, { baseDir: BaseDirectory.AppLocalData });
+ * const data = await readTextFile(filePath, { baseDir: BaseDirectory.AppLocalData });
+ * console.log(data);  // "Hello W"
  * ```
  *
  * @since 2.0.0
@@ -993,7 +1001,7 @@ interface WriteFileOptions {
  *
  * let encoder = new TextEncoder();
  * let data = encoder.encode("Hello World");
- * await writeFile('file.txt', data, { baseDir: BaseDirectory.App });
+ * await writeFile('file.txt', data, { baseDir: BaseDirectory.AppLocalData });
  * ```
  *
  * @since 2.0.0
@@ -1007,10 +1015,11 @@ async function writeFile(
     throw new TypeError("Must be a file URL.");
   }
 
-  await invoke("plugin:fs|write_file", {
-    path: path instanceof URL ? path.toString() : path,
-    data: Array.from(data),
-    options,
+  await invoke("plugin:fs|write_file", data, {
+    headers: {
+      path: path instanceof URL ? path.toString() : path,
+      options: JSON.stringify(options),
+    },
   });
 }
 
@@ -1020,7 +1029,7 @@ async function writeFile(
   * ```typescript
   * import { writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
   *
-  * await writeTextFile('file.txt', "Hello world", { baseDir: BaseDirectory.App });
+  * await writeTextFile('file.txt', "Hello world", { baseDir: BaseDirectory.AppLocalData });
   * ```
   *
   * @since 2.0.0

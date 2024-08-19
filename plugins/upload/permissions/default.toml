@@ -1,0 +1,16 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = """
+This permission set configures what kind of
+operations are available from the upload plugin.
+
+#### Granted Permissions
+
+All operations are enabled by default.
+
+"""
+permissions = [
+  "allow-upload",
+  "allow-download"
+]

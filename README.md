@@ -8,7 +8,7 @@
 | [biometric](plugins/biometric)                  | Prompt the user for biometric authentication on Android and iOS.                                                                                                       | ?   | ?   | ?   | ✅  | ✅  |
 | [cli](plugins/cli)                              | Parse arguments from your Command Line Interface       | ✅  | ✅  | ✅  | ?   | ?   |
 | [clipboard-manager](plugins/clipboard-manager)  | Read and write to the system clipboard.                | ✅  | ✅  | ✅  | ✅  | ✅  |
-| [deep-link](plugins/deep-link)                  | Set your Tauri application as the default handler for an URL.                                                                                                       | ?   | ?   | ?   | ✅   | ✅  |
+| [deep-link](plugins/deep-link)                  | Set your Tauri application as the default handler for an URL.                                                                                                       | ✅   | ✅   | ✅   | ✅   | ✅  |
 | [dialog](plugins/dialog)                        | Native system dialogs for opening and saving files along with message dialogs.                                                                                                   | ✅  | ✅  | ✅  | ✅  | ✅ |
 | [fs](plugins/fs)                                | Access the file system.                                | ✅   | ✅   | ✅   | ?   | ?  |
 | [global-shortcut](plugins/global-shortcut)      | Register global shortcuts.                             | ✅  | ✅  | ✅  | ?   | ?  |
@@ -32,6 +32,10 @@
 | [window-state](plugins/window-state)            | Persist window sizes and positions.                    | ✅  | ✅  | ✅  | ?   | ?   |
 
 _This repo and all plugins require a Rust version of at least **1.75**_
+
+## Contributing
+
+PRs accepted. Please make sure to read the [Contributing Guide](https://github.com/tauri-apps/tauri/blob/dev/.github/CONTRIBUTING.md) before making a pull request.
 
 ## Partners
 

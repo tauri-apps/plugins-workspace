@@ -103,7 +103,18 @@ pub enum ShellAllowedArg {
         /// This will require the argument value passed to this variable to match the `validator` regex
         /// before it will be executed.
         ///
-        /// [regex]: https://docs.rs/regex/latest/regex/#syntax
+        /// The regex string is by default surrounded by `^...$` to match the full string.
+        /// For example the `https?://\w+` regex would be registered as `^https?://\w+$`.
+        ///
+        /// [regex]: <https://docs.rs/regex/latest/regex/#syntax>
         validator: String,
+
+        /// Marks the validator as a raw regex, meaning the plugin should not make any modification at runtime.
+        ///
+        /// This means the regex will not match on the entire string by default, which might
+        /// be exploited if your regex allow unexpected input to be considered valid.
+        /// When using this option, make sure your regex is correct.
+        #[serde(default)]
+        raw: bool,
     },
 }

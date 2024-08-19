@@ -182,7 +182,7 @@ pub struct CopyFileOptions {
 }
 
 #[tauri::command]
-pub fn copy_file<R: Runtime>(
+pub async fn copy_file<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
@@ -291,7 +291,7 @@ fn read_dir_inner<P: AsRef<Path>>(path: P) -> crate::Result<Vec<DirEntry>> {
 }
 
 #[tauri::command]
-pub fn read_dir<R: Runtime>(
+pub async fn read_dir<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
@@ -317,7 +317,7 @@ pub fn read_dir<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn read<R: Runtime>(
+pub async fn read<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
     len: u32,
@@ -330,13 +330,13 @@ pub fn read<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn read_file<R: Runtime>(
+pub async fn read_file<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafePathBuf,
     options: Option<BaseOptions>,
-) -> CommandResult<Vec<u8>> {
+) -> CommandResult<tauri::ipc::Response> {
     let resolved_path = resolve_path(
         &webview,
         &global_scope,
@@ -345,6 +345,7 @@ pub fn read_file<R: Runtime>(
         options.as_ref().and_then(|o| o.base_dir),
     )?;
     std::fs::read(&resolved_path)
+        .map(tauri::ipc::Response::new)
         .map_err(|e| {
             format!(
                 "failed to read file at path: {} with error: {e}",
@@ -355,7 +356,7 @@ pub fn read_file<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn read_text_file<R: Runtime>(
+pub async fn read_text_file<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
@@ -411,7 +412,7 @@ pub fn read_text_file_lines<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn read_text_file_lines_next<R: Runtime>(
+pub async fn read_text_file_lines_next<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
 ) -> CommandResult<(Option<String>, bool)> {
@@ -546,7 +547,7 @@ pub enum SeekMode {
 }
 
 #[tauri::command]
-pub fn seek<R: Runtime>(
+pub async fn seek<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
     offset: i64,
@@ -622,7 +623,7 @@ pub fn fstat<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> CommandResult<
 }
 
 #[tauri::command]
-pub fn truncate<R: Runtime>(
+pub async fn truncate<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
@@ -657,7 +658,7 @@ pub fn truncate<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn ftruncate<R: Runtime>(
+pub async fn ftruncate<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
     len: Option<u64>,
@@ -669,7 +670,7 @@ pub fn ftruncate<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn write<R: Runtime>(
+pub async fn write<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
     data: Vec<u8>,
@@ -752,19 +753,35 @@ fn write_file_inner<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn write_file<R: Runtime>(
+pub async fn write_file<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
-    data: Vec<u8>,
-    options: Option<WriteFileOptions>,
+    request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
-    write_file_inner(webview, &global_scope, &command_scope, path, &data, options)
+    if let tauri::ipc::InvokeBody::Raw(data) = request.body() {
+        let path = request
+            .headers()
+            .get("path")
+            .ok_or_else(|| anyhow::anyhow!("missing file path").into())
+            .and_then(|p| {
+                p.to_str()
+                    .map_err(|e| anyhow::anyhow!("invalid path: {e}").into())
+            })
+            .and_then(|p| SafePathBuf::new(p.into()).map_err(CommandError::from))?;
+        let options = request
+            .headers()
+            .get("options")
+            .and_then(|p| p.to_str().ok())
+            .and_then(|opts| serde_json::from_str(opts).ok());
+        write_file_inner(webview, &global_scope, &command_scope, path, data, options)
+    } else {
+        Err(anyhow::anyhow!("unexpected invoke body").into())
+    }
 }
 
 #[tauri::command]
-pub fn write_text_file<R: Runtime>(
+pub async fn write_text_file<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
@@ -837,7 +854,7 @@ pub fn resolve_path<R: Runtime>(
                 .chain(global_scope.denies().iter().map(|e| e.path.clone()))
                 .chain(command_scope.denies().iter().map(|e| e.path.clone()))
                 .collect(),
-            require_literal_leading_dot: None,
+            require_literal_leading_dot: app.fs_scope().require_literal_leading_dot,
         },
     )?;
 

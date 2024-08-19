@@ -7,7 +7,7 @@
 
 [[permission]]
 identifier = "scope-template-recursive"
-description = "This scope recursive access to the complete `$TEMPLATE` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$TEMPLATE` folder, including sub directories and files."
 
 [[permission.scope.allow]]
 path = "$TEMPLATE/**"

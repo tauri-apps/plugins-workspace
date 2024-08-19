@@ -1,6 +1,7 @@
 // Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
+use std::path::PathBuf;
 
 use serde::{de::DeserializeOwned, Deserialize};
 use tauri::{
@@ -49,6 +50,11 @@ struct FilePickerResponse {
     files: Vec<FileResponse>,
 }
 
+#[derive(Debug, Deserialize)]
+struct SaveFileResponse {
+    file: PathBuf,
+}
+
 pub fn pick_file<R: Runtime, F: FnOnce(Option<FileResponse>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
@@ -77,6 +83,23 @@ pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<FileResponse>>) + Send + 'sta
             .run_mobile_plugin::<FilePickerResponse>("showFilePicker", dialog.payload(true));
         if let Ok(response) = res {
             f(Some(response.files))
+        } else {
+            f(None)
+        }
+    });
+}
+
+pub fn save_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
+    dialog: FileDialogBuilder<R>,
+    f: F,
+) {
+    std::thread::spawn(move || {
+        let res = dialog
+            .dialog
+            .0
+            .run_mobile_plugin::<SaveFileResponse>("saveFileDialog", dialog.payload(false));
+        if let Ok(response) = res {
+            f(Some(response.file))
         } else {
             f(None)
         }

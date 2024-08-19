@@ -88,9 +88,14 @@ impl ScopeObject for ScopeAllowedCommand {
                     crate::scope_entry::ShellAllowedArg::Fixed(fixed) => {
                         crate::scope::ScopeAllowedArg::Fixed(fixed)
                     }
-                    crate::scope_entry::ShellAllowedArg::Var { validator } => {
-                        let validator = Regex::new(&validator)
-                            .unwrap_or_else(|e| panic!("invalid regex {validator}: {e}"));
+                    crate::scope_entry::ShellAllowedArg::Var { validator, raw } => {
+                        let regex = if raw {
+                            validator
+                        } else {
+                            format!("^{validator}$")
+                        };
+                        let validator = Regex::new(&regex)
+                            .unwrap_or_else(|e| panic!("invalid regex {regex}: {e}"));
                         crate::scope::ScopeAllowedArg::Var { validator }
                     }
                 });

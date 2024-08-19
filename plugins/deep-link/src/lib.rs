@@ -23,22 +23,29 @@ fn init_deep_link<R: Runtime, C: DeserializeOwned>(
 ) -> crate::Result<DeepLink<R>> {
     #[cfg(target_os = "android")]
     {
-        use tauri::ipc::{Channel, InvokeBody};
+        use tauri::{
+            ipc::{Channel, InvokeResponseBody},
+            Emitter,
+        };
 
         let handle = _api.register_android_plugin(PLUGIN_IDENTIFIER, "DeepLinkPlugin")?;
+
+        #[derive(serde::Deserialize)]
+        struct Event {
+            url: String,
+        }
 
         let app_handle = app.clone();
         handle.run_mobile_plugin::<()>(
             "setEventHandler",
             imp::EventHandler {
                 handler: Channel::new(move |event| {
-                    println!("got channel event: {:?}", &event);
-
                     let url = match event {
-                        InvokeBody::Json(payload) => payload
-                            .get("url")
-                            .and_then(|v| v.as_str())
-                            .map(|s| s.to_owned()),
+                        InvokeResponseBody::Json(payload) => {
+                            serde_json::from_str::<Event>(&payload)
+                                .ok()
+                                .map(|payload| payload.url)
+                        }
                         _ => None,
                     };
 
@@ -388,6 +395,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
         .on_event(|_app, _event| {
             #[cfg(any(target_os = "macos", target_os = "ios"))]
             if let tauri::RunEvent::Opened { urls } = _event {
+                use tauri::Emitter;
+
                 let _ = _app.emit("deep-link://new-url", urls);
                 _app.state::<DeepLink<R>>()
                     .current

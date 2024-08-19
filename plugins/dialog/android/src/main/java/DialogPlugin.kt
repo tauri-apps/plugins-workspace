@@ -41,6 +41,11 @@ class MessageOptions {
   var cancelButtonLabel: String? = null
 }
 
+@InvokeArg
+class SaveFileDialogOptions {
+  var fileName: String? = null
+}
+
 @TauriPlugin
 class DialogPlugin(private val activity: Activity): Plugin(activity) {
   var filePickerOptions: FilePickerOptions? = null
@@ -203,5 +208,47 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
         val dialog = builder.create()
         dialog.show()
       }
+  }
+
+  @Command
+  fun saveFileDialog(invoke: Invoke) {
+    try {
+      val args = invoke.parseArgs(SaveFileDialogOptions::class.java)
+
+      val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+      intent.addCategory(Intent.CATEGORY_OPENABLE)
+      intent.setType("text/plain")
+      intent.putExtra(Intent.EXTRA_TITLE, args.fileName ?: "")
+      startActivityForResult(invoke, intent, "saveFileDialogResult")
+    } catch (ex: Exception) {
+      val message = ex.message ?: "Failed to pick save file"
+      Logger.error(message)
+      invoke.reject(message)
+    }
+  }
+
+  @ActivityCallback
+  fun saveFileDialogResult(invoke: Invoke, result: ActivityResult) {
+    try {
+      when (result.resultCode) {
+        Activity.RESULT_OK -> {
+          val callResult = JSObject()
+          val intent: Intent? = result.data
+          if (intent != null) {
+            val uri = intent.data
+            if (uri != null) {
+              callResult.put("file", uri.toString())
+            }
+          }
+          invoke.resolve(callResult)
+        }
+        Activity.RESULT_CANCELED -> invoke.reject("File picker cancelled")
+        else -> invoke.reject("Failed to pick files")
+      }
+    } catch (ex: java.lang.Exception) {
+      val message = ex.message ?: "Failed to read file pick result"
+      Logger.error(message)
+      invoke.reject(message)
+    }
   }
 }

@@ -18,7 +18,7 @@
  *
  * ### Restricting access to the {@link Command | `Command`} APIs
  *
- * The plugin configuration object has a `scope` field that defines an array of CLIs that can be used.
+ * The plugin permissions object has a `scope` field that defines an array of CLIs that can be used.
  * Each CLI is a configuration object `{ name: string, cmd: string, sidecar?: bool, args?: boolean | Arg[] }`.
  *
  * - `name`: the unique identifier of the command, passed to the {@link Command.create | Command.create function}.
@@ -35,12 +35,13 @@
  *
  * CLI: `git commit -m "the commit message"`
  *
- * Configuration:
+ * Capability:
  * ```json
  * {
- *   "plugins": {
- *     "shell": {
- *       "scope": [
+ *   "permissions": [
+ *     {
+ *       "identifier": "shell:allow-execute",
+ *       "allow": [
  *         {
  *           "name": "run-git-commit",
  *           "cmd": "git",
@@ -48,7 +49,7 @@
  *         }
  *       ]
  *     }
- *   }
+ *   ]
  * }
  * ```
  * Usage:
@@ -171,7 +172,6 @@ class EventEmitter<E extends Record<string, any>> {
   ): this {
     const wrapper = (arg: E[typeof eventName]): void => {
       this.removeListener(eventName, wrapper);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       listener(arg);
     };
     return this.addListener(eventName, wrapper);
@@ -204,9 +204,8 @@ class EventEmitter<E extends Record<string, any>> {
    * @since 2.0.0
    */
   removeAllListeners<N extends keyof E>(event?: N): this {
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (event) {
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete,security/detect-object-injection
+      // eslint-disable-next-line security/detect-object-injection
       delete this.eventListeners[event];
     } else {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -226,9 +225,8 @@ class EventEmitter<E extends Record<string, any>> {
    */
   emit<N extends keyof E>(eventName: N, arg: E[typeof eventName]): boolean {
     if (eventName in this.eventListeners) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,security/detect-object-injection
+      // eslint-disable-next-line security/detect-object-injection
       const listeners = this.eventListeners[eventName];
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       for (const listener of listeners) listener(arg);
       return true;
     }

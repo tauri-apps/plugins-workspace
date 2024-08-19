@@ -1,0 +1,17 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = """
+This permission set configures which
+shell functionality is exposed by default.
+
+#### Granted Permissions
+
+It allows to use the `open` functionality without any specific
+scope pre-configured. It will allow opening `http(s)://`,
+`tel:` and `mailto:` links.
+"""
+
+permissions = [
+    "allow-open",
+]

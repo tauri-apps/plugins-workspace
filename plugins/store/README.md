@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-store = "2.0.0-beta"
+tauri-plugin-store = "2.0.0-rc"
 # alternatively with Git:
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -127,7 +127,7 @@ fn main() {
 
 ### Loading Gracefully
 
-If you call `load` on a `Store` that hasn't yet been written to the desk, it will return an error. You must handle this error if you want to gracefully continue and use the default store until you save it to the disk. The example above shows how to do this.
+If you call `load` on a `Store` that hasn't yet been written to the disk, it will return an error. You must handle this error if you want to gracefully continue and use the default store until you save it to the disk. The example above shows how to do this.
 
 For example, this would cause a panic if the store has not yet been created:
 

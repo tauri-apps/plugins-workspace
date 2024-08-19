@@ -7,7 +7,7 @@
 
 [[permission]]
 identifier = "scope-log-recursive"
-description = "This scope recursive access to the complete `$LOG` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$LOG` folder, including sub directories and files."
 
 [[permission.scope.allow]]
 path = "$LOG/**"

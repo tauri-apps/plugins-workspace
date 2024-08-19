@@ -10,8 +10,7 @@ android {
     defaultConfig {
         manifestPlaceholders["usesCleartextTraffic"] = "false"
         applicationId = "com.tauri.deep_link_example"
-        minSdk = 24
-        targetSdk = 34
+        minSdk = 24        
         versionCode = 1
         versionName = "1.0"
     }

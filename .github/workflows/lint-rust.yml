@@ -53,6 +53,9 @@ jobs:
             tauri-plugin-clipboard-manager:
               - .github/workflows/lint-rust.yml
               - plugins/clipboard-manager/**
+            tauri-plugin-deep-link:
+              - .github/workflows/lint-rust.yml
+              - plugins/deep-link/**
             tauri-plugin-dialog:
               - .github/workflows/lint-rust.yml
               - plugins/dialog/**
@@ -60,9 +63,15 @@ jobs:
             tauri-plugin-fs:
               - .github/workflows/lint-rust.yml
               - plugins/fs/**
+            tauri-plugin-geolocation:
+              - .github/workflows/lint-rust.yml
+              - plugins/geolocation/**
             tauri-plugin-global-shortcut:
               - .github/workflows/lint-rust.yml
               - plugins/global-shortcut/**
+            tauri-plugin-haptics:
+              - .github/workflows/lint-rust.yml
+              - plugins/haptics/**
             tauri-plugin-http:
               - .github/workflows/lint-rust.yml
               - plugins/http/**

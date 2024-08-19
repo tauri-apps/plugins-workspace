@@ -1,0 +1,26 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = """
+This permission set configures what kind of
+operations are available from the store plugin.
+
+#### Granted Permissions
+
+All operations are enabled by default.
+
+"""
+permissions = [
+  "allow-clear",
+  "allow-delete",
+  "allow-entries",
+  "allow-get",
+  "allow-has",
+  "allow-keys",
+  "allow-length",
+  "allow-load",
+  "allow-reset",
+  "allow-save",
+  "allow-set",
+  "allow-values",
+]

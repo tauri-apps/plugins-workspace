@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-#![cfg(target_os = "linux")]
-
 #[cfg(feature = "semver")]
 use crate::semver_compat::semver_compat_string;
 

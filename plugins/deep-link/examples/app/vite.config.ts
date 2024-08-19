@@ -3,25 +3,22 @@
 // SPDX-License-Identifier: MIT
 
 import { defineConfig } from "vite";
-import { internalIpV4 } from "internal-ip";
 
-const mobile =
-  process.env.TAURI_PLATFORM === "android" ||
-  process.env.TAURI_PLATFORM === "ios";
+const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
-export default defineConfig(async () => ({
+export default defineConfig({
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   // prevent vite from obscuring rust errors
   clearScreen: false,
   // tauri expects a fixed port, fail if that port is not available
   server: {
-    host: mobile ? "0.0.0.0" : false,
+    host: host || false,
     port: 1420,
-    hmr: mobile
+    hmr: host
       ? {
           protocol: "ws",
-          host: await internalIpV4(),
+          host,
           port: 1421,
         }
       : undefined,
@@ -38,4 +35,4 @@ export default defineConfig(async () => ({
     // produce sourcemaps for debug builds
     sourcemap: !!process.env.TAURI_DEBUG,
   },
-}));
+});

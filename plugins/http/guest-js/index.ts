@@ -7,16 +7,18 @@
  *
  * ## Security
  *
- * This API has a scope configuration that forces you to restrict the URLs and paths that can be accessed using glob patterns.
+ * This API has a scope configuration that forces you to restrict the URLs that can be accessed using glob patterns.
  *
- * For instance, this scope configuration only allows making HTTP requests to the GitHub API for the `tauri-apps` organization:
+ * For instance, this scope configuration only allows making HTTP requests to all subdomains for `tauri.app` except for `https://private.tauri.app`:
  * ```json
  * {
- *   "plugins": {
- *     "http": {
- *       "scope": ["https://api.github.com/repos/tauri-apps/*"]
+ *   "permissions": [
+ *     {
+ *       "identifier": "http:default",
+ *       "allow": [{ "url": "https://*.tauri.app" }],
+ *       "deny": [{ "url": "https://private.tauri.app" }]
  *     }
- *   }
+ *   ]
  * }
  * ```
  * Trying to execute any API with a URL not configured on the scope results in a promise rejection due to denied access.
@@ -84,6 +86,8 @@ export interface ClientOptions {
   proxy?: Proxy;
 }
 
+const ERROR_REQUEST_CANCELLED = "Request canceled";
+
 /**
  * Fetch a resource from the network. It returns a `Promise` that resolves to the
  * `Response` to that `Request`, whether it is successful or not.
@@ -102,6 +106,12 @@ export async function fetch(
   input: URL | Request | string,
   init?: RequestInit & ClientOptions,
 ): Promise<Response> {
+  // abort early here if needed
+  const signal = init?.signal;
+  if (signal?.aborted) {
+    throw new Error(ERROR_REQUEST_CANCELLED);
+  }
+
   const maxRedirections = init?.maxRedirections;
   const connectTimeout = init?.connectTimeout;
   const proxy = init?.proxy;
@@ -112,8 +122,6 @@ export async function fetch(
     delete init.connectTimeout;
     delete init.proxy;
   }
-
-  const signal = init?.signal;
 
   const headers = init?.headers
     ? init.headers instanceof Headers
@@ -141,6 +149,7 @@ export async function fetch(
         ? headers
         : Object.entries(headers);
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const mappedHeaders: Array<[string, string]> = headersArray.map(
     ([name, val]) => [
       name,
@@ -149,6 +158,11 @@ export async function fetch(
       typeof val === "string" ? val : (val as any).toString(),
     ],
   );
+
+  // abort early here if needed
+  if (signal?.aborted) {
+    throw new Error(ERROR_REQUEST_CANCELLED);
+  }
 
   const rid = await invoke<number>("plugin:http|fetch", {
     clientConfig: {
@@ -162,11 +176,17 @@ export async function fetch(
     },
   });
 
-  signal?.addEventListener("abort", () => {
-    void invoke("plugin:http|fetch_cancel", {
-      rid,
-    });
-  });
+  const abort = () => invoke("plugin:http|fetch_cancel", { rid });
+
+  // abort early here if needed
+  if (signal?.aborted) {
+    // we don't care about the result of this proimse
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    abort();
+    throw new Error(ERROR_REQUEST_CANCELLED);
+  }
+
+  signal?.addEventListener("abort", () => void abort());
 
   interface FetchSendResponse {
     status: number;
@@ -200,14 +220,21 @@ export async function fetch(
         ? new Uint8Array(body)
         : null,
     {
-      headers: responseHeaders,
       status,
       statusText,
     },
   );
 
-  // url is read only but seems like we can do this
+  // url and headers are read only properties
+  // but seems like we can set them like this
+  //
+  // we define theme like this, because using `Response`
+  // constructor, it removes url and some headers
+  // like `set-cookie` headers
   Object.defineProperty(res, "url", { value: url });
+  Object.defineProperty(res, "headers", {
+    value: new Headers(responseHeaders),
+  });
 
   return res;
 }

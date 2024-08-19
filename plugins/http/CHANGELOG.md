@@ -1,5 +1,45 @@
 # Changelog
 
+## \[2.0.0-rc.1]
+
+- [`84f8bd5e`](https://github.com/tauri-apps/plugins-workspace/commit/84f8bd5e1ef22e664267380b5bbf756ebc5389c3) ([#1662](https://github.com/tauri-apps/plugins-workspace/pull/1662) by [@twlite](https://github.com/tauri-apps/plugins-workspace/../../twlite)) Fixed an issue with abort signal not aborting the fetch request.
+
+## \[2.0.0-rc.0]
+
+- [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-rc.0`
+
+## \[2.0.0-beta.9]
+
+- [`99d6ac0f`](https://github.com/tauri-apps/plugins-workspace/commit/99d6ac0f9506a6a4a1aa59c728157190a7441af6) ([#1606](https://github.com/tauri-apps/plugins-workspace/pull/1606) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) The JS packages now specify the *minimum* `@tauri-apps/api` version instead of a single exact version.
+- [`6de87966`](https://github.com/tauri-apps/plugins-workspace/commit/6de87966ecc00ad9d91c25be452f1f46bd2b7e1f) ([#1597](https://github.com/tauri-apps/plugins-workspace/pull/1597) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Update to tauri beta.25.
+
+## \[2.0.0-beta.8]
+
+- [`ac9a25cc`](https://github.com/tauri-apps/plugins-workspace/commit/ac9a25cc12ee2b325f00212ba74316da3369bde5) ([#1395](https://github.com/tauri-apps/plugins-workspace/pull/1395) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix cancelling requests using `AbortSignal`.
+- [`a6654932`](https://github.com/tauri-apps/plugins-workspace/commit/a66549329c60dea35e3a06a38c357e368c9053a1) ([#1526](https://github.com/tauri-apps/plugins-workspace/pull/1526) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix missing `Set-Cookie` headers in the response which meant `request.headers.getSetCookie()` always returned empty array.
+- [`22a17980`](https://github.com/tauri-apps/plugins-workspace/commit/22a17980ff4f6f8c40adb1b8f4ffc6dae2fe7e30) ([#1537](https://github.com/tauri-apps/plugins-workspace/pull/1537) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri beta.24.
+
+## \[2.0.0-beta.7]
+
+- [`76daee7a`](https://github.com/tauri-apps/plugins-workspace/commit/76daee7aafece34de3092c86e531cf9eb1138989) ([#1512](https://github.com/tauri-apps/plugins-workspace/pull/1512) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update to tauri beta.23.
+
+## \[2.0.0-beta.6]
+
+- [`0f739dbc`](https://github.com/tauri-apps/plugins-workspace/commit/0f739dbc483a1f091977cbe575c3862fd39f8cf1) ([#1392](https://github.com/tauri-apps/plugins-workspace/pull/1392) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Allow setting `Origin` header when `unsafe-headers` feature flag is active.
+
+## \[2.0.0-beta.5]
+
+- [`9013854f`](https://github.com/tauri-apps/plugins-workspace/commit/9013854f42a49a230b9dbb9d02774765528a923f)([#1382](https://github.com/tauri-apps/plugins-workspace/pull/1382)) Update to tauri beta.22.
+
+## \[2.0.0-beta.4]
+
+- [`9d7ae45b`](https://github.com/tauri-apps/plugins-workspace/commit/9d7ae45b0edf9b22c73e7d7c413a784bb35c3d77)([#1354](https://github.com/tauri-apps/plugins-workspace/pull/1354)) Include headers created by browser if not declared by user, which fixes missing headers like `Content-Type` when using `FormData`.
+- [`430bd6f4`](https://github.com/tauri-apps/plugins-workspace/commit/430bd6f4f379bee5d232ae6b098ae131db7f178a)([#1363](https://github.com/tauri-apps/plugins-workspace/pull/1363)) Update to tauri beta.20.
+
 ## \[2.0.0-beta.3]
 
 - [`bd1ed590`](https://github.com/tauri-apps/plugins-workspace/commit/bd1ed5903ffcce5500310dac1e59e8c67674ef1e)([#1237](https://github.com/tauri-apps/plugins-workspace/pull/1237)) Update to tauri beta.17.
@@ -141,6 +181,55 @@
   371\)) First v2 alpha release!
   !
   371\)) First v2 alpha release!
-lpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+  ub.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  ace/pull/371)) First v2 alpha release!
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+  t v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  ace/pull/371)) First v2 alpha release!
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
   !
   371\)) First v2 alpha release!

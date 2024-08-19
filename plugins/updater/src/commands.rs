@@ -10,7 +10,7 @@ use tauri::{ipc::Channel, Manager, Resource, ResourceId, Runtime, Webview};
 use std::time::Duration;
 use url::Url;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 #[serde(tag = "event", content = "data")]
 pub enum DownloadEvent {
     #[serde(rename_all = "camelCase")]
@@ -82,7 +82,7 @@ pub(crate) async fn check<R: Runtime>(
 pub(crate) async fn download<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
-    on_event: Channel,
+    on_event: Channel<DownloadEvent>,
 ) -> Result<ResourceId> {
     let update = webview.resources_table().get::<Update>(rid)?;
     let mut first_chunk = true;
@@ -96,7 +96,7 @@ pub(crate) async fn download<R: Runtime>(
                 let _ = on_event.send(DownloadEvent::Progress { chunk_length });
             },
             || {
-                let _ = on_event.send(&DownloadEvent::Finished);
+                let _ = on_event.send(DownloadEvent::Finished);
             },
         )
         .await?;
@@ -122,7 +122,7 @@ pub(crate) async fn install<R: Runtime>(
 pub(crate) async fn download_and_install<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
-    on_event: Channel,
+    on_event: Channel<DownloadEvent>,
 ) -> Result<()> {
     let update = webview.resources_table().get::<Update>(rid)?;
 
@@ -138,7 +138,7 @@ pub(crate) async fn download_and_install<R: Runtime>(
                 let _ = on_event.send(DownloadEvent::Progress { chunk_length });
             },
             || {
-                let _ = on_event.send(&DownloadEvent::Finished);
+                let _ = on_event.send(DownloadEvent::Finished);
             },
         )
         .await?;

@@ -1,0 +1,19 @@
+"$schema" = "schemas/schema.json"
+[default]
+description = """
+This permission set configures if your
+application can enable or disable auto
+starting the application on boot.
+
+#### Granted Permissions
+
+It allows all to check, enable and
+disable the automatic start on boot.
+
+"""
+
+permissions = [
+  "allow-enable",
+  "allow-disable",
+  "allow-is-enabled",
+]
