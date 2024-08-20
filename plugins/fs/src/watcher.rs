@@ -22,7 +22,7 @@ use std::{
 };
 
 use crate::{
-    commands::{resolve_path, CommandResult, PathRef},
+    commands::{resolve_path, CommandResult, FilePath},
     scope::Entry,
 };
 
@@ -83,7 +83,7 @@ pub struct WatchOptions {
 #[tauri::command]
 pub async fn watch<R: Runtime>(
     webview: Webview<R>,
-    paths: Vec<PathRef>,
+    paths: Vec<FilePath>,
     options: WatchOptions,
     on_event: Channel<Event>,
     global_scope: GlobalScope<Entry>,

@@ -28,12 +28,12 @@ use crate::{scope::Entry, Error, FsExt};
 /// such as `file://` URIs or Android `content://` URIs.
 #[derive(Debug, serde::Deserialize)]
 #[serde(untagged)]
-pub enum PathRef {
+pub enum FilePath {
     Url(url::Url),
     Path(SafePathBuf),
 }
 
-impl FromStr for PathRef {
+impl FromStr for FilePath {
     type Err = CommandError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Ok(url) = url::Url::from_str(s) {
@@ -44,7 +44,7 @@ impl FromStr for PathRef {
     }
 }
 
-impl fmt::Display for PathRef {
+impl fmt::Display for FilePath {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Url(u) => u.fmt(f),
@@ -53,7 +53,7 @@ impl fmt::Display for PathRef {
     }
 }
 
-impl PathRef {
+impl FilePath {
     #[inline]
     fn into_path(self) -> CommandResult<SafePathBuf> {
         match self {
@@ -122,7 +122,7 @@ pub fn create<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
     let resolved_path = resolve_path(
@@ -194,7 +194,7 @@ pub fn open<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     options: Option<OpenOptions>,
 ) -> CommandResult<ResourceId> {
     let (file, _path) = resolve_file(
@@ -249,8 +249,8 @@ pub async fn copy_file<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    from_path: PathRef,
-    to_path: PathRef,
+    from_path: FilePath,
+    to_path: FilePath,
     options: Option<CopyFileOptions>,
 ) -> CommandResult<()> {
     let resolved_from_path = resolve_path(
@@ -291,7 +291,7 @@ pub fn mkdir<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     options: Option<MkdirOptions>,
 ) -> CommandResult<()> {
     let resolved_path = resolve_path(
@@ -358,7 +358,7 @@ pub async fn read_dir<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<Vec<DirEntry>> {
     let resolved_path = resolve_path(
@@ -397,7 +397,7 @@ pub async fn read_file<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<tauri::ipc::Response> {
     let (mut file, path) = resolve_file(
@@ -431,7 +431,7 @@ pub async fn read_text_file<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<String> {
     let (mut file, path) = resolve_file(
@@ -465,7 +465,7 @@ pub fn read_text_file_lines<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
     use std::io::BufRead;
@@ -521,7 +521,7 @@ pub fn remove<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     options: Option<RemoveOptions>,
 ) -> CommandResult<()> {
     let resolved_path = resolve_path(
@@ -589,8 +589,8 @@ pub fn rename<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    old_path: PathRef,
-    new_path: PathRef,
+    old_path: FilePath,
+    new_path: FilePath,
     options: Option<RenameOptions>,
 ) -> CommandResult<()> {
     let resolved_old_path = resolve_path(
@@ -651,7 +651,7 @@ pub fn stat<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
     let resolved_path = resolve_path(
@@ -675,7 +675,7 @@ pub fn lstat<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
     let resolved_path = resolve_path(
@@ -707,7 +707,7 @@ pub async fn truncate<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     len: Option<u64>,
     options: Option<BaseOptions>,
 ) -> CommandResult<()> {
@@ -784,7 +784,7 @@ fn write_file_inner<R: Runtime>(
     webview: Webview<R>,
     global_scope: &GlobalScope<Entry>,
     command_scope: &CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     data: &[u8],
     options: Option<WriteFileOptions>,
 ) -> CommandResult<()> {
@@ -844,7 +844,7 @@ pub async fn write_file<R: Runtime>(
                 p.to_str()
                     .map_err(|e| anyhow::anyhow!("invalid path: {e}").into())
             })
-            .and_then(|p| PathRef::from_str(p).map_err(CommandError::from))?;
+            .and_then(|p| FilePath::from_str(p).map_err(CommandError::from))?;
         let options = request
             .headers()
             .get("options")
@@ -862,7 +862,7 @@ pub async fn write_text_file<R: Runtime>(
     #[allow(unused)] webview: Webview<R>,
     #[allow(unused)] global_scope: GlobalScope<Entry>,
     #[allow(unused)] command_scope: CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     data: String,
     #[allow(unused)] options: Option<WriteFileOptions>,
 ) -> CommandResult<()> {
@@ -881,7 +881,7 @@ pub fn exists<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<bool> {
     let resolved_path = resolve_path(
@@ -899,7 +899,7 @@ pub fn resolve_file<R: Runtime>(
     webview: &Webview<R>,
     global_scope: &GlobalScope<Entry>,
     command_scope: &CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     open_options: OpenOptions,
 ) -> CommandResult<(File, PathBuf)> {
     resolve_file_in_fs(webview, global_scope, command_scope, path, open_options)
@@ -909,7 +909,7 @@ fn resolve_file_in_fs<R: Runtime>(
     webview: &Webview<R>,
     global_scope: &GlobalScope<Entry>,
     command_scope: &CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     open_options: OpenOptions,
 ) -> CommandResult<(File, PathBuf)> {
     let path = resolve_path(
@@ -951,21 +951,21 @@ pub fn resolve_file<R: Runtime>(
     webview: &Webview<R>,
     global_scope: &GlobalScope<Entry>,
     command_scope: &CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     open_options: OpenOptions,
 ) -> CommandResult<(File, PathBuf)> {
     match path {
-        PathRef::Url(url) => {
+        FilePath::Url(url) => {
             let file = webview
                 .fs()
                 .resolve_content_uri(url.as_str(), open_options.android_mode())?;
             Ok((file, url.as_str().into()))
         }
-        PathRef::Path(path) => resolve_file_in_fs(
+        FilePath::Path(path) => resolve_file_in_fs(
             webview,
             global_scope,
             command_scope,
-            PathRef::Path(path),
+            FilePath::Path(path),
             open_options,
         ),
     }
@@ -975,7 +975,7 @@ pub fn resolve_path<R: Runtime>(
     webview: &Webview<R>,
     global_scope: &GlobalScope<Entry>,
     command_scope: &CommandScope<Entry>,
-    path: PathRef,
+    path: FilePath,
     base_dir: Option<BaseDirectory>,
 ) -> CommandResult<PathBuf> {
     let path = path.into_path()?;
