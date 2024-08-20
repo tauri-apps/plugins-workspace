@@ -8,7 +8,7 @@ use tauri::{
     AppHandle, Runtime,
 };
 
-use crate::models::*;
+use crate::{models::*, FilePath, OpenOptions};
 
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "com.plugin.fs";
@@ -34,8 +34,26 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Fs<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Fs<R> {
+    pub fn open<P: Into<FilePath>>(
+        &self,
+        path: P,
+        opts: OpenOptions,
+    ) -> std::io::Result<std::fs::File> {
+        match path.into() {
+            FilePath::Url(u) => self
+                .resolve_content_uri(u.to_string(), opts.android_mode())
+                .map_err(|e| {
+                    std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        format!("failed to open file: {e}"),
+                    )
+                }),
+            FilePath::Path(p) => std::fs::OpenOptions::from(opts).open(p),
+        }
+    }
+
     #[cfg(target_os = "android")]
-    pub fn resolve_content_uri(
+    fn resolve_content_uri(
         &self,
         uri: impl Into<String>,
         mode: impl Into<String>,
