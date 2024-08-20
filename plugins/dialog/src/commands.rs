@@ -148,9 +148,11 @@ pub(crate) async fn open<R: Runtime>(
                 )
             } else {
                 let folder = dialog_builder.blocking_pick_folder();
-                if let Ok(path) = folder.path() {
-                    if let Some(s) = window.try_fs_scope() {
-                        s.allow_directory(path, options.recursive);
+                if let Some(folder) = &folder {
+                    if let Ok(path) = folder.path() {
+                        if let Some(s) = window.try_fs_scope() {
+                            s.allow_directory(path, options.recursive);
+                        }
                     }
                 }
                 OpenResponse::Folder(folder.map(|p| p.simplified()))
