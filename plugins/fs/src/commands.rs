@@ -646,6 +646,90 @@ pub async fn seek<R: Runtime>(
     .map_err(Into::into)
 }
 
+#[cfg(target_os = "android")]
+fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Metadata>>(
+    metadata_fn: F,
+    webview: &Webview<R>,
+    global_scope: &GlobalScope<Entry>,
+    command_scope: &CommandScope<Entry>,
+    path: FilePath,
+    options: Option<BaseOptions>,
+) -> CommandResult<std::fs::Metadata> {
+    match path {
+        FilePath::Url(url) => {
+            let (file, path) = resolve_file(
+                webview,
+                global_scope,
+                command_scope,
+                FilePath::Url(url),
+                OpenOptions {
+                    base: BaseOptions { base_dir: None },
+                    read: true,
+                    ..Default::default()
+                },
+            )?;
+            file.metadata().map_err(|e| {
+                format!(
+                    "failed to get metadata of path: {} with error: {e}",
+                    path.display()
+                )
+                .into()
+            })
+        }
+        FilePath::Path(p) => get_fs_metadata(
+            metadata_fn,
+            webview,
+            global_scope,
+            command_scope,
+            FilePath::Path(p),
+            options,
+        ),
+    }
+}
+
+#[cfg(not(target_os = "android"))]
+fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Metadata>>(
+    metadata_fn: F,
+    webview: &Webview<R>,
+    global_scope: &GlobalScope<Entry>,
+    command_scope: &CommandScope<Entry>,
+    path: FilePath,
+    options: Option<BaseOptions>,
+) -> CommandResult<std::fs::Metadata> {
+    get_fs_metadata(
+        metadata_fn,
+        webview,
+        global_scope,
+        command_scope,
+        path,
+        options,
+    )
+}
+
+fn get_fs_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Metadata>>(
+    metadata_fn: F,
+    webview: &Webview<R>,
+    global_scope: &GlobalScope<Entry>,
+    command_scope: &CommandScope<Entry>,
+    path: FilePath,
+    options: Option<BaseOptions>,
+) -> CommandResult<std::fs::Metadata> {
+    let resolved_path = resolve_path(
+        webview,
+        global_scope,
+        command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base_dir),
+    )?;
+    let metadata = metadata_fn(&resolved_path).map_err(|e| {
+        format!(
+            "failed to get metadata of path: {} with error: {e}",
+            resolved_path.display()
+        )
+    })?;
+    Ok(metadata)
+}
+
 #[tauri::command]
 pub fn stat<R: Runtime>(
     webview: Webview<R>,
@@ -654,19 +738,15 @@ pub fn stat<R: Runtime>(
     path: FilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
-    let resolved_path = resolve_path(
+    let metadata = get_metadata(
+        |p| std::fs::metadata(p),
         &webview,
         &global_scope,
         &command_scope,
         path,
-        options.as_ref().and_then(|o| o.base_dir),
+        options,
     )?;
-    let metadata = std::fs::metadata(&resolved_path).map_err(|e| {
-        format!(
-            "failed to get metadata of path: {} with error: {e}",
-            resolved_path.display()
-        )
-    })?;
+
     Ok(get_stat(metadata))
 }
 
@@ -678,19 +758,14 @@ pub fn lstat<R: Runtime>(
     path: FilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
-    let resolved_path = resolve_path(
+    let metadata = get_metadata(
+        |p| std::fs::symlink_metadata(p),
         &webview,
         &global_scope,
         &command_scope,
         path,
-        options.as_ref().and_then(|o| o.base_dir),
+        options,
     )?;
-    let metadata = std::fs::symlink_metadata(&resolved_path).map_err(|e| {
-        format!(
-            "failed to get metadata of path: {} with error: {e}",
-            resolved_path.display()
-        )
-    })?;
     Ok(get_stat(metadata))
 }
 
