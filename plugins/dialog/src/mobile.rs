@@ -1,7 +1,6 @@
 // Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
-use std::path::PathBuf;
 
 use serde::{de::DeserializeOwned, Deserialize};
 use tauri::{
@@ -9,7 +8,7 @@ use tauri::{
     AppHandle, Runtime,
 };
 
-use crate::{FileDialogBuilder, FileResponse, MessageDialogBuilder};
+use crate::{FileDialogBuilder, FilePath, MessageDialogBuilder};
 
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "app.tauri.dialog";
@@ -47,15 +46,15 @@ impl<R: Runtime> Dialog<R> {
 
 #[derive(Debug, Deserialize)]
 struct FilePickerResponse {
-    files: Vec<FileResponse>,
+    files: Vec<FilePath>,
 }
 
 #[derive(Debug, Deserialize)]
 struct SaveFileResponse {
-    file: PathBuf,
+    file: FilePath,
 }
 
-pub fn pick_file<R: Runtime, F: FnOnce(Option<FileResponse>) + Send + 'static>(
+pub fn pick_file<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
@@ -72,7 +71,7 @@ pub fn pick_file<R: Runtime, F: FnOnce(Option<FileResponse>) + Send + 'static>(
     });
 }
 
-pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<FileResponse>>) + Send + 'static>(
+pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<FilePath>>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
@@ -89,7 +88,7 @@ pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<FileResponse>>) + Send + 'sta
     });
 }
 
-pub fn save_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
+pub fn save_file<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {

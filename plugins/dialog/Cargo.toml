@@ -24,6 +24,7 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 dunce = { workspace = true }
+url = { workspace = true }
 tauri-plugin-fs = { path = "../fs", version = "2.0.0-rc.0" }
 
 [target.'cfg(target_os = "ios")'.dependencies]

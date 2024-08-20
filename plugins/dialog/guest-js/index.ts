@@ -4,18 +4,6 @@
 
 import { invoke } from "@tauri-apps/api/core";
 
-interface FileResponse {
-  base64Data?: string;
-  duration?: number;
-  height?: number;
-  width?: number;
-  mimeType?: string;
-  modifiedAt?: number;
-  name?: string;
-  path: string;
-  size: number;
-}
-
 /**
  * Extension filters for the file dialog.
  *
@@ -117,8 +105,8 @@ type OpenDialogReturn<T extends OpenDialogOptions> = T["directory"] extends true
     ? string[] | null
     : string | null
   : T["multiple"] extends true
-    ? FileResponse[] | null
-    : FileResponse | null;
+    ? string[] | null
+    : string | null;
 
 /**
  * Open a file/directory selection dialog.
@@ -306,7 +294,6 @@ async function confirm(
 
 export type {
   DialogFilter,
-  FileResponse,
   OpenDialogOptions,
   OpenDialogReturn,
   SaveDialogOptions,

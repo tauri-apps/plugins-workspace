@@ -17,9 +17,6 @@ use tauri::{
     Manager, Runtime,
 };
 
-#[cfg(any(desktop, target_os = "ios"))]
-use std::fs;
-
 use std::{
     path::{Path, PathBuf},
     sync::mpsc::sync_channel,
@@ -216,35 +213,43 @@ impl<R: Runtime> MessageDialogBuilder<R> {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct FileResponse {
-    pub base64_data: Option<String>,
-    pub duration: Option<u64>,
-    pub height: Option<usize>,
-    pub width: Option<usize>,
-    pub mime_type: Option<String>,
-    pub modified_at: Option<u64>,
-    pub name: Option<String>,
-    pub path: PathBuf,
-    pub size: u64,
+/// Represents either a filesystem path or a URI pointing to a file
+/// such as `file://` URIs or Android `content://` URIs.
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(untagged)]
+pub enum FilePath {
+    Url(url::Url),
+    Path(PathBuf),
 }
 
-impl FileResponse {
-    #[cfg(desktop)]
-    fn new(path: PathBuf) -> Self {
-        let metadata = fs::metadata(&path);
-        let metadata = metadata.as_ref();
-        Self {
-            base64_data: None,
-            duration: None,
-            height: None,
-            width: None,
-            mime_type: None,
-            modified_at: metadata.ok().and_then(|m| to_msec(m.modified())),
-            name: path.file_name().map(|f| f.to_string_lossy().into_owned()),
-            path,
-            size: metadata.map(|m| m.len()).unwrap_or(0),
+impl From<PathBuf> for FilePath {
+    fn from(value: PathBuf) -> Self {
+        Self::Path(value)
+    }
+}
+
+impl From<url::Url> for FilePath {
+    fn from(value: url::Url) -> Self {
+        Self::Url(value)
+    }
+}
+
+impl FilePath {
+    fn simplified(self) -> Self {
+        match self {
+            Self::Url(url) => Self::Url(url),
+            Self::Path(p) => Self::Path(dunce::simplified(&p).to_path_buf()),
+        }
+    }
+
+    #[inline]
+    fn path(&self) -> Result<PathBuf> {
+        match self {
+            Self::Url(url) => url
+                .to_file_path()
+                .map(PathBuf::from)
+                .map_err(|_| Error::InvalidPathUrl),
+            Self::Path(p) => Ok(p.to_owned()),
         }
     }
 }
@@ -374,9 +379,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///     })
     ///   })
     /// ```
-    pub fn pick_file<F: FnOnce(Option<FileResponse>) + Send + 'static>(self, f: F) {
-        #[cfg(desktop)]
-        let f = |path: Option<PathBuf>| f(path.map(FileResponse::new));
+    pub fn pick_file<F: FnOnce(Option<FilePath>) + Send + 'static>(self, f: F) {
         pick_file(self, f)
     }
 
@@ -398,15 +401,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///     })
     ///   })
     /// ```
-    pub fn pick_files<F: FnOnce(Option<Vec<FileResponse>>) + Send + 'static>(self, f: F) {
-        #[cfg(desktop)]
-        let f = |paths: Option<Vec<PathBuf>>| {
-            f(paths.map(|p| {
-                p.into_iter()
-                    .map(FileResponse::new)
-                    .collect::<Vec<FileResponse>>()
-            }))
-        };
+    pub fn pick_files<F: FnOnce(Option<Vec<FilePath>>) + Send + 'static>(self, f: F) {
         pick_files(self, f)
     }
 
@@ -429,7 +424,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   })
     /// ```
     #[cfg(desktop)]
-    pub fn pick_folder<F: FnOnce(Option<PathBuf>) + Send + 'static>(self, f: F) {
+    pub fn pick_folder<F: FnOnce(Option<FilePath>) + Send + 'static>(self, f: F) {
         pick_folder(self, f)
     }
 
@@ -452,7 +447,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   })
     /// ```
     #[cfg(desktop)]
-    pub fn pick_folders<F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(self, f: F) {
+    pub fn pick_folders<F: FnOnce(Option<Vec<FilePath>>) + Send + 'static>(self, f: F) {
         pick_folders(self, f)
     }
 
@@ -475,7 +470,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///     })
     ///   })
     /// ```
-    pub fn save_file<F: FnOnce(Option<PathBuf>) + Send + 'static>(self, f: F) {
+    pub fn save_file<F: FnOnce(Option<FilePath>) + Send + 'static>(self, f: F) {
         save_file(self, f)
     }
 }
@@ -497,7 +492,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   // the file path is `None` if the user closed the dialog
     /// }
     /// ```
-    pub fn blocking_pick_file(self) -> Option<FileResponse> {
+    pub fn blocking_pick_file(self) -> Option<FilePath> {
         blocking_fn!(self, pick_file)
     }
 
@@ -516,7 +511,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   // the file paths value is `None` if the user closed the dialog
     /// }
     /// ```
-    pub fn blocking_pick_files(self) -> Option<Vec<FileResponse>> {
+    pub fn blocking_pick_files(self) -> Option<Vec<FilePath>> {
         blocking_fn!(self, pick_files)
     }
 
@@ -536,7 +531,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// }
     /// ```
     #[cfg(desktop)]
-    pub fn blocking_pick_folder(self) -> Option<PathBuf> {
+    pub fn blocking_pick_folder(self) -> Option<FilePath> {
         blocking_fn!(self, pick_folder)
     }
 
@@ -556,7 +551,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// }
     /// ```
     #[cfg(desktop)]
-    pub fn blocking_pick_folders(self) -> Option<Vec<PathBuf>> {
+    pub fn blocking_pick_folders(self) -> Option<Vec<FilePath>> {
         blocking_fn!(self, pick_folders)
     }
 
@@ -575,23 +570,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   // the file path is `None` if the user closed the dialog
     /// }
     /// ```
-    pub fn blocking_save_file(self) -> Option<PathBuf> {
+    pub fn blocking_save_file(self) -> Option<FilePath> {
         blocking_fn!(self, save_file)
-    }
-}
-
-// taken from deno source code: https://github.com/denoland/deno/blob/ffffa2f7c44bd26aec5ae1957e0534487d099f48/runtime/ops/fs.rs#L913
-#[cfg(desktop)]
-#[inline]
-fn to_msec(maybe_time: std::result::Result<std::time::SystemTime, std::io::Error>) -> Option<u64> {
-    match maybe_time {
-        Ok(time) => {
-            let msec = time
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|t| t.as_millis() as u64)
-                .unwrap_or_else(|err| err.duration().as_millis() as u64);
-            Some(msec)
-        }
-        Err(_) => None,
     }
 }
