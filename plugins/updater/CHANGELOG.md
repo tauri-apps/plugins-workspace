@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.0.0-rc.1]
+
+- [`77013925`](https://github.com/tauri-apps/plugins-workspace/commit/7701392500f375340045880fce5fb8f867bfe670) ([#1636](https://github.com/tauri-apps/plugins-workspace/pull/1636) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fixes the updater not preserving AppImage file permissions.
+- [`5d170a54`](https://github.com/tauri-apps/plugins-workspace/commit/5d170a5444982dcc14135f6f1fc3e5da359f0eb0) ([#1671](https://github.com/tauri-apps/plugins-workspace/pull/1671) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.3.
+
 ## \[2.0.0-rc.0]
 
 - [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.

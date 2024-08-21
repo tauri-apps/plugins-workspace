@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-updater"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 description = "In-app updates for Tauri applications."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -43,7 +43,7 @@ zip = { version = "2", default-features = false, optional = true }
 windows-sys = { version = "0.59.0", features = [
   "Win32_Foundation",
   "Win32_UI_WindowsAndMessaging",
-  "Win32_UI_Shell"
+  "Win32_UI_Shell",
 ] }
 
 [target."cfg(target_os = \"linux\")".dependencies]
