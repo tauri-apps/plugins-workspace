@@ -11,7 +11,7 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use std::{convert::Infallible, fmt, path::PathBuf, str::FromStr};
+use std::{convert::Infallible, fmt, io::Read, path::PathBuf, str::FromStr};
 
 use serde::Deserialize;
 use tauri::{
@@ -349,6 +349,34 @@ impl OpenOptions {
         }
 
         mode
+    }
+}
+
+impl<R: Runtime> Fs<R> {
+    pub fn read_to_string<P: Into<FilePath>>(&self, path: P) -> std::io::Result<String> {
+        let mut s = String::new();
+        self.open(
+            path,
+            OpenOptions {
+                read: true,
+                ..Default::default()
+            },
+        )?
+        .read_to_string(&mut s)?;
+        Ok(s)
+    }
+
+    pub fn read<P: Into<FilePath>>(&self, path: P) -> std::io::Result<Vec<u8>> {
+        let mut buf = Vec::new();
+        self.open(
+            path,
+            OpenOptions {
+                read: true,
+                ..Default::default()
+            },
+        )?
+        .read_to_end(&mut buf)?;
+        Ok(buf)
     }
 }
 

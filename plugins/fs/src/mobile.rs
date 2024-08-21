@@ -48,7 +48,23 @@ impl<R: Runtime> Fs<R> {
                         format!("failed to open file: {e}"),
                     )
                 }),
-            FilePath::Path(p) => std::fs::OpenOptions::from(opts).open(p),
+            FilePath::Path(p) => {
+                // tauri::utils::platform::resources_dir() returns a PathBuf with the Android asset URI prefix
+                // we must resolve that file with the Android API
+                if p.strip_prefix(tauri::utils::platform::ANDROID_ASSET_PROTOCOL_URI_PREFIX)
+                    .is_ok()
+                {
+                    self.resolve_content_uri(p.to_string_lossy(), opts.android_mode())
+                        .map_err(|e| {
+                            std::io::Error::new(
+                                std::io::ErrorKind::Other,
+                                format!("failed to open file: {e}"),
+                            )
+                        })
+                } else {
+                    std::fs::OpenOptions::from(opts).open(p)
+                }
+            }
         }
     }
 
