@@ -11,7 +11,13 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use std::{convert::Infallible, fmt, io::Read, path::PathBuf, str::FromStr};
+use std::{
+    convert::Infallible,
+    fmt,
+    io::Read,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 use serde::Deserialize;
 use tauri::{
@@ -67,6 +73,18 @@ impl FromStr for FilePath {
 impl From<PathBuf> for FilePath {
     fn from(value: PathBuf) -> Self {
         Self::Path(value)
+    }
+}
+
+impl From<&Path> for FilePath {
+    fn from(value: &Path) -> Self {
+        Self::Path(value.to_owned())
+    }
+}
+
+impl From<&PathBuf> for FilePath {
+    fn from(value: &PathBuf) -> Self {
+        Self::Path(value.to_owned())
     }
 }
 
