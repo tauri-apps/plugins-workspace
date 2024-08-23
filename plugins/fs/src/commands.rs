@@ -9,18 +9,60 @@ use tauri::{
     ipc::{CommandScope, GlobalScope},
     path::{BaseDirectory, SafePathBuf},
     utils::config::FsScope,
-    Manager, Resource, ResourceId, Runtime, Webview,
+    AppHandle, Manager, Resource, ResourceId, Runtime, Webview,
 };
 
 use std::{
     fs::File,
     io::{BufReader, Lines, Read, Write},
     path::{Path, PathBuf},
+    str::FromStr,
     sync::Mutex,
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{scope::Entry, Error, FsExt};
+use crate::{scope::Entry, Error, FilePath, FsExt};
+
+#[derive(Debug, serde::Deserialize)]
+#[serde(untagged)]
+pub enum SafeFilePath {
+    Url(url::Url),
+    Path(SafePathBuf),
+}
+
+impl From<SafeFilePath> for FilePath {
+    fn from(value: SafeFilePath) -> Self {
+        match value {
+            SafeFilePath::Url(url) => FilePath::Url(url),
+            SafeFilePath::Path(p) => FilePath::Path(p.as_ref().to_owned()),
+        }
+    }
+}
+
+impl FromStr for SafeFilePath {
+    type Err = CommandError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Ok(url) = url::Url::from_str(s) {
+            Ok(Self::Url(url))
+        } else {
+            Ok(Self::Path(SafePathBuf::new(s.into())?))
+        }
+    }
+}
+
+impl SafeFilePath {
+    #[inline]
+    fn into_path(self) -> CommandResult<SafePathBuf> {
+        match self {
+            Self::Url(url) => SafePathBuf::new(
+                url.to_file_path()
+                    .map_err(|_| format!("failed to get path from {url}"))?,
+            )
+            .map_err(Into::into),
+            Self::Path(p) => Ok(p),
+        }
+    }
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum CommandError {
@@ -30,6 +72,8 @@ pub enum CommandError {
     Plugin(#[from] Error),
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
     #[error(transparent)]
     UrlParseError(#[from] url::ParseError),
     #[cfg(feature = "watch")]
@@ -64,7 +108,7 @@ impl Serialize for CommandError {
 
 pub type CommandResult<T> = std::result::Result<T, CommandError>;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BaseOptions {
     base_dir: Option<BaseDirectory>,
@@ -75,7 +119,7 @@ pub fn create<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
+    path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
     let resolved_path = resolve_path(
@@ -95,29 +139,13 @@ pub fn create<R: Runtime>(
     Ok(rid)
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OpenOptions {
     #[serde(flatten)]
     base: BaseOptions,
-    #[serde(default = "default_true")]
-    read: bool,
-    #[serde(default)]
-    write: bool,
-    #[serde(default)]
-    append: bool,
-    #[serde(default)]
-    truncate: bool,
-    #[serde(default)]
-    create: bool,
-    #[serde(default)]
-    create_new: bool,
-    #[allow(unused)]
-    mode: Option<u32>,
-}
-
-fn default_true() -> bool {
-    true
+    #[serde(flatten)]
+    options: crate::OpenOptions,
 }
 
 #[tauri::command]
@@ -125,44 +153,35 @@ pub fn open<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
+    path: SafeFilePath,
     options: Option<OpenOptions>,
 ) -> CommandResult<ResourceId> {
-    let resolved_path = resolve_path(
+    let (file, _path) = resolve_file(
         &webview,
         &global_scope,
         &command_scope,
         path,
-        options.as_ref().and_then(|o| o.base.base_dir),
-    )?;
-
-    let mut opts = std::fs::OpenOptions::new();
-    // default to read-only
-    opts.read(true);
-
-    if let Some(options) = options {
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::OpenOptionsExt;
-            if let Some(mode) = options.mode {
-                opts.mode(mode);
+        if let Some(opts) = options {
+            OpenOptions {
+                base: opts.base,
+                options: opts.options,
             }
-        }
-
-        opts.read(options.read)
-            .create(options.create)
-            .write(options.write)
-            .truncate(options.truncate)
-            .append(options.append)
-            .create_new(options.create_new);
-    }
-
-    let file = opts.open(&resolved_path).map_err(|e| {
-        format!(
-            "failed to open file at path: {} with error: {e}",
-            resolved_path.display()
-        )
-    })?;
+        } else {
+            OpenOptions {
+                base: BaseOptions { base_dir: None },
+                options: crate::OpenOptions {
+                    read: true,
+                    write: false,
+                    truncate: false,
+                    create: false,
+                    create_new: false,
+                    append: false,
+                    mode: None,
+                    custom_flags: None,
+                },
+            }
+        },
+    )?;
 
     let rid = webview.resources_table().add(StdFileResource::new(file));
 
@@ -186,8 +205,8 @@ pub async fn copy_file<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    from_path: SafePathBuf,
-    to_path: SafePathBuf,
+    from_path: SafeFilePath,
+    to_path: SafeFilePath,
     options: Option<CopyFileOptions>,
 ) -> CommandResult<()> {
     let resolved_from_path = resolve_path(
@@ -228,7 +247,7 @@ pub fn mkdir<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
+    path: SafeFilePath,
     options: Option<MkdirOptions>,
 ) -> CommandResult<()> {
     let resolved_path = resolve_path(
@@ -295,7 +314,7 @@ pub async fn read_dir<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
+    path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<Vec<DirEntry>> {
     let resolved_path = resolve_path(
@@ -334,25 +353,35 @@ pub async fn read_file<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
+    path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<tauri::ipc::Response> {
-    let resolved_path = resolve_path(
+    let (mut file, path) = resolve_file(
         &webview,
         &global_scope,
         &command_scope,
         path,
-        options.as_ref().and_then(|o| o.base_dir),
+        OpenOptions {
+            base: BaseOptions {
+                base_dir: options.as_ref().and_then(|o| o.base_dir),
+            },
+            options: crate::OpenOptions {
+                read: true,
+                ..Default::default()
+            },
+        },
     )?;
-    std::fs::read(&resolved_path)
-        .map(tauri::ipc::Response::new)
-        .map_err(|e| {
-            format!(
-                "failed to read file at path: {} with error: {e}",
-                resolved_path.display()
-            )
-        })
-        .map_err(Into::into)
+
+    let mut contents = Vec::new();
+
+    file.read_to_end(&mut contents).map_err(|e| {
+        format!(
+            "failed to read file as text at path: {} with error: {e}",
+            path.display()
+        )
+    })?;
+
+    Ok(tauri::ipc::Response::new(contents))
 }
 
 #[tauri::command]
@@ -360,24 +389,35 @@ pub async fn read_text_file<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
+    path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<String> {
-    let resolved_path = resolve_path(
+    let (mut file, path) = resolve_file(
         &webview,
         &global_scope,
         &command_scope,
         path,
-        options.as_ref().and_then(|o| o.base_dir),
+        OpenOptions {
+            base: BaseOptions {
+                base_dir: options.as_ref().and_then(|o| o.base_dir),
+            },
+            options: crate::OpenOptions {
+                read: true,
+                ..Default::default()
+            },
+        },
     )?;
-    std::fs::read_to_string(&resolved_path)
-        .map_err(|e| {
-            format!(
-                "failed to read file as text at path: {} with error: {e}",
-                resolved_path.display()
-            )
-        })
-        .map_err(Into::into)
+
+    let mut contents = String::new();
+
+    file.read_to_string(&mut contents).map_err(|e| {
+        format!(
+            "failed to read file as text at path: {} with error: {e}",
+            path.display()
+        )
+    })?;
+
+    Ok(contents)
 }
 
 #[tauri::command]
@@ -385,7 +425,7 @@ pub fn read_text_file_lines<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
+    path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
     use std::io::BufRead;
@@ -441,7 +481,7 @@ pub fn remove<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
+    path: SafeFilePath,
     options: Option<RemoveOptions>,
 ) -> CommandResult<()> {
     let resolved_path = resolve_path(
@@ -509,8 +549,8 @@ pub fn rename<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    old_path: SafePathBuf,
-    new_path: SafePathBuf,
+    old_path: SafeFilePath,
+    new_path: SafeFilePath,
     options: Option<RenameOptions>,
 ) -> CommandResult<()> {
     let resolved_old_path = resolve_path(
@@ -566,27 +606,109 @@ pub async fn seek<R: Runtime>(
     .map_err(Into::into)
 }
 
-#[tauri::command]
-pub fn stat<R: Runtime>(
-    webview: Webview<R>,
-    global_scope: GlobalScope<Entry>,
-    command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
+#[cfg(target_os = "android")]
+fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Metadata>>(
+    metadata_fn: F,
+    webview: &Webview<R>,
+    global_scope: &GlobalScope<Entry>,
+    command_scope: &CommandScope<Entry>,
+    path: SafeFilePath,
     options: Option<BaseOptions>,
-) -> CommandResult<FileInfo> {
+) -> CommandResult<std::fs::Metadata> {
+    match path {
+        SafeFilePath::Url(url) => {
+            let (file, path) = resolve_file(
+                webview,
+                global_scope,
+                command_scope,
+                SafeFilePath::Url(url),
+                OpenOptions {
+                    base: BaseOptions { base_dir: None },
+                    options: crate::OpenOptions {
+                        read: true,
+                        ..Default::default()
+                    },
+                },
+            )?;
+            file.metadata().map_err(|e| {
+                format!(
+                    "failed to get metadata of path: {} with error: {e}",
+                    path.display()
+                )
+                .into()
+            })
+        }
+        SafeFilePath::Path(p) => get_fs_metadata(
+            metadata_fn,
+            webview,
+            global_scope,
+            command_scope,
+            SafeFilePath::Path(p),
+            options,
+        ),
+    }
+}
+
+#[cfg(not(target_os = "android"))]
+fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Metadata>>(
+    metadata_fn: F,
+    webview: &Webview<R>,
+    global_scope: &GlobalScope<Entry>,
+    command_scope: &CommandScope<Entry>,
+    path: SafeFilePath,
+    options: Option<BaseOptions>,
+) -> CommandResult<std::fs::Metadata> {
+    get_fs_metadata(
+        metadata_fn,
+        webview,
+        global_scope,
+        command_scope,
+        path,
+        options,
+    )
+}
+
+fn get_fs_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Metadata>>(
+    metadata_fn: F,
+    webview: &Webview<R>,
+    global_scope: &GlobalScope<Entry>,
+    command_scope: &CommandScope<Entry>,
+    path: SafeFilePath,
+    options: Option<BaseOptions>,
+) -> CommandResult<std::fs::Metadata> {
     let resolved_path = resolve_path(
-        &webview,
-        &global_scope,
-        &command_scope,
+        webview,
+        global_scope,
+        command_scope,
         path,
         options.as_ref().and_then(|o| o.base_dir),
     )?;
-    let metadata = std::fs::metadata(&resolved_path).map_err(|e| {
+    let metadata = metadata_fn(&resolved_path).map_err(|e| {
         format!(
             "failed to get metadata of path: {} with error: {e}",
             resolved_path.display()
         )
     })?;
+    Ok(metadata)
+}
+
+#[tauri::command]
+pub fn stat<R: Runtime>(
+    webview: Webview<R>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
+    path: SafeFilePath,
+    options: Option<BaseOptions>,
+) -> CommandResult<FileInfo> {
+    let metadata = get_metadata(
+        |p| std::fs::metadata(p),
+        &webview,
+        &global_scope,
+        &command_scope,
+        path,
+        options,
+    )?;
+
     Ok(get_stat(metadata))
 }
 
@@ -595,22 +717,17 @@ pub fn lstat<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
+    path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
-    let resolved_path = resolve_path(
+    let metadata = get_metadata(
+        |p| std::fs::symlink_metadata(p),
         &webview,
         &global_scope,
         &command_scope,
         path,
-        options.as_ref().and_then(|o| o.base_dir),
+        options,
     )?;
-    let metadata = std::fs::symlink_metadata(&resolved_path).map_err(|e| {
-        format!(
-            "failed to get metadata of path: {} with error: {e}",
-            resolved_path.display()
-        )
-    })?;
     Ok(get_stat(metadata))
 }
 
@@ -627,7 +744,7 @@ pub async fn truncate<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
+    path: SafeFilePath,
     len: Option<u64>,
     options: Option<BaseOptions>,
 ) -> CommandResult<()> {
@@ -704,49 +821,51 @@ fn write_file_inner<R: Runtime>(
     webview: Webview<R>,
     global_scope: &GlobalScope<Entry>,
     command_scope: &CommandScope<Entry>,
-    path: SafePathBuf,
+    path: SafeFilePath,
     data: &[u8],
     options: Option<WriteFileOptions>,
 ) -> CommandResult<()> {
-    let resolved_path = resolve_path(
+    let (mut file, path) = resolve_file(
         &webview,
         global_scope,
         command_scope,
         path,
-        options.as_ref().and_then(|o| o.base.base_dir),
-    )?;
-
-    let mut opts = std::fs::OpenOptions::new();
-    // defaults
-    opts.read(false).write(true).truncate(true).create(true);
-
-    if let Some(options) = options {
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::OpenOptionsExt;
-            if let Some(mode) = options.mode {
-                opts.mode(mode);
+        if let Some(opts) = options {
+            OpenOptions {
+                base: opts.base,
+                options: crate::OpenOptions {
+                    read: false,
+                    write: true,
+                    create: opts.create,
+                    truncate: !opts.append,
+                    append: opts.append,
+                    create_new: opts.create_new,
+                    mode: opts.mode,
+                    custom_flags: None,
+                },
             }
-        }
-
-        opts.create(options.create)
-            .append(options.append)
-            .truncate(!options.append)
-            .create_new(options.create_new);
-    }
-
-    let mut file = opts.open(&resolved_path).map_err(|e| {
-        format!(
-            "failed to open file at path: {} with error: {e}",
-            resolved_path.display()
-        )
-    })?;
+        } else {
+            OpenOptions {
+                base: BaseOptions { base_dir: None },
+                options: crate::OpenOptions {
+                    read: false,
+                    write: true,
+                    truncate: true,
+                    create: true,
+                    create_new: false,
+                    append: false,
+                    mode: None,
+                    custom_flags: None,
+                },
+            }
+        },
+    )?;
 
     file.write_all(data)
         .map_err(|e| {
             format!(
                 "failed to write bytes to file at path: {} with error: {e}",
-                resolved_path.display()
+                path.display()
             )
         })
         .map_err(Into::into)
@@ -768,7 +887,7 @@ pub async fn write_file<R: Runtime>(
                 p.to_str()
                     .map_err(|e| anyhow::anyhow!("invalid path: {e}").into())
             })
-            .and_then(|p| SafePathBuf::new(p.into()).map_err(CommandError::from))?;
+            .and_then(|p| SafeFilePath::from_str(p).map_err(CommandError::from))?;
         let options = request
             .headers()
             .get("options")
@@ -782,12 +901,13 @@ pub async fn write_file<R: Runtime>(
 
 #[tauri::command]
 pub async fn write_text_file<R: Runtime>(
-    webview: Webview<R>,
-    global_scope: GlobalScope<Entry>,
-    command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
+    #[allow(unused)] app: AppHandle<R>,
+    #[allow(unused)] webview: Webview<R>,
+    #[allow(unused)] global_scope: GlobalScope<Entry>,
+    #[allow(unused)] command_scope: CommandScope<Entry>,
+    path: SafeFilePath,
     data: String,
-    options: Option<WriteFileOptions>,
+    #[allow(unused)] options: Option<WriteFileOptions>,
 ) -> CommandResult<()> {
     write_file_inner(
         webview,
@@ -804,7 +924,7 @@ pub fn exists<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
-    path: SafePathBuf,
+    path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<bool> {
     let resolved_path = resolve_path(
@@ -817,24 +937,87 @@ pub fn exists<R: Runtime>(
     Ok(resolved_path.exists())
 }
 
-pub fn resolve_path<R: Runtime>(
-    app: &Webview<R>,
+#[cfg(not(target_os = "android"))]
+pub fn resolve_file<R: Runtime>(
+    webview: &Webview<R>,
     global_scope: &GlobalScope<Entry>,
     command_scope: &CommandScope<Entry>,
-    path: SafePathBuf,
+    path: SafeFilePath,
+    open_options: OpenOptions,
+) -> CommandResult<(File, PathBuf)> {
+    resolve_file_in_fs(webview, global_scope, command_scope, path, open_options)
+}
+
+fn resolve_file_in_fs<R: Runtime>(
+    webview: &Webview<R>,
+    global_scope: &GlobalScope<Entry>,
+    command_scope: &CommandScope<Entry>,
+    path: SafeFilePath,
+    open_options: OpenOptions,
+) -> CommandResult<(File, PathBuf)> {
+    let path = resolve_path(
+        webview,
+        global_scope,
+        command_scope,
+        path,
+        open_options.base.base_dir,
+    )?;
+
+    let file = std::fs::OpenOptions::from(open_options.options)
+        .open(&path)
+        .map_err(|e| {
+            format!(
+                "failed to open file at path: {} with error: {e}",
+                path.display()
+            )
+        })?;
+    Ok((file, path))
+}
+
+#[cfg(target_os = "android")]
+pub fn resolve_file<R: Runtime>(
+    webview: &Webview<R>,
+    global_scope: &GlobalScope<Entry>,
+    command_scope: &CommandScope<Entry>,
+    path: SafeFilePath,
+    open_options: OpenOptions,
+) -> CommandResult<(File, PathBuf)> {
+    match path {
+        SafeFilePath::Url(url) => {
+            let path = url.as_str().into();
+            let file = webview
+                .fs()
+                .open(SafeFilePath::Url(url), open_options.options)?;
+            Ok((file, path))
+        }
+        SafeFilePath::Path(path) => resolve_file_in_fs(
+            webview,
+            global_scope,
+            command_scope,
+            SafeFilePath::Path(path),
+            open_options,
+        ),
+    }
+}
+
+pub fn resolve_path<R: Runtime>(
+    webview: &Webview<R>,
+    global_scope: &GlobalScope<Entry>,
+    command_scope: &CommandScope<Entry>,
+    path: SafeFilePath,
     base_dir: Option<BaseDirectory>,
 ) -> CommandResult<PathBuf> {
-    let path = file_url_to_safe_pathbuf(path)?;
+    let path = path.into_path()?;
     let path = if let Some(base_dir) = base_dir {
-        app.path().resolve(&path, base_dir)?
+        webview.path().resolve(&path, base_dir)?
     } else {
         path.as_ref().to_path_buf()
     };
 
     let scope = tauri::scope::fs::Scope::new(
-        app,
+        webview,
         &FsScope::Scope {
-            allow: app
+            allow: webview
                 .fs_scope()
                 .allowed
                 .lock()
@@ -844,7 +1027,7 @@ pub fn resolve_path<R: Runtime>(
                 .chain(global_scope.allows().iter().map(|e| e.path.clone()))
                 .chain(command_scope.allows().iter().map(|e| e.path.clone()))
                 .collect(),
-            deny: app
+            deny: webview
                 .fs_scope()
                 .denied
                 .lock()
@@ -854,7 +1037,7 @@ pub fn resolve_path<R: Runtime>(
                 .chain(global_scope.denies().iter().map(|e| e.path.clone()))
                 .chain(command_scope.denies().iter().map(|e| e.path.clone()))
                 .collect(),
-            require_literal_leading_dot: app.fs_scope().require_literal_leading_dot,
+            require_literal_leading_dot: webview.fs_scope().require_literal_leading_dot,
         },
     )?;
 
@@ -862,18 +1045,6 @@ pub fn resolve_path<R: Runtime>(
         Ok(path)
     } else {
         Err(CommandError::Plugin(Error::PathForbidden(path)))
-    }
-}
-
-#[inline]
-fn file_url_to_safe_pathbuf(path: SafePathBuf) -> CommandResult<SafePathBuf> {
-    if path.as_ref().starts_with("file:") {
-        let url = url::Url::parse(&path.display().to_string())?
-            .to_file_path()
-            .map_err(|_| "failed to get path from `file:` url")?;
-        SafePathBuf::new(url).map_err(Into::into)
-    } else {
-        Ok(path)
     }
 }
 

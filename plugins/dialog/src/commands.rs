@@ -8,17 +8,17 @@ use serde::{Deserialize, Serialize};
 use tauri::{command, Manager, Runtime, State, Window};
 use tauri_plugin_fs::FsExt;
 
-use crate::{Dialog, FileDialogBuilder, FileResponse, MessageDialogKind, Result};
+use crate::{Dialog, FileDialogBuilder, FilePath, MessageDialogKind, Result};
 
 #[derive(Serialize)]
 #[serde(untagged)]
 pub enum OpenResponse {
     #[cfg(desktop)]
-    Folders(Option<Vec<PathBuf>>),
+    Folders(Option<Vec<FilePath>>),
     #[cfg(desktop)]
-    Folder(Option<PathBuf>),
-    Files(Option<Vec<FileResponse>>),
-    File(Option<FileResponse>),
+    Folder(Option<FilePath>),
+    Files(Option<Vec<FilePath>>),
+    File(Option<FilePath>),
 }
 
 #[allow(dead_code)]
@@ -136,25 +136,26 @@ pub(crate) async fn open<R: Runtime>(
                 let folders = dialog_builder.blocking_pick_folders();
                 if let Some(folders) = &folders {
                     for folder in folders {
-                        if let Some(s) = window.try_fs_scope() {
-                            s.allow_directory(folder, options.recursive);
+                        if let Ok(path) = folder.path() {
+                            if let Some(s) = window.try_fs_scope() {
+                                s.allow_directory(path, options.recursive);
+                            }
                         }
                     }
                 }
-                OpenResponse::Folders(folders.map(|folders| {
-                    folders
-                        .iter()
-                        .map(|p| dunce::simplified(p).to_path_buf())
-                        .collect()
-                }))
+                OpenResponse::Folders(
+                    folders.map(|folders| folders.into_iter().map(|p| p.simplified()).collect()),
+                )
             } else {
                 let folder = dialog_builder.blocking_pick_folder();
-                if let Some(path) = &folder {
-                    if let Some(s) = window.try_fs_scope() {
-                        s.allow_directory(path, options.recursive);
+                if let Some(folder) = &folder {
+                    if let Ok(path) = folder.path() {
+                        if let Some(s) = window.try_fs_scope() {
+                            s.allow_directory(path, options.recursive);
+                        }
                     }
                 }
-                OpenResponse::Folder(folder.map(|p| dunce::simplified(&p).to_path_buf()))
+                OpenResponse::Folder(folder.map(|p| p.simplified()))
             }
         }
         #[cfg(mobile)]
@@ -163,37 +164,28 @@ pub(crate) async fn open<R: Runtime>(
         let files = dialog_builder.blocking_pick_files();
         if let Some(files) = &files {
             for file in files {
-                if let Some(s) = window.try_fs_scope() {
-                    s.allow_file(&file.path);
+                if let Ok(path) = file.path() {
+                    if let Some(s) = window.try_fs_scope() {
+                        s.allow_file(&path);
+                    }
+
+                    window.state::<tauri::scope::Scopes>().allow_file(&path)?;
                 }
-                window
-                    .state::<tauri::scope::Scopes>()
-                    .allow_file(&file.path)?;
             }
         }
-        OpenResponse::Files(files.map(|files| {
-            files
-                .into_iter()
-                .map(|mut f| {
-                    f.path = dunce::simplified(&f.path).to_path_buf();
-                    f
-                })
-                .collect()
-        }))
+        OpenResponse::Files(files.map(|files| files.into_iter().map(|f| f.simplified()).collect()))
     } else {
         let file = dialog_builder.blocking_pick_file();
+
         if let Some(file) = &file {
-            if let Some(s) = window.try_fs_scope() {
-                s.allow_file(&file.path);
+            if let Ok(path) = file.path() {
+                if let Some(s) = window.try_fs_scope() {
+                    s.allow_file(&path);
+                }
+                window.state::<tauri::scope::Scopes>().allow_file(&path)?;
             }
-            window
-                .state::<tauri::scope::Scopes>()
-                .allow_file(&file.path)?;
         }
-        OpenResponse::File(file.map(|mut f| {
-            f.path = dunce::simplified(&f.path).to_path_buf();
-            f
-        }))
+        OpenResponse::File(file.map(|f| f.simplified()))
     };
     Ok(res)
 }
@@ -204,7 +196,7 @@ pub(crate) async fn save<R: Runtime>(
     window: Window<R>,
     dialog: State<'_, Dialog<R>>,
     options: SaveDialogOptions,
-) -> Result<Option<PathBuf>> {
+) -> Result<Option<FilePath>> {
     #[cfg(target_os = "ios")]
     return Err(crate::Error::FileSaveDialogNotImplemented);
     #[cfg(any(desktop, target_os = "android"))]
@@ -230,13 +222,15 @@ pub(crate) async fn save<R: Runtime>(
 
         let path = dialog_builder.blocking_save_file();
         if let Some(p) = &path {
-            if let Some(s) = window.try_fs_scope() {
-                s.allow_file(p);
+            if let Ok(path) = p.path() {
+                if let Some(s) = window.try_fs_scope() {
+                    s.allow_file(&path);
+                }
+                window.state::<tauri::scope::Scopes>().allow_file(&path)?;
             }
-            window.state::<tauri::scope::Scopes>().allow_file(p)?;
         }
 
-        Ok(path.map(|p| dunce::simplified(&p).to_path_buf()))
+        Ok(path.map(|p| p.simplified()))
     }
 }
 

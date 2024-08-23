@@ -23,6 +23,9 @@ pub enum Error {
     #[cfg(feature = "watch")]
     #[error(transparent)]
     Watch(#[from] notify::Error),
+    #[cfg(target_os = "android")]
+    #[error(transparent)]
+    PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
 }
 
 impl Serialize for Error {
