@@ -227,6 +227,7 @@ dependencies = [
  "tauri-plugin-os",
  "tauri-plugin-process",
  "tauri-plugin-shell",
+ "tauri-plugin-store",
  "tauri-plugin-updater",
  "tiny_http",
  "window-shadows",

@@ -14,6 +14,7 @@
   import Notifications from "./views/Notifications.svelte";
   import Shortcuts from "./views/Shortcuts.svelte";
   import Shell from "./views/Shell.svelte";
+  import Store from "./views/Store.svelte";
   import Updater from "./views/Updater.svelte";
   import Clipboard from "./views/Clipboard.svelte";
   import WebRTC from "./views/WebRTC.svelte";
@@ -89,6 +90,11 @@
       label: "Shell",
       component: Shell,
       icon: "i-codicon-terminal-bash",
+    },
+    {
+      label: "Store",
+      component: Store,
+      icon: "i-codicon-file-code",
     },
     !isMobile && {
       label: "Updater",
