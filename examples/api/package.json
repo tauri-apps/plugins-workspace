@@ -23,6 +23,7 @@
     "@tauri-apps/plugin-os": "2.0.0-rc.0",
     "@tauri-apps/plugin-process": "2.0.0-rc.0",
     "@tauri-apps/plugin-shell": "2.0.0-rc.0",
+    "@tauri-apps/plugin-store": "2.0.0-rc.0",
     "@tauri-apps/plugin-updater": "2.0.0-rc.0",
     "@zerodevx/svelte-json-view": "1.0.9"
   },
