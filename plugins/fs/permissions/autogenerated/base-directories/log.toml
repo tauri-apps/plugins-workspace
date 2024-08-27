@@ -10,12 +10,16 @@ identifier = "scope-log-recursive"
 description = "This scope permits recursive access to the complete `$LOG` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$LOG"
+[[permission.scope.allow]]
 path = "$LOG/**"
 
 [[permission]]
 identifier = "scope-log"
 description = "This scope permits access to all files and list content of top level directories in the `$LOG`folder."
 
+[[permission.scope.allow]]
+path = "$LOG"
 [[permission.scope.allow]]
 path = "$LOG/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-log-index"
 description = "This scope permits to list all files and folders in the `$LOG`folder."
 
 [[permission.scope.allow]]
-path = "$LOG/"
+path = "$LOG"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

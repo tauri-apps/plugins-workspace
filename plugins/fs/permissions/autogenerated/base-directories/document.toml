@@ -10,12 +10,16 @@ identifier = "scope-document-recursive"
 description = "This scope permits recursive access to the complete `$DOCUMENT` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$DOCUMENT"
+[[permission.scope.allow]]
 path = "$DOCUMENT/**"
 
 [[permission]]
 identifier = "scope-document"
 description = "This scope permits access to all files and list content of top level directories in the `$DOCUMENT`folder."
 
+[[permission.scope.allow]]
+path = "$DOCUMENT"
 [[permission.scope.allow]]
 path = "$DOCUMENT/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-document-index"
 description = "This scope permits to list all files and folders in the `$DOCUMENT`folder."
 
 [[permission.scope.allow]]
-path = "$DOCUMENT/"
+path = "$DOCUMENT"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

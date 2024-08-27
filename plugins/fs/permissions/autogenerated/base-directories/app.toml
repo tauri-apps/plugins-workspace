@@ -10,12 +10,16 @@ identifier = "scope-app-recursive"
 description = "This scope permits recursive access to the complete `$APP` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$APP"
+[[permission.scope.allow]]
 path = "$APP/**"
 
 [[permission]]
 identifier = "scope-app"
 description = "This scope permits access to all files and list content of top level directories in the `$APP`folder."
 
+[[permission.scope.allow]]
+path = "$APP"
 [[permission.scope.allow]]
 path = "$APP/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-app-index"
 description = "This scope permits to list all files and folders in the `$APP`folder."
 
 [[permission.scope.allow]]
-path = "$APP/"
+path = "$APP"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

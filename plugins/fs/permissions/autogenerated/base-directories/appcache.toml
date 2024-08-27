@@ -10,12 +10,16 @@ identifier = "scope-appcache-recursive"
 description = "This scope permits recursive access to the complete `$APPCACHE` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$APPCACHE"
+[[permission.scope.allow]]
 path = "$APPCACHE/**"
 
 [[permission]]
 identifier = "scope-appcache"
 description = "This scope permits access to all files and list content of top level directories in the `$APPCACHE`folder."
 
+[[permission.scope.allow]]
+path = "$APPCACHE"
 [[permission.scope.allow]]
 path = "$APPCACHE/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-appcache-index"
 description = "This scope permits to list all files and folders in the `$APPCACHE`folder."
 
 [[permission.scope.allow]]
-path = "$APPCACHE/"
+path = "$APPCACHE"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

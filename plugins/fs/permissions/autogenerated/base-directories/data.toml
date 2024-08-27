@@ -10,12 +10,16 @@ identifier = "scope-data-recursive"
 description = "This scope permits recursive access to the complete `$DATA` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$DATA"
+[[permission.scope.allow]]
 path = "$DATA/**"
 
 [[permission]]
 identifier = "scope-data"
 description = "This scope permits access to all files and list content of top level directories in the `$DATA`folder."
 
+[[permission.scope.allow]]
+path = "$DATA"
 [[permission.scope.allow]]
 path = "$DATA/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-data-index"
 description = "This scope permits to list all files and folders in the `$DATA`folder."
 
 [[permission.scope.allow]]
-path = "$DATA/"
+path = "$DATA"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

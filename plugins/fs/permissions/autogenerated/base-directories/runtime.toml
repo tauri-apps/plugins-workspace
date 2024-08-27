@@ -10,12 +10,16 @@ identifier = "scope-runtime-recursive"
 description = "This scope permits recursive access to the complete `$RUNTIME` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$RUNTIME"
+[[permission.scope.allow]]
 path = "$RUNTIME/**"
 
 [[permission]]
 identifier = "scope-runtime"
 description = "This scope permits access to all files and list content of top level directories in the `$RUNTIME`folder."
 
+[[permission.scope.allow]]
+path = "$RUNTIME"
 [[permission.scope.allow]]
 path = "$RUNTIME/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-runtime-index"
 description = "This scope permits to list all files and folders in the `$RUNTIME`folder."
 
 [[permission.scope.allow]]
-path = "$RUNTIME/"
+path = "$RUNTIME"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands
