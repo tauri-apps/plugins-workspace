@@ -1,5 +1,22 @@
 # Changelog
 
+## \[2.0.0-rc.1]
+
+- [`84f8bd5e`](https://github.com/tauri-apps/plugins-workspace/commit/84f8bd5e1ef22e664267380b5bbf756ebc5389c3) ([#1662](https://github.com/tauri-apps/plugins-workspace/pull/1662) by [@twlite](https://github.com/tauri-apps/plugins-workspace/../../twlite)) Fixed an issue with abort signal not aborting the fetch request.
+
+## \[2.0.0-rc.0]
+
+- [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-rc.0`
+
+## \[2.0.0-beta.9]
+
+- [`99d6ac0f`](https://github.com/tauri-apps/plugins-workspace/commit/99d6ac0f9506a6a4a1aa59c728157190a7441af6) ([#1606](https://github.com/tauri-apps/plugins-workspace/pull/1606) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) The JS packages now specify the *minimum* `@tauri-apps/api` version instead of a single exact version.
+- [`6de87966`](https://github.com/tauri-apps/plugins-workspace/commit/6de87966ecc00ad9d91c25be452f1f46bd2b7e1f) ([#1597](https://github.com/tauri-apps/plugins-workspace/pull/1597) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Update to tauri beta.25.
+
 ## \[2.0.0-beta.8]
 
 - [`ac9a25cc`](https://github.com/tauri-apps/plugins-workspace/commit/ac9a25cc12ee2b325f00212ba74316da3369bde5) ([#1395](https://github.com/tauri-apps/plugins-workspace/pull/1395) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix cancelling requests using `AbortSignal`.
@@ -203,6 +220,13 @@
   lpha release!
   !
   371\)) First v2 alpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
+  !
+  371\)) First v2 alpha release!
+  lpha release!
   lpha release!
   !
   371\)) First v2 alpha release!

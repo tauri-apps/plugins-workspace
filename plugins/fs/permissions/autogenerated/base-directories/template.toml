@@ -10,12 +10,16 @@ identifier = "scope-template-recursive"
 description = "This scope permits recursive access to the complete `$TEMPLATE` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$TEMPLATE"
+[[permission.scope.allow]]
 path = "$TEMPLATE/**"
 
 [[permission]]
 identifier = "scope-template"
 description = "This scope permits access to all files and list content of top level directories in the `$TEMPLATE`folder."
 
+[[permission.scope.allow]]
+path = "$TEMPLATE"
 [[permission.scope.allow]]
 path = "$TEMPLATE/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-template-index"
 description = "This scope permits to list all files and folders in the `$TEMPLATE`folder."
 
 [[permission.scope.allow]]
-path = "$TEMPLATE/"
+path = "$TEMPLATE"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

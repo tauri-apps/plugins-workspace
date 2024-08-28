@@ -8,14 +8,12 @@
 //! to give results back. This is particularly useful when running dialogs from the main thread.
 //! When using on asynchronous contexts such as async commands, the [`blocking`] APIs are recommended.
 
-use std::path::PathBuf;
-
 use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 use rfd::{AsyncFileDialog, AsyncMessageDialog};
 use serde::de::DeserializeOwned;
 use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
-use crate::{models::*, FileDialogBuilder, MessageDialogBuilder};
+use crate::{models::*, FileDialogBuilder, FilePath, MessageDialogBuilder};
 
 const OK: &str = "Ok";
 
@@ -115,11 +113,11 @@ impl<R: Runtime> From<MessageDialogBuilder<R>> for AsyncMessageDialog {
     }
 }
 
-pub fn pick_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
+pub fn pick_file<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
-    let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf()));
+    let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf().into()));
     let handle = dialog.dialog.app_handle().to_owned();
     let _ = handle.run_on_main_thread(move || {
         let dialog = AsyncFileDialog::from(dialog).pick_file();
@@ -127,12 +125,16 @@ pub fn pick_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
     });
 }
 
-pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(
+pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<FilePath>>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
     let f = |paths: Option<Vec<rfd::FileHandle>>| {
-        f(paths.map(|list| list.into_iter().map(|p| p.path().to_path_buf()).collect()))
+        f(paths.map(|list| {
+            list.into_iter()
+                .map(|p| p.path().to_path_buf().into())
+                .collect()
+        }))
     };
     let handle = dialog.dialog.app_handle().to_owned();
     let _ = handle.run_on_main_thread(move || {
@@ -141,11 +143,11 @@ pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(
     });
 }
 
-pub fn pick_folder<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
+pub fn pick_folder<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
-    let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf()));
+    let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf().into()));
     let handle = dialog.dialog.app_handle().to_owned();
     let _ = handle.run_on_main_thread(move || {
         let dialog = AsyncFileDialog::from(dialog).pick_folder();
@@ -153,12 +155,16 @@ pub fn pick_folder<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
     });
 }
 
-pub fn pick_folders<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static>(
+pub fn pick_folders<R: Runtime, F: FnOnce(Option<Vec<FilePath>>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
     let f = |paths: Option<Vec<rfd::FileHandle>>| {
-        f(paths.map(|list| list.into_iter().map(|p| p.path().to_path_buf()).collect()))
+        f(paths.map(|list| {
+            list.into_iter()
+                .map(|p| p.path().to_path_buf().into())
+                .collect()
+        }))
     };
     let handle = dialog.dialog.app_handle().to_owned();
     let _ = handle.run_on_main_thread(move || {
@@ -167,11 +173,11 @@ pub fn pick_folders<R: Runtime, F: FnOnce(Option<Vec<PathBuf>>) + Send + 'static
     });
 }
 
-pub fn save_file<R: Runtime, F: FnOnce(Option<PathBuf>) + Send + 'static>(
+pub fn save_file<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
-    let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf()));
+    let f = |path: Option<rfd::FileHandle>| f(path.map(|p| p.path().to_path_buf().into()));
     let handle = dialog.dialog.app_handle().to_owned();
     let _ = handle.run_on_main_thread(move || {
         let dialog = AsyncFileDialog::from(dialog).save_file();

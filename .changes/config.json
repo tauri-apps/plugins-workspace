@@ -68,6 +68,7 @@
         "os",
         "process",
         "shell",
+        "store",
         "updater"
       ]
     },
@@ -90,6 +91,7 @@
         "os-js",
         "process-js",
         "shell-js",
+        "store-js",
         "updater-js"
       ],
       "postversion": "pnpm install --no-frozen-lockfile"
@@ -174,12 +176,28 @@
       "path": "./plugins/dialog",
       "manager": "javascript"
     },
+    "geolocation": {
+      "path": "./plugins/geolocation",
+      "manager": "rust"
+    },
+    "geolocation-js": {
+      "path": "./plugins/geolocation",
+      "manager": "javascript"
+    },
     "global-shortcut": {
       "path": "./plugins/global-shortcut",
       "manager": "rust"
     },
     "global-shortcut-js": {
       "path": "./plugins/global-shortcut",
+      "manager": "javascript"
+    },
+    "haptics": {
+      "path": "./plugins/haptics",
+      "manager": "rust"
+    },
+    "haptics-js": {
+      "path": "./plugins/haptics",
       "manager": "javascript"
     },
     "http": {

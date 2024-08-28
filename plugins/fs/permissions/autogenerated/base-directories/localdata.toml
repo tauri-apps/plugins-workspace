@@ -10,12 +10,16 @@ identifier = "scope-localdata-recursive"
 description = "This scope permits recursive access to the complete `$LOCALDATA` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$LOCALDATA"
+[[permission.scope.allow]]
 path = "$LOCALDATA/**"
 
 [[permission]]
 identifier = "scope-localdata"
 description = "This scope permits access to all files and list content of top level directories in the `$LOCALDATA`folder."
 
+[[permission.scope.allow]]
+path = "$LOCALDATA"
 [[permission.scope.allow]]
 path = "$LOCALDATA/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-localdata-index"
 description = "This scope permits to list all files and folders in the `$LOCALDATA`folder."
 
 [[permission.scope.allow]]
-path = "$LOCALDATA/"
+path = "$LOCALDATA"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

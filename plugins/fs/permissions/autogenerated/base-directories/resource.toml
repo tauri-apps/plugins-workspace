@@ -10,12 +10,16 @@ identifier = "scope-resource-recursive"
 description = "This scope permits recursive access to the complete `$RESOURCE` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$RESOURCE"
+[[permission.scope.allow]]
 path = "$RESOURCE/**"
 
 [[permission]]
 identifier = "scope-resource"
 description = "This scope permits access to all files and list content of top level directories in the `$RESOURCE`folder."
 
+[[permission.scope.allow]]
+path = "$RESOURCE"
 [[permission.scope.allow]]
 path = "$RESOURCE/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-resource-index"
 description = "This scope permits to list all files and folders in the `$RESOURCE`folder."
 
 [[permission.scope.allow]]
-path = "$RESOURCE/"
+path = "$RESOURCE"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands
