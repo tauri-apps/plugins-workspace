@@ -29,7 +29,6 @@ struct Filter: Decodable {
 
 struct FilePickerOptions: Decodable {
   var multiple: Bool?
-  var readData: Bool?
   var filters: [Filter]?
 }
 
@@ -136,55 +135,9 @@ class DialogPlugin: Plugin {
   public func onFilePickerEvent(_ event: FilePickerEvent) {
     switch event {
     case .selected(let urls):
-      let readData = pendingInvokeArgs?.readData ?? false
-      do {
-        let filesResult = try urls.map { (url: URL) -> JSObject in
-          var file = JSObject()
-
-          let mimeType = filePickerController.getMimeTypeFromUrl(url)
-          let isVideo = mimeType.hasPrefix("video")
-          let isImage = mimeType.hasPrefix("image")
-
-          if readData {
-            file["data"] = try Data(contentsOf: url).base64EncodedString()
-          }
-
-          if isVideo {
-            file["duration"] = filePickerController.getVideoDuration(url)
-            let (height, width) = filePickerController.getVideoDimensions(url)
-            if let height = height {
-              file["height"] = height
-            }
-            if let width = width {
-              file["width"] = width
-            }
-          } else if isImage {
-            let (height, width) = filePickerController.getImageDimensions(url)
-            if let height = height {
-              file["height"] = height
-            }
-            if let width = width {
-              file["width"] = width
-            }
-          }
-
-          file["modifiedAt"] = filePickerController.getModifiedAtFromUrl(url)
-          file["mimeType"] = mimeType
-          file["name"] = url.lastPathComponent
-          file["path"] = url.absoluteString
-          file["size"] = try filePickerController.getSizeFromUrl(url)
-          return file
-        }
-        pendingInvoke?.resolve(["files": filesResult])
-      } catch let error as NSError {
-        pendingInvoke?.reject(error.localizedDescription, error: error)
-        return
-      }
-
       pendingInvoke?.resolve(["files": urls])
     case .cancelled:
-      let files: JSArray = []
-      pendingInvoke?.resolve(["files": files])
+      pendingInvoke?.resolve(["files": nil])
     case .error(let error):
       pendingInvoke?.reject(error)
     }

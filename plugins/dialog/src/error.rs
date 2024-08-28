@@ -23,6 +23,8 @@ pub enum Error {
     FileSaveDialogNotImplemented,
     #[error(transparent)]
     Fs(#[from] tauri_plugin_fs::Error),
+    #[error("URL is not a valid path")]
+    InvalidPathUrl,
 }
 
 impl Serialize for Error {

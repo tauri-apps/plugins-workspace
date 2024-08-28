@@ -10,12 +10,16 @@ identifier = "scope-picture-recursive"
 description = "This scope permits recursive access to the complete `$PICTURE` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$PICTURE"
+[[permission.scope.allow]]
 path = "$PICTURE/**"
 
 [[permission]]
 identifier = "scope-picture"
 description = "This scope permits access to all files and list content of top level directories in the `$PICTURE`folder."
 
+[[permission.scope.allow]]
+path = "$PICTURE"
 [[permission.scope.allow]]
 path = "$PICTURE/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-picture-index"
 description = "This scope permits to list all files and folders in the `$PICTURE`folder."
 
 [[permission.scope.allow]]
-path = "$PICTURE/"
+path = "$PICTURE"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

@@ -1,3 +1,0 @@
-# Tauri
-
-Tauri iOS API.

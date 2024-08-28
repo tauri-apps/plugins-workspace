@@ -10,12 +10,16 @@ identifier = "scope-cache-recursive"
 description = "This scope permits recursive access to the complete `$CACHE` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$CACHE"
+[[permission.scope.allow]]
 path = "$CACHE/**"
 
 [[permission]]
 identifier = "scope-cache"
 description = "This scope permits access to all files and list content of top level directories in the `$CACHE`folder."
 
+[[permission.scope.allow]]
+path = "$CACHE"
 [[permission.scope.allow]]
 path = "$CACHE/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-cache-index"
 description = "This scope permits to list all files and folders in the `$CACHE`folder."
 
 [[permission.scope.allow]]
-path = "$CACHE/"
+path = "$CACHE"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

@@ -5,9 +5,14 @@
 use serde::{Serialize, Serializer};
 
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum Error {
     #[error("{0}")]
     GlobalHotkey(String),
+    #[error(transparent)]
+    RecvError(#[from] std::sync::mpsc::RecvError),
+    #[error(transparent)]
+    Tauri(#[from] tauri::Error),
 }
 
 impl Serialize for Error {

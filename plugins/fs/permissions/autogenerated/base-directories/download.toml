@@ -10,12 +10,16 @@ identifier = "scope-download-recursive"
 description = "This scope permits recursive access to the complete `$DOWNLOAD` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$DOWNLOAD"
+[[permission.scope.allow]]
 path = "$DOWNLOAD/**"
 
 [[permission]]
 identifier = "scope-download"
 description = "This scope permits access to all files and list content of top level directories in the `$DOWNLOAD`folder."
 
+[[permission.scope.allow]]
+path = "$DOWNLOAD"
 [[permission.scope.allow]]
 path = "$DOWNLOAD/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-download-index"
 description = "This scope permits to list all files and folders in the `$DOWNLOAD`folder."
 
 [[permission.scope.allow]]
-path = "$DOWNLOAD/"
+path = "$DOWNLOAD"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

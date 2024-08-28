@@ -10,12 +10,16 @@ identifier = "scope-temp-recursive"
 description = "This scope permits recursive access to the complete `$TEMP` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$TEMP"
+[[permission.scope.allow]]
 path = "$TEMP/**"
 
 [[permission]]
 identifier = "scope-temp"
 description = "This scope permits access to all files and list content of top level directories in the `$TEMP`folder."
 
+[[permission.scope.allow]]
+path = "$TEMP"
 [[permission.scope.allow]]
 path = "$TEMP/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-temp-index"
 description = "This scope permits to list all files and folders in the `$TEMP`folder."
 
 [[permission.scope.allow]]
-path = "$TEMP/"
+path = "$TEMP"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

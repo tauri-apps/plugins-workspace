@@ -11,6 +11,7 @@
     ".changes/remove-target-sdk.md",
     ".changes/shell-open-regex-match-string.md",
     ".changes/shell-regex-match-string.md",
+    ".changes/swift-build-older-versions.md",
     ".changes/update-fs-api-docs.md",
     ".changes/update-tauri-rc-3.md"
   ]

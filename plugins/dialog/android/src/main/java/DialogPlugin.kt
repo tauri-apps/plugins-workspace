@@ -30,7 +30,6 @@ class Filter {
 class FilePickerOptions {
   lateinit var filters: Array<Filter>
   var multiple: Boolean? = null
-  var readData: Boolean? = null
 }
 
 @InvokeArg
@@ -95,7 +94,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     try {
       when (result.resultCode) {
         Activity.RESULT_OK -> {
-          val callResult = createPickFilesResult(result.data, filePickerOptions?.readData ?: false)
+          val callResult = createPickFilesResult(result.data)
           invoke.resolve(callResult)
         }
         Activity.RESULT_CANCELED -> invoke.reject("File picker cancelled")
@@ -108,49 +107,23 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     }
   }
 
-  private fun createPickFilesResult(data: Intent?, readData: Boolean): JSObject {
+  private fun createPickFilesResult(data: Intent?): JSObject {
     val callResult = JSObject()
-    val filesResultList: MutableList<JSObject> = ArrayList()
     if (data == null) {
-      callResult.put("files", JSArray.from(filesResultList))
+      callResult.put("files", null)
       return callResult
     }
-    val uris: MutableList<Uri?> = ArrayList()
+    val uris: MutableList<String?> = ArrayList()
     if (data.clipData == null) {
       val uri: Uri? = data.data
-      uris.add(uri)
+      uris.add(uri?.toString())
     } else {
       for (i in 0 until data.clipData!!.itemCount) {
         val uri: Uri = data.clipData!!.getItemAt(i).uri
-        uris.add(uri)
+        uris.add(uri.toString())
       }
     }
-    for (i in uris.indices) {
-      val uri = uris[i] ?: continue
-      val fileResult = JSObject()
-      if (readData) {
-        fileResult.put("base64Data", FilePickerUtils.getDataFromUri(activity, uri))
-      }
-      val duration = FilePickerUtils.getDurationFromUri(activity, uri)
-      if (duration != null) {
-        fileResult.put("duration", duration)
-      }
-      val resolution = FilePickerUtils.getHeightAndWidthFromUri(activity, uri)
-      if (resolution != null) {
-        fileResult.put("height", resolution.height)
-        fileResult.put("width", resolution.width)
-      }
-      fileResult.put("mimeType", FilePickerUtils.getMimeTypeFromUri(activity, uri))
-      val modifiedAt = FilePickerUtils.getModifiedAtFromUri(activity, uri)
-      if (modifiedAt != null) {
-        fileResult.put("modifiedAt", modifiedAt)
-      }
-      fileResult.put("name", FilePickerUtils.getNameFromUri(activity, uri))
-      fileResult.put("path", FilePickerUtils.getPathFromUri(activity, uri))
-      fileResult.put("size", FilePickerUtils.getSizeFromUri(activity, uri))
-      filesResultList.add(fileResult)
-    }
-    callResult.put("files", JSArray.from(filesResultList.toTypedArray()))
+    callResult.put("files", JSArray.from(uris.toTypedArray()))
     return callResult
   }
   

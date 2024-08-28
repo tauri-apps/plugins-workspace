@@ -68,6 +68,7 @@
         "os",
         "process",
         "shell",
+        "store",
         "updater"
       ]
     },
@@ -90,6 +91,7 @@
         "os-js",
         "process-js",
         "shell-js",
+        "store-js",
         "updater-js"
       ],
       "postversion": "pnpm install --no-frozen-lockfile"

@@ -10,12 +10,16 @@ identifier = "scope-home-recursive"
 description = "This scope permits recursive access to the complete `$HOME` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$HOME"
+[[permission.scope.allow]]
 path = "$HOME/**"
 
 [[permission]]
 identifier = "scope-home"
 description = "This scope permits access to all files and list content of top level directories in the `$HOME`folder."
 
+[[permission.scope.allow]]
+path = "$HOME"
 [[permission.scope.allow]]
 path = "$HOME/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-home-index"
 description = "This scope permits to list all files and folders in the `$HOME`folder."
 
 [[permission.scope.allow]]
-path = "$HOME/"
+path = "$HOME"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

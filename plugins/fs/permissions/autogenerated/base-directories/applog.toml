@@ -10,12 +10,16 @@ identifier = "scope-applog-recursive"
 description = "This scope permits recursive access to the complete `$APPLOG` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$APPLOG"
+[[permission.scope.allow]]
 path = "$APPLOG/**"
 
 [[permission]]
 identifier = "scope-applog"
 description = "This scope permits access to all files and list content of top level directories in the `$APPLOG`folder."
 
+[[permission.scope.allow]]
+path = "$APPLOG"
 [[permission.scope.allow]]
 path = "$APPLOG/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-applog-index"
 description = "This scope permits to list all files and folders in the `$APPLOG`folder."
 
 [[permission.scope.allow]]
-path = "$APPLOG/"
+path = "$APPLOG"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

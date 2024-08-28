@@ -10,12 +10,16 @@ identifier = "scope-config-recursive"
 description = "This scope permits recursive access to the complete `$CONFIG` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$CONFIG"
+[[permission.scope.allow]]
 path = "$CONFIG/**"
 
 [[permission]]
 identifier = "scope-config"
 description = "This scope permits access to all files and list content of top level directories in the `$CONFIG`folder."
 
+[[permission.scope.allow]]
+path = "$CONFIG"
 [[permission.scope.allow]]
 path = "$CONFIG/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-config-index"
 description = "This scope permits to list all files and folders in the `$CONFIG`folder."
 
 [[permission.scope.allow]]
-path = "$CONFIG/"
+path = "$CONFIG"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands
