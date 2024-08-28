@@ -13,7 +13,6 @@ settingGroups:
       PRODUCT_NAME: Tauri API
       PRODUCT_BUNDLE_IDENTIFIER: com.tauri.api
       DEVELOPMENT_TEAM: Q93MBH6S2F
-      CODE_SIGN_STYLE: Automatic
 targetTemplates:
   app:
     type: application
@@ -74,7 +73,7 @@ targets:
         EXCLUDED_ARCHS[sdk=iphoneos*]: arm64-sim x86_64
       groups: [app]
     dependencies:
-      - framework: libapi_lib.a
+      - framework: libapp.a
         embed: false
       - sdk: CoreGraphics.framework
       - sdk: Metal.framework
@@ -88,6 +87,6 @@ targets:
         name: Build Rust Code
         basedOnDependencyAnalysis: false
         outputFiles:
-          - $(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapi_lib.a
-          - $(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapi_lib.a
-          - $(SRCROOT)/Externals/arm64-sim/${CONFIGURATION}/libapi_lib.a
+          - $(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapp.a
+          - $(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapp.a
+          - $(SRCROOT)/Externals/arm64-sim/${CONFIGURATION}/libapp.a
