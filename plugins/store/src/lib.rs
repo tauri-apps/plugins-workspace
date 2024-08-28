@@ -21,8 +21,7 @@ use std::{
     sync::{Mutex, Weak},
     time::Duration,
 };
-use store::Store;
-pub use store::{StoreBuilder, StoreInner};
+pub use store::{Store, StoreBuilder, StoreInner};
 use tauri::{
     plugin::{self, TauriPlugin},
     AppHandle, Manager, ResourceId, RunEvent, Runtime, Webview,
@@ -41,8 +40,6 @@ struct ChangePayload<'a> {
 pub struct StoreCollection<R: Runtime> {
     stores: Mutex<HashMap<PathBuf, Weak<Mutex<StoreInner<R>>>>>,
     // frozen: bool,
-    #[cfg(mobile)]
-    mobile_plugin_handle: PluginHandle<R>,
 }
 
 #[tauri::command]
@@ -285,8 +282,8 @@ impl<R: Runtime> Builder<R> {
                     }
                 }
 
-                app_handle.manage(StoreCollection {
-                    stores: Mutex::new(self.stores),
+                app_handle.manage(StoreCollection::<R> {
+                    stores: Mutex::new(HashMap::new()),
                     // frozen: self.frozen,
                 });
 

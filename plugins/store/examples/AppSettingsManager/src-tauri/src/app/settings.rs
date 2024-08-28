@@ -21,9 +21,8 @@ impl AppSettings {
 
         let theme = store
             .get("appSettings.theme")
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string())
-            .unwrap_or_else(|| "dark".to_string());
+            .and_then(|v| v.as_str().map(String::from))
+            .unwrap_or_else(|| "dark".to_owned());
 
         Ok(AppSettings {
             launch_at_login,

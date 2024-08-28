@@ -12,7 +12,12 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
-use tauri::{AppHandle, Emitter, Manager, Runtime};
+use tauri::{AppHandle, Emitter, Manager, Resource, Runtime};
+use tokio::{
+    select,
+    sync::mpsc::{unbounded_channel, UnboundedSender},
+    time::sleep,
+};
 
 type SerializeFn =
     fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>>;
@@ -42,7 +47,7 @@ pub struct StoreBuilder<R: Runtime> {
     auto_save: Option<Duration>,
 }
 
-impl StoreBuilder {
+impl<R: Runtime> StoreBuilder<R> {
     /// Creates a new [`StoreBuilder`].
     ///
     /// # Examples
@@ -214,8 +219,6 @@ pub struct StoreInner<R: Runtime> {
     pub(crate) app: AppHandle<R>,
     pub(crate) path: PathBuf,
     pub(crate) cache: HashMap<String, JsonValue>,
-    pub(crate) serialize: SerializeFn,
-    pub(crate) deserialize: DeserializeFn,
 }
 
 impl<R: Runtime> StoreInner<R> {
@@ -227,7 +230,7 @@ impl<R: Runtime> StoreInner<R> {
         }
     }
 
-    pub fn save(&self, serialize_fn: SerializeFn) -> crate::Result<(), Error> {
+    pub fn save(&self, serialize_fn: SerializeFn) -> crate::Result<()> {
         let app_dir = self
             .app
             .path()
@@ -237,7 +240,7 @@ impl<R: Runtime> StoreInner<R> {
 
         create_dir_all(store_path.parent().expect("invalid store path"))?;
 
-        let bytes = serialize_fn(&self.cache).map_err(Error::Serialize)?;
+        let bytes = serialize_fn(&self.cache).map_err(crate::Error::Serialize)?;
         let mut f = File::create(&store_path)?;
         f.write_all(&bytes)?;
 
@@ -245,7 +248,7 @@ impl<R: Runtime> StoreInner<R> {
     }
 
     /// Update the store from the on-disk state
-    pub fn load(&mut self, deserialize_fn: DeserializeFn) -> crate::Result<(), Error> {
+    pub fn load(&mut self, deserialize_fn: DeserializeFn) -> crate::Result<()> {
         let app_dir = self
             .app
             .path()
@@ -256,7 +259,7 @@ impl<R: Runtime> StoreInner<R> {
         let bytes = read(store_path)?;
 
         self.cache
-            .extend(deserialize_fn(&bytes).map_err(Error::Deserialize)?);
+            .extend(deserialize_fn(&bytes).map_err(crate::Error::Deserialize)?);
 
         Ok(())
     }
@@ -382,15 +385,15 @@ impl<R: Runtime> Store<R> {
         let _ = self.trigger_auto_save();
     }
 
-    pub fn get(&self, key: String) -> Option<JsonValue> {
+    pub fn get(&self, key: impl AsRef<str>) -> Option<JsonValue> {
         self.store.lock().unwrap().get(key).cloned()
     }
 
-    pub fn has(&self, key: String) -> bool {
+    pub fn has(&self, key: impl AsRef<str>) -> bool {
         self.store.lock().unwrap().has(key)
     }
 
-    pub fn delete(&self, key: String) -> bool {
+    pub fn delete(&self, key: impl AsRef<str>) -> bool {
         let deleted = self.store.lock().unwrap().delete(key);
         if deleted {
             let _ = self.trigger_auto_save();

@@ -18,7 +18,7 @@ fn main() {
         .plugin(Builder::new().build())
         .setup(|app| {
             // Init store and load it from disk
-            let mut store = app
+            let store = app
                 .handle()
                 .store_builder("settings.json")
                 .auto_save(Duration::from_millis(100))
