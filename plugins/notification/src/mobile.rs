@@ -4,7 +4,7 @@
 
 use serde::{de::DeserializeOwned, Deserialize};
 use tauri::{
-    plugin::{PluginApi, PluginHandle},
+    plugin::{PermissionState, PluginApi, PluginHandle},
     AppHandle, Runtime,
 };
 

@@ -22,6 +22,7 @@ use tauri::{
 };
 
 pub use models::*;
+pub use tauri::plugin::PermissionState;
 
 #[cfg(desktop)]
 mod desktop;

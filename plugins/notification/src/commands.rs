@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use tauri::{command, AppHandle, Runtime, State};
+use tauri::{command, plugin::PermissionState, AppHandle, Runtime, State};
 
-use crate::{Notification, NotificationData, PermissionState, Result};
+use crate::{Notification, NotificationData, Result};
 
 #[command]
 pub(crate) async fn is_permission_granted<R: Runtime>(
@@ -15,7 +15,7 @@ pub(crate) async fn is_permission_granted<R: Runtime>(
     match state {
         PermissionState::Granted => Ok(Some(true)),
         PermissionState::Denied => Ok(Some(false)),
-        PermissionState::Unknown => Ok(None),
+        PermissionState::Unknown | PermissionState::PromptWithRationale => Ok(None),
     }
 }
 
