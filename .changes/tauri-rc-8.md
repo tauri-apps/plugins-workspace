@@ -58,4 +58,4 @@
 "geolocation-js": patch
 ---
 
-Update to tauri 2.0.0-rc.7
+Update to tauri 2.0.0-rc.8
