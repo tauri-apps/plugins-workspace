@@ -313,7 +313,7 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
             }
         }
 
-        if flags.contains(StateFlags::POSITION) && !is_maximized {
+        if flags.contains(StateFlags::POSITION) && !is_maximized && !self.is_minimized() {
             let position = self.outer_position()?;
             state.x = position.x;
             state.y = position.y;
