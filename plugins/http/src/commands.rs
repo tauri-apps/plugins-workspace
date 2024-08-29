@@ -254,15 +254,6 @@ pub async fn fetch<R: Runtime>(
                     request = request.header(header::USER_AGENT, HTTP_USER_AGENT);
                 }
 
-                if cfg!(feature = "unsafe-headers")
-                    && !headers.contains_key(header::ORIGIN.as_str())
-                {
-                    if let Ok(url) = webview.url() {
-                        request =
-                            request.header(header::ORIGIN, url.origin().ascii_serialization());
-                    }
-                }
-
                 if let Some(data) = data {
                     request = request.body(data);
                 }
