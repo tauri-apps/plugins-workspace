@@ -4,7 +4,6 @@
 
 import { invoke } from "@tauri-apps/api/core";
 
-type BytesDto = string | number[];
 export type ClientPath =
   | string
   | Iterable<number>
@@ -25,15 +24,6 @@ export type StoreKey =
   | Iterable<number>
   | ArrayLike<number>
   | ArrayBuffer;
-
-function toBytesDto(
-  v: ClientPath | VaultPath | RecordPath | StoreKey,
-): string | number[] {
-  if (typeof v === "string") {
-    return v;
-  }
-  return Array.from(v instanceof ArrayBuffer ? new Uint8Array(v) : v);
-}
 
 export interface ConnectionLimits {
   maxPendingIncoming?: number;
@@ -100,14 +90,14 @@ export class Location {
 
   static generic(vault: VaultPath, record: RecordPath): Location {
     return new Location("Generic", {
-      vault: toBytesDto(vault),
-      record: toBytesDto(record),
+      vault,
+      record,
     });
   }
 
   static counter(vault: VaultPath, counter: number): Location {
     return new Location("Counter", {
-      vault: toBytesDto(vault),
+      vault,
       counter,
     });
   }
@@ -270,11 +260,11 @@ class ProcedureExecutor {
 
 export class Client {
   path: string;
-  name: BytesDto;
+  name: ClientPath;
 
   constructor(path: string, name: ClientPath) {
     this.path = path;
-    this.name = toBytesDto(name);
+    this.name = name;
   }
 
   /**
@@ -284,7 +274,7 @@ export class Client {
    * @returns
    */
   getVault(name: VaultPath): Vault {
-    return new Vault(this.path, this.name, toBytesDto(name));
+    return new Vault(this.path, this.name, name);
   }
 
   getStore(): Store {
@@ -294,9 +284,9 @@ export class Client {
 
 export class Store {
   path: string;
-  client: BytesDto;
+  client: ClientPath;
 
-  constructor(path: string, client: BytesDto) {
+  constructor(path: string, client: ClientPath) {
     this.path = path;
     this.client = client;
   }
@@ -305,7 +295,7 @@ export class Store {
     return await invoke<number[] | null>("plugin:stronghold|get_store_record", {
       snapshotPath: this.path,
       client: this.client,
-      key: toBytesDto(key),
+      key,
     }).then((v) => v && Uint8Array.from(v));
   }
 
@@ -317,7 +307,7 @@ export class Store {
     await invoke("plugin:stronghold|save_store_record", {
       snapshotPath: this.path,
       client: this.client,
-      key: toBytesDto(key),
+      key,
       value,
       lifetime,
     });
@@ -329,7 +319,7 @@ export class Store {
       {
         snapshotPath: this.path,
         client: this.client,
-        key: toBytesDto(key),
+        key,
       },
     ).then((v) => v && Uint8Array.from(v));
   }
@@ -343,9 +333,9 @@ export class Store {
 export class Vault extends ProcedureExecutor {
   /** The vault path. */
   path: string;
-  client: BytesDto;
+  client: ClientPath;
   /** The vault name. */
-  name: BytesDto;
+  name: VaultPath;
 
   constructor(path: string, client: ClientPath, name: VaultPath) {
     super({
@@ -354,8 +344,8 @@ export class Vault extends ProcedureExecutor {
       vault: name,
     });
     this.path = path;
-    this.client = toBytesDto(client);
-    this.name = toBytesDto(name);
+    this.client = client;
+    this.name = name;
   }
 
   /**
@@ -370,7 +360,7 @@ export class Vault extends ProcedureExecutor {
       snapshotPath: this.path,
       client: this.client,
       vault: this.name,
-      recordPath: toBytesDto(recordPath),
+      recordPath,
       secret,
     });
   }
@@ -431,14 +421,14 @@ export class Stronghold {
   async loadClient(client: ClientPath): Promise<Client> {
     return await invoke("plugin:stronghold|load_client", {
       snapshotPath: this.path,
-      client: toBytesDto(client),
+      client,
     }).then(() => new Client(this.path, client));
   }
 
   async createClient(client: ClientPath): Promise<Client> {
     return await invoke("plugin:stronghold|create_client", {
       snapshotPath: this.path,
-      client: toBytesDto(client),
+      client,
     }).then(() => new Client(this.path, client));
   }
 

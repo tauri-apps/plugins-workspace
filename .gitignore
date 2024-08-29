@@ -6,3 +6,5 @@ dist
 .vscode
 .gradle
 **/capabilities/schemas
+.build
+.tauri

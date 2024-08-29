@@ -411,7 +411,7 @@ class FileHandle extends Resource {
   async write(data: Uint8Array): Promise<number> {
     return await invoke("plugin:fs|write", {
       rid: this.rid,
-      data: Array.from(data),
+      data,
     });
   }
 }
