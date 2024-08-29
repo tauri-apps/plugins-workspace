@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import { invoke } from "@tauri-apps/api/core";
+import type { PermissionState } from "@tauri-apps/api/core";
 import type { Options } from "./index";
 
 (function () {
@@ -19,23 +20,21 @@ import type { Options } from "./index";
     return await invoke("plugin:notification|is_permission_granted");
   }
 
-  function setNotificationPermission(
-    value: "granted" | "denied" | "default",
-  ): void {
+  function setNotificationPermission(value: NotificationPermission): void {
     permissionSettable = true;
     // @ts-expect-error we can actually set this value on the webview
     window.Notification.permission = value;
     permissionSettable = false;
   }
 
-  async function requestPermission(): Promise<
-    "default" | "denied" | "granted" | "prompt"
-  > {
-    return await invoke<"prompt" | "default" | "granted" | "denied">(
+  async function requestPermission(): Promise<PermissionState> {
+    return await invoke<PermissionState>(
       "plugin:notification|request_permission",
     ).then((permission) => {
       setNotificationPermission(
-        permission === "prompt" ? "default" : permission,
+        permission === "prompt" || permission === "prompt-with-rationale"
+          ? "default"
+          : permission,
       );
       return permission;
     });
