@@ -151,13 +151,25 @@ async fn load<R: Runtime>(
     migrations: State<'_, Migrations>,
     db: String,
 ) -> Result<String> {
+    // see test cases from [sqlx](https://github.com/launchbadge/sqlx/blob/929af41745a9434ae83417dcf2571685cecca6f0/sqlx-sqlite/src/options/parse.rs#L135)
     #[cfg(feature = "sqlite")]
-    let fqdb = path_mapper(app_path(&app), &db);
+    let is_in_memory = db.contains(":memory") || db.contains("mode=memory");
+
+    #[cfg(feature = "sqlite")]
+    let fqdb = if is_in_memory {
+        path_mapper(app_path(&app), &db)
+    } else {
+        db.clone()
+    };
     #[cfg(not(feature = "sqlite"))]
     let fqdb = db.clone();
 
     #[cfg(feature = "sqlite")]
-    create_dir_all(app_path(&app)).expect("Problem creating App directory!");
+    {
+        if !is_in_memory {
+            create_dir_all(app_path(&app)).expect("Problem creating App directory!");
+        }
+    }
 
     if !Db::database_exists(&fqdb).await.unwrap_or(false) {
         Db::create_database(&fqdb).await?;
