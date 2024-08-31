@@ -48,7 +48,7 @@ class DialogPlugin: Plugin {
 
     let parsedTypes = parseFiltersOption(args.filters ?? [])
 
-    var isMedia = true
+    var isMedia = !parsedTypes.isEmpty
     var uniqueMimeType: Bool? = nil
     var mimeKind: String? = nil
     if !parsedTypes.isEmpty {
