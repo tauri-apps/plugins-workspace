@@ -45,6 +45,8 @@ jobs:
       - name: build
         run: cargo build --workspace --exclude 'tauri-plugin-sql' --all-targets --all-features
 
+      - uses: dtolnay/rust-toolchain@1.73.0
+
       - name: build sql:sqlite
         run: cargo build --package 'tauri-plugin-sql' --all-targets --features sqlite
 
