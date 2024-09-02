@@ -25,10 +25,6 @@ jobs:
         id: filter
         with:
           filters: |
-            authenticator:
-              - .github/workflows/check-generated-files.yml
-              - plugins/authenticator/guest-js/**
-              - plugins/authenticator/src/api-iife.js
             autostart:
               - .github/workflows/check-generated-files.yml
               - plugins/autostart/guest-js/**

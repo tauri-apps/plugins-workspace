@@ -103,14 +103,6 @@
       "dependencies": ["deep-link-js"],
       "postversion": "pnpm install --no-frozen-lockfile"
     },
-    "authenticator": {
-      "path": "./plugins/authenticator",
-      "manager": "rust"
-    },
-    "authenticator-js": {
-      "path": "./plugins/authenticator",
-      "manager": "javascript"
-    },
     "autostart": {
       "path": "./plugins/autostart",
       "manager": "rust"
