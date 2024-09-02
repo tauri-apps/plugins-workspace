@@ -50,23 +50,55 @@ pub use scope::{Event as ScopeEvent, Scope};
 
 type Result<T> = std::result::Result<T, Error>;
 
+// TODO: Combine this with SafeFilePath
 /// Represents either a filesystem path or a URI pointing to a file
 /// such as `file://` URIs or Android `content://` URIs.
-#[derive(Debug, serde::Deserialize)]
-#[serde(untagged)]
+#[derive(Debug)]
 pub enum FilePath {
     Url(url::Url),
     Path(PathBuf),
+}
+
+impl<'de> serde::Deserialize<'de> for FilePath {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct FilePathVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for FilePathVisitor {
+            type Value = FilePath;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a string representing an file URL or a path")
+            }
+
+            fn visit_str<E>(self, s: &str) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                FilePath::from_str(s).map_err(|e| {
+                    serde::de::Error::invalid_value(
+                        serde::de::Unexpected::Str(s),
+                        &e.to_string().as_str(),
+                    )
+                })
+            }
+        }
+
+        deserializer.deserialize_str(FilePathVisitor)
+    }
 }
 
 impl FromStr for FilePath {
     type Err = Infallible;
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         if let Ok(url) = url::Url::from_str(s) {
-            Ok(Self::Url(url))
-        } else {
-            Ok(Self::Path(PathBuf::from(s)))
+            if url.scheme().len() != 1 {
+                return Ok(Self::Url(url));
+            }
         }
+        Ok(Self::Path(PathBuf::from(s)))
     }
 }
 

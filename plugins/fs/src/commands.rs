@@ -23,11 +23,42 @@ use std::{
 
 use crate::{scope::Entry, Error, FilePath, FsExt};
 
-#[derive(Debug, serde::Deserialize)]
-#[serde(untagged)]
+// TODO: Combine this with FilePath
+#[derive(Debug)]
 pub enum SafeFilePath {
     Url(url::Url),
     Path(SafePathBuf),
+}
+
+impl<'de> serde::Deserialize<'de> for SafeFilePath {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct SafeFilePathVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for SafeFilePathVisitor {
+            type Value = SafeFilePath;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a string representing an file URL or a path")
+            }
+
+            fn visit_str<E>(self, s: &str) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                SafeFilePath::from_str(s).map_err(|e| {
+                    serde::de::Error::invalid_value(
+                        serde::de::Unexpected::Str(s),
+                        &e.to_string().as_str(),
+                    )
+                })
+            }
+        }
+
+        deserializer.deserialize_str(SafeFilePathVisitor)
+    }
 }
 
 impl From<SafeFilePath> for FilePath {
@@ -43,10 +74,11 @@ impl FromStr for SafeFilePath {
     type Err = CommandError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Ok(url) = url::Url::from_str(s) {
-            Ok(Self::Url(url))
-        } else {
-            Ok(Self::Path(SafePathBuf::new(s.into())?))
+            if url.scheme().len() != 1 {
+                return Ok(Self::Url(url));
+            }
         }
+        Ok(Self::Path(SafePathBuf::new(s.into())?))
     }
 }
 
@@ -1166,5 +1198,21 @@ fn get_stat(metadata: std::fs::Metadata) -> FileInfo {
         rdev: usm!(rdev),
         blksize: usm!(blksize),
         blocks: usm!(blocks),
+    }
+}
+
+mod test {
+    #[test]
+    fn safe_file_path_parse() {
+        use super::SafeFilePath;
+
+        assert!(matches!(
+            serde_json::from_str::<SafeFilePath>("\"C:/Users\""),
+            Ok(SafeFilePath::Path(_))
+        ));
+        assert!(matches!(
+            serde_json::from_str::<SafeFilePath>("\"file:///C:/Users\""),
+            Ok(SafeFilePath::Url(_))
+        ));
     }
 }
