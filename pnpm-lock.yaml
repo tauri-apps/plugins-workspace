@@ -24,7 +24,7 @@ importers:
         version: 0.4.4(rollup@4.21.2)
       '@rollup/plugin-typescript':
         specifier: 11.1.6
-        version: 11.1.6(rollup@4.21.2)(tslib@2.6.3)(typescript@5.5.4)
+        version: 11.1.6(rollup@4.21.2)(tslib@2.7.0)(typescript@5.5.4)
       '@types/eslint__js':
         specifier: 8.42.3
         version: 8.42.3
@@ -47,8 +47,8 @@ importers:
         specifier: 4.21.2
         version: 4.21.2
       tslib:
-        specifier: 2.6.3
-        version: 2.6.3
+        specifier: 2.7.0
+        version: 2.7.0
       typescript:
         specifier: 5.5.4
         version: 5.5.4
@@ -2368,8 +2368,8 @@ packages:
     peerDependencies:
       typescript: '>=4.2.0'
 
-  tslib@2.6.3:
-    resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
+  tslib@2.7.0:
+    resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==}
 
   tsx@4.17.0:
     resolution: {integrity: sha512-eN4mnDA5UMKDt4YZixo9tBioibaMBpoxBkD+rIPAjVmYERSG0/dWEY1CEFuV89CgASlKL499q8AhmkMnnjtOJg==}
@@ -3136,14 +3136,14 @@ snapshots:
     optionalDependencies:
       rollup: 4.21.2
 
-  '@rollup/plugin-typescript@11.1.6(rollup@4.21.2)(tslib@2.6.3)(typescript@5.5.4)':
+  '@rollup/plugin-typescript@11.1.6(rollup@4.21.2)(tslib@2.7.0)(typescript@5.5.4)':
     dependencies:
       '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
       resolve: 1.22.8
       typescript: 5.5.4
     optionalDependencies:
       rollup: 4.21.2
-      tslib: 2.6.3
+      tslib: 2.7.0
 
   '@rollup/pluginutils@5.1.0(rollup@4.21.2)':
     dependencies:
@@ -4664,7 +4664,7 @@ snapshots:
     dependencies:
       typescript: 5.5.4
 
-  tslib@2.6.3: {}
+  tslib@2.7.0: {}
 
   tsx@4.17.0:
     dependencies:
