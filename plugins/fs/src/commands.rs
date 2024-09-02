@@ -1202,10 +1202,10 @@ fn get_stat(metadata: std::fs::Metadata) -> FileInfo {
 }
 
 mod test {
-    use super::*;
-
     #[test]
     fn safe_file_path_parse() {
+        use super::SafeFilePath;
+
         assert!(matches!(
             serde_json::from_str::<SafeFilePath>("\"C:/Users\""),
             Ok(SafeFilePath::Path(_))
