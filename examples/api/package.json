@@ -25,7 +25,7 @@
     "@tauri-apps/plugin-shell": "2.0.0-rc.1",
     "@tauri-apps/plugin-store": "2.0.0-rc.1",
     "@tauri-apps/plugin-updater": "2.0.0-rc.1",
-    "@zerodevx/svelte-json-view": "1.0.9"
+    "@zerodevx/svelte-json-view": "1.0.10"
   },
   "devDependencies": {
     "@iconify-json/codicon": "^1.1.37",

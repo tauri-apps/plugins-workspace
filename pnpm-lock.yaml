@@ -107,8 +107,8 @@ importers:
         specifier: 2.0.0-rc.1
         version: link:../../plugins/updater
       '@zerodevx/svelte-json-view':
-        specifier: 1.0.9
-        version: 1.0.9(svelte@4.2.18)
+        specifier: 1.0.10
+        version: 1.0.10(svelte@4.2.18)
     devDependencies:
       '@iconify-json/codicon':
         specifier: ^1.1.37
@@ -1289,10 +1289,10 @@ packages:
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0
 
-  '@zerodevx/svelte-json-view@1.0.9':
-    resolution: {integrity: sha512-2KKxBfDxEo7lM/kJSy+m1PdLAp5Q9c5nB6OYVBg7oWPdCLXB9JVH1Ytxn2hkqTn77m9MobqGI1fz9FFOTPONfA==}
+  '@zerodevx/svelte-json-view@1.0.10':
+    resolution: {integrity: sha512-7RUUD0i+iKy7SeZ8UP2SfrPyVMXkCHyLhee9Y9Ni1U6HWjP9TXgaKqdfiAiB91ZQQQDaTAXzYkgTLiSNGrxXyg==}
     peerDependencies:
-      svelte: ^3.57.0 || ^4.0.0
+      svelte: ^3.57.0 || ^4.0.0 || ^5.0.0
 
   abort-controller@3.0.0:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
@@ -3533,7 +3533,7 @@ snapshots:
       - rollup
       - supports-color
 
-  '@zerodevx/svelte-json-view@1.0.9(svelte@4.2.18)':
+  '@zerodevx/svelte-json-view@1.0.10(svelte@4.2.18)':
     dependencies:
       svelte: 4.2.18
 
