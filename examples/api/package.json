@@ -25,13 +25,13 @@
     "@tauri-apps/plugin-shell": "2.0.0-rc.1",
     "@tauri-apps/plugin-store": "2.0.0-rc.1",
     "@tauri-apps/plugin-updater": "2.0.0-rc.1",
-    "@zerodevx/svelte-json-view": "1.0.9"
+    "@zerodevx/svelte-json-view": "1.0.10"
   },
   "devDependencies": {
     "@iconify-json/codicon": "^1.1.37",
     "@iconify-json/ph": "^1.1.8",
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
-    "@tauri-apps/cli": "2.0.0-rc.8",
+    "@tauri-apps/cli": "2.0.0-rc.10",
     "@unocss/extractor-svelte": "^0.62.0",
     "svelte": "^4.2.8",
     "unocss": "^0.62.0",

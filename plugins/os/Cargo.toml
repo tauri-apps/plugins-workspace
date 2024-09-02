@@ -24,5 +24,5 @@ log = { workspace = true }
 thiserror = { workspace = true }
 os_info = "3"
 sys-locale = "0.3"
-gethostname = "0.4"
+gethostname = "0.5"
 serialize-to-javascript = "=0.1.1"
