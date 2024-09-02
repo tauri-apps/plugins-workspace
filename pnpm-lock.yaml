@@ -135,12 +135,6 @@ importers:
         specifier: ^5.0.13
         version: 5.4.0(terser@5.31.5)
 
-  plugins/authenticator:
-    dependencies:
-      '@tauri-apps/api':
-        specifier: ^2.0.0-rc.4
-        version: 2.0.0-rc.4
-
   plugins/autostart:
     dependencies:
       '@tauri-apps/api':
@@ -2772,18 +2766,17 @@ snapshots:
       picocolors: 1.0.1
       sisteransi: 1.0.5
 
-  '@covector/apply@0.10.0(mocha@10.7.3)':
+  '@covector/apply@0.10.0':
     dependencies:
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.3)
       semver: 7.6.3
     transitivePeerDependencies:
       - encoding
-      - mocha
 
-  '@covector/assemble@0.12.0':
+  '@covector/assemble@0.12.0(mocha@10.7.3)':
     dependencies:
-      '@covector/command': 0.8.0
+      '@covector/command': 0.8.0(mocha@10.7.3)
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.3)
       js-yaml: 4.1.0
@@ -2794,6 +2787,7 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
+      - mocha
       - supports-color
 
   '@covector/changelog@0.12.0':
@@ -2808,12 +2802,13 @@ snapshots:
       - encoding
       - supports-color
 
-  '@covector/command@0.8.0':
+  '@covector/command@0.8.0(mocha@10.7.3)':
     dependencies:
       '@effection/process': 2.1.4
       effection: 2.0.8(mocha@10.7.3)
     transitivePeerDependencies:
       - encoding
+      - mocha
 
   '@covector/files@0.8.0':
     dependencies:
@@ -3711,10 +3706,10 @@ snapshots:
   covector@0.12.3(mocha@10.7.3):
     dependencies:
       '@clack/prompts': 0.7.0
-      '@covector/apply': 0.10.0(mocha@10.7.3)
-      '@covector/assemble': 0.12.0
+      '@covector/apply': 0.10.0
+      '@covector/assemble': 0.12.0(mocha@10.7.3)
       '@covector/changelog': 0.12.0
-      '@covector/command': 0.8.0
+      '@covector/command': 0.8.0(mocha@10.7.3)
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.3)
       globby: 11.1.0
