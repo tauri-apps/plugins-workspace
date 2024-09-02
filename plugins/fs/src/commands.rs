@@ -23,26 +23,40 @@ use std::{
 
 use crate::{scope::Entry, Error, FilePath, FsExt};
 
-#[derive(Debug, serde::Deserialize)]
-#[serde(untagged)]
+#[derive(Debug)]
 pub enum SafeFilePath {
-    #[serde(deserialize_with = "deserialize_url")]
     Url(url::Url),
     Path(SafePathBuf),
 }
 
-fn deserialize_url<'de, D>(deserializer: D) -> Result<url::Url, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let url = url::Url::deserialize(deserializer)?;
-    let scheme = url.scheme();
-    if scheme.len() != 1 {
-        Ok(url)
-    } else {
-        Err(serde::de::Error::custom(format!(
-            "Single letter scheme \"{scheme}\" is not supported because it conflicts with Windows paths"
-        )))
+impl<'de> serde::Deserialize<'de> for SafeFilePath {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct SafeFilePathVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for SafeFilePathVisitor {
+            type Value = SafeFilePath;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a string representing an file URL or a path")
+            }
+
+            fn visit_str<E>(self, s: &str) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                SafeFilePath::from_str(s).map_err(|e| {
+                    serde::de::Error::invalid_value(
+                        serde::de::Unexpected::Str(s),
+                        &e.to_string().as_str(),
+                    )
+                })
+            }
+        }
+
+        deserializer.deserialize_str(SafeFilePathVisitor)
     }
 }
 

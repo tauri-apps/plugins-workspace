@@ -52,26 +52,40 @@ type Result<T> = std::result::Result<T, Error>;
 
 /// Represents either a filesystem path or a URI pointing to a file
 /// such as `file://` URIs or Android `content://` URIs.
-#[derive(Debug, serde::Deserialize)]
-#[serde(untagged)]
+#[derive(Debug)]
 pub enum FilePath {
-    #[serde(deserialize_with = "deserialize_url")]
     Url(url::Url),
     Path(PathBuf),
 }
 
-fn deserialize_url<'de, D>(deserializer: D) -> std::result::Result<url::Url, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let url: url::Url = Deserialize::deserialize::<D>(deserializer)?;
-    let scheme = url.scheme();
-    if scheme.len() != 1 {
-        Ok(url)
-    } else {
-        Err(serde::de::Error::custom(format!(
-            "Single letter scheme \"{scheme}\" is not supported because it conflicts with Windows paths"
-        )))
+impl<'de> serde::Deserialize<'de> for FilePath {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct SafeFilePathVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for SafeFilePathVisitor {
+            type Value = FilePath;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a string representing an file URL or a path")
+            }
+
+            fn visit_str<E>(self, s: &str) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                FilePath::from_str(s).map_err(|e| {
+                    serde::de::Error::invalid_value(
+                        serde::de::Unexpected::Str(s),
+                        &e.to_string().as_str(),
+                    )
+                })
+            }
+        }
+
+        deserializer.deserialize_str(SafeFilePathVisitor)
     }
 }
 
