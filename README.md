@@ -21,6 +21,7 @@
 | [persisted-scope](plugins/persisted-scope)      | Persist runtime scope changes on the filesystem.       | ✅  | ✅  | ✅  | ?   | ?   |
 | [positioner](plugins/positioner)                | Move windows to common locations.                      | ✅  | ✅  | ✅  | ?   | ?   |
 | [process](plugins/process)                      | This plugin provides APIs to access the current process. To spawn child processes, see the [`shell`](https://github.com/tauri-apps/tauri-plugin-shell) plugin.                                                          | ✅   | ✅   | ✅   | ?   | ?   |
+| [sharesheet](plugins/sharesheet)                | Share content with other apps via a dialog.            | ?   | ?   | ?   | ✅  | ✅  |
 | [shell](plugins/shell)                          | Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application.                                                                                               | ✅   | ✅   | ✅   | ?   | ?   |
 | [single-instance](plugins/single-instance)      | Ensure a single instance of your tauri app is running. | ✅  | ?   | ✅  | ?   | ?   |
 | [sql](plugins/sql)                              | Interface with SQL databases.                          | ✅  | ✅  | ✅  | ?   | ?   |

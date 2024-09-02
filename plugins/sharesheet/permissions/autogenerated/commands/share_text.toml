@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-share-text"
+description = "Enables the share_text command without any pre-configured scope."
+commands.allow = ["share_text"]
+
+[[permission]]
+identifier = "deny-share-text"
+description = "Denies the share_text command without any pre-configured scope."
+commands.deny = ["share_text"]
