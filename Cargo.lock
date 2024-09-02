@@ -3043,6 +3043,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "infer"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc150e5ce2330295b8616ce0e3f53250e53af31759a9dbedad1621ba29151847"
+dependencies = [
+ "cfb",
+]
+
+[[package]]
 name = "inotify"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6916,7 +6925,7 @@ dependencies = [
  "flate2",
  "futures-util",
  "http",
- "infer",
+ "infer 0.16.0",
  "minisign-verify",
  "reqwest",
  "semver",
@@ -7038,7 +7047,7 @@ dependencies = [
  "getrandom 0.2.15",
  "glob",
  "html5ever",
- "infer",
+ "infer 0.15.0",
  "json-patch",
  "kuchikiki",
  "log",
