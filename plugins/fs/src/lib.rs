@@ -63,9 +63,9 @@ impl<'de> serde::Deserialize<'de> for FilePath {
     where
         D: serde::Deserializer<'de>,
     {
-        struct SafeFilePathVisitor;
+        struct FilePathVisitor;
 
-        impl<'de> serde::de::Visitor<'de> for SafeFilePathVisitor {
+        impl<'de> serde::de::Visitor<'de> for FilePathVisitor {
             type Value = FilePath;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -85,7 +85,7 @@ impl<'de> serde::Deserialize<'de> for FilePath {
             }
         }
 
-        deserializer.deserialize_str(SafeFilePathVisitor)
+        deserializer.deserialize_str(FilePathVisitor)
     }
 }
 
