@@ -6713,7 +6713,7 @@ version = "2.0.0-rc.2"
 dependencies = [
  "android_logger",
  "byte-unit",
- "cocoa 0.25.0",
+ "cocoa 0.26.0",
  "fern",
  "log",
  "objc",
