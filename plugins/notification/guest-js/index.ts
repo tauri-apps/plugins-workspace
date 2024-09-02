@@ -15,6 +15,8 @@ import {
   addPluginListener,
 } from "@tauri-apps/api/core";
 
+export type { PermissionState } from "@tauri-apps/api/core";
+
 /**
  * Options to send a notification.
  *
@@ -304,9 +306,6 @@ interface Channel {
   visibility?: Visibility;
 }
 
-/** Possible permission values. */
-type Permission = "granted" | "denied" | "default";
-
 /**
  * Checks if the permission to send notifications is granted.
  * @example
@@ -340,7 +339,7 @@ async function isPermissionGranted(): Promise<boolean> {
  *
  * @since 2.0.0
  */
-async function requestPermission(): Promise<Permission> {
+async function requestPermission(): Promise<NotificationPermission> {
   return await window.Notification.requestPermission();
 }
 
@@ -570,7 +569,6 @@ async function onAction(
 export type {
   Attachment,
   Options,
-  Permission,
   Action,
   ActionType,
   PendingNotification,

@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-rc.1]
+
+- [`448846b8`](https://github.com/tauri-apps/plugins-workspace/commit/448846b834d23df6e7c5dc66c5dd9aa0cb01846d) ([#1658](https://github.com/tauri-apps/plugins-workspace/pull/1658) by [@mikoto2000](https://github.com/tauri-apps/plugins-workspace/../../mikoto2000)) The `open` function now returns a string representing either the file path or URI instead of an object.
+  To read the file data, use the `fs` APIs.
+- [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
+
 ## \[2.0.0-rc.2]
 
 - [`b9147758`](https://github.com/tauri-apps/plugins-workspace/commit/b914775898c2bee7ceb20bd17ee595005cd17a64) ([#1679](https://github.com/tauri-apps/plugins-workspace/pull/1679) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Explicitly set a minimum macOS version for the Swift package.
@@ -184,6 +190,20 @@
   pull/371)) First v2 alpha release!
   lpha release!
   pull/371)) First v2 alpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+  lpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+v2 alpha release!
   lpha release!
   pull/371)) First v2 alpha release!
   lpha release!
