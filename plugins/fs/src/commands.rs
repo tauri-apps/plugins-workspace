@@ -1205,24 +1205,14 @@ mod test {
     use super::*;
 
     #[test]
-    fn windows_path() {
-        assert_eq!(
-            matches!(
-                serde_json::from_str::<SafeFilePath>("\"C:/Users\""),
-                Ok(SafeFilePath::Path(_))
-            ),
-            true
-        );
-    }
-
-    #[test]
-    fn url() {
-        assert_eq!(
-            matches!(
-                serde_json::from_str::<SafeFilePath>("\"file:///C:/Users\""),
-                Ok(SafeFilePath::Url(_))
-            ),
-            true
-        );
+    fn safe_file_path_parse() {
+        assert!(matches!(
+            serde_json::from_str::<SafeFilePath>("\"C:/Users\""),
+            Ok(SafeFilePath::Path(_))
+        ));
+        assert!(matches!(
+            serde_json::from_str::<SafeFilePath>("\"file:///C:/Users\""),
+            Ok(SafeFilePath::Url(_))
+        ));
     }
 }
