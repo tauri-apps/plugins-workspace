@@ -152,7 +152,7 @@ impl<R: Runtime> Dialog<R> {
         )
     }
 
-    /// Creates a new builder for dialogs that lets ths user select file(s) or folder(s).
+    /// Creates a new builder for dialogs that lets the user select file(s) or folder(s).
     pub fn file(&self) -> FileDialogBuilder<R> {
         FileDialogBuilder::new(self.clone())
     }
