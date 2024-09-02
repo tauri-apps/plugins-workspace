@@ -6422,7 +6422,7 @@ dependencies = [
  "tokio",
  "tray-icon",
  "url",
- "urlpattern",
+ "urlpattern 0.2.0",
  "uuid",
  "webkit2gtk",
  "webview2-com",
@@ -6710,7 +6710,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "url",
- "urlpattern",
+ "urlpattern 0.3.0",
 ]
 
 [[package]]
@@ -7067,7 +7067,7 @@ dependencies = [
  "thiserror",
  "toml 0.8.2",
  "url",
- "urlpattern",
+ "urlpattern 0.2.0",
  "walkdir",
 ]
 
@@ -7720,6 +7720,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f9bd5ff03aea02fa45b13a7980151fe45009af1980ba69f651ec367121a31609"
 dependencies = [
  "derive_more",
+ "regex",
+ "serde",
+ "unic-ucd-ident",
+ "url",
+]
+
+[[package]]
+name = "urlpattern"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "70acd30e3aa1450bc2eece896ce2ad0d178e9c079493819301573dae3c37ba6d"
+dependencies = [
  "regex",
  "serde",
  "unic-ucd-ident",
