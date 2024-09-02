@@ -23,6 +23,7 @@ use std::{
 
 use crate::{scope::Entry, Error, FilePath, FsExt};
 
+// TODO: Combine this with FilePath
 #[derive(Debug)]
 pub enum SafeFilePath {
     Url(url::Url),
@@ -1197,5 +1198,31 @@ fn get_stat(metadata: std::fs::Metadata) -> FileInfo {
         rdev: usm!(rdev),
         blksize: usm!(blksize),
         blocks: usm!(blocks),
+    }
+}
+
+mod test {
+    use super::*;
+
+    #[test]
+    fn windows_path() {
+        assert_eq!(
+            matches!(
+                serde_json::from_str::<SafeFilePath>("\"C:/Users\""),
+                Ok(SafeFilePath::Path(_))
+            ),
+            true
+        );
+    }
+
+    #[test]
+    fn url() {
+        assert_eq!(
+            matches!(
+                serde_json::from_str::<SafeFilePath>("\"file:///C:/Users\""),
+                Ok(SafeFilePath::Url(_))
+            ),
+            true
+        );
     }
 }

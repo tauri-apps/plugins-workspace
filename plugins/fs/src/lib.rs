@@ -50,6 +50,7 @@ pub use scope::{Event as ScopeEvent, Scope};
 
 type Result<T> = std::result::Result<T, Error>;
 
+// TODO: Combine this with SafeFilePath
 /// Represents either a filesystem path or a URI pointing to a file
 /// such as `file://` URIs or Android `content://` URIs.
 #[derive(Debug)]
