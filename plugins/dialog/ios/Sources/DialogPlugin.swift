@@ -131,13 +131,19 @@ class DialogPlugin: Plugin {
   @objc public func saveFileDialog(_ invoke: Invoke) throws {
     let args = try invoke.parseArgs(SaveFileDialogOptions.self)
 
-    // we must pretend that we're moving a file and the user must select its location
+    // The Tauri save dialog API prompts the user to select a path where a file must be saved
+    // This behavior maps to the operating system interfaces on all platforms except iOS,
+    // which only exposes a mechanism to "move file `srcPath` to a location defined by the user"
+    //
+    // so we have to work around it by creating an empty file matching the requested `args.fileName`,
+    // and using it as `srcPath` for the operation - returning the path the user selected
+    // so the app dev can write to it later - matching cross platform behavior as mentioned above
     let fileManager = FileManager.default
-    let destinationFolder = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-    let destinationPath = destinationFolder.appendingPathComponent(args.fileName ?? "file")
-    if !fileManager.fileExists(atPath: destinationPath.path) {
-      // the file contents must be actually provided by the tauri dev after the path is resolved by this API
-      try "".write(to: destinationPath, atomically: true, encoding: .utf8)
+    let srcFolder = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+    let srcPath = srcFolder.appendingPathComponent(args.fileName ?? "file")
+    if !fileManager.fileExists(atPath: srcPath.path) {
+      // the file contents must be actually provided by the tauri dev after the path is resolved by the save API
+      try "".write(to: srcPath, atomically: true, encoding: .utf8)
     }
 
     onFilePickerResult = { (event: FilePickerEvent) -> Void in
@@ -152,7 +158,7 @@ class DialogPlugin: Plugin {
     }
 
     DispatchQueue.main.async {
-      let picker = UIDocumentPickerViewController(url: destinationPath, in: .exportToService)
+      let picker = UIDocumentPickerViewController(url: srcPath, in: .exportToService)
       if let defaultPath = args.defaultPath {
         picker.directoryURL = URL(string: defaultPath)
       }
