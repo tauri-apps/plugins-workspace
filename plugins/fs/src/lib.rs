@@ -55,18 +55,35 @@ type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug, serde::Deserialize)]
 #[serde(untagged)]
 pub enum FilePath {
+    #[serde(deserialize_with = "deserialize_url")]
     Url(url::Url),
     Path(PathBuf),
+}
+
+fn deserialize_url<'de, D>(deserializer: D) -> std::result::Result<url::Url, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let url: url::Url = Deserialize::deserialize::<D>(deserializer)?;
+    let scheme = url.scheme();
+    if scheme.len() != 1 {
+        Ok(url)
+    } else {
+        Err(serde::de::Error::custom(format!(
+            "Single letter scheme \"{scheme}\" is not supported because it conflicts with Windows paths"
+        )))
+    }
 }
 
 impl FromStr for FilePath {
     type Err = Infallible;
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         if let Ok(url) = url::Url::from_str(s) {
-            Ok(Self::Url(url))
-        } else {
-            Ok(Self::Path(PathBuf::from(s)))
+            if url.scheme().len() != 1 {
+                return Ok(Self::Url(url));
+            }
         }
+        Ok(Self::Path(PathBuf::from(s)))
     }
 }
 

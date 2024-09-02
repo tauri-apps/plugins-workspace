@@ -26,8 +26,24 @@ use crate::{scope::Entry, Error, FilePath, FsExt};
 #[derive(Debug, serde::Deserialize)]
 #[serde(untagged)]
 pub enum SafeFilePath {
+    #[serde(deserialize_with = "deserialize_url")]
     Url(url::Url),
     Path(SafePathBuf),
+}
+
+fn deserialize_url<'de, D>(deserializer: D) -> Result<url::Url, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let url = url::Url::deserialize(deserializer)?;
+    let scheme = url.scheme();
+    if scheme.len() != 1 {
+        Ok(url)
+    } else {
+        Err(serde::de::Error::custom(format!(
+            "Single letter scheme \"{scheme}\" is not supported because it conflicts with Windows paths"
+        )))
+    }
 }
 
 impl From<SafeFilePath> for FilePath {
@@ -43,10 +59,11 @@ impl FromStr for SafeFilePath {
     type Err = CommandError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Ok(url) = url::Url::from_str(s) {
-            Ok(Self::Url(url))
-        } else {
-            Ok(Self::Path(SafePathBuf::new(s.into())?))
+            if url.scheme().len() != 1 {
+                return Ok(Self::Url(url));
+            }
         }
+        Ok(Self::Path(SafePathBuf::new(s.into())?))
     }
 }
 
