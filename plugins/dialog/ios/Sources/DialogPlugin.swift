@@ -17,10 +17,10 @@ enum FilePickerEvent {
 }
 
 struct MessageDialogOptions: Decodable {
-  let title: String?
+  var title: String?
   let message: String
-  let okButtonLabel: String?
-  let cancelButtonLabel: String?
+  var okButtonLabel: String?
+  var cancelButtonLabel: String?
 }
 
 struct Filter: Decodable {
@@ -30,13 +30,18 @@ struct Filter: Decodable {
 struct FilePickerOptions: Decodable {
   var multiple: Bool?
   var filters: [Filter]?
+  var defaultPath: String?
+}
+
+struct SaveFileDialogOptions: Decodable {
+  var fileName: String?
+  var defaultPath: String?
 }
 
 class DialogPlugin: Plugin {
 
   var filePickerController: FilePickerController!
-  var pendingInvoke: Invoke? = nil
-  var pendingInvokeArgs: FilePickerOptions? = nil
+  var onFilePickerResult: ((FilePickerEvent) -> Void)? = nil
 
   override init() {
     super.init()
@@ -66,8 +71,16 @@ class DialogPlugin: Plugin {
       }
     }
 
-    pendingInvoke = invoke
-    pendingInvokeArgs = args
+    onFilePickerResult = { (event: FilePickerEvent) -> Void in
+      switch event {
+      case .selected(let urls):
+        invoke.resolve(["files": urls])
+      case .cancelled:
+        invoke.resolve(["files": nil])
+      case .error(let error):
+        invoke.reject(error)
+      }
+    }
 
     if uniqueMimeType == true || isMedia {
       DispatchQueue.main.async {
@@ -104,11 +117,54 @@ class DialogPlugin: Plugin {
       let documentTypes = parsedTypes.isEmpty ? ["public.data"] : parsedTypes
       DispatchQueue.main.async {
         let picker = UIDocumentPickerViewController(documentTypes: documentTypes, in: .import)
+        if let defaultPath = args.defaultPath {
+          picker.directoryURL = URL(string: defaultPath)
+        }
         picker.delegate = self.filePickerController
         picker.allowsMultipleSelection = args.multiple ?? false
         picker.modalPresentationStyle = .fullScreen
         self.presentViewController(picker)
       }
+    }
+  }
+
+  @objc public func saveFileDialog(_ invoke: Invoke) throws {
+    let args = try invoke.parseArgs(SaveFileDialogOptions.self)
+
+    // The Tauri save dialog API prompts the user to select a path where a file must be saved
+    // This behavior maps to the operating system interfaces on all platforms except iOS,
+    // which only exposes a mechanism to "move file `srcPath` to a location defined by the user"
+    //
+    // so we have to work around it by creating an empty file matching the requested `args.fileName`,
+    // and using it as `srcPath` for the operation - returning the path the user selected
+    // so the app dev can write to it later - matching cross platform behavior as mentioned above
+    let fileManager = FileManager.default
+    let srcFolder = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+    let srcPath = srcFolder.appendingPathComponent(args.fileName ?? "file")
+    if !fileManager.fileExists(atPath: srcPath.path) {
+      // the file contents must be actually provided by the tauri dev after the path is resolved by the save API
+      try "".write(to: srcPath, atomically: true, encoding: .utf8)
+    }
+
+    onFilePickerResult = { (event: FilePickerEvent) -> Void in
+      switch event {
+      case .selected(let urls):
+        invoke.resolve(["file": urls.first!])
+      case .cancelled:
+        invoke.resolve(["file": nil])
+      case .error(let error):
+        invoke.reject(error)
+      }
+    }
+
+    DispatchQueue.main.async {
+      let picker = UIDocumentPickerViewController(url: srcPath, in: .exportToService)
+      if let defaultPath = args.defaultPath {
+        picker.directoryURL = URL(string: defaultPath)
+      }
+      picker.delegate = self.filePickerController
+      picker.modalPresentationStyle = .fullScreen
+      self.presentViewController(picker)
     }
   }
 
@@ -133,14 +189,7 @@ class DialogPlugin: Plugin {
   }
 
   public func onFilePickerEvent(_ event: FilePickerEvent) {
-    switch event {
-    case .selected(let urls):
-      pendingInvoke?.resolve(["files": urls])
-    case .cancelled:
-      pendingInvoke?.resolve(["files": nil])
-    case .error(let error):
-      pendingInvoke?.reject(error)
-    }
+    self.onFilePickerResult?(event)
   }
 
   @objc public func showMessageDialog(_ invoke: Invoke) throws {

@@ -197,41 +197,36 @@ pub(crate) async fn save<R: Runtime>(
     dialog: State<'_, Dialog<R>>,
     options: SaveDialogOptions,
 ) -> Result<Option<FilePath>> {
-    #[cfg(target_os = "ios")]
-    return Err(crate::Error::FileSaveDialogNotImplemented);
-    #[cfg(any(desktop, target_os = "android"))]
+    let mut dialog_builder = dialog.file();
+    #[cfg(any(windows, target_os = "macos"))]
     {
-        let mut dialog_builder = dialog.file();
-        #[cfg(any(windows, target_os = "macos"))]
-        {
-            dialog_builder = dialog_builder.set_parent(&window);
-        }
-        if let Some(title) = options.title {
-            dialog_builder = dialog_builder.set_title(title);
-        }
-        if let Some(default_path) = options.default_path {
-            dialog_builder = set_default_path(dialog_builder, default_path);
-        }
-        if let Some(can) = options.can_create_directories {
-            dialog_builder = dialog_builder.set_can_create_directories(can);
-        }
-        for filter in options.filters {
-            let extensions: Vec<&str> = filter.extensions.iter().map(|s| &**s).collect();
-            dialog_builder = dialog_builder.add_filter(filter.name, &extensions);
-        }
-
-        let path = dialog_builder.blocking_save_file();
-        if let Some(p) = &path {
-            if let Ok(path) = p.path() {
-                if let Some(s) = window.try_fs_scope() {
-                    s.allow_file(&path);
-                }
-                window.state::<tauri::scope::Scopes>().allow_file(&path)?;
-            }
-        }
-
-        Ok(path.map(|p| p.simplified()))
+        dialog_builder = dialog_builder.set_parent(&window);
     }
+    if let Some(title) = options.title {
+        dialog_builder = dialog_builder.set_title(title);
+    }
+    if let Some(default_path) = options.default_path {
+        dialog_builder = set_default_path(dialog_builder, default_path);
+    }
+    if let Some(can) = options.can_create_directories {
+        dialog_builder = dialog_builder.set_can_create_directories(can);
+    }
+    for filter in options.filters {
+        let extensions: Vec<&str> = filter.extensions.iter().map(|s| &**s).collect();
+        dialog_builder = dialog_builder.add_filter(filter.name, &extensions);
+    }
+
+    let path = dialog_builder.blocking_save_file();
+    if let Some(p) = &path {
+        if let Ok(path) = p.path() {
+            if let Some(s) = window.try_fs_scope() {
+                s.allow_file(&path);
+            }
+            window.state::<tauri::scope::Scopes>().allow_file(&path)?;
+        }
+    }
+
+    Ok(path.map(|p| p.simplified()))
 }
 
 fn message_dialog<R: Runtime>(
