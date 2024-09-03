@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-rc.2]
+
+- [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
+
 ## \[2.0.0-rc.1]
 
 - [`84f8bd5e`](https://github.com/tauri-apps/plugins-workspace/commit/84f8bd5e1ef22e664267380b5bbf756ebc5389c3) ([#1662](https://github.com/tauri-apps/plugins-workspace/pull/1662) by [@twlite](https://github.com/tauri-apps/plugins-workspace/../../twlite)) Fixed an issue with abort signal not aborting the fetch request.
@@ -231,5 +235,8 @@
   !
   371\)) First v2 alpha release!
   lpha release!
+  !
+  371\)) First v2 alpha release!
+ha release!
   !
   371\)) First v2 alpha release!

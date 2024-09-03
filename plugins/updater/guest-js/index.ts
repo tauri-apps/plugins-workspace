@@ -4,14 +4,14 @@
 
 import { invoke, Channel, Resource } from "@tauri-apps/api/core";
 
-/** Options used to check for updates */
+/** Options used when checking for updates */
 interface CheckOptions {
   /**
    * Request headers
    */
   headers?: HeadersInit;
   /**
-   * Timeout in seconds
+   * Timeout in milliseconds
    */
   timeout?: number;
   /**
@@ -22,6 +22,18 @@ interface CheckOptions {
    * Target identifier for the running application. This is sent to the backend.
    */
   target?: string;
+}
+
+/** Options used when downloading an update */
+interface DownloadOptions {
+  /**
+   * Request headers
+   */
+  headers?: HeadersInit;
+  /**
+   * Timeout in milliseconds
+   */
+  timeout?: number;
 }
 
 interface UpdateMetadata {
@@ -57,7 +69,10 @@ class Update extends Resource {
   }
 
   /** Download the updater package */
-  async download(onEvent?: (progress: DownloadEvent) => void): Promise<void> {
+  async download(
+    onEvent?: (progress: DownloadEvent) => void,
+    options?: DownloadOptions,
+  ): Promise<void> {
     const channel = new Channel<DownloadEvent>();
     if (onEvent) {
       channel.onmessage = onEvent;
@@ -65,6 +80,7 @@ class Update extends Resource {
     const downloadedBytesRid = await invoke<number>("plugin:updater|download", {
       onEvent: channel,
       rid: this.rid,
+      ...options,
     });
     this.downloadedBytes = new Resource(downloadedBytesRid);
   }
@@ -87,6 +103,7 @@ class Update extends Resource {
   /** Downloads the updater package and installs it */
   async downloadAndInstall(
     onEvent?: (progress: DownloadEvent) => void,
+    options?: DownloadOptions,
   ): Promise<void> {
     const channel = new Channel<DownloadEvent>();
     if (onEvent) {
@@ -95,6 +112,7 @@ class Update extends Resource {
     await invoke("plugin:updater|download_and_install", {
       onEvent: channel,
       rid: this.rid,
+      ...options,
     });
   }
 
@@ -115,5 +133,5 @@ async function check(options?: CheckOptions): Promise<Update | null> {
   }).then((meta) => (meta.available ? new Update(meta) : null));
 }
 
-export type { CheckOptions, DownloadEvent };
+export type { CheckOptions, DownloadOptions, DownloadEvent };
 export { check, Update };

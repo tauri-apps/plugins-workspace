@@ -68,6 +68,10 @@ pub enum Error {
     #[error(transparent)]
     Http(#[from] http::Error),
     #[error(transparent)]
+    InvalidHeaderValue(#[from] http::header::InvalidHeaderValue),
+    #[error(transparent)]
+    InvalidHeaderName(#[from] http::header::InvalidHeaderName),
+    #[error(transparent)]
     Tauri(#[from] tauri::Error),
 }
 

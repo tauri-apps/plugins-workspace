@@ -2,7 +2,6 @@
 
 |                                                 |                                                        | Win | Mac | Lin | iOS | And |
 | ----------------------------------------------- | ------------------------------------------------------ | --- | --- | --- | --- | --- |
-| [authenticator](plugins/authenticator)          | Interface with hardware security keys.                 | ✅  | ✅  | ✅  | ?   | ?   |
 | [autostart](plugins/autostart)                  | Automatically launch your app at system startup.       | ✅  | ✅  | ✅  | ?   | ?   |
 | [barcode-scanner](plugins/barcode-scanner)      | Allows your mobile application to use the camera to scan QR codes, EAN-13 and other kinds of barcodes.                                                                                                  | ?   | ?   | ?   | ✅  | ✅  |
 | [biometric](plugins/biometric)                  | Prompt the user for biometric authentication on Android and iOS.                                                                                                       | ?   | ?   | ?   | ✅  | ✅  |

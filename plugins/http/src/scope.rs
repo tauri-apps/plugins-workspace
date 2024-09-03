@@ -30,7 +30,7 @@ fn parse_url_pattern(s: &str) -> Result<UrlPattern, urlpattern::quirks::Error> {
     {
         init.pathname.replace("*".to_string());
     }
-    UrlPattern::parse(init)
+    UrlPattern::parse(init, Default::default())
 }
 
 impl<'de> Deserialize<'de> for Entry {

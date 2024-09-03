@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/core";
+import {
+  invoke,
+  requestPermissions as checkPermissions_,
+  checkPermissions as requestPermissions_,
+} from "@tauri-apps/api/core";
 
-export type PermissionState = "granted" | "denied" | "prompt";
+export type { PermissionState } from "@tauri-apps/api/core";
 
 export enum Format {
   QRCode = "QR_CODE",
@@ -53,8 +57,8 @@ export async function cancel(): Promise<void> {
  * Get permission state.
  */
 export async function checkPermissions(): Promise<PermissionState> {
-  return await invoke<{ camera: PermissionState }>(
-    "plugin:barcode-scanner|check_permissions",
+  return await checkPermissions_<{ camera: PermissionState }>(
+    "barcode-scanner",
   ).then((r) => r.camera);
 }
 
@@ -62,8 +66,8 @@ export async function checkPermissions(): Promise<PermissionState> {
  * Request permissions to use the camera.
  */
 export async function requestPermissions(): Promise<PermissionState> {
-  return await invoke<{ camera: PermissionState }>(
-    "plugin:barcode-scanner|request_permissions",
+  return await requestPermissions_<{ camera: PermissionState }>(
+    "barcode-scanner",
   ).then((r) => r.camera);
 }
 

@@ -206,7 +206,7 @@ checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
 
 [[package]]
 name = "api"
-version = "2.0.0-rc.1"
+version = "2.0.0-rc.2"
 dependencies = [
  "log",
  "serde",
@@ -526,23 +526,6 @@ name = "atomic-waker"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
-
-[[package]]
-name = "authenticator"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08cee7a0952628fde958e149507c2bb321ab4fccfafd225da0b20adc956ef88a"
-dependencies = [
- "bitflags 1.3.2",
- "core-foundation 0.9.4",
- "devd-rs",
- "libc",
- "libudev",
- "log",
- "rand 0.7.3",
- "runloop",
- "winapi",
-]
 
 [[package]]
 name = "auto-launch"
@@ -978,10 +961,8 @@ checksum = "a21f936df1771bf62b77f047b726c4625ff2e8aa607c01ec06e5a05bd8463401"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
- "js-sys",
  "num-traits",
  "serde",
- "wasm-bindgen",
  "windows-targets 0.52.6",
 ]
 
@@ -1601,16 +1582,6 @@ dependencies = [
  "quote",
  "rustc_version",
  "syn 2.0.75",
-]
-
-[[package]]
-name = "devd-rs"
-version = "0.3.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9313f104b590510b46fc01c0a324fc76505c13871454d3c48490468d04c8d395"
-dependencies = [
- "libc",
- "nom",
 ]
 
 [[package]]
@@ -2430,6 +2401,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "gethostname"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc3655aa6818d65bc620d6911f05aa7b6aeb596291e1e9f79e52df85583d1e30"
+dependencies = [
+ "rustix",
+ "windows-targets 0.52.6",
+]
+
+[[package]]
 name = "getrandom"
 version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3033,6 +3014,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "infer"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc150e5ce2330295b8616ce0e3f53250e53af31759a9dbedad1621ba29151847"
+dependencies = [
+ "cfb",
+]
+
+[[package]]
 name = "inotify"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3448,26 +3438,6 @@ dependencies = [
  "cc",
  "pkg-config",
  "vcpkg",
-]
-
-[[package]]
-name = "libudev"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea626d3bdf40a1c5aee3bcd4f40826970cae8d80a8fec934c82a63840094dcfe"
-dependencies = [
- "libc",
- "libudev-sys",
-]
-
-[[package]]
-name = "libudev-sys"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c8469b4a23b962c1396b9b451dda50ef5b283e8dd309d69033475fa9b334324"
-dependencies = [
- "libc",
- "pkg-config",
 ]
 
 [[package]]
@@ -5134,12 +5104,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "runloop"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d79b4b604167921892e84afbbaad9d5ad74e091bf6c511d9dbfb0593f09fabd"
-
-[[package]]
 name = "rust-argon2"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6360,9 +6324,9 @@ checksum = "61c41af27dd6d1e27b1b16b489db798443478cef1f06a660c96db617ba5de3b1"
 
 [[package]]
 name = "tauri"
-version = "2.0.0-rc.7"
+version = "2.0.0-rc.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd19af7f228219ba1c18b8058594f444d9758f94f9e2643283985059f056d5bd"
+checksum = "e8345ccc676ef16e26b61fc0f5340b4e770678b1e1f53f08c69ebdac5e56b422"
 dependencies = [
  "anyhow",
  "bytes",
@@ -6403,7 +6367,7 @@ dependencies = [
  "tokio",
  "tray-icon",
  "url",
- "urlpattern",
+ "urlpattern 0.2.0",
  "uuid",
  "webkit2gtk",
  "webview2-com",
@@ -6494,31 +6458,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "tauri-plugin-authenticator"
-version = "2.0.0-rc.0"
-dependencies = [
- "authenticator",
- "base64 0.22.1",
- "byteorder",
- "bytes",
- "chrono",
- "log",
- "once_cell",
- "openssl",
- "rand 0.8.5",
- "rusty-fork",
- "serde",
- "serde_json",
- "sha2",
- "tauri",
- "tauri-plugin",
- "thiserror",
- "winapi-util",
-]
-
-[[package]]
 name = "tauri-plugin-autostart"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "auto-launch",
  "log",
@@ -6531,7 +6472,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-barcode-scanner"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "log",
  "serde",
@@ -6543,7 +6484,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-biometric"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "log",
  "serde",
@@ -6556,7 +6497,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-cli"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "clap",
  "log",
@@ -6569,7 +6510,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-clipboard-manager"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "arboard",
  "image 0.24.9",
@@ -6583,7 +6524,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.0.0-rc.1"
+version = "2.0.0-rc.2"
 dependencies = [
  "dunce",
  "log",
@@ -6601,7 +6542,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "dunce",
  "log",
@@ -6618,7 +6559,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "anyhow",
  "glob",
@@ -6637,7 +6578,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-geolocation"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "log",
  "serde",
@@ -6650,7 +6591,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-global-shortcut"
-version = "2.0.0-rc.1"
+version = "2.0.0-rc.2"
 dependencies = [
  "global-hotkey",
  "log",
@@ -6663,7 +6604,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-haptics"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "log",
  "serde",
@@ -6676,7 +6617,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "data-url",
  "http",
@@ -6691,12 +6632,12 @@ dependencies = [
  "thiserror",
  "tokio",
  "url",
- "urlpattern",
+ "urlpattern 0.3.0",
 ]
 
 [[package]]
 name = "tauri-plugin-localhost"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "http",
  "log",
@@ -6709,11 +6650,11 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-log"
-version = "2.0.0-rc.1"
+version = "2.0.0-rc.2"
 dependencies = [
  "android_logger",
  "byte-unit",
- "cocoa 0.25.0",
+ "cocoa 0.26.0",
  "fern",
  "log",
  "objc",
@@ -6729,7 +6670,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-nfc"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "log",
  "serde",
@@ -6742,7 +6683,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "color-backtrace",
  "ctor",
@@ -6764,9 +6705,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-os"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
- "gethostname",
+ "gethostname 0.5.0",
  "log",
  "os_info",
  "serde",
@@ -6780,7 +6721,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6794,7 +6735,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-positioner"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "log",
  "serde",
@@ -6807,7 +6748,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-process"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "tauri",
  "tauri-plugin",
@@ -6815,7 +6756,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-shell"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "encoding_rs",
  "log",
@@ -6834,7 +6775,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "log",
  "semver",
@@ -6848,7 +6789,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-sql"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "futures-core",
  "indexmap 2.4.0",
@@ -6865,7 +6806,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-store"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "dunce",
  "log",
@@ -6879,7 +6820,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-stronghold"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "hex",
  "iota-crypto",
@@ -6900,14 +6841,14 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.0.0-rc.1"
+version = "2.0.0-rc.2"
 dependencies = [
  "base64 0.22.1",
  "dirs 5.0.1",
  "flate2",
  "futures-util",
  "http",
- "infer",
+ "infer 0.16.0",
  "minisign-verify",
  "reqwest",
  "semver",
@@ -6927,7 +6868,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-upload"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "futures-util",
  "log",
@@ -6944,7 +6885,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-websocket"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.1"
 dependencies = [
  "futures-util",
  "http",
@@ -6961,7 +6902,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "2.0.0-rc.1"
+version = "2.0.0-rc.2"
 dependencies = [
  "bitflags 2.6.0",
  "log",
@@ -7029,7 +6970,7 @@ dependencies = [
  "getrandom 0.2.15",
  "glob",
  "html5ever",
- "infer",
+ "infer 0.15.0",
  "json-patch",
  "kuchikiki",
  "log",
@@ -7049,7 +6990,7 @@ dependencies = [
  "thiserror",
  "toml 0.8.2",
  "url",
- "urlpattern",
+ "urlpattern 0.2.0",
  "walkdir",
 ]
 
@@ -7702,6 +7643,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f9bd5ff03aea02fa45b13a7980151fe45009af1980ba69f651ec367121a31609"
 dependencies = [
  "derive_more",
+ "regex",
+ "serde",
+ "unic-ucd-ident",
+ "url",
+]
+
+[[package]]
+name = "urlpattern"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "70acd30e3aa1450bc2eece896ce2ad0d178e9c079493819301573dae3c37ba6d"
+dependencies = [
  "regex",
  "serde",
  "unic-ucd-ident",
@@ -8628,7 +8581,7 @@ version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d91ffca73ee7f68ce055750bf9f6eca0780b8c85eff9bc046a3b0da41755e12"
 dependencies = [
- "gethostname",
+ "gethostname 0.4.3",
  "rustix",
  "x11rb-protocol",
 ]

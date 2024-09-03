@@ -13,6 +13,7 @@ use tauri::{
 };
 
 use std::{
+    borrow::Cow,
     fs::File,
     io::{BufReader, Lines, Read, Write},
     path::{Path, PathBuf},
@@ -23,11 +24,42 @@ use std::{
 
 use crate::{scope::Entry, Error, FilePath, FsExt};
 
-#[derive(Debug, serde::Deserialize)]
-#[serde(untagged)]
+// TODO: Combine this with FilePath
+#[derive(Debug)]
 pub enum SafeFilePath {
     Url(url::Url),
     Path(SafePathBuf),
+}
+
+impl<'de> serde::Deserialize<'de> for SafeFilePath {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct SafeFilePathVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for SafeFilePathVisitor {
+            type Value = SafeFilePath;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a string representing an file URL or a path")
+            }
+
+            fn visit_str<E>(self, s: &str) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                SafeFilePath::from_str(s).map_err(|e| {
+                    serde::de::Error::invalid_value(
+                        serde::de::Unexpected::Str(s),
+                        &e.to_string().as_str(),
+                    )
+                })
+            }
+        }
+
+        deserializer.deserialize_str(SafeFilePathVisitor)
+    }
 }
 
 impl From<SafeFilePath> for FilePath {
@@ -43,10 +75,11 @@ impl FromStr for SafeFilePath {
     type Err = CommandError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Ok(url) = url::Url::from_str(s) {
-            Ok(Self::Url(url))
-        } else {
-            Ok(Self::Path(SafePathBuf::new(s.into())?))
+            if url.scheme().len() != 1 {
+                return Ok(Self::Url(url));
+            }
         }
+        Ok(Self::Path(SafePathBuf::new(s.into())?))
     }
 }
 
@@ -72,6 +105,8 @@ pub enum CommandError {
     Plugin(#[from] Error),
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
     #[error(transparent)]
     Io(#[from] std::io::Error),
     #[error(transparent)]
@@ -878,25 +913,31 @@ pub async fn write_file<R: Runtime>(
     command_scope: CommandScope<Entry>,
     request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
-    if let tauri::ipc::InvokeBody::Raw(data) = request.body() {
-        let path = request
-            .headers()
-            .get("path")
-            .ok_or_else(|| anyhow::anyhow!("missing file path").into())
-            .and_then(|p| {
-                p.to_str()
-                    .map_err(|e| anyhow::anyhow!("invalid path: {e}").into())
-            })
-            .and_then(|p| SafeFilePath::from_str(p).map_err(CommandError::from))?;
-        let options = request
-            .headers()
-            .get("options")
-            .and_then(|p| p.to_str().ok())
-            .and_then(|opts| serde_json::from_str(opts).ok());
-        write_file_inner(webview, &global_scope, &command_scope, path, data, options)
-    } else {
-        Err(anyhow::anyhow!("unexpected invoke body").into())
-    }
+    let data = match request.body() {
+        tauri::ipc::InvokeBody::Raw(data) => Cow::Borrowed(data),
+        tauri::ipc::InvokeBody::Json(serde_json::Value::Array(data)) => Cow::Owned(
+            data.iter()
+                .flat_map(|v| v.as_number().and_then(|v| v.as_u64().map(|v| v as u8)))
+                .collect(),
+        ),
+        _ => return Err(anyhow::anyhow!("unexpected invoke body").into()),
+    };
+
+    let path = request
+        .headers()
+        .get("path")
+        .ok_or_else(|| anyhow::anyhow!("missing file path").into())
+        .and_then(|p| {
+            p.to_str()
+                .map_err(|e| anyhow::anyhow!("invalid path: {e}").into())
+        })
+        .and_then(|p| SafeFilePath::from_str(p).map_err(CommandError::from))?;
+    let options = request
+        .headers()
+        .get("options")
+        .and_then(|p| p.to_str().ok())
+        .and_then(|opts| serde_json::from_str(opts).ok());
+    write_file_inner(webview, &global_scope, &command_scope, path, &data, options)
 }
 
 #[tauri::command]
@@ -1166,5 +1207,21 @@ fn get_stat(metadata: std::fs::Metadata) -> FileInfo {
         rdev: usm!(rdev),
         blksize: usm!(blksize),
         blocks: usm!(blocks),
+    }
+}
+
+mod test {
+    #[test]
+    fn safe_file_path_parse() {
+        use super::SafeFilePath;
+
+        assert!(matches!(
+            serde_json::from_str::<SafeFilePath>("\"C:/Users\""),
+            Ok(SafeFilePath::Path(_))
+        ));
+        assert!(matches!(
+            serde_json::from_str::<SafeFilePath>("\"file:///C:/Users\""),
+            Ok(SafeFilePath::Url(_))
+        ));
     }
 }
