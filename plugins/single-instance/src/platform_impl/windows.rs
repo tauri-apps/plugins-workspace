@@ -1,5 +1,3 @@
-#![cfg(target_os = "windows")]
-
 #[cfg(feature = "semver")]
 use crate::semver_compat::semver_compat_string;
 

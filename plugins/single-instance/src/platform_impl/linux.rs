@@ -1,5 +1,3 @@
-#![cfg(target_os = "linux")]
-
 use std::sync::Arc;
 
 #[cfg(feature = "semver")]

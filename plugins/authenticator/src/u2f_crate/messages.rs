@@ -33,6 +33,7 @@ pub struct RegisteredKey {
 #[serde(rename_all = "camelCase")]
 pub struct RegisterResponse {
     pub registration_data: String,
+    #[allow(dead_code)]
     pub version: String,
     pub client_data: String,
 }
