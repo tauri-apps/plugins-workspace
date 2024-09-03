@@ -11,13 +11,7 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use std::{
-    convert::Infallible,
-    fmt,
-    io::Read,
-    path::{Path, PathBuf},
-    str::FromStr,
-};
+use std::io::Read;
 
 use serde::Deserialize;
 use tauri::{
@@ -32,6 +26,7 @@ mod config;
 #[cfg(not(target_os = "android"))]
 mod desktop;
 mod error;
+mod file_path;
 #[cfg(target_os = "android")]
 mod mobile;
 #[cfg(target_os = "android")]
@@ -48,92 +43,10 @@ pub use mobile::Fs;
 pub use error::Error;
 pub use scope::{Event as ScopeEvent, Scope};
 
+pub use file_path::FilePath;
+pub use file_path::SafeFilePath;
+
 type Result<T> = std::result::Result<T, Error>;
-
-// TODO: Combine this with SafeFilePath
-/// Represents either a filesystem path or a URI pointing to a file
-/// such as `file://` URIs or Android `content://` URIs.
-#[derive(Debug)]
-pub enum FilePath {
-    Url(url::Url),
-    Path(PathBuf),
-}
-
-impl<'de> serde::Deserialize<'de> for FilePath {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        struct FilePathVisitor;
-
-        impl<'de> serde::de::Visitor<'de> for FilePathVisitor {
-            type Value = FilePath;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("a string representing an file URL or a path")
-            }
-
-            fn visit_str<E>(self, s: &str) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                FilePath::from_str(s).map_err(|e| {
-                    serde::de::Error::invalid_value(
-                        serde::de::Unexpected::Str(s),
-                        &e.to_string().as_str(),
-                    )
-                })
-            }
-        }
-
-        deserializer.deserialize_str(FilePathVisitor)
-    }
-}
-
-impl FromStr for FilePath {
-    type Err = Infallible;
-    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        if let Ok(url) = url::Url::from_str(s) {
-            if url.scheme().len() != 1 {
-                return Ok(Self::Url(url));
-            }
-        }
-        Ok(Self::Path(PathBuf::from(s)))
-    }
-}
-
-impl From<PathBuf> for FilePath {
-    fn from(value: PathBuf) -> Self {
-        Self::Path(value)
-    }
-}
-
-impl From<&Path> for FilePath {
-    fn from(value: &Path) -> Self {
-        Self::Path(value.to_owned())
-    }
-}
-
-impl From<&PathBuf> for FilePath {
-    fn from(value: &PathBuf) -> Self {
-        Self::Path(value.to_owned())
-    }
-}
-
-impl From<url::Url> for FilePath {
-    fn from(value: url::Url) -> Self {
-        Self::Url(value)
-    }
-}
-
-impl fmt::Display for FilePath {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Url(u) => u.fmt(f),
-            Self::Path(p) => p.display().fmt(f),
-        }
-    }
-}
 
 #[derive(Debug, Default, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -151,8 +64,10 @@ pub struct OpenOptions {
     #[serde(default)]
     create_new: bool,
     #[serde(default)]
+    #[allow(unused)]
     mode: Option<u32>,
     #[serde(default)]
+    #[allow(unused)]
     custom_flags: Option<i32>,
 }
 

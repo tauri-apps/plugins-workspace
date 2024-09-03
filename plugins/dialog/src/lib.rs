@@ -11,7 +11,7 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use tauri::{
     plugin::{Builder, TauriPlugin},
     Manager, Runtime,
@@ -24,6 +24,7 @@ use std::{
 
 pub use models::*;
 
+pub use tauri_plugin_fs::FilePath;
 #[cfg(desktop)]
 mod desktop;
 #[cfg(mobile)]
@@ -294,57 +295,6 @@ impl<R: Runtime> MessageDialogBuilder<R> {
         blocking_fn!(self, show)
     }
 }
-
-/// Represents either a filesystem path or a URI pointing to a file
-/// such as `file://` URIs or Android `content://` URIs.
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(untagged)]
-pub enum FilePath {
-    Url(url::Url),
-    Path(PathBuf),
-}
-
-impl From<PathBuf> for FilePath {
-    fn from(value: PathBuf) -> Self {
-        Self::Path(value)
-    }
-}
-
-impl From<url::Url> for FilePath {
-    fn from(value: url::Url) -> Self {
-        Self::Url(value)
-    }
-}
-
-impl From<FilePath> for tauri_plugin_fs::FilePath {
-    fn from(value: FilePath) -> Self {
-        match value {
-            FilePath::Path(p) => tauri_plugin_fs::FilePath::Path(p),
-            FilePath::Url(url) => tauri_plugin_fs::FilePath::Url(url),
-        }
-    }
-}
-
-impl FilePath {
-    fn simplified(self) -> Self {
-        match self {
-            Self::Url(url) => Self::Url(url),
-            Self::Path(p) => Self::Path(dunce::simplified(&p).to_path_buf()),
-        }
-    }
-
-    #[inline]
-    fn path(&self) -> Result<PathBuf> {
-        match self {
-            Self::Url(url) => url
-                .to_file_path()
-                .map(PathBuf::from)
-                .map_err(|_| Error::InvalidPathUrl),
-            Self::Path(p) => Ok(p.to_owned()),
-        }
-    }
-}
-
 #[derive(Debug, Serialize)]
 pub(crate) struct Filter {
     pub name: String,

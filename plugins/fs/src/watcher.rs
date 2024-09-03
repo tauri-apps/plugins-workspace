@@ -22,8 +22,9 @@ use std::{
 };
 
 use crate::{
-    commands::{resolve_path, CommandResult, SafeFilePath},
+    commands::{resolve_path, CommandResult},
     scope::Entry,
+    SafeFilePath,
 };
 
 struct InnerWatcher {

@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use tauri::{
     ipc::{CommandScope, GlobalScope},
-    path::{BaseDirectory, SafePathBuf},
+    path::BaseDirectory,
     utils::config::FsScope,
     AppHandle, Manager, Resource, ResourceId, Runtime, Webview,
 };
@@ -22,80 +22,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{scope::Entry, Error, FilePath, FsExt};
-
-// TODO: Combine this with FilePath
-#[derive(Debug)]
-pub enum SafeFilePath {
-    Url(url::Url),
-    Path(SafePathBuf),
-}
-
-impl<'de> serde::Deserialize<'de> for SafeFilePath {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        struct SafeFilePathVisitor;
-
-        impl<'de> serde::de::Visitor<'de> for SafeFilePathVisitor {
-            type Value = SafeFilePath;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("a string representing an file URL or a path")
-            }
-
-            fn visit_str<E>(self, s: &str) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                SafeFilePath::from_str(s).map_err(|e| {
-                    serde::de::Error::invalid_value(
-                        serde::de::Unexpected::Str(s),
-                        &e.to_string().as_str(),
-                    )
-                })
-            }
-        }
-
-        deserializer.deserialize_str(SafeFilePathVisitor)
-    }
-}
-
-impl From<SafeFilePath> for FilePath {
-    fn from(value: SafeFilePath) -> Self {
-        match value {
-            SafeFilePath::Url(url) => FilePath::Url(url),
-            SafeFilePath::Path(p) => FilePath::Path(p.as_ref().to_owned()),
-        }
-    }
-}
-
-impl FromStr for SafeFilePath {
-    type Err = CommandError;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if let Ok(url) = url::Url::from_str(s) {
-            if url.scheme().len() != 1 {
-                return Ok(Self::Url(url));
-            }
-        }
-        Ok(Self::Path(SafePathBuf::new(s.into())?))
-    }
-}
-
-impl SafeFilePath {
-    #[inline]
-    fn into_path(self) -> CommandResult<SafePathBuf> {
-        match self {
-            Self::Url(url) => SafePathBuf::new(
-                url.to_file_path()
-                    .map_err(|_| format!("failed to get path from {url}"))?,
-            )
-            .map_err(Into::into),
-            Self::Path(p) => Ok(p),
-        }
-    }
-}
+use crate::{scope::Entry, Error, FsExt, SafeFilePath};
 
 #[derive(Debug, thiserror::Error)]
 pub enum CommandError {
@@ -1052,7 +979,7 @@ pub fn resolve_path<R: Runtime>(
     let path = if let Some(base_dir) = base_dir {
         webview.path().resolve(&path, base_dir)?
     } else {
-        path.as_ref().to_path_buf()
+        path
     };
 
     let scope = tauri::scope::fs::Scope::new(

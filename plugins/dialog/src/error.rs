@@ -7,6 +7,7 @@ use serde::{ser::Serializer, Serialize};
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum Error {
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
@@ -20,8 +21,6 @@ pub enum Error {
     FolderPickerNotImplemented,
     #[error(transparent)]
     Fs(#[from] tauri_plugin_fs::Error),
-    #[error("URL is not a valid path")]
-    InvalidPathUrl,
 }
 
 impl Serialize for Error {

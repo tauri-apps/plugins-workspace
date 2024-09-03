@@ -136,7 +136,7 @@ pub(crate) async fn open<R: Runtime>(
                 let folders = dialog_builder.blocking_pick_folders();
                 if let Some(folders) = &folders {
                     for folder in folders {
-                        if let Ok(path) = folder.path() {
+                        if let Ok(path) = folder.clone().into_path() {
                             if let Some(s) = window.try_fs_scope() {
                                 s.allow_directory(path, options.recursive);
                             }
@@ -149,7 +149,7 @@ pub(crate) async fn open<R: Runtime>(
             } else {
                 let folder = dialog_builder.blocking_pick_folder();
                 if let Some(folder) = &folder {
-                    if let Ok(path) = folder.path() {
+                    if let Ok(path) = folder.clone().into_path() {
                         if let Some(s) = window.try_fs_scope() {
                             s.allow_directory(path, options.recursive);
                         }
@@ -164,7 +164,7 @@ pub(crate) async fn open<R: Runtime>(
         let files = dialog_builder.blocking_pick_files();
         if let Some(files) = &files {
             for file in files {
-                if let Ok(path) = file.path() {
+                if let Ok(path) = file.clone().into_path() {
                     if let Some(s) = window.try_fs_scope() {
                         s.allow_file(&path);
                     }
@@ -178,7 +178,7 @@ pub(crate) async fn open<R: Runtime>(
         let file = dialog_builder.blocking_pick_file();
 
         if let Some(file) = &file {
-            if let Ok(path) = file.path() {
+            if let Ok(path) = file.clone().into_path() {
                 if let Some(s) = window.try_fs_scope() {
                     s.allow_file(&path);
                 }
@@ -218,7 +218,7 @@ pub(crate) async fn save<R: Runtime>(
 
     let path = dialog_builder.blocking_save_file();
     if let Some(p) = &path {
-        if let Ok(path) = p.path() {
+        if let Ok(path) = p.clone().into_path() {
             if let Some(s) = window.try_fs_scope() {
                 s.allow_file(&path);
             }
