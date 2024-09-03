@@ -1,7 +1,6 @@
 [workspace]
 # Listed without globs to prevent issues with renovate's baseBranches config.
 members = [
-  "plugins/authenticator",
   "plugins/autostart",
   "plugins/fs-extra",
   "plugins/fs-watch",

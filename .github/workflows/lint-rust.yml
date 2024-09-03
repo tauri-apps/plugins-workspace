@@ -31,10 +31,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: install webkit2gtk and libudev for [authenticator]
+      - name: install webkit2gtk
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libudev-dev
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev
 
       - name: Install clippy with stable toolchain
         uses: dtolnay/rust-toolchain@stable

@@ -331,23 +331,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1181e1e0d1fce796a03db1ae795d67167da795f9cf4a39c37589e85ef57f26d3"
 
 [[package]]
-name = "authenticator"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08cee7a0952628fde958e149507c2bb321ab4fccfafd225da0b20adc956ef88a"
-dependencies = [
- "bitflags 1.3.2",
- "core-foundation",
- "devd-rs",
- "libc",
- "libudev",
- "log",
- "rand 0.7.3",
- "runloop",
- "winapi",
-]
-
-[[package]]
 name = "auto-launch"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -670,10 +653,8 @@ checksum = "7f2c685bad3eb3d45a01354cedb7d5faa66194d1d58ba6e267a8de788f79db38"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
- "js-sys",
  "num-traits",
  "serde",
- "wasm-bindgen",
  "windows-targets 0.48.1",
 ]
 
@@ -1038,16 +1019,6 @@ dependencies = [
  "quote",
  "rustc_version",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "devd-rs"
-version = "0.3.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9313f104b590510b46fc01c0a324fc76505c13871454d3c48490468d04c8d395"
-dependencies = [
- "libc",
- "nom",
 ]
 
 [[package]]
@@ -2476,26 +2447,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "libudev"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea626d3bdf40a1c5aee3bcd4f40826970cae8d80a8fec934c82a63840094dcfe"
-dependencies = [
- "libc",
- "libudev-sys",
-]
-
-[[package]]
-name = "libudev-sys"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c8469b4a23b962c1396b9b451dda50ef5b283e8dd309d69033475fa9b334324"
-dependencies = [
- "libc",
- "pkg-config",
-]
-
-[[package]]
 name = "line-wrap"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3722,12 +3673,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "runloop"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d79b4b604167921892e84afbbaad9d5ad74e091bf6c511d9dbfb0593f09fabd"
-
-[[package]]
 name = "rust-argon2"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4859,27 +4804,6 @@ dependencies = [
  "syn 1.0.109",
  "tauri-codegen",
  "tauri-utils",
-]
-
-[[package]]
-name = "tauri-plugin-authenticator"
-version = "0.0.0"
-dependencies = [
- "authenticator",
- "base64 0.22.0",
- "byteorder",
- "bytes",
- "chrono",
- "log",
- "once_cell",
- "openssl",
- "rand 0.8.5",
- "rusty-fork",
- "serde",
- "serde_json",
- "sha2 0.10.7",
- "tauri",
- "thiserror",
 ]
 
 [[package]]

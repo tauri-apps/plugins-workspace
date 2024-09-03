@@ -46,16 +46,6 @@ importers:
         specifier: rc-v8
         version: 8.0.0-alpha.62(eslint@9.9.1)(typescript@5.5.4)
 
-  plugins/authenticator:
-    dependencies:
-      '@tauri-apps/api':
-        specifier: 1.6.0
-        version: 1.6.0
-    devDependencies:
-      tslib:
-        specifier: 2.7.0
-        version: 2.7.0
-
   plugins/autostart:
     dependencies:
       '@tauri-apps/api':

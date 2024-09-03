@@ -33,15 +33,6 @@
     }
   },
   "packages": {
-    "authenticator": {
-      "path": "./plugins/authenticator",
-      "manager": "rust-disabled"
-    },
-    "authenticator-js": {
-      "path": "./plugins/authenticator",
-      "manager": "javascript-disabled"
-    },
-
     "autostart": {
       "path": "./plugins/autostart",
       "manager": "rust-disabled"

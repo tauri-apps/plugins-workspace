@@ -2,7 +2,6 @@
 
 |                                            |                                                           | Win | Mac | Lin | iOS | And |
 | ------------------------------------------ | --------------------------------------------------------- | --- | --- | --- | --- | --- |
-| [authenticator](plugins/authenticator)     | Interface with hardware security keys.                    | ✅  | ✅  | ✅  | ?   | ?   |
 | [autostart](plugins/autostart)             | Automatically launch your app at system startup.          | ✅  | ✅  | ✅  | ?   | ?   |
 | [fs-extra](plugins/fs-extra)               | File system methods that aren't included in the core API. | ✅  | ✅  | ✅  | ?   | ?   |
 | [fs-watch](plugins/fs-watch)               | Watch the filesystem for changes.                         | ✅  | ✅  | ✅  | ?   | ?   |
