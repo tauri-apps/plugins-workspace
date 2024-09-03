@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-subscribe-to-topic"
+description = "Enables the subscribe_to_topic command without any pre-configured scope."
+commands.allow = ["subscribe_to_topic"]
+
+[[permission]]
+identifier = "deny-subscribe-to-topic"
+description = "Denies the subscribe_to_topic command without any pre-configured scope."
+commands.deny = ["subscribe_to_topic"]

@@ -9,6 +9,7 @@
 | [clipboard-manager](plugins/clipboard-manager)  | Read and write to the system clipboard.                | ✅  | ✅  | ✅  | ✅  | ✅  |
 | [deep-link](plugins/deep-link)                  | Set your Tauri application as the default handler for an URL.                                                                                                       | ✅   | ✅   | ✅   | ✅   | ✅  |
 | [dialog](plugins/dialog)                        | Native system dialogs for opening and saving files along with message dialogs.                                                                                                   | ✅  | ✅  | ✅  | ✅  | ✅ |
+| [fcm](plugins/fcm)                              | Push notification via Firebase.                        | ?   | ?   | ?   | ✅   | ✅  |
 | [fs](plugins/fs)                                | Access the file system.                                | ✅   | ✅   | ✅   | ?   | ?  |
 | [global-shortcut](plugins/global-shortcut)      | Register global shortcuts.                             | ✅  | ✅  | ✅  | ?   | ?  |
 | [http](plugins/http)                            | Access the HTTP client written in Rust.                | ✅   | ✅   | ✅   | ✅   | ✅  |
