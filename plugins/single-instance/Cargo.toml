@@ -19,7 +19,7 @@ thiserror = { workspace = true }
 semver = { version = "1", optional = true }
 
 [target.'cfg(target_os = "windows")'.dependencies.windows-sys]
-version = "0.52"
+version = "0.59"
 features = [
     "Win32_System_Threading",
     "Win32_System_DataExchange",
