@@ -62,16 +62,16 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import Database from "@tauri-apps/plugin-sql";
+import Database from '@tauri-apps/plugin-sql'
 
 // sqlite. The path is relative to `tauri::api::path::BaseDirectory::AppConfig`.
-const db = await Database.load("sqlite:test.db");
+const db = await Database.load('sqlite:test.db')
 // mysql
-const db = await Database.load("mysql://user:pass@host/database");
+const db = await Database.load('mysql://user:pass@host/database')
 // postgres
-const db = await Database.load("postgres://postgres:password@localhost/test");
+const db = await Database.load('postgres://postgres:password@localhost/test')
 
-await db.execute("INSERT INTO ...");
+await db.execute('INSERT INTO ...')
 ```
 
 ## Syntax
@@ -84,25 +84,25 @@ We use sqlx as our underlying library, adopting their query syntax:
 ```javascript
 // INSERT and UPDATE examples for sqlite and postgres
 const result = await db.execute(
-  "INSERT into todos (id, title, status) VALUES ($1, $2, $3)",
-  [todos.id, todos.title, todos.status],
-);
+  'INSERT into todos (id, title, status) VALUES ($1, $2, $3)',
+  [todos.id, todos.title, todos.status]
+)
 
 const result = await db.execute(
-  "UPDATE todos SET title = $1, status = $2 WHERE id = $3",
-  [todos.title, todos.status, todos.id],
-);
+  'UPDATE todos SET title = $1, status = $2 WHERE id = $3',
+  [todos.title, todos.status, todos.id]
+)
 
 // INSERT and UPDATE examples for mysql
 const result = await db.execute(
-  "INSERT into todos (id, title, status) VALUES (?, ?, ?)",
-  [todos.id, todos.title, todos.status],
-);
+  'INSERT into todos (id, title, status) VALUES (?, ?, ?)',
+  [todos.id, todos.title, todos.status]
+)
 
 const result = await db.execute(
-  "UPDATE todos SET title = ?, status = ? WHERE id = ?",
-  [todos.title, todos.status, todos.id],
-);
+  'UPDATE todos SET title = ?, status = ? WHERE id = ?',
+  [todos.title, todos.status, todos.id]
+)
 ```
 
 ## Migrations
@@ -173,8 +173,8 @@ To apply the migrations when the plugin is initialized, add the connection strin
 Alternatively, the client side `load()` also runs the migrations for a given connection string:
 
 ```ts
-import Database from "@tauri-apps/plugin-sql";
-const db = await Database.load("sqlite:mydatabase.db");
+import Database from '@tauri-apps/plugin-sql'
+const db = await Database.load('sqlite:mydatabase.db')
 ```
 
 Ensure that the migrations are defined in the correct order and are safe to run multiple times.

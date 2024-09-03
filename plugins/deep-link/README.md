@@ -129,10 +129,10 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
+import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
 await onOpenUrl((urls) => {
-  console.log("deep link:", urls);
-});
+  console.log('deep link:', urls)
+})
 ```
 
 Note that the Plugin will only emit events on macOS, iOS and Android. On Windows and Linux the OS will spawn a new instance of your app with the URL as a CLI argument. If you want your app to behave on Windows & Linux similar to the other platforms you can use the [single-instance](../single-instance/) plugin.

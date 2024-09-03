@@ -34,8 +34,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "lts/*"
-          registry-url: "https://registry.npmjs.org"
+          node-version: 'lts/*'
+          registry-url: 'https://registry.npmjs.org'
 
       - uses: pnpm/action-setup@v4
         with:
@@ -65,7 +65,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.ORG_NPM_TOKEN }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          command: "version-or-publish"
+          command: 'version-or-publish'
           createRelease: true
           recognizeContributors: true
 
@@ -78,8 +78,8 @@ jobs:
         uses: tauri-apps/create-pull-request@v3
         if: steps.covector.outputs.commandRan == 'version'
         with:
-          title: "Publish New Versions (${{ github.ref_name }})"
-          commit-message: "publish new versions"
-          labels: "version updates"
-          branch: "ci/release-${{ github.ref_name }}"
+          title: 'Publish New Versions (${{ github.ref_name }})'
+          commit-message: 'publish new versions'
+          labels: 'version updates'
+          branch: 'ci/release-${{ github.ref_name }}'
           body: ${{ steps.covector.outputs.change }}

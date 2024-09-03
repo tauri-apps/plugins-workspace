@@ -54,7 +54,6 @@ The camera has two modes. The first one is where the user can see the background
 The second mode allows the developer to assist the user and add a transparent overlay to the image, providing hints or additional information (like a link preview).
 The overlay could be made non-transparent by the application frontend and as long as the app is open (and in some cases) it could read QR codes in range of the camera lense.
 
-
 #### Out Of Scope
 
 - Exploits in the operating system QR code parsing functionality

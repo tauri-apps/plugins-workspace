@@ -72,24 +72,27 @@ Then you need to add the permissions to your capabilities file:
 }
 ```
 
-
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification';
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification
+} from '@tauri-apps/plugin-notification'
 
 async function checkPermission() {
   if (!(await isPermissionGranted())) {
-    return (await requestPermission()) === 'granted';
+    return (await requestPermission()) === 'granted'
   }
-  return true;
+  return true
 }
 
 export async function enqueueNotification(title, body) {
   if (!(await checkPermission())) {
-    return;
+    return
   }
-  sendNotification({ title, body });
+  sendNotification({ title, body })
 }
 ```
 

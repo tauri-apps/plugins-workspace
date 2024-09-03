@@ -10,19 +10,19 @@ on:
       - v1
       - v2
     paths:
-      - ".github/workflows/lint-rust.yml"
-      - "plugins/*/src/**"
-      - "!plugins/*/src/api-iife.js"
-      - "**/Cargo.toml"
+      - '.github/workflows/lint-rust.yml'
+      - 'plugins/*/src/**'
+      - '!plugins/*/src/api-iife.js'
+      - '**/Cargo.toml'
   pull_request:
     branches:
       - v1
       - v2
     paths:
-      - ".github/workflows/lint-rust.yml"
-      - "plugins/*/src/**"
-      - "!plugins/*/src/api-iife.js"
-      - "**/Cargo.toml"
+      - '.github/workflows/lint-rust.yml'
+      - 'plugins/*/src/**'
+      - '!plugins/*/src/api-iife.js'
+      - '**/Cargo.toml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -162,17 +162,3 @@ jobs:
       - name: clippy ${{ matrix.package }} postgres
         if: matrix.package == 'tauri-plugin-sql'
         run: cargo clippy --package ${{ matrix.package }} --all-targets --no-default-features --features postgres -- -D warnings
-
-  fmt:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install rustfmt with nightly toolchain
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: rustfmt
-
-      - name: Check formatting
-        run: cargo fmt --all -- --check
