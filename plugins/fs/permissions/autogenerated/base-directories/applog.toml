@@ -36,47 +36,29 @@ path = "$APPLOG"
 [[set]]
 identifier = "allow-applog-read-recursive"
 description = "This allows full recursive read access to the complete `$APPLOG` folder, files and subdirectories."
-permissions = [
-    "read-all",
-    "scope-applog-recursive"
-]
+permissions = ["read-all", "scope-applog-recursive"]
 
 [[set]]
 identifier = "allow-applog-write-recursive"
 description = "This allows full recursive write access to the complete `$APPLOG` folder, files and subdirectories."
-permissions = [
-    "write-all",
-    "scope-applog-recursive"
-]
+permissions = ["write-all", "scope-applog-recursive"]
 
 [[set]]
 identifier = "allow-applog-read"
 description = "This allows non-recursive read access to the `$APPLOG` folder."
-permissions = [
-    "read-all",
-    "scope-applog"
-]
+permissions = ["read-all", "scope-applog"]
 
 [[set]]
 identifier = "allow-applog-write"
 description = "This allows non-recursive write access to the `$APPLOG` folder."
-permissions = [
-    "write-all",
-    "scope-applog"
-]
+permissions = ["write-all", "scope-applog"]
 
 [[set]]
 identifier = "allow-applog-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$APPLOG` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-applog-recursive"
-]
+permissions = ["read-meta", "scope-applog-recursive"]
 
 [[set]]
 identifier = "allow-applog-meta"
 description = "This allows non-recursive read access to metadata of the `$APPLOG` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-applog-index"
-]
+permissions = ["read-meta", "scope-applog-index"]

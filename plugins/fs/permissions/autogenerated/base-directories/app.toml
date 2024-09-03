@@ -36,47 +36,29 @@ path = "$APP"
 [[set]]
 identifier = "allow-app-read-recursive"
 description = "This allows full recursive read access to the complete `$APP` folder, files and subdirectories."
-permissions = [
-    "read-all",
-    "scope-app-recursive"
-]
+permissions = ["read-all", "scope-app-recursive"]
 
 [[set]]
 identifier = "allow-app-write-recursive"
 description = "This allows full recursive write access to the complete `$APP` folder, files and subdirectories."
-permissions = [
-    "write-all",
-    "scope-app-recursive"
-]
+permissions = ["write-all", "scope-app-recursive"]
 
 [[set]]
 identifier = "allow-app-read"
 description = "This allows non-recursive read access to the `$APP` folder."
-permissions = [
-    "read-all",
-    "scope-app"
-]
+permissions = ["read-all", "scope-app"]
 
 [[set]]
 identifier = "allow-app-write"
 description = "This allows non-recursive write access to the `$APP` folder."
-permissions = [
-    "write-all",
-    "scope-app"
-]
+permissions = ["write-all", "scope-app"]
 
 [[set]]
 identifier = "allow-app-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$APP` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-app-recursive"
-]
+permissions = ["read-meta", "scope-app-recursive"]
 
 [[set]]
 identifier = "allow-app-meta"
 description = "This allows non-recursive read access to metadata of the `$APP` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-app-index"
-]
+permissions = ["read-meta", "scope-app-index"]

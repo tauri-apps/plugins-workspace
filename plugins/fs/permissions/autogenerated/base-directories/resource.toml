@@ -36,47 +36,29 @@ path = "$RESOURCE"
 [[set]]
 identifier = "allow-resource-read-recursive"
 description = "This allows full recursive read access to the complete `$RESOURCE` folder, files and subdirectories."
-permissions = [
-    "read-all",
-    "scope-resource-recursive"
-]
+permissions = ["read-all", "scope-resource-recursive"]
 
 [[set]]
 identifier = "allow-resource-write-recursive"
 description = "This allows full recursive write access to the complete `$RESOURCE` folder, files and subdirectories."
-permissions = [
-    "write-all",
-    "scope-resource-recursive"
-]
+permissions = ["write-all", "scope-resource-recursive"]
 
 [[set]]
 identifier = "allow-resource-read"
 description = "This allows non-recursive read access to the `$RESOURCE` folder."
-permissions = [
-    "read-all",
-    "scope-resource"
-]
+permissions = ["read-all", "scope-resource"]
 
 [[set]]
 identifier = "allow-resource-write"
 description = "This allows non-recursive write access to the `$RESOURCE` folder."
-permissions = [
-    "write-all",
-    "scope-resource"
-]
+permissions = ["write-all", "scope-resource"]
 
 [[set]]
 identifier = "allow-resource-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$RESOURCE` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-resource-recursive"
-]
+permissions = ["read-meta", "scope-resource-recursive"]
 
 [[set]]
 identifier = "allow-resource-meta"
 description = "This allows non-recursive read access to metadata of the `$RESOURCE` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-resource-index"
-]
+permissions = ["read-meta", "scope-resource-index"]
