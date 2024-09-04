@@ -22,7 +22,7 @@
  * Each CLI is a configuration object `{ name: string, cmd: string, sidecar?: bool, args?: boolean | Arg[] }`.
  *
  * - `name`: the unique identifier of the command, passed to the {@link Command.create | Command.create function}.
- * If it's a sidecar, this must be the value defined on `tauri.conf.json > tauri > bundle > externalBin`.
+ * If it's a sidecar, this must be the value defined on `tauri.conf.json > bundle > externalBin`.
  * - `cmd`: the program that is executed on this configuration. If it's a sidecar, this value is ignored.
  * - `sidecar`: whether the object configures a sidecar or a system program.
  * - `args`: the arguments that can be passed to the program. By default no arguments are allowed.

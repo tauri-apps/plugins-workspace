@@ -21,6 +21,7 @@ export default tseslint.config(
       "**/init.js",
       "**/rollup.config.js",
       "**/bindings.ts",
+      "**/.test-server",
       ".scripts",
       "eslint.config.js",
     ],
