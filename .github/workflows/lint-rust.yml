@@ -147,10 +147,6 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: create dummy dist
-        working-directory: examples/api
-        run: mkdir dist
-
       - name: clippy ${{ matrix.package }}
         if: matrix.package != 'tauri-plugin-sql'
         run: cargo clippy --package ${{ matrix.package }} --all-targets -- -D warnings

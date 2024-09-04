@@ -210,10 +210,6 @@ jobs:
         with:
           key: cache-${{ matrix.package }}-${{ matrix.platform.target }}
 
-      - name: create dummy dist
-        working-directory: examples/api
-        run: mkdir dist
-
       - name: install cross
         if: ${{ matrix.platform.runner == 'cross' }}
         run: cargo +stable install cross --git https://github.com/cross-rs/cross
