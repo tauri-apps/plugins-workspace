@@ -36,21 +36,13 @@ pub enum SafeFilePath {
 
 impl FilePath {
     /// Get a reference to the contaiend [`Path`] if the variant is [`FilePath::Path`].
+    ///
+    /// Use [`FilePath::into_path`] to try to convert the [`FilePath::Url`] variant as well.
     #[inline]
-    pub fn path(&self) -> Option<&Path> {
+    pub fn as_path(&self) -> Option<&Path> {
         match self {
             Self::Url(_) => None,
             Self::Path(p) => Some(p),
-        }
-    }
-
-    /// Takes the contained [`PathBuf`] if the variant is [`FilePath::Path`],
-    /// and when possible, converts Windows UNC paths to regular paths.
-    #[inline]
-    pub fn simplified(self) -> Self {
-        match self {
-            Self::Url(url) => Self::Url(url),
-            Self::Path(p) => Self::Path(dunce::simplified(&p).to_path_buf()),
         }
     }
 
@@ -68,17 +60,6 @@ impl FilePath {
             Self::Path(p) => Ok(p),
         }
     }
-}
-
-impl SafeFilePath {
-    /// Get a reference to the contaiend [`Path`] if the variant is [`FilePath::Path`].
-    #[inline]
-    pub fn path(&self) -> Option<&Path> {
-        match self {
-            Self::Url(_) => None,
-            Self::Path(p) => Some(p.as_ref()),
-        }
-    }
 
     /// Takes the contained [`PathBuf`] if the variant is [`FilePath::Path`],
     /// and when possible, converts Windows UNC paths to regular paths.
@@ -86,16 +67,26 @@ impl SafeFilePath {
     pub fn simplified(self) -> Self {
         match self {
             Self::Url(url) => Self::Url(url),
-            Self::Path(p) => {
-                // Safe to unwrap since it was a safe file path already
-                Self::Path(SafePathBuf::new(dunce::simplified(p.as_ref()).to_path_buf()).unwrap())
-            }
+            Self::Path(p) => Self::Path(dunce::simplified(&p).to_path_buf()),
+        }
+    }
+}
+
+impl SafeFilePath {
+    /// Get a reference to the contaiend [`Path`] if the variant is [`SafeFilePath::Path`].
+    ///
+    /// Use [`SafeFilePath::into_path`] to try to convert the [`SafeFilePath::Url`] variant as well.
+    #[inline]
+    pub fn as_path(&self) -> Option<&Path> {
+        match self {
+            Self::Url(_) => None,
+            Self::Path(p) => Some(p.as_ref()),
         }
     }
 
     /// Try to convert into [`PathBuf`] if possible.
     ///
-    /// This calls [`Url::to_file_path`](url::Url::to_file_path) if the variant is [`FilePath::Url`],
+    /// This calls [`Url::to_file_path`](url::Url::to_file_path) if the variant is [`SafeFilePath::Url`],
     /// otherwise returns the contained [PathBuf] as is.
     #[inline]
     pub fn into_path(self) -> Result<PathBuf> {
@@ -105,6 +96,19 @@ impl SafeFilePath {
                 .map(PathBuf::from)
                 .map_err(|_| Error::InvalidPathUrl),
             Self::Path(p) => Ok(p.as_ref().to_owned()),
+        }
+    }
+
+    /// Takes the contained [`PathBuf`] if the variant is [`SafeFilePath::Path`],
+    /// and when possible, converts Windows UNC paths to regular paths.
+    #[inline]
+    pub fn simplified(self) -> Self {
+        match self {
+            Self::Url(url) => Self::Url(url),
+            Self::Path(p) => {
+                // Safe to unwrap since it was a safe file path already
+                Self::Path(SafePathBuf::new(dunce::simplified(p.as_ref()).to_path_buf()).unwrap())
+            }
         }
     }
 }
