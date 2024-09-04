@@ -10,11 +10,11 @@ repository = { workspace = true }
 links = "tauri-plugin-process"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 tauri = { workspace = true }

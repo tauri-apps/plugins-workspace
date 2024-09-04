@@ -7,7 +7,7 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from '@tauri-apps/api/core'
 
 /**
  * Exits immediately with the given `exitCode`.
@@ -23,7 +23,7 @@ import { invoke } from "@tauri-apps/api/core";
  * @since 2.0.0
  */
 async function exit(code = 0): Promise<void> {
-  await invoke("plugin:process|exit", { code });
+  await invoke('plugin:process|exit', { code })
 }
 
 /**
@@ -39,7 +39,7 @@ async function exit(code = 0): Promise<void> {
  * @since 2.0.0
  */
 async function relaunch(): Promise<void> {
-  await invoke("plugin:process|restart");
+  await invoke('plugin:process|restart')
 }
 
-export { exit, relaunch };
+export { exit, relaunch }

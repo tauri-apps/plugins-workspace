@@ -73,9 +73,9 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { moveWindow, Position } from "@tauri-apps/plugin-positioner";
+import { moveWindow, Position } from '@tauri-apps/plugin-positioner'
 
-moveWindow(Position.TopRight);
+moveWindow(Position.TopRight)
 ```
 
 If you only intend on moving the window from rust code, you can import the Window trait extension instead of registering the plugin:

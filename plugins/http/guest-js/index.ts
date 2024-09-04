@@ -26,7 +26,7 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from '@tauri-apps/api/core'
 
 /**
  * Configuration of a proxy that a Client should pass requests to.
@@ -37,34 +37,34 @@ export interface Proxy {
   /**
    * Proxy all traffic to the passed URL.
    */
-  all?: string | ProxyConfig;
+  all?: string | ProxyConfig
   /**
    * Proxy all HTTP traffic to the passed URL.
    */
-  http?: string | ProxyConfig;
+  http?: string | ProxyConfig
   /**
    * Proxy all HTTPS traffic to the passed URL.
    */
-  https?: string | ProxyConfig;
+  https?: string | ProxyConfig
 }
 
 export interface ProxyConfig {
   /**
    * The URL of the proxy server.
    */
-  url: string;
+  url: string
   /**
    * Set the `Proxy-Authorization` header using Basic auth.
    */
   basicAuth?: {
-    username: string;
-    password: string;
-  };
+    username: string
+    password: string
+  }
   /**
    * A configuration for filtering out requests that shouldn't be proxied.
    * Entries are expected to be comma-separated (whitespace between entries is ignored)
    */
-  noProxy?: string;
+  noProxy?: string
 }
 
 /**
@@ -77,16 +77,16 @@ export interface ClientOptions {
    * Defines the maximum number of redirects the client should follow.
    * If set to 0, no redirects will be followed.
    */
-  maxRedirections?: number;
+  maxRedirections?: number
   /** Timeout in milliseconds */
-  connectTimeout?: number;
+  connectTimeout?: number
   /**
    * Configuration of a proxy that a Client should pass requests to.
    */
-  proxy?: Proxy;
+  proxy?: Proxy
 }
 
-const ERROR_REQUEST_CANCELLED = "Request canceled";
+const ERROR_REQUEST_CANCELLED = 'Request canceled'
 
 /**
  * Fetch a resource from the network. It returns a `Promise` that resolves to the
@@ -104,41 +104,41 @@ const ERROR_REQUEST_CANCELLED = "Request canceled";
  */
 export async function fetch(
   input: URL | Request | string,
-  init?: RequestInit & ClientOptions,
+  init?: RequestInit & ClientOptions
 ): Promise<Response> {
   // abort early here if needed
-  const signal = init?.signal;
+  const signal = init?.signal
   if (signal?.aborted) {
-    throw new Error(ERROR_REQUEST_CANCELLED);
+    throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
-  const maxRedirections = init?.maxRedirections;
-  const connectTimeout = init?.connectTimeout;
-  const proxy = init?.proxy;
+  const maxRedirections = init?.maxRedirections
+  const connectTimeout = init?.connectTimeout
+  const proxy = init?.proxy
 
   // Remove these fields before creating the request
   if (init) {
-    delete init.maxRedirections;
-    delete init.connectTimeout;
-    delete init.proxy;
+    delete init.maxRedirections
+    delete init.connectTimeout
+    delete init.proxy
   }
 
   const headers = init?.headers
     ? init.headers instanceof Headers
       ? init.headers
       : new Headers(init.headers)
-    : new Headers();
+    : new Headers()
 
-  const req = new Request(input, init);
-  const buffer = await req.arrayBuffer();
+  const req = new Request(input, init)
+  const buffer = await req.arrayBuffer()
   const data =
-    buffer.byteLength !== 0 ? Array.from(new Uint8Array(buffer)) : null;
+    buffer.byteLength !== 0 ? Array.from(new Uint8Array(buffer)) : null
 
   // append new headers created by the browser `Request` implementation,
   // if not already declared by the caller of this function
   for (const [key, value] of req.headers) {
     if (!headers.get(key)) {
-      headers.set(key, value);
+      headers.set(key, value)
     }
   }
 
@@ -147,7 +147,7 @@ export async function fetch(
       ? Array.from(headers.entries())
       : Array.isArray(headers)
         ? headers
-        : Object.entries(headers);
+        : Object.entries(headers)
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const mappedHeaders: Array<[string, string]> = headersArray.map(
@@ -155,16 +155,16 @@ export async function fetch(
       name,
       // we need to ensure we have all header values as strings
       // eslint-disable-next-line
-      typeof val === "string" ? val : (val as any).toString(),
-    ],
-  );
+      typeof val === 'string' ? val : (val as any).toString()
+    ]
+  )
 
   // abort early here if needed
   if (signal?.aborted) {
-    throw new Error(ERROR_REQUEST_CANCELLED);
+    throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
-  const rid = await invoke<number>("plugin:http|fetch", {
+  const rid = await invoke<number>('plugin:http|fetch', {
     clientConfig: {
       method: req.method,
       url: req.url,
@@ -172,28 +172,28 @@ export async function fetch(
       data,
       maxRedirections,
       connectTimeout,
-      proxy,
-    },
-  });
+      proxy
+    }
+  })
 
-  const abort = () => invoke("plugin:http|fetch_cancel", { rid });
+  const abort = () => invoke('plugin:http|fetch_cancel', { rid })
 
   // abort early here if needed
   if (signal?.aborted) {
     // we don't care about the result of this proimse
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    abort();
-    throw new Error(ERROR_REQUEST_CANCELLED);
+    abort()
+    throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
-  signal?.addEventListener("abort", () => void abort());
+  signal?.addEventListener('abort', () => void abort())
 
   interface FetchSendResponse {
-    status: number;
-    statusText: string;
-    headers: [[string, string]];
-    url: string;
-    rid: number;
+    status: number
+    statusText: string
+    headers: [[string, string]]
+    url: string
+    rid: number
   }
 
   const {
@@ -201,17 +201,17 @@ export async function fetch(
     statusText,
     url,
     headers: responseHeaders,
-    rid: responseRid,
-  } = await invoke<FetchSendResponse>("plugin:http|fetch_send", {
-    rid,
-  });
+    rid: responseRid
+  } = await invoke<FetchSendResponse>('plugin:http|fetch_send', {
+    rid
+  })
 
   const body = await invoke<ArrayBuffer | number[]>(
-    "plugin:http|fetch_read_body",
+    'plugin:http|fetch_read_body',
     {
-      rid: responseRid,
-    },
-  );
+      rid: responseRid
+    }
+  )
 
   const res = new Response(
     body instanceof ArrayBuffer && body.byteLength !== 0
@@ -221,9 +221,9 @@ export async function fetch(
         : null,
     {
       status,
-      statusText,
-    },
-  );
+      statusText
+    }
+  )
 
   // url and headers are read only properties
   // but seems like we can set them like this
@@ -231,10 +231,10 @@ export async function fetch(
   // we define theme like this, because using `Response`
   // constructor, it removes url and some headers
   // like `set-cookie` headers
-  Object.defineProperty(res, "url", { value: url });
-  Object.defineProperty(res, "headers", {
-    value: new Headers(responseHeaders),
-  });
+  Object.defineProperty(res, 'url', { value: url })
+  Object.defineProperty(res, 'headers', {
+    value: new Headers(responseHeaders)
+  })
 
-  return res;
+  return res
 }

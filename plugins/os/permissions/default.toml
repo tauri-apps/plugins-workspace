@@ -13,11 +13,11 @@ All information except the host name are available.
 """
 
 permissions = [
-    "allow-arch",
-    "allow-exe-extension",
-    "allow-family",
-    "allow-locale",
-    "allow-os-type",
-    "allow-platform",
-    "allow-version",
+  "allow-arch",
+  "allow-exe-extension",
+  "allow-family",
+  "allow-locale",
+  "allow-os-type",
+  "allow-platform",
+  "allow-version",
 ]

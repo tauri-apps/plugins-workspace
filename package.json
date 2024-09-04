@@ -6,8 +6,8 @@
   "scripts": {
     "build": "pnpm run -r --parallel --filter !plugins-workspace --filter !\"./plugins/*/examples/**\" --filter !\"./examples/*\" build",
     "lint": "eslint .",
-    "format": "prettier --write \"./**/*.{cjs,mjs,js,jsx,mts,ts,tsx,html,css,json}\" --ignore-path .prettierignore",
-    "format-check": "prettier --check \"./**/*.{cjs,mjs,js,jsx,mts,ts,tsx,html,css,json}\" --ignore-path .prettierignore"
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "@eslint/js": "9.9.1",
@@ -31,10 +31,5 @@
   },
   "engines": {
     "pnpm": "^9.0.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "micromatch@<4.0.8": ">=4.0.8"
-    }
   }
 }

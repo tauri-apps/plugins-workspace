@@ -10,21 +10,21 @@ on:
       - v1
       - v2
     paths:
-      - ".github/workflows/test-rust.yml"
-      - "plugins/*/src/**"
-      - "!plugins/*/src/api-iife.js"
-      - "**/Cargo.toml"
-      - "**/Cargo.lock"
+      - '.github/workflows/test-rust.yml'
+      - 'plugins/*/src/**'
+      - '!plugins/*/src/api-iife.js'
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
   pull_request:
     branches:
       - v1
       - v2
     paths:
-      - ".github/workflows/test-rust.yml"
-      - "plugins/*/src/**"
-      - "!plugins/*/src/api-iife.js"
-      - "**/Cargo.toml"
-      - "**/Cargo.lock"
+      - '.github/workflows/test-rust.yml'
+      - 'plugins/*/src/**'
+      - '!plugins/*/src/api-iife.js'
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -163,32 +163,32 @@ jobs:
           - {
               target: x86_64-pc-windows-msvc,
               os: windows-latest,
-              runner: "cargo",
-              command: "test",
+              runner: 'cargo',
+              command: 'test'
             }
           - {
               target: x86_64-unknown-linux-gnu,
               os: ubuntu-latest,
-              runner: "cargo",
-              command: "test",
+              runner: 'cargo',
+              command: 'test'
             }
           - {
               target: aarch64-apple-darwin,
               os: macos-latest,
-              runner: "cargo",
-              command: "test",
+              runner: 'cargo',
+              command: 'test'
             }
           - {
               target: aarch64-apple-ios,
               os: macos-latest,
-              runner: "cargo",
-              command: "build",
+              runner: 'cargo',
+              command: 'build'
             }
           - {
               target: aarch64-linux-android,
               os: ubuntu-latest,
-              runner: "cross",
-              command: "build",
+              runner: 'cross',
+              command: 'build'
             }
 
     runs-on: ${{ matrix.platform.os }}
@@ -209,10 +209,6 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: cache-${{ matrix.package }}-${{ matrix.platform.target }}
-
-      - name: create dummy dist
-        working-directory: examples/api
-        run: mkdir dist
 
       - name: install cross
         if: ${{ matrix.platform.runner == 'cross' }}

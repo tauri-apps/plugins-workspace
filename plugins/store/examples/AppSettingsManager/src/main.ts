@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-window.addEventListener("DOMContentLoaded", () => {
-  document.querySelector("#greet-form")?.addEventListener("submit", (e) => {
-    e.preventDefault();
-  });
-});
+window.addEventListener('DOMContentLoaded', () => {
+  document.querySelector('#greet-form')?.addEventListener('submit', (e) => {
+    e.preventDefault()
+  })
+})

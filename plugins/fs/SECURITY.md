@@ -36,14 +36,12 @@ the restrictions imposed by the scope.
 
 The scope is defined at compile time in the used permissions but the user or application developer can grant or revoke access to specific files or folders at runtime by modifying the scope state through the runtime authority, if configured during plugin initialization.
 
-
 ### Security Assumptions
 
 - The filesystem access is limited by user permissions
 - The operating system filesystem access confinment works as documented
 - The scoping mechanism of the Tauri `fs` commands work as intended and has no bypasses
 - The user or application developer can grant or revoke access to specific files at runtime by modifying the scope
-
 
 #### Out Of Scope
 

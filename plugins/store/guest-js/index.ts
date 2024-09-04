@@ -2,23 +2,23 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from '@tauri-apps/api/core'
 
 interface ChangePayload<T> {
-  path: string;
-  key: string;
-  value: T | null;
+  path: string
+  key: string
+  value: T | null
 }
 
 /**
  * A key-value store persisted by the backend layer.
  */
 export class Store {
-  path: string;
+  path: string
   constructor(path: string) {
-    this.path = path;
+    this.path = path
   }
 
   /**
@@ -29,11 +29,11 @@ export class Store {
    * @returns
    */
   async set(key: string, value: unknown): Promise<void> {
-    await invoke("plugin:store|set", {
+    await invoke('plugin:store|set', {
       path: this.path,
       key,
-      value,
-    });
+      value
+    })
   }
 
   /**
@@ -43,10 +43,10 @@ export class Store {
    * @returns
    */
   async get<T>(key: string): Promise<T | null> {
-    return await invoke("plugin:store|get", {
+    return await invoke('plugin:store|get', {
       path: this.path,
-      key,
-    });
+      key
+    })
   }
 
   /**
@@ -56,10 +56,10 @@ export class Store {
    * @returns
    */
   async has(key: string): Promise<boolean> {
-    return await invoke("plugin:store|has", {
+    return await invoke('plugin:store|has', {
       path: this.path,
-      key,
-    });
+      key
+    })
   }
 
   /**
@@ -69,10 +69,10 @@ export class Store {
    * @returns
    */
   async delete(key: string): Promise<boolean> {
-    return await invoke("plugin:store|delete", {
+    return await invoke('plugin:store|delete', {
       path: this.path,
-      key,
-    });
+      key
+    })
   }
 
   /**
@@ -82,9 +82,9 @@ export class Store {
    * @returns
    */
   async clear(): Promise<void> {
-    await invoke("plugin:store|clear", {
-      path: this.path,
-    });
+    await invoke('plugin:store|clear', {
+      path: this.path
+    })
   }
 
   /**
@@ -94,9 +94,9 @@ export class Store {
    * @returns
    */
   async reset(): Promise<void> {
-    await invoke("plugin:store|reset", {
-      path: this.path,
-    });
+    await invoke('plugin:store|reset', {
+      path: this.path
+    })
   }
 
   /**
@@ -105,9 +105,9 @@ export class Store {
    * @returns
    */
   async keys(): Promise<string[]> {
-    return await invoke("plugin:store|keys", {
-      path: this.path,
-    });
+    return await invoke('plugin:store|keys', {
+      path: this.path
+    })
   }
 
   /**
@@ -116,9 +116,9 @@ export class Store {
    * @returns
    */
   async values<T>(): Promise<T[]> {
-    return await invoke("plugin:store|values", {
-      path: this.path,
-    });
+    return await invoke('plugin:store|values', {
+      path: this.path
+    })
   }
 
   /**
@@ -127,9 +127,9 @@ export class Store {
    * @returns
    */
   async entries<T>(): Promise<Array<[key: string, value: T]>> {
-    return await invoke("plugin:store|entries", {
-      path: this.path,
-    });
+    return await invoke('plugin:store|entries', {
+      path: this.path
+    })
   }
 
   /**
@@ -138,9 +138,9 @@ export class Store {
    * @returns
    */
   async length(): Promise<number> {
-    return await invoke("plugin:store|length", {
-      path: this.path,
-    });
+    return await invoke('plugin:store|length', {
+      path: this.path
+    })
   }
 
   /**
@@ -152,9 +152,9 @@ export class Store {
    * @returns
    */
   async load(): Promise<void> {
-    await invoke("plugin:store|load", {
-      path: this.path,
-    });
+    await invoke('plugin:store|load', {
+      path: this.path
+    })
   }
 
   /**
@@ -165,9 +165,9 @@ export class Store {
    * @returns
    */
   async save(): Promise<void> {
-    await invoke("plugin:store|save", {
-      path: this.path,
-    });
+    await invoke('plugin:store|save', {
+      path: this.path
+    })
   }
 
   /**
@@ -180,13 +180,13 @@ export class Store {
    */
   async onKeyChange<T>(
     key: string,
-    cb: (value: T | null) => void,
+    cb: (value: T | null) => void
   ): Promise<UnlistenFn> {
-    return await listen<ChangePayload<T>>("store://change", (event) => {
+    return await listen<ChangePayload<T>>('store://change', (event) => {
       if (event.payload.path === this.path && event.payload.key === key) {
-        cb(event.payload.value);
+        cb(event.payload.value)
       }
-    });
+    })
   }
 
   /**
@@ -197,12 +197,12 @@ export class Store {
    * @since 2.0.0
    */
   async onChange<T>(
-    cb: (key: string, value: T | null) => void,
+    cb: (key: string, value: T | null) => void
   ): Promise<UnlistenFn> {
-    return await listen<ChangePayload<T>>("store://change", (event) => {
+    return await listen<ChangePayload<T>>('store://change', (event) => {
       if (event.payload.path === this.path) {
-        cb(event.payload.key, event.payload.value);
+        cb(event.payload.key, event.payload.value)
       }
-    });
+    })
   }
 }

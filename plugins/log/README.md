@@ -68,17 +68,17 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { trace, info, error, attachConsole } from "@tauri-apps/plugin-log";
+import { trace, info, error, attachConsole } from '@tauri-apps/plugin-log'
 
 // with TargetKind::Webview enabled this function will print logs to the browser console
-const detach = await attachConsole();
+const detach = await attachConsole()
 
-trace("Trace");
-info("Info");
-error("Error");
+trace('Trace')
+info('Info')
+error('Error')
 
 // detach the browser console from the log stream
-detach();
+detach()
 ```
 
 To log from rust code, add the log crate to your `Cargo.toml`:

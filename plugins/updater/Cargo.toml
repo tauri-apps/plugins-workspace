@@ -10,13 +10,13 @@ repository = { workspace = true }
 links = "tauri-plugin-updater"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 no-default-features = true
-features = [ "zip" ]
+features = ["zip"]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 tauri = { workspace = true }
