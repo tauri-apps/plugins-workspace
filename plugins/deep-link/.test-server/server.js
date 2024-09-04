@@ -12,7 +12,7 @@ const server = http.createServer(function (req, res) {
   console.log(req.url);
   if (req.url == "/.well-known/apple-app-site-association") {
     const association = fs.readFileSync(
-      ".well-known/apple-app-site-association"
+      ".well-known/apple-app-site-association",
     );
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(association);
