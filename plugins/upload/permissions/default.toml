@@ -10,7 +10,4 @@ operations are available from the upload plugin.
 All operations are enabled by default.
 
 """
-permissions = [
-  "allow-upload",
-  "allow-download"
-]
+permissions = ["allow-upload", "allow-download"]

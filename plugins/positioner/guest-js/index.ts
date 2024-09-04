@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from '@tauri-apps/api/core'
 
 /**
  * Well known window positions.
@@ -23,7 +23,7 @@ export enum Position {
   TrayRight,
   TrayBottomRight,
   TrayCenter,
-  TrayBottomCenter,
+  TrayBottomCenter
 }
 
 /**
@@ -33,7 +33,7 @@ export enum Position {
  * @param to The {@link Position} to move to.
  */
 export async function moveWindow(to: Position): Promise<void> {
-  await invoke("plugin:positioner|move_window", {
-    position: to,
-  });
+  await invoke('plugin:positioner|move_window', {
+    position: to
+  })
 }

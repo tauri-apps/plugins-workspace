@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 // eslint-disable-next-line
-Object.defineProperty(window, "__TAURI_OS_PLUGIN_INTERNALS__", {
+Object.defineProperty(window, '__TAURI_OS_PLUGIN_INTERNALS__', {
   value: {
     eol: __TEMPLATE_eol__,
     os_type: __TEMPLATE_os_type__,
@@ -11,6 +11,6 @@ Object.defineProperty(window, "__TAURI_OS_PLUGIN_INTERNALS__", {
     family: __TEMPLATE_family__,
     version: __TEMPLATE_version__,
     arch: __TEMPLATE_arch__,
-    exe_extension: __TEMPLATE_exe_extension__,
-  },
-});
+    exe_extension: __TEMPLATE_exe_extension__
+  }
+})

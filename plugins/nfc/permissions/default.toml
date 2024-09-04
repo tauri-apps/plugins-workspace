@@ -12,7 +12,4 @@ and scanning nearby tags is allowed.
 Writing to tags needs to be manually enabled.
 
 """
-permissions = [
-  "allow-is-available",
-  "allow-scan",
-]
+permissions = ["allow-is-available", "allow-scan"]

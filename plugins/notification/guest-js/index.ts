@@ -12,10 +12,10 @@
 import {
   invoke,
   type PluginListener,
-  addPluginListener,
-} from "@tauri-apps/api/core";
+  addPluginListener
+} from '@tauri-apps/api/core'
 
-export type { PermissionState } from "@tauri-apps/api/core";
+export type { PermissionState } from '@tauri-apps/api/core'
 
 /**
  * Options to send a notification.
@@ -26,54 +26,54 @@ interface Options {
   /**
    * The notification identifier to reference this object later. Must be a 32-bit integer.
    */
-  id?: number;
+  id?: number
   /**
    * Identifier of the {@link Channel} that deliveres this notification.
    *
    * If the channel does not exist, the notification won't fire.
    * Make sure the channel exists with {@link listChannels} and {@link createChannel}.
    */
-  channelId?: string;
+  channelId?: string
   /**
    * Notification title.
    */
-  title: string;
+  title: string
   /**
    * Optional notification body.
    * */
-  body?: string;
+  body?: string
   /**
    * Schedule this notification to fire on a later time or a fixed interval.
    */
-  schedule?: Schedule;
+  schedule?: Schedule
   /**
    * Multiline text.
    * Changes the notification style to big text.
    * Cannot be used with `inboxLines`.
    */
-  largeBody?: string;
+  largeBody?: string
   /**
    * Detail text for the notification with `largeBody`, `inboxLines` or `groupSummary`.
    */
-  summary?: string;
+  summary?: string
   /**
    * Defines an action type for this notification.
    */
-  actionTypeId?: string;
+  actionTypeId?: string
   /**
    * Identifier used to group multiple notifications.
    *
    * https://developer.apple.com/documentation/usernotifications/unmutablenotificationcontent/1649872-threadidentifier
    */
-  group?: string;
+  group?: string
   /**
    * Instructs the system that this notification is the summary of a group on Android.
    */
-  groupSummary?: boolean;
+  groupSummary?: boolean
   /**
    * The sound resource name. Only available on mobile.
    */
-  sound?: string;
+  sound?: string
   /**
    * List of lines to add to the notification.
    * Changes the notification style to inbox.
@@ -81,31 +81,31 @@ interface Options {
    *
    * Only supports up to 5 lines.
    */
-  inboxLines?: string[];
+  inboxLines?: string[]
   /**
    * Notification icon.
    *
    * On Android the icon must be placed in the app's `res/drawable` folder.
    */
-  icon?: string;
+  icon?: string
   /**
    * Notification large icon (Android).
    *
    * The icon must be placed in the app's `res/drawable` folder.
    */
-  largeIcon?: string;
+  largeIcon?: string
   /**
    * Icon color on Android.
    */
-  iconColor?: string;
+  iconColor?: string
   /**
    * Notification attachments.
    */
-  attachments?: Attachment[];
+  attachments?: Attachment[]
   /**
    * Extra payload to store in the notification.
    */
-  extra?: Record<string, unknown>;
+  extra?: Record<string, unknown>
   /**
    * If true, the notification cannot be dismissed by the user on Android.
    *
@@ -113,29 +113,29 @@ interface Options {
    * It is typically used to indicate a background task that is pending (e.g. a file download)
    * or the user is engaged with (e.g. playing music).
    */
-  ongoing?: boolean;
+  ongoing?: boolean
   /**
    * Automatically cancel the notification when the user clicks on it.
    */
-  autoCancel?: boolean;
+  autoCancel?: boolean
   /**
    * Changes the notification presentation to be silent on iOS (no badge, no sound, not listed).
    */
-  silent?: boolean;
+  silent?: boolean
   /**
    * Notification visibility.
    */
-  visibility?: Visibility;
+  visibility?: Visibility
   /**
    * Sets the number of items this notification represents on Android.
    */
-  number?: number;
+  number?: number
 }
 
 interface ScheduleInterval {
-  year?: number;
-  month?: number;
-  day?: number;
+  year?: number
+  month?: number
+  day?: number
   /**
    * 1 - Sunday
    * 2 - Monday
@@ -145,79 +145,79 @@ interface ScheduleInterval {
    * 6 - Friday
    * 7 - Saturday
    */
-  weekday?: number;
-  hour?: number;
-  minute?: number;
-  second?: number;
+  weekday?: number
+  hour?: number
+  minute?: number
+  second?: number
 }
 
 enum ScheduleEvery {
-  Year = "year",
-  Month = "month",
-  TwoWeeks = "twoWeeks",
-  Week = "week",
-  Day = "day",
-  Hour = "hour",
-  Minute = "minute",
+  Year = 'year',
+  Month = 'month',
+  TwoWeeks = 'twoWeeks',
+  Week = 'week',
+  Day = 'day',
+  Hour = 'hour',
+  Minute = 'minute',
   /**
    * Not supported on iOS.
    */
-  Second = "second",
+  Second = 'second'
 }
 
 class Schedule {
   at:
     | {
-        date: Date;
-        repeating: boolean;
-        allowWhileIdle: boolean;
+        date: Date
+        repeating: boolean
+        allowWhileIdle: boolean
       }
-    | undefined;
+    | undefined
 
   interval:
     | {
-        interval: ScheduleInterval;
-        allowWhileIdle: boolean;
+        interval: ScheduleInterval
+        allowWhileIdle: boolean
       }
-    | undefined;
+    | undefined
 
   every:
     | {
-        interval: ScheduleEvery;
-        count: number;
-        allowWhileIdle: boolean;
+        interval: ScheduleEvery
+        count: number
+        allowWhileIdle: boolean
       }
-    | undefined;
+    | undefined
 
   static at(date: Date, repeating = false, allowWhileIdle = false): Schedule {
     return {
       at: { date, repeating, allowWhileIdle },
       interval: undefined,
-      every: undefined,
-    };
+      every: undefined
+    }
   }
 
   static interval(
     interval: ScheduleInterval,
-    allowWhileIdle = false,
+    allowWhileIdle = false
   ): Schedule {
     return {
       at: undefined,
       interval: { interval, allowWhileIdle },
-      every: undefined,
-    };
+      every: undefined
+    }
   }
 
   static every(
     kind: ScheduleEvery,
     count: number,
-    allowWhileIdle = false,
+    allowWhileIdle = false
   ): Schedule {
     return {
       at: undefined,
       interval: undefined,
-      every: { interval: kind, count, allowWhileIdle },
-    };
+      every: { interval: kind, count, allowWhileIdle }
+    }
   }
 }
 
@@ -226,58 +226,58 @@ class Schedule {
  */
 interface Attachment {
   /** Attachment identifier. */
-  id: string;
+  id: string
   /** Attachment URL. Accepts the `asset` and `file` protocols. */
-  url: string;
+  url: string
 }
 
 interface Action {
-  id: string;
-  title: string;
-  requiresAuthentication?: boolean;
-  foreground?: boolean;
-  destructive?: boolean;
-  input?: boolean;
-  inputButtonTitle?: string;
-  inputPlaceholder?: string;
+  id: string
+  title: string
+  requiresAuthentication?: boolean
+  foreground?: boolean
+  destructive?: boolean
+  input?: boolean
+  inputButtonTitle?: string
+  inputPlaceholder?: string
 }
 
 interface ActionType {
   /**
    * The identifier of this action type
    */
-  id: string;
+  id: string
   /**
    * The list of associated actions
    */
-  actions: Action[];
-  hiddenPreviewsBodyPlaceholder?: string;
-  customDismissAction?: boolean;
-  allowInCarPlay?: boolean;
-  hiddenPreviewsShowTitle?: boolean;
-  hiddenPreviewsShowSubtitle?: boolean;
+  actions: Action[]
+  hiddenPreviewsBodyPlaceholder?: string
+  customDismissAction?: boolean
+  allowInCarPlay?: boolean
+  hiddenPreviewsShowTitle?: boolean
+  hiddenPreviewsShowSubtitle?: boolean
 }
 
 interface PendingNotification {
-  id: number;
-  title?: string;
-  body?: string;
-  schedule: Schedule;
+  id: number
+  title?: string
+  body?: string
+  schedule: Schedule
 }
 
 interface ActiveNotification {
-  id: number;
-  tag?: string;
-  title?: string;
-  body?: string;
-  group?: string;
-  groupSummary: boolean;
-  data: Record<string, string>;
-  extra: Record<string, unknown>;
-  attachments: Attachment[];
-  actionTypeId?: string;
-  schedule?: Schedule;
-  sound?: string;
+  id: number
+  tag?: string
+  title?: string
+  body?: string
+  group?: string
+  groupSummary: boolean
+  data: Record<string, string>
+  extra: Record<string, unknown>
+  attachments: Attachment[]
+  actionTypeId?: string
+  schedule?: Schedule
+  sound?: string
 }
 
 enum Importance {
@@ -285,25 +285,25 @@ enum Importance {
   Min,
   Low,
   Default,
-  High,
+  High
 }
 
 enum Visibility {
   Secret = -1,
   Private,
-  Public,
+  Public
 }
 
 interface Channel {
-  id: string;
-  name: string;
-  description?: string;
-  sound?: string;
-  lights?: boolean;
-  lightColor?: string;
-  vibration?: boolean;
-  importance?: Importance;
-  visibility?: Visibility;
+  id: string
+  name: string
+  description?: string
+  sound?: string
+  lights?: boolean
+  lightColor?: string
+  vibration?: boolean
+  importance?: Importance
+  visibility?: Visibility
 }
 
 /**
@@ -317,10 +317,10 @@ interface Channel {
  * @since 2.0.0
  */
 async function isPermissionGranted(): Promise<boolean> {
-  if (window.Notification.permission !== "default") {
-    return await Promise.resolve(window.Notification.permission === "granted");
+  if (window.Notification.permission !== 'default') {
+    return await Promise.resolve(window.Notification.permission === 'granted')
   }
-  return await invoke("plugin:notification|is_permission_granted");
+  return await invoke('plugin:notification|is_permission_granted')
 }
 
 /**
@@ -340,7 +340,7 @@ async function isPermissionGranted(): Promise<boolean> {
  * @since 2.0.0
  */
 async function requestPermission(): Promise<NotificationPermission> {
-  return await window.Notification.requestPermission();
+  return await window.Notification.requestPermission()
 }
 
 /**
@@ -362,10 +362,10 @@ async function requestPermission(): Promise<NotificationPermission> {
  * @since 2.0.0
  */
 function sendNotification(options: Options | string): void {
-  if (typeof options === "string") {
-    new window.Notification(options);
+  if (typeof options === 'string') {
+    new window.Notification(options)
   } else {
-    new window.Notification(options.title, options);
+    new window.Notification(options.title, options)
   }
 }
 
@@ -389,7 +389,7 @@ function sendNotification(options: Options | string): void {
  * @since 2.0.0
  */
 async function registerActionTypes(types: ActionType[]): Promise<void> {
-  await invoke("plugin:notification|register_action_types", { types });
+  await invoke('plugin:notification|register_action_types', { types })
 }
 
 /**
@@ -406,7 +406,7 @@ async function registerActionTypes(types: ActionType[]): Promise<void> {
  * @since 2.0.0
  */
 async function pending(): Promise<PendingNotification[]> {
-  return await invoke("plugin:notification|get_pending");
+  return await invoke('plugin:notification|get_pending')
 }
 
 /**
@@ -423,7 +423,7 @@ async function pending(): Promise<PendingNotification[]> {
  * @since 2.0.0
  */
 async function cancel(notifications: number[]): Promise<void> {
-  await invoke("plugin:notification|cancel", { notifications });
+  await invoke('plugin:notification|cancel', { notifications })
 }
 
 /**
@@ -440,7 +440,7 @@ async function cancel(notifications: number[]): Promise<void> {
  * @since 2.0.0
  */
 async function cancelAll(): Promise<void> {
-  await invoke("plugin:notification|cancel");
+  await invoke('plugin:notification|cancel')
 }
 
 /**
@@ -457,7 +457,7 @@ async function cancelAll(): Promise<void> {
  * @since 2.0.0
  */
 async function active(): Promise<ActiveNotification[]> {
-  return await invoke("plugin:notification|get_active");
+  return await invoke('plugin:notification|get_active')
 }
 
 /**
@@ -474,9 +474,9 @@ async function active(): Promise<ActiveNotification[]> {
  * @since 2.0.0
  */
 async function removeActive(
-  notifications: Array<{ id: number; tag?: string }>,
+  notifications: Array<{ id: number; tag?: string }>
 ): Promise<void> {
-  await invoke("plugin:notification|remove_active", { notifications });
+  await invoke('plugin:notification|remove_active', { notifications })
 }
 
 /**
@@ -493,7 +493,7 @@ async function removeActive(
  * @since 2.0.0
  */
 async function removeAllActive(): Promise<void> {
-  await invoke("plugin:notification|remove_active");
+  await invoke('plugin:notification|remove_active')
 }
 
 /**
@@ -517,7 +517,7 @@ async function removeAllActive(): Promise<void> {
  * @since 2.0.0
  */
 async function createChannel(channel: Channel): Promise<void> {
-  await invoke("plugin:notification|create_channel", { ...channel });
+  await invoke('plugin:notification|create_channel', { ...channel })
 }
 
 /**
@@ -534,7 +534,7 @@ async function createChannel(channel: Channel): Promise<void> {
  * @since 2.0.0
  */
 async function removeChannel(id: string): Promise<void> {
-  await invoke("plugin:notification|delete_channel", { id });
+  await invoke('plugin:notification|delete_channel', { id })
 }
 
 /**
@@ -551,19 +551,19 @@ async function removeChannel(id: string): Promise<void> {
  * @since 2.0.0
  */
 async function channels(): Promise<Channel[]> {
-  return await invoke("plugin:notification|listChannels");
+  return await invoke('plugin:notification|listChannels')
 }
 
 async function onNotificationReceived(
-  cb: (notification: Options) => void,
+  cb: (notification: Options) => void
 ): Promise<PluginListener> {
-  return await addPluginListener("notification", "notification", cb);
+  return await addPluginListener('notification', 'notification', cb)
 }
 
 async function onAction(
-  cb: (notification: Options) => void,
+  cb: (notification: Options) => void
 ): Promise<PluginListener> {
-  return await addPluginListener("notification", "actionPerformed", cb);
+  return await addPluginListener('notification', 'actionPerformed', cb)
 }
 
 export type {
@@ -574,8 +574,8 @@ export type {
   PendingNotification,
   ActiveNotification,
   Channel,
-  ScheduleInterval,
-};
+  ScheduleInterval
+}
 
 export {
   Importance,
@@ -596,5 +596,5 @@ export {
   onNotificationReceived,
   onAction,
   Schedule,
-  ScheduleEvery,
-};
+  ScheduleEvery
+}

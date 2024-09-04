@@ -1521,11 +1521,13 @@ checksum = "5c297a1c74b71ae29df00c3e22dd9534821d60eb9af5a0192823fa2acea70c2a"
 name = "deep-link-example"
 version = "0.0.0"
 dependencies = [
+ "log",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build 2.0.0-rc.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "tauri-plugin-deep-link",
+ "tauri-plugin-log",
 ]
 
 [[package]]

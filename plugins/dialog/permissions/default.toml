@@ -12,9 +12,9 @@ All dialog types are enabled.
 
 """
 permissions = [
-    "allow-ask",
-    "allow-confirm",
-    "allow-message",
-    "allow-save",
-    "allow-open",
+  "allow-ask",
+  "allow-confirm",
+  "allow-message",
+  "allow-save",
+  "allow-open",
 ]

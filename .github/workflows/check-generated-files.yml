@@ -7,8 +7,8 @@ name: check generated files
 on:
   pull_request:
     paths:
-      - ".github/workflows/check-generated-files.yml"
-      - "**/guest-js/**"
+      - '.github/workflows/check-generated-files.yml'
+      - '**/guest-js/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -136,7 +136,7 @@ jobs:
             ${{ runner.os }}-
       - uses: actions/setup-node@v4
         with:
-          node-version: "lts/*"
+          node-version: 'lts/*'
       - uses: pnpm/action-setup@v4
         with:
           version: 9.x.x

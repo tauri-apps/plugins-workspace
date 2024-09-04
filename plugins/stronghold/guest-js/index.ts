@@ -2,112 +2,112 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from '@tauri-apps/api/core'
 
 export type ClientPath =
   | string
   | Iterable<number>
   | ArrayLike<number>
-  | ArrayBuffer;
+  | ArrayBuffer
 export type VaultPath =
   | string
   | Iterable<number>
   | ArrayLike<number>
-  | ArrayBuffer;
+  | ArrayBuffer
 export type RecordPath =
   | string
   | Iterable<number>
   | ArrayLike<number>
-  | ArrayBuffer;
+  | ArrayBuffer
 export type StoreKey =
   | string
   | Iterable<number>
   | ArrayLike<number>
-  | ArrayBuffer;
+  | ArrayBuffer
 
 export interface ConnectionLimits {
-  maxPendingIncoming?: number;
-  maxPendingOutgoing?: number;
-  maxEstablishedIncoming?: number;
-  maxEstablishedOutgoing?: number;
-  maxEstablishedPerPeer?: number;
-  maxEstablishedTotal?: number;
+  maxPendingIncoming?: number
+  maxPendingOutgoing?: number
+  maxEstablishedIncoming?: number
+  maxEstablishedOutgoing?: number
+  maxEstablishedPerPeer?: number
+  maxEstablishedTotal?: number
 }
 
 export interface PeerAddress {
-  known: string[]; // multiaddr
-  use_relay_fallback: boolean;
+  known: string[] // multiaddr
+  use_relay_fallback: boolean
 }
 
 export interface AddressInfo {
-  peers: Map<string, PeerAddress>;
-  relays: string[]; // peers
+  peers: Map<string, PeerAddress>
+  relays: string[] // peers
 }
 
 export interface ClientAccess {
-  useVaultDefault?: boolean;
-  useVaultExceptions?: Map<VaultPath, boolean>;
-  writeVaultDefault?: boolean;
-  writeVaultExceptions?: Map<VaultPath, boolean>;
-  cloneVaultDefault?: boolean;
-  cloneVaultExceptions?: Map<VaultPath, boolean>;
-  readStore?: boolean;
-  writeStore?: boolean;
+  useVaultDefault?: boolean
+  useVaultExceptions?: Map<VaultPath, boolean>
+  writeVaultDefault?: boolean
+  writeVaultExceptions?: Map<VaultPath, boolean>
+  cloneVaultDefault?: boolean
+  cloneVaultExceptions?: Map<VaultPath, boolean>
+  readStore?: boolean
+  writeStore?: boolean
 }
 
 export interface Permissions {
-  default?: ClientAccess;
-  exceptions?: Map<VaultPath, ClientAccess>;
+  default?: ClientAccess
+  exceptions?: Map<VaultPath, ClientAccess>
 }
 
 export interface NetworkConfig {
-  requestTimeout?: Duration;
-  connectionTimeout?: Duration;
-  connectionsLimit?: ConnectionLimits;
-  enableMdns?: boolean;
-  enableRelay?: boolean;
-  addresses?: AddressInfo;
-  peerPermissions?: Map<string, Permissions>;
-  permissionsDefault?: Permissions;
+  requestTimeout?: Duration
+  connectionTimeout?: Duration
+  connectionsLimit?: ConnectionLimits
+  enableMdns?: boolean
+  enableRelay?: boolean
+  addresses?: AddressInfo
+  peerPermissions?: Map<string, Permissions>
+  permissionsDefault?: Permissions
 }
 
 /** A duration definition. */
 export interface Duration {
   /** The number of whole seconds contained by this Duration. */
-  secs: number;
+  secs: number
   /** The fractional part of this Duration, in nanoseconds. Must be greater or equal to 0 and smaller than 1e+9 (the max number of nanoseoncds in a second) */
-  nanos: number;
+  nanos: number
 }
 
 export class Location {
-  type: string;
-  payload: Record<string, unknown>;
+  type: string
+  payload: Record<string, unknown>
 
   constructor(type: string, payload: Record<string, unknown>) {
-    this.type = type;
-    this.payload = payload;
+    this.type = type
+    this.payload = payload
   }
 
   static generic(vault: VaultPath, record: RecordPath): Location {
-    return new Location("Generic", {
+    return new Location('Generic', {
       vault,
-      record,
-    });
+      record
+    })
   }
 
   static counter(vault: VaultPath, counter: number): Location {
-    return new Location("Counter", {
+    return new Location('Counter', {
       vault,
-      counter,
-    });
+      counter
+    })
   }
 }
 
 class ProcedureExecutor {
-  procedureArgs: Record<string, unknown>;
+  procedureArgs: Record<string, unknown>
 
   constructor(procedureArgs: Record<string, unknown>) {
-    this.procedureArgs = procedureArgs;
+    this.procedureArgs = procedureArgs
   }
 
   /**
@@ -119,18 +119,18 @@ class ProcedureExecutor {
    */
   async generateSLIP10Seed(
     outputLocation: Location,
-    sizeBytes?: number,
+    sizeBytes?: number
   ): Promise<Uint8Array> {
-    return await invoke<number[]>("plugin:stronghold|execute_procedure", {
+    return await invoke<number[]>('plugin:stronghold|execute_procedure', {
       ...this.procedureArgs,
       procedure: {
-        type: "SLIP10Generate",
+        type: 'SLIP10Generate',
         payload: {
           output: outputLocation,
-          sizeBytes,
-        },
-      },
-    }).then((n) => Uint8Array.from(n));
+          sizeBytes
+        }
+      }
+    }).then((n) => Uint8Array.from(n))
   }
 
   /**
@@ -144,24 +144,24 @@ class ProcedureExecutor {
    */
   async deriveSLIP10(
     chain: number[],
-    source: "Seed" | "Key",
+    source: 'Seed' | 'Key',
     sourceLocation: Location,
-    outputLocation: Location,
+    outputLocation: Location
   ): Promise<Uint8Array> {
-    return await invoke<number[]>("plugin:stronghold|execute_procedure", {
+    return await invoke<number[]>('plugin:stronghold|execute_procedure', {
       ...this.procedureArgs,
       procedure: {
-        type: "SLIP10Derive",
+        type: 'SLIP10Derive',
         payload: {
           chain,
           input: {
             type: source,
-            payload: sourceLocation,
+            payload: sourceLocation
           },
-          output: outputLocation,
-        },
-      },
-    }).then((n) => Uint8Array.from(n));
+          output: outputLocation
+        }
+      }
+    }).then((n) => Uint8Array.from(n))
   }
 
   /**
@@ -175,19 +175,19 @@ class ProcedureExecutor {
   async recoverBIP39(
     mnemonic: string,
     outputLocation: Location,
-    passphrase?: string,
+    passphrase?: string
   ): Promise<Uint8Array> {
-    return await invoke<number[]>("plugin:stronghold|execute_procedure", {
+    return await invoke<number[]>('plugin:stronghold|execute_procedure', {
       ...this.procedureArgs,
       procedure: {
-        type: "BIP39Recover",
+        type: 'BIP39Recover',
         payload: {
           mnemonic,
           passphrase,
-          output: outputLocation,
-        },
-      },
-    }).then((n) => Uint8Array.from(n));
+          output: outputLocation
+        }
+      }
+    }).then((n) => Uint8Array.from(n))
   }
 
   /**
@@ -199,18 +199,18 @@ class ProcedureExecutor {
    */
   async generateBIP39(
     outputLocation: Location,
-    passphrase?: string,
+    passphrase?: string
   ): Promise<Uint8Array> {
-    return await invoke<number[]>("plugin:stronghold|execute_procedure", {
+    return await invoke<number[]>('plugin:stronghold|execute_procedure', {
       ...this.procedureArgs,
       procedure: {
-        type: "BIP39Generate",
+        type: 'BIP39Generate',
         payload: {
           output: outputLocation,
-          passphrase,
-        },
-      },
-    }).then((n) => Uint8Array.from(n));
+          passphrase
+        }
+      }
+    }).then((n) => Uint8Array.from(n))
   }
 
   /**
@@ -221,16 +221,16 @@ class ProcedureExecutor {
    * @since 2.0.0
    */
   async getEd25519PublicKey(privateKeyLocation: Location): Promise<Uint8Array> {
-    return await invoke<number[]>("plugin:stronghold|execute_procedure", {
+    return await invoke<number[]>('plugin:stronghold|execute_procedure', {
       ...this.procedureArgs,
       procedure: {
-        type: "PublicKey",
+        type: 'PublicKey',
         payload: {
-          type: "Ed25519",
-          privateKey: privateKeyLocation,
-        },
-      },
-    }).then((n) => Uint8Array.from(n));
+          type: 'Ed25519',
+          privateKey: privateKeyLocation
+        }
+      }
+    }).then((n) => Uint8Array.from(n))
   }
 
   /**
@@ -243,28 +243,28 @@ class ProcedureExecutor {
    */
   async signEd25519(
     privateKeyLocation: Location,
-    msg: string,
+    msg: string
   ): Promise<Uint8Array> {
-    return await invoke<number[]>("plugin:stronghold|execute_procedure", {
+    return await invoke<number[]>('plugin:stronghold|execute_procedure', {
       ...this.procedureArgs,
       procedure: {
-        type: "Ed25519Sign",
+        type: 'Ed25519Sign',
         payload: {
           privateKey: privateKeyLocation,
-          msg,
-        },
-      },
-    }).then((n) => Uint8Array.from(n));
+          msg
+        }
+      }
+    }).then((n) => Uint8Array.from(n))
   }
 }
 
 export class Client {
-  path: string;
-  name: ClientPath;
+  path: string
+  name: ClientPath
 
   constructor(path: string, name: ClientPath) {
-    this.path = path;
-    this.name = name;
+    this.path = path
+    this.name = name
   }
 
   /**
@@ -274,54 +274,54 @@ export class Client {
    * @returns
    */
   getVault(name: VaultPath): Vault {
-    return new Vault(this.path, this.name, name);
+    return new Vault(this.path, this.name, name)
   }
 
   getStore(): Store {
-    return new Store(this.path, this.name);
+    return new Store(this.path, this.name)
   }
 }
 
 export class Store {
-  path: string;
-  client: ClientPath;
+  path: string
+  client: ClientPath
 
   constructor(path: string, client: ClientPath) {
-    this.path = path;
-    this.client = client;
+    this.path = path
+    this.client = client
   }
 
   async get(key: StoreKey): Promise<Uint8Array | null> {
-    return await invoke<number[] | null>("plugin:stronghold|get_store_record", {
+    return await invoke<number[] | null>('plugin:stronghold|get_store_record', {
       snapshotPath: this.path,
       client: this.client,
-      key,
-    }).then((v) => v && Uint8Array.from(v));
+      key
+    }).then((v) => v && Uint8Array.from(v))
   }
 
   async insert(
     key: StoreKey,
     value: number[],
-    lifetime?: Duration,
+    lifetime?: Duration
   ): Promise<void> {
-    await invoke("plugin:stronghold|save_store_record", {
+    await invoke('plugin:stronghold|save_store_record', {
       snapshotPath: this.path,
       client: this.client,
       key,
       value,
-      lifetime,
-    });
+      lifetime
+    })
   }
 
   async remove(key: StoreKey): Promise<Uint8Array | null> {
     return await invoke<number[] | null>(
-      "plugin:stronghold|remove_store_record",
+      'plugin:stronghold|remove_store_record',
       {
         snapshotPath: this.path,
         client: this.client,
-        key,
-      },
-    ).then((v) => v && Uint8Array.from(v));
+        key
+      }
+    ).then((v) => v && Uint8Array.from(v))
   }
 }
 
@@ -332,20 +332,20 @@ export class Store {
  */
 export class Vault extends ProcedureExecutor {
   /** The vault path. */
-  path: string;
-  client: ClientPath;
+  path: string
+  client: ClientPath
   /** The vault name. */
-  name: VaultPath;
+  name: VaultPath
 
   constructor(path: string, client: ClientPath, name: VaultPath) {
     super({
       snapshotPath: path,
       client,
-      vault: name,
-    });
-    this.path = path;
-    this.client = client;
-    this.name = name;
+      vault: name
+    })
+    this.path = path
+    this.client = client
+    this.name = name
   }
 
   /**
@@ -356,13 +356,13 @@ export class Vault extends ProcedureExecutor {
    * @returns
    */
   async insert(recordPath: RecordPath, secret: number[]): Promise<void> {
-    await invoke("plugin:stronghold|save_secret", {
+    await invoke('plugin:stronghold|save_secret', {
       snapshotPath: this.path,
       client: this.client,
       vault: this.name,
       recordPath,
-      secret,
-    });
+      secret
+    })
   }
 
   /**
@@ -372,12 +372,12 @@ export class Vault extends ProcedureExecutor {
    * @returns
    */
   async remove(location: Location): Promise<void> {
-    await invoke("plugin:stronghold|remove_secret", {
+    await invoke('plugin:stronghold|remove_secret', {
       snapshotPath: this.path,
       client: this.client,
       vault: this.name,
-      recordPath: location.payload.record,
-    });
+      recordPath: location.payload.record
+    })
   }
 }
 
@@ -385,7 +385,7 @@ export class Vault extends ProcedureExecutor {
  * A representation of an access to a stronghold.
  */
 export class Stronghold {
-  path: string;
+  path: string
 
   /**
    * Initializes a stronghold.
@@ -394,7 +394,7 @@ export class Stronghold {
    * @param password
    */
   private constructor(path: string) {
-    this.path = path;
+    this.path = path
   }
 
   /**
@@ -403,33 +403,33 @@ export class Stronghold {
    * @returns
    */
   static async load(path: string, password: string): Promise<Stronghold> {
-    return await invoke("plugin:stronghold|initialize", {
+    return await invoke('plugin:stronghold|initialize', {
       snapshotPath: path,
-      password,
-    }).then(() => new Stronghold(path));
+      password
+    }).then(() => new Stronghold(path))
   }
 
   /**
    * Remove this instance from the cache.
    */
   async unload(): Promise<void> {
-    await invoke("plugin:stronghold|destroy", {
-      snapshotPath: this.path,
-    });
+    await invoke('plugin:stronghold|destroy', {
+      snapshotPath: this.path
+    })
   }
 
   async loadClient(client: ClientPath): Promise<Client> {
-    return await invoke("plugin:stronghold|load_client", {
+    return await invoke('plugin:stronghold|load_client', {
       snapshotPath: this.path,
-      client,
-    }).then(() => new Client(this.path, client));
+      client
+    }).then(() => new Client(this.path, client))
   }
 
   async createClient(client: ClientPath): Promise<Client> {
-    return await invoke("plugin:stronghold|create_client", {
+    return await invoke('plugin:stronghold|create_client', {
       snapshotPath: this.path,
-      client,
-    }).then(() => new Client(this.path, client));
+      client
+    }).then(() => new Client(this.path, client))
   }
 
   /**
@@ -437,8 +437,8 @@ export class Stronghold {
    * @returns
    */
   async save(): Promise<void> {
-    await invoke("plugin:stronghold|save", {
-      snapshotPath: this.path,
-    });
+    await invoke('plugin:stronghold|save', {
+      snapshotPath: this.path
+    })
   }
 }

@@ -4,15 +4,15 @@
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import { commands } from "./bindings";
+import { commands } from './bindings'
 
 export const {
   vibrate,
   impactFeedback,
   notificationFeedback,
-  selectionFeedback,
-} = commands;
+  selectionFeedback
+} = commands
 
-export { ImpactFeedbackStyle, NotificationFeedbackType } from "./bindings";
+export { ImpactFeedbackStyle, NotificationFeedbackType } from './bindings'
 
 // export { events };
