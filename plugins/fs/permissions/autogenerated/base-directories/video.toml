@@ -36,29 +36,47 @@ path = "$VIDEO"
 [[set]]
 identifier = "allow-video-read-recursive"
 description = "This allows full recursive read access to the complete `$VIDEO` folder, files and subdirectories."
-permissions = ["read-all", "scope-video-recursive"]
+permissions = [
+    "read-all",
+    "scope-video-recursive"
+]
 
 [[set]]
 identifier = "allow-video-write-recursive"
 description = "This allows full recursive write access to the complete `$VIDEO` folder, files and subdirectories."
-permissions = ["write-all", "scope-video-recursive"]
+permissions = [
+    "write-all",
+    "scope-video-recursive"
+]
 
 [[set]]
 identifier = "allow-video-read"
 description = "This allows non-recursive read access to the `$VIDEO` folder."
-permissions = ["read-all", "scope-video"]
+permissions = [
+    "read-all",
+    "scope-video"
+]
 
 [[set]]
 identifier = "allow-video-write"
 description = "This allows non-recursive write access to the `$VIDEO` folder."
-permissions = ["write-all", "scope-video"]
+permissions = [
+    "write-all",
+    "scope-video"
+]
 
 [[set]]
 identifier = "allow-video-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$VIDEO` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-video-recursive"]
+permissions = [
+    "read-meta",
+    "scope-video-recursive"
+]
 
 [[set]]
 identifier = "allow-video-meta"
 description = "This allows non-recursive read access to metadata of the `$VIDEO` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-video-index"]
+permissions = [
+    "read-meta",
+    "scope-video-index"
+]

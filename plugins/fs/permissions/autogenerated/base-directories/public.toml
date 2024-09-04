@@ -36,29 +36,47 @@ path = "$PUBLIC"
 [[set]]
 identifier = "allow-public-read-recursive"
 description = "This allows full recursive read access to the complete `$PUBLIC` folder, files and subdirectories."
-permissions = ["read-all", "scope-public-recursive"]
+permissions = [
+    "read-all",
+    "scope-public-recursive"
+]
 
 [[set]]
 identifier = "allow-public-write-recursive"
 description = "This allows full recursive write access to the complete `$PUBLIC` folder, files and subdirectories."
-permissions = ["write-all", "scope-public-recursive"]
+permissions = [
+    "write-all",
+    "scope-public-recursive"
+]
 
 [[set]]
 identifier = "allow-public-read"
 description = "This allows non-recursive read access to the `$PUBLIC` folder."
-permissions = ["read-all", "scope-public"]
+permissions = [
+    "read-all",
+    "scope-public"
+]
 
 [[set]]
 identifier = "allow-public-write"
 description = "This allows non-recursive write access to the `$PUBLIC` folder."
-permissions = ["write-all", "scope-public"]
+permissions = [
+    "write-all",
+    "scope-public"
+]
 
 [[set]]
 identifier = "allow-public-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$PUBLIC` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-public-recursive"]
+permissions = [
+    "read-meta",
+    "scope-public-recursive"
+]
 
 [[set]]
 identifier = "allow-public-meta"
 description = "This allows non-recursive read access to metadata of the `$PUBLIC` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-public-index"]
+permissions = [
+    "read-meta",
+    "scope-public-index"
+]

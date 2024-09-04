@@ -36,29 +36,47 @@ path = "$TEMP"
 [[set]]
 identifier = "allow-temp-read-recursive"
 description = "This allows full recursive read access to the complete `$TEMP` folder, files and subdirectories."
-permissions = ["read-all", "scope-temp-recursive"]
+permissions = [
+    "read-all",
+    "scope-temp-recursive"
+]
 
 [[set]]
 identifier = "allow-temp-write-recursive"
 description = "This allows full recursive write access to the complete `$TEMP` folder, files and subdirectories."
-permissions = ["write-all", "scope-temp-recursive"]
+permissions = [
+    "write-all",
+    "scope-temp-recursive"
+]
 
 [[set]]
 identifier = "allow-temp-read"
 description = "This allows non-recursive read access to the `$TEMP` folder."
-permissions = ["read-all", "scope-temp"]
+permissions = [
+    "read-all",
+    "scope-temp"
+]
 
 [[set]]
 identifier = "allow-temp-write"
 description = "This allows non-recursive write access to the `$TEMP` folder."
-permissions = ["write-all", "scope-temp"]
+permissions = [
+    "write-all",
+    "scope-temp"
+]
 
 [[set]]
 identifier = "allow-temp-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$TEMP` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-temp-recursive"]
+permissions = [
+    "read-meta",
+    "scope-temp-recursive"
+]
 
 [[set]]
 identifier = "allow-temp-meta"
 description = "This allows non-recursive read access to metadata of the `$TEMP` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-temp-index"]
+permissions = [
+    "read-meta",
+    "scope-temp-index"
+]

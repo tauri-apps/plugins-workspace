@@ -36,29 +36,47 @@ path = "$DOWNLOAD"
 [[set]]
 identifier = "allow-download-read-recursive"
 description = "This allows full recursive read access to the complete `$DOWNLOAD` folder, files and subdirectories."
-permissions = ["read-all", "scope-download-recursive"]
+permissions = [
+    "read-all",
+    "scope-download-recursive"
+]
 
 [[set]]
 identifier = "allow-download-write-recursive"
 description = "This allows full recursive write access to the complete `$DOWNLOAD` folder, files and subdirectories."
-permissions = ["write-all", "scope-download-recursive"]
+permissions = [
+    "write-all",
+    "scope-download-recursive"
+]
 
 [[set]]
 identifier = "allow-download-read"
 description = "This allows non-recursive read access to the `$DOWNLOAD` folder."
-permissions = ["read-all", "scope-download"]
+permissions = [
+    "read-all",
+    "scope-download"
+]
 
 [[set]]
 identifier = "allow-download-write"
 description = "This allows non-recursive write access to the `$DOWNLOAD` folder."
-permissions = ["write-all", "scope-download"]
+permissions = [
+    "write-all",
+    "scope-download"
+]
 
 [[set]]
 identifier = "allow-download-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$DOWNLOAD` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-download-recursive"]
+permissions = [
+    "read-meta",
+    "scope-download-recursive"
+]
 
 [[set]]
 identifier = "allow-download-meta"
 description = "This allows non-recursive read access to metadata of the `$DOWNLOAD` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-download-index"]
+permissions = [
+    "read-meta",
+    "scope-download-index"
+]
