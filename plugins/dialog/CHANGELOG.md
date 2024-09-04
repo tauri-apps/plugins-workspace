@@ -1,5 +1,19 @@
 # Changelog
 
+## \[2.0.0-rc.4]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-rc.2`
+
+### breaking
+
+- [`0cb99bda`](https://github.com/tauri-apps/plugins-workspace/commit/0cb99bdaf11b5a9bb66b80bdf40b085d87c3066d) ([#1706](https://github.com/tauri-apps/plugins-workspace/pull/1706) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) If no filters are specified, the file picker dialog now defaults to a file selection instead of photos.
+
+### feat
+
+- [`feb1e93f`](https://github.com/tauri-apps/plugins-workspace/commit/feb1e93fcb9a913c002daa29e3b709f24b97c664) ([#1707](https://github.com/tauri-apps/plugins-workspace/pull/1707) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Implement `save` API on iOS.
+
 ## \[2.0.0-rc.1]
 
 - [`448846b8`](https://github.com/tauri-apps/plugins-workspace/commit/448846b834d23df6e7c5dc66c5dd9aa0cb01846d) ([#1658](https://github.com/tauri-apps/plugins-workspace/pull/1658) by [@mikoto2000](https://github.com/tauri-apps/plugins-workspace/../../mikoto2000)) The `open` function now returns a string representing either the file path or URI instead of an object.
@@ -203,7 +217,7 @@
   pull/371)) First v2 alpha release!
   lpha release!
   pull/371)) First v2 alpha release!
-v2 alpha release!
+  v2 alpha release!
   lpha release!
   pull/371)) First v2 alpha release!
   lpha release!

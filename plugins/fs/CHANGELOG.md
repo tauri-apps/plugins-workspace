@@ -2,6 +2,14 @@
 
 ## \[2.0.0-rc.2]
 
+- [`f7280c88`](https://github.com/tauri-apps/plugins-workspace/commit/f7280c88309cdf1f2330574fec31e26e01e9cdbd) ([#1710](https://github.com/tauri-apps/plugins-workspace/pull/1710) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix can't use Windows paths like `C:/Users/UserName/file.txt`
+
+### bug
+
+- [`51819c60`](https://github.com/tauri-apps/plugins-workspace/commit/51819c601f863cbfbd11809a1c4cf9df5a20b1e0) ([#1708](https://github.com/tauri-apps/plugins-workspace/pull/1708) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fixes `writeFile` command implementation on Android.
+
+## \[2.0.0-rc.2]
+
 - [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
 
 ## \[2.0.0-rc.1]
@@ -132,7 +140,7 @@
   ac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-uri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  uri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   kspace/pull/371)) First v2 alpha release!
