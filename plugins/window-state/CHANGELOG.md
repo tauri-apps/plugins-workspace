@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-rc.3]
+
+- [`17e8014b`](https://github.com/tauri-apps/plugins-workspace/commit/17e8014b6993602ddad21e8f5dcb625de1eea2c0) ([#1702](https://github.com/tauri-apps/plugins-workspace/pull/1702) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix saving a minimized window's state changes its position to -32000
+
 ## \[2.0.0-rc.1]
 
 - [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8

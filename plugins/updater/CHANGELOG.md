@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-rc.2]
+
+- [`f8255e1d`](https://github.com/tauri-apps/plugins-workspace/commit/f8255e1db5df6cf562b9334fbefe5e62f4a28e0a) ([#1661](https://github.com/tauri-apps/plugins-workspace/pull/1661) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add a second argument in `Update.download` and `Update.donloadAndInstall` JS APIs to modify headers and timeout when downloading the update.
+
 ## \[2.0.0-rc.1]
 
 - [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
