@@ -25,8 +25,8 @@ class BiometricStatus {
 struct AuthOptions: Decodable {
   let reason: String
   var allowDeviceCredential: Bool?
-  let fallbackTitle: String?
-  let cancelTitle: String?
+  var fallbackTitle: String?
+  var cancelTitle: String?
 }
 
 class BiometricPlugin: Plugin {

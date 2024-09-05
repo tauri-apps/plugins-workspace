@@ -8,7 +8,7 @@ import UIKit
 import WebKit
 
 class PingArgs: Decodable {
-  let value: String?
+  var value: String?
 }
 
 class ExamplePlugin: Plugin {
