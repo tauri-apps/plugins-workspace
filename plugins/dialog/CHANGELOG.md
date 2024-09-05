@@ -1,5 +1,20 @@
 # Changelog
 
+## \[2.0.0-rc.5]
+
+- [`a2fe5551`](https://github.com/tauri-apps/plugins-workspace/commit/a2fe55512f908dd11c814ce021d164f01677572a) ([#1727](https://github.com/tauri-apps/plugins-workspace/pull/1727) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add utility methods on `FilePath` and `SafeFilePath` enums which are:
+
+  - `path`
+  - `simplified`
+  - `into_path`
+- [`a2fe5551`](https://github.com/tauri-apps/plugins-workspace/commit/a2fe55512f908dd11c814ce021d164f01677572a) ([#1727](https://github.com/tauri-apps/plugins-workspace/pull/1727) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Implement `Serialize`, `Deserialize`, `From`, `TryFrom` and `FromStr` traits for `FilePath` and `SafeFilePath` enums.
+- [`a2fe5551`](https://github.com/tauri-apps/plugins-workspace/commit/a2fe55512f908dd11c814ce021d164f01677572a) ([#1727](https://github.com/tauri-apps/plugins-workspace/pull/1727) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Mark `Error` enum as `#[non_exhuastive]`.
+- [`a2fe5551`](https://github.com/tauri-apps/plugins-workspace/commit/a2fe55512f908dd11c814ce021d164f01677572a) ([#1727](https://github.com/tauri-apps/plugins-workspace/pull/1727) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add `SafeFilePath` enum.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-rc.3`
+
 ## \[2.0.0-rc.4]
 
 ### Dependencies

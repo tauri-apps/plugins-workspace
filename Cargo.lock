@@ -206,7 +206,7 @@ checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
 
 [[package]]
 name = "api"
-version = "2.0.0-rc.3"
+version = "2.0.0-rc.4"
 dependencies = [
  "log",
  "serde",
@@ -6544,7 +6544,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-rc.4"
+version = "2.0.0-rc.5"
 dependencies = [
  "log",
  "raw-window-handle 0.6.2",
@@ -6560,7 +6560,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "anyhow",
  "dunce",
@@ -6619,7 +6619,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "data-url",
  "http",
@@ -6723,7 +6723,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6842,7 +6842,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "base64 0.22.1",
  "dirs 5.0.1",
