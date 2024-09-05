@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-#![cfg(feature = "semver")]
-
 /// Takes a version and spits out a String with trailing _x, thus only considering the digits
 /// relevant regarding semver compatibility
 pub fn semver_compat_string(version: semver::Version) -> String {

@@ -6546,7 +6546,6 @@ dependencies = [
 name = "tauri-plugin-dialog"
 version = "2.0.0-rc.4"
 dependencies = [
- "dunce",
  "log",
  "raw-window-handle 0.6.2",
  "rfd",
@@ -6564,6 +6563,7 @@ name = "tauri-plugin-fs"
 version = "2.0.0-rc.2"
 dependencies = [
  "anyhow",
+ "dunce",
  "glob",
  "notify",
  "notify-debouncer-full",
