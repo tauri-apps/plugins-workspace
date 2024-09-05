@@ -11,6 +11,10 @@
     ".changes/fix-ios-file-dialog-default-mode.md",
     ".changes/fix-linux-updater-permission-error.md",
     ".changes/fix-restore-minimized-window-position.md",
+    ".changes/fs-dialog-file-path-methods.md",
+    ".changes/fs-dialog-file-path-traits.md",
+    ".changes/fs-dialog-non-exhaustive-error.md",
+    ".changes/fs-dialog-safe-file-path.md",
     ".changes/fs-scope-recursive-allow-read-dir.md",
     ".changes/fs-windows-path.md",
     ".changes/geolocation-release.md",
@@ -30,6 +34,7 @@
     ".changes/tauri-rc-8.md",
     ".changes/update-fs-api-docs.md",
     ".changes/update-tauri-rc-3.md",
+    ".changes/updater-js-headers-download-crate.md",
     ".changes/updater-js-headers-download.md"
   ]
 }

@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-rc.3]
+
+- [`d00519e3`](https://github.com/tauri-apps/plugins-workspace/commit/d00519e3e3a3234f9eb6c2ba82c92d4199f03e53) ([#1735](https://github.com/tauri-apps/plugins-workspace/pull/1735) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) This releases the changes from 2.0.0-rc.2 to crates.io. Please see the links below for the actual changes.
+
 ## \[2.0.0-rc.2]
 
 - [`f8255e1d`](https://github.com/tauri-apps/plugins-workspace/commit/f8255e1db5df6cf562b9334fbefe5e62f4a28e0a) ([#1661](https://github.com/tauri-apps/plugins-workspace/pull/1661) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add a second argument in `Update.download` and `Update.donloadAndInstall` JS APIs to modify headers and timeout when downloading the update.
