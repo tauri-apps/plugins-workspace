@@ -32,9 +32,11 @@ func makeNotificationContent(_ notification: Notification) throws -> UNNotificat
   let content = UNMutableNotificationContent()
   content.title = NSString.localizedUserNotificationString(
     forKey: notification.title, arguments: nil)
-  content.body = NSString.localizedUserNotificationString(
-    forKey: notification.body,
-    arguments: nil)
+  if let body = notification.body {
+    content.body = NSString.localizedUserNotificationString(
+      forKey: body,
+      arguments: nil)
+  }
 
   content.userInfo = [
     "__EXTRA__": notification.extra as Any,
