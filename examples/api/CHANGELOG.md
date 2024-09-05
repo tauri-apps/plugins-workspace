@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-rc.3]
+
+### Dependencies
+
+- Upgraded to `updater-js@2.0.0-rc.2`
+
 ## \[2.0.0-rc.2]
 
 ### Dependencies
