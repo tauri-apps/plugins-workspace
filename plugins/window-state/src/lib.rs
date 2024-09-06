@@ -451,13 +451,15 @@ impl Builder {
                     }
 
                     WindowEvent::Moved(position) if flags.contains(StateFlags::POSITION) => {
-                        let mut c = cache.lock().unwrap();
-                        if let Some(state) = c.get_mut(&label) {
-                            state.prev_x = state.x;
-                            state.prev_y = state.y;
+                        if !window_clone.is_minimized().unwrap_or_default() {
+                            let mut c = cache.lock().unwrap();
+                            if let Some(state) = c.get_mut(&label) {
+                                state.prev_x = state.x;
+                                state.prev_y = state.y;
 
-                            state.x = position.x;
-                            state.y = position.y;
+                                state.x = position.x;
+                                state.y = position.y;
+                            }
                         }
                     }
                     _ => {}

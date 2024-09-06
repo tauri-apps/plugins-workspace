@@ -46,6 +46,8 @@ pub fn run() {
                 app.handle()
                     .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
                 app.handle()
+                    .plugin(tauri_plugin_window_state::Builder::new().build())?;
+                app.handle()
                     .plugin(tauri_plugin_updater::Builder::new().build())?;
             }
             #[cfg(mobile)]
@@ -63,8 +65,7 @@ pub fn run() {
                     .user_agent(&format!("Tauri API - {}", std::env::consts::OS))
                     .title("Tauri API Validation")
                     .inner_size(1000., 800.)
-                    .min_inner_size(600., 400.)
-                    .content_protected(true);
+                    .min_inner_size(600., 400.);
             }
 
             #[cfg(target_os = "windows")]
