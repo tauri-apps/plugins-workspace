@@ -3008,15 +3008,6 @@ dependencies = [
 
 [[package]]
 name = "infer"
-version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb33622da908807a06f9513c19b3c1ad50fab3e4137d82a78107d502075aa199"
-dependencies = [
- "cfb",
-]
-
-[[package]]
-name = "infer"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc150e5ce2330295b8616ce0e3f53250e53af31759a9dbedad1621ba29151847"
@@ -6326,9 +6317,9 @@ checksum = "61c41af27dd6d1e27b1b16b489db798443478cef1f06a660c96db617ba5de3b1"
 
 [[package]]
 name = "tauri"
-version = "2.0.0-rc.9"
+version = "2.0.0-rc.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b805e6bf5f6a4df7d1a64b2952d33fca6d538746efe9c9cdae4157a1efc5b17"
+checksum = "a6327f79726c508efbbc3826b343fd7d39ebce786bdeff5881077b35d335d9e0"
 dependencies = [
  "anyhow",
  "bytes",
@@ -6343,7 +6334,7 @@ dependencies = [
  "heck 0.5.0",
  "http",
  "http-range",
- "image 0.24.9",
+ "image 0.25.2",
  "jni",
  "libc",
  "log",
@@ -6369,7 +6360,7 @@ dependencies = [
  "tokio",
  "tray-icon",
  "url",
- "urlpattern 0.2.0",
+ "urlpattern",
  "uuid",
  "webkit2gtk",
  "webview2-com",
@@ -6379,9 +6370,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-build"
-version = "2.0.0-rc.8"
+version = "2.0.0-rc.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4acec578ff9de14da177722c8fb5e3d6c88af296696190c70b83bec91437248a"
+checksum = "7938a610d1474435fa38dfba66c95ce9be7f17b500672b6e00072bca5e52fef3"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -6403,9 +6394,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-codegen"
-version = "2.0.0-rc.8"
+version = "2.0.0-rc.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0744bec087358e5de9a078a1b19346ed9b775f578395975f5a74ccd0c717b22a"
+checksum = "467d3e95b57c860bea13b7c812820d9e7425e4b700e5e69b358d906f22022007"
 dependencies = [
  "base64 0.22.1",
  "brotli",
@@ -6430,9 +6421,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-macros"
-version = "2.0.0-rc.7"
+version = "2.0.0-rc.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b043cac341130f288044dca76fae8e62d7c18fdcd8012239a66af03868b7ca37"
+checksum = "c4585a906bd96bf57d063c3d60c52577ccc5de592d08f9d112e873ada79af9b9"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -6444,9 +6435,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin"
-version = "2.0.0-rc.8"
+version = "2.0.0-rc.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c9bb31aad7296f85df545171023c72a263b54aac350197f923893fb5e6f90b4"
+checksum = "b905ecef194245bb35baba0447703f9fe40e4c03e946c7aba54c21c23e3452c7"
 dependencies = [
  "anyhow",
  "glob",
@@ -6634,7 +6625,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "url",
- "urlpattern 0.3.0",
+ "urlpattern",
 ]
 
 [[package]]
@@ -6849,7 +6840,7 @@ dependencies = [
  "flate2",
  "futures-util",
  "http",
- "infer 0.16.0",
+ "infer",
  "minisign-verify",
  "reqwest",
  "semver",
@@ -6916,9 +6907,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime"
-version = "2.0.0-rc.8"
+version = "2.0.0-rc.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7c7a6530acc06640e8f07cfeb01ac694f1de2f4e565525a2199e0dca80ff9f7"
+checksum = "b72cd110a6699ef44963504d4fa4f6c535677bb0177da2d178f4f822a53058ed"
 dependencies = [
  "dpi",
  "gtk",
@@ -6935,9 +6926,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime-wry"
-version = "2.0.0-rc.8"
+version = "2.0.0-rc.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fcadbc24646c8d3362ed4e332cb42932e08c632220a20a61cb7e5fe36ddd85c"
+checksum = "1eb325cca17496ccbb469e7e2fef7f3e31a1005ab0c658dc3331c7781a573401"
 dependencies = [
  "cocoa 0.26.0",
  "gtk",
@@ -6959,9 +6950,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-utils"
-version = "2.0.0-rc.8"
+version = "2.0.0-rc.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "201498c8281ab2597e344b4a4c923e8d491782305979d71e7cdf8fb79aab5948"
+checksum = "6746b87c4755f493b94920622e245aef2d771f001ddeffc203e315872d323e1c"
 dependencies = [
  "aes-gcm",
  "brotli",
@@ -6971,7 +6962,7 @@ dependencies = [
  "getrandom 0.2.15",
  "glob",
  "html5ever",
- "infer 0.15.0",
+ "infer",
  "json-patch",
  "kuchikiki",
  "log",
@@ -6991,7 +6982,7 @@ dependencies = [
  "thiserror",
  "toml 0.8.2",
  "url",
- "urlpattern 0.2.0",
+ "urlpattern",
  "walkdir",
 ]
 
@@ -7420,9 +7411,9 @@ dependencies = [
 
 [[package]]
 name = "tray-icon"
-version = "0.16.0"
+version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "131a65b2cef2081bc14dbcd414c906edbfa3bb5323dd7e748cc298614681196b"
+checksum = "044d7738b3d50f288ddef035b793228740ad4d927f5466b0af55dc15e7e03cfe"
 dependencies = [
  "core-graphics 0.24.0",
  "crossbeam-channel",
@@ -7635,19 +7626,6 @@ dependencies = [
  "idna 0.5.0",
  "percent-encoding",
  "serde",
-]
-
-[[package]]
-name = "urlpattern"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9bd5ff03aea02fa45b13a7980151fe45009af1980ba69f651ec367121a31609"
-dependencies = [
- "derive_more",
- "regex",
- "serde",
- "unic-ucd-ident",
- "url",
 ]
 
 [[package]]
