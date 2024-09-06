@@ -88,6 +88,24 @@ pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<FilePath>>) + Send + 'static>
     });
 }
 
+pub fn pick_folder<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
+    dialog: FileDialogBuilder<R>,
+    f: F,
+) {
+    std::thread::spawn(move || {
+        // Use a different plugin method for folder picker, "showFolderPicker"
+        let res = dialog
+            .dialog
+            .0
+            .run_mobile_plugin::<FilePickerResponse>("showFolderPicker", dialog.payload(true));
+        if let Ok(response) = res {
+            f(Some(response.files.into_iter().next().unwrap())) // Return the first selected folder
+        } else {
+            f(None)
+        }
+    });
+}
+
 pub fn save_file<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
