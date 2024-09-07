@@ -16,8 +16,8 @@ use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime,
-    WebviewWindow, Window, WindowEvent,
+    Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, WebviewWindow, Window,
+    WindowEvent,
 };
 
 use std::{
@@ -72,8 +72,8 @@ struct PluginState {
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 struct WindowState {
-    width: f64,
-    height: f64,
+    width: u32,
+    height: u32,
     x: i32,
     y: i32,
     // prev_x and prev_y are used to store position
@@ -181,7 +181,7 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
 
             if flags.contains(StateFlags::SIZE) {
-                self.set_size(LogicalSize {
+                self.set_size(PhysicalSize {
                     width: state.width,
                     height: state.height,
                 })?;
@@ -223,11 +223,7 @@ impl<R: Runtime> WindowExt for Window<R> {
             let mut metadata = WindowState::default();
 
             if flags.contains(StateFlags::SIZE) {
-                let scale_factor = self
-                    .current_monitor()?
-                    .map(|m| m.scale_factor())
-                    .unwrap_or(1.);
-                let size = self.inner_size()?.to_logical(scale_factor);
+                let size = self.inner_size()?;
                 metadata.width = size.width;
                 metadata.height = size.height;
             }
@@ -278,10 +274,11 @@ impl<R: Runtime> WindowExtInternal for WebviewWindow<R> {
 
 impl<R: Runtime> WindowExtInternal for Window<R> {
     fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()> {
-        let is_maximized = match flags.intersects(StateFlags::MAXIMIZED | StateFlags::SIZE) {
-            true => self.is_maximized()?,
-            false => false,
-        };
+        let is_maximized = flags
+            .intersects(StateFlags::MAXIMIZED | StateFlags::POSITION | StateFlags::SIZE)
+            && self.is_maximized()?;
+        let is_minimized =
+            flags.intersects(StateFlags::POSITION | StateFlags::SIZE) && self.is_minimized()?;
 
         if flags.contains(StateFlags::MAXIMIZED) {
             state.maximized = is_maximized;
@@ -299,21 +296,16 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
             state.visible = self.is_visible()?;
         }
 
-        if flags.contains(StateFlags::SIZE) {
-            let scale_factor = self
-                .current_monitor()?
-                .map(|m| m.scale_factor())
-                .unwrap_or(1.);
-            let size = self.inner_size()?.to_logical(scale_factor);
-
+        if flags.contains(StateFlags::SIZE) && !is_maximized && !is_minimized {
+            let size = self.inner_size()?;
             // It doesn't make sense to save a window with 0 height or width
-            if size.width > 0. && size.height > 0. && !is_maximized {
+            if size.width > 0 && size.height > 0 {
                 state.width = size.width;
                 state.height = size.height;
             }
         }
 
-        if flags.contains(StateFlags::POSITION) && !is_maximized && !self.is_minimized()? {
+        if flags.contains(StateFlags::POSITION) && !is_maximized && !is_minimized {
             let position = self.outer_position()?;
             state.x = position.x;
             state.y = position.y;
@@ -462,6 +454,17 @@ impl Builder {
                             }
                         }
                     }
+                    WindowEvent::Resized(size) if flags.contains(StateFlags::SIZE) => {
+                        if !window_clone.is_minimized().unwrap_or_default()
+                            && !window_clone.is_maximized().unwrap_or_default()
+                        {
+                            let mut c = cache.lock().unwrap();
+                            if let Some(state) = c.get_mut(&label) {
+                                state.width = size.width;
+                                state.height = size.height;
+                            }
+                        }
+                    }
                     _ => {}
                 });
             })
@@ -475,13 +478,11 @@ impl Builder {
 }
 
 trait MonitorExt {
-    fn intersects(&self, position: PhysicalPosition<i32>, size: LogicalSize<u32>) -> bool;
+    fn intersects(&self, position: PhysicalPosition<i32>, size: PhysicalSize<u32>) -> bool;
 }
 
 impl MonitorExt for Monitor {
-    fn intersects(&self, position: PhysicalPosition<i32>, size: LogicalSize<u32>) -> bool {
-        let size = size.to_physical::<u32>(self.scale_factor());
-
+    fn intersects(&self, position: PhysicalPosition<i32>, size: PhysicalSize<u32>) -> bool {
         let PhysicalPosition { x, y } = *self.position();
         let PhysicalSize { width, height } = *self.size();
 
