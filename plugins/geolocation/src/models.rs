@@ -4,6 +4,7 @@
 
 use serde::{Deserialize, Serialize};
 use specta::Type;
+use tauri::plugin::PermissionState;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -22,19 +23,6 @@ pub struct PermissionStatus {
     ///
     /// On iOS it will have the same value as the `location` alias.
     pub coarse_location: PermissionState,
-}
-
-/// Permission state.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub enum PermissionState {
-    /// Permission access has been granted.
-    Granted,
-    /// Permission access has been denied.
-    Denied,
-    /// The end user should be prompted for permission.
-    #[default]
-    Prompt,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Type)]

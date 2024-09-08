@@ -32,10 +32,12 @@ where
 #[derive(Deserialize)]
 pub struct Config {
     /// Mobile requires `https://<host>` urls.
+    #[serde(default)]
     pub mobile: Vec<AssociatedDomain>,
     /// Desktop requires urls starting with `<scheme>://`.
     /// These urls are also active in dev mode on Android.
     #[allow(unused)] // Used in tauri-bundler
+    #[serde(default)]
     pub desktop: DesktopProtocol,
 }
 
@@ -45,4 +47,10 @@ pub struct Config {
 pub enum DesktopProtocol {
     One(DeepLinkProtocol),
     List(Vec<DeepLinkProtocol>),
+}
+
+impl Default for DesktopProtocol {
+    fn default() -> Self {
+        Self::List(Vec::new())
+    }
 }

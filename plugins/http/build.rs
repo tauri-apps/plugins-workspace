@@ -59,6 +59,7 @@ impl From<HttpScopeEntry> for scope::Entry {
             url: urlpattern::UrlPattern::parse(
                 urlpattern::UrlPatternInit::parse_constructor_string::<regex::Regex>(&url, None)
                     .unwrap(),
+                Default::default(),
             )
             .unwrap(),
         }

@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-http"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.3"
 description = "Access an HTTP client written in Rust."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -10,15 +10,15 @@ repository = { workspace = true }
 links = "tauri-plugin-http"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
 url = { workspace = true }
-urlpattern = "0.2"
+urlpattern = "0.3"
 regex = "1"
 
 [dependencies]
@@ -27,8 +27,8 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 thiserror = { workspace = true }
 tokio = { version = "1", features = ["sync", "macros"] }
-tauri-plugin-fs = { path = "../fs", version = "2.0.0-rc.0" }
-urlpattern = "0.2"
+tauri-plugin-fs = { path = "../fs", version = "2.0.0-rc.3" }
+urlpattern = "0.3"
 regex = "1"
 http = "1"
 reqwest = { version = "0.12", default-features = false }

@@ -1,5 +1,40 @@
 # Changelog
 
+## \[2.0.0-rc.5]
+
+- [`a2fe5551`](https://github.com/tauri-apps/plugins-workspace/commit/a2fe55512f908dd11c814ce021d164f01677572a) ([#1727](https://github.com/tauri-apps/plugins-workspace/pull/1727) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add utility methods on `FilePath` and `SafeFilePath` enums which are:
+
+  - `path`
+  - `simplified`
+  - `into_path`
+- [`a2fe5551`](https://github.com/tauri-apps/plugins-workspace/commit/a2fe55512f908dd11c814ce021d164f01677572a) ([#1727](https://github.com/tauri-apps/plugins-workspace/pull/1727) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Implement `Serialize`, `Deserialize`, `From`, `TryFrom` and `FromStr` traits for `FilePath` and `SafeFilePath` enums.
+- [`a2fe5551`](https://github.com/tauri-apps/plugins-workspace/commit/a2fe55512f908dd11c814ce021d164f01677572a) ([#1727](https://github.com/tauri-apps/plugins-workspace/pull/1727) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Mark `Error` enum as `#[non_exhuastive]`.
+- [`a2fe5551`](https://github.com/tauri-apps/plugins-workspace/commit/a2fe55512f908dd11c814ce021d164f01677572a) ([#1727](https://github.com/tauri-apps/plugins-workspace/pull/1727) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add `SafeFilePath` enum.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-rc.3`
+
+## \[2.0.0-rc.4]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-rc.2`
+
+### breaking
+
+- [`0cb99bda`](https://github.com/tauri-apps/plugins-workspace/commit/0cb99bdaf11b5a9bb66b80bdf40b085d87c3066d) ([#1706](https://github.com/tauri-apps/plugins-workspace/pull/1706) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) If no filters are specified, the file picker dialog now defaults to a file selection instead of photos.
+
+### feat
+
+- [`feb1e93f`](https://github.com/tauri-apps/plugins-workspace/commit/feb1e93fcb9a913c002daa29e3b709f24b97c664) ([#1707](https://github.com/tauri-apps/plugins-workspace/pull/1707) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Implement `save` API on iOS.
+
+## \[2.0.0-rc.1]
+
+- [`448846b8`](https://github.com/tauri-apps/plugins-workspace/commit/448846b834d23df6e7c5dc66c5dd9aa0cb01846d) ([#1658](https://github.com/tauri-apps/plugins-workspace/pull/1658) by [@mikoto2000](https://github.com/tauri-apps/plugins-workspace/../../mikoto2000)) The `open` function now returns a string representing either the file path or URI instead of an object.
+  To read the file data, use the `fs` APIs.
+- [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
+
 ## \[2.0.0-rc.2]
 
 - [`b9147758`](https://github.com/tauri-apps/plugins-workspace/commit/b914775898c2bee7ceb20bd17ee595005cd17a64) ([#1679](https://github.com/tauri-apps/plugins-workspace/pull/1679) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Explicitly set a minimum macOS version for the Swift package.
@@ -184,6 +219,20 @@
   pull/371)) First v2 alpha release!
   lpha release!
   pull/371)) First v2 alpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+  lpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+  lpha release!
+  pull/371)) First v2 alpha release!
+  v2 alpha release!
   lpha release!
   pull/371)) First v2 alpha release!
   lpha release!

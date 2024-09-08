@@ -12,6 +12,4 @@ scope pre-configured. It will allow opening `http(s)://`,
 `tel:` and `mailto:` links.
 """
 
-permissions = [
-    "allow-open",
-]
+permissions = ["allow-open"]

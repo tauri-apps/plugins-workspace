@@ -6,24 +6,24 @@
   "scripts": {
     "build": "pnpm run -r --parallel --filter !plugins-workspace --filter !\"./plugins/*/examples/**\" --filter !\"./examples/*\" build",
     "lint": "eslint .",
-    "format": "prettier --write \"./**/*.{cjs,mjs,js,jsx,mts,ts,tsx,html,css,json}\" --ignore-path .prettierignore",
-    "format-check": "prettier --check \"./**/*.{cjs,mjs,js,jsx,mts,ts,tsx,html,css,json}\" --ignore-path .prettierignore"
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "@eslint/js": "9.9.0",
+    "@eslint/js": "9.9.1",
     "@rollup/plugin-node-resolve": "15.2.3",
     "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-typescript": "11.1.6",
     "@types/eslint__js": "8.42.3",
     "covector": "^0.12.0",
-    "eslint": "9.9.0",
+    "eslint": "9.9.1",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-security": "3.0.1",
     "prettier": "3.3.3",
-    "rollup": "4.21.0",
-    "tslib": "2.6.3",
+    "rollup": "4.21.2",
+    "tslib": "2.7.0",
     "typescript": "5.5.4",
-    "typescript-eslint": "8.1.0"
+    "typescript-eslint": "8.4.0"
   },
   "resolutions": {
     "semver": ">=7.5.2",
@@ -31,10 +31,5 @@
   },
   "engines": {
     "pnpm": "^9.0.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "micromatch@<4.0.8": ">=4.0.8"
-    }
   }
 }

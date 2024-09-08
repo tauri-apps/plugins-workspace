@@ -39,6 +39,7 @@ One possible threat you need to consider when using this plugin is that secrets
 in logs can theoretically be leaked when the application's frontend gets compromised.
 
 For this threat to be possible all of the following requirements need to be fulfilled:
+
 - `TargetKind::Webview` enabled OR secrets stem from frontend logs
 - Frontend application is compromised via something like XSS (cross-site-scripting) OR logs are directly exposed
 - Logs contain secrets or sensitive information

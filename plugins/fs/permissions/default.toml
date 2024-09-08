@@ -28,7 +28,7 @@ On Windows the webview data folder access is denied.
 
 """
 permissions = [
-    "create-app-specific-dirs",
-    "read-app-specific-dirs-recursive",
-    "deny-default",
+  "create-app-specific-dirs",
+  "read-app-specific-dirs-recursive",
+  "deny-default",
 ]

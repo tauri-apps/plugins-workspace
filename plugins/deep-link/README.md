@@ -63,7 +63,7 @@ For [app links](https://developer.android.com/training/app-links#android-app-lin
 ]
 ```
 
-Where `$APP_BUNDLE_ID` is the value defined on `tauri.conf.json > tauri > bundle > identifier` with `-` replaced with `_` and `$CERT_FINGERPRINT` is a list of SHA256 fingerprints of your app's signing certificates, see [verify android applinks](https://developer.android.com/training/app-links/verify-android-applinks#web-assoc) for more information.
+Where `$APP_BUNDLE_ID` is the value defined on `tauri.conf.json > identifier` with `-` replaced with `_` and `$CERT_FINGERPRINT` is a list of SHA256 fingerprints of your app's signing certificates, see [verify android applinks](https://developer.android.com/training/app-links/verify-android-applinks#web-assoc) for more information.
 
 ### iOS
 
@@ -87,7 +87,17 @@ For [universal links](https://developer.apple.com/documentation/xcode/allowing-a
 }
 ```
 
-Where `$DEVELOPMENT_TEAM_ID` is the value defined on `tauri.conf.json > tauri > bundle > iOS > developmentTeam` or the `TAURI_APPLE_DEVELOPMENT_TEAM` environment variable and `$APP_BUNDLE_ID` is the value defined on `tauri.conf.json > tauri > bundle > identifier`. See [applinks.details](https://developer.apple.com/documentation/bundleresources/applinks/details) for more information.
+Where `$DEVELOPMENT_TEAM_ID` is the value defined on `tauri.conf.json > bundle > iOS > developmentTeam` or the `APPLE_DEVELOPMENT_TEAM` environment variable and `$APP_BUNDLE_ID` is the value defined on `tauri.conf.json > identifier`. See [applinks.details](https://developer.apple.com/documentation/bundleresources/applinks/details) for more information.
+
+To verify if your domain has been properly configured to expose the app associations, you can run the following command:
+
+```sh
+curl -v https://app-site-association.cdn-apple.com/a/v1/<host>
+```
+
+**The apple-app-site-association file must be served over HTTPS and the response must include the `Content-Type: application/json` header.**
+
+To quickly open an app link on the iOS simulator you can execute `xcrun simctl openurl booted <url>`.
 
 See [supporting associated domains](https://developer.apple.com/documentation/xcode/supporting-associated-domains?language=objc) for more information.
 
@@ -129,10 +139,10 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
+import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
 await onOpenUrl((urls) => {
-  console.log("deep link:", urls);
-});
+  console.log('deep link:', urls)
+})
 ```
 
 Note that the Plugin will only emit events on macOS, iOS and Android. On Windows and Linux the OS will spawn a new instance of your app with the URL as a CLI argument. If you want your app to behave on Windows & Linux similar to the other platforms you can use the [single-instance](../single-instance/) plugin.

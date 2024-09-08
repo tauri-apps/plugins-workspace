@@ -87,12 +87,12 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript bindings:
 
 ```javascript
-import { register } from "@tauri-apps/plugin-global-shortcut";
-await register("CommandOrControl+Shift+C", (event) => {
-  if (event.state === "Pressed") {
-    console.log("Shortcut triggered");
+import { register } from '@tauri-apps/plugin-global-shortcut'
+await register('CommandOrControl+Shift+C', (event) => {
+  if (event.state === 'Pressed') {
+    console.log('Shortcut triggered')
   }
-});
+})
 ```
 
 ## Contributing

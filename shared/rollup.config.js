@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { readFileSync } from "fs";
-import { join } from "path";
-import { cwd } from "process";
-import { nodeResolve } from "@rollup/plugin-node-resolve";
-import typescript from "@rollup/plugin-typescript";
-import terser from "@rollup/plugin-terser";
+import { readFileSync } from 'fs'
+import { join } from 'path'
+import { cwd } from 'process'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import typescript from '@rollup/plugin-typescript'
+import terser from '@rollup/plugin-terser'
 
 /**
  * Create a base rollup config
@@ -21,21 +21,21 @@ import terser from "@rollup/plugin-terser";
  */
 export function createConfig(options = {}) {
   const {
-    input = "guest-js/index.ts",
+    input = 'guest-js/index.ts',
     external = [/^@tauri-apps\/api/],
-    additionalConfigs = [],
-  } = options;
+    additionalConfigs = []
+  } = options
 
   // eslint-disable-next-line security/detect-non-literal-fs-filename
-  const pkg = JSON.parse(readFileSync(join(cwd(), "package.json"), "utf8"));
+  const pkg = JSON.parse(readFileSync(join(cwd(), 'package.json'), 'utf8'))
 
   const pluginJsName = pkg.name
-    .replace("@tauri-apps/plugin-", "")
-    .replace(/-./g, (x) => x[1].toUpperCase());
+    .replace('@tauri-apps/plugin-', '')
+    .replace(/-./g, (x) => x[1].toUpperCase())
   const iifeVarName = `__TAURI_PLUGIN_${pkg.name
-    .replace("@tauri-apps/plugin-", "")
-    .replace("-", (x) => "_")
-    .toUpperCase()}__`;
+    .replace('@tauri-apps/plugin-', '')
+    .replace('-', (x) => '_')
+    .toUpperCase()}__`
 
   return [
     {
@@ -43,50 +43,50 @@ export function createConfig(options = {}) {
       output: [
         {
           file: pkg.exports.import,
-          format: "esm",
+          format: 'esm'
         },
         {
           file: pkg.exports.require,
-          format: "cjs",
-        },
+          format: 'cjs'
+        }
       ],
       plugins: [
         typescript({
           declaration: true,
-          declarationDir: `./${pkg.exports.import.split("/")[0]}`,
-        }),
+          declarationDir: `./${pkg.exports.import.split('/')[0]}`
+        })
       ],
       external: [
         ...external,
         ...Object.keys(pkg.dependencies || {}),
-        ...Object.keys(pkg.peerDependencies || {}),
+        ...Object.keys(pkg.peerDependencies || {})
       ],
       onwarn: (warning) => {
-        throw Object.assign(new Error(), warning);
-      },
+        throw Object.assign(new Error(), warning)
+      }
     },
 
     {
       input,
       output: {
-        format: "iife",
+        format: 'iife',
         name: iifeVarName,
         // IIFE is in the format `var ${iifeVarName} = (() => {})()`
         // we check if __TAURI__ exists and inject the API object
         banner: "if ('__TAURI__' in window) {",
         // the last `}` closes the if in the banner
         footer: `Object.defineProperty(window.__TAURI__, '${pluginJsName}', { value: ${iifeVarName} }) }`,
-        file: "api-iife.js",
+        file: 'api-iife.js'
       },
       // and var is not guaranteed to assign to the global `window` object so we make sure to assign it
       plugins: [typescript(), terser(), nodeResolve()],
       onwarn: (warning) => {
-        throw Object.assign(new Error(), warning);
-      },
+        throw Object.assign(new Error(), warning)
+      }
     },
 
     ...(Array.isArray(additionalConfigs)
       ? additionalConfigs
-      : [additionalConfigs]),
-  ];
+      : [additionalConfigs])
+  ]
 }

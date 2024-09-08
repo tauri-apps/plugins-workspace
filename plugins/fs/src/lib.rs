@@ -11,13 +11,7 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use std::{
-    convert::Infallible,
-    fmt,
-    io::Read,
-    path::{Path, PathBuf},
-    str::FromStr,
-};
+use std::io::Read;
 
 use serde::Deserialize;
 use tauri::{
@@ -32,6 +26,7 @@ mod config;
 #[cfg(not(target_os = "android"))]
 mod desktop;
 mod error;
+mod file_path;
 #[cfg(target_os = "android")]
 mod mobile;
 #[cfg(target_os = "android")]
@@ -48,60 +43,10 @@ pub use mobile::Fs;
 pub use error::Error;
 pub use scope::{Event as ScopeEvent, Scope};
 
+pub use file_path::FilePath;
+pub use file_path::SafeFilePath;
+
 type Result<T> = std::result::Result<T, Error>;
-
-/// Represents either a filesystem path or a URI pointing to a file
-/// such as `file://` URIs or Android `content://` URIs.
-#[derive(Debug, serde::Deserialize)]
-#[serde(untagged)]
-pub enum FilePath {
-    Url(url::Url),
-    Path(PathBuf),
-}
-
-impl FromStr for FilePath {
-    type Err = Infallible;
-    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        if let Ok(url) = url::Url::from_str(s) {
-            Ok(Self::Url(url))
-        } else {
-            Ok(Self::Path(PathBuf::from(s)))
-        }
-    }
-}
-
-impl From<PathBuf> for FilePath {
-    fn from(value: PathBuf) -> Self {
-        Self::Path(value)
-    }
-}
-
-impl From<&Path> for FilePath {
-    fn from(value: &Path) -> Self {
-        Self::Path(value.to_owned())
-    }
-}
-
-impl From<&PathBuf> for FilePath {
-    fn from(value: &PathBuf) -> Self {
-        Self::Path(value.to_owned())
-    }
-}
-
-impl From<url::Url> for FilePath {
-    fn from(value: url::Url) -> Self {
-        Self::Url(value)
-    }
-}
-
-impl fmt::Display for FilePath {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Url(u) => u.fmt(f),
-            Self::Path(p) => p.display().fmt(f),
-        }
-    }
-}
 
 #[derive(Debug, Default, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -119,8 +64,10 @@ pub struct OpenOptions {
     #[serde(default)]
     create_new: bool,
     #[serde(default)]
+    #[allow(unused)]
     mode: Option<u32>,
     #[serde(default)]
+    #[allow(unused)]
     custom_flags: Option<i32>,
 }
 

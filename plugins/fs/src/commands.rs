@@ -7,12 +7,13 @@ use serde::{Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use tauri::{
     ipc::{CommandScope, GlobalScope},
-    path::{BaseDirectory, SafePathBuf},
+    path::BaseDirectory,
     utils::config::FsScope,
     AppHandle, Manager, Resource, ResourceId, Runtime, Webview,
 };
 
 use std::{
+    borrow::Cow,
     fs::File,
     io::{BufReader, Lines, Read, Write},
     path::{Path, PathBuf},
@@ -21,48 +22,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{scope::Entry, Error, FilePath, FsExt};
-
-#[derive(Debug, serde::Deserialize)]
-#[serde(untagged)]
-pub enum SafeFilePath {
-    Url(url::Url),
-    Path(SafePathBuf),
-}
-
-impl From<SafeFilePath> for FilePath {
-    fn from(value: SafeFilePath) -> Self {
-        match value {
-            SafeFilePath::Url(url) => FilePath::Url(url),
-            SafeFilePath::Path(p) => FilePath::Path(p.as_ref().to_owned()),
-        }
-    }
-}
-
-impl FromStr for SafeFilePath {
-    type Err = CommandError;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if let Ok(url) = url::Url::from_str(s) {
-            Ok(Self::Url(url))
-        } else {
-            Ok(Self::Path(SafePathBuf::new(s.into())?))
-        }
-    }
-}
-
-impl SafeFilePath {
-    #[inline]
-    fn into_path(self) -> CommandResult<SafePathBuf> {
-        match self {
-            Self::Url(url) => SafePathBuf::new(
-                url.to_file_path()
-                    .map_err(|_| format!("failed to get path from {url}"))?,
-            )
-            .map_err(Into::into),
-            Self::Path(p) => Ok(p),
-        }
-    }
-}
+use crate::{scope::Entry, Error, FsExt, SafeFilePath};
 
 #[derive(Debug, thiserror::Error)]
 pub enum CommandError {
@@ -72,6 +32,8 @@ pub enum CommandError {
     Plugin(#[from] Error),
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
     #[error(transparent)]
     Io(#[from] std::io::Error),
     #[error(transparent)]
@@ -878,25 +840,31 @@ pub async fn write_file<R: Runtime>(
     command_scope: CommandScope<Entry>,
     request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
-    if let tauri::ipc::InvokeBody::Raw(data) = request.body() {
-        let path = request
-            .headers()
-            .get("path")
-            .ok_or_else(|| anyhow::anyhow!("missing file path").into())
-            .and_then(|p| {
-                p.to_str()
-                    .map_err(|e| anyhow::anyhow!("invalid path: {e}").into())
-            })
-            .and_then(|p| SafeFilePath::from_str(p).map_err(CommandError::from))?;
-        let options = request
-            .headers()
-            .get("options")
-            .and_then(|p| p.to_str().ok())
-            .and_then(|opts| serde_json::from_str(opts).ok());
-        write_file_inner(webview, &global_scope, &command_scope, path, data, options)
-    } else {
-        Err(anyhow::anyhow!("unexpected invoke body").into())
-    }
+    let data = match request.body() {
+        tauri::ipc::InvokeBody::Raw(data) => Cow::Borrowed(data),
+        tauri::ipc::InvokeBody::Json(serde_json::Value::Array(data)) => Cow::Owned(
+            data.iter()
+                .flat_map(|v| v.as_number().and_then(|v| v.as_u64().map(|v| v as u8)))
+                .collect(),
+        ),
+        _ => return Err(anyhow::anyhow!("unexpected invoke body").into()),
+    };
+
+    let path = request
+        .headers()
+        .get("path")
+        .ok_or_else(|| anyhow::anyhow!("missing file path").into())
+        .and_then(|p| {
+            p.to_str()
+                .map_err(|e| anyhow::anyhow!("invalid path: {e}").into())
+        })
+        .and_then(|p| SafeFilePath::from_str(p).map_err(CommandError::from))?;
+    let options = request
+        .headers()
+        .get("options")
+        .and_then(|p| p.to_str().ok())
+        .and_then(|opts| serde_json::from_str(opts).ok());
+    write_file_inner(webview, &global_scope, &command_scope, path, &data, options)
 }
 
 #[tauri::command]
@@ -1011,7 +979,7 @@ pub fn resolve_path<R: Runtime>(
     let path = if let Some(base_dir) = base_dir {
         webview.path().resolve(&path, base_dir)?
     } else {
-        path.as_ref().to_path_buf()
+        path
     };
 
     let scope = tauri::scope::fs::Scope::new(
@@ -1166,5 +1134,21 @@ fn get_stat(metadata: std::fs::Metadata) -> FileInfo {
         rdev: usm!(rdev),
         blksize: usm!(blksize),
         blocks: usm!(blocks),
+    }
+}
+
+mod test {
+    #[test]
+    fn safe_file_path_parse() {
+        use super::SafeFilePath;
+
+        assert!(matches!(
+            serde_json::from_str::<SafeFilePath>("\"C:/Users\""),
+            Ok(SafeFilePath::Path(_))
+        ));
+        assert!(matches!(
+            serde_json::from_str::<SafeFilePath>("\"file:///C:/Users\""),
+            Ok(SafeFilePath::Url(_))
+        ));
     }
 }

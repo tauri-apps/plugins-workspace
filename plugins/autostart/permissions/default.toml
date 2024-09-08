@@ -12,8 +12,4 @@ disable the automatic start on boot.
 
 """
 
-permissions = [
-  "allow-enable",
-  "allow-disable",
-  "allow-is-enabled",
-]
+permissions = ["allow-enable", "allow-disable", "allow-is-enabled"]

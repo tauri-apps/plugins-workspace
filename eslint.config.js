@@ -2,28 +2,29 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import eslint from "@eslint/js";
-import eslintConfigPrettier from "eslint-config-prettier";
-import eslintPluginSecurity from "eslint-plugin-security";
-import tseslint from "typescript-eslint";
+import eslint from '@eslint/js'
+import eslintConfigPrettier from 'eslint-config-prettier'
+import eslintPluginSecurity from 'eslint-plugin-security'
+import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   {
     ignores: [
-      "**/target",
-      "**/node_modules",
-      "**/examples",
-      "**/dist",
-      "**/dist-js",
-      "**/build",
-      "**/api-iife.js",
-      "**/init-iife.js",
-      "**/init.js",
-      "**/rollup.config.js",
-      "**/bindings.ts",
-      ".scripts",
-      "eslint.config.js",
-    ],
+      '**/target',
+      '**/node_modules',
+      '**/examples',
+      '**/dist',
+      '**/dist-js',
+      '**/build',
+      '**/api-iife.js',
+      '**/init-iife.js',
+      '**/init.js',
+      '**/rollup.config.js',
+      '**/bindings.ts',
+      '**/.test-server',
+      '.scripts',
+      'eslint.config.js'
+    ]
   },
   eslint.configs.recommended,
   eslintConfigPrettier,
@@ -31,7 +32,7 @@ export default tseslint.config(
   ...tseslint.configs.recommendedTypeChecked,
   {
     languageOptions: {
-      parserOptions: { project: true, tsconfigRootDir: import.meta.dirname },
-    },
-  },
-);
+      parserOptions: { project: true, tsconfigRootDir: import.meta.dirname }
+    }
+  }
+)

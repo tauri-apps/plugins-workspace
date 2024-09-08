@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 
-import { invoke, Resource } from "@tauri-apps/api/core";
+import { invoke, Resource } from '@tauri-apps/api/core'
 
 interface ChangePayload<T> {
-  path: string;
-  key: string;
-  value: T | null;
+  path: string
+  key: string
+  value: T | null
 }
 
 /**
@@ -17,11 +17,11 @@ interface ChangePayload<T> {
  * @param autoSave: Auto save on modification with debounce duration in milliseconds
  */
 export async function createStore(path: string, autoSave?: number) {
-  const resourceId = await invoke<number>("plugin:store|create_store", {
+  const resourceId = await invoke<number>('plugin:store|create_store', {
     path,
-    autoSave,
-  });
-  return new Store(resourceId, path);
+    autoSave
+  })
+  return new Store(resourceId, path)
 }
 
 /**
@@ -30,9 +30,9 @@ export async function createStore(path: string, autoSave?: number) {
 export class Store extends Resource {
   constructor(
     rid: number,
-    private readonly path: string,
+    private readonly path: string
   ) {
-    super(rid);
+    super(rid)
   }
 
   /**
@@ -43,11 +43,11 @@ export class Store extends Resource {
    * @returns
    */
   async set(key: string, value: unknown): Promise<void> {
-    await invoke("plugin:store|set", {
+    await invoke('plugin:store|set', {
       rid: this.rid,
       key,
-      value,
-    });
+      value
+    })
   }
 
   /**
@@ -57,10 +57,10 @@ export class Store extends Resource {
    * @returns
    */
   async get<T>(key: string): Promise<T | null> {
-    return await invoke("plugin:store|get", {
+    return await invoke('plugin:store|get', {
       rid: this.rid,
-      key,
-    });
+      key
+    })
   }
 
   /**
@@ -70,10 +70,10 @@ export class Store extends Resource {
    * @returns
    */
   async has(key: string): Promise<boolean> {
-    return await invoke("plugin:store|has", {
+    return await invoke('plugin:store|has', {
       rid: this.rid,
-      key,
-    });
+      key
+    })
   }
 
   /**
@@ -83,10 +83,10 @@ export class Store extends Resource {
    * @returns
    */
   async delete(key: string): Promise<boolean> {
-    return await invoke("plugin:store|delete", {
+    return await invoke('plugin:store|delete', {
       rid: this.rid,
-      key,
-    });
+      key
+    })
   }
 
   /**
@@ -96,7 +96,7 @@ export class Store extends Resource {
    * @returns
    */
   async clear(): Promise<void> {
-    await invoke("plugin:store|clear", { rid: this.rid });
+    await invoke('plugin:store|clear', { rid: this.rid })
   }
 
   /**
@@ -106,7 +106,7 @@ export class Store extends Resource {
    * @returns
    */
   async reset(): Promise<void> {
-    await invoke("plugin:store|reset", { rid: this.rid });
+    await invoke('plugin:store|reset', { rid: this.rid })
   }
 
   /**
@@ -115,7 +115,7 @@ export class Store extends Resource {
    * @returns
    */
   async keys(): Promise<string[]> {
-    return await invoke("plugin:store|keys", { rid: this.rid });
+    return await invoke('plugin:store|keys', { rid: this.rid })
   }
 
   /**
@@ -124,7 +124,7 @@ export class Store extends Resource {
    * @returns
    */
   async values<T>(): Promise<T[]> {
-    return await invoke("plugin:store|values", { rid: this.rid });
+    return await invoke('plugin:store|values', { rid: this.rid })
   }
 
   /**
@@ -133,7 +133,7 @@ export class Store extends Resource {
    * @returns
    */
   async entries<T>(): Promise<Array<[key: string, value: T]>> {
-    return await invoke("plugin:store|entries", { rid: this.rid });
+    return await invoke('plugin:store|entries', { rid: this.rid })
   }
 
   /**
@@ -142,7 +142,7 @@ export class Store extends Resource {
    * @returns
    */
   async length(): Promise<number> {
-    return await invoke("plugin:store|length", { rid: this.rid });
+    return await invoke('plugin:store|length', { rid: this.rid })
   }
 
   /**
@@ -154,7 +154,7 @@ export class Store extends Resource {
    * @returns
    */
   async load(): Promise<void> {
-    await invoke("plugin:store|load", { rid: this.rid });
+    await invoke('plugin:store|load', { rid: this.rid })
   }
 
   /**
@@ -165,7 +165,7 @@ export class Store extends Resource {
    * @returns
    */
   async save(): Promise<void> {
-    await invoke("plugin:store|save", { rid: this.rid });
+    await invoke('plugin:store|save', { rid: this.rid })
   }
 
   /**
@@ -178,13 +178,13 @@ export class Store extends Resource {
    */
   async onKeyChange<T>(
     key: string,
-    cb: (value: T | null) => void,
+    cb: (value: T | null) => void
   ): Promise<UnlistenFn> {
-    return await listen<ChangePayload<T>>("store://change", (event) => {
+    return await listen<ChangePayload<T>>('store://change', (event) => {
       if (event.payload.path === this.path && event.payload.key === key) {
-        cb(event.payload.value);
+        cb(event.payload.value)
       }
-    });
+    })
   }
 
   /**
@@ -195,12 +195,12 @@ export class Store extends Resource {
    * @since 2.0.0
    */
   async onChange<T>(
-    cb: (key: string, value: T | null) => void,
+    cb: (key: string, value: T | null) => void
   ): Promise<UnlistenFn> {
-    return await listen<ChangePayload<T>>("store://change", (event) => {
+    return await listen<ChangePayload<T>>('store://change', (event) => {
       if (event.payload.path === this.path) {
-        cb(event.payload.key, event.payload.value);
+        cb(event.payload.key, event.payload.value)
       }
-    });
+    })
   }
 }

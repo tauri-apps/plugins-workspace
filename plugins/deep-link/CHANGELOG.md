@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-rc.3]
+
+- [`4654591d`](https://github.com/tauri-apps/plugins-workspace/commit/4654591d820403d6fa1a007fd55bb0d85947a6cc) ([#1732](https://github.com/tauri-apps/plugins-workspace/pull/1732) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Allow empty configuration values.
+
+## \[2.0.0-rc.1]
+
+- [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
+
 ## \[2.0.0-rc.1]
 
 - [`2c00c029`](https://github.com/tauri-apps/plugins-workspace/commit/2c00c0292c9127b81567de46691e8c0f73557261) ([#1630](https://github.com/tauri-apps/plugins-workspace/pull/1630) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed an issue that caused multi-word IIFE names to not be formatted correctly. For example the `barcode-scanner` was defined as `window.__TAURI_PLUGIN_CLIPBOARDMANAGER__` instead of `window.__TAURI_PLUGIN_CLIPBOARD_MANAGER__`.

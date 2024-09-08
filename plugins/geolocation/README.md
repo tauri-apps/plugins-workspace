@@ -87,16 +87,16 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { getCurrentPosition, watchPosition } from "@tauri-apps/plugin-log";
+import { getCurrentPosition, watchPosition } from '@tauri-apps/plugin-log'
 
-const pos = await getCurrentPosition();
+const pos = await getCurrentPosition()
 
 await watchPosition(
   { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
   (pos) => {
-    console.log(pos);
+    console.log(pos)
   }
-);
+)
 ```
 
 ## Contributing

@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use serde::{Serialize, Serializer};
 
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum Error {
     #[error(transparent)]
     Json(#[from] serde_json::Error),
@@ -26,6 +27,10 @@ pub enum Error {
     #[cfg(target_os = "android")]
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
+    #[error("URL is not a valid path")]
+    InvalidPathUrl,
+    #[error("Unsafe PathBuf: {0}")]
+    UnsafePathBuf(&'static str),
 }
 
 impl Serialize for Error {

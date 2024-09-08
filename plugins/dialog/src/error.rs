@@ -7,6 +7,7 @@ use serde::{ser::Serializer, Serialize};
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum Error {
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
@@ -18,13 +19,8 @@ pub enum Error {
     #[cfg(mobile)]
     #[error("Folder picker is not implemented on mobile")]
     FolderPickerNotImplemented,
-    #[cfg(target_os = "ios")]
-    #[error("File save dialog is not implemented on iOS")]
-    FileSaveDialogNotImplemented,
     #[error(transparent)]
     Fs(#[from] tauri_plugin_fs::Error),
-    #[error("URL is not a valid path")]
-    InvalidPathUrl,
 }
 
 impl Serialize for Error {
