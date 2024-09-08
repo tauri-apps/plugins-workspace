@@ -23,7 +23,7 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 dunce = { workspace = true }
-tokio = { version = "1", features = [ "sync", "time", "macros" ]}
+tokio = { version = "1", features = ["sync", "time", "macros"] }
 
 [target.'cfg(target_os = "ios")'.dependencies]
 tauri = { workspace = true, features = ["wry"] }
