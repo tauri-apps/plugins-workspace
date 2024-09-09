@@ -1,26 +1,345 @@
-| Permission | Description |
-|------|-----|
-|`allow-clear`|Enables the clear command without any pre-configured scope.|
-|`deny-clear`|Denies the clear command without any pre-configured scope.|
-|`allow-delete`|Enables the delete command without any pre-configured scope.|
-|`deny-delete`|Denies the delete command without any pre-configured scope.|
-|`allow-entries`|Enables the entries command without any pre-configured scope.|
-|`deny-entries`|Denies the entries command without any pre-configured scope.|
-|`allow-get`|Enables the get command without any pre-configured scope.|
-|`deny-get`|Denies the get command without any pre-configured scope.|
-|`allow-has`|Enables the has command without any pre-configured scope.|
-|`deny-has`|Denies the has command without any pre-configured scope.|
-|`allow-keys`|Enables the keys command without any pre-configured scope.|
-|`deny-keys`|Denies the keys command without any pre-configured scope.|
-|`allow-length`|Enables the length command without any pre-configured scope.|
-|`deny-length`|Denies the length command without any pre-configured scope.|
-|`allow-load`|Enables the load command without any pre-configured scope.|
-|`deny-load`|Denies the load command without any pre-configured scope.|
-|`allow-reset`|Enables the reset command without any pre-configured scope.|
-|`deny-reset`|Denies the reset command without any pre-configured scope.|
-|`allow-save`|Enables the save command without any pre-configured scope.|
-|`deny-save`|Denies the save command without any pre-configured scope.|
-|`allow-set`|Enables the set command without any pre-configured scope.|
-|`deny-set`|Denies the set command without any pre-configured scope.|
-|`allow-values`|Enables the values command without any pre-configured scope.|
-|`deny-values`|Denies the values command without any pre-configured scope.|
+## Default Permission
+
+This permission set configures what kind of
+operations are available from the store plugin.
+
+#### Granted Permissions
+
+All operations are enabled by default.
+
+
+
+- `allow-clear`
+- `allow-delete`
+- `allow-entries`
+- `allow-get`
+- `allow-has`
+- `allow-keys`
+- `allow-length`
+- `allow-load`
+- `allow-reset`
+- `allow-save`
+- `allow-set`
+- `allow-values`
+
+## Permission Table 
+
+<table>
+<tr>
+<th>Identifier</th>
+<th>Description</th>
+</tr>
+
+
+<tr>
+<td>
+
+`store:allow-clear`
+
+</td>
+<td>
+
+Enables the clear command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-clear`
+
+</td>
+<td>
+
+Denies the clear command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-delete`
+
+</td>
+<td>
+
+Enables the delete command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-delete`
+
+</td>
+<td>
+
+Denies the delete command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-entries`
+
+</td>
+<td>
+
+Enables the entries command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-entries`
+
+</td>
+<td>
+
+Denies the entries command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-get`
+
+</td>
+<td>
+
+Enables the get command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-get`
+
+</td>
+<td>
+
+Denies the get command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-has`
+
+</td>
+<td>
+
+Enables the has command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-has`
+
+</td>
+<td>
+
+Denies the has command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-keys`
+
+</td>
+<td>
+
+Enables the keys command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-keys`
+
+</td>
+<td>
+
+Denies the keys command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-length`
+
+</td>
+<td>
+
+Enables the length command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-length`
+
+</td>
+<td>
+
+Denies the length command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-load`
+
+</td>
+<td>
+
+Enables the load command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-load`
+
+</td>
+<td>
+
+Denies the load command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-reset`
+
+</td>
+<td>
+
+Enables the reset command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-reset`
+
+</td>
+<td>
+
+Denies the reset command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-save`
+
+</td>
+<td>
+
+Enables the save command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-save`
+
+</td>
+<td>
+
+Denies the save command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-set`
+
+</td>
+<td>
+
+Enables the set command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-set`
+
+</td>
+<td>
+
+Denies the set command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-values`
+
+</td>
+<td>
+
+Enables the values command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-values`
+
+</td>
+<td>
+
+Denies the values command without any pre-configured scope.
+
+</td>
+</tr>
+</table>

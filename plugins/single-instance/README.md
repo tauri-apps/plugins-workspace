@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-single-instance = "2.0.0-beta"
+tauri-plugin-single-instance = "2.0.0-rc"
 # alternatively with Git:
 tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -42,8 +42,7 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
             println!("{}, {argv:?}, {cwd}", app.package_info().name);
-
-            app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
+            app.emit("single-instance", Payload { args: argv, cwd }).unwrap();
         }))
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

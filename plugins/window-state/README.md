@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-window-state = "2.0.0-beta"
+tauri-plugin-window-state = "2.0.0-rc"
 # alternatively with Git:
 tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -71,9 +71,9 @@ app.save_window_state(StateFlags::all()); // will save the state of all open win
 or through Javascript
 
 ```javascript
-import { saveWindowState, StateFlags } from "@tauri-apps/plugin-window-state";
+import { saveWindowState, StateFlags } from '@tauri-apps/plugin-window-state'
 
-saveWindowState(StateFlags.ALL);
+saveWindowState(StateFlags.ALL)
 ```
 
 To manually restore a windows state from disk you can call the `restore_state()` method exposed by the `WindowExt` trait:
@@ -90,10 +90,10 @@ or through Javascript
 ```javascript
 import {
   restoreStateCurrent,
-  StateFlags,
-} from "@tauri-apps/plugin-window-state";
+  StateFlags
+} from '@tauri-apps/plugin-window-state'
 
-restoreStateCurrent(StateFlags.ALL);
+restoreStateCurrent(StateFlags.ALL)
 ```
 
 ## Contributing

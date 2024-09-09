@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-http"
-version = "2.0.0-beta.7"
+version = "2.0.0-rc.3"
 description = "Access an HTTP client written in Rust."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -10,15 +10,15 @@ repository = { workspace = true }
 links = "tauri-plugin-http"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
 url = { workspace = true }
-urlpattern = "0.2"
+urlpattern = "0.3"
 regex = "1"
 
 [dependencies]
@@ -26,8 +26,9 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
 thiserror = { workspace = true }
-tauri-plugin-fs = { path = "../fs", version = "2.0.0-beta.7" }
-urlpattern = "0.2"
+tokio = { version = "1", features = ["sync", "macros"] }
+tauri-plugin-fs = { path = "../fs", version = "2.0.0-rc.3" }
+urlpattern = "0.3"
 regex = "1"
 http = "1"
 reqwest = { version = "0.12", default-features = false }
@@ -40,26 +41,26 @@ default = [
   "http2",
   "charset",
   "macos-system-configuration",
-  "cookies"
+  "cookies",
 ]
-multipart = [ "reqwest/multipart" ]
-json = [ "reqwest/json" ]
-stream = [ "reqwest/stream" ]
-native-tls = [ "reqwest/native-tls" ]
-native-tls-vendored = [ "reqwest/native-tls-vendored" ]
-native-tls-alpn = [ "reqwest/native-tls-alpn" ]
-rustls-tls = [ "reqwest/rustls-tls" ]
-rustls-tls-manual-roots = [ "reqwest/rustls-tls-manual-roots" ]
-rustls-tls-webpki-roots = [ "reqwest/rustls-tls-webpki-roots" ]
-rustls-tls-native-roots = [ "reqwest/rustls-tls-native-roots" ]
-blocking = [ "reqwest/blocking" ]
-cookies = [ "reqwest/cookies" ]
-gzip = [ "reqwest/gzip" ]
-brotli = [ "reqwest/brotli" ]
-deflate = [ "reqwest/deflate" ]
-trust-dns = [ "reqwest/trust-dns" ]
-socks = [ "reqwest/socks" ]
-http2 = [ "reqwest/http2" ]
-charset = [ "reqwest/charset" ]
-macos-system-configuration = [ "reqwest/macos-system-configuration" ]
-unsafe-headers = [ ]
+multipart = ["reqwest/multipart"]
+json = ["reqwest/json"]
+stream = ["reqwest/stream"]
+native-tls = ["reqwest/native-tls"]
+native-tls-vendored = ["reqwest/native-tls-vendored"]
+native-tls-alpn = ["reqwest/native-tls-alpn"]
+rustls-tls = ["reqwest/rustls-tls"]
+rustls-tls-manual-roots = ["reqwest/rustls-tls-manual-roots"]
+rustls-tls-webpki-roots = ["reqwest/rustls-tls-webpki-roots"]
+rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
+blocking = ["reqwest/blocking"]
+cookies = ["reqwest/cookies"]
+gzip = ["reqwest/gzip"]
+brotli = ["reqwest/brotli"]
+deflate = ["reqwest/deflate"]
+trust-dns = ["reqwest/trust-dns"]
+socks = ["reqwest/socks"]
+http2 = ["reqwest/http2"]
+charset = ["reqwest/charset"]
+macos-system-configuration = ["reqwest/macos-system-configuration"]
+unsafe-headers = []

@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-barcode-scanner = "2.0.0-beta"
+tauri-plugin-barcode-scanner = "2.0.0-rc"
 # alternatively with Git:
 tauri-plugin-barcode-scanner = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -60,12 +60,12 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { scan } from "@tauri-apps/plugin-barcode-scanner";
+import { scan } from '@tauri-apps/plugin-barcode-scanner'
 
 // `windowed: true` actually sets the webview to transparent
 // instead of opening a separate view for the camera
 // make sure your user interface is ready to show what is underneath with a transparent element
-scan({ windowed: true, formats: [""] })
+scan({ windowed: true, formats: [''] })
 ```
 
 ## Contributing

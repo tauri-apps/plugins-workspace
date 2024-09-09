@@ -1,5 +1,53 @@
 # Changelog
 
+## \[2.0.0-rc.0]
+
+### Dependencies
+
+- Upgraded to `deep-link-js@2.0.0-rc.1`
+
+## \[2.0.0-beta.11]
+
+### Dependencies
+
+- Upgraded to `deep-link-js@2.0.0-rc.0`
+
+## \[2.0.0-beta.10]
+
+### Dependencies
+
+- Upgraded to `deep-link-js@2.0.0-beta.10`
+
+## \[2.0.0-beta.9]
+
+### Dependencies
+
+- Upgraded to `deep-link-js@2.0.0-beta.9`
+
+## \[2.0.0-beta.8]
+
+### Dependencies
+
+- Upgraded to `deep-link-js@2.0.0-beta.8`
+
+## \[2.0.0-beta.7]
+
+### Dependencies
+
+- Upgraded to `deep-link-js@2.0.0-beta.7`
+
+## \[2.0.0-beta.6]
+
+### Dependencies
+
+- Upgraded to `deep-link-js@2.0.0-beta.6`
+
+## \[2.0.0-beta.5]
+
+### Dependencies
+
+- Upgraded to `deep-link-js@2.0.0-beta.5`
+
 ## \[2.0.0-beta.4]
 
 ### Dependencies

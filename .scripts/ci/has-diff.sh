@@ -5,5 +5,6 @@ then
   echo "working directory is clean"
 else
   echo "found diff"
+  git diff --name-status HEAD
   exit 1
 fi

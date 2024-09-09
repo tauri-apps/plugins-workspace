@@ -65,7 +65,7 @@ struct NotificationAttachment: Codable {
 struct Notification: Decodable {
   let id: Int
   var title: String
-  var body: String
+  var body: String?
   var extra: [String: String]?
   let schedule: NotificationSchedule?
   let attachments: [NotificationAttachment]?

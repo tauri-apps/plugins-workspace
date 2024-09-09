@@ -2,39 +2,39 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from '@tauri-apps/api/core'
 
 // open <a href="..."> links with the API
 function openLinks(): void {
-  document.querySelector("body")?.addEventListener("click", function (e) {
-    let target: HTMLElement | null = e.target as HTMLElement;
+  document.querySelector('body')?.addEventListener('click', function (e) {
+    let target: HTMLElement | null = e.target as HTMLElement
     while (target) {
-      if (target.matches("a")) {
-        const t = target as HTMLAnchorElement;
+      if (target.matches('a')) {
+        const t = target as HTMLAnchorElement
         if (
-          t.href !== "" &&
-          ["http://", "https://", "mailto:", "tel:"].some((v) =>
-            t.href.startsWith(v),
+          t.href !== '' &&
+          ['http://', 'https://', 'mailto:', 'tel:'].some((v) =>
+            t.href.startsWith(v)
           ) &&
-          t.target === "_blank"
+          t.target === '_blank'
         ) {
-          void invoke("plugin:shell|open", {
-            path: t.href,
-          });
-          e.preventDefault();
+          void invoke('plugin:shell|open', {
+            path: t.href
+          })
+          e.preventDefault()
         }
-        break;
+        break
       }
-      target = target.parentElement;
+      target = target.parentElement
     }
-  });
+  })
 }
 
 if (
-  document.readyState === "complete" ||
-  document.readyState === "interactive"
+  document.readyState === 'complete' ||
+  document.readyState === 'interactive'
 ) {
-  openLinks();
+  openLinks()
 } else {
-  window.addEventListener("DOMContentLoaded", openLinks, true);
+  window.addEventListener('DOMContentLoaded', openLinks, true)
 }

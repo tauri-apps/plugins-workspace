@@ -7,23 +7,23 @@ name: Audit Rust
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: '0 0 * * *'
   push:
     branches:
       - v1
       - v2
     paths:
-      - ".github/workflows/audit-rust.yml"
-      - "**/Cargo.lock"
-      - "**/Cargo.toml"
+      - '.github/workflows/audit-rust.yml'
+      - '**/Cargo.lock'
+      - '**/Cargo.toml'
   pull_request:
     branches:
       - v1
       - v2
     paths:
-      - ".github/workflows/audit-rust.yml"
-      - "**/Cargo.lock"
-      - "**/Cargo.toml"
+      - '.github/workflows/audit-rust.yml'
+      - '**/Cargo.lock'
+      - '**/Cargo.toml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

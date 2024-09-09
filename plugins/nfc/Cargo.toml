@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-nfc"
-version = "2.0.0-beta.4"
+version = "2.0.0-rc.3"
 description = "Read and write NFC tags on Android and iOS."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -9,11 +9,12 @@ repository = { workspace = true }
 links = "tauri-plugin-nfc"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+targets = ["x86_64-linux-android"]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }

@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from '@tauri-apps/api/core'
 
-export const RTD_TEXT = [0x54]; // "T"
-export const RTD_URI = [0x55]; // "U"
+export const RTD_TEXT = [0x54] // "T"
+export const RTD_URI = [0x55] // "U"
 
 export interface UriFilter {
-  scheme?: string;
-  host?: string;
-  pathPrefix?: string;
+  scheme?: string
+  host?: string
+  pathPrefix?: string
 }
 
 export enum TechKind {
@@ -23,19 +23,19 @@ export enum TechKind {
   NfcB,
   NfcBarcode,
   NfcF,
-  NfcV,
+  NfcV
 }
 
 export type ScanKind =
   | {
-      type: "tag";
-      uri?: UriFilter;
-      mimeType?: string;
+      type: 'tag'
+      uri?: UriFilter
+      mimeType?: string
     }
   | {
-      type: "ndef";
-      uri?: UriFilter;
-      mimeType?: string;
+      type: 'ndef'
+      uri?: UriFilter
+      mimeType?: string
       /**
        *  Each of the tech-lists is considered independently and the activity is considered a match if
        * any single tech-list matches the tag that was discovered.
@@ -56,25 +56,25 @@ export type ScanKind =
        * ]
        * ```
        */
-      techLists?: TechKind[][];
-    };
+      techLists?: TechKind[][]
+    }
 
 export interface ScanOptions {
-  keepSessionAlive?: boolean;
+  keepSessionAlive?: boolean
   /** Message displayed in the UI. iOS only. */
-  message?: string;
+  message?: string
   /** Message displayed in the UI when the message has been read. iOS only. */
-  successMessage?: string;
+  successMessage?: string
 }
 
 export interface WriteOptions {
-  kind?: ScanKind;
+  kind?: ScanKind
   /** Message displayed in the UI when reading the tag. iOS only. */
-  message?: string;
+  message?: string
   /** Message displayed in the UI when the tag has been read. iOS only. */
-  successfulReadMessage?: string;
+  successfulReadMessage?: string
   /** Message displayed in the UI when the message has been written. iOS only. */
-  successMessage?: string;
+  successMessage?: string
 }
 
 export enum NFCTypeNameFormat {
@@ -84,122 +84,120 @@ export enum NFCTypeNameFormat {
   AbsoluteURI = 3,
   NfcExternal = 4,
   Unknown = 5,
-  Unchanged = 6,
+  Unchanged = 6
 }
 
 export interface TagRecord {
-  tnf: NFCTypeNameFormat;
-  kind: number[];
-  id: number[];
-  payload: number[];
+  tnf: NFCTypeNameFormat
+  kind: number[]
+  id: number[]
+  payload: number[]
 }
 
 export interface Tag {
-  id: number[];
-  kind: string[];
-  records: TagRecord[];
+  id: number[]
+  kind: string[]
+  records: TagRecord[]
 }
 
 export interface NFCRecord {
-  format: NFCTypeNameFormat;
-  kind: number[];
-  id: number[];
-  payload: number[];
+  format: NFCTypeNameFormat
+  kind: number[]
+  id: number[]
+  payload: number[]
 }
 
 export function record(
   format: NFCTypeNameFormat,
   kind: string | number[],
   id: string | number[],
-  payload: string | number[],
+  payload: string | number[]
 ): NFCRecord {
   return {
     format,
     kind:
-      typeof kind === "string"
+      typeof kind === 'string'
         ? Array.from(new TextEncoder().encode(kind))
         : kind,
-    id: typeof id === "string" ? Array.from(new TextEncoder().encode(id)) : id,
+    id: typeof id === 'string' ? Array.from(new TextEncoder().encode(id)) : id,
     payload:
-      typeof payload === "string"
+      typeof payload === 'string'
         ? Array.from(new TextEncoder().encode(payload))
-        : payload,
-  };
+        : payload
+  }
 }
 
 export function textRecord(
   text: string,
   id?: string | number[],
-  language: string = "en",
+  language: string = 'en'
 ): NFCRecord {
-  const payload = Array.from(new TextEncoder().encode(language + text));
-  payload.unshift(language.length);
-  return record(NFCTypeNameFormat.NfcWellKnown, RTD_TEXT, id ?? [], payload);
+  const payload = Array.from(new TextEncoder().encode(language + text))
+  payload.unshift(language.length)
+  return record(NFCTypeNameFormat.NfcWellKnown, RTD_TEXT, id ?? [], payload)
 }
 
 const protocols = [
-  "",
-  "http://www.",
-  "https://www.",
-  "http://",
-  "https://",
-  "tel:",
-  "mailto:",
-  "ftp://anonymous:anonymous@",
-  "ftp://ftp.",
-  "ftps://",
-  "sftp://",
-  "smb://",
-  "nfs://",
-  "ftp://",
-  "dav://",
-  "news:",
-  "telnet://",
-  "imap:",
-  "rtsp://",
-  "urn:",
-  "pop:",
-  "sip:",
-  "sips:",
-  "tftp:",
-  "btspp://",
-  "btl2cap://",
-  "btgoep://",
-  "tcpobex://",
-  "irdaobex://",
-  "file://",
-  "urn:epc:id:",
-  "urn:epc:tag:",
-  "urn:epc:pat:",
-  "urn:epc:raw:",
-  "urn:epc:",
-  "urn:nfc:",
-];
+  '',
+  'http://www.',
+  'https://www.',
+  'http://',
+  'https://',
+  'tel:',
+  'mailto:',
+  'ftp://anonymous:anonymous@',
+  'ftp://ftp.',
+  'ftps://',
+  'sftp://',
+  'smb://',
+  'nfs://',
+  'ftp://',
+  'dav://',
+  'news:',
+  'telnet://',
+  'imap:',
+  'rtsp://',
+  'urn:',
+  'pop:',
+  'sip:',
+  'sips:',
+  'tftp:',
+  'btspp://',
+  'btl2cap://',
+  'btgoep://',
+  'tcpobex://',
+  'irdaobex://',
+  'file://',
+  'urn:epc:id:',
+  'urn:epc:tag:',
+  'urn:epc:pat:',
+  'urn:epc:raw:',
+  'urn:epc:',
+  'urn:nfc:'
+]
 
 function encodeURI(uri: string): number[] {
-  let prefix = "";
+  let prefix = ''
 
   protocols.slice(1).forEach(function (protocol) {
     if (
-      (prefix.length === 0 || prefix === "urn:") &&
+      (prefix.length === 0 || prefix === 'urn:') &&
       uri.indexOf(protocol) === 0
     ) {
-      prefix = protocol;
+      prefix = protocol
     }
-  });
+  })
 
   if (prefix.length === 0) {
-    prefix = "";
+    prefix = ''
   }
 
-  const encoded = Array.from(
-    new TextEncoder().encode(uri.slice(prefix.length)),
-  );
-  const protocolCode = protocols.indexOf(prefix);
+  const encoded = Array.from(new TextEncoder().encode(uri.slice(prefix.length)))
+  const protocolCode = protocols.indexOf(prefix)
   // prepend protocol code
-  encoded.unshift(protocolCode);
+  encoded.unshift(protocolCode)
 
-  return encoded;
+  return encoded
 }
 
 export function uriRecord(uri: string, id?: string | number[]): NFCRecord {
@@ -207,13 +205,13 @@ export function uriRecord(uri: string, id?: string | number[]): NFCRecord {
     NFCTypeNameFormat.NfcWellKnown,
     RTD_URI,
     id ?? [],
-    encodeURI(uri),
-  );
+    encodeURI(uri)
+  )
 }
 
 function mapScanKind(kind: ScanKind): Record<string, unknown> {
-  const { type: scanKind, ...kindOptions } = kind;
-  return { [scanKind]: kindOptions };
+  const { type: scanKind, ...kindOptions } = kind
+  return { [scanKind]: kindOptions }
 }
 
 /**
@@ -232,12 +230,12 @@ function mapScanKind(kind: ScanKind): Record<string, unknown> {
  */
 export async function scan(
   kind: ScanKind,
-  options?: ScanOptions,
+  options?: ScanOptions
 ): Promise<Tag> {
-  return await invoke("plugin:nfc|scan", {
+  return await invoke('plugin:nfc|scan', {
     kind: mapScanKind(kind),
-    ...options,
-  });
+    ...options
+  })
 }
 
 /**
@@ -257,19 +255,19 @@ export async function scan(
  */
 export async function write(
   records: NFCRecord[],
-  options?: WriteOptions,
+  options?: WriteOptions
 ): Promise<void> {
-  const { kind, ...opts } = options ?? {};
+  const { kind, ...opts } = options ?? {}
   if (kind) {
     // @ts-expect-error map the property
-    opts.kind = mapScanKind(kind);
+    opts.kind = mapScanKind(kind)
   }
-  await invoke("plugin:nfc|write", {
+  await invoke('plugin:nfc|write', {
     records,
-    ...opts,
-  });
+    ...opts
+  })
 }
 
 export async function isAvailable(): Promise<boolean> {
-  return await invoke("plugin:nfc|is_available");
+  return await invoke('plugin:nfc|is_available')
 }

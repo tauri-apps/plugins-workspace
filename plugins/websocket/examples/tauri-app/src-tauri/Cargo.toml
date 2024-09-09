@@ -7,11 +7,11 @@ edition = "2021"
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
-tauri = { workspace = true }
+tauri = { workspace = true, features = ["wry", "compression"] }
 tokio = { version = "1", features = ["net"] }
 futures-util = "0.3"
 tauri-plugin-websocket = { path = "../../../" }
-tokio-tungstenite = "0.21"
+tokio-tungstenite = "0.23"
 
 [build-dependencies]
 tauri-build = { workspace = true }

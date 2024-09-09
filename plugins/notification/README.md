@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-notification = "2.0.0-beta"
+tauri-plugin-notification = "2.0.0-rc"
 # alternatively with Git:
 tauri-plugin-notification = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -57,10 +57,43 @@ fn main() {
 }
 ```
 
+Then you need to add the permissions to your capabilities file:
+
+`src-tauri/capabilities/main.json`
+
+```json
+{
+  ...
+  "permissions": [
+    ...
+    "notification:default"
+  ],
+  ...
+}
+```
+
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification
+} from '@tauri-apps/plugin-notification'
 
+async function checkPermission() {
+  if (!(await isPermissionGranted())) {
+    return (await requestPermission()) === 'granted'
+  }
+  return true
+}
+
+export async function enqueueNotification(title, body) {
+  if (!(await checkPermission())) {
+    return
+  }
+  sendNotification({ title, body })
+}
 ```
 
 ## Contributing

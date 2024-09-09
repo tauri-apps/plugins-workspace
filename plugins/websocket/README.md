@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-websocket = "2.0.0-beta"
+tauri-plugin-websocket = "2.0.0-rc"
 # alternatively with Git:
 tauri-plugin-websocket = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -60,13 +60,13 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import WebSocket from "@tauri-apps/plugin-websocket";
+import WebSocket from '@tauri-apps/plugin-websocket'
 
-const ws = await WebSocket.connect("wss://example.com");
+const ws = await WebSocket.connect('wss://example.com')
 
-await ws.send("Hello World");
+await ws.send('Hello World')
 
-await ws.disconnect();
+await ws.disconnect()
 ```
 
 ## Contributing

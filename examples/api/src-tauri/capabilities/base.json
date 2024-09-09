@@ -14,20 +14,13 @@
         }
       ]
     },
-    "app:default",
-    "resources:default",
+    "core:default",
     "fs:default",
-    "menu:default",
-    "path:default",
-    "tray:default",
-    "event:default",
-    "window:default",
-    "window:allow-minimize",
-    "window:allow-maximize",
-    "window:allow-unmaximize",
-    "window:allow-close",
-    "window:allow-start-dragging",
-    "image:default",
+    "core:window:allow-minimize",
+    "core:window:allow-maximize",
+    "core:window:allow-unmaximize",
+    "core:window:allow-close",
+    "core:window:allow-start-dragging",
     "notification:default",
     "os:allow-platform",
     "dialog:allow-open",
@@ -36,7 +29,7 @@
     "dialog:allow-confirm",
     "dialog:allow-message",
     {
-      "identifier": "shell:allow-execute",
+      "identifier": "shell:allow-spawn",
       "allow": [
         {
           "name": "sh",
@@ -44,7 +37,7 @@
           "args": [
             "-c",
             {
-              "validator": "\\S+"
+              "validator": ".+"
             }
           ]
         },
@@ -54,7 +47,7 @@
           "args": [
             "/C",
             {
-              "validator": "\\S+"
+              "validator": ".+"
             }
           ]
         }
@@ -68,6 +61,9 @@
     "clipboard-manager:allow-write-text",
     "clipboard-manager:allow-read-image",
     "clipboard-manager:allow-write-image",
+    "fs:allow-open",
+    "fs:allow-write",
+    "fs:allow-read",
     "fs:allow-rename",
     "fs:allow-mkdir",
     "fs:allow-remove",
@@ -82,6 +78,11 @@
         }
       ],
       "deny": ["$APPDATA/db/*.stronghold"]
-    }
+    },
+    "store:allow-entries",
+    "store:allow-get",
+    "store:allow-set",
+    "store:allow-save",
+    "store:allow-load"
   ]
 }

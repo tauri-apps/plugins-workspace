@@ -7,8 +7,10 @@
 
 [[permission]]
 identifier = "scope-audio-recursive"
-description = "This scope recursive access to the complete `$AUDIO` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$AUDIO` folder, including sub directories and files."
 
+[[permission.scope.allow]]
+path = "$AUDIO"
 [[permission.scope.allow]]
 path = "$AUDIO/**"
 
@@ -17,6 +19,8 @@ identifier = "scope-audio"
 description = "This scope permits access to all files and list content of top level directories in the `$AUDIO`folder."
 
 [[permission.scope.allow]]
+path = "$AUDIO"
+[[permission.scope.allow]]
 path = "$AUDIO/*"
 
 [[permission]]
@@ -24,7 +28,7 @@ identifier = "scope-audio-index"
 description = "This scope permits to list all files and folders in the `$AUDIO`folder."
 
 [[permission.scope.allow]]
-path = "$AUDIO/"
+path = "$AUDIO"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

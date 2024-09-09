@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-clipboard-manager = "2.0.0-beta"
+tauri-plugin-clipboard-manager = "2.0.0-rc"
 # alternatively with Git:
 tauri-plugin-clipboard-manager = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -60,9 +60,15 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { writeText, readText, writeHtml, readHtml, clear } from "@tauri-apps/plugin-clipboard-manager";
-await writeText("Tauri is awesome!");
-assert(await readText(), "Tauri is awesome!");
+import {
+  writeText,
+  readText,
+  writeHtml,
+  readHtml,
+  clear
+} from '@tauri-apps/plugin-clipboard-manager'
+await writeText('Tauri is awesome!')
+assert(await readText(), 'Tauri is awesome!')
 ```
 
 ## Contributing

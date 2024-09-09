@@ -28,6 +28,8 @@ use std::{
 
 mod cmd;
 
+type LabelMapperFn = dyn Fn(&str) -> &str + Send + Sync;
+
 /// Default filename used to store window state.
 ///
 /// If using a custom filename, you should probably use [`AppHandleExt::filename`] instead.
@@ -65,6 +67,7 @@ impl Default for StateFlags {
 
 struct PluginState {
     filename: String,
+    map_label: Option<Box<LabelMapperFn>>,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
@@ -114,10 +117,19 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
         if let Ok(app_dir) = self.path().app_config_dir() {
             let plugin_state = self.state::<PluginState>();
             let state_path = app_dir.join(&plugin_state.filename);
+            let windows = self.webview_windows();
             let cache = self.state::<WindowStateCache>();
             let mut state = cache.0.lock().unwrap();
+
             for (label, s) in state.iter_mut() {
-                if let Some(window) = self.get_webview_window(label) {
+                let window = match &plugin_state.map_label {
+                    Some(map) => windows
+                        .iter()
+                        .find_map(|(l, window)| (map(l) == label).then_some(window)),
+                    None => windows.get(label),
+                };
+
+                if let Some(window) = window {
                     window.update_state(s, flags)?;
                 }
             }
@@ -148,13 +160,20 @@ impl<R: Runtime> WindowExt for WebviewWindow<R> {
 }
 impl<R: Runtime> WindowExt for Window<R> {
     fn restore_state(&self, flags: StateFlags) -> tauri::Result<()> {
+        let plugin_state = self.app_handle().state::<PluginState>();
+        let label = plugin_state
+            .map_label
+            .as_ref()
+            .map(|map| map(self.label()))
+            .unwrap_or_else(|| self.label());
+
         let cache = self.state::<WindowStateCache>();
         let mut c = cache.0.lock().unwrap();
 
         let mut should_show = true;
 
         if let Some(state) = c
-            .get(self.label())
+            .get(label)
             .filter(|state| state != &&WindowState::default())
         {
             if flags.contains(StateFlags::DECORATIONS) {
@@ -235,7 +254,7 @@ impl<R: Runtime> WindowExt for Window<R> {
                 metadata.fullscreen = self.is_fullscreen()?;
             }
 
-            c.insert(self.label().into(), metadata);
+            c.insert(label.into(), metadata);
         }
 
         if flags.contains(StateFlags::VISIBLE) && should_show {
@@ -294,7 +313,7 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
             }
         }
 
-        if flags.contains(StateFlags::POSITION) && !is_maximized {
+        if flags.contains(StateFlags::POSITION) && !is_maximized && !self.is_minimized()? {
             let position = self.outer_position()?;
             state.x = position.x;
             state.y = position.y;
@@ -309,6 +328,7 @@ pub struct Builder {
     denylist: HashSet<String>,
     skip_initial_state: HashSet<String>,
     state_flags: StateFlags,
+    map_label: Option<Box<LabelMapperFn>>,
     filename: Option<String>,
 }
 
@@ -342,9 +362,21 @@ impl Builder {
         self
     }
 
+    /// Transforms the window label when saving the window state.
+    ///
+    /// This can be used to group different windows to use the same state.
+    pub fn map_label<F>(mut self, map_fn: F) -> Self
+    where
+        F: Fn(&str) -> &str + Sync + Send + 'static,
+    {
+        self.map_label = Some(Box::new(map_fn));
+        self
+    }
+
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let flags = self.state_flags;
         let filename = self.filename.unwrap_or_else(|| DEFAULT_FILENAME.into());
+        let map_label = self.map_label;
 
         PluginBuilder::new("window-state")
             .invoke_handler(tauri::generate_handler![
@@ -372,21 +404,31 @@ impl Builder {
                         Default::default()
                     };
                 app.manage(WindowStateCache(cache));
-                app.manage(PluginState { filename });
+                app.manage(PluginState {
+                    filename,
+                    map_label,
+                });
                 Ok(())
             })
             .on_window_ready(move |window| {
-                if self.denylist.contains(window.label()) {
+                let plugin_state = window.app_handle().state::<PluginState>();
+                let label = plugin_state
+                    .map_label
+                    .as_ref()
+                    .map(|map| map(window.label()))
+                    .unwrap_or_else(|| window.label());
+
+                if self.denylist.contains(label) {
                     return;
                 }
 
-                if !self.skip_initial_state.contains(window.label()) {
+                if !self.skip_initial_state.contains(label) {
                     let _ = window.restore_state(self.state_flags);
                 }
 
                 let cache = window.state::<WindowStateCache>();
                 let cache = cache.0.clone();
-                let label = window.label().to_string();
+                let label = label.to_string();
                 let window_clone = window.clone();
                 let flags = self.state_flags;
 

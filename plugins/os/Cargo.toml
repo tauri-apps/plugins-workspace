@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-os"
-version = "2.0.0-beta.4"
+version = "2.0.0-rc.1"
 description = "Read information about the operating system."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -10,11 +10,11 @@ repository = { workspace = true }
 links = "tauri-plugin-os"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }
@@ -24,5 +24,5 @@ log = { workspace = true }
 thiserror = { workspace = true }
 os_info = "3"
 sys-locale = "0.3"
-gethostname = "0.4"
+gethostname = "0.5"
 serialize-to-javascript = "=0.1.1"

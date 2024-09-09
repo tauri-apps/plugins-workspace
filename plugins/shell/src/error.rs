@@ -20,7 +20,7 @@ pub enum Error {
     #[error(transparent)]
     Scope(#[from] crate::scope::Error),
     /// Sidecar not allowed by the configuration.
-    #[error("sidecar not configured under `tauri.conf.json > tauri > bundle > externalBin`: {0}")]
+    #[error("sidecar not configured under `tauri.conf.json > bundle > externalBin`: {0}")]
     SidecarNotAllowed(PathBuf),
     /// Program not allowed by the scope.
     #[error("program not allowed on the configured shell scope: {0}")]

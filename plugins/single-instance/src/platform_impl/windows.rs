@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-#![cfg(target_os = "windows")]
-
 #[cfg(feature = "semver")]
 use crate::semver_compat::semver_compat_string;
 
@@ -55,7 +53,7 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
                 unsafe {
                     let hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
 
-                    if hwnd != 0 {
+                    if !hwnd.is_null() {
                         let data = format!(
                             "{}|{}\0",
                             std::env::current_dir()
@@ -76,7 +74,7 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
                     }
                 }
             } else {
-                app.manage(MutexHandle(hmutex));
+                app.manage(MutexHandle(hmutex as _));
 
                 let hwnd = create_event_target_window::<R>(&class_name, &window_name);
                 unsafe {
@@ -87,7 +85,7 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
                     )
                 };
 
-                app.manage(TargetWindowHandle(hwnd));
+                app.manage(TargetWindowHandle(hwnd as _));
             }
 
             Ok(())
@@ -103,12 +101,12 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
     if let Some(hmutex) = manager.try_state::<MutexHandle>() {
         unsafe {
-            ReleaseMutex(hmutex.0);
-            CloseHandle(hmutex.0);
+            ReleaseMutex(hmutex.0 as _);
+            CloseHandle(hmutex.0 as _);
         }
     }
     if let Some(hwnd) = manager.try_state::<TargetWindowHandle>() {
-        unsafe { DestroyWindow(hwnd.0) };
+        unsafe { DestroyWindow(hwnd.0 as _) };
     }
 }
 
@@ -152,12 +150,12 @@ fn create_event_target_window<R: Runtime>(class_name: &[u16], window_name: &[u16
             cbClsExtra: 0,
             cbWndExtra: 0,
             hInstance: GetModuleHandleW(std::ptr::null()),
-            hIcon: 0,
-            hCursor: 0,
-            hbrBackground: 0,
+            hIcon: std::ptr::null_mut(),
+            hCursor: std::ptr::null_mut(),
+            hbrBackground: std::ptr::null_mut(),
             lpszMenuName: std::ptr::null(),
             lpszClassName: class_name.as_ptr(),
-            hIconSm: 0,
+            hIconSm: std::ptr::null_mut(),
         };
 
         RegisterClassExW(&class);
@@ -181,8 +179,8 @@ fn create_event_target_window<R: Runtime>(class_name: &[u16], window_name: &[u16
             0,
             0,
             0,
-            0,
-            0,
+            std::ptr::null_mut(),
+            std::ptr::null_mut(),
             GetModuleHandleW(std::ptr::null()),
             std::ptr::null(),
         );

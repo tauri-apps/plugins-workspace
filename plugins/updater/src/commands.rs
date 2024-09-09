@@ -4,13 +4,14 @@
 
 use crate::{Result, Update, UpdaterExt};
 
+use http::{HeaderMap, HeaderName, HeaderValue};
 use serde::Serialize;
 use tauri::{ipc::Channel, Manager, Resource, ResourceId, Runtime, Webview};
 
-use std::time::Duration;
+use std::{str::FromStr, time::Duration};
 use url::Url;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 #[serde(tag = "event", content = "data")]
 pub enum DownloadEvent {
     #[serde(rename_all = "camelCase")]
@@ -53,7 +54,7 @@ pub(crate) async fn check<R: Runtime>(
         }
     }
     if let Some(timeout) = timeout {
-        builder = builder.timeout(Duration::from_secs(timeout));
+        builder = builder.timeout(Duration::from_millis(timeout));
     }
     if let Some(ref proxy) = proxy {
         let url = Url::parse(proxy.as_str())?;
@@ -82,9 +83,26 @@ pub(crate) async fn check<R: Runtime>(
 pub(crate) async fn download<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
-    on_event: Channel,
+    on_event: Channel<DownloadEvent>,
+    headers: Option<Vec<(String, String)>>,
+    timeout: Option<u64>,
 ) -> Result<ResourceId> {
     let update = webview.resources_table().get::<Update>(rid)?;
+
+    let mut update = (*update).clone();
+
+    if let Some(headers) = headers {
+        let mut map = HeaderMap::new();
+        for (k, v) in headers {
+            map.append(HeaderName::from_str(&k)?, HeaderValue::from_str(&v)?);
+        }
+        update.headers = map;
+    }
+
+    if let Some(timeout) = timeout {
+        update.timeout = Some(Duration::from_millis(timeout));
+    }
+
     let mut first_chunk = true;
     let bytes = update
         .download(
@@ -96,10 +114,11 @@ pub(crate) async fn download<R: Runtime>(
                 let _ = on_event.send(DownloadEvent::Progress { chunk_length });
             },
             || {
-                let _ = on_event.send(&DownloadEvent::Finished);
+                let _ = on_event.send(DownloadEvent::Finished);
             },
         )
         .await?;
+
     Ok(webview.resources_table().add(DownloadedBytes(bytes)))
 }
 
@@ -122,9 +141,25 @@ pub(crate) async fn install<R: Runtime>(
 pub(crate) async fn download_and_install<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
-    on_event: Channel,
+    on_event: Channel<DownloadEvent>,
+    headers: Option<Vec<(String, String)>>,
+    timeout: Option<u64>,
 ) -> Result<()> {
     let update = webview.resources_table().get::<Update>(rid)?;
+
+    let mut update = (*update).clone();
+
+    if let Some(headers) = headers {
+        let mut map = HeaderMap::new();
+        for (k, v) in headers {
+            map.append(HeaderName::from_str(&k)?, HeaderValue::from_str(&v)?);
+        }
+        update.headers = map;
+    }
+
+    if let Some(timeout) = timeout {
+        update.timeout = Some(Duration::from_millis(timeout));
+    }
 
     let mut first_chunk = true;
 
@@ -138,7 +173,7 @@ pub(crate) async fn download_and_install<R: Runtime>(
                 let _ = on_event.send(DownloadEvent::Progress { chunk_length });
             },
             || {
-                let _ = on_event.send(&DownloadEvent::Finished);
+                let _ = on_event.send(DownloadEvent::Finished);
             },
         )
         .await?;
