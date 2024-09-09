@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-notification"
-version = "2.0.0-beta.5"
+version = "2.0.0-rc.3"
 description = "Send desktop and mobile notifications on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -10,12 +10,12 @@ repository = { workspace = true }
 links = "tauri-plugin-notification"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
-targets = [ "x86_64-unknown-linux-gnu", "x86_64-linux-android" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+targets = ["x86_64-unknown-linux-gnu", "x86_64-linux-android"]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }
@@ -24,26 +24,19 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 rand = "0.8"
-time = { version = "0.3", features = [ "serde", "parsing", "formatting" ] }
-url = { version = "2", features = [ "serde" ] }
+time = { version = "0.3", features = ["serde", "parsing", "formatting"] }
+url = { version = "2", features = ["serde"] }
 serde_repr = "0.1"
 
+[target.'cfg(target_os = "ios")'.dependencies]
+tauri = { workspace = true, features = ["wry"] }
+
 [target."cfg(windows)".dependencies]
-win7-notifications = { version = "0.4.3", optional = true }
+win7-notifications = { version = "0.4.5", optional = true }
 windows-version = { version = "0.1", optional = true }
 
-[target."cfg(all(unix, not(target_os = \"macos\")))".dependencies]
-lazy_static = { version = "1", optional = true }
-zbus = { version = "4", optional = true }
-log = "0.4"
-env_logger = { version = "0.10", optional = true }
-
-[target."cfg(target_os=\"macos\")".dependencies]
-mac-notification-sys = "0.6"
-chrono = { version = "0.4", optional = true }
-
-[target."cfg(target_os=\"windows\")".dependencies]
-winrt-notification = { package = "tauri-winrt-notification", version = "0.3" }
+[target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
+notify-rust = "4.11"
 
 [dev-dependencies]
 color-backtrace = "0.6"
@@ -51,6 +44,4 @@ ctor = "0.2"
 maplit = "1"
 
 [features]
-default = [ "zbus", "async" ]
-async = [ ]
-windows7-compat = [ "win7-notifications", "windows-version" ]
+windows7-compat = ["win7-notifications", "windows-version"]

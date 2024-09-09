@@ -1,7 +1,16 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("rust")
+}
+
+val tauriProperties = Properties().apply {
+    val propFile = file("tauri.properties")
+    if (propFile.exists()) {
+        propFile.inputStream().use { load(it) }
+    }
 }
 
 android {
@@ -12,8 +21,8 @@ android {
         applicationId = "com.tauri.deep_link_example"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = tauriProperties.getProperty("tauri.android.versionCode", "1").toInt()
+        versionName = tauriProperties.getProperty("tauri.android.versionName", "1.0")
     }
     buildTypes {
         getByName("debug") {
@@ -38,6 +47,9 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+    buildFeatures {
+        buildConfig = true
     }
 }
 

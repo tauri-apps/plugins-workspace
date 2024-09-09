@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-nfc = "2.0.0-beta"
+tauri-plugin-nfc = "2.0.0-rc"
 # alternatively with Git:
 tauri-plugin-nfc = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -62,9 +62,9 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { scan, textRecord, write } from "@tauri-apps/plugin-nfc";
-await scan({ type: "tag", keepSessionAlive: true });
-await write([textRecord("Tauri is awesome!")]);
+import { scan, textRecord, write } from '@tauri-apps/plugin-nfc'
+await scan({ type: 'tag', keepSessionAlive: true })
+await write([textRecord('Tauri is awesome!')])
 ```
 
 ## Contributing

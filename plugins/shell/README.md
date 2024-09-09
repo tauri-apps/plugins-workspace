@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-shell = "2.0.0-beta"
+tauri-plugin-shell = "2.0.0-rc"
 # alternatively with Git:
 tauri-plugin-shell = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -60,8 +60,8 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Command } from "@tauri-apps/plugin-shell";
-Command.create("git", ["commit", "-m", "the commit message"]);
+import { Command } from '@tauri-apps/plugin-shell'
+Command.create('git', ['commit', '-m', 'the commit message'])
 ```
 
 ## Contributing

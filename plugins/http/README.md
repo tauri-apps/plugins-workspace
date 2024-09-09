@@ -18,7 +18,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-http = "2.0.0-beta"
+tauri-plugin-http = "2.0.0-rc"
 # alternatively with Git:
 tauri-plugin-http = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -60,11 +60,11 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { fetch } from "@tauri-apps/plugin-http";
-const response = await fetch("http://localhost:3003/users/2", {
-  method: "GET",
-  timeout: 30,
-});
+import { fetch } from '@tauri-apps/plugin-http'
+const response = await fetch('http://localhost:3003/users/2', {
+  method: 'GET',
+  timeout: 30
+})
 ```
 
 ## Contributing

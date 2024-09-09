@@ -1,5 +1,42 @@
 # Changelog
 
+## \[2.0.0-rc.1]
+
+- [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
+
+## \[2.0.0-rc.1]
+
+- [`2c00c029`](https://github.com/tauri-apps/plugins-workspace/commit/2c00c0292c9127b81567de46691e8c0f73557261) ([#1630](https://github.com/tauri-apps/plugins-workspace/pull/1630) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed an issue that caused multi-word IIFE names to not be formatted correctly. For example the `barcode-scanner` was defined as `window.__TAURI_PLUGIN_CLIPBOARDMANAGER__` instead of `window.__TAURI_PLUGIN_CLIPBOARD_MANAGER__`.
+
+## \[2.0.0-rc.0]
+
+- [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
+
+## \[2.0.0-beta.8]
+
+- [`99d6ac0f`](https://github.com/tauri-apps/plugins-workspace/commit/99d6ac0f9506a6a4a1aa59c728157190a7441af6) ([#1606](https://github.com/tauri-apps/plugins-workspace/pull/1606) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) The JS packages now specify the *minimum* `@tauri-apps/api` version instead of a single exact version.
+- [`6de87966`](https://github.com/tauri-apps/plugins-workspace/commit/6de87966ecc00ad9d91c25be452f1f46bd2b7e1f) ([#1597](https://github.com/tauri-apps/plugins-workspace/pull/1597) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Update to tauri beta.25.
+
+## \[2.0.0-beta.7]
+
+- [`381a466d`](https://github.com/tauri-apps/plugins-workspace/commit/381a466db344e59a76b2a4d5785b2a0b64d4d373) ([#1117](https://github.com/tauri-apps/plugins-workspace/pull/1117) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Refactored the JS APIs:
+
+  - Enhanced `register` and `unregister` to take either a single shortcut or an array.
+  - Removed `registerAll` instead use `register` with an array.
+- [`22a17980`](https://github.com/tauri-apps/plugins-workspace/commit/22a17980ff4f6f8c40adb1b8f4ffc6dae2fe7e30) ([#1537](https://github.com/tauri-apps/plugins-workspace/pull/1537) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri beta.24.
+
+## \[2.0.0-beta.6]
+
+- [`76daee7a`](https://github.com/tauri-apps/plugins-workspace/commit/76daee7aafece34de3092c86e531cf9eb1138989) ([#1512](https://github.com/tauri-apps/plugins-workspace/pull/1512) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update to tauri beta.23.
+
+## \[2.0.0-beta.5]
+
+- [`9013854f`](https://github.com/tauri-apps/plugins-workspace/commit/9013854f42a49a230b9dbb9d02774765528a923f)([#1382](https://github.com/tauri-apps/plugins-workspace/pull/1382)) Update to tauri beta.22.
+
+## \[2.0.0-beta.4]
+
+- [`430bd6f4`](https://github.com/tauri-apps/plugins-workspace/commit/430bd6f4f379bee5d232ae6b098ae131db7f178a)([#1363](https://github.com/tauri-apps/plugins-workspace/pull/1363)) Update to tauri beta.20.
+
 ## \[2.0.0-beta.3]
 
 - [`9c7eb359`](https://github.com/tauri-apps/plugins-workspace/commit/9c7eb35967ad10659eb4976bd6f77d9d270bfeed)([#1244](https://github.com/tauri-apps/plugins-workspace/pull/1244)) Refactored APIs to introduce new pressed and released events:
@@ -71,3 +108,10 @@
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  ]\(https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  om/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+st v2 alpha release!
+  ]\(https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  om/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!

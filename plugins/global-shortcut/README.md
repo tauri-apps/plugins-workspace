@@ -21,7 +21,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 # you can add the dependencies on the `[dependencies]` section if you do not target mobile
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
-tauri-plugin-global-shortcut = "2.0.0-beta"
+tauri-plugin-global-shortcut = "2.0.0-rc"
 # alternatively with Git:
 tauri-plugin-global-shortcut = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -87,12 +87,12 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript bindings:
 
 ```javascript
-import { register } from "@tauri-apps/plugin-global-shortcut";
-await register("CommandOrControl+Shift+C", (event) => {
-  if (event.state === "Pressed") {
-    console.log("Shortcut triggered");
+import { register } from '@tauri-apps/plugin-global-shortcut'
+await register('CommandOrControl+Shift+C', (event) => {
+  if (event.state === 'Pressed') {
+    console.log('Shortcut triggered')
   }
-});
+})
 ```
 
 ## Contributing

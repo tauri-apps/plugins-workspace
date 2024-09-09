@@ -1,8 +1,8 @@
 <script>
   import { writable } from "svelte/store";
   import { open } from "@tauri-apps/plugin-shell";
-  import { getCurrent } from "@tauri-apps/api/window";
-  import { getCurrent as getCurrentWebview } from "@tauri-apps/api/webview";
+  import { getCurrentWindow } from "@tauri-apps/api/window";
+  import { getCurrentWebview } from "@tauri-apps/api/webview";
   import * as os from "@tauri-apps/plugin-os";
 
   import Welcome from "./views/Welcome.svelte";
@@ -14,6 +14,7 @@
   import Notifications from "./views/Notifications.svelte";
   import Shortcuts from "./views/Shortcuts.svelte";
   import Shell from "./views/Shell.svelte";
+  import Store from "./views/Store.svelte";
   import Updater from "./views/Updater.svelte";
   import Clipboard from "./views/Clipboard.svelte";
   import WebRTC from "./views/WebRTC.svelte";
@@ -24,7 +25,7 @@
   import { ask } from "@tauri-apps/plugin-dialog";
   import Nfc from "./views/Nfc.svelte";
 
-  const appWindow = getCurrent();
+  const appWindow = getCurrentWindow();
 
   if (appWindow.label !== "main") {
     appWindow.onCloseRequested(async (event) => {
@@ -89,6 +90,11 @@
       label: "Shell",
       component: Shell,
       icon: "i-codicon-terminal-bash",
+    },
+    {
+      label: "Store",
+      component: Store,
+      icon: "i-codicon-file-code",
     },
     !isMobile && {
       label: "Updater",
@@ -492,7 +498,10 @@
           <div class="i-codicon-clear-all" />
         </div>
       </div>
-      <div bind:this={consoleTextEl} class="px-2 overflow-y-auto all:font-mono code-block all:text-xs select-text mr-2">
+      <div
+        bind:this={consoleTextEl}
+        class="px-2 overflow-y-auto all:font-mono code-block all:text-xs select-text mr-2"
+      >
         {#each $messages as r}
           {@html r.html}
         {/each}

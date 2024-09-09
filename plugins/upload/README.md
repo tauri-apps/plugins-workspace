@@ -19,7 +19,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-upload = "2.0.0-beta"
+tauri-plugin-upload = "2.0.0-rc"
 # alternatively with Git:
 tauri-plugin-upload = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -61,25 +61,25 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { upload } from "@tauri-apps/plugin-upload";
+import { upload } from '@tauri-apps/plugin-upload'
 
 upload(
-  "https://example.com/file-upload",
-  "./path/to/my/file.txt",
+  'https://example.com/file-upload',
+  './path/to/my/file.txt',
   (progress, total) => console.log(`Uploaded ${progress} of ${total} bytes`), // a callback that will be called with the upload progress
-  { "Content-Type": "text/plain" }, // optional headers to send with the request
-);
+  { 'Content-Type': 'text/plain' } // optional headers to send with the request
+)
 ```
 
 ```javascript
-import { download } from "@tauri-apps/plugin-upload";
+import { download } from '@tauri-apps/plugin-upload'
 
 download(
-  "https://example.com/file-download-link",
-  "./path/to/save/my/file.txt",
+  'https://example.com/file-download-link',
+  './path/to/save/my/file.txt',
   (progress, total) => console.log(`Downloaded ${progress} of ${total} bytes`), // a callback that will be called with the download progress
-  { "Content-Type": "text/plain" }, // optional headers to send with the request
-);
+  { 'Content-Type': 'text/plain' } // optional headers to send with the request
+)
 ```
 
 ## Contributing

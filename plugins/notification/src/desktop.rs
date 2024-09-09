@@ -3,9 +3,12 @@
 // SPDX-License-Identifier: MIT
 
 use serde::de::DeserializeOwned;
-use tauri::{plugin::PluginApi, AppHandle, Runtime};
+use tauri::{
+    plugin::{PermissionState, PluginApi},
+    AppHandle, Runtime,
+};
 
-use crate::{models::*, NotificationBuilder};
+use crate::NotificationBuilder;
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
@@ -156,11 +159,11 @@ mod imp {
         ///
         /// - **Windows**: Not supported on Windows 7. If your app targets it, enable the `windows7-compat` feature and use [`Self::notify`].
         #[cfg_attr(
-            all(not(doc_cfg), feature = "windows7-compat"),
+            all(not(docsrs), feature = "windows7-compat"),
             deprecated = "This function does not work on Windows 7. Use `Self::notify` instead."
         )]
         pub fn show(self) -> crate::Result<()> {
-            let mut notification = crate::notify_rust::Notification::new();
+            let mut notification = notify_rust::Notification::new();
             if let Some(body) = self.body {
                 notification.body(&body);
             }
@@ -186,7 +189,7 @@ mod imp {
             }
             #[cfg(target_os = "macos")]
             {
-                let _ = crate::notify_rust::set_application(if tauri::dev() {
+                let _ = notify_rust::set_application(if tauri::is_dev() {
                     "com.apple.Terminal"
                 } else {
                     &self.identifier
@@ -220,7 +223,7 @@ mod imp {
         ///   .expect("error while running tauri application");
         /// ```
         #[cfg(feature = "windows7-compat")]
-        #[cfg_attr(doc_cfg, doc(cfg(feature = "windows7-compat")))]
+        #[cfg_attr(docsrs, doc(cfg(feature = "windows7-compat")))]
         #[allow(unused_variables)]
         pub fn notify<R: tauri::Runtime>(self, app: &tauri::AppHandle<R>) -> crate::Result<()> {
             #[cfg(windows)]

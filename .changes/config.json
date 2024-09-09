@@ -3,24 +3,40 @@
   "pkgManagers": {
     "javascript": {
       "version": true,
-      "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.cjs npm ${ pkgFile.pkg.name } ${ pkgFile.pkg.version }",
-      "publish": ["pnpm build", "pnpm publish --access public --no-git-checks"]
+      "getPublishedVersion": {
+        "use": "fetch:check",
+        "options": {
+          "url": "https://registry.npmjs.com/${ pkg.pkgFile.pkg.name }/${ pkg.pkgFile.version }"
+        }
+      },
+      "publish": [
+        {
+          "command": "pnpm build",
+          "dryRunCommand": "pnpm build"
+        },
+        {
+          "command": "npm publish --provenance --access public",
+          "dryRunCommand": "npm publish --provenance --access public --dry-run",
+          "pipe": true
+        }
+      ]
     },
     "rust": {
       "version": true,
-      "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.cjs cargo ${ pkgFile.pkg.package.name } ${ pkgFile.pkg.package.version }",
+      "getPublishedVersion": {
+        "use": "fetch:check",
+        "options": {
+          "url": "https://crates.io/api/v1/crates/${ pkg.pkgFile.pkg.package.name }/${ pkg.pkgFile.version }"
+        }
+      },
       "publish": [
-        {
-          "command": "cargo package --no-verify",
-          "dryRunCommand": true
-        },
         {
           "command": "echo '<details>\n<summary><em><h4>Cargo Publish</h4></em></summary>\n\n```'",
           "dryRunCommand": true,
           "pipe": true
         },
         {
-          "command": "cargo publish",
+          "command": "cargo publish --no-verify",
           "dryRunCommand": "cargo publish --dry-run",
           "pipe": true
         },
@@ -52,6 +68,7 @@
         "os",
         "process",
         "shell",
+        "store",
         "updater"
       ]
     },
@@ -74,6 +91,7 @@
         "os-js",
         "process-js",
         "shell-js",
+        "store-js",
         "updater-js"
       ],
       "postversion": "pnpm install --no-frozen-lockfile"
@@ -84,14 +102,6 @@
       "publish": false,
       "dependencies": ["deep-link-js"],
       "postversion": "pnpm install --no-frozen-lockfile"
-    },
-    "authenticator": {
-      "path": "./plugins/authenticator",
-      "manager": "rust"
-    },
-    "authenticator-js": {
-      "path": "./plugins/authenticator",
-      "manager": "javascript"
     },
     "autostart": {
       "path": "./plugins/autostart",
@@ -158,12 +168,28 @@
       "path": "./plugins/dialog",
       "manager": "javascript"
     },
+    "geolocation": {
+      "path": "./plugins/geolocation",
+      "manager": "rust"
+    },
+    "geolocation-js": {
+      "path": "./plugins/geolocation",
+      "manager": "javascript"
+    },
     "global-shortcut": {
       "path": "./plugins/global-shortcut",
       "manager": "rust"
     },
     "global-shortcut-js": {
       "path": "./plugins/global-shortcut",
+      "manager": "javascript"
+    },
+    "haptics": {
+      "path": "./plugins/haptics",
+      "manager": "rust"
+    },
+    "haptics-js": {
+      "path": "./plugins/haptics",
       "manager": "javascript"
     },
     "http": {
@@ -246,28 +272,7 @@
     },
     "sql": {
       "path": "./plugins/sql",
-      "manager": "rust",
-      "publish": [
-        {
-          "command": "cargo package --no-verify",
-          "dryRunCommand": true
-        },
-        {
-          "command": "echo '<details>\n<summary><em><h4>Cargo Publish</h4></em></summary>\n\n```'",
-          "dryRunCommand": true,
-          "pipe": true
-        },
-        {
-          "command": "cargo publish --features sqlite",
-          "dryRunCommand": "cargo publish --features sqlite --dry-run",
-          "pipe": true
-        },
-        {
-          "command": "echo '```\n\n</details>\n'",
-          "dryRunCommand": true,
-          "pipe": true
-        }
-      ]
+      "manager": "rust"
     },
     "sql-js": {
       "path": "./plugins/sql",

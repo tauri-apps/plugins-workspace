@@ -7,8 +7,8 @@ name: check generated files
 on:
   pull_request:
     paths:
-      - ".github/workflows/check-generated-files.yml"
-      - "**/guest-js/**"
+      - '.github/workflows/check-generated-files.yml'
+      - '**/guest-js/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,10 +25,6 @@ jobs:
         id: filter
         with:
           filters: |
-            authenticator:
-              - .github/workflows/check-generated-files.yml
-              - plugins/authenticator/guest-js/**
-              - plugins/authenticator/src/api-iife.js
             autostart:
               - .github/workflows/check-generated-files.yml
               - plugins/autostart/guest-js/**
@@ -49,10 +45,18 @@ jobs:
               - .github/workflows/check-generated-files.yml
               - plugins/fs/guest-js/**
               - plugins/fs/src/api-iife.js
+            geolocation:
+              - .github/workflows/check-generated-files.yml
+              - plugins/geolocation/guest-js/**
+              - plugins/geolocation/src/api-iife.js
             global-shortcut:
               - .github/workflows/check-generated-files.yml
               - plugins/global-shortcut/guest-js/**
               - plugins/global-shortcut/src/api-iife.js
+            haptics:
+              - .github/workflows/check-generated-files.yml
+              - plugins/haptics/guest-js/**
+              - plugins/haptics/src/api-iife.js
             http:
               - .github/workflows/check-generated-files.yml
               - plugins/http/guest-js/**
@@ -132,7 +136,7 @@ jobs:
             ${{ runner.os }}-
       - uses: actions/setup-node@v4
         with:
-          node-version: "lts/*"
+          node-version: 'lts/*'
       - uses: pnpm/action-setup@v4
         with:
           version: 9.x.x

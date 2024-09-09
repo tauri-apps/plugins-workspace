@@ -1,5 +1,57 @@
 # Changelog
 
+## \[2.0.0-rc.3]
+
+- [`a2fe5551`](https://github.com/tauri-apps/plugins-workspace/commit/a2fe55512f908dd11c814ce021d164f01677572a) ([#1727](https://github.com/tauri-apps/plugins-workspace/pull/1727) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add utility methods on `FilePath` and `SafeFilePath` enums which are:
+
+  - `path`
+  - `simplified`
+  - `into_path`
+- [`a2fe5551`](https://github.com/tauri-apps/plugins-workspace/commit/a2fe55512f908dd11c814ce021d164f01677572a) ([#1727](https://github.com/tauri-apps/plugins-workspace/pull/1727) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Implement `Serialize`, `Deserialize`, `From`, `TryFrom` and `FromStr` traits for `FilePath` and `SafeFilePath` enums.
+- [`a2fe5551`](https://github.com/tauri-apps/plugins-workspace/commit/a2fe55512f908dd11c814ce021d164f01677572a) ([#1727](https://github.com/tauri-apps/plugins-workspace/pull/1727) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Mark `Error` enum as `#[non_exhuastive]`.
+- [`a2fe5551`](https://github.com/tauri-apps/plugins-workspace/commit/a2fe55512f908dd11c814ce021d164f01677572a) ([#1727](https://github.com/tauri-apps/plugins-workspace/pull/1727) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add `SafeFilePath` enum.
+
+## \[2.0.0-rc.2]
+
+- [`f7280c88`](https://github.com/tauri-apps/plugins-workspace/commit/f7280c88309cdf1f2330574fec31e26e01e9cdbd) ([#1710](https://github.com/tauri-apps/plugins-workspace/pull/1710) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix can't use Windows paths like `C:/Users/UserName/file.txt`
+
+### bug
+
+- [`51819c60`](https://github.com/tauri-apps/plugins-workspace/commit/51819c601f863cbfbd11809a1c4cf9df5a20b1e0) ([#1708](https://github.com/tauri-apps/plugins-workspace/pull/1708) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fixes `writeFile` command implementation on Android.
+
+## \[2.0.0-rc.2]
+
+- [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
+
+## \[2.0.0-rc.1]
+
+- [`5f689902`](https://github.com/tauri-apps/plugins-workspace/commit/5f68990297f2cefac4220649a469adb7fa94fe1b) ([#1645](https://github.com/tauri-apps/plugins-workspace/pull/1645) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update documentation.
+
+## \[2.0.0-rc.0]
+
+- [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
+
+## \[2.0.0-beta.8]
+
+- [`99d6ac0f`](https://github.com/tauri-apps/plugins-workspace/commit/99d6ac0f9506a6a4a1aa59c728157190a7441af6) ([#1606](https://github.com/tauri-apps/plugins-workspace/pull/1606) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) The JS packages now specify the *minimum* `@tauri-apps/api` version instead of a single exact version.
+- [`6de87966`](https://github.com/tauri-apps/plugins-workspace/commit/6de87966ecc00ad9d91c25be452f1f46bd2b7e1f) ([#1597](https://github.com/tauri-apps/plugins-workspace/pull/1597) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Update to tauri beta.25.
+
+## \[2.0.0-beta.7]
+
+- [`22a17980`](https://github.com/tauri-apps/plugins-workspace/commit/22a17980ff4f6f8c40adb1b8f4ffc6dae2fe7e30) ([#1537](https://github.com/tauri-apps/plugins-workspace/pull/1537) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri beta.24.
+
+## \[2.0.0-beta.6]
+
+- [`76daee7a`](https://github.com/tauri-apps/plugins-workspace/commit/76daee7aafece34de3092c86e531cf9eb1138989) ([#1512](https://github.com/tauri-apps/plugins-workspace/pull/1512) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update to tauri beta.23.
+
+## \[2.0.0-beta.5]
+
+- [`9013854f`](https://github.com/tauri-apps/plugins-workspace/commit/9013854f42a49a230b9dbb9d02774765528a923f)([#1382](https://github.com/tauri-apps/plugins-workspace/pull/1382)) Update to tauri beta.22.
+
+## \[2.0.0-beta.4]
+
+- [`430bd6f4`](https://github.com/tauri-apps/plugins-workspace/commit/430bd6f4f379bee5d232ae6b098ae131db7f178a)([#1363](https://github.com/tauri-apps/plugins-workspace/pull/1363)) Update to tauri beta.20.
+
 ## \[2.0.0-beta.3]
 
 - [`bd1ed590`](https://github.com/tauri-apps/plugins-workspace/commit/bd1ed5903ffcce5500310dac1e59e8c67674ef1e)([#1237](https://github.com/tauri-apps/plugins-workspace/pull/1237)) Update to tauri beta.17.
@@ -87,6 +139,23 @@
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-ac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  ac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  s/plugins-workspace/pull/371)) First v2 alpha release!
+  ac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  kspace/pull/371)) First v2 alpha release!
+  s/plugins-workspace/pull/371)) First v2 alpha release!
+  ac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  uri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  kspace/pull/371)) First v2 alpha release!
+  s/plugins-workspace/pull/371)) First v2 alpha release!
+  ac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
