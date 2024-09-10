@@ -29,11 +29,21 @@
     },
     "deep-link": {
       "mobile": [
-        { "host": "fabianlars.de", "pathPrefix": ["/intent"] },
-        { "host": "tauri.app" }
+        {
+          "host": "fabianlars.de",
+          "pathPrefix": [
+            "/intent"
+          ]
+        },
+        {
+          "host": "tauri.app"
+        }
       ],
       "desktop": {
-        "schemes": ["fabianlars", "my-tauri-app"]
+        "schemes": [
+          "fabianlars",
+          "my-tauri-app"
+        ]
       }
     }
   },

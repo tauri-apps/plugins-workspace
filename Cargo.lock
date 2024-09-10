@@ -1534,6 +1534,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-deep-link",
  "tauri-plugin-log",
+ "tauri-plugin-single-instance",
 ]
 
 [[package]]
@@ -6754,6 +6755,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "tauri-plugin-deep-link",
  "thiserror",
  "windows-sys 0.59.0",
  "zbus",

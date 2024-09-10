@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use serde::de::DeserializeOwned;
 use tauri::{
     plugin::{Builder, PluginApi, TauriPlugin},
     AppHandle, Manager, Runtime,
@@ -17,12 +16,14 @@ pub use error::{Error, Result};
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "app.tauri.deep_link";
 
-fn init_deep_link<R: Runtime, C: DeserializeOwned>(
+fn init_deep_link<R: Runtime>(
     app: &AppHandle<R>,
-    _api: PluginApi<R, C>,
+    api: PluginApi<R, Option<config::Config>>,
 ) -> crate::Result<DeepLink<R>> {
     #[cfg(target_os = "android")]
     {
+        let _api = api;
+
         use tauri::{
             ipc::{Channel, InvokeResponseBody},
             Emitter,
@@ -59,11 +60,26 @@ fn init_deep_link<R: Runtime, C: DeserializeOwned>(
         return Ok(DeepLink(handle));
     }
 
-    #[cfg(not(target_os = "android"))]
-    Ok(DeepLink {
+    #[cfg(target_os = "ios")]
+    return Ok(DeepLink {
         app: app.clone(),
         current: Default::default(),
-    })
+        config: api.config().clone(),
+    });
+
+    #[cfg(desktop)]
+    {
+        let args = std::env::args();
+
+        let deep_link = DeepLink {
+            app: app.clone(),
+            current: Default::default(),
+            config: api.config().clone(),
+        };
+        deep_link.handle_cli_arguments(args);
+
+        Ok(deep_link)
+    }
 }
 
 #[cfg(target_os = "android")]
@@ -90,10 +106,6 @@ mod imp {
 
     impl<R: Runtime> DeepLink<R> {
         /// Get the current URLs that triggered the deep link. Use this on app load to check whether your app was started via a deep link.
-        ///
-        /// ## Platform-specific:
-        ///
-        /// - **Windows / Linux**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
             self.0
                 .run_mobile_plugin::<GetCurrentResponse>("getCurrent", ())
@@ -154,23 +166,55 @@ mod imp {
 
     /// Access to the deep-link APIs.
     pub struct DeepLink<R: Runtime> {
-        #[allow(dead_code)]
         pub(crate) app: AppHandle<R>,
-        #[allow(dead_code)]
         pub(crate) current: Mutex<Option<Vec<url::Url>>>,
+        pub(crate) config: Option<crate::config::Config>,
     }
 
     impl<R: Runtime> DeepLink<R> {
+        #[cfg(desktop)]
+        #[doc(hidden)]
+        pub fn handle_cli_arguments<S: AsRef<str>, I: Iterator<Item = S>>(&self, mut args: I) {
+            if cfg!(windows) || cfg!(target_os = "linux") {
+                use tauri::Emitter;
+
+                let Some(config) = &self.config else {
+                    return;
+                };
+
+                args.next(); // bin name
+                let arg = args.next();
+
+                let maybe_deep_link = args.next().is_none(); // single argument
+                if !maybe_deep_link {
+                    return;
+                }
+
+                if let Some(url) = arg.and_then(|arg| arg.as_ref().parse::<url::Url>().ok()) {
+                    if config.desktop.contains_scheme(&url.scheme().to_string()) {
+                        let mut current = self.current.lock().unwrap();
+                        let updated = current.is_some();
+
+                        current.replace(vec![url.clone()]);
+
+                        if updated {
+                            let _ = self.app.emit("deep-link://new-url", vec![url]);
+                        }
+                    } else if cfg!(debug_assertions) {
+                        log::warn!("argument {url} does not match any configured deep link scheme; skipping it");
+                    }
+                }
+            }
+        }
+
         /// Get the current URLs that triggered the deep link. Use this on app load to check whether your app was started via a deep link.
         ///
         /// ## Platform-specific:
         ///
-        /// - **Windows / Linux**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
+        /// - **Windows / Linux**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
+        ///     Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
-            #[cfg(not(any(windows, target_os = "linux")))]
             return Ok(self.current.lock().unwrap().clone());
-            #[cfg(any(windows, target_os = "linux"))]
-            Err(crate::Error::UnsupportedPlatform)
         }
 
         /// Register the app as the default handler for the specified protocol.
