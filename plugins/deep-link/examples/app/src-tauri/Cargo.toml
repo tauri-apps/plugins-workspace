@@ -22,6 +22,7 @@ serde_json = { workspace = true }
 tauri = { workspace = true, features = ["wry", "compression"] }
 tauri-plugin-deep-link = { path = "../../../" }
 tauri-plugin-log = { path = "../../../../log" }
+tauri-plugin-single-instance = { path = "../../../../single-instance" }
 log = "0.4"
 
 [features]
