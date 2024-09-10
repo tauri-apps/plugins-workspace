@@ -9,8 +9,8 @@ import WebKit
 
 struct ScanOptions: Decodable {
   var formats: [SupportedFormat]?
-  let windowed: Bool?
-  let cameraDirection: String?
+  var windowed: Bool?
+  var cameraDirection: String?
 }
 
 enum SupportedFormat: String, CaseIterable, Decodable {

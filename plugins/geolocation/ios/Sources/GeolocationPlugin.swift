@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+import CoreLocation
 import SwiftRs
 import Tauri
 import UIKit
 import WebKit
-import CoreLocation
 
 class GetPositionArgs: Decodable {
-  let enableHighAccuracy: Bool?
+  var enableHighAccuracy: Bool?
 }
 
 class WatchPositionArgs: Decodable {
@@ -101,14 +101,14 @@ class GeolocationPlugin: Plugin, CLLocationManagerDelegate {
     if CLLocationManager.locationServicesEnabled() {
       // TODO: Use the authorizationStatus instance property with locationManagerDidChangeAuthorization(_:) instead.
       switch CLLocationManager.authorizationStatus() {
-        case .notDetermined:
-          status = "prompt"
-        case .restricted, .denied:
-          status = "denied"
-        case .authorizedAlways, .authorizedWhenInUse:
-          status = "granted"
-        @unknown default:
-          status = "prompt"
+      case .notDetermined:
+        status = "prompt"
+      case .restricted, .denied:
+        status = "denied"
+      case .authorizedAlways, .authorizedWhenInUse:
+        status = "granted"
+      @unknown default:
+        status = "prompt"
       }
     } else {
       invoke.reject("Location services are not enabled.")
@@ -161,16 +161,18 @@ class GeolocationPlugin: Plugin, CLLocationManagerDelegate {
     }
   }
 
-  public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+  public func locationManager(
+    _ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]
+  ) {
     // Respond to all getCurrentPosition() calls.
     for request in self.positionRequests {
-       // The capacitor plugin uses locations.first but .last should be the most current one
-       // and i don't see a reason to use old locations
-       if let location = locations.last {
-         let result = convertLocation(location)
-         request.resolve(result)
-       } else {
-         request.reject("Location service returned an empty Location array.")
+      // The capacitor plugin uses locations.first but .last should be the most current one
+      // and i don't see a reason to use old locations
+      if let location = locations.last {
+        let result = convertLocation(location)
+        request.resolve(result)
+      } else {
+        request.reject("Location service returned an empty Location array.")
       }
     }
 
@@ -194,7 +196,9 @@ class GeolocationPlugin: Plugin, CLLocationManagerDelegate {
     }
   }
 
-  public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+  public func locationManager(
+    _ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus
+  ) {
     let requests = self.permissionRequests
     self.permissionRequests.removeAll()
 
