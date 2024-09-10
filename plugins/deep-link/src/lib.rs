@@ -70,15 +70,21 @@ fn init_deep_link<R: Runtime>(
     #[cfg(desktop)]
     {
         let args = std::env::args();
-
-        let deep_link = DeepLink {
-            app: app.clone(),
-            current: Default::default(),
-            config: api.config().clone(),
+        let current = if let Some(config) = api.config() {
+            imp::deep_link_from_args(config, args)
+        } else {
+            None
         };
-        deep_link.handle_cli_arguments(args);
 
-        Ok(deep_link)
+        Ok(DeepLink {
+            app: app.clone(),
+            current: std::sync::Mutex::new(if let Some(url) = current {
+                Some(vec![url])
+            } else {
+                None
+            }),
+            config: api.config().clone(),
+        })
     }
 }
 
@@ -171,39 +177,55 @@ mod imp {
         pub(crate) config: Option<crate::config::Config>,
     }
 
+    pub(crate) fn deep_link_from_args<S: AsRef<str>, I: Iterator<Item = S>>(
+        config: &crate::config::Config,
+        mut args: I,
+    ) -> Option<url::Url> {
+        if cfg!(windows) || cfg!(target_os = "linux") {
+            args.next(); // bin name
+            let arg = args.next();
+
+            let maybe_deep_link = args.next().is_none(); // single argument
+            if !maybe_deep_link {
+                return None;
+            }
+
+            if let Some(url) = arg.and_then(|arg| arg.as_ref().parse::<url::Url>().ok()) {
+                if config.desktop.contains_scheme(&url.scheme().to_string()) {
+                    return Some(url);
+                } else if cfg!(debug_assertions) {
+                    log::warn!("argument {url} does not match any configured deep link scheme; skipping it");
+                }
+            }
+        }
+
+        None
+    }
+
     impl<R: Runtime> DeepLink<R> {
+        /// Checks if the provided list of arguments (which should match [`std::env::args`])
+        /// contains a deep link argument (for Linux and Windows).
+        ///
+        /// On Linux and Windows the deep links trigger a new app instance with the deep link URL as its only argument.
+        ///
+        /// This function does what it can to verify if the argument is actually a deep link, though it could also be a regular CLI argument.
+        /// To enhance its checks, we only match deep links against the schemes defined in the Tauri configuration
+        /// i.e. dynamic schemes WON'T be processed.
+        ///
+        /// This function updates the [`Self::get_current`] value and emits a `deep-link://new-url` event.
         #[cfg(desktop)]
         #[doc(hidden)]
         pub fn handle_cli_arguments<S: AsRef<str>, I: Iterator<Item = S>>(&self, mut args: I) {
-            if cfg!(windows) || cfg!(target_os = "linux") {
-                use tauri::Emitter;
+            use tauri::Emitter;
 
-                let Some(config) = &self.config else {
-                    return;
-                };
+            let Some(config) = &self.config else {
+                return;
+            };
 
-                args.next(); // bin name
-                let arg = args.next();
-
-                let maybe_deep_link = args.next().is_none(); // single argument
-                if !maybe_deep_link {
-                    return;
-                }
-
-                if let Some(url) = arg.and_then(|arg| arg.as_ref().parse::<url::Url>().ok()) {
-                    if config.desktop.contains_scheme(&url.scheme().to_string()) {
-                        let mut current = self.current.lock().unwrap();
-                        let updated = current.is_some();
-
-                        current.replace(vec![url.clone()]);
-
-                        if updated {
-                            let _ = self.app.emit("deep-link://new-url", vec![url]);
-                        }
-                    } else if cfg!(debug_assertions) {
-                        log::warn!("argument {url} does not match any configured deep link scheme; skipping it");
-                    }
-                }
+            if let Some(url) = deep_link_from_args(config, args) {
+                let mut current = self.current.lock().unwrap();
+                current.replace(vec![url.clone()]);
+                let _ = self.app.emit("deep-link://new-url", vec![url]);
             }
         }
 
@@ -213,6 +235,7 @@ mod imp {
         ///
         /// - **Windows / Linux**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
         ///     Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
+        ///     Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
             return Ok(self.current.lock().unwrap().clone());
         }
