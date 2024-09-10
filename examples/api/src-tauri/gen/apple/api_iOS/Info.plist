@@ -40,6 +40,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Authenticate with biometrics</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Request camera access for WebRTC</string>
 	<key>NSMicrophoneUsageDescription</key>
