@@ -108,6 +108,12 @@ mod imp {
 
     impl<R: Runtime> DeepLink<R> {
         /// Get the current URLs that triggered the deep link. Use this on app load to check whether your app was started via a deep link.
+        ///
+        /// ## Platform-specific:
+        ///
+        /// - **Windows / Linux**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
+        ///     Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
+        ///     Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
             self.0
                 .run_mobile_plugin::<GetCurrentResponse>("getCurrent", ())
