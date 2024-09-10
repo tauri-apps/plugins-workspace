@@ -214,7 +214,6 @@ mod imp {
         ///
         /// This function updates the [`Self::get_current`] value and emits a `deep-link://new-url` event.
         #[cfg(desktop)]
-        #[doc(hidden)]
         pub fn handle_cli_arguments<S: AsRef<str>, I: Iterator<Item = S>>(&self, mut args: I) {
             use tauri::Emitter;
 
