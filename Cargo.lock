@@ -212,7 +212,7 @@ checksum = "10f00e1f6e58a40e807377c75c6a7f97bf9044fab57816f2414e6f5f4499d7b8"
 
 [[package]]
 name = "api"
-version = "2.0.0-rc.4"
+version = "2.0.0-rc.5"
 dependencies = [
  "log",
  "serde",
@@ -6444,7 +6444,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-barcode-scanner"
-version = "2.0.0-rc.3"
+version = "2.0.0-rc.4"
 dependencies = [
  "log",
  "serde",
@@ -6655,7 +6655,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "2.0.0-rc.3"
+version = "2.0.0-rc.4"
 dependencies = [
  "color-backtrace",
  "ctor",
@@ -6761,7 +6761,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-sql"
-version = "2.0.0-rc.1"
+version = "2.0.0-rc.2"
 dependencies = [
  "futures-core",
  "indexmap 2.5.0",
