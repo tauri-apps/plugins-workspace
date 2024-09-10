@@ -30,22 +30,7 @@ pub fn run() {
             {
                 use tauri_plugin_deep_link::DeepLinkExt;
 
-                let schemes = app
-                    .config()
-                    .plugins
-                    .0
-                    .get("deep-link")
-                    .unwrap()
-                    .get("desktop")
-                    .unwrap()
-                    .get("schemes")
-                    .unwrap()
-                    .as_array()
-                    .unwrap();
-
-                for scheme in schemes {
-                    app.deep_link().register(scheme.as_str().unwrap())?;
-                }
+                app.deep_link().register_all()?;
             }
 
             app.listen("deep-link://new-url", |url| {

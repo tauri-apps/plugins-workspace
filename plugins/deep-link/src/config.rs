@@ -65,4 +65,14 @@ impl DesktopProtocol {
                 .any(|protocol| protocol.schemes.contains(scheme)),
         }
     }
+
+    pub fn schemes(&self) -> Vec<String> {
+        match self {
+            Self::One(protocol) => protocol.schemes.clone(),
+            Self::List(protocols) => protocols
+                .iter()
+                .flat_map(|protocol| protocol.schemes.clone())
+                .collect(),
+        }
+    }
 }

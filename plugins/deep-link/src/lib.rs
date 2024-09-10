@@ -240,6 +240,22 @@ mod imp {
             return Ok(self.current.lock().unwrap().clone());
         }
 
+        /// Registers all schemes defined in the configuration file.
+        ///
+        /// This is useful to ensure the schemes are registered even if the user unregistered it
+        /// or did not install the app properly (e.g. an AppImage that was not properly registered with an AppImage launcher).
+        pub fn register_all(&self) -> crate::Result<()> {
+            let Some(config) = &self.config else {
+                return Ok(());
+            };
+
+            for scheme in config.desktop.schemes() {
+                self.register(scheme)?;
+            }
+
+            Ok(())
+        }
+
         /// Register the app as the default handler for the specified protocol.
         ///
         /// - `protocol`: The name of the protocol without `://`. For example, if you want your app to handle `tauri://` links, call this method with `tauri` as the protocol.
