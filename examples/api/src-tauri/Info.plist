@@ -8,5 +8,7 @@
 		<string>Request microphone access for WebRTC</string>
 		<key>NSFaceIDUsageDescription</key>
 		<string>Authenticate with biometrics</string>
+		<key>NFCReaderUsageDescription</key>
+		<string>Read and write to NFC tags for testing</string>
 	</dict>
 </plist>

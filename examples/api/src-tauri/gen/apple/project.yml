@@ -2,7 +2,7 @@ name: api
 options:
   bundleIdPrefix: com.tauri.api
   deploymentTarget:
-    iOS: 13.0
+    iOS: 14.0
 fileGroups: [../../src]
 configs:
   debug: debug
