@@ -6497,7 +6497,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.0.0-rc.3"
+version = "2.0.0-rc.4"
 dependencies = [
  "dunce",
  "log",
@@ -6748,7 +6748,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-rc.1"
+version = "2.0.0-rc.2"
 dependencies = [
  "log",
  "semver",
