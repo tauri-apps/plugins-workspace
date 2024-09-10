@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-rc.4]
+
+- [`3d301c65`](https://github.com/tauri-apps/plugins-workspace/commit/3d301c654e6f5e7f343e0e0cbb57648002e98f04) ([#1737](https://github.com/tauri-apps/plugins-workspace/pull/1737) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) The notification body is now optional on iOS to match the other platforms.
+
 ## \[2.0.0-rc.1]
 
 - [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Use `PermissionState` from the `tauri` crate, which now also includes a "prompt with rationale" variant for Android (returned when your app must explain to the user why it needs the permission).

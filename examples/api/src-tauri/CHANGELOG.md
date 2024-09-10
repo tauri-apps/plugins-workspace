@@ -1,5 +1,12 @@
 # Changelog
 
+## \[2.0.0-rc.5]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.0.0-rc.4`
+- Upgraded to `notification@2.0.0-rc.4`
+
 ## \[2.0.0-rc.4]
 
 ### Dependencies
