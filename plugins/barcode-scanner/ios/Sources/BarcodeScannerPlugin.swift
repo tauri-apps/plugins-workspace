@@ -262,6 +262,13 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
 
     self.invoke = invoke
 
+    let entry = Bundle.main.infoDictionary?["NSCameraUsageDescription"] as? String
+
+    if entry == nil || entry?.count == 0 {
+      invoke.reject("NSCameraUsageDescription is not in the app Info.plist")
+      return
+    }
+
     var iOS14min: Bool = false
     if #available(iOS 14.0, *) { iOS14min = true }
     if !iOS14min && self.getPermissionState() != "granted" {
