@@ -31,19 +31,14 @@
       "mobile": [
         {
           "host": "fabianlars.de",
-          "pathPrefix": [
-            "/intent"
-          ]
+          "pathPrefix": ["/intent"]
         },
         {
           "host": "tauri.app"
         }
       ],
       "desktop": {
-        "schemes": [
-          "fabianlars",
-          "my-tauri-app"
-        ]
+        "schemes": ["fabianlars", "my-tauri-app"]
       }
     }
   },
