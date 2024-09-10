@@ -78,11 +78,7 @@ fn init_deep_link<R: Runtime>(
 
         Ok(DeepLink {
             app: app.clone(),
-            current: std::sync::Mutex::new(if let Some(url) = current {
-                Some(vec![url])
-            } else {
-                None
-            }),
+            current: std::sync::Mutex::new(current.map(|url| vec![url])),
             config: api.config().clone(),
         })
     }
@@ -214,7 +210,7 @@ mod imp {
         ///
         /// This function updates the [`Self::get_current`] value and emits a `deep-link://new-url` event.
         #[cfg(desktop)]
-        pub fn handle_cli_arguments<S: AsRef<str>, I: Iterator<Item = S>>(&self, mut args: I) {
+        pub fn handle_cli_arguments<S: AsRef<str>, I: Iterator<Item = S>>(&self, args: I) {
             use tauri::Emitter;
 
             let Some(config) = &self.config else {
@@ -241,8 +237,8 @@ mod imp {
 
         /// Registers all schemes defined in the configuration file.
         ///
-        /// This is useful to ensure the schemes are registered even if the user unregistered it
-        /// or did not install the app properly (e.g. an AppImage that was not properly registered with an AppImage launcher).
+        /// This is useful to ensure the schemes are registered even if the user did not install the app properly
+        /// (e.g. an AppImage that was not properly registered with an AppImage launcher).
         pub fn register_all(&self) -> crate::Result<()> {
             let Some(config) = &self.config else {
                 return Ok(());

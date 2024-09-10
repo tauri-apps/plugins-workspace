@@ -66,6 +66,7 @@ impl DesktopProtocol {
         }
     }
 
+    #[allow(dead_code)]
     pub fn schemes(&self) -> Vec<String> {
         match self {
             Self::One(protocol) => protocol.schemes.clone(),
