@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { defineConfig } from "vite";
-import Unocss from "unocss/vite";
-import { svelte } from "@sveltejs/vite-plugin-svelte";
-import process from "process";
+import { defineConfig } from 'vite'
+import Unocss from 'unocss/vite'
+import { svelte } from '@sveltejs/vite-plugin-svelte'
+import process from 'process'
 
-const host = process.env.TAURI_DEV_HOST;
+const host = process.env.TAURI_DEV_HOST
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => {
@@ -18,9 +18,9 @@ export default defineConfig(async () => {
         output: {
           entryFileNames: `assets/[name].js`,
           chunkFileNames: `assets/[name].js`,
-          assetFileNames: `assets/[name].[ext]`,
-        },
-      },
+          assetFileNames: `assets/[name].[ext]`
+        }
+      }
     },
     server: {
       host: host || false,
@@ -28,14 +28,14 @@ export default defineConfig(async () => {
       strictPort: true,
       hmr: host
         ? {
-            protocol: "ws",
+            protocol: 'ws',
             host,
-            port: 5183,
+            port: 5183
           }
         : undefined,
       fs: {
-        allow: [".", "../../tooling/api/dist"],
-      },
-    },
-  };
-});
+        allow: ['.', '../../tooling/api/dist']
+      }
+    }
+  }
+})

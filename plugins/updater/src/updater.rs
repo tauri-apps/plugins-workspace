@@ -469,10 +469,6 @@ impl Update {
             "Accept",
             HeaderValue::from_str("application/octet-stream").unwrap(),
         );
-        headers.insert(
-            "User-Agent",
-            HeaderValue::from_str("tauri-updater").unwrap(),
-        );
 
         let mut request = ClientBuilder::new().user_agent(UPDATER_USER_AGENT);
         if let Some(timeout) = self.timeout {
@@ -647,7 +643,7 @@ impl Update {
 
         unsafe {
             ShellExecuteW(
-                0,
+                std::ptr::null_mut(),
                 w!("open"),
                 file.as_ptr(),
                 parameters.as_ptr(),
@@ -784,6 +780,8 @@ impl Update {
 
                     let tmp_app_image = &tmp_dir.path().join("current_app.AppImage");
 
+                    let permissions = std::fs::metadata(&self.extract_path)?.permissions();
+
                     // create a backup of our current app image
                     std::fs::rename(&self.extract_path, tmp_app_image)?;
 
@@ -812,7 +810,9 @@ impl Update {
                         return Err(Error::BinaryNotFoundInArchive);
                     }
 
-                    return match std::fs::write(&self.extract_path, bytes) {
+                    return match std::fs::write(&self.extract_path, bytes)
+                        .and_then(|_| std::fs::set_permissions(&self.extract_path, permissions))
+                    {
                         Err(err) => {
                             // if something went wrong during the extraction, we should restore previous app
                             std::fs::rename(tmp_app_image, &self.extract_path)?;

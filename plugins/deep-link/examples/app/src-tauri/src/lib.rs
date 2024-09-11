@@ -13,8 +13,26 @@ fn greet(name: &str) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|_app, argv, _cwd| {
+            println!("single instance triggered: {argv:?}");
+        }))
         .plugin(tauri_plugin_deep_link::init())
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .level(log::LevelFilter::Info)
+                .build(),
+        )
         .setup(|app| {
+            // ensure deep links are registered on the system
+            // this is useful because AppImages requires additional setup to be available in the system
+            // and calling register() makes the deep links immediately available - without any user input
+            #[cfg(target_os = "linux")]
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+
+                app.deep_link().register_all()?;
+            }
+
             app.listen("deep-link://new-url", |url| {
                 dbg!(url);
             });

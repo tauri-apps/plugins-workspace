@@ -3,9 +3,12 @@
 // SPDX-License-Identifier: MIT
 
 use serde::de::DeserializeOwned;
-use tauri::{plugin::PluginApi, AppHandle, Runtime};
+use tauri::{
+    plugin::{PermissionState, PluginApi},
+    AppHandle, Runtime,
+};
 
-use crate::{models::*, NotificationBuilder};
+use crate::NotificationBuilder;
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,

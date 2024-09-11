@@ -21,6 +21,9 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true, features = ["wry", "compression"] }
 tauri-plugin-deep-link = { path = "../../../" }
+tauri-plugin-log = { path = "../../../../log" }
+tauri-plugin-single-instance = { path = "../../../../single-instance" }
+log = "0.4"
 
 [features]
 # this feature is used for production builds or when `devUrl` points to the filesystem and the built-in dev server is disabled.

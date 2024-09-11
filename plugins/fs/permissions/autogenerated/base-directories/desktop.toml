@@ -10,12 +10,16 @@ identifier = "scope-desktop-recursive"
 description = "This scope permits recursive access to the complete `$DESKTOP` folder, including sub directories and files."
 
 [[permission.scope.allow]]
+path = "$DESKTOP"
+[[permission.scope.allow]]
 path = "$DESKTOP/**"
 
 [[permission]]
 identifier = "scope-desktop"
 description = "This scope permits access to all files and list content of top level directories in the `$DESKTOP`folder."
 
+[[permission.scope.allow]]
+path = "$DESKTOP"
 [[permission.scope.allow]]
 path = "$DESKTOP/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-desktop-index"
 description = "This scope permits to list all files and folders in the `$DESKTOP`folder."
 
 [[permission.scope.allow]]
-path = "$DESKTOP/"
+path = "$DESKTOP"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands

@@ -10,19 +10,19 @@ on:
       - v1
       - v2
     paths:
-      - ".github/workflows/lint-rust.yml"
-      - "plugins/*/src/**"
-      - "!plugins/*/src/api-iife.js"
-      - "**/Cargo.toml"
+      - '.github/workflows/lint-rust.yml'
+      - 'plugins/*/src/**'
+      - '!plugins/*/src/api-iife.js'
+      - '**/Cargo.toml'
   pull_request:
     branches:
       - v1
       - v2
     paths:
-      - ".github/workflows/lint-rust.yml"
-      - "plugins/*/src/**"
-      - "!plugins/*/src/api-iife.js"
-      - "**/Cargo.toml"
+      - '.github/workflows/lint-rust.yml'
+      - 'plugins/*/src/**'
+      - '!plugins/*/src/api-iife.js'
+      - '**/Cargo.toml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -41,9 +41,6 @@ jobs:
         id: filter
         with:
           filters: |
-            tauri-plugin-authenticator:
-              - .github/workflows/lint-rust.yml
-              - plugins/authenticator/**
             tauri-plugin-autostart:
               - .github/workflows/lint-rust.yml
               - plugins/autostart/**
@@ -138,10 +135,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: install webkit2gtk and libudev for [authenticator]
+      - name: install webkit2gtk
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libudev-dev
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev
 
       - name: Install clippy with stable toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -149,10 +146,6 @@ jobs:
           components: clippy
 
       - uses: Swatinem/rust-cache@v2
-
-      - name: create dummy dist
-        working-directory: examples/api
-        run: mkdir dist
 
       - name: clippy ${{ matrix.package }}
         if: matrix.package != 'tauri-plugin-sql'
@@ -165,17 +158,3 @@ jobs:
       - name: clippy ${{ matrix.package }} postgres
         if: matrix.package == 'tauri-plugin-sql'
         run: cargo clippy --package ${{ matrix.package }} --all-targets --no-default-features --features postgres -- -D warnings
-
-  fmt:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install rustfmt with nightly toolchain
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: rustfmt
-
-      - name: Check formatting
-        run: cargo fmt --all -- --check

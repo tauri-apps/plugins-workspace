@@ -13,8 +13,4 @@ All reading related operations are enabled.
 Also allows to load or close a connection.
 
 """
-permissions = [
-  "allow-close",
-  "allow-load",
-  "allow-select",
-]
+permissions = ["allow-close", "allow-load", "allow-select"]

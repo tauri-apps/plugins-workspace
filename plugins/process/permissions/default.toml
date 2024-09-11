@@ -11,7 +11,4 @@ This enables to quit via `allow-exit` and restart via `allow-restart`
 the application.
 """
 
-permissions = [
-    "allow-exit",
-    "allow-restart",
-]
+permissions = ["allow-exit", "allow-restart"]

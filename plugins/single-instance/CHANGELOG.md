@@ -1,5 +1,18 @@
 # Changelog
 
+## \[2.0.0-rc.2]
+
+- [`64a6240f`](https://github.com/tauri-apps/plugins-workspace/commit/64a6240f79fcd52267c8d721b727ae695055d7ff) ([#1759](https://github.com/tauri-apps/plugins-workspace/pull/1759) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Integrate with the deep link plugin out of the box.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.0.0-rc.4`
+
+## \[2.0.0-rc.1]
+
+- [`3c52f30e`](https://github.com/tauri-apps/plugins-workspace/commit/3c52f30ea4ec29c51f7021aa7871614d72e43258) ([#1665](https://github.com/tauri-apps/plugins-workspace/pull/1665) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Updated `windows-sys` crate to `0.59`
+- [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
+
 ## \[2.0.0-rc.0]
 
 - [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/core";
-import { type UnlistenFn, listen } from "@tauri-apps/api/event";
+import { invoke } from '@tauri-apps/api/core'
+import { type UnlistenFn, listen } from '@tauri-apps/api/event'
 
 /**
  * Get the current URLs that triggered the deep link. Use this on app load to check whether your app was started via a deep link.
@@ -14,12 +14,14 @@ import { type UnlistenFn, listen } from "@tauri-apps/api/event";
  * const urls = await getCurrent();
  * ```
  *
- * #### - **Windows / Linux**: Unsupported.
+ * #### - **Windows / Linux**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
+ * Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
+ * Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect..
  *
  * @since 2.0.0
  */
 export async function getCurrent(): Promise<string[] | null> {
-  return await invoke("plugin:deep-link|get_current");
+  return await invoke('plugin:deep-link|get_current')
 }
 
 /**
@@ -38,7 +40,7 @@ export async function getCurrent(): Promise<string[] | null> {
  * @since 2.0.0
  */
 export async function register(protocol: string): Promise<null> {
-  return await invoke("plugin:deep-link|register", { protocol });
+  return await invoke('plugin:deep-link|register', { protocol })
 }
 
 /**
@@ -57,7 +59,7 @@ export async function register(protocol: string): Promise<null> {
  * @since 2.0.0
  */
 export async function unregister(protocol: string): Promise<null> {
-  return await invoke("plugin:deep-link|unregister", { protocol });
+  return await invoke('plugin:deep-link|unregister', { protocol })
 }
 
 /**
@@ -76,7 +78,7 @@ export async function unregister(protocol: string): Promise<null> {
  * @since 2.0.0
  */
 export async function isRegistered(protocol: string): Promise<boolean> {
-  return await invoke("plugin:deep-link|is_registered", { protocol });
+  return await invoke('plugin:deep-link|is_registered', { protocol })
 }
 
 /**
@@ -95,14 +97,14 @@ export async function isRegistered(protocol: string): Promise<boolean> {
  * @since 2.0.0
  */
 export async function onOpenUrl(
-  handler: (urls: string[]) => void,
+  handler: (urls: string[]) => void
 ): Promise<UnlistenFn> {
-  const current = await getCurrent();
+  const current = await getCurrent()
   if (current) {
-    handler(current);
+    handler(current)
   }
 
-  return await listen<string[]>("deep-link://new-url", (event) => {
-    handler(event.payload);
-  });
+  return await listen<string[]>('deep-link://new-url', (event) => {
+    handler(event.payload)
+  })
 }

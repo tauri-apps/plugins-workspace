@@ -1,5 +1,77 @@
 # Changelog
 
+## \[2.0.0-rc.5]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.0.0-rc.4`
+- Upgraded to `notification@2.0.0-rc.4`
+
+## \[2.0.0-rc.4]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-rc.3`
+- Upgraded to `dialog@2.0.0-rc.5`
+- Upgraded to `updater@2.0.0-rc.3`
+- Upgraded to `http@2.0.0-rc.3`
+
+## \[2.0.0-rc.3]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-rc.2`
+- Upgraded to `dialog@2.0.0-rc.4`
+- Upgraded to `http@2.0.0-rc.2`
+
+## \[2.0.0-rc.2]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.0.0-rc.3`
+- Upgraded to `notification@2.0.0-rc.3`
+- Upgraded to `dialog@2.0.0-rc.3`
+- Upgraded to `fs@2.0.0-rc.1`
+- Upgraded to `global-shortcut@2.0.0-rc.2`
+- Upgraded to `store@2.0.0-rc.3`
+- Upgraded to `biometric@2.0.0-rc.3`
+- Upgraded to `cli@2.0.0-rc.1`
+- Upgraded to `clipboard-manager@2.0.0-rc.3`
+- Upgraded to `http@2.0.0-rc.1`
+- Upgraded to `log-plugin@2.0.0-rc.2`
+- Upgraded to `nfc@2.0.0-rc.3`
+- Upgraded to `os@2.0.0-rc.1`
+- Upgraded to `process@2.0.0-rc.1`
+- Upgraded to `shell@2.0.0-rc.3`
+- Upgraded to `updater@2.0.0-rc.2`
+
+## \[2.0.0-rc.1]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.0.0-rc.2`
+- Upgraded to `biometric@2.0.0-rc.2`
+- Upgraded to `clipboard-manager@2.0.0-rc.2`
+- Upgraded to `dialog@2.0.0-rc.2`
+- Upgraded to `log-plugin@2.0.0-rc.1`
+- Upgraded to `nfc@2.0.0-rc.2`
+- Upgraded to `notification@2.0.0-rc.2`
+- Upgraded to `shell@2.0.0-rc.2`
+
+## \[2.0.0-rc.0]
+
+### Dependencies
+
+- Upgraded to `dialog@2.0.0-rc.1`
+- Upgraded to `updater@2.0.0-rc.1`
+- Upgraded to `barcode-scanner@2.0.0-rc.1`
+- Upgraded to `clipboard-manager@2.0.0-rc.1`
+- Upgraded to `global-shortcut@2.0.0-rc.1`
+- Upgraded to `biometric@2.0.0-rc.1`
+- Upgraded to `nfc@2.0.0-rc.1`
+- Upgraded to `notification@2.0.0-rc.1`
+- Upgraded to `shell@2.0.0-rc.1`
+
 ## \[2.0.0-beta.17]
 
 ### Dependencies

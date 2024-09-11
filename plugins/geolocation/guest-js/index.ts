@@ -4,26 +4,26 @@
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import { Channel } from "@tauri-apps/api/core";
-import { commands, type PositionOptions, type Position } from "./bindings";
+import { Channel } from '@tauri-apps/api/core'
+import { commands, type PositionOptions, type Position } from './bindings'
 
 export async function watchPosition(
   options: PositionOptions,
   // TODO: This can receive errors too
-  cb: (location: Position | string) => void,
+  cb: (location: Position | string) => void
 ): Promise<number> {
-  const channel = new Channel<Position>();
-  channel.onmessage = cb;
-  await commands.watchPosition(options, channel);
-  return channel.id;
+  const channel = new Channel<Position>()
+  channel.onmessage = cb
+  await commands.watchPosition(options, channel)
+  return channel.id
 }
 
 export const {
   getCurrentPosition,
   clearWatch,
   checkPermissions,
-  requestPermissions,
-} = commands;
+  requestPermissions
+} = commands
 
 export type {
   PermissionState,
@@ -31,7 +31,7 @@ export type {
   PermissionType,
   Position,
   PositionOptions,
-  Coordinates,
-} from "./bindings";
+  Coordinates
+} from './bindings'
 
 // export { events };

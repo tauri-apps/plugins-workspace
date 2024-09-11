@@ -10,7 +10,4 @@ It allows acccess to all biometric commands.
 
 """
 
-permissions = [
-  "allow-authenticate",
-  "allow-status",
-]
+permissions = ["allow-authenticate", "allow-status"]

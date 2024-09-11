@@ -61,6 +61,9 @@
     "clipboard-manager:allow-write-text",
     "clipboard-manager:allow-read-image",
     "clipboard-manager:allow-write-image",
+    "fs:allow-open",
+    "fs:allow-write",
+    "fs:allow-read",
     "fs:allow-rename",
     "fs:allow-mkdir",
     "fs:allow-remove",
@@ -75,6 +78,11 @@
         }
       ],
       "deny": ["$APPDATA/db/*.stronghold"]
-    }
+    },
+    "store:allow-entries",
+    "store:allow-get",
+    "store:allow-set",
+    "store:allow-save",
+    "store:allow-load"
   ]
 }

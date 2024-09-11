@@ -60,22 +60,22 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```typescript
-import { Store } from "tauri-plugin-store-api";
+import { Store } from '@tauri-apps/plugin-store'
 
-const store = new Store(".settings.dat");
+const store = new Store('.settings.dat')
 
-await store.set("some-key", { value: 5 });
+await store.set('some-key', { value: 5 })
 
-const val = await store.get<{ value: number }>("some-key");
+const val = await store.get<{ value: number }>('some-key')
 
 if (val) {
-  console.log(val);
+  console.log(val)
 } else {
-  console.log("val is null");
+  console.log('val is null')
 }
 
 // This manually saves the store.
-await store.save();
+await store.save()
 ```
 
 ### Persisting Values
@@ -85,14 +85,14 @@ As seen above, values added to the store are not persisted between application l
 You can manually save a store with:
 
 ```javascript
-await store.save();
+await store.save()
 ```
 
 Stores are loaded automatically when used from the JavaScript bindings.  
 However, you can also load them manually later like so:
 
 ```javascript
-await store.load();
+await store.load()
 ```
 
 ## Usage from Rust

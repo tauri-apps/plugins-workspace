@@ -68,6 +68,7 @@
         "os",
         "process",
         "shell",
+        "store",
         "updater"
       ]
     },
@@ -90,6 +91,7 @@
         "os-js",
         "process-js",
         "shell-js",
+        "store-js",
         "updater-js"
       ],
       "postversion": "pnpm install --no-frozen-lockfile"
@@ -100,14 +102,6 @@
       "publish": false,
       "dependencies": ["deep-link-js"],
       "postversion": "pnpm install --no-frozen-lockfile"
-    },
-    "authenticator": {
-      "path": "./plugins/authenticator",
-      "manager": "rust"
-    },
-    "authenticator-js": {
-      "path": "./plugins/authenticator",
-      "manager": "javascript"
     },
     "autostart": {
       "path": "./plugins/autostart",
@@ -274,7 +268,8 @@
     },
     "single-instance": {
       "path": "./plugins/single-instance",
-      "manager": "rust"
+      "manager": "rust",
+      "dependencies": ["deep-link"]
     },
     "sql": {
       "path": "./plugins/sql",

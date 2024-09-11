@@ -1,5 +1,22 @@
 # Changelog
 
+## \[2.0.0-rc.3]
+
+- [`d00519e3`](https://github.com/tauri-apps/plugins-workspace/commit/d00519e3e3a3234f9eb6c2ba82c92d4199f03e53) ([#1735](https://github.com/tauri-apps/plugins-workspace/pull/1735) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) This releases the changes from 2.0.0-rc.2 to crates.io. Please see the links below for the actual changes.
+
+## \[2.0.0-rc.2]
+
+- [`f8255e1d`](https://github.com/tauri-apps/plugins-workspace/commit/f8255e1db5df6cf562b9334fbefe5e62f4a28e0a) ([#1661](https://github.com/tauri-apps/plugins-workspace/pull/1661) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add a second argument in `Update.download` and `Update.donloadAndInstall` JS APIs to modify headers and timeout when downloading the update.
+
+## \[2.0.0-rc.1]
+
+- [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
+
+## \[2.0.0-rc.1]
+
+- [`77013925`](https://github.com/tauri-apps/plugins-workspace/commit/7701392500f375340045880fce5fb8f867bfe670) ([#1636](https://github.com/tauri-apps/plugins-workspace/pull/1636) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fixes the updater not preserving AppImage file permissions.
+- [`5d170a54`](https://github.com/tauri-apps/plugins-workspace/commit/5d170a5444982dcc14135f6f1fc3e5da359f0eb0) ([#1671](https://github.com/tauri-apps/plugins-workspace/pull/1671) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.3.
+
 ## \[2.0.0-rc.0]
 
 - [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.

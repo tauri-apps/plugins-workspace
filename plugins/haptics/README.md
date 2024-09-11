@@ -68,13 +68,13 @@ import {
   vibrate,
   impactFeedback,
   notificationFeedback,
-  selectionFeedback,
-} from "@tauri-apps/plugin-haptics";
+  selectionFeedback
+} from '@tauri-apps/plugin-haptics'
 
-await vibrate(1);
-await impactFeedback("medium");
-await notificationFeedback("warning");
-await selectionFeedback();
+await vibrate(1)
+await impactFeedback('medium')
+await notificationFeedback('warning')
+await selectionFeedback()
 ```
 
 ## Contributing

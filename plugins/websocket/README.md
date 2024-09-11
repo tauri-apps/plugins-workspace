@@ -60,13 +60,13 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import WebSocket from "@tauri-apps/plugin-websocket";
+import WebSocket from '@tauri-apps/plugin-websocket'
 
-const ws = await WebSocket.connect("wss://example.com");
+const ws = await WebSocket.connect('wss://example.com')
 
-await ws.send("Hello World");
+await ws.send('Hello World')
 
-await ws.disconnect();
+await ws.disconnect()
 ```
 
 ## Contributing

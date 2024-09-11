@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-barcode-scanner"
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.4"
 description = "Scan QR codes, EAN-13 and other kinds of barcodes on Android and iOS"
 edition = { workspace = true }
 authors = { workspace = true }
@@ -10,12 +10,12 @@ repository = { workspace = true }
 links = "tauri-plugin-barcode-scanner"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 targets = ["x86_64-linux-android"]
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }
@@ -23,3 +23,6 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+tauri = { workspace = true, features = ["wry"] }

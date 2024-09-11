@@ -7,7 +7,7 @@ use notify_debouncer_full::{new_debouncer, DebounceEventResult, Debouncer, FileI
 use serde::Deserialize;
 use tauri::{
     ipc::{Channel, CommandScope, GlobalScope},
-    path::{BaseDirectory, SafePathBuf},
+    path::BaseDirectory,
     Manager, Resource, ResourceId, Runtime, Webview,
 };
 
@@ -24,6 +24,7 @@ use std::{
 use crate::{
     commands::{resolve_path, CommandResult},
     scope::Entry,
+    SafeFilePath,
 };
 
 struct InnerWatcher {
@@ -83,7 +84,7 @@ pub struct WatchOptions {
 #[tauri::command]
 pub async fn watch<R: Runtime>(
     webview: Webview<R>,
-    paths: Vec<SafePathBuf>,
+    paths: Vec<SafeFilePath>,
     options: WatchOptions,
     on_event: Channel<Event>,
     global_scope: GlobalScope<Entry>,

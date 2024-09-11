@@ -7,7 +7,7 @@
 use serde::{Deserialize, Deserializer};
 use tauri_utils::config::DeepLinkProtocol;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct AssociatedDomain {
     #[serde(deserialize_with = "deserialize_associated_host")]
     pub host: String,
@@ -29,20 +29,51 @@ where
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Config {
     /// Mobile requires `https://<host>` urls.
+    #[serde(default)]
     pub mobile: Vec<AssociatedDomain>,
     /// Desktop requires urls starting with `<scheme>://`.
     /// These urls are also active in dev mode on Android.
     #[allow(unused)] // Used in tauri-bundler
+    #[serde(default)]
     pub desktop: DesktopProtocol,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 #[serde(untagged)]
 #[allow(unused)] // Used in tauri-bundler
 pub enum DesktopProtocol {
     One(DeepLinkProtocol),
     List(Vec<DeepLinkProtocol>),
+}
+
+impl Default for DesktopProtocol {
+    fn default() -> Self {
+        Self::List(Vec::new())
+    }
+}
+
+impl DesktopProtocol {
+    #[allow(dead_code)]
+    pub fn contains_scheme(&self, scheme: &String) -> bool {
+        match self {
+            Self::One(protocol) => protocol.schemes.contains(scheme),
+            Self::List(protocols) => protocols
+                .iter()
+                .any(|protocol| protocol.schemes.contains(scheme)),
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn schemes(&self) -> Vec<String> {
+        match self {
+            Self::One(protocol) => protocol.schemes.clone(),
+            Self::List(protocols) => protocols
+                .iter()
+                .flat_map(|protocol| protocol.schemes.clone())
+                .collect(),
+        }
+    }
 }

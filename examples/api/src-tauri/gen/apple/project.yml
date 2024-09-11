@@ -2,7 +2,7 @@ name: api
 options:
   bundleIdPrefix: com.tauri.api
   deploymentTarget:
-    iOS: 13.0
+    iOS: 14.0
 fileGroups: [../../src]
 configs:
   debug: debug
@@ -13,7 +13,6 @@ settingGroups:
       PRODUCT_NAME: Tauri API
       PRODUCT_BUNDLE_IDENTIFIER: com.tauri.api
       DEVELOPMENT_TEAM: Q93MBH6S2F
-      CODE_SIGN_STYLE: Automatic
 targetTemplates:
   app:
     type: application
@@ -65,7 +64,7 @@ targets:
       base:
         ENABLE_BITCODE: false
         ARCHS: [arm64, arm64-sim]
-        VALID_ARCHS: arm64  arm64-sim 
+        VALID_ARCHS: arm64  arm64-sim
         LIBRARY_SEARCH_PATHS[arch=x86_64]: $(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)
         LIBRARY_SEARCH_PATHS[arch=arm64]: $(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)
         LIBRARY_SEARCH_PATHS[arch=arm64-sim]: $(inherited) $(PROJECT_DIR)/Externals/arm64-sim/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)
@@ -74,7 +73,7 @@ targets:
         EXCLUDED_ARCHS[sdk=iphoneos*]: arm64-sim x86_64
       groups: [app]
     dependencies:
-      - framework: libapi_lib.a
+      - framework: libapp.a
         embed: false
       - sdk: CoreGraphics.framework
       - sdk: Metal.framework
@@ -88,6 +87,6 @@ targets:
         name: Build Rust Code
         basedOnDependencyAnalysis: false
         outputFiles:
-          - $(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapi_lib.a
-          - $(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapi_lib.a
-          - $(SRCROOT)/Externals/arm64-sim/${CONFIGURATION}/libapi_lib.a
+          - $(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapp.a
+          - $(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapp.a
+          - $(SRCROOT)/Externals/arm64-sim/${CONFIGURATION}/libapp.a
