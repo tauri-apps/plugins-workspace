@@ -6538,6 +6538,7 @@ dependencies = [
  "glob",
  "notify",
  "notify-debouncer-full",
+ "percent-encoding",
  "schemars",
  "serde",
  "serde_json",
