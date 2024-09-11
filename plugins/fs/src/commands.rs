@@ -13,6 +13,7 @@ use tauri::{
 };
 
 use std::{
+    borrow::Cow,
     fs::File,
     io::{BufReader, Lines, Read, Write},
     path::{Path, PathBuf},
@@ -839,34 +840,32 @@ pub async fn write_file<R: Runtime>(
     command_scope: CommandScope<Entry>,
     request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
-    if let tauri::ipc::InvokeBody::Raw(data) = request.body() {
-        let path = request
-            .headers()
-            .get("path")
-            .ok_or_else(|| anyhow::anyhow!("missing file path").into())
-            .and_then(|p| {
-                p.to_str()
-                    .map_err(|e| anyhow::anyhow!("invalid path: {e}").into())
-            })
-            .and_then(|p| {
-                let bytes: Vec<u8> = p
-                    .split(',')
-                    .map(str::trim)
-                    .filter_map(|n| n.parse().ok())
-                    .collect();
-                String::from_utf8(bytes)
-                    .map_err(|_| anyhow::anyhow!("path is not a valid UTF-8").into())
-            })
-            .and_then(|p| SafeFilePath::from_str(&p).map_err(CommandError::from))?;
-        let options = request
-            .headers()
-            .get("options")
-            .and_then(|p| p.to_str().ok())
-            .and_then(|opts| serde_json::from_str(opts).ok());
-        write_file_inner(webview, &global_scope, &command_scope, path, data, options)
-    } else {
-        Err(anyhow::anyhow!("unexpected invoke body").into())
-    }
+    let data = match request.body() {
+        tauri::ipc::InvokeBody::Raw(data) => Cow::Borrowed(data),
+        tauri::ipc::InvokeBody::Json(serde_json::Value::Array(data)) => Cow::Owned(
+            data.iter()
+                .flat_map(|v| v.as_number().and_then(|v| v.as_u64().map(|v| v as u8)))
+                .collect(),
+        ),
+        _ => return Err(anyhow::anyhow!("unexpected invoke body").into()),
+    };
+
+    let path = request
+        .headers()
+        .get("path")
+        .ok_or_else(|| anyhow::anyhow!("missing file path").into())
+        .and_then(|p| {
+            percent_encoding::percent_decode(p.as_ref())
+                .decode_utf8()
+                .map_err(|_| anyhow::anyhow!("path is not a valid UTF-8").into())
+        })
+        .and_then(|p| SafeFilePath::from_str(&p).map_err(CommandError::from))?;
+    let options = request
+        .headers()
+        .get("options")
+        .and_then(|p| p.to_str().ok())
+        .and_then(|opts| serde_json::from_str(opts).ok());
+    write_file_inner(webview, &global_scope, &command_scope, path, &data, options)
 }
 
 #[tauri::command]

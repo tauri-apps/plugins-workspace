@@ -1013,11 +1013,9 @@ async function writeFile(
     throw new TypeError('Must be a file URL.')
   }
 
-  const pathStr = path instanceof URL ? path.toString() : path
-
   await invoke('plugin:fs|write_file', data, {
     headers: {
-      path: Array.from(new TextEncoder().encode(pathStr)).join(','),
+      path: encodeURIComponent(path instanceof URL ? path.toString() : path),
       options: JSON.stringify(options)
     }
   })
@@ -1146,16 +1144,16 @@ type WatchEventKindModify =
   | { kind: 'any' }
   | { kind: 'data'; mode: 'any' | 'size' | 'content' | 'other' }
   | {
-      kind: 'metadata'
-      mode:
-        | 'any'
-        | 'access-time'
-        | 'write-time'
-        | 'permissions'
-        | 'ownership'
-        | 'extended'
-        | 'other'
-    }
+    kind: 'metadata'
+    mode:
+    | 'any'
+    | 'access-time'
+    | 'write-time'
+    | 'permissions'
+    | 'ownership'
+    | 'extended'
+    | 'other'
+  }
   | { kind: 'rename'; mode: 'any' | 'to' | 'from' | 'both' | 'other' }
   | { kind: 'other' }
 
