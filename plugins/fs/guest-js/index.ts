@@ -1144,16 +1144,16 @@ type WatchEventKindModify =
   | { kind: 'any' }
   | { kind: 'data'; mode: 'any' | 'size' | 'content' | 'other' }
   | {
-    kind: 'metadata'
-    mode:
-    | 'any'
-    | 'access-time'
-    | 'write-time'
-    | 'permissions'
-    | 'ownership'
-    | 'extended'
-    | 'other'
-  }
+      kind: 'metadata'
+      mode:
+        | 'any'
+        | 'access-time'
+        | 'write-time'
+        | 'permissions'
+        | 'ownership'
+        | 'extended'
+        | 'other'
+    }
   | { kind: 'rename'; mode: 'any' | 'to' | 'from' | 'both' | 'other' }
   | { kind: 'other' }
 
