@@ -34,13 +34,13 @@ enum ScheduleEveryKind: String, Decodable {
 }
 
 struct ScheduleInterval: Decodable {
-  let year: Int?
-  let month: Int?
-  let day: Int?
-  let weekday: Int?
-  let hour: Int?
-  let minute: Int?
-  let second: Int?
+  var year: Int?
+  var month: Int?
+  var day: Int?
+  var weekday: Int?
+  var hour: Int?
+  var minute: Int?
+  var second: Int?
 }
 
 enum NotificationSchedule: Decodable {
@@ -67,13 +67,13 @@ struct Notification: Decodable {
   var title: String
   var body: String?
   var extra: [String: String]?
-  let schedule: NotificationSchedule?
-  let attachments: [NotificationAttachment]?
-  let sound: String?
-  let group: String?
-  let actionTypeId: String?
-  let summary: String?
-  var silent = false
+  var schedule: NotificationSchedule?
+  var attachments: [NotificationAttachment]?
+  var sound: String?
+  var group: String?
+  var actionTypeId: String?
+  var summary: String?
+  var silent: Bool?
 }
 
 struct RemoveActiveNotification: Decodable {
@@ -130,19 +130,19 @@ struct Action: Decodable {
   var foreground: Bool?
   var destructive: Bool?
   var input: Bool?
-  let inputButtonTitle: String?
-  let inputPlaceholder: String?
+  var inputButtonTitle: String?
+  var inputPlaceholder: String?
 }
 
 struct ActionType: Decodable {
   let id: String
   let actions: [Action]
-  let hiddenPreviewsBodyPlaceholder: String?
+  var hiddenPreviewsBodyPlaceholder: String?
   var customDismissAction: Bool?
   var allowInCarPlay: Bool?
   var hiddenPreviewsShowTitle: Bool?
   var hiddenPreviewsShowSubtitle: Bool?
-  let hiddenBodyPlaceholder: String?
+  var hiddenBodyPlaceholder: String?
 }
 
 struct RegisterActionTypesArgs: Decodable {

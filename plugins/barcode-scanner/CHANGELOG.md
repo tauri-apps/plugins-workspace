@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.0.0-rc.4]
+
+- [`713c54ef`](https://github.com/tauri-apps/plugins-workspace/commit/713c54ef8365d36afd84585dcabed2fbb751223d) ([#1749](https://github.com/tauri-apps/plugins-workspace/pull/1749) by [@olivierlemasle](https://github.com/tauri-apps/plugins-workspace/../../olivierlemasle)) Remove unused Android dependencies.
+- [`8c3a6a25`](https://github.com/tauri-apps/plugins-workspace/commit/8c3a6a253d7029d370659d2102f91a458745d345) ([#1758](https://github.com/tauri-apps/plugins-workspace/pull/1758) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Validate missing `NSCameraUsageDescription` Info.plist value.
+
 ## \[2.0.0-rc.1]
 
 - [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Use `PermissionState` from the `tauri` crate, which now also includes a "prompt with rationale" variant for Android (returned when your app must explain to the user why it needs the permission).

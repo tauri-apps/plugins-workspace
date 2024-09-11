@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-	<key>NSCameraUsageDescription</key>
-	<string>Request camera access for WebRTC</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Request microphone access for WebRTC</string>
-</dict>
+	<dict>
+		<key>NSCameraUsageDescription</key>
+		<string>Request camera access for WebRTC</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>Request microphone access for WebRTC</string>
+		<key>NSFaceIDUsageDescription</key>
+		<string>Authenticate with biometrics</string>
+		<key>NFCReaderUsageDescription</key>
+		<string>Read and write to NFC tags for testing</string>
+	</dict>
 </plist>
