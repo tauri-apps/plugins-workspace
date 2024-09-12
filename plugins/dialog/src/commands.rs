@@ -132,14 +132,17 @@ pub(crate) async fn open<R: Runtime>(
     let res = if options.directory {
         #[cfg(desktop)]
         {
+            let tauri_scope = window.state::<tauri::scope::Scopes>();
+
             if options.multiple {
                 let folders = dialog_builder.blocking_pick_folders();
                 if let Some(folders) = &folders {
                     for folder in folders {
                         if let Ok(path) = folder.clone().into_path() {
                             if let Some(s) = window.try_fs_scope() {
-                                s.allow_directory(path, options.recursive);
+                                s.allow_directory(&path, options.recursive);
                             }
+                            tauri_scope.allow_directory(&path, options.directory)?;
                         }
                     }
                 }
@@ -151,8 +154,9 @@ pub(crate) async fn open<R: Runtime>(
                 if let Some(folder) = &folder {
                     if let Ok(path) = folder.clone().into_path() {
                         if let Some(s) = window.try_fs_scope() {
-                            s.allow_directory(path, options.recursive);
+                            s.allow_directory(&path, options.recursive);
                         }
+                        tauri_scope.allow_directory(&path, options.directory)?;
                     }
                 }
                 OpenResponse::Folder(folder.map(|p| p.simplified()))
@@ -161,6 +165,8 @@ pub(crate) async fn open<R: Runtime>(
         #[cfg(mobile)]
         return Err(crate::Error::FolderPickerNotImplemented);
     } else if options.multiple {
+        let tauri_scope = window.state::<tauri::scope::Scopes>();
+
         let files = dialog_builder.blocking_pick_files();
         if let Some(files) = &files {
             for file in files {
@@ -169,12 +175,13 @@ pub(crate) async fn open<R: Runtime>(
                         s.allow_file(&path);
                     }
 
-                    window.state::<tauri::scope::Scopes>().allow_file(&path)?;
+                    tauri_scope.allow_file(&path)?;
                 }
             }
         }
         OpenResponse::Files(files.map(|files| files.into_iter().map(|f| f.simplified()).collect()))
     } else {
+        let tauri_scope = window.state::<tauri::scope::Scopes>();
         let file = dialog_builder.blocking_pick_file();
 
         if let Some(file) = &file {
@@ -182,7 +189,7 @@ pub(crate) async fn open<R: Runtime>(
                 if let Some(s) = window.try_fs_scope() {
                     s.allow_file(&path);
                 }
-                window.state::<tauri::scope::Scopes>().allow_file(&path)?;
+                tauri_scope.allow_file(&path)?;
             }
         }
         OpenResponse::File(file.map(|f| f.simplified()))
@@ -216,13 +223,15 @@ pub(crate) async fn save<R: Runtime>(
         dialog_builder = dialog_builder.add_filter(filter.name, &extensions);
     }
 
+    let tauri_scope = window.state::<tauri::scope::Scopes>();
+
     let path = dialog_builder.blocking_save_file();
     if let Some(p) = &path {
         if let Ok(path) = p.clone().into_path() {
             if let Some(s) = window.try_fs_scope() {
                 s.allow_file(&path);
             }
-            window.state::<tauri::scope::Scopes>().allow_file(&path)?;
+            tauri_scope.allow_file(&path)?;
         }
     }
 
