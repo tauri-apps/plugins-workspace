@@ -19,7 +19,7 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
-tauri-plugin-deep-link = { path = "../deep-link", version = "2.0.0-rc.4" }
+tauri-plugin-deep-link = { path = "../deep-link", version = "2.0.0-rc.4", optional = true }
 semver = { version = "1", optional = true }
 
 [target."cfg(target_os = \"windows\")".dependencies.windows-sys]
@@ -39,3 +39,4 @@ zbus = "4"
 
 [features]
 semver = ["dep:semver"]
+deep-link = ["dep:tauri-plugin-deep-link"]
