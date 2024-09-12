@@ -49,7 +49,7 @@ fn main() {
 }
 ```
 
-Note that currently, plugins run in the order they were added in to the builder, you need to register this plugin first if you don't want the other plugins to run on the new instance
+Note that currently, plugins run in the order they were added in to the builder, so make sure that this plugin is registered first.
 
 ## Contributing
 
