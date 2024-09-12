@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.0.0-rc.5]
+
+- [`984110a9`](https://github.com/tauri-apps/plugins-workspace/commit/984110a978774712bad4d746ed06134d54debcd0) ([#1770](https://github.com/tauri-apps/plugins-workspace/pull/1770) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Emit the `deep-link://new-url` event on Linux and Windows when the app is executed with a deep link CLI argument,
+  matching the iOS and macOS behavior.
+
 ## \[2.0.0-rc.2]
 
 - [`64a6240f`](https://github.com/tauri-apps/plugins-workspace/commit/64a6240f79fcd52267c8d721b727ae695055d7ff) ([#1759](https://github.com/tauri-apps/plugins-workspace/pull/1759) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Implement `get_current` on Linux and Windows.
@@ -108,6 +113,6 @@
 - [`eccd6f9`](https://github.com/tauri-apps/plugins-workspace/commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
   commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
   ithub.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
-](https://github.com/tauri-apps/plugins-workspace/commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
+  ]\(https://github.com/tauri-apps/plugins-workspace/commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
   commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
   ithub.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
