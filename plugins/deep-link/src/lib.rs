@@ -70,17 +70,14 @@ fn init_deep_link<R: Runtime>(
     #[cfg(desktop)]
     {
         let args = std::env::args();
-        let current = if let Some(config) = api.config() {
-            imp::deep_link_from_args(config, args)
-        } else {
-            None
-        };
-
-        Ok(DeepLink {
+        let deep_link = DeepLink {
             app: app.clone(),
-            current: std::sync::Mutex::new(current.map(|url| vec![url])),
+            current: Default::default(),
             config: api.config().clone(),
-        })
+        };
+        deep_link.handle_cli_arguments(args);
+
+        Ok(deep_link)
     }
 }
 
@@ -179,31 +176,6 @@ mod imp {
         pub(crate) config: Option<crate::config::Config>,
     }
 
-    pub(crate) fn deep_link_from_args<S: AsRef<str>, I: Iterator<Item = S>>(
-        config: &crate::config::Config,
-        mut args: I,
-    ) -> Option<url::Url> {
-        if cfg!(windows) || cfg!(target_os = "linux") {
-            args.next(); // bin name
-            let arg = args.next();
-
-            let maybe_deep_link = args.next().is_none(); // single argument
-            if !maybe_deep_link {
-                return None;
-            }
-
-            if let Some(url) = arg.and_then(|arg| arg.as_ref().parse::<url::Url>().ok()) {
-                if config.desktop.contains_scheme(&url.scheme().to_string()) {
-                    return Some(url);
-                } else if cfg!(debug_assertions) {
-                    log::warn!("argument {url} does not match any configured deep link scheme; skipping it");
-                }
-            }
-        }
-
-        None
-    }
-
     impl<R: Runtime> DeepLink<R> {
         /// Checks if the provided list of arguments (which should match [`std::env::args`])
         /// contains a deep link argument (for Linux and Windows).
@@ -216,17 +188,31 @@ mod imp {
         ///
         /// This function updates the [`Self::get_current`] value and emits a `deep-link://new-url` event.
         #[cfg(desktop)]
-        pub fn handle_cli_arguments<S: AsRef<str>, I: Iterator<Item = S>>(&self, args: I) {
+        pub fn handle_cli_arguments<S: AsRef<str>, I: Iterator<Item = S>>(&self, mut args: I) {
             use tauri::Emitter;
 
             let Some(config) = &self.config else {
                 return;
             };
 
-            if let Some(url) = deep_link_from_args(config, args) {
-                let mut current = self.current.lock().unwrap();
-                current.replace(vec![url.clone()]);
-                let _ = self.app.emit("deep-link://new-url", vec![url]);
+            if cfg!(windows) || cfg!(target_os = "linux") {
+                args.next(); // bin name
+                let arg = args.next();
+
+                let maybe_deep_link = args.next().is_none(); // single argument
+                if !maybe_deep_link {
+                    return;
+                }
+
+                if let Some(url) = arg.and_then(|arg| arg.as_ref().parse::<url::Url>().ok()) {
+                    if config.desktop.contains_scheme(&url.scheme().to_string()) {
+                        let mut current = self.current.lock().unwrap();
+                        current.replace(vec![url.clone()]);
+                        let _ = self.app.emit("deep-link://new-url", vec![url]);
+                    } else if cfg!(debug_assertions) {
+                        log::warn!("argument {url} does not match any configured deep link scheme; skipping it");
+                    }
+                }
             }
         }
 
