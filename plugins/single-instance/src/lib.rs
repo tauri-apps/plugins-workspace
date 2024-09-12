@@ -35,9 +35,8 @@ pub fn init<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sy
 ) -> TauriPlugin<R> {
     platform_impl::init(Box::new(move |app, args, cwd| {
         #[cfg(feature = "deep-link")]
-        {
-            use tauri_plugin_deep_link::DeepLinkExt;
-            app.deep_link().handle_cli_arguments(args.iter());
+        if let Some(deep_link) = app.try_state::<tauri_plugin_deep_link::DeepLink<R>>() {
+            deep_link.handle_cli_arguments(args.iter());
         }
         f(app, args, cwd)
     }))
