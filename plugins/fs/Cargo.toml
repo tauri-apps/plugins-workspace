@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-fs"
-version = "2.0.0-rc.3"
+version = "2.0.0-rc.4"
 description = "Access the file system."
 authors = { workspace = true }
 license = { workspace = true }
