@@ -7502,6 +7502,55 @@
           "enum": [
             "updater:deny-install"
           ]
+        },
+        {
+          "description": "window-state:default -> This permission set configures what kind of\noperations are available from the window state plugin.\n\n#### Granted Permissions\n\nAll operations are enabled by default.\n\n",
+          "type": "string",
+          "enum": [
+            "window-state:default"
+          ]
+        },
+        {
+          "description": "window-state:allow-filename -> Enables the filename command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window-state:allow-filename"
+          ]
+        },
+        {
+          "description": "window-state:allow-restore-state -> Enables the restore_state command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window-state:allow-restore-state"
+          ]
+        },
+        {
+          "description": "window-state:allow-save-window-state -> Enables the save_window_state command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window-state:allow-save-window-state"
+          ]
+        },
+        {
+          "description": "window-state:deny-filename -> Denies the filename command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window-state:deny-filename"
+          ]
+        },
+        {
+          "description": "window-state:deny-restore-state -> Denies the restore_state command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window-state:deny-restore-state"
+          ]
+        },
+        {
+          "description": "window-state:deny-save-window-state -> Denies the save_window_state command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "window-state:deny-save-window-state"
+          ]
         }
       ]
     },
