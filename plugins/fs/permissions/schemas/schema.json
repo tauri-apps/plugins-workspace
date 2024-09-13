@@ -295,42 +295,42 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-app-read-recursive -> This allows full recursive read access to the complete `$APP` folder, files and subdirectories.",
+          "description": "allow-app-read-recursive -> This allows full recursive read access to the complete application folders, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-app-read-recursive"
           ]
         },
         {
-          "description": "allow-app-write-recursive -> This allows full recursive write access to the complete `$APP` folder, files and subdirectories.",
+          "description": "allow-app-write-recursive -> This allows full recursive write access to the complete application folders, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-app-write-recursive"
           ]
         },
         {
-          "description": "allow-app-read -> This allows non-recursive read access to the `$APP` folder.",
+          "description": "allow-app-read -> This allows non-recursive read access to the application folders.",
           "type": "string",
           "enum": [
             "allow-app-read"
           ]
         },
         {
-          "description": "allow-app-write -> This allows non-recursive write access to the `$APP` folder.",
+          "description": "allow-app-write -> This allows non-recursive write access to the application folders.",
           "type": "string",
           "enum": [
             "allow-app-write"
           ]
         },
         {
-          "description": "allow-app-meta-recursive -> This allows full recursive read access to metadata of the `$APP` folder, including file listing and statistics.",
+          "description": "allow-app-meta-recursive -> This allows full recursive read access to metadata of the application folders, including file listing and statistics.",
           "type": "string",
           "enum": [
             "allow-app-meta-recursive"
           ]
         },
         {
-          "description": "allow-app-meta -> This allows non-recursive read access to metadata of the `$APP` folder, including file listing and statistics.",
+          "description": "allow-app-meta -> This allows non-recursive read access to metadata of the application folders, including file listing and statistics.",
           "type": "string",
           "enum": [
             "allow-app-meta"

@@ -47,7 +47,7 @@ On Windows the webview data folder access is denied.
 </td>
 <td>
 
-This allows full recursive read access to the complete `$APP` folder, files and subdirectories.
+This allows full recursive read access to the complete application folders, files and subdirectories.
 
 </td>
 </tr>
@@ -60,7 +60,7 @@ This allows full recursive read access to the complete `$APP` folder, files and 
 </td>
 <td>
 
-This allows full recursive write access to the complete `$APP` folder, files and subdirectories.
+This allows full recursive write access to the complete application folders, files and subdirectories.
 
 </td>
 </tr>
@@ -73,7 +73,7 @@ This allows full recursive write access to the complete `$APP` folder, files and
 </td>
 <td>
 
-This allows non-recursive read access to the `$APP` folder.
+This allows non-recursive read access to the application folders.
 
 </td>
 </tr>
@@ -86,7 +86,7 @@ This allows non-recursive read access to the `$APP` folder.
 </td>
 <td>
 
-This allows non-recursive write access to the `$APP` folder.
+This allows non-recursive write access to the application folders.
 
 </td>
 </tr>
@@ -99,7 +99,7 @@ This allows non-recursive write access to the `$APP` folder.
 </td>
 <td>
 
-This allows full recursive read access to metadata of the `$APP` folder, including file listing and statistics.
+This allows full recursive read access to metadata of the application folders, including file listing and statistics.
 
 </td>
 </tr>
@@ -112,7 +112,7 @@ This allows full recursive read access to metadata of the `$APP` folder, includi
 </td>
 <td>
 
-This allows non-recursive read access to metadata of the `$APP` folder, including file listing and statistics.
+This allows non-recursive read access to metadata of the application folders, including file listing and statistics.
 
 </td>
 </tr>

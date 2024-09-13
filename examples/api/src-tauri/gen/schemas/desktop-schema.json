@@ -150,42 +150,42 @@
                       ]
                     },
                     {
-                      "description": "fs:allow-app-meta -> This allows non-recursive read access to metadata of the `$APP` folder, including file listing and statistics.",
+                      "description": "fs:allow-app-meta -> This allows non-recursive read access to metadata of the application folders, including file listing and statistics.",
                       "type": "string",
                       "enum": [
                         "fs:allow-app-meta"
                       ]
                     },
                     {
-                      "description": "fs:allow-app-meta-recursive -> This allows full recursive read access to metadata of the `$APP` folder, including file listing and statistics.",
+                      "description": "fs:allow-app-meta-recursive -> This allows full recursive read access to metadata of the application folders, including file listing and statistics.",
                       "type": "string",
                       "enum": [
                         "fs:allow-app-meta-recursive"
                       ]
                     },
                     {
-                      "description": "fs:allow-app-read -> This allows non-recursive read access to the `$APP` folder.",
+                      "description": "fs:allow-app-read -> This allows non-recursive read access to the application folders.",
                       "type": "string",
                       "enum": [
                         "fs:allow-app-read"
                       ]
                     },
                     {
-                      "description": "fs:allow-app-read-recursive -> This allows full recursive read access to the complete `$APP` folder, files and subdirectories.",
+                      "description": "fs:allow-app-read-recursive -> This allows full recursive read access to the complete application folders, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-app-read-recursive"
                       ]
                     },
                     {
-                      "description": "fs:allow-app-write -> This allows non-recursive write access to the `$APP` folder.",
+                      "description": "fs:allow-app-write -> This allows non-recursive write access to the application folders.",
                       "type": "string",
                       "enum": [
                         "fs:allow-app-write"
                       ]
                     },
                     {
-                      "description": "fs:allow-app-write-recursive -> This allows full recursive write access to the complete `$APP` folder, files and subdirectories.",
+                      "description": "fs:allow-app-write-recursive -> This allows full recursive write access to the complete application folders, files and subdirectories.",
                       "type": "string",
                       "enum": [
                         "fs:allow-app-write-recursive"
@@ -2427,7 +2427,7 @@
                         ]
                       },
                       "cmd": {
-                        "description": "The command name. It can start with a variable that resolves to a system base directory. The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`, `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`, `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$APP`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`, `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.",
+                        "description": "The command name. It can start with a variable that resolves to a system base directory. The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`, `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`, `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`, `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.",
                         "type": "string"
                       },
                       "name": {
@@ -2462,7 +2462,7 @@
                         ]
                       },
                       "cmd": {
-                        "description": "The command name. It can start with a variable that resolves to a system base directory. The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`, `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`, `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$APP`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`, `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.",
+                        "description": "The command name. It can start with a variable that resolves to a system base directory. The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`, `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`, `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`, `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.",
                         "type": "string"
                       },
                       "name": {
@@ -4641,42 +4641,42 @@
           ]
         },
         {
-          "description": "fs:allow-app-meta -> This allows non-recursive read access to metadata of the `$APP` folder, including file listing and statistics.",
+          "description": "fs:allow-app-meta -> This allows non-recursive read access to metadata of the application folders, including file listing and statistics.",
           "type": "string",
           "enum": [
             "fs:allow-app-meta"
           ]
         },
         {
-          "description": "fs:allow-app-meta-recursive -> This allows full recursive read access to metadata of the `$APP` folder, including file listing and statistics.",
+          "description": "fs:allow-app-meta-recursive -> This allows full recursive read access to metadata of the application folders, including file listing and statistics.",
           "type": "string",
           "enum": [
             "fs:allow-app-meta-recursive"
           ]
         },
         {
-          "description": "fs:allow-app-read -> This allows non-recursive read access to the `$APP` folder.",
+          "description": "fs:allow-app-read -> This allows non-recursive read access to the application folders.",
           "type": "string",
           "enum": [
             "fs:allow-app-read"
           ]
         },
         {
-          "description": "fs:allow-app-read-recursive -> This allows full recursive read access to the complete `$APP` folder, files and subdirectories.",
+          "description": "fs:allow-app-read-recursive -> This allows full recursive read access to the complete application folders, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-app-read-recursive"
           ]
         },
         {
-          "description": "fs:allow-app-write -> This allows non-recursive write access to the `$APP` folder.",
+          "description": "fs:allow-app-write -> This allows non-recursive write access to the application folders.",
           "type": "string",
           "enum": [
             "fs:allow-app-write"
           ]
         },
         {
-          "description": "fs:allow-app-write-recursive -> This allows full recursive write access to the complete `$APP` folder, files and subdirectories.",
+          "description": "fs:allow-app-write-recursive -> This allows full recursive write access to the complete application folders, files and subdirectories.",
           "type": "string",
           "enum": [
             "fs:allow-app-write-recursive"

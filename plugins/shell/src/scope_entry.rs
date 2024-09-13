@@ -19,7 +19,7 @@ pub struct Entry {
     /// It can start with a variable that resolves to a system base directory.
     /// The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`,
     /// `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`,
-    /// `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$APP`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`,
+    /// `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`,
     /// `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.
     // use default just so the schema doesn't flag it as required
     #[serde(rename = "cmd")]
