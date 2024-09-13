@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-rc.6]
+
+- [`2b898f07`](https://github.com/tauri-apps/plugins-workspace/commit/2b898f078688c57309ca17962bf02e665c406514) ([#1769](https://github.com/tauri-apps/plugins-workspace/pull/1769) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update Tauri scopes (asset protocol) when using the `open()` command to select directories.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-rc.4`
+
 ## \[2.0.0-rc.5]
 
 - [`a2fe5551`](https://github.com/tauri-apps/plugins-workspace/commit/a2fe55512f908dd11c814ce021d164f01677572a) ([#1727](https://github.com/tauri-apps/plugins-workspace/pull/1727) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add utility methods on `FilePath` and `SafeFilePath` enums which are:

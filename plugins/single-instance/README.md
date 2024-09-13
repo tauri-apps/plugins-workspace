@@ -34,8 +34,8 @@ use tauri::{Manager};
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
-  args: Vec<String>,
-  cwd: String,
+    args: Vec<String>,
+    cwd: String,
 }
 
 fn main() {
@@ -48,6 +48,8 @@ fn main() {
         .expect("error while running tauri application");
 }
 ```
+
+Note that currently, plugins run in the order they were added in to the builder, so make sure that this plugin is registered first.
 
 ## Contributing
 

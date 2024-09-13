@@ -13,7 +13,6 @@
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 
 use tauri::{plugin::TauriPlugin, AppHandle, Manager, Runtime};
-use tauri_plugin_deep_link::DeepLink;
 
 #[cfg(target_os = "windows")]
 #[path = "platform_impl/windows.rs"]
@@ -35,7 +34,8 @@ pub fn init<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sy
     mut f: F,
 ) -> TauriPlugin<R> {
     platform_impl::init(Box::new(move |app, args, cwd| {
-        if let Some(deep_link) = app.try_state::<DeepLink<R>>() {
+        #[cfg(feature = "deep-link")]
+        if let Some(deep_link) = app.try_state::<tauri_plugin_deep_link::DeepLink<R>>() {
             deep_link.handle_cli_arguments(args.iter());
         }
         f(app, args, cwd)

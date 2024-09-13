@@ -212,7 +212,7 @@ checksum = "10f00e1f6e58a40e807377c75c6a7f97bf9044fab57816f2414e6f5f4499d7b8"
 
 [[package]]
 name = "api"
-version = "2.0.0-rc.5"
+version = "2.0.0-rc.6"
 dependencies = [
  "log",
  "serde",
@@ -6498,7 +6498,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.0.0-rc.4"
+version = "2.0.0-rc.5"
 dependencies = [
  "dunce",
  "log",
@@ -6516,7 +6516,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-rc.5"
+version = "2.0.0-rc.6"
 dependencies = [
  "log",
  "raw-window-handle 0.6.2",
@@ -6532,13 +6532,14 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-rc.3"
+version = "2.0.0-rc.4"
 dependencies = [
  "anyhow",
  "dunce",
  "glob",
  "notify",
  "notify-debouncer-full",
+ "percent-encoding",
  "schemars",
  "serde",
  "serde_json",
@@ -6591,7 +6592,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.0-rc.3"
+version = "2.0.0-rc.4"
 dependencies = [
  "data-url",
  "http",
@@ -6695,7 +6696,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.0-rc.3"
+version = "2.0.0-rc.4"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6749,7 +6750,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 dependencies = [
  "log",
  "semver",
