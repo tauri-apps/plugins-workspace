@@ -1606,28 +1606,28 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-app -> This scope permits access to all files and list content of top level directories in the `$APP`folder.",
+                      "description": "fs:scope-app -> This scope permits access to all files and list content of top level directories in the application folders.",
                       "type": "string",
                       "enum": [
                         "fs:scope-app"
                       ]
                     },
                     {
-                      "description": "fs:scope-app-index -> This scope permits to list all files and folders in the `$APP`folder.",
+                      "description": "fs:scope-app-index -> This scope permits to list all files and folders in the application directories.",
                       "type": "string",
                       "enum": [
                         "fs:scope-app-index"
                       ]
                     },
                     {
-                      "description": "fs:scope-app-recursive -> This scope permits recursive access to the complete `$APP` folder, including sub directories and files.",
+                      "description": "fs:scope-app-recursive -> This scope permits recursive access to the complete application folders, including sub directories and files.",
                       "type": "string",
                       "enum": [
                         "fs:scope-app-recursive"
                       ]
                     },
                     {
-                      "description": "fs:scope-appcache -> This scope permits access to all files and list content of top level directories in the `$APPCACHE`folder.",
+                      "description": "fs:scope-appcache -> This scope permits access to all files and list content of top level directories in the `$APPCACHE` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-appcache"
@@ -1648,7 +1648,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-appconfig -> This scope permits access to all files and list content of top level directories in the `$APPCONFIG`folder.",
+                      "description": "fs:scope-appconfig -> This scope permits access to all files and list content of top level directories in the `$APPCONFIG` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-appconfig"
@@ -1669,7 +1669,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-appdata -> This scope permits access to all files and list content of top level directories in the `$APPDATA`folder.",
+                      "description": "fs:scope-appdata -> This scope permits access to all files and list content of top level directories in the `$APPDATA` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-appdata"
@@ -1690,7 +1690,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-applocaldata -> This scope permits access to all files and list content of top level directories in the `$APPLOCALDATA`folder.",
+                      "description": "fs:scope-applocaldata -> This scope permits access to all files and list content of top level directories in the `$APPLOCALDATA` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-applocaldata"
@@ -1711,7 +1711,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-applog -> This scope permits access to all files and list content of top level directories in the `$APPLOG`folder.",
+                      "description": "fs:scope-applog -> This scope permits access to all files and list content of top level directories in the `$APPLOG` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-applog"
@@ -1732,7 +1732,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-audio -> This scope permits access to all files and list content of top level directories in the `$AUDIO`folder.",
+                      "description": "fs:scope-audio -> This scope permits access to all files and list content of top level directories in the `$AUDIO` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-audio"
@@ -1753,7 +1753,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-cache -> This scope permits access to all files and list content of top level directories in the `$CACHE`folder.",
+                      "description": "fs:scope-cache -> This scope permits access to all files and list content of top level directories in the `$CACHE` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-cache"
@@ -1774,7 +1774,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-config -> This scope permits access to all files and list content of top level directories in the `$CONFIG`folder.",
+                      "description": "fs:scope-config -> This scope permits access to all files and list content of top level directories in the `$CONFIG` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-config"
@@ -1795,7 +1795,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-data -> This scope permits access to all files and list content of top level directories in the `$DATA`folder.",
+                      "description": "fs:scope-data -> This scope permits access to all files and list content of top level directories in the `$DATA` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-data"
@@ -1816,7 +1816,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-desktop -> This scope permits access to all files and list content of top level directories in the `$DESKTOP`folder.",
+                      "description": "fs:scope-desktop -> This scope permits access to all files and list content of top level directories in the `$DESKTOP` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-desktop"
@@ -1837,7 +1837,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-document -> This scope permits access to all files and list content of top level directories in the `$DOCUMENT`folder.",
+                      "description": "fs:scope-document -> This scope permits access to all files and list content of top level directories in the `$DOCUMENT` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-document"
@@ -1858,7 +1858,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-download -> This scope permits access to all files and list content of top level directories in the `$DOWNLOAD`folder.",
+                      "description": "fs:scope-download -> This scope permits access to all files and list content of top level directories in the `$DOWNLOAD` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-download"
@@ -1879,7 +1879,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-exe -> This scope permits access to all files and list content of top level directories in the `$EXE`folder.",
+                      "description": "fs:scope-exe -> This scope permits access to all files and list content of top level directories in the `$EXE` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-exe"
@@ -1900,7 +1900,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-font -> This scope permits access to all files and list content of top level directories in the `$FONT`folder.",
+                      "description": "fs:scope-font -> This scope permits access to all files and list content of top level directories in the `$FONT` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-font"
@@ -1921,7 +1921,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-home -> This scope permits access to all files and list content of top level directories in the `$HOME`folder.",
+                      "description": "fs:scope-home -> This scope permits access to all files and list content of top level directories in the `$HOME` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-home"
@@ -1942,7 +1942,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-localdata -> This scope permits access to all files and list content of top level directories in the `$LOCALDATA`folder.",
+                      "description": "fs:scope-localdata -> This scope permits access to all files and list content of top level directories in the `$LOCALDATA` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-localdata"
@@ -1963,7 +1963,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-log -> This scope permits access to all files and list content of top level directories in the `$LOG`folder.",
+                      "description": "fs:scope-log -> This scope permits access to all files and list content of top level directories in the `$LOG` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-log"
@@ -1984,7 +1984,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-picture -> This scope permits access to all files and list content of top level directories in the `$PICTURE`folder.",
+                      "description": "fs:scope-picture -> This scope permits access to all files and list content of top level directories in the `$PICTURE` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-picture"
@@ -2005,7 +2005,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-public -> This scope permits access to all files and list content of top level directories in the `$PUBLIC`folder.",
+                      "description": "fs:scope-public -> This scope permits access to all files and list content of top level directories in the `$PUBLIC` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-public"
@@ -2026,7 +2026,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-resource -> This scope permits access to all files and list content of top level directories in the `$RESOURCE`folder.",
+                      "description": "fs:scope-resource -> This scope permits access to all files and list content of top level directories in the `$RESOURCE` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-resource"
@@ -2047,7 +2047,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-runtime -> This scope permits access to all files and list content of top level directories in the `$RUNTIME`folder.",
+                      "description": "fs:scope-runtime -> This scope permits access to all files and list content of top level directories in the `$RUNTIME` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-runtime"
@@ -2068,7 +2068,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-temp -> This scope permits access to all files and list content of top level directories in the `$TEMP`folder.",
+                      "description": "fs:scope-temp -> This scope permits access to all files and list content of top level directories in the `$TEMP` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-temp"
@@ -2089,7 +2089,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-template -> This scope permits access to all files and list content of top level directories in the `$TEMPLATE`folder.",
+                      "description": "fs:scope-template -> This scope permits access to all files and list content of top level directories in the `$TEMPLATE` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-template"
@@ -2110,7 +2110,7 @@
                       ]
                     },
                     {
-                      "description": "fs:scope-video -> This scope permits access to all files and list content of top level directories in the `$VIDEO`folder.",
+                      "description": "fs:scope-video -> This scope permits access to all files and list content of top level directories in the `$VIDEO` folder.",
                       "type": "string",
                       "enum": [
                         "fs:scope-video"
@@ -6104,28 +6104,28 @@
           ]
         },
         {
-          "description": "fs:scope-app -> This scope permits access to all files and list content of top level directories in the `$APP`folder.",
+          "description": "fs:scope-app -> This scope permits access to all files and list content of top level directories in the application folders.",
           "type": "string",
           "enum": [
             "fs:scope-app"
           ]
         },
         {
-          "description": "fs:scope-app-index -> This scope permits to list all files and folders in the `$APP`folder.",
+          "description": "fs:scope-app-index -> This scope permits to list all files and folders in the application directories.",
           "type": "string",
           "enum": [
             "fs:scope-app-index"
           ]
         },
         {
-          "description": "fs:scope-app-recursive -> This scope permits recursive access to the complete `$APP` folder, including sub directories and files.",
+          "description": "fs:scope-app-recursive -> This scope permits recursive access to the complete application folders, including sub directories and files.",
           "type": "string",
           "enum": [
             "fs:scope-app-recursive"
           ]
         },
         {
-          "description": "fs:scope-appcache -> This scope permits access to all files and list content of top level directories in the `$APPCACHE`folder.",
+          "description": "fs:scope-appcache -> This scope permits access to all files and list content of top level directories in the `$APPCACHE` folder.",
           "type": "string",
           "enum": [
             "fs:scope-appcache"
@@ -6146,7 +6146,7 @@
           ]
         },
         {
-          "description": "fs:scope-appconfig -> This scope permits access to all files and list content of top level directories in the `$APPCONFIG`folder.",
+          "description": "fs:scope-appconfig -> This scope permits access to all files and list content of top level directories in the `$APPCONFIG` folder.",
           "type": "string",
           "enum": [
             "fs:scope-appconfig"
@@ -6167,7 +6167,7 @@
           ]
         },
         {
-          "description": "fs:scope-appdata -> This scope permits access to all files and list content of top level directories in the `$APPDATA`folder.",
+          "description": "fs:scope-appdata -> This scope permits access to all files and list content of top level directories in the `$APPDATA` folder.",
           "type": "string",
           "enum": [
             "fs:scope-appdata"
@@ -6188,7 +6188,7 @@
           ]
         },
         {
-          "description": "fs:scope-applocaldata -> This scope permits access to all files and list content of top level directories in the `$APPLOCALDATA`folder.",
+          "description": "fs:scope-applocaldata -> This scope permits access to all files and list content of top level directories in the `$APPLOCALDATA` folder.",
           "type": "string",
           "enum": [
             "fs:scope-applocaldata"
@@ -6209,7 +6209,7 @@
           ]
         },
         {
-          "description": "fs:scope-applog -> This scope permits access to all files and list content of top level directories in the `$APPLOG`folder.",
+          "description": "fs:scope-applog -> This scope permits access to all files and list content of top level directories in the `$APPLOG` folder.",
           "type": "string",
           "enum": [
             "fs:scope-applog"
@@ -6230,7 +6230,7 @@
           ]
         },
         {
-          "description": "fs:scope-audio -> This scope permits access to all files and list content of top level directories in the `$AUDIO`folder.",
+          "description": "fs:scope-audio -> This scope permits access to all files and list content of top level directories in the `$AUDIO` folder.",
           "type": "string",
           "enum": [
             "fs:scope-audio"
@@ -6251,7 +6251,7 @@
           ]
         },
         {
-          "description": "fs:scope-cache -> This scope permits access to all files and list content of top level directories in the `$CACHE`folder.",
+          "description": "fs:scope-cache -> This scope permits access to all files and list content of top level directories in the `$CACHE` folder.",
           "type": "string",
           "enum": [
             "fs:scope-cache"
@@ -6272,7 +6272,7 @@
           ]
         },
         {
-          "description": "fs:scope-config -> This scope permits access to all files and list content of top level directories in the `$CONFIG`folder.",
+          "description": "fs:scope-config -> This scope permits access to all files and list content of top level directories in the `$CONFIG` folder.",
           "type": "string",
           "enum": [
             "fs:scope-config"
@@ -6293,7 +6293,7 @@
           ]
         },
         {
-          "description": "fs:scope-data -> This scope permits access to all files and list content of top level directories in the `$DATA`folder.",
+          "description": "fs:scope-data -> This scope permits access to all files and list content of top level directories in the `$DATA` folder.",
           "type": "string",
           "enum": [
             "fs:scope-data"
@@ -6314,7 +6314,7 @@
           ]
         },
         {
-          "description": "fs:scope-desktop -> This scope permits access to all files and list content of top level directories in the `$DESKTOP`folder.",
+          "description": "fs:scope-desktop -> This scope permits access to all files and list content of top level directories in the `$DESKTOP` folder.",
           "type": "string",
           "enum": [
             "fs:scope-desktop"
@@ -6335,7 +6335,7 @@
           ]
         },
         {
-          "description": "fs:scope-document -> This scope permits access to all files and list content of top level directories in the `$DOCUMENT`folder.",
+          "description": "fs:scope-document -> This scope permits access to all files and list content of top level directories in the `$DOCUMENT` folder.",
           "type": "string",
           "enum": [
             "fs:scope-document"
@@ -6356,7 +6356,7 @@
           ]
         },
         {
-          "description": "fs:scope-download -> This scope permits access to all files and list content of top level directories in the `$DOWNLOAD`folder.",
+          "description": "fs:scope-download -> This scope permits access to all files and list content of top level directories in the `$DOWNLOAD` folder.",
           "type": "string",
           "enum": [
             "fs:scope-download"
@@ -6377,7 +6377,7 @@
           ]
         },
         {
-          "description": "fs:scope-exe -> This scope permits access to all files and list content of top level directories in the `$EXE`folder.",
+          "description": "fs:scope-exe -> This scope permits access to all files and list content of top level directories in the `$EXE` folder.",
           "type": "string",
           "enum": [
             "fs:scope-exe"
@@ -6398,7 +6398,7 @@
           ]
         },
         {
-          "description": "fs:scope-font -> This scope permits access to all files and list content of top level directories in the `$FONT`folder.",
+          "description": "fs:scope-font -> This scope permits access to all files and list content of top level directories in the `$FONT` folder.",
           "type": "string",
           "enum": [
             "fs:scope-font"
@@ -6419,7 +6419,7 @@
           ]
         },
         {
-          "description": "fs:scope-home -> This scope permits access to all files and list content of top level directories in the `$HOME`folder.",
+          "description": "fs:scope-home -> This scope permits access to all files and list content of top level directories in the `$HOME` folder.",
           "type": "string",
           "enum": [
             "fs:scope-home"
@@ -6440,7 +6440,7 @@
           ]
         },
         {
-          "description": "fs:scope-localdata -> This scope permits access to all files and list content of top level directories in the `$LOCALDATA`folder.",
+          "description": "fs:scope-localdata -> This scope permits access to all files and list content of top level directories in the `$LOCALDATA` folder.",
           "type": "string",
           "enum": [
             "fs:scope-localdata"
@@ -6461,7 +6461,7 @@
           ]
         },
         {
-          "description": "fs:scope-log -> This scope permits access to all files and list content of top level directories in the `$LOG`folder.",
+          "description": "fs:scope-log -> This scope permits access to all files and list content of top level directories in the `$LOG` folder.",
           "type": "string",
           "enum": [
             "fs:scope-log"
@@ -6482,7 +6482,7 @@
           ]
         },
         {
-          "description": "fs:scope-picture -> This scope permits access to all files and list content of top level directories in the `$PICTURE`folder.",
+          "description": "fs:scope-picture -> This scope permits access to all files and list content of top level directories in the `$PICTURE` folder.",
           "type": "string",
           "enum": [
             "fs:scope-picture"
@@ -6503,7 +6503,7 @@
           ]
         },
         {
-          "description": "fs:scope-public -> This scope permits access to all files and list content of top level directories in the `$PUBLIC`folder.",
+          "description": "fs:scope-public -> This scope permits access to all files and list content of top level directories in the `$PUBLIC` folder.",
           "type": "string",
           "enum": [
             "fs:scope-public"
@@ -6524,7 +6524,7 @@
           ]
         },
         {
-          "description": "fs:scope-resource -> This scope permits access to all files and list content of top level directories in the `$RESOURCE`folder.",
+          "description": "fs:scope-resource -> This scope permits access to all files and list content of top level directories in the `$RESOURCE` folder.",
           "type": "string",
           "enum": [
             "fs:scope-resource"
@@ -6545,7 +6545,7 @@
           ]
         },
         {
-          "description": "fs:scope-runtime -> This scope permits access to all files and list content of top level directories in the `$RUNTIME`folder.",
+          "description": "fs:scope-runtime -> This scope permits access to all files and list content of top level directories in the `$RUNTIME` folder.",
           "type": "string",
           "enum": [
             "fs:scope-runtime"
@@ -6566,7 +6566,7 @@
           ]
         },
         {
-          "description": "fs:scope-temp -> This scope permits access to all files and list content of top level directories in the `$TEMP`folder.",
+          "description": "fs:scope-temp -> This scope permits access to all files and list content of top level directories in the `$TEMP` folder.",
           "type": "string",
           "enum": [
             "fs:scope-temp"
@@ -6587,7 +6587,7 @@
           ]
         },
         {
-          "description": "fs:scope-template -> This scope permits access to all files and list content of top level directories in the `$TEMPLATE`folder.",
+          "description": "fs:scope-template -> This scope permits access to all files and list content of top level directories in the `$TEMPLATE` folder.",
           "type": "string",
           "enum": [
             "fs:scope-template"
@@ -6608,7 +6608,7 @@
           ]
         },
         {
-          "description": "fs:scope-video -> This scope permits access to all files and list content of top level directories in the `$VIDEO`folder.",
+          "description": "fs:scope-video -> This scope permits access to all files and list content of top level directories in the `$VIDEO` folder.",
           "type": "string",
           "enum": [
             "fs:scope-video"

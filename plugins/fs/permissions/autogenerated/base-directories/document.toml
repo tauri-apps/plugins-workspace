@@ -16,7 +16,7 @@ path = "$DOCUMENT/**"
 
 [[permission]]
 identifier = "scope-document"
-description = "This scope permits access to all files and list content of top level directories in the `$DOCUMENT`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$DOCUMENT` folder."
 
 [[permission.scope.allow]]
 path = "$DOCUMENT"

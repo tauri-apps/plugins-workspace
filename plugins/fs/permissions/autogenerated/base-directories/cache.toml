@@ -16,7 +16,7 @@ path = "$CACHE/**"
 
 [[permission]]
 identifier = "scope-cache"
-description = "This scope permits access to all files and list content of top level directories in the `$CACHE`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$CACHE` folder."
 
 [[permission.scope.allow]]
 path = "$CACHE"

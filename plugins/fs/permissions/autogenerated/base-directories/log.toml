@@ -16,7 +16,7 @@ path = "$LOG/**"
 
 [[permission]]
 identifier = "scope-log"
-description = "This scope permits access to all files and list content of top level directories in the `$LOG`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$LOG` folder."
 
 [[permission.scope.allow]]
 path = "$LOG"

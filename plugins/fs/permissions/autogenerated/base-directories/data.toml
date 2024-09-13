@@ -16,7 +16,7 @@ path = "$DATA/**"
 
 [[permission]]
 identifier = "scope-data"
-description = "This scope permits access to all files and list content of top level directories in the `$DATA`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$DATA` folder."
 
 [[permission.scope.allow]]
 path = "$DATA"

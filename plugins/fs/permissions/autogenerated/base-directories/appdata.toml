@@ -16,7 +16,7 @@ path = "$APPDATA/**"
 
 [[permission]]
 identifier = "scope-appdata"
-description = "This scope permits access to all files and list content of top level directories in the `$APPDATA`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$APPDATA` folder."
 
 [[permission.scope.allow]]
 path = "$APPDATA"
