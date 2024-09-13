@@ -16,7 +16,7 @@ path = "$RUNTIME/**"
 
 [[permission]]
 identifier = "scope-runtime"
-description = "This scope permits access to all files and list content of top level directories in the `$RUNTIME`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$RUNTIME` folder."
 
 [[permission.scope.allow]]
 path = "$RUNTIME"

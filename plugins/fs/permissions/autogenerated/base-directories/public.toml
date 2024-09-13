@@ -16,7 +16,7 @@ path = "$PUBLIC/**"
 
 [[permission]]
 identifier = "scope-public"
-description = "This scope permits access to all files and list content of top level directories in the `$PUBLIC`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$PUBLIC` folder."
 
 [[permission.scope.allow]]
 path = "$PUBLIC"

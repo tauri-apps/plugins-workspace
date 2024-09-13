@@ -295,63 +295,63 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-app-read-recursive -> This allows full recursive read access to the complete `$APP` folder, files and subdirectories.",
+          "description": "allow-app-read-recursive -> This allows full recursive read access to the complete application folders, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-app-read-recursive"
           ]
         },
         {
-          "description": "allow-app-write-recursive -> This allows full recursive write access to the complete `$APP` folder, files and subdirectories.",
+          "description": "allow-app-write-recursive -> This allows full recursive write access to the complete application folders, files and subdirectories.",
           "type": "string",
           "enum": [
             "allow-app-write-recursive"
           ]
         },
         {
-          "description": "allow-app-read -> This allows non-recursive read access to the `$APP` folder.",
+          "description": "allow-app-read -> This allows non-recursive read access to the application folders.",
           "type": "string",
           "enum": [
             "allow-app-read"
           ]
         },
         {
-          "description": "allow-app-write -> This allows non-recursive write access to the `$APP` folder.",
+          "description": "allow-app-write -> This allows non-recursive write access to the application folders.",
           "type": "string",
           "enum": [
             "allow-app-write"
           ]
         },
         {
-          "description": "allow-app-meta-recursive -> This allows full recursive read access to metadata of the `$APP` folder, including file listing and statistics.",
+          "description": "allow-app-meta-recursive -> This allows full recursive read access to metadata of the application folders, including file listing and statistics.",
           "type": "string",
           "enum": [
             "allow-app-meta-recursive"
           ]
         },
         {
-          "description": "allow-app-meta -> This allows non-recursive read access to metadata of the `$APP` folder, including file listing and statistics.",
+          "description": "allow-app-meta -> This allows non-recursive read access to metadata of the application folders, including file listing and statistics.",
           "type": "string",
           "enum": [
             "allow-app-meta"
           ]
         },
         {
-          "description": "scope-app-recursive -> This scope permits recursive access to the complete `$APP` folder, including sub directories and files.",
+          "description": "scope-app-recursive -> This scope permits recursive access to the complete application folders, including sub directories and files.",
           "type": "string",
           "enum": [
             "scope-app-recursive"
           ]
         },
         {
-          "description": "scope-app -> This scope permits access to all files and list content of top level directories in the `$APP`folder.",
+          "description": "scope-app -> This scope permits access to all files and list content of top level directories in the application folders.",
           "type": "string",
           "enum": [
             "scope-app"
           ]
         },
         {
-          "description": "scope-app-index -> This scope permits to list all files and folders in the `$APP`folder.",
+          "description": "scope-app-index -> This scope permits to list all files and folders in the application directories.",
           "type": "string",
           "enum": [
             "scope-app-index"
@@ -407,7 +407,7 @@
           ]
         },
         {
-          "description": "scope-appcache -> This scope permits access to all files and list content of top level directories in the `$APPCACHE`folder.",
+          "description": "scope-appcache -> This scope permits access to all files and list content of top level directories in the `$APPCACHE` folder.",
           "type": "string",
           "enum": [
             "scope-appcache"
@@ -470,7 +470,7 @@
           ]
         },
         {
-          "description": "scope-appconfig -> This scope permits access to all files and list content of top level directories in the `$APPCONFIG`folder.",
+          "description": "scope-appconfig -> This scope permits access to all files and list content of top level directories in the `$APPCONFIG` folder.",
           "type": "string",
           "enum": [
             "scope-appconfig"
@@ -533,7 +533,7 @@
           ]
         },
         {
-          "description": "scope-appdata -> This scope permits access to all files and list content of top level directories in the `$APPDATA`folder.",
+          "description": "scope-appdata -> This scope permits access to all files and list content of top level directories in the `$APPDATA` folder.",
           "type": "string",
           "enum": [
             "scope-appdata"
@@ -596,7 +596,7 @@
           ]
         },
         {
-          "description": "scope-applocaldata -> This scope permits access to all files and list content of top level directories in the `$APPLOCALDATA`folder.",
+          "description": "scope-applocaldata -> This scope permits access to all files and list content of top level directories in the `$APPLOCALDATA` folder.",
           "type": "string",
           "enum": [
             "scope-applocaldata"
@@ -659,7 +659,7 @@
           ]
         },
         {
-          "description": "scope-applog -> This scope permits access to all files and list content of top level directories in the `$APPLOG`folder.",
+          "description": "scope-applog -> This scope permits access to all files and list content of top level directories in the `$APPLOG` folder.",
           "type": "string",
           "enum": [
             "scope-applog"
@@ -722,7 +722,7 @@
           ]
         },
         {
-          "description": "scope-audio -> This scope permits access to all files and list content of top level directories in the `$AUDIO`folder.",
+          "description": "scope-audio -> This scope permits access to all files and list content of top level directories in the `$AUDIO` folder.",
           "type": "string",
           "enum": [
             "scope-audio"
@@ -785,7 +785,7 @@
           ]
         },
         {
-          "description": "scope-cache -> This scope permits access to all files and list content of top level directories in the `$CACHE`folder.",
+          "description": "scope-cache -> This scope permits access to all files and list content of top level directories in the `$CACHE` folder.",
           "type": "string",
           "enum": [
             "scope-cache"
@@ -848,7 +848,7 @@
           ]
         },
         {
-          "description": "scope-config -> This scope permits access to all files and list content of top level directories in the `$CONFIG`folder.",
+          "description": "scope-config -> This scope permits access to all files and list content of top level directories in the `$CONFIG` folder.",
           "type": "string",
           "enum": [
             "scope-config"
@@ -911,7 +911,7 @@
           ]
         },
         {
-          "description": "scope-data -> This scope permits access to all files and list content of top level directories in the `$DATA`folder.",
+          "description": "scope-data -> This scope permits access to all files and list content of top level directories in the `$DATA` folder.",
           "type": "string",
           "enum": [
             "scope-data"
@@ -974,7 +974,7 @@
           ]
         },
         {
-          "description": "scope-desktop -> This scope permits access to all files and list content of top level directories in the `$DESKTOP`folder.",
+          "description": "scope-desktop -> This scope permits access to all files and list content of top level directories in the `$DESKTOP` folder.",
           "type": "string",
           "enum": [
             "scope-desktop"
@@ -1037,7 +1037,7 @@
           ]
         },
         {
-          "description": "scope-document -> This scope permits access to all files and list content of top level directories in the `$DOCUMENT`folder.",
+          "description": "scope-document -> This scope permits access to all files and list content of top level directories in the `$DOCUMENT` folder.",
           "type": "string",
           "enum": [
             "scope-document"
@@ -1100,7 +1100,7 @@
           ]
         },
         {
-          "description": "scope-download -> This scope permits access to all files and list content of top level directories in the `$DOWNLOAD`folder.",
+          "description": "scope-download -> This scope permits access to all files and list content of top level directories in the `$DOWNLOAD` folder.",
           "type": "string",
           "enum": [
             "scope-download"
@@ -1163,7 +1163,7 @@
           ]
         },
         {
-          "description": "scope-exe -> This scope permits access to all files and list content of top level directories in the `$EXE`folder.",
+          "description": "scope-exe -> This scope permits access to all files and list content of top level directories in the `$EXE` folder.",
           "type": "string",
           "enum": [
             "scope-exe"
@@ -1226,7 +1226,7 @@
           ]
         },
         {
-          "description": "scope-font -> This scope permits access to all files and list content of top level directories in the `$FONT`folder.",
+          "description": "scope-font -> This scope permits access to all files and list content of top level directories in the `$FONT` folder.",
           "type": "string",
           "enum": [
             "scope-font"
@@ -1289,7 +1289,7 @@
           ]
         },
         {
-          "description": "scope-home -> This scope permits access to all files and list content of top level directories in the `$HOME`folder.",
+          "description": "scope-home -> This scope permits access to all files and list content of top level directories in the `$HOME` folder.",
           "type": "string",
           "enum": [
             "scope-home"
@@ -1352,7 +1352,7 @@
           ]
         },
         {
-          "description": "scope-localdata -> This scope permits access to all files and list content of top level directories in the `$LOCALDATA`folder.",
+          "description": "scope-localdata -> This scope permits access to all files and list content of top level directories in the `$LOCALDATA` folder.",
           "type": "string",
           "enum": [
             "scope-localdata"
@@ -1415,7 +1415,7 @@
           ]
         },
         {
-          "description": "scope-log -> This scope permits access to all files and list content of top level directories in the `$LOG`folder.",
+          "description": "scope-log -> This scope permits access to all files and list content of top level directories in the `$LOG` folder.",
           "type": "string",
           "enum": [
             "scope-log"
@@ -1478,7 +1478,7 @@
           ]
         },
         {
-          "description": "scope-picture -> This scope permits access to all files and list content of top level directories in the `$PICTURE`folder.",
+          "description": "scope-picture -> This scope permits access to all files and list content of top level directories in the `$PICTURE` folder.",
           "type": "string",
           "enum": [
             "scope-picture"
@@ -1541,7 +1541,7 @@
           ]
         },
         {
-          "description": "scope-public -> This scope permits access to all files and list content of top level directories in the `$PUBLIC`folder.",
+          "description": "scope-public -> This scope permits access to all files and list content of top level directories in the `$PUBLIC` folder.",
           "type": "string",
           "enum": [
             "scope-public"
@@ -1604,7 +1604,7 @@
           ]
         },
         {
-          "description": "scope-resource -> This scope permits access to all files and list content of top level directories in the `$RESOURCE`folder.",
+          "description": "scope-resource -> This scope permits access to all files and list content of top level directories in the `$RESOURCE` folder.",
           "type": "string",
           "enum": [
             "scope-resource"
@@ -1667,7 +1667,7 @@
           ]
         },
         {
-          "description": "scope-runtime -> This scope permits access to all files and list content of top level directories in the `$RUNTIME`folder.",
+          "description": "scope-runtime -> This scope permits access to all files and list content of top level directories in the `$RUNTIME` folder.",
           "type": "string",
           "enum": [
             "scope-runtime"
@@ -1730,7 +1730,7 @@
           ]
         },
         {
-          "description": "scope-temp -> This scope permits access to all files and list content of top level directories in the `$TEMP`folder.",
+          "description": "scope-temp -> This scope permits access to all files and list content of top level directories in the `$TEMP` folder.",
           "type": "string",
           "enum": [
             "scope-temp"
@@ -1793,7 +1793,7 @@
           ]
         },
         {
-          "description": "scope-template -> This scope permits access to all files and list content of top level directories in the `$TEMPLATE`folder.",
+          "description": "scope-template -> This scope permits access to all files and list content of top level directories in the `$TEMPLATE` folder.",
           "type": "string",
           "enum": [
             "scope-template"
@@ -1856,7 +1856,7 @@
           ]
         },
         {
-          "description": "scope-video -> This scope permits access to all files and list content of top level directories in the `$VIDEO`folder.",
+          "description": "scope-video -> This scope permits access to all files and list content of top level directories in the `$VIDEO` folder.",
           "type": "string",
           "enum": [
             "scope-video"

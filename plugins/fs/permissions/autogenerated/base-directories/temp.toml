@@ -16,7 +16,7 @@ path = "$TEMP/**"
 
 [[permission]]
 identifier = "scope-temp"
-description = "This scope permits access to all files and list content of top level directories in the `$TEMP`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$TEMP` folder."
 
 [[permission.scope.allow]]
 path = "$TEMP"

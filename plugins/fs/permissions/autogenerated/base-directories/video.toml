@@ -16,7 +16,7 @@ path = "$VIDEO/**"
 
 [[permission]]
 identifier = "scope-video"
-description = "This scope permits access to all files and list content of top level directories in the `$VIDEO`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$VIDEO` folder."
 
 [[permission.scope.allow]]
 path = "$VIDEO"

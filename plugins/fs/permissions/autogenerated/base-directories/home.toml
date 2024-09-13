@@ -16,7 +16,7 @@ path = "$HOME/**"
 
 [[permission]]
 identifier = "scope-home"
-description = "This scope permits access to all files and list content of top level directories in the `$HOME`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$HOME` folder."
 
 [[permission.scope.allow]]
 path = "$HOME"

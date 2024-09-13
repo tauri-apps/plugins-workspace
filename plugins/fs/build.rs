@@ -52,7 +52,6 @@ const BASE_DIR_VARS: &[&str] = &[
     "TEMPLATE",
     "VIDEO",
     "RESOURCE",
-    "APP",
     "LOG",
     "TEMP",
     "APPCONFIG",
@@ -118,7 +117,7 @@ path = "${upper}/**"
 
 [[permission]]
 identifier = "scope-{lower}"
-description = "This scope permits access to all files and list content of top level directories in the `${upper}`folder."
+description = "This scope permits access to all files and list content of top level directories in the `${upper}` folder."
 
 [[permission.scope.allow]]
 path = "${upper}"
