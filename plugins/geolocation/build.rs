@@ -7,7 +7,7 @@ const COMMANDS: &[&str] = &[
     "watch_position",
     "clear_watch",
     "check_permissions",
-    "clear_permissions",
+    "request_permissions",
 ];
 
 fn main() {

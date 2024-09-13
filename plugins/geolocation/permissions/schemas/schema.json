@@ -323,20 +323,6 @@
           ]
         },
         {
-          "description": "allow-clear-positions -> Enables the clear_positions command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "allow-clear-positions"
-          ]
-        },
-        {
-          "description": "deny-clear-positions -> Denies the clear_positions command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "deny-clear-positions"
-          ]
-        },
-        {
           "description": "allow-clear-watch -> Enables the clear_watch command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -362,6 +348,20 @@
           "type": "string",
           "enum": [
             "deny-get-current-position"
+          ]
+        },
+        {
+          "description": "allow-request-permissions -> Enables the request_permissions command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-request-permissions"
+          ]
+        },
+        {
+          "description": "deny-request-permissions -> Denies the request_permissions command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-request-permissions"
           ]
         },
         {

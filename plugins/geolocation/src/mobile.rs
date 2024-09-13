@@ -98,7 +98,10 @@ impl<R: Runtime> Geolocation<R> {
         permissions: Option<Vec<PermissionType>>,
     ) -> crate::Result<PermissionStatus> {
         self.0
-            .run_mobile_plugin("requestPermissions", permissions)
+            .run_mobile_plugin(
+                "requestPermissions",
+                serde_json::json!({ "permissions": permissions }),
+            )
             .map_err(Into::into)
     }
 }

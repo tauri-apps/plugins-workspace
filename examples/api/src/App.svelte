@@ -1,203 +1,209 @@
 <script>
-  import { writable } from "svelte/store";
-  import { open } from "@tauri-apps/plugin-shell";
-  import { getCurrentWindow } from "@tauri-apps/api/window";
-  import { getCurrentWebview } from "@tauri-apps/api/webview";
-  import * as os from "@tauri-apps/plugin-os";
+  import { writable } from 'svelte/store'
+  import { open } from '@tauri-apps/plugin-shell'
+  import { getCurrentWindow } from '@tauri-apps/api/window'
+  import { getCurrentWebview } from '@tauri-apps/api/webview'
+  import * as os from '@tauri-apps/plugin-os'
 
-  import Welcome from "./views/Welcome.svelte";
-  import Cli from "./views/Cli.svelte";
-  import Communication from "./views/Communication.svelte";
-  import Dialog from "./views/Dialog.svelte";
-  import FileSystem from "./views/FileSystem.svelte";
-  import Http from "./views/Http.svelte";
-  import Notifications from "./views/Notifications.svelte";
-  import Shortcuts from "./views/Shortcuts.svelte";
-  import Shell from "./views/Shell.svelte";
-  import Store from "./views/Store.svelte";
-  import Updater from "./views/Updater.svelte";
-  import Clipboard from "./views/Clipboard.svelte";
-  import WebRTC from "./views/WebRTC.svelte";
-  import Scanner from "./views/Scanner.svelte";
-  import Biometric from "./views/Biometric.svelte";
+  import Welcome from './views/Welcome.svelte'
+  import Cli from './views/Cli.svelte'
+  import Communication from './views/Communication.svelte'
+  import Dialog from './views/Dialog.svelte'
+  import FileSystem from './views/FileSystem.svelte'
+  import Http from './views/Http.svelte'
+  import Notifications from './views/Notifications.svelte'
+  import Shortcuts from './views/Shortcuts.svelte'
+  import Shell from './views/Shell.svelte'
+  import Store from './views/Store.svelte'
+  import Updater from './views/Updater.svelte'
+  import Clipboard from './views/Clipboard.svelte'
+  import WebRTC from './views/WebRTC.svelte'
+  import Scanner from './views/Scanner.svelte'
+  import Biometric from './views/Biometric.svelte'
+  import Geolocation from './views/Geolocation.svelte'
 
-  import { onMount, tick } from "svelte";
-  import { ask } from "@tauri-apps/plugin-dialog";
-  import Nfc from "./views/Nfc.svelte";
+  import { onMount, tick } from 'svelte'
+  import { ask } from '@tauri-apps/plugin-dialog'
+  import Nfc from './views/Nfc.svelte'
 
-  const appWindow = getCurrentWindow();
+  const appWindow = getCurrentWindow()
 
-  if (appWindow.label !== "main") {
+  if (appWindow.label !== 'main') {
     appWindow.onCloseRequested(async (event) => {
-      const confirmed = await confirm("Are you sure?");
+      const confirmed = await confirm('Are you sure?')
       if (!confirmed) {
         // user did not confirm closing the window; let's prevent it
-        event.preventDefault();
+        event.preventDefault()
       }
-    });
+    })
   }
 
   getCurrentWebview().onDragDropEvent((event) => {
-    onMessage(`File drop: ${JSON.stringify(event.payload)}`);
-  });
+    onMessage(`File drop: ${JSON.stringify(event.payload)}`)
+  })
 
-  const userAgent = navigator.userAgent.toLowerCase();
-  const isMobile =
-    userAgent.includes("android") || userAgent.includes("iphone");
+  const userAgent = navigator.userAgent.toLowerCase()
+  const isMobile = userAgent.includes('android') || userAgent.includes('iphone')
 
   const views = [
     {
-      label: "Welcome",
+      label: 'Welcome',
       component: Welcome,
-      icon: "i-ph-hand-waving",
+      icon: 'i-ph-hand-waving'
     },
     {
-      label: "Communication",
+      label: 'Communication',
       component: Communication,
-      icon: "i-codicon-radio-tower",
+      icon: 'i-codicon-radio-tower'
     },
     !isMobile && {
-      label: "CLI",
+      label: 'CLI',
       component: Cli,
-      icon: "i-codicon-terminal",
+      icon: 'i-codicon-terminal'
     },
     {
-      label: "Dialog",
+      label: 'Dialog',
       component: Dialog,
-      icon: "i-codicon-multiple-windows",
+      icon: 'i-codicon-multiple-windows'
     },
     {
-      label: "File system",
+      label: 'File system',
       component: FileSystem,
-      icon: "i-codicon-files",
+      icon: 'i-codicon-files'
     },
     {
-      label: "HTTP",
+      label: 'HTTP',
       component: Http,
-      icon: "i-ph-globe-hemisphere-west",
+      icon: 'i-ph-globe-hemisphere-west'
     },
     {
-      label: "Notifications",
+      label: 'Notifications',
       component: Notifications,
-      icon: "i-codicon-bell-dot",
+      icon: 'i-codicon-bell-dot'
     },
     !isMobile && {
-      label: "Shortcuts",
+      label: 'Shortcuts',
       component: Shortcuts,
-      icon: "i-codicon-record-keys",
+      icon: 'i-codicon-record-keys'
     },
     {
-      label: "Shell",
+      label: 'Shell',
       component: Shell,
-      icon: "i-codicon-terminal-bash",
+      icon: 'i-codicon-terminal-bash'
     },
     {
-      label: "Store",
+      label: 'Store',
       component: Store,
-      icon: "i-codicon-file-code",
+      icon: 'i-codicon-file-code'
     },
     !isMobile && {
-      label: "Updater",
+      label: 'Updater',
       component: Updater,
-      icon: "i-codicon-cloud-download",
+      icon: 'i-codicon-cloud-download'
     },
     {
-      label: "Clipboard",
+      label: 'Clipboard',
       component: Clipboard,
-      icon: "i-codicon-clippy",
+      icon: 'i-codicon-clippy'
     },
     {
-      label: "WebRTC",
+      label: 'WebRTC',
       component: WebRTC,
-      icon: "i-ph-broadcast",
+      icon: 'i-ph-broadcast'
     },
     isMobile && {
-      label: "Scanner",
+      label: 'Scanner',
       component: Scanner,
-      icon: "i-ph-scan",
+      icon: 'i-ph-scan'
     },
     isMobile && {
-      label: "NFC",
+      label: 'NFC',
       component: Nfc,
-      icon: "i-ph-nfc",
+      icon: 'i-ph-nfc'
     },
     isMobile && {
-      label: "Biometric",
+      label: 'Biometric',
       component: Biometric,
-      icon: "i-ph-scan",
+      icon: 'i-ph-scan'
     },
   ];
+    isMobile && {
+      label: 'Geolocation',
+      component: Geolocation,
+      icon: 'i-ph-map-pin'
+    }
+  ]
 
-  let selected = views[0];
+  let selected = views[0]
   function select(view) {
-    selected = view;
+    selected = view
   }
 
   // Window controls
-  let isWindowMaximized;
+  let isWindowMaximized
   onMount(async () => {
-    isWindowMaximized = await appWindow.isMaximized();
+    isWindowMaximized = await appWindow.isMaximized()
     appWindow.onResized(async () => {
-      isWindowMaximized = await appWindow.isMaximized();
-    });
-  });
+      isWindowMaximized = await appWindow.isMaximized()
+    })
+  })
 
   function minimize() {
-    appWindow.minimize();
+    appWindow.minimize()
   }
 
   async function toggleMaximize() {
-    (await appWindow.isMaximized())
+    ;(await appWindow.isMaximized())
       ? appWindow.unmaximize()
-      : appWindow.maximize();
+      : appWindow.maximize()
   }
 
-  let confirmed_close = false;
+  let confirmed_close = false
   async function close() {
     if (!confirmed_close) {
       confirmed_close = await ask(
-        "Are you sure that you want to close this window?",
+        'Are you sure that you want to close this window?',
         {
-          title: "Tauri API",
+          title: 'Tauri API'
         }
-      );
+      )
       if (confirmed_close) {
-        appWindow.close();
+        appWindow.close()
       }
     }
   }
 
   // dark/light
-  let isDark;
+  let isDark
   onMount(() => {
-    isDark = localStorage && localStorage.getItem("theme") == "dark";
-    applyTheme(isDark);
-  });
+    isDark = localStorage && localStorage.getItem('theme') == 'dark'
+    applyTheme(isDark)
+  })
   function applyTheme(isDark) {
-    const html = document.querySelector("html");
-    isDark ? html.classList.add("dark") : html.classList.remove("dark");
-    localStorage && localStorage.setItem("theme", isDark ? "dark" : "");
+    const html = document.querySelector('html')
+    isDark ? html.classList.add('dark') : html.classList.remove('dark')
+    localStorage && localStorage.setItem('theme', isDark ? 'dark' : '')
   }
   function toggleDark() {
-    isDark = !isDark;
-    applyTheme(isDark);
+    isDark = !isDark
+    applyTheme(isDark)
   }
 
   // Console
-  let messages = writable([]);
-  let consoleTextEl;
+  let messages = writable([])
+  let consoleTextEl
   async function onMessage(value) {
     messages.update((r) => [
       ...r,
       {
         html:
           `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> ` +
-          (typeof value === "string" ? value : JSON.stringify(value, null, 1)) +
-          "</pre>",
-      },
-    ]);
-    await tick();
-    if (consoleTextEl) consoleTextEl.scrollTop = consoleTextEl.scrollHeight;
+          (typeof value === 'string' ? value : JSON.stringify(value, null, 1)) +
+          '</pre>'
+      }
+    ])
+    await tick()
+    if (consoleTextEl) consoleTextEl.scrollTop = consoleTextEl.scrollHeight
   }
 
   // this function is renders HTML without sanitizing it so it's insecure
@@ -209,111 +215,109 @@
         html:
           `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> ` +
           html +
-          "</pre>",
-      },
-    ]);
-    await tick();
-    if (consoleTextEl) consoleTextEl.scrollTop = consoleTextEl.scrollHeight;
+          '</pre>'
+      }
+    ])
+    await tick()
+    if (consoleTextEl) consoleTextEl.scrollTop = consoleTextEl.scrollHeight
   }
 
   function clear() {
-    messages.update(() => []);
+    messages.update(() => [])
   }
 
-  let consoleEl, consoleH, cStartY;
-  let minConsoleHeight = 50;
+  let consoleEl, consoleH, cStartY
+  let minConsoleHeight = 50
   function startResizingConsole(e) {
-    cStartY = e.clientY;
+    cStartY = e.clientY
 
-    const styles = window.getComputedStyle(consoleEl);
-    consoleH = parseInt(styles.height, 10);
+    const styles = window.getComputedStyle(consoleEl)
+    consoleH = parseInt(styles.height, 10)
 
     const moveHandler = (e) => {
-      const dy = e.clientY - cStartY;
-      const newH = consoleH - dy;
+      const dy = e.clientY - cStartY
+      const newH = consoleH - dy
       consoleEl.style.height = `${
         newH < minConsoleHeight ? minConsoleHeight : newH
-      }px`;
-    };
+      }px`
+    }
     const upHandler = () => {
-      document.removeEventListener("mouseup", upHandler);
-      document.removeEventListener("mousemove", moveHandler);
-    };
-    document.addEventListener("mouseup", upHandler);
-    document.addEventListener("mousemove", moveHandler);
+      document.removeEventListener('mouseup', upHandler)
+      document.removeEventListener('mousemove', moveHandler)
+    }
+    document.addEventListener('mouseup', upHandler)
+    document.addEventListener('mousemove', moveHandler)
   }
 
-  let isWindows;
+  let isWindows
   onMount(async () => {
-    isWindows = (await os.platform()) === "windows";
-  });
+    isWindows = (await os.platform()) === 'windows'
+  })
 
   // mobile
-  let isSideBarOpen = false;
-  let sidebar;
-  let sidebarToggle;
-  let isDraggingSideBar = false;
-  let draggingStartPosX = 0;
-  let draggingEndPosX = 0;
-  const clamp = (min, num, max) => Math.min(Math.max(num, min), max);
+  let isSideBarOpen = false
+  let sidebar
+  let sidebarToggle
+  let isDraggingSideBar = false
+  let draggingStartPosX = 0
+  let draggingEndPosX = 0
+  const clamp = (min, num, max) => Math.min(Math.max(num, min), max)
 
   function toggleSidebar(sidebar, isSideBarOpen) {
     sidebar.style.setProperty(
-      "--translate-x",
-      `${isSideBarOpen ? "0" : "-18.75"}rem`
-    );
+      '--translate-x',
+      `${isSideBarOpen ? '0' : '-18.75'}rem`
+    )
   }
 
   onMount(() => {
-    sidebar = document.querySelector("#sidebar");
-    sidebarToggle = document.querySelector("#sidebarToggle");
+    sidebar = document.querySelector('#sidebar')
+    sidebarToggle = document.querySelector('#sidebarToggle')
 
-    document.addEventListener("click", (e) => {
+    document.addEventListener('click', (e) => {
       if (sidebarToggle.contains(e.target)) {
-        isSideBarOpen = !isSideBarOpen;
+        isSideBarOpen = !isSideBarOpen
       } else if (isSideBarOpen && !sidebar.contains(e.target)) {
-        isSideBarOpen = false;
+        isSideBarOpen = false
       }
-    });
+    })
 
-    document.addEventListener("touchstart", (e) => {
-      if (sidebarToggle.contains(e.target)) return;
+    document.addEventListener('touchstart', (e) => {
+      if (sidebarToggle.contains(e.target)) return
 
-      const x = e.touches[0].clientX;
+      const x = e.touches[0].clientX
       if ((0 < x && x < 20 && !isSideBarOpen) || isSideBarOpen) {
-        isDraggingSideBar = true;
-        draggingStartPosX = x;
+        isDraggingSideBar = true
+        draggingStartPosX = x
       }
-    });
+    })
 
-    document.addEventListener("touchmove", (e) => {
+    document.addEventListener('touchmove', (e) => {
       if (isDraggingSideBar) {
-        const x = e.touches[0].clientX;
-        draggingEndPosX = x;
-        const delta = (x - draggingStartPosX) / 10;
+        const x = e.touches[0].clientX
+        draggingEndPosX = x
+        const delta = (x - draggingStartPosX) / 10
         sidebar.style.setProperty(
-          "--translate-x",
+          '--translate-x',
           `-${clamp(0, isSideBarOpen ? 0 - delta : 18.75 - delta, 18.75)}rem`
-        );
+        )
       }
-    });
+    })
 
-    document.addEventListener("touchend", () => {
+    document.addEventListener('touchend', () => {
       if (isDraggingSideBar) {
-        const delta = (draggingEndPosX - draggingStartPosX) / 10;
-        isSideBarOpen = isSideBarOpen
-          ? delta > -(18.75 / 2)
-          : delta > 18.75 / 2;
+        const delta = (draggingEndPosX - draggingStartPosX) / 10
+        isSideBarOpen = isSideBarOpen ? delta > -(18.75 / 2) : delta > 18.75 / 2
       }
 
-      isDraggingSideBar = false;
-    });
-  });
+      isDraggingSideBar = false
+    })
+  })
 
   $: {
-    const sidebar = document.querySelector("#sidebar");
+    const sidebar = document.querySelector('#sidebar')
     if (sidebar) {
-      toggleSidebar(sidebar, isSideBarOpen);
+      toggleSidebar(sidebar, isSideBarOpen)
     }
   }
 </script>
@@ -332,7 +336,7 @@
       children:items-center children:justify-center"
     >
       <span
-        title={isDark ? "Switch to Light mode" : "Switch to Dark mode"}
+        title={isDark ? 'Switch to Light mode' : 'Switch to Dark mode'}
         class="hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
         on:click={toggleDark}
       >
@@ -350,7 +354,7 @@
         <div class="i-codicon-chrome-minimize" />
       </span>
       <span
-        title={isWindowMaximized ? "Restore" : "Maximize"}
+        title={isWindowMaximized ? 'Restore' : 'Maximize'}
         class="hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
         on:click={toggleMaximize}
       >
@@ -393,7 +397,7 @@
       bg-darkPrimaryLighter transition-colors-250 overflow-hidden grid select-none px-2"
   >
     <img
-      on:click={() => open("https://tauri.app/")}
+      on:click={() => open('https://tauri.app/')}
       class="self-center p-7 cursor-pointer"
       src="tauri_logo.png"
       alt="Tauri logo"
@@ -449,8 +453,8 @@
             href="##"
             class="nv {selected === view ? 'nv_selected' : ''}"
             on:click={() => {
-              select(view);
-              isSideBarOpen = false;
+              select(view)
+              isSideBarOpen = false
             }}
           >
             <div class="{view.icon} mr-2" />

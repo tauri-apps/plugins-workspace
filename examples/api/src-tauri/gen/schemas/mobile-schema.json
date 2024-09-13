@@ -6748,6 +6748,158 @@
           ]
         },
         {
+          "type": "string",
+          "enum": [
+            "geolocation:default"
+          ]
+        },
+        {
+          "description": "geolocation:allow-check-permissions -> Enables the check_permissions command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "geolocation:allow-check-permissions"
+          ]
+        },
+        {
+          "description": "geolocation:allow-clear-permissions -> Enables the clear_permissions command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "geolocation:allow-clear-permissions"
+          ]
+        },
+        {
+          "description": "geolocation:allow-clear-watch -> Enables the clear_watch command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "geolocation:allow-clear-watch"
+          ]
+        },
+        {
+          "description": "geolocation:allow-get-current-position -> Enables the get_current_position command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "geolocation:allow-get-current-position"
+          ]
+        },
+        {
+          "description": "geolocation:allow-request-permissions -> Enables the request_permissions command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "geolocation:allow-request-permissions"
+          ]
+        },
+        {
+          "description": "geolocation:allow-watch-position -> Enables the watch_position command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "geolocation:allow-watch-position"
+          ]
+        },
+        {
+          "description": "geolocation:deny-check-permissions -> Denies the check_permissions command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "geolocation:deny-check-permissions"
+          ]
+        },
+        {
+          "description": "geolocation:deny-clear-permissions -> Denies the clear_permissions command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "geolocation:deny-clear-permissions"
+          ]
+        },
+        {
+          "description": "geolocation:deny-clear-watch -> Denies the clear_watch command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "geolocation:deny-clear-watch"
+          ]
+        },
+        {
+          "description": "geolocation:deny-get-current-position -> Denies the get_current_position command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "geolocation:deny-get-current-position"
+          ]
+        },
+        {
+          "description": "geolocation:deny-request-permissions -> Denies the request_permissions command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "geolocation:deny-request-permissions"
+          ]
+        },
+        {
+          "description": "geolocation:deny-watch-position -> Denies the watch_position command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "geolocation:deny-watch-position"
+          ]
+        },
+        {
+          "type": "string",
+          "enum": [
+            "haptics:default"
+          ]
+        },
+        {
+          "description": "haptics:allow-impact-feedback -> Enables the impact_feedback command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "haptics:allow-impact-feedback"
+          ]
+        },
+        {
+          "description": "haptics:allow-notification-feedback -> Enables the notification_feedback command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "haptics:allow-notification-feedback"
+          ]
+        },
+        {
+          "description": "haptics:allow-selection-feedback -> Enables the selection_feedback command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "haptics:allow-selection-feedback"
+          ]
+        },
+        {
+          "description": "haptics:allow-vibrate -> Enables the vibrate command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "haptics:allow-vibrate"
+          ]
+        },
+        {
+          "description": "haptics:deny-impact-feedback -> Denies the impact_feedback command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "haptics:deny-impact-feedback"
+          ]
+        },
+        {
+          "description": "haptics:deny-notification-feedback -> Denies the notification_feedback command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "haptics:deny-notification-feedback"
+          ]
+        },
+        {
+          "description": "haptics:deny-selection-feedback -> Denies the selection_feedback command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "haptics:deny-selection-feedback"
+          ]
+        },
+        {
+          "description": "haptics:deny-vibrate -> Denies the vibrate command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "haptics:deny-vibrate"
+          ]
+        },
+        {
           "description": "http:default -> This permission set configures what kind of\nfetch operations are available from the http plugin.\n\nThis enables all fetch operations but does not\nallow explicitly any origins to be fetched. This needs to\nbe manually configured before usage.\n\n#### Granted Permissions\n\nAll fetch operations are enabled.\n\n",
           "type": "string",
           "enum": [
