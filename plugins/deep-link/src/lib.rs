@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use std::sync::Arc;
+
 use tauri::{
     plugin::{Builder, PluginApi, TauriPlugin},
-    AppHandle, Manager, Runtime,
+    AppHandle, EventId, Listener, Manager, Runtime,
 };
 
 mod commands;
@@ -437,6 +439,7 @@ mod imp {
 }
 
 pub use imp::DeepLink;
+use url::Url;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the deep-link APIs.
 pub trait DeepLinkExt<R: Runtime> {
@@ -446,6 +449,54 @@ pub trait DeepLinkExt<R: Runtime> {
 impl<R: Runtime, T: Manager<R>> crate::DeepLinkExt<R> for T {
     fn deep_link(&self) -> &DeepLink<R> {
         self.state::<DeepLink<R>>().inner()
+    }
+}
+
+/// Event that is triggered when the app was requested to open a new URL.
+///
+/// Typed [`tauri::Event`].
+pub struct OpenUrlEvent {
+    id: EventId,
+    urls: Vec<Url>,
+}
+
+impl OpenUrlEvent {
+    /// The event ID which can be used to stop listening to the event via [`tauri::Listener::unlisten`].
+    pub fn id(&self) -> EventId {
+        self.id
+    }
+
+    /// The event URLs.
+    pub fn urls(self) -> Vec<Url> {
+        self.urls
+    }
+}
+
+impl<R: Runtime> DeepLink<R> {
+    /// Handle a new deep link being triggered to open the app.
+    ///
+    /// To avoid race conditions, if the app was started with a deep link,
+    /// the closure gets immediately called with the deep link URL.
+    pub fn on_open_url<F: Fn(OpenUrlEvent) + Send + Sync + 'static>(&self, f: F) -> EventId {
+        let f = Arc::new(f);
+        let f_ = f.clone();
+        let event_id = self.app.listen("deep-link://new-url", move |event| {
+            if let Ok(urls) = serde_json::from_str(event.payload()) {
+                f(OpenUrlEvent {
+                    id: event.id(),
+                    urls,
+                })
+            }
+        });
+
+        if let Ok(Some(current)) = self.get_current() {
+            f_(OpenUrlEvent {
+                id: event_id,
+                urls: current,
+            })
+        }
+
+        event_id
     }
 }
 

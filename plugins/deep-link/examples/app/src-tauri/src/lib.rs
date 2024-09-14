@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use tauri::Listener;
+use tauri_plugin_deep_link::DeepLinkExt;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -33,16 +34,14 @@ pub fn run() {
             // ensure deep links are registered on the system
             // this is useful because AppImages requires additional setup to be available in the system
             // and calling register() makes the deep links immediately available - without any user input
-            #[cfg(target_os = "linux")]
-            {
-                use tauri_plugin_deep_link::DeepLinkExt;
+            // additionally, we manually register on Windows on debug builds for development
+            #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
+            app.deep_link().register_all()?;
 
-                app.deep_link().register_all()?;
-            }
-
-            app.listen("deep-link://new-url", |url| {
-                dbg!(url);
+            app.deep_link().on_open_url(|event| {
+                dbg!(event.urls());
             });
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![greet])
