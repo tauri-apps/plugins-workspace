@@ -4,8 +4,8 @@
 
 import {
   invoke,
-  requestPermissions as checkPermissions_,
-  checkPermissions as requestPermissions_
+  requestPermissions as requestPermissions_,
+  checkPermissions as checkPermissions_
 } from '@tauri-apps/api/core'
 
 export type { PermissionState } from '@tauri-apps/api/core'
