@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-rc.5]
+
+- [`7a37355e`](https://github.com/tauri-apps/plugins-workspace/commit/7a37355e177772cbddf24397d5a23280e00558af) ([#1787](https://github.com/tauri-apps/plugins-workspace/pull/1787) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix deadlock when trying to restore window states on initial load
+
 ## \[2.0.0-rc.4]
 
 - [`204e5aac`](https://github.com/tauri-apps/plugins-workspace/commit/204e5aacad7e8f99a9a08f4a45cfed83643c1cc0) ([#1743](https://github.com/tauri-apps/plugins-workspace/pull/1743)) Fix can't restore a minimized window's size and position properly
