@@ -295,95 +295,69 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-cancel -> Enables the cancel command without any pre-configured scope.",
+          "description": "Enables the cancel command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-cancel"
-          ]
+          "const": "allow-cancel"
         },
         {
-          "description": "deny-cancel -> Denies the cancel command without any pre-configured scope.",
+          "description": "Denies the cancel command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-cancel"
-          ]
+          "const": "deny-cancel"
         },
         {
-          "description": "allow-check-permissions -> Enables the check_permissions command without any pre-configured scope.",
+          "description": "Enables the check_permissions command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-check-permissions"
-          ]
+          "const": "allow-check-permissions"
         },
         {
-          "description": "deny-check-permissions -> Denies the check_permissions command without any pre-configured scope.",
+          "description": "Denies the check_permissions command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-check-permissions"
-          ]
+          "const": "deny-check-permissions"
         },
         {
-          "description": "allow-open-app-settings -> Enables the open_app_settings command without any pre-configured scope.",
+          "description": "Enables the open_app_settings command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-open-app-settings"
-          ]
+          "const": "allow-open-app-settings"
         },
         {
-          "description": "deny-open-app-settings -> Denies the open_app_settings command without any pre-configured scope.",
+          "description": "Denies the open_app_settings command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-open-app-settings"
-          ]
+          "const": "deny-open-app-settings"
         },
         {
-          "description": "allow-request-permissions -> Enables the request_permissions command without any pre-configured scope.",
+          "description": "Enables the request_permissions command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-request-permissions"
-          ]
+          "const": "allow-request-permissions"
         },
         {
-          "description": "deny-request-permissions -> Denies the request_permissions command without any pre-configured scope.",
+          "description": "Denies the request_permissions command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-request-permissions"
-          ]
+          "const": "deny-request-permissions"
         },
         {
-          "description": "allow-scan -> Enables the scan command without any pre-configured scope.",
+          "description": "Enables the scan command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-scan"
-          ]
+          "const": "allow-scan"
         },
         {
-          "description": "deny-scan -> Denies the scan command without any pre-configured scope.",
+          "description": "Denies the scan command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-scan"
-          ]
+          "const": "deny-scan"
         },
         {
-          "description": "allow-vibrate -> Enables the vibrate command without any pre-configured scope.",
+          "description": "Enables the vibrate command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-vibrate"
-          ]
+          "const": "allow-vibrate"
         },
         {
-          "description": "deny-vibrate -> Denies the vibrate command without any pre-configured scope.",
+          "description": "Denies the vibrate command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-vibrate"
-          ]
+          "const": "deny-vibrate"
         },
         {
-          "description": "default -> This permission set configures which\nbarcode scanning features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all barcode related features.\n\n",
+          "description": "This permission set configures which\nbarcode scanning features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all barcode related features.\n\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

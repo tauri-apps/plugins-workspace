@@ -295,123 +295,89 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-arch -> Enables the arch command without any pre-configured scope.",
+          "description": "Enables the arch command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-arch"
-          ]
+          "const": "allow-arch"
         },
         {
-          "description": "deny-arch -> Denies the arch command without any pre-configured scope.",
+          "description": "Denies the arch command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-arch"
-          ]
+          "const": "deny-arch"
         },
         {
-          "description": "allow-exe-extension -> Enables the exe_extension command without any pre-configured scope.",
+          "description": "Enables the exe_extension command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-exe-extension"
-          ]
+          "const": "allow-exe-extension"
         },
         {
-          "description": "deny-exe-extension -> Denies the exe_extension command without any pre-configured scope.",
+          "description": "Denies the exe_extension command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-exe-extension"
-          ]
+          "const": "deny-exe-extension"
         },
         {
-          "description": "allow-family -> Enables the family command without any pre-configured scope.",
+          "description": "Enables the family command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-family"
-          ]
+          "const": "allow-family"
         },
         {
-          "description": "deny-family -> Denies the family command without any pre-configured scope.",
+          "description": "Denies the family command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-family"
-          ]
+          "const": "deny-family"
         },
         {
-          "description": "allow-hostname -> Enables the hostname command without any pre-configured scope.",
+          "description": "Enables the hostname command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-hostname"
-          ]
+          "const": "allow-hostname"
         },
         {
-          "description": "deny-hostname -> Denies the hostname command without any pre-configured scope.",
+          "description": "Denies the hostname command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-hostname"
-          ]
+          "const": "deny-hostname"
         },
         {
-          "description": "allow-locale -> Enables the locale command without any pre-configured scope.",
+          "description": "Enables the locale command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-locale"
-          ]
+          "const": "allow-locale"
         },
         {
-          "description": "deny-locale -> Denies the locale command without any pre-configured scope.",
+          "description": "Denies the locale command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-locale"
-          ]
+          "const": "deny-locale"
         },
         {
-          "description": "allow-os-type -> Enables the os_type command without any pre-configured scope.",
+          "description": "Enables the os_type command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-os-type"
-          ]
+          "const": "allow-os-type"
         },
         {
-          "description": "deny-os-type -> Denies the os_type command without any pre-configured scope.",
+          "description": "Denies the os_type command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-os-type"
-          ]
+          "const": "deny-os-type"
         },
         {
-          "description": "allow-platform -> Enables the platform command without any pre-configured scope.",
+          "description": "Enables the platform command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-platform"
-          ]
+          "const": "allow-platform"
         },
         {
-          "description": "deny-platform -> Denies the platform command without any pre-configured scope.",
+          "description": "Denies the platform command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-platform"
-          ]
+          "const": "deny-platform"
         },
         {
-          "description": "allow-version -> Enables the version command without any pre-configured scope.",
+          "description": "Enables the version command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-version"
-          ]
+          "const": "allow-version"
         },
         {
-          "description": "deny-version -> Denies the version command without any pre-configured scope.",
+          "description": "Denies the version command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-version"
-          ]
+          "const": "deny-version"
         },
         {
-          "description": "default -> This permission set configures which\noperating system information are available\nto gather from the frontend.\n\n#### Granted Permissions\n\nAll information except the host name are available.\n\n",
+          "description": "This permission set configures which\noperating system information are available\nto gather from the frontend.\n\n#### Granted Permissions\n\nAll information except the host name are available.\n\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

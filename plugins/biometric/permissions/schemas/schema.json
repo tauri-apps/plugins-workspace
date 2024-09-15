@@ -295,39 +295,29 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-authenticate -> Enables the authenticate command without any pre-configured scope.",
+          "description": "Enables the authenticate command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-authenticate"
-          ]
+          "const": "allow-authenticate"
         },
         {
-          "description": "deny-authenticate -> Denies the authenticate command without any pre-configured scope.",
+          "description": "Denies the authenticate command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-authenticate"
-          ]
+          "const": "deny-authenticate"
         },
         {
-          "description": "allow-status -> Enables the status command without any pre-configured scope.",
+          "description": "Enables the status command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-status"
-          ]
+          "const": "allow-status"
         },
         {
-          "description": "deny-status -> Denies the status command without any pre-configured scope.",
+          "description": "Denies the status command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-status"
-          ]
+          "const": "deny-status"
         },
         {
-          "description": "default -> This permission set configures which\nbiometric features are by default exposed.\n\n#### Granted Permissions\n\nIt allows acccess to all biometric commands.\n\n",
+          "description": "This permission set configures which\nbiometric features are by default exposed.\n\n#### Granted Permissions\n\nIt allows acccess to all biometric commands.\n\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

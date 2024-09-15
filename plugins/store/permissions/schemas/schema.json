@@ -295,179 +295,129 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-clear -> Enables the clear command without any pre-configured scope.",
+          "description": "Enables the clear command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-clear"
-          ]
+          "const": "allow-clear"
         },
         {
-          "description": "deny-clear -> Denies the clear command without any pre-configured scope.",
+          "description": "Denies the clear command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-clear"
-          ]
+          "const": "deny-clear"
         },
         {
-          "description": "allow-delete -> Enables the delete command without any pre-configured scope.",
+          "description": "Enables the delete command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-delete"
-          ]
+          "const": "allow-delete"
         },
         {
-          "description": "deny-delete -> Denies the delete command without any pre-configured scope.",
+          "description": "Denies the delete command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-delete"
-          ]
+          "const": "deny-delete"
         },
         {
-          "description": "allow-entries -> Enables the entries command without any pre-configured scope.",
+          "description": "Enables the entries command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-entries"
-          ]
+          "const": "allow-entries"
         },
         {
-          "description": "deny-entries -> Denies the entries command without any pre-configured scope.",
+          "description": "Denies the entries command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-entries"
-          ]
+          "const": "deny-entries"
         },
         {
-          "description": "allow-get -> Enables the get command without any pre-configured scope.",
+          "description": "Enables the get command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-get"
-          ]
+          "const": "allow-get"
         },
         {
-          "description": "deny-get -> Denies the get command without any pre-configured scope.",
+          "description": "Denies the get command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-get"
-          ]
+          "const": "deny-get"
         },
         {
-          "description": "allow-has -> Enables the has command without any pre-configured scope.",
+          "description": "Enables the has command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-has"
-          ]
+          "const": "allow-has"
         },
         {
-          "description": "deny-has -> Denies the has command without any pre-configured scope.",
+          "description": "Denies the has command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-has"
-          ]
+          "const": "deny-has"
         },
         {
-          "description": "allow-keys -> Enables the keys command without any pre-configured scope.",
+          "description": "Enables the keys command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-keys"
-          ]
+          "const": "allow-keys"
         },
         {
-          "description": "deny-keys -> Denies the keys command without any pre-configured scope.",
+          "description": "Denies the keys command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-keys"
-          ]
+          "const": "deny-keys"
         },
         {
-          "description": "allow-length -> Enables the length command without any pre-configured scope.",
+          "description": "Enables the length command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-length"
-          ]
+          "const": "allow-length"
         },
         {
-          "description": "deny-length -> Denies the length command without any pre-configured scope.",
+          "description": "Denies the length command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-length"
-          ]
+          "const": "deny-length"
         },
         {
-          "description": "allow-load -> Enables the load command without any pre-configured scope.",
+          "description": "Enables the load command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-load"
-          ]
+          "const": "allow-load"
         },
         {
-          "description": "deny-load -> Denies the load command without any pre-configured scope.",
+          "description": "Denies the load command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-load"
-          ]
+          "const": "deny-load"
         },
         {
-          "description": "allow-reset -> Enables the reset command without any pre-configured scope.",
+          "description": "Enables the reset command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-reset"
-          ]
+          "const": "allow-reset"
         },
         {
-          "description": "deny-reset -> Denies the reset command without any pre-configured scope.",
+          "description": "Denies the reset command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-reset"
-          ]
+          "const": "deny-reset"
         },
         {
-          "description": "allow-save -> Enables the save command without any pre-configured scope.",
+          "description": "Enables the save command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-save"
-          ]
+          "const": "allow-save"
         },
         {
-          "description": "deny-save -> Denies the save command without any pre-configured scope.",
+          "description": "Denies the save command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-save"
-          ]
+          "const": "deny-save"
         },
         {
-          "description": "allow-set -> Enables the set command without any pre-configured scope.",
+          "description": "Enables the set command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-set"
-          ]
+          "const": "allow-set"
         },
         {
-          "description": "deny-set -> Denies the set command without any pre-configured scope.",
+          "description": "Denies the set command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-set"
-          ]
+          "const": "deny-set"
         },
         {
-          "description": "allow-values -> Enables the values command without any pre-configured scope.",
+          "description": "Enables the values command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-values"
-          ]
+          "const": "allow-values"
         },
         {
-          "description": "deny-values -> Denies the values command without any pre-configured scope.",
+          "description": "Denies the values command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-values"
-          ]
+          "const": "deny-values"
         },
         {
-          "description": "default -> This permission set configures what kind of\noperations are available from the store plugin.\n\n#### Granted Permissions\n\nAll operations are enabled by default.\n\n",
+          "description": "This permission set configures what kind of\noperations are available from the store plugin.\n\n#### Granted Permissions\n\nAll operations are enabled by default.\n\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }
