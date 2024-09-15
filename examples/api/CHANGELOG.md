@@ -1,5 +1,12 @@
 # Changelog
 
+## \[2.0.0-rc.4]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@2.0.0-rc.2`
+- Upgraded to `clipboard-manager-js@2.0.0-rc.2`
+
 ## \[2.0.0-rc.3]
 
 ### Dependencies

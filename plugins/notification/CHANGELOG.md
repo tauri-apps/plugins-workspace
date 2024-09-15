@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-rc.5]
+
+- [`fb85e5dd`](https://github.com/tauri-apps/plugins-workspace/commit/fb85e5dd76688f3ae836890160f9bde843b70167) ([#1785](https://github.com/tauri-apps/plugins-workspace/pull/1785)) Update to tauri 2.0.0-rc.12.
+
 ## \[2.0.0-rc.4]
 
 - [`3d301c65`](https://github.com/tauri-apps/plugins-workspace/commit/3d301c654e6f5e7f343e0e0cbb57648002e98f04) ([#1737](https://github.com/tauri-apps/plugins-workspace/pull/1737) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) The notification body is now optional on iOS to match the other platforms.

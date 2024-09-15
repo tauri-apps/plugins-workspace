@@ -1,5 +1,15 @@
 # Changelog
 
+## \[2.0.0-rc.7]
+
+### Dependencies
+
+- Upgraded to `clipboard-manager@2.0.0-rc.4`
+- Upgraded to `fs@2.0.0-rc.5`
+- Upgraded to `notification@2.0.0-rc.5`
+- Upgraded to `dialog@2.0.0-rc.7`
+- Upgraded to `http@2.0.0-rc.5`
+
 ## \[2.0.0-rc.6]
 
 ### Dependencies

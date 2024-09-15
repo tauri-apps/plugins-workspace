@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-rc.2]
+
+- [`79d6e19c`](https://github.com/tauri-apps/plugins-workspace/commit/79d6e19c4b38bae0cab29eb88df379e2237d9aac) ([#1777](https://github.com/tauri-apps/plugins-workspace/pull/1777)) Fixed an issue which caused checkPermission and requestPermission to be mixed up.
+
 ## \[2.0.0-rc.4]
 
 - [`713c54ef`](https://github.com/tauri-apps/plugins-workspace/commit/713c54ef8365d36afd84585dcabed2fbb751223d) ([#1749](https://github.com/tauri-apps/plugins-workspace/pull/1749) by [@olivierlemasle](https://github.com/tauri-apps/plugins-workspace/../../olivierlemasle)) Remove unused Android dependencies.

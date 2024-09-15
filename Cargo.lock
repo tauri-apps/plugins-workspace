@@ -212,7 +212,7 @@ checksum = "10f00e1f6e58a40e807377c75c6a7f97bf9044fab57816f2414e6f5f4499d7b8"
 
 [[package]]
 name = "api"
-version = "2.0.0-rc.6"
+version = "2.0.0-rc.7"
 dependencies = [
  "log",
  "serde",
@@ -6448,7 +6448,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-clipboard-manager"
-version = "2.0.0-rc.3"
+version = "2.0.0-rc.4"
 dependencies = [
  "arboard",
  "image 0.24.9",
@@ -6462,7 +6462,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.0.0-rc.5"
+version = "2.0.0-rc.6"
 dependencies = [
  "dunce",
  "log",
@@ -6480,7 +6480,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-rc.6"
+version = "2.0.0-rc.7"
 dependencies = [
  "log",
  "raw-window-handle",
@@ -6496,7 +6496,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-rc.4"
+version = "2.0.0-rc.5"
 dependencies = [
  "anyhow",
  "dunce",
@@ -6556,7 +6556,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.0-rc.4"
+version = "2.0.0-rc.5"
 dependencies = [
  "data-url",
  "http",
@@ -6622,7 +6622,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "2.0.0-rc.4"
+version = "2.0.0-rc.5"
 dependencies = [
  "color-backtrace",
  "ctor",
@@ -6660,7 +6660,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.0-rc.4"
+version = "2.0.0-rc.5"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6714,7 +6714,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-rc.3"
+version = "2.0.0-rc.4"
 dependencies = [
  "log",
  "semver",
@@ -6841,7 +6841,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "2.0.0-rc.3"
+version = "2.0.0-rc.4"
 dependencies = [
  "bitflags 2.6.0",
  "log",

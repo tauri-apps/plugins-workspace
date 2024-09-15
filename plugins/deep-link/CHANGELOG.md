@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.0.0-rc.6]
+
+- [`6f3f6679`](https://github.com/tauri-apps/plugins-workspace/commit/6f3f66794a87ef9d1c16667c425d5ad7091a9c2f) ([#1780](https://github.com/tauri-apps/plugins-workspace/pull/1780)) Added `DeepLink::on_open_url` function to match the JavaScript API implementation,
+  which wraps the `deep-link://new-url` event and also send the current deep link if there's any.
+
 ## \[2.0.0-rc.5]
 
 - [`984110a9`](https://github.com/tauri-apps/plugins-workspace/commit/984110a978774712bad4d746ed06134d54debcd0) ([#1770](https://github.com/tauri-apps/plugins-workspace/pull/1770) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Emit the `deep-link://new-url` event on Linux and Windows when the app is executed with a deep link CLI argument,
