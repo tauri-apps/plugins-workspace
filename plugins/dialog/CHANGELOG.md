@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-rc.7]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-rc.5`
+
 ## \[2.0.0-rc.6]
 
 - [`2b898f07`](https://github.com/tauri-apps/plugins-workspace/commit/2b898f078688c57309ca17962bf02e665c406514) ([#1769](https://github.com/tauri-apps/plugins-workspace/pull/1769) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update Tauri scopes (asset protocol) when using the `open()` command to select directories.

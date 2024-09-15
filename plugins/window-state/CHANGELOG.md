@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-rc.4]
+
+- [`204e5aac`](https://github.com/tauri-apps/plugins-workspace/commit/204e5aacad7e8f99a9a08f4a45cfed83643c1cc0) ([#1743](https://github.com/tauri-apps/plugins-workspace/pull/1743)) Fix can't restore a minimized window's size and position properly
+
+### breaking
+
+- [`204e5aac`](https://github.com/tauri-apps/plugins-workspace/commit/204e5aacad7e8f99a9a08f4a45cfed83643c1cc0) ([#1743](https://github.com/tauri-apps/plugins-workspace/pull/1743)) Window's size is now stored in physical size instead of logical size
+
 ## \[2.0.0-rc.3]
 
 - [`17e8014b`](https://github.com/tauri-apps/plugins-workspace/commit/17e8014b6993602ddad21e8f5dcb625de1eea2c0) ([#1702](https://github.com/tauri-apps/plugins-workspace/pull/1702) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix saving a minimized window's state changes its position to -32000
