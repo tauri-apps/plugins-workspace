@@ -184,7 +184,7 @@ mod tests {
     }
 
     async fn download_file(url: &str) -> Result<()> {
-        let file_path = "../../target/tmp/test.txt";
+        let file_path = concat!(env!("CARGO_MANIFEST_DIR"), "/test/test.txt");
         let headers = HashMap::new();
         let sender: Channel<ProgressPayload> =
             Channel::new(|msg: InvokeResponseBody| -> tauri::Result<()> {
