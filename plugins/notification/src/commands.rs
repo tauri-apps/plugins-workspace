@@ -15,7 +15,7 @@ pub(crate) async fn is_permission_granted<R: Runtime>(
     match state {
         PermissionState::Granted => Ok(Some(true)),
         PermissionState::Denied => Ok(Some(false)),
-        PermissionState::Unknown | PermissionState::PromptWithRationale => Ok(None),
+        PermissionState::Prompt | PermissionState::PromptWithRationale => Ok(None),
     }
 }
 

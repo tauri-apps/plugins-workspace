@@ -295,2006 +295,1434 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-app-read-recursive -> This allows full recursive read access to the complete application folders, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete application folders, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-app-read-recursive"
-          ]
+          "const": "allow-app-read-recursive"
         },
         {
-          "description": "allow-app-write-recursive -> This allows full recursive write access to the complete application folders, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete application folders, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-app-write-recursive"
-          ]
+          "const": "allow-app-write-recursive"
         },
         {
-          "description": "allow-app-read -> This allows non-recursive read access to the application folders.",
+          "description": "This allows non-recursive read access to the application folders.",
           "type": "string",
-          "enum": [
-            "allow-app-read"
-          ]
+          "const": "allow-app-read"
         },
         {
-          "description": "allow-app-write -> This allows non-recursive write access to the application folders.",
+          "description": "This allows non-recursive write access to the application folders.",
           "type": "string",
-          "enum": [
-            "allow-app-write"
-          ]
+          "const": "allow-app-write"
         },
         {
-          "description": "allow-app-meta-recursive -> This allows full recursive read access to metadata of the application folders, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the application folders, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-app-meta-recursive"
-          ]
+          "const": "allow-app-meta-recursive"
         },
         {
-          "description": "allow-app-meta -> This allows non-recursive read access to metadata of the application folders, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the application folders, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-app-meta"
-          ]
+          "const": "allow-app-meta"
         },
         {
-          "description": "scope-app-recursive -> This scope permits recursive access to the complete application folders, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete application folders, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-app-recursive"
-          ]
+          "const": "scope-app-recursive"
         },
         {
-          "description": "scope-app -> This scope permits access to all files and list content of top level directories in the application folders.",
+          "description": "This scope permits access to all files and list content of top level directories in the application folders.",
           "type": "string",
-          "enum": [
-            "scope-app"
-          ]
+          "const": "scope-app"
         },
         {
-          "description": "scope-app-index -> This scope permits to list all files and folders in the application directories.",
+          "description": "This scope permits to list all files and folders in the application directories.",
           "type": "string",
-          "enum": [
-            "scope-app-index"
-          ]
+          "const": "scope-app-index"
         },
         {
-          "description": "allow-appcache-read-recursive -> This allows full recursive read access to the complete `$APPCACHE` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$APPCACHE` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-appcache-read-recursive"
-          ]
+          "const": "allow-appcache-read-recursive"
         },
         {
-          "description": "allow-appcache-write-recursive -> This allows full recursive write access to the complete `$APPCACHE` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$APPCACHE` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-appcache-write-recursive"
-          ]
+          "const": "allow-appcache-write-recursive"
         },
         {
-          "description": "allow-appcache-read -> This allows non-recursive read access to the `$APPCACHE` folder.",
+          "description": "This allows non-recursive read access to the `$APPCACHE` folder.",
           "type": "string",
-          "enum": [
-            "allow-appcache-read"
-          ]
+          "const": "allow-appcache-read"
         },
         {
-          "description": "allow-appcache-write -> This allows non-recursive write access to the `$APPCACHE` folder.",
+          "description": "This allows non-recursive write access to the `$APPCACHE` folder.",
           "type": "string",
-          "enum": [
-            "allow-appcache-write"
-          ]
+          "const": "allow-appcache-write"
         },
         {
-          "description": "allow-appcache-meta-recursive -> This allows full recursive read access to metadata of the `$APPCACHE` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$APPCACHE` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-appcache-meta-recursive"
-          ]
+          "const": "allow-appcache-meta-recursive"
         },
         {
-          "description": "allow-appcache-meta -> This allows non-recursive read access to metadata of the `$APPCACHE` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$APPCACHE` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-appcache-meta"
-          ]
+          "const": "allow-appcache-meta"
         },
         {
-          "description": "scope-appcache-recursive -> This scope permits recursive access to the complete `$APPCACHE` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$APPCACHE` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-appcache-recursive"
-          ]
+          "const": "scope-appcache-recursive"
         },
         {
-          "description": "scope-appcache -> This scope permits access to all files and list content of top level directories in the `$APPCACHE` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$APPCACHE` folder.",
           "type": "string",
-          "enum": [
-            "scope-appcache"
-          ]
+          "const": "scope-appcache"
         },
         {
-          "description": "scope-appcache-index -> This scope permits to list all files and folders in the `$APPCACHE`folder.",
+          "description": "This scope permits to list all files and folders in the `$APPCACHE`folder.",
           "type": "string",
-          "enum": [
-            "scope-appcache-index"
-          ]
+          "const": "scope-appcache-index"
         },
         {
-          "description": "allow-appconfig-read-recursive -> This allows full recursive read access to the complete `$APPCONFIG` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$APPCONFIG` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-appconfig-read-recursive"
-          ]
+          "const": "allow-appconfig-read-recursive"
         },
         {
-          "description": "allow-appconfig-write-recursive -> This allows full recursive write access to the complete `$APPCONFIG` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$APPCONFIG` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-appconfig-write-recursive"
-          ]
+          "const": "allow-appconfig-write-recursive"
         },
         {
-          "description": "allow-appconfig-read -> This allows non-recursive read access to the `$APPCONFIG` folder.",
+          "description": "This allows non-recursive read access to the `$APPCONFIG` folder.",
           "type": "string",
-          "enum": [
-            "allow-appconfig-read"
-          ]
+          "const": "allow-appconfig-read"
         },
         {
-          "description": "allow-appconfig-write -> This allows non-recursive write access to the `$APPCONFIG` folder.",
+          "description": "This allows non-recursive write access to the `$APPCONFIG` folder.",
           "type": "string",
-          "enum": [
-            "allow-appconfig-write"
-          ]
+          "const": "allow-appconfig-write"
         },
         {
-          "description": "allow-appconfig-meta-recursive -> This allows full recursive read access to metadata of the `$APPCONFIG` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$APPCONFIG` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-appconfig-meta-recursive"
-          ]
+          "const": "allow-appconfig-meta-recursive"
         },
         {
-          "description": "allow-appconfig-meta -> This allows non-recursive read access to metadata of the `$APPCONFIG` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$APPCONFIG` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-appconfig-meta"
-          ]
+          "const": "allow-appconfig-meta"
         },
         {
-          "description": "scope-appconfig-recursive -> This scope permits recursive access to the complete `$APPCONFIG` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$APPCONFIG` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-appconfig-recursive"
-          ]
+          "const": "scope-appconfig-recursive"
         },
         {
-          "description": "scope-appconfig -> This scope permits access to all files and list content of top level directories in the `$APPCONFIG` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$APPCONFIG` folder.",
           "type": "string",
-          "enum": [
-            "scope-appconfig"
-          ]
+          "const": "scope-appconfig"
         },
         {
-          "description": "scope-appconfig-index -> This scope permits to list all files and folders in the `$APPCONFIG`folder.",
+          "description": "This scope permits to list all files and folders in the `$APPCONFIG`folder.",
           "type": "string",
-          "enum": [
-            "scope-appconfig-index"
-          ]
+          "const": "scope-appconfig-index"
         },
         {
-          "description": "allow-appdata-read-recursive -> This allows full recursive read access to the complete `$APPDATA` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$APPDATA` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-appdata-read-recursive"
-          ]
+          "const": "allow-appdata-read-recursive"
         },
         {
-          "description": "allow-appdata-write-recursive -> This allows full recursive write access to the complete `$APPDATA` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$APPDATA` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-appdata-write-recursive"
-          ]
+          "const": "allow-appdata-write-recursive"
         },
         {
-          "description": "allow-appdata-read -> This allows non-recursive read access to the `$APPDATA` folder.",
+          "description": "This allows non-recursive read access to the `$APPDATA` folder.",
           "type": "string",
-          "enum": [
-            "allow-appdata-read"
-          ]
+          "const": "allow-appdata-read"
         },
         {
-          "description": "allow-appdata-write -> This allows non-recursive write access to the `$APPDATA` folder.",
+          "description": "This allows non-recursive write access to the `$APPDATA` folder.",
           "type": "string",
-          "enum": [
-            "allow-appdata-write"
-          ]
+          "const": "allow-appdata-write"
         },
         {
-          "description": "allow-appdata-meta-recursive -> This allows full recursive read access to metadata of the `$APPDATA` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$APPDATA` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-appdata-meta-recursive"
-          ]
+          "const": "allow-appdata-meta-recursive"
         },
         {
-          "description": "allow-appdata-meta -> This allows non-recursive read access to metadata of the `$APPDATA` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$APPDATA` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-appdata-meta"
-          ]
+          "const": "allow-appdata-meta"
         },
         {
-          "description": "scope-appdata-recursive -> This scope permits recursive access to the complete `$APPDATA` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$APPDATA` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-appdata-recursive"
-          ]
+          "const": "scope-appdata-recursive"
         },
         {
-          "description": "scope-appdata -> This scope permits access to all files and list content of top level directories in the `$APPDATA` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$APPDATA` folder.",
           "type": "string",
-          "enum": [
-            "scope-appdata"
-          ]
+          "const": "scope-appdata"
         },
         {
-          "description": "scope-appdata-index -> This scope permits to list all files and folders in the `$APPDATA`folder.",
+          "description": "This scope permits to list all files and folders in the `$APPDATA`folder.",
           "type": "string",
-          "enum": [
-            "scope-appdata-index"
-          ]
+          "const": "scope-appdata-index"
         },
         {
-          "description": "allow-applocaldata-read-recursive -> This allows full recursive read access to the complete `$APPLOCALDATA` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$APPLOCALDATA` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-applocaldata-read-recursive"
-          ]
+          "const": "allow-applocaldata-read-recursive"
         },
         {
-          "description": "allow-applocaldata-write-recursive -> This allows full recursive write access to the complete `$APPLOCALDATA` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$APPLOCALDATA` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-applocaldata-write-recursive"
-          ]
+          "const": "allow-applocaldata-write-recursive"
         },
         {
-          "description": "allow-applocaldata-read -> This allows non-recursive read access to the `$APPLOCALDATA` folder.",
+          "description": "This allows non-recursive read access to the `$APPLOCALDATA` folder.",
           "type": "string",
-          "enum": [
-            "allow-applocaldata-read"
-          ]
+          "const": "allow-applocaldata-read"
         },
         {
-          "description": "allow-applocaldata-write -> This allows non-recursive write access to the `$APPLOCALDATA` folder.",
+          "description": "This allows non-recursive write access to the `$APPLOCALDATA` folder.",
           "type": "string",
-          "enum": [
-            "allow-applocaldata-write"
-          ]
+          "const": "allow-applocaldata-write"
         },
         {
-          "description": "allow-applocaldata-meta-recursive -> This allows full recursive read access to metadata of the `$APPLOCALDATA` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$APPLOCALDATA` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-applocaldata-meta-recursive"
-          ]
+          "const": "allow-applocaldata-meta-recursive"
         },
         {
-          "description": "allow-applocaldata-meta -> This allows non-recursive read access to metadata of the `$APPLOCALDATA` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$APPLOCALDATA` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-applocaldata-meta"
-          ]
+          "const": "allow-applocaldata-meta"
         },
         {
-          "description": "scope-applocaldata-recursive -> This scope permits recursive access to the complete `$APPLOCALDATA` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$APPLOCALDATA` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-applocaldata-recursive"
-          ]
+          "const": "scope-applocaldata-recursive"
         },
         {
-          "description": "scope-applocaldata -> This scope permits access to all files and list content of top level directories in the `$APPLOCALDATA` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$APPLOCALDATA` folder.",
           "type": "string",
-          "enum": [
-            "scope-applocaldata"
-          ]
+          "const": "scope-applocaldata"
         },
         {
-          "description": "scope-applocaldata-index -> This scope permits to list all files and folders in the `$APPLOCALDATA`folder.",
+          "description": "This scope permits to list all files and folders in the `$APPLOCALDATA`folder.",
           "type": "string",
-          "enum": [
-            "scope-applocaldata-index"
-          ]
+          "const": "scope-applocaldata-index"
         },
         {
-          "description": "allow-applog-read-recursive -> This allows full recursive read access to the complete `$APPLOG` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$APPLOG` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-applog-read-recursive"
-          ]
+          "const": "allow-applog-read-recursive"
         },
         {
-          "description": "allow-applog-write-recursive -> This allows full recursive write access to the complete `$APPLOG` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$APPLOG` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-applog-write-recursive"
-          ]
+          "const": "allow-applog-write-recursive"
         },
         {
-          "description": "allow-applog-read -> This allows non-recursive read access to the `$APPLOG` folder.",
+          "description": "This allows non-recursive read access to the `$APPLOG` folder.",
           "type": "string",
-          "enum": [
-            "allow-applog-read"
-          ]
+          "const": "allow-applog-read"
         },
         {
-          "description": "allow-applog-write -> This allows non-recursive write access to the `$APPLOG` folder.",
+          "description": "This allows non-recursive write access to the `$APPLOG` folder.",
           "type": "string",
-          "enum": [
-            "allow-applog-write"
-          ]
+          "const": "allow-applog-write"
         },
         {
-          "description": "allow-applog-meta-recursive -> This allows full recursive read access to metadata of the `$APPLOG` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$APPLOG` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-applog-meta-recursive"
-          ]
+          "const": "allow-applog-meta-recursive"
         },
         {
-          "description": "allow-applog-meta -> This allows non-recursive read access to metadata of the `$APPLOG` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$APPLOG` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-applog-meta"
-          ]
+          "const": "allow-applog-meta"
         },
         {
-          "description": "scope-applog-recursive -> This scope permits recursive access to the complete `$APPLOG` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$APPLOG` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-applog-recursive"
-          ]
+          "const": "scope-applog-recursive"
         },
         {
-          "description": "scope-applog -> This scope permits access to all files and list content of top level directories in the `$APPLOG` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$APPLOG` folder.",
           "type": "string",
-          "enum": [
-            "scope-applog"
-          ]
+          "const": "scope-applog"
         },
         {
-          "description": "scope-applog-index -> This scope permits to list all files and folders in the `$APPLOG`folder.",
+          "description": "This scope permits to list all files and folders in the `$APPLOG`folder.",
           "type": "string",
-          "enum": [
-            "scope-applog-index"
-          ]
+          "const": "scope-applog-index"
         },
         {
-          "description": "allow-audio-read-recursive -> This allows full recursive read access to the complete `$AUDIO` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$AUDIO` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-audio-read-recursive"
-          ]
+          "const": "allow-audio-read-recursive"
         },
         {
-          "description": "allow-audio-write-recursive -> This allows full recursive write access to the complete `$AUDIO` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$AUDIO` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-audio-write-recursive"
-          ]
+          "const": "allow-audio-write-recursive"
         },
         {
-          "description": "allow-audio-read -> This allows non-recursive read access to the `$AUDIO` folder.",
+          "description": "This allows non-recursive read access to the `$AUDIO` folder.",
           "type": "string",
-          "enum": [
-            "allow-audio-read"
-          ]
+          "const": "allow-audio-read"
         },
         {
-          "description": "allow-audio-write -> This allows non-recursive write access to the `$AUDIO` folder.",
+          "description": "This allows non-recursive write access to the `$AUDIO` folder.",
           "type": "string",
-          "enum": [
-            "allow-audio-write"
-          ]
+          "const": "allow-audio-write"
         },
         {
-          "description": "allow-audio-meta-recursive -> This allows full recursive read access to metadata of the `$AUDIO` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$AUDIO` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-audio-meta-recursive"
-          ]
+          "const": "allow-audio-meta-recursive"
         },
         {
-          "description": "allow-audio-meta -> This allows non-recursive read access to metadata of the `$AUDIO` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$AUDIO` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-audio-meta"
-          ]
+          "const": "allow-audio-meta"
         },
         {
-          "description": "scope-audio-recursive -> This scope permits recursive access to the complete `$AUDIO` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$AUDIO` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-audio-recursive"
-          ]
+          "const": "scope-audio-recursive"
         },
         {
-          "description": "scope-audio -> This scope permits access to all files and list content of top level directories in the `$AUDIO` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$AUDIO` folder.",
           "type": "string",
-          "enum": [
-            "scope-audio"
-          ]
+          "const": "scope-audio"
         },
         {
-          "description": "scope-audio-index -> This scope permits to list all files and folders in the `$AUDIO`folder.",
+          "description": "This scope permits to list all files and folders in the `$AUDIO`folder.",
           "type": "string",
-          "enum": [
-            "scope-audio-index"
-          ]
+          "const": "scope-audio-index"
         },
         {
-          "description": "allow-cache-read-recursive -> This allows full recursive read access to the complete `$CACHE` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$CACHE` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-cache-read-recursive"
-          ]
+          "const": "allow-cache-read-recursive"
         },
         {
-          "description": "allow-cache-write-recursive -> This allows full recursive write access to the complete `$CACHE` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$CACHE` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-cache-write-recursive"
-          ]
+          "const": "allow-cache-write-recursive"
         },
         {
-          "description": "allow-cache-read -> This allows non-recursive read access to the `$CACHE` folder.",
+          "description": "This allows non-recursive read access to the `$CACHE` folder.",
           "type": "string",
-          "enum": [
-            "allow-cache-read"
-          ]
+          "const": "allow-cache-read"
         },
         {
-          "description": "allow-cache-write -> This allows non-recursive write access to the `$CACHE` folder.",
+          "description": "This allows non-recursive write access to the `$CACHE` folder.",
           "type": "string",
-          "enum": [
-            "allow-cache-write"
-          ]
+          "const": "allow-cache-write"
         },
         {
-          "description": "allow-cache-meta-recursive -> This allows full recursive read access to metadata of the `$CACHE` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$CACHE` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-cache-meta-recursive"
-          ]
+          "const": "allow-cache-meta-recursive"
         },
         {
-          "description": "allow-cache-meta -> This allows non-recursive read access to metadata of the `$CACHE` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$CACHE` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-cache-meta"
-          ]
+          "const": "allow-cache-meta"
         },
         {
-          "description": "scope-cache-recursive -> This scope permits recursive access to the complete `$CACHE` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$CACHE` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-cache-recursive"
-          ]
+          "const": "scope-cache-recursive"
         },
         {
-          "description": "scope-cache -> This scope permits access to all files and list content of top level directories in the `$CACHE` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$CACHE` folder.",
           "type": "string",
-          "enum": [
-            "scope-cache"
-          ]
+          "const": "scope-cache"
         },
         {
-          "description": "scope-cache-index -> This scope permits to list all files and folders in the `$CACHE`folder.",
+          "description": "This scope permits to list all files and folders in the `$CACHE`folder.",
           "type": "string",
-          "enum": [
-            "scope-cache-index"
-          ]
+          "const": "scope-cache-index"
         },
         {
-          "description": "allow-config-read-recursive -> This allows full recursive read access to the complete `$CONFIG` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$CONFIG` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-config-read-recursive"
-          ]
+          "const": "allow-config-read-recursive"
         },
         {
-          "description": "allow-config-write-recursive -> This allows full recursive write access to the complete `$CONFIG` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$CONFIG` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-config-write-recursive"
-          ]
+          "const": "allow-config-write-recursive"
         },
         {
-          "description": "allow-config-read -> This allows non-recursive read access to the `$CONFIG` folder.",
+          "description": "This allows non-recursive read access to the `$CONFIG` folder.",
           "type": "string",
-          "enum": [
-            "allow-config-read"
-          ]
+          "const": "allow-config-read"
         },
         {
-          "description": "allow-config-write -> This allows non-recursive write access to the `$CONFIG` folder.",
+          "description": "This allows non-recursive write access to the `$CONFIG` folder.",
           "type": "string",
-          "enum": [
-            "allow-config-write"
-          ]
+          "const": "allow-config-write"
         },
         {
-          "description": "allow-config-meta-recursive -> This allows full recursive read access to metadata of the `$CONFIG` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$CONFIG` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-config-meta-recursive"
-          ]
+          "const": "allow-config-meta-recursive"
         },
         {
-          "description": "allow-config-meta -> This allows non-recursive read access to metadata of the `$CONFIG` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$CONFIG` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-config-meta"
-          ]
+          "const": "allow-config-meta"
         },
         {
-          "description": "scope-config-recursive -> This scope permits recursive access to the complete `$CONFIG` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$CONFIG` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-config-recursive"
-          ]
+          "const": "scope-config-recursive"
         },
         {
-          "description": "scope-config -> This scope permits access to all files and list content of top level directories in the `$CONFIG` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$CONFIG` folder.",
           "type": "string",
-          "enum": [
-            "scope-config"
-          ]
+          "const": "scope-config"
         },
         {
-          "description": "scope-config-index -> This scope permits to list all files and folders in the `$CONFIG`folder.",
+          "description": "This scope permits to list all files and folders in the `$CONFIG`folder.",
           "type": "string",
-          "enum": [
-            "scope-config-index"
-          ]
+          "const": "scope-config-index"
         },
         {
-          "description": "allow-data-read-recursive -> This allows full recursive read access to the complete `$DATA` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$DATA` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-data-read-recursive"
-          ]
+          "const": "allow-data-read-recursive"
         },
         {
-          "description": "allow-data-write-recursive -> This allows full recursive write access to the complete `$DATA` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$DATA` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-data-write-recursive"
-          ]
+          "const": "allow-data-write-recursive"
         },
         {
-          "description": "allow-data-read -> This allows non-recursive read access to the `$DATA` folder.",
+          "description": "This allows non-recursive read access to the `$DATA` folder.",
           "type": "string",
-          "enum": [
-            "allow-data-read"
-          ]
+          "const": "allow-data-read"
         },
         {
-          "description": "allow-data-write -> This allows non-recursive write access to the `$DATA` folder.",
+          "description": "This allows non-recursive write access to the `$DATA` folder.",
           "type": "string",
-          "enum": [
-            "allow-data-write"
-          ]
+          "const": "allow-data-write"
         },
         {
-          "description": "allow-data-meta-recursive -> This allows full recursive read access to metadata of the `$DATA` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$DATA` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-data-meta-recursive"
-          ]
+          "const": "allow-data-meta-recursive"
         },
         {
-          "description": "allow-data-meta -> This allows non-recursive read access to metadata of the `$DATA` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$DATA` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-data-meta"
-          ]
+          "const": "allow-data-meta"
         },
         {
-          "description": "scope-data-recursive -> This scope permits recursive access to the complete `$DATA` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$DATA` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-data-recursive"
-          ]
+          "const": "scope-data-recursive"
         },
         {
-          "description": "scope-data -> This scope permits access to all files and list content of top level directories in the `$DATA` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$DATA` folder.",
           "type": "string",
-          "enum": [
-            "scope-data"
-          ]
+          "const": "scope-data"
         },
         {
-          "description": "scope-data-index -> This scope permits to list all files and folders in the `$DATA`folder.",
+          "description": "This scope permits to list all files and folders in the `$DATA`folder.",
           "type": "string",
-          "enum": [
-            "scope-data-index"
-          ]
+          "const": "scope-data-index"
         },
         {
-          "description": "allow-desktop-read-recursive -> This allows full recursive read access to the complete `$DESKTOP` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$DESKTOP` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-desktop-read-recursive"
-          ]
+          "const": "allow-desktop-read-recursive"
         },
         {
-          "description": "allow-desktop-write-recursive -> This allows full recursive write access to the complete `$DESKTOP` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$DESKTOP` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-desktop-write-recursive"
-          ]
+          "const": "allow-desktop-write-recursive"
         },
         {
-          "description": "allow-desktop-read -> This allows non-recursive read access to the `$DESKTOP` folder.",
+          "description": "This allows non-recursive read access to the `$DESKTOP` folder.",
           "type": "string",
-          "enum": [
-            "allow-desktop-read"
-          ]
+          "const": "allow-desktop-read"
         },
         {
-          "description": "allow-desktop-write -> This allows non-recursive write access to the `$DESKTOP` folder.",
+          "description": "This allows non-recursive write access to the `$DESKTOP` folder.",
           "type": "string",
-          "enum": [
-            "allow-desktop-write"
-          ]
+          "const": "allow-desktop-write"
         },
         {
-          "description": "allow-desktop-meta-recursive -> This allows full recursive read access to metadata of the `$DESKTOP` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$DESKTOP` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-desktop-meta-recursive"
-          ]
+          "const": "allow-desktop-meta-recursive"
         },
         {
-          "description": "allow-desktop-meta -> This allows non-recursive read access to metadata of the `$DESKTOP` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$DESKTOP` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-desktop-meta"
-          ]
+          "const": "allow-desktop-meta"
         },
         {
-          "description": "scope-desktop-recursive -> This scope permits recursive access to the complete `$DESKTOP` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$DESKTOP` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-desktop-recursive"
-          ]
+          "const": "scope-desktop-recursive"
         },
         {
-          "description": "scope-desktop -> This scope permits access to all files and list content of top level directories in the `$DESKTOP` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$DESKTOP` folder.",
           "type": "string",
-          "enum": [
-            "scope-desktop"
-          ]
+          "const": "scope-desktop"
         },
         {
-          "description": "scope-desktop-index -> This scope permits to list all files and folders in the `$DESKTOP`folder.",
+          "description": "This scope permits to list all files and folders in the `$DESKTOP`folder.",
           "type": "string",
-          "enum": [
-            "scope-desktop-index"
-          ]
+          "const": "scope-desktop-index"
         },
         {
-          "description": "allow-document-read-recursive -> This allows full recursive read access to the complete `$DOCUMENT` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$DOCUMENT` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-document-read-recursive"
-          ]
+          "const": "allow-document-read-recursive"
         },
         {
-          "description": "allow-document-write-recursive -> This allows full recursive write access to the complete `$DOCUMENT` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$DOCUMENT` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-document-write-recursive"
-          ]
+          "const": "allow-document-write-recursive"
         },
         {
-          "description": "allow-document-read -> This allows non-recursive read access to the `$DOCUMENT` folder.",
+          "description": "This allows non-recursive read access to the `$DOCUMENT` folder.",
           "type": "string",
-          "enum": [
-            "allow-document-read"
-          ]
+          "const": "allow-document-read"
         },
         {
-          "description": "allow-document-write -> This allows non-recursive write access to the `$DOCUMENT` folder.",
+          "description": "This allows non-recursive write access to the `$DOCUMENT` folder.",
           "type": "string",
-          "enum": [
-            "allow-document-write"
-          ]
+          "const": "allow-document-write"
         },
         {
-          "description": "allow-document-meta-recursive -> This allows full recursive read access to metadata of the `$DOCUMENT` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$DOCUMENT` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-document-meta-recursive"
-          ]
+          "const": "allow-document-meta-recursive"
         },
         {
-          "description": "allow-document-meta -> This allows non-recursive read access to metadata of the `$DOCUMENT` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$DOCUMENT` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-document-meta"
-          ]
+          "const": "allow-document-meta"
         },
         {
-          "description": "scope-document-recursive -> This scope permits recursive access to the complete `$DOCUMENT` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$DOCUMENT` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-document-recursive"
-          ]
+          "const": "scope-document-recursive"
         },
         {
-          "description": "scope-document -> This scope permits access to all files and list content of top level directories in the `$DOCUMENT` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$DOCUMENT` folder.",
           "type": "string",
-          "enum": [
-            "scope-document"
-          ]
+          "const": "scope-document"
         },
         {
-          "description": "scope-document-index -> This scope permits to list all files and folders in the `$DOCUMENT`folder.",
+          "description": "This scope permits to list all files and folders in the `$DOCUMENT`folder.",
           "type": "string",
-          "enum": [
-            "scope-document-index"
-          ]
+          "const": "scope-document-index"
         },
         {
-          "description": "allow-download-read-recursive -> This allows full recursive read access to the complete `$DOWNLOAD` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$DOWNLOAD` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-download-read-recursive"
-          ]
+          "const": "allow-download-read-recursive"
         },
         {
-          "description": "allow-download-write-recursive -> This allows full recursive write access to the complete `$DOWNLOAD` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$DOWNLOAD` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-download-write-recursive"
-          ]
+          "const": "allow-download-write-recursive"
         },
         {
-          "description": "allow-download-read -> This allows non-recursive read access to the `$DOWNLOAD` folder.",
+          "description": "This allows non-recursive read access to the `$DOWNLOAD` folder.",
           "type": "string",
-          "enum": [
-            "allow-download-read"
-          ]
+          "const": "allow-download-read"
         },
         {
-          "description": "allow-download-write -> This allows non-recursive write access to the `$DOWNLOAD` folder.",
+          "description": "This allows non-recursive write access to the `$DOWNLOAD` folder.",
           "type": "string",
-          "enum": [
-            "allow-download-write"
-          ]
+          "const": "allow-download-write"
         },
         {
-          "description": "allow-download-meta-recursive -> This allows full recursive read access to metadata of the `$DOWNLOAD` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$DOWNLOAD` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-download-meta-recursive"
-          ]
+          "const": "allow-download-meta-recursive"
         },
         {
-          "description": "allow-download-meta -> This allows non-recursive read access to metadata of the `$DOWNLOAD` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$DOWNLOAD` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-download-meta"
-          ]
+          "const": "allow-download-meta"
         },
         {
-          "description": "scope-download-recursive -> This scope permits recursive access to the complete `$DOWNLOAD` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$DOWNLOAD` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-download-recursive"
-          ]
+          "const": "scope-download-recursive"
         },
         {
-          "description": "scope-download -> This scope permits access to all files and list content of top level directories in the `$DOWNLOAD` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$DOWNLOAD` folder.",
           "type": "string",
-          "enum": [
-            "scope-download"
-          ]
+          "const": "scope-download"
         },
         {
-          "description": "scope-download-index -> This scope permits to list all files and folders in the `$DOWNLOAD`folder.",
+          "description": "This scope permits to list all files and folders in the `$DOWNLOAD`folder.",
           "type": "string",
-          "enum": [
-            "scope-download-index"
-          ]
+          "const": "scope-download-index"
         },
         {
-          "description": "allow-exe-read-recursive -> This allows full recursive read access to the complete `$EXE` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$EXE` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-exe-read-recursive"
-          ]
+          "const": "allow-exe-read-recursive"
         },
         {
-          "description": "allow-exe-write-recursive -> This allows full recursive write access to the complete `$EXE` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$EXE` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-exe-write-recursive"
-          ]
+          "const": "allow-exe-write-recursive"
         },
         {
-          "description": "allow-exe-read -> This allows non-recursive read access to the `$EXE` folder.",
+          "description": "This allows non-recursive read access to the `$EXE` folder.",
           "type": "string",
-          "enum": [
-            "allow-exe-read"
-          ]
+          "const": "allow-exe-read"
         },
         {
-          "description": "allow-exe-write -> This allows non-recursive write access to the `$EXE` folder.",
+          "description": "This allows non-recursive write access to the `$EXE` folder.",
           "type": "string",
-          "enum": [
-            "allow-exe-write"
-          ]
+          "const": "allow-exe-write"
         },
         {
-          "description": "allow-exe-meta-recursive -> This allows full recursive read access to metadata of the `$EXE` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$EXE` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-exe-meta-recursive"
-          ]
+          "const": "allow-exe-meta-recursive"
         },
         {
-          "description": "allow-exe-meta -> This allows non-recursive read access to metadata of the `$EXE` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$EXE` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-exe-meta"
-          ]
+          "const": "allow-exe-meta"
         },
         {
-          "description": "scope-exe-recursive -> This scope permits recursive access to the complete `$EXE` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$EXE` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-exe-recursive"
-          ]
+          "const": "scope-exe-recursive"
         },
         {
-          "description": "scope-exe -> This scope permits access to all files and list content of top level directories in the `$EXE` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$EXE` folder.",
           "type": "string",
-          "enum": [
-            "scope-exe"
-          ]
+          "const": "scope-exe"
         },
         {
-          "description": "scope-exe-index -> This scope permits to list all files and folders in the `$EXE`folder.",
+          "description": "This scope permits to list all files and folders in the `$EXE`folder.",
           "type": "string",
-          "enum": [
-            "scope-exe-index"
-          ]
+          "const": "scope-exe-index"
         },
         {
-          "description": "allow-font-read-recursive -> This allows full recursive read access to the complete `$FONT` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$FONT` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-font-read-recursive"
-          ]
+          "const": "allow-font-read-recursive"
         },
         {
-          "description": "allow-font-write-recursive -> This allows full recursive write access to the complete `$FONT` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$FONT` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-font-write-recursive"
-          ]
+          "const": "allow-font-write-recursive"
         },
         {
-          "description": "allow-font-read -> This allows non-recursive read access to the `$FONT` folder.",
+          "description": "This allows non-recursive read access to the `$FONT` folder.",
           "type": "string",
-          "enum": [
-            "allow-font-read"
-          ]
+          "const": "allow-font-read"
         },
         {
-          "description": "allow-font-write -> This allows non-recursive write access to the `$FONT` folder.",
+          "description": "This allows non-recursive write access to the `$FONT` folder.",
           "type": "string",
-          "enum": [
-            "allow-font-write"
-          ]
+          "const": "allow-font-write"
         },
         {
-          "description": "allow-font-meta-recursive -> This allows full recursive read access to metadata of the `$FONT` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$FONT` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-font-meta-recursive"
-          ]
+          "const": "allow-font-meta-recursive"
         },
         {
-          "description": "allow-font-meta -> This allows non-recursive read access to metadata of the `$FONT` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$FONT` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-font-meta"
-          ]
+          "const": "allow-font-meta"
         },
         {
-          "description": "scope-font-recursive -> This scope permits recursive access to the complete `$FONT` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$FONT` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-font-recursive"
-          ]
+          "const": "scope-font-recursive"
         },
         {
-          "description": "scope-font -> This scope permits access to all files and list content of top level directories in the `$FONT` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$FONT` folder.",
           "type": "string",
-          "enum": [
-            "scope-font"
-          ]
+          "const": "scope-font"
         },
         {
-          "description": "scope-font-index -> This scope permits to list all files and folders in the `$FONT`folder.",
+          "description": "This scope permits to list all files and folders in the `$FONT`folder.",
           "type": "string",
-          "enum": [
-            "scope-font-index"
-          ]
+          "const": "scope-font-index"
         },
         {
-          "description": "allow-home-read-recursive -> This allows full recursive read access to the complete `$HOME` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$HOME` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-home-read-recursive"
-          ]
+          "const": "allow-home-read-recursive"
         },
         {
-          "description": "allow-home-write-recursive -> This allows full recursive write access to the complete `$HOME` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$HOME` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-home-write-recursive"
-          ]
+          "const": "allow-home-write-recursive"
         },
         {
-          "description": "allow-home-read -> This allows non-recursive read access to the `$HOME` folder.",
+          "description": "This allows non-recursive read access to the `$HOME` folder.",
           "type": "string",
-          "enum": [
-            "allow-home-read"
-          ]
+          "const": "allow-home-read"
         },
         {
-          "description": "allow-home-write -> This allows non-recursive write access to the `$HOME` folder.",
+          "description": "This allows non-recursive write access to the `$HOME` folder.",
           "type": "string",
-          "enum": [
-            "allow-home-write"
-          ]
+          "const": "allow-home-write"
         },
         {
-          "description": "allow-home-meta-recursive -> This allows full recursive read access to metadata of the `$HOME` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$HOME` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-home-meta-recursive"
-          ]
+          "const": "allow-home-meta-recursive"
         },
         {
-          "description": "allow-home-meta -> This allows non-recursive read access to metadata of the `$HOME` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$HOME` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-home-meta"
-          ]
+          "const": "allow-home-meta"
         },
         {
-          "description": "scope-home-recursive -> This scope permits recursive access to the complete `$HOME` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$HOME` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-home-recursive"
-          ]
+          "const": "scope-home-recursive"
         },
         {
-          "description": "scope-home -> This scope permits access to all files and list content of top level directories in the `$HOME` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$HOME` folder.",
           "type": "string",
-          "enum": [
-            "scope-home"
-          ]
+          "const": "scope-home"
         },
         {
-          "description": "scope-home-index -> This scope permits to list all files and folders in the `$HOME`folder.",
+          "description": "This scope permits to list all files and folders in the `$HOME`folder.",
           "type": "string",
-          "enum": [
-            "scope-home-index"
-          ]
+          "const": "scope-home-index"
         },
         {
-          "description": "allow-localdata-read-recursive -> This allows full recursive read access to the complete `$LOCALDATA` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$LOCALDATA` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-localdata-read-recursive"
-          ]
+          "const": "allow-localdata-read-recursive"
         },
         {
-          "description": "allow-localdata-write-recursive -> This allows full recursive write access to the complete `$LOCALDATA` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$LOCALDATA` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-localdata-write-recursive"
-          ]
+          "const": "allow-localdata-write-recursive"
         },
         {
-          "description": "allow-localdata-read -> This allows non-recursive read access to the `$LOCALDATA` folder.",
+          "description": "This allows non-recursive read access to the `$LOCALDATA` folder.",
           "type": "string",
-          "enum": [
-            "allow-localdata-read"
-          ]
+          "const": "allow-localdata-read"
         },
         {
-          "description": "allow-localdata-write -> This allows non-recursive write access to the `$LOCALDATA` folder.",
+          "description": "This allows non-recursive write access to the `$LOCALDATA` folder.",
           "type": "string",
-          "enum": [
-            "allow-localdata-write"
-          ]
+          "const": "allow-localdata-write"
         },
         {
-          "description": "allow-localdata-meta-recursive -> This allows full recursive read access to metadata of the `$LOCALDATA` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$LOCALDATA` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-localdata-meta-recursive"
-          ]
+          "const": "allow-localdata-meta-recursive"
         },
         {
-          "description": "allow-localdata-meta -> This allows non-recursive read access to metadata of the `$LOCALDATA` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$LOCALDATA` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-localdata-meta"
-          ]
+          "const": "allow-localdata-meta"
         },
         {
-          "description": "scope-localdata-recursive -> This scope permits recursive access to the complete `$LOCALDATA` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$LOCALDATA` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-localdata-recursive"
-          ]
+          "const": "scope-localdata-recursive"
         },
         {
-          "description": "scope-localdata -> This scope permits access to all files and list content of top level directories in the `$LOCALDATA` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$LOCALDATA` folder.",
           "type": "string",
-          "enum": [
-            "scope-localdata"
-          ]
+          "const": "scope-localdata"
         },
         {
-          "description": "scope-localdata-index -> This scope permits to list all files and folders in the `$LOCALDATA`folder.",
+          "description": "This scope permits to list all files and folders in the `$LOCALDATA`folder.",
           "type": "string",
-          "enum": [
-            "scope-localdata-index"
-          ]
+          "const": "scope-localdata-index"
         },
         {
-          "description": "allow-log-read-recursive -> This allows full recursive read access to the complete `$LOG` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$LOG` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-log-read-recursive"
-          ]
+          "const": "allow-log-read-recursive"
         },
         {
-          "description": "allow-log-write-recursive -> This allows full recursive write access to the complete `$LOG` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$LOG` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-log-write-recursive"
-          ]
+          "const": "allow-log-write-recursive"
         },
         {
-          "description": "allow-log-read -> This allows non-recursive read access to the `$LOG` folder.",
+          "description": "This allows non-recursive read access to the `$LOG` folder.",
           "type": "string",
-          "enum": [
-            "allow-log-read"
-          ]
+          "const": "allow-log-read"
         },
         {
-          "description": "allow-log-write -> This allows non-recursive write access to the `$LOG` folder.",
+          "description": "This allows non-recursive write access to the `$LOG` folder.",
           "type": "string",
-          "enum": [
-            "allow-log-write"
-          ]
+          "const": "allow-log-write"
         },
         {
-          "description": "allow-log-meta-recursive -> This allows full recursive read access to metadata of the `$LOG` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$LOG` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-log-meta-recursive"
-          ]
+          "const": "allow-log-meta-recursive"
         },
         {
-          "description": "allow-log-meta -> This allows non-recursive read access to metadata of the `$LOG` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$LOG` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-log-meta"
-          ]
+          "const": "allow-log-meta"
         },
         {
-          "description": "scope-log-recursive -> This scope permits recursive access to the complete `$LOG` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$LOG` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-log-recursive"
-          ]
+          "const": "scope-log-recursive"
         },
         {
-          "description": "scope-log -> This scope permits access to all files and list content of top level directories in the `$LOG` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$LOG` folder.",
           "type": "string",
-          "enum": [
-            "scope-log"
-          ]
+          "const": "scope-log"
         },
         {
-          "description": "scope-log-index -> This scope permits to list all files and folders in the `$LOG`folder.",
+          "description": "This scope permits to list all files and folders in the `$LOG`folder.",
           "type": "string",
-          "enum": [
-            "scope-log-index"
-          ]
+          "const": "scope-log-index"
         },
         {
-          "description": "allow-picture-read-recursive -> This allows full recursive read access to the complete `$PICTURE` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$PICTURE` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-picture-read-recursive"
-          ]
+          "const": "allow-picture-read-recursive"
         },
         {
-          "description": "allow-picture-write-recursive -> This allows full recursive write access to the complete `$PICTURE` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$PICTURE` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-picture-write-recursive"
-          ]
+          "const": "allow-picture-write-recursive"
         },
         {
-          "description": "allow-picture-read -> This allows non-recursive read access to the `$PICTURE` folder.",
+          "description": "This allows non-recursive read access to the `$PICTURE` folder.",
           "type": "string",
-          "enum": [
-            "allow-picture-read"
-          ]
+          "const": "allow-picture-read"
         },
         {
-          "description": "allow-picture-write -> This allows non-recursive write access to the `$PICTURE` folder.",
+          "description": "This allows non-recursive write access to the `$PICTURE` folder.",
           "type": "string",
-          "enum": [
-            "allow-picture-write"
-          ]
+          "const": "allow-picture-write"
         },
         {
-          "description": "allow-picture-meta-recursive -> This allows full recursive read access to metadata of the `$PICTURE` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$PICTURE` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-picture-meta-recursive"
-          ]
+          "const": "allow-picture-meta-recursive"
         },
         {
-          "description": "allow-picture-meta -> This allows non-recursive read access to metadata of the `$PICTURE` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$PICTURE` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-picture-meta"
-          ]
+          "const": "allow-picture-meta"
         },
         {
-          "description": "scope-picture-recursive -> This scope permits recursive access to the complete `$PICTURE` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$PICTURE` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-picture-recursive"
-          ]
+          "const": "scope-picture-recursive"
         },
         {
-          "description": "scope-picture -> This scope permits access to all files and list content of top level directories in the `$PICTURE` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$PICTURE` folder.",
           "type": "string",
-          "enum": [
-            "scope-picture"
-          ]
+          "const": "scope-picture"
         },
         {
-          "description": "scope-picture-index -> This scope permits to list all files and folders in the `$PICTURE`folder.",
+          "description": "This scope permits to list all files and folders in the `$PICTURE`folder.",
           "type": "string",
-          "enum": [
-            "scope-picture-index"
-          ]
+          "const": "scope-picture-index"
         },
         {
-          "description": "allow-public-read-recursive -> This allows full recursive read access to the complete `$PUBLIC` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$PUBLIC` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-public-read-recursive"
-          ]
+          "const": "allow-public-read-recursive"
         },
         {
-          "description": "allow-public-write-recursive -> This allows full recursive write access to the complete `$PUBLIC` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$PUBLIC` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-public-write-recursive"
-          ]
+          "const": "allow-public-write-recursive"
         },
         {
-          "description": "allow-public-read -> This allows non-recursive read access to the `$PUBLIC` folder.",
+          "description": "This allows non-recursive read access to the `$PUBLIC` folder.",
           "type": "string",
-          "enum": [
-            "allow-public-read"
-          ]
+          "const": "allow-public-read"
         },
         {
-          "description": "allow-public-write -> This allows non-recursive write access to the `$PUBLIC` folder.",
+          "description": "This allows non-recursive write access to the `$PUBLIC` folder.",
           "type": "string",
-          "enum": [
-            "allow-public-write"
-          ]
+          "const": "allow-public-write"
         },
         {
-          "description": "allow-public-meta-recursive -> This allows full recursive read access to metadata of the `$PUBLIC` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$PUBLIC` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-public-meta-recursive"
-          ]
+          "const": "allow-public-meta-recursive"
         },
         {
-          "description": "allow-public-meta -> This allows non-recursive read access to metadata of the `$PUBLIC` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$PUBLIC` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-public-meta"
-          ]
+          "const": "allow-public-meta"
         },
         {
-          "description": "scope-public-recursive -> This scope permits recursive access to the complete `$PUBLIC` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$PUBLIC` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-public-recursive"
-          ]
+          "const": "scope-public-recursive"
         },
         {
-          "description": "scope-public -> This scope permits access to all files and list content of top level directories in the `$PUBLIC` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$PUBLIC` folder.",
           "type": "string",
-          "enum": [
-            "scope-public"
-          ]
+          "const": "scope-public"
         },
         {
-          "description": "scope-public-index -> This scope permits to list all files and folders in the `$PUBLIC`folder.",
+          "description": "This scope permits to list all files and folders in the `$PUBLIC`folder.",
           "type": "string",
-          "enum": [
-            "scope-public-index"
-          ]
+          "const": "scope-public-index"
         },
         {
-          "description": "allow-resource-read-recursive -> This allows full recursive read access to the complete `$RESOURCE` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$RESOURCE` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-resource-read-recursive"
-          ]
+          "const": "allow-resource-read-recursive"
         },
         {
-          "description": "allow-resource-write-recursive -> This allows full recursive write access to the complete `$RESOURCE` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$RESOURCE` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-resource-write-recursive"
-          ]
+          "const": "allow-resource-write-recursive"
         },
         {
-          "description": "allow-resource-read -> This allows non-recursive read access to the `$RESOURCE` folder.",
+          "description": "This allows non-recursive read access to the `$RESOURCE` folder.",
           "type": "string",
-          "enum": [
-            "allow-resource-read"
-          ]
+          "const": "allow-resource-read"
         },
         {
-          "description": "allow-resource-write -> This allows non-recursive write access to the `$RESOURCE` folder.",
+          "description": "This allows non-recursive write access to the `$RESOURCE` folder.",
           "type": "string",
-          "enum": [
-            "allow-resource-write"
-          ]
+          "const": "allow-resource-write"
         },
         {
-          "description": "allow-resource-meta-recursive -> This allows full recursive read access to metadata of the `$RESOURCE` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$RESOURCE` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-resource-meta-recursive"
-          ]
+          "const": "allow-resource-meta-recursive"
         },
         {
-          "description": "allow-resource-meta -> This allows non-recursive read access to metadata of the `$RESOURCE` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$RESOURCE` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-resource-meta"
-          ]
+          "const": "allow-resource-meta"
         },
         {
-          "description": "scope-resource-recursive -> This scope permits recursive access to the complete `$RESOURCE` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$RESOURCE` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-resource-recursive"
-          ]
+          "const": "scope-resource-recursive"
         },
         {
-          "description": "scope-resource -> This scope permits access to all files and list content of top level directories in the `$RESOURCE` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$RESOURCE` folder.",
           "type": "string",
-          "enum": [
-            "scope-resource"
-          ]
+          "const": "scope-resource"
         },
         {
-          "description": "scope-resource-index -> This scope permits to list all files and folders in the `$RESOURCE`folder.",
+          "description": "This scope permits to list all files and folders in the `$RESOURCE`folder.",
           "type": "string",
-          "enum": [
-            "scope-resource-index"
-          ]
+          "const": "scope-resource-index"
         },
         {
-          "description": "allow-runtime-read-recursive -> This allows full recursive read access to the complete `$RUNTIME` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$RUNTIME` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-runtime-read-recursive"
-          ]
+          "const": "allow-runtime-read-recursive"
         },
         {
-          "description": "allow-runtime-write-recursive -> This allows full recursive write access to the complete `$RUNTIME` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$RUNTIME` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-runtime-write-recursive"
-          ]
+          "const": "allow-runtime-write-recursive"
         },
         {
-          "description": "allow-runtime-read -> This allows non-recursive read access to the `$RUNTIME` folder.",
+          "description": "This allows non-recursive read access to the `$RUNTIME` folder.",
           "type": "string",
-          "enum": [
-            "allow-runtime-read"
-          ]
+          "const": "allow-runtime-read"
         },
         {
-          "description": "allow-runtime-write -> This allows non-recursive write access to the `$RUNTIME` folder.",
+          "description": "This allows non-recursive write access to the `$RUNTIME` folder.",
           "type": "string",
-          "enum": [
-            "allow-runtime-write"
-          ]
+          "const": "allow-runtime-write"
         },
         {
-          "description": "allow-runtime-meta-recursive -> This allows full recursive read access to metadata of the `$RUNTIME` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$RUNTIME` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-runtime-meta-recursive"
-          ]
+          "const": "allow-runtime-meta-recursive"
         },
         {
-          "description": "allow-runtime-meta -> This allows non-recursive read access to metadata of the `$RUNTIME` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$RUNTIME` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-runtime-meta"
-          ]
+          "const": "allow-runtime-meta"
         },
         {
-          "description": "scope-runtime-recursive -> This scope permits recursive access to the complete `$RUNTIME` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$RUNTIME` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-runtime-recursive"
-          ]
+          "const": "scope-runtime-recursive"
         },
         {
-          "description": "scope-runtime -> This scope permits access to all files and list content of top level directories in the `$RUNTIME` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$RUNTIME` folder.",
           "type": "string",
-          "enum": [
-            "scope-runtime"
-          ]
+          "const": "scope-runtime"
         },
         {
-          "description": "scope-runtime-index -> This scope permits to list all files and folders in the `$RUNTIME`folder.",
+          "description": "This scope permits to list all files and folders in the `$RUNTIME`folder.",
           "type": "string",
-          "enum": [
-            "scope-runtime-index"
-          ]
+          "const": "scope-runtime-index"
         },
         {
-          "description": "allow-temp-read-recursive -> This allows full recursive read access to the complete `$TEMP` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$TEMP` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-temp-read-recursive"
-          ]
+          "const": "allow-temp-read-recursive"
         },
         {
-          "description": "allow-temp-write-recursive -> This allows full recursive write access to the complete `$TEMP` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$TEMP` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-temp-write-recursive"
-          ]
+          "const": "allow-temp-write-recursive"
         },
         {
-          "description": "allow-temp-read -> This allows non-recursive read access to the `$TEMP` folder.",
+          "description": "This allows non-recursive read access to the `$TEMP` folder.",
           "type": "string",
-          "enum": [
-            "allow-temp-read"
-          ]
+          "const": "allow-temp-read"
         },
         {
-          "description": "allow-temp-write -> This allows non-recursive write access to the `$TEMP` folder.",
+          "description": "This allows non-recursive write access to the `$TEMP` folder.",
           "type": "string",
-          "enum": [
-            "allow-temp-write"
-          ]
+          "const": "allow-temp-write"
         },
         {
-          "description": "allow-temp-meta-recursive -> This allows full recursive read access to metadata of the `$TEMP` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$TEMP` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-temp-meta-recursive"
-          ]
+          "const": "allow-temp-meta-recursive"
         },
         {
-          "description": "allow-temp-meta -> This allows non-recursive read access to metadata of the `$TEMP` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$TEMP` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-temp-meta"
-          ]
+          "const": "allow-temp-meta"
         },
         {
-          "description": "scope-temp-recursive -> This scope permits recursive access to the complete `$TEMP` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$TEMP` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-temp-recursive"
-          ]
+          "const": "scope-temp-recursive"
         },
         {
-          "description": "scope-temp -> This scope permits access to all files and list content of top level directories in the `$TEMP` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$TEMP` folder.",
           "type": "string",
-          "enum": [
-            "scope-temp"
-          ]
+          "const": "scope-temp"
         },
         {
-          "description": "scope-temp-index -> This scope permits to list all files and folders in the `$TEMP`folder.",
+          "description": "This scope permits to list all files and folders in the `$TEMP`folder.",
           "type": "string",
-          "enum": [
-            "scope-temp-index"
-          ]
+          "const": "scope-temp-index"
         },
         {
-          "description": "allow-template-read-recursive -> This allows full recursive read access to the complete `$TEMPLATE` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$TEMPLATE` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-template-read-recursive"
-          ]
+          "const": "allow-template-read-recursive"
         },
         {
-          "description": "allow-template-write-recursive -> This allows full recursive write access to the complete `$TEMPLATE` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$TEMPLATE` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-template-write-recursive"
-          ]
+          "const": "allow-template-write-recursive"
         },
         {
-          "description": "allow-template-read -> This allows non-recursive read access to the `$TEMPLATE` folder.",
+          "description": "This allows non-recursive read access to the `$TEMPLATE` folder.",
           "type": "string",
-          "enum": [
-            "allow-template-read"
-          ]
+          "const": "allow-template-read"
         },
         {
-          "description": "allow-template-write -> This allows non-recursive write access to the `$TEMPLATE` folder.",
+          "description": "This allows non-recursive write access to the `$TEMPLATE` folder.",
           "type": "string",
-          "enum": [
-            "allow-template-write"
-          ]
+          "const": "allow-template-write"
         },
         {
-          "description": "allow-template-meta-recursive -> This allows full recursive read access to metadata of the `$TEMPLATE` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$TEMPLATE` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-template-meta-recursive"
-          ]
+          "const": "allow-template-meta-recursive"
         },
         {
-          "description": "allow-template-meta -> This allows non-recursive read access to metadata of the `$TEMPLATE` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$TEMPLATE` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-template-meta"
-          ]
+          "const": "allow-template-meta"
         },
         {
-          "description": "scope-template-recursive -> This scope permits recursive access to the complete `$TEMPLATE` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$TEMPLATE` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-template-recursive"
-          ]
+          "const": "scope-template-recursive"
         },
         {
-          "description": "scope-template -> This scope permits access to all files and list content of top level directories in the `$TEMPLATE` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$TEMPLATE` folder.",
           "type": "string",
-          "enum": [
-            "scope-template"
-          ]
+          "const": "scope-template"
         },
         {
-          "description": "scope-template-index -> This scope permits to list all files and folders in the `$TEMPLATE`folder.",
+          "description": "This scope permits to list all files and folders in the `$TEMPLATE`folder.",
           "type": "string",
-          "enum": [
-            "scope-template-index"
-          ]
+          "const": "scope-template-index"
         },
         {
-          "description": "allow-video-read-recursive -> This allows full recursive read access to the complete `$VIDEO` folder, files and subdirectories.",
+          "description": "This allows full recursive read access to the complete `$VIDEO` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-video-read-recursive"
-          ]
+          "const": "allow-video-read-recursive"
         },
         {
-          "description": "allow-video-write-recursive -> This allows full recursive write access to the complete `$VIDEO` folder, files and subdirectories.",
+          "description": "This allows full recursive write access to the complete `$VIDEO` folder, files and subdirectories.",
           "type": "string",
-          "enum": [
-            "allow-video-write-recursive"
-          ]
+          "const": "allow-video-write-recursive"
         },
         {
-          "description": "allow-video-read -> This allows non-recursive read access to the `$VIDEO` folder.",
+          "description": "This allows non-recursive read access to the `$VIDEO` folder.",
           "type": "string",
-          "enum": [
-            "allow-video-read"
-          ]
+          "const": "allow-video-read"
         },
         {
-          "description": "allow-video-write -> This allows non-recursive write access to the `$VIDEO` folder.",
+          "description": "This allows non-recursive write access to the `$VIDEO` folder.",
           "type": "string",
-          "enum": [
-            "allow-video-write"
-          ]
+          "const": "allow-video-write"
         },
         {
-          "description": "allow-video-meta-recursive -> This allows full recursive read access to metadata of the `$VIDEO` folder, including file listing and statistics.",
+          "description": "This allows full recursive read access to metadata of the `$VIDEO` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-video-meta-recursive"
-          ]
+          "const": "allow-video-meta-recursive"
         },
         {
-          "description": "allow-video-meta -> This allows non-recursive read access to metadata of the `$VIDEO` folder, including file listing and statistics.",
+          "description": "This allows non-recursive read access to metadata of the `$VIDEO` folder, including file listing and statistics.",
           "type": "string",
-          "enum": [
-            "allow-video-meta"
-          ]
+          "const": "allow-video-meta"
         },
         {
-          "description": "scope-video-recursive -> This scope permits recursive access to the complete `$VIDEO` folder, including sub directories and files.",
+          "description": "This scope permits recursive access to the complete `$VIDEO` folder, including sub directories and files.",
           "type": "string",
-          "enum": [
-            "scope-video-recursive"
-          ]
+          "const": "scope-video-recursive"
         },
         {
-          "description": "scope-video -> This scope permits access to all files and list content of top level directories in the `$VIDEO` folder.",
+          "description": "This scope permits access to all files and list content of top level directories in the `$VIDEO` folder.",
           "type": "string",
-          "enum": [
-            "scope-video"
-          ]
+          "const": "scope-video"
         },
         {
-          "description": "scope-video-index -> This scope permits to list all files and folders in the `$VIDEO`folder.",
+          "description": "This scope permits to list all files and folders in the `$VIDEO`folder.",
           "type": "string",
-          "enum": [
-            "scope-video-index"
-          ]
+          "const": "scope-video-index"
         },
         {
-          "description": "allow-copy-file -> Enables the copy_file command without any pre-configured scope.",
+          "description": "Enables the copy_file command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-copy-file"
-          ]
+          "const": "allow-copy-file"
         },
         {
-          "description": "deny-copy-file -> Denies the copy_file command without any pre-configured scope.",
+          "description": "Denies the copy_file command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-copy-file"
-          ]
+          "const": "deny-copy-file"
         },
         {
-          "description": "allow-create -> Enables the create command without any pre-configured scope.",
+          "description": "Enables the create command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-create"
-          ]
+          "const": "allow-create"
         },
         {
-          "description": "deny-create -> Denies the create command without any pre-configured scope.",
+          "description": "Denies the create command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-create"
-          ]
+          "const": "deny-create"
         },
         {
-          "description": "allow-exists -> Enables the exists command without any pre-configured scope.",
+          "description": "Enables the exists command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-exists"
-          ]
+          "const": "allow-exists"
         },
         {
-          "description": "deny-exists -> Denies the exists command without any pre-configured scope.",
+          "description": "Denies the exists command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-exists"
-          ]
+          "const": "deny-exists"
         },
         {
-          "description": "allow-fstat -> Enables the fstat command without any pre-configured scope.",
+          "description": "Enables the fstat command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-fstat"
-          ]
+          "const": "allow-fstat"
         },
         {
-          "description": "deny-fstat -> Denies the fstat command without any pre-configured scope.",
+          "description": "Denies the fstat command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-fstat"
-          ]
+          "const": "deny-fstat"
         },
         {
-          "description": "allow-ftruncate -> Enables the ftruncate command without any pre-configured scope.",
+          "description": "Enables the ftruncate command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-ftruncate"
-          ]
+          "const": "allow-ftruncate"
         },
         {
-          "description": "deny-ftruncate -> Denies the ftruncate command without any pre-configured scope.",
+          "description": "Denies the ftruncate command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-ftruncate"
-          ]
+          "const": "deny-ftruncate"
         },
         {
-          "description": "allow-lstat -> Enables the lstat command without any pre-configured scope.",
+          "description": "Enables the lstat command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-lstat"
-          ]
+          "const": "allow-lstat"
         },
         {
-          "description": "deny-lstat -> Denies the lstat command without any pre-configured scope.",
+          "description": "Denies the lstat command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-lstat"
-          ]
+          "const": "deny-lstat"
         },
         {
-          "description": "allow-mkdir -> Enables the mkdir command without any pre-configured scope.",
+          "description": "Enables the mkdir command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-mkdir"
-          ]
+          "const": "allow-mkdir"
         },
         {
-          "description": "deny-mkdir -> Denies the mkdir command without any pre-configured scope.",
+          "description": "Denies the mkdir command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-mkdir"
-          ]
+          "const": "deny-mkdir"
         },
         {
-          "description": "allow-open -> Enables the open command without any pre-configured scope.",
+          "description": "Enables the open command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-open"
-          ]
+          "const": "allow-open"
         },
         {
-          "description": "deny-open -> Denies the open command without any pre-configured scope.",
+          "description": "Denies the open command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-open"
-          ]
+          "const": "deny-open"
         },
         {
-          "description": "allow-read -> Enables the read command without any pre-configured scope.",
+          "description": "Enables the read command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-read"
-          ]
+          "const": "allow-read"
         },
         {
-          "description": "deny-read -> Denies the read command without any pre-configured scope.",
+          "description": "Denies the read command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-read"
-          ]
+          "const": "deny-read"
         },
         {
-          "description": "allow-read-dir -> Enables the read_dir command without any pre-configured scope.",
+          "description": "Enables the read_dir command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-read-dir"
-          ]
+          "const": "allow-read-dir"
         },
         {
-          "description": "deny-read-dir -> Denies the read_dir command without any pre-configured scope.",
+          "description": "Denies the read_dir command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-read-dir"
-          ]
+          "const": "deny-read-dir"
         },
         {
-          "description": "allow-read-file -> Enables the read_file command without any pre-configured scope.",
+          "description": "Enables the read_file command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-read-file"
-          ]
+          "const": "allow-read-file"
         },
         {
-          "description": "deny-read-file -> Denies the read_file command without any pre-configured scope.",
+          "description": "Denies the read_file command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-read-file"
-          ]
+          "const": "deny-read-file"
         },
         {
-          "description": "allow-read-text-file -> Enables the read_text_file command without any pre-configured scope.",
+          "description": "Enables the read_text_file command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-read-text-file"
-          ]
+          "const": "allow-read-text-file"
         },
         {
-          "description": "deny-read-text-file -> Denies the read_text_file command without any pre-configured scope.",
+          "description": "Denies the read_text_file command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-read-text-file"
-          ]
+          "const": "deny-read-text-file"
         },
         {
-          "description": "allow-read-text-file-lines -> Enables the read_text_file_lines command without any pre-configured scope.",
+          "description": "Enables the read_text_file_lines command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-read-text-file-lines"
-          ]
+          "const": "allow-read-text-file-lines"
         },
         {
-          "description": "deny-read-text-file-lines -> Denies the read_text_file_lines command without any pre-configured scope.",
+          "description": "Denies the read_text_file_lines command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-read-text-file-lines"
-          ]
+          "const": "deny-read-text-file-lines"
         },
         {
-          "description": "allow-read-text-file-lines-next -> Enables the read_text_file_lines_next command without any pre-configured scope.",
+          "description": "Enables the read_text_file_lines_next command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-read-text-file-lines-next"
-          ]
+          "const": "allow-read-text-file-lines-next"
         },
         {
-          "description": "deny-read-text-file-lines-next -> Denies the read_text_file_lines_next command without any pre-configured scope.",
+          "description": "Denies the read_text_file_lines_next command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-read-text-file-lines-next"
-          ]
+          "const": "deny-read-text-file-lines-next"
         },
         {
-          "description": "allow-remove -> Enables the remove command without any pre-configured scope.",
+          "description": "Enables the remove command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-remove"
-          ]
+          "const": "allow-remove"
         },
         {
-          "description": "deny-remove -> Denies the remove command without any pre-configured scope.",
+          "description": "Denies the remove command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-remove"
-          ]
+          "const": "deny-remove"
         },
         {
-          "description": "allow-rename -> Enables the rename command without any pre-configured scope.",
+          "description": "Enables the rename command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-rename"
-          ]
+          "const": "allow-rename"
         },
         {
-          "description": "deny-rename -> Denies the rename command without any pre-configured scope.",
+          "description": "Denies the rename command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-rename"
-          ]
+          "const": "deny-rename"
         },
         {
-          "description": "allow-seek -> Enables the seek command without any pre-configured scope.",
+          "description": "Enables the seek command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-seek"
-          ]
+          "const": "allow-seek"
         },
         {
-          "description": "deny-seek -> Denies the seek command without any pre-configured scope.",
+          "description": "Denies the seek command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-seek"
-          ]
+          "const": "deny-seek"
         },
         {
-          "description": "allow-stat -> Enables the stat command without any pre-configured scope.",
+          "description": "Enables the stat command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-stat"
-          ]
+          "const": "allow-stat"
         },
         {
-          "description": "deny-stat -> Denies the stat command without any pre-configured scope.",
+          "description": "Denies the stat command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-stat"
-          ]
+          "const": "deny-stat"
         },
         {
-          "description": "allow-truncate -> Enables the truncate command without any pre-configured scope.",
+          "description": "Enables the truncate command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-truncate"
-          ]
+          "const": "allow-truncate"
         },
         {
-          "description": "deny-truncate -> Denies the truncate command without any pre-configured scope.",
+          "description": "Denies the truncate command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-truncate"
-          ]
+          "const": "deny-truncate"
         },
         {
-          "description": "allow-unwatch -> Enables the unwatch command without any pre-configured scope.",
+          "description": "Enables the unwatch command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-unwatch"
-          ]
+          "const": "allow-unwatch"
         },
         {
-          "description": "deny-unwatch -> Denies the unwatch command without any pre-configured scope.",
+          "description": "Denies the unwatch command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-unwatch"
-          ]
+          "const": "deny-unwatch"
         },
         {
-          "description": "allow-watch -> Enables the watch command without any pre-configured scope.",
+          "description": "Enables the watch command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-watch"
-          ]
+          "const": "allow-watch"
         },
         {
-          "description": "deny-watch -> Denies the watch command without any pre-configured scope.",
+          "description": "Denies the watch command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-watch"
-          ]
+          "const": "deny-watch"
         },
         {
-          "description": "allow-write -> Enables the write command without any pre-configured scope.",
+          "description": "Enables the write command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-write"
-          ]
+          "const": "allow-write"
         },
         {
-          "description": "deny-write -> Denies the write command without any pre-configured scope.",
+          "description": "Denies the write command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-write"
-          ]
+          "const": "deny-write"
         },
         {
-          "description": "allow-write-file -> Enables the write_file command without any pre-configured scope.",
+          "description": "Enables the write_file command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-write-file"
-          ]
+          "const": "allow-write-file"
         },
         {
-          "description": "deny-write-file -> Denies the write_file command without any pre-configured scope.",
+          "description": "Denies the write_file command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-write-file"
-          ]
+          "const": "deny-write-file"
         },
         {
-          "description": "allow-write-text-file -> Enables the write_text_file command without any pre-configured scope.",
+          "description": "Enables the write_text_file command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-write-text-file"
-          ]
+          "const": "allow-write-text-file"
         },
         {
-          "description": "deny-write-text-file -> Denies the write_text_file command without any pre-configured scope.",
+          "description": "Denies the write_text_file command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-write-text-file"
-          ]
+          "const": "deny-write-text-file"
         },
         {
-          "description": "create-app-specific-dirs -> This permissions allows to create the application specific directories.\n",
+          "description": "This permissions allows to create the application specific directories.\n",
           "type": "string",
-          "enum": [
-            "create-app-specific-dirs"
-          ]
+          "const": "create-app-specific-dirs"
         },
         {
-          "description": "default -> This set of permissions describes the what kind of\nfile system access the `fs` plugin has enabled or denied by default.\n\n#### Granted Permissions\n\nThis default permission set enables read access to the\napplication specific directories (AppConfig, AppData, AppLocalData, AppCache,\nAppLog) and all files and sub directories created in it.\nThe location of these directories depends on the operating system,\nwhere the application is run.\n\nIn general these directories need to be manually created\nby the application at runtime, before accessing files or folders\nin it is possible.\n\nTherefore, it is also allowed to create all of these folders via\nthe `mkdir` command.\n\n#### Denied Permissions\n\nThis default permission set prevents access to critical components\nof the Tauri application by default.\nOn Windows the webview data folder access is denied.\n\n",
+          "description": "This set of permissions describes the what kind of\nfile system access the `fs` plugin has enabled or denied by default.\n\n#### Granted Permissions\n\nThis default permission set enables read access to the\napplication specific directories (AppConfig, AppData, AppLocalData, AppCache,\nAppLog) and all files and sub directories created in it.\nThe location of these directories depends on the operating system,\nwhere the application is run.\n\nIn general these directories need to be manually created\nby the application at runtime, before accessing files or folders\nin it is possible.\n\nTherefore, it is also allowed to create all of these folders via\nthe `mkdir` command.\n\n#### Denied Permissions\n\nThis default permission set prevents access to critical components\nof the Tauri application by default.\nOn Windows the webview data folder access is denied.\n\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         },
         {
-          "description": "deny-default -> This denies access to dangerous Tauri relevant files and folders by default.",
+          "description": "This denies access to dangerous Tauri relevant files and folders by default.",
           "type": "string",
-          "enum": [
-            "deny-default"
-          ]
+          "const": "deny-default"
         },
         {
-          "description": "deny-webview-data-linux -> This denies read access to the\n`$APPLOCALDATA` folder on linux as the webview data and configuration values are stored here.\nAllowing access can lead to sensitive information disclosure and should be well considered.",
+          "description": "This denies read access to the\n`$APPLOCALDATA` folder on linux as the webview data and configuration values are stored here.\nAllowing access can lead to sensitive information disclosure and should be well considered.",
           "type": "string",
-          "enum": [
-            "deny-webview-data-linux"
-          ]
+          "const": "deny-webview-data-linux"
         },
         {
-          "description": "deny-webview-data-windows -> This denies read access to the\n`$APPLOCALDATA/EBWebView` folder on windows as the webview data and configuration values are stored here.\nAllowing access can lead to sensitive information disclosure and should be well considered.",
+          "description": "This denies read access to the\n`$APPLOCALDATA/EBWebView` folder on windows as the webview data and configuration values are stored here.\nAllowing access can lead to sensitive information disclosure and should be well considered.",
           "type": "string",
-          "enum": [
-            "deny-webview-data-windows"
-          ]
+          "const": "deny-webview-data-windows"
         },
         {
-          "description": "read-all -> This enables all read related commands without any pre-configured accessible paths.",
+          "description": "This enables all read related commands without any pre-configured accessible paths.",
           "type": "string",
-          "enum": [
-            "read-all"
-          ]
+          "const": "read-all"
         },
         {
-          "description": "read-app-specific-dirs-recursive -> This permission allows recursive read functionality on the application\nspecific base directories. \n",
+          "description": "This permission allows recursive read functionality on the application\nspecific base directories. \n",
           "type": "string",
-          "enum": [
-            "read-app-specific-dirs-recursive"
-          ]
+          "const": "read-app-specific-dirs-recursive"
         },
         {
-          "description": "read-dirs -> This enables directory read and file metadata related commands without any pre-configured accessible paths.",
+          "description": "This enables directory read and file metadata related commands without any pre-configured accessible paths.",
           "type": "string",
-          "enum": [
-            "read-dirs"
-          ]
+          "const": "read-dirs"
         },
         {
-          "description": "read-files -> This enables file read related commands without any pre-configured accessible paths.",
+          "description": "This enables file read related commands without any pre-configured accessible paths.",
           "type": "string",
-          "enum": [
-            "read-files"
-          ]
+          "const": "read-files"
         },
         {
-          "description": "read-meta -> This enables all index or metadata related commands without any pre-configured accessible paths.",
+          "description": "This enables all index or metadata related commands without any pre-configured accessible paths.",
           "type": "string",
-          "enum": [
-            "read-meta"
-          ]
+          "const": "read-meta"
         },
         {
-          "description": "scope -> An empty permission you can use to modify the global scope.",
+          "description": "An empty permission you can use to modify the global scope.",
           "type": "string",
-          "enum": [
-            "scope"
-          ]
+          "const": "scope"
         },
         {
-          "description": "write-all -> This enables all write related commands without any pre-configured accessible paths.",
+          "description": "This enables all write related commands without any pre-configured accessible paths.",
           "type": "string",
-          "enum": [
-            "write-all"
-          ]
+          "const": "write-all"
         },
         {
-          "description": "write-files -> This enables all file write related commands without any pre-configured accessible paths.",
+          "description": "This enables all file write related commands without any pre-configured accessible paths.",
           "type": "string",
-          "enum": [
-            "write-files"
-          ]
+          "const": "write-files"
         }
       ]
     }

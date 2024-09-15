@@ -295,60 +295,44 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-impact-feedback -> Enables the impact_feedback command without any pre-configured scope.",
+          "description": "Enables the impact_feedback command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-impact-feedback"
-          ]
+          "const": "allow-impact-feedback"
         },
         {
-          "description": "deny-impact-feedback -> Denies the impact_feedback command without any pre-configured scope.",
+          "description": "Denies the impact_feedback command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-impact-feedback"
-          ]
+          "const": "deny-impact-feedback"
         },
         {
-          "description": "allow-notification-feedback -> Enables the notification_feedback command without any pre-configured scope.",
+          "description": "Enables the notification_feedback command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-notification-feedback"
-          ]
+          "const": "allow-notification-feedback"
         },
         {
-          "description": "deny-notification-feedback -> Denies the notification_feedback command without any pre-configured scope.",
+          "description": "Denies the notification_feedback command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-notification-feedback"
-          ]
+          "const": "deny-notification-feedback"
         },
         {
-          "description": "allow-selection-feedback -> Enables the selection_feedback command without any pre-configured scope.",
+          "description": "Enables the selection_feedback command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-selection-feedback"
-          ]
+          "const": "allow-selection-feedback"
         },
         {
-          "description": "deny-selection-feedback -> Denies the selection_feedback command without any pre-configured scope.",
+          "description": "Denies the selection_feedback command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-selection-feedback"
-          ]
+          "const": "deny-selection-feedback"
         },
         {
-          "description": "allow-vibrate -> Enables the vibrate command without any pre-configured scope.",
+          "description": "Enables the vibrate command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-vibrate"
-          ]
+          "const": "allow-vibrate"
         },
         {
-          "description": "deny-vibrate -> Denies the vibrate command without any pre-configured scope.",
+          "description": "Denies the vibrate command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-vibrate"
-          ]
+          "const": "deny-vibrate"
         }
       ]
     }

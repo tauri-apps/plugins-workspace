@@ -295,39 +295,29 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-connect -> Enables the connect command without any pre-configured scope.",
+          "description": "Enables the connect command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-connect"
-          ]
+          "const": "allow-connect"
         },
         {
-          "description": "deny-connect -> Denies the connect command without any pre-configured scope.",
+          "description": "Denies the connect command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-connect"
-          ]
+          "const": "deny-connect"
         },
         {
-          "description": "allow-send -> Enables the send command without any pre-configured scope.",
+          "description": "Enables the send command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-send"
-          ]
+          "const": "allow-send"
         },
         {
-          "description": "deny-send -> Denies the send command without any pre-configured scope.",
+          "description": "Denies the send command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-send"
-          ]
+          "const": "deny-send"
         },
         {
-          "description": "default -> Allows connecting and sending data to a WebSocket server",
+          "description": "Allows connecting and sending data to a WebSocket server",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

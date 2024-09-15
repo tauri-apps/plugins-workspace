@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-rc.4]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.0.0-rc.6`
+
 ## \[2.0.0-rc.3]
 
 - [`b2269333`](https://github.com/tauri-apps/plugins-workspace/commit/b2269333e39afe32629a11763a8e25d0b12b132b) ([#1766](https://github.com/tauri-apps/plugins-workspace/pull/1766) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Put deep link integration behined a feature

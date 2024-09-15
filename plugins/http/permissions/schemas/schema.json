@@ -295,67 +295,49 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-fetch -> Enables the fetch command without any pre-configured scope.",
+          "description": "Enables the fetch command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-fetch"
-          ]
+          "const": "allow-fetch"
         },
         {
-          "description": "deny-fetch -> Denies the fetch command without any pre-configured scope.",
+          "description": "Denies the fetch command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-fetch"
-          ]
+          "const": "deny-fetch"
         },
         {
-          "description": "allow-fetch-cancel -> Enables the fetch_cancel command without any pre-configured scope.",
+          "description": "Enables the fetch_cancel command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-fetch-cancel"
-          ]
+          "const": "allow-fetch-cancel"
         },
         {
-          "description": "deny-fetch-cancel -> Denies the fetch_cancel command without any pre-configured scope.",
+          "description": "Denies the fetch_cancel command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-fetch-cancel"
-          ]
+          "const": "deny-fetch-cancel"
         },
         {
-          "description": "allow-fetch-read-body -> Enables the fetch_read_body command without any pre-configured scope.",
+          "description": "Enables the fetch_read_body command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-fetch-read-body"
-          ]
+          "const": "allow-fetch-read-body"
         },
         {
-          "description": "deny-fetch-read-body -> Denies the fetch_read_body command without any pre-configured scope.",
+          "description": "Denies the fetch_read_body command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-fetch-read-body"
-          ]
+          "const": "deny-fetch-read-body"
         },
         {
-          "description": "allow-fetch-send -> Enables the fetch_send command without any pre-configured scope.",
+          "description": "Enables the fetch_send command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-fetch-send"
-          ]
+          "const": "allow-fetch-send"
         },
         {
-          "description": "deny-fetch-send -> Denies the fetch_send command without any pre-configured scope.",
+          "description": "Denies the fetch_send command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-fetch-send"
-          ]
+          "const": "deny-fetch-send"
         },
         {
-          "description": "default -> This permission set configures what kind of\nfetch operations are available from the http plugin.\n\nThis enables all fetch operations but does not\nallow explicitly any origins to be fetched. This needs to\nbe manually configured before usage.\n\n#### Granted Permissions\n\nAll fetch operations are enabled.\n\n",
+          "description": "This permission set configures what kind of\nfetch operations are available from the http plugin.\n\nThis enables all fetch operations but does not\nallow explicitly any origins to be fetched. This needs to\nbe manually configured before usage.\n\n#### Granted Permissions\n\nAll fetch operations are enabled.\n\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }
