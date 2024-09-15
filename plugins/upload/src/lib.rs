@@ -187,7 +187,7 @@ mod tests {
                 let _ = msg;
                 Ok(())
             });
-        return download(&url, file_path, headers, sender).await;
+        download(url, file_path, headers, sender).await
     }
 
     async fn spawn_server_mocked(return_status: usize) -> MockedServer {
@@ -201,10 +201,10 @@ mod tests {
             .await;
 
         let url = _server.url() + path;
-        return MockedServer {
+        MockedServer {
             _server,
             url,
             mocked_endpoint: mock,
-        };
+        }
     }
 }
