@@ -105,6 +105,8 @@ impl Default for WindowState {
 }
 
 struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
+/// Used to prevent deadlocks from resize and position event listeners setting the cached state on restoring states
+struct RestoringWindowState(Mutex<()>);
 pub trait AppHandleExt {
     /// Saves all open windows state to disk
     fn save_window_state(&self, flags: StateFlags) -> Result<()>;
@@ -167,6 +169,8 @@ impl<R: Runtime> WindowExt for Window<R> {
             .map(|map| map(self.label()))
             .unwrap_or_else(|| self.label());
 
+        let restoring_window_state = self.state::<RestoringWindowState>();
+        let _restoring_window_lock = restoring_window_state.0.lock().unwrap();
         let cache = self.state::<WindowStateCache>();
         let mut c = cache.0.lock().unwrap();
 
@@ -396,6 +400,7 @@ impl Builder {
                         Default::default()
                     };
                 app.manage(WindowStateCache(cache));
+                app.manage(RestoringWindowState(Mutex::new(())));
                 app.manage(PluginState {
                     filename,
                     map_label,
@@ -443,7 +448,13 @@ impl Builder {
                     }
 
                     WindowEvent::Moved(position) if flags.contains(StateFlags::POSITION) => {
-                        if !window_clone.is_minimized().unwrap_or_default() {
+                        if window_clone
+                            .state::<RestoringWindowState>()
+                            .0
+                            .try_lock()
+                            .is_ok()
+                            && !window_clone.is_minimized().unwrap_or_default()
+                        {
                             let mut c = cache.lock().unwrap();
                             if let Some(state) = c.get_mut(&label) {
                                 state.prev_x = state.x;
@@ -455,7 +466,12 @@ impl Builder {
                         }
                     }
                     WindowEvent::Resized(size) if flags.contains(StateFlags::SIZE) => {
-                        if !window_clone.is_minimized().unwrap_or_default()
+                        if window_clone
+                            .state::<RestoringWindowState>()
+                            .0
+                            .try_lock()
+                            .is_ok()
+                            && !window_clone.is_minimized().unwrap_or_default()
                             && !window_clone.is_maximized().unwrap_or_default()
                         {
                             let mut c = cache.lock().unwrap();
