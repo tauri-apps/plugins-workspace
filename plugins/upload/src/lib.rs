@@ -176,7 +176,11 @@ mod tests {
         let mocked_server = spawn_server_mocked(200).await;
         let result = download_file(&mocked_server.url).await;
         mocked_server.mocked_endpoint.assert();
-        assert!(result.is_ok());
+        assert!(
+            result.is_ok(),
+            "failed to download file: {}",
+            result.unwrap_err()
+        );
     }
 
     async fn download_file(url: &str) -> Result<()> {
