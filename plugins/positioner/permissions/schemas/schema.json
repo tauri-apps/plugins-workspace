@@ -295,25 +295,19 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-move-window -> Enables the move_window command without any pre-configured scope.",
+          "description": "Enables the move_window command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-move-window"
-          ]
+          "const": "allow-move-window"
         },
         {
-          "description": "deny-move-window -> Denies the move_window command without any pre-configured scope.",
+          "description": "Denies the move_window command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-move-window"
-          ]
+          "const": "deny-move-window"
         },
         {
-          "description": "default -> Allows the move_window command",
+          "description": "Allows the move_window command",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

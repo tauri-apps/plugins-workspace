@@ -13,19 +13,5 @@ commands.allow = [
   "read_text_file_lines",
   "read_text_file_lines_next",
   "exists",
+  "scope-app-recursive",
 ]
-
-[[permission.scope.allow]]
-path = "$APPCONFIG/**"
-
-[[permission.scope.allow]]
-path = "$APPDATA/**"
-
-[[permission.scope.allow]]
-path = "$APPLOCALDATA/**"
-
-[[permission.scope.allow]]
-path = "$APPCACHE/**"
-
-[[permission.scope.allow]]
-path = "$APPLOG/**"

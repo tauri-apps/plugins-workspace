@@ -295,235 +295,169 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-batch -> Enables the batch command without any pre-configured scope.",
+          "description": "Enables the batch command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-batch"
-          ]
+          "const": "allow-batch"
         },
         {
-          "description": "deny-batch -> Denies the batch command without any pre-configured scope.",
+          "description": "Denies the batch command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-batch"
-          ]
+          "const": "deny-batch"
         },
         {
-          "description": "allow-cancel -> Enables the cancel command without any pre-configured scope.",
+          "description": "Enables the cancel command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-cancel"
-          ]
+          "const": "allow-cancel"
         },
         {
-          "description": "deny-cancel -> Denies the cancel command without any pre-configured scope.",
+          "description": "Denies the cancel command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-cancel"
-          ]
+          "const": "deny-cancel"
         },
         {
-          "description": "allow-check-permissions -> Enables the check_permissions command without any pre-configured scope.",
+          "description": "Enables the check_permissions command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-check-permissions"
-          ]
+          "const": "allow-check-permissions"
         },
         {
-          "description": "deny-check-permissions -> Denies the check_permissions command without any pre-configured scope.",
+          "description": "Denies the check_permissions command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-check-permissions"
-          ]
+          "const": "deny-check-permissions"
         },
         {
-          "description": "allow-create-channel -> Enables the create_channel command without any pre-configured scope.",
+          "description": "Enables the create_channel command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-create-channel"
-          ]
+          "const": "allow-create-channel"
         },
         {
-          "description": "deny-create-channel -> Denies the create_channel command without any pre-configured scope.",
+          "description": "Denies the create_channel command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-create-channel"
-          ]
+          "const": "deny-create-channel"
         },
         {
-          "description": "allow-delete-channel -> Enables the delete_channel command without any pre-configured scope.",
+          "description": "Enables the delete_channel command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-delete-channel"
-          ]
+          "const": "allow-delete-channel"
         },
         {
-          "description": "deny-delete-channel -> Denies the delete_channel command without any pre-configured scope.",
+          "description": "Denies the delete_channel command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-delete-channel"
-          ]
+          "const": "deny-delete-channel"
         },
         {
-          "description": "allow-get-active -> Enables the get_active command without any pre-configured scope.",
+          "description": "Enables the get_active command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-get-active"
-          ]
+          "const": "allow-get-active"
         },
         {
-          "description": "deny-get-active -> Denies the get_active command without any pre-configured scope.",
+          "description": "Denies the get_active command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-get-active"
-          ]
+          "const": "deny-get-active"
         },
         {
-          "description": "allow-get-pending -> Enables the get_pending command without any pre-configured scope.",
+          "description": "Enables the get_pending command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-get-pending"
-          ]
+          "const": "allow-get-pending"
         },
         {
-          "description": "deny-get-pending -> Denies the get_pending command without any pre-configured scope.",
+          "description": "Denies the get_pending command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-get-pending"
-          ]
+          "const": "deny-get-pending"
         },
         {
-          "description": "allow-is-permission-granted -> Enables the is_permission_granted command without any pre-configured scope.",
+          "description": "Enables the is_permission_granted command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-is-permission-granted"
-          ]
+          "const": "allow-is-permission-granted"
         },
         {
-          "description": "deny-is-permission-granted -> Denies the is_permission_granted command without any pre-configured scope.",
+          "description": "Denies the is_permission_granted command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-is-permission-granted"
-          ]
+          "const": "deny-is-permission-granted"
         },
         {
-          "description": "allow-list-channels -> Enables the list_channels command without any pre-configured scope.",
+          "description": "Enables the list_channels command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-list-channels"
-          ]
+          "const": "allow-list-channels"
         },
         {
-          "description": "deny-list-channels -> Denies the list_channels command without any pre-configured scope.",
+          "description": "Denies the list_channels command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-list-channels"
-          ]
+          "const": "deny-list-channels"
         },
         {
-          "description": "allow-notify -> Enables the notify command without any pre-configured scope.",
+          "description": "Enables the notify command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-notify"
-          ]
+          "const": "allow-notify"
         },
         {
-          "description": "deny-notify -> Denies the notify command without any pre-configured scope.",
+          "description": "Denies the notify command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-notify"
-          ]
+          "const": "deny-notify"
         },
         {
-          "description": "allow-permission-state -> Enables the permission_state command without any pre-configured scope.",
+          "description": "Enables the permission_state command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-permission-state"
-          ]
+          "const": "allow-permission-state"
         },
         {
-          "description": "deny-permission-state -> Denies the permission_state command without any pre-configured scope.",
+          "description": "Denies the permission_state command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-permission-state"
-          ]
+          "const": "deny-permission-state"
         },
         {
-          "description": "allow-register-action-types -> Enables the register_action_types command without any pre-configured scope.",
+          "description": "Enables the register_action_types command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-register-action-types"
-          ]
+          "const": "allow-register-action-types"
         },
         {
-          "description": "deny-register-action-types -> Denies the register_action_types command without any pre-configured scope.",
+          "description": "Denies the register_action_types command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-register-action-types"
-          ]
+          "const": "deny-register-action-types"
         },
         {
-          "description": "allow-register-listener -> Enables the register_listener command without any pre-configured scope.",
+          "description": "Enables the register_listener command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-register-listener"
-          ]
+          "const": "allow-register-listener"
         },
         {
-          "description": "deny-register-listener -> Denies the register_listener command without any pre-configured scope.",
+          "description": "Denies the register_listener command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-register-listener"
-          ]
+          "const": "deny-register-listener"
         },
         {
-          "description": "allow-remove-active -> Enables the remove_active command without any pre-configured scope.",
+          "description": "Enables the remove_active command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-remove-active"
-          ]
+          "const": "allow-remove-active"
         },
         {
-          "description": "deny-remove-active -> Denies the remove_active command without any pre-configured scope.",
+          "description": "Denies the remove_active command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-remove-active"
-          ]
+          "const": "deny-remove-active"
         },
         {
-          "description": "allow-request-permission -> Enables the request_permission command without any pre-configured scope.",
+          "description": "Enables the request_permission command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-request-permission"
-          ]
+          "const": "allow-request-permission"
         },
         {
-          "description": "deny-request-permission -> Denies the request_permission command without any pre-configured scope.",
+          "description": "Denies the request_permission command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-request-permission"
-          ]
+          "const": "deny-request-permission"
         },
         {
-          "description": "allow-show -> Enables the show command without any pre-configured scope.",
+          "description": "Enables the show command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-show"
-          ]
+          "const": "allow-show"
         },
         {
-          "description": "deny-show -> Denies the show command without any pre-configured scope.",
+          "description": "Denies the show command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-show"
-          ]
+          "const": "deny-show"
         },
         {
-          "description": "default -> This permission set configures which\nnotification features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all notification related features.\n\n",
+          "description": "This permission set configures which\nnotification features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all notification related features.\n\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

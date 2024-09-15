@@ -16,7 +16,7 @@ path = "$APPLOG/**"
 
 [[permission]]
 identifier = "scope-applog"
-description = "This scope permits access to all files and list content of top level directories in the `$APPLOG`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$APPLOG` folder."
 
 [[permission.scope.allow]]
 path = "$APPLOG"

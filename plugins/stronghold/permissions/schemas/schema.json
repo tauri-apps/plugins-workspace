@@ -295,165 +295,119 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-create-client -> Enables the create_client command without any pre-configured scope.",
+          "description": "Enables the create_client command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-create-client"
-          ]
+          "const": "allow-create-client"
         },
         {
-          "description": "deny-create-client -> Denies the create_client command without any pre-configured scope.",
+          "description": "Denies the create_client command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-create-client"
-          ]
+          "const": "deny-create-client"
         },
         {
-          "description": "allow-destroy -> Enables the destroy command without any pre-configured scope.",
+          "description": "Enables the destroy command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-destroy"
-          ]
+          "const": "allow-destroy"
         },
         {
-          "description": "deny-destroy -> Denies the destroy command without any pre-configured scope.",
+          "description": "Denies the destroy command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-destroy"
-          ]
+          "const": "deny-destroy"
         },
         {
-          "description": "allow-execute-procedure -> Enables the execute_procedure command without any pre-configured scope.",
+          "description": "Enables the execute_procedure command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-execute-procedure"
-          ]
+          "const": "allow-execute-procedure"
         },
         {
-          "description": "deny-execute-procedure -> Denies the execute_procedure command without any pre-configured scope.",
+          "description": "Denies the execute_procedure command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-execute-procedure"
-          ]
+          "const": "deny-execute-procedure"
         },
         {
-          "description": "allow-get-store-record -> Enables the get_store_record command without any pre-configured scope.",
+          "description": "Enables the get_store_record command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-get-store-record"
-          ]
+          "const": "allow-get-store-record"
         },
         {
-          "description": "deny-get-store-record -> Denies the get_store_record command without any pre-configured scope.",
+          "description": "Denies the get_store_record command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-get-store-record"
-          ]
+          "const": "deny-get-store-record"
         },
         {
-          "description": "allow-initialize -> Enables the initialize command without any pre-configured scope.",
+          "description": "Enables the initialize command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-initialize"
-          ]
+          "const": "allow-initialize"
         },
         {
-          "description": "deny-initialize -> Denies the initialize command without any pre-configured scope.",
+          "description": "Denies the initialize command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-initialize"
-          ]
+          "const": "deny-initialize"
         },
         {
-          "description": "allow-load-client -> Enables the load_client command without any pre-configured scope.",
+          "description": "Enables the load_client command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-load-client"
-          ]
+          "const": "allow-load-client"
         },
         {
-          "description": "deny-load-client -> Denies the load_client command without any pre-configured scope.",
+          "description": "Denies the load_client command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-load-client"
-          ]
+          "const": "deny-load-client"
         },
         {
-          "description": "allow-remove-secret -> Enables the remove_secret command without any pre-configured scope.",
+          "description": "Enables the remove_secret command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-remove-secret"
-          ]
+          "const": "allow-remove-secret"
         },
         {
-          "description": "deny-remove-secret -> Denies the remove_secret command without any pre-configured scope.",
+          "description": "Denies the remove_secret command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-remove-secret"
-          ]
+          "const": "deny-remove-secret"
         },
         {
-          "description": "allow-remove-store-record -> Enables the remove_store_record command without any pre-configured scope.",
+          "description": "Enables the remove_store_record command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-remove-store-record"
-          ]
+          "const": "allow-remove-store-record"
         },
         {
-          "description": "deny-remove-store-record -> Denies the remove_store_record command without any pre-configured scope.",
+          "description": "Denies the remove_store_record command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-remove-store-record"
-          ]
+          "const": "deny-remove-store-record"
         },
         {
-          "description": "allow-save -> Enables the save command without any pre-configured scope.",
+          "description": "Enables the save command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-save"
-          ]
+          "const": "allow-save"
         },
         {
-          "description": "deny-save -> Denies the save command without any pre-configured scope.",
+          "description": "Denies the save command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-save"
-          ]
+          "const": "deny-save"
         },
         {
-          "description": "allow-save-secret -> Enables the save_secret command without any pre-configured scope.",
+          "description": "Enables the save_secret command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-save-secret"
-          ]
+          "const": "allow-save-secret"
         },
         {
-          "description": "deny-save-secret -> Denies the save_secret command without any pre-configured scope.",
+          "description": "Denies the save_secret command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-save-secret"
-          ]
+          "const": "deny-save-secret"
         },
         {
-          "description": "allow-save-store-record -> Enables the save_store_record command without any pre-configured scope.",
+          "description": "Enables the save_store_record command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-save-store-record"
-          ]
+          "const": "allow-save-store-record"
         },
         {
-          "description": "deny-save-store-record -> Denies the save_store_record command without any pre-configured scope.",
+          "description": "Denies the save_store_record command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-save-store-record"
-          ]
+          "const": "deny-save-store-record"
         },
         {
-          "description": "default -> This permission set configures what kind of\noperations are available from the stronghold plugin.\n\n#### Granted Permissions\n\nAll non-destructive operations are enabled by default.\n\n",
+          "description": "This permission set configures what kind of\noperations are available from the stronghold plugin.\n\n#### Granted Permissions\n\nAll non-destructive operations are enabled by default.\n\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

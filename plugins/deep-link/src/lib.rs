@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use std::sync::Arc;
+
 use tauri::{
     plugin::{Builder, PluginApi, TauriPlugin},
-    AppHandle, Manager, Runtime,
+    AppHandle, EventId, Listener, Manager, Runtime,
 };
 
 mod commands;
@@ -57,7 +59,10 @@ fn init_deep_link<R: Runtime>(
             },
         )?;
 
-        return Ok(DeepLink(handle));
+        return Ok(DeepLink {
+            app: app.clone(),
+            plugin_handle: handle,
+        });
     }
 
     #[cfg(target_os = "ios")]
@@ -83,10 +88,9 @@ fn init_deep_link<R: Runtime>(
 
 #[cfg(target_os = "android")]
 mod imp {
-    use tauri::{plugin::PluginHandle, Runtime};
+    use tauri::{ipc::Channel, plugin::PluginHandle, AppHandle, Runtime};
 
     use serde::{Deserialize, Serialize};
-    use tauri::ipc::Channel;
 
     #[derive(Serialize)]
     #[serde(rename_all = "camelCase")]
@@ -101,7 +105,10 @@ mod imp {
     }
 
     /// Access to the deep-link APIs.
-    pub struct DeepLink<R: Runtime>(pub(crate) PluginHandle<R>);
+    pub struct DeepLink<R: Runtime> {
+        pub(crate) app: AppHandle<R>,
+        pub(crate) plugin_handle: PluginHandle<R>,
+    }
 
     impl<R: Runtime> DeepLink<R> {
         /// Get the current URLs that triggered the deep link. Use this on app load to check whether your app was started via a deep link.
@@ -112,7 +119,7 @@ mod imp {
         ///     Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
         ///     Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
-            self.0
+            self.plugin_handle
                 .run_mobile_plugin::<GetCurrentResponse>("getCurrent", ())
                 .map(|v| v.url.map(|url| vec![url]))
                 .map_err(Into::into)
@@ -437,6 +444,7 @@ mod imp {
 }
 
 pub use imp::DeepLink;
+use url::Url;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the deep-link APIs.
 pub trait DeepLinkExt<R: Runtime> {
@@ -446,6 +454,54 @@ pub trait DeepLinkExt<R: Runtime> {
 impl<R: Runtime, T: Manager<R>> crate::DeepLinkExt<R> for T {
     fn deep_link(&self) -> &DeepLink<R> {
         self.state::<DeepLink<R>>().inner()
+    }
+}
+
+/// Event that is triggered when the app was requested to open a new URL.
+///
+/// Typed [`tauri::Event`].
+pub struct OpenUrlEvent {
+    id: EventId,
+    urls: Vec<Url>,
+}
+
+impl OpenUrlEvent {
+    /// The event ID which can be used to stop listening to the event via [`tauri::Listener::unlisten`].
+    pub fn id(&self) -> EventId {
+        self.id
+    }
+
+    /// The event URLs.
+    pub fn urls(self) -> Vec<Url> {
+        self.urls
+    }
+}
+
+impl<R: Runtime> DeepLink<R> {
+    /// Handle a new deep link being triggered to open the app.
+    ///
+    /// To avoid race conditions, if the app was started with a deep link,
+    /// the closure gets immediately called with the deep link URL.
+    pub fn on_open_url<F: Fn(OpenUrlEvent) + Send + Sync + 'static>(&self, f: F) -> EventId {
+        let f = Arc::new(f);
+        let f_ = f.clone();
+        let event_id = self.app.listen("deep-link://new-url", move |event| {
+            if let Ok(urls) = serde_json::from_str(event.payload()) {
+                f(OpenUrlEvent {
+                    id: event.id(),
+                    urls,
+                })
+            }
+        });
+
+        if let Ok(Some(current)) = self.get_current() {
+            f_(OpenUrlEvent {
+                id: event_id,
+                urls: current,
+            })
+        }
+
+        event_id
     }
 }
 

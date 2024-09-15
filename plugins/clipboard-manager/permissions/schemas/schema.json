@@ -295,95 +295,69 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-clear -> Enables the clear command without any pre-configured scope.",
+          "description": "Enables the clear command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-clear"
-          ]
+          "const": "allow-clear"
         },
         {
-          "description": "deny-clear -> Denies the clear command without any pre-configured scope.",
+          "description": "Denies the clear command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-clear"
-          ]
+          "const": "deny-clear"
         },
         {
-          "description": "allow-read-image -> Enables the read_image command without any pre-configured scope.",
+          "description": "Enables the read_image command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-read-image"
-          ]
+          "const": "allow-read-image"
         },
         {
-          "description": "deny-read-image -> Denies the read_image command without any pre-configured scope.",
+          "description": "Denies the read_image command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-read-image"
-          ]
+          "const": "deny-read-image"
         },
         {
-          "description": "allow-read-text -> Enables the read_text command without any pre-configured scope.",
+          "description": "Enables the read_text command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-read-text"
-          ]
+          "const": "allow-read-text"
         },
         {
-          "description": "deny-read-text -> Denies the read_text command without any pre-configured scope.",
+          "description": "Denies the read_text command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-read-text"
-          ]
+          "const": "deny-read-text"
         },
         {
-          "description": "allow-write-html -> Enables the write_html command without any pre-configured scope.",
+          "description": "Enables the write_html command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-write-html"
-          ]
+          "const": "allow-write-html"
         },
         {
-          "description": "deny-write-html -> Denies the write_html command without any pre-configured scope.",
+          "description": "Denies the write_html command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-write-html"
-          ]
+          "const": "deny-write-html"
         },
         {
-          "description": "allow-write-image -> Enables the write_image command without any pre-configured scope.",
+          "description": "Enables the write_image command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-write-image"
-          ]
+          "const": "allow-write-image"
         },
         {
-          "description": "deny-write-image -> Denies the write_image command without any pre-configured scope.",
+          "description": "Denies the write_image command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-write-image"
-          ]
+          "const": "deny-write-image"
         },
         {
-          "description": "allow-write-text -> Enables the write_text command without any pre-configured scope.",
+          "description": "Enables the write_text command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-write-text"
-          ]
+          "const": "allow-write-text"
         },
         {
-          "description": "deny-write-text -> Denies the write_text command without any pre-configured scope.",
+          "description": "Denies the write_text command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-write-text"
-          ]
+          "const": "deny-write-text"
         },
         {
-          "description": "default -> No features are enabled by default, as we believe\nthe clipboard can be inherently dangerous and it is \napplication specific if read and/or write access is needed.\n\nClipboard interaction needs to be explicitly enabled.\n",
+          "description": "No features are enabled by default, as we believe\nthe clipboard can be inherently dangerous and it is \napplication specific if read and/or write access is needed.\n\nClipboard interaction needs to be explicitly enabled.\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

@@ -295,67 +295,49 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-check -> Enables the check command without any pre-configured scope.",
+          "description": "Enables the check command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-check"
-          ]
+          "const": "allow-check"
         },
         {
-          "description": "deny-check -> Denies the check command without any pre-configured scope.",
+          "description": "Denies the check command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-check"
-          ]
+          "const": "deny-check"
         },
         {
-          "description": "allow-download -> Enables the download command without any pre-configured scope.",
+          "description": "Enables the download command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-download"
-          ]
+          "const": "allow-download"
         },
         {
-          "description": "deny-download -> Denies the download command without any pre-configured scope.",
+          "description": "Denies the download command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-download"
-          ]
+          "const": "deny-download"
         },
         {
-          "description": "allow-download-and-install -> Enables the download_and_install command without any pre-configured scope.",
+          "description": "Enables the download_and_install command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-download-and-install"
-          ]
+          "const": "allow-download-and-install"
         },
         {
-          "description": "deny-download-and-install -> Denies the download_and_install command without any pre-configured scope.",
+          "description": "Denies the download_and_install command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-download-and-install"
-          ]
+          "const": "deny-download-and-install"
         },
         {
-          "description": "allow-install -> Enables the install command without any pre-configured scope.",
+          "description": "Enables the install command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-install"
-          ]
+          "const": "allow-install"
         },
         {
-          "description": "deny-install -> Denies the install command without any pre-configured scope.",
+          "description": "Denies the install command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-install"
-          ]
+          "const": "deny-install"
         },
         {
-          "description": "default -> This permission set configures which kind of\nupdater functions are exposed to the frontend.\n\n#### Granted Permissions\n\nThe full workflow from checking for updates to installing them\nis enabled.\n\n",
+          "description": "This permission set configures which kind of\nupdater functions are exposed to the frontend.\n\n#### Granted Permissions\n\nThe full workflow from checking for updates to installing them\nis enabled.\n\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

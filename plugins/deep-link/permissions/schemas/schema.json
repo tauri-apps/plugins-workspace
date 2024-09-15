@@ -295,67 +295,49 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-get-current -> Enables the get_current command without any pre-configured scope.",
+          "description": "Enables the get_current command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-get-current"
-          ]
+          "const": "allow-get-current"
         },
         {
-          "description": "deny-get-current -> Denies the get_current command without any pre-configured scope.",
+          "description": "Denies the get_current command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-get-current"
-          ]
+          "const": "deny-get-current"
         },
         {
-          "description": "allow-is-registered -> Enables the is_registered command without any pre-configured scope.",
+          "description": "Enables the is_registered command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-is-registered"
-          ]
+          "const": "allow-is-registered"
         },
         {
-          "description": "deny-is-registered -> Denies the is_registered command without any pre-configured scope.",
+          "description": "Denies the is_registered command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-is-registered"
-          ]
+          "const": "deny-is-registered"
         },
         {
-          "description": "allow-register -> Enables the register command without any pre-configured scope.",
+          "description": "Enables the register command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-register"
-          ]
+          "const": "allow-register"
         },
         {
-          "description": "deny-register -> Denies the register command without any pre-configured scope.",
+          "description": "Denies the register command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-register"
-          ]
+          "const": "deny-register"
         },
         {
-          "description": "allow-unregister -> Enables the unregister command without any pre-configured scope.",
+          "description": "Enables the unregister command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-unregister"
-          ]
+          "const": "allow-unregister"
         },
         {
-          "description": "deny-unregister -> Denies the unregister command without any pre-configured scope.",
+          "description": "Denies the unregister command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-unregister"
-          ]
+          "const": "deny-unregister"
         },
         {
-          "description": "default -> Allows reading the opened deep link via the get_current command",
+          "description": "Allows reading the opened deep link via the get_current command",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

@@ -16,7 +16,7 @@ path = "$FONT/**"
 
 [[permission]]
 identifier = "scope-font"
-description = "This scope permits access to all files and list content of top level directories in the `$FONT`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$FONT` folder."
 
 [[permission.scope.allow]]
 path = "$FONT"
