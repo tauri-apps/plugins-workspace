@@ -295,81 +295,59 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-execute -> Enables the execute command without any pre-configured scope.",
+          "description": "Enables the execute command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-execute"
-          ]
+          "const": "allow-execute"
         },
         {
-          "description": "deny-execute -> Denies the execute command without any pre-configured scope.",
+          "description": "Denies the execute command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-execute"
-          ]
+          "const": "deny-execute"
         },
         {
-          "description": "allow-kill -> Enables the kill command without any pre-configured scope.",
+          "description": "Enables the kill command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-kill"
-          ]
+          "const": "allow-kill"
         },
         {
-          "description": "deny-kill -> Denies the kill command without any pre-configured scope.",
+          "description": "Denies the kill command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-kill"
-          ]
+          "const": "deny-kill"
         },
         {
-          "description": "allow-open -> Enables the open command without any pre-configured scope.",
+          "description": "Enables the open command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-open"
-          ]
+          "const": "allow-open"
         },
         {
-          "description": "deny-open -> Denies the open command without any pre-configured scope.",
+          "description": "Denies the open command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-open"
-          ]
+          "const": "deny-open"
         },
         {
-          "description": "allow-spawn -> Enables the spawn command without any pre-configured scope.",
+          "description": "Enables the spawn command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-spawn"
-          ]
+          "const": "allow-spawn"
         },
         {
-          "description": "deny-spawn -> Denies the spawn command without any pre-configured scope.",
+          "description": "Denies the spawn command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-spawn"
-          ]
+          "const": "deny-spawn"
         },
         {
-          "description": "allow-stdin-write -> Enables the stdin_write command without any pre-configured scope.",
+          "description": "Enables the stdin_write command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-stdin-write"
-          ]
+          "const": "allow-stdin-write"
         },
         {
-          "description": "deny-stdin-write -> Denies the stdin_write command without any pre-configured scope.",
+          "description": "Denies the stdin_write command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-stdin-write"
-          ]
+          "const": "deny-stdin-write"
         },
         {
-          "description": "default -> This permission set configures which\nshell functionality is exposed by default.\n\n#### Granted Permissions\n\nIt allows to use the `open` functionality without any specific\nscope pre-configured. It will allow opening `http(s)://`,\n`tel:` and `mailto:` links.\n",
+          "description": "This permission set configures which\nshell functionality is exposed by default.\n\n#### Granted Permissions\n\nIt allows to use the `open` functionality without any specific\nscope pre-configured. It will allow opening `http(s)://`,\n`tel:` and `mailto:` links.\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

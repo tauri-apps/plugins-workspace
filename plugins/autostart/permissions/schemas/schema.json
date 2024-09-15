@@ -295,53 +295,39 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-disable -> Enables the disable command without any pre-configured scope.",
+          "description": "Enables the disable command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-disable"
-          ]
+          "const": "allow-disable"
         },
         {
-          "description": "deny-disable -> Denies the disable command without any pre-configured scope.",
+          "description": "Denies the disable command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-disable"
-          ]
+          "const": "deny-disable"
         },
         {
-          "description": "allow-enable -> Enables the enable command without any pre-configured scope.",
+          "description": "Enables the enable command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-enable"
-          ]
+          "const": "allow-enable"
         },
         {
-          "description": "deny-enable -> Denies the enable command without any pre-configured scope.",
+          "description": "Denies the enable command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-enable"
-          ]
+          "const": "deny-enable"
         },
         {
-          "description": "allow-is-enabled -> Enables the is_enabled command without any pre-configured scope.",
+          "description": "Enables the is_enabled command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-is-enabled"
-          ]
+          "const": "allow-is-enabled"
         },
         {
-          "description": "deny-is-enabled -> Denies the is_enabled command without any pre-configured scope.",
+          "description": "Denies the is_enabled command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-is-enabled"
-          ]
+          "const": "deny-is-enabled"
         },
         {
-          "description": "default -> This permission set configures if your\napplication can enable or disable auto\nstarting the application on boot.\n\n#### Granted Permissions\n\nIt allows all to check, enable and\ndisable the automatic start on boot.\n\n",
+          "description": "This permission set configures if your\napplication can enable or disable auto\nstarting the application on boot.\n\n#### Granted Permissions\n\nIt allows all to check, enable and\ndisable the automatic start on boot.\n\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

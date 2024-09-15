@@ -295,81 +295,59 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-ask -> Enables the ask command without any pre-configured scope.",
+          "description": "Enables the ask command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-ask"
-          ]
+          "const": "allow-ask"
         },
         {
-          "description": "deny-ask -> Denies the ask command without any pre-configured scope.",
+          "description": "Denies the ask command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-ask"
-          ]
+          "const": "deny-ask"
         },
         {
-          "description": "allow-confirm -> Enables the confirm command without any pre-configured scope.",
+          "description": "Enables the confirm command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-confirm"
-          ]
+          "const": "allow-confirm"
         },
         {
-          "description": "deny-confirm -> Denies the confirm command without any pre-configured scope.",
+          "description": "Denies the confirm command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-confirm"
-          ]
+          "const": "deny-confirm"
         },
         {
-          "description": "allow-message -> Enables the message command without any pre-configured scope.",
+          "description": "Enables the message command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-message"
-          ]
+          "const": "allow-message"
         },
         {
-          "description": "deny-message -> Denies the message command without any pre-configured scope.",
+          "description": "Denies the message command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-message"
-          ]
+          "const": "deny-message"
         },
         {
-          "description": "allow-open -> Enables the open command without any pre-configured scope.",
+          "description": "Enables the open command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-open"
-          ]
+          "const": "allow-open"
         },
         {
-          "description": "deny-open -> Denies the open command without any pre-configured scope.",
+          "description": "Denies the open command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-open"
-          ]
+          "const": "deny-open"
         },
         {
-          "description": "allow-save -> Enables the save command without any pre-configured scope.",
+          "description": "Enables the save command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-save"
-          ]
+          "const": "allow-save"
         },
         {
-          "description": "deny-save -> Denies the save command without any pre-configured scope.",
+          "description": "Denies the save command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-save"
-          ]
+          "const": "deny-save"
         },
         {
-          "description": "default -> This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n",
+          "description": "This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }
