@@ -126,7 +126,6 @@
       component: Biometric,
       icon: 'i-ph-scan'
     },
-  ];
     isMobile && {
       label: 'Geolocation',
       component: Geolocation,

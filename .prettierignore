@@ -24,3 +24,4 @@ CHANGELOG.md
 # mobile build
 **/ios/.build
 **/.tauri
+plugins/*/android/build

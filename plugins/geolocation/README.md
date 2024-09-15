@@ -87,7 +87,12 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { checkPermissions, requestPermissions, getCurrentPosition, watchPosition } from '@tauri-apps/plugin-log'
+import {
+  checkPermissions,
+  requestPermissions,
+  getCurrentPosition,
+  watchPosition
+} from '@tauri-apps/plugin-log'
 
 let permissions = await checkPermissions()
 if (
