@@ -26,8 +26,14 @@ target/
 # compiled plugins
 dist-js/
 
-# plugins .tauri director
+# plugins .tauri directory
 /plugins/*/.tauri
+
+# examples
+examples/*/dist
+plugins/*/examples/*/dist
+examples/*/src-tauri/gen/schemas
+plugins/*/examples/*/src-tauri/gen/schemas
 
 # logs
 logs
