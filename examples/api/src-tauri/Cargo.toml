@@ -59,6 +59,8 @@ tauri-plugin-window-state = { path = "../../../plugins/window-state", version = 
 tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", version = "2.0.0-rc.4" }
 tauri-plugin-nfc = { path = "../../../plugins/nfc", version = "2.0.0-rc.3" }
 tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "2.0.0-rc.3" }
+tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "2.0.0-rc.3" }
+tauri-plugin-haptics = { path = "../../../plugins/haptics/", version = "2.0.0-rc.3" }
 
 [features]
 prod = ["tauri/custom-protocol"]

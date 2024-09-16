@@ -315,16 +315,6 @@
           "const": "deny-clear-permissions"
         },
         {
-          "description": "Enables the clear_positions command without any pre-configured scope.",
-          "type": "string",
-          "const": "allow-clear-positions"
-        },
-        {
-          "description": "Denies the clear_positions command without any pre-configured scope.",
-          "type": "string",
-          "const": "deny-clear-positions"
-        },
-        {
           "description": "Enables the clear_watch command without any pre-configured scope.",
           "type": "string",
           "const": "allow-clear-watch"
@@ -343,6 +333,16 @@
           "description": "Denies the get_current_position command without any pre-configured scope.",
           "type": "string",
           "const": "deny-get-current-position"
+        },
+        {
+          "description": "Enables the request_permissions command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-request-permissions"
+        },
+        {
+          "description": "Denies the request_permissions command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-request-permissions"
         },
         {
           "description": "Enables the watch_position command without any pre-configured scope.",

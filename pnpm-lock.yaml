@@ -78,9 +78,15 @@ importers:
       '@tauri-apps/plugin-fs':
         specifier: 2.0.0-rc.2
         version: link:../../plugins/fs
+      '@tauri-apps/plugin-geolocation':
+        specifier: 2.0.0-rc.1
+        version: link:../../plugins/geolocation
       '@tauri-apps/plugin-global-shortcut':
         specifier: 2.0.0-rc.1
         version: link:../../plugins/global-shortcut
+      '@tauri-apps/plugin-haptics':
+        specifier: 2.0.0-rc.1
+        version: link:../../plugins/haptics
       '@tauri-apps/plugin-http':
         specifier: 2.0.0-rc.2
         version: link:../../plugins/http
