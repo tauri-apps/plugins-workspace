@@ -91,7 +91,7 @@ impl<R: Runtime> Clipboard<R> {
                     &image.bytes,
                     image.width as u32,
                     image.height as u32,
-                    image::ColorType::Rgba8,
+                    image::ExtendedColorType::Rgba8,
                 )?;
 
                 let image = Image::new_owned(buffer, image.width as u32, image.height as u32);
