@@ -79,8 +79,8 @@ importers:
         specifier: 2.0.0-rc.2
         version: link:../../plugins/fs
       '@tauri-apps/plugin-geolocation':
-        specifier: 2.0.0-rc.1
-        version: 2.0.0-rc.1
+        specifier: 2.0.0-rc.2
+        version: link:../../plugins/geolocation
       '@tauri-apps/plugin-global-shortcut':
         specifier: 2.0.0-rc.1
         version: link:../../plugins/global-shortcut
@@ -1124,9 +1124,6 @@ packages:
     resolution: {integrity: sha512-w5cq2WBKYRJDCE5wi5gyjM79Cq3AchTFImbcGBB+uyB/m3PDBXEidaTBTHqwiup2hKbMivuBAzGUCHt+OfgBhA==}
     engines: {node: '>= 10'}
     hasBin: true
-
-  '@tauri-apps/plugin-geolocation@2.0.0-rc.1':
-    resolution: {integrity: sha512-k4mtFp+ox7GU29cKWeNU0cJStbjBiC77mX9yKHRGE1F6Bsbd4YaOUxWX6eZRZt7fFbNWvnNhJtR7Zhn/yAqLBg==}
 
   '@types/eslint@9.6.1':
     resolution: {integrity: sha512-FXx2pKgId/WyYo2jXw63kk7/+TY7u7AziEJxJAnSFzHlqTAS3Ync6SvgYAN/k4/PQpnnVuzoMuVnByKK2qp0ag==}
@@ -3243,10 +3240,6 @@ snapshots:
       '@tauri-apps/cli-win32-arm64-msvc': 2.0.0-rc.15
       '@tauri-apps/cli-win32-ia32-msvc': 2.0.0-rc.15
       '@tauri-apps/cli-win32-x64-msvc': 2.0.0-rc.15
-
-  '@tauri-apps/plugin-geolocation@2.0.0-rc.1':
-    dependencies:
-      '@tauri-apps/api': 2.0.0-rc.4
 
   '@types/eslint@9.6.1':
     dependencies:
