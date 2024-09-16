@@ -38,4 +38,4 @@ rustls-tls = ["reqwest/rustls-tls"]
 
 [dev-dependencies]
 mockito = "1.5.0"
-tokio = { version = "*", features = ["macros"] }
+tokio = { version = "1", features = ["macros"] }
