@@ -22,8 +22,6 @@
     ".changes/fix-linux-updater-permission-error.md",
     ".changes/fix-restore-minimized-window-position.md",
     ".changes/fix-restore-minimized-window-state.md",
-    ".changes/fix-restore-window-state-deadlock.md",
-    ".changes/fix-upload-handle-non-success-download.md",
     ".changes/fs-dialog-file-path-methods.md",
     ".changes/fs-dialog-file-path-traits.md",
     ".changes/fs-dialog-non-exhaustive-error.md",

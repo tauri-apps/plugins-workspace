@@ -1,11 +1,5 @@
 # Changelog
 
-## \[2.0.0-rc.2]
-
-### bug
-
-- [`1d9741b5`](https://github.com/tauri-apps/plugins-workspace/commit/1d9741b52bb242d32b2ffd46fb4343a501cbd54b) ([#1783](https://github.com/tauri-apps/plugins-workspace/pull/1783) by [@fxsalazar](https://github.com/tauri-apps/plugins-workspace/../../fxsalazar)) fix download content to file when unsuccessful response
-
 ## \[2.0.0-rc.1]
 
 - [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
