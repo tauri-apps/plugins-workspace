@@ -2743,9 +2743,9 @@ snapshots:
       - encoding
       - mocha
 
-  '@covector/assemble@0.12.0(mocha@10.7.3)':
+  '@covector/assemble@0.12.0':
     dependencies:
-      '@covector/command': 0.8.0(mocha@10.7.3)
+      '@covector/command': 0.8.0
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.3)
       js-yaml: 4.1.0
@@ -2756,10 +2756,9 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
-      - mocha
       - supports-color
 
-  '@covector/changelog@0.12.0(mocha@10.7.3)':
+  '@covector/changelog@0.12.0':
     dependencies:
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.3)
@@ -2769,16 +2768,14 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
-      - mocha
       - supports-color
 
-  '@covector/command@0.8.0(mocha@10.7.3)':
+  '@covector/command@0.8.0':
     dependencies:
-      '@effection/process': 2.1.4(mocha@10.7.3)
+      '@effection/process': 2.1.4
       effection: 2.0.8(mocha@10.7.3)
     transitivePeerDependencies:
       - encoding
-      - mocha
 
   '@covector/files@0.8.0':
     dependencies:
@@ -2825,8 +2822,10 @@ snapshots:
     dependencies:
       effection: 2.0.8(mocha@10.7.3)
       mocha: 10.7.3
+    transitivePeerDependencies:
+      - encoding
 
-  '@effection/process@2.1.4(mocha@10.7.3)':
+  '@effection/process@2.1.4':
     dependencies:
       cross-spawn: 7.0.3
       ctrlc-windows: 2.1.0
@@ -2834,7 +2833,6 @@ snapshots:
       shellwords: 0.1.1
     transitivePeerDependencies:
       - encoding
-      - mocha
 
   '@effection/stream@2.0.6':
     dependencies:
@@ -3680,9 +3678,9 @@ snapshots:
     dependencies:
       '@clack/prompts': 0.7.0
       '@covector/apply': 0.10.0(mocha@10.7.3)
-      '@covector/assemble': 0.12.0(mocha@10.7.3)
-      '@covector/changelog': 0.12.0(mocha@10.7.3)
-      '@covector/command': 0.8.0(mocha@10.7.3)
+      '@covector/assemble': 0.12.0
+      '@covector/changelog': 0.12.0
+      '@covector/command': 0.8.0
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.7.3)
       globby: 11.1.0
