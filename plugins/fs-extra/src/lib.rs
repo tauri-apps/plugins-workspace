@@ -78,9 +78,10 @@ struct Metadata {
 }
 
 fn system_time_to_ms(time: std::io::Result<SystemTime>) -> u64 {
-    time.map(|t| {
-        let duration_since_epoch = t.duration_since(UNIX_EPOCH).unwrap();
-        duration_since_epoch.as_millis() as u64
+    time.map(|time| {
+        time.duration_since(UNIX_EPOCH)
+            .map(|t| t.as_millis() as u64)
+            .unwrap_or_else(|err| err.duration().as_millis() as u64)
     })
     .unwrap_or_default()
 }
