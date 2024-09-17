@@ -35,7 +35,7 @@ pub enum SafeFilePath {
 }
 
 impl FilePath {
-    /// Get a reference to the contaiend [`Path`] if the variant is [`FilePath::Path`].
+    /// Get a reference to the contained [`Path`] if the variant is [`FilePath::Path`].
     ///
     /// Use [`FilePath::into_path`] to try to convert the [`FilePath::Url`] variant as well.
     #[inline]
@@ -73,7 +73,7 @@ impl FilePath {
 }
 
 impl SafeFilePath {
-    /// Get a reference to the contaiend [`Path`] if the variant is [`SafeFilePath::Path`].
+    /// Get a reference to the contained [`Path`] if the variant is [`SafeFilePath::Path`].
     ///
     /// Use [`SafeFilePath::into_path`] to try to convert the [`SafeFilePath::Url`] variant as well.
     #[inline]
