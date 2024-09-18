@@ -278,7 +278,7 @@ mod imp {
 
                 let cmd_reg = CURRENT_USER.create(format!("{key_base}\\shell\\open\\command"))?;
 
-                cmd_reg.set_string("", &format!("{} \"%1\"", &exe))?;
+                cmd_reg.set_string("", &format!("\"{}\" \"%1\"", &exe))?;
 
                 Ok(())
             }
