@@ -250,10 +250,6 @@ impl<R: Runtime> MessageDialogBuilder<R> {
     }
 
     /// Set parent windows explicitly (optional)
-    ///
-    /// ## Platform-specific
-    ///
-    /// - Linux: XDG only.
     #[cfg(desktop)]
     pub fn parent<W: raw_window_handle::HasWindowHandle + raw_window_handle::HasDisplayHandle>(
         mut self,
