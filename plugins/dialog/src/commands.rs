@@ -244,8 +244,8 @@ fn message_dialog<R: Runtime>(
     title: Option<String>,
     message: String,
     kind: Option<MessageDialogKind>,
-    ok_button_label: Option<String>,
-    cancel_button_label: Option<String>,
+    ok_button_label: Option<Option<String>>,
+    cancel_button_label: Option<Option<String>>,
 ) -> bool {
     let mut builder = dialog.message(message);
 
@@ -288,7 +288,7 @@ pub(crate) async fn message<R: Runtime>(
         title,
         message,
         kind,
-        ok_button_label,
+        Some(ok_button_label),
         None,
     ))
 }
@@ -309,8 +309,8 @@ pub(crate) async fn ask<R: Runtime>(
         title,
         message,
         kind,
-        Some(ok_button_label.unwrap_or_else(|| "Yes".into())),
-        Some(cancel_button_label.unwrap_or_else(|| "No".into())),
+        Some(ok_button_label),
+        Some(cancel_button_label),
     ))
 }
 
@@ -330,7 +330,7 @@ pub(crate) async fn confirm<R: Runtime>(
         title,
         message,
         kind,
-        Some(ok_button_label.unwrap_or_else(|| "Ok".into())),
-        Some(cancel_button_label.unwrap_or_else(|| "Cancel".into())),
+        Some(ok_button_label),
+        Some(cancel_button_label),
     ))
 }

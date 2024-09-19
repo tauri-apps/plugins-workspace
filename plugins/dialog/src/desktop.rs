@@ -9,13 +9,14 @@
 //! When using on asynchronous contexts such as async commands, the [`blocking`] APIs are recommended.
 
 use raw_window_handle::{HasDisplayHandle, HasWindowHandle, RawDisplayHandle, RawWindowHandle};
-use rfd::{AsyncFileDialog, AsyncMessageDialog};
+use rfd::AsyncFileDialog;
 use serde::de::DeserializeOwned;
 use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
 use crate::{models::*, FileDialogBuilder, FilePath, MessageDialogBuilder};
 
 const OK: &str = "Ok";
+const CANCEL: &str = "Cancel";
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
@@ -109,31 +110,6 @@ impl<R: Runtime> From<FileDialogBuilder<R>> for AsyncFileDialog {
     }
 }
 
-impl<R: Runtime> From<MessageDialogBuilder<R>> for AsyncMessageDialog {
-    fn from(d: MessageDialogBuilder<R>) -> Self {
-        let mut dialog = AsyncMessageDialog::new()
-            .set_title(&d.title)
-            .set_description(&d.message)
-            .set_level(d.kind.into());
-
-        let buttons = match (d.ok_button_label, d.cancel_button_label) {
-            (Some(ok), Some(cancel)) => Some(rfd::MessageButtons::OkCancelCustom(ok, cancel)),
-            (Some(ok), None) => Some(rfd::MessageButtons::OkCustom(ok)),
-            (None, Some(cancel)) => Some(rfd::MessageButtons::OkCancelCustom(OK.into(), cancel)),
-            (None, None) => None,
-        };
-        if let Some(buttons) = buttons {
-            dialog = dialog.set_buttons(buttons);
-        }
-
-        if let Some(parent) = d.parent {
-            dialog = dialog.set_parent(&parent);
-        }
-
-        dialog
-    }
-}
-
 pub fn pick_file<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
@@ -208,7 +184,7 @@ pub fn save_file<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
 
 /// Shows a message dialog
 pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
-    dialog: MessageDialogBuilder<R>,
+    mut dialog: MessageDialogBuilder<R>,
     f: F,
 ) {
     use rfd::MessageDialogResult;
@@ -217,14 +193,31 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
     let f = move |res| {
         f(match res {
             MessageDialogResult::Ok | MessageDialogResult::Yes => true,
-            MessageDialogResult::Custom(s) => ok_label.map_or(s == OK, |ok_label| ok_label == s),
+            MessageDialogResult::Custom(s) => ok_label == Some(Some(s)),
             _ => false,
         });
     };
 
+    let buttons = match (dialog.ok_button_label, dialog.cancel_button_label) {
+        (Some(ok), Some(cancel)) => match (ok, cancel) {
+            (Some(ok), Some(cancel)) => Some(rfd::MessageButtons::OkCancelCustom(ok, cancel)),
+            (Some(ok), None) => Some(rfd::MessageButtons::OkCancelCustom(ok, CANCEL.into())),
+            (None, Some(cancel)) => Some(rfd::MessageButtons::OkCancelCustom(OK.into(), cancel)),
+            (None, None) => Some(rfd::MessageButtons::OkCancel),
+        },
+        (Some(Some(ok)), None) => Some(rfd::MessageButtons::OkCustom(ok)),
+        (Some(None), None) => Some(rfd::MessageButtons::Ok),
+        (None, Some(Some(cancel))) => Some(rfd::MessageButtons::OkCancelCustom(OK.into(), cancel)),
+        (None, Some(None)) => Some(rfd::MessageButtons::OkCancel),
+        (None, None) => None,
+    };
+    if let Some(buttons) = buttons {
+        dialog.builder = dialog.builder.set_buttons(buttons);
+    }
+
     let handle = dialog.dialog.app_handle().to_owned();
     let _ = handle.run_on_main_thread(move || {
-        let dialog = AsyncMessageDialog::from(dialog).show();
+        let dialog = dialog.builder.show();
         std::thread::spawn(move || f(tauri::async_runtime::block_on(dialog)));
     });
 }

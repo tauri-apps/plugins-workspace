@@ -189,17 +189,23 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .build()
 }
 
+#[cfg(desktop)]
 /// A builder for message dialogs.
 pub struct MessageDialogBuilder<R: Runtime> {
-    #[allow(dead_code)]
     pub(crate) dialog: Dialog<R>,
+    pub(crate) ok_button_label: Option<Option<String>>,
+    pub(crate) cancel_button_label: Option<Option<String>>,
+    pub(crate) builder: rfd::AsyncMessageDialog,
+}
+
+#[cfg(mobile)]
+/// A builder for message dialogs.
+pub struct MessageDialogBuilder<R: Runtime> {
     pub(crate) title: String,
     pub(crate) message: String,
     pub(crate) kind: MessageDialogKind,
-    pub(crate) ok_button_label: Option<String>,
-    pub(crate) cancel_button_label: Option<String>,
-    #[cfg(desktop)]
-    pub(crate) parent: Option<crate::desktop::WindowHandle>,
+    pub(crate) ok_button_label: Option<Option<String>>,
+    pub(crate) cancel_button_label: Option<Option<String>>,
 }
 
 /// Payload for the message dialog mobile API.
@@ -218,17 +224,31 @@ pub(crate) struct MessageDialogPayload<'a> {
 unsafe impl<R: Runtime> Send for MessageDialogBuilder<R> {}
 
 impl<R: Runtime> MessageDialogBuilder<R> {
+    #[cfg(desktop)]
     /// Creates a new message dialog builder.
     pub fn new(dialog: Dialog<R>, title: impl Into<String>, message: impl Into<String>) -> Self {
+        use rfd::AsyncMessageDialog;
+
+        let builder = AsyncMessageDialog::new()
+            .set_title(title)
+            .set_description(message);
         Self {
             dialog,
+            ok_button_label: None,
+            cancel_button_label: None,
+            builder,
+        }
+    }
+
+    #[cfg(mobile)]
+    /// Creates a new message dialog builder.
+    pub fn new(_dialog: Dialog<R>, title: impl Into<String>, message: impl Into<String>) -> Self {
+        Self {
             title: title.into(),
             message: message.into(),
             kind: Default::default(),
             ok_button_label: None,
             cancel_button_label: None,
-            #[cfg(desktop)]
-            parent: None,
         }
     }
 
@@ -244,8 +264,15 @@ impl<R: Runtime> MessageDialogBuilder<R> {
     }
 
     /// Sets the dialog title.
+    #[cfg(mobile)]
     pub fn title(mut self, title: impl Into<String>) -> Self {
         self.title = title.into();
+        self
+    }
+
+    #[cfg(desktop)]
+    pub fn title(mut self, title: impl Into<String>) -> Self {
+        self.builder = self.builder.set_title(title);
         self
     }
 
@@ -255,25 +282,18 @@ impl<R: Runtime> MessageDialogBuilder<R> {
         mut self,
         parent: &W,
     ) -> Self {
-        if let (Ok(window_handle), Ok(display_handle)) =
-            (parent.window_handle(), parent.display_handle())
-        {
-            self.parent.replace(crate::desktop::WindowHandle::new(
-                window_handle.as_raw(),
-                display_handle.as_raw(),
-            ));
-        }
+        self.builder = self.builder.set_parent(parent);
         self
     }
 
     /// Sets the label for the OK button.
-    pub fn ok_button_label(mut self, label: impl Into<String>) -> Self {
+    pub fn ok_button_label(mut self, label: impl Into<Option<String>>) -> Self {
         self.ok_button_label.replace(label.into());
         self
     }
 
     /// Sets the label for the Cancel button.
-    pub fn cancel_button_label(mut self, label: impl Into<String>) -> Self {
+    pub fn cancel_button_label(mut self, label: impl Into<Option<String>>) -> Self {
         self.cancel_button_label.replace(label.into());
         self
     }
@@ -282,8 +302,19 @@ impl<R: Runtime> MessageDialogBuilder<R> {
     ///
     /// Depending on the system it can result in type specific icon to show up,
     /// the will inform user it message is a error, warning or just information.
+    #[cfg(mobile)]
     pub fn kind(mut self, kind: MessageDialogKind) -> Self {
         self.kind = kind;
+        self
+    }
+
+    /// Set type of a dialog.
+    ///
+    /// Depending on the system it can result in type specific icon to show up,
+    /// the will inform user it message is a error, warning or just information.
+    #[cfg(desktop)]
+    pub fn kind(mut self, kind: MessageDialogKind) -> Self {
+        self.builder = self.builder.set_level(kind.into());
         self
     }
 
