@@ -325,8 +325,8 @@ impl Updater {
             // the URL will be generated dynamically
             let version = self.current_version.to_string();
             let version = version.as_bytes();
-            let encoded_version =
-                percent_encoding::percent_encode(version, const { &CONTROLS.add(b'+') });
+            let ascii_set = const { &CONTROLS.add(b'+') };
+            let encoded_version = percent_encoding::percent_encode(version, ascii_set);
             let encoded_version = encoded_version.to_string();
 
             let url: Url = url
