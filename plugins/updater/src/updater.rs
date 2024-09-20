@@ -16,7 +16,7 @@ use base64::Engine;
 use futures_util::StreamExt;
 use http::HeaderName;
 use minisign_verify::{PublicKey, Signature};
-use percent_encoding::CONTROLS;
+use percent_encoding::{AsciiSet, CONTROLS};
 use reqwest::{
     header::{HeaderMap, HeaderValue},
     ClientBuilder, StatusCode,
@@ -325,8 +325,8 @@ impl Updater {
             // the URL will be generated dynamically
             let version = self.current_version.to_string();
             let version = version.as_bytes();
-            let ascii_set = const { &CONTROLS.add(b'+') };
-            let encoded_version = percent_encoding::percent_encode(version, ascii_set);
+            const CONTROLS_ADD: &AsciiSet = &CONTROLS.add(b'+');
+            let encoded_version = percent_encoding::percent_encode(version, CONTROLS_ADD);
             let encoded_version = encoded_version.to_string();
 
             let url: Url = url
