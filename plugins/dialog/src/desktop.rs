@@ -8,7 +8,7 @@
 //! to give results back. This is particularly useful when running dialogs from the main thread.
 //! When using on asynchronous contexts such as async commands, the [`blocking`] APIs are recommended.
 
-use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+use raw_window_handle::{HasDisplayHandle, HasWindowHandle, RawDisplayHandle, RawWindowHandle};
 use rfd::{AsyncFileDialog, AsyncMessageDialog};
 use serde::de::DeserializeOwned;
 use tauri::{plugin::PluginApi, AppHandle, Runtime};
@@ -50,13 +50,34 @@ impl From<MessageDialogKind> for rfd::MessageLevel {
     }
 }
 
-struct WindowHandle(RawWindowHandle);
+#[derive(Debug)]
+pub(crate) struct WindowHandle {
+    window_handle: RawWindowHandle,
+    display_handle: RawDisplayHandle,
+}
+
+impl WindowHandle {
+    pub(crate) fn new(window_handle: RawWindowHandle, display_handle: RawDisplayHandle) -> Self {
+        Self {
+            window_handle,
+            display_handle,
+        }
+    }
+}
 
 impl HasWindowHandle for WindowHandle {
     fn window_handle(
         &self,
     ) -> Result<raw_window_handle::WindowHandle<'_>, raw_window_handle::HandleError> {
-        Ok(unsafe { raw_window_handle::WindowHandle::borrow_raw(self.0) })
+        Ok(unsafe { raw_window_handle::WindowHandle::borrow_raw(self.window_handle) })
+    }
+}
+
+impl HasDisplayHandle for WindowHandle {
+    fn display_handle(
+        &self,
+    ) -> Result<raw_window_handle::DisplayHandle<'_>, raw_window_handle::HandleError> {
+        Ok(unsafe { raw_window_handle::DisplayHandle::borrow_raw(self.display_handle) })
     }
 }
 
@@ -79,7 +100,7 @@ impl<R: Runtime> From<FileDialogBuilder<R>> for AsyncFileDialog {
         }
         #[cfg(desktop)]
         if let Some(parent) = d.parent {
-            builder = builder.set_parent(&WindowHandle(parent));
+            builder = builder.set_parent(&parent);
         }
 
         builder = builder.set_can_create_directories(d.can_create_directories.unwrap_or(true));
@@ -106,7 +127,7 @@ impl<R: Runtime> From<MessageDialogBuilder<R>> for AsyncMessageDialog {
         }
 
         if let Some(parent) = d.parent {
-            dialog = dialog.set_parent(&WindowHandle(parent));
+            dialog = dialog.set_parent(&parent);
         }
 
         dialog

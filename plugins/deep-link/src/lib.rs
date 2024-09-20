@@ -274,11 +274,11 @@ mod imp {
                 key_reg.set_string("URL Protocol", "")?;
 
                 let icon_reg = CURRENT_USER.create(format!("{key_base}\\DefaultIcon"))?;
-                icon_reg.set_string("", &format!("{},0", &exe))?;
+                icon_reg.set_string("", &format!("{exe},0"))?;
 
                 let cmd_reg = CURRENT_USER.create(format!("{key_base}\\shell\\open\\command"))?;
 
-                cmd_reg.set_string("", &format!("{} \"%1\"", &exe))?;
+                cmd_reg.set_string("", &format!("\"{exe}\" \"%1\""))?;
 
                 Ok(())
             }
@@ -408,13 +408,13 @@ mod imp {
                     _protocol.as_ref()
                 ))?;
 
-                let registered_cmd: String = cmd_reg.get_string("")?;
+                let registered_cmd = cmd_reg.get_string("")?;
 
                 let exe = dunce::simplified(&tauri::utils::platform::current_exe()?)
                     .display()
                     .to_string();
 
-                Ok(registered_cmd == format!("{} \"%1\"", &exe))
+                Ok(registered_cmd == format!("\"{exe}\" \"%1\""))
             }
             #[cfg(target_os = "linux")]
             {

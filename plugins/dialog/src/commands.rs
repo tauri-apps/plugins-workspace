@@ -205,7 +205,7 @@ pub(crate) async fn save<R: Runtime>(
     options: SaveDialogOptions,
 ) -> Result<Option<FilePath>> {
     let mut dialog_builder = dialog.file();
-    #[cfg(any(windows, target_os = "macos"))]
+    #[cfg(desktop)]
     {
         dialog_builder = dialog_builder.set_parent(&window);
     }
@@ -253,7 +253,7 @@ fn message_dialog<R: Runtime>(
         builder = builder.title(title);
     }
 
-    #[cfg(any(windows, target_os = "macos"))]
+    #[cfg(desktop)]
     {
         builder = builder.parent(&window);
     }
