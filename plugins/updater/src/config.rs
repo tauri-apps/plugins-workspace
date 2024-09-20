@@ -111,7 +111,7 @@ impl<'de> Deserialize<'de> for Config {
         #[derive(Deserialize)]
         #[serde(rename_all = "camelCase")]
         pub struct Config {
-            #[serde(alias = "dangerous-insecure-transport-protocol")]
+            #[serde(default, alias = "dangerous-insecure-transport-protocol")]
             pub dangerous_insecure_transport_protocol: bool,
             #[serde(default)]
             pub endpoints: Vec<Url>,
