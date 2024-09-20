@@ -147,9 +147,17 @@ impl UpdaterBuilder {
         self
     }
 
-    pub fn endpoints(mut self, endpoints: Vec<Url>) -> Self {
+    pub fn endpoints(mut self, endpoints: Vec<Url>) -> Result<Self> {
+        if !self.config.dangerous_insecure_transport_protocol {
+            for url in &endpoints {
+                if url.scheme() != "https" {
+                    return Err(Error::InsecureTransportProtocol);
+                }
+            }
+        }
+
         self.endpoints.replace(endpoints);
-        self
+        Ok(self)
     }
 
     pub fn executable_path<P: AsRef<Path>>(mut self, p: P) -> Self {
@@ -218,7 +226,7 @@ impl UpdaterBuilder {
     pub fn build(self) -> Result<Updater> {
         let endpoints = self
             .endpoints
-            .unwrap_or_else(|| self.config.endpoints.iter().map(|e| e.0.clone()).collect());
+            .unwrap_or_else(|| self.config.endpoints.clone());
 
         if endpoints.is_empty() {
             return Err(Error::EmptyEndpoints);

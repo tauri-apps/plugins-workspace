@@ -91,47 +91,57 @@ where
 }
 
 /// Updater configuration.
-#[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, Default)]
 pub struct Config {
+    /// Dangerously allow using insecure transport protocols for update endpoints.
+    pub dangerous_insecure_transport_protocol: bool,
     /// Updater endpoints.
-    #[serde(default)]
-    pub endpoints: Vec<UpdaterEndpoint>,
+    pub endpoints: Vec<Url>,
     /// Signature public key.
     pub pubkey: String,
     /// The Windows configuration for the updater.
     pub windows: Option<WindowsConfig>,
 }
 
-/// A URL to an updater server.
-///
-/// The URL must use the `https` scheme on production.
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct UpdaterEndpoint(pub Url);
-
-impl std::fmt::Display for UpdaterEndpoint {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl<'de> Deserialize<'de> for UpdaterEndpoint {
+impl<'de> Deserialize<'de> for Config {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        let url = Url::deserialize(deserializer)?;
-
-        if url.scheme() != "https" {
-            #[cfg(debug_assertions)]
-            eprintln!("[\x1b[33mWARNING\x1b[0m] The configured updater endpoint doesn't use `https` protocol. This is allowed in development but will fail in release builds.");
-
-            #[cfg(not(debug_assertions))]
-            return Err(serde::de::Error::custom(
-                "The configured updater endpoint must use the `https` protocol.",
-            ));
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        pub struct Config {
+            #[serde(alias = "dangerous-insecure-transport-protocol")]
+            pub dangerous_insecure_transport_protocol: bool,
+            #[serde(default)]
+            pub endpoints: Vec<Url>,
+            pub pubkey: String,
+            pub windows: Option<WindowsConfig>,
         }
 
-        Ok(Self(url))
+        let config = Config::deserialize(deserializer)?;
+
+        if !config.dangerous_insecure_transport_protocol {
+            for url in &config.endpoints {
+                if url.scheme() != "https" {
+                    #[cfg(debug_assertions)]
+                    eprintln!("[\x1b[33mWARNING\x1b[0m] The configured updater endpoint doesn't use `https` protocol. This is allowed in development but will fail in release builds.");
+                    #[cfg(debug_assertions)]
+                    eprintln!("[\x1b[33mWARNING\x1b[0m] if this is a desired behavior, you can enable `dangerousInsecureTransportProtocol` in the plugin configuration");
+
+                    #[cfg(not(debug_assertions))]
+                    return Err(serde::de::Error::custom(
+                        "The configured updater endpoint must use the `https` protocol.",
+                    ));
+                }
+            }
+        }
+
+        Ok(Self {
+            dangerous_insecure_transport_protocol: config.dangerous_insecure_transport_protocol,
+            endpoints: config.endpoints,
+            pubkey: config.pubkey,
+            windows: config.windows,
+        })
     }
 }
