@@ -16,6 +16,7 @@ use base64::Engine;
 use futures_util::StreamExt;
 use http::HeaderName;
 use minisign_verify::{PublicKey, Signature};
+use percent_encoding::{AsciiSet, CONTROLS};
 use reqwest::{
     header::{HeaderMap, HeaderValue},
     ClientBuilder, StatusCode,
@@ -322,17 +323,20 @@ impl Updater {
             // https://releases.myapp.com/update/darwin/aarch64/1.0.0
             // The main objective is if the update URL is defined via the Cargo.toml
             // the URL will be generated dynamically
+            let version = self.current_version.to_string();
+            let version = version.as_bytes();
+            const CONTROLS_ADD: &AsciiSet = &CONTROLS.add(b'+');
+            let encoded_version = percent_encoding::percent_encode(version, CONTROLS_ADD);
+            let encoded_version = encoded_version.to_string();
+
             let url: Url = url
                 .to_string()
                 // url::Url automatically url-encodes the path components
-                .replace(
-                    "%7B%7Bcurrent_version%7D%7D",
-                    &self.current_version.to_string(),
-                )
+                .replace("%7B%7Bcurrent_version%7D%7D", &encoded_version)
                 .replace("%7B%7Btarget%7D%7D", &self.target)
                 .replace("%7B%7Barch%7D%7D", self.arch)
                 // but not query parameters
-                .replace("{{current_version}}", &self.current_version.to_string())
+                .replace("{{current_version}}", &encoded_version)
                 .replace("{{target}}", &self.target)
                 .replace("{{arch}}", self.arch)
                 .parse()?;

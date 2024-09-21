@@ -295,25 +295,19 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-log -> Enables the log command without any pre-configured scope.",
+          "description": "Enables the log command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-log"
-          ]
+          "const": "allow-log"
         },
         {
-          "description": "deny-log -> Denies the log command without any pre-configured scope.",
+          "description": "Denies the log command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-log"
-          ]
+          "const": "deny-log"
         },
         {
-          "description": "default -> Allows the log command",
+          "description": "Allows the log command",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

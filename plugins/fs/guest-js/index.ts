@@ -270,7 +270,7 @@ class FileHandle extends Resource {
    * @example
    * ```typescript
    * import { open, BaseDirectory } from "@tauri-apps/plugin-fs"
-   * // if "$APP/foo/bar.txt" contains the text "hello world":
+   * // if "$APPCONFIG/foo/bar.txt" contains the text "hello world":
    * const file = await open("foo/bar.txt", { baseDir: BaseDirectory.AppConfig });
    * const buf = new Uint8Array(100);
    * const numberOfBytesRead = await file.read(buf); // 11 bytes
@@ -1015,7 +1015,7 @@ async function writeFile(
 
   await invoke('plugin:fs|write_file', data, {
     headers: {
-      path: path instanceof URL ? path.toString() : path,
+      path: encodeURIComponent(path instanceof URL ? path.toString() : path),
       options: JSON.stringify(options)
     }
   })

@@ -855,10 +855,11 @@ pub async fn write_file<R: Runtime>(
         .get("path")
         .ok_or_else(|| anyhow::anyhow!("missing file path").into())
         .and_then(|p| {
-            p.to_str()
-                .map_err(|e| anyhow::anyhow!("invalid path: {e}").into())
+            percent_encoding::percent_decode(p.as_ref())
+                .decode_utf8()
+                .map_err(|_| anyhow::anyhow!("path is not a valid UTF-8").into())
         })
-        .and_then(|p| SafeFilePath::from_str(p).map_err(CommandError::from))?;
+        .and_then(|p| SafeFilePath::from_str(&p).map_err(CommandError::from))?;
     let options = request
         .headers()
         .get("options")

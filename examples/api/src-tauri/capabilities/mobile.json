@@ -11,6 +11,10 @@
     "barcode-scanner:allow-scan",
     "barcode-scanner:allow-cancel",
     "barcode-scanner:allow-request-permissions",
-    "barcode-scanner:allow-check-permissions"
+    "barcode-scanner:allow-check-permissions",
+    "geolocation:allow-check-permissions",
+    "geolocation:allow-request-permissions",
+    "geolocation:allow-watch-position",
+    "geolocation:allow-get-current-position"
   ]
 }

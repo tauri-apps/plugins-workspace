@@ -295,81 +295,59 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-is-registered -> Enables the is_registered command without any pre-configured scope.",
+          "description": "Enables the is_registered command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-is-registered"
-          ]
+          "const": "allow-is-registered"
         },
         {
-          "description": "deny-is-registered -> Denies the is_registered command without any pre-configured scope.",
+          "description": "Denies the is_registered command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-is-registered"
-          ]
+          "const": "deny-is-registered"
         },
         {
-          "description": "allow-register -> Enables the register command without any pre-configured scope.",
+          "description": "Enables the register command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-register"
-          ]
+          "const": "allow-register"
         },
         {
-          "description": "deny-register -> Denies the register command without any pre-configured scope.",
+          "description": "Denies the register command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-register"
-          ]
+          "const": "deny-register"
         },
         {
-          "description": "allow-register-all -> Enables the register_all command without any pre-configured scope.",
+          "description": "Enables the register_all command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-register-all"
-          ]
+          "const": "allow-register-all"
         },
         {
-          "description": "deny-register-all -> Denies the register_all command without any pre-configured scope.",
+          "description": "Denies the register_all command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-register-all"
-          ]
+          "const": "deny-register-all"
         },
         {
-          "description": "allow-unregister -> Enables the unregister command without any pre-configured scope.",
+          "description": "Enables the unregister command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-unregister"
-          ]
+          "const": "allow-unregister"
         },
         {
-          "description": "deny-unregister -> Denies the unregister command without any pre-configured scope.",
+          "description": "Denies the unregister command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-unregister"
-          ]
+          "const": "deny-unregister"
         },
         {
-          "description": "allow-unregister-all -> Enables the unregister_all command without any pre-configured scope.",
+          "description": "Enables the unregister_all command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-unregister-all"
-          ]
+          "const": "allow-unregister-all"
         },
         {
-          "description": "deny-unregister-all -> Denies the unregister_all command without any pre-configured scope.",
+          "description": "Denies the unregister_all command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-unregister-all"
-          ]
+          "const": "deny-unregister-all"
         },
         {
-          "description": "default -> No features are enabled by default, as we believe\nthe shortcuts can be inherently dangerous and it is\napplication specific if specific shortcuts should be\nregistered or unregistered.\n",
+          "description": "No features are enabled by default, as we believe\nthe shortcuts can be inherently dangerous and it is\napplication specific if specific shortcuts should be\nregistered or unregistered.\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

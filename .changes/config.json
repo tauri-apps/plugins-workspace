@@ -268,7 +268,8 @@
     },
     "single-instance": {
       "path": "./plugins/single-instance",
-      "manager": "rust"
+      "manager": "rust",
+      "dependencies": ["deep-link"]
     },
     "sql": {
       "path": "./plugins/sql",

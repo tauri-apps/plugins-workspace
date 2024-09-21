@@ -16,7 +16,7 @@ path = "$LOCALDATA/**"
 
 [[permission]]
 identifier = "scope-localdata"
-description = "This scope permits access to all files and list content of top level directories in the `$LOCALDATA`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$LOCALDATA` folder."
 
 [[permission.scope.allow]]
 path = "$LOCALDATA"

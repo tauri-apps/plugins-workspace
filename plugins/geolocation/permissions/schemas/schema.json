@@ -295,88 +295,64 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-check-permissions -> Enables the check_permissions command without any pre-configured scope.",
+          "description": "Enables the check_permissions command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-check-permissions"
-          ]
+          "const": "allow-check-permissions"
         },
         {
-          "description": "deny-check-permissions -> Denies the check_permissions command without any pre-configured scope.",
+          "description": "Denies the check_permissions command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-check-permissions"
-          ]
+          "const": "deny-check-permissions"
         },
         {
-          "description": "allow-clear-permissions -> Enables the clear_permissions command without any pre-configured scope.",
+          "description": "Enables the clear_permissions command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-clear-permissions"
-          ]
+          "const": "allow-clear-permissions"
         },
         {
-          "description": "deny-clear-permissions -> Denies the clear_permissions command without any pre-configured scope.",
+          "description": "Denies the clear_permissions command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-clear-permissions"
-          ]
+          "const": "deny-clear-permissions"
         },
         {
-          "description": "allow-clear-positions -> Enables the clear_positions command without any pre-configured scope.",
+          "description": "Enables the clear_watch command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-clear-positions"
-          ]
+          "const": "allow-clear-watch"
         },
         {
-          "description": "deny-clear-positions -> Denies the clear_positions command without any pre-configured scope.",
+          "description": "Denies the clear_watch command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-clear-positions"
-          ]
+          "const": "deny-clear-watch"
         },
         {
-          "description": "allow-clear-watch -> Enables the clear_watch command without any pre-configured scope.",
+          "description": "Enables the get_current_position command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-clear-watch"
-          ]
+          "const": "allow-get-current-position"
         },
         {
-          "description": "deny-clear-watch -> Denies the clear_watch command without any pre-configured scope.",
+          "description": "Denies the get_current_position command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-clear-watch"
-          ]
+          "const": "deny-get-current-position"
         },
         {
-          "description": "allow-get-current-position -> Enables the get_current_position command without any pre-configured scope.",
+          "description": "Enables the request_permissions command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-get-current-position"
-          ]
+          "const": "allow-request-permissions"
         },
         {
-          "description": "deny-get-current-position -> Denies the get_current_position command without any pre-configured scope.",
+          "description": "Denies the request_permissions command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-get-current-position"
-          ]
+          "const": "deny-request-permissions"
         },
         {
-          "description": "allow-watch-position -> Enables the watch_position command without any pre-configured scope.",
+          "description": "Enables the watch_position command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-watch-position"
-          ]
+          "const": "allow-watch-position"
         },
         {
-          "description": "deny-watch-position -> Denies the watch_position command without any pre-configured scope.",
+          "description": "Denies the watch_position command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-watch-position"
-          ]
+          "const": "deny-watch-position"
         }
       ]
     }
