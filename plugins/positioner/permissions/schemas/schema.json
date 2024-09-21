@@ -309,6 +309,13 @@
           ]
         },
         {
+          "description": "allow-set-tray-icon-state -> Enables the set_tray_icon_state to handle events and set the TrayIcon state.",
+          "type": "string",
+          "enum": [
+            "allow-set-tray-icon-state"
+          ]
+        },
+        {
           "description": "default -> Allows the move_window command",
           "type": "string",
           "enum": [
