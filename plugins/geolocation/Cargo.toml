@@ -14,9 +14,9 @@ rustdoc-args = ["--cfg", "docsrs"]
 targets = ["x86_64-linux-android"]
 
 [package.metadata.platforms.support]
-windows = { level = "unknown", notes = "" }
-linux = { level = "unknown", notes = "" }
-macos = { level = "unknown", notes = "" }
+windows = { level = "none", notes = "" }
+linux = { level = "none", notes = "" }
+macos = { level = "none", notes = "" }
 android = { level = "full", notes = "" }
 ios = { level = "full", notes = "" }
 
