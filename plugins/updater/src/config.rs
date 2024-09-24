@@ -121,21 +121,11 @@ impl<'de> Deserialize<'de> for Config {
 
         let config = Config::deserialize(deserializer)?;
 
-        if !config.dangerous_insecure_transport_protocol {
-            for url in &config.endpoints {
-                if url.scheme() != "https" {
-                    #[cfg(debug_assertions)]
-                    eprintln!("[\x1b[33mWARNING\x1b[0m] The configured updater endpoint doesn't use `https` protocol. This is allowed in development but will fail in release builds.");
-                    #[cfg(debug_assertions)]
-                    eprintln!("[\x1b[33mWARNING\x1b[0m] if this is a desired behavior, you can enable `dangerousInsecureTransportProtocol` in the plugin configuration");
-
-                    #[cfg(not(debug_assertions))]
-                    return Err(serde::de::Error::custom(
-                        "The configured updater endpoint must use the `https` protocol.",
-                    ));
-                }
-            }
-        }
+        validate_endpoints(
+            &config.endpoints,
+            config.dangerous_insecure_transport_protocol,
+        )
+        .map_err(serde::de::Error::custom)?;
 
         Ok(Self {
             dangerous_insecure_transport_protocol: config.dangerous_insecure_transport_protocol,
@@ -144,4 +134,26 @@ impl<'de> Deserialize<'de> for Config {
             windows: config.windows,
         })
     }
+}
+
+pub(crate) fn validate_endpoints(
+    endpoints: &[Url],
+    dangerous_insecure_transport_protocol: bool,
+) -> crate::Result<()> {
+    if !dangerous_insecure_transport_protocol {
+        for url in endpoints {
+            #[cfg(debug_assertions)]
+            #[cfg(debug_assertions)]
+            eprintln!("[\x1b[33mWARNING\x1b[0m] The updater endpoint \"{url}\" doesn't use `https` protocol. This is allowed in development but will fail in release builds.");
+            #[cfg(debug_assertions)]
+            eprintln!("[\x1b[33mWARNING\x1b[0m] if this is a desired behavior, you can enable `dangerousInsecureTransportProtocol` in the plugin configuration");
+
+            #[cfg(not(debug_assertions))]
+            if url.scheme() != "https" {
+                return Err(crate::Error::InsecureTransportProtocol);
+            }
+        }
+    }
+
+    Ok(())
 }

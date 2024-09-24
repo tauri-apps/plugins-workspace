@@ -148,13 +148,10 @@ impl UpdaterBuilder {
     }
 
     pub fn endpoints(mut self, endpoints: Vec<Url>) -> Result<Self> {
-        if !self.config.dangerous_insecure_transport_protocol {
-            for url in &endpoints {
-                if url.scheme() != "https" {
-                    return Err(Error::InsecureTransportProtocol);
-                }
-            }
-        }
+        crate::config::validate_endpoints(
+            &endpoints,
+            self.config.dangerous_insecure_transport_protocol,
+        )?;
 
         self.endpoints.replace(endpoints);
         Ok(self)
