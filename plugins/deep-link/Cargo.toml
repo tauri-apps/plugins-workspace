@@ -17,9 +17,9 @@ targets = ["x86_64-linux-android"]
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }
 linux = { level = "full", notes = "" }
-macos = { level = "full", notes = "" }
-android = { level = "full", notes = "" }
-ios = { level = "full", notes = "" }
+macos = { level = "partial", notes = "Runtime deep link registration is not supported" }
+android = { level = "partial", notes = "Runtime deep link registration is not supported" }
+ios = { level = "partial", notes = "Runtime deep link registration is not supported" }
 
 [build-dependencies]
 serde = { workspace = true }
