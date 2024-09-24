@@ -18,7 +18,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 windows = { level = "full", notes = "" }
 linux = { level = "full", notes = "" }
 macos = { level = "full", notes = "" }
-android = { level = "none", notes = "" }
+android = { level = "full", notes = "" }
 ios = { level = "none", notes = "" }
 
 [build-dependencies]
