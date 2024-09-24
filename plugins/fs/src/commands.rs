@@ -993,8 +993,8 @@ pub fn resolve_path<R: Runtime>(
                 .unwrap()
                 .clone()
                 .into_iter()
-                .chain(global_scope.allows().iter().map(|e| e.path.clone()))
-                .chain(command_scope.allows().iter().map(|e| e.path.clone()))
+                .chain(global_scope.allows().iter().filter_map(|e| e.path.clone()))
+                .chain(command_scope.allows().iter().filter_map(|e| e.path.clone()))
                 .collect(),
             deny: webview
                 .fs_scope()
@@ -1003,8 +1003,8 @@ pub fn resolve_path<R: Runtime>(
                 .unwrap()
                 .clone()
                 .into_iter()
-                .chain(global_scope.denies().iter().map(|e| e.path.clone()))
-                .chain(command_scope.denies().iter().map(|e| e.path.clone()))
+                .chain(global_scope.denies().iter().filter_map(|e| e.path.clone()))
+                .chain(command_scope.denies().iter().filter_map(|e| e.path.clone()))
                 .collect(),
             require_literal_leading_dot: webview.fs_scope().require_literal_leading_dot,
         },
