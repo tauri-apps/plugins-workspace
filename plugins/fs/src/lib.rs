@@ -360,6 +360,7 @@ impl ScopeObject for scope::Entry {
 
         match app.path().parse(path) {
             Ok(path) => Ok(Self { path: Some(path) }),
+            #[cfg(not(target_os = "android"))]
             Err(tauri::Error::UnknownPath) => Ok(Self { path: None }),
             Err(err) => Err(err.into()),
         }
