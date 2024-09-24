@@ -148,9 +148,14 @@ impl UpdaterBuilder {
         self
     }
 
-    pub fn endpoints(mut self, endpoints: Vec<Url>) -> Self {
+    pub fn endpoints(mut self, endpoints: Vec<Url>) -> Result<Self> {
+        crate::config::validate_endpoints(
+            &endpoints,
+            self.config.dangerous_insecure_transport_protocol,
+        )?;
+
         self.endpoints.replace(endpoints);
-        self
+        Ok(self)
     }
 
     pub fn executable_path<P: AsRef<Path>>(mut self, p: P) -> Self {
@@ -219,7 +224,7 @@ impl UpdaterBuilder {
     pub fn build(self) -> Result<Updater> {
         let endpoints = self
             .endpoints
-            .unwrap_or_else(|| self.config.endpoints.iter().map(|e| e.0.clone()).collect());
+            .unwrap_or_else(|| self.config.endpoints.clone());
 
         if endpoints.is_empty() {
             return Err(Error::EmptyEndpoints);
