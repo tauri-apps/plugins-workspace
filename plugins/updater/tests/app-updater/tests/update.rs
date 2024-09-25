@@ -221,7 +221,7 @@ fn update_app() {
             let updater_extension = if let Some(updater_zip_ext) = updater_zip_ext {
                 format!("{bundle_updater_ext}.{updater_zip_ext}")
             } else {
-                format!("{bundle_updater_ext}")
+                bundle_updater_ext
             };
             let signature_extension = format!("{updater_extension}.sig");
             let signature_path = out_bundle_path.with_extension(signature_extension);

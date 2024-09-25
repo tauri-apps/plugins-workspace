@@ -413,7 +413,7 @@ fn update_app() {
                     ),
                     2 => (
                         v2_config.version,
-                        Box::new(|| v2::bundle_paths(&root_dir, &v2_config.version))
+                        Box::new(|| v2::bundle_paths(&root_dir, v2_config.version))
                             as Box<dyn Fn() -> Vec<(BundleTarget, PathBuf)>>,
                         "-v2",
                     ),

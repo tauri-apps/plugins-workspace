@@ -93,6 +93,7 @@ pub(crate) struct ShellScopeEntry {
 // and `ShellScopeEntryAllowedArg` and `ShellAllowedArg`
 // and `ShellScopeEntryAllowedArgs` and `ShellAllowedArgs`
 // are kept in sync
+#[allow(clippy::unnecessary_operation)]
 fn _f() {
     let v = scope_entry::EntryRaw {
         name: String::new(),
