@@ -2,4 +2,4 @@
 fs: patch
 ---
 
-Fixed an issue causing any `fs` APIs to throw an `error deserializing scope: unknown path` error when the permissions/scopes allowed OS specific paths that aren't available on the currently running OS.
+Fix failing to deserialize capability file when using an OS specific path in the scope that is not available on the current OS.
