@@ -33,18 +33,18 @@ fn parse_url_pattern(s: &str) -> Result<UrlPattern, urlpattern::quirks::Error> {
     UrlPattern::parse(init, Default::default())
 }
 
+#[derive(Deserialize)]
+#[serde(untagged)]
+pub(crate) enum EntryRaw {
+    Value(String),
+    Object { url: String },
+}
+
 impl<'de> Deserialize<'de> for Entry {
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        #[derive(Deserialize)]
-        #[serde(untagged)]
-        enum EntryRaw {
-            Value(String),
-            Object { url: String },
-        }
-
         EntryRaw::deserialize(deserializer).and_then(|raw| {
             let url = match raw {
                 EntryRaw::Value(url) => url,
