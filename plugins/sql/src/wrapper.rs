@@ -34,7 +34,7 @@ pub enum DbPool {
 }
 
 // public methods
-impl DbPool {
+/* impl DbPool {
     /// Get the inner Sqlite Pool. Returns None for MySql and Postgres pools.
     #[cfg(feature = "sqlite")]
     pub fn sqlite(&self) -> Option<&Pool<Sqlite>> {
@@ -61,7 +61,7 @@ impl DbPool {
             _ => None,
         }
     }
-}
+} */
 
 // private methods
 impl DbPool {
