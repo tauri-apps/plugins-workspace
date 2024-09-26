@@ -46,7 +46,7 @@ pub(crate) async fn close(
 
     for pool in pools {
         let db = instances
-            .get_mut(&pool) //
+            .get_mut(&pool)
             .ok_or(Error::DatabaseNotLoaded(pool))?;
         db.close().await;
     }
