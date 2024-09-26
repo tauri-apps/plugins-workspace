@@ -121,6 +121,49 @@ export default class Database {
   }
 
   /**
+   * **insertMultiple**
+   *
+   * Insert multiple entry in a single request
+   *
+   * @example
+   * ```ts
+   * // BATCH INSERT example
+   * const result = await db.batchInsert(
+   *    "INSERT into todos (id, title, status) ",
+   *    [
+   *        [0, "TODO 0", "Done"],
+   *        [1, "TODO 1", "Done"],
+   *        [2, "TODO 2", "Done"],
+   *    ]
+   * );
+   * ```
+   */
+  async batchInsert(
+    query: string,
+    bindValues: unknown[][],
+  ): Promise<QueryResult> {
+    if (bindValues.length == 0 || !bindValues) {
+      console.warn("Batch insert does not contains any values");
+      return {
+        lastInsertId: 0,
+        rowsAffected: 0,
+      };
+    }
+    const [rowsAffected, lastInsertId] = await invoke<[number, number]>(
+      "plugin:sql|batch_insert",
+      {
+        db: this.path,
+        query,
+        values: bindValues,
+      },
+    );
+    return {
+      lastInsertId: lastInsertId,
+      rowsAffected: rowsAffected,
+    };
+  }
+
+  /**
    * **select**
    *
    * Passes in a SELECT query to the database for execution.

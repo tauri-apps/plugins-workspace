@@ -10,7 +10,7 @@ use sqlx::{
     migrate::{
         MigrateDatabase, Migration as SqlxMigration, MigrationSource, MigrationType, Migrator,
     },
-    Column, Pool, Row,
+    Column, Pool, QueryBuilder, Row,
 };
 use tauri::{
     command,
@@ -229,6 +229,42 @@ async fn execute(
     r
 }
 
+/// Execute multiple query (Useful to do batch insertion)
+#[command]
+async fn batch_insert(
+    db_instances: State<'_, DbInstances>,
+    db: String,
+    query: String,
+    values: Vec<Vec<JsonValue>>,
+) -> Result<(u64, LastInsertId)> {
+    let mut builder = QueryBuilder::new(query.clone());
+    let mut instances = db_instances.0.lock().await;
+
+    let db = instances.get_mut(&db).ok_or(Error::DatabaseNotLoaded(db))?;
+    builder.push_values(values, |mut b, value| {
+        for v in value {
+            if v.is_null() {
+                b.push_bind(None::<JsonValue>);
+            } else if v.is_string() {
+                b.push_bind(v.as_str().unwrap().to_owned());
+            } else if v.is_number() {
+                b.push_bind(v.as_f64().unwrap_or_default());
+            } else {
+                b.push_bind(v);
+            }
+        }
+    });
+    let query = builder.build();
+    let result = query.execute(&*db).await?;
+    #[cfg(feature = "sqlite")]
+    let r = Ok((result.rows_affected(), result.last_insert_rowid()));
+    #[cfg(feature = "mysql")]
+    let r = Ok((result.rows_affected(), result.last_insert_id()));
+    #[cfg(feature = "postgres")]
+    let r = Ok((result.rows_affected(), 0));
+    r
+}
+
 #[command]
 async fn select(
     db_instances: State<'_, DbInstances>,
@@ -290,7 +326,13 @@ impl Builder {
 
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R, Option<PluginConfig>> {
         PluginBuilder::<R, Option<PluginConfig>>::new("sql")
-            .invoke_handler(tauri::generate_handler![load, execute, select, close])
+            .invoke_handler(tauri::generate_handler![
+                load,
+                execute,
+                select,
+                close,
+                batch_insert
+            ])
             .setup(|app, api| {
                 let config = api.config().clone().unwrap_or_default();
 
