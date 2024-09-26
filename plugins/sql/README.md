@@ -156,6 +156,24 @@ fn main() {
 }
 ```
 
+### Adding Migrations using SQL Files to the Plugin Builder
+
+Like code based migrations, But instead of defining the SQL in the migration struct, you tell the plugin to look for a directory containing SQL files.
+
+Example of a migration using a directory:
+
+```rust
+fn main() {
+    tauri::Builder::default()
+        .plugin(
+            tauri_plugin_sql::Builder::default()
+                .add_migration_directory("sqlite:mydatabase.db", "migrations") // migrations is the directory
+                .build(),
+        )
+        ...
+}
+```
+
 ### Applying Migrations
 
 To apply the migrations when the plugin is initialized, add the connection string to the `tauri.conf.json` file:

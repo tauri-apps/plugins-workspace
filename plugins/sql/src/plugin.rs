@@ -24,6 +24,7 @@ use std::collections::HashMap;
 
 #[cfg(feature = "sqlite")]
 use std::{fs::create_dir_all, path::PathBuf};
+use std::{fs, io};
 
 #[cfg(feature = "sqlite")]
 type Db = sqlx::sqlite::Sqlite;
@@ -47,6 +48,12 @@ pub enum Error {
     DatabaseNotLoaded(String),
     #[error("unsupported datatype: {0}")]
     UnsupportedDatatype(String),
+    #[error("io error: {0}")]
+    Io(#[from] io::Error),
+    #[error("Invalid version number in filename: {0}")]
+    InvalidVersionNumber(String),
+    #[error("Invalid separator in filename: {0}")]
+    InvalidSeparator(String),
 }
 
 impl Serialize for Error {
@@ -143,6 +150,46 @@ impl MigrationSource<'static> for MigrationList {
         })
     }
 }
+/// Allow to do migrations from a directory.
+/// Be sure to name your migration files with the following format:
+/// `{version}-{description}.sql`
+fn migrations_from_directory(directory: &str) -> Result<MigrationList> {
+    let mut migrations = Vec::new();
+    let paths = fs::read_dir(directory)
+        .map_err(Error::Io)?;
+
+    for entry in paths {
+        let entry = entry.map_err(Error::Io)?;
+        let path = entry.path();
+        let filename = path.file_name().and_then(|os_str| os_str.to_str()).unwrap();
+        let parts: Vec<&str> = filename.splitn(2, '-').collect();
+
+        if parts.len() != 2 {
+            return Err(Error::InvalidSeparator(filename.to_string()).into());
+        }
+
+        let version_str = parts[0];
+        let description = parts[1].trim_end_matches(".sql");
+        let sql = fs::read_to_string(&path)
+            .map_err(Error::Io)?;
+
+        let version: i64 = match version_str.parse() {
+            Ok(v) => v,
+            Err(_) => {
+                return Err(Error::InvalidVersionNumber(filename.to_string()).into());
+            }
+        };
+
+        migrations.push(Migration {
+            version,
+            description: Box::leak(Box::new(description.to_string())),
+            sql: Box::leak(Box::new(sql)),
+            kind: MigrationKind::Up,
+        });
+    }
+    Ok(MigrationList(migrations))
+}
+
 
 #[command]
 async fn load<R: Runtime>(
@@ -285,6 +332,15 @@ impl Builder {
         self.migrations
             .get_or_insert(Default::default())
             .insert(db_url.to_string(), MigrationList(migrations));
+        self
+    }
+
+    /// Add migrations to a database using a file based method.
+    #[must_use]
+    pub fn add_migration_directory(mut self, db_url: &str, directory: &str) -> Self {
+        self.migrations
+            .get_or_insert(Default::default())
+            .insert(db_url.to_string(), migrations_from_directory(directory).unwrap());
         self
     }
 
