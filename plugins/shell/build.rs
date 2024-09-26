@@ -65,28 +65,38 @@ impl Default for ShellScopeEntryAllowedArgs {
 
 /// Shell scope entry.
 #[derive(JsonSchema)]
+#[serde(untagged, deny_unknown_fields)]
 #[allow(unused)]
-pub(crate) struct ShellScopeEntry {
-    /// The name for this allowed shell command configuration.
-    ///
-    /// This name will be used inside of the webview API to call this command along with
-    /// any specified arguments.
-    name: String,
-    /// The command name.
-    /// It can start with a variable that resolves to a system base directory.
-    /// The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`,
-    /// `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`,
-    /// `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`,
-    /// `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.
-    // use default just so the schema doesn't flag it as required
-    #[serde(rename = "cmd")]
-    command: Option<PathBuf>,
-    /// The allowed arguments for the command execution.
-    #[serde(default)]
-    args: ShellScopeEntryAllowedArgs,
-    /// If this command is a sidecar command.
-    #[serde(default)]
-    sidecar: bool,
+pub(crate) enum ShellScopeEntry {
+    Command {
+        /// The name for this allowed shell command configuration.
+        ///
+        /// This name will be used inside of the webview API to call this command along with
+        /// any specified arguments.
+        name: String,
+        /// The command name.
+        /// It can start with a variable that resolves to a system base directory.
+        /// The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`,
+        /// `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`,
+        /// `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`,
+        /// `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.
+        // use default just so the schema doesn't flag it as required
+        #[serde(rename = "cmd")]
+        command: PathBuf,
+        /// The allowed arguments for the command execution.
+        args: ShellScopeEntryAllowedArgs,
+    },
+    SideCar {
+        /// The name for this allowed shell command configuration.
+        ///
+        /// This name will be used inside of the webview API to call this command along with
+        /// any specified arguments.
+        name: String,
+        /// The allowed arguments for the command execution.
+        args: ShellScopeEntryAllowedArgs,
+        /// If this command is a sidecar command.
+        sidecar: bool,
+    },
 }
 
 // Ensure `ShellScopeEntry` and `scope_entry::EntryRaw`
@@ -95,48 +105,59 @@ pub(crate) struct ShellScopeEntry {
 // are kept in sync
 #[allow(clippy::unnecessary_operation)]
 fn _f() {
-    let v = scope_entry::EntryRaw {
+    match (ShellScopeEntry::SideCar {
         name: String::new(),
-        command: None,
-        args: scope_entry::ShellAllowedArgs::default(),
-        sidecar: false,
-    };
-
-    ShellScopeEntry {
-        name: v.name,
-        command: v.command,
-        args: match v.args {
-            scope_entry::ShellAllowedArgs::Flag(flag) => ShellScopeEntryAllowedArgs::Flag(flag),
-            scope_entry::ShellAllowedArgs::List(vec) => ShellScopeEntryAllowedArgs::List(
-                vec.into_iter()
-                    .map(|s| match s {
-                        scope_entry::ShellAllowedArg::Fixed(fixed) => {
-                            ShellScopeEntryAllowedArg::Fixed(fixed)
-                        }
-                        scope_entry::ShellAllowedArg::Var { validator, raw } => {
-                            ShellScopeEntryAllowedArg::Var { validator, raw }
-                        }
-                    })
-                    .collect(),
-            ),
+        args: ShellScopeEntryAllowedArgs::Flag(false),
+        sidecar: true,
+    }) {
+        ShellScopeEntry::Command {
+            name,
+            command,
+            args,
+        } => scope_entry::EntryRaw {
+            name,
+            command: Some(command),
+            args: match args {
+                ShellScopeEntryAllowedArgs::Flag(flag) => scope_entry::ShellAllowedArgs::Flag(flag),
+                ShellScopeEntryAllowedArgs::List(vec) => scope_entry::ShellAllowedArgs::List(
+                    vec.into_iter()
+                        .map(|s| match s {
+                            ShellScopeEntryAllowedArg::Fixed(fixed) => {
+                                scope_entry::ShellAllowedArg::Fixed(fixed)
+                            }
+                            ShellScopeEntryAllowedArg::Var { validator, raw } => {
+                                scope_entry::ShellAllowedArg::Var { validator, raw }
+                            }
+                        })
+                        .collect(),
+                ),
+            },
+            sidecar: false,
         },
-        sidecar: v.sidecar,
-    };
-
-    match ShellScopeEntryAllowedArgs::Flag(false) {
-        ShellScopeEntryAllowedArgs::Flag(flag) => scope_entry::ShellAllowedArgs::Flag(flag),
-        ShellScopeEntryAllowedArgs::List(vec) => scope_entry::ShellAllowedArgs::List(
-            vec.into_iter()
-                .map(|s| match s {
-                    ShellScopeEntryAllowedArg::Fixed(fixed) => {
-                        scope_entry::ShellAllowedArg::Fixed(fixed)
-                    }
-                    ShellScopeEntryAllowedArg::Var { validator, raw } => {
-                        scope_entry::ShellAllowedArg::Var { validator, raw }
-                    }
-                })
-                .collect(),
-        ),
+        ShellScopeEntry::SideCar {
+            name,
+            args,
+            sidecar,
+        } => scope_entry::EntryRaw {
+            name,
+            command: None,
+            args: match args {
+                ShellScopeEntryAllowedArgs::Flag(flag) => scope_entry::ShellAllowedArgs::Flag(flag),
+                ShellScopeEntryAllowedArgs::List(vec) => scope_entry::ShellAllowedArgs::List(
+                    vec.into_iter()
+                        .map(|s| match s {
+                            ShellScopeEntryAllowedArg::Fixed(fixed) => {
+                                scope_entry::ShellAllowedArg::Fixed(fixed)
+                            }
+                            ShellScopeEntryAllowedArg::Var { validator, raw } => {
+                                scope_entry::ShellAllowedArg::Var { validator, raw }
+                            }
+                        })
+                        .collect(),
+                ),
+            },
+            sidecar,
+        },
     };
 }
 
