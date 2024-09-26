@@ -14,6 +14,13 @@ rustc-args = ["--cfg", "docsrs"]
 rustdoc-args = ["--cfg", "docsrs"]
 targets = ["x86_64-linux-android"]
 
+[package.metadata.platforms.support]
+windows = { level = "full", notes = "" }
+linux = { level = "full", notes = "" }
+macos = { level = "partial", notes = "Runtime deep link registration is not supported" }
+android = { level = "partial", notes = "Runtime deep link registration is not supported" }
+ios = { level = "partial", notes = "Runtime deep link registration is not supported" }
+
 [build-dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
