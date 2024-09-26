@@ -353,17 +353,17 @@ impl ScopeObject for scope::Entry {
         app: &AppHandle<R>,
         raw: Value,
     ) -> std::result::Result<Self, Self::Error> {
-        let entry = serde_json::from_value(raw.into()).map(|raw| {
-            let path = match raw {
-                scope::EntryRaw::Value(path) => path,
-                scope::EntryRaw::Object { path } => path,
-            };
-            Self { path }
+        let path = serde_json::from_value(raw.into()).map(|raw| match raw {
+            scope::EntryRaw::Value(path) => path,
+            scope::EntryRaw::Object { path } => path,
         })?;
 
-        Ok(Self {
-            path: app.path().parse(entry.path)?,
-        })
+        match app.path().parse(path) {
+            Ok(path) => Ok(Self { path: Some(path) }),
+            #[cfg(not(target_os = "android"))]
+            Err(tauri::Error::UnknownPath) => Ok(Self { path: None }),
+            Err(err) => Err(err.into()),
+        }
     }
 }
 
