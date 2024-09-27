@@ -50,7 +50,7 @@ impl Serialize for MessageDialogKind {
     }
 }
 
-/// Set the set of button that will be displayed on the dialog
+/// Set of button that will be displayed on the dialog
 #[non_exhaustive]
 #[derive(Debug, Default, Clone)]
 pub enum MessageDialogButtons {
