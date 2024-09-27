@@ -41,6 +41,9 @@ use desktop::*;
 #[cfg(mobile)]
 use mobile::*;
 
+pub(crate) const OK: &str = "Ok";
+pub(crate) const CANCEL: &str = "Cancel";
+
 macro_rules! blocking_fn {
     ($self:ident, $fn:ident) => {{
         let (tx, rx) = sync_channel(0);

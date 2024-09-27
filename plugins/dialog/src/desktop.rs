@@ -13,10 +13,7 @@ use rfd::{AsyncFileDialog, AsyncMessageDialog};
 use serde::de::DeserializeOwned;
 use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
-use crate::{models::*, FileDialogBuilder, FilePath, MessageDialogBuilder};
-
-pub(crate) const OK: &str = "Ok";
-pub(crate) const CANCEL: &str = "Cancel";
+use crate::{models::*, FileDialogBuilder, FilePath, MessageDialogBuilder, OK};
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
