@@ -9,7 +9,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-rc.5",
+    "@tauri-apps/api": "2.0.0-rc.6",
     "@tauri-apps/plugin-barcode-scanner": "2.0.0-rc.2",
     "@tauri-apps/plugin-biometric": "2.0.0-rc.1",
     "@tauri-apps/plugin-cli": "2.0.0-rc.1",
@@ -33,7 +33,7 @@
     "@iconify-json/codicon": "^1.1.37",
     "@iconify-json/ph": "^1.1.8",
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
-    "@tauri-apps/cli": "2.0.0-rc.16",
+    "@tauri-apps/cli": "2.0.0-rc.17",
     "@unocss/extractor-svelte": "^0.62.0",
     "svelte": "^4.2.19",
     "unocss": "^0.62.0",
