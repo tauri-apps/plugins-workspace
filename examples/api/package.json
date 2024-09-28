@@ -34,9 +34,9 @@
     "@iconify-json/ph": "^1.1.8",
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
     "@tauri-apps/cli": "2.0.0-rc.17",
-    "@unocss/extractor-svelte": "^0.62.0",
+    "@unocss/extractor-svelte": "^0.63.0",
     "svelte": "^4.2.19",
-    "unocss": "^0.62.0",
+    "unocss": "^0.63.0",
     "vite": "^5.4.7"
   }
 }
