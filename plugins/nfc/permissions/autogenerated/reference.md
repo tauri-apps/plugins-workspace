@@ -14,7 +14,7 @@ Writing to tags needs to be manually enabled.
 - `allow-is-available`
 - `allow-scan`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

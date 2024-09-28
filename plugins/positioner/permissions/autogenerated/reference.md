@@ -4,7 +4,7 @@ Allows the move_window command
 
 - `allow-move-window`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

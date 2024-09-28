@@ -15,7 +15,7 @@ disable the automatic start on boot.
 - `allow-disable`
 - `allow-is-enabled`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

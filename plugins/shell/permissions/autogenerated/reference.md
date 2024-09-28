@@ -12,7 +12,7 @@ scope pre-configured. It will allow opening `http(s)://`,
 
 - `allow-open`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>
