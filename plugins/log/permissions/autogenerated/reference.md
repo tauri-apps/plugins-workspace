@@ -4,7 +4,7 @@ Allows the log command
 
 - `allow-log`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

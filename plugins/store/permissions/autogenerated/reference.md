@@ -22,7 +22,7 @@ All operations are enabled by default.
 - `allow-set`
 - `allow-values`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

@@ -30,7 +30,7 @@ On Windows the webview data folder access is denied.
 - `read-app-specific-dirs-recursive`
 - `deny-default`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

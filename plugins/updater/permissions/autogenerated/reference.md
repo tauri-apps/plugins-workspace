@@ -15,7 +15,7 @@ is enabled.
 - `allow-install`
 - `allow-download-and-install`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>
