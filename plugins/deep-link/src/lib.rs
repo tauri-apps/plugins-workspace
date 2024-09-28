@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use serde::de::DeserializeOwned;
+use std::sync::Arc;
+
 use tauri::{
     plugin::{Builder, PluginApi, TauriPlugin},
-    AppHandle, Manager, Runtime,
+    AppHandle, EventId, Listener, Manager, Runtime,
 };
 
 mod commands;
@@ -17,12 +18,14 @@ pub use error::{Error, Result};
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "app.tauri.deep_link";
 
-fn init_deep_link<R: Runtime, C: DeserializeOwned>(
+fn init_deep_link<R: Runtime>(
     app: &AppHandle<R>,
-    _api: PluginApi<R, C>,
+    api: PluginApi<R, Option<config::Config>>,
 ) -> crate::Result<DeepLink<R>> {
     #[cfg(target_os = "android")]
     {
+        let _api = api;
+
         use tauri::{
             ipc::{Channel, InvokeResponseBody},
             Emitter,
@@ -56,22 +59,38 @@ fn init_deep_link<R: Runtime, C: DeserializeOwned>(
             },
         )?;
 
-        return Ok(DeepLink(handle));
+        return Ok(DeepLink {
+            app: app.clone(),
+            plugin_handle: handle,
+        });
     }
 
-    #[cfg(not(target_os = "android"))]
-    Ok(DeepLink {
+    #[cfg(target_os = "ios")]
+    return Ok(DeepLink {
         app: app.clone(),
         current: Default::default(),
-    })
+        config: api.config().clone(),
+    });
+
+    #[cfg(desktop)]
+    {
+        let args = std::env::args();
+        let deep_link = DeepLink {
+            app: app.clone(),
+            current: Default::default(),
+            config: api.config().clone(),
+        };
+        deep_link.handle_cli_arguments(args);
+
+        Ok(deep_link)
+    }
 }
 
 #[cfg(target_os = "android")]
 mod imp {
-    use tauri::{plugin::PluginHandle, Runtime};
+    use tauri::{ipc::Channel, plugin::PluginHandle, AppHandle, Runtime};
 
     use serde::{Deserialize, Serialize};
-    use tauri::ipc::Channel;
 
     #[derive(Serialize)]
     #[serde(rename_all = "camelCase")]
@@ -86,16 +105,21 @@ mod imp {
     }
 
     /// Access to the deep-link APIs.
-    pub struct DeepLink<R: Runtime>(pub(crate) PluginHandle<R>);
+    pub struct DeepLink<R: Runtime> {
+        pub(crate) app: AppHandle<R>,
+        pub(crate) plugin_handle: PluginHandle<R>,
+    }
 
     impl<R: Runtime> DeepLink<R> {
         /// Get the current URLs that triggered the deep link. Use this on app load to check whether your app was started via a deep link.
         ///
         /// ## Platform-specific:
         ///
-        /// - **Windows / Linux**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
+        /// - **Windows / Linux**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
+        ///     Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
+        ///     Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
-            self.0
+            self.plugin_handle
                 .run_mobile_plugin::<GetCurrentResponse>("getCurrent", ())
                 .map(|v| v.url.map(|url| vec![url]))
                 .map_err(Into::into)
@@ -154,23 +178,76 @@ mod imp {
 
     /// Access to the deep-link APIs.
     pub struct DeepLink<R: Runtime> {
-        #[allow(dead_code)]
         pub(crate) app: AppHandle<R>,
-        #[allow(dead_code)]
         pub(crate) current: Mutex<Option<Vec<url::Url>>>,
+        pub(crate) config: Option<crate::config::Config>,
     }
 
     impl<R: Runtime> DeepLink<R> {
+        /// Checks if the provided list of arguments (which should match [`std::env::args`])
+        /// contains a deep link argument (for Linux and Windows).
+        ///
+        /// On Linux and Windows the deep links trigger a new app instance with the deep link URL as its only argument.
+        ///
+        /// This function does what it can to verify if the argument is actually a deep link, though it could also be a regular CLI argument.
+        /// To enhance its checks, we only match deep links against the schemes defined in the Tauri configuration
+        /// i.e. dynamic schemes WON'T be processed.
+        ///
+        /// This function updates the [`Self::get_current`] value and emits a `deep-link://new-url` event.
+        #[cfg(desktop)]
+        pub fn handle_cli_arguments<S: AsRef<str>, I: Iterator<Item = S>>(&self, mut args: I) {
+            use tauri::Emitter;
+
+            let Some(config) = &self.config else {
+                return;
+            };
+
+            if cfg!(windows) || cfg!(target_os = "linux") {
+                args.next(); // bin name
+                let arg = args.next();
+
+                let maybe_deep_link = args.next().is_none(); // single argument
+                if !maybe_deep_link {
+                    return;
+                }
+
+                if let Some(url) = arg.and_then(|arg| arg.as_ref().parse::<url::Url>().ok()) {
+                    if config.desktop.contains_scheme(&url.scheme().to_string()) {
+                        let mut current = self.current.lock().unwrap();
+                        current.replace(vec![url.clone()]);
+                        let _ = self.app.emit("deep-link://new-url", vec![url]);
+                    } else if cfg!(debug_assertions) {
+                        log::warn!("argument {url} does not match any configured deep link scheme; skipping it");
+                    }
+                }
+            }
+        }
+
         /// Get the current URLs that triggered the deep link. Use this on app load to check whether your app was started via a deep link.
         ///
         /// ## Platform-specific:
         ///
-        /// - **Windows / Linux**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
+        /// - **Windows / Linux**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
+        ///     Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
+        ///     Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
-            #[cfg(not(any(windows, target_os = "linux")))]
             return Ok(self.current.lock().unwrap().clone());
-            #[cfg(any(windows, target_os = "linux"))]
-            Err(crate::Error::UnsupportedPlatform)
+        }
+
+        /// Registers all schemes defined in the configuration file.
+        ///
+        /// This is useful to ensure the schemes are registered even if the user did not install the app properly
+        /// (e.g. an AppImage that was not properly registered with an AppImage launcher).
+        pub fn register_all(&self) -> crate::Result<()> {
+            let Some(config) = &self.config else {
+                return Ok(());
+            };
+
+            for scheme in config.desktop.schemes() {
+                self.register(scheme)?;
+            }
+
+            Ok(())
         }
 
         /// Register the app as the default handler for the specified protocol.
@@ -197,11 +274,11 @@ mod imp {
                 key_reg.set_string("URL Protocol", "")?;
 
                 let icon_reg = CURRENT_USER.create(format!("{key_base}\\DefaultIcon"))?;
-                icon_reg.set_string("", &format!("{},0", &exe))?;
+                icon_reg.set_string("", &format!("{exe},0"))?;
 
                 let cmd_reg = CURRENT_USER.create(format!("{key_base}\\shell\\open\\command"))?;
 
-                cmd_reg.set_string("", &format!("{} \"%1\"", &exe))?;
+                cmd_reg.set_string("", &format!("\"{exe}\" \"%1\""))?;
 
                 Ok(())
             }
@@ -331,13 +408,13 @@ mod imp {
                     _protocol.as_ref()
                 ))?;
 
-                let registered_cmd: String = cmd_reg.get_string("")?;
+                let registered_cmd = cmd_reg.get_string("")?;
 
                 let exe = dunce::simplified(&tauri::utils::platform::current_exe()?)
                     .display()
                     .to_string();
 
-                Ok(registered_cmd == format!("{} \"%1\"", &exe))
+                Ok(registered_cmd == format!("\"{exe}\" \"%1\""))
             }
             #[cfg(target_os = "linux")]
             {
@@ -367,6 +444,7 @@ mod imp {
 }
 
 pub use imp::DeepLink;
+use url::Url;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the deep-link APIs.
 pub trait DeepLinkExt<R: Runtime> {
@@ -376,6 +454,54 @@ pub trait DeepLinkExt<R: Runtime> {
 impl<R: Runtime, T: Manager<R>> crate::DeepLinkExt<R> for T {
     fn deep_link(&self) -> &DeepLink<R> {
         self.state::<DeepLink<R>>().inner()
+    }
+}
+
+/// Event that is triggered when the app was requested to open a new URL.
+///
+/// Typed [`tauri::Event`].
+pub struct OpenUrlEvent {
+    id: EventId,
+    urls: Vec<Url>,
+}
+
+impl OpenUrlEvent {
+    /// The event ID which can be used to stop listening to the event via [`tauri::Listener::unlisten`].
+    pub fn id(&self) -> EventId {
+        self.id
+    }
+
+    /// The event URLs.
+    pub fn urls(self) -> Vec<Url> {
+        self.urls
+    }
+}
+
+impl<R: Runtime> DeepLink<R> {
+    /// Handle a new deep link being triggered to open the app.
+    ///
+    /// To avoid race conditions, if the app was started with a deep link,
+    /// the closure gets immediately called with the deep link URL.
+    pub fn on_open_url<F: Fn(OpenUrlEvent) + Send + Sync + 'static>(&self, f: F) -> EventId {
+        let f = Arc::new(f);
+        let f_ = f.clone();
+        let event_id = self.app.listen("deep-link://new-url", move |event| {
+            if let Ok(urls) = serde_json::from_str(event.payload()) {
+                f(OpenUrlEvent {
+                    id: event.id(),
+                    urls,
+                })
+            }
+        });
+
+        if let Ok(Some(current)) = self.get_current() {
+            f_(OpenUrlEvent {
+                id: event_id,
+                urls: current,
+            })
+        }
+
+        event_id
     }
 }
 

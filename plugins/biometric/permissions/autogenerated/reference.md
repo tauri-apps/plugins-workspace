@@ -12,7 +12,7 @@ It allows acccess to all biometric commands.
 - `allow-authenticate`
 - `allow-status`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

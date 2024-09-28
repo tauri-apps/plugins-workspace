@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.0-rc.3"
+version = "2.0.0-rc.5"
 description = "Save filesystem and asset scopes and restore them when the app is reopened."
 authors = { workspace = true }
 license = { workspace = true }
@@ -12,6 +12,13 @@ repository = { workspace = true }
 rustc-args = ["--cfg", "docsrs"]
 rustdoc-args = ["--cfg", "docsrs"]
 
+[package.metadata.platforms.support]
+windows = { level = "full", notes = "" }
+linux = { level = "full", notes = "" }
+macos = { level = "full", notes = "" }
+android = { level = "none", notes = "" }
+ios = { level = "none", notes = "" }
+
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -20,7 +27,7 @@ log = { workspace = true }
 thiserror = { workspace = true }
 aho-corasick = "1"
 bincode = "1"
-tauri-plugin-fs = { path = "../fs", version = "2.0.0-rc.3" }
+tauri-plugin-fs = { path = "../fs", version = "2.0.0-rc.5" }
 
 [features]
 protocol-asset = ["tauri/protocol-asset"]

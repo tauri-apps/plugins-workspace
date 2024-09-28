@@ -295,25 +295,19 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-cli-matches -> Enables the cli_matches command without any pre-configured scope.",
+          "description": "Enables the cli_matches command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-cli-matches"
-          ]
+          "const": "allow-cli-matches"
         },
         {
-          "description": "deny-cli-matches -> Denies the cli_matches command without any pre-configured scope.",
+          "description": "Denies the cli_matches command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-cli-matches"
-          ]
+          "const": "deny-cli-matches"
         },
         {
-          "description": "default -> Allows reading the CLI matches",
+          "description": "Allows reading the CLI matches",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

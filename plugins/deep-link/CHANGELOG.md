@@ -1,5 +1,19 @@
 # Changelog
 
+## \[2.0.0-rc.6]
+
+- [`6f3f6679`](https://github.com/tauri-apps/plugins-workspace/commit/6f3f66794a87ef9d1c16667c425d5ad7091a9c2f) ([#1780](https://github.com/tauri-apps/plugins-workspace/pull/1780)) Added `DeepLink::on_open_url` function to match the JavaScript API implementation,
+  which wraps the `deep-link://new-url` event and also send the current deep link if there's any.
+
+## \[2.0.0-rc.5]
+
+- [`984110a9`](https://github.com/tauri-apps/plugins-workspace/commit/984110a978774712bad4d746ed06134d54debcd0) ([#1770](https://github.com/tauri-apps/plugins-workspace/pull/1770) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Emit the `deep-link://new-url` event on Linux and Windows when the app is executed with a deep link CLI argument,
+  matching the iOS and macOS behavior.
+
+## \[2.0.0-rc.2]
+
+- [`64a6240f`](https://github.com/tauri-apps/plugins-workspace/commit/64a6240f79fcd52267c8d721b727ae695055d7ff) ([#1759](https://github.com/tauri-apps/plugins-workspace/pull/1759) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Implement `get_current` on Linux and Windows.
+
 ## \[2.0.0-rc.3]
 
 - [`4654591d`](https://github.com/tauri-apps/plugins-workspace/commit/4654591d820403d6fa1a007fd55bb0d85947a6cc) ([#1732](https://github.com/tauri-apps/plugins-workspace/pull/1732) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Allow empty configuration values.
@@ -102,5 +116,8 @@
   om/tauri-apps/plugins-workspace/commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
 
 - [`eccd6f9`](https://github.com/tauri-apps/plugins-workspace/commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
+  commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
+  ithub.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
+  ]\(https://github.com/tauri-apps/plugins-workspace/commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
   commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
   ithub.com/tauri-apps/plugins-workspace/pull/504)) Initial release.

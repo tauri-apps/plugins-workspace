@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-clipboard-manager"
-version = "2.0.0-rc.3"
+version = "2.0.0-rc.4"
 description = "Read and write to the system clipboard."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -13,6 +13,14 @@ links = "tauri-plugin-clipboard-manager"
 rustc-args = ["--cfg", "docsrs"]
 rustdoc-args = ["--cfg", "docsrs"]
 targets = ["x86_64-unknown-linux-gnu", "x86_64-linux-android"]
+
+[package.metadata.platforms.support]
+windows = { level = "full", notes = "" }
+linux = { level = "full", notes = "" }
+macos = { level = "full", notes = "" }
+android = { level = "partial", notes = "Only plain-text content support" }
+ios = { level = "partial", notes = "Only plain-text content support" }
+
 
 [build-dependencies]
 tauri-plugin = { workspace = true, features = ["build"] }
@@ -29,4 +37,4 @@ tauri = { workspace = true, features = ["wry"] }
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 arboard = "3"
-image = "0.24"
+image = "0.25"

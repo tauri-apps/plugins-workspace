@@ -16,7 +16,7 @@ path = "$APPCONFIG/**"
 
 [[permission]]
 identifier = "scope-appconfig"
-description = "This scope permits access to all files and list content of top level directories in the `$APPCONFIG`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$APPCONFIG` folder."
 
 [[permission.scope.allow]]
 path = "$APPCONFIG"

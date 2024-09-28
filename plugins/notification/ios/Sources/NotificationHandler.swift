@@ -34,7 +34,7 @@ public class NotificationHandler: NSObject, NotificationHandlerProtocol {
     try? self.plugin?.trigger("notification", data: notificationData)
 
     if let options = notificationsMap[notification.request.identifier] {
-      if options.silent {
+      if options.silent ?? false {
         return UNNotificationPresentationOptions.init(rawValue: 0)
       }
     }

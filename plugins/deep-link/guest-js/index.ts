@@ -14,7 +14,9 @@ import { type UnlistenFn, listen } from '@tauri-apps/api/event'
  * const urls = await getCurrent();
  * ```
  *
- * #### - **Windows / Linux**: Unsupported.
+ * #### - **Windows / Linux**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
+ * Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
+ * Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect..
  *
  * @since 2.0.0
  */

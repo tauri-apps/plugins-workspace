@@ -23,7 +23,7 @@ pub enum EntryRaw {
 
 #[derive(Debug)]
 pub struct Entry {
-    pub path: PathBuf,
+    pub path: Option<PathBuf>,
 }
 
 pub type EventId = u32;

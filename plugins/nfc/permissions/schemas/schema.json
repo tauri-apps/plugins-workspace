@@ -295,53 +295,39 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-is-available -> Enables the is_available command without any pre-configured scope.",
+          "description": "Enables the is_available command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-is-available"
-          ]
+          "const": "allow-is-available"
         },
         {
-          "description": "deny-is-available -> Denies the is_available command without any pre-configured scope.",
+          "description": "Denies the is_available command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-is-available"
-          ]
+          "const": "deny-is-available"
         },
         {
-          "description": "allow-scan -> Enables the scan command without any pre-configured scope.",
+          "description": "Enables the scan command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-scan"
-          ]
+          "const": "allow-scan"
         },
         {
-          "description": "deny-scan -> Denies the scan command without any pre-configured scope.",
+          "description": "Denies the scan command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-scan"
-          ]
+          "const": "deny-scan"
         },
         {
-          "description": "allow-write -> Enables the write command without any pre-configured scope.",
+          "description": "Enables the write command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-write"
-          ]
+          "const": "allow-write"
         },
         {
-          "description": "deny-write -> Denies the write command without any pre-configured scope.",
+          "description": "Denies the write command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-write"
-          ]
+          "const": "deny-write"
         },
         {
-          "description": "default -> This permission set configures what kind of\noperations are available from the nfc plugin.\n\n#### Granted Permissions\n\nChecking if the NFC functionality is available\nand scanning nearby tags is allowed.\nWriting to tags needs to be manually enabled.\n\n",
+          "description": "This permission set configures what kind of\noperations are available from the nfc plugin.\n\n#### Granted Permissions\n\nChecking if the NFC functionality is available\nand scanning nearby tags is allowed.\nWriting to tags needs to be manually enabled.\n\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

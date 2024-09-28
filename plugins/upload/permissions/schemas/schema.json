@@ -295,39 +295,29 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-download -> Enables the download command without any pre-configured scope.",
+          "description": "Enables the download command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-download"
-          ]
+          "const": "allow-download"
         },
         {
-          "description": "deny-download -> Denies the download command without any pre-configured scope.",
+          "description": "Denies the download command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-download"
-          ]
+          "const": "deny-download"
         },
         {
-          "description": "allow-upload -> Enables the upload command without any pre-configured scope.",
+          "description": "Enables the upload command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-upload"
-          ]
+          "const": "allow-upload"
         },
         {
-          "description": "deny-upload -> Denies the upload command without any pre-configured scope.",
+          "description": "Denies the upload command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-upload"
-          ]
+          "const": "deny-upload"
         },
         {
-          "description": "default -> This permission set configures what kind of\noperations are available from the upload plugin.\n\n#### Granted Permissions\n\nAll operations are enabled by default.\n\n",
+          "description": "This permission set configures what kind of\noperations are available from the upload plugin.\n\n#### Granted Permissions\n\nAll operations are enabled by default.\n\n",
           "type": "string",
-          "enum": [
-            "default"
-          ]
+          "const": "default"
         }
       ]
     }

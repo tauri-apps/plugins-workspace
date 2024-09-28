@@ -20,3 +20,8 @@ api-iife.js
 init-iife.js
 CHANGELOG.md
 *schema.json
+
+# mobile build
+**/ios/.build
+**/.tauri
+plugins/*/android/build

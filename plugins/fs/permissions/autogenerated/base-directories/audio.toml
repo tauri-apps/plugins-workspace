@@ -16,7 +16,7 @@ path = "$AUDIO/**"
 
 [[permission]]
 identifier = "scope-audio"
-description = "This scope permits access to all files and list content of top level directories in the `$AUDIO`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$AUDIO` folder."
 
 [[permission.scope.allow]]
 path = "$AUDIO"

@@ -16,7 +16,7 @@ path = "$PICTURE/**"
 
 [[permission]]
 identifier = "scope-picture"
-description = "This scope permits access to all files and list content of top level directories in the `$PICTURE`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$PICTURE` folder."
 
 [[permission.scope.allow]]
 path = "$PICTURE"

@@ -1,5 +1,5 @@
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>
@@ -63,32 +63,6 @@ Denies the clear_permissions command without any pre-configured scope.
 <tr>
 <td>
 
-`geolocation:allow-clear-positions`
-
-</td>
-<td>
-
-Enables the clear_positions command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`geolocation:deny-clear-positions`
-
-</td>
-<td>
-
-Denies the clear_positions command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
 `geolocation:allow-clear-watch`
 
 </td>
@@ -134,6 +108,32 @@ Enables the get_current_position command without any pre-configured scope.
 <td>
 
 Denies the get_current_position command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`geolocation:allow-request-permissions`
+
+</td>
+<td>
+
+Enables the request_permissions command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`geolocation:deny-request-permissions`
+
+</td>
+<td>
+
+Denies the request_permissions command without any pre-configured scope.
 
 </td>
 </tr>

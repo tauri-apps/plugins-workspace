@@ -855,10 +855,11 @@ pub async fn write_file<R: Runtime>(
         .get("path")
         .ok_or_else(|| anyhow::anyhow!("missing file path").into())
         .and_then(|p| {
-            p.to_str()
-                .map_err(|e| anyhow::anyhow!("invalid path: {e}").into())
+            percent_encoding::percent_decode(p.as_ref())
+                .decode_utf8()
+                .map_err(|_| anyhow::anyhow!("path is not a valid UTF-8").into())
         })
-        .and_then(|p| SafeFilePath::from_str(p).map_err(CommandError::from))?;
+        .and_then(|p| SafeFilePath::from_str(&p).map_err(CommandError::from))?;
     let options = request
         .headers()
         .get("options")
@@ -992,8 +993,8 @@ pub fn resolve_path<R: Runtime>(
                 .unwrap()
                 .clone()
                 .into_iter()
-                .chain(global_scope.allows().iter().map(|e| e.path.clone()))
-                .chain(command_scope.allows().iter().map(|e| e.path.clone()))
+                .chain(global_scope.allows().iter().filter_map(|e| e.path.clone()))
+                .chain(command_scope.allows().iter().filter_map(|e| e.path.clone()))
                 .collect(),
             deny: webview
                 .fs_scope()
@@ -1002,8 +1003,8 @@ pub fn resolve_path<R: Runtime>(
                 .unwrap()
                 .clone()
                 .into_iter()
-                .chain(global_scope.denies().iter().map(|e| e.path.clone()))
-                .chain(command_scope.denies().iter().map(|e| e.path.clone()))
+                .chain(global_scope.denies().iter().filter_map(|e| e.path.clone()))
+                .chain(command_scope.denies().iter().filter_map(|e| e.path.clone()))
                 .collect(),
             require_literal_leading_dot: webview.fs_scope().require_literal_leading_dot,
         },

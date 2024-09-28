@@ -1,0 +1,114 @@
+"$schema" = "schemas/schema.json"
+
+# Scopes Section
+# This section contains scopes, which define file level access
+
+[[permission]]
+identifier = "scope-app-recursive"
+description = "This scope permits recursive access to the complete application folders, including sub directories and files."
+
+[[permission.scope.allow]]
+path = "$APPCONFIG"
+[[permission.scope.allow]]
+path = "$APPCONFIG/**"
+
+[[permission.scope.allow]]
+path = "$APPDATA"
+[[permission.scope.allow]]
+path = "$APPDATA/**"
+
+[[permission.scope.allow]]
+path = "$APPLOCALDATA"
+[[permission.scope.allow]]
+path = "$APPLOCALDATA/**"
+
+[[permission.scope.allow]]
+path = "$APPCACHE"
+[[permission.scope.allow]]
+path = "$APPCACHE/**"
+
+[[permission.scope.allow]]
+path = "$APPLOG"
+[[permission.scope.allow]]
+path = "$APPLOG/**"
+
+[[permission]]
+identifier = "scope-app"
+description = "This scope permits access to all files and list content of top level directories in the application folders."
+
+[[permission.scope.allow]]
+path = "$APPCONFIG"
+[[permission.scope.allow]]
+path = "$APPCONFIG/*"
+
+[[permission.scope.allow]]
+path = "$APPDATA"
+[[permission.scope.allow]]
+path = "$APPDATA/*"
+
+[[permission.scope.allow]]
+path = "$APPLOCALDATA"
+[[permission.scope.allow]]
+path = "$APPLOCALDATA/*"
+
+[[permission.scope.allow]]
+path = "$APPCACHE"
+[[permission.scope.allow]]
+path = "$APPCACHE/*"
+
+[[permission.scope.allow]]
+path = "$APPLOG"
+[[permission.scope.allow]]
+path = "$APPLOG/*"
+
+[[permission]]
+identifier = "scope-app-index"
+description = "This scope permits to list all files and folders in the application directories."
+
+[[permission.scope.allow]]
+path = "$APPCONFIG"
+
+[[permission.scope.allow]]
+path = "$APPDATA"
+
+[[permission.scope.allow]]
+path = "$APPLOCALDATA"
+
+[[permission.scope.allow]]
+path = "$APPCACHE"
+
+[[permission.scope.allow]]
+path = "$APPLOG"
+
+# Sets Section
+# This section combines the scope elements with enablement of commands
+
+[[set]]
+identifier = "allow-app-read-recursive"
+description = "This allows full recursive read access to the complete application folders, files and subdirectories."
+permissions = ["read-all", "scope-app-recursive"]
+
+[[set]]
+identifier = "allow-app-write-recursive"
+description = "This allows full recursive write access to the complete application folders, files and subdirectories."
+permissions = ["write-all", "scope-app-recursive"]
+
+[[set]]
+identifier = "allow-app-read"
+description = "This allows non-recursive read access to the application folders."
+permissions = ["read-all", "scope-app"]
+
+[[set]]
+identifier = "allow-app-write"
+description = "This allows non-recursive write access to the application folders."
+permissions = ["write-all", "scope-app"]
+
+[[set]]
+identifier = "allow-app-meta-recursive"
+description = "This allows full recursive read access to metadata of the application folders, including file listing and statistics."
+permissions = ["read-meta", "scope-app-recursive"]
+
+[[set]]
+identifier = "allow-app-meta"
+description = "This allows non-recursive read access to metadata of the application folders, including file listing and statistics."
+permissions = ["read-meta", "scope-app-index"]

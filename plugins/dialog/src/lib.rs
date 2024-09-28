@@ -199,7 +199,7 @@ pub struct MessageDialogBuilder<R: Runtime> {
     pub(crate) ok_button_label: Option<String>,
     pub(crate) cancel_button_label: Option<String>,
     #[cfg(desktop)]
-    pub(crate) parent: Option<raw_window_handle::RawWindowHandle>,
+    pub(crate) parent: Option<crate::desktop::WindowHandle>,
 }
 
 /// Payload for the message dialog mobile API.
@@ -250,14 +250,18 @@ impl<R: Runtime> MessageDialogBuilder<R> {
     }
 
     /// Set parent windows explicitly (optional)
-    ///
-    /// ## Platform-specific
-    ///
-    /// - **Linux:** Unsupported.
     #[cfg(desktop)]
-    pub fn parent<W: raw_window_handle::HasWindowHandle>(mut self, parent: &W) -> Self {
-        if let Ok(h) = parent.window_handle() {
-            self.parent.replace(h.as_raw());
+    pub fn parent<W: raw_window_handle::HasWindowHandle + raw_window_handle::HasDisplayHandle>(
+        mut self,
+        parent: &W,
+    ) -> Self {
+        if let (Ok(window_handle), Ok(display_handle)) =
+            (parent.window_handle(), parent.display_handle())
+        {
+            self.parent.replace(crate::desktop::WindowHandle::new(
+                window_handle.as_raw(),
+                display_handle.as_raw(),
+            ));
         }
         self
     }
@@ -314,7 +318,7 @@ pub struct FileDialogBuilder<R: Runtime> {
     pub(crate) title: Option<String>,
     pub(crate) can_create_directories: Option<bool>,
     #[cfg(desktop)]
-    pub(crate) parent: Option<raw_window_handle::RawWindowHandle>,
+    pub(crate) parent: Option<crate::desktop::WindowHandle>,
 }
 
 #[cfg(mobile)]
@@ -380,9 +384,19 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// Sets the parent window of the dialog.
     #[cfg(desktop)]
     #[must_use]
-    pub fn set_parent<W: raw_window_handle::HasWindowHandle>(mut self, parent: &W) -> Self {
-        if let Ok(h) = parent.window_handle() {
-            self.parent.replace(h.as_raw());
+    pub fn set_parent<
+        W: raw_window_handle::HasWindowHandle + raw_window_handle::HasDisplayHandle,
+    >(
+        mut self,
+        parent: &W,
+    ) -> Self {
+        if let (Ok(window_handle), Ok(display_handle)) =
+            (parent.window_handle(), parent.display_handle())
+        {
+            self.parent.replace(crate::desktop::WindowHandle::new(
+                window_handle.as_raw(),
+                display_handle.as_raw(),
+            ));
         }
         self
     }

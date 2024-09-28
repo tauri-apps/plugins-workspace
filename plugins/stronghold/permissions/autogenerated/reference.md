@@ -18,7 +18,7 @@ All non-destructive operations are enabled by default.
 - `allow-save-store-record`
 - `allow-save`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

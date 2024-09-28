@@ -16,7 +16,7 @@ path = "$DESKTOP/**"
 
 [[permission]]
 identifier = "scope-desktop"
-description = "This scope permits access to all files and list content of top level directories in the `$DESKTOP`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$DESKTOP` folder."
 
 [[permission.scope.allow]]
 path = "$DESKTOP"

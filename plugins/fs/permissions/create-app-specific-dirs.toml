@@ -5,19 +5,4 @@ identifier = "create-app-specific-dirs"
 description = """
 This permissions allows to create the application specific directories.
 """
-commands.allow = ["mkdir"]
-
-[[permission.scope.allow]]
-path = "$APPCONFIG"
-
-[[permission.scope.allow]]
-path = "$APPDATA"
-
-[[permission.scope.allow]]
-path = "$APPLOCALDATA"
-
-[[permission.scope.allow]]
-path = "$APPCACHE"
-
-[[permission.scope.allow]]
-path = "$APPLOG"
+commands.allow = ["mkdir", "scope-app-index"]

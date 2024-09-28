@@ -31,9 +31,15 @@ pub(crate) type SingleInstanceCallback<R> =
     dyn FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static;
 
 pub fn init<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static>(
-    f: F,
+    mut f: F,
 ) -> TauriPlugin<R> {
-    platform_impl::init(Box::new(f))
+    platform_impl::init(Box::new(move |app, args, cwd| {
+        #[cfg(feature = "deep-link")]
+        if let Some(deep_link) = app.try_state::<tauri_plugin_deep_link::DeepLink<R>>() {
+            deep_link.handle_cli_arguments(args.iter());
+        }
+        f(app, args, cwd)
+    }))
 }
 
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {

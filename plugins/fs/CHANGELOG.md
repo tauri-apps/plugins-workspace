@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0-rc.5]
+
+- [`cc03ccf5`](https://github.com/tauri-apps/plugins-workspace/commit/cc03ccf5e0e4be8bbf50bbdebe957c84be7f779b) ([#1774](https://github.com/tauri-apps/plugins-workspace/pull/1774)) Fix `scope-app`, `scope-app-recursive` and `scope-index` not properly enabling the application paths.
+
+## \[2.0.0-rc.4]
+
+- [`9291e4d2`](https://github.com/tauri-apps/plugins-workspace/commit/9291e4d2caa31c883c71e55f2193bd8754d72f03) ([#1640](https://github.com/tauri-apps/plugins-workspace/pull/1640) by [@SRutile](https://github.com/tauri-apps/plugins-workspace/../../SRutile)) Support any UTF-8 character in the writeFile API.
+
 ## \[2.0.0-rc.3]
 
 - [`a2fe5551`](https://github.com/tauri-apps/plugins-workspace/commit/a2fe55512f908dd11c814ce021d164f01677572a) ([#1727](https://github.com/tauri-apps/plugins-workspace/pull/1727) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add utility methods on `FilePath` and `SafeFilePath` enums which are:

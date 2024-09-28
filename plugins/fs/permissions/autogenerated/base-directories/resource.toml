@@ -16,7 +16,7 @@ path = "$RESOURCE/**"
 
 [[permission]]
 identifier = "scope-resource"
-description = "This scope permits access to all files and list content of top level directories in the `$RESOURCE`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$RESOURCE` folder."
 
 [[permission.scope.allow]]
 path = "$RESOURCE"
