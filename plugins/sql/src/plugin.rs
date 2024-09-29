@@ -70,20 +70,25 @@ fn app_path<R: Runtime>(app: &AppHandle<R>) -> PathBuf {
 #[cfg(feature = "sqlite")]
 /// Maps the user supplied DB connection string to a connection string
 /// with a fully qualified file path to the App's designed "app_path"
-fn path_mapper(mut app_path: PathBuf, connection_string: &str) -> String {
-    app_path.push(
-        connection_string
-            .split_once(':')
-            .expect("Couldn't parse the connection string for DB!")
-            .1,
-    );
+fn path_mapper<R: Runtime>(app: &AppHandle<R>, connection_string: &str) -> String {
+    let path = connection_string
+        .split_once(":")
+        .expect("Couldn't parse the connection string for DB!")
+        .1;
 
-    format!(
-        "sqlite:{}",
-        app_path
+    let pathbuf = PathBuf::from(path);
+
+    // Allow open sqlite file outside of app directory
+    if pathbuf.is_absolute() {
+        format!("sqlite:{}", path)
+    } else {
+        // Open sqlite file relative to app directory
+        let pathbuf = app_path(app).join(path);
+        let path = pathbuf
             .to_str()
-            .expect("Problem creating fully qualified path to Database file!")
-    )
+            .expect("Problem creating fully qualified path to Database file!");
+        format!("sqlite:{}", path)
+    }
 }
 
 #[derive(Default)]
@@ -152,7 +157,7 @@ async fn load<R: Runtime>(
     db: String,
 ) -> Result<String> {
     #[cfg(feature = "sqlite")]
-    let fqdb = path_mapper(app_path(&app), &db);
+    let fqdb = path_mapper(&app, &db);
     #[cfg(not(feature = "sqlite"))]
     let fqdb = db.clone();
 
@@ -302,7 +307,7 @@ impl Builder {
                     let mut lock = instances.0.lock().await;
                     for db in config.preload {
                         #[cfg(feature = "sqlite")]
-                        let fqdb = path_mapper(app_path(app), &db);
+                        let fqdb = path_mapper(app, &db);
                         #[cfg(not(feature = "sqlite"))]
                         let fqdb = db.clone();
 
