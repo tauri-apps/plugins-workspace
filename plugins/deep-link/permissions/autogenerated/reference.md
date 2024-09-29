@@ -4,7 +4,7 @@ Allows reading the opened deep link via the get_current command
 
 - `allow-get-current`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>
