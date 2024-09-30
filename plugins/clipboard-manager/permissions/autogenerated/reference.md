@@ -8,7 +8,7 @@ Clipboard interaction needs to be explicitly enabled.
 
 
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

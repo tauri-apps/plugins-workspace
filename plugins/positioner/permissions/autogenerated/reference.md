@@ -5,7 +5,7 @@ Allows the move_window command
 - `allow-move-window`
 - `set-tray-icon-state`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

@@ -7,7 +7,7 @@ registered or unregistered.
 
 
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>
