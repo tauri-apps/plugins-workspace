@@ -79,8 +79,11 @@ fn set_tray_icon_state<R: Runtime>(
 
 /// The Tauri plugin that exposes [`WindowExt::move_window`] to the webview.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    let plugin = plugin::Builder::new("positioner")
-        .invoke_handler(tauri::generate_handler![move_window, set_tray_icon_state]);
+    let plugin = plugin::Builder::new("positioner").invoke_handler(tauri::generate_handler![
+        move_window,
+        #[cfg(feature = "tray-icon")]
+        set_tray_icon_state
+    ]);
 
     #[cfg(feature = "tray-icon")]
     let plugin = plugin.setup(|app_handle, _api| {
