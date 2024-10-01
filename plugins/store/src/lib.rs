@@ -18,12 +18,13 @@ pub use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::Mutex,
+    sync::{Mutex, Weak},
+    time::Duration,
 };
-pub use store::{Store, StoreBuilder};
+pub use store::{Store, StoreBuilder, StoreInner};
 use tauri::{
     plugin::{self, TauriPlugin},
-    AppHandle, Manager, RunEvent, Runtime, State,
+    AppHandle, Manager, ResourceId, RunEvent, Runtime, Webview,
 };
 
 mod error;
@@ -37,177 +38,138 @@ struct ChangePayload<'a> {
 }
 
 pub struct StoreCollection<R: Runtime> {
-    stores: Mutex<HashMap<PathBuf, Store<R>>>,
-    frozen: bool,
+    stores: Mutex<HashMap<PathBuf, Weak<Mutex<StoreInner<R>>>>>,
+    // frozen: bool,
 }
 
-pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T>>(
+#[tauri::command]
+async fn create_store<R: Runtime>(
     app: AppHandle<R>,
-    collection: State<'_, StoreCollection<R>>,
-    path: impl AsRef<Path>,
-    f: F,
-) -> Result<T> {
-    let mut stores = collection.stores.lock().expect("mutex poisoned");
-
-    let path = path.as_ref();
-    if !stores.contains_key(path) {
-        if collection.frozen {
-            return Err(Error::NotFound(path.to_path_buf()));
-        }
-
-        #[allow(unused_mut)]
-        let mut builder = StoreBuilder::new(path);
-
-        let mut store = builder.build(app);
-
-        // ignore loading errors, just use the default
-        if let Err(err) = store.load() {
-            warn!(
-                "Failed to load store {:?} from disk: {}. Falling back to default values.",
-                path, err
-            );
-        }
-        stores.insert(path.to_path_buf(), store);
+    webview: Webview<R>,
+    path: PathBuf,
+    auto_save: Option<u64>,
+) -> Result<ResourceId> {
+    let mut builder = app.store_builder(path);
+    if let Some(auto_save) = auto_save {
+        builder = builder.auto_save(Duration::from_millis(auto_save));
     }
-
-    f(stores
-        .get_mut(path)
-        .expect("failed to retrieve store. This is a bug!"))
+    let store = builder.build();
+    Ok(webview.resources_table().add(store))
 }
 
 #[tauri::command]
 async fn set<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
+    webview: Webview<R>,
+    rid: ResourceId,
     key: String,
     value: JsonValue,
 ) -> Result<()> {
-    with_store(app, stores, path, |store| store.insert(key, value))
+    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    store.set(key, value);
+    Ok(())
 }
 
 #[tauri::command]
 async fn get<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
+    webview: Webview<R>,
+    rid: ResourceId,
     key: String,
 ) -> Result<Option<JsonValue>> {
-    with_store(app, stores, path, |store| Ok(store.get(key).cloned()))
+    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    Ok(store.get(key))
 }
 
 #[tauri::command]
-async fn has<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-    key: String,
-) -> Result<bool> {
-    with_store(app, stores, path, |store| Ok(store.has(key)))
+async fn has<R: Runtime>(webview: Webview<R>, rid: ResourceId, key: String) -> Result<bool> {
+    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    Ok(store.has(key))
 }
 
 #[tauri::command]
-async fn delete<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-    key: String,
-) -> Result<bool> {
-    with_store(app, stores, path, |store| store.delete(key))
+async fn delete<R: Runtime>(webview: Webview<R>, rid: ResourceId, key: String) -> Result<bool> {
+    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    Ok(store.delete(key))
 }
 
 #[tauri::command]
-async fn clear<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-) -> Result<()> {
-    with_store(app, stores, path, |store| store.clear())
+async fn clear<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> Result<()> {
+    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    store.clear();
+    Ok(())
 }
 
 #[tauri::command]
-async fn reset<R: Runtime>(
-    app: AppHandle<R>,
-    collection: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-) -> Result<()> {
-    with_store(app, collection, path, |store| store.reset())
+async fn reset<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> Result<()> {
+    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    store.reset();
+    Ok(())
 }
 
 #[tauri::command]
-async fn keys<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-) -> Result<Vec<String>> {
-    with_store(app, stores, path, |store| {
-        Ok(store.keys().cloned().collect())
-    })
+async fn keys<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> Result<Vec<String>> {
+    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    Ok(store.keys())
 }
 
 #[tauri::command]
-async fn values<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-) -> Result<Vec<JsonValue>> {
-    with_store(app, stores, path, |store| {
-        Ok(store.values().cloned().collect())
-    })
+async fn values<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> Result<Vec<JsonValue>> {
+    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    Ok(store.values())
 }
 
 #[tauri::command]
 async fn entries<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
+    webview: Webview<R>,
+    rid: ResourceId,
 ) -> Result<Vec<(String, JsonValue)>> {
-    with_store(app, stores, path, |store| {
-        Ok(store
-            .entries()
-            .map(|(k, v)| (k.to_owned(), v.to_owned()))
-            .collect())
-    })
+    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    Ok(store.entries())
 }
 
 #[tauri::command]
-async fn length<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-) -> Result<usize> {
-    with_store(app, stores, path, |store| Ok(store.len()))
+async fn length<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> Result<usize> {
+    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    Ok(store.length())
 }
 
 #[tauri::command]
-async fn load<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-) -> Result<()> {
-    with_store(app, stores, path, |store| store.load())
+async fn load<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> Result<()> {
+    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    store.load()
 }
 
 #[tauri::command]
-async fn save<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-) -> Result<()> {
-    with_store(app, stores, path, |store| store.save())
+async fn save<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> Result<()> {
+    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    store.save()
+}
+
+pub trait StoreExt<R: Runtime> {
+    fn store(&self, path: impl AsRef<Path>) -> Store<R>;
+    fn store_builder(&self, path: impl AsRef<Path>) -> StoreBuilder<R>;
+}
+
+impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
+    fn store(&self, path: impl AsRef<Path>) -> Store<R> {
+        StoreBuilder::new(self.app_handle(), path).build()
+    }
+
+    fn store_builder(&self, path: impl AsRef<Path>) -> StoreBuilder<R> {
+        StoreBuilder::new(self.app_handle(), path)
+    }
 }
 
 // #[derive(Default)]
 pub struct Builder<R: Runtime> {
     stores: HashMap<PathBuf, Store<R>>,
-    frozen: bool,
+    // frozen: bool,
 }
 
 impl<R: Runtime> Default for Builder<R> {
     fn default() -> Self {
         Self {
             stores: Default::default(),
-            frozen: false,
+            // frozen: false,
         }
     }
 }
@@ -217,114 +179,126 @@ impl<R: Runtime> Builder<R> {
         Self::default()
     }
 
-    /// Registers a store with the plugin.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tauri_plugin_store::{StoreBuilder, Builder};
-    ///
-    /// tauri::Builder::default()
-    ///   .setup(|app| {
-    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
-    ///     let builder = Builder::default().store(store);
-    ///     Ok(())
-    ///   });
-    /// ```
-    pub fn store(mut self, store: Store<R>) -> Self {
-        self.stores.insert(store.path.clone(), store);
-        self
-    }
+    // /// Registers a store with the plugin.
+    // ///
+    // /// # Examples
+    // ///
+    // /// ```
+    // /// use tauri_plugin_store::{StoreBuilder, Builder};
+    // ///
+    // /// tauri::Builder::default()
+    // ///   .setup(|app| {
+    // ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
+    // ///     let builder = Builder::default().store(store);
+    // ///     Ok(())
+    // ///   });
+    // /// ```
+    // pub fn store(mut self, store: Store<R>) -> Self {
+    //     self.stores.insert(store.path.clone(), store);
+    //     self
+    // }
 
-    /// Registers multiple stores with the plugin.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tauri_plugin_store::{StoreBuilder, Builder};
-    ///
-    /// tauri::Builder::default()
-    ///   .setup(|app| {
-    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
-    ///     let builder = Builder::default().stores([store]);
-    ///     Ok(())
-    ///   });
-    /// ```
-    pub fn stores<T: IntoIterator<Item = Store<R>>>(mut self, stores: T) -> Self {
-        self.stores = stores
-            .into_iter()
-            .map(|store| (store.path.clone(), store))
-            .collect();
-        self
-    }
+    // /// Registers multiple stores with the plugin.
+    // ///
+    // /// # Examples
+    // ///
+    // /// ```
+    // /// use tauri_plugin_store::{StoreBuilder, Builder};
+    // ///
+    // /// tauri::Builder::default()
+    // ///   .setup(|app| {
+    // ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
+    // ///     let builder = Builder::default().stores([store]);
+    // ///     Ok(())
+    // ///   });
+    // /// ```
+    // pub fn stores<T: IntoIterator<Item = Store<R>>>(mut self, stores: T) -> Self {
+    //     self.stores = stores
+    //         .into_iter()
+    //         .map(|store| (store.path.clone(), store))
+    //         .collect();
+    //     self
+    // }
 
-    /// Freezes the collection.
-    ///
-    /// This causes requests for plugins that haven't been registered to fail
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tauri_plugin_store::{StoreBuilder, Builder};
-    ///
-    /// tauri::Builder::default()
-    ///   .setup(|app| {
-    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
-    ///     app.handle().plugin(Builder::default().freeze().build());
-    ///     Ok(())
-    ///   });
-    /// ```
-    pub fn freeze(mut self) -> Self {
-        self.frozen = true;
-        self
-    }
+    // /// Freezes the collection.
+    // ///
+    // /// This causes requests for plugins that haven't been registered to fail
+    // ///
+    // /// # Examples
+    // ///
+    // /// ```
+    // /// use tauri_plugin_store::{StoreBuilder, Builder};
+    // ///
+    // /// tauri::Builder::default()
+    // ///   .setup(|app| {
+    // ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
+    // ///     app.handle().plugin(Builder::default().freeze().build());
+    // ///     Ok(())
+    // ///   });
+    // /// ```
+    // pub fn freeze(mut self) -> Self {
+    //     self.frozen = true;
+    //     self
+    // }
 
     /// Builds the plugin.
     ///
     /// # Examples
     ///
     /// ```
-    /// use tauri_plugin_store::{StoreBuilder, Builder};
-    ///
     /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
-    ///     app.handle().plugin(Builder::default().build());
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin").build();
     ///     Ok(())
     ///   });
     /// ```
     pub fn build(mut self) -> TauriPlugin<R> {
         plugin::Builder::new("store")
             .invoke_handler(tauri::generate_handler![
-                set, get, has, delete, clear, reset, keys, values, length, entries, load, save
+                create_store,
+                set,
+                get,
+                has,
+                delete,
+                clear,
+                reset,
+                keys,
+                values,
+                length,
+                entries,
+                load,
+                save
             ])
             .setup(move |app_handle, _api| {
                 for (path, store) in self.stores.iter_mut() {
                     // ignore loading errors, just use the default
                     if let Err(err) = store.load() {
                         warn!(
-              "Failed to load store {:?} from disk: {}. Falling back to default values.",
-              path, err
-            );
+                            "Failed to load store {path:?} from disk: {err}. Falling back to default values."
+                        );
                     }
                 }
 
-                app_handle.manage(StoreCollection {
-                    stores: Mutex::new(self.stores),
-                    frozen: self.frozen,
+                app_handle.manage(StoreCollection::<R> {
+                    stores: Mutex::new(HashMap::new()),
+                    // frozen: self.frozen,
                 });
 
                 Ok(())
             })
-            .on_event(|app_handle, event| {
+            .on_event(|_app_handle, event| {
                 if let RunEvent::Exit = event {
-                    let collection = app_handle.state::<StoreCollection<R>>();
+                    // let collection = app_handle.state::<StoreCollection<R>>();
 
-                    for store in collection.stores.lock().expect("mutex poisoned").values() {
-                        if let Err(err) = store.save() {
-                            eprintln!("failed to save store {:?} with error {:?}", store.path, err);
-                        }
-                    }
+                    // for store in collection.stores.lock().expect("mutex poisoned").values_mut() {
+                    //     if let Some(sender) = store.auto_save_debounce_sender.take() {
+                    //         let _ = sender.send(AutoSaveMessage::Cancel);
+                    //     }
+                    //     if let Err(err) = store.save() {
+                    //         eprintln!("failed to save store {:?} with error {:?}", store.path, err);
+                    //     }
+                    // }
                 }
             })
             .build()

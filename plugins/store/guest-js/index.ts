@@ -4,7 +4,7 @@
 
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 
-import { invoke } from '@tauri-apps/api/core'
+import { invoke, Resource } from '@tauri-apps/api/core'
 
 interface ChangePayload<T> {
   path: string
@@ -13,12 +13,36 @@ interface ChangePayload<T> {
 }
 
 /**
- * A key-value store persisted by the backend layer.
+ * Options to create a store
  */
-export class Store {
-  path: string
-  constructor(path: string) {
-    this.path = path
+export type StoreOptions = {
+  /**
+   * Auto save on modification with debounce duration in milliseconds
+   */
+  autoSave?: boolean
+}
+
+/**
+ * @param path: Path to save the store in `app_data_dir`
+ * @param options: Store configuration options
+ */
+export async function createStore(path: string, options?: StoreOptions) {
+  const resourceId = await invoke<number>('plugin:store|create_store', {
+    path,
+    ...options
+  })
+  return new Store(resourceId, path)
+}
+
+/**
+ * A lazy loaded key-value store persisted by the backend layer.
+ */
+export class Store extends Resource {
+  constructor(
+    rid: number,
+    private readonly path: string
+  ) {
+    super(rid)
   }
 
   /**
@@ -30,7 +54,7 @@ export class Store {
    */
   async set(key: string, value: unknown): Promise<void> {
     await invoke('plugin:store|set', {
-      path: this.path,
+      rid: this.rid,
       key,
       value
     })
@@ -44,7 +68,7 @@ export class Store {
    */
   async get<T>(key: string): Promise<T | null> {
     return await invoke('plugin:store|get', {
-      path: this.path,
+      rid: this.rid,
       key
     })
   }
@@ -57,7 +81,7 @@ export class Store {
    */
   async has(key: string): Promise<boolean> {
     return await invoke('plugin:store|has', {
-      path: this.path,
+      rid: this.rid,
       key
     })
   }
@@ -70,7 +94,7 @@ export class Store {
    */
   async delete(key: string): Promise<boolean> {
     return await invoke('plugin:store|delete', {
-      path: this.path,
+      rid: this.rid,
       key
     })
   }
@@ -82,9 +106,7 @@ export class Store {
    * @returns
    */
   async clear(): Promise<void> {
-    await invoke('plugin:store|clear', {
-      path: this.path
-    })
+    await invoke('plugin:store|clear', { rid: this.rid })
   }
 
   /**
@@ -94,9 +116,7 @@ export class Store {
    * @returns
    */
   async reset(): Promise<void> {
-    await invoke('plugin:store|reset', {
-      path: this.path
-    })
+    await invoke('plugin:store|reset', { rid: this.rid })
   }
 
   /**
@@ -105,9 +125,7 @@ export class Store {
    * @returns
    */
   async keys(): Promise<string[]> {
-    return await invoke('plugin:store|keys', {
-      path: this.path
-    })
+    return await invoke('plugin:store|keys', { rid: this.rid })
   }
 
   /**
@@ -116,9 +134,7 @@ export class Store {
    * @returns
    */
   async values<T>(): Promise<T[]> {
-    return await invoke('plugin:store|values', {
-      path: this.path
-    })
+    return await invoke('plugin:store|values', { rid: this.rid })
   }
 
   /**
@@ -127,9 +143,7 @@ export class Store {
    * @returns
    */
   async entries<T>(): Promise<Array<[key: string, value: T]>> {
-    return await invoke('plugin:store|entries', {
-      path: this.path
-    })
+    return await invoke('plugin:store|entries', { rid: this.rid })
   }
 
   /**
@@ -138,9 +152,7 @@ export class Store {
    * @returns
    */
   async length(): Promise<number> {
-    return await invoke('plugin:store|length', {
-      path: this.path
-    })
+    return await invoke('plugin:store|length', { rid: this.rid })
   }
 
   /**
@@ -152,9 +164,7 @@ export class Store {
    * @returns
    */
   async load(): Promise<void> {
-    await invoke('plugin:store|load', {
-      path: this.path
-    })
+    await invoke('plugin:store|load', { rid: this.rid })
   }
 
   /**
@@ -165,9 +175,7 @@ export class Store {
    * @returns
    */
   async save(): Promise<void> {
-    await invoke('plugin:store|save', {
-      path: this.path
-    })
+    await invoke('plugin:store|save', { rid: this.rid })
   }
 
   /**

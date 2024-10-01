@@ -9,6 +9,7 @@ All operations are enabled by default.
 
 
 
+- `allow-create-store`
 - `allow-clear`
 - `allow-delete`
 - `allow-entries`
@@ -53,6 +54,32 @@ Enables the clear command without any pre-configured scope.
 <td>
 
 Denies the clear command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-create-store`
+
+</td>
+<td>
+
+Enables the create_store command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-create-store`
+
+</td>
+<td>
+
+Denies the create_store command without any pre-configured scope.
 
 </td>
 </tr>
