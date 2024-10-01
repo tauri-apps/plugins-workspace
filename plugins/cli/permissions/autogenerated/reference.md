@@ -4,7 +4,7 @@ Allows reading the CLI matches
 
 - `allow-cli-matches`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

@@ -12,7 +12,7 @@ the application.
 - `allow-exit`
 - `allow-restart`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

@@ -13,6 +13,13 @@ links = "tauri-plugin-fs"
 rustc-args = ["--cfg", "docsrs"]
 rustdoc-args = ["--cfg", "docsrs"]
 
+[package.metadata.platforms.support]
+windows = { level = "full", notes = "" }
+linux = { level = "full", notes = "No write access to `$RESOURCES` folder" }
+macos = { level = "full", notes = "No write access to `$RESOURCES` folder" }
+android = { level = "partial", notes = "Access is restricted to Application folder by default" }
+ios = { level = "partial", notes = "Access is restricted to Application folder by default" }
+
 [build-dependencies]
 tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }

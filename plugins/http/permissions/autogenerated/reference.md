@@ -18,7 +18,7 @@ All fetch operations are enabled.
 - `allow-fetch-read-body`
 - `allow-fetch-send`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

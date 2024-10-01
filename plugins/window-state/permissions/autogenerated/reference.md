@@ -13,7 +13,7 @@ All operations are enabled by default.
 - `allow-restore-state`
 - `allow-save-window-state`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

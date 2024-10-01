@@ -16,7 +16,7 @@ It allows all barcode related features.
 - `allow-scan`
 - `allow-vibrate`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

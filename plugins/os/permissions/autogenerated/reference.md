@@ -18,7 +18,7 @@ All information except the host name are available.
 - `allow-platform`
 - `allow-version`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

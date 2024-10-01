@@ -11,6 +11,17 @@ links = "tauri-plugin-PLUGIN_NAME"
 rustc-args = ["--cfg", "docsrs"]
 rustdoc-args = ["--cfg", "docsrs"]
 
+# Platforms supported by the plugin
+# Support levels are "full", "partial", "none", "unknown"
+# Details of the support level are left to plugin maintainer
+[package.metadata.platforms]
+windows = { level = "unknown", notes = "" }
+linux = { level = "unknown", notes = "" }
+macos = { level = "unknown", notes = "" }
+android = { level = "unknown", notes = "" }
+ios = { level = "unknown", notes = "" }
+
+
 [build-dependencies]
 tauri-plugin = { workspace = true, features = ["build"] }
 
