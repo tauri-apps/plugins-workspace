@@ -149,7 +149,7 @@ pub trait StoreExt<R: Runtime> {
     fn store_builder(&self, path: impl AsRef<Path>) -> StoreBuilder<R>;
 }
 
-impl<R: Runtime> StoreExt<R> for AppHandle<R> {
+impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     fn store(&self, path: impl AsRef<Path>) -> Store<R> {
         StoreBuilder::new(self.app_handle().clone(), path).build()
     }

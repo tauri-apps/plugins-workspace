@@ -37,7 +37,7 @@ fn main() {
                     println!("theme {theme}");
                     println!("launch_at_login {launch_at_login}");
                     store.set(
-                        "appSettings".into(),
+                        "appSettings",
                         json!({ "theme": theme, "launchAtLogin": launch_at_login }),
                     );
                 }

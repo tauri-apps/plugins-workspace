@@ -149,12 +149,10 @@ As you may have noticed, the `Store` crated above isn't accessible to the fronte
 
 ```rust
 use tauri::Wry;
-use tauri_plugin_store::with_store;
+use tauri_plugin_store::StoreExt;
 
-let stores = app.state::<StoreCollection<Wry>>();
-let path = PathBuf::from("app_data.bin");
-
-with_store(app_handle, stores, path, None, |store| store.insert("a".to_string(), json!("b")))
+let store = app.store_builder("app_data.bin").build();
+store.insert("key", "value");
 ```
 
 ## Contributing

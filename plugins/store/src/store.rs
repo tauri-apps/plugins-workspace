@@ -104,11 +104,13 @@ impl<R: Runtime> StoreBuilder<R> {
     /// use tauri_plugin_store::StoreBuilder;
     ///
     /// let builder = StoreBuilder::<tauri::Wry>::new("store.bin")
-    ///   .default("foo".to_string(), "bar".into());
+    ///   .default("foo".to_string(), "bar");
     ///
     /// # Ok(())
     /// # }
-    pub fn default(mut self, key: String, value: JsonValue) -> Self {
+    pub fn default(mut self, key: impl Into<String>, value: impl Into<JsonValue>) -> Self {
+        let key = key.into();
+        let value = value.into();
         self.cache.insert(key.clone(), value.clone());
         self.defaults
             .get_or_insert(HashMap::new())
@@ -264,7 +266,9 @@ impl<R: Runtime> StoreInner<R> {
         Ok(())
     }
 
-    pub fn insert(&mut self, key: String, value: JsonValue) {
+    pub fn insert(&mut self, key: impl Into<String>, value: impl Into<JsonValue>) {
+        let key = key.into();
+        let value = value.into();
         self.cache.insert(key.clone(), value.clone());
         let _ = self.emit_change_event(&key, &value);
     }
@@ -374,8 +378,8 @@ impl<R: Runtime> Store<R> {
         f(&mut store)
     }
 
-    pub fn set(&self, key: String, value: JsonValue) {
-        self.store.lock().unwrap().insert(key, value);
+    pub fn set(&self, key: impl Into<String>, value: impl Into<JsonValue>) {
+        self.store.lock().unwrap().insert(key.into(), value.into());
         let _ = self.trigger_auto_save();
     }
 
