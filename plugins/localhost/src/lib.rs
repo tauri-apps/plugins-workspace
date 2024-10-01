@@ -74,7 +74,7 @@ impl Builder {
                 let asset_resolver = app.asset_resolver();
                 std::thread::spawn(move || {
                     let server =
-                        Server::http(&format!("localhost:{port}")).expect("Unable to spawn server");
+                        Server::http(format!("localhost:{port}")).expect("Unable to spawn server");
                     for req in server.incoming_requests() {
                         let path = req
                             .url()

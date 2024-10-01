@@ -215,21 +215,9 @@ jobs:
         run: cargo +stable install cross --git https://github.com/cross-rs/cross
 
       - name: test ${{ matrix.package }}
-        if: matrix.package != 'tauri-plugin-sql' && matrix.package != 'tauri-plugin-http'
+        if: matrix.package != 'tauri-plugin-http'
         run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features
 
       - name: test ${{ matrix.package }}
         if: matrix.package == 'tauri-plugin-http'
         run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets
-
-      - name: test ${{ matrix.package }} sqlite
-        if: matrix.package == 'tauri-plugin-sql'
-        run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --features sqlite
-
-      - name: test ${{ matrix.package }} mysql
-        if: matrix.package == 'tauri-plugin-sql'
-        run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --features mysql
-
-      - name: test ${{ matrix.package }} postgres
-        if: matrix.package == 'tauri-plugin-sql'
-        run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --features postgres

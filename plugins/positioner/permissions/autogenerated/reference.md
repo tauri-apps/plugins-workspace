@@ -3,6 +3,7 @@
 Allows the move_window command
 
 - `allow-move-window`
+- `set-tray-icon-state`
 
 ## Permission Table
 
@@ -35,6 +36,19 @@ Enables the move_window command without any pre-configured scope.
 <td>
 
 Denies the move_window command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`positioner:allow-set-tray-icon-state`
+
+</td>
+<td>
+
+Enables the set_tray_icon_state to handle events and set the TrayIcon state.
 
 </td>
 </tr>

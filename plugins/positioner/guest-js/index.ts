@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 import { invoke } from '@tauri-apps/api/core'
+import type { TrayIconEvent } from '@tauri-apps/api/tray'
 
 /**
  * Well known window positions.
@@ -35,5 +36,16 @@ export enum Position {
 export async function moveWindow(to: Position): Promise<void> {
   await invoke('plugin:positioner|move_window', {
     position: to
+  })
+}
+
+export async function handleIconState(event: TrayIconEvent): Promise<void> {
+  await invokeSetTrayIconState(event.rect)
+}
+
+async function invokeSetTrayIconState(rect: TrayIconEvent['rect']) {
+  await invoke('plugin:positioner|set_tray_icon_state', {
+    position: rect.position,
+    size: rect.size
   })
 }

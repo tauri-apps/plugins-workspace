@@ -305,6 +305,11 @@
           "const": "deny-move-window"
         },
         {
+          "description": "Enables the set_tray_icon_state to handle events and set the TrayIcon state.",
+          "type": "string",
+          "const": "allow-set-tray-icon-state"
+        },
+        {
           "description": "Allows the move_window command",
           "type": "string",
           "const": "default"

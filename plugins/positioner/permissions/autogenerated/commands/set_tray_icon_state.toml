@@ -1,0 +1,8 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-set-tray-icon-state"
+description = "Enables the set_tray_icon_state to handle events and set the TrayIcon state."
+commands.allow = ["set_tray_icon_state"]
