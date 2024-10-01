@@ -5,13 +5,21 @@
 use futures_core::future::BoxFuture;
 use serde::{ser::Serializer, Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+
+#[cfg(feature = "sqlite")]
+pub use sqlx::sqlite::{
+    SqliteConnectOptions, SqliteJournalMode, SqliteLockingMode, SqliteSynchronous,
+};
+
 use sqlx::{
     error::BoxDynError,
-    migrate::{
-        MigrateDatabase, Migration as SqlxMigration, MigrationSource, MigrationType, Migrator,
-    },
+    migrate::{Migration as SqlxMigration, MigrationSource, MigrationType, Migrator},
     Column, Pool, Row,
 };
+
+#[cfg(not(feature = "sqlite"))]
+use sqlx::migrate::MigrateDatabase;
+
 use tauri::{
     command,
     plugin::{Builder as PluginBuilder, TauriPlugin},
@@ -79,7 +87,7 @@ fn path_mapper(mut app_path: PathBuf, connection_string: &str) -> String {
     );
 
     format!(
-        "sqlite:{}",
+        "{}",
         app_path
             .to_str()
             .expect("Problem creating fully qualified path to Database file!")
@@ -90,6 +98,9 @@ fn path_mapper(mut app_path: PathBuf, connection_string: &str) -> String {
 pub struct DbInstances(pub Mutex<HashMap<String, Pool<Db>>>);
 
 struct Migrations(Mutex<HashMap<String, MigrationList>>);
+
+#[cfg(feature = "sqlite")]
+struct SqlLiteOptionStore(Mutex<HashMap<String, SqliteConnectOptions>>);
 
 #[derive(Default, Clone, Deserialize)]
 pub struct PluginConfig {
@@ -144,6 +155,7 @@ impl MigrationSource<'static> for MigrationList {
     }
 }
 
+#[cfg(not(feature = "sqlite"))]
 #[command]
 async fn load<R: Runtime>(
     #[allow(unused_variables)] app: AppHandle<R>,
@@ -151,18 +163,39 @@ async fn load<R: Runtime>(
     migrations: State<'_, Migrations>,
     db: String,
 ) -> Result<String> {
-    #[cfg(feature = "sqlite")]
-    let fqdb = path_mapper(app_path(&app), &db);
-    #[cfg(not(feature = "sqlite"))]
     let fqdb = db.clone();
-
-    #[cfg(feature = "sqlite")]
-    create_dir_all(app_path(&app)).expect("Problem creating App directory!");
-
-    if !Db::database_exists(&fqdb).await.unwrap_or(false) {
-        Db::create_database(&fqdb).await?;
-    }
     let pool = Pool::connect(&fqdb).await?;
+    if let Some(migrations) = migrations.0.lock().await.remove(&db) {
+        let migrator = Migrator::new(migrations).await?;
+        migrator.run(&pool).await?;
+    }
+    db_instances.0.lock().await.insert(db.clone(), pool);
+    Ok(db)
+}
+
+#[cfg(feature = "sqlite")]
+#[command]
+async fn load<R: Runtime>(
+    #[allow(unused_variables)] app: AppHandle<R>,
+    db_instances: State<'_, DbInstances>,
+    migrations: State<'_, Migrations>,
+    sqlite_options: State<'_, SqlLiteOptionStore>,
+    db: String,
+) -> Result<String> {
+    let options = if let Some(options) = sqlite_options.0.lock().await.remove(&db) {
+        options
+    } else {
+        SqliteConnectOptions::new()
+    };
+    let pool = if !options.clone().get_filename().starts_with("sqlx-in-memory") {
+        let fqdb = {
+            create_dir_all(app_path(&app)).expect("Problem creating App directory!");
+            path_mapper(app_path(&app), &db)
+        };
+        Pool::connect_with(options.filename(&fqdb).create_if_missing(true)).await?
+    } else {
+        Pool::connect_with(options).await?
+    };
 
     if let Some(migrations) = migrations.0.lock().await.remove(&db) {
         let migrator = Migrator::new(migrations).await?;
@@ -213,8 +246,8 @@ async fn execute(
             query = query.bind(None::<JsonValue>);
         } else if value.is_string() {
             query = query.bind(value.as_str().unwrap().to_owned())
-        } else if let Some(number) = value.as_number() {
-            query = query.bind(number.as_f64().unwrap_or_default())
+        } else if value.is_number() {
+            query = query.bind(value.as_f64().unwrap_or_default())
         } else {
             query = query.bind(value);
         }
@@ -244,8 +277,8 @@ async fn select(
             query = query.bind(None::<JsonValue>);
         } else if value.is_string() {
             query = query.bind(value.as_str().unwrap().to_owned())
-        } else if let Some(number) = value.as_number() {
-            query = query.bind(number.as_f64().unwrap_or_default())
+        } else if value.is_number() {
+            query = query.bind(value.as_f64().unwrap_or_default())
         } else {
             query = query.bind(value);
         }
@@ -272,6 +305,8 @@ async fn select(
 #[derive(Default)]
 pub struct Builder {
     migrations: Option<HashMap<String, MigrationList>>,
+    #[cfg(feature = "sqlite")]
+    sqlite_options: Option<HashMap<String, SqliteConnectOptions>>,
 }
 
 impl Builder {
@@ -288,6 +323,16 @@ impl Builder {
         self
     }
 
+    #[cfg(feature = "sqlite")]
+    /// Add sqlite options to a database.
+    #[must_use]
+    pub fn add_sqlite_options(mut self, db_url: &str, options: SqliteConnectOptions) -> Self {
+        self.sqlite_options
+            .get_or_insert(Default::default())
+            .insert(db_url.to_string(), options);
+        self
+    }
+
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R, Option<PluginConfig>> {
         PluginBuilder::<R, Option<PluginConfig>>::new("sql")
             .invoke_handler(tauri::generate_handler![load, execute, select, close])
@@ -301,15 +346,35 @@ impl Builder {
                     let instances = DbInstances::default();
                     let mut lock = instances.0.lock().await;
                     for db in config.preload {
-                        #[cfg(feature = "sqlite")]
-                        let fqdb = path_mapper(app_path(app), &db);
                         #[cfg(not(feature = "sqlite"))]
-                        let fqdb = db.clone();
+                        let fqdb = {
+                            let path_db = db.clone();
+                            if !Db::database_exists(&path_db).await.unwrap_or(false) {
+                                Db::create_database(&path_db).await?;
+                            }
+                            path_db
+                        };
 
-                        if !Db::database_exists(&fqdb).await.unwrap_or(false) {
-                            Db::create_database(&fqdb).await?;
-                        }
+                        #[cfg(not(feature = "sqlite"))]
                         let pool = Pool::connect(&fqdb).await?;
+
+                        #[cfg(feature = "sqlite")]
+                        let pool = {
+                            let options = if let Some(options) =
+                                self.sqlite_options.as_mut().unwrap().remove(&db)
+                            {
+                                options
+                            } else {
+                                SqliteConnectOptions::new()
+                            };
+                            if !options.clone().get_filename().starts_with("sqlx-in-memory") {
+                                let fqdb: String = path_mapper(app_path(app), &db);
+                                Pool::connect_with(options.filename(&fqdb).create_if_missing(true))
+                                    .await?
+                            } else {
+                                Pool::connect_with(options).await?
+                            }
+                        };
 
                         if let Some(migrations) = self.migrations.as_mut().unwrap().remove(&db) {
                             let migrator = Migrator::new(migrations).await?;
@@ -318,12 +383,14 @@ impl Builder {
                         lock.insert(db, pool);
                     }
                     drop(lock);
-
                     app.manage(instances);
                     app.manage(Migrations(Mutex::new(
                         self.migrations.take().unwrap_or_default(),
                     )));
-
+                    #[cfg(feature = "sqlite")]
+                    app.manage(SqlLiteOptionStore(Mutex::new(
+                        self.sqlite_options.take().unwrap_or_default(),
+                    )));
                     Ok(())
                 })
             })

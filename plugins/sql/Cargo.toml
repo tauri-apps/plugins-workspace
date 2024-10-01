@@ -31,12 +31,15 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 futures-core = "0.3"
-sqlx = { version = "0.8", features = ["json", "time"] }
+sqlx = { version = "0.8", features = [ "json", "time" ] }
+libsqlite3-sys = "*"
 time = "0.3"
 tokio = { version = "1", features = ["sync"] }
 indexmap = { version = "2", features = ["serde"] }
 
 [features]
-sqlite = ["sqlx/sqlite", "sqlx/runtime-tokio"]
-mysql = ["sqlx/mysql", "sqlx/runtime-tokio-rustls"]
-postgres = ["sqlx/postgres", "sqlx/runtime-tokio-rustls"]
+sqlite = [ "sqlx/sqlite", "sqlx/runtime-tokio" ]
+bundled-sqlcipher = ["sqlite","libsqlite3-sys/bundled-sqlcipher"]
+bundled-sqlcipher-vendored-openssl = ["sqlite","libsqlite3-sys/bundled-sqlcipher-vendored-openssl"]
+mysql = [ "sqlx/mysql", "sqlx/runtime-tokio-rustls" ]
+postgres = [ "sqlx/postgres", "sqlx/runtime-tokio-rustls" ]

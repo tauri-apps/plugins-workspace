@@ -185,6 +185,85 @@ Ensure that the migrations are defined in the correct order and are safe to run 
 - **Idempotency**: Write migrations in a way that they can be safely re-run without causing errors or unintended consequences.
 - **Testing**: Thoroughly test migrations to ensure they work as expected and do not compromise the integrity of your database.
 
+## Sqlite options
+
+### Adding Sqlite options
+
+Similarly as adding migrations, it is possible to add Sqlite options such as database encryption or regular Sqlite options.
+
+```rust
+use tauri_plugin_sql::{Builder, Migration, MigrationKind, SqliteConnectOptions, SqliteJournalMode};
+
+fn main() {
+    let migrations = vec![
+        // Define your migrations here
+        Migration {
+            version: 1,
+            description: "create_initial_tables",
+            sql: "CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT);",
+            kind: MigrationKind::Up,
+        }
+    ];
+
+    tauri::Builder::default()
+        .plugin(
+            tauri_plugin_sql::Builder::default()
+                .add_migrations("sqlite:mydatabase.db", migrations)
+                .add_sqlite_options("sqlite:mydatabase.db", SqliteConnectOptions::new().pragma("key", "my_database_key").journal_mode(SqliteJournalMode::Off))
+                .build(),
+        )
+        ...
+}
+```
+
+Refer to the SqliteConnectOptions doc of the sqlx crate to view all possible options.
+
+### In memory
+
+It is possible to use an in-memory database using SqliteConnectOptions::from_url with `sqlite::memory:` as url.
+
+```rust
+use tauri_plugin_sql::{Builder, Migration, MigrationKind, SqliteConnectOptions, SqliteJournalMode};
+
+fn main() {
+    let migrations = vec![
+        // Define your migrations here
+        Migration {
+            version: 1,
+            description: "create_initial_tables",
+            sql: "CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT);",
+            kind: MigrationKind::Up,
+        }
+    ];
+
+    tauri::Builder::default()
+        .plugin(
+            tauri_plugin_sql::Builder::default()
+                .add_migrations("sqlite:mydatabase.db", migrations)
+                .add_sqlite_options("sqlite:mydatabase.db", SqliteConnectOptions::from_url("sqlite::memory:"))
+                .build(),
+        )
+        ...
+}
+```
+### SqlCipher
+
+To make it work with SqlCipher, you'll need to use the bundled-sqlcipher or bundled-sqlcipher-vendored-openssl instead of the sqlite feature depending on your system.
+
+```toml
+[dependencies.tauri-plugin-sql]
+features = ["bundled-sqlcipher"]
+```
+
+You'll also need openssl to build. Please refer to libsqlite3-sys documentation to understand how to install openssl.
+
+On windows, I recommend building and installing openssl using vcpkg https://github.com/Microsoft/vcpkg
+- Clone vcpkg to C:\src\vcpkg for example
+- Bootstrap vcpkg C:\src\vcpkg\bootstrap-vcpkg.bat
+- C:\src\vcpkg\vcpkg.exe integrate install
+- C:\src\vcpkg\vcpkg.exe install openssl:x64-windows
+- Add  env variable OPENSSL_DIR = C:\src\vcpkg\installed\x64-windows
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
