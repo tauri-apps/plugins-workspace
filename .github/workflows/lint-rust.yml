@@ -148,13 +148,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: clippy ${{ matrix.package }}
-        if: matrix.package != 'tauri-plugin-sql'
         run: cargo clippy --package ${{ matrix.package }} --all-targets -- -D warnings
 
-      - name: clippy ${{ matrix.package }} mysql
-        if: matrix.package == 'tauri-plugin-sql'
-        run: cargo clippy --package ${{ matrix.package }} --all-targets --no-default-features --features mysql -- -D warnings
-
-      - name: clippy ${{ matrix.package }} postgres
-        if: matrix.package == 'tauri-plugin-sql'
-        run: cargo clippy --package ${{ matrix.package }} --all-targets --no-default-features --features postgres -- -D warnings
+      - name: clippy ${{ matrix.package }} --all-features
+        run: cargo clippy --package ${{ matrix.package }} --all-targets --all-features -- -D warnings

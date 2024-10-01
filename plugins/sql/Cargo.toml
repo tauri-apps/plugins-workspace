@@ -40,3 +40,4 @@ indexmap = { version = "2", features = ["serde"] }
 sqlite = ["sqlx/sqlite", "sqlx/runtime-tokio"]
 mysql = ["sqlx/mysql", "sqlx/runtime-tokio-rustls"]
 postgres = ["sqlx/postgres", "sqlx/runtime-tokio-rustls"]
+# TODO: bundled-cipher etc

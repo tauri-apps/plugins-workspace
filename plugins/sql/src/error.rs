@@ -6,8 +6,16 @@ use serde::{Serialize, Serializer};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[error("failed to parse arguments: {0}")]
-    ParseCli(#[from] clap::Error),
+    #[error(transparent)]
+    Sql(#[from] sqlx::Error),
+    #[error(transparent)]
+    Migration(#[from] sqlx::migrate::MigrateError),
+    #[error("invalid connection url: {0}")]
+    InvalidDbUrl(String),
+    #[error("database {0} not loaded")]
+    DatabaseNotLoaded(String),
+    #[error("unsupported datatype: {0}")]
+    UnsupportedDatatype(String),
 }
 
 impl Serialize for Error {
@@ -18,5 +26,3 @@ impl Serialize for Error {
         serializer.serialize_str(self.to_string().as_ref())
     }
 }
-
-pub type Result<T> = std::result::Result<T, Error>;
