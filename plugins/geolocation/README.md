@@ -2,6 +2,14 @@
 
 This plugin provides APIs for getting and tracking the device's current position, including information about altitude, heading, and speed (if available).
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | x         |
+| Windows  | x         |
+| macOS    | x         |
+| Android  | ✓         |
+| iOS      | ✓         |
+
 ## Install
 
 _This plugin requires a Rust version of at least **1.75**_

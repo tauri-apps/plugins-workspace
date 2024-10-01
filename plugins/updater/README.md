@@ -2,7 +2,13 @@
 
 In-app updates for Tauri applications.
 
-- Supported platforms: Windows, Linux and macOS.
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | x         |
+| iOS      | x         |
 
 ## Install
 

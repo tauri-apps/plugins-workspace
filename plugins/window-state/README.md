@@ -2,6 +2,14 @@
 
 Save window positions and sizes and restore them when the app is reopened.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | x         |
+| iOS      | x         |
+
 ## Install
 
 _This plugin requires a Rust version of at least **1.75**_

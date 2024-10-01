@@ -2,6 +2,14 @@
 
 Send message notifications (brief auto-expiring OS window element) to your user. Can also be used with the Notification Web API.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | ✓         |
+| iOS      | ✓         |
+
 ## Install
 
 _This plugin requires a Rust version of at least **1.75**_

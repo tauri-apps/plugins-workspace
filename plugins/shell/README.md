@@ -2,6 +2,14 @@
 
 Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | ✓         |
+| iOS      | ✓         |
+
 ## Install
 
 _This plugin requires a Rust version of at least **1.75**_

@@ -2,6 +2,14 @@
 
 Access the HTTP client written in Rust.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | ✓         |
+| iOS      | ✓         |
+
 ## Install
 
 _This plugin requires a Rust version of at least **1.75**_
