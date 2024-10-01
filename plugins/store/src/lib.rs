@@ -151,11 +151,11 @@ pub trait StoreExt<R: Runtime> {
 
 impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     fn store(&self, path: impl AsRef<Path>) -> Store<R> {
-        StoreBuilder::new(self.app_handle().clone(), path).build()
+        StoreBuilder::new(self.app_handle(), path).build()
     }
 
     fn store_builder(&self, path: impl AsRef<Path>) -> StoreBuilder<R> {
-        StoreBuilder::new(self.app_handle().clone(), path)
+        StoreBuilder::new(self.app_handle(), path)
     }
 }
 
@@ -246,12 +246,10 @@ impl<R: Runtime> Builder<R> {
     /// # Examples
     ///
     /// ```
-    /// use tauri_plugin_store::{StoreBuilder, Builder};
-    ///
     /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
-    ///     app.handle().plugin(Builder::default().build());
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin").build();
     ///     Ok(())
     ///   });
     /// ```

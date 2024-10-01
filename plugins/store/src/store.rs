@@ -52,17 +52,16 @@ impl<R: Runtime> StoreBuilder<R> {
     ///
     /// # Examples
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::StoreBuilder;
-    ///
-    /// let builder = StoreBuilder::<tauri::Wry>::new("store.bin");
-    ///
-    /// # Ok(())
-    /// # }
+    /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
+    ///   .setup(|app| {
+    ///     let builder = tauri_plugin_store::StoreBuilder::new(app, "store.bin");
+    ///     Ok(())
+    ///   });
     /// ```
-    pub fn new<P: AsRef<Path>>(app: AppHandle<R>, path: P) -> Self {
+    pub fn new<M: Manager<R>, P: AsRef<Path>>(manager: &M, path: P) -> Self {
         Self {
-            app,
+            app: manager.app_handle().clone(),
             // Since Store.path is only exposed to the user in emit calls we may as well simplify it here already.
             path: dunce::simplified(path.as_ref()).to_path_buf(),
             defaults: None,
@@ -77,19 +76,18 @@ impl<R: Runtime> StoreBuilder<R> {
     ///
     /// # Examples
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::StoreBuilder;
-    /// use std::collections::HashMap;
+    /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
+    ///   .setup(|app| {
+    ///     let mut defaults = std::collections::HashMap::new();
+    ///     defaults.insert("foo".to_string(), "bar".into());
     ///
-    /// let mut defaults = HashMap::new();
-    ///
-    /// defaults.insert("foo".to_string(), "bar".into());
-    ///
-    /// let builder = StoreBuilder::<tauri::Wry>::new("store.bin")
-    ///   .defaults(defaults);
-    ///
-    /// # Ok(())
-    /// # }
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin")
+    ///       .defaults(defaults)
+    ///       .build();
+    ///     Ok(())
+    ///   });
+    /// ```
     pub fn defaults(mut self, defaults: HashMap<String, JsonValue>) -> Self {
         self.cache.clone_from(&defaults);
         self.defaults = Some(defaults);
@@ -100,14 +98,15 @@ impl<R: Runtime> StoreBuilder<R> {
     ///
     /// # Examples
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::StoreBuilder;
-    ///
-    /// let builder = StoreBuilder::<tauri::Wry>::new("store.bin")
-    ///   .default("foo".to_string(), "bar");
-    ///
-    /// # Ok(())
-    /// # }
+    /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
+    ///   .setup(|app| {
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin")
+    ///       .default("foo".to_string(), "bar")
+    ///       .build();
+    ///     Ok(())
+    ///   });
+    /// ```
     pub fn default(mut self, key: impl Into<String>, value: impl Into<JsonValue>) -> Self {
         let key = key.into();
         let value = value.into();
@@ -122,14 +121,15 @@ impl<R: Runtime> StoreBuilder<R> {
     ///
     /// # Examples
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::StoreBuilder;
-    ///
-    /// let builder = StoreBuilder::<tauri::Wry>::new("store.json")
-    ///   .serialize(|cache| serde_json::to_vec(&cache).map_err(Into::into));
-    ///
-    /// # Ok(())
-    /// # }
+    /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
+    ///   .setup(|app| {
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
+    ///       .serialize(|cache| serde_json::to_vec(&cache).map_err(Into::into))
+    ///       .build();
+    ///     Ok(())
+    ///   });
+    /// ```
     pub fn serialize(mut self, serialize: SerializeFn) -> Self {
         self.serialize = serialize;
         self
@@ -139,14 +139,15 @@ impl<R: Runtime> StoreBuilder<R> {
     ///
     /// # Examples
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use tauri_plugin_store::StoreBuilder;
-    ///
-    /// let builder = StoreBuilder::<tauri::Wry>::new("store.json")
-    ///   .deserialize(|bytes| serde_json::from_slice(&bytes).map_err(Into::into));
-    ///
-    /// # Ok(())
-    /// # }
+    /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
+    ///   .setup(|app| {
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
+    ///       .deserialize(|bytes| serde_json::from_slice(&bytes).map_err(Into::into))
+    ///       .build();
+    ///     Ok(())
+    ///   });
+    /// ```
     pub fn deserialize(mut self, deserialize: DeserializeFn) -> Self {
         self.deserialize = deserialize;
         self
@@ -158,14 +159,14 @@ impl<R: Runtime> StoreBuilder<R> {
     ///
     /// # Examples
     /// ```
-    /// use tauri_plugin_store::{Builder, StoreBuilder};
     ///
     /// tauri::Builder::default()
+    ///    .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = StoreBuilder::new("store.json")
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
     ///         .auto_save(std::time::Duration::from_millis(100))
-    ///         .build(app.handle().clone());
-    ///     app.handle().plugin(Builder::default().store(store).build())
+    ///         .build();
+    ///     Ok(())
     ///   });
     /// ```
     pub fn auto_save(mut self, debounce_duration: Duration) -> Self {
@@ -178,8 +179,9 @@ impl<R: Runtime> StoreBuilder<R> {
     /// # Examples
     /// ```
     /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new("store.json").build(app.handle().clone());
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").build();
     ///     Ok(())
     ///   });
     /// ```

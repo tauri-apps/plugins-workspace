@@ -8,14 +8,14 @@
 use std::time::Duration;
 
 use serde_json::json;
-use tauri_plugin_store::{Builder, StoreExt};
+use tauri_plugin_store::StoreExt;
 
 mod app;
 use app::settings::AppSettings;
 
 fn main() {
     tauri::Builder::default()
-        .plugin(Builder::new().build())
+        .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
             // Init store and load it from disk
             let store = app
