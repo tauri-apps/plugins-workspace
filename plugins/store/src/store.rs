@@ -267,7 +267,6 @@ impl<R: Runtime> StoreInner<R> {
     pub fn insert(&mut self, key: String, value: JsonValue) {
         self.cache.insert(key.clone(), value.clone());
         let _ = self.emit_change_event(&key, &value);
-        // let _ = self.trigger_auto_save();
     }
 
     pub fn get(&self, key: impl AsRef<str>) -> Option<&JsonValue> {
@@ -282,7 +281,6 @@ impl<R: Runtime> StoreInner<R> {
         let flag = self.cache.remove(key.as_ref()).is_some();
         if flag {
             let _ = self.emit_change_event(key.as_ref(), &JsonValue::Null);
-            // let _ = self.trigger_auto_save();
         }
         flag
     }
@@ -293,9 +291,6 @@ impl<R: Runtime> StoreInner<R> {
         for key in &keys {
             let _ = self.emit_change_event(key, &JsonValue::Null);
         }
-        // if !keys.is_empty() {
-        //     let _ = self.trigger_auto_save();
-        // }
     }
 
     pub fn reset(&mut self, defaults: &Option<HashMap<String, JsonValue>>) {
@@ -312,7 +307,6 @@ impl<R: Runtime> StoreInner<R> {
                 }
             }
             self.cache.clone_from(defaults);
-            // let _ = self.trigger_auto_save();
         } else {
             self.clear()
         }
