@@ -13,10 +13,9 @@ use std::{
 
 use serde::Deserialize;
 
-#[doc(hidden)]
 #[derive(Deserialize)]
 #[serde(untagged)]
-pub enum EntryRaw {
+pub(crate) enum EntryRaw {
     Value(PathBuf),
     Object { path: PathBuf },
 }
