@@ -13,13 +13,23 @@ interface ChangePayload<T> {
 }
 
 /**
- * @param path: Path to save the store in `app_data_dir`
- * @param autoSave: Auto save on modification with debounce duration in milliseconds
+ * Options to create a store
  */
-export async function createStore(path: string, autoSave?: number) {
+export type StoreOptions = {
+  /**
+   * Auto save on modification with debounce duration in milliseconds
+   */
+  autoSave?: boolean
+}
+
+/**
+ * @param path: Path to save the store in `app_data_dir`
+ * @param options: Store configuration options
+ */
+export async function createStore(path: string, options?: StoreOptions) {
   const resourceId = await invoke<number>('plugin:store|create_store', {
     path,
-    autoSave
+    ...options
   })
   return new Store(resourceId, path)
 }
