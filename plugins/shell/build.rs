@@ -84,6 +84,7 @@ pub(crate) enum ShellScopeEntry {
         #[serde(rename = "cmd")]
         command: PathBuf,
         /// The allowed arguments for the command execution.
+        #[serde(default)]
         args: ShellScopeEntryAllowedArgs,
     },
     SideCar {
@@ -93,6 +94,7 @@ pub(crate) enum ShellScopeEntry {
         /// any specified arguments.
         name: String,
         /// The allowed arguments for the command execution.
+        #[serde(default)]
         args: ShellScopeEntryAllowedArgs,
         /// If this command is a sidecar command.
         sidecar: bool,
