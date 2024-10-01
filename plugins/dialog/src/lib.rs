@@ -41,6 +41,9 @@ use desktop::*;
 #[cfg(mobile)]
 use mobile::*;
 
+pub(crate) const OK: &str = "Ok";
+pub(crate) const CANCEL: &str = "Cancel";
+
 macro_rules! blocking_fn {
     ($self:ident, $fn:ident) => {{
         let (tx, rx) = sync_channel(0);
@@ -89,14 +92,13 @@ impl<R: Runtime> Dialog<R> {
     /// - Ask dialog:
     ///
     /// ```
-    /// use tauri_plugin_dialog::DialogExt;
+    /// use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
     ///
     /// tauri::Builder::default()
     ///   .setup(|app| {
     ///     app.dialog()
     ///       .message("Are you sure?")
-    ///       .ok_button_label("Yes")
-    ///       .cancel_button_label("No")
+    ///       .buttons(MessageDialogButtons::OkCancelCustom("Yes", "No"))
     ///       .show(|yes| {
     ///         println!("user said {}", if yes { "yes" } else { "no" });
     ///       });
@@ -107,13 +109,13 @@ impl<R: Runtime> Dialog<R> {
     /// - Message dialog with OK button:
     ///
     /// ```
-    /// use tauri_plugin_dialog::DialogExt;
+    /// use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
     ///
     /// tauri::Builder::default()
     ///   .setup(|app| {
     ///     app.dialog()
     ///       .message("Job completed successfully")
-    ///       .ok_button_label("Ok")
+    ///       .buttons(MessageDialogButtons::Ok)
     ///       .show(|_| {
     ///         println!("dialog closed");
     ///       });
@@ -129,7 +131,7 @@ impl<R: Runtime> Dialog<R> {
     /// but note that it cannot be executed on the main thread as it will freeze your application.
     ///
     /// ```
-    /// use tauri_plugin_dialog::DialogExt;
+    /// use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
     ///
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -137,8 +139,7 @@ impl<R: Runtime> Dialog<R> {
     ///     std::thread::spawn(move || {
     ///       let yes = handle.dialog()
     ///         .message("Are you sure?")
-    ///         .ok_button_label("Yes")
-    ///         .cancel_button_label("No")
+    ///         .buttons(MessageDialogButtons::OkCancelCustom("Yes", "No"))
     ///         .blocking_show();
     ///     });
     ///
@@ -196,8 +197,7 @@ pub struct MessageDialogBuilder<R: Runtime> {
     pub(crate) title: String,
     pub(crate) message: String,
     pub(crate) kind: MessageDialogKind,
-    pub(crate) ok_button_label: Option<String>,
-    pub(crate) cancel_button_label: Option<String>,
+    pub(crate) buttons: MessageDialogButtons,
     #[cfg(desktop)]
     pub(crate) parent: Option<crate::desktop::WindowHandle>,
 }
@@ -210,8 +210,8 @@ pub(crate) struct MessageDialogPayload<'a> {
     title: &'a String,
     message: &'a String,
     kind: &'a MessageDialogKind,
-    ok_button_label: &'a Option<String>,
-    cancel_button_label: &'a Option<String>,
+    ok_button_label: Option<&'a str>,
+    cancel_button_label: Option<&'a str>,
 }
 
 // raw window handle :(
@@ -225,8 +225,7 @@ impl<R: Runtime> MessageDialogBuilder<R> {
             title: title.into(),
             message: message.into(),
             kind: Default::default(),
-            ok_button_label: None,
-            cancel_button_label: None,
+            buttons: Default::default(),
             #[cfg(desktop)]
             parent: None,
         }
@@ -234,12 +233,20 @@ impl<R: Runtime> MessageDialogBuilder<R> {
 
     #[cfg(mobile)]
     pub(crate) fn payload(&self) -> MessageDialogPayload<'_> {
+        let (ok_button_label, cancel_button_label) = match &self.buttons {
+            MessageDialogButtons::Ok => (Some(OK), None),
+            MessageDialogButtons::OkCancel => (Some(OK), Some(CANCEL)),
+            MessageDialogButtons::OkCustom(ok) => (Some(ok.as_str()), Some(CANCEL)),
+            MessageDialogButtons::OkCancelCustom(ok, cancel) => {
+                (Some(ok.as_str()), Some(cancel.as_str()))
+            }
+        };
         MessageDialogPayload {
             title: &self.title,
             message: &self.message,
             kind: &self.kind,
-            ok_button_label: &self.ok_button_label,
-            cancel_button_label: &self.cancel_button_label,
+            ok_button_label,
+            cancel_button_label,
         }
     }
 
@@ -266,15 +273,9 @@ impl<R: Runtime> MessageDialogBuilder<R> {
         self
     }
 
-    /// Sets the label for the OK button.
-    pub fn ok_button_label(mut self, label: impl Into<String>) -> Self {
-        self.ok_button_label.replace(label.into());
-        self
-    }
-
-    /// Sets the label for the Cancel button.
-    pub fn cancel_button_label(mut self, label: impl Into<String>) -> Self {
-        self.cancel_button_label.replace(label.into());
+    /// Sets the dialog buttons.
+    pub fn buttons(mut self, buttons: MessageDialogButtons) -> Self {
+        self.buttons = buttons;
         self
     }
 
