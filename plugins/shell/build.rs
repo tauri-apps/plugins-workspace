@@ -87,7 +87,7 @@ pub(crate) enum ShellScopeEntry {
         #[serde(default)]
         args: ShellScopeEntryAllowedArgs,
     },
-    SideCar {
+    Sidecar {
         /// The name for this allowed shell command configuration.
         ///
         /// This name will be used inside of the webview API to call this command along with
@@ -107,7 +107,7 @@ pub(crate) enum ShellScopeEntry {
 // are kept in sync
 #[allow(clippy::unnecessary_operation)]
 fn _f() {
-    match (ShellScopeEntry::SideCar {
+    match (ShellScopeEntry::Sidecar {
         name: String::new(),
         args: ShellScopeEntryAllowedArgs::Flag(false),
         sidecar: true,
@@ -136,7 +136,7 @@ fn _f() {
             },
             sidecar: false,
         },
-        ShellScopeEntry::SideCar {
+        ShellScopeEntry::Sidecar {
             name,
             args,
             sidecar,
