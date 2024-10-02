@@ -44,10 +44,113 @@ jobs:
         with:
           base: v2
           filters: |
+            tauri-plugin-autostart:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/autostart/**
+            tauri-plugin-cli:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/cli/**
             tauri-plugin-clipboard-manager:
               - .github/workflows/test-rust.yml
               - Cargo.toml
               - plugins/clipboard-manager/**
+            tauri-plugin-deep-link:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/deep-link/**
+            tauri-plugin-dialog:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/dialog/**
+              - plugins/fs/**
+            tauri-plugin-fs:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/fs/**
+            tauri-plugin-geolocation:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/geolocation/**
+            tauri-plugin-global-shortcut:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/global-shortcut/**
+            tauri-plugin-haptics:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/haptics/**
+            tauri-plugin-http:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/http/**
+              - plugins/fs/**
+            tauri-plugin-localhost:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/localhost/**
+            tauri-plugin-log:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/log/**
+            tauri-plugin-notification:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/notification/**
+            tauri-plugin-os:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/os/**
+            tauri-plugin-persisted-scope:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/persisted-scope/**
+              - plugins/fs/**
+            tauri-plugin-positioner:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/positioner/**
+            tauri-plugin-process:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/process/**
+            tauri-plugin-shell:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/shell/**
+            tauri-plugin-single-instance:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/single-instance/**
+            tauri-plugin-sql:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/sql/**
+            tauri-plugin-store:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/store/**
+            tauri-plugin-stronghold:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/stronghold/**
+            tauri-plugin-updater:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/updater/**
+            tauri-plugin-upload:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/upload/**
+            tauri-plugin-websocket:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/websocket/**
+            tauri-plugin-window-state:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/window-state/**
 
   test:
     needs: changes
