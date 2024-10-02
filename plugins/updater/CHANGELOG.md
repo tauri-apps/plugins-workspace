@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.1]
+
+- [`9501cfa5`](https://github.com/tauri-apps/plugins-workspace/commit/9501cfa5f5385b2d7eb43a8378b322ee97cba06f) ([#1868](https://github.com/tauri-apps/plugins-workspace/pull/1868) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fix configuration parser incorrectly warning about the endpoint scheme.
+
 ## \[2.0.0]
 
 - [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
