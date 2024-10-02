@@ -165,6 +165,32 @@ Denies the get command without any pre-configured scope.
 <tr>
 <td>
 
+`store:allow-get-store`
+
+</td>
+<td>
+
+Enables the get_store command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-get-store`
+
+</td>
+<td>
+
+Denies the get_store command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `store:allow-has`
 
 </td>

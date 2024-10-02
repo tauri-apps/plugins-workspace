@@ -21,9 +21,9 @@ pub enum Error {
     /// IO error.
     #[error(transparent)]
     Io(#[from] std::io::Error),
-    /// Store not found
-    #[error("Store \"{0}\" not found")]
-    NotFound(PathBuf),
+    /// Store already exists
+    #[error("Store at \"{0}\" already exists")]
+    AlreadyExists(PathBuf),
     /// Some Tauri API failed
     #[error(transparent)]
     Tauri(#[from] tauri::Error),

@@ -41,7 +41,6 @@ pub struct StoreBuilder<R: Runtime> {
     app: AppHandle<R>,
     path: PathBuf,
     defaults: Option<HashMap<String, JsonValue>>,
-    cache: HashMap<String, JsonValue>,
     serialize: SerializeFn,
     deserialize: DeserializeFn,
     auto_save: Option<Duration>,
@@ -65,7 +64,6 @@ impl<R: Runtime> StoreBuilder<R> {
             // Since Store.path is only exposed to the user in emit calls we may as well simplify it here already.
             path: dunce::simplified(path.as_ref()).to_path_buf(),
             defaults: None,
-            cache: Default::default(),
             serialize: default_serialize,
             deserialize: default_deserialize,
             auto_save: None,
@@ -84,12 +82,11 @@ impl<R: Runtime> StoreBuilder<R> {
     ///
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin")
     ///       .defaults(defaults)
-    ///       .build();
+    ///       .build()?;
     ///     Ok(())
     ///   });
     /// ```
     pub fn defaults(mut self, defaults: HashMap<String, JsonValue>) -> Self {
-        self.cache.clone_from(&defaults);
         self.defaults = Some(defaults);
         self
     }
@@ -103,14 +100,13 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin")
     ///       .default("foo".to_string(), "bar")
-    ///       .build();
+    ///       .build()?;
     ///     Ok(())
     ///   });
     /// ```
     pub fn default(mut self, key: impl Into<String>, value: impl Into<JsonValue>) -> Self {
         let key = key.into();
         let value = value.into();
-        self.cache.insert(key.clone(), value.clone());
         self.defaults
             .get_or_insert(HashMap::new())
             .insert(key, value);
@@ -126,7 +122,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
     ///       .serialize(|cache| serde_json::to_vec(&cache).map_err(Into::into))
-    ///       .build();
+    ///       .build()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -144,7 +140,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
     ///       .deserialize(|bytes| serde_json::from_slice(&bytes).map_err(Into::into))
-    ///       .build();
+    ///       .build()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -155,17 +151,14 @@ impl<R: Runtime> StoreBuilder<R> {
 
     /// Auto save on modified with a debounce duration
     ///
-    /// Note: only works if this store is managed by the plugin (e.g. made using [`crate::with_store`] or inserted into [`crate::Builder`])
-    ///
     /// # Examples
     /// ```
-    ///
     /// tauri::Builder::default()
     ///    .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
     ///         .auto_save(std::time::Duration::from_millis(100))
-    ///         .build();
+    ///         .build()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -181,35 +174,35 @@ impl<R: Runtime> StoreBuilder<R> {
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").build();
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").build()?;
     ///     Ok(())
     ///   });
     /// ```
-    pub fn build(self) -> Store<R> {
+    pub fn build(self) -> crate::Result<Arc<Store<R>>> {
         let collection = self.app.state::<StoreCollection<R>>();
         let mut stores = collection.stores.lock().unwrap();
-        let store = stores
-            .get(&self.path)
-            .and_then(|store| store.upgrade())
-            .unwrap_or_else(|| {
-                let mut store = StoreInner::new(self.app.clone(), self.path.clone());
-                let _ = store.load(self.deserialize);
-                let store = Arc::new(Mutex::new(store));
-                stores.insert(
-                    self.path.clone(),
-                    Arc::<Mutex<StoreInner<R>>>::downgrade(&store),
-                );
-                store
-            });
-        drop(stores);
-        Store {
+
+        if stores.contains_key(&self.path) {
+            return Err(crate::Error::AlreadyExists(self.path));
+        }
+
+        let mut store_inner = StoreInner::new(self.app.clone(), self.path.clone());
+        if let Some(defaults) = &self.defaults {
+            store_inner.cache.clone_from(defaults);
+        }
+        let _ = store_inner.load(self.deserialize);
+
+        let store = Store {
             defaults: self.defaults,
             serialize: self.serialize,
             deserialize: self.deserialize,
             auto_save: self.auto_save,
             auto_save_debounce_sender: Arc::new(Mutex::new(None)),
-            store,
-        }
+            store: Arc::new(Mutex::new(store_inner)),
+        };
+        let store = Arc::new(store);
+        stores.insert(self.path, (Arc::downgrade(&store), None));
+        Ok(store)
     }
 }
 
@@ -372,10 +365,7 @@ pub struct Store<R: Runtime> {
 impl<R: Runtime> Resource for Store<R> {}
 
 impl<R: Runtime> Store<R> {
-    pub fn with_store<T>(
-        &self,
-        f: impl FnOnce(&mut StoreInner<R>) -> crate::Result<T>,
-    ) -> crate::Result<T> {
+    pub fn with_store<T>(&self, f: impl FnOnce(&mut StoreInner<R>) -> T) -> T {
         let mut store = self.store.lock().unwrap();
         f(&mut store)
     }
@@ -478,5 +468,19 @@ impl<R: Runtime> Store<R> {
             }
         });
         Ok(())
+    }
+}
+
+impl<R: Runtime> Drop for Store<R> {
+    fn drop(&mut self) {
+        let store = self.store.lock().unwrap();
+        // Cancel and save if auto save is pending
+        if let Some(sender) = self.auto_save_debounce_sender.lock().unwrap().take() {
+            let _ = sender.send(AutoSaveMessage::Cancel);
+            let _ = store.save(self.serialize);
+        };
+        let collection = store.app.state::<StoreCollection<R>>();
+        let mut stores = collection.stores.lock().unwrap();
+        stores.remove(&store.path);
     }
 }

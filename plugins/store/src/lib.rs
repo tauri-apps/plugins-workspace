@@ -18,13 +18,13 @@ pub use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::{Mutex, Weak},
+    sync::{Arc, Mutex, Weak},
     time::Duration,
 };
 pub use store::{Store, StoreBuilder, StoreInner};
 use tauri::{
     plugin::{self, TauriPlugin},
-    AppHandle, Manager, ResourceId, RunEvent, Runtime, Webview,
+    AppHandle, Manager, ResourceId, RunEvent, Runtime,
 };
 
 mod error;
@@ -38,138 +38,185 @@ struct ChangePayload<'a> {
 }
 
 pub struct StoreCollection<R: Runtime> {
-    stores: Mutex<HashMap<PathBuf, Weak<Mutex<StoreInner<R>>>>>,
-    // frozen: bool,
+    /// This weak pointer is always pointing to a real reference since we will remove it on drop
+    stores: Mutex<HashMap<PathBuf, (Weak<Store<R>>, Option<ResourceId>)>>,
 }
 
 #[tauri::command]
 async fn create_store<R: Runtime>(
     app: AppHandle<R>,
-    webview: Webview<R>,
     path: PathBuf,
     auto_save: Option<u64>,
 ) -> Result<ResourceId> {
-    let mut builder = app.store_builder(path);
+    let mut builder = app.store_builder(path.clone());
     if let Some(auto_save) = auto_save {
         builder = builder.auto_save(Duration::from_millis(auto_save));
     }
-    let store = builder.build();
-    Ok(webview.resources_table().add(store))
+    let store = builder.build()?;
+    let rid = app.resources_table().add_arc(store);
+    let collection = app.state::<StoreCollection<R>>();
+    let mut stores = collection.stores.lock().unwrap();
+    if let Some((_, resource_id)) = stores.get_mut(&path) {
+        resource_id.replace(rid);
+    }
+    Ok(rid)
+}
+
+#[tauri::command]
+async fn get_store<R: Runtime>(app: AppHandle<R>, path: PathBuf) -> Option<ResourceId> {
+    let collection = app.state::<StoreCollection<R>>();
+    let mut stores = collection.stores.lock().unwrap();
+    if let Some((store, resource_id)) = stores.get_mut(&path) {
+        let rid = if let Some(resource_id) = resource_id {
+            *resource_id
+        } else {
+            let rid = app.resources_table().add_arc(store.upgrade().unwrap());
+            resource_id.replace(rid);
+            rid
+        };
+        Some(rid)
+    } else {
+        None
+    }
 }
 
 #[tauri::command]
 async fn set<R: Runtime>(
-    webview: Webview<R>,
+    app: AppHandle<R>,
     rid: ResourceId,
     key: String,
     value: JsonValue,
 ) -> Result<()> {
-    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    let store = app.resources_table().get::<Store<R>>(rid)?;
     store.set(key, value);
     Ok(())
 }
 
 #[tauri::command]
 async fn get<R: Runtime>(
-    webview: Webview<R>,
+    app: AppHandle<R>,
     rid: ResourceId,
     key: String,
 ) -> Result<Option<JsonValue>> {
-    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    let store = app.resources_table().get::<Store<R>>(rid)?;
     Ok(store.get(key))
 }
 
 #[tauri::command]
-async fn has<R: Runtime>(webview: Webview<R>, rid: ResourceId, key: String) -> Result<bool> {
-    let store = webview.resources_table().get::<Store<R>>(rid)?;
+async fn has<R: Runtime>(app: AppHandle<R>, rid: ResourceId, key: String) -> Result<bool> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
     Ok(store.has(key))
 }
 
 #[tauri::command]
-async fn delete<R: Runtime>(webview: Webview<R>, rid: ResourceId, key: String) -> Result<bool> {
-    let store = webview.resources_table().get::<Store<R>>(rid)?;
+async fn delete<R: Runtime>(app: AppHandle<R>, rid: ResourceId, key: String) -> Result<bool> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
     Ok(store.delete(key))
 }
 
 #[tauri::command]
-async fn clear<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> Result<()> {
-    let store = webview.resources_table().get::<Store<R>>(rid)?;
+async fn clear<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
     store.clear();
     Ok(())
 }
 
 #[tauri::command]
-async fn reset<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> Result<()> {
-    let store = webview.resources_table().get::<Store<R>>(rid)?;
+async fn reset<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
     store.reset();
     Ok(())
 }
 
 #[tauri::command]
-async fn keys<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> Result<Vec<String>> {
-    let store = webview.resources_table().get::<Store<R>>(rid)?;
+async fn keys<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<Vec<String>> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
     Ok(store.keys())
 }
 
 #[tauri::command]
-async fn values<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> Result<Vec<JsonValue>> {
-    let store = webview.resources_table().get::<Store<R>>(rid)?;
+async fn values<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<Vec<JsonValue>> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
     Ok(store.values())
 }
 
 #[tauri::command]
 async fn entries<R: Runtime>(
-    webview: Webview<R>,
+    app: AppHandle<R>,
     rid: ResourceId,
 ) -> Result<Vec<(String, JsonValue)>> {
-    let store = webview.resources_table().get::<Store<R>>(rid)?;
+    let store = app.resources_table().get::<Store<R>>(rid)?;
     Ok(store.entries())
 }
 
 #[tauri::command]
-async fn length<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> Result<usize> {
-    let store = webview.resources_table().get::<Store<R>>(rid)?;
+async fn length<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<usize> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
     Ok(store.length())
 }
 
 #[tauri::command]
-async fn load<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> Result<()> {
-    let store = webview.resources_table().get::<Store<R>>(rid)?;
+async fn load<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
     store.load()
 }
 
 #[tauri::command]
-async fn save<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> Result<()> {
-    let store = webview.resources_table().get::<Store<R>>(rid)?;
+async fn save<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
     store.save()
 }
 
 pub trait StoreExt<R: Runtime> {
-    fn store(&self, path: impl AsRef<Path>) -> Store<R>;
+    fn create_store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>>;
     fn store_builder(&self, path: impl AsRef<Path>) -> StoreBuilder<R>;
+    fn share_store(&self, store: Arc<Store<R>>);
+    fn get_store(&self, path: impl AsRef<Path>) -> Option<Arc<Store<R>>>;
 }
 
 impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
-    fn store(&self, path: impl AsRef<Path>) -> Store<R> {
+    fn create_store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
         StoreBuilder::new(self.app_handle(), path).build()
     }
 
     fn store_builder(&self, path: impl AsRef<Path>) -> StoreBuilder<R> {
         StoreBuilder::new(self.app_handle(), path)
     }
+
+    fn share_store(&self, store: Arc<Store<R>>) {
+        let collection = self.state::<StoreCollection<R>>();
+        let mut stores = collection.stores.lock().unwrap();
+        if let Some(path) = store.with_store(|inner_store| {
+            if stores.contains_key(&inner_store.path) {
+                None
+            } else {
+                Some(inner_store.path.clone())
+            }
+        }) {
+            let weak_store = Arc::downgrade(&store);
+            let rid = self.resources_table().add_arc(store);
+            stores.insert(path, (weak_store, Some(rid)));
+        }
+    }
+
+    fn get_store(&self, path: impl AsRef<Path>) -> Option<Arc<Store<R>>> {
+        let collection = self.state::<StoreCollection<R>>();
+        let stores = collection.stores.lock().unwrap();
+        stores
+            .get(path.as_ref())
+            .and_then(|(store, _)| store.upgrade())
+    }
 }
 
 // #[derive(Default)]
 pub struct Builder<R: Runtime> {
     stores: HashMap<PathBuf, Store<R>>,
-    // frozen: bool,
 }
 
 impl<R: Runtime> Default for Builder<R> {
     fn default() -> Self {
         Self {
             stores: Default::default(),
-            // frozen: false,
         }
     }
 }
@@ -179,68 +226,6 @@ impl<R: Runtime> Builder<R> {
         Self::default()
     }
 
-    // /// Registers a store with the plugin.
-    // ///
-    // /// # Examples
-    // ///
-    // /// ```
-    // /// use tauri_plugin_store::{StoreBuilder, Builder};
-    // ///
-    // /// tauri::Builder::default()
-    // ///   .setup(|app| {
-    // ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
-    // ///     let builder = Builder::default().store(store);
-    // ///     Ok(())
-    // ///   });
-    // /// ```
-    // pub fn store(mut self, store: Store<R>) -> Self {
-    //     self.stores.insert(store.path.clone(), store);
-    //     self
-    // }
-
-    // /// Registers multiple stores with the plugin.
-    // ///
-    // /// # Examples
-    // ///
-    // /// ```
-    // /// use tauri_plugin_store::{StoreBuilder, Builder};
-    // ///
-    // /// tauri::Builder::default()
-    // ///   .setup(|app| {
-    // ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
-    // ///     let builder = Builder::default().stores([store]);
-    // ///     Ok(())
-    // ///   });
-    // /// ```
-    // pub fn stores<T: IntoIterator<Item = Store<R>>>(mut self, stores: T) -> Self {
-    //     self.stores = stores
-    //         .into_iter()
-    //         .map(|store| (store.path.clone(), store))
-    //         .collect();
-    //     self
-    // }
-
-    // /// Freezes the collection.
-    // ///
-    // /// This causes requests for plugins that haven't been registered to fail
-    // ///
-    // /// # Examples
-    // ///
-    // /// ```
-    // /// use tauri_plugin_store::{StoreBuilder, Builder};
-    // ///
-    // /// tauri::Builder::default()
-    // ///   .setup(|app| {
-    // ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
-    // ///     app.handle().plugin(Builder::default().freeze().build());
-    // ///     Ok(())
-    // ///   });
-    // /// ```
-    // pub fn freeze(mut self) -> Self {
-    //     self.frozen = true;
-    //     self
-    // }
-
     /// Builds the plugin.
     ///
     /// # Examples
@@ -249,7 +234,7 @@ impl<R: Runtime> Builder<R> {
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin").build();
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin").build()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -257,6 +242,7 @@ impl<R: Runtime> Builder<R> {
         plugin::Builder::new("store")
             .invoke_handler(tauri::generate_handler![
                 create_store,
+                get_store,
                 set,
                 get,
                 has,
@@ -282,23 +268,20 @@ impl<R: Runtime> Builder<R> {
 
                 app_handle.manage(StoreCollection::<R> {
                     stores: Mutex::new(HashMap::new()),
-                    // frozen: self.frozen,
                 });
 
                 Ok(())
             })
-            .on_event(|_app_handle, event| {
+            .on_event(|app_handle, event| {
                 if let RunEvent::Exit = event {
-                    // let collection = app_handle.state::<StoreCollection<R>>();
-
-                    // for store in collection.stores.lock().expect("mutex poisoned").values_mut() {
-                    //     if let Some(sender) = store.auto_save_debounce_sender.take() {
-                    //         let _ = sender.send(AutoSaveMessage::Cancel);
-                    //     }
-                    //     if let Err(err) = store.save() {
-                    //         eprintln!("failed to save store {:?} with error {:?}", store.path, err);
-                    //     }
-                    // }
+                    let collection = app_handle.state::<StoreCollection<R>>();
+                    let stores = collection.stores.lock().unwrap();
+                    for (path, (store, _)) in stores.iter() {
+                        let store = store.upgrade().unwrap();
+                        if let Err(err) = store.save() {
+                            eprintln!("failed to save store {path:?} with error {err:?}");
+                        }
+                    }
                 }
             })
             .build()

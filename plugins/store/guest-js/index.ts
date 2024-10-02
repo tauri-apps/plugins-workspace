@@ -35,7 +35,15 @@ export async function createStore(path: string, options?: StoreOptions) {
 }
 
 /**
- * A lazy loaded key-value store persisted by the backend layer.
+ * @param path: Path of the store in the rust side
+ */
+export async function getStore(path: string) {
+  const resourceId = await invoke<number>('plugin:store|get_store')
+  return new Store(resourceId, path)
+}
+
+/**
+ * A key-value store persisted by the backend layer.
  */
 export class Store extends Resource {
   constructor(
