@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-rc.7]
+
+- [`3168e176`](https://github.com/tauri-apps/plugins-workspace/commit/3168e176031a61215be542595ba90ca51f8f2d97) ([#1806](https://github.com/tauri-apps/plugins-workspace/pull/1806) by [@auggiebennett](https://github.com/tauri-apps/plugins-workspace/../../auggiebennett)) Fix fails to start when having spaces in the main binary path on Windows
+
 ## \[2.0.0-rc.6]
 
 - [`6f3f6679`](https://github.com/tauri-apps/plugins-workspace/commit/6f3f66794a87ef9d1c16667c425d5ad7091a9c2f) ([#1780](https://github.com/tauri-apps/plugins-workspace/pull/1780)) Added `DeepLink::on_open_url` function to match the JavaScript API implementation,

@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-rc.2]
+
+- [`2f7e32b5`](https://github.com/tauri-apps/plugins-workspace/commit/2f7e32b5e07454d6c0cf3ab03f8af8da74c4a8a7) ([#1822](https://github.com/tauri-apps/plugins-workspace/pull/1822) by [@jbolda](https://github.com/tauri-apps/plugins-workspace/../../jbolda)) `handleIconState` function for use in JavaScript event handlers. This allows one to update the TrayIcon state through JavaScript and fully create and handle the TrayIcon without requiring Rust (and the side-effect of creating a TrayIcon).
+
 ## \[2.0.0-rc.1]
 
 - [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
