@@ -12,7 +12,7 @@ Read and write to the system clipboard.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.75**_
+_This plugin requires a Rust version of at least **1.78**_
 
 There are three general methods of installation that we can recommend.
 
