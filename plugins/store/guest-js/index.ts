@@ -17,9 +17,9 @@ interface ChangePayload<T> {
  */
 export type StoreOptions = {
   /**
-   * Auto save on modification with debounce duration in milliseconds
+   * Auto save on modification with debounce duration in milliseconds, it's 100ms by default, pass in `false` to disable it
    */
-  autoSave?: boolean
+  autoSave?: boolean | number
 }
 
 /**

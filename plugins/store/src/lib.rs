@@ -13,7 +13,7 @@
 
 pub use error::{Error, Result};
 use log::warn;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 pub use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
@@ -42,15 +42,30 @@ pub struct StoreCollection<R: Runtime> {
     stores: Mutex<HashMap<PathBuf, (Weak<Store<R>>, Option<ResourceId>)>>,
 }
 
+#[derive(Serialize, Deserialize)]
+#[serde(untagged)]
+enum AutoSave {
+    DebounceDuration(u64),
+    Bool(bool),
+}
+
 #[tauri::command]
 async fn create_store<R: Runtime>(
     app: AppHandle<R>,
     path: PathBuf,
-    auto_save: Option<u64>,
+    auto_save: Option<AutoSave>,
 ) -> Result<ResourceId> {
     let mut builder = app.store_builder(path.clone());
     if let Some(auto_save) = auto_save {
-        builder = builder.auto_save(Duration::from_millis(auto_save));
+        match auto_save {
+            AutoSave::DebounceDuration(duration) => {
+                builder = builder.auto_save(Duration::from_millis(duration));
+            }
+            AutoSave::Bool(false) => {
+                builder = builder.disable_auto_save();
+            }
+            _ => {}
+        }
     }
     let store = builder.build()?;
     let rid = app.resources_table().add_arc(store);

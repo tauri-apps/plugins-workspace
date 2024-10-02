@@ -66,7 +66,7 @@ impl<R: Runtime> StoreBuilder<R> {
             defaults: None,
             serialize: default_serialize,
             deserialize: default_deserialize,
-            auto_save: None,
+            auto_save: Some(Duration::from_millis(100)),
         }
     }
 
@@ -164,6 +164,24 @@ impl<R: Runtime> StoreBuilder<R> {
     /// ```
     pub fn auto_save(mut self, debounce_duration: Duration) -> Self {
         self.auto_save = Some(debounce_duration);
+        self
+    }
+
+    /// Auto save on modified with a debounce duration
+    ///
+    /// # Examples
+    /// ```
+    /// tauri::Builder::default()
+    ///    .plugin(tauri_plugin_store::Builder::default().build())
+    ///   .setup(|app| {
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
+    ///         .auto_save(std::time::Duration::from_millis(100))
+    ///         .build()?;
+    ///     Ok(())
+    ///   });
+    /// ```
+    pub fn disable_auto_save(mut self) -> Self {
+        self.auto_save = None;
         self
     }
 
