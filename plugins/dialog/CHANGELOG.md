@@ -1,5 +1,17 @@
 # Changelog
 
+## \[2.0.0-rc.8]
+
+- [`6bf1bd8d`](https://github.com/tauri-apps/plugins-workspace/commit/6bf1bd8d44bb95618590aa066e638509b014e0f9) ([#1805](https://github.com/tauri-apps/plugins-workspace/pull/1805) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update rfd to 0.15
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-rc.6`
+
+### breaking
+
+- [`04459afb`](https://github.com/tauri-apps/plugins-workspace/commit/04459afbb67aafa5cd57e6a148c2beb0a8d3e04a) ([#1842](https://github.com/tauri-apps/plugins-workspace/pull/1842) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Changed `MessageDialogBuilder::ok_button_label` and `MessageDialogBuilder::cancel_button_label` to `MessageDialogBuilder::buttons` which takes an enum now
+
 ## \[2.0.0-rc.7]
 
 ### Dependencies

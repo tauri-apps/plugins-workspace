@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.0-rc.6]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-rc.6`
+
 ## \[2.0.0-rc.5]
 
 ### Dependencies

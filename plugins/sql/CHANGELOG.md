@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-rc.3]
+
+- [`30bcf5dc`](https://github.com/tauri-apps/plugins-workspace/commit/30bcf5dcc22e1bb1fb983a8d2887edc39404e6df) ([#1838](https://github.com/tauri-apps/plugins-workspace/pull/1838) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) It is now possible to enable multiple SQL backends at the same time. There will be no compile error anymore if no backends are enabled!
+
 ## \[2.0.0-rc.2]
 
 - [`0dd97d91`](https://github.com/tauri-apps/plugins-workspace/commit/0dd97d911569cdedab07f504b708036d62ff83c1) ([#1375](https://github.com/tauri-apps/plugins-workspace/pull/1375) by [@KauanCurbani](https://github.com/tauri-apps/plugins-workspace/../../KauanCurbani)) Added support for `UUID` columns to the postgres implementation.

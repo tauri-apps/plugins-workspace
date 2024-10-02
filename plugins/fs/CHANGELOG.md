@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-rc.6]
+
+- [`fc9b189e`](https://github.com/tauri-apps/plugins-workspace/commit/fc9b189e83a29bd750714ec6336133c6eabdfa20) ([#1837](https://github.com/tauri-apps/plugins-workspace/pull/1837) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fix failing to deserialize capability file when using an OS specific path in the scope that is not available on the current OS.
+
 ## \[2.0.0-rc.5]
 
 - [`cc03ccf5`](https://github.com/tauri-apps/plugins-workspace/commit/cc03ccf5e0e4be8bbf50bbdebe957c84be7f779b) ([#1774](https://github.com/tauri-apps/plugins-workspace/pull/1774)) Fix `scope-app`, `scope-app-recursive` and `scope-index` not properly enabling the application paths.

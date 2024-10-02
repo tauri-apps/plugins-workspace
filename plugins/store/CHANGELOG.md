@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0-rc.2]
+
+- [`f12d3560`](https://github.com/tauri-apps/plugins-workspace/commit/f12d35609ab84f536c0f087665fdc1f978af3093) ([#1550](https://github.com/tauri-apps/plugins-workspace/pull/1550) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) **Breaking change**: Removed the `Store` constructor and added the `createStore` API.
+
 ## \[2.0.0-rc.1]
 
 - [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
@@ -107,7 +111,9 @@
   ps://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-eb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  eb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   ps://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+plugins-workspace/pull/371)) First v2 alpha release!
   com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
