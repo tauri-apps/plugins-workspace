@@ -40,12 +40,20 @@ export async function moveWindow(to: Position): Promise<void> {
 }
 
 export async function handleIconState(event: TrayIconEvent): Promise<void> {
-  await invokeSetTrayIconState(event.rect)
-}
+  const size = {} as Record<string, unknown>
+  size[`${event.rect.size.type}`] = {
+    width: event.rect.size.width,
+    height: event.rect.size.height
+  }
 
-async function invokeSetTrayIconState(rect: TrayIconEvent['rect']) {
+  const position = {} as Record<string, unknown>
+  position[`${event.rect.position.type}`] = {
+    x: event.rect.position.x,
+    y: event.rect.position.y
+  }
+
   await invoke('plugin:positioner|set_tray_icon_state', {
-    position: rect.position,
-    size: rect.size
+    position,
+    size
   })
 }
