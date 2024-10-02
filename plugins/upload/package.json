@@ -2,7 +2,7 @@
   "name": "@tauri-apps/plugin-upload",
   "version": "2.0.0-rc.1",
   "description": "Upload files from disk to a remote server over HTTP.",
-  "license": "MIT or APACHE-2.0",
+  "license": "MIT OR Apache-2.0",
   "authors": [
     "Tauri Programme within The Commons Conservancy"
   ],
