@@ -102,8 +102,8 @@ import {
 const action = async (event: TrayIconEvent) => {
   // add the handle in the action to update the state
   await handleIconState(event);
-  if ("click" in event) {
-    const { click } = event;
+
+  if (event.type === "Click") {
     // note this option requires enabling the `tray-icon`
     //   feature in the Cargo.toml
     await moveWindow(Position.TrayLeft);
