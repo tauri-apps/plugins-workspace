@@ -437,6 +437,9 @@ impl<R: Runtime> Store<R> {
     }
 
     pub fn save(&self) -> crate::Result<()> {
+        if let Some(sender) = self.auto_save_debounce_sender.lock().unwrap().take() {
+            let _ = sender.send(AutoSaveMessage::Cancel);
+        }
         self.store.lock().unwrap().save(self.serialize)
     }
 
@@ -467,22 +470,13 @@ impl<R: Runtime> Store<R> {
                         }
                     }
                     _ = sleep(auto_save_delay) => {
-                        let _ = store.lock().unwrap().save(serialize_fn);
                         auto_save_debounce_sender.lock().unwrap().take();
+                        let _ = store.lock().unwrap().save(serialize_fn);
                         return;
                     }
                 };
             }
         });
         Ok(())
-    }
-}
-
-impl<R: Runtime> Drop for Store<R> {
-    fn drop(&mut self) {
-        let auto_save_debounce_sender = self.auto_save_debounce_sender.lock().unwrap();
-        if let Some(ref sender) = *auto_save_debounce_sender {
-            let _ = sender.send(AutoSaveMessage::Cancel);
-        }
     }
 }
