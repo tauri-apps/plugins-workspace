@@ -1,7 +1,7 @@
 [package]
 name = "tauri-plugin-stronghold"
 version = "2.0.0-rc.1"
-description = "Store secrets and keys using the IOTA Stronghold encrypted database."
+description = "Store secrets and keys using the IOTA Stronghold secret management engine."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
@@ -17,8 +17,8 @@ rustdoc-args = ["--cfg", "docsrs"]
 windows = { level = "full", notes = "" }
 linux = { level = "full", notes = "" }
 macos = { level = "full", notes = "" }
-android = { level = "none", notes = "" }
-ios = { level = "none", notes = "" }
+android = { level = "full", notes = "" }
+ios = { level = "full", notes = "" }
 
 [build-dependencies]
 tauri-plugin = { workspace = true, features = ["build"] }

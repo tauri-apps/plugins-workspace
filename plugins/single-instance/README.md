@@ -2,6 +2,14 @@
 
 Ensure a single instance of your tauri app is running.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | x         |
+| iOS      | x         |
+
 ## Install
 
 _This plugin requires a Rust version of at least **1.75**_

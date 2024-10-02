@@ -2,7 +2,13 @@
 
 Parse arguments from your Command Line Interface.
 
-- Supported platforms: Windows, Linux and macOS.
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | x         |
+| iOS      | x         |
 
 ## Install
 

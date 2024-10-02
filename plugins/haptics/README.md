@@ -4,6 +4,14 @@ Haptic feedback and vibrations on Android and iOS.
 
 There are no standards/requirements for vibration support on Android, so the `feedback` APIs may not work correctly on more affordable phones, including recently released ones.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | x         |
+| Windows  | x         |
+| macOS    | x         |
+| Android  | ✓         |
+| iOS      | ✓         |
+
 ## Install
 
 _This plugin requires a Rust version of at least **1.75**_

@@ -2,6 +2,14 @@
 
 Allows your mobile application to use the camera to scan QR codes, EAN-13 and other kinds of barcodes.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | x         |
+| Windows  | x         |
+| macOS    | x         |
+| Android  | ✓         |
+| iOS      | ✓         |
+
 ## Install
 
 _This plugin requires a Rust version of at least **1.64**_

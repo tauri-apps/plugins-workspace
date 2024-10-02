@@ -1,6 +1,14 @@
 ![plugin-autostart](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/autostart/banner.png)
 
-Automatically launch your application at startup. Supports Windows, Mac (via AppleScript or Launch Agent), and Linux.
+Automatically launch your application at startup.
+
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | x         |
+| iOS      | x         |
 
 ## Install
 

@@ -3,6 +3,14 @@
 Upload files from disk to a remote server over HTTP.
 Download files from a remote HTTP server to disk.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | ✓         |
+| iOS      | ✓         |
+
 ## Install
 
 _This plugin requires a Rust version of at least **1.75**_

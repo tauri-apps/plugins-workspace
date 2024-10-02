@@ -4,6 +4,14 @@ Position your windows at well-known locations.
 
 This plugin is a port of [electron-positioner](https://github.com/jenslind/electron-positioner) for Tauri.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | x         |
+| iOS      | x         |
+
 ## Install
 
 _This plugin requires a Rust version of at least **1.75**_
