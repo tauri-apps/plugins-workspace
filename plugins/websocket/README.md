@@ -26,7 +26,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-websocket = "2.0.0-rc"
+tauri-plugin-websocket = "2.0.0"
 # alternatively with Git:
 tauri-plugin-websocket = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
