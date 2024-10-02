@@ -682,9 +682,9 @@ dependencies = [
 
 [[package]]
 name = "bitstream-io"
-version = "2.4.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1bdba4ac537b9346c50122b6e9f9b0d2bd721e04c6032e1d15f53ce0747b054c"
+checksum = "7c12d1856e42f0d817a835fe55853957c85c8c8a470114029143d3f12671446e"
 
 [[package]]
 name = "bitvec"
