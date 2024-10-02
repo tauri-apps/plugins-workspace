@@ -12,7 +12,7 @@ Send message notifications (brief auto-expiring OS window element) to your user.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.75**_
+_This plugin requires a Rust version of at least **1.78**_
 
 There are three general methods of installation that we can recommend.
 
@@ -26,7 +26,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-notification = "2.0.0-rc"
+tauri-plugin-notification = "2.0.0"
 # alternatively with Git:
 tauri-plugin-notification = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```

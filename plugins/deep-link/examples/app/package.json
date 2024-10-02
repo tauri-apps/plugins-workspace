@@ -1,7 +1,7 @@
 {
   "name": "deep-link-example",
   "private": true,
-  "version": "2.0.0-rc.1",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,11 +10,11 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-rc.6",
-    "@tauri-apps/plugin-deep-link": "2.0.0-rc.2"
+    "@tauri-apps/api": "2.0.0",
+    "@tauri-apps/plugin-deep-link": "2.0.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "2.0.0-rc.17",
+    "@tauri-apps/cli": "2.0.0",
     "typescript": "^5.2.2",
     "vite": "^5.4.7"
   }

@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
 ## \[2.0.0-rc.7]
 
 - [`3168e176`](https://github.com/tauri-apps/plugins-workspace/commit/3168e176031a61215be542595ba90ca51f8f2d97) ([#1806](https://github.com/tauri-apps/plugins-workspace/pull/1806) by [@auggiebennett](https://github.com/tauri-apps/plugins-workspace/../../auggiebennett)) Fix fails to start when having spaces in the main binary path on Windows

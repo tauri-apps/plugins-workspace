@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
 ## \[2.0.0-rc.3]
 
 - [`30bcf5dc`](https://github.com/tauri-apps/plugins-workspace/commit/30bcf5dcc22e1bb1fb983a8d2887edc39404e6df) ([#1838](https://github.com/tauri-apps/plugins-workspace/pull/1838) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) It is now possible to enable multiple SQL backends at the same time. There will be no compile error anymore if no backends are enabled!

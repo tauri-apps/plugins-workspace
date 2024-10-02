@@ -14,7 +14,7 @@ There are no standards/requirements for vibration support on Android, so the `fe
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.75**_
+_This plugin requires a Rust version of at least **1.78**_
 
 There are three general methods of installation that we can recommend.
 
@@ -28,7 +28,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-haptics = "2.0.0-rc"
+tauri-plugin-haptics = "2.0.0"
 # alternatively with Git:
 tauri-plugin-haptics = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```

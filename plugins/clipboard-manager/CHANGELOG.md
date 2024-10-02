@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
 ## \[2.0.0-rc.2]
 
 - [`341a5320`](https://github.com/tauri-apps/plugins-workspace/commit/341a5320c33d3c7b041abf7eb0ab7ad8009e6c3f) ([#1771](https://github.com/tauri-apps/plugins-workspace/pull/1771)) Fix warnings and clear implementation on Android below SDK 28.

@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-sql",
-  "version": "2.0.0-rc.1",
+  "version": "2.0.0",
   "description": "Interface with SQL databases",
   "license": "MIT OR Apache-2.0",
   "authors": [
@@ -25,6 +25,6 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@tauri-apps/api": "^2.0.0-rc.6"
+    "@tauri-apps/api": "^2.0.0"
   }
 }
