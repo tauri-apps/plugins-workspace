@@ -1,7 +1,7 @@
 {
   "name": "plugins-workspace",
   "private": true,
-  "license": "MIT or APACHE-2.0",
+  "license": "MIT OR Apache-2.0",
   "type": "module",
   "scripts": {
     "build": "pnpm run -r --parallel --filter !plugins-workspace --filter !\"./plugins/*/examples/**\" --filter !\"./examples/*\" build",
