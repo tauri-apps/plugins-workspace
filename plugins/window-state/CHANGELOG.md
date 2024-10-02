@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
 ## \[2.0.0-rc.5]
 
 - [`7a37355e`](https://github.com/tauri-apps/plugins-workspace/commit/7a37355e177772cbddf24397d5a23280e00558af) ([#1787](https://github.com/tauri-apps/plugins-workspace/pull/1787) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix deadlock when trying to restore window states on initial load

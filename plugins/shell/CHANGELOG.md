@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
 ## \[2.0.0-rc.4]
 
 - [`44273b98`](https://github.com/tauri-apps/plugins-workspace/commit/44273b988957a254eff715d6be7547d2ace882e1) ([#1839](https://github.com/tauri-apps/plugins-workspace/pull/1839) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix the plugin schema requiring to set `sidecar` property when it is in fact optional.

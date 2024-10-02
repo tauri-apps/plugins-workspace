@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
 ## \[2.0.0-rc.2]
 
 - [`68579934`](https://github.com/tauri-apps/plugins-workspace/commit/68579934c93f6ed2edbc97474560d6a8a00e8f70) ([#1856](https://github.com/tauri-apps/plugins-workspace/pull/1856) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Expose `Matches`, `SubcommandMatches` and `ArgData` structs.

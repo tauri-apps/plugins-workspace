@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
 ## \[2.0.0-rc.2]
 
 - [`79d6e19c`](https://github.com/tauri-apps/plugins-workspace/commit/79d6e19c4b38bae0cab29eb88df379e2237d9aac) ([#1777](https://github.com/tauri-apps/plugins-workspace/pull/1777)) Fixed an issue which caused checkPermission and requestPermission to be mixed up.

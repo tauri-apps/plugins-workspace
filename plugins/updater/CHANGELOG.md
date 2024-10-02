@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
 ## \[2.0.0-rc.4]
 
 - [`221f50f5`](https://github.com/tauri-apps/plugins-workspace/commit/221f50f53bd7a87dbd404e4cb1aaf502a5047785) ([#1816](https://github.com/tauri-apps/plugins-workspace/pull/1816) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Encode `+` when making updater requests which can be cause incorrectly interpolating the endpoint when using `{{current_version}}` in the endpoint where the current version contains a build number, for example `1.8.0+1`.

@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0`
+
 ## \[2.0.0-rc.8]
 
 - [`6bf1bd8d`](https://github.com/tauri-apps/plugins-workspace/commit/6bf1bd8d44bb95618590aa066e638509b014e0f9) ([#1805](https://github.com/tauri-apps/plugins-workspace/pull/1805) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update rfd to 0.15
