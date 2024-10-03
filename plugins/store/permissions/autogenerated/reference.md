@@ -165,6 +165,32 @@ Denies the get command without any pre-configured scope.
 <tr>
 <td>
 
+`store:allow-get-or-create-store`
+
+</td>
+<td>
+
+Enables the get_or_create_store command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-get-or-create-store`
+
+</td>
+<td>
+
+Denies the get_or_create_store command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `store:allow-get-store`
 
 </td>

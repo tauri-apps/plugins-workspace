@@ -78,6 +78,19 @@ async fn get_store<R: Runtime>(app: AppHandle<R>, path: PathBuf) -> Option<Resou
 }
 
 #[tauri::command]
+async fn get_or_create_store<R: Runtime>(
+    app: AppHandle<R>,
+    path: PathBuf,
+    auto_save: Option<AutoSave>,
+) -> Result<ResourceId> {
+    if let Some(rid) = get_store(app.clone(), path.clone()).await {
+        Ok(rid)
+    } else {
+        create_store(app, path, auto_save).await
+    }
+}
+
+#[tauri::command]
 async fn set<R: Runtime>(
     app: AppHandle<R>,
     rid: ResourceId,
@@ -232,6 +245,7 @@ impl<R: Runtime> Builder<R> {
             .invoke_handler(tauri::generate_handler![
                 create_store,
                 get_store,
+                get_or_create_store,
                 set,
                 get,
                 has,

@@ -43,6 +43,17 @@ export async function getStore(path: string): Promise<Store | undefined> {
 }
 
 /**
+ * @param path: Path to save the store in `app_data_dir`
+ * @param options: Store configuration options
+ */
+export async function getOrCreateStore(
+  path: string,
+  options?: StoreOptions
+): Promise<Store> {
+  return await Store.getOrCreateStore(path, options)
+}
+
+/**
  * A lazy loaded key-value store persisted by the backend layer.
  *
  * Note that the options are not applied if someone else already created the store
@@ -56,9 +67,7 @@ export class LazyStore implements IStore {
 
   private get store(): Promise<Store> {
     if (!this._store) {
-      this._store = createStore(this.path, this.options).catch(
-        async () => (await getStore(this.path))!
-      )
+      this._store = getOrCreateStore(this.path, this.options)
     }
     return this._store
   }
@@ -172,6 +181,24 @@ export class Store extends Resource implements IStore {
   static async getStore(path: string): Promise<Store | undefined> {
     const resourceId = await invoke<number | null>('plugin:store|get_store')
     return resourceId ? new Store(resourceId, path) : undefined
+  }
+
+  /**
+   * @param path: Path to save the store in `app_data_dir`
+   * @param options: Store configuration options
+   */
+  static async getOrCreateStore(
+    path: string,
+    options?: StoreOptions
+  ): Promise<Store> {
+    const resourceId = await invoke<number>(
+      'plugin:store|get_or_create_store',
+      {
+        path,
+        ...options
+      }
+    )
+    return new Store(resourceId, path)
   }
 
   async set(key: string, value: unknown): Promise<void> {
