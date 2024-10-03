@@ -213,6 +213,14 @@ impl<R: Runtime> StoreBuilder<R> {
 
     /// Builds the [`Store`].
     ///
+    /// This loads the store from disk and put the store in the app's resource table,
+    /// to remove it from the resource table, call [`Store::close_store`]
+    ///
+    /// # Errors
+    ///
+    /// If a store with this path is already in the resource table,
+    /// will return a [`crate::Error::AlreadyExists`]
+    ///
     /// # Examples
     /// ```
     /// tauri::Builder::default()
