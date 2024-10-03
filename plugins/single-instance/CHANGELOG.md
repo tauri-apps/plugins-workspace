@@ -1,5 +1,19 @@
 # Changelog
 
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.0.0`
+
+## \[2.0.0-rc.5]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.0.0-rc.7`
+
 ## \[2.0.0-rc.4]
 
 ### Dependencies

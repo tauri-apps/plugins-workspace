@@ -2,6 +2,14 @@
 
 Allows your mobile application to use the camera to scan QR codes, EAN-13 and other kinds of barcodes.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | x         |
+| Windows  | x         |
+| macOS    | x         |
+| Android  | ✓         |
+| iOS      | ✓         |
+
 ## Install
 
 _This plugin requires a Rust version of at least **1.64**_
@@ -18,7 +26,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-barcode-scanner = "2.0.0-rc"
+tauri-plugin-barcode-scanner = "2.0.0"
 # alternatively with Git:
 tauri-plugin-barcode-scanner = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
