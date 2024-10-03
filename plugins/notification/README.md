@@ -12,7 +12,7 @@ Send message notifications (brief auto-expiring OS window element) to your user.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.78**_
+_This plugin requires a Rust version of at least **1.77.2**_
 
 There are three general methods of installation that we can recommend.
 
