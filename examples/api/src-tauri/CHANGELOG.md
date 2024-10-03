@@ -1,5 +1,30 @@
 # Changelog
 
+## \[2.0.2]
+
+- [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.0.1`
+- Upgraded to `biometric@2.0.1`
+- Upgraded to `cli@2.0.1`
+- Upgraded to `clipboard-manager@2.0.1`
+- Upgraded to `fs@2.0.1`
+- Upgraded to `dialog@2.0.1`
+- Upgraded to `geolocation@2.0.1`
+- Upgraded to `global-shortcut@2.0.1`
+- Upgraded to `haptics@2.0.1`
+- Upgraded to `http@2.0.1`
+- Upgraded to `log-plugin@2.0.1`
+- Upgraded to `nfc@2.0.1`
+- Upgraded to `notification@2.0.1`
+- Upgraded to `os@2.0.1`
+- Upgraded to `process@2.0.1`
+- Upgraded to `shell@2.0.1`
+- Upgraded to `store@2.0.1`
+- Upgraded to `updater@2.0.2`
+
 ## \[2.0.1]
 
 ### Dependencies
