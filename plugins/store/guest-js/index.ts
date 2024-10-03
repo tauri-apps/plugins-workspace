@@ -45,15 +45,9 @@ export async function getStore(path: string): Promise<Store | undefined> {
 
 /**
  * A lazy loaded key-value store persisted by the backend layer.
- *
- * Note that the options are not applied if someone else already created the store
  */
 export class LazyStore implements IStore {
   private _store?: Promise<Store>
-  constructor(
-    private readonly path: string,
-    private readonly options?: StoreOptions
-  ) {}
 
   private get store(): Promise<Store> {
     if (!this._store) {
@@ -63,6 +57,16 @@ export class LazyStore implements IStore {
     }
     return this._store
   }
+
+  /**
+   * Note that the options are not applied if someone else already created the store
+   * @param path: Path to save the store in `app_data_dir`
+   * @param options: Store configuration options
+   */
+  constructor(
+    private readonly path: string,
+    private readonly options?: StoreOptions
+  ) {}
 
   /**
    * Init/load the store if it's not already
