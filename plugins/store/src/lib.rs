@@ -165,12 +165,22 @@ async fn save<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
 }
 
 pub trait StoreExt<R: Runtime> {
+    /// Create a store or get an existing store with default settings at path
+    fn store(&self, path: impl AsRef<Path>) -> Arc<Store<R>>;
+    /// Create a store with default settings
     fn create_store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>>;
+    /// Get a store builder
     fn store_builder(&self, path: impl AsRef<Path>) -> StoreBuilder<R>;
+    /// Get an existing store
     fn get_store(&self, path: impl AsRef<Path>) -> Option<Arc<Store<R>>>;
 }
 
 impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
+    fn store(&self, path: impl AsRef<Path>) -> Arc<Store<R>> {
+        self.create_store(&path)
+            .unwrap_or_else(|_| self.get_store(path).unwrap())
+    }
+
     fn create_store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
         StoreBuilder::new(self.app_handle(), path).build()
     }
