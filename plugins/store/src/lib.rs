@@ -31,8 +31,10 @@ mod error;
 mod store;
 
 #[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 struct ChangePayload<'a> {
     path: &'a Path,
+    resource_id: Option<u32>,
     key: &'a str,
     value: &'a JsonValue,
 }

@@ -8,6 +8,7 @@ import { invoke, Resource } from '@tauri-apps/api/core'
 
 interface ChangePayload<T> {
   path: string
+  resourceId?: number
   key: string
   value: T | null
 }
@@ -143,8 +144,8 @@ export class LazyStore implements IStore {
  */
 export class Store extends Resource implements IStore {
   private constructor(
-    rid: number,
-    private readonly path: string
+    rid: number
+    // private readonly path: string
   ) {
     super(rid)
   }
@@ -159,19 +160,27 @@ export class Store extends Resource implements IStore {
     path: string,
     options?: StoreOptions
   ): Promise<Store> {
-    const resourceId = await invoke<number>('plugin:store|create_store', {
+    const rid = await invoke<number>('plugin:store|create_store', {
       path,
       ...options
     })
-    return new Store(resourceId, path)
+    return new Store(
+      rid
+      // path
+    )
   }
 
   /**
    * @param path: Path of the store in the rust side
    */
   static async getStore(path: string): Promise<Store | undefined> {
-    const resourceId = await invoke<number | null>('plugin:store|get_store')
-    return resourceId ? new Store(resourceId, path) : undefined
+    const rid = await invoke<number | null>('plugin:store|get_store', { path })
+    return rid
+      ? new Store(
+          rid
+          // path
+        )
+      : undefined
   }
 
   async set(key: string, value: unknown): Promise<void> {
@@ -240,7 +249,7 @@ export class Store extends Resource implements IStore {
     cb: (value: T | null) => void
   ): Promise<UnlistenFn> {
     return await listen<ChangePayload<T>>('store://change', (event) => {
-      if (event.payload.path === this.path && event.payload.key === key) {
+      if (event.payload.resourceId === this.rid && event.payload.key === key) {
         cb(event.payload.value)
       }
     })
@@ -250,7 +259,7 @@ export class Store extends Resource implements IStore {
     cb: (key: string, value: T | null) => void
   ): Promise<UnlistenFn> {
     return await listen<ChangePayload<T>>('store://change', (event) => {
-      if (event.payload.path === this.path) {
+      if (event.payload.resourceId === this.rid) {
         cb(event.payload.key, event.payload.value)
       }
     })

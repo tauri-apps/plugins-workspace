@@ -12,7 +12,7 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
-use tauri::{AppHandle, Emitter, Manager, Resource, ResourceId, Runtime};
+use tauri::{path::BaseDirectory, AppHandle, Emitter, Manager, Resource, ResourceId, Runtime};
 use tokio::{
     select,
     sync::mpsc::{unbounded_channel, UnboundedSender},
@@ -59,10 +59,15 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   });
     /// ```
     pub fn new<M: Manager<R>, P: AsRef<Path>>(manager: &M, path: P) -> Self {
+        let app = manager.app_handle().clone();
+        let path = app
+            .path()
+            .resolve(path, BaseDirectory::AppData)
+            .expect("failed to resolve app dir");
         Self {
-            app: manager.app_handle().clone(),
+            app,
             // Since Store.path is only exposed to the user in emit calls we may as well simplify it here already.
-            path: dunce::simplified(path.as_ref()).to_path_buf(),
+            path: dunce::simplified(&path).to_path_buf(),
             defaults: None,
             serialize_fn: default_serialize,
             deserialize_fn: default_deserialize,
@@ -255,17 +260,10 @@ impl<R: Runtime> StoreInner<R> {
 
     /// Saves the store to disk at the store's `path`.
     pub fn save(&self) -> crate::Result<()> {
-        let app_dir = self
-            .app
-            .path()
-            .app_data_dir()
-            .expect("failed to resolve app dir");
-        let store_path = app_dir.join(&self.path);
-
-        create_dir_all(store_path.parent().expect("invalid store path"))?;
+        create_dir_all(self.path.parent().expect("invalid store path"))?;
 
         let bytes = (self.serialize_fn)(&self.cache).map_err(crate::Error::Serialize)?;
-        let mut f = File::create(&store_path)?;
+        let mut f = File::create(&self.path)?;
         f.write_all(&bytes)?;
 
         Ok(())
@@ -273,14 +271,7 @@ impl<R: Runtime> StoreInner<R> {
 
     /// Update the store from the on-disk state
     pub fn load(&mut self) -> crate::Result<()> {
-        let app_dir = self
-            .app
-            .path()
-            .app_data_dir()
-            .expect("failed to resolve app dir");
-        let store_path = app_dir.join(&self.path);
-
-        let bytes = read(store_path)?;
+        let bytes = read(&self.path)?;
 
         self.cache
             .extend((self.deserialize_fn)(&bytes).map_err(crate::Error::Deserialize)?);
@@ -374,10 +365,13 @@ impl<R: Runtime> StoreInner<R> {
     }
 
     fn emit_change_event(&self, key: &str, value: &JsonValue) -> crate::Result<()> {
+        let collection = self.app.state::<StoreCollection>();
+        let stores = collection.stores.lock().unwrap();
         self.app.emit(
             "store://change",
             ChangePayload {
                 path: &self.path,
+                resource_id: stores.get(&self.path).copied(),
                 key,
                 value,
             },
