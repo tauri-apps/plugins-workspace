@@ -30,7 +30,7 @@
 | [websocket](plugins/websocket)                 | Open a WebSocket connection using a Rust client in JS.                                                                                                         | ✅  | ✅  | ✅  | ?   | ?   |
 | [window-state](plugins/window-state)           | Persist window sizes and positions.                                                                                                                            | ✅  | ✅  | ✅  | ?   | ?   |
 
-_This repo and all plugins require a Rust version of at least **1.78**_
+_This repo and all plugins require a Rust version of at least **1.77.2**_
 
 ## Contributing
 
