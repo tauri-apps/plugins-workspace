@@ -1,5 +1,5 @@
 <script>
-  import { Store } from "@tauri-apps/plugin-store";
+  import { LazyStore } from "@tauri-apps/plugin-store";
   import { onMount } from "svelte";
 
   export let onMessage;
@@ -7,11 +7,10 @@
   let key;
   let value;
 
-  const store = new Store("cache.json");
+  const store = new LazyStore("cache.json");
   let cache = {};
 
   onMount(async () => {
-    await store.load();
     const values = await store.entries();
     for (const [key, value] of values) {
       cache[key] = value;
@@ -19,16 +18,14 @@
     cache = cache;
   });
 
-  function write(key, value) {
-    store
-      .set(key, value)
-      .then(() => store.get(key))
-      .then((v) => {
-        cache[key] = v;
-        cache = cache;
-      })
-      .then(() => store.save())
-      .catch(onMessage);
+  async function write(key, value) {
+    try {
+      await store.set(key, value);
+      const v = await store.get(key);
+      cache[key] = v;
+    } catch (error) {
+      onMessage(error);
+    }
   }
 </script>
 

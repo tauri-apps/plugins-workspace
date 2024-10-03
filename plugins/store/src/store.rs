@@ -463,6 +463,9 @@ impl<R: Runtime> Store<R> {
         self.store.lock().unwrap().save()
     }
 
+    /// Removes the store from the resource table,
+    /// this doesn't remove other references of the same store held by you,
+    /// and the store is only truely closed once all reference held by you are also dropped
     pub fn close_store(self) {
         let store = self.store.lock().unwrap();
         let app = store.app.clone();
