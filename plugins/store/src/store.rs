@@ -12,7 +12,7 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
-use tauri::{AppHandle, Emitter, Manager, Resource, Runtime};
+use tauri::{AppHandle, Emitter, Manager, Resource, ResourceId, Runtime};
 use tokio::{
     select,
     sync::mpsc::{unbounded_channel, UnboundedSender},
@@ -41,8 +41,8 @@ pub struct StoreBuilder<R: Runtime> {
     app: AppHandle<R>,
     path: PathBuf,
     defaults: Option<HashMap<String, JsonValue>>,
-    serialize: SerializeFn,
-    deserialize: DeserializeFn,
+    serialize_fn: SerializeFn,
+    deserialize_fn: DeserializeFn,
     auto_save: Option<Duration>,
 }
 
@@ -64,8 +64,8 @@ impl<R: Runtime> StoreBuilder<R> {
             // Since Store.path is only exposed to the user in emit calls we may as well simplify it here already.
             path: dunce::simplified(path.as_ref()).to_path_buf(),
             defaults: None,
-            serialize: default_serialize,
-            deserialize: default_deserialize,
+            serialize_fn: default_serialize,
+            deserialize_fn: default_deserialize,
             auto_save: Some(Duration::from_millis(100)),
         }
     }
@@ -91,7 +91,7 @@ impl<R: Runtime> StoreBuilder<R> {
         self
     }
 
-    /// Inserts multiple key-value pairs.
+    /// Inserts multiple default key-value pairs.
     ///
     /// # Examples
     /// ```
@@ -127,7 +127,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   });
     /// ```
     pub fn serialize(mut self, serialize: SerializeFn) -> Self {
-        self.serialize = serialize;
+        self.serialize_fn = serialize;
         self
     }
 
@@ -145,7 +145,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   });
     /// ```
     pub fn deserialize(mut self, deserialize: DeserializeFn) -> Self {
-        self.deserialize = deserialize;
+        self.deserialize_fn = deserialize;
         self
     }
 
@@ -167,22 +167,40 @@ impl<R: Runtime> StoreBuilder<R> {
         self
     }
 
-    /// Auto save on modified with a debounce duration
-    ///
-    /// # Examples
-    /// ```
-    /// tauri::Builder::default()
-    ///    .plugin(tauri_plugin_store::Builder::default().build())
-    ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
-    ///         .auto_save(std::time::Duration::from_millis(100))
-    ///         .build()?;
-    ///     Ok(())
-    ///   });
-    /// ```
+    /// Disable auto save on modified with a debounce duration
     pub fn disable_auto_save(mut self) -> Self {
         self.auto_save = None;
         self
+    }
+
+    pub(crate) fn build_inner(mut self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
+        let collection = self.app.state::<StoreCollection>();
+        let mut stores = collection.stores.lock().unwrap();
+
+        if stores.contains_key(&self.path) {
+            return Err(crate::Error::AlreadyExists(self.path));
+        }
+
+        let mut store_inner = StoreInner::new(
+            self.app.clone(),
+            self.path.clone(),
+            self.defaults.take(),
+            self.serialize_fn,
+            self.deserialize_fn,
+        );
+        let _ = store_inner.load();
+
+        let store = Store {
+            auto_save: self.auto_save,
+            auto_save_debounce_sender: Arc::new(Mutex::new(None)),
+            store: Arc::new(Mutex::new(store_inner)),
+        };
+
+        let store = Arc::new(store);
+        let rid = self.app.resources_table().add_arc(store.clone());
+        stores.insert(self.path, rid);
+
+        Ok((store, rid))
     }
 
     /// Builds the [`Store`].
@@ -197,29 +215,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   });
     /// ```
     pub fn build(self) -> crate::Result<Arc<Store<R>>> {
-        let collection = self.app.state::<StoreCollection<R>>();
-        let mut stores = collection.stores.lock().unwrap();
-
-        if stores.contains_key(&self.path) {
-            return Err(crate::Error::AlreadyExists(self.path));
-        }
-
-        let mut store_inner = StoreInner::new(self.app.clone(), self.path.clone());
-        if let Some(defaults) = &self.defaults {
-            store_inner.cache.clone_from(defaults);
-        }
-        let _ = store_inner.load(self.deserialize);
-
-        let store = Store {
-            defaults: self.defaults,
-            serialize: self.serialize,
-            deserialize: self.deserialize,
-            auto_save: self.auto_save,
-            auto_save_debounce_sender: Arc::new(Mutex::new(None)),
-            store: Arc::new(Mutex::new(store_inner)),
-        };
-        let store = Arc::new(store);
-        stores.insert(self.path, (Arc::downgrade(&store), None));
+        let (store, _) = self.build_inner()?;
         Ok(store)
     }
 }
@@ -234,18 +230,30 @@ pub struct StoreInner<R: Runtime> {
     pub(crate) app: AppHandle<R>,
     pub(crate) path: PathBuf,
     pub(crate) cache: HashMap<String, JsonValue>,
+    pub(crate) defaults: Option<HashMap<String, JsonValue>>,
+    pub(crate) serialize_fn: SerializeFn,
+    pub(crate) deserialize_fn: DeserializeFn,
 }
 
 impl<R: Runtime> StoreInner<R> {
-    pub fn new(app: AppHandle<R>, path: PathBuf) -> Self {
+    pub fn new(
+        app: AppHandle<R>,
+        path: PathBuf,
+        defaults: Option<HashMap<String, JsonValue>>,
+        serialize_fn: SerializeFn,
+        deserialize_fn: DeserializeFn,
+    ) -> Self {
         Self {
             app,
             path,
-            cache: HashMap::new(),
+            cache: defaults.clone().unwrap_or_default(),
+            defaults,
+            serialize_fn,
+            deserialize_fn,
         }
     }
 
-    pub fn save(&self, serialize_fn: SerializeFn) -> crate::Result<()> {
+    pub fn save(&self) -> crate::Result<()> {
         let app_dir = self
             .app
             .path()
@@ -255,7 +263,7 @@ impl<R: Runtime> StoreInner<R> {
 
         create_dir_all(store_path.parent().expect("invalid store path"))?;
 
-        let bytes = serialize_fn(&self.cache).map_err(crate::Error::Serialize)?;
+        let bytes = (self.serialize_fn)(&self.cache).map_err(crate::Error::Serialize)?;
         let mut f = File::create(&store_path)?;
         f.write_all(&bytes)?;
 
@@ -263,7 +271,7 @@ impl<R: Runtime> StoreInner<R> {
     }
 
     /// Update the store from the on-disk state
-    pub fn load(&mut self, deserialize_fn: DeserializeFn) -> crate::Result<()> {
+    pub fn load(&mut self) -> crate::Result<()> {
         let app_dir = self
             .app
             .path()
@@ -274,7 +282,7 @@ impl<R: Runtime> StoreInner<R> {
         let bytes = read(store_path)?;
 
         self.cache
-            .extend(deserialize_fn(&bytes).map_err(crate::Error::Deserialize)?);
+            .extend((self.deserialize_fn)(&bytes).map_err(crate::Error::Deserialize)?);
 
         Ok(())
     }
@@ -310,8 +318,8 @@ impl<R: Runtime> StoreInner<R> {
         }
     }
 
-    pub fn reset(&mut self, defaults: &Option<HashMap<String, JsonValue>>) {
-        if let Some(defaults) = &defaults {
+    pub fn reset(&mut self) {
+        if let Some(defaults) = &self.defaults {
             for (key, value) in &self.cache {
                 if defaults.get(key) != Some(value) {
                     let _ =
@@ -372,9 +380,6 @@ impl<R: Runtime> std::fmt::Debug for StoreInner<R> {
 }
 
 pub struct Store<R: Runtime> {
-    defaults: Option<HashMap<String, JsonValue>>,
-    serialize: SerializeFn,
-    deserialize: DeserializeFn,
     auto_save: Option<Duration>,
     auto_save_debounce_sender: Arc<Mutex<Option<UnboundedSender<AutoSaveMessage>>>>,
     store: Arc<Mutex<StoreInner<R>>>,
@@ -415,7 +420,7 @@ impl<R: Runtime> Store<R> {
     }
 
     pub fn reset(&self) {
-        self.store.lock().unwrap().reset(&self.defaults);
+        self.store.lock().unwrap().reset();
         let _ = self.trigger_auto_save();
     }
 
@@ -441,14 +446,14 @@ impl<R: Runtime> Store<R> {
     }
 
     pub fn load(&self) -> crate::Result<()> {
-        self.store.lock().unwrap().load(self.deserialize)
+        self.store.lock().unwrap().load()
     }
 
     pub fn save(&self) -> crate::Result<()> {
         if let Some(sender) = self.auto_save_debounce_sender.lock().unwrap().take() {
             let _ = sender.send(AutoSaveMessage::Cancel);
         }
-        self.store.lock().unwrap().save(self.serialize)
+        self.store.lock().unwrap().save()
     }
 
     fn trigger_auto_save(&self) -> crate::Result<()> {
@@ -467,7 +472,6 @@ impl<R: Runtime> Store<R> {
         auto_save_debounce_sender.replace(sender);
         drop(auto_save_debounce_sender);
         let store = self.store.clone();
-        let serialize_fn = self.serialize;
         let auto_save_debounce_sender = self.auto_save_debounce_sender.clone();
         tauri::async_runtime::spawn(async move {
             loop {
@@ -479,7 +483,7 @@ impl<R: Runtime> Store<R> {
                     }
                     _ = sleep(auto_save_delay) => {
                         auto_save_debounce_sender.lock().unwrap().take();
-                        let _ = store.lock().unwrap().save(serialize_fn);
+                        let _ = store.lock().unwrap().save();
                         return;
                     }
                 };
@@ -487,18 +491,18 @@ impl<R: Runtime> Store<R> {
         });
         Ok(())
     }
+
+    fn apply_pending_auto_save(&self) {
+        // Cancel and save if auto save is pending
+        if let Some(sender) = self.auto_save_debounce_sender.lock().unwrap().take() {
+            let _ = sender.send(AutoSaveMessage::Cancel);
+            let _ = self.save();
+        };
+    }
 }
 
 impl<R: Runtime> Drop for Store<R> {
     fn drop(&mut self) {
-        let store = self.store.lock().unwrap();
-        // Cancel and save if auto save is pending
-        if let Some(sender) = self.auto_save_debounce_sender.lock().unwrap().take() {
-            let _ = sender.send(AutoSaveMessage::Cancel);
-            let _ = store.save(self.serialize);
-        };
-        let collection = store.app.state::<StoreCollection<R>>();
-        let mut stores = collection.stores.lock().unwrap();
-        stores.remove(&store.path);
+        self.apply_pending_auto_save();
     }
 }
