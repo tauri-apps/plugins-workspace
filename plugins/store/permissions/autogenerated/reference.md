@@ -10,6 +10,7 @@ All operations are enabled by default.
 
 
 - `allow-create-store`
+- `allow-get-store`
 - `allow-clear`
 - `allow-delete`
 - `allow-entries`

@@ -56,8 +56,8 @@ export class LazyStore implements IStore {
 
   private get store(): Promise<Store> {
     if (!this._store) {
-      this._store = createStore(this.path, this.options).catch(
-        async () => (await getStore(this.path))!
+      this._store = getStore(this.path).then(
+        async (store) => store || (await createStore(this.path, this.options))
       )
     }
     return this._store

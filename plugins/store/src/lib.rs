@@ -177,8 +177,8 @@ pub trait StoreExt<R: Runtime> {
 
 impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     fn store(&self, path: impl AsRef<Path>) -> Arc<Store<R>> {
-        self.create_store(&path)
-            .unwrap_or_else(|_| self.get_store(path).unwrap())
+        self.get_store(&path)
+            .unwrap_or_else(|| self.create_store(&path).unwrap())
     }
 
     fn create_store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
