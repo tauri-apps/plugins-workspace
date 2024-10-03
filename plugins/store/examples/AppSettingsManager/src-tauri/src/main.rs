@@ -17,7 +17,7 @@ fn main() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
             // Init store and load it from disk
-            let store = app.handle().store_builder("settings.json").build().unwrap();
+            let store = app.store("settings.json");
             app.listen("store://change", |event| {
                 dbg!(event);
             });

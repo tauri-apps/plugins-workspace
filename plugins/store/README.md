@@ -70,7 +70,7 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 ```typescript
 import { LazyStore } from '@tauri-apps/plugin-store'
 
-const store = new LazyStore('.settings.dat')
+const store = new LazyStore('settings.json')
 
 await store.set('some-key', { value: 5 })
 
@@ -113,7 +113,7 @@ fn main() {
         .plugin(tauri_plugin_store::Builder::default().build())
         .setup(|app| {
             // This loads the store from disk
-            let store = app.store_builder("app_data.bin").build()?;
+            let store = app.store("app_data.json");
 
             // Note that values must be serde_json::Value instances,
             // otherwise, they will not be compatible with the JavaScript bindings.
