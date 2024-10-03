@@ -26,7 +26,7 @@ export type StoreOptions = {
  * @param path: Path to save the store in `app_data_dir`
  * @param options: Store configuration options
  *
- * Throws if the store at that path already exists
+ * @throws If a store at that path already exists
  */
 export async function createStore(
   path: string,

@@ -463,6 +463,18 @@ impl<R: Runtime> Store<R> {
         self.store.lock().unwrap().save()
     }
 
+    pub fn close_store(self) {
+        let store = self.store.lock().unwrap();
+        let app = store.app.clone();
+        let collection = app.state::<StoreCollection>();
+        let stores = collection.stores.lock().unwrap();
+        if let Some(rid) = stores.get(&store.path).copied() {
+            drop(store);
+            drop(stores);
+            let _ = app.resources_table().take::<Store<R>>(rid);
+        }
+    }
+
     fn trigger_auto_save(&self) -> crate::Result<()> {
         let Some(auto_save_delay) = self.auto_save else {
             return Ok(());
