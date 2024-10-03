@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-dialog"
-version = "2.0.0"
+version = "2.0.1"
 description = "Native system dialogs for opening and saving files along with message dialogs on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -34,7 +34,7 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 url = { workspace = true }
-tauri-plugin-fs = { path = "../fs", version = "2.0.0" }
+tauri-plugin-fs = { path = "../fs", version = "2.0.1" }
 
 [target.'cfg(target_os = "ios")'.dependencies]
 tauri = { workspace = true, features = ["wry"] }

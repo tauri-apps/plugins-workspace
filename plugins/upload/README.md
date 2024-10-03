@@ -13,7 +13,7 @@ Download files from a remote HTTP server to disk.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.78**_
+_This plugin requires a Rust version of at least **1.77.2**_
 
 There are three general methods of installation that we can recommend.
 
