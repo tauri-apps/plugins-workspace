@@ -9,7 +9,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@tauri-apps/api": "2.0.0",
+    "@tauri-apps/api": "2.0.1",
     "@tauri-apps/plugin-barcode-scanner": "2.0.0",
     "@tauri-apps/plugin-biometric": "2.0.0",
     "@tauri-apps/plugin-cli": "2.0.0",
