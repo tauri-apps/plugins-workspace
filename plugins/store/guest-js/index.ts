@@ -21,6 +21,14 @@ export type StoreOptions = {
    * Auto save on modification with debounce duration in milliseconds, it's 100ms by default, pass in `false` to disable it
    */
   autoSave?: boolean | number
+  /**
+   * Name of a serialize function registered in the rust side plugin builder
+   */
+  serializeFnName?: string
+  /**
+   * Name of a deserialize function registered in the rust side plugin builder
+   */
+  deserializeFnName?: string
 }
 
 /**

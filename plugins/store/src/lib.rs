@@ -21,10 +21,10 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
-pub use store::{Store, StoreBuilder, StoreInner};
+pub use store::{DeserializeFn, SerializeFn, Store, StoreBuilder, StoreInner};
 use tauri::{
     plugin::{self, TauriPlugin},
-    AppHandle, Manager, ResourceId, RunEvent, Runtime,
+    AppHandle, Manager, ResourceId, RunEvent, Runtime, State,
 };
 
 mod error;
@@ -41,6 +41,8 @@ struct ChangePayload<'a> {
 
 pub struct StoreCollection {
     stores: Mutex<HashMap<PathBuf, ResourceId>>,
+    serialize_fns: HashMap<String, SerializeFn>,
+    deserialize_fns: HashMap<String, DeserializeFn>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -53,10 +55,14 @@ enum AutoSave {
 #[tauri::command]
 async fn create_store<R: Runtime>(
     app: AppHandle<R>,
+    store_collection: State<'_, StoreCollection>,
     path: PathBuf,
     auto_save: Option<AutoSave>,
+    serialize_fn_name: Option<String>,
+    deserialize_fn_name: Option<String>,
 ) -> Result<ResourceId> {
     let mut builder = app.store_builder(path.clone());
+
     if let Some(auto_save) = auto_save {
         match auto_save {
             AutoSave::DebounceDuration(duration) => {
@@ -68,15 +74,34 @@ async fn create_store<R: Runtime>(
             _ => {}
         }
     }
+
+    if let Some(serialize_fn_name) = serialize_fn_name {
+        let serialize_fn = store_collection
+            .serialize_fns
+            .get(&serialize_fn_name)
+            .ok_or_else(|| crate::Error::SerializeFunctionNotFound(serialize_fn_name))?;
+        builder = builder.serialize(*serialize_fn);
+    }
+
+    if let Some(deserialize_fn_name) = deserialize_fn_name {
+        let deserialize_fn = store_collection
+            .deserialize_fns
+            .get(&deserialize_fn_name)
+            .ok_or_else(|| crate::Error::DeserializeFunctionNotFound(deserialize_fn_name))?;
+        builder = builder.deserialize(*deserialize_fn);
+    }
+
     let (_, rid) = builder.build_inner()?;
     Ok(rid)
 }
 
 #[tauri::command]
-async fn get_store<R: Runtime>(app: AppHandle<R>, path: PathBuf) -> Option<ResourceId> {
-    let collection = app.state::<StoreCollection>();
-    let stores = collection.stores.lock().unwrap();
-    stores.get(&path).copied()
+async fn get_store(
+    store_collection: State<'_, StoreCollection>,
+    path: PathBuf,
+) -> Result<Option<ResourceId>> {
+    let stores = store_collection.stores.lock().unwrap();
+    Ok(stores.get(&path).copied())
 }
 
 #[tauri::command]
@@ -202,12 +227,16 @@ impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
 
 pub struct Builder<R: Runtime> {
     phantom_data: PhantomData<R>,
+    serialize_fns: HashMap<String, SerializeFn>,
+    deserialize_fns: HashMap<String, DeserializeFn>,
 }
 
 impl<R: Runtime> Default for Builder<R> {
     fn default() -> Self {
         Self {
             phantom_data: Default::default(),
+            serialize_fns: Default::default(),
+            deserialize_fns: Default::default(),
         }
     }
 }
@@ -215,6 +244,18 @@ impl<R: Runtime> Default for Builder<R> {
 impl<R: Runtime> Builder<R> {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Register a serialize function to access it from the JavaScript side
+    pub fn register_serialize_fn(mut self, name: String, serialize_fn: SerializeFn) -> Self {
+        self.serialize_fns.insert(name, serialize_fn);
+        self
+    }
+
+    /// Register a deserialize function to access it from the JavaScript side
+    pub fn register_deserialize_fn(mut self, name: String, deserialize_fn: DeserializeFn) -> Self {
+        self.deserialize_fns.insert(name, deserialize_fn);
+        self
     }
 
     /// Builds the plugin.
@@ -250,6 +291,8 @@ impl<R: Runtime> Builder<R> {
             .setup(move |app_handle, _api| {
                 app_handle.manage(StoreCollection {
                     stores: Mutex::new(HashMap::new()),
+                    serialize_fns: self.serialize_fns,
+                    deserialize_fns: self.deserialize_fns,
                 });
                 Ok(())
             })

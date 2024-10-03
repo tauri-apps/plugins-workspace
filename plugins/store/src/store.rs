@@ -19,9 +19,9 @@ use tokio::{
     time::sleep,
 };
 
-type SerializeFn =
+pub type SerializeFn =
     fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>>;
-pub(crate) type DeserializeFn =
+pub type DeserializeFn =
     fn(&[u8]) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>>;
 
 fn default_serialize(
