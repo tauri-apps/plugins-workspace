@@ -21,6 +21,7 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
+use store::resolve_store_path;
 pub use store::{DeserializeFn, SerializeFn, Store, StoreBuilder, StoreInner};
 use tauri::{
     plugin::{self, TauriPlugin},
@@ -96,12 +97,18 @@ async fn create_store<R: Runtime>(
 }
 
 #[tauri::command]
-async fn get_store(
+async fn get_store<R: Runtime>(
+    app: AppHandle<R>,
     store_collection: State<'_, StoreCollection>,
     path: PathBuf,
 ) -> Result<Option<ResourceId>> {
     let stores = store_collection.stores.lock().unwrap();
-    Ok(stores.get(&path).copied())
+    Ok(stores.get(&resolve_store_path(app, path)).copied())
+}
+
+#[tauri::command]
+async fn close_store<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
+    Ok(app.resources_table().close(rid)?)
 }
 
 #[tauri::command]
@@ -275,6 +282,7 @@ impl<R: Runtime> Builder<R> {
             .invoke_handler(tauri::generate_handler![
                 create_store,
                 get_store,
+                close_store,
                 set,
                 get,
                 has,
@@ -286,7 +294,7 @@ impl<R: Runtime> Builder<R> {
                 length,
                 entries,
                 load,
-                save
+                save,
             ])
             .setup(move |app_handle, _api| {
                 app_handle.manage(StoreCollection {

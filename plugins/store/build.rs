@@ -5,6 +5,7 @@
 const COMMANDS: &[&str] = &[
     "create_store",
     "get_store",
+    "close_store",
     "set",
     "get",
     "has",

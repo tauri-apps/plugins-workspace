@@ -36,6 +36,12 @@ fn default_deserialize(
     serde_json::from_slice(bytes).map_err(Into::into)
 }
 
+pub(crate) fn resolve_store_path<R: Runtime>(app: AppHandle<R>, path: impl AsRef<Path>) -> PathBuf {
+    app.path()
+        .resolve(path, BaseDirectory::AppData)
+        .expect("failed to resolve app dir")
+}
+
 /// Builds a [`Store`]
 pub struct StoreBuilder<R: Runtime> {
     app: AppHandle<R>,
@@ -60,10 +66,7 @@ impl<R: Runtime> StoreBuilder<R> {
     /// ```
     pub fn new<M: Manager<R>, P: AsRef<Path>>(manager: &M, path: P) -> Self {
         let app = manager.app_handle().clone();
-        let path = app
-            .path()
-            .resolve(path, BaseDirectory::AppData)
-            .expect("failed to resolve app dir");
+        let path = resolve_store_path(app.clone(), path);
         Self {
             app,
             // Since Store.path is only exposed to the user in emit calls we may as well simplify it here already.
