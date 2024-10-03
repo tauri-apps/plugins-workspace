@@ -54,13 +54,20 @@ export class LazyStore implements IStore {
     private readonly options?: StoreOptions
   ) {}
 
-  public get store(): Promise<Store> {
+  private get store(): Promise<Store> {
     if (!this._store) {
       this._store = createStore(this.path, this.options).catch(
         async () => (await getStore(this.path))!
       )
     }
     return this._store
+  }
+
+  /**
+   * Init/load the store if it's not already
+   */
+  async init(): Promise<void> {
+    await this.store
   }
 
   async set(key: string, value: unknown): Promise<void> {
