@@ -1,4 +1,4 @@
-![Barcode Scanner](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/scanner/banner.png)
+![Barcode Scanner](https://github.com/tauri-apps/plugins-workspace/blob/v2/plugins/barcode-scanner/banner.png)
 
 Allows your mobile application to use the camera to scan QR codes, EAN-13 and other kinds of barcodes.
 
