@@ -345,16 +345,6 @@
           "const": "deny-get"
         },
         {
-          "description": "Enables the get_or_create_store command without any pre-configured scope.",
-          "type": "string",
-          "const": "allow-get-or-create-store"
-        },
-        {
-          "description": "Denies the get_or_create_store command without any pre-configured scope.",
-          "type": "string",
-          "const": "deny-get-or-create-store"
-        },
-        {
           "description": "Enables the get_store command without any pre-configured scope.",
           "type": "string",
           "const": "allow-get-store"
