@@ -294,7 +294,7 @@ interface IStore {
   /**
    * Clears the store, removing all key-value pairs.
    *
-   * Note: To clear the storage and reset it to its `default` value, use `reset` instead.
+   * Note: To clear the storage and reset it to its `default` value, use {@linkcode reset} instead.
    * @returns
    */
   clear(): Promise<void>
@@ -302,7 +302,7 @@ interface IStore {
   /**
    * Resets the store to its `default` value.
    *
-   * If no default value has been set, this method behaves identical to `clear`.
+   * If no default value has been set, this method behaves identical to {@linkcode clear}.
    * @returns
    */
   reset(): Promise<void>
@@ -347,9 +347,6 @@ interface IStore {
 
   /**
    * Saves the store to disk at the store's `path`.
-   *
-   * As the store is only persisted to disk before the app's exit, changes might be lost in a crash.
-   * This method lets you persist the store to disk whenever you deem necessary.
    * @returns
    */
   save(): Promise<void>

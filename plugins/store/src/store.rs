@@ -236,7 +236,7 @@ pub struct StoreInner<R: Runtime> {
 }
 
 impl<R: Runtime> StoreInner<R> {
-    pub fn new(
+    fn new(
         app: AppHandle<R>,
         path: PathBuf,
         defaults: Option<HashMap<String, JsonValue>>,
@@ -253,6 +253,7 @@ impl<R: Runtime> StoreInner<R> {
         }
     }
 
+    /// Saves the store to disk at the store's `path`.
     pub fn save(&self) -> crate::Result<()> {
         let app_dir = self
             .app
@@ -287,6 +288,7 @@ impl<R: Runtime> StoreInner<R> {
         Ok(())
     }
 
+    /// Inserts a key-value pair into the store.
     pub fn insert(&mut self, key: impl Into<String>, value: impl Into<JsonValue>) {
         let key = key.into();
         let value = value.into();
@@ -294,14 +296,17 @@ impl<R: Runtime> StoreInner<R> {
         let _ = self.emit_change_event(&key, &value);
     }
 
+    /// Returns a reference to the value corresponding to the key.
     pub fn get(&self, key: impl AsRef<str>) -> Option<&JsonValue> {
         self.cache.get(key.as_ref())
     }
 
+    /// Returns `true` if the given `key` exists in the store.
     pub fn has(&self, key: impl AsRef<str>) -> bool {
         self.cache.contains_key(key.as_ref())
     }
 
+    /// Removes a key-value pair from the store.
     pub fn delete(&mut self, key: impl AsRef<str>) -> bool {
         let flag = self.cache.remove(key.as_ref()).is_some();
         if flag {
@@ -310,6 +315,9 @@ impl<R: Runtime> StoreInner<R> {
         flag
     }
 
+    /// Clears the store, removing all key-value pairs.
+    ///
+    /// Note: To clear the storage and reset it to its `default` value, use [`reset`](Self::reset) instead.
     pub fn clear(&mut self) {
         let keys: Vec<String> = self.cache.keys().cloned().collect();
         self.cache.clear();
@@ -318,6 +326,9 @@ impl<R: Runtime> StoreInner<R> {
         }
     }
 
+    /// Resets the store to its `default` value.
+    ///
+    /// If no default value has been set, this method behaves identical to [`clear`](Self::clear).
     pub fn reset(&mut self) {
         if let Some(defaults) = &self.defaults {
             for (key, value) in &self.cache {
@@ -337,22 +348,27 @@ impl<R: Runtime> StoreInner<R> {
         }
     }
 
+    /// An iterator visiting all keys in arbitrary order.
     pub fn keys(&self) -> impl Iterator<Item = &String> {
         self.cache.keys()
     }
 
+    /// An iterator visiting all values in arbitrary order.
     pub fn values(&self) -> impl Iterator<Item = &JsonValue> {
         self.cache.values()
     }
 
+    /// An iterator visiting all key-value pairs in arbitrary order.
     pub fn entries(&self) -> impl Iterator<Item = (&String, &JsonValue)> {
         self.cache.iter()
     }
 
+    /// Returns the number of elements in the store.
     pub fn len(&self) -> usize {
         self.cache.len()
     }
 
+    /// Returns true if the store contains no elements.
     pub fn is_empty(&self) -> bool {
         self.cache.is_empty()
     }
@@ -395,24 +411,30 @@ impl<R: Runtime> Resource for Store<R> {
 }
 
 impl<R: Runtime> Store<R> {
+    /// Do something with the inner store,
+    /// useful for batching some work if you need higher performance
     pub fn with_store<T>(&self, f: impl FnOnce(&mut StoreInner<R>) -> T) -> T {
         let mut store = self.store.lock().unwrap();
         f(&mut store)
     }
 
+    /// Inserts a key-value pair into the store.
     pub fn set(&self, key: impl Into<String>, value: impl Into<JsonValue>) {
         self.store.lock().unwrap().insert(key.into(), value.into());
         let _ = self.trigger_auto_save();
     }
 
+    /// Returns the value for the given `key` or `None` if the key does not exist.
     pub fn get(&self, key: impl AsRef<str>) -> Option<JsonValue> {
         self.store.lock().unwrap().get(key).cloned()
     }
 
+    /// Returns `true` if the given `key` exists in the store.
     pub fn has(&self, key: impl AsRef<str>) -> bool {
         self.store.lock().unwrap().has(key)
     }
 
+    /// Removes a key-value pair from the store.
     pub fn delete(&self, key: impl AsRef<str>) -> bool {
         let deleted = self.store.lock().unwrap().delete(key);
         if deleted {
@@ -421,24 +443,33 @@ impl<R: Runtime> Store<R> {
         deleted
     }
 
+    /// Clears the store, removing all key-value pairs.
+    ///
+    /// Note: To clear the storage and reset it to its `default` value, use [`reset`](Self::reset) instead.
     pub fn clear(&self) {
         self.store.lock().unwrap().clear();
         let _ = self.trigger_auto_save();
     }
 
+    /// Resets the store to its `default` value.
+    ///
+    /// If no default value has been set, this method behaves identical to [`clear`](Self::clear).
     pub fn reset(&self) {
         self.store.lock().unwrap().reset();
         let _ = self.trigger_auto_save();
     }
 
+    /// Returns a list of all keys in the store.
     pub fn keys(&self) -> Vec<String> {
         self.store.lock().unwrap().keys().cloned().collect()
     }
 
+    /// Returns a list of all values in the store.
     pub fn values(&self) -> Vec<JsonValue> {
         self.store.lock().unwrap().values().cloned().collect()
     }
 
+    /// Returns a list of all key-value pairs in the store.
     pub fn entries(&self) -> Vec<(String, JsonValue)> {
         self.store
             .lock()
@@ -448,14 +479,17 @@ impl<R: Runtime> Store<R> {
             .collect()
     }
 
+    /// Returns the number of elements in the store.
     pub fn length(&self) -> usize {
         self.store.lock().unwrap().len()
     }
 
+    /// Update the store from the on-disk state
     pub fn load(&self) -> crate::Result<()> {
         self.store.lock().unwrap().load()
     }
 
+    /// Saves the store to disk at the store's `path`.
     pub fn save(&self) -> crate::Result<()> {
         if let Some(sender) = self.auto_save_debounce_sender.lock().unwrap().take() {
             let _ = sender.send(AutoSaveMessage::Cancel);
