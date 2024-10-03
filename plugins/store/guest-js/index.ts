@@ -25,8 +25,13 @@ export type StoreOptions = {
 /**
  * @param path: Path to save the store in `app_data_dir`
  * @param options: Store configuration options
+ *
+ * Throws if the store at that path already exists
  */
-export async function createStore(path: string, options?: StoreOptions) {
+export async function createStore(
+  path: string,
+  options?: StoreOptions
+): Promise<Store> {
   const resourceId = await invoke<number>('plugin:store|create_store', {
     path,
     ...options
@@ -37,9 +42,9 @@ export async function createStore(path: string, options?: StoreOptions) {
 /**
  * @param path: Path of the store in the rust side
  */
-export async function getStore(path: string) {
-  const resourceId = await invoke<number>('plugin:store|get_store')
-  return new Store(resourceId, path)
+export async function getStore(path: string): Promise<Store | undefined> {
+  const resourceId = await invoke<number | null>('plugin:store|get_store')
+  return resourceId ? new Store(resourceId, path) : undefined
 }
 
 /**

@@ -385,7 +385,14 @@ pub struct Store<R: Runtime> {
     store: Arc<Mutex<StoreInner<R>>>,
 }
 
-impl<R: Runtime> Resource for Store<R> {}
+impl<R: Runtime> Resource for Store<R> {
+    fn close(self: Arc<Self>) {
+        let store = self.store.lock().unwrap();
+        let collection = store.app.state::<StoreCollection>();
+        let mut stores = collection.stores.lock().unwrap();
+        stores.remove(&store.path);
+    }
+}
 
 impl<R: Runtime> Store<R> {
     pub fn with_store<T>(&self, f: impl FnOnce(&mut StoreInner<R>) -> T) -> T {

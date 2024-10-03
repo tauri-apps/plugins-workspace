@@ -12,11 +12,11 @@
 )]
 
 pub use error::{Error, Result};
-use log::warn;
 use serde::{Deserialize, Serialize};
 pub use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
+    marker::PhantomData,
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
     time::Duration,
@@ -188,15 +188,14 @@ impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     }
 }
 
-// #[derive(Default)]
 pub struct Builder<R: Runtime> {
-    stores: HashMap<PathBuf, Store<R>>,
+    phantom_data: PhantomData<R>,
 }
 
 impl<R: Runtime> Default for Builder<R> {
     fn default() -> Self {
         Self {
-            stores: Default::default(),
+            phantom_data: Default::default(),
         }
     }
 }
@@ -218,7 +217,7 @@ impl<R: Runtime> Builder<R> {
     ///     Ok(())
     ///   });
     /// ```
-    pub fn build(mut self) -> TauriPlugin<R> {
+    pub fn build(self) -> TauriPlugin<R> {
         plugin::Builder::new("store")
             .invoke_handler(tauri::generate_handler![
                 create_store,
@@ -237,19 +236,9 @@ impl<R: Runtime> Builder<R> {
                 save
             ])
             .setup(move |app_handle, _api| {
-                for (path, store) in self.stores.iter_mut() {
-                    // ignore loading errors, just use the default
-                    if let Err(err) = store.load() {
-                        warn!(
-                            "Failed to load store {path:?} from disk: {err}. Falling back to default values."
-                        );
-                    }
-                }
-
                 app_handle.manage(StoreCollection {
                     stores: Mutex::new(HashMap::new()),
                 });
-
                 Ok(())
             })
             .on_event(|app_handle, event| {
@@ -259,7 +248,7 @@ impl<R: Runtime> Builder<R> {
                     for (path, rid) in stores.iter() {
                         if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid) {
                             if let Err(err) = store.save() {
-                                eprintln!("failed to save store {path:?} with error {err:?}");
+                                log::error!("failed to save store {path:?} with error {err:?}");
                             }
                         }
                     }
