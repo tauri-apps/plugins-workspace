@@ -254,6 +254,23 @@ impl<R: Runtime> Builder<R> {
     }
 
     /// Register a serialize function to access it from the JavaScript side
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// fn pretty_json(
+    ///     cache: &std::collections::HashMap<String, serde_json::Value>,
+    /// ) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
+    ///     Ok(serde_json::to_vec_pretty(&cache)?)
+    /// }
+    ///
+    /// tauri::Builder::default()
+    ///     .plugin(
+    ///         tauri_plugin_store::Builder::default()
+    ///             .register_serialize_fn("pretty-json".to_owned(), pretty_json)
+    ///             .build(),
+    ///     )
+    /// ```
     pub fn register_serialize_fn(mut self, name: String, serialize_fn: SerializeFn) -> Self {
         self.serialize_fns.insert(name, serialize_fn);
         self

@@ -7,7 +7,7 @@
   let key;
   let value;
 
-  let store = new LazyStore("cache.json");
+  let store = new LazyStore("cache.json", { serializeFnName: "pretty-json" });
   let cache = {};
 
   async function refreshEntries() {
