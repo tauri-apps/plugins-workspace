@@ -23,6 +23,7 @@
       await store.set(key, value);
       const v = await store.get(key);
       cache[key] = v;
+      cache = cache;
     } catch (error) {
       onMessage(error);
     }
