@@ -18,7 +18,7 @@ pub use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex, Weak},
+    sync::{Arc, Mutex},
     time::Duration,
 };
 pub use store::{Store, StoreBuilder, StoreInner};
@@ -37,9 +37,8 @@ struct ChangePayload<'a> {
     value: &'a JsonValue,
 }
 
-pub struct StoreCollection<R: Runtime> {
-    /// This weak pointer is always pointing to a real reference since we will remove it on drop
-    stores: Mutex<HashMap<PathBuf, (Weak<Store<R>>, Option<ResourceId>)>>,
+pub struct StoreCollection {
+    stores: Mutex<HashMap<PathBuf, ResourceId>>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -67,32 +66,15 @@ async fn create_store<R: Runtime>(
             _ => {}
         }
     }
-    let store = builder.build()?;
-    let rid = app.resources_table().add_arc(store);
-    let collection = app.state::<StoreCollection<R>>();
-    let mut stores = collection.stores.lock().unwrap();
-    if let Some((_, resource_id)) = stores.get_mut(&path) {
-        resource_id.replace(rid);
-    }
+    let (_, rid) = builder.build_inner()?;
     Ok(rid)
 }
 
 #[tauri::command]
 async fn get_store<R: Runtime>(app: AppHandle<R>, path: PathBuf) -> Option<ResourceId> {
-    let collection = app.state::<StoreCollection<R>>();
-    let mut stores = collection.stores.lock().unwrap();
-    if let Some((store, resource_id)) = stores.get_mut(&path) {
-        let rid = if let Some(resource_id) = resource_id {
-            *resource_id
-        } else {
-            let rid = app.resources_table().add_arc(store.upgrade().unwrap());
-            resource_id.replace(rid);
-            rid
-        };
-        Some(rid)
-    } else {
-        None
-    }
+    let collection = app.state::<StoreCollection>();
+    let stores = collection.stores.lock().unwrap();
+    stores.get(&path).copied()
 }
 
 #[tauri::command]
@@ -185,7 +167,6 @@ async fn save<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
 pub trait StoreExt<R: Runtime> {
     fn create_store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>>;
     fn store_builder(&self, path: impl AsRef<Path>) -> StoreBuilder<R>;
-    fn share_store(&self, store: Arc<Store<R>>);
     fn get_store(&self, path: impl AsRef<Path>) -> Option<Arc<Store<R>>>;
 }
 
@@ -198,28 +179,12 @@ impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
         StoreBuilder::new(self.app_handle(), path)
     }
 
-    fn share_store(&self, store: Arc<Store<R>>) {
-        let collection = self.state::<StoreCollection<R>>();
-        let mut stores = collection.stores.lock().unwrap();
-        if let Some(path) = store.with_store(|inner_store| {
-            if stores.contains_key(&inner_store.path) {
-                None
-            } else {
-                Some(inner_store.path.clone())
-            }
-        }) {
-            let weak_store = Arc::downgrade(&store);
-            let rid = self.resources_table().add_arc(store);
-            stores.insert(path, (weak_store, Some(rid)));
-        }
-    }
-
     fn get_store(&self, path: impl AsRef<Path>) -> Option<Arc<Store<R>>> {
-        let collection = self.state::<StoreCollection<R>>();
+        let collection = self.state::<StoreCollection>();
         let stores = collection.stores.lock().unwrap();
         stores
             .get(path.as_ref())
-            .and_then(|(store, _)| store.upgrade())
+            .and_then(|rid| self.resources_table().get(*rid).ok())
     }
 }
 
@@ -281,7 +246,7 @@ impl<R: Runtime> Builder<R> {
                     }
                 }
 
-                app_handle.manage(StoreCollection::<R> {
+                app_handle.manage(StoreCollection {
                     stores: Mutex::new(HashMap::new()),
                 });
 
@@ -289,12 +254,13 @@ impl<R: Runtime> Builder<R> {
             })
             .on_event(|app_handle, event| {
                 if let RunEvent::Exit = event {
-                    let collection = app_handle.state::<StoreCollection<R>>();
+                    let collection = app_handle.state::<StoreCollection>();
                     let stores = collection.stores.lock().unwrap();
-                    for (path, (store, _)) in stores.iter() {
-                        let store = store.upgrade().unwrap();
-                        if let Err(err) = store.save() {
-                            eprintln!("failed to save store {path:?} with error {err:?}");
+                    for (path, rid) in stores.iter() {
+                        if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid) {
+                            if let Err(err) = store.save() {
+                                eprintln!("failed to save store {path:?} with error {err:?}");
+                            }
                         }
                     }
                 }
