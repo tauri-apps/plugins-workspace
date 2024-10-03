@@ -63,32 +63,6 @@ Denies the clear command without any pre-configured scope.
 <tr>
 <td>
 
-`store:allow-close`
-
-</td>
-<td>
-
-Enables the close command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`store:deny-close`
-
-</td>
-<td>
-
-Denies the close command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
 `store:allow-close-store`
 
 </td>
