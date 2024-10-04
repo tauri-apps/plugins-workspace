@@ -238,7 +238,7 @@ impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
 fn default_serialize(
     cache: &HashMap<String, JsonValue>,
 ) -> std::result::Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
-    Ok(serde_json::to_vec(&cache)?)
+    Ok(serde_json::to_vec_pretty(&cache)?)
 }
 
 fn default_deserialize(
@@ -277,16 +277,16 @@ impl<R: Runtime> Builder<R> {
     /// # Examples
     ///
     /// ```
-    /// fn pretty_json(
+    /// fn no_pretty_json(
     ///     cache: &std::collections::HashMap<String, serde_json::Value>,
     /// ) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
-    ///     Ok(serde_json::to_vec_pretty(&cache)?)
+    ///     Ok(serde_json::to_vec(&cache)?)
     /// }
     ///
     /// tauri::Builder::default()
     ///     .plugin(
     ///         tauri_plugin_store::Builder::default()
-    ///             .register_serialize_fn("pretty-json".to_owned(), pretty_json)
+    ///             .register_serialize_fn("no-pretty-json".to_owned(), no_pretty_json)
     ///             .build(),
     ///     )
     /// ```
@@ -302,6 +302,23 @@ impl<R: Runtime> Builder<R> {
     }
 
     /// Use this serialize function for stores by default
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// fn no_pretty_json(
+    ///     cache: &std::collections::HashMap<String, serde_json::Value>,
+    /// ) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
+    ///     Ok(serde_json::to_vec(&cache)?)
+    /// }
+    ///
+    /// tauri::Builder::default()
+    ///     .plugin(
+    ///         tauri_plugin_store::Builder::default()
+    ///             .default_serialize_fn(no_pretty_json)
+    ///             .build(),
+    ///     )
+    /// ```
     pub fn default_serialize_fn(mut self, serialize_fn: SerializeFn) -> Self {
         self.default_serialize = serialize_fn;
         self

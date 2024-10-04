@@ -7,13 +7,8 @@
   let key;
   let value;
 
-  let store;
+  let store = new LazyStore("cache.json");
   let cache = {};
-
-  function newStore() {
-    store = new LazyStore("cache.json", { serializeFnName: "pretty-json" });
-  }
-  newStore()
 
   async function refreshEntries() {
     try {
@@ -33,7 +28,11 @@
 
   async function write(key, value) {
     try {
-      await store.set(key, value);
+      if (value) {
+        await store.set(key, value);
+      } else {
+        await store.delete(key);
+      }
       const v = await store.get(key);
       cache[key] = v;
     } catch (error) {
@@ -60,7 +59,7 @@
   }
 
   function reopen() {
-    newStore()
+    store = new LazyStore("cache.json");
     onMessage("We made a new `LazyStore` instance, operations will now work");
   }
 </script>

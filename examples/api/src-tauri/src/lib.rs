@@ -37,11 +37,7 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_shell::init())
-        .plugin(
-            tauri_plugin_store::Builder::default()
-                .register_serialize_fn("pretty-json".to_owned(), pretty_json)
-                .build(),
-        )
+        .plugin(tauri_plugin_store::Builder::default().build())
         .setup(move |app| {
             #[cfg(desktop)]
             {
@@ -162,10 +158,4 @@ pub fn run() {
             }
         }
     })
-}
-
-fn pretty_json(
-    cache: &std::collections::HashMap<String, serde_json::Value>,
-) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
-    Ok(serde_json::to_vec_pretty(&cache)?)
 }
