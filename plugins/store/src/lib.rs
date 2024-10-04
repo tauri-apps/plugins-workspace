@@ -131,9 +131,11 @@ async fn get<R: Runtime>(
     app: AppHandle<R>,
     rid: ResourceId,
     key: String,
-) -> Result<Option<JsonValue>> {
+) -> Result<(Option<JsonValue>, bool)> {
     let store = app.resources_table().get::<Store<R>>(rid)?;
-    Ok(store.get(key))
+    let value = store.get(key);
+    let exists = value.is_some();
+    Ok((value, exists))
 }
 
 #[tauri::command]

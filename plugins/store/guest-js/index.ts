@@ -87,7 +87,7 @@ export class LazyStore implements IStore {
     return (await this.store).set(key, value)
   }
 
-  async get<T>(key: string): Promise<T | null> {
+  async get<T>(key: string): Promise<T | undefined> {
     return (await this.store).get<T>(key)
   }
 
@@ -203,11 +203,12 @@ export class Store extends Resource implements IStore {
     })
   }
 
-  async get<T>(key: string): Promise<T | null> {
-    return await invoke('plugin:store|get', {
+  async get<T>(key: string): Promise<T | undefined> {
+    const [value, exists] = await invoke<[T, boolean]>('plugin:store|get', {
       rid: this.rid,
       key
     })
+    return exists ? value : undefined
   }
 
   async has(key: string): Promise<boolean> {
@@ -294,12 +295,12 @@ interface IStore {
   set(key: string, value: unknown): Promise<void>
 
   /**
-   * Returns the value for the given `key` or `null` if the key does not exist.
+   * Returns the value for the given `key` or `undefined` if the key does not exist.
    *
    * @param key
    * @returns
    */
-  get<T>(key: string): Promise<T | null>
+  get<T>(key: string): Promise<T | undefined>
 
   /**
    * Returns `true` if the given `key` exists in the store.

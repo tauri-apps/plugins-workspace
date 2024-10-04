@@ -34,7 +34,12 @@
         await store.delete(key);
       }
       const v = await store.get(key);
-      cache[key] = v;
+      if (v === undefined) {
+        delete cache[key];
+        cache = cache;
+      } else {
+        cache[key] = v;
+      }
     } catch (error) {
       onMessage(error);
     }
