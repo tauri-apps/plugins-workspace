@@ -10,7 +10,8 @@ interface ChangePayload<T> {
   path: string
   resourceId?: number
   key: string
-  value: T | null
+  value: T
+  exists: boolean
 }
 
 /**
@@ -133,13 +134,13 @@ export class LazyStore implements IStore {
 
   async onKeyChange<T>(
     key: string,
-    cb: (value: T | null) => void
+    cb: (value: T | undefined) => void
   ): Promise<UnlistenFn> {
     return (await this.store).onKeyChange<T>(key, cb)
   }
 
   async onChange<T>(
-    cb: (key: string, value: T | null) => void
+    cb: (key: string, value: T | undefined) => void
   ): Promise<UnlistenFn> {
     return (await this.store).onChange<T>(cb)
   }
@@ -259,21 +260,24 @@ export class Store extends Resource implements IStore {
 
   async onKeyChange<T>(
     key: string,
-    cb: (value: T | null) => void
+    cb: (value: T | undefined) => void
   ): Promise<UnlistenFn> {
     return await listen<ChangePayload<T>>('store://change', (event) => {
       if (event.payload.resourceId === this.rid && event.payload.key === key) {
-        cb(event.payload.value)
+        cb(event.payload.exists ? event.payload.value : undefined)
       }
     })
   }
 
   async onChange<T>(
-    cb: (key: string, value: T | null) => void
+    cb: (key: string, value: T | undefined) => void
   ): Promise<UnlistenFn> {
     return await listen<ChangePayload<T>>('store://change', (event) => {
       if (event.payload.resourceId === this.rid) {
-        cb(event.payload.key, event.payload.value)
+        cb(
+          event.payload.key,
+          event.payload.exists ? event.payload.value : undefined
+        )
       }
     })
   }
@@ -388,7 +392,7 @@ interface IStore {
    */
   onKeyChange<T>(
     key: string,
-    cb: (value: T | null) => void
+    cb: (value: T | undefined) => void
   ): Promise<UnlistenFn>
 
   /**
@@ -398,7 +402,9 @@ interface IStore {
    *
    * @since 2.0.0
    */
-  onChange<T>(cb: (key: string, value: T | null) => void): Promise<UnlistenFn>
+  onChange<T>(
+    cb: (key: string, value: T | undefined) => void
+  ): Promise<UnlistenFn>
 
   /**
    * Close the store and cleans up this resource from memory.

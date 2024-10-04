@@ -296,7 +296,7 @@ impl<R: Runtime> StoreInner<R> {
         let key = key.into();
         let value = value.into();
         self.cache.insert(key.clone(), value.clone());
-        let _ = self.emit_change_event(&key, &value);
+        let _ = self.emit_change_event(&key, Some(&value));
     }
 
     /// Returns a reference to the value corresponding to the key.
@@ -313,7 +313,7 @@ impl<R: Runtime> StoreInner<R> {
     pub fn delete(&mut self, key: impl AsRef<str>) -> bool {
         let flag = self.cache.remove(key.as_ref()).is_some();
         if flag {
-            let _ = self.emit_change_event(key.as_ref(), &JsonValue::Null);
+            let _ = self.emit_change_event(key.as_ref(), None);
         }
         flag
     }
@@ -325,7 +325,7 @@ impl<R: Runtime> StoreInner<R> {
         let keys: Vec<String> = self.cache.keys().cloned().collect();
         self.cache.clear();
         for key in &keys {
-            let _ = self.emit_change_event(key, &JsonValue::Null);
+            let _ = self.emit_change_event(key, None);
         }
     }
 
@@ -336,13 +336,12 @@ impl<R: Runtime> StoreInner<R> {
         if let Some(defaults) = &self.defaults {
             for (key, value) in &self.cache {
                 if defaults.get(key) != Some(value) {
-                    let _ =
-                        self.emit_change_event(key, defaults.get(key).unwrap_or(&JsonValue::Null));
+                    let _ = self.emit_change_event(key, defaults.get(key));
                 }
             }
             for (key, value) in defaults {
                 if !self.cache.contains_key(key) {
-                    let _ = self.emit_change_event(key, value);
+                    let _ = self.emit_change_event(key, Some(value));
                 }
             }
             self.cache.clone_from(defaults);
@@ -376,9 +375,10 @@ impl<R: Runtime> StoreInner<R> {
         self.cache.is_empty()
     }
 
-    fn emit_change_event(&self, key: &str, value: &JsonValue) -> crate::Result<()> {
+    fn emit_change_event(&self, key: &str, value: Option<&JsonValue>) -> crate::Result<()> {
         let state = self.app.state::<StoreState>();
         let stores = state.stores.lock().unwrap();
+        let exists = value.is_some();
         self.app.emit(
             "store://change",
             ChangePayload {
@@ -386,6 +386,7 @@ impl<R: Runtime> StoreInner<R> {
                 resource_id: stores.get(&self.path).copied(),
                 key,
                 value,
+                exists,
             },
         )?;
         Ok(())

@@ -37,7 +37,8 @@ struct ChangePayload<'a> {
     path: &'a Path,
     resource_id: Option<u32>,
     key: &'a str,
-    value: &'a JsonValue,
+    value: Option<&'a JsonValue>,
+    exists: bool,
 }
 
 #[derive(Debug)]
