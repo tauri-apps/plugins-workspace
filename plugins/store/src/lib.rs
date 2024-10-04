@@ -40,10 +40,13 @@ struct ChangePayload<'a> {
     value: &'a JsonValue,
 }
 
-pub struct StoreCollection {
+#[derive(Debug)]
+pub struct StoreState {
     stores: Mutex<HashMap<PathBuf, ResourceId>>,
     serialize_fns: HashMap<String, SerializeFn>,
     deserialize_fns: HashMap<String, DeserializeFn>,
+    default_serialize: SerializeFn,
+    default_deserialize: DeserializeFn,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -56,7 +59,7 @@ enum AutoSave {
 #[tauri::command]
 async fn create_store<R: Runtime>(
     app: AppHandle<R>,
-    store_collection: State<'_, StoreCollection>,
+    store_state: State<'_, StoreState>,
     path: PathBuf,
     auto_save: Option<AutoSave>,
     serialize_fn_name: Option<String>,
@@ -77,7 +80,7 @@ async fn create_store<R: Runtime>(
     }
 
     if let Some(serialize_fn_name) = serialize_fn_name {
-        let serialize_fn = store_collection
+        let serialize_fn = store_state
             .serialize_fns
             .get(&serialize_fn_name)
             .ok_or_else(|| crate::Error::SerializeFunctionNotFound(serialize_fn_name))?;
@@ -85,7 +88,7 @@ async fn create_store<R: Runtime>(
     }
 
     if let Some(deserialize_fn_name) = deserialize_fn_name {
-        let deserialize_fn = store_collection
+        let deserialize_fn = store_state
             .deserialize_fns
             .get(&deserialize_fn_name)
             .ok_or_else(|| crate::Error::DeserializeFunctionNotFound(deserialize_fn_name))?;
@@ -99,10 +102,10 @@ async fn create_store<R: Runtime>(
 #[tauri::command]
 async fn get_store<R: Runtime>(
     app: AppHandle<R>,
-    store_collection: State<'_, StoreCollection>,
+    store_state: State<'_, StoreState>,
     path: PathBuf,
 ) -> Result<Option<ResourceId>> {
-    let stores = store_collection.stores.lock().unwrap();
+    let stores = store_state.stores.lock().unwrap();
     Ok(stores.get(&resolve_store_path(app, path)).copied())
 }
 
@@ -224,7 +227,7 @@ impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     }
 
     fn get_store(&self, path: impl AsRef<Path>) -> Option<Arc<Store<R>>> {
-        let collection = self.state::<StoreCollection>();
+        let collection = self.state::<StoreState>();
         let stores = collection.stores.lock().unwrap();
         stores
             .get(path.as_ref())
@@ -232,10 +235,24 @@ impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     }
 }
 
+fn default_serialize(
+    cache: &HashMap<String, JsonValue>,
+) -> std::result::Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
+    Ok(serde_json::to_vec(&cache)?)
+}
+
+fn default_deserialize(
+    bytes: &[u8],
+) -> std::result::Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>> {
+    serde_json::from_slice(bytes).map_err(Into::into)
+}
+
 pub struct Builder<R: Runtime> {
     phantom_data: PhantomData<R>,
     serialize_fns: HashMap<String, SerializeFn>,
     deserialize_fns: HashMap<String, DeserializeFn>,
+    default_serialize: SerializeFn,
+    default_deserialize: DeserializeFn,
 }
 
 impl<R: Runtime> Default for Builder<R> {
@@ -244,6 +261,8 @@ impl<R: Runtime> Default for Builder<R> {
             phantom_data: Default::default(),
             serialize_fns: Default::default(),
             deserialize_fns: Default::default(),
+            default_serialize,
+            default_deserialize,
         }
     }
 }
@@ -282,6 +301,18 @@ impl<R: Runtime> Builder<R> {
         self
     }
 
+    /// Use this serialize function for stores by default
+    pub fn default_serialize_fn(mut self, serialize_fn: SerializeFn) -> Self {
+        self.default_serialize = serialize_fn;
+        self
+    }
+
+    /// Use this deserialize function for stores by default
+    pub fn default_deserialize_fn(mut self, deserialize_fn: DeserializeFn) -> Self {
+        self.default_deserialize = deserialize_fn;
+        self
+    }
+
     /// Builds the plugin.
     ///
     /// # Examples
@@ -314,16 +345,18 @@ impl<R: Runtime> Builder<R> {
                 save,
             ])
             .setup(move |app_handle, _api| {
-                app_handle.manage(StoreCollection {
+                app_handle.manage(StoreState {
                     stores: Mutex::new(HashMap::new()),
                     serialize_fns: self.serialize_fns,
                     deserialize_fns: self.deserialize_fns,
+                    default_serialize: self.default_serialize,
+                    default_deserialize: self.default_deserialize,
                 });
                 Ok(())
             })
             .on_event(|app_handle, event| {
                 if let RunEvent::Exit = event {
-                    let collection = app_handle.state::<StoreCollection>();
+                    let collection = app_handle.state::<StoreState>();
                     let stores = collection.stores.lock().unwrap();
                     for (path, rid) in stores.iter() {
                         if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid) {

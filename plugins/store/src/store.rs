@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use crate::{ChangePayload, StoreCollection};
+use crate::{ChangePayload, StoreState};
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
@@ -24,18 +24,6 @@ pub type SerializeFn =
 pub type DeserializeFn =
     fn(&[u8]) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>>;
 
-fn default_serialize(
-    cache: &HashMap<String, JsonValue>,
-) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
-    Ok(serde_json::to_vec(&cache)?)
-}
-
-fn default_deserialize(
-    bytes: &[u8],
-) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>> {
-    serde_json::from_slice(bytes).map_err(Into::into)
-}
-
 pub(crate) fn resolve_store_path<R: Runtime>(app: AppHandle<R>, path: impl AsRef<Path>) -> PathBuf {
     app.path()
         .resolve(path, BaseDirectory::AppData)
@@ -50,6 +38,7 @@ pub struct StoreBuilder<R: Runtime> {
     serialize_fn: SerializeFn,
     deserialize_fn: DeserializeFn,
     auto_save: Option<Duration>,
+    load_on_build: bool,
 }
 
 impl<R: Runtime> StoreBuilder<R> {
@@ -67,14 +56,18 @@ impl<R: Runtime> StoreBuilder<R> {
     pub fn new<M: Manager<R>, P: AsRef<Path>>(manager: &M, path: P) -> Self {
         let app = manager.app_handle().clone();
         let path = resolve_store_path(app.clone(), path);
+        let state = app.state::<StoreState>();
+        let serialize_fn = state.default_serialize;
+        let deserialize_fn = state.default_deserialize;
         Self {
             app,
             // Since Store.path is only exposed to the user in emit calls we may as well simplify it here already.
             path: dunce::simplified(&path).to_path_buf(),
             defaults: None,
-            serialize_fn: default_serialize,
-            deserialize_fn: default_deserialize,
+            serialize_fn,
+            deserialize_fn,
             auto_save: Some(Duration::from_millis(100)),
+            load_on_build: true,
         }
     }
 
@@ -181,9 +174,15 @@ impl<R: Runtime> StoreBuilder<R> {
         self
     }
 
+    /// Skip loading the store on build
+    pub fn skip_initial_load(mut self) -> Self {
+        self.load_on_build = false;
+        self
+    }
+
     pub(crate) fn build_inner(mut self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
-        let collection = self.app.state::<StoreCollection>();
-        let mut stores = collection.stores.lock().unwrap();
+        let state = self.app.state::<StoreState>();
+        let mut stores = state.stores.lock().unwrap();
 
         if stores.contains_key(&self.path) {
             return Err(crate::Error::AlreadyExists(self.path));
@@ -196,7 +195,9 @@ impl<R: Runtime> StoreBuilder<R> {
             self.serialize_fn,
             self.deserialize_fn,
         );
-        let _ = store_inner.load();
+        if self.load_on_build {
+            let _ = store_inner.load();
+        }
 
         let store = Store {
             auto_save: self.auto_save,
@@ -376,8 +377,8 @@ impl<R: Runtime> StoreInner<R> {
     }
 
     fn emit_change_event(&self, key: &str, value: &JsonValue) -> crate::Result<()> {
-        let collection = self.app.state::<StoreCollection>();
-        let stores = collection.stores.lock().unwrap();
+        let state = self.app.state::<StoreState>();
+        let stores = state.stores.lock().unwrap();
         self.app.emit(
             "store://change",
             ChangePayload {
@@ -409,8 +410,8 @@ pub struct Store<R: Runtime> {
 impl<R: Runtime> Resource for Store<R> {
     fn close(self: Arc<Self>) {
         let store = self.store.lock().unwrap();
-        let collection = store.app.state::<StoreCollection>();
-        let mut stores = collection.stores.lock().unwrap();
+        let state = store.app.state::<StoreState>();
+        let mut stores = state.stores.lock().unwrap();
         stores.remove(&store.path);
     }
 }
@@ -508,8 +509,8 @@ impl<R: Runtime> Store<R> {
     pub fn close_store(self) {
         let store = self.store.lock().unwrap();
         let app = store.app.clone();
-        let collection = app.state::<StoreCollection>();
-        let stores = collection.stores.lock().unwrap();
+        let state = app.state::<StoreState>();
+        let stores = state.stores.lock().unwrap();
         if let Some(rid) = stores.get(&store.path).copied() {
             drop(store);
             drop(stores);
