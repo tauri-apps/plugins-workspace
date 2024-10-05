@@ -46,6 +46,19 @@ export async function createStore(
 }
 
 /**
+ * Create a new Store or get the existing store with the path
+ *
+ * @param path: Path to save the store in `app_data_dir`
+ * @param options: Store configuration options
+ */
+export async function createOrExistingStore(
+  path: string,
+  options?: StoreOptions
+): Promise<Store> {
+  return await Store.createOrExistingStore(path, options)
+}
+
+/**
  * @param path: Path of the store in the rust side
  */
 export async function getStore(path: string): Promise<Store | undefined> {
@@ -60,9 +73,7 @@ export class LazyStore implements IStore {
 
   private get store(): Promise<Store> {
     if (!this._store) {
-      this._store = getStore(this.path).then(
-        async (store) => store || (await createStore(this.path, this.options))
-      )
+      this._store = createOrExistingStore(this.path, this.options)
     }
     return this._store
   }
@@ -174,6 +185,26 @@ export class Store extends Resource implements IStore {
     options?: StoreOptions
   ): Promise<Store> {
     const rid = await invoke<number>('plugin:store|create_store', {
+      path,
+      ...options
+    })
+    return new Store(
+      rid
+      // path
+    )
+  }
+
+  /**
+   * Create a new Store or get the existing store with the path
+   *
+   * @param path: Path to save the store in `app_data_dir`
+   * @param options: Store configuration options
+   */
+  static async createOrExistingStore(
+    path: string,
+    options?: StoreOptions
+  ): Promise<Store> {
+    const rid = await invoke<number>('plugin:store|create_or_existing_store', {
       path,
       ...options
     })

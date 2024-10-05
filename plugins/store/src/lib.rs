@@ -57,17 +57,15 @@ enum AutoSave {
     Bool(bool),
 }
 
-#[tauri::command]
-async fn create_store<R: Runtime>(
+fn builder<R: Runtime>(
     app: AppHandle<R>,
     store_state: State<'_, StoreState>,
     path: PathBuf,
     auto_save: Option<AutoSave>,
     serialize_fn_name: Option<String>,
     deserialize_fn_name: Option<String>,
-) -> Result<ResourceId> {
-    let mut builder = app.store_builder(path.clone());
-
+) -> Result<StoreBuilder<R>> {
+    let mut builder = app.store_builder(path);
     if let Some(auto_save) = auto_save {
         match auto_save {
             AutoSave::DebounceDuration(duration) => {
@@ -95,8 +93,48 @@ async fn create_store<R: Runtime>(
             .ok_or_else(|| crate::Error::DeserializeFunctionNotFound(deserialize_fn_name))?;
         builder = builder.deserialize(*deserialize_fn);
     }
+    Ok(builder)
+}
 
+#[tauri::command]
+async fn create_store<R: Runtime>(
+    app: AppHandle<R>,
+    store_state: State<'_, StoreState>,
+    path: PathBuf,
+    auto_save: Option<AutoSave>,
+    serialize_fn_name: Option<String>,
+    deserialize_fn_name: Option<String>,
+) -> Result<ResourceId> {
+    let builder = builder(
+        app,
+        store_state,
+        path,
+        auto_save,
+        serialize_fn_name,
+        deserialize_fn_name,
+    )?;
     let (_, rid) = builder.build_inner()?;
+    Ok(rid)
+}
+
+#[tauri::command]
+async fn create_or_existing_store<R: Runtime>(
+    app: AppHandle<R>,
+    store_state: State<'_, StoreState>,
+    path: PathBuf,
+    auto_save: Option<AutoSave>,
+    serialize_fn_name: Option<String>,
+    deserialize_fn_name: Option<String>,
+) -> Result<ResourceId> {
+    let builder = builder(
+        app,
+        store_state,
+        path,
+        auto_save,
+        serialize_fn_name,
+        deserialize_fn_name,
+    )?;
+    let (_, rid) = builder.build_or_existing_inner();
     Ok(rid)
 }
 
@@ -107,7 +145,7 @@ async fn get_store<R: Runtime>(
     path: PathBuf,
 ) -> Result<Option<ResourceId>> {
     let stores = store_state.stores.lock().unwrap();
-    Ok(stores.get(&resolve_store_path(app, path)).copied())
+    Ok(stores.get(&resolve_store_path(&app, path)).copied())
 }
 
 #[tauri::command]
@@ -217,8 +255,7 @@ pub trait StoreExt<R: Runtime> {
 
 impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     fn store(&self, path: impl AsRef<Path>) -> Arc<Store<R>> {
-        self.get_store(&path)
-            .unwrap_or_else(|| self.create_store(&path).unwrap())
+        StoreBuilder::new(self.app_handle(), path).build_or_existing()
     }
 
     fn create_store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
@@ -233,7 +270,7 @@ impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
         let collection = self.state::<StoreState>();
         let stores = collection.stores.lock().unwrap();
         stores
-            .get(path.as_ref())
+            .get(&resolve_store_path(self.app_handle(), path.as_ref()))
             .and_then(|rid| self.resources_table().get(*rid).ok())
     }
 }
@@ -351,6 +388,7 @@ impl<R: Runtime> Builder<R> {
                 create_store,
                 get_store,
                 close_store,
+                create_or_existing_store,
                 set,
                 get,
                 has,

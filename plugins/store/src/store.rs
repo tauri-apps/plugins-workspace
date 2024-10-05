@@ -24,10 +24,16 @@ pub type SerializeFn =
 pub type DeserializeFn =
     fn(&[u8]) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>>;
 
-pub(crate) fn resolve_store_path<R: Runtime>(app: AppHandle<R>, path: impl AsRef<Path>) -> PathBuf {
-    app.path()
-        .resolve(path, BaseDirectory::AppData)
-        .expect("failed to resolve app dir")
+pub(crate) fn resolve_store_path<R: Runtime>(
+    app: &AppHandle<R>,
+    path: impl AsRef<Path>,
+) -> PathBuf {
+    dunce::simplified(
+        &app.path()
+            .resolve(path, BaseDirectory::AppData)
+            .expect("failed to resolve app dir"),
+    )
+    .to_path_buf()
 }
 
 /// Builds a [`Store`]
@@ -55,14 +61,13 @@ impl<R: Runtime> StoreBuilder<R> {
     /// ```
     pub fn new<M: Manager<R>, P: AsRef<Path>>(manager: &M, path: P) -> Self {
         let app = manager.app_handle().clone();
-        let path = resolve_store_path(app.clone(), path);
+        let path = resolve_store_path(&app, path);
         let state = app.state::<StoreState>();
         let serialize_fn = state.default_serialize;
         let deserialize_fn = state.default_deserialize;
         Self {
             app,
-            // Since Store.path is only exposed to the user in emit calls we may as well simplify it here already.
-            path: dunce::simplified(&path).to_path_buf(),
+            path,
             defaults: None,
             serialize_fn,
             deserialize_fn,
@@ -212,7 +217,38 @@ impl<R: Runtime> StoreBuilder<R> {
         Ok((store, rid))
     }
 
-    /// Builds the [`Store`].
+    pub(crate) fn build_or_existing_inner(mut self) -> (Arc<Store<R>>, ResourceId) {
+        let state = self.app.state::<StoreState>();
+        let mut stores = state.stores.lock().unwrap();
+
+        if let Some(rid) = stores.get(&self.path) {
+            (self.app.resources_table().get(*rid).unwrap(), *rid)
+        } else {
+            let mut store_inner = StoreInner::new(
+                self.app.clone(),
+                self.path.clone(),
+                self.defaults.take(),
+                self.serialize_fn,
+                self.deserialize_fn,
+            );
+            if self.load_on_build {
+                let _ = store_inner.load();
+            }
+
+            let store = Store {
+                auto_save: self.auto_save,
+                auto_save_debounce_sender: Arc::new(Mutex::new(None)),
+                store: Arc::new(Mutex::new(store_inner)),
+            };
+
+            let store = Arc::new(store);
+            let rid = self.app.resources_table().add_arc(store.clone());
+            stores.insert(self.path, rid);
+            (store, rid)
+        }
+    }
+
+    /// Builds the [`Store`], also see [`build_or_existing`](Self::build_or_existing).
     ///
     /// This loads the store from disk and put the store in the app's resource table,
     /// to remove it from the resource table, call [`Store::close_store`]
@@ -234,6 +270,22 @@ impl<R: Runtime> StoreBuilder<R> {
     pub fn build(self) -> crate::Result<Arc<Store<R>>> {
         let (store, _) = self.build_inner()?;
         Ok(store)
+    }
+
+    /// Get the existing store with the same path or builds a new [`Store`], also see [`build`](Self::build).
+    ///
+    /// # Examples
+    /// ```
+    /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
+    ///   .setup(|app| {
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").build_or_existing();
+    ///     Ok(())
+    ///   });
+    /// ```
+    pub fn build_or_existing(self) -> Arc<Store<R>> {
+        let (store, _) = self.build_or_existing_inner();
+        store
     }
 }
 

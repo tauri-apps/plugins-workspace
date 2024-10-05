@@ -315,6 +315,16 @@
           "const": "deny-close-store"
         },
         {
+          "description": "Enables the create_or_existing_store command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-create-or-existing-store"
+        },
+        {
+          "description": "Denies the create_or_existing_store command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-create-or-existing-store"
+        },
+        {
           "description": "Enables the create_store command without any pre-configured scope.",
           "type": "string",
           "const": "allow-create-store"

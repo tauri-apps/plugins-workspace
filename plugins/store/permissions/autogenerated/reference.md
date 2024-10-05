@@ -89,6 +89,32 @@ Denies the close_store command without any pre-configured scope.
 <tr>
 <td>
 
+`store:allow-create-or-existing-store`
+
+</td>
+<td>
+
+Enables the create_or_existing_store command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-create-or-existing-store`
+
+</td>
+<td>
+
+Denies the create_or_existing_store command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `store:allow-create-store`
 
 </td>
