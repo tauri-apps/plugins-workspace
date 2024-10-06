@@ -190,7 +190,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
 
       val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
       intent.addCategory(Intent.CATEGORY_OPENABLE)
-      intent.setType("text/plain")
+      intent.setType("*/*")
       intent.putExtra(Intent.EXTRA_TITLE, args.fileName ?: "")
       startActivityForResult(invoke, intent, "saveFileDialogResult")
     } catch (ex: Exception) {
