@@ -10,6 +10,7 @@ All operations are enabled by default.
 
 
 - `allow-create-store`
+- `allow-create-or-existing-store`
 - `allow-get-store`
 - `allow-close-store`
 - `allow-clear`
