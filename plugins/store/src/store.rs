@@ -344,7 +344,7 @@ impl<R: Runtime> StoreInner<R> {
     }
 
     /// Inserts a key-value pair into the store.
-    pub fn insert(&mut self, key: impl Into<String>, value: impl Into<JsonValue>) {
+    pub fn set(&mut self, key: impl Into<String>, value: impl Into<JsonValue>) {
         let key = key.into();
         let value = value.into();
         self.cache.insert(key.clone(), value.clone());
@@ -479,7 +479,7 @@ impl<R: Runtime> Store<R> {
 
     /// Inserts a key-value pair into the store.
     pub fn set(&self, key: impl Into<String>, value: impl Into<JsonValue>) {
-        self.store.lock().unwrap().insert(key.into(), value.into());
+        self.store.lock().unwrap().set(key.into(), value.into());
         let _ = self.trigger_auto_save();
     }
 
