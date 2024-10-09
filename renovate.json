@@ -30,13 +30,6 @@
       "matchBaseBranches": ["v1"],
       "matchUpdateTypes": ["lockFileMaintenance"],
       "enabled": false
-    },
-    {
-      "description": "Prevent Renovate from replacing 2.0.0-beta.10 with 2.0.0-beta - REMOVE ONCE TAURI IS STABLE",
-      "matchManagers": ["cargo"],
-      "matchPackagePatterns": ["^tauri"],
-      "matchCurrentValue": "2.*",
-      "rangeStrategy": "bump"
     }
   ],
   "postUpdateOptions": ["pnpmDedupe"]
