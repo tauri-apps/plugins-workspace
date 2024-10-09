@@ -268,6 +268,8 @@ pub async fn fetch<R: Runtime>(
                     request = request.body(data);
                 }
 
+                request = request.headers(headers);
+
                 let fut = async move { request.send().await.map_err(Into::into) };
                 let mut resources_table = webview.resources_table();
                 let rid = resources_table.add_request(Box::pin(fut));
