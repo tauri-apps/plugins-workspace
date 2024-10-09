@@ -112,6 +112,7 @@ impl From<MessageDialogButtons> for rfd::MessageButtons {
         match value {
             MessageDialogButtons::Ok => Self::Ok,
             MessageDialogButtons::OkCancel => Self::OkCancel,
+            MessageDialogButtons::YesNo => Self::YesNo,
             MessageDialogButtons::OkCustom(ok) => Self::OkCustom(ok),
             MessageDialogButtons::OkCancelCustom(ok, cancel) => Self::OkCancelCustom(ok, cancel),
         }
