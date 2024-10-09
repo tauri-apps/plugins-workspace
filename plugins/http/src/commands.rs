@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{collections::HashMap, future::Future, pin::Pin, sync::Arc, time::Duration};
+use std::{future::Future, pin::Pin, str::FromStr, sync::Arc, time::Duration};
 
-use http::{header, HeaderName, Method, StatusCode};
+use http::{header, HeaderMap, HeaderName, HeaderValue, Method, StatusCode};
 use reqwest::{redirect::Policy, NoProxy};
 use serde::{Deserialize, Serialize};
 use tauri::{
@@ -176,7 +176,7 @@ pub async fn fetch<R: Runtime>(
     let ClientConfig {
         method,
         url,
-        headers,
+        headers: headers_raw,
         data,
         connect_timeout,
         max_redirections,
@@ -185,7 +185,17 @@ pub async fn fetch<R: Runtime>(
 
     let scheme = url.scheme();
     let method = Method::from_bytes(method.as_bytes())?;
-    let headers: HashMap<String, String> = HashMap::from_iter(headers);
+
+    let mut headers = HeaderMap::new();
+    for (h, v) in headers_raw {
+        let name = HeaderName::from_str(&h)?;
+        #[cfg(not(feature = "unsafe-headers"))]
+        if is_unsafe_header(&name) {
+            continue;
+        }
+
+        headers.append(name, HeaderValue::from_str(&v)?);
+    }
 
     match scheme {
         "http" | "https" => {
@@ -228,44 +238,37 @@ pub async fn fetch<R: Runtime>(
 
                 let mut request = builder.build()?.request(method.clone(), url);
 
-                for (name, value) in &headers {
-                    let name = HeaderName::from_bytes(name.as_bytes())?;
-                    #[cfg(not(feature = "unsafe-headers"))]
-                    if is_unsafe_header(&name) {
-                        continue;
-                    }
-
-                    request = request.header(name, value);
-                }
-
                 // POST and PUT requests should always have a 0 length content-length,
                 // if there is no body. https://fetch.spec.whatwg.org/#http-network-or-cache-fetch
                 if data.is_none() && matches!(method, Method::POST | Method::PUT) {
-                    request = request.header(header::CONTENT_LENGTH, 0);
+                    headers.append(header::CONTENT_LENGTH, HeaderValue::from_str("0")?);
                 }
 
-                if headers.contains_key(header::RANGE.as_str()) {
+                if headers.contains_key(header::RANGE) {
                     // https://fetch.spec.whatwg.org/#http-network-or-cache-fetch step 18
                     // If httpRequest’s header list contains `Range`, then append (`Accept-Encoding`, `identity`)
-                    request = request.header(header::ACCEPT_ENCODING, "identity");
+                    headers.append(header::ACCEPT_ENCODING, HeaderValue::from_str("identity")?);
                 }
 
-                if !headers.contains_key(header::USER_AGENT.as_str()) {
-                    request = request.header(header::USER_AGENT, HTTP_USER_AGENT);
+                if !headers.contains_key(header::USER_AGENT) {
+                    headers.append(header::USER_AGENT, HeaderValue::from_str(HTTP_USER_AGENT)?);
                 }
 
-                if cfg!(feature = "unsafe-headers")
-                    && !headers.contains_key(header::ORIGIN.as_str())
-                {
+                // ensure we have an Origin header set
+                if cfg!(not(feature = "unsafe-headers")) || !headers.contains_key(header::ORIGIN) {
                     if let Ok(url) = webview.url() {
-                        request =
-                            request.header(header::ORIGIN, url.origin().ascii_serialization());
+                        headers.append(
+                            header::ORIGIN,
+                            HeaderValue::from_str(&url.origin().ascii_serialization())?,
+                        );
                     }
                 }
 
                 if let Some(data) = data {
                     request = request.body(data);
                 }
+
+                request = request.headers(headers);
 
                 let fut = async move { request.send().await.map_err(Into::into) };
                 let mut resources_table = webview.resources_table();
