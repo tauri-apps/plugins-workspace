@@ -254,9 +254,8 @@ pub async fn fetch<R: Runtime>(
                     headers.append(header::USER_AGENT, HeaderValue::from_str(HTTP_USER_AGENT)?);
                 }
 
-                if cfg!(not(feature = "unsafe-headers"))
-                    || (cfg!(feature = "unsafe-headers") && !headers.contains_key(header::ORIGIN))
-                {
+                // ensure we have an Origin header set
+                if cfg!(not(feature = "unsafe-headers")) || !headers.contains_key(header::ORIGIN) {
                     if let Ok(url) = webview.url() {
                         headers.append(
                             header::ORIGIN,
