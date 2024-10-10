@@ -82,6 +82,24 @@ if (update?.available) {
 }
 ```
 
+### Config
+First, you need to prepare a distribution key pair, you can follow the [V1 guide](https://tauri.app/zh-cn/v1/guides/distribution/updater/) at this time.  
+Then, set `TAURI_SIGNING_PRIVATE_KEY` to your private key file , if the private key file have a password,set `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` to your private key file password.(The environment variables are different than v1).  
+Next, change your tauri.conf.json file like below. 
+```json
+{
+//"productName": "WindKnight",
+"plugins": {
+    "updater": {
+      "active": true,
+      "endpoints": "<your update server or json file url>",
+      "dialog": true,
+      "pubkey": "<your pub key>"
+    }
+  },
+}
+```
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
