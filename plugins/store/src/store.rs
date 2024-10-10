@@ -567,7 +567,7 @@ impl<R: Runtime> Store<R> {
         if let Some(rid) = stores.get(&store.path).copied() {
             drop(store);
             drop(stores);
-            let _ = app.resources_table().take::<Store<R>>(rid);
+            let _ = app.resources_table().close(rid);
         }
     }
 
