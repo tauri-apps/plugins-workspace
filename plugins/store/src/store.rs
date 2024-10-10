@@ -27,13 +27,8 @@ pub type DeserializeFn =
 pub(crate) fn resolve_store_path<R: Runtime>(
     app: &AppHandle<R>,
     path: impl AsRef<Path>,
-) -> PathBuf {
-    dunce::simplified(
-        &app.path()
-            .resolve(path, BaseDirectory::AppData)
-            .expect("failed to resolve app dir"),
-    )
-    .to_path_buf()
+) -> crate::Result<PathBuf> {
+    Ok(dunce::simplified(&app.path().resolve(path, BaseDirectory::AppData)?).to_path_buf())
 }
 
 /// Builds a [`Store`]
@@ -61,13 +56,12 @@ impl<R: Runtime> StoreBuilder<R> {
     /// ```
     pub fn new<M: Manager<R>, P: AsRef<Path>>(manager: &M, path: P) -> Self {
         let app = manager.app_handle().clone();
-        let path = resolve_store_path(&app, path);
         let state = app.state::<StoreState>();
         let serialize_fn = state.default_serialize;
         let deserialize_fn = state.default_deserialize;
         Self {
             app,
-            path,
+            path: path.as_ref().to_path_buf(),
             defaults: None,
             serialize_fn,
             deserialize_fn,
@@ -217,35 +211,15 @@ impl<R: Runtime> StoreBuilder<R> {
         Ok((store, rid))
     }
 
-    pub(crate) fn build_or_existing_inner(mut self) -> (Arc<Store<R>>, ResourceId) {
-        let state = self.app.state::<StoreState>();
-        let mut stores = state.stores.lock().unwrap();
-
-        if let Some(rid) = stores.get(&self.path) {
-            (self.app.resources_table().get(*rid).unwrap(), *rid)
-        } else {
-            let mut store_inner = StoreInner::new(
-                self.app.clone(),
-                self.path.clone(),
-                self.defaults.take(),
-                self.serialize_fn,
-                self.deserialize_fn,
-            );
-            if self.load_on_build {
-                let _ = store_inner.load();
+    pub(crate) fn build_or_existing_inner(self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
+        {
+            let state = self.app.state::<StoreState>();
+            let stores = state.stores.lock().unwrap();
+            if let Some(rid) = stores.get(&self.path) {
+                return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
             }
-
-            let store = Store {
-                auto_save: self.auto_save,
-                auto_save_debounce_sender: Arc::new(Mutex::new(None)),
-                store: Arc::new(Mutex::new(store_inner)),
-            };
-
-            let store = Arc::new(store);
-            let rid = self.app.resources_table().add_arc(store.clone());
-            stores.insert(self.path, rid);
-            (store, rid)
         }
+        self.build_inner()
     }
 
     /// Builds the [`Store`], also see [`build_or_existing`](Self::build_or_existing).
@@ -283,9 +257,9 @@ impl<R: Runtime> StoreBuilder<R> {
     ///     Ok(())
     ///   });
     /// ```
-    pub fn build_or_existing(self) -> Arc<Store<R>> {
-        let (store, _) = self.build_or_existing_inner();
-        store
+    pub fn build_or_existing(self) -> crate::Result<Arc<Store<R>>> {
+        let (store, _) = self.build_or_existing_inner()?;
+        Ok(store)
     }
 }
 

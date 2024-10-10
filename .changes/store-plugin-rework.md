@@ -6,7 +6,7 @@
 
 - Renamed `StoreCollection` to `StoreState`
 - `StoreBuilder::build` now returns a `Result`
-- `StoreExt::store` now returns `Arc<Store>` instead of `Store`
+- `StoreExt::store` now returns `Result<Arc<Store>>`
 
 Other Changes:
 

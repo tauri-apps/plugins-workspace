@@ -134,7 +134,7 @@ async fn create_or_existing_store<R: Runtime>(
         serialize_fn_name,
         deserialize_fn_name,
     )?;
-    let (_, rid) = builder.build_or_existing_inner();
+    let (_, rid) = builder.build_or_existing_inner()?;
     Ok(rid)
 }
 
@@ -145,7 +145,7 @@ async fn get_store<R: Runtime>(
     path: PathBuf,
 ) -> Result<Option<ResourceId>> {
     let stores = store_state.stores.lock().unwrap();
-    Ok(stores.get(&resolve_store_path(&app, path)).copied())
+    Ok(stores.get(&resolve_store_path(&app, path)?).copied())
 }
 
 #[tauri::command]
@@ -244,7 +244,7 @@ async fn save<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
 
 pub trait StoreExt<R: Runtime> {
     /// Create a store or get an existing store with default settings at path
-    fn store(&self, path: impl AsRef<Path>) -> Arc<Store<R>>;
+    fn store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>>;
     /// Create a store with default settings
     fn create_store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>>;
     /// Get a store builder
@@ -254,7 +254,7 @@ pub trait StoreExt<R: Runtime> {
 }
 
 impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
-    fn store(&self, path: impl AsRef<Path>) -> Arc<Store<R>> {
+    fn store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
         StoreBuilder::new(self.app_handle(), path).build_or_existing()
     }
 
@@ -270,7 +270,7 @@ impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
         let collection = self.state::<StoreState>();
         let stores = collection.stores.lock().unwrap();
         stores
-            .get(&resolve_store_path(self.app_handle(), path.as_ref()))
+            .get(&resolve_store_path(self.app_handle(), path.as_ref()).ok()?)
             .and_then(|rid| self.resources_table().get(*rid).ok())
     }
 }
