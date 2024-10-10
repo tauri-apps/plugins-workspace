@@ -57,7 +57,7 @@
   async function close() {
     try {
       await store.close();
-      onMessage("Store is now closed, any new operations will now errors out");
+      onMessage("Store is now closed, any new operations will error out");
     } catch (error) {
       onMessage(error);
     }

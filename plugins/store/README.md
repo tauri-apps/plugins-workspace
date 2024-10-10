@@ -85,7 +85,7 @@ if (val) {
 
 ### Persisting Values
 
-Modifications mode to the store are automatically saved by defaut
+Modifications made to the store are automatically saved by default
 
 You can manually save a store with:
 

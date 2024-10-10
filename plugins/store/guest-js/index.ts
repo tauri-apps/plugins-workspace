@@ -167,10 +167,7 @@ export class LazyStore implements IStore {
  * A key-value store persisted by the backend layer.
  */
 export class Store extends Resource implements IStore {
-  private constructor(
-    rid: number
-    // private readonly path: string
-  ) {
+  private constructor(rid: number) {
     super(rid)
   }
 
@@ -188,10 +185,7 @@ export class Store extends Resource implements IStore {
       path,
       ...options
     })
-    return new Store(
-      rid
-      // path
-    )
+    return new Store(rid)
   }
 
   /**
@@ -208,10 +202,7 @@ export class Store extends Resource implements IStore {
       path,
       ...options
     })
-    return new Store(
-      rid
-      // path
-    )
+    return new Store(rid)
   }
 
   /**
@@ -219,12 +210,7 @@ export class Store extends Resource implements IStore {
    */
   static async getStore(path: string): Promise<Store | undefined> {
     const rid = await invoke<number | null>('plugin:store|get_store', { path })
-    return rid
-      ? new Store(
-          rid
-          // path
-        )
-      : undefined
+    return rid ? new Store(rid) : undefined
   }
 
   async set(key: string, value: unknown): Promise<void> {
