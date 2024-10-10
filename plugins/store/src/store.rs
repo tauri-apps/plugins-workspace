@@ -6,8 +6,7 @@ use crate::{ChangePayload, StoreState};
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
-    fs::{create_dir_all, read, File},
-    io::Write,
+    fs,
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
     time::Duration,
@@ -298,18 +297,17 @@ impl<R: Runtime> StoreInner<R> {
 
     /// Saves the store to disk at the store's `path`.
     pub fn save(&self) -> crate::Result<()> {
-        create_dir_all(self.path.parent().expect("invalid store path"))?;
+        fs::create_dir_all(self.path.parent().expect("invalid store path"))?;
 
         let bytes = (self.serialize_fn)(&self.cache).map_err(crate::Error::Serialize)?;
-        let mut f = File::create(&self.path)?;
-        f.write_all(&bytes)?;
+        fs::write(&self.path, bytes)?;
 
         Ok(())
     }
 
     /// Update the store from the on-disk state
     pub fn load(&mut self) -> crate::Result<()> {
-        let bytes = read(&self.path)?;
+        let bytes = fs::read(&self.path)?;
 
         self.cache
             .extend((self.deserialize_fn)(&bytes).map_err(crate::Error::Deserialize)?);
