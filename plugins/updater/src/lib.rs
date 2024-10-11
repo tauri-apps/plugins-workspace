@@ -72,7 +72,11 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
     fn updater_builder(&self) -> UpdaterBuilder {
         let app = self.app_handle();
         let package_info = app.package_info();
-        let UpdaterState { config, target, version_comparator } = self.state::<UpdaterState>().inner();
+        let UpdaterState {
+            config,
+            target,
+            version_comparator,
+        } = self.state::<UpdaterState>().inner();
 
         let mut builder = UpdaterBuilder::new(
             package_info.name.clone(),
@@ -194,7 +198,11 @@ impl Builder {
                 if let Some(windows) = &mut config.windows {
                     windows.installer_args.extend_from_slice(&installer_args);
                 }
-                app.manage(UpdaterState { target, config, version_comparator });
+                app.manage(UpdaterState {
+                    target,
+                    config,
+                    version_comparator,
+                });
                 Ok(())
             })
             .invoke_handler(tauri::generate_handler![

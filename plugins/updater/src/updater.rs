@@ -224,10 +224,7 @@ impl UpdaterBuilder {
         self
     }
 
-    pub(crate) fn global_version_comparator(
-        mut self,
-        f: GlobalVersionComparator,
-    ) -> Self {
+    pub(crate) fn global_version_comparator(mut self, f: GlobalVersionComparator) -> Self {
         self.global_version_comparator.replace(f);
         self
     }
