@@ -19,6 +19,5 @@
 ### New features:
 
 - Add `get_store` to get shared stores across js and rust side
-- Add default (de)serialize functions settings
-- Allow js to use pre-stored (de)serialize functions
-- Add back lazy store (implemented in js)
+- Add default (de)serialize functions settings `default_serialize_fn` and `default_deserialize_fn`
+- Allow js to use pre-stored (de)serialize functions registered by `register_serialize_fn` and `register_deserialize_fn`
