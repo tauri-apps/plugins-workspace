@@ -262,19 +262,19 @@ impl<R: Runtime> StoreBuilder<R> {
     }
 }
 
-pub(crate) enum AutoSaveMessage {
+enum AutoSaveMessage {
     Reset,
     Cancel,
 }
 
 #[derive(Clone)]
 pub struct StoreInner<R: Runtime> {
-    pub(crate) app: AppHandle<R>,
-    pub(crate) path: PathBuf,
-    pub(crate) cache: HashMap<String, JsonValue>,
-    pub(crate) defaults: Option<HashMap<String, JsonValue>>,
-    pub(crate) serialize_fn: SerializeFn,
-    pub(crate) deserialize_fn: DeserializeFn,
+    app: AppHandle<R>,
+    path: PathBuf,
+    cache: HashMap<String, JsonValue>,
+    defaults: Option<HashMap<String, JsonValue>>,
+    serialize_fn: SerializeFn,
+    deserialize_fn: DeserializeFn,
 }
 
 impl<R: Runtime> StoreInner<R> {
