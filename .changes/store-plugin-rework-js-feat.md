@@ -3,5 +3,5 @@
 ---
 
 - Add `getStore`
-- Add an option to use pre-stored (de)serialize functions
-- Add back lazy store `LazyStore`
+- Add an option to use pre-stored (de)serialize functions (registered on rust)
+- Add `LazyStore`
