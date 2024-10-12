@@ -19,7 +19,7 @@ export type StoreOptions = {
   /**
    * Auto save on modification with debounce duration in milliseconds
    */
-  autoSave?: boolean
+  autoSave?: number
 }
 
 /**
