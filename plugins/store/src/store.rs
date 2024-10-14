@@ -268,7 +268,7 @@ enum AutoSaveMessage {
 }
 
 #[derive(Clone)]
-pub struct StoreInner<R: Runtime> {
+struct StoreInner<R: Runtime> {
     app: AppHandle<R>,
     path: PathBuf,
     cache: HashMap<String, JsonValue>,
@@ -513,6 +513,11 @@ impl<R: Runtime> Store<R> {
     /// Returns the number of elements in the store.
     pub fn length(&self) -> usize {
         self.store.lock().unwrap().len()
+    }
+
+    /// Returns true if the store contains no elements.
+    pub fn is_empty(&self) -> bool {
+        self.store.lock().unwrap().is_empty()
     }
 
     /// Update the store from the on-disk state
