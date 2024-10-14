@@ -93,6 +93,7 @@ pub async fn watch<R: Runtime>(
     let mut resolved_paths = Vec::with_capacity(paths.capacity());
     for path in paths {
         resolved_paths.push(resolve_path(
+            "watch",
             &webview,
             &global_scope,
             &command_scope,
