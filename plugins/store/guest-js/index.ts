@@ -33,8 +33,8 @@ export type StoreOptions = {
 }
 
 /**
- * @param path: Path to save the store in `app_data_dir`
- * @param options: Store configuration options
+ * @param path Path to save the store in `app_data_dir`
+ * @param options Store configuration options
  *
  * @throws If a store at that path already exists
  */
@@ -48,8 +48,8 @@ export async function createStore(
 /**
  * Create a new Store or get the existing store with the path
  *
- * @param path: Path to save the store in `app_data_dir`
- * @param options: Store configuration options
+ * @param path Path to save the store in `app_data_dir`
+ * @param options Store configuration options
  */
 export async function createOrExistingStore(
   path: string,
@@ -59,7 +59,7 @@ export async function createOrExistingStore(
 }
 
 /**
- * @param path: Path of the store in the rust side
+ * @param path Path of the store in the rust side
  */
 export async function getStore(path: string): Promise<Store | undefined> {
   return await Store.getStore(path)
@@ -80,8 +80,8 @@ export class LazyStore implements IStore {
 
   /**
    * Note that the options are not applied if someone else already created the store
-   * @param path: Path to save the store in `app_data_dir`
-   * @param options: Store configuration options
+   * @param path Path to save the store in `app_data_dir`
+   * @param options Store configuration options
    */
   constructor(
     private readonly path: string,
@@ -172,8 +172,8 @@ export class Store extends Resource implements IStore {
   }
 
   /**
-   * @param path: Path to save the store in `app_data_dir`
-   * @param options: Store configuration options
+   * @param path Path to save the store in `app_data_dir`
+   * @param options Store configuration options
    *
    * @throws If a store at that path already exists
    */
@@ -191,8 +191,8 @@ export class Store extends Resource implements IStore {
   /**
    * Create a new Store or get the existing store with the path
    *
-   * @param path: Path to save the store in `app_data_dir`
-   * @param options: Store configuration options
+   * @param path Path to save the store in `app_data_dir`
+   * @param options Store configuration options
    */
   static async createOrExistingStore(
     path: string,
@@ -206,7 +206,7 @@ export class Store extends Resource implements IStore {
   }
 
   /**
-   * @param path: Path of the store in the rust side
+   * @param path Path of the store in the rust side
    */
   static async getStore(path: string): Promise<Store | undefined> {
     const rid = await invoke<number | null>('plugin:store|get_store', { path })
