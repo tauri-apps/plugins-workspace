@@ -168,6 +168,8 @@ fn main() {
 
 To apply the migrations when the plugin is initialized, add the connection string to the `tauri.conf.json` file:
 
+> Notice: if no migration provided, keeping the `preload` empty
+
 ```json
 {
   "plugins": {
