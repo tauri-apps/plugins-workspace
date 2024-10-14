@@ -144,11 +144,11 @@ impl Builder {
 
                     for db in config.preload {
                         let pool = DbPool::connect(&db, app).await?;
-                        
+
                         if let Some(migration_map) = self.migrations.as_mut(){
                             if let Some(migrations)= migration_map.remove(&db){
                                 let migrator = Migrator::new(migrations).await?;
-                            pool.migrate(&migrator).await?;
+                                pool.migrate(&migrator).await?;
                             }
                         }
                         else{
