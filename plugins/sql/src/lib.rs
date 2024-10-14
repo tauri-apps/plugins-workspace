@@ -144,10 +144,15 @@ impl Builder {
 
                     for db in config.preload {
                         let pool = DbPool::connect(&db, app).await?;
-
-                        if let Some(migrations) = self.migrations.as_mut().unwrap().remove(&db) {
-                            let migrator = Migrator::new(migrations).await?;
+                        
+                        if let Some(migration_map) = self.migrations.as_mut(){
+                            if let Some(migrations)= migration_map.remove(&db){
+                                let migrator = Migrator::new(migrations).await?;
                             pool.migrate(&migrator).await?;
+                            }
+                        }
+                        else{
+                            panic!("No migrations providing. Please provide at least one migration or clear `preload` list");
                         }
 
                         lock.insert(db, pool);
