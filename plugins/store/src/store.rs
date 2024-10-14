@@ -442,12 +442,12 @@ impl<R: Runtime> Resource for Store<R> {
 }
 
 impl<R: Runtime> Store<R> {
-    /// Do something with the inner store,
-    /// useful for batching some work if you need higher performance
-    pub fn with_store<T>(&self, f: impl FnOnce(&mut StoreInner<R>) -> T) -> T {
-        let mut store = self.store.lock().unwrap();
-        f(&mut store)
-    }
+    // /// Do something with the inner store,
+    // /// useful for batching some work if you need higher performance
+    // pub fn with_store<T>(&self, f: impl FnOnce(&mut StoreInner<R>) -> T) -> T {
+    //     let mut store = self.store.lock().unwrap();
+    //     f(&mut store)
+    // }
 
     /// Inserts a key-value pair into the store.
     pub fn set(&self, key: impl Into<String>, value: impl Into<JsonValue>) {
