@@ -264,6 +264,14 @@ pub async fn fetch<R: Runtime>(
                     }
                 }
 
+                // In case empty origin is passed, remove it. Some services do not like Origin header
+                // so this way we can remove it in explicit way. The default behaviour is still to set it
+                if cfg!(feature = "unsafe-headers")
+                    && headers.get(header::ORIGIN) == Some(&HeaderValue::from_static(""))
+                {
+                    headers.remove(header::ORIGIN);
+                };
+
                 if let Some(data) = data {
                     request = request.body(data);
                 }
