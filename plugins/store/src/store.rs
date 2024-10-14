@@ -23,7 +23,7 @@ pub type SerializeFn =
 pub type DeserializeFn =
     fn(&[u8]) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>>;
 
-pub(crate) fn resolve_store_path<R: Runtime>(
+pub fn resolve_store_path<R: Runtime>(
     app: &AppHandle<R>,
     path: impl AsRef<Path>,
 ) -> crate::Result<PathBuf> {

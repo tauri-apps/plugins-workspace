@@ -21,8 +21,7 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
-use store::resolve_store_path;
-pub use store::{DeserializeFn, SerializeFn, Store, StoreBuilder, StoreInner};
+pub use store::{resolve_store_path, DeserializeFn, SerializeFn, Store, StoreBuilder, StoreInner};
 use tauri::{
     plugin::{self, TauriPlugin},
     AppHandle, Manager, ResourceId, RunEvent, Runtime, State,
