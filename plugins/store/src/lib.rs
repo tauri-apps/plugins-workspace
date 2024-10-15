@@ -117,7 +117,7 @@ async fn create_store<R: Runtime>(
 }
 
 #[tauri::command]
-async fn create_or_existing_store<R: Runtime>(
+async fn create_or_load<R: Runtime>(
     app: AppHandle<R>,
     store_state: State<'_, StoreState>,
     path: PathBuf,
@@ -385,9 +385,9 @@ impl<R: Runtime> Builder<R> {
         plugin::Builder::new("store")
             .invoke_handler(tauri::generate_handler![
                 create_store,
+                create_or_load,
                 get_store,
                 close_store,
-                create_or_existing_store,
                 set,
                 get,
                 has,

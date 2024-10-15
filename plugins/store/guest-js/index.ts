@@ -89,7 +89,7 @@ export class LazyStore implements IStore {
   ) {}
 
   /**
-   * Init/load the store if it's not already
+   * Init/load the store if it's not loaded already
    */
   async init(): Promise<void> {
     await this.store
@@ -194,11 +194,11 @@ export class Store extends Resource implements IStore {
    * @param path Path to save the store in `app_data_dir`
    * @param options Store configuration options
    */
-  static async createOrExistingStore(
+  static async createOrLoad(
     path: string,
     options?: StoreOptions
   ): Promise<Store> {
-    const rid = await invoke<number>('plugin:store|create_or_existing_store', {
+    const rid = await invoke<number>('plugin:store|create_or_load', {
       path,
       ...options
     })
