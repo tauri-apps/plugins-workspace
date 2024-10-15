@@ -16,7 +16,6 @@ use serde::{Deserialize, Serialize};
 pub use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
-    marker::PhantomData,
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
     time::Duration,
@@ -359,18 +358,16 @@ fn default_deserialize(
     serde_json::from_slice(bytes).map_err(Into::into)
 }
 
-pub struct Builder<R: Runtime> {
-    phantom_data: PhantomData<R>,
+pub struct Builder {
     serialize_fns: HashMap<String, SerializeFn>,
     deserialize_fns: HashMap<String, DeserializeFn>,
     default_serialize: SerializeFn,
     default_deserialize: DeserializeFn,
 }
 
-impl<R: Runtime> Default for Builder<R> {
+impl Default for Builder {
     fn default() -> Self {
         Self {
-            phantom_data: Default::default(),
             serialize_fns: Default::default(),
             deserialize_fns: Default::default(),
             default_serialize,
@@ -379,7 +376,7 @@ impl<R: Runtime> Default for Builder<R> {
     }
 }
 
-impl<R: Runtime> Builder<R> {
+impl Builder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -454,7 +451,7 @@ impl<R: Runtime> Builder<R> {
     ///     Ok(())
     ///   });
     /// ```
-    pub fn build(self) -> TauriPlugin<R> {
+    pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         plugin::Builder::new("store")
             .invoke_handler(tauri::generate_handler![
                 create_store,
