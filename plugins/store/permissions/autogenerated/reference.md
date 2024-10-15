@@ -10,21 +10,21 @@ All operations are enabled by default.
 
 
 - `allow-create-store`
-- `allow-create-or-existing-store`
+- `allow-create-or-load`
 - `allow-get-store`
 - `allow-close-store`
-- `allow-clear`
-- `allow-delete`
-- `allow-entries`
+- `allow-set`
 - `allow-get`
 - `allow-has`
+- `allow-delete`
+- `allow-clear`
+- `allow-reset`
 - `allow-keys`
+- `allow-values`
+- `allow-entries`
 - `allow-length`
 - `allow-load`
-- `allow-reset`
 - `allow-save`
-- `allow-set`
-- `allow-values`
 
 ## Permission Table
 

@@ -15,8 +15,8 @@ const COMMANDS: &[&str] = &[
     "reset",
     "keys",
     "values",
-    "length",
     "entries",
+    "length",
     "load",
     "save",
 ];
