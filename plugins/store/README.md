@@ -123,7 +123,7 @@ fn main() {
         .plugin(tauri_plugin_store::Builder::default().build())
         .setup(|app| {
             // This loads the store from disk
-            let store = app.store("app_data.json");
+            let store = app.store("app_data.json")?;
 
             // Note that values must be serde_json::Value instances,
             // otherwise, they will not be compatible with the JavaScript bindings.

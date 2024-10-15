@@ -41,7 +41,7 @@ struct ChangePayload<'a> {
 }
 
 #[derive(Debug)]
-pub struct StoreState {
+struct StoreState {
     stores: Arc<Mutex<HashMap<PathBuf, ResourceId>>>,
     serialize_fns: HashMap<String, SerializeFn>,
     deserialize_fns: HashMap<String, DeserializeFn>,
@@ -327,7 +327,6 @@ pub trait StoreExt<R: Runtime> {
 
 impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     fn store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
-        let path = path.as_ref();
         StoreBuilder::new(self.app_handle(), path).new_or_existing()
     }
 
