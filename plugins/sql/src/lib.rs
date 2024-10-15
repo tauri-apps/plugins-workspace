@@ -145,7 +145,9 @@ impl Builder {
                     for db in config.preload {
                         let pool = DbPool::connect(&db, app).await?;
 
-                        if let Some(migrations) = self.migrations.as_mut().unwrap().remove(&db) {
+                        if let Some(migrations) =
+                            self.migrations.as_mut().and_then(|mm| mm.remove(&db))
+                        {
                             let migrator = Migrator::new(migrations).await?;
                             pool.migrate(&migrator).await?;
                         }
