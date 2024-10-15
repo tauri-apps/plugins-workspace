@@ -172,7 +172,6 @@ impl<R: Runtime> StoreBuilder<R> {
 
     pub(crate) fn build_inner(
         mut self,
-        load: bool,
         mut stores: MutexGuard<'_, HashMap<PathBuf, ResourceId>>,
     ) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
         if stores.contains_key(&self.path) {
@@ -229,7 +228,7 @@ impl<R: Runtime> StoreBuilder<R> {
 
     pub(crate) fn create_inner(self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
         let stores = self.app.state::<StoreState>().stores.clone();
-        self.build_inner(false, stores.lock().unwrap())
+        self.build_inner(stores.lock().unwrap())
     }
 
     /// Get the existing store with the same path or creates a new [`Store`].
@@ -259,7 +258,7 @@ impl<R: Runtime> StoreBuilder<R> {
             return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
         }
 
-        self.build_inner(true, stores_)
+        self.build_inner(stores_)
     }
 }
 
