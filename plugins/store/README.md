@@ -68,9 +68,9 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```typescript
-import { LazyStore } from '@tauri-apps/plugin-store'
+import { createStore } from '@tauri-apps/plugin-store'
 
-const store = new LazyStore('settings.json')
+const store = await createStore('settings.json')
 
 await store.set('some-key', { value: 5 })
 
@@ -98,6 +98,16 @@ However, you can also load them manually later like so:
 
 ```javascript
 await store.load()
+```
+
+### LazyStore
+
+There's also a high level API `LazyStore` which only loads the store on first access, note that the options will be ignored if a `Store` with that path has already been created
+
+```typescript
+import { LazyStore } from '@tauri-apps/plugin-store'
+
+const store = new LazyStore('settings.json')
 ```
 
 ## Usage from Rust
