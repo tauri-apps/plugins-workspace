@@ -315,16 +315,6 @@
           "const": "deny-close-store"
         },
         {
-          "description": "Enables the create_or_load command without any pre-configured scope.",
-          "type": "string",
-          "const": "allow-create-or-load"
-        },
-        {
-          "description": "Denies the create_or_load command without any pre-configured scope.",
-          "type": "string",
-          "const": "deny-create-or-load"
-        },
-        {
           "description": "Enables the create_store command without any pre-configured scope.",
           "type": "string",
           "const": "allow-create-store"
@@ -413,6 +403,16 @@
           "description": "Denies the load command without any pre-configured scope.",
           "type": "string",
           "const": "deny-load"
+        },
+        {
+          "description": "Enables the new_or_existing command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-new-or-existing"
+        },
+        {
+          "description": "Denies the new_or_existing command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-new-or-existing"
         },
         {
           "description": "Enables the reset command without any pre-configured scope.",

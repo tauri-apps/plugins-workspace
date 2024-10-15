@@ -117,7 +117,7 @@ async fn create_store<R: Runtime>(
 }
 
 #[tauri::command]
-async fn create_or_load<R: Runtime>(
+async fn new_or_existing<R: Runtime>(
     app: AppHandle<R>,
     store_state: State<'_, StoreState>,
     path: PathBuf,
@@ -133,7 +133,7 @@ async fn create_or_load<R: Runtime>(
         serialize_fn_name,
         deserialize_fn_name,
     )?;
-    let (_, rid) = builder.create_or_load_inner()?;
+    let (_, rid) = builder.new_or_existing_inner()?;
     Ok(rid)
 }
 
@@ -291,7 +291,7 @@ pub trait StoreExt<R: Runtime> {
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = app.store_builder("users.json").auto_save(Duration::from_secs(1)).create_or_load()?;
+    ///     let store = app.store_builder("users.json").auto_save(Duration::from_secs(1)).new_or_existing()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -328,7 +328,7 @@ pub trait StoreExt<R: Runtime> {
 impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     fn store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
         let path = path.as_ref();
-        StoreBuilder::new(self.app_handle(), path).create_or_load()
+        StoreBuilder::new(self.app_handle(), path).new_or_existing()
     }
 
     fn create_store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
@@ -451,7 +451,7 @@ impl<R: Runtime> Builder<R> {
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin").create_or_load()?;
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin").new_or_existing()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -459,7 +459,7 @@ impl<R: Runtime> Builder<R> {
         plugin::Builder::new("store")
             .invoke_handler(tauri::generate_handler![
                 create_store,
-                create_or_load,
+                new_or_existing,
                 get_store,
                 close_store,
                 set,

@@ -10,7 +10,7 @@ All operations are enabled by default.
 
 
 - `allow-create-store`
-- `allow-create-or-load`
+- `allow-new-or-existing`
 - `allow-get-store`
 - `allow-close-store`
 - `allow-set`
@@ -83,32 +83,6 @@ Enables the close_store command without any pre-configured scope.
 <td>
 
 Denies the close_store command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`store:allow-create-or-load`
-
-</td>
-<td>
-
-Enables the create_or_load command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`store:deny-create-or-load`
-
-</td>
-<td>
-
-Denies the create_or_load command without any pre-configured scope.
 
 </td>
 </tr>
@@ -343,6 +317,32 @@ Enables the load command without any pre-configured scope.
 <td>
 
 Denies the load command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-new-or-existing`
+
+</td>
+<td>
+
+Enables the new_or_existing command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-new-or-existing`
+
+</td>
+<td>
+
+Denies the new_or_existing command without any pre-configured scope.
 
 </td>
 </tr>

@@ -55,11 +55,11 @@ export async function create(
  * @param path Path to save the store in `app_data_dir`
  * @param options Store configuration options
  */
-export async function createOrLoad(
+export async function newOrExisting(
   path: string,
   options?: StoreOptions
 ): Promise<Store> {
-  return await Store.createOrLoad(path, options)
+  return await Store.newOrExisting(path, options)
 }
 
 /**
@@ -77,7 +77,7 @@ export class LazyStore implements IStore {
 
   private get store(): Promise<Store> {
     if (!this._store) {
-      this._store = createOrLoad(this.path, this.options)
+      this._store = newOrExisting(this.path, this.options)
     }
     return this._store
   }
@@ -211,18 +211,18 @@ export class Store extends Resource implements IStore {
    * import { Store } from '@tauri-apps/api/store';
    * let store = await Store.get('store.json');
    * if (!store) {
-   *   store = await Store.createOrLoad('store.json');
+   *   store = await Store.newOrExisting('store.json');
    * }
    * ```
    *
    * @param path Path to save the store in `app_data_dir`
    * @param options Store configuration options
    */
-  static async createOrLoad(
+  static async newOrExisting(
     path: string,
     options?: StoreOptions
   ): Promise<Store> {
-    const rid = await invoke<number>('plugin:store|create_or_load', {
+    const rid = await invoke<number>('plugin:store|new_or_existing', {
       path,
       ...options
     })
@@ -233,14 +233,14 @@ export class Store extends Resource implements IStore {
    * Gets an already loaded store.
    *
    * If the store is not loaded, returns `null`. In this case,
-   * you must either {@link Store.create | create} it or {@link Store.createOrLoad createOrLoad} it.
+   * you must either {@link Store.create | create} it or {@link Store.newOrExisting newOrExisting} it.
    *
    * @example
    * ```typescript
    * import { Store } from '@tauri-apps/api/store';
    * let store = await Store.get('store.json');
    * if (!store) {
-   *   store = await Store.createOrLoad('store.json');
+   *   store = await Store.newOrExisting('store.json');
    * }
    * ```
    *
