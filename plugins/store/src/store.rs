@@ -185,9 +185,7 @@ impl<R: Runtime> StoreBuilder<R> {
             self.serialize_fn,
             self.deserialize_fn,
         );
-        if load {
-            let _ = store_inner.load();
-        }
+        let _ = store_inner.load();
 
         let store = Store {
             auto_save: self.auto_save,
