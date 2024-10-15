@@ -230,7 +230,11 @@ impl<R: Runtime> StoreBuilder<R> {
         self.build_inner(false)
     }
 
-    /// Get the existing store with the same path or creates a new [`Store`], also see [`create`](Self::create).
+    /// Get the existing store with the same path or creates a new [`Store`].
+    ///
+    /// If a store with the same path has already been loaded its instance is returned.
+    ///
+    /// See [`create`](Self::create) if you want to force create a new store in the path.
     ///
     /// # Examples
     /// ```
@@ -247,6 +251,13 @@ impl<R: Runtime> StoreBuilder<R> {
     }
 
     pub(crate) fn create_or_load_inner(self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
+        {
+            let state = self.app.state::<StoreState>();
+            let stores = state.stores.lock().unwrap();
+            if let Some(rid) = stores.get(&self.path) {
+                return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
+            }
+        }
         self.build_inner(true)
     }
 }

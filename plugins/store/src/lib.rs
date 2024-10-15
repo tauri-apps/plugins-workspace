@@ -299,7 +299,9 @@ pub trait StoreExt<R: Runtime> {
     /// Get a handle of an already loaded store.
     ///
     /// If the store is not loaded or does not exist, it returns `None`.
-    /// In this case, you should initialize it with [`Self::store`].
+    ///
+    /// Note that using this function can cause race conditions if you fallback to creating or loading the store,
+    /// so you should consider using [`Self::store`] if you are not sure if the store is loaded or not.
     ///
     /// # Examples
     ///
@@ -312,6 +314,9 @@ pub trait StoreExt<R: Runtime> {
     ///     let store = if let Some(s) = app.get_store("store.json") {
     ///       s
     ///     } else {
+    ///       // this is not thread safe; if another thread is doing the same load/create,
+    ///       // there will be a race condition; in this case we could remove the get_store
+    ///       // and only run app.store() as it will return the existing store if it has been loaded
     ///       app.store("store.json")?
     ///     };
     ///     Ok(())
@@ -323,9 +328,6 @@ pub trait StoreExt<R: Runtime> {
 impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     fn store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
         let path = path.as_ref();
-        if let Some(store) = self.get_store(path) {
-            return Ok(store);
-        }
         StoreBuilder::new(self.app_handle(), path).create_or_load()
     }
 

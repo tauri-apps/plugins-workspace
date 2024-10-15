@@ -46,7 +46,11 @@ export async function create(
 }
 
 /**
- * Create a new Store or load the existing store with the path
+ * Create a new Store or load the existing store with the path.
+ *
+ * If the store at the given path is already loaded,
+ * its instance is returned regardless of the options object.
+ * If the settings to not match an error is returned.
  *
  * @param path Path to save the store in `app_data_dir`
  * @param options Store configuration options
