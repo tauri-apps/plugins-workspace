@@ -112,7 +112,7 @@ async fn create_store<R: Runtime>(
         serialize_fn_name,
         deserialize_fn_name,
     )?;
-    let (_, rid) = builder.build_inner()?;
+    let (_, rid) = builder.create_inner()?;
     Ok(rid)
 }
 
@@ -133,7 +133,7 @@ async fn create_or_load<R: Runtime>(
         serialize_fn_name,
         deserialize_fn_name,
     )?;
-    let (_, rid) = builder.build_or_existing_inner()?;
+    let (_, rid) = builder.create_or_load_inner()?;
     Ok(rid)
 }
 
@@ -242,23 +242,95 @@ async fn save<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
 }
 
 pub trait StoreExt<R: Runtime> {
-    /// Create a store or get an existing store with default settings at path
+    /// Create a store or load an existing store with default settings at the given path.
+    ///
+    /// If the store is already loaded, its instance is automatically returned.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tauri_plugin_store::StoreExt;
+    ///
+    /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
+    ///   .setup(|app| {
+    ///     let store = app.store("my-store")?;
+    ///     Ok(())
+    ///   });
+    /// ```
     fn store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>>;
-    /// Create a store with default settings
+    /// Create a store with default settings.
+    ///
+    /// If the store is already loaded you must check with [`Self::get_store`] or prefer [`Self::store`]
+    /// as it will return `Err(Error::AlreadyExists)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tauri_plugin_store::StoreExt;
+    ///
+    /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
+    ///   .setup(|app| {
+    ///     let store = app.create_store("my-store")?;
+    ///     Ok(())
+    ///   });
+    /// ```
     fn create_store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>>;
-    /// Get a store builder
+    /// Get a store builder.
+    ///
+    /// The builder can be used to configure the store.
+    /// To use the default settings see [`Self::store`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tauri_plugin_store::StoreExt;
+    /// use std::time::Duration;
+    ///
+    /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
+    ///   .setup(|app| {
+    ///     let store = app.store_builder("users.json").auto_save(Duration::from_secs(1)).create_or_load()?;
+    ///     Ok(())
+    ///   });
+    /// ```
     fn store_builder(&self, path: impl AsRef<Path>) -> StoreBuilder<R>;
-    /// Get an existing store
+    /// Get a handle of an already loaded store.
+    ///
+    /// If the store is not loaded or does not exist, it returns `None`.
+    /// In this case, you should initialize it with [`Self::store`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tauri_plugin_store::StoreExt;
+    ///
+    /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
+    ///   .setup(|app| {
+    ///     let store = if let Some(s) = app.get_store("store.json") {
+    ///       s
+    ///     } else {
+    ///       app.store("store.json")?
+    ///     };
+    ///     Ok(())
+    ///   });
+    /// ```
     fn get_store(&self, path: impl AsRef<Path>) -> Option<Arc<Store<R>>>;
 }
 
 impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     fn store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
-        StoreBuilder::new(self.app_handle(), path).build_or_existing()
+        let path = path.as_ref();
+        if let Some(store) = self.get_store(path) {
+            return Ok(store);
+        }
+        StoreBuilder::new(self.app_handle(), path).create_or_load()
     }
 
     fn create_store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
-        StoreBuilder::new(self.app_handle(), path).build()
+        StoreBuilder::new(self.app_handle(), path).create()
     }
 
     fn store_builder(&self, path: impl AsRef<Path>) -> StoreBuilder<R> {
@@ -327,7 +399,7 @@ impl<R: Runtime> Builder<R> {
     ///         tauri_plugin_store::Builder::default()
     ///             .register_serialize_fn("no-pretty-json".to_owned(), no_pretty_json)
     ///             .build(),
-    ///     )
+    ///     );
     /// ```
     pub fn register_serialize_fn(mut self, name: String, serialize_fn: SerializeFn) -> Self {
         self.serialize_fns.insert(name, serialize_fn);
@@ -356,7 +428,7 @@ impl<R: Runtime> Builder<R> {
     ///         tauri_plugin_store::Builder::default()
     ///             .default_serialize_fn(no_pretty_json)
     ///             .build(),
-    ///     )
+    ///     );
     /// ```
     pub fn default_serialize_fn(mut self, serialize_fn: SerializeFn) -> Self {
         self.default_serialize = serialize_fn;
@@ -377,7 +449,7 @@ impl<R: Runtime> Builder<R> {
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin").build()?;
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin").create_or_load()?;
     ///     Ok(())
     ///   });
     /// ```

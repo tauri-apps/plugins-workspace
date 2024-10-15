@@ -38,7 +38,6 @@ pub struct StoreBuilder<R: Runtime> {
     serialize_fn: SerializeFn,
     deserialize_fn: DeserializeFn,
     auto_save: Option<Duration>,
-    load_on_build: bool,
 }
 
 impl<R: Runtime> StoreBuilder<R> {
@@ -65,7 +64,6 @@ impl<R: Runtime> StoreBuilder<R> {
             serialize_fn,
             deserialize_fn,
             auto_save: Some(Duration::from_millis(100)),
-            load_on_build: true,
         }
     }
 
@@ -81,7 +79,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin")
     ///       .defaults(defaults)
-    ///       .build()?;
+    ///       .create_or_load()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -99,7 +97,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin")
     ///       .default("foo".to_string(), "bar")
-    ///       .build()?;
+    ///       .create_or_load()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -121,7 +119,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
     ///       .serialize(|cache| serde_json::to_vec(&cache).map_err(Into::into))
-    ///       .build()?;
+    ///       .create_or_load()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -139,7 +137,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
     ///       .deserialize(|bytes| serde_json::from_slice(&bytes).map_err(Into::into))
-    ///       .build()?;
+    ///       .create_or_load()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -157,7 +155,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
     ///         .auto_save(std::time::Duration::from_millis(100))
-    ///         .build()?;
+    ///         .create_or_load()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -172,13 +170,7 @@ impl<R: Runtime> StoreBuilder<R> {
         self
     }
 
-    /// Skip loading the store on build
-    pub fn skip_initial_load(mut self) -> Self {
-        self.load_on_build = false;
-        self
-    }
-
-    pub(crate) fn build_inner(mut self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
+    pub(crate) fn build_inner(mut self, load: bool) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
         let state = self.app.state::<StoreState>();
         let mut stores = state.stores.lock().unwrap();
 
@@ -193,7 +185,7 @@ impl<R: Runtime> StoreBuilder<R> {
             self.serialize_fn,
             self.deserialize_fn,
         );
-        if self.load_on_build {
+        if load {
             let _ = store_inner.load();
         }
 
@@ -208,17 +200,6 @@ impl<R: Runtime> StoreBuilder<R> {
         stores.insert(self.path, rid);
 
         Ok((store, rid))
-    }
-
-    pub(crate) fn build_or_existing_inner(self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
-        {
-            let state = self.app.state::<StoreState>();
-            let stores = state.stores.lock().unwrap();
-            if let Some(rid) = stores.get(&self.path) {
-                return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
-            }
-        }
-        self.build_inner()
     }
 
     /// Builds the [`Store`], also see [`build_or_existing`](Self::build_or_existing).
@@ -236,29 +217,37 @@ impl<R: Runtime> StoreBuilder<R> {
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").build()?;
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").create_or_load()?;
     ///     Ok(())
     ///   });
     /// ```
-    pub fn build(self) -> crate::Result<Arc<Store<R>>> {
-        let (store, _) = self.build_inner()?;
+    pub fn create(self) -> crate::Result<Arc<Store<R>>> {
+        let (store, _) = self.create_inner()?;
         Ok(store)
     }
 
-    /// Get the existing store with the same path or builds a new [`Store`], also see [`build`](Self::build).
+    pub(crate) fn create_inner(self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
+        self.build_inner(false)
+    }
+
+    /// Get the existing store with the same path or creates a new [`Store`], also see [`create`](Self::create).
     ///
     /// # Examples
     /// ```
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").build_or_existing();
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").create_or_load();
     ///     Ok(())
     ///   });
     /// ```
-    pub fn build_or_existing(self) -> crate::Result<Arc<Store<R>>> {
-        let (store, _) = self.build_or_existing_inner()?;
+    pub fn create_or_load(self) -> crate::Result<Arc<Store<R>>> {
+        let (store, _) = self.create_or_load_inner()?;
         Ok(store)
+    }
+
+    pub(crate) fn create_or_load_inner(self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
+        self.build_inner(true)
     }
 }
 

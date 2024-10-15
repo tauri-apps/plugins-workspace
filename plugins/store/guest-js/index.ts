@@ -38,31 +38,31 @@ export type StoreOptions = {
  *
  * @throws If a store at that path already exists
  */
-export async function createStore(
+export async function create(
   path: string,
   options?: StoreOptions
 ): Promise<Store> {
-  return await Store.createStore(path, options)
+  return await Store.create(path, options)
 }
 
 /**
- * Create a new Store or get the existing store with the path
+ * Create a new Store or load the existing store with the path
  *
  * @param path Path to save the store in `app_data_dir`
  * @param options Store configuration options
  */
-export async function createOrExistingStore(
+export async function createOrLoad(
   path: string,
   options?: StoreOptions
 ): Promise<Store> {
-  return await Store.createOrExistingStore(path, options)
+  return await Store.createOrLoad(path, options)
 }
 
 /**
- * @param path Path of the store in the rust side
+ * @param path Path of the store
  */
-export async function getStore(path: string): Promise<Store | undefined> {
-  return await Store.getStore(path)
+export async function getStore(path: string): Promise<Store | null> {
+  return await Store.get(path)
 }
 
 /**
@@ -73,7 +73,7 @@ export class LazyStore implements IStore {
 
   private get store(): Promise<Store> {
     if (!this._store) {
-      this._store = createOrExistingStore(this.path, this.options)
+      this._store = createOrLoad(this.path, this.options)
     }
     return this._store
   }
@@ -172,15 +172,24 @@ export class Store extends Resource implements IStore {
   }
 
   /**
+   * Create a new store.
+   *
+   * If the store already exists, its data will be overwritten.
+   *
+   * If the store is already loaded you must use {@link getStore} instead.
+   *
+   * @example
+   * ```typescript
+   * import { Store } from '@tauri-apps/api/store';
+   * const store = await Store.create('store.json');
+   * ```
+   *
    * @param path Path to save the store in `app_data_dir`
    * @param options Store configuration options
    *
    * @throws If a store at that path already exists
    */
-  static async createStore(
-    path: string,
-    options?: StoreOptions
-  ): Promise<Store> {
+  static async create(path: string, options?: StoreOptions): Promise<Store> {
     const rid = await invoke<number>('plugin:store|create_store', {
       path,
       ...options
@@ -189,7 +198,18 @@ export class Store extends Resource implements IStore {
   }
 
   /**
-   * Create a new Store or get the existing store with the path
+   * Create a new Store or load the existing store with the path.
+   *
+   * If the store is already loaded you must use {@link getStore} instead.
+   *
+   * @example
+   * ```typescript
+   * import { Store } from '@tauri-apps/api/store';
+   * let store = await Store.get('store.json');
+   * if (!store) {
+   *   store = await Store.createOrLoad('store.json');
+   * }
+   * ```
    *
    * @param path Path to save the store in `app_data_dir`
    * @param options Store configuration options
@@ -206,11 +226,26 @@ export class Store extends Resource implements IStore {
   }
 
   /**
-   * @param path Path of the store in the rust side
+   * Gets an already loaded store.
+   *
+   * If the store is not loaded, returns `null`. In this case,
+   * you must either {@link Store.create | create} it or {@link Store.createOrLoad createOrLoad} it.
+   *
+   * @example
+   * ```typescript
+   * import { Store } from '@tauri-apps/api/store';
+   * let store = await Store.get('store.json');
+   * if (!store) {
+   *   store = await Store.createOrLoad('store.json');
+   * }
+   * ```
+   *
+   * @param path Path of the store.
    */
-  static async getStore(path: string): Promise<Store | undefined> {
-    const rid = await invoke<number | null>('plugin:store|get_store', { path })
-    return rid ? new Store(rid) : undefined
+  static async get(path: string): Promise<Store | null> {
+    return await invoke<number | null>('plugin:store|get_store', { path }).then(
+      (rid) => (rid ? new Store(rid) : null)
+    )
   }
 
   async set(key: string, value: unknown): Promise<void> {
