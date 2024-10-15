@@ -8,7 +8,7 @@ use std::{
     collections::HashMap,
     fs,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, MutexGuard},
     time::Duration,
 };
 use tauri::{path::BaseDirectory, AppHandle, Emitter, Manager, Resource, ResourceId, Runtime};
@@ -170,10 +170,11 @@ impl<R: Runtime> StoreBuilder<R> {
         self
     }
 
-    pub(crate) fn build_inner(mut self, load: bool) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
-        let state = self.app.state::<StoreState>();
-        let mut stores = state.stores.lock().unwrap();
-
+    pub(crate) fn build_inner(
+        mut self,
+        load: bool,
+        mut stores: MutexGuard<'_, HashMap<PathBuf, ResourceId>>,
+    ) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
         if stores.contains_key(&self.path) {
             return Err(crate::Error::AlreadyExists(self.path));
         }
@@ -227,7 +228,8 @@ impl<R: Runtime> StoreBuilder<R> {
     }
 
     pub(crate) fn create_inner(self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
-        self.build_inner(false)
+        let stores = self.app.state::<StoreState>().stores.clone();
+        self.build_inner(false, stores.lock().unwrap())
     }
 
     /// Get the existing store with the same path or creates a new [`Store`].
@@ -251,14 +253,13 @@ impl<R: Runtime> StoreBuilder<R> {
     }
 
     pub(crate) fn new_or_existing_inner(self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
-        {
-            let state = self.app.state::<StoreState>();
-            let stores = state.stores.lock().unwrap();
-            if let Some(rid) = stores.get(&self.path) {
-                return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
-            }
+        let stores = self.app.state::<StoreState>().stores.clone();
+        let stores_ = stores.lock().unwrap();
+        if let Some(rid) = stores_.get(&self.path) {
+            return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
         }
-        self.build_inner(true)
+
+        self.build_inner(true, stores_)
     }
 }
 

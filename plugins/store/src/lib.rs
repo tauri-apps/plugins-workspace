@@ -42,7 +42,7 @@ struct ChangePayload<'a> {
 
 #[derive(Debug)]
 pub struct StoreState {
-    stores: Mutex<HashMap<PathBuf, ResourceId>>,
+    stores: Arc<Mutex<HashMap<PathBuf, ResourceId>>>,
     serialize_fns: HashMap<String, SerializeFn>,
     deserialize_fns: HashMap<String, DeserializeFn>,
     default_serialize: SerializeFn,
@@ -477,7 +477,7 @@ impl<R: Runtime> Builder<R> {
             ])
             .setup(move |app_handle, _api| {
                 app_handle.manage(StoreState {
-                    stores: Mutex::new(HashMap::new()),
+                    stores: Arc::new(Mutex::new(HashMap::new())),
                     serialize_fns: self.serialize_fns,
                     deserialize_fns: self.deserialize_fns,
                     default_serialize: self.default_serialize,
