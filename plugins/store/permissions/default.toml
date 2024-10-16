@@ -25,6 +25,6 @@ permissions = [
   "allow-values",
   "allow-entries",
   "allow-length",
-  "allow-load",
+  "allow-reload",
   "allow-save",
 ]
