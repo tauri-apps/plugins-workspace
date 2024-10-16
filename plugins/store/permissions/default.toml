@@ -12,7 +12,7 @@ All operations are enabled by default.
 """
 permissions = [
   "allow-create-store",
-  "allow-new-or-existing",
+  "allow-load",
   "allow-get-store",
   "allow-close-store",
   "allow-set",

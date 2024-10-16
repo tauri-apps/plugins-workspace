@@ -116,7 +116,7 @@ async fn create_store<R: Runtime>(
 }
 
 #[tauri::command]
-async fn new_or_existing<R: Runtime>(
+async fn load<R: Runtime>(
     app: AppHandle<R>,
     store_state: State<'_, StoreState>,
     path: PathBuf,
@@ -132,7 +132,7 @@ async fn new_or_existing<R: Runtime>(
         serialize_fn_name,
         deserialize_fn_name,
     )?;
-    let (_, rid) = builder.new_or_existing_inner()?;
+    let (_, rid) = builder.load_inner()?;
     Ok(rid)
 }
 
@@ -229,9 +229,9 @@ async fn length<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<usize>
 }
 
 #[tauri::command]
-async fn load<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
+async fn reload<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
     let store = app.resources_table().get::<Store<R>>(rid)?;
-    store.load()
+    store.reload()
 }
 
 #[tauri::command]
@@ -290,7 +290,7 @@ pub trait StoreExt<R: Runtime> {
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = app.store_builder("users.json").auto_save(Duration::from_secs(1)).new_or_existing()?;
+    ///     let store = app.store_builder("users.json").auto_save(Duration::from_secs(1)).load()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -326,7 +326,7 @@ pub trait StoreExt<R: Runtime> {
 
 impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     fn store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
-        StoreBuilder::new(self.app_handle(), path).new_or_existing()
+        StoreBuilder::new(self.app_handle(), path).load()
     }
 
     fn create_store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
@@ -447,7 +447,7 @@ impl Builder {
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin").new_or_existing()?;
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin").load()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -455,7 +455,7 @@ impl Builder {
         plugin::Builder::new("store")
             .invoke_handler(tauri::generate_handler![
                 create_store,
-                new_or_existing,
+                load,
                 get_store,
                 close_store,
                 set,
@@ -468,7 +468,7 @@ impl Builder {
                 values,
                 length,
                 entries,
-                load,
+                reload,
                 save,
             ])
             .setup(move |app_handle, _api| {

@@ -405,14 +405,14 @@
           "const": "deny-load"
         },
         {
-          "description": "Enables the new_or_existing command without any pre-configured scope.",
+          "description": "Enables the reload command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-new-or-existing"
+          "const": "allow-reload"
         },
         {
-          "description": "Denies the new_or_existing command without any pre-configured scope.",
+          "description": "Denies the reload command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-new-or-existing"
+          "const": "deny-reload"
         },
         {
           "description": "Enables the reset command without any pre-configured scope.",

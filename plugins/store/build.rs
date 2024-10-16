@@ -4,7 +4,7 @@
 
 const COMMANDS: &[&str] = &[
     "create_store",
-    "new_or_existing",
+    "load",
     "get_store",
     "close_store",
     "set",
@@ -17,7 +17,7 @@ const COMMANDS: &[&str] = &[
     "values",
     "entries",
     "length",
-    "load",
+    "reload",
     "save",
 ];
 

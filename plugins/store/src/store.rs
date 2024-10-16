@@ -79,7 +79,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin")
     ///       .defaults(defaults)
-    ///       .new_or_existing()?;
+    ///       .load()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -97,7 +97,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin")
     ///       .default("foo".to_string(), "bar")
-    ///       .new_or_existing()?;
+    ///       .load()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -119,7 +119,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
     ///       .serialize(|cache| serde_json::to_vec(&cache).map_err(Into::into))
-    ///       .new_or_existing()?;
+    ///       .load()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -137,7 +137,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
     ///       .deserialize(|bytes| serde_json::from_slice(&bytes).map_err(Into::into))
-    ///       .new_or_existing()?;
+    ///       .load()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -155,7 +155,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
     ///         .auto_save(std::time::Duration::from_millis(100))
-    ///         .new_or_existing()?;
+    ///         .load()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -215,7 +215,7 @@ impl<R: Runtime> StoreBuilder<R> {
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").new_or_existing()?;
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").load()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -240,16 +240,16 @@ impl<R: Runtime> StoreBuilder<R> {
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").new_or_existing();
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").load();
     ///     Ok(())
     ///   });
     /// ```
-    pub fn new_or_existing(self) -> crate::Result<Arc<Store<R>>> {
-        let (store, _) = self.new_or_existing_inner()?;
+    pub fn load(self) -> crate::Result<Arc<Store<R>>> {
+        let (store, _) = self.load_inner()?;
         Ok(store)
     }
 
-    pub(crate) fn new_or_existing_inner(self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
+    pub(crate) fn load_inner(self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
         let stores = self.app.state::<StoreState>().stores.clone();
         let stores_ = stores.lock().unwrap();
         if let Some(rid) = stores_.get(&self.path) {
@@ -519,7 +519,7 @@ impl<R: Runtime> Store<R> {
     }
 
     /// Update the store from the on-disk state
-    pub fn load(&self) -> crate::Result<()> {
+    pub fn reload(&self) -> crate::Result<()> {
         self.store.lock().unwrap().load()
     }
 

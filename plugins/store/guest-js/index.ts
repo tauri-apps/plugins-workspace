@@ -55,11 +55,11 @@ export async function create(
  * @param path Path to save the store in `app_data_dir`
  * @param options Store configuration options
  */
-export async function newOrExisting(
+export async function load(
   path: string,
   options?: StoreOptions
 ): Promise<Store> {
-  return await Store.newOrExisting(path, options)
+  return await Store.load(path, options)
 }
 
 /**
@@ -77,7 +77,7 @@ export class LazyStore implements IStore {
 
   private get store(): Promise<Store> {
     if (!this._store) {
-      this._store = newOrExisting(this.path, this.options)
+      this._store = load(this.path, this.options)
     }
     return this._store
   }
@@ -180,6 +180,8 @@ export class Store extends Resource implements IStore {
    *
    * If the store already exists, its data will be overwritten.
    *
+   * To load the store if it already exists you must use {@link load} instead.
+   *
    * If the store is already loaded you must use {@link getStore} instead.
    *
    * @example
@@ -211,18 +213,15 @@ export class Store extends Resource implements IStore {
    * import { Store } from '@tauri-apps/api/store';
    * let store = await Store.get('store.json');
    * if (!store) {
-   *   store = await Store.newOrExisting('store.json');
+   *   store = await Store.load('store.json');
    * }
    * ```
    *
    * @param path Path to save the store in `app_data_dir`
    * @param options Store configuration options
    */
-  static async newOrExisting(
-    path: string,
-    options?: StoreOptions
-  ): Promise<Store> {
-    const rid = await invoke<number>('plugin:store|new_or_existing', {
+  static async load(path: string, options?: StoreOptions): Promise<Store> {
+    const rid = await invoke<number>('plugin:store|load', {
       path,
       ...options
     })
@@ -233,14 +232,14 @@ export class Store extends Resource implements IStore {
    * Gets an already loaded store.
    *
    * If the store is not loaded, returns `null`. In this case,
-   * you must either {@link Store.create | create} it or {@link Store.newOrExisting newOrExisting} it.
+   * you must either {@link Store.create | create} it or {@link Store.load load} it.
    *
    * @example
    * ```typescript
    * import { Store } from '@tauri-apps/api/store';
    * let store = await Store.get('store.json');
    * if (!store) {
-   *   store = await Store.newOrExisting('store.json');
+   *   store = await Store.load('store.json');
    * }
    * ```
    *
@@ -306,8 +305,8 @@ export class Store extends Resource implements IStore {
     return await invoke('plugin:store|length', { rid: this.rid })
   }
 
-  async load(): Promise<void> {
-    await invoke('plugin:store|load', { rid: this.rid })
+  async reload(): Promise<void> {
+    await invoke('plugin:store|reload', { rid: this.rid })
   }
 
   async save(): Promise<void> {
