@@ -170,6 +170,7 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
     if self.captureSession != nil {
       self.captureSession!.stopRunning()
       self.cameraView.removePreviewLayer()
+      self.cameraView.removeFromSuperview()
       self.captureVideoPreviewLayer = nil
       self.metaOutput = nil
       self.captureSession = nil
