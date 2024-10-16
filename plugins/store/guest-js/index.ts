@@ -179,8 +179,8 @@ export class LazyStore implements IStore {
     return (await this.store).length()
   }
 
-  async load(): Promise<void> {
-    await (await this.store).load()
+  async reload(): Promise<void> {
+    await (await this.store).reload()
   }
 
   async save(): Promise<void> {
@@ -474,7 +474,7 @@ interface IStore {
    * Note: This method does not emit change events.
    * @returns
    */
-  load(): Promise<void>
+  reload(): Promise<void>
 
   /**
    * Saves the store to disk at the store's `path`.
