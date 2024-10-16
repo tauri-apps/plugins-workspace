@@ -33,10 +33,24 @@ export type StoreOptions = {
 }
 
 /**
+ * Create a new store.
+ *
+ * If the store already exists, its data will be overwritten.
+ *
+ * To load the store if it already exists you must use {@link load} instead.
+ *
+ * If the store is already loaded you must use {@link getStore} instead.
+ *
+ * @example
+ * ```typescript
+ * import { Store } from '@tauri-apps/api/store';
+ * const store = await Store.create('store.json');
+ * ```
+ *
  * @param path Path to save the store in `app_data_dir`
  * @param options Store configuration options
  *
- * @throws If a store at that path already exists
+ * @throws If a store at that path is already loaded
  */
 export async function create(
   path: string,
@@ -48,12 +62,21 @@ export async function create(
 /**
  * Create a new Store or load the existing store with the path.
  *
- * If the store at the given path is already loaded,
- * its instance is returned regardless of the options object.
- * If the settings to not match an error is returned.
+ * If the store is already loaded you must use {@link getStore} instead.
+ *
+ * @example
+ * ```typescript
+ * import { Store } from '@tauri-apps/api/store';
+ * let store = await Store.get('store.json');
+ * if (!store) {
+ *   store = await Store.load('store.json');
+ * }
+ * ```
  *
  * @param path Path to save the store in `app_data_dir`
  * @param options Store configuration options
+ *
+ * @throws If a store at that path is already loaded
  */
 export async function load(
   path: string,
@@ -63,7 +86,24 @@ export async function load(
 }
 
 /**
- * @param path Path of the store
+ * Gets an already loaded store.
+ *
+ * If the store is not loaded, returns `null`. In this case,
+ * you must either {@link Store.create | create} it or {@link Store.load load} it.
+ *
+ * This function is more useful when you already know the store is loaded
+ * and just need to access its instance. Prefer {@link Store.load} otherwise.
+ *
+ * @example
+ * ```typescript
+ * import { getStore } from '@tauri-apps/api/store';
+ * let store = await getStore('store.json');
+ * if (!store) {
+ *   store = await Store.load('store.json');
+ * }
+ * ```
+ *
+ * @param path Path of the store.
  */
 export async function getStore(path: string): Promise<Store | null> {
   return await Store.get(path)
@@ -193,7 +233,7 @@ export class Store extends Resource implements IStore {
    * @param path Path to save the store in `app_data_dir`
    * @param options Store configuration options
    *
-   * @throws If a store at that path already exists
+   * @throws If a store at that path is already loaded
    */
   static async create(path: string, options?: StoreOptions): Promise<Store> {
     const rid = await invoke<number>('plugin:store|create_store', {
@@ -219,6 +259,8 @@ export class Store extends Resource implements IStore {
    *
    * @param path Path to save the store in `app_data_dir`
    * @param options Store configuration options
+   *
+   * @throws If a store at that path is already loaded
    */
   static async load(path: string, options?: StoreOptions): Promise<Store> {
     const rid = await invoke<number>('plugin:store|load', {
@@ -233,6 +275,9 @@ export class Store extends Resource implements IStore {
    *
    * If the store is not loaded, returns `null`. In this case,
    * you must either {@link Store.create | create} it or {@link Store.load load} it.
+   *
+   * This function is more useful when you already know the store is loaded
+   * and just need to access its instance. Prefer {@link Store.load} otherwise.
    *
    * @example
    * ```typescript
