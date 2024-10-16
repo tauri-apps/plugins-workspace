@@ -111,7 +111,7 @@ async fn create_store<R: Runtime>(
         serialize_fn_name,
         deserialize_fn_name,
     )?;
-    let (_, rid) = builder.create_inner()?;
+    let (_, rid) = builder.create_new().build_inner()?;
     Ok(rid)
 }
 
@@ -132,7 +132,7 @@ async fn load<R: Runtime>(
         serialize_fn_name,
         deserialize_fn_name,
     )?;
-    let (_, rid) = builder.load_inner()?;
+    let (_, rid) = builder.build_inner()?;
     Ok(rid)
 }
 
@@ -258,24 +258,6 @@ pub trait StoreExt<R: Runtime> {
     ///   });
     /// ```
     fn store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>>;
-    /// Create a store with default settings.
-    ///
-    /// If the store is already loaded you must check with [`Self::get_store`] or prefer [`Self::store`]
-    /// as it will return `Err(Error::AlreadyExists)`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tauri_plugin_store::StoreExt;
-    ///
-    /// tauri::Builder::default()
-    ///   .plugin(tauri_plugin_store::Builder::default().build())
-    ///   .setup(|app| {
-    ///     let store = app.create_store("my-store")?;
-    ///     Ok(())
-    ///   });
-    /// ```
-    fn create_store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>>;
     /// Get a store builder.
     ///
     /// The builder can be used to configure the store.
@@ -290,7 +272,7 @@ pub trait StoreExt<R: Runtime> {
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = app.store_builder("users.json").auto_save(Duration::from_secs(1)).load()?;
+    ///     let store = app.store_builder("users.json").auto_save(Duration::from_secs(1)).build()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -326,11 +308,7 @@ pub trait StoreExt<R: Runtime> {
 
 impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     fn store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
-        StoreBuilder::new(self.app_handle(), path).load()
-    }
-
-    fn create_store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
-        StoreBuilder::new(self.app_handle(), path).create()
+        StoreBuilder::new(self.app_handle(), path).build()
     }
 
     fn store_builder(&self, path: impl AsRef<Path>) -> StoreBuilder<R> {
@@ -447,7 +425,7 @@ impl Builder {
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin").load()?;
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin").build()?;
     ///     Ok(())
     ///   });
     /// ```

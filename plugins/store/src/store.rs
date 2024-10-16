@@ -8,7 +8,7 @@ use std::{
     collections::HashMap,
     fs,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex, MutexGuard},
+    sync::{Arc, Mutex},
     time::Duration,
 };
 use tauri::{path::BaseDirectory, AppHandle, Emitter, Manager, Resource, ResourceId, Runtime};
@@ -38,6 +38,7 @@ pub struct StoreBuilder<R: Runtime> {
     serialize_fn: SerializeFn,
     deserialize_fn: DeserializeFn,
     auto_save: Option<Duration>,
+    create_new: bool,
 }
 
 impl<R: Runtime> StoreBuilder<R> {
@@ -64,6 +65,7 @@ impl<R: Runtime> StoreBuilder<R> {
             serialize_fn,
             deserialize_fn,
             auto_save: Some(Duration::from_millis(100)),
+            create_new: false,
         }
     }
 
@@ -79,7 +81,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin")
     ///       .defaults(defaults)
-    ///       .load()?;
+    ///       .build()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -97,7 +99,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin")
     ///       .default("foo".to_string(), "bar")
-    ///       .load()?;
+    ///       .build()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -119,7 +121,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
     ///       .serialize(|cache| serde_json::to_vec(&cache).map_err(Into::into))
-    ///       .load()?;
+    ///       .build()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -137,7 +139,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
     ///       .deserialize(|bytes| serde_json::from_slice(&bytes).map_err(Into::into))
-    ///       .load()?;
+    ///       .build()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -155,7 +157,7 @@ impl<R: Runtime> StoreBuilder<R> {
     ///   .setup(|app| {
     ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
     ///         .auto_save(std::time::Duration::from_millis(100))
-    ///         .load()?;
+    ///         .build()?;
     ///     Ok(())
     ///   });
     /// ```
@@ -164,16 +166,25 @@ impl<R: Runtime> StoreBuilder<R> {
         self
     }
 
-    /// Disable auto save on modified with a debounce duration
+    /// Disable auto save on modified with a debounce duration.
     pub fn disable_auto_save(mut self) -> Self {
         self.auto_save = None;
         self
     }
 
-    pub(crate) fn build_inner(
-        mut self,
-        mut stores: MutexGuard<'_, HashMap<PathBuf, ResourceId>>,
-    ) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
+    /// Force create a new store even if it already exists.
+    pub fn create_new(mut self) -> Self {
+        self.create_new = true;
+        self
+    }
+
+    pub(crate) fn build_inner(mut self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
+        let stores = self.app.state::<StoreState>().stores.clone();
+        let mut stores = stores.lock().unwrap();
+        if let Some(rid) = stores.get(&self.path) {
+            return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
+        }
+
         if stores.contains_key(&self.path) {
             return Err(crate::Error::AlreadyExists(self.path));
         }
@@ -185,7 +196,10 @@ impl<R: Runtime> StoreBuilder<R> {
             self.serialize_fn,
             self.deserialize_fn,
         );
-        let _ = store_inner.load();
+
+        if !self.create_new {
+            let _ = store_inner.load();
+        }
 
         let store = Store {
             auto_save: self.auto_save,
@@ -200,63 +214,22 @@ impl<R: Runtime> StoreBuilder<R> {
         Ok((store, rid))
     }
 
-    /// Builds the [`Store`], also see [`build_or_existing`](Self::build_or_existing).
-    ///
-    /// This loads the store from disk and put the store in the app's resource table,
-    /// to remove it from the resource table, call [`Store::close_store`]
-    ///
-    /// # Errors
-    ///
-    /// If a store with this path is already in the resource table,
-    /// will return a [`crate::Error::AlreadyExists`]
-    ///
-    /// # Examples
-    /// ```
-    /// tauri::Builder::default()
-    ///   .plugin(tauri_plugin_store::Builder::default().build())
-    ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").load()?;
-    ///     Ok(())
-    ///   });
-    /// ```
-    pub fn create(self) -> crate::Result<Arc<Store<R>>> {
-        let (store, _) = self.create_inner()?;
-        Ok(store)
-    }
-
-    pub(crate) fn create_inner(self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
-        let stores = self.app.state::<StoreState>().stores.clone();
-        self.build_inner(stores.lock().unwrap())
-    }
-
-    /// Get the existing store with the same path or creates a new [`Store`].
+    /// Load the existing store with the same path or creates a new [`Store`].
     ///
     /// If a store with the same path has already been loaded its instance is returned.
     ///
-    /// See [`create`](Self::create) if you want to force create a new store in the path.
-    ///
     /// # Examples
     /// ```
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").load();
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.json").build();
     ///     Ok(())
     ///   });
     /// ```
-    pub fn load(self) -> crate::Result<Arc<Store<R>>> {
-        let (store, _) = self.load_inner()?;
+    pub fn build(self) -> crate::Result<Arc<Store<R>>> {
+        let (store, _) = self.build_inner()?;
         Ok(store)
-    }
-
-    pub(crate) fn load_inner(self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
-        let stores = self.app.state::<StoreState>().stores.clone();
-        let stores_ = stores.lock().unwrap();
-        if let Some(rid) = stores_.get(&self.path) {
-            return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
-        }
-
-        self.build_inner(stores_)
     }
 }
 
