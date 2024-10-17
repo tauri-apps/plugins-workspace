@@ -62,6 +62,7 @@ fn builder<R: Runtime>(
     auto_save: Option<AutoSave>,
     serialize_fn_name: Option<String>,
     deserialize_fn_name: Option<String>,
+    create_new: bool,
 ) -> Result<StoreBuilder<R>> {
     let mut builder = app.store_builder(path);
     if let Some(auto_save) = auto_save {
@@ -91,28 +92,12 @@ fn builder<R: Runtime>(
             .ok_or_else(|| crate::Error::DeserializeFunctionNotFound(deserialize_fn_name))?;
         builder = builder.deserialize(*deserialize_fn);
     }
-    Ok(builder)
-}
 
-#[tauri::command]
-async fn create_store<R: Runtime>(
-    app: AppHandle<R>,
-    store_state: State<'_, StoreState>,
-    path: PathBuf,
-    auto_save: Option<AutoSave>,
-    serialize_fn_name: Option<String>,
-    deserialize_fn_name: Option<String>,
-) -> Result<ResourceId> {
-    let builder = builder(
-        app,
-        store_state,
-        path,
-        auto_save,
-        serialize_fn_name,
-        deserialize_fn_name,
-    )?;
-    let (_, rid) = builder.create_new().build_inner()?;
-    Ok(rid)
+    if create_new {
+        builder = builder.create_new();
+    }
+
+    Ok(builder)
 }
 
 #[tauri::command]
@@ -123,6 +108,7 @@ async fn load<R: Runtime>(
     auto_save: Option<AutoSave>,
     serialize_fn_name: Option<String>,
     deserialize_fn_name: Option<String>,
+    create_new: Option<bool>,
 ) -> Result<ResourceId> {
     let builder = builder(
         app,
@@ -131,6 +117,7 @@ async fn load<R: Runtime>(
         auto_save,
         serialize_fn_name,
         deserialize_fn_name,
+        create_new.unwrap_or_default(),
     )?;
     let (_, rid) = builder.build_inner()?;
     Ok(rid)
@@ -432,7 +419,6 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         plugin::Builder::new("store")
             .invoke_handler(tauri::generate_handler![
-                create_store,
                 load,
                 get_store,
                 close_store,

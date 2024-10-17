@@ -9,7 +9,6 @@ All operations are enabled by default.
 
 
 
-- `allow-create-store`
 - `allow-load`
 - `allow-get-store`
 - `allow-close-store`
@@ -83,32 +82,6 @@ Enables the close_store command without any pre-configured scope.
 <td>
 
 Denies the close_store command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`store:allow-create-store`
-
-</td>
-<td>
-
-Enables the create_store command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`store:deny-create-store`
-
-</td>
-<td>
-
-Denies the create_store command without any pre-configured scope.
 
 </td>
 </tr>

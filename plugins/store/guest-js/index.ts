@@ -30,31 +30,10 @@ export type StoreOptions = {
    * Name of a deserialize function registered in the rust side plugin builder
    */
   deserializeFnName?: string
-}
-
-/**
- * Create a new store.
- *
- * If the store already exists, its data will be overwritten.
- *
- * To load the store if it already exists you must use {@link load} instead.
- *
- * If the store is already loaded you must use {@link getStore} instead.
- *
- * @example
- * ```typescript
- * import { Store } from '@tauri-apps/api/store';
- * const store = await Store.create('store.json');
- * ```
- *
- * @param path Path to save the store in `app_data_dir`
- * @param options Store configuration options
- */
-export async function create(
-  path: string,
-  options?: StoreOptions
-): Promise<Store> {
-  return await Store.create(path, options)
+  /**
+   * Force create a new store with default values even if it already exists.
+   */
+  createNew?: boolean
 }
 
 /**
@@ -79,8 +58,7 @@ export async function load(
 /**
  * Gets an already loaded store.
  *
- * If the store is not loaded, returns `null`. In this case,
- * you must either {@link Store.create | create} it or {@link Store.load load} it.
+ * If the store is not loaded, returns `null`. In this case you must {@link Store.load load} it.
  *
  * This function is more useful when you already know the store is loaded
  * and just need to access its instance. Prefer {@link Store.load} otherwise.
@@ -204,32 +182,6 @@ export class Store extends Resource implements IStore {
   }
 
   /**
-   * Create a new store.
-   *
-   * If the store already exists, its data will be overwritten.
-   *
-   * To load the store if it already exists you must use {@link load} instead.
-   *
-   * If the store is already loaded you must use {@link getStore} instead.
-   *
-   * @example
-   * ```typescript
-   * import { Store } from '@tauri-apps/api/store';
-   * const store = await Store.create('store.json');
-   * ```
-   *
-   * @param path Path to save the store in `app_data_dir`
-   * @param options Store configuration options
-   */
-  static async create(path: string, options?: StoreOptions): Promise<Store> {
-    const rid = await invoke<number>('plugin:store|create_store', {
-      path,
-      ...options
-    })
-    return new Store(rid)
-  }
-
-  /**
    * Create a new Store or load the existing store with the path.
    *
    * @example
@@ -252,8 +204,7 @@ export class Store extends Resource implements IStore {
   /**
    * Gets an already loaded store.
    *
-   * If the store is not loaded, returns `null`. In this case,
-   * you must either {@link Store.create | create} it or {@link Store.load load} it.
+   * If the store is not loaded, returns `null`. In this case you must {@link Store.load load} it.
    *
    * This function is more useful when you already know the store is loaded
    * and just need to access its instance. Prefer {@link Store.load} otherwise.

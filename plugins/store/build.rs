@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 
 const COMMANDS: &[&str] = &[
-    "create_store",
     "load",
     "get_store",
     "close_store",
