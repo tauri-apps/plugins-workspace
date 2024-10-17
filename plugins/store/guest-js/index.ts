@@ -311,11 +311,6 @@ export class Store extends Resource implements IStore {
       }
     })
   }
-
-  async close(): Promise<void> {
-    // The default close on `Resource` can only close resources in the webview's resource table
-    await invoke('plugin:store|close_store', { rid: this.rid })
-  }
 }
 
 interface IStore {

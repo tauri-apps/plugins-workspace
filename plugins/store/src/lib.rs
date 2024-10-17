@@ -134,11 +134,6 @@ async fn get_store<R: Runtime>(
 }
 
 #[tauri::command]
-async fn close_store<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
-    Ok(app.resources_table().close(rid)?)
-}
-
-#[tauri::command]
 async fn set<R: Runtime>(
     app: AppHandle<R>,
     rid: ResourceId,
@@ -419,21 +414,8 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         plugin::Builder::new("store")
             .invoke_handler(tauri::generate_handler![
-                load,
-                get_store,
-                close_store,
-                set,
-                get,
-                has,
-                delete,
-                clear,
-                reset,
-                keys,
-                values,
-                length,
-                entries,
-                reload,
-                save,
+                load, get_store, set, get, has, delete, clear, reset, keys, values, length,
+                entries, reload, save,
             ])
             .setup(move |app_handle, _api| {
                 app_handle.manage(StoreState {
