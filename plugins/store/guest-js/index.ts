@@ -65,10 +65,7 @@ export async function create(
  * @example
  * ```typescript
  * import { Store } from '@tauri-apps/api/store';
- * let store = await Store.get('store.json');
- * if (!store) {
- *   store = await Store.load('store.json');
- * }
+ * const store = await Store.load('store.json');
  * ```
  *
  * @param path Path to save the store in `app_data_dir`
@@ -93,10 +90,7 @@ export async function load(
  * @example
  * ```typescript
  * import { getStore } from '@tauri-apps/api/store';
- * let store = await getStore('store.json');
- * if (!store) {
- *   store = await Store.load('store.json');
- * }
+ * const store = await getStore('store.json');
  * ```
  *
  * @param path Path of the store.
@@ -245,10 +239,7 @@ export class Store extends Resource implements IStore {
    * @example
    * ```typescript
    * import { Store } from '@tauri-apps/api/store';
-   * let store = await Store.get('store.json');
-   * if (!store) {
-   *   store = await Store.load('store.json');
-   * }
+   * const store = await Store.load('store.json');
    * ```
    *
    * @param path Path to save the store in `app_data_dir`

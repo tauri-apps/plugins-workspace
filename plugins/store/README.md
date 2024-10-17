@@ -68,9 +68,9 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```typescript
-import { createStore } from '@tauri-apps/plugin-store'
+import { Store } from '@tauri-apps/plugin-store'
 
-const store = await createStore('settings.json')
+const store = await Store.load('settings.json')
 
 await store.set('some-key', { value: 5 })
 
