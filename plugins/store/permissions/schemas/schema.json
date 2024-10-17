@@ -305,16 +305,6 @@
           "const": "deny-clear"
         },
         {
-          "description": "Enables the close_store command without any pre-configured scope.",
-          "type": "string",
-          "const": "allow-close-store"
-        },
-        {
-          "description": "Denies the close_store command without any pre-configured scope.",
-          "type": "string",
-          "const": "deny-close-store"
-        },
-        {
           "description": "Enables the delete command without any pre-configured scope.",
           "type": "string",
           "const": "allow-delete"
