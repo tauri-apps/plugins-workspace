@@ -23,7 +23,7 @@ All operations are enabled by default.
 - `allow-values`
 - `allow-entries`
 - `allow-length`
-- `allow-load`
+- `allow-reload`
 - `allow-save`
 
 ## Permission Table

@@ -172,7 +172,7 @@ impl<R: Runtime> StoreBuilder<R> {
         self
     }
 
-    /// Force create a new store even if it already exists.
+    /// Force create a new store with default values even if it already exists.
     pub fn create_new(mut self) -> Self {
         self.create_new = true;
         self
@@ -181,13 +181,22 @@ impl<R: Runtime> StoreBuilder<R> {
     pub(crate) fn build_inner(mut self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
         let stores = self.app.state::<StoreState>().stores.clone();
         let mut stores = stores.lock().unwrap();
-        if let Some(rid) = stores.get(&self.path) {
-            return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
+
+        self.path = resolve_store_path(&self.app, self.path)?;
+
+        if self.create_new {
+            if let Some(rid) = stores.remove(&self.path) {
+                let _ = self.app.resources_table().take::<Store<R>>(rid);
+            }
+        } else {
+            if let Some(rid) = stores.get(&self.path) {
+                return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
+            }
         }
 
-        if stores.contains_key(&self.path) {
-            return Err(crate::Error::AlreadyExists(self.path));
-        }
+        // if stores.contains_key(&self.path) {
+        //     return Err(crate::Error::AlreadyExists(self.path));
+        // }
 
         let mut store_inner = StoreInner::new(
             self.app.clone(),

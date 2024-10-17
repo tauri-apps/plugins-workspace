@@ -49,8 +49,6 @@ export type StoreOptions = {
  *
  * @param path Path to save the store in `app_data_dir`
  * @param options Store configuration options
- *
- * @throws If a store at that path is already loaded
  */
 export async function create(
   path: string,
@@ -75,8 +73,6 @@ export async function create(
  *
  * @param path Path to save the store in `app_data_dir`
  * @param options Store configuration options
- *
- * @throws If a store at that path is already loaded
  */
 export async function load(
   path: string,
@@ -232,8 +228,6 @@ export class Store extends Resource implements IStore {
    *
    * @param path Path to save the store in `app_data_dir`
    * @param options Store configuration options
-   *
-   * @throws If a store at that path is already loaded
    */
   static async create(path: string, options?: StoreOptions): Promise<Store> {
     const rid = await invoke<number>('plugin:store|create_store', {
@@ -259,8 +253,6 @@ export class Store extends Resource implements IStore {
    *
    * @param path Path to save the store in `app_data_dir`
    * @param options Store configuration options
-   *
-   * @throws If a store at that path is already loaded
    */
   static async load(path: string, options?: StoreOptions): Promise<Store> {
     const rid = await invoke<number>('plugin:store|load', {

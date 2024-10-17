@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 
 use serde::{Serialize, Serializer};
-use std::path::PathBuf;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -21,9 +20,9 @@ pub enum Error {
     /// IO error.
     #[error(transparent)]
     Io(#[from] std::io::Error),
-    /// Store already exists
-    #[error("Store at \"{0}\" already exists")]
-    AlreadyExists(PathBuf),
+    // /// Store already exists
+    // #[error("Store at \"{0}\" already exists")]
+    // AlreadyExists(PathBuf),
     /// Serialize function not found
     #[error("Serialize Function \"{0}\" not found")]
     SerializeFunctionNotFound(String),
