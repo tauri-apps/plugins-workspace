@@ -188,10 +188,8 @@ impl<R: Runtime> StoreBuilder<R> {
             if let Some(rid) = stores.remove(&self.path) {
                 let _ = self.app.resources_table().take::<Store<R>>(rid);
             }
-        } else {
-            if let Some(rid) = stores.get(&self.path) {
-                return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
-            }
+        } else if let Some(rid) = stores.get(&self.path) {
+            return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
         }
 
         // if stores.contains_key(&self.path) {
