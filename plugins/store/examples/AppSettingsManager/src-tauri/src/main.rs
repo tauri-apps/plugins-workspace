@@ -5,9 +5,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::time::Duration;
-
 use serde_json::json;
+use tauri::Listener;
 use tauri_plugin_store::StoreExt;
 
 mod app;
@@ -18,17 +17,11 @@ fn main() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
             // Init store and load it from disk
-            let store = app
-                .handle()
-                .store_builder("settings.json")
-                .auto_save(Duration::from_millis(100))
-                .build();
-
-            // If there are no saved settings yet, this will return an error so we ignore the return value.
-            let _ = store.load();
-
+            let store = app.store("settings.json")?;
+            app.listen("store://change", |event| {
+                dbg!(event);
+            });
             let app_settings = AppSettings::load_from_store(&store);
-
             match app_settings {
                 Ok(app_settings) => {
                     let theme = app_settings.theme;

@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: MIT
 
 const COMMANDS: &[&str] = &[
-    "create_store",
+    "load",
+    "get_store",
     "set",
     "get",
     "has",
@@ -12,9 +13,9 @@ const COMMANDS: &[&str] = &[
     "reset",
     "keys",
     "values",
-    "length",
     "entries",
-    "load",
+    "length",
+    "reload",
     "save",
 ];
 
