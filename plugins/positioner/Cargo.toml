@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-positioner"
-version = "2.0.1"
+version = "2.0.2"
 description = "Position your windows at well-known locations."
 authors = { workspace = true }
 license = { workspace = true }
