@@ -13,11 +13,10 @@ use tauri::{
 
 use crate::{
     open::Program,
-    process::{CommandEvent, TerminatedPayload},
+    process::{CommandEvent, ExitStatus, TerminatedPayload},
     scope::ExecuteArgs,
     Shell,
 };
-use std::process::ExitStatus;
 
 type ChildId = u32;
 
@@ -304,14 +303,13 @@ pub fn kill<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn wait<R: Runtime>(
+pub async fn wait<R: Runtime>(
     _window: Window<R>,
     shell: State<'_, Shell<R>>,
     pid: ChildId,
 ) -> crate::Result<ExitStatus> {
     if let Some(child) = shell.children.lock().unwrap().get(&pid) {
-        let exitstatus: ExitStatus = child.wait()?;
-        Ok(exitstatus)
+        child.wait().await
     } else {
         Err(crate::Error::UnknowChildProcess)
     }

@@ -86,9 +86,11 @@ impl CommandChild {
     }
 
     /// Waits for the child to exit completely, returning the status that it exited with.
-    pub fn wait(self) -> crate::Result<std::process::ExitStatus> {
+    pub async fn wait(self) -> crate::Result<ExitStatus> {
         let exitstatus = self.inner.wait()?;
-        Ok(exitstatus)
+        Ok(ExitStatus {
+            code: exitstatus.code(),
+        })
     }
 }
 
