@@ -60,8 +60,6 @@ export async function create(
 /**
  * Create a new Store or load the existing store with the path.
  *
- * If the store is already loaded you must use {@link getStore} instead.
- *
  * @example
  * ```typescript
  * import { Store } from '@tauri-apps/api/store';
@@ -233,8 +231,6 @@ export class Store extends Resource implements IStore {
 
   /**
    * Create a new Store or load the existing store with the path.
-   *
-   * If the store is already loaded you must use {@link getStore} instead.
    *
    * @example
    * ```typescript
