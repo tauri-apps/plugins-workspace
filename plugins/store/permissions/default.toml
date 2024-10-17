@@ -13,6 +13,7 @@ All operations are enabled by default.
 permissions = [
   "allow-load",
   "allow-get-store",
+  "allow-close-store",
   "allow-set",
   "allow-get",
   "allow-has",

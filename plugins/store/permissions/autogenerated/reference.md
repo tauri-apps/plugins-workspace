@@ -11,6 +11,7 @@ All operations are enabled by default.
 
 - `allow-load`
 - `allow-get-store`
+- `allow-close-store`
 - `allow-set`
 - `allow-get`
 - `allow-has`
@@ -55,6 +56,32 @@ Enables the clear command without any pre-configured scope.
 <td>
 
 Denies the clear command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-close-store`
+
+</td>
+<td>
+
+Enables the close_store command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-close-store`
+
+</td>
+<td>
+
+Denies the close_store command without any pre-configured scope.
 
 </td>
 </tr>
