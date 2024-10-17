@@ -17,6 +17,7 @@ use crate::{
     scope::ExecuteArgs,
     Shell,
 };
+use std::process::ExitStatus;
 
 type ChildId = u32;
 
@@ -300,6 +301,20 @@ pub fn kill<R: Runtime>(
         child.kill()?;
     }
     Ok(())
+}
+
+#[tauri::command]
+pub fn wait<R: Runtime>(
+    _window: Window<R>,
+    shell: State<'_, Shell<R>>,
+    pid: ChildId,
+) -> crate::Result<ExitStatus> {
+    if let Some(child) = shell.children.lock().unwrap().get(&pid) {
+        let exitstatus: ExitStatus = child.wait()?;
+        Ok(exitstatus)
+    } else {
+        Err(crate::Error::UnknowChildProcess)
+    }
 }
 
 #[tauri::command]
