@@ -10,6 +10,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.webkit.MimeTypeMap
 import androidx.activity.result.ActivityResult
 import app.tauri.Logger
 import app.tauri.annotation.ActivityCallback
@@ -43,6 +44,7 @@ class MessageOptions {
 @InvokeArg
 class SaveFileDialogOptions {
   var fileName: String? = null
+  lateinit var filters: Array<Filter>
 }
 
 @TauriPlugin
@@ -57,20 +59,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
       
       val intent = if (parsedTypes.isNotEmpty()) {
         val intent = Intent(Intent.ACTION_PICK)
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, parsedTypes)
-        
-        var uniqueMimeType = true
-        var mimeKind: String? = null
-        for (mime in parsedTypes) {
-          val kind = mime.split("/")[0]
-          if (mimeKind == null) {
-            mimeKind = kind
-          } else if (mimeKind != kind) {
-            uniqueMimeType = false
-          }
-        }
-        
-        intent.type = if (uniqueMimeType) Intent.normalizeMimeType("$mimeKind/*") else "*/*"
+        setIntentMimeTypes(intent, parsedTypes)
         intent
       } else {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
@@ -130,11 +119,45 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
   private fun parseFiltersOption(filters: Array<Filter>): Array<String> {
     val mimeTypes = mutableListOf<String>()
     for (filter in filters) {
-      for (mime in filter.extensions) {
-        mimeTypes.add(if (mime == "text/csv") "text/comma-separated-values" else mime)
+      for (ext in filter.extensions) {
+        if (ext.contains('/')) {
+          mimeTypes.add(if (ext == "text/csv") "text/comma-separated-values" else ext)
+        } else {
+          MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)?.let {
+            mimeTypes.add(it)
+          }
+        }
       }
     }
     return mimeTypes.toTypedArray()
+  }
+
+  private fun setIntentMimeTypes(intent: Intent, mimeTypes: Array<String>) {
+    if (mimeTypes.isNotEmpty()) {
+      var uniqueMimeKind = true
+      var mimeKind: String? = null
+      for (mime in mimeTypes) {
+        val kind = mime.split("/")[0]
+        if (mimeKind == null) {
+          mimeKind = kind
+        } else if (mimeKind != kind) {
+          uniqueMimeKind = false
+        }
+      }
+
+      if (uniqueMimeKind) {
+        if (mimeTypes.size > 1) {
+          intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
+          intent.type = Intent.normalizeMimeType("$mimeKind/*")
+        } else {
+          intent.type = mimeTypes[0]
+        }
+      } else {
+        intent.type = "*/*"
+      }
+    } else {
+      intent.type = "*/*"
+    }
   }
   
   @Command
@@ -187,10 +210,12 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
   fun saveFileDialog(invoke: Invoke) {
     try {
       val args = invoke.parseArgs(SaveFileDialogOptions::class.java)
+      val parsedTypes = parseFiltersOption(args.filters)
 
       val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+      setIntentMimeTypes(intent, parsedTypes)
+
       intent.addCategory(Intent.CATEGORY_OPENABLE)
-      intent.setType("text/plain")
       intent.putExtra(Intent.EXTRA_TITLE, args.fileName ?: "")
       startActivityForResult(invoke, intent, "saveFileDialogResult")
     } catch (ex: Exception) {

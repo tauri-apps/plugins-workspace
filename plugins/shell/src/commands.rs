@@ -303,7 +303,7 @@ pub fn kill<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn open<R: Runtime>(
+pub async fn open<R: Runtime>(
     _window: Window<R>,
     shell: State<'_, Shell<R>>,
     path: String,

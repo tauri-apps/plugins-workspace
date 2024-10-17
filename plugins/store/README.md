@@ -70,7 +70,7 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 ```typescript
 import { Store } from '@tauri-apps/plugin-store'
 
-const store = new Store('.settings.dat')
+const store = await Store.load('settings.json')
 
 await store.set('some-key', { value: 5 })
 
@@ -81,14 +81,11 @@ if (val) {
 } else {
   console.log('val is null')
 }
-
-// This manually saves the store.
-await store.save()
 ```
 
 ### Persisting Values
 
-As seen above, values added to the store are not persisted between application loads unless the application is closed gracefully.
+Modifications made to the store are automatically saved by default
 
 You can manually save a store with:
 
@@ -103,65 +100,43 @@ However, you can also load them manually later like so:
 await store.load()
 ```
 
+### LazyStore
+
+There's also a high level API `LazyStore` which only loads the store on first access, note that the options will be ignored if a `Store` with that path has already been created
+
+```typescript
+import { LazyStore } from '@tauri-apps/plugin-store'
+
+const store = new LazyStore('settings.json')
+```
+
 ## Usage from Rust
 
 You can also create `Store` instances directly in Rust:
 
 ```rust
-use tauri_plugin_store::StoreBuilder;
+use tauri_plugin_store::StoreExt;
 use serde_json::json;
 
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
         .setup(|app| {
-            let mut store = StoreBuilder::new("app_data.bin").build(app.handle().clone());
-
-            // Attempt to load the store, if it's saved already.
-            store.load().expect("Failed to load store from disk");
+            // This loads the store from disk
+            let store = app.store("app_data.json")?;
 
             // Note that values must be serde_json::Value instances,
             // otherwise, they will not be compatible with the JavaScript bindings.
-            store.insert("a".to_string(), json!("b"));
-
-            // You can manually save the store after making changes.
-            // Otherwise, it will save upon graceful exit as described above.
-            store.save()
+            store.set("a".to_string(), json!("b"));
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 ```
 
-### Loading Gracefully
-
-If you call `load` on a `Store` that hasn't yet been written to the disk, it will return an error. You must handle this error if you want to gracefully continue and use the default store until you save it to the disk. The example above shows how to do this.
-
-For example, this would cause a panic if the store has not yet been created:
-
-```rust
-store.load().unwrap();
-```
-
-Rather than silently continuing like you may expect.
-
-You should always handle the error appropriately rather than unwrapping, or you may experience unexpected app crashes:
-
-```rust
-store.load().expect("Failed to load store from disk");
-```
-
 ### Frontend Interoperability
 
-As you may have noticed, the `Store` crated above isn't accessible to the frontend. To interoperate with stores created by JavaScript use the exported `with_store` method:
-
-```rust
-use tauri::Wry;
-use tauri_plugin_store::StoreExt;
-
-let store = app.store_builder("app_data.bin").build();
-store.insert("key", "value");
-```
+The store created from both Rust side and JavaScript side are stored in the app's resource table and can be accessed by both sides, you can access it by using the same path, with `getStore` and `LazyStore` in the JavaScript side and `get_store` and `store` in the Rust side
 
 ## Contributing
 
