@@ -59,6 +59,8 @@ pub enum MessageDialogButtons {
     Ok,
     /// 2 buttons `Ok` and `Cancel` with OS default dialog texts
     OkCancel,
+    /// 2 buttons `Yes` and `No` with OS default dialog texts
+    YesNo,
     /// A single `Ok` button with custom text
     OkCustom(String),
     /// 2 buttons `Ok` and `Cancel` with custom texts
