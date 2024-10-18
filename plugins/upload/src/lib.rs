@@ -13,6 +13,9 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
+mod transfer_stats;
+use transfer_stats::TransferStats;
+
 use futures_util::TryStreamExt;
 use serde::{ser::Serializer, Serialize};
 use tauri::{
@@ -58,6 +61,7 @@ impl Serialize for Error {
 struct ProgressPayload {
     progress: u64,
     total: u64,
+    transfer_speed: u64,
 }
 
 #[command]
@@ -88,11 +92,14 @@ async fn download(
     let mut file = BufWriter::new(File::create(file_path).await?);
     let mut stream = response.bytes_stream();
 
+    let mut stats = TransferStats::default();
     while let Some(chunk) = stream.try_next().await? {
         file.write_all(&chunk).await?;
+        stats.record_chunk_transfer(chunk.len());
         let _ = on_progress.send(ProgressPayload {
             progress: chunk.len() as u64,
             total,
+            transfer_speed: stats.transfer_speed,
         });
     }
     file.flush().await?;
@@ -138,10 +145,12 @@ async fn upload(
 fn file_to_body(channel: Channel<ProgressPayload>, file: File) -> reqwest::Body {
     let stream = FramedRead::new(file, BytesCodec::new()).map_ok(|r| r.freeze());
 
+    let mut stats = TransferStats::default();
     reqwest::Body::wrap_stream(ReadProgressStream::new(
         stream,
         Box::new(move |progress, total| {
-            let _ = channel.send(ProgressPayload { progress, total });
+            stats.record_chunk_transfer(progress as usize);
+            let _ = channel.send(ProgressPayload { progress, total, transfer_speed: stats.transfer_speed });
         }),
     ))
 }
