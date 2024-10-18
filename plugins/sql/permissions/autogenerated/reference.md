@@ -1,6 +1,6 @@
 ## Default Permission
 
-# Tauri SQL Default Permissions
+### Default Permissions
 
 This permission set configures what kind of
 database operations are available from the sql plugin.
@@ -16,7 +16,7 @@ Also allows to load or close a connection.
 - `allow-load`
 - `allow-select`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
@@ -18,7 +19,7 @@
         <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="$USER_HOME$/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tauri-2.0.0-rc.7/mobile/android" />
+            <option value="$USER_HOME$/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tauri-2.0.2/mobile/android" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/buildSrc" />
@@ -27,6 +28,8 @@
             <option value="$PROJECT_DIR$/../../../../../plugins/clipboard-manager/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/dialog/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/fs/android" />
+            <option value="$PROJECT_DIR$/../../../../../plugins/geolocation/android" />
+            <option value="$PROJECT_DIR$/../../../../../plugins/haptics/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/nfc/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/notification/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/shell/android" />

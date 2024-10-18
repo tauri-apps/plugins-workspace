@@ -12,270 +12,390 @@
 )]
 
 pub use error::{Error, Result};
-use log::warn;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 pub use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::Mutex,
+    sync::{Arc, Mutex},
+    time::Duration,
 };
-pub use store::{Store, StoreBuilder};
+pub use store::{resolve_store_path, DeserializeFn, SerializeFn, Store, StoreBuilder};
 use tauri::{
     plugin::{self, TauriPlugin},
-    AppHandle, Manager, RunEvent, Runtime, State,
+    AppHandle, Manager, ResourceId, RunEvent, Runtime, State,
 };
 
 mod error;
 mod store;
 
 #[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 struct ChangePayload<'a> {
     path: &'a Path,
+    resource_id: Option<u32>,
     key: &'a str,
-    value: &'a JsonValue,
+    value: Option<&'a JsonValue>,
+    exists: bool,
 }
 
-pub struct StoreCollection<R: Runtime> {
-    stores: Mutex<HashMap<PathBuf, Store<R>>>,
-    frozen: bool,
+#[derive(Debug)]
+struct StoreState {
+    stores: Arc<Mutex<HashMap<PathBuf, ResourceId>>>,
+    serialize_fns: HashMap<String, SerializeFn>,
+    deserialize_fns: HashMap<String, DeserializeFn>,
+    default_serialize: SerializeFn,
+    default_deserialize: DeserializeFn,
 }
 
-pub fn with_store<R: Runtime, T, F: FnOnce(&mut Store<R>) -> Result<T>>(
+#[derive(Serialize, Deserialize)]
+#[serde(untagged)]
+enum AutoSave {
+    DebounceDuration(u64),
+    Bool(bool),
+}
+
+fn builder<R: Runtime>(
     app: AppHandle<R>,
-    collection: State<'_, StoreCollection<R>>,
-    path: impl AsRef<Path>,
-    f: F,
-) -> Result<T> {
-    let mut stores = collection.stores.lock().expect("mutex poisoned");
-
-    let path = path.as_ref();
-    if !stores.contains_key(path) {
-        if collection.frozen {
-            return Err(Error::NotFound(path.to_path_buf()));
+    store_state: State<'_, StoreState>,
+    path: PathBuf,
+    auto_save: Option<AutoSave>,
+    serialize_fn_name: Option<String>,
+    deserialize_fn_name: Option<String>,
+    create_new: bool,
+) -> Result<StoreBuilder<R>> {
+    let mut builder = app.store_builder(path);
+    if let Some(auto_save) = auto_save {
+        match auto_save {
+            AutoSave::DebounceDuration(duration) => {
+                builder = builder.auto_save(Duration::from_millis(duration));
+            }
+            AutoSave::Bool(false) => {
+                builder = builder.disable_auto_save();
+            }
+            _ => {}
         }
-
-        #[allow(unused_mut)]
-        let mut builder = StoreBuilder::new(path);
-
-        let mut store = builder.build(app);
-
-        // ignore loading errors, just use the default
-        if let Err(err) = store.load() {
-            warn!(
-                "Failed to load store {:?} from disk: {}. Falling back to default values.",
-                path, err
-            );
-        }
-        stores.insert(path.to_path_buf(), store);
     }
 
-    f(stores
-        .get_mut(path)
-        .expect("failed to retrieve store. This is a bug!"))
-}
+    if let Some(serialize_fn_name) = serialize_fn_name {
+        let serialize_fn = store_state
+            .serialize_fns
+            .get(&serialize_fn_name)
+            .ok_or_else(|| crate::Error::SerializeFunctionNotFound(serialize_fn_name))?;
+        builder = builder.serialize(*serialize_fn);
+    }
 
-#[tauri::command]
-async fn set<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-    key: String,
-    value: JsonValue,
-) -> Result<()> {
-    with_store(app, stores, path, |store| store.insert(key, value))
-}
+    if let Some(deserialize_fn_name) = deserialize_fn_name {
+        let deserialize_fn = store_state
+            .deserialize_fns
+            .get(&deserialize_fn_name)
+            .ok_or_else(|| crate::Error::DeserializeFunctionNotFound(deserialize_fn_name))?;
+        builder = builder.deserialize(*deserialize_fn);
+    }
 
-#[tauri::command]
-async fn get<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-    key: String,
-) -> Result<Option<JsonValue>> {
-    with_store(app, stores, path, |store| Ok(store.get(key).cloned()))
-}
+    if create_new {
+        builder = builder.create_new();
+    }
 
-#[tauri::command]
-async fn has<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-    key: String,
-) -> Result<bool> {
-    with_store(app, stores, path, |store| Ok(store.has(key)))
-}
-
-#[tauri::command]
-async fn delete<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-    key: String,
-) -> Result<bool> {
-    with_store(app, stores, path, |store| store.delete(key))
-}
-
-#[tauri::command]
-async fn clear<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-) -> Result<()> {
-    with_store(app, stores, path, |store| store.clear())
-}
-
-#[tauri::command]
-async fn reset<R: Runtime>(
-    app: AppHandle<R>,
-    collection: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-) -> Result<()> {
-    with_store(app, collection, path, |store| store.reset())
-}
-
-#[tauri::command]
-async fn keys<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-) -> Result<Vec<String>> {
-    with_store(app, stores, path, |store| {
-        Ok(store.keys().cloned().collect())
-    })
-}
-
-#[tauri::command]
-async fn values<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-) -> Result<Vec<JsonValue>> {
-    with_store(app, stores, path, |store| {
-        Ok(store.values().cloned().collect())
-    })
-}
-
-#[tauri::command]
-async fn entries<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-) -> Result<Vec<(String, JsonValue)>> {
-    with_store(app, stores, path, |store| {
-        Ok(store
-            .entries()
-            .map(|(k, v)| (k.to_owned(), v.to_owned()))
-            .collect())
-    })
-}
-
-#[tauri::command]
-async fn length<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-    path: PathBuf,
-) -> Result<usize> {
-    with_store(app, stores, path, |store| Ok(store.len()))
+    Ok(builder)
 }
 
 #[tauri::command]
 async fn load<R: Runtime>(
     app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
+    store_state: State<'_, StoreState>,
     path: PathBuf,
-) -> Result<()> {
-    with_store(app, stores, path, |store| store.load())
+    auto_save: Option<AutoSave>,
+    serialize_fn_name: Option<String>,
+    deserialize_fn_name: Option<String>,
+    create_new: Option<bool>,
+) -> Result<ResourceId> {
+    let builder = builder(
+        app,
+        store_state,
+        path,
+        auto_save,
+        serialize_fn_name,
+        deserialize_fn_name,
+        create_new.unwrap_or_default(),
+    )?;
+    let (_, rid) = builder.build_inner()?;
+    Ok(rid)
 }
 
 #[tauri::command]
-async fn save<R: Runtime>(
+async fn get_store<R: Runtime>(
     app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
+    store_state: State<'_, StoreState>,
     path: PathBuf,
+) -> Result<Option<ResourceId>> {
+    let stores = store_state.stores.lock().unwrap();
+    Ok(stores.get(&resolve_store_path(&app, path)?).copied())
+}
+
+#[tauri::command]
+async fn set<R: Runtime>(
+    app: AppHandle<R>,
+    rid: ResourceId,
+    key: String,
+    value: JsonValue,
 ) -> Result<()> {
-    with_store(app, stores, path, |store| store.save())
+    let store = app.resources_table().get::<Store<R>>(rid)?;
+    store.set(key, value);
+    Ok(())
 }
 
-// #[derive(Default)]
-pub struct Builder<R: Runtime> {
-    stores: HashMap<PathBuf, Store<R>>,
-    frozen: bool,
+#[tauri::command]
+async fn get<R: Runtime>(
+    app: AppHandle<R>,
+    rid: ResourceId,
+    key: String,
+) -> Result<(Option<JsonValue>, bool)> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
+    let value = store.get(key);
+    let exists = value.is_some();
+    Ok((value, exists))
 }
 
-impl<R: Runtime> Default for Builder<R> {
+#[tauri::command]
+async fn has<R: Runtime>(app: AppHandle<R>, rid: ResourceId, key: String) -> Result<bool> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
+    Ok(store.has(key))
+}
+
+#[tauri::command]
+async fn delete<R: Runtime>(app: AppHandle<R>, rid: ResourceId, key: String) -> Result<bool> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
+    Ok(store.delete(key))
+}
+
+#[tauri::command]
+async fn clear<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
+    store.clear();
+    Ok(())
+}
+
+#[tauri::command]
+async fn reset<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
+    store.reset();
+    Ok(())
+}
+
+#[tauri::command]
+async fn keys<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<Vec<String>> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
+    Ok(store.keys())
+}
+
+#[tauri::command]
+async fn values<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<Vec<JsonValue>> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
+    Ok(store.values())
+}
+
+#[tauri::command]
+async fn entries<R: Runtime>(
+    app: AppHandle<R>,
+    rid: ResourceId,
+) -> Result<Vec<(String, JsonValue)>> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
+    Ok(store.entries())
+}
+
+#[tauri::command]
+async fn length<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<usize> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
+    Ok(store.length())
+}
+
+#[tauri::command]
+async fn reload<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
+    store.reload()
+}
+
+#[tauri::command]
+async fn save<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
+    let store = app.resources_table().get::<Store<R>>(rid)?;
+    store.save()
+}
+
+pub trait StoreExt<R: Runtime> {
+    /// Create a store or load an existing store with default settings at the given path.
+    ///
+    /// If the store is already loaded, its instance is automatically returned.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tauri_plugin_store::StoreExt;
+    ///
+    /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
+    ///   .setup(|app| {
+    ///     let store = app.store("my-store")?;
+    ///     Ok(())
+    ///   });
+    /// ```
+    fn store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>>;
+    /// Get a store builder.
+    ///
+    /// The builder can be used to configure the store.
+    /// To use the default settings see [`Self::store`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tauri_plugin_store::StoreExt;
+    /// use std::time::Duration;
+    ///
+    /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
+    ///   .setup(|app| {
+    ///     let store = app.store_builder("users.json").auto_save(Duration::from_secs(1)).build()?;
+    ///     Ok(())
+    ///   });
+    /// ```
+    fn store_builder(&self, path: impl AsRef<Path>) -> StoreBuilder<R>;
+    /// Get a handle of an already loaded store.
+    ///
+    /// If the store is not loaded or does not exist, it returns `None`.
+    ///
+    /// Note that using this function can cause race conditions if you fallback to creating or loading the store,
+    /// so you should consider using [`Self::store`] if you are not sure if the store is loaded or not.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tauri_plugin_store::StoreExt;
+    ///
+    /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
+    ///   .setup(|app| {
+    ///     let store = if let Some(s) = app.get_store("store.json") {
+    ///       s
+    ///     } else {
+    ///       // this is not thread safe; if another thread is doing the same load/create,
+    ///       // there will be a race condition; in this case we could remove the get_store
+    ///       // and only run app.store() as it will return the existing store if it has been loaded
+    ///       app.store("store.json")?
+    ///     };
+    ///     Ok(())
+    ///   });
+    /// ```
+    fn get_store(&self, path: impl AsRef<Path>) -> Option<Arc<Store<R>>>;
+}
+
+impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
+    fn store(&self, path: impl AsRef<Path>) -> Result<Arc<Store<R>>> {
+        StoreBuilder::new(self.app_handle(), path).build()
+    }
+
+    fn store_builder(&self, path: impl AsRef<Path>) -> StoreBuilder<R> {
+        StoreBuilder::new(self.app_handle(), path)
+    }
+
+    fn get_store(&self, path: impl AsRef<Path>) -> Option<Arc<Store<R>>> {
+        let collection = self.state::<StoreState>();
+        let stores = collection.stores.lock().unwrap();
+        stores
+            .get(&resolve_store_path(self.app_handle(), path.as_ref()).ok()?)
+            .and_then(|rid| self.resources_table().get(*rid).ok())
+    }
+}
+
+fn default_serialize(
+    cache: &HashMap<String, JsonValue>,
+) -> std::result::Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
+    Ok(serde_json::to_vec_pretty(&cache)?)
+}
+
+fn default_deserialize(
+    bytes: &[u8],
+) -> std::result::Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>> {
+    serde_json::from_slice(bytes).map_err(Into::into)
+}
+
+pub struct Builder {
+    serialize_fns: HashMap<String, SerializeFn>,
+    deserialize_fns: HashMap<String, DeserializeFn>,
+    default_serialize: SerializeFn,
+    default_deserialize: DeserializeFn,
+}
+
+impl Default for Builder {
     fn default() -> Self {
         Self {
-            stores: Default::default(),
-            frozen: false,
+            serialize_fns: Default::default(),
+            deserialize_fns: Default::default(),
+            default_serialize,
+            default_deserialize,
         }
     }
 }
 
-impl<R: Runtime> Builder<R> {
+impl Builder {
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Registers a store with the plugin.
+    /// Register a serialize function to access it from the JavaScript side
     ///
     /// # Examples
     ///
     /// ```
-    /// use tauri_plugin_store::{StoreBuilder, Builder};
+    /// fn no_pretty_json(
+    ///     cache: &std::collections::HashMap<String, serde_json::Value>,
+    /// ) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
+    ///     Ok(serde_json::to_vec(&cache)?)
+    /// }
     ///
     /// tauri::Builder::default()
-    ///   .setup(|app| {
-    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
-    ///     let builder = Builder::default().store(store);
-    ///     Ok(())
-    ///   });
+    ///     .plugin(
+    ///         tauri_plugin_store::Builder::default()
+    ///             .register_serialize_fn("no-pretty-json".to_owned(), no_pretty_json)
+    ///             .build(),
+    ///     );
     /// ```
-    pub fn store(mut self, store: Store<R>) -> Self {
-        self.stores.insert(store.path.clone(), store);
+    pub fn register_serialize_fn(mut self, name: String, serialize_fn: SerializeFn) -> Self {
+        self.serialize_fns.insert(name, serialize_fn);
         self
     }
 
-    /// Registers multiple stores with the plugin.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tauri_plugin_store::{StoreBuilder, Builder};
-    ///
-    /// tauri::Builder::default()
-    ///   .setup(|app| {
-    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
-    ///     let builder = Builder::default().stores([store]);
-    ///     Ok(())
-    ///   });
-    /// ```
-    pub fn stores<T: IntoIterator<Item = Store<R>>>(mut self, stores: T) -> Self {
-        self.stores = stores
-            .into_iter()
-            .map(|store| (store.path.clone(), store))
-            .collect();
+    /// Register a deserialize function to access it from the JavaScript side
+    pub fn register_deserialize_fn(mut self, name: String, deserialize_fn: DeserializeFn) -> Self {
+        self.deserialize_fns.insert(name, deserialize_fn);
         self
     }
 
-    /// Freezes the collection.
-    ///
-    /// This causes requests for plugins that haven't been registered to fail
+    /// Use this serialize function for stores by default
     ///
     /// # Examples
     ///
     /// ```
-    /// use tauri_plugin_store::{StoreBuilder, Builder};
+    /// fn no_pretty_json(
+    ///     cache: &std::collections::HashMap<String, serde_json::Value>,
+    /// ) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
+    ///     Ok(serde_json::to_vec(&cache)?)
+    /// }
     ///
     /// tauri::Builder::default()
-    ///   .setup(|app| {
-    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
-    ///     app.handle().plugin(Builder::default().freeze().build());
-    ///     Ok(())
-    ///   });
+    ///     .plugin(
+    ///         tauri_plugin_store::Builder::default()
+    ///             .default_serialize_fn(no_pretty_json)
+    ///             .build(),
+    ///     );
     /// ```
-    pub fn freeze(mut self) -> Self {
-        self.frozen = true;
+    pub fn default_serialize_fn(mut self, serialize_fn: SerializeFn) -> Self {
+        self.default_serialize = serialize_fn;
+        self
+    }
+
+    /// Use this deserialize function for stores by default
+    pub fn default_deserialize_fn(mut self, deserialize_fn: DeserializeFn) -> Self {
+        self.default_deserialize = deserialize_fn;
         self
     }
 
@@ -284,45 +404,38 @@ impl<R: Runtime> Builder<R> {
     /// # Examples
     ///
     /// ```
-    /// use tauri_plugin_store::{StoreBuilder, Builder};
-    ///
     /// tauri::Builder::default()
+    ///   .plugin(tauri_plugin_store::Builder::default().build())
     ///   .setup(|app| {
-    ///     let store = StoreBuilder::new("store.bin").build(app.handle().clone());
-    ///     app.handle().plugin(Builder::default().build());
+    ///     let store = tauri_plugin_store::StoreBuilder::new(app, "store.bin").build()?;
     ///     Ok(())
     ///   });
     /// ```
-    pub fn build(mut self) -> TauriPlugin<R> {
+    pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         plugin::Builder::new("store")
             .invoke_handler(tauri::generate_handler![
-                set, get, has, delete, clear, reset, keys, values, length, entries, load, save
+                load, get_store, set, get, has, delete, clear, reset, keys, values, length,
+                entries, reload, save,
             ])
             .setup(move |app_handle, _api| {
-                for (path, store) in self.stores.iter_mut() {
-                    // ignore loading errors, just use the default
-                    if let Err(err) = store.load() {
-                        warn!(
-              "Failed to load store {:?} from disk: {}. Falling back to default values.",
-              path, err
-            );
-                    }
-                }
-
-                app_handle.manage(StoreCollection {
-                    stores: Mutex::new(self.stores),
-                    frozen: self.frozen,
+                app_handle.manage(StoreState {
+                    stores: Arc::new(Mutex::new(HashMap::new())),
+                    serialize_fns: self.serialize_fns,
+                    deserialize_fns: self.deserialize_fns,
+                    default_serialize: self.default_serialize,
+                    default_deserialize: self.default_deserialize,
                 });
-
                 Ok(())
             })
             .on_event(|app_handle, event| {
                 if let RunEvent::Exit = event {
-                    let collection = app_handle.state::<StoreCollection<R>>();
-
-                    for store in collection.stores.lock().expect("mutex poisoned").values() {
-                        if let Err(err) = store.save() {
-                            eprintln!("failed to save store {:?} with error {:?}", store.path, err);
+                    let collection = app_handle.state::<StoreState>();
+                    let stores = collection.stores.lock().unwrap();
+                    for (path, rid) in stores.iter() {
+                        if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid) {
+                            if let Err(err) = store.save() {
+                                log::error!("failed to save store {path:?} with error {err:?}");
+                            }
                         }
                     }
                 }

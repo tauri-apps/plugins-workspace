@@ -1,5 +1,71 @@
 # Changelog
 
+## \[2.0.2]
+
+- [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.0.1`
+- Upgraded to `biometric@2.0.1`
+- Upgraded to `cli@2.0.1`
+- Upgraded to `clipboard-manager@2.0.1`
+- Upgraded to `fs@2.0.1`
+- Upgraded to `dialog@2.0.1`
+- Upgraded to `geolocation@2.0.1`
+- Upgraded to `global-shortcut@2.0.1`
+- Upgraded to `haptics@2.0.1`
+- Upgraded to `http@2.0.1`
+- Upgraded to `log-plugin@2.0.1`
+- Upgraded to `nfc@2.0.1`
+- Upgraded to `notification@2.0.1`
+- Upgraded to `os@2.0.1`
+- Upgraded to `process@2.0.1`
+- Upgraded to `shell@2.0.1`
+- Upgraded to `store@2.0.1`
+- Upgraded to `updater@2.0.2`
+
+## \[2.0.1]
+
+### Dependencies
+
+- Upgraded to `updater@2.0.1`
+
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.0.0`
+- Upgraded to `biometric@2.0.0`
+- Upgraded to `cli@2.0.0`
+- Upgraded to `clipboard-manager@2.0.0`
+- Upgraded to `fs@2.0.0`
+- Upgraded to `dialog@2.0.0`
+- Upgraded to `global-shortcut@2.0.0`
+- Upgraded to `http@2.0.0`
+- Upgraded to `log-plugin@2.0.0`
+- Upgraded to `nfc@2.0.0`
+- Upgraded to `notification@2.0.0`
+- Upgraded to `os@2.0.0`
+- Upgraded to `process@2.0.0`
+- Upgraded to `shell@2.0.0`
+- Upgraded to `store@2.0.0`
+- Upgraded to `updater@2.0.0`
+
+## \[2.0.0-rc.8]
+
+### Dependencies
+
+- Upgraded to `cli@2.0.0-rc.2`
+- Upgraded to `dialog@2.0.0-rc.8`
+- Upgraded to `fs@2.0.0-rc.6`
+- Upgraded to `shell@2.0.0-rc.4`
+- Upgraded to `store@2.0.0-rc.4`
+- Upgraded to `updater@2.0.0-rc.4`
+- Upgraded to `http@2.0.0-rc.6`
+
 ## \[2.0.0-rc.7]
 
 ### Dependencies

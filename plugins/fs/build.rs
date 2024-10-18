@@ -24,14 +24,16 @@ enum FsScopeEntry {
     },
 }
 
-// Ensure scope entry is kept up to date
-impl From<FsScopeEntry> for scope::EntryRaw {
-    fn from(value: FsScopeEntry) -> Self {
-        match value {
-            FsScopeEntry::Value(path) => scope::EntryRaw::Value(path),
-            FsScopeEntry::Object { path } => scope::EntryRaw::Object { path },
-        }
-    }
+// Ensure `FsScopeEntry` and `scope::EntryRaw` is kept in sync
+fn _f() {
+    match scope::EntryRaw::Value(PathBuf::new()) {
+        scope::EntryRaw::Value(path) => FsScopeEntry::Value(path),
+        scope::EntryRaw::Object { path } => FsScopeEntry::Object { path },
+    };
+    match FsScopeEntry::Value(PathBuf::new()) {
+        FsScopeEntry::Value(path) => scope::EntryRaw::Value(path),
+        FsScopeEntry::Object { path } => scope::EntryRaw::Object { path },
+    };
 }
 
 const BASE_DIR_VARS: &[&str] = &[

@@ -1,5 +1,23 @@
 # Changelog
 
+## \[2.0.2]
+
+- [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
+
+## \[2.0.1]
+
+- [`9501cfa5`](https://github.com/tauri-apps/plugins-workspace/commit/9501cfa5f5385b2d7eb43a8378b322ee97cba06f) ([#1868](https://github.com/tauri-apps/plugins-workspace/pull/1868) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fix configuration parser incorrectly warning about the endpoint scheme.
+
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
+## \[2.0.0-rc.4]
+
+- [`221f50f5`](https://github.com/tauri-apps/plugins-workspace/commit/221f50f53bd7a87dbd404e4cb1aaf502a5047785) ([#1816](https://github.com/tauri-apps/plugins-workspace/pull/1816) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Encode `+` when making updater requests which can be cause incorrectly interpolating the endpoint when using `{{current_version}}` in the endpoint where the current version contains a build number, for example `1.8.0+1`.
+- [`04a0aea0`](https://github.com/tauri-apps/plugins-workspace/commit/04a0aea0ab9f8750200bc2fe5aff99c1c488082d) ([#1814](https://github.com/tauri-apps/plugins-workspace/pull/1814) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) **Breaking change**, Changed `UpdaterBuilder::endpoints` method to return a `Result`.
+- [`04a0aea0`](https://github.com/tauri-apps/plugins-workspace/commit/04a0aea0ab9f8750200bc2fe5aff99c1c488082d) ([#1814](https://github.com/tauri-apps/plugins-workspace/pull/1814) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add `dangerousInsecureTransportProtocol` config option to allow using insecure transport protocols, like `http`
+
 ## \[2.0.0-rc.3]
 
 - [`d00519e3`](https://github.com/tauri-apps/plugins-workspace/commit/d00519e3e3a3234f9eb6c2ba82c92d4199f03e53) ([#1735](https://github.com/tauri-apps/plugins-workspace/pull/1735) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) This releases the changes from 2.0.0-rc.2 to crates.io. Please see the links below for the actual changes.

@@ -12,7 +12,7 @@ All operations are enabled by default.
 - `allow-upload`
 - `allow-download`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

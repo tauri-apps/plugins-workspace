@@ -1,5 +1,17 @@
 # Changelog
 
+## \[2.0.1]
+
+- [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
+
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
+## \[2.0.0-rc.7]
+
+- [`3168e176`](https://github.com/tauri-apps/plugins-workspace/commit/3168e176031a61215be542595ba90ca51f8f2d97) ([#1806](https://github.com/tauri-apps/plugins-workspace/pull/1806) by [@auggiebennett](https://github.com/tauri-apps/plugins-workspace/../../auggiebennett)) Fix fails to start when having spaces in the main binary path on Windows
+
 ## \[2.0.0-rc.6]
 
 - [`6f3f6679`](https://github.com/tauri-apps/plugins-workspace/commit/6f3f66794a87ef9d1c16667c425d5ad7091a9c2f) ([#1780](https://github.com/tauri-apps/plugins-workspace/pull/1780)) Added `DeepLink::on_open_url` function to match the JavaScript API implementation,

@@ -1,5 +1,33 @@
 # Changelog
 
+## \[2.0.1]
+
+- [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.1`
+
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0`
+
+## \[2.0.0-rc.8]
+
+- [`6bf1bd8d`](https://github.com/tauri-apps/plugins-workspace/commit/6bf1bd8d44bb95618590aa066e638509b014e0f9) ([#1805](https://github.com/tauri-apps/plugins-workspace/pull/1805) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update rfd to 0.15
+
+### Dependencies
+
+- Upgraded to `fs@2.0.0-rc.6`
+
+### breaking
+
+- [`04459afb`](https://github.com/tauri-apps/plugins-workspace/commit/04459afbb67aafa5cd57e6a148c2beb0a8d3e04a) ([#1842](https://github.com/tauri-apps/plugins-workspace/pull/1842) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Changed `MessageDialogBuilder::ok_button_label` and `MessageDialogBuilder::cancel_button_label` to `MessageDialogBuilder::buttons` which takes an enum now
+
 ## \[2.0.0-rc.7]
 
 ### Dependencies

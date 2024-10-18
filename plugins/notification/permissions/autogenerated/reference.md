@@ -26,7 +26,7 @@ It allows all notification related features.
 - `allow-create-channel`
 - `allow-permission-state`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

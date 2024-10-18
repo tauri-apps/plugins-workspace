@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-sql"
-version = "2.0.0-rc.2"
+version = "2.0.1"
 description = "Interface with SQL databases."
 authors = { workspace = true }
 license = { workspace = true }
@@ -40,3 +40,4 @@ indexmap = { version = "2", features = ["serde"] }
 sqlite = ["sqlx/sqlite", "sqlx/runtime-tokio"]
 mysql = ["sqlx/mysql", "sqlx/runtime-tokio-rustls"]
 postgres = ["sqlx/postgres", "sqlx/runtime-tokio-rustls"]
+# TODO: bundled-cipher etc

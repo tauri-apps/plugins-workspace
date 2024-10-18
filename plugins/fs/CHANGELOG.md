@@ -1,5 +1,17 @@
 # Changelog
 
+## \[2.0.1]
+
+- [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
+
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
+## \[2.0.0-rc.6]
+
+- [`fc9b189e`](https://github.com/tauri-apps/plugins-workspace/commit/fc9b189e83a29bd750714ec6336133c6eabdfa20) ([#1837](https://github.com/tauri-apps/plugins-workspace/pull/1837) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fix failing to deserialize capability file when using an OS specific path in the scope that is not available on the current OS.
+
 ## \[2.0.0-rc.5]
 
 - [`cc03ccf5`](https://github.com/tauri-apps/plugins-workspace/commit/cc03ccf5e0e4be8bbf50bbdebe957c84be7f779b) ([#1774](https://github.com/tauri-apps/plugins-workspace/pull/1774)) Fix `scope-app`, `scope-app-recursive` and `scope-index` not properly enabling the application paths.

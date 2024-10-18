@@ -305,7 +305,17 @@
           "const": "deny-move-window"
         },
         {
-          "description": "Allows the move_window command",
+          "description": "Enables the set_tray_icon_state command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-set-tray-icon-state"
+        },
+        {
+          "description": "Denies the set_tray_icon_state command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-set-tray-icon-state"
+        },
+        {
+          "description": "Allows the moveWindow and handleIconState APIs",
           "type": "string",
           "const": "default"
         }

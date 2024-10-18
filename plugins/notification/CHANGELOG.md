@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.1]
+
+- [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
+
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
 ## \[2.0.0-rc.5]
 
 - [`fb85e5dd`](https://github.com/tauri-apps/plugins-workspace/commit/fb85e5dd76688f3ae836890160f9bde843b70167) ([#1785](https://github.com/tauri-apps/plugins-workspace/pull/1785)) Update to tauri 2.0.0-rc.12.

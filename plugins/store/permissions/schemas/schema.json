@@ -335,6 +335,16 @@
           "const": "deny-get"
         },
         {
+          "description": "Enables the get_store command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-store"
+        },
+        {
+          "description": "Denies the get_store command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-store"
+        },
+        {
           "description": "Enables the has command without any pre-configured scope.",
           "type": "string",
           "const": "allow-has"
@@ -373,6 +383,16 @@
           "description": "Denies the load command without any pre-configured scope.",
           "type": "string",
           "const": "deny-load"
+        },
+        {
+          "description": "Enables the reload command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-reload"
+        },
+        {
+          "description": "Denies the reload command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-reload"
         },
         {
           "description": "Enables the reset command without any pre-configured scope.",

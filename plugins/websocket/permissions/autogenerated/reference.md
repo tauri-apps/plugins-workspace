@@ -5,7 +5,7 @@ Allows connecting and sending data to a WebSocket server
 - `allow-connect`
 - `allow-send`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

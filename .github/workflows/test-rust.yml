@@ -168,7 +168,7 @@ jobs:
             }
           - {
               target: x86_64-unknown-linux-gnu,
-              os: ubuntu-latest,
+              os: ubuntu-22.04,
               runner: 'cargo',
               command: 'test'
             }
@@ -202,7 +202,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev
 
-      - uses: dtolnay/rust-toolchain@1.75.0
+      - uses: dtolnay/rust-toolchain@1.77.2
         with:
           targets: ${{ matrix.platform.target }}
 
@@ -215,21 +215,9 @@ jobs:
         run: cargo +stable install cross --git https://github.com/cross-rs/cross
 
       - name: test ${{ matrix.package }}
-        if: matrix.package != 'tauri-plugin-sql' && matrix.package != 'tauri-plugin-http'
+        if: matrix.package != 'tauri-plugin-http'
         run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features
 
       - name: test ${{ matrix.package }}
         if: matrix.package == 'tauri-plugin-http'
         run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets
-
-      - name: test ${{ matrix.package }} sqlite
-        if: matrix.package == 'tauri-plugin-sql'
-        run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --features sqlite
-
-      - name: test ${{ matrix.package }} mysql
-        if: matrix.package == 'tauri-plugin-sql'
-        run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --features mysql
-
-      - name: test ${{ matrix.package }} postgres
-        if: matrix.package == 'tauri-plugin-sql'
-        run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --features postgres

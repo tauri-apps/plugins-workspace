@@ -11,16 +11,18 @@ All operations are enabled by default.
 
 """
 permissions = [
-  "allow-clear",
-  "allow-delete",
-  "allow-entries",
+  "allow-load",
+  "allow-get-store",
+  "allow-set",
   "allow-get",
   "allow-has",
-  "allow-keys",
-  "allow-length",
-  "allow-load",
+  "allow-delete",
+  "allow-clear",
   "allow-reset",
-  "allow-save",
-  "allow-set",
+  "allow-keys",
   "allow-values",
+  "allow-entries",
+  "allow-length",
+  "allow-reload",
+  "allow-save",
 ]

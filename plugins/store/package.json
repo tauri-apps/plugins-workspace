@@ -1,8 +1,8 @@
 {
   "name": "@tauri-apps/plugin-store",
-  "version": "2.0.0-rc.1",
+  "version": "2.0.0",
   "description": "Simple, persistent key-value store.",
-  "license": "MIT or APACHE-2.0",
+  "license": "MIT OR Apache-2.0",
   "authors": [
     "Tauri Programme within The Commons Conservancy"
   ],
@@ -25,6 +25,6 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@tauri-apps/api": "^2.0.0-rc.4"
+    "@tauri-apps/api": "^2.0.0"
   }
 }

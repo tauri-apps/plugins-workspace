@@ -9,20 +9,22 @@ All operations are enabled by default.
 
 
 
-- `allow-clear`
-- `allow-delete`
-- `allow-entries`
+- `allow-load`
+- `allow-get-store`
+- `allow-set`
 - `allow-get`
 - `allow-has`
-- `allow-keys`
-- `allow-length`
-- `allow-load`
+- `allow-delete`
+- `allow-clear`
 - `allow-reset`
-- `allow-save`
-- `allow-set`
+- `allow-keys`
 - `allow-values`
+- `allow-entries`
+- `allow-length`
+- `allow-reload`
+- `allow-save`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>
@@ -138,6 +140,32 @@ Denies the get command without any pre-configured scope.
 <tr>
 <td>
 
+`store:allow-get-store`
+
+</td>
+<td>
+
+Enables the get_store command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-get-store`
+
+</td>
+<td>
+
+Denies the get_store command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `store:allow-has`
 
 </td>
@@ -235,6 +263,32 @@ Enables the load command without any pre-configured scope.
 <td>
 
 Denies the load command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:allow-reload`
+
+</td>
+<td>
+
+Enables the reload command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`store:deny-reload`
+
+</td>
+<td>
+
+Denies the reload command without any pre-configured scope.
 
 </td>
 </tr>

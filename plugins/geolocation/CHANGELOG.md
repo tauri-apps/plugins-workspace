@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.1]
+
+- [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
+
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
 ## \[2.0.0-rc.2]
 
 - [`60765694`](https://github.com/tauri-apps/plugins-workspace/commit/60765694f54875e22b8eb70b1d2e32dbf0c585c7) ([#1773](https://github.com/tauri-apps/plugins-workspace/pull/1773) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update API to match other plugins.
@@ -25,4 +33,4 @@
 
 - [`9606089b`](https://github.com/tauri-apps/plugins-workspace/commit/9606089b2add4a17f80ed5a09d59ce94824bd672) ([#1599](https://github.com/tauri-apps/plugins-workspace/pull/1599)) Initial release.
 - [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
-tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
+  tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.

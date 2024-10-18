@@ -67,7 +67,8 @@ pub fn run() {
                     .user_agent(&format!("Tauri API - {}", std::env::consts::OS))
                     .title("Tauri API Validation")
                     .inner_size(1000., 800.)
-                    .min_inner_size(600., 400.);
+                    .min_inner_size(600., 400.)
+                    .visible(false);
             }
 
             #[cfg(target_os = "windows")]

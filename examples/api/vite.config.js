@@ -26,13 +26,6 @@ export default defineConfig(async () => {
       host: host || false,
       port: 5173,
       strictPort: true,
-      hmr: host
-        ? {
-            protocol: 'ws',
-            host,
-            port: 5183
-          }
-        : undefined,
       fs: {
         allow: ['.', '../../tooling/api/dist']
       }

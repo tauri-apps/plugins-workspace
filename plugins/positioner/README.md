@@ -4,9 +4,17 @@ Position your windows at well-known locations.
 
 This plugin is a port of [electron-positioner](https://github.com/jenslind/electron-positioner) for Tauri.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | x         |
+| iOS      | x         |
+
 ## Install
 
-_This plugin requires a Rust version of at least **1.75**_
+_This plugin requires a Rust version of at least **1.77.2**_
 
 There are three general methods of installation that we can recommend.
 
@@ -20,7 +28,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-positioner = "2.0.0-rc"
+tauri-plugin-positioner = "2.0.0"
 # alternatively with Git:
 tauri-plugin-positioner = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -58,6 +66,7 @@ fn main() {
         .plugin(tauri_plugin_positioner::init())
         // This is required to get tray-relative positions to work
         .setup(|app| {
+            // note that this will create a new TrayIcon
             TrayIconBuilder::new()
                 .on_tray_icon_event(|app, event| {
                     tauri_plugin_positioner::on_tray_event(app.app_handle(), &event);
@@ -68,6 +77,40 @@ fn main() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+```
+
+Alternatively, you may handle the tray events through JavaScript. Register the plugin as previously noted.
+
+```rust
+fn main() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_positioner::init())
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+```
+
+And in JavaScript, the `action` passed to the TrayIcon should include the handler.
+
+```javascript
+import {
+  moveWindow,
+  Position,
+  handleIconState,
+} from "@tauri-apps/plugin-positioner";
+
+const action = async (event: TrayIconEvent) => {
+  // add the handle in the action to update the state
+  await handleIconState(event);
+
+  if (event.type === "Click") {
+    // note this option requires enabling the `tray-icon`
+    //   feature in the Cargo.toml
+    await moveWindow(Position.TrayLeft);
+  }
+};
+
+const tray = await TrayIcon.new({ id: "main", action });
 ```
 
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
