@@ -301,13 +301,20 @@ pub async fn read_dir<R: Runtime>(
 pub async fn read<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
-    len: u32,
-) -> CommandResult<(Vec<u8>, usize)> {
-    let mut data = vec![0; len as usize];
+    len: usize,
+) -> CommandResult<tauri::ipc::Response> {
+    let mut data = vec![0; len];
     let file = webview.resources_table().get::<StdFileResource>(rid)?;
     let nread = StdFileResource::with_lock(&file, |mut file| file.read(&mut data))
         .map_err(|e| format!("faied to read bytes from file with error: {e}"))?;
-    Ok((data, nread))
+
+    // This is an optimization to include the number of read bytes (as bigendian bytes)
+    // at the end of returned vector so we can use `tauri::ipc::Response`
+    // and avoid serialization overhead of separate values.
+    let nread = nread.to_be_bytes();
+    data.extend(nread);
+
+    Ok(tauri::ipc::Response::new(data))
 }
 
 #[tauri::command]
