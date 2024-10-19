@@ -311,7 +311,21 @@ pub async fn read<R: Runtime>(
     // This is an optimization to include the number of read bytes (as bigendian bytes)
     // at the end of returned vector so we can use `tauri::ipc::Response`
     // and avoid serialization overhead of separate values.
+    #[cfg(target_pointer_width = "16")]
+    let nread = {
+        let nread = nread.to_be_bytes();
+        let mut out = [0; 8];
+        out[6..].copy_from_slice(&nread);
+    };
+    #[cfg(target_pointer_width = "32")]
+    let nread = {
+        let nread = nread.to_be_bytes();
+        let mut out = [0; 8];
+        out[4..].copy_from_slice(&nread);
+    };
+    #[cfg(target_pointer_width = "64")]
     let nread = nread.to_be_bytes();
+
     data.extend(nread);
 
     Ok(tauri::ipc::Response::new(data))
