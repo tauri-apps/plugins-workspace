@@ -85,6 +85,7 @@ pub fn create<R: Runtime>(
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
     let resolved_path = resolve_path(
+        "create",
         &webview,
         &global_scope,
         &command_scope,
@@ -119,6 +120,7 @@ pub fn open<R: Runtime>(
     options: Option<OpenOptions>,
 ) -> CommandResult<ResourceId> {
     let (file, _path) = resolve_file(
+        "open",
         &webview,
         &global_scope,
         &command_scope,
@@ -172,6 +174,7 @@ pub async fn copy_file<R: Runtime>(
     options: Option<CopyFileOptions>,
 ) -> CommandResult<()> {
     let resolved_from_path = resolve_path(
+        "copy-file",
         &webview,
         &global_scope,
         &command_scope,
@@ -179,6 +182,7 @@ pub async fn copy_file<R: Runtime>(
         options.as_ref().and_then(|o| o.from_path_base_dir),
     )?;
     let resolved_to_path = resolve_path(
+        "copy-file",
         &webview,
         &global_scope,
         &command_scope,
@@ -213,6 +217,7 @@ pub fn mkdir<R: Runtime>(
     options: Option<MkdirOptions>,
 ) -> CommandResult<()> {
     let resolved_path = resolve_path(
+        "mkdir",
         &webview,
         &global_scope,
         &command_scope,
@@ -280,6 +285,7 @@ pub async fn read_dir<R: Runtime>(
     options: Option<BaseOptions>,
 ) -> CommandResult<Vec<DirEntry>> {
     let resolved_path = resolve_path(
+        "read-dir",
         &webview,
         &global_scope,
         &command_scope,
@@ -319,6 +325,7 @@ pub async fn read_file<R: Runtime>(
     options: Option<BaseOptions>,
 ) -> CommandResult<tauri::ipc::Response> {
     let (mut file, path) = resolve_file(
+        "read-file",
         &webview,
         &global_scope,
         &command_scope,
@@ -355,6 +362,7 @@ pub async fn read_text_file<R: Runtime>(
     options: Option<BaseOptions>,
 ) -> CommandResult<String> {
     let (mut file, path) = resolve_file(
+        "read-text-file",
         &webview,
         &global_scope,
         &command_scope,
@@ -393,6 +401,7 @@ pub fn read_text_file_lines<R: Runtime>(
     use std::io::BufRead;
 
     let resolved_path = resolve_path(
+        "read-text-file-lines",
         &webview,
         &global_scope,
         &command_scope,
@@ -447,6 +456,7 @@ pub fn remove<R: Runtime>(
     options: Option<RemoveOptions>,
 ) -> CommandResult<()> {
     let resolved_path = resolve_path(
+        "remove",
         &webview,
         &global_scope,
         &command_scope,
@@ -516,6 +526,7 @@ pub fn rename<R: Runtime>(
     options: Option<RenameOptions>,
 ) -> CommandResult<()> {
     let resolved_old_path = resolve_path(
+        "rename",
         &webview,
         &global_scope,
         &command_scope,
@@ -523,6 +534,7 @@ pub fn rename<R: Runtime>(
         options.as_ref().and_then(|o| o.old_path_base_dir),
     )?;
     let resolved_new_path = resolve_path(
+        "rename",
         &webview,
         &global_scope,
         &command_scope,
@@ -570,6 +582,7 @@ pub async fn seek<R: Runtime>(
 
 #[cfg(target_os = "android")]
 fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Metadata>>(
+    permission: &str,
     metadata_fn: F,
     webview: &Webview<R>,
     global_scope: &GlobalScope<Entry>,
@@ -580,6 +593,7 @@ fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Meta
     match path {
         SafeFilePath::Url(url) => {
             let (file, path) = resolve_file(
+                permission,
                 webview,
                 global_scope,
                 command_scope,
@@ -601,6 +615,7 @@ fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Meta
             })
         }
         SafeFilePath::Path(p) => get_fs_metadata(
+            permission,
             metadata_fn,
             webview,
             global_scope,
@@ -613,6 +628,7 @@ fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Meta
 
 #[cfg(not(target_os = "android"))]
 fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Metadata>>(
+    permission: &str,
     metadata_fn: F,
     webview: &Webview<R>,
     global_scope: &GlobalScope<Entry>,
@@ -621,6 +637,7 @@ fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Meta
     options: Option<BaseOptions>,
 ) -> CommandResult<std::fs::Metadata> {
     get_fs_metadata(
+        permission,
         metadata_fn,
         webview,
         global_scope,
@@ -631,6 +648,7 @@ fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Meta
 }
 
 fn get_fs_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Metadata>>(
+    permission: &str,
     metadata_fn: F,
     webview: &Webview<R>,
     global_scope: &GlobalScope<Entry>,
@@ -639,6 +657,7 @@ fn get_fs_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::M
     options: Option<BaseOptions>,
 ) -> CommandResult<std::fs::Metadata> {
     let resolved_path = resolve_path(
+        permission,
         webview,
         global_scope,
         command_scope,
@@ -663,6 +682,7 @@ pub fn stat<R: Runtime>(
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
     let metadata = get_metadata(
+        "stat",
         |p| std::fs::metadata(p),
         &webview,
         &global_scope,
@@ -683,6 +703,7 @@ pub fn lstat<R: Runtime>(
     options: Option<BaseOptions>,
 ) -> CommandResult<FileInfo> {
     let metadata = get_metadata(
+        "lstat",
         |p| std::fs::symlink_metadata(p),
         &webview,
         &global_scope,
@@ -711,6 +732,7 @@ pub async fn truncate<R: Runtime>(
     options: Option<BaseOptions>,
 ) -> CommandResult<()> {
     let resolved_path = resolve_path(
+        "truncate",
         &webview,
         &global_scope,
         &command_scope,
@@ -780,6 +802,7 @@ fn default_create_value() -> bool {
 }
 
 fn write_file_inner<R: Runtime>(
+    permission: &str,
     webview: Webview<R>,
     global_scope: &GlobalScope<Entry>,
     command_scope: &CommandScope<Entry>,
@@ -788,6 +811,7 @@ fn write_file_inner<R: Runtime>(
     options: Option<WriteFileOptions>,
 ) -> CommandResult<()> {
     let (mut file, path) = resolve_file(
+        permission,
         &webview,
         global_scope,
         command_scope,
@@ -865,7 +889,15 @@ pub async fn write_file<R: Runtime>(
         .get("options")
         .and_then(|p| p.to_str().ok())
         .and_then(|opts| serde_json::from_str(opts).ok());
-    write_file_inner(webview, &global_scope, &command_scope, path, &data, options)
+    write_file_inner(
+        "write-file",
+        webview,
+        &global_scope,
+        &command_scope,
+        path,
+        &data,
+        options,
+    )
 }
 
 #[tauri::command]
@@ -879,6 +911,7 @@ pub async fn write_text_file<R: Runtime>(
     #[allow(unused)] options: Option<WriteFileOptions>,
 ) -> CommandResult<()> {
     write_file_inner(
+        "write-text-file",
         webview,
         &global_scope,
         &command_scope,
@@ -897,6 +930,7 @@ pub fn exists<R: Runtime>(
     options: Option<BaseOptions>,
 ) -> CommandResult<bool> {
     let resolved_path = resolve_path(
+        "exists",
         &webview,
         &global_scope,
         &command_scope,
@@ -908,16 +942,25 @@ pub fn exists<R: Runtime>(
 
 #[cfg(not(target_os = "android"))]
 pub fn resolve_file<R: Runtime>(
+    permission: &str,
     webview: &Webview<R>,
     global_scope: &GlobalScope<Entry>,
     command_scope: &CommandScope<Entry>,
     path: SafeFilePath,
     open_options: OpenOptions,
 ) -> CommandResult<(File, PathBuf)> {
-    resolve_file_in_fs(webview, global_scope, command_scope, path, open_options)
+    resolve_file_in_fs(
+        permission,
+        webview,
+        global_scope,
+        command_scope,
+        path,
+        open_options,
+    )
 }
 
 fn resolve_file_in_fs<R: Runtime>(
+    permission: &str,
     webview: &Webview<R>,
     global_scope: &GlobalScope<Entry>,
     command_scope: &CommandScope<Entry>,
@@ -925,6 +968,7 @@ fn resolve_file_in_fs<R: Runtime>(
     open_options: OpenOptions,
 ) -> CommandResult<(File, PathBuf)> {
     let path = resolve_path(
+        permission,
         webview,
         global_scope,
         command_scope,
@@ -945,6 +989,7 @@ fn resolve_file_in_fs<R: Runtime>(
 
 #[cfg(target_os = "android")]
 pub fn resolve_file<R: Runtime>(
+    permission: &str,
     webview: &Webview<R>,
     global_scope: &GlobalScope<Entry>,
     command_scope: &CommandScope<Entry>,
@@ -960,6 +1005,7 @@ pub fn resolve_file<R: Runtime>(
             Ok((file, path))
         }
         SafeFilePath::Path(path) => resolve_file_in_fs(
+            permission,
             webview,
             global_scope,
             command_scope,
@@ -970,6 +1016,7 @@ pub fn resolve_file<R: Runtime>(
 }
 
 pub fn resolve_path<R: Runtime>(
+    permission: &str,
     webview: &Webview<R>,
     global_scope: &GlobalScope<Entry>,
     command_scope: &CommandScope<Entry>,
@@ -1013,7 +1060,17 @@ pub fn resolve_path<R: Runtime>(
     if scope.is_allowed(&path) {
         Ok(path)
     } else {
-        Err(CommandError::Plugin(Error::PathForbidden(path)))
+        #[cfg(not(debug_assertions))]
+        return Err(CommandError::Plugin(Error::PathForbidden(path)));
+
+        #[cfg(debug_assertions)]
+        Err(
+            anyhow::anyhow!(
+                "forbidden path: {}, maybe it is not allowed on the scope for `allow-{permission}` permission in your capability file",
+                path.display()
+            )
+        )
+        .map_err(Into::into)
     }
 }
 
