@@ -1068,10 +1068,13 @@ async function writeTextFile(
     throw new TypeError('Must be a file URL.')
   }
 
-  await invoke('plugin:fs|write_text_file', {
-    path: path instanceof URL ? path.toString() : path,
-    data,
-    options
+  const encoder = new TextEncoder()
+
+  await invoke('plugin:fs|write_text_file', encoder.encode(data), {
+    headers: {
+      path: path instanceof URL ? path.toString() : path,
+      options: JSON.stringify(options)
+    }
   })
 }
 
