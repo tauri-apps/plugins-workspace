@@ -11,7 +11,7 @@ resolver = "2"
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
 log = "0.4"
-tauri = { version = "2.0.2", default-features = false }
+tauri = { version = "2.0.4", default-features = false }
 tauri-build = "2.0.1"
 tauri-plugin = "2.0.1"
 tauri-utils = "2.0.1"
