@@ -2,6 +2,11 @@
 
 ## \[2.0.1]
 
+- [`cfd48b3b`](https://github.com/tauri-apps/plugins-workspace/commit/cfd48b3b2ec0fccfc162197518694ed59ceda22c) ([#1941](https://github.com/tauri-apps/plugins-workspace/pull/1941) by [@Nipsuli](https://github.com/tauri-apps/plugins-workspace/../../Nipsuli)) Allow skipping sending `Origin` header in HTTP requests by setting `Origin` header to an empty string when calling `fetch`.
+- [`9b2840db`](https://github.com/tauri-apps/plugins-workspace/commit/9b2840db9464cf08db75806270e4441f0af81e5d) ([#1884](https://github.com/tauri-apps/plugins-workspace/pull/1884) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Retain headers order.
+
+## \[2.0.1]
+
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
 
 ### Dependencies
@@ -284,5 +289,8 @@
   !
   371\)) First v2 alpha release!
   ha release!
+  !
+  371\)) First v2 alpha release!
+lease!
   !
   371\)) First v2 alpha release!

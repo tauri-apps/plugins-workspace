@@ -2,6 +2,11 @@
 
 ## \[2.0.1]
 
+- [`2302c2db`](https://github.com/tauri-apps/plugins-workspace/commit/2302c2db1c49673e61dcbda8cdb01b2c57e9ba6f) ([#1910](https://github.com/tauri-apps/plugins-workspace/pull/1910) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `ask` and `confirm` not using system button texts
+- [`aee14ed4`](https://github.com/tauri-apps/plugins-workspace/commit/aee14ed4261cdedc4ed7cc2686f01f437859a5c7) ([#1892](https://github.com/tauri-apps/plugins-workspace/pull/1892) by [@nashaofu](https://github.com/tauri-apps/plugins-workspace/../../nashaofu)) Set `save` dialog mime type from the `filters` extensions on Android.
+
+## \[2.0.1]
+
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
 
 ### Dependencies
@@ -287,4 +292,6 @@
   lpha release!
   pull/371)) First v2 alpha release!
   lpha release!
+  pull/371)) First v2 alpha release!
+lease!
   pull/371)) First v2 alpha release!
