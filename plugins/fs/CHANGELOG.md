@@ -2,6 +2,10 @@
 
 ## \[2.0.1]
 
+- [`ae802456`](https://github.com/tauri-apps/plugins-workspace/commit/ae8024565f074f313084777c8b10d1b5e3bbe220) ([#1950](https://github.com/tauri-apps/plugins-workspace/pull/1950) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Improve performance of the `FileHandle.read` and `writeTextFile` APIs.
+
+## \[2.0.1]
+
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
 
 ## \[2.0.0]

@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.1.0]
+
+### feat
+
+- [`8c67d44a`](https://github.com/tauri-apps/plugins-workspace/commit/8c67d44aef60b1427019538d8420787ef35bd3d5) ([#1860](https://github.com/tauri-apps/plugins-workspace/pull/1860) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) -   Add `getStore`
+  - Add an option to use pre-stored (de)serialize functions (registered on rust)
+  - Add `LazyStore`
+
 ## \[2.0.1]
 
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
@@ -118,6 +126,14 @@
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   ps://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  eb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  ps://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  plugins-workspace/pull/371)) First v2 alpha release!
+  com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+) First v2 alpha release!
   com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   eb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   ps://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
