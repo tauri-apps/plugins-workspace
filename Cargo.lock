@@ -6855,7 +6855,9 @@ dependencies = [
  "serde_repr",
  "tauri",
  "tauri-plugin",
+ "tauri-utils",
  "thiserror",
+ "toml 0.8.2",
  "url",
  "uuid",
 ]
