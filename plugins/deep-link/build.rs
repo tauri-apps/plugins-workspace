@@ -9,25 +9,50 @@ use config::{AssociatedDomain, Config};
 const COMMANDS: &[&str] = &["get_current", "register", "unregister", "is_registered"];
 
 // TODO: Consider using activity-alias in case users may have multiple activities in their app.
-// TODO: Do we want to support the other path* configs too?
 fn intent_filter(domain: &AssociatedDomain) -> String {
     format!(
         r#"<intent-filter android:autoVerify="true">
     <action android:name="android.intent.action.VIEW" />
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
-    <data android:scheme="http" />
-    <data android:scheme="https" />
+    {}
     <data android:host="{}" />
     {}
+    {}
+    {}
+    {}
 </intent-filter>"#,
+        domain
+            .scheme
+            .iter()
+            .map(|scheme| format!(r#"<data android:scheme="{scheme}" />"#))
+            .collect::<Vec<_>>()
+            .join("\n    "),
         domain.host,
+        domain
+            .path
+            .iter()
+            .map(|path| format!(r#"<data android:path="{path}" />"#))
+            .collect::<Vec<_>>()
+            .join("\n    "),
+        domain
+            .path_pattern
+            .iter()
+            .map(|pattern| format!(r#"<data android:pathPattern="{pattern}" />"#))
+            .collect::<Vec<_>>()
+            .join("\n    "),
         domain
             .path_prefix
             .iter()
             .map(|prefix| format!(r#"<data android:pathPrefix="{prefix}" />"#))
             .collect::<Vec<_>>()
-            .join("\n    ")
+            .join("\n    "),
+        domain
+            .path_suffix
+            .iter()
+            .map(|suffix| format!(r#"<data android:pathSuffix="{suffix}" />"#))
+            .collect::<Vec<_>>()
+            .join("\n    "),
     )
 }
 

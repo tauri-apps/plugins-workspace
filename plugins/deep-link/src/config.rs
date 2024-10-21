@@ -9,10 +9,20 @@ use tauri_utils::config::DeepLinkProtocol;
 
 #[derive(Deserialize, Clone)]
 pub struct AssociatedDomain {
+    #[serde(default)]
+    pub scheme: Vec<String>,
+
     #[serde(deserialize_with = "deserialize_associated_host")]
     pub host: String,
+
+    #[serde(default)]
+    pub path: Vec<String>,
+    #[serde(default, alias = "path-pattern", rename = "pathPattern")]
+    pub path_pattern: Vec<String>,
     #[serde(default, alias = "path-prefix", rename = "pathPrefix")]
     pub path_prefix: Vec<String>,
+    #[serde(default, alias = "path-suffix", rename = "pathSuffix")]
+    pub path_suffix: Vec<String>,
 }
 
 fn deserialize_associated_host<'de, D>(deserializer: D) -> Result<String, D::Error>
