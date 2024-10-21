@@ -421,6 +421,10 @@ pub async fn read_text_file_lines_next<R: Runtime>(
     let ret = StdLinesResource::with_lock(&lines, |lines| -> CommandResult<Vec<u8>> {
         let mut buf = Vec::new();
 
+        // This is an optimization over `BufReader::lines` so we can use `tauri::ipc::Response`
+        // and also include wether we finished iteration or not (1 or 0)
+        // at the end of returned vector so we can use `tauri::ipc::Response`
+        // and avoid serialization overhead of separate values.
         match lines.read_until(b'\n', &mut buf) {
             Ok(0) => {
                 resource_table.close(rid)?;

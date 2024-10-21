@@ -813,6 +813,11 @@ async function readTextFileLines(
       const bytes =
         arr instanceof ArrayBuffer ? new Uint8Array(arr) : Uint8Array.from(arr)
 
+      // Rust side will never return an empty array for this command and
+      // ensure there is at least one elements there.
+      //
+      // This is an optimization to include wether we finished iteration or not (1 or 0)
+      // at the end of returned array to avoid serialization overhead of separate values.
       const done = bytes[bytes.byteLength - 1] === 1
 
       if (done) {
@@ -821,8 +826,7 @@ async function readTextFileLines(
         return { value: null, done }
       }
 
-      const data = bytes.slice(0, bytes.byteLength)
-      const line = data.byteLength !== 0 ? new TextDecoder().decode(data) : ''
+      const line = new TextDecoder().decode(bytes.slice(0, bytes.byteLength))
 
       return {
         value: line,
