@@ -15,7 +15,7 @@ use tauri::{
 use std::{
     borrow::Cow,
     fs::File,
-    io::{BufReader, Lines, Read, Write},
+    io::{BufRead, BufReader, Read, Write},
     path::{Path, PathBuf},
     str::FromStr,
     sync::Mutex,
@@ -369,6 +369,7 @@ pub async fn read_file<R: Runtime>(
     Ok(tauri::ipc::Response::new(contents))
 }
 
+// TODO, remove in v3, rely on `read_file` command instead
 #[tauri::command]
 pub async fn read_text_file<R: Runtime>(
     webview: Webview<R>,
@@ -376,33 +377,8 @@ pub async fn read_text_file<R: Runtime>(
     command_scope: CommandScope<Entry>,
     path: SafeFilePath,
     options: Option<BaseOptions>,
-) -> CommandResult<String> {
-    let (mut file, path) = resolve_file(
-        &webview,
-        &global_scope,
-        &command_scope,
-        path,
-        OpenOptions {
-            base: BaseOptions {
-                base_dir: options.as_ref().and_then(|o| o.base_dir),
-            },
-            options: crate::OpenOptions {
-                read: true,
-                ..Default::default()
-            },
-        },
-    )?;
-
-    let mut contents = String::new();
-
-    file.read_to_string(&mut contents).map_err(|e| {
-        format!(
-            "failed to read file as text at path: {} with error: {e}",
-            path.display()
-        )
-    })?;
-
-    Ok(contents)
+) -> CommandResult<tauri::ipc::Response> {
+    read_file(webview, global_scope, command_scope, path, options).await
 }
 
 #[tauri::command]
@@ -413,8 +389,6 @@ pub fn read_text_file_lines<R: Runtime>(
     path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
-    use std::io::BufRead;
-
     let resolved_path = resolve_path(
         &webview,
         &global_scope,
@@ -430,7 +404,7 @@ pub fn read_text_file_lines<R: Runtime>(
         )
     })?;
 
-    let lines = BufReader::new(file).lines();
+    let lines = BufReader::new(file);
     let rid = webview.resources_table().add(StdLinesResource::new(lines));
 
     Ok(rid)
@@ -440,18 +414,28 @@ pub fn read_text_file_lines<R: Runtime>(
 pub async fn read_text_file_lines_next<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
-) -> CommandResult<(Option<String>, bool)> {
+) -> CommandResult<tauri::ipc::Response> {
     let mut resource_table = webview.resources_table();
     let lines = resource_table.get::<StdLinesResource>(rid)?;
 
-    let ret = StdLinesResource::with_lock(&lines, |lines| {
-        lines.next().map(|a| (a.ok(), false)).unwrap_or_else(|| {
-            let _ = resource_table.close(rid);
-            (None, true)
-        })
+    let ret = StdLinesResource::with_lock(&lines, |lines| -> CommandResult<Vec<u8>> {
+        // This is an optimization to include wether we finished iteration or not (1 or 0)
+        // at the end of returned vector so we can use `tauri::ipc::Response`
+        // and avoid serialization overhead of separate values.
+        match lines.next() {
+            Some(Ok(mut bytes)) => {
+                bytes.push(false as u8);
+                Ok(bytes)
+            }
+            Some(Err(_)) => Ok(vec![false as u8]),
+            None => {
+                resource_table.close(rid)?;
+                Ok(vec![true as u8])
+            }
+        }
     });
 
-    Ok(ret)
+    ret.map(tauri::ipc::Response::new)
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -802,10 +786,11 @@ fn default_create_value() -> bool {
     true
 }
 
-fn write_file_inner<R: Runtime>(
+#[tauri::command]
+pub async fn write_file<R: Runtime>(
     webview: Webview<R>,
-    global_scope: &GlobalScope<Entry>,
-    command_scope: &CommandScope<Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
     let data = match request.body() {
@@ -836,8 +821,8 @@ fn write_file_inner<R: Runtime>(
 
     let (mut file, path) = resolve_file(
         &webview,
-        global_scope,
-        command_scope,
+        &global_scope,
+        &command_scope,
         path,
         if let Some(opts) = options {
             OpenOptions {
@@ -880,17 +865,7 @@ fn write_file_inner<R: Runtime>(
         .map_err(Into::into)
 }
 
-#[tauri::command]
-pub async fn write_file<R: Runtime>(
-    webview: Webview<R>,
-    global_scope: GlobalScope<Entry>,
-    command_scope: CommandScope<Entry>,
-    request: tauri::ipc::Request<'_>,
-) -> CommandResult<()> {
-    write_file_inner(webview, &global_scope, &command_scope, request)
-}
-
-// TODO, in v3, remove this command and rely on `write_file` command only
+// TODO, remove in v3, rely on `write_file` command instead
 #[tauri::command]
 pub async fn write_text_file<R: Runtime>(
     webview: Webview<R>,
@@ -898,7 +873,7 @@ pub async fn write_text_file<R: Runtime>(
     command_scope: CommandScope<Entry>,
     request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
-    write_file_inner(webview, &global_scope, &command_scope, request)
+    write_file(webview, global_scope, command_scope, request).await
 }
 
 #[tauri::command]
@@ -1045,14 +1020,38 @@ impl StdFileResource {
 
 impl Resource for StdFileResource {}
 
-struct StdLinesResource(Mutex<Lines<BufReader<File>>>);
+/// Same as [std::io::Lines] but with bytes
+struct LinesBytes<T: BufRead>(T);
+
+impl<B: BufRead> Iterator for LinesBytes<B> {
+    type Item = std::io::Result<Vec<u8>>;
+
+    fn next(&mut self) -> Option<std::io::Result<Vec<u8>>> {
+        let mut buf = Vec::new();
+        match self.0.read_until(b'\n', &mut buf) {
+            Ok(0) => None,
+            Ok(_n) => {
+                if buf.last() == Some(&b'\n') {
+                    buf.pop();
+                    if buf.last() == Some(&b'\r') {
+                        buf.pop();
+                    }
+                }
+                Some(Ok(buf))
+            }
+            Err(e) => Some(Err(e)),
+        }
+    }
+}
+
+struct StdLinesResource(Mutex<LinesBytes<BufReader<File>>>);
 
 impl StdLinesResource {
-    fn new(lines: Lines<BufReader<File>>) -> Self {
-        Self(Mutex::new(lines))
+    fn new(lines: BufReader<File>) -> Self {
+        Self(Mutex::new(LinesBytes(lines)))
     }
 
-    fn with_lock<R, F: FnMut(&mut Lines<BufReader<File>>) -> R>(&self, mut f: F) -> R {
+    fn with_lock<R, F: FnMut(&mut LinesBytes<BufReader<File>>) -> R>(&self, mut f: F) -> R {
         let mut lines = self.0.lock().unwrap();
         f(&mut lines)
     }
@@ -1151,7 +1150,12 @@ fn get_stat(metadata: std::fs::Metadata) -> FileInfo {
     }
 }
 
+#[cfg(test)]
 mod test {
+    use std::io::{BufRead, BufReader};
+
+    use super::LinesBytes;
+
     #[test]
     fn safe_file_path_parse() {
         use super::SafeFilePath;
@@ -1164,5 +1168,25 @@ mod test {
             serde_json::from_str::<SafeFilePath>("\"file:///C:/Users\""),
             Ok(SafeFilePath::Url(_))
         ));
+    }
+
+    #[test]
+    fn test_lines_bytes() {
+        let base = String::from("line 1\nline2\nline 3\nline 4");
+        let bytes = base.as_bytes();
+
+        let string1 = base.lines().collect::<String>();
+        let string2 = BufReader::new(bytes)
+            .lines()
+            .map_while(Result::ok)
+            .collect::<String>();
+        let string3 = LinesBytes(BufReader::new(bytes))
+            .flatten()
+            .flat_map(String::from_utf8)
+            .collect::<String>();
+
+        assert_eq!(string1, string2);
+        assert_eq!(string1, string3);
+        assert_eq!(string2, string3);
     }
 }

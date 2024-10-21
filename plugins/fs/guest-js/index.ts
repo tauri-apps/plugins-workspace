@@ -758,10 +758,14 @@ async function readTextFile(
     throw new TypeError('Must be a file URL.')
   }
 
-  return await invoke<string>('plugin:fs|read_text_file', {
+  const arr = await invoke<ArrayBuffer | number[]>('plugin:fs|read_text_file', {
     path: path instanceof URL ? path.toString() : path,
     options
   })
+
+  const bytes = arr instanceof ArrayBuffer ? arr : Uint8Array.from(arr)
+
+  return new TextDecoder().decode(bytes)
 }
 
 /**
@@ -792,6 +796,7 @@ async function readTextFileLines(
   return await Promise.resolve({
     path: pathStr,
     rid: null as number | null,
+
     async next(): Promise<IteratorResult<string>> {
       if (this.rid === null) {
         this.rid = await invoke<number>('plugin:fs|read_text_file_lines', {
@@ -800,19 +805,35 @@ async function readTextFileLines(
         })
       }
 
-      const [line, done] = await invoke<[string | null, boolean]>(
+      const arr = await invoke<ArrayBuffer | number[]>(
         'plugin:fs|read_text_file_lines_next',
         { rid: this.rid }
       )
 
-      // an iteration is over, reset rid for next iteration
-      if (done) this.rid = null
+      const bytes =
+        arr instanceof ArrayBuffer ? new Uint8Array(arr) : Uint8Array.from(arr)
+
+      // Rust side will never return an empty array for this command and
+      // ensure there is at least one elements there.
+      //
+      // This is an optimization to include wether we finished iteration or not (1 or 0)
+      // at the end of returned array to avoid serialization overhead of separate values.
+      const done = bytes[bytes.byteLength - 1] === 1
+
+      if (done) {
+        // a full iteration is over, reset rid for next iteration
+        this.rid = null
+        return { value: null, done }
+      }
+
+      const line = new TextDecoder().decode(bytes.slice(0, bytes.byteLength))
 
       return {
-        value: done ? '' : line!,
+        value: line,
         done
       }
     },
+
     [Symbol.asyncIterator](): AsyncIterableIterator<string> {
       return this
     }
