@@ -419,30 +419,20 @@ pub async fn read_text_file_lines_next<R: Runtime>(
     let lines = resource_table.get::<StdLinesResource>(rid)?;
 
     let ret = StdLinesResource::with_lock(&lines, |lines| -> CommandResult<Vec<u8>> {
-        let mut buf = Vec::new();
-
-        // This is an optimization over `BufReader::lines` so we can use `tauri::ipc::Response`
-        // and also include wether we finished iteration or not (1 or 0)
+        // This is an optimization to include wether we finished iteration or not (1 or 0)
         // at the end of returned vector so we can use `tauri::ipc::Response`
         // and avoid serialization overhead of separate values.
-        match lines.read_until(b'\n', &mut buf) {
-            Ok(0) => {
-                resource_table.close(rid)?;
-                buf.push(true as u8);
+        match lines.next() {
+            Some(Ok(mut bytes)) => {
+                bytes.push(false as u8);
+                Ok(bytes)
             }
-            // retain same behavior as `BufReader::lines` and `Lines` iterator
-            Err(_) | Ok(_) => {
-                if buf.last() == Some(&b'\n') {
-                    buf.pop();
-                    if buf.last() == Some(&b'\r') {
-                        buf.pop();
-                    }
-                }
-                buf.push(false as u8);
+            Some(Err(_)) => Ok(vec![false as u8]),
+            None => {
+                resource_table.close(rid)?;
+                Ok(vec![true as u8])
             }
         }
-
-        Ok(buf)
     });
 
     ret.map(tauri::ipc::Response::new)
@@ -1030,14 +1020,38 @@ impl StdFileResource {
 
 impl Resource for StdFileResource {}
 
-struct StdLinesResource(Mutex<BufReader<File>>);
+/// Same as [std::io::Lines] but with bytes
+struct LinesBytes<T: BufRead>(T);
+
+impl<B: BufRead> Iterator for LinesBytes<B> {
+    type Item = std::io::Result<Vec<u8>>;
+
+    fn next(&mut self) -> Option<std::io::Result<Vec<u8>>> {
+        let mut buf = Vec::new();
+        match self.0.read_until(b'\n', &mut buf) {
+            Ok(0) => None,
+            Ok(_n) => {
+                if buf.last() == Some(&b'\n') {
+                    buf.pop();
+                    if buf.last() == Some(&b'\r') {
+                        buf.pop();
+                    }
+                }
+                Some(Ok(buf))
+            }
+            Err(e) => Some(Err(e)),
+        }
+    }
+}
+
+struct StdLinesResource(Mutex<LinesBytes<BufReader<File>>>);
 
 impl StdLinesResource {
     fn new(lines: BufReader<File>) -> Self {
-        Self(Mutex::new(lines))
+        Self(Mutex::new(LinesBytes(lines)))
     }
 
-    fn with_lock<R, F: FnMut(&mut BufReader<File>) -> R>(&self, mut f: F) -> R {
+    fn with_lock<R, F: FnMut(&mut LinesBytes<BufReader<File>>) -> R>(&self, mut f: F) -> R {
         let mut lines = self.0.lock().unwrap();
         f(&mut lines)
     }
@@ -1136,7 +1150,12 @@ fn get_stat(metadata: std::fs::Metadata) -> FileInfo {
     }
 }
 
+#[cfg(test)]
 mod test {
+    use std::io::{BufRead, BufReader};
+
+    use super::LinesBytes;
+
     #[test]
     fn safe_file_path_parse() {
         use super::SafeFilePath;
@@ -1149,5 +1168,23 @@ mod test {
             serde_json::from_str::<SafeFilePath>("\"file:///C:/Users\""),
             Ok(SafeFilePath::Url(_))
         ));
+    }
+
+    #[test]
+    fn test_lines_bytes() {
+        let base = String::from("line 1\nline2\nline 3\nline 4");
+        let bytes = base.as_bytes();
+
+        let string1 = base.lines().collect::<String>();
+        let string2 = BufReader::new(bytes).lines().flatten().collect::<String>();
+        let string3 = LinesBytes(BufReader::new(bytes))
+            .flatten()
+            .map(|s| String::from_utf8(s))
+            .flatten()
+            .collect::<String>();
+
+        assert_eq!(string1, string2);
+        assert_eq!(string1, string3);
+        assert_eq!(string2, string3);
     }
 }
