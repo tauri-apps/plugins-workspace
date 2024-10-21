@@ -1,5 +1,23 @@
 # Changelog
 
+## \[2.0.4]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.3`
+- Upgraded to `dialog@2.0.3`
+- Upgraded to `http@2.0.3`
+
+## \[2.0.3]
+
+### Dependencies
+
+- Upgraded to `dialog@2.0.2`
+- Upgraded to `fs@2.0.2`
+- Upgraded to `http@2.0.2`
+- Upgraded to `shell@2.0.2`
+- Upgraded to `store@2.1.0`
+
 ## \[2.0.2]
 
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.

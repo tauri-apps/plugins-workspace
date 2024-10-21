@@ -2,6 +2,10 @@
 
 ## \[2.0.1]
 
+- [`51ddf6a7`](https://github.com/tauri-apps/plugins-workspace/commit/51ddf6a71544acfb261ffc9393dab1342da0a219) ([#1881](https://github.com/tauri-apps/plugins-workspace/pull/1881) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) On Windows, Fix `open` JS API hanging and freezing the app.
+
+## \[2.0.1]
+
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
 
 ## \[2.0.0]

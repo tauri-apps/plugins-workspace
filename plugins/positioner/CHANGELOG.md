@@ -2,6 +2,10 @@
 
 ## \[2.0.1]
 
+- [`3c1f3874`](https://github.com/tauri-apps/plugins-workspace/commit/3c1f3874f4c828637b3aa983cba13c77427faf58) ([#1911](https://github.com/tauri-apps/plugins-workspace/pull/1911) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Added missing permission for `handleIconState` and fixed its event processing logic.
+
+## \[2.0.1]
+
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
 
 ## \[2.0.0]
