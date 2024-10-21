@@ -1176,11 +1176,13 @@ mod test {
         let bytes = base.as_bytes();
 
         let string1 = base.lines().collect::<String>();
-        let string2 = BufReader::new(bytes).lines().flatten().collect::<String>();
+        let string2 = BufReader::new(bytes)
+            .lines()
+            .map_while(Result::ok)
+            .collect::<String>();
         let string3 = LinesBytes(BufReader::new(bytes))
             .flatten()
-            .map(|s| String::from_utf8(s))
-            .flatten()
+            .flat_map(String::from_utf8)
             .collect::<String>();
 
         assert_eq!(string1, string2);
