@@ -911,7 +911,13 @@ pub async fn write_file<R: Runtime>(
     command_scope: CommandScope<Entry>,
     request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
-    write_file_inner(webview, &global_scope, &command_scope, request)
+    write_file_inner(
+        "write_file",
+        webview,
+        &global_scope,
+        &command_scope,
+        request,
+    )
 }
 
 // TODO, in v3, remove this command and rely on `write_file` command only
@@ -922,7 +928,13 @@ pub async fn write_text_file<R: Runtime>(
     command_scope: CommandScope<Entry>,
     request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
-    write_file_inner(webview, &global_scope, &command_scope, request)
+    write_file_inner(
+        "write_text_file",
+        webview,
+        &global_scope,
+        &command_scope,
+        request,
+    )
 }
 
 #[tauri::command]
