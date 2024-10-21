@@ -24,6 +24,8 @@ ios = { level = "partial", notes = "Access is restricted to Application folder b
 tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
+toml = "0.8"
+tauri-utils = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }
