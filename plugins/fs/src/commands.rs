@@ -316,12 +316,14 @@ pub async fn read<R: Runtime>(
         let nread = nread.to_be_bytes();
         let mut out = [0; 8];
         out[6..].copy_from_slice(&nread);
+        out
     };
     #[cfg(target_pointer_width = "32")]
     let nread = {
         let nread = nread.to_be_bytes();
         let mut out = [0; 8];
         out[4..].copy_from_slice(&nread);
+        out
     };
     #[cfg(target_pointer_width = "64")]
     let nread = nread.to_be_bytes();
