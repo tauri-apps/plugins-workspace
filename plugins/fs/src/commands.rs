@@ -15,7 +15,7 @@ use tauri::{
 use std::{
     borrow::Cow,
     fs::File,
-    io::{BufReader, Lines, Read, Write},
+    io::{BufRead, BufReader, Read, Write},
     path::{Path, PathBuf},
     str::FromStr,
     sync::Mutex,
@@ -389,8 +389,6 @@ pub fn read_text_file_lines<R: Runtime>(
     path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
-    use std::io::BufRead;
-
     let resolved_path = resolve_path(
         &webview,
         &global_scope,
@@ -406,7 +404,7 @@ pub fn read_text_file_lines<R: Runtime>(
         )
     })?;
 
-    let lines = BufReader::new(file).lines();
+    let lines = BufReader::new(file);
     let rid = webview.resources_table().add(StdLinesResource::new(lines));
 
     Ok(rid)
@@ -416,18 +414,34 @@ pub fn read_text_file_lines<R: Runtime>(
 pub async fn read_text_file_lines_next<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
-) -> CommandResult<(Option<String>, bool)> {
+) -> CommandResult<tauri::ipc::Response> {
     let mut resource_table = webview.resources_table();
     let lines = resource_table.get::<StdLinesResource>(rid)?;
 
-    let ret = StdLinesResource::with_lock(&lines, |lines| {
-        lines.next().map(|a| (a.ok(), false)).unwrap_or_else(|| {
-            let _ = resource_table.close(rid);
-            (None, true)
-        })
+    let ret = StdLinesResource::with_lock(&lines, |lines| -> CommandResult<Vec<u8>> {
+        let mut buf = Vec::new();
+
+        match lines.read_until(b'\n', &mut buf) {
+            Ok(0) => {
+                resource_table.close(rid)?;
+                buf.push(true as u8);
+            }
+            // retain same behavior as `BufReader::lines` and `Lines` iterator
+            Err(_) | Ok(_) => {
+                if buf.last() == Some(&b'\n') {
+                    buf.pop();
+                    if buf.last() == Some(&b'\r') {
+                        buf.pop();
+                    }
+                }
+                buf.push(false as u8);
+            }
+        }
+
+        Ok(buf)
     });
 
-    Ok(ret)
+    ret.map(tauri::ipc::Response::new)
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -1012,14 +1026,14 @@ impl StdFileResource {
 
 impl Resource for StdFileResource {}
 
-struct StdLinesResource(Mutex<Lines<BufReader<File>>>);
+struct StdLinesResource(Mutex<BufReader<File>>);
 
 impl StdLinesResource {
-    fn new(lines: Lines<BufReader<File>>) -> Self {
+    fn new(lines: BufReader<File>) -> Self {
         Self(Mutex::new(lines))
     }
 
-    fn with_lock<R, F: FnMut(&mut Lines<BufReader<File>>) -> R>(&self, mut f: F) -> R {
+    fn with_lock<R, F: FnMut(&mut BufReader<File>) -> R>(&self, mut f: F) -> R {
         let mut lines = self.0.lock().unwrap();
         f(&mut lines)
     }

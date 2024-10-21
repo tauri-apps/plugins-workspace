@@ -796,6 +796,7 @@ async function readTextFileLines(
   return await Promise.resolve({
     path: pathStr,
     rid: null as number | null,
+
     async next(): Promise<IteratorResult<string>> {
       if (this.rid === null) {
         this.rid = await invoke<number>('plugin:fs|read_text_file_lines', {
@@ -804,19 +805,31 @@ async function readTextFileLines(
         })
       }
 
-      const [line, done] = await invoke<[string | null, boolean]>(
+      const arr = await invoke<ArrayBuffer | number[]>(
         'plugin:fs|read_text_file_lines_next',
         { rid: this.rid }
       )
 
-      // an iteration is over, reset rid for next iteration
-      if (done) this.rid = null
+      const bytes =
+        arr instanceof ArrayBuffer ? new Uint8Array(arr) : Uint8Array.from(arr)
+
+      const done = bytes[bytes.byteLength - 1] === 1
+
+      if (done) {
+        // a full iteration is over, reset rid for next iteration
+        this.rid = null
+        return { value: null, done }
+      }
+
+      const data = bytes.slice(0, bytes.byteLength)
+      const line = data.byteLength !== 0 ? new TextDecoder().decode(data) : ''
 
       return {
-        value: done ? '' : line!,
+        value: line,
         done
       }
     },
+
     [Symbol.asyncIterator](): AsyncIterableIterator<string> {
       return this
     }
