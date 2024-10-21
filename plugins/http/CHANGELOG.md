@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.3]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.3`
+
 ## \[2.0.1]
 
 - [`cfd48b3b`](https://github.com/tauri-apps/plugins-workspace/commit/cfd48b3b2ec0fccfc162197518694ed59ceda22c) ([#1941](https://github.com/tauri-apps/plugins-workspace/pull/1941) by [@Nipsuli](https://github.com/tauri-apps/plugins-workspace/../../Nipsuli)) Allow skipping sending `Origin` header in HTTP requests by setting `Origin` header to an empty string when calling `fetch`.
@@ -291,6 +297,6 @@
   ha release!
   !
   371\)) First v2 alpha release!
-lease!
+  lease!
   !
   371\)) First v2 alpha release!

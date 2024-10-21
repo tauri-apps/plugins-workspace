@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.3]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.3`
+
 ## \[2.0.2]
 
 ### Dependencies
