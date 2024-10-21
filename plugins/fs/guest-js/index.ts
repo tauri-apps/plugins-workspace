@@ -255,6 +255,7 @@ function fromBytes(buffer: FixedSizeArray<number, 8>): number {
   const size = bytes.byteLength
   let x = 0
   for (let i = 0; i < size; i++) {
+    // eslint-disable-next-line security/detect-object-injection
     const byte = bytes[i]
     x *= 0x100
     x += byte
@@ -1045,7 +1046,7 @@ async function writeFile(
     for await (const chunk of data) {
       await file.write(chunk)
     }
-    file.close()
+    await file.close()
   } else {
     await invoke('plugin:fs|write_file', data, {
       headers: {

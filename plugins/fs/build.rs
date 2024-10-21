@@ -210,10 +210,10 @@ permissions = [
         let permission_path = permissions_dir.join(format!("{command}.toml"));
 
         let content = std::fs::read_to_string(&permission_path)
-            .expect(&format!("failed to read {command}.toml"));
+            .unwrap_or_else(|_| panic!("failed to read {command}.toml"));
 
         let mut permission_file = toml::from_str::<PermissionFile>(&content)
-            .expect(&format!("failed to deserialize {command}.toml"));
+            .unwrap_or_else(|_| panic!("failed to deserialize {command}.toml"));
 
         for p in permission_file.permission.iter_mut() {
             p.commands
@@ -222,7 +222,7 @@ permissions = [
         }
 
         let out = toml::to_string_pretty(&permission_file)
-            .expect(&format!("failed to serialize {command}.toml"));
+            .unwrap_or_else(|_| panic!("failed to serialize {command}.toml"));
         let out = format!(
             r#"# Automatically generated - DO NOT EDIT!
 
@@ -230,6 +230,7 @@ permissions = [
 
 {out}"#
         );
-        std::fs::write(permission_path, out).expect(&format!("failed to write {command}.toml"));
+        std::fs::write(permission_path, out)
+            .unwrap_or_else(|_| panic!("failed to write {command}.toml"));
     }
 }
