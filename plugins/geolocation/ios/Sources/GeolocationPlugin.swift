@@ -14,6 +14,7 @@ class GetPositionArgs: Decodable {
 
 class WatchPositionArgs: Decodable {
   let options: GetPositionArgs
+  let request_updates_in_background: Bool
   let channel: Channel
 }
 
@@ -21,9 +22,20 @@ class ClearWatchArgs: Decodable {
   let channelId: UInt32
 }
 
+enum PermissionType: String, Decodable {
+  case location
+  case coarseLocation
+}
+
+class RequestPermissionsArgs: Decodable {
+  let permissions: [PermissionType]
+  let requestUpdatesInBackground: Bool
+}
+
 class GeolocationPlugin: Plugin, CLLocationManagerDelegate {
   private let locationManager = CLLocationManager()
   private var isUpdatingLocation: Bool = false
+  private var backgroundUpdatesRequested: Bool = false
   private var permissionRequests: [Invoke] = []
   private var positionRequests: [Invoke] = []
   private var watcherChannels: [Channel] = []
@@ -61,6 +73,8 @@ class GeolocationPlugin: Plugin, CLLocationManagerDelegate {
   @objc public func watchPosition(_ invoke: Invoke) throws {
     let args = try invoke.parseArgs(WatchPositionArgs.self)
 
+    self.backgroundUpdatesRequested = args.request_updates_in_background;
+    
     self.watcherChannels.append(args.channel)
 
     DispatchQueue.main.async {
@@ -70,12 +84,28 @@ class GeolocationPlugin: Plugin, CLLocationManagerDelegate {
         self.locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
       }
 
+      
+
       // TODO: Use the authorizationStatus instance property with locationManagerDidChangeAuthorization(_:) instead.
       if CLLocationManager.authorizationStatus() == .notDetermined {
-        self.locationManager.requestWhenInUseAuthorization()
+        if self.backgroundUpdatesRequested {
+          self.locationManager.requestAlwaysAuthorization()
+        } else {
+          self.locationManager.requestWhenInUseAuthorization()
+        }
       } else {
-        self.locationManager.startUpdatingLocation()
-        self.isUpdatingLocation = true
+        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse && self.backgroundUpdatesRequested {
+          self.locationManager.requestAlwaysAuthorization()
+        } else {
+          self.locationManager.startUpdatingLocation()
+          self.isUpdatingLocation = true
+          // Enable background updates if enabled
+          if self.backgroundUpdatesRequested {
+            self.locationManager.allowsBackgroundLocationUpdates = true
+            self.locationManager.pausesLocationUpdatesAutomatically = false
+            self.locationManager.showsBackgroundLocationIndicator = true
+          }
+        }
       }
     }
 
@@ -125,9 +155,19 @@ class GeolocationPlugin: Plugin, CLLocationManagerDelegate {
       // TODO: Use the authorizationStatus instance property with locationManagerDidChangeAuthorization(_:) instead.
       if CLLocationManager.authorizationStatus() == .notDetermined {
         self.permissionRequests.append(invoke)
-
-        DispatchQueue.main.async {
-          self.locationManager.requestWhenInUseAuthorization()
+        do {
+          let args = try invoke.parseArgs(RequestPermissionsArgs.self)
+  
+          DispatchQueue.main.async {
+            self.locationManager.requestWhenInUseAuthorization()
+            if args.requestUpdatesInBackground {
+              // Request background permission if requested
+              self.locationManager.requestAlwaysAuthorization()
+              self.backgroundUpdatesRequested = true
+            }
+          }
+        } catch {
+          invoke.reject(error.localizedDescription)
         }
       } else {
         checkPermissions(invoke)
@@ -224,6 +264,11 @@ class GeolocationPlugin: Plugin, CLLocationManagerDelegate {
   private func stopUpdating() {
     self.locationManager.stopUpdatingLocation()
     self.isUpdatingLocation = false
+    if self.backgroundUpdatesRequested {
+      self.locationManager.allowsBackgroundLocationUpdates = false
+      self.locationManager.pausesLocationUpdatesAutomatically = true
+      self.locationManager.showsBackgroundLocationIndicator = false
+    }
   }
 
   private func convertLocation(_ location: CLLocation) -> JsonObject {
