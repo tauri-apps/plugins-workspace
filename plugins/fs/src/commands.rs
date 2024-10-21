@@ -369,6 +369,7 @@ pub async fn read_file<R: Runtime>(
     Ok(tauri::ipc::Response::new(contents))
 }
 
+// TODO, remove in v3, rely on `read_file` command instead
 #[tauri::command]
 pub async fn read_text_file<R: Runtime>(
     webview: Webview<R>,
@@ -376,33 +377,8 @@ pub async fn read_text_file<R: Runtime>(
     command_scope: CommandScope<Entry>,
     path: SafeFilePath,
     options: Option<BaseOptions>,
-) -> CommandResult<String> {
-    let (mut file, path) = resolve_file(
-        &webview,
-        &global_scope,
-        &command_scope,
-        path,
-        OpenOptions {
-            base: BaseOptions {
-                base_dir: options.as_ref().and_then(|o| o.base_dir),
-            },
-            options: crate::OpenOptions {
-                read: true,
-                ..Default::default()
-            },
-        },
-    )?;
-
-    let mut contents = String::new();
-
-    file.read_to_string(&mut contents).map_err(|e| {
-        format!(
-            "failed to read file as text at path: {} with error: {e}",
-            path.display()
-        )
-    })?;
-
-    Ok(contents)
+) -> CommandResult<tauri::ipc::Response> {
+    read_file(webview, global_scope, command_scope, path, options).await
 }
 
 #[tauri::command]
@@ -802,10 +778,11 @@ fn default_create_value() -> bool {
     true
 }
 
-fn write_file_inner<R: Runtime>(
+#[tauri::command]
+pub async fn write_file<R: Runtime>(
     webview: Webview<R>,
-    global_scope: &GlobalScope<Entry>,
-    command_scope: &CommandScope<Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
     let data = match request.body() {
@@ -836,8 +813,8 @@ fn write_file_inner<R: Runtime>(
 
     let (mut file, path) = resolve_file(
         &webview,
-        global_scope,
-        command_scope,
+        &global_scope,
+        &command_scope,
         path,
         if let Some(opts) = options {
             OpenOptions {
@@ -880,17 +857,7 @@ fn write_file_inner<R: Runtime>(
         .map_err(Into::into)
 }
 
-#[tauri::command]
-pub async fn write_file<R: Runtime>(
-    webview: Webview<R>,
-    global_scope: GlobalScope<Entry>,
-    command_scope: CommandScope<Entry>,
-    request: tauri::ipc::Request<'_>,
-) -> CommandResult<()> {
-    write_file_inner(webview, &global_scope, &command_scope, request)
-}
-
-// TODO, in v3, remove this command and rely on `write_file` command only
+// TODO, remove in v3, rely on `write_file` command instead
 #[tauri::command]
 pub async fn write_text_file<R: Runtime>(
     webview: Webview<R>,
@@ -898,7 +865,7 @@ pub async fn write_text_file<R: Runtime>(
     command_scope: CommandScope<Entry>,
     request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
-    write_file_inner(webview, &global_scope, &command_scope, request)
+    write_file(webview, global_scope, command_scope, request).await
 }
 
 #[tauri::command]

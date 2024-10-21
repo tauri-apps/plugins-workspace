@@ -758,10 +758,14 @@ async function readTextFile(
     throw new TypeError('Must be a file URL.')
   }
 
-  return await invoke<string>('plugin:fs|read_text_file', {
+  const arr = await invoke<ArrayBuffer | number[]>('plugin:fs|read_text_file', {
     path: path instanceof URL ? path.toString() : path,
     options
   })
+
+  const bytes = arr instanceof ArrayBuffer ? arr : Uint8Array.from(arr)
+
+  return new TextDecoder().decode(bytes)
 }
 
 /**
