@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.3]
+
+- [`14cee64c`](https://github.com/tauri-apps/plugins-workspace/commit/14cee64c82a72655ae6a4ac0892736a2959dbda5) ([#1958](https://github.com/tauri-apps/plugins-workspace/pull/1958) by [@bWanShiTong](https://github.com/tauri-apps/plugins-workspace/../../bWanShiTong)) Fix compilation on targets with pointer width of `16` or `32`
+
 ## \[2.0.1]
 
 - [`ae802456`](https://github.com/tauri-apps/plugins-workspace/commit/ae8024565f074f313084777c8b10d1b5e3bbe220) ([#1950](https://github.com/tauri-apps/plugins-workspace/pull/1950) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Improve performance of the `FileHandle.read` and `writeTextFile` APIs.

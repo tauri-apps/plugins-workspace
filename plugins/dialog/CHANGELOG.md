@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.3]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.3`
+
 ## \[2.0.1]
 
 - [`2302c2db`](https://github.com/tauri-apps/plugins-workspace/commit/2302c2db1c49673e61dcbda8cdb01b2c57e9ba6f) ([#1910](https://github.com/tauri-apps/plugins-workspace/pull/1910) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `ask` and `confirm` not using system button texts
@@ -293,5 +299,5 @@
   pull/371)) First v2 alpha release!
   lpha release!
   pull/371)) First v2 alpha release!
-lease!
+  lease!
   pull/371)) First v2 alpha release!
