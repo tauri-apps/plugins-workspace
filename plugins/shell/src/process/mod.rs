@@ -84,6 +84,14 @@ impl CommandChild {
     pub fn pid(&self) -> u32 {
         self.inner.id()
     }
+
+    /// Waits for the child to exit completely, returning the status that it exited with.
+    pub async fn wait(self) -> crate::Result<ExitStatus> {
+        let exitstatus = self.inner.wait()?;
+        Ok(ExitStatus {
+            code: exitstatus.code(),
+        })
+    }
 }
 
 /// Describes the result of a process after it has terminated.
