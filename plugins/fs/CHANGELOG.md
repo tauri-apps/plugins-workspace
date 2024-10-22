@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.2]
+
+- [`77149dc4`](https://github.com/tauri-apps/plugins-workspace/commit/77149dc4320d26b413e4a6bbe82c654367c51b32) ([#1965](https://github.com/tauri-apps/plugins-workspace/pull/1965) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix `writeTextFile` converting UTF-8 characters (for example `äöü`) in the given path into replacement character (`�`)
+
 ## \[2.0.3]
 
 - [`14cee64c`](https://github.com/tauri-apps/plugins-workspace/commit/14cee64c82a72655ae6a4ac0892736a2959dbda5) ([#1958](https://github.com/tauri-apps/plugins-workspace/pull/1958) by [@bWanShiTong](https://github.com/tauri-apps/plugins-workspace/../../bWanShiTong)) Fix compilation on targets with pointer width of `16` or `32`
