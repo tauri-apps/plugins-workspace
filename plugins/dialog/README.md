@@ -71,6 +71,31 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 
 ```
 
+### Android Integration
+In order to access media (like images and video) outside the app, make sure to include the following lines as required in your **AndroidManifest.xml** file like so:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Include these settings as necessary -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
+    <!-- For older versions of Android -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    ...other permissions
+</manifest>
+```
+
+The relevant `AndroidManifest.xml`file is located in:
+```
+/src-tauri/gen/android/app/src/main/AndroidManifest.xml
+```
+
+> **NOTE:** This is the only `AndroidManifest.xml` file that can be modified in the project. All other files in the project gets overwritten when the tauri app is built
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
