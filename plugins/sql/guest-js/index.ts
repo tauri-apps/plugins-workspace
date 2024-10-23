@@ -129,12 +129,12 @@ export default class Database {
    * ```ts
    * // for sqlite & postgres
    * const result = await db.select(
-   *    "SELECT * from todos WHERE id = $1", id
+   *    "SELECT * from todos WHERE id = $1", [ id ]
    * );
    *
    * // for mysql
    * const result = await db.select(
-   *    "SELECT * from todos WHERE id = ?", id
+   *    "SELECT * from todos WHERE id = ?", [ id ]
    * );
    * ```
    */
