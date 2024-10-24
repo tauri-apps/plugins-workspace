@@ -20,9 +20,10 @@ pub(crate) async fn get_current_position<R: Runtime>(
 pub(crate) async fn watch_position<R: Runtime>(
     app: AppHandle<R>,
     options: PositionOptions,
+    request_updates_in_background: bool,
     channel: Channel,
 ) -> Result<()> {
-    app.geolocation().watch_position_inner(options, channel)
+    app.geolocation().watch_position_inner(options, channel, request_updates_in_background)
 }
 
 #[command]
@@ -42,6 +43,7 @@ pub(crate) async fn check_permissions<R: Runtime>(app: AppHandle<R>) -> Result<P
 pub(crate) async fn request_permissions<R: Runtime>(
     app: AppHandle<R>,
     permissions: Option<Vec<PermissionType>>,
+    request_updates_in_background: bool,
 ) -> Result<PermissionStatus> {
-    app.geolocation().request_permissions(permissions)
+    app.geolocation().request_permissions(permissions, request_updates_in_background)
 }
