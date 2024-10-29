@@ -24,6 +24,7 @@ This default permission set prevents access to critical components
 of the Tauri application by default.
 On Windows the webview data folder access is denied.
 
+#### Included permissions:
 
 
 - `create-app-specific-dirs`
