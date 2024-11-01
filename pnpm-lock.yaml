@@ -23,7 +23,7 @@ importers:
         version: 0.4.4(rollup@4.22.4)
       '@rollup/plugin-typescript':
         specifier: 11.1.6
-        version: 11.1.6(rollup@4.22.4)(tslib@2.7.0)(typescript@5.6.3)
+        version: 11.1.6(rollup@4.22.4)(tslib@2.8.1)(typescript@5.6.3)
       '@types/eslint__js':
         specifier: 8.42.3
         version: 8.42.3
@@ -53,8 +53,8 @@ importers:
         version: 1.6.0
     devDependencies:
       tslib:
-        specifier: 2.7.0
-        version: 2.7.0
+        specifier: 2.8.1
+        version: 2.8.1
 
   plugins/fs-extra:
     dependencies:
@@ -63,8 +63,8 @@ importers:
         version: 1.6.0
     devDependencies:
       tslib:
-        specifier: 2.7.0
-        version: 2.7.0
+        specifier: 2.8.1
+        version: 2.8.1
 
   plugins/fs-watch:
     dependencies:
@@ -73,8 +73,8 @@ importers:
         version: 1.6.0
     devDependencies:
       tslib:
-        specifier: 2.7.0
-        version: 2.7.0
+        specifier: 2.8.1
+        version: 2.8.1
 
   plugins/log:
     dependencies:
@@ -83,8 +83,8 @@ importers:
         version: 1.6.0
     devDependencies:
       tslib:
-        specifier: 2.7.0
-        version: 2.7.0
+        specifier: 2.8.1
+        version: 2.8.1
 
   plugins/positioner:
     dependencies:
@@ -93,8 +93,8 @@ importers:
         version: 1.6.0
     devDependencies:
       tslib:
-        specifier: 2.7.0
-        version: 2.7.0
+        specifier: 2.8.1
+        version: 2.8.1
 
   plugins/single-instance/examples/vanilla:
     devDependencies:
@@ -109,8 +109,8 @@ importers:
         version: 1.6.0
     devDependencies:
       tslib:
-        specifier: 2.7.0
-        version: 2.7.0
+        specifier: 2.8.1
+        version: 2.8.1
 
   plugins/store:
     dependencies:
@@ -119,8 +119,8 @@ importers:
         version: 1.6.0
     devDependencies:
       tslib:
-        specifier: 2.7.0
-        version: 2.7.0
+        specifier: 2.8.1
+        version: 2.8.1
 
   plugins/store/examples/AppSettingsManager:
     devDependencies:
@@ -141,8 +141,8 @@ importers:
         version: 1.6.0
     devDependencies:
       tslib:
-        specifier: 2.7.0
-        version: 2.7.0
+        specifier: 2.8.1
+        version: 2.8.1
 
   plugins/upload:
     dependencies:
@@ -151,8 +151,8 @@ importers:
         version: 1.6.0
     devDependencies:
       tslib:
-        specifier: 2.7.0
-        version: 2.7.0
+        specifier: 2.8.1
+        version: 2.8.1
 
   plugins/websocket:
     dependencies:
@@ -161,8 +161,8 @@ importers:
         version: 1.6.0
     devDependencies:
       tslib:
-        specifier: 2.7.0
-        version: 2.7.0
+        specifier: 2.8.1
+        version: 2.8.1
 
   plugins/websocket/examples/tauri-app:
     dependencies:
@@ -187,8 +187,8 @@ importers:
         version: 1.6.0
     devDependencies:
       tslib:
-        specifier: 2.7.0
-        version: 2.7.0
+        specifier: 2.8.1
+        version: 2.8.1
 
 packages:
 
@@ -1127,8 +1127,8 @@ packages:
     peerDependencies:
       typescript: '>=4.2.0'
 
-  tslib@2.7.0:
-    resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==}
+  tslib@2.8.1:
+    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
@@ -1368,14 +1368,14 @@ snapshots:
     optionalDependencies:
       rollup: 4.22.4
 
-  '@rollup/plugin-typescript@11.1.6(rollup@4.22.4)(tslib@2.7.0)(typescript@5.6.3)':
+  '@rollup/plugin-typescript@11.1.6(rollup@4.22.4)(tslib@2.8.1)(typescript@5.6.3)':
     dependencies:
       '@rollup/pluginutils': 5.1.1(rollup@4.22.4)
       resolve: 1.22.8
       typescript: 5.6.3
     optionalDependencies:
       rollup: 4.22.4
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@rollup/pluginutils@5.1.1(rollup@4.22.4)':
     dependencies:
@@ -2030,7 +2030,7 @@ snapshots:
     dependencies:
       typescript: 5.6.3
 
-  tslib@2.7.0: {}
+  tslib@2.8.1: {}
 
   type-check@0.4.0:
     dependencies:
