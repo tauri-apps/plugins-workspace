@@ -36,7 +36,10 @@ anyhow = "1"
 uuid = { version = "1", features = ["v4"] }
 glob = "0.3"
 # TODO: Remove `serialization-compat-6` in v3
-notify = { version = "7", optional = true, features = ["serde", "serialization-compat-6"] }
+notify = { version = "7", optional = true, features = [
+    "serde",
+    "serialization-compat-6",
+] }
 notify-debouncer-full = { version = "0.4", optional = true }
 dunce = { workspace = true }
 percent-encoding = "2"
