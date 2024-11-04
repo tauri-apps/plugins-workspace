@@ -205,7 +205,7 @@
     if (consoleTextEl) consoleTextEl.scrollTop = consoleTextEl.scrollHeight
   }
 
-  // this function is renders HTML without sanitizing it so it's insecure
+  // this function renders HTML without sanitizing it so it's insecure
   // we only use it with our own input data
   async function insecureRenderHtml(html) {
     messages.update((r) => [
@@ -334,42 +334,46 @@
       children:h-100% children:w-12 children:inline-flex
       children:items-center children:justify-center"
     >
-      <span
+      <button
+        aria-label="Toggle dark mode"
         title={isDark ? 'Switch to Light mode' : 'Switch to Dark mode'}
-        class="hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
+        class="bg-inherit border-none hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
         on:click={toggleDark}
       >
         {#if isDark}
-          <div class="i-ph-sun" />
+          <div class="i-ph-sun"></div>
         {:else}
-          <div class="i-ph-moon" />
+          <div class="i-ph-moon"></div>
         {/if}
-      </span>
-      <span
+      </button>
+      <button
+        aria-label="Minimize window"
         title="Minimize"
-        class="hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
+        class="bg-inherit border-none hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
         on:click={minimize}
       >
-        <div class="i-codicon-chrome-minimize" />
-      </span>
-      <span
+        <div class="i-codicon-chrome-minimize"></div>
+      </button>
+      <button
+        aria-label="Maximize window"
         title={isWindowMaximized ? 'Restore' : 'Maximize'}
-        class="hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
+        class="bg-inherit border-none hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
         on:click={toggleMaximize}
       >
         {#if isWindowMaximized}
-          <div class="i-codicon-chrome-restore" />
+          <div class="i-codicon-chrome-restore"></div>
         {:else}
-          <div class="i-codicon-chrome-maximize" />
+          <div class="i-codicon-chrome-maximize"></div>
         {/if}
-      </span>
-      <span
+      </button>
+      <button
+        aria-label="Close window"
         title="Close"
-        class="hover:bg-red-700 dark:hover:bg-red-700 hover:text-darkPrimaryText active:bg-red-700/90 dark:active:bg-red-700/90 active:text-darkPrimaryText"
+        class="bg-inherit border-none hover:bg-red-700 dark:hover:bg-red-700 hover:text-darkPrimaryText active:bg-red-700/90 dark:active:bg-red-700/90 active:text-darkPrimaryText"
         on:click={close}
       >
-        <div class="i-codicon-chrome-close" />
-      </span>
+        <div class="i-codicon-chrome-close"></div>
+      </button>
     </span>
   </div>
 {/if}
@@ -377,13 +381,13 @@
 <!-- Sidebar toggle, only visible on small screens -->
 <div
   id="sidebarToggle"
-  class="z-2000 sidebar-toggle display-none lt-sm:flex justify-center absolute items-center w-8 h-8 rd-8
+  class="z-2000 sidebar-toggle hidden lt-sm:flex justify-center absolute items-center w-8 h-8 rd-8
             bg-accent dark:bg-darkAccent active:bg-accentDark dark:active:bg-darkAccentDark"
 >
   {#if isSideBarOpen}
-    <span class="i-codicon-close animate-duration-300ms animate-fade-in" />
+    <span class="i-codicon-close animate-duration-300ms animate-fade-in"></span>
   {:else}
-    <span class="i-codicon-menu animate-duration-300ms animate-fade-in" />
+    <span class="i-codicon-menu animate-duration-300ms animate-fade-in"></span>
   {/if}
 </div>
 
@@ -395,24 +399,21 @@
     class="lt-sm:h-screen lt-sm:shadow-lg lt-sm:shadow lt-sm:transition-transform lt-sm:absolute lt-sm:z-1999
       bg-darkPrimaryLighter transition-colors-250 overflow-hidden grid select-none px-2"
   >
-    <img
-      on:click={() => open('https://tauri.app/')}
-      class="self-center p-7 cursor-pointer"
-      src="tauri_logo.png"
-      alt="Tauri logo"
-    />
+    <a href="https://tauri.app" target="_blank">
+      <img class="p-7" src="tauri_logo.png" alt="Tauri logo" />
+    </a>
     {#if !isWindows}
       <a href="##" class="nv justify-between h-8" on:click={toggleDark}>
         {#if isDark}
           Switch to Light mode
-          <div class="i-ph-sun" />
+          <div class="i-ph-sun"></div>
         {:else}
           Switch to Dark mode
-          <div class="i-ph-moon" />
+          <div class="i-ph-moon"></div>
         {/if}
       </a>
       <br />
-      <div class="bg-white/5 h-2px" />
+      <div class="bg-white/5 h-2px"></div>
       <br />
     {/if}
 
@@ -422,7 +423,7 @@
       href="https://tauri.app/v1/guides/"
     >
       Documentation
-      <span class="i-codicon-link-external" />
+      <span class="i-codicon-link-external"></span>
     </a>
     <a
       class="nv justify-between h-8"
@@ -430,7 +431,7 @@
       href="https://github.com/tauri-apps/tauri"
     >
       GitHub
-      <span class="i-codicon-link-external" />
+      <span class="i-codicon-link-external"></span>
     </a>
     <a
       class="nv justify-between h-8"
@@ -438,10 +439,10 @@
       href="https://github.com/tauri-apps/tauri/tree/dev/examples/api"
     >
       Source
-      <span class="i-codicon-link-external" />
+      <span class="i-codicon-link-external"></span>
     </a>
     <br />
-    <div class="bg-white/5 h-2px" />
+    <div class="bg-white/5 h-2px"></div>
     <br />
     <div
       class="flex flex-col overflow-y-auto children-h-10 children-flex-none gap-1"
@@ -456,7 +457,7 @@
               isSideBarOpen = false
             }}
           >
-            <div class="{view.icon} mr-2" />
+            <div class="{view.icon} mr-2"></div>
             <p>{view.label}</p></a
           >
         {/if}
@@ -485,21 +486,23 @@
       id="console"
       class="select-none h-15rem grid grid-rows-[2px_2rem_1fr] gap-1 overflow-hidden"
     >
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         on:mousedown={startResizingConsole}
         class="bg-black/20 h-2px cursor-ns-resize"
-      />
+      ></div>
       <div class="flex justify-between items-center px-2">
         <p class="font-semibold">Console</p>
-        <div
-          class="cursor-pointer h-85% rd-1 p-1 flex justify-center items-center
+        <button
+          aria-label="Clear Console"
+          class="cursor-pointer h-85% rd-1 p-1 flex justify-center items-center border-none bg-inherit
                 hover:bg-hoverOverlay dark:hover:bg-darkHoverOverlay
                 active:bg-hoverOverlay/25 dark:active:bg-darkHoverOverlay/25
           "
           on:click={clear}
         >
-          <div class="i-codicon-clear-all" />
-        </div>
+          <div class="i-codicon-clear-all"></div>
+        </button>
       </div>
       <div
         bind:this={consoleTextEl}
