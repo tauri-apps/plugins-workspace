@@ -42,7 +42,7 @@ features = [
 ]
 
 [target."cfg(target_os = \"linux\")".dependencies]
-zbus = "4"
+zbus = "5"
 
 [features]
 semver = ["dep:semver"]
