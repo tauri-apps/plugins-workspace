@@ -31,7 +31,7 @@ serde_repr = "0.1"
 byte-unit = "5"
 log = { workspace = true, features = ["kv_unstable"] }
 time = { version = "0.3", features = ["formatting", "local-offset"] }
-fern = "0.6"
+fern = "0.7"
 thiserror = "1"
 
 [target."cfg(target_os = \"android\")".dependencies]
