@@ -35,8 +35,9 @@ url = { workspace = true }
 anyhow = "1"
 uuid = { version = "1", features = ["v4"] }
 glob = "0.3"
-notify = { version = "7", optional = true, features = ["serde"] }
-notify-debouncer-full = { version = "0.3", optional = true }
+# TODO: Remove `serialization-compat-6` in v3
+notify = { version = "7", optional = true, features = ["serde", "serialization-compat-6"] }
+notify-debouncer-full = { version = "0.4", optional = true }
 dunce = { workspace = true }
 percent-encoding = "2"
 
