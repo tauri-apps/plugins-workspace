@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
-use notify_debouncer_full::{new_debouncer, DebounceEventResult, Debouncer, FileIdMap};
+use notify_debouncer_full::{new_debouncer, DebounceEventResult, Debouncer, RecommendedCache};
 use serde::Deserialize;
 use tauri::{
     ipc::{Channel, CommandScope, GlobalScope},
@@ -47,7 +47,7 @@ impl WatcherResource {
 impl Resource for WatcherResource {}
 
 enum WatcherKind {
-    Debouncer(Debouncer<RecommendedWatcher, FileIdMap>),
+    Debouncer(Debouncer<RecommendedWatcher, RecommendedCache>),
     Watcher(RecommendedWatcher),
 }
 
