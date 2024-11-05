@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.2]
+
+- [`cfb3ec0e`](https://github.com/tauri-apps/plugins-workspace/commit/cfb3ec0e21cab8010fbc1d7ef82aa65d86c3cfa9) ([#2007](https://github.com/tauri-apps/plugins-workspace/pull/2007) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On macOS the plugin now (temporarily) ignores the maximized state for undecorated windows on resize events to fix app freezes.
+
 ## \[2.0.1]
 
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.

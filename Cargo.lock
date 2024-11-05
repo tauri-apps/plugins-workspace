@@ -206,7 +206,7 @@ checksum = "86fdf8605db99b54d3cd748a44c6d04df638eb5dafb219b135d0149bd0db01f6"
 
 [[package]]
 name = "api"
-version = "2.0.4"
+version = "2.0.5"
 dependencies = [
  "log",
  "serde",
@@ -6386,7 +6386,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-clipboard-manager"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "arboard",
  "log",
@@ -6526,7 +6526,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-log"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "android_logger",
  "byte-unit",
@@ -6666,7 +6666,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-sql"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "futures-core",
  "indexmap 2.6.0",
@@ -6746,7 +6746,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-upload"
-version = "2.0.1"
+version = "2.1.0"
 dependencies = [
  "futures-util",
  "log",
@@ -6781,7 +6781,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "bitflags 2.6.0",
  "log",
