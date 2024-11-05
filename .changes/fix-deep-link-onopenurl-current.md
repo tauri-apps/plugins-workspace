@@ -1,4 +1,5 @@
 ---
+deep-link: patch
 deep-link-js: patch
 ---
 
