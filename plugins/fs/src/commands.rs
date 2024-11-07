@@ -16,7 +16,7 @@ use std::{
     borrow::Cow,
     fs::File,
     io::{BufReader, Lines, Read, Write},
-    path::{Path, PathBuf},
+    path::PathBuf,
     str::FromStr,
     sync::Mutex,
     time::{SystemTime, UNIX_EPOCH},
@@ -245,30 +245,10 @@ pub fn mkdir<R: Runtime>(
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
 pub struct DirEntry {
-    pub name: Option<String>,
+    pub name: String,
     pub is_directory: bool,
     pub is_file: bool,
     pub is_symlink: bool,
-}
-
-fn read_dir_inner<P: AsRef<Path>>(path: P) -> crate::Result<Vec<DirEntry>> {
-    let mut files_and_dirs: Vec<DirEntry> = vec![];
-    for entry in std::fs::read_dir(path)? {
-        let path = entry?.path();
-        let file_type = path.metadata()?.file_type();
-        files_and_dirs.push(DirEntry {
-            is_directory: file_type.is_dir(),
-            is_file: file_type.is_file(),
-            is_symlink: std::fs::symlink_metadata(&path)
-                .map(|md| md.file_type().is_symlink())
-                .unwrap_or(false),
-            name: path
-                .file_name()
-                .map(|name| name.to_string_lossy())
-                .map(|name| name.to_string()),
-        });
-    }
-    Result::Ok(files_and_dirs)
 }
 
 #[tauri::command]
@@ -287,14 +267,37 @@ pub async fn read_dir<R: Runtime>(
         options.as_ref().and_then(|o| o.base_dir),
     )?;
 
-    read_dir_inner(&resolved_path)
-        .map_err(|e| {
-            format!(
-                "failed to read directory at path: {} with error: {e}",
-                resolved_path.display()
-            )
+    let entries = std::fs::read_dir(&resolved_path).map_err(|e| {
+        format!(
+            "failed to read directory at path: {} with error: {e}",
+            resolved_path.display()
+        )
+    })?;
+
+    let entries = entries
+        .filter_map(|entry| {
+            let entry = entry.ok()?;
+            let name = entry.file_name().into_string().ok()?;
+            let metadata = entry.file_type();
+            macro_rules! method_or_false {
+                ($method:ident) => {
+                    if let Ok(metadata) = &metadata {
+                        metadata.$method()
+                    } else {
+                        false
+                    }
+                };
+            }
+            Some(DirEntry {
+                name,
+                is_file: method_or_false!(is_file),
+                is_directory: method_or_false!(is_dir),
+                is_symlink: method_or_false!(is_symlink),
+            })
         })
-        .map_err(Into::into)
+        .collect();
+
+    Ok(entries)
 }
 
 #[tauri::command]
