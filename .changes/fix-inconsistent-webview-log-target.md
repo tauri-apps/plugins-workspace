@@ -1,5 +1,5 @@
 ---
-'log': 'patch'
+'log-plugin': 'patch'
 'log-js': 'patch'
 ---
 
