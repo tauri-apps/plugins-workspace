@@ -233,13 +233,13 @@ fn log(
     let level = log::Level::from(level);
 
     let target = if let Some(location) = location {
-        &format!("{WEBVIEW_TARGET}:{location}")
+        format!("{WEBVIEW_TARGET}:{location}")
     } else {
-        WEBVIEW_TARGET
+        WEBVIEW_TARGET.to_string()
     };
 
     let mut builder = RecordBuilder::new();
-    builder.level(level).target(target).file(file).line(line);
+    builder.level(level).target(&target).file(file).line(line);
 
     let key_values = key_values.unwrap_or_default();
     let mut kv = HashMap::new();
