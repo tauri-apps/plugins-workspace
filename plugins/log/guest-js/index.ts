@@ -59,8 +59,8 @@ function getCallerLocation(stack?: string) {
     //     at filename.js:13:1
 
     const lines = stack.split('\n')
-    // Find the second line (caller of the current location)
-    const callerLine = lines[2].trim()
+    // Find the third line (caller's caller of the current location)
+    const callerLine = lines[3].trim()
 
     const regex =
       /at\s+(?<functionName>.*?)\s+\((?<fileName>.*?):(?<lineNumber>\d+):(?<columnNumber>\d+)\)/
@@ -99,10 +99,11 @@ function getCallerLocation(stack?: string) {
     // global code@filename.js:13:4
 
     const traces = stack.split('\n').map((line) => line.split('@'))
-    const filtered = traces?.filter(([name, location]) => {
+    const filtered = traces.filter(([name, location]) => {
       return name.length > 0 && location !== '[native code]'
     })
-    return filtered?.[1]?.filter((v) => v.length > 0).join('@')
+    // Find the third line (caller's caller of the current location)
+    return filtered[2].filter((v) => v.length > 0).join('@')
   }
 }
 
