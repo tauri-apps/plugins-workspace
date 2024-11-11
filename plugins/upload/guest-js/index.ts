@@ -6,6 +6,7 @@ import { invoke, Channel } from '@tauri-apps/api/core'
 
 interface ProgressPayload {
   progress: number
+  progressTotal: number
   total: number
   transferSpeed: number
 }
