@@ -32,10 +32,11 @@
  * ```json
  * {
  *   "permissions": [
- *    {
- *     "identifier": "fs:allow-exists",
- *     "allow": [{ "path": "$APPDATA/databases/*" }]
- *   }]
+ *     {
+ *       "identifier": "fs:allow-exists",
+ *       "allow": [{ "path": "$APPDATA/databases/*" }]
+ *     }
+ *   ]
  * }
  * ```
  *
