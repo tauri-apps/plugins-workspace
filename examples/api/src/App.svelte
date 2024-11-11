@@ -21,6 +21,7 @@
   import Scanner from './views/Scanner.svelte'
   import Biometric from './views/Biometric.svelte'
   import Geolocation from './views/Geolocation.svelte'
+  import Haptics from './views/Haptics.svelte'
 
   import { onMount, tick } from 'svelte'
   import { ask } from '@tauri-apps/plugin-dialog'
@@ -130,6 +131,11 @@
       label: 'Geolocation',
       component: Geolocation,
       icon: 'i-ph-map-pin'
+    },
+    isMobile && {
+      label: 'Haptics',
+      component: Haptics,
+      icon: 'i-ph-vibrate'
     }
   ]
 
