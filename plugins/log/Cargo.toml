@@ -32,7 +32,7 @@ byte-unit = "5"
 log = { workspace = true, features = ["kv_unstable"] }
 time = { version = "0.3", features = ["formatting", "local-offset"] }
 fern = "0.7"
-thiserror = "1"
+thiserror = "2"
 
 [target."cfg(target_os = \"android\")".dependencies]
 android_logger = "0.14"
