@@ -20,10 +20,11 @@
  * ```json
  * {
  *   "permissions": [
- *    {
- *     "identifier": "fs:scope",
- *     "allow": [{ "path": "$APPDATA/databases/*" }]
- *   }]
+ *     {
+ *       "identifier": "fs:scope",
+ *       "allow": [{ "path": "$APPDATA/databases/*" }]
+ *     }
+ *   ]
  * }
  * ```
  *
