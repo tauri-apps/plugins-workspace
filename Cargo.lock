@@ -6322,7 +6322,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
 ]
 
 [[package]]
@@ -6334,7 +6334,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
 ]
 
 [[package]]
@@ -6347,7 +6347,7 @@ dependencies = [
  "serde_repr",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
 ]
 
 [[package]]
@@ -6360,7 +6360,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
 ]
 
 [[package]]
@@ -6373,7 +6373,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
 ]
 
 [[package]]
@@ -6388,7 +6388,7 @@ dependencies = [
  "tauri",
  "tauri-plugin",
  "tauri-utils",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "url",
  "windows-registry 0.3.0",
  "windows-result 0.2.0",
@@ -6406,7 +6406,7 @@ dependencies = [
  "tauri",
  "tauri-plugin",
  "tauri-plugin-fs",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "url",
 ]
 
@@ -6426,7 +6426,7 @@ dependencies = [
  "serde_repr",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "url",
  "uuid",
 ]
@@ -6441,7 +6441,7 @@ dependencies = [
  "specta",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
 ]
 
 [[package]]
@@ -6454,7 +6454,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
 ]
 
 [[package]]
@@ -6467,7 +6467,7 @@ dependencies = [
  "specta",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
 ]
 
 [[package]]
@@ -6484,7 +6484,7 @@ dependencies = [
  "tauri",
  "tauri-plugin",
  "tauri-plugin-fs",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "tokio",
  "url",
  "urlpattern",
@@ -6499,7 +6499,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "tiny_http",
 ]
 
@@ -6519,7 +6519,7 @@ dependencies = [
  "swift-rs",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "time",
 ]
 
@@ -6533,7 +6533,7 @@ dependencies = [
  "serde_repr",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
 ]
 
 [[package]]
@@ -6551,7 +6551,7 @@ dependencies = [
  "serde_repr",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "time",
  "url",
  "win7-notifications",
@@ -6571,7 +6571,7 @@ dependencies = [
  "sys-locale",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
 ]
 
 [[package]]
@@ -6585,7 +6585,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin-fs",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
 ]
 
 [[package]]
@@ -6598,7 +6598,7 @@ dependencies = [
  "serde_repr",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
 ]
 
 [[package]]
@@ -6624,7 +6624,7 @@ dependencies = [
  "shared_child",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "tokio",
 ]
 
@@ -6638,7 +6638,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin-deep-link",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "windows-sys 0.59.0",
  "zbus",
 ]
@@ -6655,7 +6655,7 @@ dependencies = [
  "sqlx",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "time",
  "tokio",
 ]
@@ -6670,7 +6670,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "tokio",
 ]
 
@@ -6691,7 +6691,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "zeroize",
 ]
 
@@ -6715,7 +6715,7 @@ dependencies = [
  "tauri",
  "tauri-plugin",
  "tempfile",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "time",
  "tokio",
  "url",
@@ -6736,7 +6736,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "tokio",
  "tokio-util",
 ]
@@ -6753,7 +6753,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
  "tokio",
  "tokio-tungstenite",
 ]
@@ -6768,7 +6768,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.64",
+ "thiserror 2.0.3",
 ]
 
 [[package]]
