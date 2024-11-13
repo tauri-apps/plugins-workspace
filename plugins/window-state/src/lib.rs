@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/window-state/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/window-state)
-//!
 //! Save window positions and sizes and restore them when the app is reopened.
 
 #![doc(

@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/upload/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/upload)
-//!
 //! Upload files from disk to a remote server over HTTP.
 //!
 //! Download files from a remote HTTP server to disk.
