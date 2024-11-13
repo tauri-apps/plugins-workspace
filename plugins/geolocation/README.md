@@ -100,7 +100,7 @@ import {
   requestPermissions,
   getCurrentPosition,
   watchPosition
-} from '@tauri-apps/plugin-log'
+} from '@tauri-apps/plugin-geolocation'
 
 let permissions = await checkPermissions()
 if (
