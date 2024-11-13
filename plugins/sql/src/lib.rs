@@ -104,10 +104,9 @@ impl MigrationSource<'static> for MigrationList {
     }
 }
 
-macro_rules! run_async_command {
-    ($cmd:expr) => {
-        tokio::task::block_in_place(|| tokio::runtime::Handle::current().block_on($cmd))
-    };
+/// Allows blocking on async code without creating a nested runtime.
+fn run_async_command<F: std::future::Future>(cmd: F) -> F::Output {
+    tokio::task::block_in_place(|| tokio::runtime::Handle::current().block_on(cmd))
 }
 
 /// Tauri SQL plugin builder.
@@ -144,7 +143,7 @@ impl Builder {
             .setup(|app, api| {
                 let config = api.config().clone().unwrap_or_default();
 
-                run_async_command!(async move {
+                run_async_command(async move {
                     let instances = DbInstances::default();
                     let mut lock = instances.0.write().await;
 
@@ -172,7 +171,7 @@ impl Builder {
             })
             .on_event(|app, event| {
                 if let RunEvent::Exit = event {
-                    run_async_command!(async move {
+                    run_async_command(async move {
                         let instances = &*app.state::<DbInstances>();
                         let instances = instances.0.read().await;
                         for value in instances.values() {
