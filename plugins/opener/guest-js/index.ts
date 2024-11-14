@@ -20,19 +20,6 @@
 
 import { invoke } from '@tauri-apps/api/core'
 
-export type Program =
-  | 'firefox'
-  | 'google chrome'
-  | 'chromium'
-  | 'safari'
-  | 'open'
-  | 'start'
-  | 'xdg-open'
-  | 'gio'
-  | 'gnome-open'
-  | 'kde-open'
-  | 'wslview'
-
 /**
  * Opens a url with the system's default app, or the one specified with {@linkcode openWith}.
  *
@@ -47,13 +34,11 @@ export type Program =
  * ```
  *
  * @param url The URL to open.
- * @param openWith The app to open the URL with.
- * Must be one of `firefox`, `google chrome`, `chromium` `safari`, `open`, `start`, `xdg-open`, `gio`, `gnome-open`, `kde-open` or `wslview`.
- * If not specified, defaults to the system default application for the specified url type.
+ * @param openWith The app to open the URL with. If not specified, defaults to the system default application for the specified url type.
  *
  * @since 2.0.0
  */
-export async function openUrl(url: string, openWith?: Program): Promise<void> {
+export async function openUrl(url: string, openWith?: string): Promise<void> {
   await invoke('plugin:opener|open_url', {
     url,
     with: openWith
@@ -69,21 +54,16 @@ export async function openUrl(url: string, openWith?: Program): Promise<void> {
  *
  * // opens a file using the default program:
  * await openPath('/path/to/file');
- * // opens a file using `start` command on Windows.
- * await openPath('C:/path/to/file', 'start');
+ * // opens a file using `vlc` command on Windows.
+ * await openPath('C:/path/to/file', 'vlc');
  * ```
  *
  * @param path The path to open.
- * @param openWith The app to open the path with.
- * Must be one of `firefox`, `google chrome`, `chromium` `safari`, `open`, `start`, `xdg-open`, `gio`, `gnome-open`, `kde-open` or `wslview`.
- * If not specified, defaults to the system default application for the specified path type.
+ * @param openWith The app to open the path with. If not specified, defaults to the system default application for the specified path type.
  *
  * @since 2.0.0
  */
-export async function openPath(
-  path: string,
-  openWith?: Program
-): Promise<void> {
+export async function openPath(path: string, openWith?: string): Promise<void> {
   await invoke('plugin:opener|open_path', {
     path,
     with: openWith

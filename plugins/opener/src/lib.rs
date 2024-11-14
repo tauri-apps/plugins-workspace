@@ -6,7 +6,7 @@ use std::path::Path;
 
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    AppHandle, Manager, Runtime,
+    Manager, Runtime,
 };
 
 #[cfg(mobile)]
@@ -30,8 +30,10 @@ pub use open::{open_path, open_url};
 pub use reveal_item_in_dir::reveal_item_in_dir;
 
 pub struct Opener<R: Runtime> {
-    #[allow(dead_code)]
-    app: AppHandle<R>,
+    // we use `fn() -> R` to slicence the unused generic error
+    // while keeping this struct `Send + Sync` without requiring `R` to be
+    #[cfg(not(mobile))]
+    _marker: std::marker::PhantomData<fn() -> R>,
     #[cfg(mobile)]
     mobile_plugin_handle: PluginHandle<R>,
 }
@@ -116,7 +118,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             let handle = _api.register_ios_plugin(init_plugin_opener)?;
 
             app.manage(Opener {
-                app: app.clone(),
+                #[cfg(not(mobile))]
+                _marker: std::marker::PhantomData::<fn() -> R>,
                 #[cfg(mobile)]
                 mobile_plugin_handle: handle,
             });
