@@ -6,7 +6,19 @@ import { invoke } from '@tauri-apps/api/core'
 
 // open <a href="..."> links with the API
 window.addEventListener('click', function (evt) {
-  if (evt.defaultPrevented || evt.button !== 0 || evt.metaKey || evt.altKey)
+  console.log(evt.button)
+
+  // return early if
+  if (
+    // event was prevented
+    evt.defaultPrevented ||
+    // or not a left click or middle click
+    evt.button !== 0 ||
+    // or meta key pressed
+    evt.metaKey ||
+    // or al key pressed
+    evt.altKey
+  )
     return
 
   const a = evt
@@ -15,20 +27,30 @@ window.addEventListener('click', function (evt) {
     | HTMLAnchorElement
     | undefined
 
+  // return early if
   if (
+    // not tirggered from <a> element
     !a ||
+    // or doesn't have a href
     !a.href ||
-    // only open if supposed to be open in a new tab
-    !(a.target === '_blank' || evt.ctrlKey || evt.shiftKey)
+    // or not supposed to be open in a new tab
+    !(
+      a.target === '_blank' ||
+      // or ctrl key pressed
+      evt.ctrlKey ||
+      // or shift key pressed
+      evt.shiftKey
+    )
   )
     return
 
   const url = new URL(a.href)
 
+  // return early if
   if (
-    // only open if not same origin
+    // same origin (internal navigation)
     url.origin === window.location.origin ||
-    // only open default protocols
+    // not default protocols
     ['http:', 'https:', 'mailto:', 'tel:'].every((p) => url.protocol !== p)
   )
     return
@@ -36,6 +58,6 @@ window.addEventListener('click', function (evt) {
   evt.preventDefault()
 
   void invoke('plugin:opener|open_url', {
-    path: url
+    url
   })
 })

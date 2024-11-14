@@ -6574,6 +6574,7 @@ dependencies = [
  "tauri",
  "tauri-plugin",
  "thiserror 2.0.3",
+ "url",
  "windows 0.58.0",
  "zbus",
 ]

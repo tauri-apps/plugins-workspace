@@ -32,7 +32,7 @@
 
   function openPath() {
     opener
-      .openPath(path, pathProgram === 'Default' ? undefined : urlProgram)
+      .openPath(path, pathProgram === 'Default' ? undefined : pathProgram)
       .catch(onMessage)
   }
 
