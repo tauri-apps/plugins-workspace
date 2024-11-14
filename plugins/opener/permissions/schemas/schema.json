@@ -300,16 +300,6 @@
           "const": "allow-default-urls"
         },
         {
-          "description": "Enables the open command without any pre-configured scope.",
-          "type": "string",
-          "const": "allow-open"
-        },
-        {
-          "description": "Denies the open command without any pre-configured scope.",
-          "type": "string",
-          "const": "deny-open"
-        },
-        {
           "description": "Enables the open_path command without any pre-configured scope.",
           "type": "string",
           "const": "allow-open-path"
@@ -328,16 +318,6 @@
           "description": "Denies the open_url command without any pre-configured scope.",
           "type": "string",
           "const": "deny-open-url"
-        },
-        {
-          "description": "Enables the reveal_item_in_dir command without any pre-configured scope.",
-          "type": "string",
-          "const": "allow-reveal-item-in-dir"
-        },
-        {
-          "description": "Denies the reveal_item_in_dir command without any pre-configured scope.",
-          "type": "string",
-          "const": "deny-reveal-item-in-dir"
         },
         {
           "description": "Enables the reveal_item_in_dir command without any pre-configured scope.",
