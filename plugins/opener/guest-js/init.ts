@@ -6,8 +6,6 @@ import { invoke } from '@tauri-apps/api/core'
 
 // open <a href="..."> links with the API
 window.addEventListener('click', function (evt) {
-  console.log(evt.button)
-
   // return early if
   if (
     // event was prevented

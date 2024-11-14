@@ -9,7 +9,7 @@ use tauri::{
     AppHandle, Runtime,
 };
 
-use crate::{open::Program, scope::Scope, Error};
+use crate::{scope::Scope, Error};
 
 #[tauri::command]
 pub async fn open_url<R: Runtime>(
@@ -17,7 +17,7 @@ pub async fn open_url<R: Runtime>(
     command_scope: CommandScope<crate::scope::Entry>,
     global_scope: GlobalScope<crate::scope::Entry>,
     url: String,
-    with: Option<Program>,
+    with: Option<String>,
 ) -> crate::Result<()> {
     let scope = Scope::new(
         &app,
@@ -33,10 +33,10 @@ pub async fn open_url<R: Runtime>(
             .collect(),
     );
 
-    if scope.is_url_allowed(&url) {
+    if scope.is_url_allowed(&url, with.as_deref()) {
         crate::open_url(url, with)
     } else {
-        Err(Error::ForbiddenUrl(url))
+        Err(Error::ForbiddenUrl { url, with })
     }
 }
 
@@ -46,7 +46,7 @@ pub async fn open_path<R: Runtime>(
     command_scope: CommandScope<crate::scope::Entry>,
     global_scope: GlobalScope<crate::scope::Entry>,
     path: String,
-    with: Option<Program>,
+    with: Option<String>,
 ) -> crate::Result<()> {
     let scope = Scope::new(
         &app,
@@ -62,10 +62,10 @@ pub async fn open_path<R: Runtime>(
             .collect(),
     );
 
-    if scope.is_path_allowed(Path::new(&path))? {
+    if scope.is_path_allowed(Path::new(&path), with.as_deref())? {
         crate::open_path(path, with)
     } else {
-        Err(Error::ForbiddenPath(path))
+        Err(Error::ForbiddenPath { path, with })
     }
 }
 

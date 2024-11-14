@@ -8,6 +8,25 @@ use std::path::PathBuf;
 #[allow(dead_code)]
 mod scope;
 
+/// Opener scope application.
+#[derive(schemars::JsonSchema)]
+#[serde(untagged)]
+#[allow(unused)]
+enum Application {
+    /// Open in default application.
+    Default,
+    /// If true, allow open with any application.
+    Enable(bool),
+    /// Allow specific application to open with.
+    App(String),
+}
+
+impl Default for Application {
+    fn default() -> Self {
+        Self::Default
+    }
+}
+
 /// Opener scope entry.
 #[derive(schemars::JsonSchema)]
 #[serde(untagged)]
@@ -26,6 +45,9 @@ enum OpenerScopeEntry {
         ///
         /// - "https://myapi.service.com/users/*": allows access to any URLs that begins with "https://myapi.service.com/users/"
         url: String,
+        /// An application to open this url with, for example: firefox.
+        #[serde(default)]
+        app: Application,
     },
     Path {
         /// A path that can be opened by the webview when using the Opener APIs.
@@ -36,18 +58,55 @@ enum OpenerScopeEntry {
         /// `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$APP`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`,
         /// `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.
         path: PathBuf,
+        /// An application to open this path with, for example: xdg-open.
+        #[serde(default)]
+        app: Application,
     },
 }
 
 // Ensure `OpenerScopeEntry` and `scope::EntryRaw` is kept in sync
 fn _f() {
-    match (scope::EntryRaw::Url { url: String::new() }) {
-        scope::EntryRaw::Url { url } => OpenerScopeEntry::Url { url },
-        scope::EntryRaw::Path { path } => OpenerScopeEntry::Path { path },
+    match (scope::EntryRaw::Url {
+        url: String::new(),
+        app: scope::Application::Enable(true),
+    }) {
+        scope::EntryRaw::Url { url, app } => OpenerScopeEntry::Url {
+            url,
+            app: match app {
+                scope::Application::Enable(p) => Application::Enable(p),
+                scope::Application::App(p) => Application::App(p),
+                scope::Application::Default => Application::Default,
+            },
+        },
+        scope::EntryRaw::Path { path, app } => OpenerScopeEntry::Path {
+            path,
+            app: match app {
+                scope::Application::Enable(p) => Application::Enable(p),
+                scope::Application::App(p) => Application::App(p),
+                scope::Application::Default => Application::Default,
+            },
+        },
     };
-    match (OpenerScopeEntry::Url { url: String::new() }) {
-        OpenerScopeEntry::Url { url } => scope::EntryRaw::Url { url },
-        OpenerScopeEntry::Path { path } => scope::EntryRaw::Path { path },
+    match (OpenerScopeEntry::Url {
+        url: String::new(),
+        app: Application::Enable(true),
+    }) {
+        OpenerScopeEntry::Url { url, app } => scope::EntryRaw::Url {
+            url,
+            app: match app {
+                Application::Enable(p) => scope::Application::Enable(p),
+                Application::App(p) => scope::Application::App(p),
+                Application::Default => scope::Application::Default,
+            },
+        },
+        OpenerScopeEntry::Path { path, app } => scope::EntryRaw::Path {
+            path,
+            app: match app {
+                Application::Enable(p) => scope::Application::Enable(p),
+                Application::App(p) => scope::Application::App(p),
+                Application::Default => scope::Application::Default,
+            },
+        },
     };
 }
 

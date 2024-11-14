@@ -26,7 +26,7 @@ mod scope_entry;
 pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 
-pub use open::{open_path, open_url, Program};
+pub use open::{open_path, open_url};
 pub use reveal_item_in_dir::reveal_item_in_dir;
 
 pub struct Opener<R: Runtime> {
@@ -37,36 +37,60 @@ pub struct Opener<R: Runtime> {
 }
 
 impl<R: Runtime> Opener<R> {
-    /// Open a  url with a default or specific browser opening program.
+    /// Open a url with a default or specific program.
+    ///
+    /// ## Platform-specific:
+    ///
+    /// - **Android / iOS**: Always opens using default program.
     #[cfg(desktop)]
-    pub fn open_url(&self, url: impl Into<String>, with: Option<open::Program>) -> Result<()> {
-        open::open(url.into(), with).map_err(Into::into)
+    pub fn open_url(&self, url: impl Into<String>, with: Option<impl Into<String>>) -> Result<()> {
+        crate::open::open(url.into(), with.map(Into::into)).map_err(Into::into)
     }
 
-    /// Open a  url with a default or specific browser opening program.
+    /// Open a url with a default or specific program.
+    ///
+    /// ## Platform-specific:
+    ///
+    /// - **Android / iOS**: Always opens using default program.
     #[cfg(mobile)]
-    pub fn open_url(&self, url: impl Into<String>, _with: Option<open::Program>) -> Result<()> {
+    pub fn open_url(&self, url: impl Into<String>, _with: Option<impl Into<String>>) -> Result<()> {
         self.mobile_plugin_handle
             .run_mobile_plugin("open", url.into())
             .map_err(Into::into)
     }
 
-    /// Open a (url) path with a default or specific browser opening program.
+    /// Open a path with a default or specific program.
+    ///
+    /// ## Platform-specific:
+    ///
+    /// - **Android / iOS**: Always opens using default program.
     #[cfg(desktop)]
-    pub fn open_path(&self, path: impl Into<String>, with: Option<open::Program>) -> Result<()> {
-        open::open(path.into(), with).map_err(Into::into)
+    pub fn open_path(
+        &self,
+        path: impl Into<String>,
+        with: Option<impl Into<String>>,
+    ) -> Result<()> {
+        crate::open::open(path.into(), with.map(Into::into)).map_err(Into::into)
     }
 
-    /// Open a (url) path with a default or specific browser opening program.
+    /// Open a path with a default or specific program.
+    ///
+    /// ## Platform-specific:
+    ///
+    /// - **Android / iOS**: Always opens using default program.
     #[cfg(mobile)]
-    pub fn open_path(&self, path: impl Into<String>, _with: Option<open::Program>) -> Result<()> {
+    pub fn open_path(
+        &self,
+        path: impl Into<String>,
+        _with: Option<impl Into<String>>,
+    ) -> Result<()> {
         self.mobile_plugin_handle
             .run_mobile_plugin("open", path.into())
             .map_err(Into::into)
     }
 
     pub fn reveal_item_in_dir<P: AsRef<Path>>(&self, p: P) -> Result<()> {
-        reveal_item_in_dir::reveal_item_in_dir(p)
+        crate::reveal_item_in_dir::reveal_item_in_dir(p)
     }
 }
 
