@@ -4,22 +4,20 @@
   export let onMessage
 
   let url = ''
-  let path = ''
-  let revealPath = ''
-
-  let urlProgram = 'Default'
-  let pathProgram = 'Default'
-
+  let urlProgram = ''
   function openUrl() {
     opener.openUrl(url, urlProgram ? urlProgram : undefined).catch(onMessage)
   }
 
+  let path = ''
+  let pathProgram = ''
   function openPath() {
     opener
       .openPath(path, pathProgram ? pathProgram : undefined)
       .catch(onMessage)
   }
 
+  let revealPath = ''
   function revealItemInDir() {
     opener.revealItemInDir(revealPath).catch(onMessage)
   }

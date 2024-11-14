@@ -20,9 +20,9 @@ pub enum Error {
     Json(#[from] serde_json::Error),
     #[error("unknown program {0}")]
     UnknownProgramName(String),
-    #[error("Not allowed to open path {0}{}", .with.as_ref().map(|w| format!(" with {w}")).unwrap_or_default())]
+    #[error("Not allowed to open path {}{}", .path, .with.as_ref().map(|w| format!(" with {w}")).unwrap_or_default())]
     ForbiddenPath { path: String, with: Option<String> },
-    #[error("Not allowed to open url {0}{}", .with.as_ref().map(|w| format!(" with {w}")).unwrap_or_default())]
+    #[error("Not allowed to open url {}{}", .url, .with.as_ref().map(|w| format!(" with {w}")).unwrap_or_default())]
     ForbiddenUrl { url: String, with: Option<String> },
     #[error("API not supported on the current platform")]
     UnsupportedPlatform,
