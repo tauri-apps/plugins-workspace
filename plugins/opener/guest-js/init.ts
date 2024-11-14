@@ -10,7 +10,7 @@ window.addEventListener('click', function (evt) {
   if (
     // event was prevented
     evt.defaultPrevented ||
-    // or not a left click or middle click
+    // or not a left click
     evt.button !== 0 ||
     // or meta key pressed
     evt.metaKey ||
