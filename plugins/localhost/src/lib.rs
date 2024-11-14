@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/localhost/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/localhost)
-//!
 //! Expose your apps assets through a localhost server instead of the default custom protocol.
 //!
 //! **Note: This plugins brings considerable security risks and you should only use it if you know what your are doing. If in doubt, use the default custom protocol implementation.**

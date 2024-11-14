@@ -104,6 +104,11 @@ impl DbPool {
                 }
                 Ok(Self::Postgres(Pool::connect(conn_url).await?))
             }
+            #[cfg(not(any(feature = "sqlite", feature = "postgres", feature = "mysql")))]
+            _ => Err(crate::Error::InvalidDbUrl(format!(
+                "{conn_url} - No database driver enabled!"
+            ))),
+            #[cfg(any(feature = "sqlite", feature = "postgres", feature = "mysql"))]
             _ => Err(crate::Error::InvalidDbUrl(conn_url.to_string())),
         }
     }
