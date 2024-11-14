@@ -92,7 +92,7 @@ fn main() {
 }
 ```
 
-Then, for instance, grant the plugin the permission to check or request permissions from the user and to read the device position 
+Then, for instance, grant the plugin the permission to check or request permissions from the user and to read the device position
 
 `src-tauri/capabilities/default.json`
 
