@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
+#[serde(untagged)]
 pub enum Application {
     Default,
     Enable(bool),
