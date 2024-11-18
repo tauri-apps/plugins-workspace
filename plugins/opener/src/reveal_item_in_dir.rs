@@ -71,18 +71,22 @@ mod imp {
 
         unsafe {
             if let Err(e) = SHOpenFolderAndSelectItems(dir_item, Some(&[file_item]), 0) {
+                // from https://github.com/electron/electron/blob/10d967028af2e72382d16b7e2025d243b9e204ae/shell/common/platform_util_win.cc#L302
+                // On some systems, the above call mysteriously fails with "file not
+                // found" even though the file is there.  In these cases, ShellExecute()
+                // seems to work as a fallback (although it won't select the file).
                 if e.code().0 == ERROR_FILE_NOT_FOUND.0 as i32 {
-                    let is_dir = std::fs::metadata(file).map(|f| f.is_dir()).unwrap_or(false);
+                    let is_dir = file.is_dir();
                     let mut info = SHELLEXECUTEINFOW {
                         cbSize: std::mem::size_of::<SHELLEXECUTEINFOW>() as _,
                         nShow: SW_SHOWNORMAL.0,
+                        lpFile: PCWSTR(dir.as_ptr()),
+                        lpClass: if is_dir { w!("folder") } else { PCWSTR::null() },
                         lpVerb: if is_dir {
                             w!("explore")
                         } else {
                             PCWSTR::null()
                         },
-                        lpClass: if is_dir { w!("folder") } else { PCWSTR::null() },
-                        lpFile: PCWSTR(file_h.as_ptr()),
                         ..std::mem::zeroed()
                     };
 
