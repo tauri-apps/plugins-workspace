@@ -11,20 +11,20 @@
     "example:api:dev": "pnpm run --filter \"api\" tauri dev"
   },
   "devDependencies": {
-    "@eslint/js": "9.14.0",
+    "@eslint/js": "9.15.0",
     "@rollup/plugin-node-resolve": "15.3.0",
     "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-typescript": "11.1.6",
     "@types/eslint__js": "8.42.3",
     "covector": "^0.12.3",
-    "eslint": "9.14.0",
+    "eslint": "9.15.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-security": "3.0.1",
     "prettier": "3.3.3",
-    "rollup": "4.26.0",
+    "rollup": "4.27.3",
     "tslib": "2.8.1",
     "typescript": "5.6.3",
-    "typescript-eslint": "8.14.0"
+    "typescript-eslint": "8.15.0"
   },
   "resolutions": {
     "semver": ">=7.5.2",
