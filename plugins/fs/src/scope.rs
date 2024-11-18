@@ -4,13 +4,14 @@
 
 use std::{
     collections::HashMap,
-    path::{Path, PathBuf},
+    path::{Path, PathBuf, MAIN_SEPARATOR},
     sync::{
         atomic::{AtomicU32, Ordering},
         Mutex,
     },
 };
 
+use glob::Pattern;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -56,8 +57,9 @@ impl Scope {
 
         {
             let mut allowed = self.allowed.lock().unwrap();
-            allowed.push(path.to_path_buf());
-            allowed.push(path.join(if recursive { "**" } else { "*" }));
+            let p = path.to_string_lossy();
+            allowed.push(escaped_pattern(&p));
+            allowed.push(escaped_pattern_with(&p, if recursive { "**" } else { "*" }));
         }
 
         self.emit(Event::PathAllowed(path.to_path_buf()));
@@ -69,7 +71,10 @@ impl Scope {
     pub fn allow_file<P: AsRef<Path>>(&self, path: P) {
         let path = path.as_ref();
 
-        self.allowed.lock().unwrap().push(path.to_path_buf());
+        self.allowed
+            .lock()
+            .unwrap()
+            .push(escaped_pattern(&path.to_string_lossy()));
 
         self.emit(Event::PathAllowed(path.to_path_buf()));
     }
@@ -82,8 +87,9 @@ impl Scope {
 
         {
             let mut denied = self.denied.lock().unwrap();
-            denied.push(path.to_path_buf());
-            denied.push(path.join(if recursive { "**" } else { "*" }));
+            let p = path.to_string_lossy();
+            denied.push(escaped_pattern(&p));
+            denied.push(escaped_pattern_with(&p, if recursive { "**" } else { "*" }));
         }
 
         self.emit(Event::PathForbidden(path.to_path_buf()));
@@ -95,7 +101,10 @@ impl Scope {
     pub fn forbid_file<P: AsRef<Path>>(&self, path: P) {
         let path = path.as_ref();
 
-        self.denied.lock().unwrap().push(path.to_path_buf());
+        self.denied
+            .lock()
+            .unwrap()
+            .push(escaped_pattern(&path.to_string_lossy()));
 
         self.emit(Event::PathForbidden(path.to_path_buf()));
     }
@@ -127,5 +136,17 @@ impl Scope {
         let id = self.next_event_id();
         self.event_listeners.lock().unwrap().insert(id, Box::new(f));
         id
+    }
+}
+
+fn escaped_pattern(p: &str) -> Result<Pattern, glob::PatternError> {
+    Pattern::new(&Pattern::escape(p))
+}
+
+fn escaped_pattern_with(p: &str, append: &str) -> Result<Pattern, glob::PatternError> {
+    if p.ends_with(MAIN_SEPARATOR) {
+        Pattern::new(&format!("{}{append}", Pattern::escape(p)))
+    } else {
+        Pattern::new(&format!("{}{}{append}", Pattern::escape(p), MAIN_SEPARATOR))
     }
 }

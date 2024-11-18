@@ -14,7 +14,7 @@ rustc-args = ["--cfg", "docsrs"]
 rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.platforms.support]
-windows = { level = "full", notes = "" }
+windows = { level = "full", notes = "No write access to `$RESOURCES` folder with MSI installer and NSIS installers in `perMachine` or `both` mode" }
 linux = { level = "full", notes = "No write access to `$RESOURCES` folder" }
 macos = { level = "full", notes = "No write access to `$RESOURCES` folder" }
 android = { level = "partial", notes = "Access is restricted to Application folder by default" }
