@@ -4,14 +4,13 @@
 
 use std::{
     collections::HashMap,
-    path::{Path, PathBuf, MAIN_SEPARATOR},
+    path::{Path, PathBuf},
     sync::{
         atomic::{AtomicU32, Ordering},
         Mutex,
     },
 };
 
-use glob::Pattern;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -58,8 +57,8 @@ impl Scope {
         {
             let mut allowed = self.allowed.lock().unwrap();
             let p = path.to_string_lossy();
-            allowed.push(escaped_pattern(&p));
-            allowed.push(escaped_pattern_with(&p, if recursive { "**" } else { "*" }));
+            allowed.push(escape(&p));
+            allowed.push(PathBuf::from(if recursive { "**" } else { "*" }));
         }
 
         self.emit(Event::PathAllowed(path.to_path_buf()));
@@ -74,7 +73,7 @@ impl Scope {
         self.allowed
             .lock()
             .unwrap()
-            .push(escaped_pattern(&path.to_string_lossy()));
+            .push(escape(&path.to_string_lossy()));
 
         self.emit(Event::PathAllowed(path.to_path_buf()));
     }
@@ -88,8 +87,8 @@ impl Scope {
         {
             let mut denied = self.denied.lock().unwrap();
             let p = path.to_string_lossy();
-            denied.push(escaped_pattern(&p));
-            denied.push(escaped_pattern_with(&p, if recursive { "**" } else { "*" }));
+            denied.push(escape(&p));
+            denied.push(PathBuf::from(if recursive { "**" } else { "*" }));
         }
 
         self.emit(Event::PathForbidden(path.to_path_buf()));
@@ -104,7 +103,7 @@ impl Scope {
         self.denied
             .lock()
             .unwrap()
-            .push(escaped_pattern(&path.to_string_lossy()));
+            .push(escape(&path.to_string_lossy()));
 
         self.emit(Event::PathForbidden(path.to_path_buf()));
     }
@@ -139,14 +138,26 @@ impl Scope {
     }
 }
 
-fn escaped_pattern(p: &str) -> Result<Pattern, glob::PatternError> {
-    Pattern::new(&Pattern::escape(p))
-}
-
-fn escaped_pattern_with(p: &str, append: &str) -> Result<Pattern, glob::PatternError> {
-    if p.ends_with(MAIN_SEPARATOR) {
-        Pattern::new(&format!("{}{append}", Pattern::escape(p)))
-    } else {
-        Pattern::new(&format!("{}{}{append}", Pattern::escape(p), MAIN_SEPARATOR))
+// taken from https://github.com/rust-lang/glob/blob/master/src/lib.rs#L717C5-L737C6
+/// Escape metacharacters within the given string by surrounding them in
+/// brackets. The resulting string will, when compiled into a `Pattern`,
+/// match the input string and nothing else.
+pub fn escape(s: &str) -> PathBuf {
+    let mut escaped = String::new();
+    for c in s.chars() {
+        match c {
+            // note that ! does not need escaping because it is only special
+            // inside brackets
+            /* disabled to not break paths '?' | */
+            '*' | '[' | ']' => {
+                escaped.push('[');
+                escaped.push(c);
+                escaped.push(']');
+            }
+            c => {
+                escaped.push(c);
+            }
+        }
     }
+    PathBuf::from(escaped)
 }
