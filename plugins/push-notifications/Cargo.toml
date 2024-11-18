@@ -1,0 +1,39 @@
+[package]
+name = "tauri-plugin-push-notifications"
+version = "0.1.0"
+description = "Enable push notifications in your Tauri app."
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+rust-version = { workspace = true }
+repository = { workspace = true }
+exclude = ["/examples", "/webview-dist", "/webview-src", "/node_modules"]
+links = "tauri-plugin-push-notifications"
+
+[package.metadata.docs.rs]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[package.metadata.platforms.support]
+linux = { level = "none", notes = "No push functionality available" }
+windows = { level = "partial", notes = "Experimental" }
+macos = { level = "full", notes = "" }
+android = { level = "full", notes = "" }
+ios = { level = "full", notes = "" }
+
+[dependencies]
+tauri = { workspace = true, features = ["push-notifications"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+base64 = "^0"
+
+[build-dependencies]
+tauri-plugin = { version = "^2", features = ["build"] }
+schemars = { workspace = true }
+serde = { workspace = true }
+
+[patch.crates-io]
+tauri = { path = "/workspace/tauri/crates/tauri" }
+tauri-plugin = { path = "/workspace/tauri/crates/tauri-plugin" }
+tao = { path = "/workspace/tao" }

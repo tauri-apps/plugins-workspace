@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-push-token"
+description = "Enables the push_token command without any pre-configured scope."
+commands.allow = ["push_token"]
+
+[[permission]]
+identifier = "deny-push-token"
+description = "Denies the push_token command without any pre-configured scope."
+commands.deny = ["push_token"]
