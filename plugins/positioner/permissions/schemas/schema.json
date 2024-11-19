@@ -305,6 +305,16 @@
           "const": "deny-move-window"
         },
         {
+          "description": "Enables the move_window_constrained command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-move-window-constrained"
+        },
+        {
+          "description": "Denies the move_window_constrained command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-move-window-constrained"
+        },
+        {
           "description": "Enables the set_tray_icon_state command without any pre-configured scope.",
           "type": "string",
           "const": "allow-set-tray-icon-state"

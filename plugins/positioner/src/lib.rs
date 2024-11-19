@@ -63,10 +63,12 @@ async fn move_window<R: Runtime>(window: tauri::Window<R>, position: Position) -
 
 #[cfg(feature = "tray-icon")]
 #[tauri::command]
-async fn move_window_constrained<R: Runtime>(window: tauri::Window<R>, position: Position) -> Result<()> {
+async fn move_window_constrained<R: Runtime>(
+    window: tauri::Window<R>,
+    position: Position,
+) -> Result<()> {
     window.move_window_constrained(position)
 }
-
 
 #[cfg(feature = "tray-icon")]
 #[tauri::command]
