@@ -4,10 +4,7 @@
 
 use std::path::Path;
 
-use tauri::{
-    plugin::{Builder, TauriPlugin},
-    Manager, Runtime,
-};
+use tauri::{plugin::TauriPlugin, Manager, Runtime};
 
 #[cfg(mobile)]
 use tauri::plugin::PluginHandle;
@@ -107,28 +104,66 @@ impl<R: Runtime, T: Manager<R>> crate::OpenerExt<R> for T {
     }
 }
 
+/// The opener plugin Builder.
+pub struct Builder {
+    open_js_links_on_click: bool,
+}
+
+impl Default for Builder {
+    fn default() -> Self {
+        Self {
+            open_js_links_on_click: true,
+        }
+    }
+}
+
+impl Builder {
+    /// Create a new opener plugin Builder.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Whether the plugin should inject a JS script to open URLs in default browser
+    /// when clicking on `<a>` elements that has `_blank` target, or when pressing `Ctrl` or `Shift` while clicking it.
+    ///
+    /// Enabled by default for `http:`, `https:`, `mailto:`, `tel:` links.
+    pub fn open_js_links_on_click(mut self, open: bool) -> Self {
+        self.open_js_links_on_click = open;
+        self
+    }
+
+    /// Build and Initializes the plugin.
+    pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
+        let mut builder = tauri::plugin::Builder::new("opener")
+            .setup(|app, _api| {
+                #[cfg(target_os = "android")]
+                let handle = _api.register_android_plugin(PLUGIN_IDENTIFIER, "OpenerPlugin")?;
+                #[cfg(target_os = "ios")]
+                let handle = _api.register_ios_plugin(init_plugin_opener)?;
+
+                app.manage(Opener {
+                    #[cfg(not(mobile))]
+                    _marker: std::marker::PhantomData::<fn() -> R>,
+                    #[cfg(mobile)]
+                    mobile_plugin_handle: handle,
+                });
+                Ok(())
+            })
+            .invoke_handler(tauri::generate_handler![
+                commands::open_url,
+                commands::open_path,
+                commands::reveal_item_in_dir
+            ]);
+
+        if self.open_js_links_on_click {
+            builder = builder.js_init_script(include_str!("init-iife.js").to_string());
+        }
+
+        builder.build()
+    }
+}
+
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("opener")
-        .js_init_script(include_str!("init-iife.js").to_string())
-        .setup(|app, _api| {
-            #[cfg(target_os = "android")]
-            let handle = _api.register_android_plugin(PLUGIN_IDENTIFIER, "OpenerPlugin")?;
-            #[cfg(target_os = "ios")]
-            let handle = _api.register_ios_plugin(init_plugin_opener)?;
-
-            app.manage(Opener {
-                #[cfg(not(mobile))]
-                _marker: std::marker::PhantomData::<fn() -> R>,
-                #[cfg(mobile)]
-                mobile_plugin_handle: handle,
-            });
-            Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![
-            commands::open_url,
-            commands::open_path,
-            commands::reveal_item_in_dir
-        ])
-        .build()
+    Builder::default().build()
 }
