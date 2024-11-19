@@ -39,6 +39,19 @@ export async function moveWindow(to: Position): Promise<void> {
   })
 }
 
+/**
+ * Moves the `Window` to the given {@link Position} using `WindowExt.move_window_constrained()`
+ *
+ * This move operation constrains the window to the screen dimensions in case of
+ * tray-icon positions.
+ * @param to The (tray) {@link Position} to move to.
+ */
+export async function moveWindowConstrained(to: Position): Promise<void> {
+  await invoke('plugin:positioner|move_window_constrained', {
+    position: to
+  })
+}
+
 export async function handleIconState(event: TrayIconEvent): Promise<void> {
   await invoke('plugin:positioner|set_tray_icon_state', {
     position: event.rect.position,
