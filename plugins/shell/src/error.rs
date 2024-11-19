@@ -33,6 +33,8 @@ pub enum Error {
     /// Utf8 error.
     #[error(transparent)]
     Utf8(#[from] std::string::FromUtf8Error),
+    #[error("Child process does'nt exist")]
+    UnknowChildProcess,
 }
 
 impl Serialize for Error {

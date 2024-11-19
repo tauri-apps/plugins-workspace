@@ -339,6 +339,20 @@ class Child {
       pid: this.pid
     })
   }
+
+    /**
+   * Waits for the child to exit completely, returning the status that it exited with.
+   *
+   * @returns A promise with ExitStatus.
+   *
+   * @since 2.0.2
+   */
+  async wait(): Promise<void> {
+    await invoke('plugin:shell|wait', {
+      cmd: 'waitChild',
+      pid: this.pid
+    })
+  }
 }
 
 interface CommandEvents {

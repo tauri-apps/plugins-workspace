@@ -13,7 +13,7 @@ use tauri::{
 
 use crate::{
     open::Program,
-    process::{CommandEvent, TerminatedPayload},
+    process::{CommandEvent, ExitStatus, TerminatedPayload},
     scope::ExecuteArgs,
     Shell,
 };
@@ -300,6 +300,19 @@ pub fn kill<R: Runtime>(
         child.kill()?;
     }
     Ok(())
+}
+
+#[tauri::command]
+pub async fn wait<R: Runtime>(
+    _window: Window<R>,
+    shell: State<'_, Shell<R>>,
+    pid: ChildId,
+) -> crate::Result<ExitStatus> {
+    if let Some(child) = shell.children.lock().unwrap().get(&pid) {
+        child.wait().await
+    } else {
+        Err(crate::Error::UnknowChildProcess)
+    }
 }
 
 #[tauri::command]
