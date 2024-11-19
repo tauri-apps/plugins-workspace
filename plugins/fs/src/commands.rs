@@ -16,7 +16,7 @@ use std::{
     borrow::Cow,
     fs::File,
     io::{BufReader, Lines, Read, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
     str::FromStr,
     sync::Mutex,
     time::{SystemTime, UNIX_EPOCH},
@@ -1002,34 +1002,85 @@ pub fn resolve_path<R: Runtime>(
     let scope = tauri::scope::fs::Scope::new(
         webview,
         &FsScope::Scope {
-            allow: webview
-                .fs_scope()
-                .allowed
-                .lock()
-                .unwrap()
-                .clone()
-                .into_iter()
-                .chain(global_scope.allows().iter().filter_map(|e| e.path.clone()))
+            allow: global_scope
+                .allows()
+                .iter()
+                .filter_map(|e| e.path.clone())
                 .chain(command_scope.allows().iter().filter_map(|e| e.path.clone()))
                 .collect(),
-            deny: webview
-                .fs_scope()
-                .denied
-                .lock()
-                .unwrap()
-                .clone()
-                .into_iter()
-                .chain(global_scope.denies().iter().filter_map(|e| e.path.clone()))
+            deny: global_scope
+                .denies()
+                .iter()
+                .filter_map(|e| e.path.clone())
                 .chain(command_scope.denies().iter().filter_map(|e| e.path.clone()))
                 .collect(),
             require_literal_leading_dot: webview.fs_scope().require_literal_leading_dot,
         },
     )?;
 
-    if scope.is_allowed(&path) {
+    let fs_scope = webview.fs_scope();
+
+    let require_literal_leading_dot = fs_scope.require_literal_leading_dot.unwrap_or(cfg!(unix));
+
+    if fs_scope
+        .scope
+        .as_ref()
+        .map(|s| is_forbidden(s, &path, require_literal_leading_dot))
+        .unwrap_or(false)
+        || is_forbidden(&scope, &path, require_literal_leading_dot)
+    {
+        return Err(CommandError::Plugin(Error::PathForbidden(path)));
+    }
+
+    if fs_scope
+        .scope
+        .as_ref()
+        .map(|s| s.is_allowed(&path))
+        .unwrap_or(false)
+        || scope.is_allowed(&path)
+    {
         Ok(path)
     } else {
         Err(CommandError::Plugin(Error::PathForbidden(path)))
+    }
+}
+
+fn is_forbidden<P: AsRef<Path>>(
+    scope: &tauri::fs::Scope,
+    path: P,
+    require_literal_leading_dot: bool,
+) -> bool {
+    let path = path.as_ref();
+    let path = if path.is_symlink() {
+        match std::fs::read_link(path) {
+            Ok(p) => p,
+            Err(_) => return false,
+        }
+    } else {
+        path.to_path_buf()
+    };
+    let path = if !path.exists() {
+        crate::Result::Ok(path)
+    } else {
+        std::fs::canonicalize(path).map_err(Into::into)
+    };
+
+    if let Ok(path) = path {
+        let path: PathBuf = path.components().collect();
+        scope.forbidden_patterns().iter().any(|p| {
+            p.matches_path_with(
+                &path,
+                glob::MatchOptions {
+                    // this is needed so `/dir/*` doesn't match files within subdirectories such as `/dir/subdir/file.txt`
+                    // see: <https://github.com/tauri-apps/tauri/security/advisories/GHSA-6mv3-wm7j-h4w5>
+                    require_literal_separator: true,
+                    require_literal_leading_dot,
+                    ..Default::default()
+                },
+            )
+        })
+    } else {
+        false
     }
 }
 

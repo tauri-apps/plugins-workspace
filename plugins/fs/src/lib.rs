@@ -15,7 +15,7 @@ use serde::Deserialize;
 use tauri::{
     ipc::ScopeObject,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    utils::acl::Value,
+    utils::{acl::Value, config::FsScope},
     AppHandle, DragDropEvent, Manager, RunEvent, Runtime, WindowEvent,
 };
 
@@ -23,6 +23,7 @@ mod commands;
 mod config;
 #[cfg(not(target_os = "android"))]
 mod desktop;
+mod entryraw;
 mod error;
 mod file_path;
 #[cfg(target_os = "android")]
@@ -352,8 +353,8 @@ impl ScopeObject for scope::Entry {
         raw: Value,
     ) -> std::result::Result<Self, Self::Error> {
         let path = serde_json::from_value(raw.into()).map(|raw| match raw {
-            scope::EntryRaw::Value(path) => path,
-            scope::EntryRaw::Object { path } => path,
+            entryraw::EntryRaw::Value(path) => path,
+            entryraw::EntryRaw::Object { path } => path,
         })?;
 
         match app.path().parse(path) {
@@ -419,11 +420,13 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             watcher::unwatch
         ])
         .setup(|app, api| {
-            let mut scope = Scope::default();
-            scope.require_literal_leading_dot = api
-                .config()
-                .as_ref()
-                .and_then(|c| c.require_literal_leading_dot);
+            let scope = Scope {
+                require_literal_leading_dot: api
+                    .config()
+                    .as_ref()
+                    .and_then(|c| c.require_literal_leading_dot),
+                scope: Some(tauri::fs::Scope::new(app, &FsScope::default())?),
+            };
 
             #[cfg(target_os = "android")]
             {
