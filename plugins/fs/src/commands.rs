@@ -16,7 +16,7 @@ use std::{
     borrow::Cow,
     fs::File,
     io::{BufRead, BufReader, Read, Write},
-    path::{Path, PathBuf},
+    path::PathBuf,
     str::FromStr,
     sync::Mutex,
     time::{SystemTime, UNIX_EPOCH},
