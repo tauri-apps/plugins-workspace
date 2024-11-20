@@ -22,7 +22,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{scope::Entry, Error, FsExt, SafeFilePath};
+use crate::{scope::Entry, Error, SafeFilePath};
 
 #[derive(Debug, thiserror::Error)]
 pub enum CommandError {
@@ -999,6 +999,8 @@ pub fn resolve_path<R: Runtime>(
         path
     };
 
+    let fs_scope = webview.state::<crate::Scope>();
+
     let scope = tauri::scope::fs::Scope::new(
         webview,
         &FsScope::Scope {
@@ -1014,31 +1016,19 @@ pub fn resolve_path<R: Runtime>(
                 .filter_map(|e| e.path.clone())
                 .chain(command_scope.denies().iter().filter_map(|e| e.path.clone()))
                 .collect(),
-            require_literal_leading_dot: webview.fs_scope().require_literal_leading_dot,
+            require_literal_leading_dot: fs_scope.require_literal_leading_dot,
         },
     )?;
 
-    let fs_scope = webview.fs_scope();
-
     let require_literal_leading_dot = fs_scope.require_literal_leading_dot.unwrap_or(cfg!(unix));
 
-    if fs_scope
-        .scope
-        .as_ref()
-        .map(|s| is_forbidden(s, &path, require_literal_leading_dot))
-        .unwrap_or(false)
+    if is_forbidden(&fs_scope.scope, &path, require_literal_leading_dot)
         || is_forbidden(&scope, &path, require_literal_leading_dot)
     {
         return Err(CommandError::Plugin(Error::PathForbidden(path)));
     }
 
-    if fs_scope
-        .scope
-        .as_ref()
-        .map(|s| s.is_allowed(&path))
-        .unwrap_or(false)
-        || scope.is_allowed(&path)
-    {
+    if fs_scope.scope.is_allowed(&path) || scope.is_allowed(&path) {
         Ok(path)
     } else {
         Err(CommandError::Plugin(Error::PathForbidden(path)))

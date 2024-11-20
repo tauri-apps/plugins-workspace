@@ -23,7 +23,6 @@ mod commands;
 mod config;
 #[cfg(not(target_os = "android"))]
 mod desktop;
-mod entryraw;
 mod error;
 mod file_path;
 #[cfg(target_os = "android")]
@@ -40,7 +39,6 @@ pub use desktop::Fs;
 pub use mobile::Fs;
 
 pub use error::Error;
-pub use scope::{Event as ScopeEvent, Scope};
 
 pub use file_path::FilePath;
 pub use file_path::SafeFilePath;
@@ -353,8 +351,8 @@ impl ScopeObject for scope::Entry {
         raw: Value,
     ) -> std::result::Result<Self, Self::Error> {
         let path = serde_json::from_value(raw.into()).map(|raw| match raw {
-            entryraw::EntryRaw::Value(path) => path,
-            entryraw::EntryRaw::Object { path } => path,
+            scope::EntryRaw::Value(path) => path,
+            scope::EntryRaw::Object { path } => path,
         })?;
 
         match app.path().parse(path) {
@@ -366,21 +364,26 @@ impl ScopeObject for scope::Entry {
     }
 }
 
+pub(crate) struct Scope {
+    pub(crate) scope: tauri::fs::Scope,
+    pub(crate) require_literal_leading_dot: Option<bool>,
+}
+
 pub trait FsExt<R: Runtime> {
-    fn fs_scope(&self) -> &Scope;
-    fn try_fs_scope(&self) -> Option<&Scope>;
+    fn fs_scope(&self) -> tauri::fs::Scope;
+    fn try_fs_scope(&self) -> Option<tauri::fs::Scope>;
 
     /// Cross platform file system APIs that also support manipulating Android files.
     fn fs(&self) -> &Fs<R>;
 }
 
 impl<R: Runtime, T: Manager<R>> FsExt<R> for T {
-    fn fs_scope(&self) -> &Scope {
-        self.state::<Scope>().inner()
+    fn fs_scope(&self) -> tauri::fs::Scope {
+        self.state::<Scope>().scope.clone()
     }
 
-    fn try_fs_scope(&self) -> Option<&Scope> {
-        self.try_state::<Scope>().map(|s| s.inner())
+    fn try_fs_scope(&self) -> Option<tauri::fs::Scope> {
+        self.try_state::<Scope>().map(|s| s.scope.clone())
     }
 
     fn fs(&self) -> &Fs<R> {
@@ -425,7 +428,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
                     .config()
                     .as_ref()
                     .and_then(|c| c.require_literal_leading_dot),
-                scope: Some(tauri::fs::Scope::new(app, &FsScope::default())?),
+                scope: tauri::fs::Scope::new(app, &FsScope::default())?,
             };
 
             #[cfg(target_os = "android")]
@@ -449,9 +452,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
                 let scope = app.fs_scope();
                 for path in paths {
                     if path.is_file() {
-                        scope.allow_file(path);
+                        let _ = scope.allow_file(path);
                     } else {
-                        scope.allow_directory(path, true);
+                        let _ = scope.allow_directory(path, true);
                     }
                 }
             }

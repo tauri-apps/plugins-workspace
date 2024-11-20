@@ -7,7 +7,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-#[path = "src/entryraw.rs"]
+#[path = "src/scope.rs"]
 #[allow(dead_code)]
 mod scope;
 

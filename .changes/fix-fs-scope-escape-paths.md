@@ -1,5 +1,6 @@
 ---
-fs: patch
+fs: minor
+persisted-scope: minor
 ---
 
-Paths given to the `Scope` methods are now correctly escaped, preventing issues with paths containing `[]`.
+**Breaking Change:** Replaced the custom `tauri_plugin_fs::Scope` struct with `tauri::fs::Scope`.
