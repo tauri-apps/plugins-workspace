@@ -99,11 +99,6 @@ export async function isRegistered(protocol: string): Promise<boolean> {
 export async function onOpenUrl(
   handler: (urls: string[]) => void
 ): Promise<UnlistenFn> {
-  const current = await getCurrent()
-  if (current) {
-    handler(current)
-  }
-
   return await listen<string[]>('deep-link://new-url', (event) => {
     handler(event.payload)
   })

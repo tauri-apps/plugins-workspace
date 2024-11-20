@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/shell/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/shell)
-//!
 //! Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application.
 
 #![doc(
@@ -28,6 +26,8 @@ use tauri::{
 mod commands;
 mod config;
 mod error;
+#[deprecated(since = "2.1.0", note = "Use tauri-plugin-opener instead.")]
+#[allow(deprecated)]
 pub mod open;
 pub mod process;
 mod scope;
@@ -72,6 +72,8 @@ impl<R: Runtime> Shell<R> {
     ///
     /// See [`crate::open::open`] for how it handles security-related measures.
     #[cfg(desktop)]
+    #[deprecated(since = "2.1.0", note = "Use tauri-plugin-opener instead.")]
+    #[allow(deprecated)]
     pub fn open(&self, path: impl Into<String>, with: Option<open::Program>) -> Result<()> {
         open::open(&self.open_scope, path.into(), with).map_err(Into::into)
     }
@@ -80,6 +82,7 @@ impl<R: Runtime> Shell<R> {
     ///
     /// See [`crate::open::open`] for how it handles security-related measures.
     #[cfg(mobile)]
+    #[deprecated(since = "2.1.0", note = "Use tauri-plugin-opener instead.")]
     pub fn open(&self, path: impl Into<String>, _with: Option<open::Program>) -> Result<()> {
         self.mobile_plugin_handle
             .run_mobile_plugin("open", path.into())

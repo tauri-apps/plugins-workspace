@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/clipboard-manager/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/clipboard-manager)
-//!
 //! Read and write to the system clipboard.
 
 #![doc(
