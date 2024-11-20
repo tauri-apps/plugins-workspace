@@ -53,6 +53,10 @@ jobs:
               - .github/workflows/check-generated-files.yml
               - plugins/global-shortcut/guest-js/**
               - plugins/global-shortcut/src/api-iife.js
+            opener:
+              - .github/workflows/check-generated-files.yml
+              - plugins/opener/guest-js/**
+              - plugins/opener/src/api-iife.js
             haptics:
               - .github/workflows/check-generated-files.yml
               - plugins/haptics/guest-js/**

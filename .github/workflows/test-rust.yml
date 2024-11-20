@@ -77,6 +77,10 @@ jobs:
               - .github/workflows/test-rust.yml
               - Cargo.toml
               - plugins/global-shortcut/**
+            tauri-plugin-opener:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - plugins/opener/**
             tauri-plugin-haptics:
               - .github/workflows/test-rust.yml
               - Cargo.toml

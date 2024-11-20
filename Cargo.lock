@@ -226,6 +226,7 @@ dependencies = [
  "tauri-plugin-log",
  "tauri-plugin-nfc",
  "tauri-plugin-notification",
+ "tauri-plugin-opener",
  "tauri-plugin-os",
  "tauri-plugin-process",
  "tauri-plugin-shell",
@@ -6694,6 +6695,26 @@ dependencies = [
  "url",
  "win7-notifications",
  "windows-version",
+]
+
+[[package]]
+name = "tauri-plugin-opener"
+version = "1.0.0"
+dependencies = [
+ "dunce",
+ "glob",
+ "objc2-app-kit",
+ "objc2-foundation",
+ "open",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.3",
+ "url",
+ "windows 0.58.0",
+ "zbus 4.4.0",
 ]
 
 [[package]]

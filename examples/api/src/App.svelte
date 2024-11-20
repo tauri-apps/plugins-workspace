@@ -1,6 +1,5 @@
 <script>
   import { writable } from 'svelte/store'
-  import { open } from '@tauri-apps/plugin-shell'
   import { getCurrentWindow } from '@tauri-apps/api/window'
   import { getCurrentWebview } from '@tauri-apps/api/webview'
   import * as os from '@tauri-apps/plugin-os'
@@ -14,6 +13,7 @@
   import Notifications from './views/Notifications.svelte'
   import Shortcuts from './views/Shortcuts.svelte'
   import Shell from './views/Shell.svelte'
+  import Opener from './views/Opener.svelte'
   import Store from './views/Store.svelte'
   import Updater from './views/Updater.svelte'
   import Clipboard from './views/Clipboard.svelte'
@@ -91,6 +91,11 @@
       label: 'Shell',
       component: Shell,
       icon: 'i-codicon-terminal-bash'
+    },
+    {
+      label: 'Opener',
+      component: Opener,
+      icon: 'i-codicon-link-external'
     },
     {
       label: 'Store',

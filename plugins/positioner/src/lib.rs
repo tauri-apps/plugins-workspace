@@ -63,6 +63,15 @@ async fn move_window<R: Runtime>(window: tauri::Window<R>, position: Position) -
 
 #[cfg(feature = "tray-icon")]
 #[tauri::command]
+async fn move_window_constrained<R: Runtime>(
+    window: tauri::Window<R>,
+    position: Position,
+) -> Result<()> {
+    window.move_window_constrained(position)
+}
+
+#[cfg(feature = "tray-icon")]
+#[tauri::command]
 fn set_tray_icon_state<R: Runtime>(
     app: AppHandle<R>,
     position: PhysicalPosition<f64>,
@@ -79,6 +88,8 @@ fn set_tray_icon_state<R: Runtime>(
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     let plugin = plugin::Builder::new("positioner").invoke_handler(tauri::generate_handler![
         move_window,
+        #[cfg(feature = "tray-icon")]
+        move_window_constrained,
         #[cfg(feature = "tray-icon")]
         set_tray_icon_state
     ]);

@@ -80,6 +80,11 @@
       ],
       "deny": ["$APPDATA/db/*.stronghold"]
     },
-    "store:default"
+    "store:default",
+    "opener:default",
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [{ "path": "$APPDATA" }, { "path": "$APPDATA/**" }]
+    }
   ]
 }

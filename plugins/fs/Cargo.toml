@@ -34,7 +34,7 @@ thiserror = { workspace = true }
 url = { workspace = true }
 anyhow = "1"
 uuid = { version = "1", features = ["v4"] }
-glob = "0.3"
+glob = { workspace = true }
 # TODO: Remove `serialization-compat-6` in v3
 notify = { version = "7", optional = true, features = [
   "serde",
