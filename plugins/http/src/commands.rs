@@ -283,6 +283,9 @@ pub async fn fetch<R: Runtime>(
 
                 request = request.headers(headers);
 
+                #[cfg(feature = "tracing")]
+                log::trace!("{:?}", request);
+
                 let fut = async move { request.send().await.map_err(Into::into) };
                 let mut resources_table = webview.resources_table();
                 let rid = resources_table.add_request(Box::pin(fut));
@@ -303,6 +306,9 @@ pub async fn fetch<R: Runtime>(
                 .status(StatusCode::OK)
                 .header(header::CONTENT_TYPE, data_url.mime_type().to_string())
                 .body(reqwest::Body::from(body))?;
+
+            #[cfg(feature = "tracing")]
+            log::trace!("{:?}", response);
 
             let fut = async move { Ok(reqwest::Response::from(response)) };
             let mut resources_table = webview.resources_table();
@@ -350,6 +356,9 @@ pub async fn fetch_send<R: Runtime>(
             return Err(Error::RequestCanceled);
         }
     };
+
+    #[cfg(feature = "tracing")]
+    log::trace!("{:?}", res);
 
     let status = res.status();
     let url = res.url().to_string();

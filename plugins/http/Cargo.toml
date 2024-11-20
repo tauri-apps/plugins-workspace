@@ -41,6 +41,7 @@ http = "1"
 reqwest = { version = "0.12", default-features = false }
 url = { workspace = true }
 data-url = "0.3"
+log = { workspace = true, optional = true }
 
 [features]
 default = [
@@ -71,3 +72,4 @@ http2 = ["reqwest/http2"]
 charset = ["reqwest/charset"]
 macos-system-configuration = ["reqwest/macos-system-configuration"]
 unsafe-headers = []
+tracing = ["dep:log"]
