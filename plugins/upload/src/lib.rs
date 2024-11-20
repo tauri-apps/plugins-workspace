@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/upload/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/upload)
-//!
 //! Upload files from disk to a remote server over HTTP.
 //!
 //! Download files from a remote HTTP server to disk.
@@ -12,6 +10,9 @@
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
+
+mod transfer_stats;
+use transfer_stats::TransferStats;
 
 use futures_util::TryStreamExt;
 use serde::{ser::Serializer, Serialize};
@@ -55,9 +56,12 @@ impl Serialize for Error {
 }
 
 #[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct ProgressPayload {
     progress: u64,
+    progress_total: u64,
     total: u64,
+    transfer_speed: u64,
 }
 
 #[command]
@@ -88,11 +92,15 @@ async fn download(
     let mut file = BufWriter::new(File::create(file_path).await?);
     let mut stream = response.bytes_stream();
 
+    let mut stats = TransferStats::default();
     while let Some(chunk) = stream.try_next().await? {
         file.write_all(&chunk).await?;
+        stats.record_chunk_transfer(chunk.len());
         let _ = on_progress.send(ProgressPayload {
             progress: chunk.len() as u64,
+            progress_total: stats.total_transferred,
             total,
+            transfer_speed: stats.transfer_speed,
         });
     }
     file.flush().await?;
@@ -138,10 +146,17 @@ async fn upload(
 fn file_to_body(channel: Channel<ProgressPayload>, file: File) -> reqwest::Body {
     let stream = FramedRead::new(file, BytesCodec::new()).map_ok(|r| r.freeze());
 
+    let mut stats = TransferStats::default();
     reqwest::Body::wrap_stream(ReadProgressStream::new(
         stream,
         Box::new(move |progress, total| {
-            let _ = channel.send(ProgressPayload { progress, total });
+            stats.record_chunk_transfer(progress as usize);
+            let _ = channel.send(ProgressPayload {
+                progress,
+                progress_total: stats.total_transferred,
+                total,
+                transfer_speed: stats.transfer_speed,
+            });
         }),
     ))
 }

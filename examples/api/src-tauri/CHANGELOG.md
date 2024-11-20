@@ -1,5 +1,12 @@
 # Changelog
 
+## \[2.0.5]
+
+### Dependencies
+
+- Upgraded to `clipboard-manager@2.0.2`
+- Upgraded to `log-plugin@2.0.2`
+
 ## \[2.0.4]
 
 ### Dependencies

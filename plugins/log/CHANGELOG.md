@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.2]
+
+- [`606fa08d`](https://github.com/tauri-apps/plugins-workspace/commit/606fa08dae1acd074b961fb360623f4c86f13ee8) ([#1997](https://github.com/tauri-apps/plugins-workspace/pull/1997) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) **Potentially breaking:** Updated `fern` from 0.6 to 0.7. This is technically a breaking change because `fern` is re-exported in `tauri-plugin-log`.
+
 ## \[2.0.1]
 
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.

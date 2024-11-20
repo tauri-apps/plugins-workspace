@@ -62,6 +62,7 @@
         "dialog",
         "fs",
         "global-shortcut",
+        "opener",
         "http",
         "nfc",
         "notification",
@@ -87,6 +88,7 @@
         "dialog-js",
         "fs-js",
         "global-shortcut-js",
+        "opener-js",
         "http-js",
         "nfc-js",
         "notification-js",
@@ -184,6 +186,14 @@
     },
     "global-shortcut-js": {
       "path": "./plugins/global-shortcut",
+      "manager": "javascript"
+    },
+    "opener": {
+      "path": "./plugins/opener",
+      "manager": "rust"
+    },
+    "opener-js": {
+      "path": "./plugins/opener",
       "manager": "javascript"
     },
     "haptics": {

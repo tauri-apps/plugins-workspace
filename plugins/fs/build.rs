@@ -16,10 +16,23 @@ mod scope;
 #[serde(untagged)]
 #[allow(unused)]
 enum FsScopeEntry {
-    /// FS scope path.
+    /// A path that can be accessed by the webview when using the fs APIs.
+    /// FS scope path pattern.
+    ///
+    /// The pattern can start with a variable that resolves to a system base directory.
+    /// The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`,
+    /// `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`,
+    /// `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$APP`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`,
+    /// `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.
     Value(PathBuf),
     Object {
-        /// FS scope path.
+        /// A path that can be accessed by the webview when using the fs APIs.
+        ///
+        /// The pattern can start with a variable that resolves to a system base directory.
+        /// The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`,
+        /// `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`,
+        /// `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$APP`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`,
+        /// `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.
         path: PathBuf,
     },
 }

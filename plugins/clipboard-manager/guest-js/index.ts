@@ -90,7 +90,7 @@ async function writeImage(
  * import { readImage } from '@tauri-apps/plugin-clipboard-manager';
  *
  * const clipboardImage = await readImage();
- * const blob = new Blob([clipboardImage.bytes], { type: 'image' })
+ * const blob = new Blob([await clipboardImage.rbga()], { type: 'image' })
  * const url = URL.createObjectURL(blob)
  * ```
  * @since 2.0.0

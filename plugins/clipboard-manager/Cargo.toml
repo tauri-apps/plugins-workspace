@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-clipboard-manager"
-version = "2.0.1"
+version = "2.0.2"
 description = "Read and write to the system clipboard."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -37,4 +37,3 @@ tauri = { workspace = true, features = ["wry"] }
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 arboard = "3"
-image = "0.25"

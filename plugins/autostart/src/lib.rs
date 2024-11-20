@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/autostart/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/autostart)
-//!
 //! Automatically launch your application at startup. Supports Windows, Mac (via AppleScript or Launch Agent), and Linux.
 
 #![doc(

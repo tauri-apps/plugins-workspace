@@ -14,16 +14,29 @@
  *
  * The API has a scope configuration that forces you to restrict the paths that can be accessed using glob patterns.
  *
- * The scope configuration is an array of glob patterns describing folder paths that are allowed.
- * For instance, this scope configuration only allows accessing files on the
- * *databases* folder of the {@link https://v2.tauri.app/reference/javascript/api/namespacepath/#appdatadir | `$APPDATA` directory}:
+ * The scope configuration is an array of glob patterns describing file/directory paths that are allowed.
+ * For instance, this scope configuration allows **all** enabled `fs` APIs to (only) access files in the
+ * *databases* directory of the {@link https://v2.tauri.app/reference/javascript/api/namespacepath/#appdatadir | `$APPDATA` directory}:
  * ```json
  * {
- *   "plugins": {
- *     "fs": {
- *       "scope": ["$APPDATA/databases/*"]
+ *   "permissions": [
+ *     {
+ *       "identifier": "fs:scope",
+ *       "allow": [{ "path": "$APPDATA/databases/*" }]
  *     }
- *   }
+ *   ]
+ * }
+ * ```
+ *
+ * Scopes can also be applied to specific `fs` APIs by using the API's identifier instead of `fs:scope`:
+ * ```json
+ * {
+ *   "permissions": [
+ *     {
+ *       "identifier": "fs:allow-exists",
+ *       "allow": [{ "path": "$APPDATA/databases/*" }]
+ *     }
+ *   ]
  * }
  * ```
  *
@@ -55,8 +68,6 @@
  * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#tempdir | $TEMP}.
  *
  * Trying to execute any API with a URL not configured on the scope results in a promise rejection due to denied access.
- *
- * Note that this scope applies to **all** APIs on this module.
  *
  * @module
  */
@@ -1093,7 +1104,7 @@ async function writeTextFile(
 
   await invoke('plugin:fs|write_text_file', encoder.encode(data), {
     headers: {
-      path: path instanceof URL ? path.toString() : path,
+      path: encodeURIComponent(path instanceof URL ? path.toString() : path),
       options: JSON.stringify(options)
     }
   })

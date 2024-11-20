@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-upload"
-version = "2.0.1"
+version = "2.1.0"
 description = "Upload files from disk to a remote server over HTTP."
 authors = { workspace = true }
 license = { workspace = true }
@@ -44,5 +44,5 @@ native-tls-vendored = ["reqwest/native-tls-vendored"]
 rustls-tls = ["reqwest/rustls-tls"]
 
 [dev-dependencies]
-mockito = "1.5.0"
+mockito = "1.6.1"
 tokio = { version = "1", features = ["macros"] }

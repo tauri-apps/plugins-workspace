@@ -92,6 +92,20 @@ fn main() {
 }
 ```
 
+Then, for instance, grant the plugin the permission to check or request permissions from the user and to read the device position
+
+`src-tauri/capabilities/default.json`
+
+```json
+  "permissions": [
+    "core:default",
+    "geolocation:allow-check-permissions",
+    "geolocation:allow-request-permissions",
+    "geolocation:allow-get-current-position",
+    "geolocation:allow-watch-position",
+  ]
+```
+
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
@@ -100,7 +114,7 @@ import {
   requestPermissions,
   getCurrentPosition,
   watchPosition
-} from '@tauri-apps/plugin-log'
+} from '@tauri-apps/plugin-geolocation'
 
 let permissions = await checkPermissions()
 if (

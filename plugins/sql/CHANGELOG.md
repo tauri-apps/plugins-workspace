@@ -2,6 +2,10 @@
 
 ## \[2.0.1]
 
+- [`0ca4cc91`](https://github.com/tauri-apps/plugins-workspace/commit/0ca4cc914c5ea995c98f9e60a2ab49827c219350) ([#1963](https://github.com/tauri-apps/plugins-workspace/pull/1963) by [@yoggys](https://github.com/tauri-apps/plugins-workspace/../../yoggys)) Fixed incorrect documentation of the select method in the Database class.
+
+## \[2.0.1]
+
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
 
 ## \[2.0.0]

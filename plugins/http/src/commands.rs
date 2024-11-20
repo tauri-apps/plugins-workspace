@@ -191,6 +191,11 @@ pub async fn fetch<R: Runtime>(
         let name = HeaderName::from_str(&h)?;
         #[cfg(not(feature = "unsafe-headers"))]
         if is_unsafe_header(&name) {
+            #[cfg(debug_assertions)]
+            {
+                eprintln!("[\x1b[33mWARNING\x1b[0m] Skipping {name} header as it is a forbidden header per fetch spec https://fetch.spec.whatwg.org/#terminology-headers");
+                eprintln!("[\x1b[33mWARNING\x1b[0m] if keeping the header is a desired behavior, you can enable `unsafe-headers` feature flag in your Cargo.toml");
+            }
             continue;
         }
 
