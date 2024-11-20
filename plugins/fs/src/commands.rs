@@ -967,6 +967,8 @@ pub fn resolve_file<R: Runtime>(
     path: SafeFilePath,
     open_options: OpenOptions,
 ) -> CommandResult<(File, PathBuf)> {
+    use crate::FsExt;
+
     match path {
         SafeFilePath::Url(url) => {
             let path = url.as_str().into();
