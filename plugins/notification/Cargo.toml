@@ -15,7 +15,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 targets = ["x86_64-unknown-linux-gnu", "x86_64-linux-android"]
 
 [package.metadata.platforms.support]
-windows = { level = "full", notes = "" }
+windows = { level = "full", notes = "Only works for installed apps. Shows powershell name & icon in development." }
 linux = { level = "full", notes = "" }
 macos = { level = "full", notes = "" }
 android = { level = "full", notes = "" }
