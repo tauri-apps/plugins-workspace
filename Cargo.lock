@@ -6456,7 +6456,6 @@ name = "tauri-plugin-autostart"
 version = "2.0.1"
 dependencies = [
  "auto-launch",
- "log",
  "serde",
  "serde_json",
  "tauri",
@@ -6520,7 +6519,6 @@ name = "tauri-plugin-deep-link"
 version = "2.0.1"
 dependencies = [
  "dunce",
- "log",
  "rust-ini",
  "serde",
  "serde_json",
@@ -6528,6 +6526,7 @@ dependencies = [
  "tauri-plugin",
  "tauri-utils",
  "thiserror 2.0.3",
+ "tracing",
  "url",
  "windows-registry 0.3.0",
  "windows-result 0.2.0",
@@ -6615,7 +6614,6 @@ version = "2.0.3"
 dependencies = [
  "data-url",
  "http",
- "log",
  "regex",
  "reqwest",
  "schemars",
@@ -6626,6 +6624,7 @@ dependencies = [
  "tauri-plugin-fs",
  "thiserror 2.0.3",
  "tokio",
+ "tracing",
  "url",
  "urlpattern",
 ]
@@ -6792,13 +6791,13 @@ dependencies = [
 name = "tauri-plugin-single-instance"
 version = "2.0.1"
 dependencies = [
- "log",
  "semver",
  "serde",
  "serde_json",
  "tauri",
  "tauri-plugin-deep-link",
  "thiserror 2.0.3",
+ "tracing",
  "windows-sys 0.59.0",
  "zbus 4.4.0",
 ]
@@ -6825,13 +6824,13 @@ name = "tauri-plugin-store"
 version = "2.1.0"
 dependencies = [
  "dunce",
- "log",
  "serde",
  "serde_json",
  "tauri",
  "tauri-plugin",
  "thiserror 2.0.3",
  "tokio",
+ "tracing",
 ]
 
 [[package]]

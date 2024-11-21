@@ -432,7 +432,7 @@ impl Builder {
                     for (path, rid) in stores.iter() {
                         if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid) {
                             if let Err(err) = store.save() {
-                                log::error!("failed to save store {path:?} with error {err:?}");
+                                tracing::error!("failed to save store {path:?} with error {err:?}");
                             }
                         }
                     }

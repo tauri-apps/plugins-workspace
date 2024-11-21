@@ -24,7 +24,7 @@ ios = { level = "none", notes = "" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 thiserror = { workspace = true }
 tauri-plugin-deep-link = { path = "../deep-link", version = "2.0.1", optional = true }
 semver = { version = "1", optional = true }

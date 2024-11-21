@@ -11,8 +11,6 @@
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 
 use auto_launch::{AutoLaunch, AutoLaunchBuilder};
-#[cfg(target_os = "macos")]
-use log::info;
 use serde::{ser::Serializer, Serialize};
 use tauri::{
     command,
@@ -133,7 +131,6 @@ pub fn init<R: Runtime>(
                     } else {
                         exe_path
                     };
-                info!("auto_start path {}", &app_path);
                 builder.set_app_path(&app_path);
             }
             #[cfg(target_os = "linux")]

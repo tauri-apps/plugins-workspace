@@ -215,7 +215,7 @@ mod imp {
                         current.replace(vec![url.clone()]);
                         let _ = self.app.emit("deep-link://new-url", vec![url]);
                     } else if cfg!(debug_assertions) {
-                        log::warn!("argument {url} does not match any configured deep link scheme; skipping it");
+                        tracing::warn!("argument {url} does not match any configured deep link scheme; skipping it");
                     }
                 }
             }
