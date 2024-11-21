@@ -195,7 +195,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
                     for allowed in &scope.allowed_paths {
                         let allowed = fix_pattern(&ac, allowed);
-                         allow_path(fs_scope, &allowed);
+                        allow_path(fs_scope, &allowed);
                     }
                     for forbidden in &scope.forbidden_patterns {
                         let forbidden = fix_pattern(&ac, forbidden);
