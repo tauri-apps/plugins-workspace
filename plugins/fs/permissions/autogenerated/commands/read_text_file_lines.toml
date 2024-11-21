@@ -18,5 +18,5 @@ identifier = "deny-read-text-file-lines"
 description = "Denies the read_text_file_lines command without any pre-configured scope."
 
 [permission.commands]
-allow = ["read_text_file_lines_next"]
+allow = []
 deny = ["read_text_file_lines"]

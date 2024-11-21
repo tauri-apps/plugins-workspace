@@ -228,7 +228,11 @@ permissions = [
         let mut permission_file = toml::from_str::<PermissionFile>(&content)
             .unwrap_or_else(|_| panic!("failed to deserialize {command}.toml"));
 
-        for p in permission_file.permission.iter_mut() {
+        for p in permission_file
+            .permission
+            .iter_mut()
+            .filter(|p| p.identifier.starts_with("allow"))
+        {
             p.commands
                 .allow
                 .extend(nested_commands.iter().map(|s| s.to_string()));
