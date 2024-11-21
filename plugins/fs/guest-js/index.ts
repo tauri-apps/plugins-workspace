@@ -827,7 +827,7 @@ async function readTextFileLines(
       // Rust side will never return an empty array for this command and
       // ensure there is at least one elements there.
       //
-      // This is an optimization to include wether we finished iteration or not (1 or 0)
+      // This is an optimization to include whether we finished iteration or not (1 or 0)
       // at the end of returned array to avoid serialization overhead of separate values.
       const done = bytes[bytes.byteLength - 1] === 1
 
