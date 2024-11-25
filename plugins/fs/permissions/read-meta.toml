@@ -3,4 +3,4 @@
 [[permission]]
 identifier = "read-meta"
 description = "This enables all index or metadata related commands without any pre-configured accessible paths."
-commands.allow = ["read_dir", "stat", "lstat", "fstat", "exists"]
+commands.allow = ["read_dir", "stat", "lstat", "fstat", "exists", "size"]

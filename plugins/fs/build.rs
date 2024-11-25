@@ -102,6 +102,7 @@ const COMMANDS: &[(&str, &[&str])] = &[
     ("exists", &[]),
     ("watch", &[]),
     ("unwatch", &[]),
+    ("size", &[]),
 ];
 
 fn main() {

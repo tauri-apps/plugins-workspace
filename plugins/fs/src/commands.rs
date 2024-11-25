@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use anyhow::Ok;
 use serde::{Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use tauri::{
@@ -895,6 +896,55 @@ pub fn exists<R: Runtime>(
         options.as_ref().and_then(|o| o.base_dir),
     )?;
     Ok(resolved_path.exists())
+}
+
+#[tauri::command]
+pub async fn size<R: Runtime>(
+    webview: Webview<R>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
+    path: SafeFilePath,
+    options: Option<BaseOptions>,
+) -> CommandResult<u64> {
+    let resolved_path = resolve_path(
+        &webview,
+        &global_scope,
+        &command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base_dir),
+    )?;
+
+    let metadata = resolved_path.metadata()?;
+
+    if metadata.is_file() {
+        Ok(metadata.len())
+    } else {
+        let size = get_dir_size(resolved_path).map_err(|e| {
+            format!(
+                "failed to get size at path: {} with error: {e}",
+                resolved_path.display()
+            )
+        })?;
+
+        Ok(size)
+    }
+}
+
+fn get_dir_size(path: PathBuf) -> CommandResult<u64> {
+    let mut size = 0;
+
+    for entry in std::fs::read_dir(path)? {
+        let entry = entry?;
+        let metadata = entry.metadata()?;
+
+        if metadata.is_file() {
+            size += metadata.len();
+        } else if metadata.is_dir() {
+            size += get_dir_size(entry.path())?;
+        }
+    }
+
+    Ok(size)
 }
 
 #[cfg(not(target_os = "android"))]

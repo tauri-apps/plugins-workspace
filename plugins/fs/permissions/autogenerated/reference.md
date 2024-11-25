@@ -3410,6 +3410,32 @@ Denies the seek command without any pre-configured scope.
 <tr>
 <td>
 
+`fs:allow-size`
+
+</td>
+<td>
+
+Enables the size command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fs:deny-size`
+
+</td>
+<td>
+
+Denies the size command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `fs:allow-stat`
 
 </td>

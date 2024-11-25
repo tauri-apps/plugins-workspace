@@ -1322,6 +1322,28 @@ async function watchImmediate(
   }
 }
 
+/**
+ * Get the size of a file or directory.
+ * @example
+ * ```typescript
+ * import { size, BaseDirectory } from '@tauri-apps/plugin-fs';
+ * // Get the size of the `$APPDATA/tauri` directory.
+ * const dirSize = await size('tauri', { baseDir: BaseDirectory.AppData });
+ * console.log(dirSize); // 1024
+ * ```
+ *
+ * @since 2.0.0
+ */
+async function size(path: string | URL): Promise<number> {
+  if (path instanceof URL && path.protocol !== 'file:') {
+    throw new TypeError('Must be a file URL.')
+  }
+
+  return await invoke('plugin:fs|size', {
+    path: path instanceof URL ? path.toString() : path,
+  })
+}
+
 export type {
   CreateOptions,
   OpenOptions,
@@ -1369,5 +1391,6 @@ export {
   writeTextFile,
   exists,
   watch,
-  watchImmediate
+  watchImmediate,
+  size
 }

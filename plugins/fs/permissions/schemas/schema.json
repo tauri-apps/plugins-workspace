@@ -1590,6 +1590,16 @@
           "const": "deny-seek"
         },
         {
+          "description": "Enables the size command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-size"
+        },
+        {
+          "description": "Denies the size command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-size"
+        },
+        {
           "description": "Enables the stat command without any pre-configured scope.",
           "type": "string",
           "const": "allow-stat"
