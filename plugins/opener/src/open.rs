@@ -9,14 +9,14 @@ use std::{ffi::OsStr, path::Path};
 pub(crate) fn open<P: AsRef<OsStr>, S: AsRef<str>>(path: P, with: Option<S>) -> crate::Result<()> {
     match with {
         Some(program) => ::open::with_detached(path, program.as_ref()),
+        #[cfg(target_os = "linux")]
         None => {
             // ref https://github.com/tauri-apps/tauri/issues/10617
-            #[cfg(target_os = "linux")]
-            return ::open::with_detached(&path, "/usr/bin/xdg-open")
-                .or_else(|_| ::open::that_detached(path));
-            #[cfg(not(target_os = "linux"))]
-            ::open::that_detached(path)
+            ::open::with_detached(&path, "/usr/bin/xdg-open")
+                .or_else(|_| ::open::that_detached(path))
         }
+        #[cfg(not(target_os = "linux"))]
+        None => ::open::that_detached(path),
     }
     .map_err(Into::into)
 }
