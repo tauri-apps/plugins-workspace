@@ -1326,6 +1326,7 @@ async function watchImmediate(
  * Get the size of a file or directory. For files, the `stat` functions can be used as well.
  *
  * If `path` is a directory, this function will recursively iterate over every file and every directory inside of `path` and therefore will be very time consuming if used on larger directories.
+ *
  * @example
  * ```typescript
  * import { size, BaseDirectory } from '@tauri-apps/plugin-fs';
