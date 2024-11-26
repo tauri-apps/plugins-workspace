@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use anyhow::Ok;
 use serde::{Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use tauri::{
@@ -919,7 +918,7 @@ pub async fn size<R: Runtime>(
     if metadata.is_file() {
         Ok(metadata.len())
     } else {
-        let size = get_dir_size(resolved_path).map_err(|e| {
+        let size = get_dir_size(&resolved_path).map_err(|e| {
             format!(
                 "failed to get size at path: {} with error: {e}",
                 resolved_path.display()
@@ -930,7 +929,7 @@ pub async fn size<R: Runtime>(
     }
 }
 
-fn get_dir_size(path: PathBuf) -> CommandResult<u64> {
+fn get_dir_size(path: &PathBuf) -> CommandResult<u64> {
     let mut size = 0;
 
     for entry in std::fs::read_dir(path)? {
@@ -940,7 +939,7 @@ fn get_dir_size(path: PathBuf) -> CommandResult<u64> {
         if metadata.is_file() {
             size += metadata.len();
         } else if metadata.is_dir() {
-            size += get_dir_size(entry.path())?;
+            size += get_dir_size(&entry.path())?;
         }
     }
 
