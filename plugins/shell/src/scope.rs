@@ -221,7 +221,7 @@ impl OpenScope {
             #[cfg(target_os = "linux")]
             None => {
                 // ref https://github.com/tauri-apps/tauri/issues/10617
-                ::open::with_detached(&path, "/usr/bin/xdg-open")
+                ::open::with_detached(path, "/usr/bin/xdg-open")
                     .or_else(|_| ::open::that_detached(path))
             }
             #[cfg(not(target_os = "linux"))]
