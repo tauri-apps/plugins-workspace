@@ -39,6 +39,11 @@ use desktop::*;
 #[cfg(mobile)]
 use mobile::*;
 
+#[cfg(desktop)]
+pub use desktop::Dialog;
+#[cfg(mobile)]
+pub use mobile::Dialog;
+
 pub(crate) const OK: &str = "Ok";
 pub(crate) const CANCEL: &str = "Cancel";
 pub(crate) const YES: &str = "Yes";
