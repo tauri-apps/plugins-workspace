@@ -13,13 +13,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # required for use of git history
-
-      - uses: actions/setup-node@v4
+      - name: covector status
+        uses: jbolda/covector/packages/action@covector-v0
+        id: covector
         with:
-          node-version: lts/*
-          registry-url: 'https://registry.npmjs.org'
-      - name: temp
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.ORG_NPM_TOKEN }}
-        run: |
-          npm unpublish @tauri-apps/plugin-fs@2.0.3
+          command: 'status'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          comment: true
