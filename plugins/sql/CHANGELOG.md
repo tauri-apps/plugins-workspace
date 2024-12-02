@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.3]
+
+- [`90ef77c8`](https://github.com/tauri-apps/plugins-workspace/commit/90ef77c8723ac9d0ba7bd3b52a80a2b14843ff99) ([#2038](https://github.com/tauri-apps/plugins-workspace/pull/2038) by [@johncarmack1984](https://github.com/tauri-apps/plugins-workspace/../../johncarmack1984)) Allow blocking on async code without creating a nested runtime.
+
 ## \[2.0.1]
 
 - [`0ca4cc91`](https://github.com/tauri-apps/plugins-workspace/commit/0ca4cc914c5ea995c98f9e60a2ab49827c219350) ([#1963](https://github.com/tauri-apps/plugins-workspace/pull/1963) by [@yoggys](https://github.com/tauri-apps/plugins-workspace/../../yoggys)) Fixed incorrect documentation of the select method in the Database class.

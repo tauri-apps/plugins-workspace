@@ -2,6 +2,10 @@
 
 ## \[2.0.1]
 
+- [`b2aea045`](https://github.com/tauri-apps/plugins-workspace/commit/b2aea0456799775a7243706fdd7a5abf9a193992) ([#2008](https://github.com/tauri-apps/plugins-workspace/pull/2008) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) `onOpenUrl()` will now not call `getCurrent()` anymore, matching the documented behavior.
+
+## \[2.0.1]
+
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
 
 ## \[2.0.0]

@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.1.0]
+
+- [`fecfd553`](https://github.com/tauri-apps/plugins-workspace/commit/fecfd5533a6452f054fbcd909021f12b0dce834f) ([#2070](https://github.com/tauri-apps/plugins-workspace/pull/2070) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) **Breaking Change:** Replaced the custom `tauri_plugin_fs::Scope` struct with `tauri::fs::Scope`.
+
+### Dependencies
+
+- Upgraded to `fs@2.1.0`
+
 ## \[2.0.3]
 
 ### Dependencies

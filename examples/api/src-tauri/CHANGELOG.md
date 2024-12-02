@@ -1,5 +1,16 @@
 # Changelog
 
+## \[2.0.6]
+
+### Dependencies
+
+- Upgraded to `fs@2.1.0`
+- Upgraded to `updater@2.1.0`
+- Upgraded to `dialog@2.0.4`
+- Upgraded to `log-plugin@2.0.3`
+- Upgraded to `http@2.0.4`
+- Upgraded to `opener@2.0.0`
+
 ## \[2.0.5]
 
 ### Dependencies

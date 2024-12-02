@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.3]
+
+- [`ed981027`](https://github.com/tauri-apps/plugins-workspace/commit/ed981027dd4fba7d0e2f836eb5db34d344388d73) ([#1962](https://github.com/tauri-apps/plugins-workspace/pull/1962) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Improve performance of `readTextFile` and `readTextFileLines` APIs
+- [`3e78173d`](https://github.com/tauri-apps/plugins-workspace/commit/3e78173df9ce90aa3b19e1f36d1f8712c5020fb6) ([#2018](https://github.com/tauri-apps/plugins-workspace/pull/2018) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix `readDir` function failing to read directories that contain broken symlinks.
+- [`5092ea5e`](https://github.com/tauri-apps/plugins-workspace/commit/5092ea5e89817c0550d09b0a4ad17bf1253b23df) ([#1964](https://github.com/tauri-apps/plugins-workspace/pull/1964) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add support for using `ReadableStream<Unit8Array>` with `writeFile` API.
+
 ## \[2.0.2]
 
 - [`77149dc4`](https://github.com/tauri-apps/plugins-workspace/commit/77149dc4320d26b413e4a6bbe82c654367c51b32) ([#1965](https://github.com/tauri-apps/plugins-workspace/pull/1965) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix `writeTextFile` converting UTF-8 characters (for example `äöü`) in the given path into replacement character (`�`)
@@ -184,6 +190,14 @@
   .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   uri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  kspace/pull/371)) First v2 alpha release!
+  s/plugins-workspace/pull/371)) First v2 alpha release!
+  ac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+apps/plugins-workspace/pull/371)) First v2 alpha release!
   .com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   kspace/pull/371)) First v2 alpha release!

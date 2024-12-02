@@ -70,13 +70,13 @@ importers:
         specifier: 2.0.0
         version: link:../../plugins/cli
       '@tauri-apps/plugin-clipboard-manager':
-        specifier: 2.0.0
+        specifier: 2.0.1
         version: link:../../plugins/clipboard-manager
       '@tauri-apps/plugin-dialog':
         specifier: 2.0.1
         version: link:../../plugins/dialog
       '@tauri-apps/plugin-fs':
-        specifier: 2.0.2
+        specifier: 2.0.3
         version: link:../../plugins/fs
       '@tauri-apps/plugin-geolocation':
         specifier: 2.0.0
@@ -97,7 +97,7 @@ importers:
         specifier: 2.0.0
         version: link:../../plugins/notification
       '@tauri-apps/plugin-opener':
-        specifier: 1.0.0
+        specifier: 2.0.0
         version: link:../../plugins/opener
       '@tauri-apps/plugin-os':
         specifier: 2.0.0
@@ -185,7 +185,7 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       '@tauri-apps/plugin-deep-link':
-        specifier: 2.0.0
+        specifier: 2.0.1
         version: link:../..
     devDependencies:
       '@tauri-apps/cli':
@@ -2441,14 +2441,13 @@ snapshots:
       picocolors: 1.1.1
       sisteransi: 1.0.5
 
-  '@covector/apply@0.10.0(mocha@10.8.2)':
+  '@covector/apply@0.10.0':
     dependencies:
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.8.2)
       semver: 7.6.3
     transitivePeerDependencies:
       - encoding
-      - mocha
 
   '@covector/assemble@0.12.0':
     dependencies:
@@ -2465,7 +2464,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@covector/changelog@0.12.0':
+  '@covector/changelog@0.12.0(mocha@10.8.2)':
     dependencies:
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.8.2)
@@ -2475,6 +2474,7 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
+      - mocha
       - supports-color
 
   '@covector/command@0.8.0':
@@ -3413,9 +3413,9 @@ snapshots:
   covector@0.12.3(mocha@10.8.2):
     dependencies:
       '@clack/prompts': 0.7.0
-      '@covector/apply': 0.10.0(mocha@10.8.2)
+      '@covector/apply': 0.10.0
       '@covector/assemble': 0.12.0
-      '@covector/changelog': 0.12.0
+      '@covector/changelog': 0.12.0(mocha@10.8.2)
       '@covector/command': 0.8.0
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.8.2)

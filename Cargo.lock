@@ -206,7 +206,7 @@ checksum = "4c95c10ba0b00a02636238b814946408b1322d5ac4760326e6fb8ec956d85775"
 
 [[package]]
 name = "api"
-version = "2.0.5"
+version = "2.0.6"
 dependencies = [
  "log",
  "serde",
@@ -6522,7 +6522,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "dunce",
  "rust-ini",
@@ -6540,7 +6540,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.3"
+version = "2.0.4"
 dependencies = [
  "log",
  "raw-window-handle",
@@ -6556,7 +6556,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.3"
+version = "2.1.0"
 dependencies = [
  "anyhow",
  "dunce",
@@ -6618,7 +6618,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.3"
+version = "2.0.4"
 dependencies = [
  "data-url",
  "http",
@@ -6639,7 +6639,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-localhost"
-version = "2.0.1"
+version = "2.1.0"
 dependencies = [
  "http",
  "log",
@@ -6652,7 +6652,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-log"
-version = "2.0.2"
+version = "2.0.3"
 dependencies = [
  "android_logger",
  "byte-unit",
@@ -6707,7 +6707,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-opener"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "dunce",
  "glob",
@@ -6743,7 +6743,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.0.3"
+version = "2.1.0"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6757,7 +6757,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-positioner"
-version = "2.0.2"
+version = "2.1.0"
 dependencies = [
  "log",
  "serde",
@@ -6797,7 +6797,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "semver",
  "serde",
@@ -6812,7 +6812,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-sql"
-version = "2.0.2"
+version = "2.0.3"
 dependencies = [
  "futures-core",
  "indexmap 2.7.0",
@@ -6864,7 +6864,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.0.2"
+version = "2.1.0"
 dependencies = [
  "base64 0.22.1",
  "dirs 5.0.1",
@@ -6892,7 +6892,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-upload"
-version = "2.1.0"
+version = "2.2.0"
 dependencies = [
  "futures-util",
  "log",

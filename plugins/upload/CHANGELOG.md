@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.0]
+
+- [`5dadd205`](https://github.com/tauri-apps/plugins-workspace/commit/5dadd205f5596c9607457dd015a2f9d7fc48a2db) ([#2033](https://github.com/tauri-apps/plugins-workspace/pull/2033) by [@514sid](https://github.com/tauri-apps/plugins-workspace/../../514sid)) Added a new field `progressTotal` to track the total amount of data transferred during the upload/download process.
+
 ## \[2.1.0]
 
 - [`87cc5852`](https://github.com/tauri-apps/plugins-workspace/commit/87cc58527d769960427a2f46bb10532f5dcf7ace) ([#1797](https://github.com/tauri-apps/plugins-workspace/pull/1797) by [@VirtualPirate](https://github.com/tauri-apps/plugins-workspace/../../VirtualPirate)) Added feature for calculating `transfer_speed` during file uploads and downloads

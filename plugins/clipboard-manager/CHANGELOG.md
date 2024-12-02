@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.1]
+
+- [`3fa0fc09`](https://github.com/tauri-apps/plugins-workspace/commit/3fa0fc09bbee0d619801e5757af9fb3c09883c97) ([#2099](https://github.com/tauri-apps/plugins-workspace/pull/2099) by [@rasteiner](https://github.com/tauri-apps/plugins-workspace/../../rasteiner)) Fix clipboard manager client side api not copying fallback alternative text when calling `writeHtml`.
+
 ## \[2.0.2]
 
 - [`d57df4de`](https://github.com/tauri-apps/plugins-workspace/commit/d57df4debe7c75cfbd6d6558fff1beb07dbee54c) ([#1986](https://github.com/tauri-apps/plugins-workspace/pull/1986) by [@RikaKagurasaka](https://github.com/tauri-apps/plugins-workspace/../../RikaKagurasaka)) Fix that `read_image` wrongly set the image rgba data with binary PNG data.
