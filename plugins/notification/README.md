@@ -54,7 +54,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-notification#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {

@@ -81,7 +81,7 @@ The Google Play Store uses this property to decide whether it should show the ap
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {
