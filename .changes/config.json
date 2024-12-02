@@ -56,7 +56,7 @@
       "dependencies": [
         "barcode-scanner",
         "biometric",
-        "log-plugin",
+        "log",
         "cli",
         "clipboard-manager",
         "dialog",
@@ -217,7 +217,7 @@
       "path": "./plugins/localhost",
       "manager": "rust"
     },
-    "log-plugin": {
+    "log": {
       "path": "./plugins/log",
       "manager": "rust"
     },
