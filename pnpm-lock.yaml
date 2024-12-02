@@ -116,7 +116,7 @@ importers:
         version: link:../../plugins/updater
       '@zerodevx/svelte-json-view':
         specifier: 1.0.11
-        version: 1.0.11(svelte@5.3.1)
+        version: 1.0.11(svelte@5.4.0)
     devDependencies:
       '@iconify-json/codicon':
         specifier: ^1.1.37
@@ -126,7 +126,7 @@ importers:
         version: 1.2.1
       '@sveltejs/vite-plugin-svelte':
         specifier: ^5.0.0
-        version: 5.0.1(svelte@5.3.1)(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))
+        version: 5.0.1(svelte@5.4.0)(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))
       '@tauri-apps/cli':
         specifier: 2.1.0
         version: 2.1.0
@@ -135,13 +135,13 @@ importers:
         version: 0.65.0
       svelte:
         specifier: ^5.0.0
-        version: 5.3.1
+        version: 5.4.0
       unocss:
         specifier: ^0.65.0
-        version: 0.65.0(postcss@8.4.49)(rollup@4.28.0)(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))(vue@3.5.13(typescript@5.7.2))
+        version: 0.65.0(postcss@8.4.49)(rollup@4.28.0)(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))(vue@3.5.13(typescript@5.7.2))
       vite:
         specifier: ^6.0.0
-        version: 6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
+        version: 6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
 
   plugins/autostart:
     dependencies:
@@ -196,7 +196,7 @@ importers:
         version: 5.7.2
       vite:
         specifier: ^6.0.0
-        version: 6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
+        version: 6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
 
   plugins/dialog:
     dependencies:
@@ -310,7 +310,7 @@ importers:
         version: 5.7.2
       vite:
         specifier: ^6.0.0
-        version: 6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
+        version: 6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
 
   plugins/stronghold:
     dependencies:
@@ -350,7 +350,7 @@ importers:
         version: 5.7.2
       vite:
         specifier: ^6.0.0
-        version: 6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
+        version: 6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
 
   plugins/window-state:
     dependencies:
@@ -2167,8 +2167,8 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
-  svelte@5.3.1:
-    resolution: {integrity: sha512-Y6PXppQhIZZ0HLZKj6UMV/VZPJbHiK98K8A5M7mJ+PGrz4erUmuDRUa8l7aw4La++Vl51YWzLUuuB0FZ7JPfnw==}
+  svelte@5.4.0:
+    resolution: {integrity: sha512-2I/mjD8cXDpKfdfUK+T6yo/OzugMXIm8lhyJUFM5F/gICMYnkl3C/+4cOSpia8TqpDsi6Qfm5+fdmBNMNmaf2g==}
     engines: {node: '>=18'}
 
   terser@5.36.0:
@@ -2270,8 +2270,8 @@ packages:
   vfile@4.2.1:
     resolution: {integrity: sha512-O6AE4OskCG5S1emQ/4gl8zK586RqA3srz3nfK/Viy0UPToBc5Trp9BVFb1u0CjsKrAWwnpr4ifM/KBXPWwJbCA==}
 
-  vite@6.0.1:
-    resolution: {integrity: sha512-Ldn6gorLGr4mCdFnmeAOLweJxZ34HjKnDm4HGo6P66IEqTxQb36VEdFJQENKxWjupNfoIjvRUnswjn1hpYEpjQ==}
+  vite@6.0.2:
+    resolution: {integrity: sha512-XdQ+VsY2tJpBsKGs0wf3U/+azx8BBpYRHFAyKm5VeEZNOJZRB63q7Sc8Iup3k0TrN3KO6QgyzFf+opSbfY1y0g==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
     peerDependencies:
@@ -2441,13 +2441,14 @@ snapshots:
       picocolors: 1.1.1
       sisteransi: 1.0.5
 
-  '@covector/apply@0.10.0':
+  '@covector/apply@0.10.0(mocha@10.8.2)':
     dependencies:
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.8.2)
       semver: 7.6.3
     transitivePeerDependencies:
       - encoding
+      - mocha
 
   '@covector/assemble@0.12.0':
     dependencies:
@@ -2464,7 +2465,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@covector/changelog@0.12.0(mocha@10.8.2)':
+  '@covector/changelog@0.12.0':
     dependencies:
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.8.2)
@@ -2474,7 +2475,6 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
-      - mocha
       - supports-color
 
   '@covector/command@0.8.0':
@@ -2893,25 +2893,25 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.28.0':
     optional: true
 
-  '@sveltejs/vite-plugin-svelte-inspector@4.0.1(@sveltejs/vite-plugin-svelte@5.0.1(svelte@5.3.1)(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)))(svelte@5.3.1)(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))':
+  '@sveltejs/vite-plugin-svelte-inspector@4.0.1(@sveltejs/vite-plugin-svelte@5.0.1(svelte@5.4.0)(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)))(svelte@5.4.0)(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte': 5.0.1(svelte@5.3.1)(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))
+      '@sveltejs/vite-plugin-svelte': 5.0.1(svelte@5.4.0)(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))
       debug: 4.3.7(supports-color@8.1.1)
-      svelte: 5.3.1
-      vite: 6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
+      svelte: 5.4.0
+      vite: 6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
     transitivePeerDependencies:
       - supports-color
 
-  '@sveltejs/vite-plugin-svelte@5.0.1(svelte@5.3.1)(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))':
+  '@sveltejs/vite-plugin-svelte@5.0.1(svelte@5.4.0)(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte-inspector': 4.0.1(@sveltejs/vite-plugin-svelte@5.0.1(svelte@5.3.1)(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)))(svelte@5.3.1)(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))
+      '@sveltejs/vite-plugin-svelte-inspector': 4.0.1(@sveltejs/vite-plugin-svelte@5.0.1(svelte@5.4.0)(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)))(svelte@5.4.0)(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))
       debug: 4.3.7(supports-color@8.1.1)
       deepmerge: 4.3.1
       kleur: 4.1.5
       magic-string: 0.30.14
-      svelte: 5.3.1
-      vite: 6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
-      vitefu: 1.0.4(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))
+      svelte: 5.4.0
+      vite: 6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
+      vitefu: 1.0.4(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))
     transitivePeerDependencies:
       - supports-color
 
@@ -3063,13 +3063,13 @@ snapshots:
       '@typescript-eslint/types': 8.16.0
       eslint-visitor-keys: 4.2.0
 
-  '@unocss/astro@0.65.0(rollup@4.28.0)(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))(vue@3.5.13(typescript@5.7.2))':
+  '@unocss/astro@0.65.0(rollup@4.28.0)(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))(vue@3.5.13(typescript@5.7.2))':
     dependencies:
       '@unocss/core': 0.65.0
       '@unocss/reset': 0.65.0
-      '@unocss/vite': 0.65.0(rollup@4.28.0)(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))(vue@3.5.13(typescript@5.7.2))
+      '@unocss/vite': 0.65.0(rollup@4.28.0)(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))(vue@3.5.13(typescript@5.7.2))
     optionalDependencies:
-      vite: 6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
+      vite: 6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
     transitivePeerDependencies:
       - rollup
       - supports-color
@@ -3200,7 +3200,7 @@ snapshots:
     dependencies:
       '@unocss/core': 0.65.0
 
-  '@unocss/vite@0.65.0(rollup@4.28.0)(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))(vue@3.5.13(typescript@5.7.2))':
+  '@unocss/vite@0.65.0(rollup@4.28.0)(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))(vue@3.5.13(typescript@5.7.2))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@rollup/pluginutils': 5.1.3(rollup@4.28.0)
@@ -3210,7 +3210,7 @@ snapshots:
       chokidar: 3.6.0
       magic-string: 0.30.14
       tinyglobby: 0.2.10
-      vite: 6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
+      vite: 6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
     transitivePeerDependencies:
       - rollup
       - supports-color
@@ -3270,9 +3270,9 @@ snapshots:
 
   '@vue/shared@3.5.13': {}
 
-  '@zerodevx/svelte-json-view@1.0.11(svelte@5.3.1)':
+  '@zerodevx/svelte-json-view@1.0.11(svelte@5.4.0)':
     dependencies:
-      svelte: 5.3.1
+      svelte: 5.4.0
 
   abort-controller@3.0.0:
     dependencies:
@@ -3413,9 +3413,9 @@ snapshots:
   covector@0.12.3(mocha@10.8.2):
     dependencies:
       '@clack/prompts': 0.7.0
-      '@covector/apply': 0.10.0
+      '@covector/apply': 0.10.0(mocha@10.8.2)
       '@covector/assemble': 0.12.0
-      '@covector/changelog': 0.12.0(mocha@10.8.2)
+      '@covector/changelog': 0.12.0
       '@covector/command': 0.8.0
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.8.2)
@@ -4250,7 +4250,7 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  svelte@5.3.1:
+  svelte@5.4.0:
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@jridgewell/sourcemap-codec': 1.5.0
@@ -4350,9 +4350,9 @@ snapshots:
     dependencies:
       '@types/unist': 2.0.11
 
-  unocss@0.65.0(postcss@8.4.49)(rollup@4.28.0)(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))(vue@3.5.13(typescript@5.7.2)):
+  unocss@0.65.0(postcss@8.4.49)(rollup@4.28.0)(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))(vue@3.5.13(typescript@5.7.2)):
     dependencies:
-      '@unocss/astro': 0.65.0(rollup@4.28.0)(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))(vue@3.5.13(typescript@5.7.2))
+      '@unocss/astro': 0.65.0(rollup@4.28.0)(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))(vue@3.5.13(typescript@5.7.2))
       '@unocss/cli': 0.65.0(rollup@4.28.0)
       '@unocss/core': 0.65.0
       '@unocss/postcss': 0.65.0(postcss@8.4.49)
@@ -4368,9 +4368,9 @@ snapshots:
       '@unocss/transformer-compile-class': 0.65.0
       '@unocss/transformer-directives': 0.65.0
       '@unocss/transformer-variant-group': 0.65.0
-      '@unocss/vite': 0.65.0(rollup@4.28.0)(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))(vue@3.5.13(typescript@5.7.2))
+      '@unocss/vite': 0.65.0(rollup@4.28.0)(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2))(vue@3.5.13(typescript@5.7.2))
     optionalDependencies:
-      vite: 6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
+      vite: 6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
     transitivePeerDependencies:
       - postcss
       - rollup
@@ -4393,7 +4393,7 @@ snapshots:
       unist-util-stringify-position: 2.0.3
       vfile-message: 2.0.4
 
-  vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2):
+  vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2):
     dependencies:
       esbuild: 0.24.0
       postcss: 8.4.49
@@ -4404,9 +4404,9 @@ snapshots:
       terser: 5.36.0
       tsx: 4.19.2
 
-  vitefu@1.0.4(vite@6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)):
+  vitefu@1.0.4(vite@6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)):
     optionalDependencies:
-      vite: 6.0.1(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
+      vite: 6.0.2(jiti@1.21.6)(terser@5.36.0)(tsx@4.19.2)
 
   vue-flow-layout@0.1.1(vue@3.5.13(typescript@5.7.2)):
     dependencies:
