@@ -25,8 +25,6 @@ function checkChangeFiles(changeFiles) {
       .filter((l) => !(l === '---' || !l))
       .map((l) => l.replace(/('|")/g, '').split(':'))
 
-    console.log('pkgs', JSON.stringify(packages))
-
     const rsPackages = Object.fromEntries(
       packages
         .filter((v) => !v[0].endsWith('-js'))
