@@ -1,18 +1,20 @@
 #!/usr/bin/env node
 
-// Copyright 2019-2024 Tauri Programme within The Commons Conservancy
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
 import { readFileSync, readdirSync } from 'fs'
 import { join } from 'path'
 
-const ignorePackages = [
+/* const ignorePackages = [
   'api-example',
   'api-example-js',
   'deep-link-example',
   'deep-link-example-js'
-]
+] */
+
+const rsOnly = ['localhost', 'persisted-scope']
 
 function checkChangeFiles(changeFiles) {
   let code = 0
@@ -37,6 +39,8 @@ function checkChangeFiles(changeFiles) {
     )
 
     for (const pkg in rsPackages) {
+      if (rsOnly.includes(pkg)) continue
+
       if (!jsPackages[pkg]) {
         console.error(
           `Missing "${rsPackages[pkg]}" bump for JS package "${pkg}-js" in ${file}.`
