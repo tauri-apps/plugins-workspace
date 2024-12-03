@@ -6892,7 +6892,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-upload"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "futures-util",
  "log",

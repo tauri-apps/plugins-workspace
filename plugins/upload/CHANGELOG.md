@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.1]
+
+- [`05c62d73`](https://github.com/tauri-apps/plugins-workspace/commit/05c62d731fa48fd06b8cb3694a962d8cb0db8619) ([#1523](https://github.com/tauri-apps/plugins-workspace/pull/1523) by [@enri90](https://github.com/tauri-apps/plugins-workspace/../../enri90)) Added post request on download function
+
 ## \[2.2.0]
 
 - [`5dadd205`](https://github.com/tauri-apps/plugins-workspace/commit/5dadd205f5596c9607457dd015a2f9d7fc48a2db) ([#2033](https://github.com/tauri-apps/plugins-workspace/pull/2033) by [@514sid](https://github.com/tauri-apps/plugins-workspace/../../514sid)) Added a new field `progressTotal` to track the total amount of data transferred during the upload/download process.
