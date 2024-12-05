@@ -170,7 +170,8 @@
     },
     "dialog-js": {
       "path": "./plugins/dialog",
-      "manager": "javascript"
+      "manager": "javascript",
+      "dependencies": ["fs-js"]
     },
     "geolocation": {
       "path": "./plugins/geolocation",
@@ -211,7 +212,8 @@
     },
     "http-js": {
       "path": "./plugins/http",
-      "manager": "javascript"
+      "manager": "javascript",
+      "dependencies": ["fs-js"]
     },
     "localhost": {
       "path": "./plugins/localhost",
