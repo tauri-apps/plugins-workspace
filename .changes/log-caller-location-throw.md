@@ -1,4 +1,5 @@
 ---
+"log": patch
 "log-js": patch
 ---
 
