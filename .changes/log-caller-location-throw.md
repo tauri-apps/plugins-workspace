@@ -3,4 +3,4 @@
 "log-js": patch
 ---
 
-Make log functions omit caller location when failed parsing it instead of throwing
+Make log functions omit caller location when failed to parse it instead of throwing
