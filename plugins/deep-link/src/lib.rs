@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::sync::Arc;
-
 use tauri::{
     plugin::{Builder, PluginApi, TauriPlugin},
     AppHandle, EventId, Listener, Manager, Runtime,
@@ -217,7 +215,7 @@ mod imp {
                         current.replace(vec![url.clone()]);
                         let _ = self.app.emit("deep-link://new-url", vec![url]);
                     } else if cfg!(debug_assertions) {
-                        log::warn!("argument {url} does not match any configured deep link scheme; skipping it");
+                        tracing::warn!("argument {url} does not match any configured deep link scheme; skipping it");
                     }
                 }
             }
@@ -478,13 +476,10 @@ impl OpenUrlEvent {
 }
 
 impl<R: Runtime> DeepLink<R> {
-    /// Handle a new deep link being triggered to open the app.
+    /// Helper function for the `deep-link://new-url` event to run a function each time the protocol is triggered while the app is running.
     ///
-    /// To avoid race conditions, if the app was started with a deep link,
-    /// the closure gets immediately called with the deep link URL.
+    /// Use `get_current` on app load to check whether your app was started via a deep link.
     pub fn on_open_url<F: Fn(OpenUrlEvent) + Send + Sync + 'static>(&self, f: F) -> EventId {
-        let f = Arc::new(f);
-        let f_ = f.clone();
         let event_id = self.app.listen("deep-link://new-url", move |event| {
             if let Ok(urls) = serde_json::from_str(event.payload()) {
                 f(OpenUrlEvent {
@@ -493,13 +488,6 @@ impl<R: Runtime> DeepLink<R> {
                 })
             }
         });
-
-        if let Ok(Some(current)) = self.get_current() {
-            f_(OpenUrlEvent {
-                id: event_id,
-                urls: current,
-            })
-        }
 
         event_id
     }

@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-sql"
-version = "2.0.1"
+version = "2.0.3"
 description = "Interface with SQL databases."
 authors = { workspace = true }
 license = { workspace = true }

@@ -1,56 +1,56 @@
 <script>
-  import { check } from "@tauri-apps/plugin-updater";
-  import { relaunch } from "@tauri-apps/plugin-process";
+  import { check } from '@tauri-apps/plugin-updater'
+  import { relaunch } from '@tauri-apps/plugin-process'
 
-  export let onMessage;
+  export let onMessage
 
-  let isChecking, isInstalling, newUpdate;
+  let isChecking, isInstalling, newUpdate
   let totalSize = 0,
-    downloadedSize = 0;
+    downloadedSize = 0
 
   async function checkUpdate() {
-    isChecking = true;
+    isChecking = true
     try {
-      const update = await check();
-      onMessage(`Should update: ${update.available}`);
-      onMessage(update);
+      const update = await check()
+      onMessage(`Should update: ${update.available}`)
+      onMessage(update)
 
-      newUpdate = update;
+      newUpdate = update
     } catch (e) {
-      onMessage(e);
+      onMessage(e)
     } finally {
-      isChecking = false;
+      isChecking = false
     }
   }
 
   async function install() {
-    isInstalling = true;
-    downloadedSize = 0;
+    isInstalling = true
+    downloadedSize = 0
     try {
       await newUpdate.downloadAndInstall((downloadProgress) => {
         switch (downloadProgress.event) {
-          case "Started":
-            totalSize = downloadProgress.data.contentLength;
-            break;
-          case "Progress":
-            downloadedSize += downloadProgress.data.chunkLength;
-            break;
-          case "Finished":
-            break;
+          case 'Started':
+            totalSize = downloadProgress.data.contentLength
+            break
+          case 'Progress':
+            downloadedSize += downloadProgress.data.chunkLength
+            break
+          case 'Finished':
+            break
         }
-      });
-      onMessage("Installation complete, restarting...");
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      await relaunch();
+      })
+      onMessage('Installation complete, restarting...')
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      await relaunch()
     } catch (e) {
-      console.error(e);
-      onMessage(e);
+      console.error(e)
+      onMessage(e)
     } finally {
-      isInstalling = false;
+      isInstalling = false
     }
   }
 
-  $: progress = totalSize ? Math.round((downloadedSize / totalSize) * 100) : 0;
+  $: progress = totalSize ? Math.round((downloadedSize / totalSize) * 100) : 0
 </script>
 
 <div class="flex children:grow children:h10">
@@ -61,7 +61,7 @@
   {:else}
     <div class="progress">
       <span>{progress}%</span>
-      <div class="progress-bar" style="width: {progress}%" />
+      <div class="progress-bar" style="width: {progress}%"></div>
     </div>
   {/if}
 </div>

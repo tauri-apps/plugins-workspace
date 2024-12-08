@@ -47,109 +47,140 @@ jobs:
             tauri-plugin-autostart:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/autostart/**
             tauri-plugin-cli:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/cli/**
             tauri-plugin-clipboard-manager:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/clipboard-manager/**
             tauri-plugin-deep-link:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/deep-link/**
             tauri-plugin-dialog:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/dialog/**
               - plugins/fs/**
             tauri-plugin-fs:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/fs/**
             tauri-plugin-geolocation:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/geolocation/**
             tauri-plugin-global-shortcut:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/global-shortcut/**
+            tauri-plugin-opener:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - Cargo.lock
+              - plugins/opener/**
             tauri-plugin-haptics:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/haptics/**
             tauri-plugin-http:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/http/**
               - plugins/fs/**
             tauri-plugin-localhost:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/localhost/**
             tauri-plugin-log:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/log/**
             tauri-plugin-notification:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/notification/**
             tauri-plugin-os:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/os/**
             tauri-plugin-persisted-scope:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/persisted-scope/**
               - plugins/fs/**
             tauri-plugin-positioner:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/positioner/**
             tauri-plugin-process:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/process/**
             tauri-plugin-shell:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/shell/**
             tauri-plugin-single-instance:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/single-instance/**
             tauri-plugin-sql:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/sql/**
             tauri-plugin-store:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/store/**
             tauri-plugin-stronghold:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/stronghold/**
             tauri-plugin-updater:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/updater/**
             tauri-plugin-upload:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/upload/**
             tauri-plugin-websocket:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/websocket/**
             tauri-plugin-window-state:
               - .github/workflows/test-rust.yml
               - Cargo.toml
+              - Cargo.lock
               - plugins/window-state/**
 
   test:

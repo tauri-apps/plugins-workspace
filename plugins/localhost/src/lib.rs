@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/localhost/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/localhost)
-//!
 //! Expose your apps assets through a localhost server instead of the default custom protocol.
 //!
 //! **Note: This plugins brings considerable security risks and you should only use it if you know what your are doing. If in doubt, use the default custom protocol implementation.**
@@ -46,6 +44,7 @@ type OnRequest = Option<Box<dyn Fn(&Request, &mut Response) + Send + Sync>>;
 
 pub struct Builder {
     port: u16,
+    host: Option<String>,
     on_request: OnRequest,
 }
 
@@ -53,8 +52,15 @@ impl Builder {
     pub fn new(port: u16) -> Self {
         Self {
             port,
+            host: None,
             on_request: None,
         }
+    }
+
+    // Change the host the plugin binds to. Defaults to `localhost`.
+    pub fn host<H: Into<String>>(mut self, host: H) -> Self {
+        self.host = Some(host.into());
+        self
     }
 
     pub fn on_request<F: Fn(&Request, &mut Response) + Send + Sync + 'static>(
@@ -67,6 +73,7 @@ impl Builder {
 
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R> {
         let port = self.port;
+        let host = self.host.unwrap_or("localhost".to_string());
         let on_request = self.on_request.take();
 
         PluginBuilder::new("localhost")
@@ -74,7 +81,7 @@ impl Builder {
                 let asset_resolver = app.asset_resolver();
                 std::thread::spawn(move || {
                     let server =
-                        Server::http(format!("localhost:{port}")).expect("Unable to spawn server");
+                        Server::http(format!("{host}:{port}")).expect("Unable to spawn server");
                     for req in server.incoming_requests() {
                         let path = req
                             .url()

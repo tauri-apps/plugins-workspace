@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/sql/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/sql)
-//!
 //! Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx). It supports the `sqlite`, `mysql` and `postgres` drivers, enabled by a Cargo feature.
 
 #![doc(
@@ -29,12 +27,12 @@ use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, RunEvent, Runtime,
 };
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, RwLock};
 
 use std::collections::HashMap;
 
 #[derive(Default)]
-pub struct DbInstances(pub Mutex<HashMap<String, DbPool>>);
+pub struct DbInstances(pub RwLock<HashMap<String, DbPool>>);
 
 #[derive(Serialize)]
 #[serde(untagged)]
@@ -104,6 +102,15 @@ impl MigrationSource<'static> for MigrationList {
     }
 }
 
+/// Allows blocking on async code without creating a nested runtime.
+fn run_async_command<F: std::future::Future>(cmd: F) -> F::Output {
+    if tokio::runtime::Handle::try_current().is_ok() {
+        tokio::task::block_in_place(|| tokio::runtime::Handle::current().block_on(cmd))
+    } else {
+        tauri::async_runtime::block_on(cmd)
+    }
+}
+
 /// Tauri SQL plugin builder.
 #[derive(Default)]
 pub struct Builder {
@@ -138,9 +145,9 @@ impl Builder {
             .setup(|app, api| {
                 let config = api.config().clone().unwrap_or_default();
 
-                tauri::async_runtime::block_on(async move {
+                run_async_command(async move {
                     let instances = DbInstances::default();
-                    let mut lock = instances.0.lock().await;
+                    let mut lock = instances.0.write().await;
 
                     for db in config.preload {
                         let pool = DbPool::connect(&db, app).await?;
@@ -166,9 +173,9 @@ impl Builder {
             })
             .on_event(|app, event| {
                 if let RunEvent::Exit = event {
-                    tauri::async_runtime::block_on(async move {
+                    run_async_command(async move {
                         let instances = &*app.state::<DbInstances>();
-                        let instances = instances.0.lock().await;
+                        let instances = instances.0.read().await;
                         for value in instances.values() {
                             value.close().await;
                         }

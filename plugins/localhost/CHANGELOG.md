@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.1.0]
+
+- [`3449dd5a`](https://github.com/tauri-apps/plugins-workspace/commit/3449dd5a8f6d12fee8d6389c034fe47e19d72bcd) ([#1982](https://github.com/tauri-apps/plugins-workspace/pull/1982) by [@arihav](https://github.com/tauri-apps/plugins-workspace/../../arihav)) Add custom host binding to allow external access
+
 ## \[2.0.1]
 
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.

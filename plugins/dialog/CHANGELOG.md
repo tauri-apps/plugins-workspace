@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.4]
+
+- [`76f99ce9`](https://github.com/tauri-apps/plugins-workspace/commit/76f99ce999a2ff9e40235c1675e3eb6570b5e1e2) ([#2108](https://github.com/tauri-apps/plugins-workspace/pull/2108) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) The `Dialog` struct is now correctly exported, primarily to fix the documentation on `docs.rs`.
+
+### Dependencies
+
+- Upgraded to `fs@2.1.0`
+
 ## \[2.0.3]
 
 ### Dependencies

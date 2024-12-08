@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/dialog/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/dialog)
-//!
 //! Native system dialogs for opening and saving files along with message dialogs.
 
 #![doc(
@@ -40,6 +38,11 @@ pub use error::{Error, Result};
 use desktop::*;
 #[cfg(mobile)]
 use mobile::*;
+
+#[cfg(desktop)]
+pub use desktop::Dialog;
+#[cfg(mobile)]
+pub use mobile::Dialog;
 
 pub(crate) const OK: &str = "Ok";
 pub(crate) const CANCEL: &str = "Cancel";

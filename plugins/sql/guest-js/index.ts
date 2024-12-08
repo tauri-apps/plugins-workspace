@@ -10,12 +10,12 @@ export interface QueryResult {
   /**
    * The last inserted `id`.
    *
-   * This value is always `0` when using the Postgres driver. If the
+   * This value is not set for Postgres databases. If the
    * last inserted id is required on Postgres, the `select` function
    * must be used, with a `RETURNING` clause
    * (`INSERT INTO todos (title) VALUES ($1) RETURNING id`).
    */
-  lastInsertId: number
+  lastInsertId?: number
 }
 
 /**
@@ -129,12 +129,12 @@ export default class Database {
    * ```ts
    * // for sqlite & postgres
    * const result = await db.select(
-   *    "SELECT * from todos WHERE id = $1", id
+   *    "SELECT * from todos WHERE id = $1", [ id ]
    * );
    *
    * // for mysql
    * const result = await db.select(
-   *    "SELECT * from todos WHERE id = ?", id
+   *    "SELECT * from todos WHERE id = ?", [ id ]
    * );
    * ```
    */

@@ -1,6 +1,6 @@
 ![plugin-websocket](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/websocket/banner.png)
 
-Expose a WebSocket server to your Tauri frontend.
+Open a WebSocket connection using a Rust client in JS.
 
 | Platform | Supported |
 | -------- | --------- |
@@ -54,7 +54,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-websocket#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {

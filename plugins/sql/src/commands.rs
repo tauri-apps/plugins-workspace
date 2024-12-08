@@ -23,7 +23,7 @@ pub(crate) async fn load<R: Runtime>(
         pool.migrate(&migrator).await?;
     }
 
-    db_instances.0.lock().await.insert(db.clone(), pool);
+    db_instances.0.write().await.insert(db.clone(), pool);
 
     Ok(db)
 }
@@ -36,7 +36,7 @@ pub(crate) async fn close(
     db_instances: State<'_, DbInstances>,
     db: Option<String>,
 ) -> Result<bool, crate::Error> {
-    let mut instances = db_instances.0.lock().await;
+    let instances = db_instances.0.read().await;
 
     let pools = if let Some(db) = db {
         vec![db]
@@ -45,9 +45,7 @@ pub(crate) async fn close(
     };
 
     for pool in pools {
-        let db = instances
-            .get_mut(&pool)
-            .ok_or(Error::DatabaseNotLoaded(pool))?;
+        let db = instances.get(&pool).ok_or(Error::DatabaseNotLoaded(pool))?;
         db.close().await;
     }
 
@@ -62,9 +60,9 @@ pub(crate) async fn execute(
     query: String,
     values: Vec<JsonValue>,
 ) -> Result<(u64, LastInsertId), crate::Error> {
-    let mut instances = db_instances.0.lock().await;
+    let instances = db_instances.0.read().await;
 
-    let db = instances.get_mut(&db).ok_or(Error::DatabaseNotLoaded(db))?;
+    let db = instances.get(&db).ok_or(Error::DatabaseNotLoaded(db))?;
     db.execute(query, values).await
 }
 
@@ -75,8 +73,8 @@ pub(crate) async fn select(
     query: String,
     values: Vec<JsonValue>,
 ) -> Result<Vec<IndexMap<String, JsonValue>>, crate::Error> {
-    let mut instances = db_instances.0.lock().await;
+    let instances = db_instances.0.read().await;
 
-    let db = instances.get_mut(&db).ok_or(Error::DatabaseNotLoaded(db))?;
+    let db = instances.get(&db).ok_or(Error::DatabaseNotLoaded(db))?;
     db.select(query, values).await
 }

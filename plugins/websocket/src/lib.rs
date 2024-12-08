@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/websocket/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/websocket)
-//!
-//! Expose a WebSocket server to your Tauri frontend.
+//! Open a WebSocket connection using a Rust client in JS.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",

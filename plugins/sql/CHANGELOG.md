@@ -1,5 +1,17 @@
 # Changelog
 
+## \[2.0.2]
+
+- [`31956469`](https://github.com/tauri-apps/plugins-workspace/commit/319564699638c080b73d506bcaad186ecc4a8236) ([#1928](https://github.com/tauri-apps/plugins-workspace/pull/1928) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed the QueryResult typing by marking `lastInsertId` as optional to reflect postgres-only changes made in the 2.0.0 release.
+
+## \[2.0.3]
+
+- [`90ef77c8`](https://github.com/tauri-apps/plugins-workspace/commit/90ef77c8723ac9d0ba7bd3b52a80a2b14843ff99) ([#2038](https://github.com/tauri-apps/plugins-workspace/pull/2038) by [@johncarmack1984](https://github.com/tauri-apps/plugins-workspace/../../johncarmack1984)) Allow blocking on async code without creating a nested runtime.
+
+## \[2.0.1]
+
+- [`0ca4cc91`](https://github.com/tauri-apps/plugins-workspace/commit/0ca4cc914c5ea995c98f9e60a2ab49827c219350) ([#1963](https://github.com/tauri-apps/plugins-workspace/pull/1963) by [@yoggys](https://github.com/tauri-apps/plugins-workspace/../../yoggys)) Fixed incorrect documentation of the select method in the Database class.
+
 ## \[2.0.1]
 
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.

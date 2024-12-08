@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-http"
-version = "2.0.3"
+version = "2.0.4"
 description = "Access an HTTP client written in Rust."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -34,13 +34,14 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 thiserror = { workspace = true }
 tokio = { version = "1", features = ["sync", "macros"] }
-tauri-plugin-fs = { path = "../fs", version = "2.0.3" }
+tauri-plugin-fs = { path = "../fs", version = "2.1.0" }
 urlpattern = "0.3"
 regex = "1"
 http = "1"
 reqwest = { version = "0.12", default-features = false }
 url = { workspace = true }
 data-url = "0.3"
+tracing = { workspace = true, optional = true }
 
 [features]
 default = [
@@ -71,3 +72,4 @@ http2 = ["reqwest/http2"]
 charset = ["reqwest/charset"]
 macos-system-configuration = ["reqwest/macos-system-configuration"]
 unsafe-headers = []
+tracing = ["dep:tracing"]
