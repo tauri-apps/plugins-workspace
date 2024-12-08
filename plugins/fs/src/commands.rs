@@ -342,8 +342,7 @@ pub async fn read<R: Runtime>(
     Ok(tauri::ipc::Response::new(data))
 }
 
-#[tauri::command]
-pub async fn read_file<R: Runtime>(
+async fn read_file_inner<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
@@ -379,6 +378,17 @@ pub async fn read_file<R: Runtime>(
     Ok(tauri::ipc::Response::new(contents))
 }
 
+#[tauri::command]
+pub async fn read_file<R: Runtime>(
+    webview: Webview<R>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
+    path: SafeFilePath,
+    options: Option<BaseOptions>,
+) -> CommandResult<tauri::ipc::Response> {
+    read_file_inner("read-file", global_scope, command_scope, path, options).await
+}
+
 // TODO, remove in v3, rely on `read_file` command instead
 #[tauri::command]
 pub async fn read_text_file<R: Runtime>(
@@ -388,33 +398,7 @@ pub async fn read_text_file<R: Runtime>(
     path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<tauri::ipc::Response> {
-    let (mut file, path) = resolve_file(
-        "read-text-file",
-        &webview,
-        &global_scope,
-        &command_scope,
-        path,
-        OpenOptions {
-            base: BaseOptions {
-                base_dir: options.as_ref().and_then(|o| o.base_dir),
-            },
-            options: crate::OpenOptions {
-                read: true,
-                ..Default::default()
-            },
-        },
-    )?;
-
-    let mut contents = Vec::new();
-
-    file.read_to_end(&mut contents).map_err(|e| {
-        format!(
-            "failed to read file as text at path: {} with error: {e}",
-            path.display()
-        )
-    })?;
-
-    Ok(tauri::ipc::Response::new(contents))
+    read_file_inner("read-text-file", global_scope, command_scope, path, options).await
 }
 
 #[tauri::command]
