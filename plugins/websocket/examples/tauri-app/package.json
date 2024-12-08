@@ -9,9 +9,9 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "2.0.3",
+    "@tauri-apps/cli": "2.1.0",
     "typescript": "^5.3.3",
-    "vite": "^5.4.7"
+    "vite": "^6.0.0"
   },
   "dependencies": {
     "tauri-plugin-websocket-api": "link:..\\.."

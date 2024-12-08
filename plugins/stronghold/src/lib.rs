@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/stronghold/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/stronghold)
-//!
 //! Store secrets and keys using the [IOTA Stronghold](https://github.com/iotaledger/stronghold.rs) encrypted database and secure runtime.
 
 #![doc(
@@ -127,7 +125,7 @@ impl<'de> Deserialize<'de> for KeyType {
     {
         struct KeyTypeVisitor;
 
-        impl<'de> Visitor<'de> for KeyTypeVisitor {
+        impl Visitor<'_> for KeyTypeVisitor {
             type Value = KeyType;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {

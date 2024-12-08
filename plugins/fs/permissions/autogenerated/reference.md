@@ -24,6 +24,7 @@ This default permission set prevents access to critical components
 of the Tauri application by default.
 On Windows the webview data folder access is denied.
 
+#### Included permissions within this default permission set:
 
 
 - `create-app-specific-dirs`
@@ -3402,6 +3403,32 @@ Enables the seek command without any pre-configured scope.
 <td>
 
 Denies the seek command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fs:allow-size`
+
+</td>
+<td>
+
+Enables the size command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fs:deny-size`
+
+</td>
+<td>
+
+Denies the size command without any pre-configured scope.
 
 </td>
 </tr>

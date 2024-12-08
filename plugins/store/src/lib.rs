@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/store/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/store)
-//!
 //! Simple, persistent key-value store.
 
 #![doc(
@@ -434,7 +432,7 @@ impl Builder {
                     for (path, rid) in stores.iter() {
                         if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid) {
                             if let Err(err) = store.save() {
-                                log::error!("failed to save store {path:?} with error {err:?}");
+                                tracing::error!("failed to save store {path:?} with error {err:?}");
                             }
                         }
                     }

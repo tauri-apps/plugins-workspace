@@ -15,14 +15,14 @@ use tauri::{
 use std::{
     borrow::Cow,
     fs::File,
-    io::{BufReader, Lines, Read, Write},
+    io::{BufRead, BufReader, Read, Write},
     path::{Path, PathBuf},
     str::FromStr,
     sync::Mutex,
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{scope::Entry, Error, FsExt, SafeFilePath};
+use crate::{scope::Entry, Error, SafeFilePath};
 
 #[derive(Debug, thiserror::Error)]
 pub enum CommandError {
@@ -245,30 +245,10 @@ pub fn mkdir<R: Runtime>(
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
 pub struct DirEntry {
-    pub name: Option<String>,
+    pub name: String,
     pub is_directory: bool,
     pub is_file: bool,
     pub is_symlink: bool,
-}
-
-fn read_dir_inner<P: AsRef<Path>>(path: P) -> crate::Result<Vec<DirEntry>> {
-    let mut files_and_dirs: Vec<DirEntry> = vec![];
-    for entry in std::fs::read_dir(path)? {
-        let path = entry?.path();
-        let file_type = path.metadata()?.file_type();
-        files_and_dirs.push(DirEntry {
-            is_directory: file_type.is_dir(),
-            is_file: file_type.is_file(),
-            is_symlink: std::fs::symlink_metadata(&path)
-                .map(|md| md.file_type().is_symlink())
-                .unwrap_or(false),
-            name: path
-                .file_name()
-                .map(|name| name.to_string_lossy())
-                .map(|name| name.to_string()),
-        });
-    }
-    Result::Ok(files_and_dirs)
 }
 
 #[tauri::command]
@@ -287,14 +267,37 @@ pub async fn read_dir<R: Runtime>(
         options.as_ref().and_then(|o| o.base_dir),
     )?;
 
-    read_dir_inner(&resolved_path)
-        .map_err(|e| {
-            format!(
-                "failed to read directory at path: {} with error: {e}",
-                resolved_path.display()
-            )
+    let entries = std::fs::read_dir(&resolved_path).map_err(|e| {
+        format!(
+            "failed to read directory at path: {} with error: {e}",
+            resolved_path.display()
+        )
+    })?;
+
+    let entries = entries
+        .filter_map(|entry| {
+            let entry = entry.ok()?;
+            let name = entry.file_name().into_string().ok()?;
+            let metadata = entry.file_type();
+            macro_rules! method_or_false {
+                ($method:ident) => {
+                    if let Ok(metadata) = &metadata {
+                        metadata.$method()
+                    } else {
+                        false
+                    }
+                };
+            }
+            Some(DirEntry {
+                name,
+                is_file: method_or_false!(is_file),
+                is_directory: method_or_false!(is_dir),
+                is_symlink: method_or_false!(is_symlink),
+            })
         })
-        .map_err(Into::into)
+        .collect();
+
+    Ok(entries)
 }
 
 #[tauri::command]
@@ -369,6 +372,7 @@ pub async fn read_file<R: Runtime>(
     Ok(tauri::ipc::Response::new(contents))
 }
 
+// TODO, remove in v3, rely on `read_file` command instead
 #[tauri::command]
 pub async fn read_text_file<R: Runtime>(
     webview: Webview<R>,
@@ -376,33 +380,8 @@ pub async fn read_text_file<R: Runtime>(
     command_scope: CommandScope<Entry>,
     path: SafeFilePath,
     options: Option<BaseOptions>,
-) -> CommandResult<String> {
-    let (mut file, path) = resolve_file(
-        &webview,
-        &global_scope,
-        &command_scope,
-        path,
-        OpenOptions {
-            base: BaseOptions {
-                base_dir: options.as_ref().and_then(|o| o.base_dir),
-            },
-            options: crate::OpenOptions {
-                read: true,
-                ..Default::default()
-            },
-        },
-    )?;
-
-    let mut contents = String::new();
-
-    file.read_to_string(&mut contents).map_err(|e| {
-        format!(
-            "failed to read file as text at path: {} with error: {e}",
-            path.display()
-        )
-    })?;
-
-    Ok(contents)
+) -> CommandResult<tauri::ipc::Response> {
+    read_file(webview, global_scope, command_scope, path, options).await
 }
 
 #[tauri::command]
@@ -413,8 +392,6 @@ pub fn read_text_file_lines<R: Runtime>(
     path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
-    use std::io::BufRead;
-
     let resolved_path = resolve_path(
         &webview,
         &global_scope,
@@ -430,7 +407,7 @@ pub fn read_text_file_lines<R: Runtime>(
         )
     })?;
 
-    let lines = BufReader::new(file).lines();
+    let lines = BufReader::new(file);
     let rid = webview.resources_table().add(StdLinesResource::new(lines));
 
     Ok(rid)
@@ -440,18 +417,28 @@ pub fn read_text_file_lines<R: Runtime>(
 pub async fn read_text_file_lines_next<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
-) -> CommandResult<(Option<String>, bool)> {
+) -> CommandResult<tauri::ipc::Response> {
     let mut resource_table = webview.resources_table();
     let lines = resource_table.get::<StdLinesResource>(rid)?;
 
-    let ret = StdLinesResource::with_lock(&lines, |lines| {
-        lines.next().map(|a| (a.ok(), false)).unwrap_or_else(|| {
-            let _ = resource_table.close(rid);
-            (None, true)
-        })
+    let ret = StdLinesResource::with_lock(&lines, |lines| -> CommandResult<Vec<u8>> {
+        // This is an optimization to include wether we finished iteration or not (1 or 0)
+        // at the end of returned vector so we can use `tauri::ipc::Response`
+        // and avoid serialization overhead of separate values.
+        match lines.next() {
+            Some(Ok(mut bytes)) => {
+                bytes.push(false as u8);
+                Ok(bytes)
+            }
+            Some(Err(_)) => Ok(vec![false as u8]),
+            None => {
+                resource_table.close(rid)?;
+                Ok(vec![true as u8])
+            }
+        }
     });
 
-    Ok(ret)
+    ret.map(tauri::ipc::Response::new)
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -802,10 +789,11 @@ fn default_create_value() -> bool {
     true
 }
 
-fn write_file_inner<R: Runtime>(
+#[tauri::command]
+pub async fn write_file<R: Runtime>(
     webview: Webview<R>,
-    global_scope: &GlobalScope<Entry>,
-    command_scope: &CommandScope<Entry>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
     request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
     let data = match request.body() {
@@ -836,8 +824,8 @@ fn write_file_inner<R: Runtime>(
 
     let (mut file, path) = resolve_file(
         &webview,
-        global_scope,
-        command_scope,
+        &global_scope,
+        &command_scope,
         path,
         if let Some(opts) = options {
             OpenOptions {
@@ -880,17 +868,7 @@ fn write_file_inner<R: Runtime>(
         .map_err(Into::into)
 }
 
-#[tauri::command]
-pub async fn write_file<R: Runtime>(
-    webview: Webview<R>,
-    global_scope: GlobalScope<Entry>,
-    command_scope: CommandScope<Entry>,
-    request: tauri::ipc::Request<'_>,
-) -> CommandResult<()> {
-    write_file_inner(webview, &global_scope, &command_scope, request)
-}
-
-// TODO, in v3, remove this command and rely on `write_file` command only
+// TODO, remove in v3, rely on `write_file` command instead
 #[tauri::command]
 pub async fn write_text_file<R: Runtime>(
     webview: Webview<R>,
@@ -898,7 +876,7 @@ pub async fn write_text_file<R: Runtime>(
     command_scope: CommandScope<Entry>,
     request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
-    write_file_inner(webview, &global_scope, &command_scope, request)
+    write_file(webview, global_scope, command_scope, request).await
 }
 
 #[tauri::command]
@@ -917,6 +895,55 @@ pub fn exists<R: Runtime>(
         options.as_ref().and_then(|o| o.base_dir),
     )?;
     Ok(resolved_path.exists())
+}
+
+#[tauri::command]
+pub async fn size<R: Runtime>(
+    webview: Webview<R>,
+    global_scope: GlobalScope<Entry>,
+    command_scope: CommandScope<Entry>,
+    path: SafeFilePath,
+    options: Option<BaseOptions>,
+) -> CommandResult<u64> {
+    let resolved_path = resolve_path(
+        &webview,
+        &global_scope,
+        &command_scope,
+        path,
+        options.as_ref().and_then(|o| o.base_dir),
+    )?;
+
+    let metadata = resolved_path.metadata()?;
+
+    if metadata.is_file() {
+        Ok(metadata.len())
+    } else {
+        let size = get_dir_size(&resolved_path).map_err(|e| {
+            format!(
+                "failed to get size at path: {} with error: {e}",
+                resolved_path.display()
+            )
+        })?;
+
+        Ok(size)
+    }
+}
+
+fn get_dir_size(path: &PathBuf) -> CommandResult<u64> {
+    let mut size = 0;
+
+    for entry in std::fs::read_dir(path)? {
+        let entry = entry?;
+        let metadata = entry.metadata()?;
+
+        if metadata.is_file() {
+            size += metadata.len();
+        } else if metadata.is_dir() {
+            size += get_dir_size(&entry.path())?;
+        }
+    }
+
+    Ok(size)
 }
 
 #[cfg(not(target_os = "android"))]
@@ -964,6 +991,8 @@ pub fn resolve_file<R: Runtime>(
     path: SafeFilePath,
     open_options: OpenOptions,
 ) -> CommandResult<(File, PathBuf)> {
+    use crate::FsExt;
+
     match path {
         SafeFilePath::Url(url) => {
             let path = url.as_str().into();
@@ -996,37 +1025,78 @@ pub fn resolve_path<R: Runtime>(
         path
     };
 
+    let fs_scope = webview.state::<crate::Scope>();
+
     let scope = tauri::scope::fs::Scope::new(
         webview,
         &FsScope::Scope {
-            allow: webview
-                .fs_scope()
-                .allowed
-                .lock()
-                .unwrap()
-                .clone()
-                .into_iter()
-                .chain(global_scope.allows().iter().filter_map(|e| e.path.clone()))
+            allow: global_scope
+                .allows()
+                .iter()
+                .filter_map(|e| e.path.clone())
                 .chain(command_scope.allows().iter().filter_map(|e| e.path.clone()))
                 .collect(),
-            deny: webview
-                .fs_scope()
-                .denied
-                .lock()
-                .unwrap()
-                .clone()
-                .into_iter()
-                .chain(global_scope.denies().iter().filter_map(|e| e.path.clone()))
+            deny: global_scope
+                .denies()
+                .iter()
+                .filter_map(|e| e.path.clone())
                 .chain(command_scope.denies().iter().filter_map(|e| e.path.clone()))
                 .collect(),
-            require_literal_leading_dot: webview.fs_scope().require_literal_leading_dot,
+            require_literal_leading_dot: fs_scope.require_literal_leading_dot,
         },
     )?;
 
-    if scope.is_allowed(&path) {
+    let require_literal_leading_dot = fs_scope.require_literal_leading_dot.unwrap_or(cfg!(unix));
+
+    if is_forbidden(&fs_scope.scope, &path, require_literal_leading_dot)
+        || is_forbidden(&scope, &path, require_literal_leading_dot)
+    {
+        return Err(CommandError::Plugin(Error::PathForbidden(path)));
+    }
+
+    if fs_scope.scope.is_allowed(&path) || scope.is_allowed(&path) {
         Ok(path)
     } else {
         Err(CommandError::Plugin(Error::PathForbidden(path)))
+    }
+}
+
+fn is_forbidden<P: AsRef<Path>>(
+    scope: &tauri::fs::Scope,
+    path: P,
+    require_literal_leading_dot: bool,
+) -> bool {
+    let path = path.as_ref();
+    let path = if path.is_symlink() {
+        match std::fs::read_link(path) {
+            Ok(p) => p,
+            Err(_) => return false,
+        }
+    } else {
+        path.to_path_buf()
+    };
+    let path = if !path.exists() {
+        crate::Result::Ok(path)
+    } else {
+        std::fs::canonicalize(path).map_err(Into::into)
+    };
+
+    if let Ok(path) = path {
+        let path: PathBuf = path.components().collect();
+        scope.forbidden_patterns().iter().any(|p| {
+            p.matches_path_with(
+                &path,
+                glob::MatchOptions {
+                    // this is needed so `/dir/*` doesn't match files within subdirectories such as `/dir/subdir/file.txt`
+                    // see: <https://github.com/tauri-apps/tauri/security/advisories/GHSA-6mv3-wm7j-h4w5>
+                    require_literal_separator: true,
+                    require_literal_leading_dot,
+                    ..Default::default()
+                },
+            )
+        })
+    } else {
+        false
     }
 }
 
@@ -1045,14 +1115,38 @@ impl StdFileResource {
 
 impl Resource for StdFileResource {}
 
-struct StdLinesResource(Mutex<Lines<BufReader<File>>>);
+/// Same as [std::io::Lines] but with bytes
+struct LinesBytes<T: BufRead>(T);
+
+impl<B: BufRead> Iterator for LinesBytes<B> {
+    type Item = std::io::Result<Vec<u8>>;
+
+    fn next(&mut self) -> Option<std::io::Result<Vec<u8>>> {
+        let mut buf = Vec::new();
+        match self.0.read_until(b'\n', &mut buf) {
+            Ok(0) => None,
+            Ok(_n) => {
+                if buf.last() == Some(&b'\n') {
+                    buf.pop();
+                    if buf.last() == Some(&b'\r') {
+                        buf.pop();
+                    }
+                }
+                Some(Ok(buf))
+            }
+            Err(e) => Some(Err(e)),
+        }
+    }
+}
+
+struct StdLinesResource(Mutex<LinesBytes<BufReader<File>>>);
 
 impl StdLinesResource {
-    fn new(lines: Lines<BufReader<File>>) -> Self {
-        Self(Mutex::new(lines))
+    fn new(lines: BufReader<File>) -> Self {
+        Self(Mutex::new(LinesBytes(lines)))
     }
 
-    fn with_lock<R, F: FnMut(&mut Lines<BufReader<File>>) -> R>(&self, mut f: F) -> R {
+    fn with_lock<R, F: FnMut(&mut LinesBytes<BufReader<File>>) -> R>(&self, mut f: F) -> R {
         let mut lines = self.0.lock().unwrap();
         f(&mut lines)
     }
@@ -1151,7 +1245,12 @@ fn get_stat(metadata: std::fs::Metadata) -> FileInfo {
     }
 }
 
+#[cfg(test)]
 mod test {
+    use std::io::{BufRead, BufReader};
+
+    use super::LinesBytes;
+
     #[test]
     fn safe_file_path_parse() {
         use super::SafeFilePath;
@@ -1164,5 +1263,25 @@ mod test {
             serde_json::from_str::<SafeFilePath>("\"file:///C:/Users\""),
             Ok(SafeFilePath::Url(_))
         ));
+    }
+
+    #[test]
+    fn test_lines_bytes() {
+        let base = String::from("line 1\nline2\nline 3\nline 4");
+        let bytes = base.as_bytes();
+
+        let string1 = base.lines().collect::<String>();
+        let string2 = BufReader::new(bytes)
+            .lines()
+            .map_while(Result::ok)
+            .collect::<String>();
+        let string3 = LinesBytes(BufReader::new(bytes))
+            .flatten()
+            .flat_map(String::from_utf8)
+            .collect::<String>();
+
+        assert_eq!(string1, string2);
+        assert_eq!(string1, string3);
+        assert_eq!(string2, string3);
     }
 }

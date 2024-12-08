@@ -10,6 +10,7 @@ use crate::scope::OpenScope;
 use std::str::FromStr;
 
 /// Program to use on the [`open()`] call.
+#[deprecated(since = "2.1.0", note = "Use tauri-plugin-opener instead.")]
 pub enum Program {
     /// Use the `open` program.
     Open,
@@ -117,6 +118,7 @@ impl Program {
 ///     Ok(())
 ///   });
 /// ```
+#[deprecated(since = "2.1.0", note = "Use tauri-plugin-opener instead.")]
 pub fn open<P: AsRef<str>>(scope: &OpenScope, path: P, with: Option<Program>) -> crate::Result<()> {
     scope.open(path.as_ref(), with).map_err(Into::into)
 }

@@ -27,7 +27,7 @@ tauri-plugin = { workspace = true, features = ["build"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 thiserror = { workspace = true }
 dunce = { workspace = true }
 tokio = { version = "1", features = ["sync", "time", "macros"] }

@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/autostart/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/autostart)
-//!
 //! Automatically launch your application at startup. Supports Windows, Mac (via AppleScript or Launch Agent), and Linux.
 
 #![doc(
@@ -13,8 +11,6 @@
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 
 use auto_launch::{AutoLaunch, AutoLaunchBuilder};
-#[cfg(target_os = "macos")]
-use log::info;
 use serde::{ser::Serializer, Serialize};
 use tauri::{
     command,
@@ -135,7 +131,6 @@ pub fn init<R: Runtime>(
                     } else {
                         exe_path
                     };
-                info!("auto_start path {}", &app_path);
                 builder.set_app_path(&app_path);
             }
             #[cfg(target_os = "linux")]

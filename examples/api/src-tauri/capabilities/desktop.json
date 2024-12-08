@@ -9,6 +9,8 @@
     "updater:default",
     "global-shortcut:allow-unregister",
     "global-shortcut:allow-register",
-    "global-shortcut:allow-unregister-all"
+    "global-shortcut:allow-unregister-all",
+    { "identifier": "fs:allow-watch", "allow": ["*", "**/*"] },
+    "fs:allow-unwatch"
   ]
 }

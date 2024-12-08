@@ -34,7 +34,7 @@ pub fn init<R: Runtime>(cb: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
                             listen_for_other_instances(&socket, app.clone(), cb);
                         }
                         _ => {
-                            log::debug!(
+                            tracing::debug!(
                                 "single_instance failed to notify - launching normally: {}",
                                 e
                             );
@@ -108,11 +108,13 @@ fn listen_for_other_instances<A: Runtime>(
                                         s.split('\0').map(String::from).collect();
                                     cb(app.app_handle(), args, cwd.clone());
                                 }
-                                Err(e) => log::debug!("single_instance failed to be notified: {e}"),
+                                Err(e) => {
+                                    tracing::debug!("single_instance failed to be notified: {e}")
+                                }
                             }
                         }
                         Err(err) => {
-                            log::debug!("single_instance failed to be notified: {}", err);
+                            tracing::debug!("single_instance failed to be notified: {}", err);
                             continue;
                         }
                     }
@@ -120,7 +122,7 @@ fn listen_for_other_instances<A: Runtime>(
             });
         }
         Err(err) => {
-            log::error!(
+            tracing::error!(
                 "single_instance failed to listen to other processes - launching normally: {}",
                 err
             );

@@ -38,7 +38,7 @@ tauri-plugin-localhost = { git = "https://github.com/tauri-apps/plugins-workspac
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 use tauri::{Manager, window::WindowBuilder, WindowUrl};

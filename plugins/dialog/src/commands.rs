@@ -143,7 +143,7 @@ pub(crate) async fn open<R: Runtime>(
                     for folder in folders {
                         if let Ok(path) = folder.clone().into_path() {
                             if let Some(s) = window.try_fs_scope() {
-                                s.allow_directory(&path, options.recursive);
+                                s.allow_directory(&path, options.recursive)?;
                             }
                             tauri_scope.allow_directory(&path, options.directory)?;
                         }
@@ -157,7 +157,7 @@ pub(crate) async fn open<R: Runtime>(
                 if let Some(folder) = &folder {
                     if let Ok(path) = folder.clone().into_path() {
                         if let Some(s) = window.try_fs_scope() {
-                            s.allow_directory(&path, options.recursive);
+                            s.allow_directory(&path, options.recursive)?;
                         }
                         tauri_scope.allow_directory(&path, options.directory)?;
                     }
@@ -175,7 +175,7 @@ pub(crate) async fn open<R: Runtime>(
             for file in files {
                 if let Ok(path) = file.clone().into_path() {
                     if let Some(s) = window.try_fs_scope() {
-                        s.allow_file(&path);
+                        s.allow_file(&path)?;
                     }
 
                     tauri_scope.allow_file(&path)?;
@@ -190,7 +190,7 @@ pub(crate) async fn open<R: Runtime>(
         if let Some(file) = &file {
             if let Ok(path) = file.clone().into_path() {
                 if let Some(s) = window.try_fs_scope() {
-                    s.allow_file(&path);
+                    s.allow_file(&path)?;
                 }
                 tauri_scope.allow_file(&path)?;
             }
@@ -232,7 +232,7 @@ pub(crate) async fn save<R: Runtime>(
     if let Some(p) = &path {
         if let Ok(path) = p.clone().into_path() {
             if let Some(s) = window.try_fs_scope() {
-                s.allow_file(&path);
+                s.allow_file(&path)?;
             }
             tauri_scope.allow_file(&path)?;
         }

@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-deep-link"
-version = "2.0.1"
+version = "2.0.2"
 description = "Set your Tauri application as the default handler for an URL"
 authors = { workspace = true }
 license = { workspace = true }
@@ -32,7 +32,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
 tauri-utils = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 thiserror = { workspace = true }
 url = { workspace = true }
 

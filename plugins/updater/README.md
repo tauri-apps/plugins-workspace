@@ -55,7 +55,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-updater#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {
@@ -81,6 +81,8 @@ if (update?.available) {
   await relaunch()
 }
 ```
+
+Note that for these APIs to work you have to properly configure the updater first and generate updater artifacts. Please refer to the [guide on our website](https://v2.tauri.app/plugin/updater/) for this.
 
 ## Contributing
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.4]
+
+- [`a3b553dd`](https://github.com/tauri-apps/plugins-workspace/commit/a3b553ddb403771aa699362c4e69a064b7731da5) ([#2079](https://github.com/tauri-apps/plugins-workspace/pull/2079) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add tracing logs for requestes and responses behind `tracing` feature flag.
+
+### Dependencies
+
+- Upgraded to `fs@2.1.0`
+
 ## \[2.0.3]
 
 ### Dependencies

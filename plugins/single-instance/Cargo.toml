@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-single-instance"
-version = "2.0.1"
+version = "2.0.2"
 description = "Ensure a single instance of your tauri app is running."
 authors = { workspace = true }
 license = { workspace = true }
@@ -24,9 +24,9 @@ ios = { level = "none", notes = "" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 thiserror = { workspace = true }
-tauri-plugin-deep-link = { path = "../deep-link", version = "2.0.1", optional = true }
+tauri-plugin-deep-link = { path = "../deep-link", version = "2.0.2", optional = true }
 semver = { version = "1", optional = true }
 
 [target."cfg(target_os = \"windows\")".dependencies.windows-sys]
@@ -42,7 +42,7 @@ features = [
 ]
 
 [target."cfg(target_os = \"linux\")".dependencies]
-zbus = "4"
+zbus = { workspace = true }
 
 [features]
 semver = ["dep:semver"]

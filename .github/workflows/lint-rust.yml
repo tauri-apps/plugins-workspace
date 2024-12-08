@@ -66,6 +66,9 @@ jobs:
             tauri-plugin-global-shortcut:
               - .github/workflows/lint-rust.yml
               - plugins/global-shortcut/**
+            tauri-plugin-opener:
+              - .github/workflows/lint-rust.yml
+              - plugins/opener/**
             tauri-plugin-haptics:
               - .github/workflows/lint-rust.yml
               - plugins/haptics/**

@@ -5,9 +5,19 @@
 [[permission]]
 identifier = "allow-write-file"
 description = "Enables the write_file command without any pre-configured scope."
-commands.allow = ["write_file"]
+
+[permission.commands]
+allow = [
+    "write_file",
+    "open",
+    "write",
+]
+deny = []
 
 [[permission]]
 identifier = "deny-write-file"
 description = "Denies the write_file command without any pre-configured scope."
-commands.deny = ["write_file"]
+
+[permission.commands]
+allow = []
+deny = ["write_file"]

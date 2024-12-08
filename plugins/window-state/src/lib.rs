@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/window-state/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/window-state)
-//!
 //! Save window positions and sizes and restore them when the app is reopened.
 
 #![doc(
@@ -471,13 +469,23 @@ impl Builder {
                             .0
                             .try_lock()
                             .is_ok()
-                            && !window_clone.is_minimized().unwrap_or_default()
-                            && !window_clone.is_maximized().unwrap_or_default()
                         {
-                            let mut c = cache.lock().unwrap();
-                            if let Some(state) = c.get_mut(&label) {
-                                state.width = size.width;
-                                state.height = size.height;
+                            // TODO: Remove once https://github.com/tauri-apps/tauri/issues/5812 is resolved.
+                            let is_maximized = if cfg!(target_os = "macos")
+                                && (!window_clone.is_decorated().unwrap_or_default()
+                                    || !window_clone.is_resizable().unwrap_or_default())
+                            {
+                                false
+                            } else {
+                                window_clone.is_maximized().unwrap_or_default()
+                            };
+
+                            if !window_clone.is_minimized().unwrap_or_default() && !is_maximized {
+                                let mut c = cache.lock().unwrap();
+                                if let Some(state) = c.get_mut(&label) {
+                                    state.width = size.width;
+                                    state.height = size.height;
+                                }
                             }
                         }
                     }
