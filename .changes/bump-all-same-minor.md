@@ -1,61 +1,61 @@
 ---
-autostart
-barcode-scanner
-biometric
-cli
-clipboard-manager
-deep-link
-dialog
-fs
-geolocation
-global-shortcut
-haptics
-http
-localhost
-log
-nfc
-notification
-opener
-os
-persisted-scope
-positioner
-process
-shell
-single-instance
-sql
-store
-stronghold
-updater
-upload
-websocket
-window-state
-autostart-js
-barcode-scanner-js
-biometric-js
-cli-js
-clipboard-manager-js
-deep-link-js
-dialog-js
-fs-js
-geolocation-js
-global-shortcut-js
-haptics-js
-http-js
-log-js
-nfc-js
-notification-js
-opener-js
-os-js
-positioner-js
-process-js
-shell-js
-sql-js
-store-js
-stronghold-js
-updater-js
-upload-js
-websocket-js
-window-state-js
+autostart: minor
+barcode-scanner: minor
+biometric: minor
+cli: minor
+clipboard-manager: minor
+deep-link: minor
+dialog: minor
+fs: minor
+geolocation: minor
+global-shortcut: minor
+haptics: minor
+http: minor
+localhost: minor
+log: minor
+nfc: minor
+notification: minor
+opener: minor
+os: minor
+persisted-scope: minor
+positioner: minor
+process: minor
+shell: minor
+single-instance: minor
+sql: minor
+store: minor
+stronghold: minor
+updater: minor
+upload: minor
+websocket: minor
+window-state: minor
+autostart-js: minor
+barcode-scanner-js: minor
+biometric-js: minor
+cli-js: minor
+clipboard-manager-js: minor
+deep-link-js: minor
+dialog-js: minor
+fs-js: minor
+geolocation-js: minor
+global-shortcut-js: minor
+haptics-js: minor
+http-js: minor
+log-js: minor
+nfc-js: minor
+notification-js: minor
+opener-js: minor
+os-js: minor
+positioner-js: minor
+process-js: minor
+shell-js: minor
+sql-js: minor
+store-js: minor
+stronghold-js: minor
+updater-js: minor
+upload-js: minor
+websocket-js: minor
+window-state-js: minor
 ---
 
 Bumped all plugins to `v2.3.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
