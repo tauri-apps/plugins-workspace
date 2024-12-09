@@ -1,0 +1,82 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+# Scopes Section
+# This section contains scopes, which define file level access
+
+[[permission]]
+identifier = "scope-temp-recursive"
+description = "This scope permits recursive access to the complete `$TEMP` folder, including sub directories and files."
+
+[[permission.scope.allow]]
+path = "$TEMP"
+[[permission.scope.allow]]
+path = "$TEMP/**"
+
+[[permission]]
+identifier = "scope-temp"
+description = "This scope permits access to all files and list content of top level directories in the `$TEMP` folder."
+
+[[permission.scope.allow]]
+path = "$TEMP"
+[[permission.scope.allow]]
+path = "$TEMP/*"
+
+[[permission]]
+identifier = "scope-temp-index"
+description = "This scope permits to list all files and folders in the `$TEMP`folder."
+
+[[permission.scope.allow]]
+path = "$TEMP"
+
+# Sets Section
+# This section combines the scope elements with enablement of commands
+
+[[set]]
+identifier = "allow-temp-read-recursive"
+description = "This allows full recursive read access to the complete `$TEMP` folder, files and subdirectories."
+permissions = [
+    "read-all",
+    "scope-temp-recursive"
+]
+
+[[set]]
+identifier = "allow-temp-write-recursive"
+description = "This allows full recursive write access to the complete `$TEMP` folder, files and subdirectories."
+permissions = [
+    "write-all",
+    "scope-temp-recursive"
+]
+
+[[set]]
+identifier = "allow-temp-read"
+description = "This allows non-recursive read access to the `$TEMP` folder."
+permissions = [
+    "read-all",
+    "scope-temp"
+]
+
+[[set]]
+identifier = "allow-temp-write"
+description = "This allows non-recursive write access to the `$TEMP` folder."
+permissions = [
+    "write-all",
+    "scope-temp"
+]
+
+[[set]]
+identifier = "allow-temp-meta-recursive"
+description = "This allows full recursive read access to metadata of the `$TEMP` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-temp-recursive"
+]
+
+[[set]]
+identifier = "allow-temp-meta"
+description = "This allows non-recursive read access to metadata of the `$TEMP` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-temp-index"
+]

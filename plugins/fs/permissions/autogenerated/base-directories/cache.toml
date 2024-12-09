@@ -1,0 +1,82 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+# Scopes Section
+# This section contains scopes, which define file level access
+
+[[permission]]
+identifier = "scope-cache-recursive"
+description = "This scope permits recursive access to the complete `$CACHE` folder, including sub directories and files."
+
+[[permission.scope.allow]]
+path = "$CACHE"
+[[permission.scope.allow]]
+path = "$CACHE/**"
+
+[[permission]]
+identifier = "scope-cache"
+description = "This scope permits access to all files and list content of top level directories in the `$CACHE` folder."
+
+[[permission.scope.allow]]
+path = "$CACHE"
+[[permission.scope.allow]]
+path = "$CACHE/*"
+
+[[permission]]
+identifier = "scope-cache-index"
+description = "This scope permits to list all files and folders in the `$CACHE`folder."
+
+[[permission.scope.allow]]
+path = "$CACHE"
+
+# Sets Section
+# This section combines the scope elements with enablement of commands
+
+[[set]]
+identifier = "allow-cache-read-recursive"
+description = "This allows full recursive read access to the complete `$CACHE` folder, files and subdirectories."
+permissions = [
+    "read-all",
+    "scope-cache-recursive"
+]
+
+[[set]]
+identifier = "allow-cache-write-recursive"
+description = "This allows full recursive write access to the complete `$CACHE` folder, files and subdirectories."
+permissions = [
+    "write-all",
+    "scope-cache-recursive"
+]
+
+[[set]]
+identifier = "allow-cache-read"
+description = "This allows non-recursive read access to the `$CACHE` folder."
+permissions = [
+    "read-all",
+    "scope-cache"
+]
+
+[[set]]
+identifier = "allow-cache-write"
+description = "This allows non-recursive write access to the `$CACHE` folder."
+permissions = [
+    "write-all",
+    "scope-cache"
+]
+
+[[set]]
+identifier = "allow-cache-meta-recursive"
+description = "This allows full recursive read access to metadata of the `$CACHE` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-cache-recursive"
+]
+
+[[set]]
+identifier = "allow-cache-meta"
+description = "This allows non-recursive read access to metadata of the `$CACHE` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-cache-index"
+]

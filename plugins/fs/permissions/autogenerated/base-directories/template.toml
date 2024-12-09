@@ -1,0 +1,82 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+# Scopes Section
+# This section contains scopes, which define file level access
+
+[[permission]]
+identifier = "scope-template-recursive"
+description = "This scope permits recursive access to the complete `$TEMPLATE` folder, including sub directories and files."
+
+[[permission.scope.allow]]
+path = "$TEMPLATE"
+[[permission.scope.allow]]
+path = "$TEMPLATE/**"
+
+[[permission]]
+identifier = "scope-template"
+description = "This scope permits access to all files and list content of top level directories in the `$TEMPLATE` folder."
+
+[[permission.scope.allow]]
+path = "$TEMPLATE"
+[[permission.scope.allow]]
+path = "$TEMPLATE/*"
+
+[[permission]]
+identifier = "scope-template-index"
+description = "This scope permits to list all files and folders in the `$TEMPLATE`folder."
+
+[[permission.scope.allow]]
+path = "$TEMPLATE"
+
+# Sets Section
+# This section combines the scope elements with enablement of commands
+
+[[set]]
+identifier = "allow-template-read-recursive"
+description = "This allows full recursive read access to the complete `$TEMPLATE` folder, files and subdirectories."
+permissions = [
+    "read-all",
+    "scope-template-recursive"
+]
+
+[[set]]
+identifier = "allow-template-write-recursive"
+description = "This allows full recursive write access to the complete `$TEMPLATE` folder, files and subdirectories."
+permissions = [
+    "write-all",
+    "scope-template-recursive"
+]
+
+[[set]]
+identifier = "allow-template-read"
+description = "This allows non-recursive read access to the `$TEMPLATE` folder."
+permissions = [
+    "read-all",
+    "scope-template"
+]
+
+[[set]]
+identifier = "allow-template-write"
+description = "This allows non-recursive write access to the `$TEMPLATE` folder."
+permissions = [
+    "write-all",
+    "scope-template"
+]
+
+[[set]]
+identifier = "allow-template-meta-recursive"
+description = "This allows full recursive read access to metadata of the `$TEMPLATE` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-template-recursive"
+]
+
+[[set]]
+identifier = "allow-template-meta"
+description = "This allows non-recursive read access to metadata of the `$TEMPLATE` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-template-index"
+]
