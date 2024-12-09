@@ -66,7 +66,7 @@ impl CookieStoreMutex {
 
     pub fn save<W: std::io::Write>(&self, writer: &mut W) -> cookie_store::Result<()> {
         let store = self.lock().expect("poisoned cookie jar mutex");
-        cookie_store::serde::save(&store, writer, |c| serde_json::to_string(c))
+        cookie_store::serde::save(&store, writer, serde_json::to_string)
     }
 }
 
