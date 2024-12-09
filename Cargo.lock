@@ -5042,18 +5042,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "reqwest_cookie_store"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0b36498c7452f11b1833900f31fbb01fc46be20992a50269c88cf59d79f54e9"
-dependencies = [
- "bytes",
- "cookie_store",
- "reqwest",
- "url",
-]
-
-[[package]]
 name = "rfc6979"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6632,11 +6620,12 @@ dependencies = [
 name = "tauri-plugin-http"
 version = "2.0.4"
 dependencies = [
+ "bytes",
+ "cookie_store",
  "data-url",
  "http",
  "regex",
  "reqwest",
- "reqwest_cookie_store",
  "schemars",
  "serde",
  "serde_json",

@@ -14,13 +14,15 @@ pub use error::{Error, Result};
 
 mod commands;
 mod error;
+#[cfg(feature = "cookies")]
+mod reqwest_cookie_store;
 mod scope;
 
 pub(crate) struct Http {
     #[cfg(feature = "cookies")]
     cookies_jar_path: std::path::PathBuf,
     #[cfg(feature = "cookies")]
-    cookies_jar: std::sync::Arc<reqwest_cookie_store::CookieStoreMutex>,
+    cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
@@ -28,7 +30,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .setup(|app, _| {
             #[cfg(feature = "cookies")]
             let (cookies_jar_path, cookies_jar) = {
-                use reqwest_cookie_store::*;
+                use crate::reqwest_cookie_store::*;
                 use std::fs::File;
                 use std::io::BufReader;
                 use std::sync::Arc;
@@ -44,9 +46,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     .open(&path)?;
 
                 let reader = BufReader::new(file);
-                let store = CookieStore::load_json(reader).map_err(|e| e.to_string())?;
+                let store = CookieStoreMutex::load(reader).map_err(|e| e.to_string())?;
 
-                (path, Arc::new(CookieStoreMutex::new(store)))
+                (path, Arc::new(store))
             };
 
             let state = Http {
@@ -69,9 +71,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 let state = app.state::<Http>();
 
                 if let Ok(file) = File::create(&state.cookies_jar_path) {
-                    let store = state.cookies_jar.lock().expect("poisoned cookie jar mutex");
                     let mut writer = BufWriter::new(file);
-                    let _ = store.save_json(&mut writer);
+                    let _ = state.cookies_jar.save(&mut writer);
                 }
             }
         })
