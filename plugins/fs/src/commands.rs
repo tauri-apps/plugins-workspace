@@ -393,7 +393,7 @@ pub async fn read_file<R: Runtime>(
         global_scope,
         command_scope,
         path,
-        options
+        options,
     )
     .await
 }
@@ -413,7 +413,7 @@ pub async fn read_text_file<R: Runtime>(
         global_scope,
         command_scope,
         path,
-        options
+        options,
     )
     .await
 }
