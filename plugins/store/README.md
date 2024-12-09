@@ -128,6 +128,7 @@ fn main() {
             // Note that values must be serde_json::Value instances,
             // otherwise, they will not be compatible with the JavaScript bindings.
             store.set("a".to_string(), json!("b"));
+            Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -97,9 +97,10 @@ fn main() {
     tauri::Builder::default()
         .setup(|app| {
             let opener = app.opener();
-            opener.open_url("https://example.com", Some("firefox"));
-            opener.open_path("/path/to/file", Some("firefox"));
-            opener.reveal_item_in_dir("/path/to/file");
+            opener.open_url("https://example.com", Some("firefox"))?;
+            opener.open_path("/path/to/file", Some("firefox"))?;
+            opener.reveal_item_in_dir("/path/to/file")?;
+            Ok(())
         })
         .plugin(tauri_plugin_opener::init())
         .run(tauri::generate_context!())
