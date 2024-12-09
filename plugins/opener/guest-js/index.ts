@@ -71,7 +71,7 @@ export async function openPath(path: string, openWith?: string): Promise<void> {
 }
 
 /**
- * Reveal a path the system's default explorer.
+ * Reveal a path with the system's default explorer.
  *
  * #### Platform-specific:
  *
