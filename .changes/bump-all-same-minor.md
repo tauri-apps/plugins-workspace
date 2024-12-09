@@ -26,7 +26,6 @@ sql: minor
 store: minor
 stronghold: minor
 updater: minor
-upload: minor
 websocket: minor
 window-state: minor
 autostart-js: minor
@@ -53,9 +52,8 @@ sql-js: minor
 store-js: minor
 stronghold-js: minor
 updater-js: minor
-upload-js: minor
 websocket-js: minor
 window-state-js: minor
 ---
 
-Bumped all plugins to `v2.3.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
+Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
