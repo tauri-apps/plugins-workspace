@@ -387,7 +387,7 @@ pub async fn read_file<R: Runtime>(
     path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<tauri::ipc::Response> {
-    read_file_inner("read-file", global_scope, command_scope, path, options).await
+    read_file_inner("read-file", webview, global_scope, command_scope, path, options).await
 }
 
 // TODO, remove in v3, rely on `read_file` command instead
@@ -399,7 +399,7 @@ pub async fn read_text_file<R: Runtime>(
     path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<tauri::ipc::Response> {
-    read_file_inner("read-text-file", global_scope, command_scope, path, options).await
+    read_file_inner("read-text-file", webview, global_scope, command_scope, path, options).await
 }
 
 #[tauri::command]
