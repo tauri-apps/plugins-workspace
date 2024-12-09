@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.0.2]
+
+- [`69d508ee`](https://github.com/tauri-apps/plugins-workspace/commit/69d508ee6910ae4064f2398fbacb803b3944d6a8) ([#2157](https://github.com/tauri-apps/plugins-workspace/pull/2157) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Make log functions omit caller location when failed to parse it instead of throwing
+
 ## \[2.0.1]
 
 - [`371a2f73`](https://github.com/tauri-apps/plugins-workspace/commit/371a2f7361e0b91cf66f1287ffb18b34414a6cb8) ([#2021](https://github.com/tauri-apps/plugins-workspace/pull/2021) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Make webview log target more consistent that it always starts with `webview`

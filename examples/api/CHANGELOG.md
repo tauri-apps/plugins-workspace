@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.4]
+
+### Dependencies
+
+- Upgraded to `log-js@2.0.2`
+
 ## \[2.0.3]
 
 ### Dependencies
