@@ -73,10 +73,10 @@ importers:
         specifier: 2.0.1
         version: link:../../plugins/clipboard-manager
       '@tauri-apps/plugin-dialog':
-        specifier: 2.0.1
+        specifier: 2.0.2
         version: link:../../plugins/dialog
       '@tauri-apps/plugin-fs':
-        specifier: 2.0.3
+        specifier: 2.0.4
         version: link:../../plugins/fs
       '@tauri-apps/plugin-geolocation':
         specifier: 2.0.0
@@ -88,7 +88,7 @@ importers:
         specifier: 2.0.0
         version: link:../../plugins/haptics
       '@tauri-apps/plugin-http':
-        specifier: 2.0.1
+        specifier: 2.0.2
         version: link:../../plugins/http
       '@tauri-apps/plugin-nfc':
         specifier: 2.0.0

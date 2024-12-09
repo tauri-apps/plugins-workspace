@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.5]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.0.4`
+- Upgraded to `dialog-js@2.0.2`
+- Upgraded to `http-js@2.0.2`
+
 ## \[2.0.4]
 
 ### Dependencies
