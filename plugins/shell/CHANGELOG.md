@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.1.0]
+
+- [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
+
 ## \[2.0.1]
 
 - [`51ddf6a7`](https://github.com/tauri-apps/plugins-workspace/commit/51ddf6a71544acfb261ffc9393dab1342da0a219) ([#1881](https://github.com/tauri-apps/plugins-workspace/pull/1881) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) On Windows, Fix `open` JS API hanging and freezing the app.

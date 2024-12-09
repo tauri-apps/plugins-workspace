@@ -61,58 +61,58 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       '@tauri-apps/plugin-barcode-scanner':
-        specifier: 2.0.0
+        specifier: 2.1.0
         version: link:../../plugins/barcode-scanner
       '@tauri-apps/plugin-biometric':
-        specifier: 2.0.0
+        specifier: 2.1.0
         version: link:../../plugins/biometric
       '@tauri-apps/plugin-cli':
-        specifier: 2.0.0
+        specifier: 2.1.0
         version: link:../../plugins/cli
       '@tauri-apps/plugin-clipboard-manager':
-        specifier: 2.0.1
+        specifier: 2.1.0
         version: link:../../plugins/clipboard-manager
       '@tauri-apps/plugin-dialog':
-        specifier: 2.0.2
+        specifier: 2.1.0
         version: link:../../plugins/dialog
       '@tauri-apps/plugin-fs':
-        specifier: 2.0.4
+        specifier: 2.1.0
         version: link:../../plugins/fs
       '@tauri-apps/plugin-geolocation':
         specifier: 2.0.0
-        version: link:../../plugins/geolocation
+        version: 2.0.0
       '@tauri-apps/plugin-global-shortcut':
-        specifier: 2.0.0
+        specifier: 2.1.0
         version: link:../../plugins/global-shortcut
       '@tauri-apps/plugin-haptics':
         specifier: 2.0.0
-        version: link:../../plugins/haptics
+        version: 2.0.0
       '@tauri-apps/plugin-http':
-        specifier: 2.0.2
+        specifier: 2.1.0
         version: link:../../plugins/http
       '@tauri-apps/plugin-nfc':
-        specifier: 2.0.0
+        specifier: 2.1.0
         version: link:../../plugins/nfc
       '@tauri-apps/plugin-notification':
-        specifier: 2.0.0
+        specifier: 2.1.0
         version: link:../../plugins/notification
       '@tauri-apps/plugin-opener':
-        specifier: 2.0.0
+        specifier: 2.1.0
         version: link:../../plugins/opener
       '@tauri-apps/plugin-os':
-        specifier: 2.0.0
+        specifier: 2.1.0
         version: link:../../plugins/os
       '@tauri-apps/plugin-process':
-        specifier: 2.0.0
+        specifier: 2.1.0
         version: link:../../plugins/process
       '@tauri-apps/plugin-shell':
-        specifier: 2.0.1
+        specifier: 2.1.0
         version: link:../../plugins/shell
       '@tauri-apps/plugin-store':
-        specifier: 2.1.0
+        specifier: 2.2.0
         version: link:../../plugins/store
       '@tauri-apps/plugin-updater':
-        specifier: 2.0.0
+        specifier: 2.1.0
         version: link:../../plugins/updater
       '@zerodevx/svelte-json-view':
         specifier: 1.0.11
@@ -185,7 +185,7 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       '@tauri-apps/plugin-deep-link':
-        specifier: 2.0.1
+        specifier: 2.1.0
         version: link:../..
     devDependencies:
       '@tauri-apps/cli':
@@ -1054,6 +1054,12 @@ packages:
     resolution: {integrity: sha512-K2VhcKqBhAeS5pNOVdnR/xQRU6jwpgmkSL2ejHXcl0m+kaTggT0WRDQnFtPq6NljA7aE03cvwsbCAoFG7vtkJw==}
     engines: {node: '>= 10'}
     hasBin: true
+
+  '@tauri-apps/plugin-geolocation@2.0.0':
+    resolution: {integrity: sha512-Vw/SHDh8kIPuXPph/sN9hV/GRct+qf+FS8GI/FWC7Uth+JVT2LEalpHKmnBKVEW8ouYS/M+GY55GNfd5qmbF9g==}
+
+  '@tauri-apps/plugin-haptics@2.0.0':
+    resolution: {integrity: sha512-/cD9KjzvbRCbsufCiexzB11flOjjN1qZmd+Whs+21B24av3M/MhBNTmahYYDRVXjZQaoaVKJ1wTBn+6m4G6C2Q==}
 
   '@types/eslint@9.6.1':
     resolution: {integrity: sha512-FXx2pKgId/WyYo2jXw63kk7/+TY7u7AziEJxJAnSFzHlqTAS3Ync6SvgYAN/k4/PQpnnVuzoMuVnByKK2qp0ag==}
@@ -2455,9 +2461,9 @@ snapshots:
       - encoding
       - mocha
 
-  '@covector/assemble@0.12.0':
+  '@covector/assemble@0.12.0(mocha@10.8.2)':
     dependencies:
-      '@covector/command': 0.8.0
+      '@covector/command': 0.8.0(mocha@10.8.2)
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.8.2)
       js-yaml: 4.1.0
@@ -2468,9 +2474,10 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
+      - mocha
       - supports-color
 
-  '@covector/changelog@0.12.0':
+  '@covector/changelog@0.12.0(mocha@10.8.2)':
     dependencies:
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.8.2)
@@ -2480,14 +2487,16 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
+      - mocha
       - supports-color
 
-  '@covector/command@0.8.0':
+  '@covector/command@0.8.0(mocha@10.8.2)':
     dependencies:
-      '@effection/process': 2.1.4
+      '@effection/process': 2.1.4(mocha@10.8.2)
       effection: 2.0.8(mocha@10.8.2)
     transitivePeerDependencies:
       - encoding
+      - mocha
 
   '@covector/files@0.8.0':
     dependencies:
@@ -2534,10 +2543,8 @@ snapshots:
     dependencies:
       effection: 2.0.8(mocha@10.8.2)
       mocha: 10.8.2
-    transitivePeerDependencies:
-      - encoding
 
-  '@effection/process@2.1.4':
+  '@effection/process@2.1.4(mocha@10.8.2)':
     dependencies:
       cross-spawn: 7.0.6
       ctrlc-windows: 2.1.0
@@ -2545,6 +2552,7 @@ snapshots:
       shellwords: 0.1.1
     transitivePeerDependencies:
       - encoding
+      - mocha
 
   '@effection/stream@2.0.6':
     dependencies:
@@ -2967,6 +2975,14 @@ snapshots:
       '@tauri-apps/cli-win32-arm64-msvc': 2.1.0
       '@tauri-apps/cli-win32-ia32-msvc': 2.1.0
       '@tauri-apps/cli-win32-x64-msvc': 2.1.0
+
+  '@tauri-apps/plugin-geolocation@2.0.0':
+    dependencies:
+      '@tauri-apps/api': 2.1.1
+
+  '@tauri-apps/plugin-haptics@2.0.0':
+    dependencies:
+      '@tauri-apps/api': 2.1.1
 
   '@types/eslint@9.6.1':
     dependencies:
@@ -3422,9 +3438,9 @@ snapshots:
     dependencies:
       '@clack/prompts': 0.7.0
       '@covector/apply': 0.10.0(mocha@10.8.2)
-      '@covector/assemble': 0.12.0
-      '@covector/changelog': 0.12.0
-      '@covector/command': 0.8.0
+      '@covector/assemble': 0.12.0(mocha@10.8.2)
+      '@covector/changelog': 0.12.0(mocha@10.8.2)
+      '@covector/command': 0.8.0(mocha@10.8.2)
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.8.2)
       globby: 11.1.0
