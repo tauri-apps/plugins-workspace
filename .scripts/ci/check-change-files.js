@@ -14,7 +14,7 @@ import { join } from 'path'
   'deep-link-example-js'
 ] */
 
-const rsOnly = ['localhost', 'persisted-scope']
+const rsOnly = ['localhost', 'persisted-scope', 'single-instance']
 
 function checkChangeFiles(changeFiles) {
   let code = 0
