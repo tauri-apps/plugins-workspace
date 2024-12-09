@@ -343,6 +343,7 @@ pub async fn read<R: Runtime>(
 }
 
 async fn read_file_inner<R: Runtime>(
+    permission: &str,
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
@@ -350,7 +351,7 @@ async fn read_file_inner<R: Runtime>(
     options: Option<BaseOptions>,
 ) -> CommandResult<tauri::ipc::Response> {
     let (mut file, path) = resolve_file(
-        "read-file",
+        permission,
         &webview,
         &global_scope,
         &command_scope,
