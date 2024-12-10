@@ -15,7 +15,7 @@
     "@tauri-apps/plugin-biometric": "2.1.0",
     "@tauri-apps/plugin-cli": "2.1.0",
     "@tauri-apps/plugin-clipboard-manager": "2.1.0",
-    "@tauri-apps/plugin-dialog": "2.1.0",
+    "@tauri-apps/plugin-dialog": "2.2.0",
     "@tauri-apps/plugin-fs": "2.1.0",
     "@tauri-apps/plugin-geolocation": "2.0.0",
     "@tauri-apps/plugin-global-shortcut": "2.1.0",
