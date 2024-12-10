@@ -1,5 +1,17 @@
 # Changelog
 
+## \[2.2.0]
+
+- [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
+
+## \[2.0.2]
+
+- [`69d508ee`](https://github.com/tauri-apps/plugins-workspace/commit/69d508ee6910ae4064f2398fbacb803b3944d6a8) ([#2157](https://github.com/tauri-apps/plugins-workspace/pull/2157) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Make log functions omit caller location when failed to parse it instead of throwing
+
+## \[2.0.1]
+
+- [`371a2f73`](https://github.com/tauri-apps/plugins-workspace/commit/371a2f7361e0b91cf66f1287ffb18b34414a6cb8) ([#2021](https://github.com/tauri-apps/plugins-workspace/pull/2021) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Make webview log target more consistent that it always starts with `webview`
+
 ## \[2.0.2]
 
 - [`606fa08d`](https://github.com/tauri-apps/plugins-workspace/commit/606fa08dae1acd074b961fb360623f4c86f13ee8) ([#1997](https://github.com/tauri-apps/plugins-workspace/pull/1997) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) **Potentially breaking:** Updated `fern` from 0.6 to 0.7. This is technically a breaking change because `fern` is re-exported in `tauri-plugin-log`.
@@ -100,15 +112,3 @@
 ## \[2.0.0-alpha.0]
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  te to alpha.11.
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  v2 alpha release!
-  https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  ase!
-  https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!

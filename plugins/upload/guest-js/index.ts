@@ -45,7 +45,8 @@ async function download(
   url: string,
   filePath: string,
   progressHandler?: ProgressHandler,
-  headers?: Map<string, string>
+  headers?: Map<string, string>,
+  body?: string
 ): Promise<void> {
   const ids = new Uint32Array(1)
   window.crypto.getRandomValues(ids)
@@ -61,7 +62,8 @@ async function download(
     url,
     filePath,
     headers: headers ?? {},
-    onProgress
+    onProgress,
+    body
   })
 }
 

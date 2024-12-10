@@ -110,7 +110,7 @@ struct InitJavascript<'a> {
     exe_extension: &'a str,
 }
 
-impl<'a> InitJavascript<'a> {
+impl InitJavascript<'_> {
     fn new() -> Self {
         Self {
             #[cfg(windows)]

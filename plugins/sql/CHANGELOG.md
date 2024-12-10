@@ -1,5 +1,17 @@
 # Changelog
 
+## \[2.2.0]
+
+- [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
+
+## \[2.0.2]
+
+- [`31956469`](https://github.com/tauri-apps/plugins-workspace/commit/319564699638c080b73d506bcaad186ecc4a8236) ([#1928](https://github.com/tauri-apps/plugins-workspace/pull/1928) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed the QueryResult typing by marking `lastInsertId` as optional to reflect postgres-only changes made in the 2.0.0 release.
+
+## \[2.0.3]
+
+- [`90ef77c8`](https://github.com/tauri-apps/plugins-workspace/commit/90ef77c8723ac9d0ba7bd3b52a80a2b14843ff99) ([#2038](https://github.com/tauri-apps/plugins-workspace/pull/2038) by [@johncarmack1984](https://github.com/tauri-apps/plugins-workspace/../../johncarmack1984)) Allow blocking on async code without creating a nested runtime.
+
 ## \[2.0.1]
 
 - [`0ca4cc91`](https://github.com/tauri-apps/plugins-workspace/commit/0ca4cc914c5ea995c98f9e60a2ab49827c219350) ([#1963](https://github.com/tauri-apps/plugins-workspace/pull/1963) by [@yoggys](https://github.com/tauri-apps/plugins-workspace/../../yoggys)) Fixed incorrect documentation of the select method in the Database class.
@@ -104,23 +116,3 @@
 ## \[2.0.0-alpha.0]
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  te to alpha.11.
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  to alpha.11.
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  te to alpha.11.
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  ae67\`]\(https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!

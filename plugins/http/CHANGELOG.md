@@ -1,5 +1,27 @@
 # Changelog
 
+## \[2.2.0]
+
+- [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
+
+### Dependencies
+
+- Upgraded to `fs@2.2.0`
+
+## \[2.0.2]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.0.4`
+
+## \[2.0.4]
+
+- [`a3b553dd`](https://github.com/tauri-apps/plugins-workspace/commit/a3b553ddb403771aa699362c4e69a064b7731da5) ([#2079](https://github.com/tauri-apps/plugins-workspace/pull/2079) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add tracing logs for requestes and responses behind `tracing` feature flag.
+
+### Dependencies
+
+- Upgraded to `fs@2.1.0`
+
 ## \[2.0.3]
 
 ### Dependencies
@@ -200,103 +222,3 @@
 ## \[2.0.0-alpha.0]
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  /717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  ace/pull/371)) First v2 alpha release!
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  /717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  ace/pull/371)) First v2 alpha release!
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  lpha release!
-  !
-  371\)) First v2 alpha release!
-  ub.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  ace/pull/371)) First v2 alpha release!
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  lpha release!
-  !
-  371\)) First v2 alpha release!
-  lpha release!
-  !
-  371\)) First v2 alpha release!
-  t v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  ace/pull/371)) First v2 alpha release!
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  !
-  371\)) First v2 alpha release!
-  lpha release!
-  !
-  371\)) First v2 alpha release!
-  lpha release!
-  !
-  371\)) First v2 alpha release!
-  lpha release!
-  !
-  371\)) First v2 alpha release!
-  lpha release!
-  lpha release!
-  !
-  371\)) First v2 alpha release!
-  lpha release!
-  !
-  371\)) First v2 alpha release!
-  ha release!
-  !
-  371\)) First v2 alpha release!
-  lease!
-  !
-  371\)) First v2 alpha release!

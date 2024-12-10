@@ -133,7 +133,7 @@ Under `tauri.conf.json > plugins > deep-link`, configure the domains (mobile) an
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {

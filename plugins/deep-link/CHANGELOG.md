@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.2.0]
+
+- [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
+
+## \[2.0.1]
+
+- [`b2aea045`](https://github.com/tauri-apps/plugins-workspace/commit/b2aea0456799775a7243706fdd7a5abf9a193992) ([#2008](https://github.com/tauri-apps/plugins-workspace/pull/2008) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) `onOpenUrl()` will now not call `getCurrent()` anymore, matching the documented behavior.
+
 ## \[2.0.1]
 
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.

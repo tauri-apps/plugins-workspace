@@ -69,12 +69,16 @@ async fn download(
     url: &str,
     file_path: &str,
     headers: HashMap<String, String>,
+    body: Option<String>,
     on_progress: Channel<ProgressPayload>,
 ) -> Result<()> {
     let client = reqwest::Client::new();
-
-    let mut request = client.get(url);
-    // Loop through the headers keys and values
+    let mut request = if let Some(body) = body {
+        client.post(url).body(body)
+    } else {
+        client.get(url)
+    };
+    // Loop trought the headers keys and values
     // and add them to the request object.
     for (key, value) in headers {
         request = request.header(&key, value);
@@ -206,7 +210,7 @@ mod tests {
                 let _ = msg;
                 Ok(())
             });
-        download(url, file_path, headers, sender).await
+        download(url, file_path, headers, None, sender).await
     }
 
     async fn spawn_server_mocked(return_status: usize) -> MockedServer {

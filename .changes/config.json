@@ -15,8 +15,18 @@
           "dryRunCommand": "pnpm build"
         },
         {
+          "command": "echo '<details>\n<summary><em><h4>PNPM Publish</h4></em></summary>\n\n```'",
+          "dryRunCommand": true,
+          "pipe": true
+        },
+        {
           "command": "npm publish --provenance --access public",
           "dryRunCommand": "npm publish --provenance --access public --dry-run",
+          "pipe": true
+        },
+        {
+          "command": "echo '```\n\n</details>\n'",
+          "dryRunCommand": true,
           "pipe": true
         }
       ]
@@ -56,7 +66,7 @@
       "dependencies": [
         "barcode-scanner",
         "biometric",
-        "log-plugin",
+        "log",
         "cli",
         "clipboard-manager",
         "dialog",
@@ -170,7 +180,8 @@
     },
     "dialog-js": {
       "path": "./plugins/dialog",
-      "manager": "javascript"
+      "manager": "javascript",
+      "dependencies": ["fs-js"]
     },
     "geolocation": {
       "path": "./plugins/geolocation",
@@ -211,13 +222,14 @@
     },
     "http-js": {
       "path": "./plugins/http",
-      "manager": "javascript"
+      "manager": "javascript",
+      "dependencies": ["fs-js"]
     },
     "localhost": {
       "path": "./plugins/localhost",
       "manager": "rust"
     },
-    "log-plugin": {
+    "log": {
       "path": "./plugins/log",
       "manager": "rust"
     },

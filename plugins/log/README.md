@@ -56,7 +56,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-log#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 use tauri_plugin_log::{Target, TargetKind};
