@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.3.0]
+
+- [`829b6326`](https://github.com/tauri-apps/plugins-workspace/commit/829b63265030bc9c61d1738c4eaca0ffb3178677) ([#1919](https://github.com/tauri-apps/plugins-workspace/pull/1919) by [@n1ght-hunter](https://github.com/tauri-apps/plugins-workspace/../../n1ght-hunter)) Add `tauri_plugin_updater::Builder::default_version_comparator` method to set the default version comparator for the updater.
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
