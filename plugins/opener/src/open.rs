@@ -26,7 +26,7 @@ pub(crate) fn open<P: AsRef<OsStr>, S: AsRef<str>>(path: P, with: Option<S>) -> 
 /// tauri::Builder::default()
 ///   .setup(|app| {
 ///     // open the given URL on the system default browser
-///     tauri_plugin_opener::open_url("https://github.com/tauri-apps/tauri", None)?;
+///     tauri_plugin_opener::open_url("https://github.com/tauri-apps/tauri", None::<&str>)?;
 ///     Ok(())
 ///   });
 /// ```
@@ -46,8 +46,8 @@ pub fn open_url<P: AsRef<str>, S: AsRef<str>>(url: P, with: Option<S>) -> crate:
 /// ```rust,no_run
 /// tauri::Builder::default()
 ///   .setup(|app| {
-///     // open the given URL on the system default browser
-///     tauri_plugin_opener::open_path("/path/to/file", None)?;
+///     // open the given URL on the system default explorer
+///     tauri_plugin_opener::open_path("/path/to/file", None::<&str>)?;
 ///     Ok(())
 ///   });
 /// ```

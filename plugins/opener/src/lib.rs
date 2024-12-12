@@ -38,6 +38,19 @@ pub struct Opener<R: Runtime> {
 impl<R: Runtime> Opener<R> {
     /// Open a url with a default or specific program.
     ///
+    /// # Examples
+    ///
+    /// ```rust,no_run
+    /// use tauri_plugin_opener::OpenerExt;
+    ///
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     // open the given URL on the system default browser
+    ///     app.opener().open_url("https://github.com/tauri-apps/tauri", None::<&str>)?;
+    ///     Ok(())
+    ///   });
+    /// ```
+    ///
     /// ## Platform-specific:
     ///
     /// - **Android / iOS**: Always opens using default program.
@@ -47,6 +60,19 @@ impl<R: Runtime> Opener<R> {
     }
 
     /// Open a url with a default or specific program.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,no_run
+    /// use tauri_plugin_opener::OpenerExt;
+    ///
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     // open the given URL on the system default browser
+    ///     app.opener().open_url("https://github.com/tauri-apps/tauri", None::<&str>)?;
+    ///     Ok(())
+    ///   });
+    /// ```
     ///
     /// ## Platform-specific:
     ///
@@ -59,6 +85,19 @@ impl<R: Runtime> Opener<R> {
     }
 
     /// Open a path with a default or specific program.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,no_run
+    /// use tauri_plugin_opener::OpenerExt;
+    ///
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     // open the given path on the system default explorer
+    ///     app.opener().open_path("/path/to/file", None::<&str>)?;
+    ///     Ok(())
+    ///   });
+    /// ```
     ///
     /// ## Platform-specific:
     ///
@@ -73,6 +112,19 @@ impl<R: Runtime> Opener<R> {
     }
 
     /// Open a path with a default or specific program.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,no_run
+    /// use tauri_plugin_opener::OpenerExt;
+    ///
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     // open the given path on the system default explorer
+    ///     app.opener().open_path("/path/to/file", None::<&str>)?;
+    ///     Ok(())
+    ///   });
+    /// ```
     ///
     /// ## Platform-specific:
     ///
@@ -98,7 +150,7 @@ pub trait OpenerExt<R: Runtime> {
     fn opener(&self) -> &Opener<R>;
 }
 
-impl<R: Runtime, T: Manager<R>> crate::OpenerExt<R> for T {
+impl<R: Runtime, T: Manager<R>> OpenerExt<R> for T {
     fn opener(&self) -> &Opener<R> {
         self.state::<Opener<R>>().inner()
     }

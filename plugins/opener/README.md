@@ -98,8 +98,18 @@ fn main() {
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let opener = app.opener();
+
+            // Opens the URL in the default browser
+            opener.open_url("https://example.com", None::<&str>)?;
+            // Or with a specific browser/app
             opener.open_url("https://example.com", Some("firefox"))?;
+
+            // Opens the path with the system's default app
+            opener.open_path("/path/to/file", None::<&str>)?;
+            // Or with a specific app
             opener.open_path("/path/to/file", Some("firefox"))?;
+
+            // Reveal a path with the system's default explorer
             opener.reveal_item_in_dir("/path/to/file")?;
             Ok(())
         })
