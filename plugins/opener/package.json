@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-opener",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Open files and URLs using their default application.",
   "license": "MIT OR Apache-2.0",
   "authors": [

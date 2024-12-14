@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.2]
+
+- [`ee0f65de`](https://github.com/tauri-apps/plugins-workspace/commit/ee0f65de5c645c244c5f0b638e0e0aab687cb9bf) ([#2207](https://github.com/tauri-apps/plugins-workspace/pull/2207) by [@universalappfactory](https://github.com/tauri-apps/plugins-workspace/../../universalappfactory)) Fixed OpenerPlugin packagename for android
+
 ## \[2.2.1]
 
 - [`18dffc9d`](https://github.com/tauri-apps/plugins-workspace/commit/18dffc9dfecaf0c900e233e041d9ca36c92834b5) ([#2189](https://github.com/tauri-apps/plugins-workspace/pull/2189) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fix usage on iOS.

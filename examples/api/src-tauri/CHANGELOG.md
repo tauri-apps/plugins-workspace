@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.11]
+
+### Dependencies
+
+- Upgraded to `opener@2.2.2`
+
 ## \[2.0.10]
 
 ### Dependencies

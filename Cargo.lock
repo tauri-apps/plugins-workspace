@@ -206,7 +206,7 @@ checksum = "4c95c10ba0b00a02636238b814946408b1322d5ac4760326e6fb8ec956d85775"
 
 [[package]]
 name = "api"
-version = "2.0.10"
+version = "2.0.11"
 dependencies = [
  "log",
  "serde",
@@ -6707,7 +6707,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-opener"
-version = "2.2.1"
+version = "2.2.2"
 dependencies = [
  "dunce",
  "glob",
