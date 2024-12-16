@@ -54,7 +54,7 @@ features = [
 tauri-plugin-cli = { path = "../../../plugins/cli", version = "2.2.0" }
 tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", version = "2.2.0" }
 tauri-plugin-updater = { path = "../../../plugins/updater", version = "2.3.0" }
-tauri-plugin-window-state = { path = "../../../plugins/window-state", version = "2.0.0" }
+tauri-plugin-window-state = { path = "../../../plugins/window-state", version = "2.2.0" }
 
 [target."cfg(any(target_os = \"android\", target_os = \"ios\"))".dependencies]
 tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", version = "2.2.0" }
