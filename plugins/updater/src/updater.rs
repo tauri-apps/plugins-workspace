@@ -179,6 +179,16 @@ impl UpdaterBuilder {
         Ok(self)
     }
 
+    pub fn headers(mut self, headers: HeaderMap) -> Self {
+        self.headers = headers;
+        self
+    }
+
+    pub fn clear_headers(mut self) -> Self {
+        self.headers.clear();
+        self
+    }
+
     pub fn timeout(mut self, timeout: Duration) -> Self {
         self.timeout = Some(timeout);
         self

@@ -13,6 +13,7 @@
 
 use std::{ffi::OsString, sync::Arc};
 
+use http::{HeaderMap, HeaderName, HeaderValue};
 use semver::Version;
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
@@ -74,13 +75,15 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
             config,
             target,
             version_comparator,
+            headers,
         } = self.state::<UpdaterState>().inner();
 
         let mut builder = UpdaterBuilder::new(
             package_info.name.clone(),
             package_info.version.clone(),
             config.clone(),
-        );
+        )
+        .headers(headers.clone());
 
         if let Some(target) = target {
             builder = builder.target(target);
@@ -124,6 +127,7 @@ struct UpdaterState {
     target: Option<String>,
     config: Config,
     version_comparator: Option<VersionComparator>,
+    headers: HeaderMap,
 }
 
 #[derive(Default)]
@@ -131,6 +135,7 @@ pub struct Builder {
     target: Option<String>,
     pubkey: Option<String>,
     installer_args: Vec<OsString>,
+    headers: HeaderMap,
     default_version_comparator: Option<VersionComparator>,
 }
 
@@ -172,6 +177,26 @@ impl Builder {
         self
     }
 
+    pub fn header<K, V>(mut self, key: K, value: V) -> Result<Self>
+    where
+        HeaderName: TryFrom<K>,
+        <HeaderName as TryFrom<K>>::Error: Into<http::Error>,
+        HeaderValue: TryFrom<V>,
+        <HeaderValue as TryFrom<V>>::Error: Into<http::Error>,
+    {
+        let key: std::result::Result<HeaderName, http::Error> = key.try_into().map_err(Into::into);
+        let value: std::result::Result<HeaderValue, http::Error> =
+            value.try_into().map_err(Into::into);
+        self.headers.insert(key?, value?);
+
+        Ok(self)
+    }
+
+    pub fn headers(mut self, headers: HeaderMap) -> Self {
+        self.headers = headers;
+        self
+    }
+
     pub fn default_version_comparator<
         F: Fn(Version, RemoteRelease) -> bool + Send + Sync + 'static,
     >(
@@ -187,6 +212,7 @@ impl Builder {
         let target = self.target;
         let version_comparator = self.default_version_comparator;
         let installer_args = self.installer_args;
+        let headers = self.headers;
         PluginBuilder::<R, Config>::new("updater")
             .setup(move |app, api| {
                 let mut config = api.config().clone();
@@ -200,6 +226,7 @@ impl Builder {
                     target,
                     config,
                     version_comparator,
+                    headers,
                 });
                 Ok(())
             })
