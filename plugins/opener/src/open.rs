@@ -53,5 +53,9 @@ pub fn open_url<P: AsRef<str>, S: AsRef<str>>(url: P, with: Option<S>) -> crate:
 /// ```
 pub fn open_path<P: AsRef<Path>, S: AsRef<str>>(path: P, with: Option<S>) -> crate::Result<()> {
     let path = path.as_ref();
+    if with.is_none() {
+        // Returns an IO error if not exists, and besides `exists()` is a shorthand for `metadata()`
+        _ = path.metadata()?;
+    }
     open(path, with)
 }
