@@ -2,4 +2,5 @@
 "opener": patch
 "opener-js": patch
 ---
-`open_path` now returns an error if the file does not exist
+
+Return an error in `open_path` if the file does not exist when opening with default application.
