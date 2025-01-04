@@ -14,7 +14,7 @@
     "@tauri-apps/plugin-deep-link": "2.2.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "2.2.1",
+    "@tauri-apps/cli": "2.2.2",
     "typescript": "^5.2.2",
     "vite": "^6.0.0"
   }
