@@ -17,7 +17,11 @@ async function upload(
   url: string,
   filePath: string,
   progressHandler?: ProgressHandler,
-  headers?: Map<string, string>
+  headers?: Map<string, string>,
+  options?: {
+    skipSslCertCheck?: boolean
+    trustSslCert?: string
+  }
 ): Promise<string> {
   const ids = new Uint32Array(1)
   window.crypto.getRandomValues(ids)
@@ -33,7 +37,9 @@ async function upload(
     url,
     filePath,
     headers: headers ?? {},
-    onProgress
+    onProgress,
+    skipSslCertCheck: options?.skipSslCertCheck,
+    trustSslCert: options?.trustSslCert
   })
 }
 
@@ -46,7 +52,11 @@ async function download(
   filePath: string,
   progressHandler?: ProgressHandler,
   headers?: Map<string, string>,
-  body?: string
+  body?: string,
+  options?: {
+    skipSslCertCheck?: boolean
+    trustSslCert?: string
+  }
 ): Promise<void> {
   const ids = new Uint32Array(1)
   window.crypto.getRandomValues(ids)
@@ -63,7 +73,9 @@ async function download(
     filePath,
     headers: headers ?? {},
     onProgress,
-    body
+    body,
+    skipSslCertCheck: options?.skipSslCertCheck,
+    trustSslCert: options?.trustSslCert
   })
 }
 

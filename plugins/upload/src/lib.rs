@@ -64,6 +64,23 @@ struct ProgressPayload {
     transfer_speed: u64,
 }
 
+fn build_client(
+    skip_ssl_cert_check: Option<bool>,
+    trust_ssl_cert: Option<String>,
+) -> Result<reqwest::Client> {
+    let mut client_builder = reqwest::Client::builder();
+    if skip_ssl_cert_check.unwrap_or(false) {
+        client_builder = client_builder.danger_accept_invalid_certs(true);
+    }
+    if let Some(cert) = match trust_ssl_cert {
+        Some(cert) => reqwest::tls::Certificate::from_pem(cert.as_bytes()).ok(),
+        None => None,
+    } {
+        client_builder = client_builder.add_root_certificate(cert);
+    }
+    client_builder.build().map_err(Into::into)
+}
+
 #[command]
 async fn download(
     url: &str,
@@ -71,8 +88,10 @@ async fn download(
     headers: HashMap<String, String>,
     body: Option<String>,
     on_progress: Channel<ProgressPayload>,
+    skip_ssl_cert_check: Option<bool>,
+    trust_ssl_cert: Option<String>,
 ) -> Result<()> {
-    let client = reqwest::Client::new();
+    let client = build_client(skip_ssl_cert_check, trust_ssl_cert)?;
     let mut request = if let Some(body) = body {
         client.post(url).body(body)
     } else {
@@ -118,13 +137,13 @@ async fn upload(
     file_path: &str,
     headers: HashMap<String, String>,
     on_progress: Channel<ProgressPayload>,
+    skip_ssl_cert_check: Option<bool>,
+    trust_ssl_cert: Option<String>,
 ) -> Result<String> {
-    // Read the file
     let file = File::open(file_path).await?;
     let file_len = file.metadata().await.unwrap().len();
 
-    // Create the request and attach the file to the body
-    let client = reqwest::Client::new();
+    let client = build_client(skip_ssl_cert_check, trust_ssl_cert)?;
     let mut request = client
         .post(url)
         .header(reqwest::header::CONTENT_LENGTH, file_len)
@@ -210,7 +229,7 @@ mod tests {
                 let _ = msg;
                 Ok(())
             });
-        download(url, file_path, headers, None, sender).await
+        download(url, file_path, headers, None, sender, None, None).await
     }
 
     async fn spawn_server_mocked(return_status: usize) -> MockedServer {
