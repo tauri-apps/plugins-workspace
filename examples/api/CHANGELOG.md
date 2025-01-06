@@ -1,5 +1,12 @@
 # Changelog
 
+## \[2.0.9]
+
+### Dependencies
+
+- Upgraded to `opener-js@2.2.3`
+- Upgraded to `updater-js@2.3.1`
+
 ## \[2.0.8]
 
 ### Dependencies
