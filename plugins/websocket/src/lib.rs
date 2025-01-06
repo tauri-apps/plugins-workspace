@@ -8,6 +8,7 @@ use tauri::{
 };
 use tokio::{net::TcpStream, sync::Mutex};
 use tokio_tungstenite::{
+    connect_async_tls_with_config,
     tungstenite::{
         client::IntoClientRequest,
         protocol::{CloseFrame as ProtocolCloseFrame, WebSocketConfig},
