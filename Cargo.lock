@@ -6547,7 +6547,7 @@ dependencies = [
  "tracing",
  "url",
  "windows-registry 0.4.0",
- "windows-result 0.2.0",
+ "windows-result 0.3.0",
 ]
 
 [[package]]
