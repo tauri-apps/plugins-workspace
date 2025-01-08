@@ -58,7 +58,7 @@ impl<R: Runtime> Clipboard<R> {
         }
     }
 
-    /// Warning: This method should not be used on the main thread! Otherwise the underlying libraries may deadlock on Linux, freezing the whole app.
+    /// Warning: This method should not be used on the main thread! Otherwise the underlying libraries may deadlock on Linux, freezing the whole app, when trying to copy data copied from this app, for example if the user copies text from the WebView.
     pub fn read_text(&self) -> crate::Result<String> {
         match &self.clipboard {
             Ok(clipboard) => {
@@ -99,7 +99,7 @@ impl<R: Runtime> Clipboard<R> {
         }
     }
 
-    /// Warning: This method should not be used on the main thread! Otherwise the underlying libraries may deadlock on Linux, freezing the whole app.
+    /// Warning: This method should not be used on the main thread! Otherwise the underlying libraries may deadlock on Linux, freezing the whole app, when trying to copy data copied from this app, for example if the user copies text from the WebView.
     pub fn read_image(&self) -> crate::Result<Image<'_>> {
         match &self.clipboard {
             Ok(clipboard) => {
