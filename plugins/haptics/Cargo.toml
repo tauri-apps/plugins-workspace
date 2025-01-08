@@ -30,6 +30,7 @@ tauri = { workspace = true, features = ["specta"] }
 log = { workspace = true }
 thiserror = { workspace = true }
 specta = { workspace = true }
+specta-util = { workspace = true }
 
 [target.'cfg(target_os = "ios")'.dependencies]
 tauri = { workspace = true, features = ["wry"] }

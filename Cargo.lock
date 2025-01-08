@@ -5804,6 +5804,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "specta-util"
+version = "0.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8113d65b58a6de3184b01d6df9e50b6d4bbe7f724251f576d84f23228824456"
+dependencies = [
+ "ctor",
+ "serde",
+ "specta",
+ "specta-macros",
+]
+
+[[package]]
 name = "spin"
 version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6585,6 +6597,7 @@ dependencies = [
  "serde",
  "serde_json",
  "specta",
+ "specta-util",
  "tauri",
  "tauri-plugin",
  "thiserror 2.0.9",
@@ -6611,6 +6624,7 @@ dependencies = [
  "serde",
  "serde_json",
  "specta",
+ "specta-util",
  "tauri",
  "tauri-plugin",
  "thiserror 2.0.9",
