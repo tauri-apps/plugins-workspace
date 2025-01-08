@@ -11,7 +11,7 @@
 
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    Manager, Runtime,
+    Manager, RunEvent, Runtime,
 };
 
 #[cfg(desktop)]
@@ -58,6 +58,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             let clipboard = desktop::init(app, api)?;
             app.manage(clipboard);
             Ok(())
+        })
+        .on_event(|_app, _event| {
+            #[cfg(desktop)]
+            if let RunEvent::Exit = _event {
+                _app.clipboard().cleanup();
+            }
         })
         .build()
 }
