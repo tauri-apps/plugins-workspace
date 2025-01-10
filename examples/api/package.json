@@ -17,7 +17,7 @@
     "@tauri-apps/plugin-clipboard-manager": "2.2.0",
     "@tauri-apps/plugin-dialog": "2.2.0",
     "@tauri-apps/plugin-fs": "2.2.0",
-    "@tauri-apps/plugin-geolocation": "2.2.0",
+    "@tauri-apps/plugin-geolocation": "2.2.1",
     "@tauri-apps/plugin-global-shortcut": "2.2.0",
     "@tauri-apps/plugin-opener": "2.2.3",
     "@tauri-apps/plugin-haptics": "2.2.0",

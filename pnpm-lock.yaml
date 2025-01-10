@@ -79,14 +79,14 @@ importers:
         specifier: 2.2.0
         version: link:../../plugins/fs
       '@tauri-apps/plugin-geolocation':
-        specifier: 2.2.0
+        specifier: 2.2.1
         version: link:../../plugins/geolocation
       '@tauri-apps/plugin-global-shortcut':
         specifier: 2.2.0
         version: link:../../plugins/global-shortcut
       '@tauri-apps/plugin-haptics':
         specifier: 2.2.0
-        version: link:../../plugins/haptics
+        version: 2.2.0
       '@tauri-apps/plugin-http':
         specifier: 2.2.0
         version: link:../../plugins/http
@@ -1054,6 +1054,9 @@ packages:
     resolution: {integrity: sha512-tvI/wEL1v//Qka1CDTCXR1cvwNCguJ0PtqXhdHBcKiT7DPZuFV/ZYUTygy+HpiP0b25t4XksoJqTeETxOtlb/Q==}
     engines: {node: '>= 10'}
     hasBin: true
+
+  '@tauri-apps/plugin-haptics@2.2.0':
+    resolution: {integrity: sha512-4x/QFowYsyWdZpg/1HRA3eMkX4Rol0su5XBneKeYat6EdXBTnMnuqYBaDKUcpH3vJF6UGWA3AzPeA4a+ewWS8Q==}
 
   '@types/eslint@9.6.1':
     resolution: {integrity: sha512-FXx2pKgId/WyYo2jXw63kk7/+TY7u7AziEJxJAnSFzHlqTAS3Ync6SvgYAN/k4/PQpnnVuzoMuVnByKK2qp0ag==}
@@ -2950,6 +2953,10 @@ snapshots:
       '@tauri-apps/cli-win32-arm64-msvc': 2.2.3
       '@tauri-apps/cli-win32-ia32-msvc': 2.2.3
       '@tauri-apps/cli-win32-x64-msvc': 2.2.3
+
+  '@tauri-apps/plugin-haptics@2.2.0':
+    dependencies:
+      '@tauri-apps/api': 2.2.0
 
   '@types/eslint@9.6.1':
     dependencies:
