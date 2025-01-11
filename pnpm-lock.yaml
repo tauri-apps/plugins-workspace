@@ -61,58 +61,58 @@ importers:
         specifier: 2.2.0
         version: 2.2.0
       '@tauri-apps/plugin-barcode-scanner':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: link:../../plugins/barcode-scanner
       '@tauri-apps/plugin-biometric':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: link:../../plugins/biometric
       '@tauri-apps/plugin-cli':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: link:../../plugins/cli
       '@tauri-apps/plugin-clipboard-manager':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: link:../../plugins/clipboard-manager
       '@tauri-apps/plugin-dialog':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: link:../../plugins/dialog
       '@tauri-apps/plugin-fs':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: link:../../plugins/fs
       '@tauri-apps/plugin-geolocation':
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: ^2.2.0
+        version: link:../../plugins/geolocation
       '@tauri-apps/plugin-global-shortcut':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: link:../../plugins/global-shortcut
       '@tauri-apps/plugin-haptics':
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: ^2.2.0
+        version: link:../../plugins/haptics
       '@tauri-apps/plugin-http':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: link:../../plugins/http
       '@tauri-apps/plugin-nfc':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: link:../../plugins/nfc
       '@tauri-apps/plugin-notification':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: link:../../plugins/notification
       '@tauri-apps/plugin-opener':
-        specifier: 2.2.3
+        specifier: ^2.2.0
         version: link:../../plugins/opener
       '@tauri-apps/plugin-os':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: link:../../plugins/os
       '@tauri-apps/plugin-process':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: link:../../plugins/process
       '@tauri-apps/plugin-shell':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: link:../../plugins/shell
       '@tauri-apps/plugin-store':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: link:../../plugins/store
       '@tauri-apps/plugin-updater':
-        specifier: 2.3.1
+        specifier: ^2.2.0
         version: link:../../plugins/updater
       '@zerodevx/svelte-json-view':
         specifier: 1.0.11
@@ -378,13 +378,13 @@ packages:
     resolution: {integrity: sha512-Ed61U6XJc3CVRfkERJWDz4dJwKe7iLmmJsbOGu9wSloNSFttHV0I8g6UAgb7qnK5ly5bGLPd4oXZlxCdANBOWQ==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/parser@7.26.2':
-    resolution: {integrity: sha512-DWMCZH9WA4Maitz2q21SRKHo9QXZxkDsbNZoVD62gusNtNBBqDg9i7uOhASfTfIGNzW+O+r7+jAlM8dwphcJKQ==}
+  '@babel/parser@7.26.5':
+    resolution: {integrity: sha512-SRJ4jYmXRqV1/Xc+TIVG84WjHBXKlxO9sHQnA2Pf12QQEAp1LOh6kDzNHXcUnbH1QI0FDoPPVOt+vyUDucxpaw==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  '@babel/types@7.26.0':
-    resolution: {integrity: sha512-Z/yiTPj+lDVnF7lWeKCIJzaIkI0vYO87dMpZ4bg4TDrFe4XXLFWL1TbXU27gBP3QccxV9mZICCrnjnYlJjXHOA==}
+  '@babel/types@7.26.5':
+    resolution: {integrity: sha512-L6mZmwFDK6Cjh1nRCLXpa6no13ZIioJDz7mdkzHv399pThrTa/k0nUlNaenOeh2kWu/iaOQYElEpKPUswUa9Vg==}
     engines: {node: '>=6.9.0'}
 
   '@chainsafe/abort-controller@3.0.1':
@@ -1054,12 +1054,6 @@ packages:
     resolution: {integrity: sha512-tvI/wEL1v//Qka1CDTCXR1cvwNCguJ0PtqXhdHBcKiT7DPZuFV/ZYUTygy+HpiP0b25t4XksoJqTeETxOtlb/Q==}
     engines: {node: '>= 10'}
     hasBin: true
-
-  '@tauri-apps/plugin-geolocation@2.2.0':
-    resolution: {integrity: sha512-D00yiGfTMagd2TI1jA5zvfmpv8zm08bJZr1JpmHbQyXX03r/S+OVWnItU1UyAFO9IvOZTvV/GkI3t6ZEiFFlnQ==}
-
-  '@tauri-apps/plugin-haptics@2.2.0':
-    resolution: {integrity: sha512-4x/QFowYsyWdZpg/1HRA3eMkX4Rol0su5XBneKeYat6EdXBTnMnuqYBaDKUcpH3vJF6UGWA3AzPeA4a+ewWS8Q==}
 
   '@types/eslint@9.6.1':
     resolution: {integrity: sha512-FXx2pKgId/WyYo2jXw63kk7/+TY7u7AziEJxJAnSFzHlqTAS3Ync6SvgYAN/k4/PQpnnVuzoMuVnByKK2qp0ag==}
@@ -2410,11 +2404,11 @@ snapshots:
 
   '@babel/helper-validator-identifier@7.25.9': {}
 
-  '@babel/parser@7.26.2':
+  '@babel/parser@7.26.5':
     dependencies:
-      '@babel/types': 7.26.0
+      '@babel/types': 7.26.5
 
-  '@babel/types@7.26.0':
+  '@babel/types@7.26.5':
     dependencies:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
@@ -2960,14 +2954,6 @@ snapshots:
       '@tauri-apps/cli-win32-ia32-msvc': 2.2.3
       '@tauri-apps/cli-win32-x64-msvc': 2.2.3
 
-  '@tauri-apps/plugin-geolocation@2.2.0':
-    dependencies:
-      '@tauri-apps/api': 2.2.0
-
-  '@tauri-apps/plugin-haptics@2.2.0':
-    dependencies:
-      '@tauri-apps/api': 2.2.0
-
   '@types/eslint@9.6.1':
     dependencies:
       '@types/estree': 1.0.6
@@ -3222,7 +3208,7 @@ snapshots:
 
   '@vue/compiler-core@3.5.13':
     dependencies:
-      '@babel/parser': 7.26.2
+      '@babel/parser': 7.26.5
       '@vue/shared': 3.5.13
       entities: 4.5.0
       estree-walker: 2.0.2
@@ -3235,7 +3221,7 @@ snapshots:
 
   '@vue/compiler-sfc@3.5.13':
     dependencies:
-      '@babel/parser': 7.26.2
+      '@babel/parser': 7.26.5
       '@vue/compiler-core': 3.5.13
       '@vue/compiler-dom': 3.5.13
       '@vue/compiler-ssr': 3.5.13
