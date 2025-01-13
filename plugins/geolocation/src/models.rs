@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: MIT
 
 use serde::{Deserialize, Serialize};
-use specta::Type;
 use tauri::plugin::PermissionState;
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub struct PermissionStatus {
     /// Permission state for the location alias.
@@ -25,7 +25,8 @@ pub struct PermissionStatus {
     pub coarse_location: PermissionState,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub struct PositionOptions {
     /// High accuracy mode (such as GPS, if available)
@@ -46,14 +47,16 @@ pub struct PositionOptions {
     pub maximum_age: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub enum PermissionType {
     Location,
     CoarseLocation,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub struct Coordinates {
     /// Latitude in decimal degrees.
@@ -73,7 +76,8 @@ pub struct Coordinates {
     pub heading: Option<f64>,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub struct Position {
     /// Creation time for these coordinates.
@@ -83,7 +87,8 @@ pub struct Position {
     pub coords: Coordinates,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(untagged)]
 pub enum WatchEvent {
     Position(Position),
