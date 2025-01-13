@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.2.2]
+
+- [`c9c13a0f`](https://github.com/tauri-apps/plugins-workspace/commit/c9c13a0fe7cdaac223843f5ba33176252f8e22f5) ([#2316](https://github.com/tauri-apps/plugins-workspace/pull/2316) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) **Breaking change:** `specta` integration is now behind a `specta` feature flag like in Tauri.
+- [`c9c13a0f`](https://github.com/tauri-apps/plugins-workspace/commit/c9c13a0fe7cdaac223843f5ba33176252f8e22f5) ([#2316](https://github.com/tauri-apps/plugins-workspace/pull/2316) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Unlock and widen `specta` version range to match Tauri. No API changes.
+
 ## \[2.2.1]
 
 - [`fb67ab2b`](https://github.com/tauri-apps/plugins-workspace/commit/fb67ab2b926502bfc20d6b43fbdd156691ea8526) ([#2281](https://github.com/tauri-apps/plugins-workspace/pull/2281) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Added `specta-util` to fix a "dependency not found" compilation error.
