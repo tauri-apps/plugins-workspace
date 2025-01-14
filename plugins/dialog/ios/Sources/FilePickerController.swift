@@ -7,6 +7,7 @@ import MobileCoreServices
 import PhotosUI
 import Photos
 import Tauri
+import UniformTypeIdentifiers
 
 public class FilePickerController: NSObject {
   var plugin: DialogPlugin
@@ -118,6 +119,15 @@ public class FilePickerController: NSObject {
 
 extension FilePickerController: UIDocumentPickerDelegate {
 	public func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+		// Check if this is a folder picker by examining the URLs
+		let isFolder = urls.first?.hasDirectoryPath ?? false
+		
+		if isFolder {
+			self.plugin.onFilePickerEvent(.selected(urls))
+			return
+		}
+		
+		// Handle regular files
 		do {
 			let temporaryUrls = try urls.map { try saveTemporaryFile($0) }
 			self.plugin.onFilePickerEvent(.selected(temporaryUrls))

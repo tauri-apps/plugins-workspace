@@ -54,6 +54,11 @@ struct SaveFileResponse {
     file: FilePath,
 }
 
+#[derive(Debug, Deserialize)]
+struct FolderPickerResponse {
+    directories: Vec<FilePath>,
+}
+
 pub fn pick_file<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
@@ -123,5 +128,41 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
             .0
             .run_mobile_plugin::<ShowMessageDialogResponse>("showMessageDialog", dialog.payload());
         f(res.map(|r| r.value).unwrap_or_default())
+    });
+}
+
+#[cfg(target_os = "ios")]
+pub fn pick_folders<R: Runtime, F: FnOnce(Option<Vec<FilePath>>) + Send + 'static>(
+    dialog: FileDialogBuilder<R>,
+    f: F,
+) {
+    std::thread::spawn(move || {
+        let res = dialog
+            .dialog
+            .0
+            .run_mobile_plugin::<FolderPickerResponse>("showFolderPicker", dialog.payload(true));
+        if let Ok(response) = res {
+            f(Some(response.directories))
+        } else {
+            f(None)
+        }
+    });
+}
+
+#[cfg(target_os = "ios")]
+pub fn pick_folder<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
+    dialog: FileDialogBuilder<R>,
+    f: F,
+) {
+    std::thread::spawn(move || {
+        let res = dialog
+            .dialog
+            .0
+            .run_mobile_plugin::<FolderPickerResponse>("showFolderPicker", dialog.payload(false));
+        if let Ok(response) = res {
+            f(Some(response.directories.into_iter().next().unwrap()))
+        } else {
+            f(None)
+        }
     });
 }
