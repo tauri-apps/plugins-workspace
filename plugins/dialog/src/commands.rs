@@ -16,9 +16,9 @@ use crate::{
 #[derive(Serialize)]
 #[serde(untagged)]
 pub enum OpenResponse {
-    #[cfg(any(desktop, target_os = "ios"))]
+    #[cfg(any(desktop, target_os = "ios", target_os = "android"))]
     Folders(Option<Vec<FilePath>>),
-    #[cfg(any(desktop, target_os = "ios"))]
+    #[cfg(any(desktop, target_os = "ios", target_os = "android"))]
     Folder(Option<FilePath>),
     Files(Option<Vec<FilePath>>),
     File(Option<FilePath>),
@@ -132,8 +132,8 @@ pub(crate) async fn open<R: Runtime>(
         dialog_builder = dialog_builder.add_filter(filter.name, &extensions);
     }
 
-    let res = if options.directory {
-        #[cfg(any(desktop, target_os = "ios"))]
+    if options.directory {
+        #[cfg(any(desktop, target_os = "ios", target_os = "android"))]
         {
             let tauri_scope = window.state::<tauri::scope::Scopes>();
 
@@ -149,9 +149,9 @@ pub(crate) async fn open<R: Runtime>(
                         }
                     }
                 }
-                OpenResponse::Folders(
+                return Ok(OpenResponse::Folders(
                     folders.map(|folders| folders.into_iter().map(|p| p.simplified()).collect()),
-                )
+                ));
             } else {
                 let folder = dialog_builder.blocking_pick_folder();
                 if let Some(folder) = &folder {
@@ -162,14 +162,14 @@ pub(crate) async fn open<R: Runtime>(
                         tauri_scope.allow_directory(&path, options.directory)?;
                     }
                 }
-                OpenResponse::Folder(folder.map(|p| p.simplified()))
+                return Ok(OpenResponse::Folder(folder.map(|p| p.simplified())));
             }
         }
-        #[cfg(all(mobile, not(target_os = "ios")))]
-        return Err(crate::Error::FolderPickerNotImplemented);
-    } else if options.multiple {
-        let tauri_scope = window.state::<tauri::scope::Scopes>();
+    }
 
+    // Handle file selection
+    if options.multiple {
+        let tauri_scope = window.state::<tauri::scope::Scopes>();
         let files = dialog_builder.blocking_pick_files();
         if let Some(files) = &files {
             for file in files {
@@ -177,16 +177,14 @@ pub(crate) async fn open<R: Runtime>(
                     if let Some(s) = window.try_fs_scope() {
                         s.allow_file(&path)?;
                     }
-
                     tauri_scope.allow_file(&path)?;
                 }
             }
         }
-        OpenResponse::Files(files.map(|files| files.into_iter().map(|f| f.simplified()).collect()))
+        Ok(OpenResponse::Files(files.map(|files| files.into_iter().map(|f| f.simplified()).collect())))
     } else {
         let tauri_scope = window.state::<tauri::scope::Scopes>();
         let file = dialog_builder.blocking_pick_file();
-
         if let Some(file) = &file {
             if let Ok(path) = file.clone().into_path() {
                 if let Some(s) = window.try_fs_scope() {
@@ -195,9 +193,8 @@ pub(crate) async fn open<R: Runtime>(
                 tauri_scope.allow_file(&path)?;
             }
         }
-        OpenResponse::File(file.map(|f| f.simplified()))
-    };
-    Ok(res)
+        Ok(OpenResponse::File(file.map(|f| f.simplified())))
+    }
 }
 
 #[allow(unused_variables)]

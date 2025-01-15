@@ -16,9 +16,6 @@ pub enum Error {
     #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
-    #[cfg(mobile)]
-    #[error("Folder picker is not implemented on mobile")]
-    FolderPickerNotImplemented,
     #[error(transparent)]
     Fs(#[from] tauri_plugin_fs::Error),
 }

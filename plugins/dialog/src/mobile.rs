@@ -131,7 +131,7 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
     });
 }
 
-#[cfg(target_os = "ios")]
+#[cfg(mobile)]
 pub fn pick_folders<R: Runtime, F: FnOnce(Option<Vec<FilePath>>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
@@ -149,7 +149,7 @@ pub fn pick_folders<R: Runtime, F: FnOnce(Option<Vec<FilePath>>) + Send + 'stati
     });
 }
 
-#[cfg(target_os = "ios")]
+#[cfg(mobile)]
 pub fn pick_folder<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
