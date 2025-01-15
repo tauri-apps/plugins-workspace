@@ -3,4 +3,4 @@
 "dialog-js": patch
 ---
 
-Add support for folder picker on iOS.
+Add support for folder picker on iOS and Android.
