@@ -146,9 +146,9 @@ pub(crate) async fn open<R: Runtime>(
                         }
                     }
                 }
-                return Ok(OpenResponse::Folders(
-                    folders.map(|folders| folders.into_iter().map(|p| p.simplified()).collect()),
-                ));
+                return Ok(OpenResponse::Folders(folders.map(|folders| {
+                    folders.into_iter().map(|p| p.simplified()).collect()
+                })));
             } else {
                 let folder = dialog_builder.blocking_pick_folder();
                 if let Some(folder) = &folder {
@@ -178,7 +178,9 @@ pub(crate) async fn open<R: Runtime>(
                 }
             }
         }
-        Ok(OpenResponse::Files(files.map(|files| files.into_iter().map(|f| f.simplified()).collect())))
+        Ok(OpenResponse::Files(files.map(|files| {
+            files.into_iter().map(|f| f.simplified()).collect()
+        })))
     } else {
         let tauri_scope = window.state::<tauri::scope::Scopes>();
         let file = dialog_builder.blocking_pick_file();
