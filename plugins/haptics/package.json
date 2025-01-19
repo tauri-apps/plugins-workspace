@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-haptics",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "license": "MIT OR Apache-2.0",
   "authors": [
     "Tauri Programme within The Commons Conservancy"

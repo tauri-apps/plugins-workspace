@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.5]
+
+- [`5b821181`](https://github.com/tauri-apps/plugins-workspace/commit/5b8211815825ddae2dcc0c00520e0cfdff002763) ([#2332](https://github.com/tauri-apps/plugins-workspace/pull/2332) by [@betamos](https://github.com/tauri-apps/plugins-workspace/../../betamos)) Fix broken JS commands `opener.openPath` and `opener.openUrl` on mobile.
+
 ## \[2.2.4]
 
 - [`da5c59e2`](https://github.com/tauri-apps/plugins-workspace/commit/da5c59e2fe879d177e3cfd52fcacce85440423cb) ([#2271](https://github.com/tauri-apps/plugins-workspace/pull/2271) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `zbus` dependency to version 5. No API changes.

@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.3]
+
+- [`406e6f48`](https://github.com/tauri-apps/plugins-workspace/commit/406e6f484cdc13d35c50fb949f7489ca9eeccc44) ([#2323](https://github.com/tauri-apps/plugins-workspace/pull/2323) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed an issue that caused build failures when the `haptics` or `geolocation` plugin was used without their `specta` feature flag enabled.
+
 ## \[2.2.2]
 
 - [`c9c13a0f`](https://github.com/tauri-apps/plugins-workspace/commit/c9c13a0fe7cdaac223843f5ba33176252f8e22f5) ([#2316](https://github.com/tauri-apps/plugins-workspace/pull/2316) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) **Breaking change:** `specta` integration is now behind a `specta` feature flag like in Tauri.
