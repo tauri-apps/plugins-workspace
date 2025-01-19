@@ -1,5 +1,19 @@
 # Changelog
 
+## \[2.0.10]
+
+### Dependencies
+
+- Upgraded to `notification-js@2.2.1`
+- Upgraded to `opener-js@2.2.4`
+
+## \[2.0.9]
+
+### Dependencies
+
+- Upgraded to `opener-js@2.2.3`
+- Upgraded to `updater-js@2.3.1`
+
 ## \[2.0.8]
 
 ### Dependencies

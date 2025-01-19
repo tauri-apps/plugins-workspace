@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.3.1]
+
+- [`57efb47c`](https://github.com/tauri-apps/plugins-workspace/commit/57efb47c116f880477f72f02a8e4239e88007d44) ([#2235](https://github.com/tauri-apps/plugins-workspace/pull/2235) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add `Builder::header` and `Builder::headers` method to configure default headers for updater.
+
 ## \[2.3.0]
 
 - [`829b6326`](https://github.com/tauri-apps/plugins-workspace/commit/829b63265030bc9c61d1738c4eaca0ffb3178677) ([#1919](https://github.com/tauri-apps/plugins-workspace/pull/1919) by [@n1ght-hunter](https://github.com/tauri-apps/plugins-workspace/../../n1ght-hunter)) Add `tauri_plugin_updater::Builder::default_version_comparator` method to set the default version comparator for the updater.

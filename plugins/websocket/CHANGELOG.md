@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.2.1]
+
+- [`05cca602`](https://github.com/tauri-apps/plugins-workspace/commit/05cca602d927c30014d3892438ca28d99bc4e1d3) ([#2210](https://github.com/tauri-apps/plugins-workspace/pull/2210) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) **Breaking change:** Updated tokio_tungstenite to `0.26`. This may be a breaking change if you use the `tls_connector` Builder method in Rust.
+  **Breaking change:** Removed the accidental `ConnectionConfig` struct re-export (in rust). This should not affect anyone since the Config was not used in any public API.
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.

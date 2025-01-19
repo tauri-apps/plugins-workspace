@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-opener"
-version = "2.2.2"
+version = "2.2.4"
 description = "Open files and URLs using their default application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -15,7 +15,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 # Platforms supported by the plugin
 # Support levels are "full", "partial", "none", "unknown"
 # Details of the support level are left to plugin maintainer
-[package.metadata.platforms]
+[package.metadata.platforms.support]
 windows = { level = "full", notes = "" }
 linux = { level = "full", notes = "" }
 macos = { level = "full", notes = "" }

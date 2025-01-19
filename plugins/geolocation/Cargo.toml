@@ -1,7 +1,7 @@
 [package]
 name = "tauri-plugin-geolocation"
 description = "Get and track the device's current position"
-version = "2.2.0"
+version = "2.2.2"
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
@@ -26,10 +26,13 @@ tauri-plugin = { workspace = true, features = ["build"] }
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
-tauri = { workspace = true, features = ["specta"] }
+tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
-specta = { workspace = true }
+specta = { workspace = true, optional = true }
 
 [target.'cfg(target_os = "ios")'.dependencies]
 tauri = { workspace = true, features = ["wry"] }
+
+[features]
+specta = ["dep:specta", "tauri/specta"]

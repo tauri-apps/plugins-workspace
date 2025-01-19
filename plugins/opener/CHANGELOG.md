@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.2.4]
+
+- [`da5c59e2`](https://github.com/tauri-apps/plugins-workspace/commit/da5c59e2fe879d177e3cfd52fcacce85440423cb) ([#2271](https://github.com/tauri-apps/plugins-workspace/pull/2271) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `zbus` dependency to version 5. No API changes.
+
+## \[2.2.3]
+
+- [`a9ac1e3c`](https://github.com/tauri-apps/plugins-workspace/commit/a9ac1e3c939cec4338a9422ef02323c1d4dde6cd) ([#2253](https://github.com/tauri-apps/plugins-workspace/pull/2253) by [@betamos](https://github.com/tauri-apps/plugins-workspace/../../betamos)) Return an error in `open_path` if the file does not exist when opening with default application.
+
 ## \[2.2.2]
 
 - [`ee0f65de`](https://github.com/tauri-apps/plugins-workspace/commit/ee0f65de5c645c244c5f0b638e0e0aab687cb9bf) ([#2207](https://github.com/tauri-apps/plugins-workspace/pull/2207) by [@universalappfactory](https://github.com/tauri-apps/plugins-workspace/../../universalappfactory)) Fixed OpenerPlugin packagename for android
