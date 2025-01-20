@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.1]
+
+- [`0ec895c3`](https://github.com/tauri-apps/plugins-workspace/commit/0ec895c378d4700cf8d7a002c6d9829f3c015b9f) ([#2330](https://github.com/tauri-apps/plugins-workspace/pull/2330) by [@thewh1teagle](https://github.com/tauri-apps/plugins-workspace/../../thewh1teagle)) Add `Builder::with_filter` callback to exclude specific windows from saving their state. This allows for more flexibility by enabling dynamic exclusion of windows based on custom logic.
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.

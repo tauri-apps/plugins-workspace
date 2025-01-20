@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.15]
+
+### Dependencies
+
+- Upgraded to `haptics@2.2.3`
+- Upgraded to `geolocation@2.2.3`
+- Upgraded to `opener@2.2.5`
+
 ## \[2.0.14]
 
 ### Dependencies
