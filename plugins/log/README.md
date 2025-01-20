@@ -54,7 +54,23 @@ yarn add https://github.com/tauri-apps/tauri-plugin-log#v2
 
 ## Usage
 
-First you need to register the core plugin with Tauri:
+First, you should enable the `log:default` capability:
+
+```json
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "log:default" # add this!
+  ]
+}
+```
+
+Then, you need to register the core plugin with Tauri:
 
 `src-tauri/src/lib.rs`
 
