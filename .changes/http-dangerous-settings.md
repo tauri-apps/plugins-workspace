@@ -3,4 +3,4 @@
 "http-js": minor
 ---
 
-http new api to disable tls hostname/certificate validation
+Add `dangerous-settings` feature flag and new JS `danger` option to disable tls hostname/certificate validation.
