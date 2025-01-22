@@ -3,4 +3,4 @@ updater: minor
 updater-js: minor
 ---
 
-The `Update` struct/object will now contain a `other_response_fields`/`otherResponseFields` property that contains all other fields found in the server's json response that are not handled by the plugin.
+The `Update` struct/object will now contain a `raw_json`/`rawJson` property to be able to read parts of server's json response that are not handled by the plugin.

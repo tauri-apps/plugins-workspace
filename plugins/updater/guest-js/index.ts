@@ -43,7 +43,7 @@ interface UpdateMetadata {
   version: string
   date?: string
   body?: string
-  otherResponseFields: Record<string, unknown>
+  rawJson: Record<string, unknown>
 }
 
 /** Updater download event */
@@ -58,7 +58,7 @@ class Update extends Resource {
   version: string
   date?: string
   body?: string
-  otherResponseFields: Record<string, unknown>
+  rawJson: Record<string, unknown>
   private downloadedBytes?: Resource
 
   constructor(metadata: UpdateMetadata) {
@@ -68,7 +68,7 @@ class Update extends Resource {
     this.version = metadata.version
     this.date = metadata.date
     this.body = metadata.body
-    this.otherResponseFields = metadata.otherResponseFields
+    this.rawJson = metadata.rawJson
   }
 
   /** Download the updater package */

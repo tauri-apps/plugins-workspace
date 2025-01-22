@@ -8,7 +8,7 @@ use http::{HeaderMap, HeaderName, HeaderValue};
 use serde::Serialize;
 use tauri::{ipc::Channel, Manager, Resource, ResourceId, Runtime, Webview};
 
-use std::{collections::HashMap, str::FromStr, time::Duration};
+use std::{str::FromStr, time::Duration};
 use url::Url;
 
 #[derive(Debug, Clone, Serialize)]
@@ -34,7 +34,7 @@ pub(crate) struct Metadata {
     version: String,
     date: Option<String>,
     body: Option<String>,
-    other_response_fields: HashMap<String, serde_json::Value>,
+    raw_json: serde_json::Value,
 }
 
 struct DownloadedBytes(pub Vec<u8>);
@@ -74,9 +74,7 @@ pub(crate) async fn check<R: Runtime>(
         metadata.version.clone_from(&update.version);
         metadata.date = update.date.map(|d| d.to_string());
         metadata.body.clone_from(&update.body);
-        metadata
-            .other_response_fields
-            .clone_from(&update.other_response_fields);
+        metadata.raw_json.clone_from(&update.raw_json);
         metadata.rid = Some(webview.resources_table().add(update));
     }
 

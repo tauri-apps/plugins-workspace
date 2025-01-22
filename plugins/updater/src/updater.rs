@@ -64,10 +64,6 @@ pub struct RemoteRelease {
     pub pub_date: Option<OffsetDateTime>,
     /// Release data.
     pub data: RemoteReleaseInner,
-    /// Additional unknown fields found in the server's JSON response.
-    ///
-    /// Field names should be reasonable unique to not interfere with potential future plugin additions.
-    pub other_response_fields: HashMap<String, serde_json::Value>,
 }
 
 impl RemoteRelease {
@@ -334,6 +330,7 @@ impl Updater {
         }
 
         let mut remote_release: Option<RemoteRelease> = None;
+        let mut raw_json: Option<serde_json::Value> = None;
         let mut last_error: Option<Error> = None;
         for url in &self.endpoints {
             // replace {{current_version}}, {{target}} and {{arch}} in the provided URL
@@ -383,7 +380,8 @@ impl Updater {
                         return Ok(None);
                     };
 
-                    match serde_json::from_value::<RemoteRelease>(res.json().await?)
+                    raw_json = Some(res.json().await?);
+                    match serde_json::from_value::<RemoteRelease>(raw_json.clone().unwrap())
                         .map_err(Into::into)
                     {
                         Ok(release) => {
@@ -425,7 +423,7 @@ impl Updater {
                 download_url: release.download_url(&self.json_target)?.to_owned(),
                 body: release.notes.clone(),
                 signature: release.signature(&self.json_target)?.to_owned(),
-                other_response_fields: release.other_response_fields.clone(),
+                raw_json: raw_json.unwrap(),
                 timeout: self.timeout,
                 proxy: self.proxy.clone(),
                 headers: self.headers.clone(),
@@ -459,10 +457,8 @@ pub struct Update {
     pub download_url: Url,
     /// Signature announced
     pub signature: String,
-    /// Additional unknown fields found in the server's JSON response.
-    ///
-    /// Field names should be reasonable unique to not interfere with potential future plugin additions.
-    pub other_response_fields: HashMap<String, serde_json::Value>,
+    /// The raw version of server's JSON response. Useful if the response contains additional fields that the updater doesn't handle.
+    pub raw_json: serde_json::Value,
     /// Request timeout
     pub timeout: Option<Duration>,
     /// Request proxy
@@ -1162,9 +1158,6 @@ impl<'de> Deserialize<'de> for RemoteRelease {
             // dynamic platform response
             url: Option<Url>,
             signature: Option<String>,
-            // unknown fields
-            #[serde(flatten)]
-            other_response_fields: HashMap<String, serde_json::Value>,
         }
 
         let release = InnerRemoteRelease::deserialize(deserializer)?;
@@ -1194,7 +1187,6 @@ impl<'de> Deserialize<'de> for RemoteRelease {
                     })?,
                 })
             },
-            other_response_fields: release.other_response_fields,
         })
     }
 }
