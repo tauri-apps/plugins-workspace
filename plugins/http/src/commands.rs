@@ -77,6 +77,14 @@ pub struct FetchResponse {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)] //feature flags shoudln't affect api
+pub struct DangerousSettings {
+    accept_invalid_certs: bool,
+    accept_invalid_hostnames: bool,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ClientConfig {
     method: String,
     url: url::Url,
@@ -85,6 +93,7 @@ pub struct ClientConfig {
     connect_timeout: Option<u64>,
     max_redirections: Option<usize>,
     proxy: Option<Proxy>,
+    danger: Option<DangerousSettings>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -181,6 +190,7 @@ pub async fn fetch<R: Runtime>(
         connect_timeout,
         max_redirections,
         proxy,
+        danger,
     } = client_config;
 
     let scheme = url.scheme();
@@ -219,6 +229,24 @@ pub async fn fetch<R: Runtime>(
             .is_allowed(&url)
             {
                 let mut builder = reqwest::ClientBuilder::new();
+
+                if let Some(danger_config) = danger {
+                    #[cfg(not(feature = "dangerous-settings"))]
+                    {
+                        #[cfg(debug_assertions)]
+                        {
+                            eprintln!("[\x1b[33mWARNING\x1b[0m] using dangerous settings requires `dangerous-settings` feature flag in your Cargo.toml");
+                        }
+                        let _ = danger_config;
+                        return Err(Error::DangerousSettings);
+                    }
+                    #[cfg(feature = "dangerous-settings")]
+                    {
+                        builder = builder
+                            .danger_accept_invalid_certs(danger_config.accept_invalid_certs)
+                            .danger_accept_invalid_hostnames(danger_config.accept_invalid_hostnames)
+                    }
+                }
 
                 if let Some(timeout) = connect_timeout {
                     builder = builder.connect_timeout(Duration::from_millis(timeout));

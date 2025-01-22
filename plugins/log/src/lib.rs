@@ -35,31 +35,6 @@ pub const WEBVIEW_TARGET: &str = "webview";
 
 #[cfg(target_os = "ios")]
 mod ios {
-    use cocoa::base::id;
-    use objc::*;
-
-    const UTF8_ENCODING: usize = 4;
-    pub struct NSString(pub id);
-
-    impl NSString {
-        pub fn new(s: &str) -> Self {
-            // Safety: objc runtime calls are unsafe
-            NSString(unsafe {
-                let ns_string: id = msg_send![class!(NSString), alloc];
-                let ns_string: id = msg_send![ns_string,
-                                            initWithBytes:s.as_ptr()
-                                            length:s.len()
-                                            encoding:UTF8_ENCODING];
-
-                // The thing is allocated in rust, the thing must be set to autorelease in rust to relinquish control
-                // or it can not be released correctly in OC runtime
-                let _: () = msg_send![ns_string, autorelease];
-
-                ns_string
-            })
-        }
-    }
-
     swift_rs::swift!(pub fn tauri_log(
       level: u8, message: *const std::ffi::c_void
     ));
@@ -429,7 +404,12 @@ impl Builder {
                                 log::Level::Info => 2,
                                 log::Level::Warn | log::Level::Error => 3,
                             },
-                            ios::NSString::new(message.as_str()).0 as _,
+                            // The string is allocated in rust, so we must
+                            // autorelease it rust to give it to the Swift
+                            // runtime.
+                            objc2::rc::Retained::autorelease_ptr(
+                                objc2_foundation::NSString::from_str(message.as_str()),
+                            ) as _,
                         );
                     }
                 }),

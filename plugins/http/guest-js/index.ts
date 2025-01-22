@@ -84,6 +84,26 @@ export interface ClientOptions {
    * Configuration of a proxy that a Client should pass requests to.
    */
   proxy?: Proxy
+  /**
+   * Configuration for dangerous settings on the client such as disabling SSL verification.
+   */
+  danger?: DangerousSettings
+}
+
+/**
+ * Configuration for dangerous settings on the client such as disabling SSL verification.
+ *
+ * @since 2.3.0
+ */
+export interface DangerousSettings {
+  /**
+   * Disables SSL verification.
+   */
+  acceptInvalidCerts?: boolean
+  /**
+   * Disables hostname verification.
+   */
+  acceptInvalidHostnames?: boolean
 }
 
 const ERROR_REQUEST_CANCELLED = 'Request canceled'
@@ -115,12 +135,14 @@ export async function fetch(
   const maxRedirections = init?.maxRedirections
   const connectTimeout = init?.connectTimeout
   const proxy = init?.proxy
+  const danger = init?.danger
 
   // Remove these fields before creating the request
   if (init) {
     delete init.maxRedirections
     delete init.connectTimeout
     delete init.proxy
+    delete init.danger
   }
 
   const headers = init?.headers
@@ -172,7 +194,8 @@ export async function fetch(
       data,
       maxRedirections,
       connectTimeout,
-      proxy
+      proxy,
+      danger
     }
   })
 
