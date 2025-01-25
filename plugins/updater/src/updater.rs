@@ -330,6 +330,7 @@ impl Updater {
         }
 
         let mut remote_release: Option<RemoteRelease> = None;
+        let mut raw_json: Option<serde_json::Value> = None;
         let mut last_error: Option<Error> = None;
         for url in &self.endpoints {
             // replace {{current_version}}, {{target}} and {{arch}} in the provided URL
@@ -379,7 +380,8 @@ impl Updater {
                         return Ok(None);
                     };
 
-                    match serde_json::from_value::<RemoteRelease>(res.json().await?)
+                    raw_json = Some(res.json().await?);
+                    match serde_json::from_value::<RemoteRelease>(raw_json.clone().unwrap())
                         .map_err(Into::into)
                     {
                         Ok(release) => {
@@ -421,6 +423,7 @@ impl Updater {
                 download_url: release.download_url(&self.json_target)?.to_owned(),
                 body: release.notes.clone(),
                 signature: release.signature(&self.json_target)?.to_owned(),
+                raw_json: raw_json.unwrap(),
                 timeout: self.timeout,
                 proxy: self.proxy.clone(),
                 headers: self.headers.clone(),
@@ -454,6 +457,8 @@ pub struct Update {
     pub download_url: Url,
     /// Signature announced
     pub signature: String,
+    /// The raw version of server's JSON response. Useful if the response contains additional fields that the updater doesn't handle.
+    pub raw_json: serde_json::Value,
     /// Request timeout
     pub timeout: Option<Duration>,
     /// Request proxy
