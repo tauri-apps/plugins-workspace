@@ -240,6 +240,7 @@ dependencies = [
 name = "app-updater"
 version = "0.1.0"
 dependencies = [
+ "dunce",
  "serde",
  "serde_json",
  "tauri",
@@ -6857,6 +6858,7 @@ version = "2.4.0"
 dependencies = [
  "base64 0.22.1",
  "dirs 5.0.1",
+ "dunce",
  "flate2",
  "futures-util",
  "http",

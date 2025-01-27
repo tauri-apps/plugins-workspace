@@ -19,55 +19,65 @@ const UPDATER_PRIVATE_KEY: &str = "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZ
 const UPDATED_EXIT_CODE: i32 = 0;
 const UP_TO_DATE_EXIT_CODE: i32 = 2;
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 struct Config {
     version: &'static str,
     bundle: BundleConfig,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 struct BundleConfig {
     create_updater_artifacts: Updater,
 }
 
 #[derive(Serialize)]
-struct PlatformUpdate {
-    signature: String,
-    url: &'static str,
-    with_elevated_task: bool,
-}
-
-#[derive(Serialize)]
 struct Update {
     version: &'static str,
     date: String,
-    platforms: HashMap<String, PlatformUpdate>,
+    signature: String,
+    url: &'static str,
 }
 
-fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTarget) {
+fn setup_test() -> (PathBuf, PathBuf, Config, Config) {
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+
+    let target_dir = std::env::var("CARGO_TARGET_DIR")
+        .or_else(|_| std::env::var("CARGO_BUILD_TARGET_DIR"))
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| manifest_dir.join("../../../../target"));
+
+    let base_config = Config {
+        version: "0.1.0",
+        bundle: BundleConfig {
+            create_updater_artifacts: Updater::Bool(true),
+        },
+    };
+
+    let config = Config {
+        version: "1.0.0",
+        bundle: BundleConfig {
+            create_updater_artifacts: Updater::Bool(true),
+        },
+    };
+
+    (manifest_dir, target_dir, base_config, config)
+}
+
+fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: &str) {
     let mut command = Command::new("cargo");
     command
-        .args(["tauri", "build", "--debug", "--verbose"])
+        .args(["tauri", "build", "--debug"])
         .arg("--config")
         .arg(serde_json::to_string(config).unwrap())
         .env("TAURI_SIGNING_PRIVATE_KEY", UPDATER_PRIVATE_KEY)
         .env("TAURI_SIGNING_PRIVATE_KEY_PASSWORD", "")
         .current_dir(cwd);
 
-    #[cfg(target_os = "linux")]
-    command.args(["--bundles", target.name()]);
-    #[cfg(target_os = "macos")]
-    command.args(["--bundles", target.name()]);
-
     if bundle_updater {
-        #[cfg(windows)]
-        command.args(["--bundles", "msi", "nsis"]);
-
-        command.args(["--bundles", "updater"]);
+        command.args(["--bundles", target, "updater"]);
     } else {
-        #[cfg(windows)]
-        command.args(["--bundles", target.name()]);
+        command.arg("--no-bundle");
     }
 
     let status = command
@@ -79,268 +89,209 @@ fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTa
     }
 }
 
-#[derive(Copy, Clone)]
-enum BundleTarget {
-    AppImage,
+fn start_server(update_bundle: PathBuf, signature: PathBuf) -> Arc<tiny_http::Server> {
+    let server = tiny_http::Server::http("localhost:3007").expect("failed to start updater server");
+    let server = Arc::new(server);
+    let server_ = server.clone();
+    std::thread::spawn(move || {
+        for request in server_.incoming_requests() {
+            match request.url() {
+                "/" => {
+                    let signature =
+                        std::fs::read_to_string(&signature).expect("failed to read signature");
 
-    App,
+                    let now = time::OffsetDateTime::now_utc()
+                        .format(&time::format_description::well_known::Rfc3339)
+                        .unwrap();
 
-    Msi,
-    Nsis,
+                    let body = serde_json::to_vec(&Update {
+                        version: "1.0.0",
+                        date: now,
+                        signature,
+                        url: "http://localhost:3007/download",
+                    })
+                    .unwrap();
+
+                    let len = body.len();
+
+                    let response = tiny_http::Response::new(
+                        tiny_http::StatusCode(200),
+                        Vec::new(),
+                        std::io::Cursor::new(body),
+                        Some(len),
+                        None,
+                    );
+
+                    let _ = request.respond(response);
+                }
+                "/download" => {
+                    let file = File::open(&update_bundle).unwrap_or_else(|_| {
+                        panic!("failed to open updater bundle {}", update_bundle.display())
+                    });
+
+                    let _ = request.respond(tiny_http::Response::from_file(file));
+                }
+                _ => (),
+            }
+        }
+    });
+
+    server
 }
 
-impl BundleTarget {
-    fn name(self) -> &'static str {
-        match self {
-            Self::AppImage => "appimage",
-            Self::App => "app",
-            Self::Msi => "msi",
-            Self::Nsis => "nsis",
-        }
+fn test_update(app: &Path, update_bundle: PathBuf, signature: PathBuf, target: &str) {
+    // start the updater server
+    let server = start_server(update_bundle, signature);
+
+    // run app
+    let mut app_cmd = Command::new(app);
+    #[cfg(target_os = "linux")]
+    if std::env::var("CI").map(|v| v == "true").unwrap_or_default() {
+        app_cmd = Command::new("xvfb-run");
+        app_cmd.arg("--auto-servernum").arg(app);
+    };
+    app_cmd.env("TARGET", target);
+    let output = app_cmd.output().expect("failed to run app");
+
+    // check if updated, or failed during update
+    let code = output.status.code().unwrap_or(-1);
+    if code != UPDATED_EXIT_CODE {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        panic!("app failed while updating, expected exit code {UPDATED_EXIT_CODE}, got {code}\n{stderr}");
+    }
+
+    // wait for the update to finish
+    std::thread::sleep(std::time::Duration::from_secs(20));
+
+    // run again
+    let status = app_cmd.status().expect("failed to run new app");
+
+    //  check if new version is up to date
+    let code = status.code().unwrap_or(-1);
+    if code != UP_TO_DATE_EXIT_CODE {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        panic!(
+            "app failed to update, expected exit code {UP_TO_DATE_EXIT_CODE}, got {code}\n{stderr}"
+        );
+    }
+
+    // shutdown the server
+    server.unblock();
+}
+
+#[cfg(windows)]
+fn nsis() {
+    let (manifest_dir, target_dir, base_config, config) = setup_test();
+
+    // build update bundles
+    build_app(&manifest_dir, &config, true, "nsis");
+
+    // bundle base app
+    build_app(&manifest_dir, &base_config, false, "nsis");
+
+    let app = target_dir.join("debug/app-updater.exe");
+
+    // test nsis installer updates
+    let update_bundle = target_dir.join(format!(
+        "debug/bundle/nsis/app-updater_{}_x64-setup.exe",
+        config.version,
+    ));
+    let signature = update_bundle.with_extension("exe.sig");
+    test_update(&app, update_bundle, signature, "nsis");
+
+    // cleanup the installed application
+    if !std::env::var("CI").map(|v| v == "true").unwrap_or_default() {
+        let _ = Command::new(target_dir.join("debug/uninstall.exe"))
+            .arg("/S")
+            .status()
+            .expect("failed to run nsis uninstaller");
+        std::thread::sleep(std::time::Duration::from_secs(5));
     }
 }
 
-impl Default for BundleTarget {
-    fn default() -> Self {
-        #[cfg(any(target_os = "macos", target_os = "ios"))]
-        return Self::App;
-        #[cfg(target_os = "linux")]
-        return Self::AppImage;
-        #[cfg(windows)]
-        return Self::Nsis;
+#[cfg(windows)]
+fn msi() {
+    let (manifest_dir, target_dir, base_config, config) = setup_test();
+
+    // build update bundles
+    build_app(&manifest_dir, &config, true, "msi");
+
+    // bundle base app
+    build_app(&manifest_dir, &base_config, false, "msi");
+
+    let app = target_dir.join("debug/app-updater.exe");
+
+    // test msi installer updates
+    let update_bundle = target_dir.join(format!(
+        "debug/bundle/msi/app-updater_{}_x64_en-US.msi",
+        config.version,
+    ));
+    let signature = update_bundle.with_extension("msi.sig");
+    test_update(&app, update_bundle, signature, "msi");
+
+    // cleanup the installed application
+    if !std::env::var("CI").map(|v| v == "true").unwrap_or_default() {
+        let uninstall = target_dir.join("debug/Uninstall app-updater.lnk");
+        let _ = Command::new("cmd")
+            .arg("/c")
+            .arg(&uninstall)
+            .arg("/quiet")
+            .status()
+            .expect("failed to run msi uninstaller");
+        std::thread::sleep(std::time::Duration::from_secs(5));
     }
 }
 
 #[cfg(target_os = "linux")]
-fn bundle_paths(root_dir: &Path, version: &str) -> Vec<(BundleTarget, PathBuf)> {
-    vec![(
-        BundleTarget::AppImage,
-        root_dir.join(format!(
-            "target/debug/bundle/appimage/app-updater_{version}_amd64.AppImage"
-        )),
-    )]
+fn appimage() {
+    let (manifest_dir, target_dir, base_config, config) = setup_test();
+
+    // build update bundles
+    build_app(&manifest_dir, &config, true, "appimage");
+
+    let update_bundle = target_dir.join(format!(
+        "debug/bundle/appimage/app-updater_{}_amd64.AppImage",
+        config.version,
+    ));
+    let signature = update_bundle.with_extension("AppImage.sig");
+
+    // backup update bundles files because next build will override them
+    let appimage_backup = target_dir.join("debug/bundle/test-appimage.AppImage");
+    let signature_backup = target_dir.join("debug/bundle/test-appimage.AppImage.sig");
+    std::fs::rename(&update_bundle, &appimage_backup);
+    std::fs::rename(&signature, &signature_backup);
+
+    // bundle base app
+    build_app(&manifest_dir, &base_config, true, "appimage");
+
+    // restore backup
+    std::fs::rename(&appimage_backup, &update_bundle);
+    std::fs::rename(&signature_backup, &signature);
+
+    let app = target_dir.join(format!(
+        "debug/bundle/appimage/app-updater_{}_amd64.AppImage",
+        base_config.version
+    ));
+
+    // test appimage updates
+    test_update(&app, update_bundle, signature, "appimage");
 }
 
 #[cfg(target_os = "macos")]
-fn bundle_paths(root_dir: &Path, _version: &str) -> Vec<(BundleTarget, PathBuf)> {
-    vec![(
-        BundleTarget::App,
-        root_dir.join("target/debug/bundle/macos/app-updater.app"),
-    )]
-}
-
-#[cfg(target_os = "ios")]
-fn bundle_paths(root_dir: &Path, _version: &str) -> Vec<(BundleTarget, PathBuf)> {
-    vec![(
-        BundleTarget::App,
-        root_dir.join("target/debug/bundle/ios/app-updater.ipa"),
-    )]
-}
-
-#[cfg(target_os = "android")]
-fn bundle_path(root_dir: &Path, _version: &str) -> PathBuf {
-    root_dir.join("target/debug/bundle/android/app-updater.apk")
-}
-
-#[cfg(windows)]
-fn bundle_paths(root_dir: &Path, version: &str) -> Vec<(BundleTarget, PathBuf)> {
-    vec![
-        (
-            BundleTarget::Nsis,
-            root_dir.join(format!(
-                "target/debug/bundle/nsis/app-updater_{version}_x64-setup.exe"
-            )),
-        ),
-        (
-            BundleTarget::Msi,
-            root_dir.join(format!(
-                "target/debug/bundle/msi/app-updater_{version}_x64_en-US.msi"
-            )),
-        ),
-    ]
+fn app() {
+    let (manifest_dir, target_dir, base_config, config) = setup_test();
 }
 
 #[test]
 #[ignore]
-fn update_app() {
-    let target =
-        tauri_plugin_updater::target().expect("running updater test in an unsupported platform");
-    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let root_dir = manifest_dir.join("../../../..");
-
-    for mut config in [
-        Config {
-            version: "1.0.0",
-            bundle: BundleConfig {
-                create_updater_artifacts: Updater::Bool(true),
-            },
-        },
-        Config {
-            version: "1.0.0",
-            bundle: BundleConfig {
-                create_updater_artifacts: Updater::String(V1Compatible::V1Compatible),
-            },
-        },
-    ] {
-        let v1_compatible = matches!(
-            config.bundle.create_updater_artifacts,
-            Updater::String(V1Compatible::V1Compatible)
-        );
-
-        // bundle app update
-        build_app(&manifest_dir, &config, true, Default::default());
-
-        let updater_zip_ext = if v1_compatible {
-            if cfg!(windows) {
-                Some("zip")
-            } else {
-                Some("tar.gz")
-            }
-        } else if cfg!(target_os = "macos") {
-            Some("tar.gz")
-        } else {
-            None
-        };
-
-        for (bundle_target, out_bundle_path) in bundle_paths(&root_dir, "1.0.0") {
-            let bundle_updater_ext = if v1_compatible {
-                out_bundle_path
-                    .extension()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .replace("exe", "nsis")
-            } else {
-                out_bundle_path
-                    .extension()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .to_string()
-            };
-            let updater_extension = if let Some(updater_zip_ext) = updater_zip_ext {
-                format!("{bundle_updater_ext}.{updater_zip_ext}")
-            } else {
-                bundle_updater_ext
-            };
-            let signature_extension = format!("{updater_extension}.sig");
-            let signature_path = out_bundle_path.with_extension(signature_extension);
-            let signature = std::fs::read_to_string(&signature_path).unwrap_or_else(|_| {
-                panic!("failed to read signature file {}", signature_path.display())
-            });
-            let out_updater_path = out_bundle_path.with_extension(updater_extension);
-            let updater_path = root_dir.join(format!(
-                "target/debug/{}",
-                out_updater_path.file_name().unwrap().to_str().unwrap()
-            ));
-            std::fs::rename(&out_updater_path, &updater_path).expect("failed to rename bundle");
-
-            let target = target.clone();
-
-            // start the updater server
-            let server = Arc::new(
-                tiny_http::Server::http("localhost:3007").expect("failed to start updater server"),
-            );
-
-            let server_ = server.clone();
-            std::thread::spawn(move || {
-                for request in server_.incoming_requests() {
-                    match request.url() {
-                        "/" => {
-                            let mut platforms = HashMap::new();
-
-                            platforms.insert(
-                                target.clone(),
-                                PlatformUpdate {
-                                    signature: signature.clone(),
-                                    url: "http://localhost:3007/download",
-                                    with_elevated_task: false,
-                                },
-                            );
-                            let body = serde_json::to_vec(&Update {
-                                version: "1.0.0",
-                                date: time::OffsetDateTime::now_utc()
-                                    .format(&time::format_description::well_known::Rfc3339)
-                                    .unwrap(),
-                                platforms,
-                            })
-                            .unwrap();
-                            let len = body.len();
-                            let response = tiny_http::Response::new(
-                                tiny_http::StatusCode(200),
-                                Vec::new(),
-                                std::io::Cursor::new(body),
-                                Some(len),
-                                None,
-                            );
-                            let _ = request.respond(response);
-                        }
-                        "/download" => {
-                            let _ = request.respond(tiny_http::Response::from_file(
-                                File::open(&updater_path).unwrap_or_else(|_| {
-                                    panic!(
-                                        "failed to open updater bundle {}",
-                                        updater_path.display()
-                                    )
-                                }),
-                            ));
-                        }
-                        _ => (),
-                    }
-                }
-            });
-
-            config.version = "0.1.0";
-
-            // bundle initial app version
-            build_app(&manifest_dir, &config, false, bundle_target);
-
-            let status_checks = if matches!(bundle_target, BundleTarget::Msi) {
-                // for msi we can't really check if the app was updated, because we can't change the install path
-                vec![UPDATED_EXIT_CODE]
-            } else {
-                vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE]
-            };
-
-            for expected_exit_code in status_checks {
-                let mut binary_cmd = if cfg!(windows) {
-                    Command::new(root_dir.join("target/debug/app-updater.exe"))
-                } else if cfg!(target_os = "macos") {
-                    Command::new(
-                        bundle_paths(&root_dir, "0.1.0")
-                            .first()
-                            .unwrap()
-                            .1
-                            .join("Contents/MacOS/app-updater"),
-                    )
-                } else if std::env::var("CI").map(|v| v == "true").unwrap_or_default() {
-                    let mut c = Command::new("xvfb-run");
-                    c.arg("--auto-servernum")
-                        .arg(&bundle_paths(&root_dir, "0.1.0").first().unwrap().1);
-                    c
-                } else {
-                    Command::new(&bundle_paths(&root_dir, "0.1.0").first().unwrap().1)
-                };
-
-                binary_cmd.env("TARGET", bundle_target.name());
-
-                let status = binary_cmd.status().expect("failed to run app");
-                let code = status.code().unwrap_or(-1);
-
-                if code != expected_exit_code {
-                    panic!(
-                        "failed to run app, expected exit code {expected_exit_code}, got {code}"
-                    );
-                }
-                #[cfg(windows)]
-                if code == UPDATED_EXIT_CODE {
-                    // wait for the update to finish
-                    std::thread::sleep(std::time::Duration::from_secs(5));
-                }
-            }
-
-            // graceful shutdown
-            server.unblock();
-        }
-    }
+fn it_updates() {
+    #[cfg(windows)]
+    nsis();
+    // MSI test should be the last one
+    #[cfg(windows)]
+    msi();
+    #[cfg(target_os = "linux")]
+    appimage();
+    #[cfg(target_os = "macos")]
+    app();
 }

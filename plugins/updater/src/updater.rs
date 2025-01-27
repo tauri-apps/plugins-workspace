@@ -632,12 +632,16 @@ impl Update {
                 .chain(self.installer_args())
                 .collect(),
             WindowsUpdaterType::Msi { path, .. } => {
-                let escaped_args = current_args
-                    .iter()
-                    .map(escape_msi_property_arg)
-                    .collect::<Vec<_>>()
-                    .join(" ");
-                msi_args = OsString::from(format!("LAUNCHAPPARGS=\"{escaped_args}\""));
+                msi_args = if !current_args.is_empty() {
+                    let escaped_args = current_args
+                        .iter()
+                        .map(escape_msi_property_arg)
+                        .collect::<Vec<_>>()
+                        .join(" ");
+                    OsString::from(format!("LAUNCHAPPARGS=\"{escaped_args}\""))
+                } else {
+                    OsString::new()
+                };
 
                 [OsStr::new("/i"), path.as_os_str()]
                     .into_iter()
@@ -645,7 +649,7 @@ impl Update {
                     .chain(once(OsStr::new("/promptrestart")))
                     .chain(self.installer_args())
                     .chain(once(OsStr::new("AUTOLAUNCHAPP=True")))
-                    .chain(once(msi_args.as_os_str()))
+                    .chain(once(msi_args.as_os_str()).filter(|a| !a.is_empty()))
                     .collect()
             }
         };

@@ -14,5 +14,8 @@ tauri-plugin-updater = { path = "../.." }
 tiny_http = "0.12"
 time = { version = "0.3", features = ["formatting"] }
 
+[target."cfg(windows)".dependencies]
+dunce = { workspace = true }
+
 [features]
 prod = ["tauri/custom-protocol"]

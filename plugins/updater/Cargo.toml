@@ -63,6 +63,9 @@ flate2 = { version = "1", optional = true }
 tar = "0.4"
 flate2 = "1"
 
+[dev-dependencies]
+dunce = { workspace = true }
+
 [features]
 default = ["rustls-tls", "zip"]
 zip = ["dep:zip", "dep:tar", "dep:flate2"]

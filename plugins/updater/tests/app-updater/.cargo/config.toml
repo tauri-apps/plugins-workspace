@@ -1,0 +1,5 @@
+[target.'cfg(windows)']
+runner = "powershell -Command Start-Process -Verb runAs -FilePath"
+
+[target.x86_64-unknown-linux-gnu]
+runner = 'sudo -E'

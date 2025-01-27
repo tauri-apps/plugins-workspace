@@ -14,29 +14,31 @@ fn main() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             let handle = app.handle().clone();
+            eprintln!("app version: {}", app.package_info().version);
+
             tauri::async_runtime::spawn(async move {
+                #[allow(unused_mut)]
                 let mut builder = handle.updater_builder();
-                if std::env::var("TARGET").unwrap_or_default() == "nsis" {
-                    // /D sets the default installation directory ($INSTDIR),
-                    // overriding InstallDir and InstallDirRegKey.
-                    // It must be the last parameter used in the command line and must not contain any quotes, even if the path contains spaces.
-                    // Only absolute paths are supported.
-                    // NOTE: we only need this because this is an integration test and we don't want to install the app in the programs folder
-                    builder = builder.installer_args(vec![format!(
-                        "/D={}",
-                        tauri::utils::platform::current_exe()
-                            .unwrap()
-                            .parent()
-                            .unwrap()
-                            .display()
-                    )]);
+
+                // Overriding installation directory for integration tests on Windows
+                #[cfg(windows)]
+                {
+                    let target = std::env::var("TARGET").unwrap_or_default();
+                    let exe = tauri::utils::platform::current_exe().unwrap();
+                    let dir = dunce::simplified(exe.parent().unwrap()).display();
+                    if target == "nsis" {
+                        builder = builder.installer_arg(format!("/D=\"{dir}\"",));
+                    } else if target == "msi" {
+                        builder = builder.installer_arg(format!("INSTALLDIR=\"{dir}\""));
+                    }
                 }
+
                 let updater = builder.build().unwrap();
 
                 match updater.check().await {
                     Ok(Some(update)) => {
                         if let Err(e) = update.download_and_install(|_, _| {}, || {}).await {
-                            println!("{e}");
+                            eprintln!("{e}");
                             std::process::exit(1);
                         }
                         std::process::exit(0);
@@ -45,8 +47,8 @@ fn main() {
                         std::process::exit(2);
                     }
                     Err(e) => {
-                        println!("{e}");
-                        std::process::exit(1);
+                        eprintln!("{e}");
+                        std::process::exit(3);
                     }
                 }
             });
