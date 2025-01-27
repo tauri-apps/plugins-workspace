@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.0]
+
+- [`0afc9b6b`](https://github.com/tauri-apps/plugins-workspace/commit/0afc9b6be07bee1077f05a86285d977e57810ed9) ([#2325](https://github.com/tauri-apps/plugins-workspace/pull/2325) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) The `Update` struct/object will now contain a `raw_json`/`rawJson` property to be able to read parts of server's json response that are not handled by the plugin.
+
 ## \[2.3.1]
 
 - [`57efb47c`](https://github.com/tauri-apps/plugins-workspace/commit/57efb47c116f880477f72f02a8e4239e88007d44) ([#2235](https://github.com/tauri-apps/plugins-workspace/pull/2235) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add `Builder::header` and `Builder::headers` method to configure default headers for updater.

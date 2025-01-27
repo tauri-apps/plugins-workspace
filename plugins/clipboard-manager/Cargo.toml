@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-clipboard-manager"
-version = "2.2.0"
+version = "2.2.1"
 description = "Read and write to the system clipboard."
 edition = { workspace = true }
 authors = { workspace = true }

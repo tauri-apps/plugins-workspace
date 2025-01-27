@@ -1,5 +1,14 @@
 # Changelog
 
+## \[2.0.16]
+
+### Dependencies
+
+- Upgraded to `clipboard-manager@2.2.1`
+- Upgraded to `http@2.3.0`
+- Upgraded to `log@2.2.1`
+- Upgraded to `updater@2.4.0`
+
 ## \[2.0.15]
 
 ### Dependencies

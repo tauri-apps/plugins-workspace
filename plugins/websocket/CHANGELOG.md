@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.3.0]
+
+- [`78acfa45`](https://github.com/tauri-apps/plugins-workspace/commit/78acfa456f343c0af5fbf35660802d14ff7a5eca) ([#2027](https://github.com/tauri-apps/plugins-workspace/pull/2027) by [@twlite](https://github.com/tauri-apps/plugins-workspace/../../twlite)) `addListener` now returns a cleanup function instead of `void` to remove the listener.
+
 ## \[2.2.1]
 
 - [`05cca602`](https://github.com/tauri-apps/plugins-workspace/commit/05cca602d927c30014d3892438ca28d99bc4e1d3) ([#2210](https://github.com/tauri-apps/plugins-workspace/pull/2210) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) **Breaking change:** Updated tokio_tungstenite to `0.26`. This may be a breaking change if you use the `tls_connector` Builder method in Rust.
