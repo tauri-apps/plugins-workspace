@@ -35,7 +35,7 @@ hex = "0.4"
 zeroize = { version = "1", features = ["zeroize_derive"] }
 rust-argon2 = { version = "2", optional = true }
 rand_chacha = { version = "0.3.1", optional = true }
-rand_core = { version = "0.6.4", features = ["getrandom"], optional = true }
+rand_core = { version = "0.9.0", features = ["getrandom"], optional = true }
 
 [dev-dependencies]
 rand = "0.8"
