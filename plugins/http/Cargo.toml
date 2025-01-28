@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-http"
-version = "2.2.0"
+version = "2.3.0"
 description = "Access an HTTP client written in Rust."
 edition = { workspace = true }
 authors = { workspace = true }

@@ -58,9 +58,9 @@ export type Message =
 
 export default class WebSocket {
   id: number
-  private readonly listeners: Array<(arg: Message) => void>
+  private readonly listeners: Set<(arg: Message) => void>
 
-  constructor(id: number, listeners: Array<(arg: Message) => void>) {
+  constructor(id: number, listeners: Set<(arg: Message) => void>) {
     this.id = id
     this.listeners = listeners
   }
@@ -69,7 +69,7 @@ export default class WebSocket {
     url: string,
     config?: ConnectionConfig
   ): Promise<WebSocket> {
-    const listeners: Array<(arg: Message) => void> = []
+    const listeners: Set<(arg: Message) => void> = new Set()
 
     const onMessage = new Channel<Message>()
     onMessage.onmessage = (message: Message): void => {
@@ -89,8 +89,12 @@ export default class WebSocket {
     }).then((id) => new WebSocket(id, listeners))
   }
 
-  addListener(cb: (arg: Message) => void): void {
-    this.listeners.push(cb)
+  addListener(cb: (arg: Message) => void): () => void {
+    this.listeners.add(cb)
+
+    return () => {
+      this.listeners.delete(cb)
+    }
   }
 
   async send(message: Message | string | number[]): Promise<void> {

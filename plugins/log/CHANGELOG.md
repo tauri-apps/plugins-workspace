@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.1]
+
+- [`784a54a3`](https://github.com/tauri-apps/plugins-workspace/commit/784a54a39094dfbaaa8dd123eb083c04dc6c3bb2) ([#2344](https://github.com/tauri-apps/plugins-workspace/pull/2344) by [@madsmtm](https://github.com/tauri-apps/plugins-workspace/../../madsmtm)) Use `objc2` instead of `objc`.
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
