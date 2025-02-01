@@ -2349,9 +2349,9 @@ dependencies = [
 
 [[package]]
 name = "gethostname"
-version = "0.5.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc3655aa6818d65bc620d6911f05aa7b6aeb596291e1e9f79e52df85583d1e30"
+checksum = "4fd4b8790c0792e3b11895efdf5f289ebe8b59107a6624f1cce68f24ff8c7035"
 dependencies = [
  "rustix",
  "windows-targets 0.52.6",
@@ -6750,7 +6750,7 @@ dependencies = [
 name = "tauri-plugin-os"
 version = "2.2.0"
 dependencies = [
- "gethostname 0.5.0",
+ "gethostname 1.0.0",
  "log",
  "os_info",
  "serde",
