@@ -23,7 +23,7 @@ use reqwest::{
 };
 use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
-use tauri::{utils::platform::current_exe, Resource};
+use tauri::{utils::platform::current_exe, AppHandle, Resource, Runtime};
 use time::OffsetDateTime;
 use url::Url;
 
@@ -94,8 +94,12 @@ impl RemoteRelease {
 
 pub type OnBeforeExit = Arc<dyn Fn() + Send + Sync + 'static>;
 pub type VersionComparator = Arc<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>;
+type MainThreadClosure = Box<dyn FnOnce() + Send + Sync + 'static>;
+type RunOnMainThread =
+    Box<dyn Fn(MainThreadClosure) -> std::result::Result<(), tauri::Error> + Send + Sync + 'static>;
 
 pub struct UpdaterBuilder {
+    run_on_main_thread: RunOnMainThread,
     app_name: String,
     current_version: Version,
     config: Config,
@@ -112,18 +116,20 @@ pub struct UpdaterBuilder {
 }
 
 impl UpdaterBuilder {
-    /// It's prefered to use [`crate::UpdaterExt::updater_builder`] instead of
-    /// constructing a [`UpdaterBuilder`] with this function yourself
-    pub fn new(app_name: String, current_version: Version, config: crate::Config) -> Self {
+    pub(crate) fn new<R: Runtime>(app: &AppHandle<R>, config: crate::Config) -> Self {
+        let app_ = app.clone();
+        let run_on_main_thread =
+            move |f: Box<dyn FnOnce() + Send + Sync + 'static>| app_.run_on_main_thread(f);
         Self {
+            run_on_main_thread: Box::new(run_on_main_thread),
             installer_args: config
                 .windows
                 .as_ref()
                 .map(|w| w.installer_args.clone())
                 .unwrap_or_default(),
             current_exe_args: Vec::new(),
-            app_name,
-            current_version,
+            app_name: app.package_info().name.clone(),
+            current_version: app.package_info().version.clone(),
             config,
             version_comparator: None,
             executable_path: None,
@@ -249,6 +255,7 @@ impl UpdaterBuilder {
         };
 
         Ok(Updater {
+            run_on_main_thread: Arc::new(self.run_on_main_thread),
             config: self.config,
             app_name: self.app_name,
             current_version: self.current_version,
@@ -281,6 +288,7 @@ impl UpdaterBuilder {
 }
 
 pub struct Updater {
+    run_on_main_thread: Arc<RunOnMainThread>,
     config: Config,
     app_name: String,
     current_version: Version,
@@ -400,6 +408,7 @@ impl Updater {
 
         let update = if should_update {
             Some(Update {
+                run_on_main_thread: self.run_on_main_thread.clone(),
                 config: self.config.clone(),
                 on_before_exit: self.on_before_exit.clone(),
                 app_name: self.app_name.clone(),
@@ -427,6 +436,7 @@ impl Updater {
 
 #[derive(Clone)]
 pub struct Update {
+    run_on_main_thread: Arc<RunOnMainThread>,
     config: Config,
     #[allow(unused)]
     on_before_exit: Option<OnBeforeExit>,
@@ -1065,17 +1075,23 @@ impl Update {
 
         if need_authorization {
             // Use AppleScript to perform moves with admin privileges
-            let script = format!(
+            let apple_script = format!(
                 "do shell script \"rm -rf '{src}' && mv -f '{new}' '{src}'\" with administrator privileges",
                 src = self.extract_path.display(),
                 new = tmp_extract_dir.path().display()
             );
 
-            let mut osascript = std::process::Command::new("osascript");
-            osascript.arg("-e").arg(script);
+            let (tx, rx) = std::sync::mpsc::channel();
+            let res = (self.run_on_main_thread)(Box::new(move || {
+                let mut script =
+                    osakit::Script::new_from_source(osakit::Language::AppleScript, &apple_script);
+                script.compile().expect("invalid AppleScript");
+                let r = script.execute();
+                tx.send(r).unwrap();
+            }));
+            let result = rx.recv().unwrap();
 
-            let status = osascript.status()?;
-            if !status.success() {
+            if res.is_err() || result.is_err() {
                 std::fs::remove_dir_all(tmp_extract_dir.path()).ok();
                 return Err(Error::Io(std::io::Error::new(
                     std::io::ErrorKind::PermissionDenied,
