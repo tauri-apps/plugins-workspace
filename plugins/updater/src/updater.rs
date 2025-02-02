@@ -99,6 +99,7 @@ type RunOnMainThread =
     Box<dyn Fn(MainThreadClosure) -> std::result::Result<(), tauri::Error> + Send + Sync + 'static>;
 
 pub struct UpdaterBuilder {
+    #[allow(dead_code)]
     run_on_main_thread: RunOnMainThread,
     app_name: String,
     current_version: Version,
@@ -298,6 +299,7 @@ impl UpdaterBuilder {
 }
 
 pub struct Updater {
+    #[allow(dead_code)]
     run_on_main_thread: Arc<RunOnMainThread>,
     config: Config,
     app_name: String,
@@ -449,6 +451,7 @@ impl Updater {
 
 #[derive(Clone)]
 pub struct Update {
+    #[allow(dead_code)]
     run_on_main_thread: Arc<RunOnMainThread>,
     config: Config,
     #[allow(unused)]
