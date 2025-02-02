@@ -19,7 +19,7 @@ windows = { level = "full", notes = "" }
 linux = { level = "full", notes = "" }
 macos = { level = "full", notes = "" }
 android = { level = "full", notes = "" }
-ios = { level = "none", notes = "" }
+ios = { level = "full", notes = "" }
 
 [build-dependencies]
 tauri-plugin = { workspace = true, features = ["build"] }

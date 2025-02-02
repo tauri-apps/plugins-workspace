@@ -38,8 +38,8 @@ url = { workspace = true }
 
 [target."cfg(windows)".dependencies]
 dunce = "1"
-windows-registry = "0.3"
-windows-result = "0.2"
+windows-registry = "0.4"
+windows-result = "0.3"
 
 [target."cfg(target_os = \"linux\")".dependencies]
 rust-ini = "0.21"

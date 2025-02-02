@@ -11,7 +11,7 @@ tauri = { workspace = true, features = ["wry", "compression"] }
 tokio = { version = "1", features = ["net"] }
 futures-util = "0.3"
 tauri-plugin-websocket = { path = "../../../" }
-tokio-tungstenite = "0.24"
+tokio-tungstenite = "0.26"
 
 [build-dependencies]
 tauri-build = { workspace = true }

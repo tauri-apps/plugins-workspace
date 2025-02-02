@@ -27,6 +27,7 @@ use std::{
 mod cmd;
 
 type LabelMapperFn = dyn Fn(&str) -> &str + Send + Sync;
+type FilterCallbackFn = dyn Fn(&str) -> bool + Send + Sync;
 
 /// Default filename used to store window state.
 ///
@@ -320,6 +321,7 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
 #[derive(Default)]
 pub struct Builder {
     denylist: HashSet<String>,
+    filter_callback: Option<Box<FilterCallbackFn>>,
     skip_initial_state: HashSet<String>,
     state_flags: StateFlags,
     map_label: Option<Box<LabelMapperFn>>,
@@ -344,9 +346,19 @@ impl Builder {
     }
 
     /// Sets a list of windows that shouldn't be tracked and managed by this plugin
-    /// for example splash screen windows.
+    /// For example, splash screen windows.
     pub fn with_denylist(mut self, denylist: &[&str]) -> Self {
         self.denylist = denylist.iter().map(|l| l.to_string()).collect();
+        self
+    }
+
+    /// Sets a filter callback to exclude specific windows from being tracked.  
+    /// Return `true` to save the state, or `false` to skip and not save it.
+    pub fn with_filter<F>(mut self, filter_callback: F) -> Self
+    where
+        F: Fn(&str) -> bool + Send + Sync + 'static,
+    {
+        self.filter_callback = Some(Box::new(filter_callback));
         self
     }
 
@@ -413,8 +425,17 @@ impl Builder {
                     .map(|map| map(window.label()))
                     .unwrap_or_else(|| window.label());
 
+                // Check deny list names
                 if self.denylist.contains(label) {
                     return;
+                }
+
+                // Check deny list callback
+                if let Some(filter_callback) = &self.filter_callback {
+                    // Don't save the state if the callback returns false
+                    if !filter_callback(label) {
+                        return;
+                    }
                 }
 
                 if !self.skip_initial_state.contains(label) {
