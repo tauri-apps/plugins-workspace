@@ -206,7 +206,7 @@ checksum = "4c95c10ba0b00a02636238b814946408b1322d5ac4760326e6fb8ec956d85775"
 
 [[package]]
 name = "api"
-version = "2.0.16"
+version = "2.0.17"
 dependencies = [
  "log",
  "serde",
@@ -6940,7 +6940,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.4.0"
+version = "2.5.0"
 dependencies = [
  "base64 0.22.1",
  "dirs 6.0.0",
@@ -6969,7 +6969,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-upload"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "futures-util",
  "log",

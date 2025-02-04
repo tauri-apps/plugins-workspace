@@ -1,7 +1,7 @@
 {
   "name": "api",
   "private": true,
-  "version": "2.0.12",
+  "version": "2.0.13",
   "type": "module",
   "scripts": {
     "dev": "vite --clearScreen false",
@@ -28,7 +28,7 @@
     "@tauri-apps/plugin-process": "^2.2.0",
     "@tauri-apps/plugin-shell": "^2.2.0",
     "@tauri-apps/plugin-store": "^2.2.0",
-    "@tauri-apps/plugin-updater": "^2.4.0",
+    "@tauri-apps/plugin-updater": "^2.5.0",
     "@zerodevx/svelte-json-view": "1.0.11"
   },
   "devDependencies": {

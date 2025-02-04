@@ -112,7 +112,7 @@ importers:
         specifier: ^2.2.0
         version: link:../../plugins/store
       '@tauri-apps/plugin-updater':
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../../plugins/updater
       '@zerodevx/svelte-json-view':
         specifier: 1.0.11
