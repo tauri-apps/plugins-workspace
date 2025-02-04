@@ -75,10 +75,10 @@ Second, add the required permissions in the project:
 
 ```json
   "permissions": [
-    +"haptics:allow-impact-feedback",
-    +"haptics:allow-notification-feedback",
-    +"haptics:allow-selection-feedback",
-    +"haptics:allow-vibrate"
+    "haptics:allow-impact-feedback",
+    "haptics:allow-notification-feedback",
+    "haptics:allow-selection-feedback",
+    "haptics:allow-vibrate"
   ]
 ```
 
