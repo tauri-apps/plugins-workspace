@@ -72,7 +72,7 @@ pub(crate) async fn check<R: Runtime>(
         metadata.available = true;
         metadata.current_version.clone_from(&update.current_version);
         metadata.version.clone_from(&update.version);
-        metadata.date = update.date.map(|d| d.to_string());
+        metadata.date = update.date.map(|d| d.format("%Y-%m-%dT%H:%M:%S%:z").to_string());
         metadata.body.clone_from(&update.body);
         metadata.raw_json.clone_from(&update.raw_json);
         metadata.rid = Some(webview.resources_table().add(update));
