@@ -305,6 +305,16 @@
           "const": "deny-authenticate"
         },
         {
+          "description": "Enables the biometric_cipher command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-biometric-cipher"
+        },
+        {
+          "description": "Denies the biometric_cipher command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-biometric-cipher"
+        },
+        {
           "description": "Enables the status command without any pre-configured scope.",
           "type": "string",
           "const": "allow-status"
