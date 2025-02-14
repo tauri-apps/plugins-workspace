@@ -8,7 +8,7 @@ use tauri::{
     AppHandle, Runtime,
 };
 
-use crate::{models::*, FilePath, OpenOptions};
+use crate::{models::*, FilePath, OpenOptions, SafeFilePath};
 
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "com.plugin.fs";
@@ -91,6 +91,27 @@ impl<R: Runtime> Fs<R> {
             } else {
                 todo!()
             }
+        }
+    }
+
+    pub fn file_name(&self, filepath: SafeFilePath) -> Result<String, String> {
+        let uri;
+        match filepath {
+            SafeFilePath::Path(_) => unreachable!(), // Modern android uses content URIs so getting a path is not possible
+            SafeFilePath::Url(url) => {
+                uri = url.to_string();
+            }
+        }
+        let Ok(result) = self.0.run_mobile_plugin::<GetFileNameResponse>(
+            "getFileName",
+            GetFileNamePayload { uri },
+        ) else {
+            return Err("Failed to invoke getFileName kotlin function".into());
+        };
+        if let Some(name) = result.name {
+            Ok(name)
+        } else {
+            Err("Failed to get file name".into())
         }
     }
 }

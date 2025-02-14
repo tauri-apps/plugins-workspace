@@ -13,6 +13,18 @@ pub struct GetFileDescriptorPayload {
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct GetFileNamePayload {
+    pub uri: String,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GetFileDescriptorResponse {
     pub fd: Option<i32>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GetFileNameResponse {
+    pub name: Option<String>,
 }

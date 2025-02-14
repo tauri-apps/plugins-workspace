@@ -7,8 +7,10 @@ package com.plugin.fs
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.res.AssetManager.ACCESS_BUFFER
+import android.database.Cursor
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import android.provider.OpenableColumns
 import app.tauri.annotation.Command
 import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.TauriPlugin
@@ -31,6 +33,11 @@ class WriteTextFileArgs {
 class GetFileDescriptorArgs {
     lateinit var uri: String
     lateinit var mode: String
+}
+
+@InvokeArg
+class GetFileNameArgs {
+    lateinit var uri: String
 }
 
 @TauriPlugin
@@ -88,6 +95,37 @@ class FsPlugin(private val activity: Activity): Plugin(activity) {
                 copy(i, o)
             }
         }
+    }
+
+    @Command
+    fun getFileName(invoke: Invoke) {
+        val args = invoke.parseArgs(GetFileNameArgs::class.java)
+        val res = JSObject()
+        val name = getRealNameFromURI(Uri.parse(args.uri))
+        res.put("name", name)
+        invoke.resolve(res)
+    }
+
+    fun getRealNameFromURI(contentUri: Uri): String? {
+        var cursor: Cursor? = null
+        try {
+            val projection = arrayOf(OpenableColumns.DISPLAY_NAME)
+            cursor = activity.contentResolver.query(contentUri, projection, null, null, null)
+
+            cursor?.let {
+                val columnIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (it.moveToFirst()) {
+                    val FileName = it.getString(columnIndex)
+                    return FileName
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            cursor?.close()
+        }
+
+        return null // Return null if no file name could be resolved
     }
 }
 
