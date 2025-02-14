@@ -14,4 +14,5 @@ commands.allow = [
   "read_text_file_lines_next",
   "exists",
   "scope-app-recursive",
+  "file_name",
 ]

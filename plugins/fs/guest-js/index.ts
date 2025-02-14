@@ -1347,6 +1347,13 @@ async function size(path: string | URL): Promise<number> {
   })
 }
 
+/**
+ * Get the file name from a file path (desktop) or content URI (android)
+ */
+async function fileName(filepath: string | URL): Promise<string> {
+  return await invoke('plugin:fs|file_name', {filepath});
+}
+
 export type {
   CreateOptions,
   OpenOptions,
@@ -1395,5 +1402,6 @@ export {
   exists,
   watch,
   watchImmediate,
-  size
+  size,
+  fileName
 }
