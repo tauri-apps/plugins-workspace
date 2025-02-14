@@ -22,7 +22,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{scope::Entry, Error, SafeFilePath};
+use crate::{scope::Entry, Error, FsExt, SafeFilePath};
 
 #[derive(Debug, thiserror::Error)]
 pub enum CommandError {
@@ -1098,6 +1098,14 @@ fn is_forbidden<P: AsRef<Path>>(
     } else {
         false
     }
+}
+
+#[tauri::command]
+pub async fn file_name<R: Runtime>(
+    webview: Webview<R>,
+    filepath: SafeFilePath,
+) -> Result<String, String> {
+    webview.fs().file_name(filepath)
 }
 
 struct StdFileResource(Mutex<File>);

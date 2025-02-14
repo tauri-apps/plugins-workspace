@@ -6,7 +6,7 @@ use std::path::PathBuf;
 
 use tauri::{AppHandle, Runtime};
 
-use crate::{FilePath, OpenOptions};
+use crate::{FilePath, OpenOptions, SafeFilePath};
 
 pub struct Fs<R: Runtime>(pub(crate) AppHandle<R>);
 
@@ -31,5 +31,20 @@ impl<R: Runtime> Fs<R> {
     ) -> std::io::Result<std::fs::File> {
         let path = path_or_err(path)?;
         std::fs::OpenOptions::from(opts).open(path)
+    }
+
+    pub fn file_name(&self, filepath: SafeFilePath) -> Result<String, String> {
+        match filepath {
+            SafeFilePath::Path(_) => {
+                let Some(filepath) = filepath.as_path() else {
+                    return Err("failed to obtain filepath".into());
+                };
+                let Some(file_name) = filepath.file_name() else {
+                    return Err("failed to get file_name from filepath".into());
+                };
+                Ok(file_name.to_string_lossy().to_string())
+            }
+            SafeFilePath::Url(_) => unreachable!(), // We do not obtain a URL path in desktop
+        }
     }
 }

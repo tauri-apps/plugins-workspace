@@ -418,6 +418,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             commands::write_text_file,
             commands::exists,
             commands::size,
+            commands::file_name,
             #[cfg(feature = "watch")]
             watcher::watch,
             #[cfg(feature = "watch")]
