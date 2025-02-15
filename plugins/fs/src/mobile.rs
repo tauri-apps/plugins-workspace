@@ -102,10 +102,10 @@ impl<R: Runtime> Fs<R> {
                 uri = url.to_string();
             }
         }
-        let Ok(result) = self.0.run_mobile_plugin::<GetFileNameResponse>(
-            "getFileName",
-            GetFileNamePayload { uri },
-        ) else {
+        let Ok(result) = self
+            .0
+            .run_mobile_plugin::<GetFileNameResponse>("getFileName", GetFileNamePayload { uri })
+        else {
             return Err("Failed to invoke getFileName kotlin function".into());
         };
         if let Some(name) = result.name {
