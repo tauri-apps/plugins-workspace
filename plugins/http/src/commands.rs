@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{collections::HashMap, future::Future, pin::Pin, sync::Arc, time::Duration};
+use std::{future::Future, pin::Pin, str::FromStr, sync::Arc, time::Duration};
 
-use http::{header, HeaderName, Method, StatusCode};
+use http::{header, HeaderMap, HeaderName, HeaderValue, Method, StatusCode};
 use reqwest::{redirect::Policy, NoProxy};
 use serde::{Deserialize, Serialize};
 use tauri::{
@@ -77,6 +77,14 @@ pub struct FetchResponse {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)] //feature flags shoudln't affect api
+pub struct DangerousSettings {
+    accept_invalid_certs: bool,
+    accept_invalid_hostnames: bool,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ClientConfig {
     method: String,
     url: url::Url,
@@ -85,6 +93,7 @@ pub struct ClientConfig {
     connect_timeout: Option<u64>,
     max_redirections: Option<usize>,
     proxy: Option<Proxy>,
+    danger: Option<DangerousSettings>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -176,16 +185,32 @@ pub async fn fetch<R: Runtime>(
     let ClientConfig {
         method,
         url,
-        headers,
+        headers: headers_raw,
         data,
         connect_timeout,
         max_redirections,
         proxy,
+        danger,
     } = client_config;
 
     let scheme = url.scheme();
     let method = Method::from_bytes(method.as_bytes())?;
-    let headers: HashMap<String, String> = HashMap::from_iter(headers);
+
+    let mut headers = HeaderMap::new();
+    for (h, v) in headers_raw {
+        let name = HeaderName::from_str(&h)?;
+        #[cfg(not(feature = "unsafe-headers"))]
+        if is_unsafe_header(&name) {
+            #[cfg(debug_assertions)]
+            {
+                eprintln!("[\x1b[33mWARNING\x1b[0m] Skipping {name} header as it is a forbidden header per fetch spec https://fetch.spec.whatwg.org/#terminology-headers");
+                eprintln!("[\x1b[33mWARNING\x1b[0m] if keeping the header is a desired behavior, you can enable `unsafe-headers` feature flag in your Cargo.toml");
+            }
+            continue;
+        }
+
+        headers.append(name, HeaderValue::from_str(&v)?);
+    }
 
     match scheme {
         "http" | "https" => {
@@ -204,6 +229,24 @@ pub async fn fetch<R: Runtime>(
             .is_allowed(&url)
             {
                 let mut builder = reqwest::ClientBuilder::new();
+
+                if let Some(danger_config) = danger {
+                    #[cfg(not(feature = "dangerous-settings"))]
+                    {
+                        #[cfg(debug_assertions)]
+                        {
+                            eprintln!("[\x1b[33mWARNING\x1b[0m] using dangerous settings requires `dangerous-settings` feature flag in your Cargo.toml");
+                        }
+                        let _ = danger_config;
+                        return Err(Error::DangerousSettings);
+                    }
+                    #[cfg(feature = "dangerous-settings")]
+                    {
+                        builder = builder
+                            .danger_accept_invalid_certs(danger_config.accept_invalid_certs)
+                            .danger_accept_invalid_hostnames(danger_config.accept_invalid_hostnames)
+                    }
+                }
 
                 if let Some(timeout) = connect_timeout {
                     builder = builder.connect_timeout(Duration::from_millis(timeout));
@@ -228,44 +271,48 @@ pub async fn fetch<R: Runtime>(
 
                 let mut request = builder.build()?.request(method.clone(), url);
 
-                for (name, value) in &headers {
-                    let name = HeaderName::from_bytes(name.as_bytes())?;
-                    #[cfg(not(feature = "unsafe-headers"))]
-                    if is_unsafe_header(&name) {
-                        continue;
-                    }
-
-                    request = request.header(name, value);
-                }
-
                 // POST and PUT requests should always have a 0 length content-length,
                 // if there is no body. https://fetch.spec.whatwg.org/#http-network-or-cache-fetch
                 if data.is_none() && matches!(method, Method::POST | Method::PUT) {
-                    request = request.header(header::CONTENT_LENGTH, 0);
+                    headers.append(header::CONTENT_LENGTH, HeaderValue::from_str("0")?);
                 }
 
-                if headers.contains_key(header::RANGE.as_str()) {
+                if headers.contains_key(header::RANGE) {
                     // https://fetch.spec.whatwg.org/#http-network-or-cache-fetch step 18
                     // If httpRequest’s header list contains `Range`, then append (`Accept-Encoding`, `identity`)
-                    request = request.header(header::ACCEPT_ENCODING, "identity");
+                    headers.append(header::ACCEPT_ENCODING, HeaderValue::from_str("identity")?);
                 }
 
-                if !headers.contains_key(header::USER_AGENT.as_str()) {
-                    request = request.header(header::USER_AGENT, HTTP_USER_AGENT);
+                if !headers.contains_key(header::USER_AGENT) {
+                    headers.append(header::USER_AGENT, HeaderValue::from_str(HTTP_USER_AGENT)?);
                 }
 
-                if cfg!(feature = "unsafe-headers")
-                    && !headers.contains_key(header::ORIGIN.as_str())
-                {
+                // ensure we have an Origin header set
+                if cfg!(not(feature = "unsafe-headers")) || !headers.contains_key(header::ORIGIN) {
                     if let Ok(url) = webview.url() {
-                        request =
-                            request.header(header::ORIGIN, url.origin().ascii_serialization());
+                        headers.append(
+                            header::ORIGIN,
+                            HeaderValue::from_str(&url.origin().ascii_serialization())?,
+                        );
                     }
                 }
+
+                // In case empty origin is passed, remove it. Some services do not like Origin header
+                // so this way we can remove it in explicit way. The default behaviour is still to set it
+                if cfg!(feature = "unsafe-headers")
+                    && headers.get(header::ORIGIN) == Some(&HeaderValue::from_static(""))
+                {
+                    headers.remove(header::ORIGIN);
+                };
 
                 if let Some(data) = data {
                     request = request.body(data);
                 }
+
+                request = request.headers(headers);
+
+                #[cfg(feature = "tracing")]
+                tracing::trace!("{:?}", request);
 
                 let fut = async move { request.send().await.map_err(Into::into) };
                 let mut resources_table = webview.resources_table();
@@ -287,6 +334,9 @@ pub async fn fetch<R: Runtime>(
                 .status(StatusCode::OK)
                 .header(header::CONTENT_TYPE, data_url.mime_type().to_string())
                 .body(reqwest::Body::from(body))?;
+
+            #[cfg(feature = "tracing")]
+            tracing::trace!("{:?}", response);
 
             let fut = async move { Ok(reqwest::Response::from(response)) };
             let mut resources_table = webview.resources_table();
@@ -334,6 +384,9 @@ pub async fn fetch_send<R: Runtime>(
             return Err(Error::RequestCanceled);
         }
     };
+
+    #[cfg(feature = "tracing")]
+    tracing::trace!("{:?}", res);
 
     let status = res.status();
     let url = res.url().to_string();

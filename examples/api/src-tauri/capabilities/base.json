@@ -53,6 +53,7 @@
         }
       ]
     },
+    "shell:allow-open",
     "shell:allow-kill",
     "shell:allow-stdin-write",
     "process:allow-exit",
@@ -79,10 +80,11 @@
       ],
       "deny": ["$APPDATA/db/*.stronghold"]
     },
-    "store:allow-entries",
-    "store:allow-get",
-    "store:allow-set",
-    "store:allow-save",
-    "store:allow-load"
+    "store:default",
+    "opener:default",
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [{ "path": "$APPDATA" }, { "path": "$APPDATA/**" }]
+    }
   ]
 }

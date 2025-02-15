@@ -7,7 +7,6 @@ use tauri::{command, ipc::Channel, AppHandle, Runtime};
 use crate::{GeolocationExt, PermissionStatus, PermissionType, Position, PositionOptions, Result};
 
 #[command]
-#[specta::specta]
 pub(crate) async fn get_current_position<R: Runtime>(
     app: AppHandle<R>,
     options: Option<PositionOptions>,
@@ -16,7 +15,6 @@ pub(crate) async fn get_current_position<R: Runtime>(
 }
 
 #[command]
-#[specta::specta]
 pub(crate) async fn watch_position<R: Runtime>(
     app: AppHandle<R>,
     options: PositionOptions,
@@ -26,19 +24,16 @@ pub(crate) async fn watch_position<R: Runtime>(
 }
 
 #[command]
-#[specta::specta]
 pub(crate) async fn clear_watch<R: Runtime>(app: AppHandle<R>, channel_id: u32) -> Result<()> {
     app.geolocation().clear_watch(channel_id)
 }
 
 #[command]
-#[specta::specta]
 pub(crate) async fn check_permissions<R: Runtime>(app: AppHandle<R>) -> Result<PermissionStatus> {
     app.geolocation().check_permissions()
 }
 
 #[command]
-#[specta::specta]
 pub(crate) async fn request_permissions<R: Runtime>(
     app: AppHandle<R>,
     permissions: Option<Vec<PermissionType>>,

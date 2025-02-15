@@ -257,8 +257,8 @@ async function ask(
     message: message.toString(),
     title: opts?.title?.toString(),
     kind: opts?.kind,
-    okButtonLabel: opts?.okLabel?.toString() ?? 'Yes',
-    cancelButtonLabel: opts?.cancelLabel?.toString() ?? 'No'
+    yesButtonLabel: opts?.okLabel?.toString(),
+    noButtonLabel: opts?.cancelLabel?.toString()
   })
 }
 
@@ -287,8 +287,8 @@ async function confirm(
     message: message.toString(),
     title: opts?.title?.toString(),
     kind: opts?.kind,
-    okButtonLabel: opts?.okLabel?.toString() ?? 'Ok',
-    cancelButtonLabel: opts?.cancelLabel?.toString() ?? 'Cancel'
+    okButtonLabel: opts?.okLabel?.toString(),
+    cancelButtonLabel: opts?.cancelLabel?.toString()
   })
 }
 

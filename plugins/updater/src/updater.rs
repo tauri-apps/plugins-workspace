@@ -23,7 +23,7 @@ use reqwest::{
 };
 use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
-use tauri::{utils::platform::current_exe, Resource};
+use tauri::{utils::platform::current_exe, AppHandle, Resource, Runtime};
 use time::OffsetDateTime;
 use url::Url;
 
@@ -93,12 +93,18 @@ impl RemoteRelease {
 }
 
 pub type OnBeforeExit = Arc<dyn Fn() + Send + Sync + 'static>;
+pub type VersionComparator = Arc<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>;
+type MainThreadClosure = Box<dyn FnOnce() + Send + Sync + 'static>;
+type RunOnMainThread =
+    Box<dyn Fn(MainThreadClosure) -> std::result::Result<(), tauri::Error> + Send + Sync + 'static>;
 
 pub struct UpdaterBuilder {
+    #[allow(dead_code)]
+    run_on_main_thread: RunOnMainThread,
     app_name: String,
     current_version: Version,
     config: Config,
-    version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
+    pub(crate) version_comparator: Option<VersionComparator>,
     executable_path: Option<PathBuf>,
     target: Option<String>,
     endpoints: Option<Vec<Url>>,
@@ -111,18 +117,20 @@ pub struct UpdaterBuilder {
 }
 
 impl UpdaterBuilder {
-    /// It's prefered to use [`crate::UpdaterExt::updater_builder`] instead of
-    /// constructing a [`UpdaterBuilder`] with this function yourself
-    pub fn new(app_name: String, current_version: Version, config: crate::Config) -> Self {
+    pub(crate) fn new<R: Runtime>(app: &AppHandle<R>, config: crate::Config) -> Self {
+        let app_ = app.clone();
+        let run_on_main_thread =
+            move |f: Box<dyn FnOnce() + Send + Sync + 'static>| app_.run_on_main_thread(f);
         Self {
+            run_on_main_thread: Box::new(run_on_main_thread),
             installer_args: config
                 .windows
                 .as_ref()
                 .map(|w| w.installer_args.clone())
                 .unwrap_or_default(),
             current_exe_args: Vec::new(),
-            app_name,
-            current_version,
+            app_name: app.package_info().name.clone(),
+            current_version: app.package_info().version.clone(),
             config,
             version_comparator: None,
             executable_path: None,
@@ -139,7 +147,7 @@ impl UpdaterBuilder {
         mut self,
         f: F,
     ) -> Self {
-        self.version_comparator = Some(Box::new(f));
+        self.version_comparator = Some(Arc::new(f));
         self
     }
 
@@ -176,6 +184,16 @@ impl UpdaterBuilder {
         self.headers.insert(key?, value?);
 
         Ok(self)
+    }
+
+    pub fn headers(mut self, headers: HeaderMap) -> Self {
+        self.headers = headers;
+        self
+    }
+
+    pub fn clear_headers(mut self) -> Self {
+        self.headers.clear();
+        self
     }
 
     pub fn timeout(mut self, timeout: Duration) -> Self {
@@ -248,6 +266,7 @@ impl UpdaterBuilder {
         };
 
         Ok(Updater {
+            run_on_main_thread: Arc::new(self.run_on_main_thread),
             config: self.config,
             app_name: self.app_name,
             current_version: self.current_version,
@@ -280,10 +299,12 @@ impl UpdaterBuilder {
 }
 
 pub struct Updater {
+    #[allow(dead_code)]
+    run_on_main_thread: Arc<RunOnMainThread>,
     config: Config,
     app_name: String,
     current_version: Version,
-    version_comparator: Option<Box<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>>,
+    version_comparator: Option<VersionComparator>,
     timeout: Option<Duration>,
     proxy: Option<Url>,
     endpoints: Vec<Url>,
@@ -319,6 +340,7 @@ impl Updater {
         }
 
         let mut remote_release: Option<RemoteRelease> = None;
+        let mut raw_json: Option<serde_json::Value> = None;
         let mut last_error: Option<Error> = None;
         for url in &self.endpoints {
             // replace {{current_version}}, {{target}} and {{arch}} in the provided URL
@@ -368,7 +390,8 @@ impl Updater {
                         return Ok(None);
                     };
 
-                    match serde_json::from_value::<RemoteRelease>(res.json().await?)
+                    raw_json = Some(res.json().await?);
+                    match serde_json::from_value::<RemoteRelease>(raw_json.clone().unwrap())
                         .map_err(Into::into)
                     {
                         Ok(release) => {
@@ -399,6 +422,7 @@ impl Updater {
 
         let update = if should_update {
             Some(Update {
+                run_on_main_thread: self.run_on_main_thread.clone(),
                 config: self.config.clone(),
                 on_before_exit: self.on_before_exit.clone(),
                 app_name: self.app_name.clone(),
@@ -410,6 +434,7 @@ impl Updater {
                 download_url: release.download_url(&self.json_target)?.to_owned(),
                 body: release.notes.clone(),
                 signature: release.signature(&self.json_target)?.to_owned(),
+                raw_json: raw_json.unwrap(),
                 timeout: self.timeout,
                 proxy: self.proxy.clone(),
                 headers: self.headers.clone(),
@@ -426,6 +451,8 @@ impl Updater {
 
 #[derive(Clone)]
 pub struct Update {
+    #[allow(dead_code)]
+    run_on_main_thread: Arc<RunOnMainThread>,
     config: Config,
     #[allow(unused)]
     on_before_exit: Option<OnBeforeExit>,
@@ -443,6 +470,8 @@ pub struct Update {
     pub download_url: Url,
     /// Signature announced
     pub signature: String,
+    /// The raw version of server's JSON response. Useful if the response contains additional fields that the updater doesn't handle.
+    pub raw_json: serde_json::Value,
     /// Request timeout
     pub timeout: Option<Duration>,
     /// Request proxy
@@ -748,7 +777,7 @@ impl Update {
     }
 }
 
-/// Linux (AppImage)
+/// Linux (AppImage and Deb)
 #[cfg(any(
     target_os = "linux",
     target_os = "dragonfly",
@@ -760,12 +789,19 @@ impl Update {
     /// ### Expected structure:
     /// ├── [AppName]_[version]_amd64.AppImage.tar.gz    # GZ generated by tauri-bundler
     /// │   └──[AppName]_[version]_amd64.AppImage        # Application AppImage
+    /// ├── [AppName]_[version]_amd64.deb                # Debian package
     /// └── ...
     ///
-    /// We should have an AppImage already installed to be able to copy and install
-    /// the extract_path is the current AppImage path
-    /// tmp_dir is where our new AppImage is found
     fn install_inner(&self, bytes: &[u8]) -> Result<()> {
+        if self.is_deb_package() {
+            self.install_deb(bytes)
+        } else {
+            // Handle AppImage or other formats
+            self.install_appimage(bytes)
+        }
+    }
+
+    fn install_appimage(&self, bytes: &[u8]) -> Result<()> {
         use std::os::unix::fs::{MetadataExt, PermissionsExt};
         let extract_path_metadata = self.extract_path.metadata()?;
 
@@ -835,6 +871,162 @@ impl Update {
 
         Err(Error::TempDirNotOnSameMountPoint)
     }
+
+    fn is_deb_package(&self) -> bool {
+        // First check if we're in a typical Debian installation path
+        let in_system_path = self
+            .extract_path
+            .to_str()
+            .map(|p| p.starts_with("/usr"))
+            .unwrap_or(false);
+
+        if !in_system_path {
+            return false;
+        }
+
+        // Then verify it's actually a Debian-based system by checking for dpkg
+        let dpkg_exists = std::path::Path::new("/var/lib/dpkg").exists();
+        let apt_exists = std::path::Path::new("/etc/apt").exists();
+
+        // Additional check for the package in dpkg database
+        let package_in_dpkg = if let Ok(output) = std::process::Command::new("dpkg")
+            .args(["-S", &self.extract_path.to_string_lossy()])
+            .output()
+        {
+            output.status.success()
+        } else {
+            false
+        };
+
+        // Consider it a deb package only if:
+        // 1. We're in a system path AND
+        // 2. We have Debian package management tools AND
+        // 3. The binary is tracked by dpkg
+        dpkg_exists && apt_exists && package_in_dpkg
+    }
+
+    fn install_deb(&self, bytes: &[u8]) -> Result<()> {
+        // First verify the bytes are actually a .deb package
+        if !infer::archive::is_deb(bytes) {
+            return Err(Error::InvalidUpdaterFormat);
+        }
+
+        // Try different temp directories
+        let tmp_dir_locations = vec![
+            Box::new(|| Some(std::env::temp_dir())) as Box<dyn FnOnce() -> Option<PathBuf>>,
+            Box::new(dirs::cache_dir),
+            Box::new(|| Some(self.extract_path.parent().unwrap().to_path_buf())),
+        ];
+
+        // Try writing to multiple temp locations until one succeeds
+        for tmp_dir_location in tmp_dir_locations {
+            if let Some(path) = tmp_dir_location() {
+                if let Ok(tmp_dir) = tempfile::Builder::new()
+                    .prefix("tauri_deb_update")
+                    .tempdir_in(path)
+                {
+                    let deb_path = tmp_dir.path().join("package.deb");
+
+                    // Try writing the .deb file
+                    if std::fs::write(&deb_path, bytes).is_ok() {
+                        // If write succeeds, proceed with installation
+                        return self.try_install_with_privileges(&deb_path);
+                    }
+                    // If write fails, continue to next temp location
+                }
+            }
+        }
+
+        // If we get here, all temp locations failed
+        Err(Error::TempDirNotFound)
+    }
+
+    fn try_install_with_privileges(&self, deb_path: &Path) -> Result<()> {
+        // 1. First try using pkexec (graphical sudo prompt)
+        if let Ok(status) = std::process::Command::new("pkexec")
+            .arg("dpkg")
+            .arg("-i")
+            .arg(deb_path)
+            .status()
+        {
+            if status.success() {
+                return Ok(());
+            }
+        }
+
+        // 2. Try zenity or kdialog for a graphical sudo experience
+        if let Ok(password) = self.get_password_graphically() {
+            if self.install_with_sudo(deb_path, &password)? {
+                return Ok(());
+            }
+        }
+
+        // 3. Final fallback: terminal sudo
+        let status = std::process::Command::new("sudo")
+            .arg("dpkg")
+            .arg("-i")
+            .arg(deb_path)
+            .status()?;
+
+        if status.success() {
+            Ok(())
+        } else {
+            Err(Error::DebInstallFailed)
+        }
+    }
+
+    fn get_password_graphically(&self) -> Result<String> {
+        // Try zenity first
+        let zenity_result = std::process::Command::new("zenity")
+            .args([
+                "--password",
+                "--title=Authentication Required",
+                "--text=Enter your password to install the update:",
+            ])
+            .output();
+
+        if let Ok(output) = zenity_result {
+            if output.status.success() {
+                return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
+            }
+        }
+
+        // Fall back to kdialog if zenity fails or isn't available
+        let kdialog_result = std::process::Command::new("kdialog")
+            .args(["--password", "Enter your password to install the update:"])
+            .output();
+
+        if let Ok(output) = kdialog_result {
+            if output.status.success() {
+                return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
+            }
+        }
+
+        Err(Error::AuthenticationFailed)
+    }
+
+    fn install_with_sudo(&self, deb_path: &Path, password: &str) -> Result<bool> {
+        use std::io::Write;
+        use std::process::{Command, Stdio};
+
+        let mut child = Command::new("sudo")
+            .arg("-S") // read password from stdin
+            .arg("dpkg")
+            .arg("-i")
+            .arg(deb_path)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()?;
+
+        if let Some(mut stdin) = child.stdin.take() {
+            // Write password to stdin
+            writeln!(stdin, "{}", password)?;
+        }
+
+        let status = child.wait()?;
+        Ok(status.success())
+    }
 }
 
 /// MacOS
@@ -852,42 +1044,85 @@ impl Update {
         let cursor = Cursor::new(bytes);
         let mut extracted_files: Vec<PathBuf> = Vec::new();
 
-        // the first file in the tar.gz will always be
-        // <app_name>/Contents
-        let tmp_dir = tempfile::Builder::new()
+        // Create temp directories for backup and extraction
+        let tmp_backup_dir = tempfile::Builder::new()
             .prefix("tauri_current_app")
             .tempdir()?;
 
-        // create backup of our current app
-        std::fs::rename(&self.extract_path, tmp_dir.path())?;
+        let tmp_extract_dir = tempfile::Builder::new()
+            .prefix("tauri_updated_app")
+            .tempdir()?;
 
         let decoder = GzDecoder::new(cursor);
         let mut archive = tar::Archive::new(decoder);
 
-        std::fs::create_dir(&self.extract_path)?;
-
+        // Extract files to temporary directory
         for entry in archive.entries()? {
             let mut entry = entry?;
-
-            // skip the first folder (should be the app name)
             let collected_path: PathBuf = entry.path()?.iter().skip(1).collect();
-            let extraction_path = &self.extract_path.join(collected_path);
+            let extraction_path = tmp_extract_dir.path().join(&collected_path);
 
-            // if something went wrong during the extraction, we should restore previous app
-            if let Err(err) = entry.unpack(extraction_path) {
-                for file in extracted_files.iter().rev() {
-                    // delete all the files we extracted
-                    if file.is_dir() {
-                        std::fs::remove_dir(file)?;
-                    } else {
-                        std::fs::remove_file(file)?;
-                    }
-                }
-                std::fs::rename(tmp_dir.path(), &self.extract_path)?;
-                return Err(err.into());
+            // Ensure parent directories exist
+            if let Some(parent) = extraction_path.parent() {
+                std::fs::create_dir_all(parent)?;
             }
 
-            extracted_files.push(extraction_path.to_path_buf());
+            if let Err(err) = entry.unpack(&extraction_path) {
+                // Cleanup on error
+                std::fs::remove_dir_all(tmp_extract_dir.path()).ok();
+                return Err(err.into());
+            }
+            extracted_files.push(extraction_path);
+        }
+
+        // Try to move the current app to backup
+        let move_result = std::fs::rename(
+            &self.extract_path,
+            tmp_backup_dir.path().join("current_app"),
+        );
+        let need_authorization = if let Err(err) = move_result {
+            if err.kind() == std::io::ErrorKind::PermissionDenied {
+                true
+            } else {
+                std::fs::remove_dir_all(tmp_extract_dir.path()).ok();
+                return Err(err.into());
+            }
+        } else {
+            false
+        };
+
+        if need_authorization {
+            // Use AppleScript to perform moves with admin privileges
+            let apple_script = format!(
+                "do shell script \"rm -rf '{src}' && mv -f '{new}' '{src}'\" with administrator privileges",
+                src = self.extract_path.display(),
+                new = tmp_extract_dir.path().display()
+            );
+
+            let (tx, rx) = std::sync::mpsc::channel();
+            let res = (self.run_on_main_thread)(Box::new(move || {
+                let mut script =
+                    osakit::Script::new_from_source(osakit::Language::AppleScript, &apple_script);
+                script.compile().expect("invalid AppleScript");
+                let r = script.execute();
+                tx.send(r).unwrap();
+            }));
+            let result = rx.recv().unwrap();
+
+            if res.is_err() || result.is_err() {
+                std::fs::remove_dir_all(tmp_extract_dir.path()).ok();
+                return Err(Error::Io(std::io::Error::new(
+                    std::io::ErrorKind::PermissionDenied,
+                    "Failed to move the new app into place",
+                )));
+            }
+        } else {
+            // Remove existing directory if it exists
+            if self.extract_path.exists() {
+                std::fs::remove_dir_all(&self.extract_path)?;
+            }
+            // Move the new app to the target path
+            std::fs::rename(tmp_extract_dir.path(), &self.extract_path)?;
         }
 
         let _ = std::process::Command::new("touch")

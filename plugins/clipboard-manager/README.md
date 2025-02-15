@@ -54,7 +54,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-clipboard-manager#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {
@@ -72,7 +72,6 @@ import {
   writeText,
   readText,
   writeHtml,
-  readHtml,
   clear
 } from '@tauri-apps/plugin-clipboard-manager'
 await writeText('Tauri is awesome!')

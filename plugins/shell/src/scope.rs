@@ -4,6 +4,7 @@
 
 use std::sync::Arc;
 
+#[allow(deprecated)]
 use crate::open::Program;
 use crate::process::Command;
 
@@ -201,6 +202,7 @@ impl OpenScope {
     ///
     /// The path is validated against the `plugins > shell > open` validation regex, which
     /// defaults to `^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+`.
+    #[allow(deprecated)]
     pub fn open(&self, path: &str, with: Option<Program>) -> Result<(), Error> {
         // ensure we pass validation if the configuration has one
         if let Some(regex) = &self.open {
@@ -222,7 +224,7 @@ impl OpenScope {
     }
 }
 
-impl<'a> ShellScope<'a> {
+impl ShellScope<'_> {
     /// Validates argument inputs and creates a Tauri sidecar [`Command`].
     pub fn prepare_sidecar(
         &self,

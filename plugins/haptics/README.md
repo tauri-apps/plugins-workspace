@@ -58,7 +58,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-haptics#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {
@@ -67,6 +67,19 @@ fn main() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+```
+
+Second, add the required permissions in the project:
+
+`src-tauri/capabilities/default.json`
+
+```json
+  "permissions": [
+    "haptics:allow-impact-feedback",
+    "haptics:allow-notification-feedback",
+    "haptics:allow-selection-feedback",
+    "haptics:allow-vibrate"
+  ]
 ```
 
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:

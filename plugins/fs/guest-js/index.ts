@@ -10,20 +10,33 @@
  * This module prevents path traversal, not allowing parent directory accessors to be used
  * (i.e. "/usr/path/to/../file" or "../path/to/file" paths are not allowed).
  * Paths accessed with this API must be either relative to one of the {@link BaseDirectory | base directories}
- * or created with the {@link https://v2.tauri.app/reference/javascript/api/namespacepath | path API}.
+ * or created with the {@link https://v2.tauri.app/reference/javascript/api/namespacepath/ | path API}.
  *
  * The API has a scope configuration that forces you to restrict the paths that can be accessed using glob patterns.
  *
- * The scope configuration is an array of glob patterns describing folder paths that are allowed.
- * For instance, this scope configuration only allows accessing files on the
- * *databases* folder of the {@link https://v2.tauri.app/reference/javascript/api/namespacepath/#appdatadir | `$APPDATA` directory}:
+ * The scope configuration is an array of glob patterns describing file/directory paths that are allowed.
+ * For instance, this scope configuration allows **all** enabled `fs` APIs to (only) access files in the
+ * *databases* directory of the {@link https://v2.tauri.app/reference/javascript/api/namespacepath/#appdatadir | `$APPDATA` directory}:
  * ```json
  * {
- *   "plugins": {
- *     "fs": {
- *       "scope": ["$APPDATA/databases/*"]
+ *   "permissions": [
+ *     {
+ *       "identifier": "fs:scope",
+ *       "allow": [{ "path": "$APPDATA/databases/*" }]
  *     }
- *   }
+ *   ]
+ * }
+ * ```
+ *
+ * Scopes can also be applied to specific `fs` APIs by using the API's identifier instead of `fs:scope`:
+ * ```json
+ * {
+ *   "permissions": [
+ *     {
+ *       "identifier": "fs:allow-exists",
+ *       "allow": [{ "path": "$APPDATA/databases/*" }]
+ *     }
+ *   ]
  * }
  * ```
  *
@@ -55,8 +68,6 @@
  * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#tempdir | $TEMP}.
  *
  * Trying to execute any API with a URL not configured on the scope results in a promise rejection due to denied access.
- *
- * Note that this scope applies to **all** APIs on this module.
  *
  * @module
  */
@@ -243,6 +254,26 @@ function parseFileInfo(r: UnparsedFileInfo): FileInfo {
   }
 }
 
+// https://mstn.github.io/2018/06/08/fixed-size-arrays-in-typescript/
+type FixedSizeArray<T, N extends number> = ReadonlyArray<T> & {
+  length: N
+}
+
+// https://gist.github.com/zapthedingbat/38ebfbedd98396624e5b5f2ff462611d
+/** Converts a big-endian eight byte array to number  */
+function fromBytes(buffer: FixedSizeArray<number, 8>): number {
+  const bytes = new Uint8ClampedArray(buffer)
+  const size = bytes.byteLength
+  let x = 0
+  for (let i = 0; i < size; i++) {
+    // eslint-disable-next-line security/detect-object-injection
+    const byte = bytes[i]
+    x *= 0x100
+    x += byte
+  }
+  return x
+}
+
 /**
  *  The Tauri abstraction for reading and writing files.
  *
@@ -285,12 +316,20 @@ class FileHandle extends Resource {
       return 0
     }
 
-    const [data, nread] = await invoke<[number[], number]>('plugin:fs|read', {
+    const data = await invoke<ArrayBuffer | number[]>('plugin:fs|read', {
       rid: this.rid,
       len: buffer.byteLength
     })
 
-    buffer.set(data)
+    // Rust side will never return an empty array for this command and
+    // ensure there is at least 8 elements there.
+    //
+    // This is an optimization to include the number of read bytes (as bigendian bytes)
+    // at the end of returned array to avoid serialization overhead of separate values.
+    const nread = fromBytes(data.slice(-8) as FixedSizeArray<number, 8>)
+
+    const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : data
+    buffer.set(bytes.slice(0, bytes.length - 8))
 
     return nread === 0 ? null : nread
   }
@@ -389,11 +428,11 @@ class FileHandle extends Resource {
   }
 
   /**
-   * Writes `p.byteLength` bytes from `p` to the underlying data stream. It
-   * resolves to the number of bytes written from `p` (`0` <= `n` <=
-   * `p.byteLength`) or reject with the error encountered that caused the
+   * Writes `data.byteLength` bytes from `data` to the underlying data stream. It
+   * resolves to the number of bytes written from `data` (`0` <= `n` <=
+   * `data.byteLength`) or reject with the error encountered that caused the
    * write to stop early. `write()` must reject with a non-null error if
-   * would resolve to `n` < `p.byteLength`. `write()` must not modify the
+   * would resolve to `n` < `data.byteLength`. `write()` must not modify the
    * slice data, even temporarily.
    *
    * @example
@@ -731,10 +770,14 @@ async function readTextFile(
     throw new TypeError('Must be a file URL.')
   }
 
-  return await invoke<string>('plugin:fs|read_text_file', {
+  const arr = await invoke<ArrayBuffer | number[]>('plugin:fs|read_text_file', {
     path: path instanceof URL ? path.toString() : path,
     options
   })
+
+  const bytes = arr instanceof ArrayBuffer ? arr : Uint8Array.from(arr)
+
+  return new TextDecoder().decode(bytes)
 }
 
 /**
@@ -765,6 +808,7 @@ async function readTextFileLines(
   return await Promise.resolve({
     path: pathStr,
     rid: null as number | null,
+
     async next(): Promise<IteratorResult<string>> {
       if (this.rid === null) {
         this.rid = await invoke<number>('plugin:fs|read_text_file_lines', {
@@ -773,19 +817,35 @@ async function readTextFileLines(
         })
       }
 
-      const [line, done] = await invoke<[string | null, boolean]>(
+      const arr = await invoke<ArrayBuffer | number[]>(
         'plugin:fs|read_text_file_lines_next',
         { rid: this.rid }
       )
 
-      // an iteration is over, reset rid for next iteration
-      if (done) this.rid = null
+      const bytes =
+        arr instanceof ArrayBuffer ? new Uint8Array(arr) : Uint8Array.from(arr)
+
+      // Rust side will never return an empty array for this command and
+      // ensure there is at least one elements there.
+      //
+      // This is an optimization to include whether we finished iteration or not (1 or 0)
+      // at the end of returned array to avoid serialization overhead of separate values.
+      const done = bytes[bytes.byteLength - 1] === 1
+
+      if (done) {
+        // a full iteration is over, reset rid for next iteration
+        this.rid = null
+        return { value: null, done }
+      }
+
+      const line = new TextDecoder().decode(bytes.slice(0, bytes.byteLength))
 
       return {
-        value: done ? '' : line!,
+        value: line,
         done
       }
     },
+
     [Symbol.asyncIterator](): AsyncIterableIterator<string> {
       return this
     }
@@ -1006,19 +1066,27 @@ interface WriteFileOptions {
  */
 async function writeFile(
   path: string | URL,
-  data: Uint8Array,
+  data: Uint8Array | ReadableStream<Uint8Array>,
   options?: WriteFileOptions
 ): Promise<void> {
   if (path instanceof URL && path.protocol !== 'file:') {
     throw new TypeError('Must be a file URL.')
   }
 
-  await invoke('plugin:fs|write_file', data, {
-    headers: {
-      path: encodeURIComponent(path instanceof URL ? path.toString() : path),
-      options: JSON.stringify(options)
+  if (data instanceof ReadableStream) {
+    const file = await open(path, options)
+    for await (const chunk of data) {
+      await file.write(chunk)
     }
-  })
+    await file.close()
+  } else {
+    await invoke('plugin:fs|write_file', data, {
+      headers: {
+        path: encodeURIComponent(path instanceof URL ? path.toString() : path),
+        options: JSON.stringify(options)
+      }
+    })
+  }
 }
 
 /**
@@ -1041,10 +1109,13 @@ async function writeTextFile(
     throw new TypeError('Must be a file URL.')
   }
 
-  await invoke('plugin:fs|write_text_file', {
-    path: path instanceof URL ? path.toString() : path,
-    data,
-    options
+  const encoder = new TextEncoder()
+
+  await invoke('plugin:fs|write_text_file', encoder.encode(data), {
+    headers: {
+      path: encodeURIComponent(path instanceof URL ? path.toString() : path),
+      options: JSON.stringify(options)
+    }
   })
 }
 
@@ -1251,6 +1322,31 @@ async function watchImmediate(
   }
 }
 
+/**
+ * Get the size of a file or directory. For files, the `stat` functions can be used as well.
+ *
+ * If `path` is a directory, this function will recursively iterate over every file and every directory inside of `path` and therefore will be very time consuming if used on larger directories.
+ *
+ * @example
+ * ```typescript
+ * import { size, BaseDirectory } from '@tauri-apps/plugin-fs';
+ * // Get the size of the `$APPDATA/tauri` directory.
+ * const dirSize = await size('tauri', { baseDir: BaseDirectory.AppData });
+ * console.log(dirSize); // 1024
+ * ```
+ *
+ * @since 2.1.0
+ */
+async function size(path: string | URL): Promise<number> {
+  if (path instanceof URL && path.protocol !== 'file:') {
+    throw new TypeError('Must be a file URL.')
+  }
+
+  return await invoke('plugin:fs|size', {
+    path: path instanceof URL ? path.toString() : path
+  })
+}
+
 export type {
   CreateOptions,
   OpenOptions,
@@ -1298,5 +1394,6 @@ export {
   writeTextFile,
   exists,
   watch,
-  watchImmediate
+  watchImmediate,
+  size
 }

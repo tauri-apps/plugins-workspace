@@ -73,7 +73,7 @@ export async function unregister(protocol: string): Promise<null> {
  * await isRegistered("my-scheme");
  * ```
  *
- * #### - **macOS / Android / iOS**: Unsupported, always returns `true`.
+ * #### - **macOS / Android / iOS**: Unsupported.
  *
  * @since 2.0.0
  */
@@ -92,18 +92,13 @@ export async function isRegistered(protocol: string): Promise<boolean> {
  * await onOpenUrl((urls) => { console.log(urls) });
  * ```
  *
- * #### - **Windows / Linux**: Unsupported, the OS will spawn a new app instance passing the URL as a CLI argument.
+ * #### - **Windows / Linux**: Unsupported without the single-instance plugin. The OS will spawn a new app instance passing the URL as a CLI argument.
  *
  * @since 2.0.0
  */
 export async function onOpenUrl(
   handler: (urls: string[]) => void
 ): Promise<UnlistenFn> {
-  const current = await getCurrent()
-  if (current) {
-    handler(current)
-  }
-
   return await listen<string[]>('deep-link://new-url', (event) => {
     handler(event.payload)
   })

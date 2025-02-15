@@ -1,5 +1,5 @@
 <script>
-  import { Store } from "@tauri-apps/plugin-store";
+  import { LazyStore } from "@tauri-apps/plugin-store";
   import { onMount } from "svelte";
 
   export let onMessage;
@@ -7,28 +7,65 @@
   let key;
   let value;
 
-  const store = new Store("cache.json");
+  let store = new LazyStore("cache.json");
   let cache = {};
 
-  onMount(async () => {
-    await store.load();
-    const values = await store.entries();
-    for (const [key, value] of values) {
-      cache[key] = value;
+  async function refreshEntries() {
+    try {
+      const values = await store.entries();
+      cache = {};
+      for (const [key, value] of values) {
+        cache[key] = value;
+      }
+    } catch (error) {
+      onMessage(error);
     }
-    cache = cache;
+  }
+
+  onMount(async () => {
+    await refreshEntries();
   });
 
-  function write(key, value) {
-    store
-      .set(key, value)
-      .then(() => store.get(key))
-      .then((v) => {
-        cache[key] = v;
+  async function write(key, value) {
+    try {
+      if (value) {
+        await store.set(key, value);
+      } else {
+        await store.delete(key);
+      }
+      const v = await store.get(key);
+      if (v === undefined) {
+        delete cache[key];
         cache = cache;
-      })
-      .then(() => store.save())
-      .catch(onMessage);
+      } else {
+        cache[key] = v;
+      }
+    } catch (error) {
+      onMessage(error);
+    }
+  }
+
+  async function reset() {
+    try {
+      await store.reset();
+    } catch (error) {
+      onMessage(error);
+    }
+    await refreshEntries();
+  }
+
+  async function close() {
+    try {
+      await store.close();
+      onMessage("Store is now closed, any new operations will error out");
+    } catch (error) {
+      onMessage(error);
+    }
+  }
+
+  function reopen() {
+    store = new LazyStore("cache.json");
+    onMessage("We made a new `LazyStore` instance, operations will now work");
   }
 </script>
 
@@ -44,7 +81,12 @@
       <input class="grow input" bind:value />
     </div>
 
-    <button class="btn" on:click={() => write(key, value)}> Write </button>
+    <div>
+      <button class="btn" on:click={() => write(key, value)}>Write</button>
+      <button class="btn" on:click={() => reset()}>Reset</button>
+      <button class="btn" on:click={() => close()}>Close</button>
+      <button class="btn" on:click={() => reopen()}>Re-open</button>
+    </div>
   </div>
 
   <div>

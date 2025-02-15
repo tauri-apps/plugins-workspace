@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/log/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/log)
-//!
 //! Logging for Tauri applications.
 
 #![doc(
@@ -33,35 +31,10 @@ use tauri::{AppHandle, Emitter};
 pub use fern;
 use time::OffsetDateTime;
 
-pub const WEBVIEW_TARGET: &str = "Webview";
+pub const WEBVIEW_TARGET: &str = "webview";
 
 #[cfg(target_os = "ios")]
 mod ios {
-    use cocoa::base::id;
-    use objc::*;
-
-    const UTF8_ENCODING: usize = 4;
-    pub struct NSString(pub id);
-
-    impl NSString {
-        pub fn new(s: &str) -> Self {
-            // Safety: objc runtime calls are unsafe
-            NSString(unsafe {
-                let ns_string: id = msg_send![class!(NSString), alloc];
-                let ns_string: id = msg_send![ns_string,
-                                            initWithBytes:s.as_ptr()
-                                            length:s.len()
-                                            encoding:UTF8_ENCODING];
-
-                // The thing is allocated in rust, the thing must be set to autorelease in rust to relinquish control
-                // or it can not be released correctly in OC runtime
-                let _: () = msg_send![ns_string, autorelease];
-
-                ns_string
-            })
-        }
-    }
-
     swift_rs::swift!(pub fn tauri_log(
       level: u8, message: *const std::ffi::c_void
     ));
@@ -230,22 +203,16 @@ fn log(
     line: Option<u32>,
     key_values: Option<HashMap<String, String>>,
 ) {
-    let location = location.unwrap_or("webview");
-
     let level = log::Level::from(level);
 
-    let metadata = log::MetadataBuilder::new()
-        .level(level)
-        .target(WEBVIEW_TARGET)
-        .build();
+    let target = if let Some(location) = location {
+        format!("{WEBVIEW_TARGET}:{location}")
+    } else {
+        WEBVIEW_TARGET.to_string()
+    };
 
     let mut builder = RecordBuilder::new();
-    builder
-        .level(level)
-        .metadata(metadata)
-        .target(location)
-        .file(file)
-        .line(line);
+    builder.level(level).target(&target).file(file).line(line);
 
     let key_values = key_values.unwrap_or_default();
     let mut kv = HashMap::new();
@@ -311,7 +278,7 @@ impl Builder {
         let format =
             time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
                 .unwrap();
-        self.dispatch = fern::Dispatch::new().format(move |out, message, record| {
+        self.dispatch = self.dispatch.format(move |out, message, record| {
             out.finish(format_args!(
                 "{}[{}][{}] {}",
                 timezone_strategy.get_now().format(&format).unwrap(),
@@ -380,8 +347,8 @@ impl Builder {
     ///     .clear_targets()
     ///     .targets([
     ///         Target::new(TargetKind::Webview),
-    ///         Target::new(TargetKind::LogDir { file_name: Some("webview".into()) }).filter(|metadata| metadata.target() == WEBVIEW_TARGET),
-    ///         Target::new(TargetKind::LogDir { file_name: Some("rust".into()) }).filter(|metadata| metadata.target() != WEBVIEW_TARGET),
+    ///         Target::new(TargetKind::LogDir { file_name: Some("webview".into()) }).filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),
+    ///         Target::new(TargetKind::LogDir { file_name: Some("rust".into()) }).filter(|metadata| !metadata.target().starts_with(WEBVIEW_TARGET)),
     ///     ]);
     /// ```
     pub fn targets(mut self, targets: impl IntoIterator<Item = Target>) -> Self {
@@ -437,7 +404,12 @@ impl Builder {
                                 log::Level::Info => 2,
                                 log::Level::Warn | log::Level::Error => 3,
                             },
-                            ios::NSString::new(message.as_str()).0 as _,
+                            // The string is allocated in rust, so we must
+                            // autorelease it rust to give it to the Swift
+                            // runtime.
+                            objc2::rc::Retained::autorelease_ptr(
+                                objc2_foundation::NSString::from_str(message.as_str()),
+                            ) as _,
                         );
                     }
                 }),

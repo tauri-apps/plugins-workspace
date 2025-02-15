@@ -11,8 +11,9 @@ use tauri::{
     Manager, Runtime, State, Window,
 };
 
+#[allow(deprecated)]
+use crate::open::Program;
 use crate::{
-    open::Program,
     process::{CommandEvent, TerminatedPayload},
     scope::ExecuteArgs,
     Shell,
@@ -302,8 +303,9 @@ pub fn kill<R: Runtime>(
     Ok(())
 }
 
+#[allow(deprecated)]
 #[tauri::command]
-pub fn open<R: Runtime>(
+pub async fn open<R: Runtime>(
     _window: Window<R>,
     shell: State<'_, Shell<R>>,
     path: String,

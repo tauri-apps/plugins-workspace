@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/dialog/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/dialog)
-//!
 //! Native system dialogs for opening and saving files along with message dialogs.
 
 #![doc(
@@ -41,8 +39,15 @@ use desktop::*;
 #[cfg(mobile)]
 use mobile::*;
 
+#[cfg(desktop)]
+pub use desktop::Dialog;
+#[cfg(mobile)]
+pub use mobile::Dialog;
+
 pub(crate) const OK: &str = "Ok";
 pub(crate) const CANCEL: &str = "Cancel";
+pub(crate) const YES: &str = "Yes";
+pub(crate) const NO: &str = "No";
 
 macro_rules! blocking_fn {
     ($self:ident, $fn:ident) => {{
@@ -236,6 +241,7 @@ impl<R: Runtime> MessageDialogBuilder<R> {
         let (ok_button_label, cancel_button_label) = match &self.buttons {
             MessageDialogButtons::Ok => (Some(OK), None),
             MessageDialogButtons::OkCancel => (Some(OK), Some(CANCEL)),
+            MessageDialogButtons::YesNo => (Some(YES), Some(NO)),
             MessageDialogButtons::OkCustom(ok) => (Some(ok.as_str()), Some(CANCEL)),
             MessageDialogButtons::OkCancelCustom(ok, cancel) => {
                 (Some(ok.as_str()), Some(cancel.as_str()))

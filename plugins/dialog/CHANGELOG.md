@@ -1,5 +1,38 @@
 # Changelog
 
+## \[2.2.0]
+
+- [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.1.0`
+
+## \[2.0.2]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.0.4`
+
+## \[2.0.4]
+
+- [`76f99ce9`](https://github.com/tauri-apps/plugins-workspace/commit/76f99ce999a2ff9e40235c1675e3eb6570b5e1e2) ([#2108](https://github.com/tauri-apps/plugins-workspace/pull/2108) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) The `Dialog` struct is now correctly exported, primarily to fix the documentation on `docs.rs`.
+
+### Dependencies
+
+- Upgraded to `fs@2.1.0`
+
+## \[2.0.3]
+
+### Dependencies
+
+- Upgraded to `fs@2.0.3`
+
+## \[2.0.1]
+
+- [`2302c2db`](https://github.com/tauri-apps/plugins-workspace/commit/2302c2db1c49673e61dcbda8cdb01b2c57e9ba6f) ([#1910](https://github.com/tauri-apps/plugins-workspace/pull/1910) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `ask` and `confirm` not using system button texts
+- [`aee14ed4`](https://github.com/tauri-apps/plugins-workspace/commit/aee14ed4261cdedc4ed7cc2686f01f437859a5c7) ([#1892](https://github.com/tauri-apps/plugins-workspace/pull/1892) by [@nashaofu](https://github.com/tauri-apps/plugins-workspace/../../nashaofu)) Set `save` dialog mime type from the `filters` extensions on Android.
+
 ## \[2.0.1]
 
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
@@ -205,86 +238,3 @@
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   d6e80b)([#545](https://github.com/tauri-apps/plugins-workspace/pull/545)) Fixes docs.rs build by enabling the `tauri/dox` feature flag.
-- [`d74fc0a`](https://github.com/tauri-apps/plugins-workspace/commit/d74fc0a097996e90a37be8f57d50b7d1f6ca616f)([#555](https://github.com/tauri-apps/plugins-workspace/pull/555)) Update to alpha.11.
-
-### Dependencies
-
-- Upgraded to `fs@2.0.0-alpha.1`
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  \`
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  pull/371)) First v2 alpha release!
-  ri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  \`
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  pull/371)) First v2 alpha release!
-  hub.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  pull/371)) First v2 alpha release!
-  ri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  \`
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  pull/371)) First v2 alpha release!
-  alpha release!
-  pull/371)) First v2 alpha release!
-  ri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  \`
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  pull/371)) First v2 alpha release!
-  kspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  pull/371)) First v2 alpha release!
-  71]\(https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  pull/371)) First v2 alpha release!
-  kspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  pull/371)) First v2 alpha release!
-  lpha release!
-  pull/371)) First v2 alpha release!
-  7ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  pull/371)) First v2 alpha release!
-  71]\(https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  pull/371)) First v2 alpha release!
-  kspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  pull/371)) First v2 alpha release!
-  lpha release!
-  pull/371)) First v2 alpha release!
-  lpha release!
-  pull/371)) First v2 alpha release!
-  lpha release!
-  pull/371)) First v2 alpha release!
-  lpha release!
-  pull/371)) First v2 alpha release!
-  lpha release!
-  lpha release!
-  pull/371)) First v2 alpha release!
-  lpha release!
-  pull/371)) First v2 alpha release!
-  lpha release!
-  pull/371)) First v2 alpha release!
-  v2 alpha release!
-  lpha release!
-  pull/371)) First v2 alpha release!
-  lpha release!
-  pull/371)) First v2 alpha release!
-  lpha release!
-  pull/371)) First v2 alpha release!
-  lpha release!
-  lpha release!
-  pull/371)) First v2 alpha release!
-  lpha release!
-  pull/371)) First v2 alpha release!
-  lpha release!
-  pull/371)) First v2 alpha release!

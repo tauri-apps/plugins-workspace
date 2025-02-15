@@ -1,8 +1,7 @@
 {
-  "extends": ["config:base"],
+  "extends": ["config:recommended"],
   "baseBranches": ["v2", "v1"],
   "enabledManagers": ["cargo", "npm"],
-  "semanticCommitType": "chore",
   "labels": ["dependencies"],
   "ignorePaths": [
     "**/node_modules/**",
@@ -14,29 +13,17 @@
     "**/__fixtures__/**",
     "shared/**"
   ],
-  "lockFileMaintenance": {
-    "enabled": true
-  },
   "rangeStrategy": "replace",
   "packageRules": [
+    {
+      "semanticCommitType": "chore",
+      "matchPackageNames": ["*"]
+    },
     {
       "description": "Disable node/pnpm version updates",
       "matchPackageNames": ["node", "pnpm"],
       "matchDepTypes": ["engines", "packageManager"],
       "enabled": false
-    },
-    {
-      "description": "Disable lock file maintenance for v1",
-      "matchBaseBranches": ["v1"],
-      "matchUpdateTypes": ["lockFileMaintenance"],
-      "enabled": false
-    },
-    {
-      "description": "Prevent Renovate from replacing 2.0.0-beta.10 with 2.0.0-beta - REMOVE ONCE TAURI IS STABLE",
-      "matchManagers": ["cargo"],
-      "matchPackagePatterns": ["^tauri"],
-      "matchCurrentValue": "2.*",
-      "rangeStrategy": "bump"
     }
   ],
   "postUpdateOptions": ["pnpmDedupe"]

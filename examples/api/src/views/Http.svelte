@@ -1,69 +1,69 @@
 <script>
-  import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
-  import { JsonView } from "@zerodevx/svelte-json-view";
+  import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
+  import { JsonView } from '@zerodevx/svelte-json-view'
 
-  let httpMethod = "GET";
-  let httpBody = "";
+  let httpMethod = 'GET'
+  let httpBody = ''
 
-  export let onMessage;
+  export let onMessage
 
   async function makeHttpRequest() {
-    let method = httpMethod || "GET";
+    let method = httpMethod || 'GET'
 
     const options = {
-      method: method || "GET",
-      headers: {},
-    };
+      method: method || 'GET',
+      headers: {}
+    }
 
-    let bodyType;
+    let bodyType
 
-    if (method !== "GET") {
-      options.body = httpBody;
+    if (method !== 'GET') {
+      options.body = httpBody
 
       if (
-        (httpBody.startsWith("{") && httpBody.endsWith("}")) ||
-        (httpBody.startsWith("[") && httpBody.endsWith("]"))
+        (httpBody.startsWith('{') && httpBody.endsWith('}')) ||
+        (httpBody.startsWith('[') && httpBody.endsWith(']'))
       ) {
-        options.headers["Content-Type"] = "application/json";
-        bodyType = "json";
-      } else if (httpBody !== "") {
-        bodyType = "text";
+        options.headers['Content-Type'] = 'application/json'
+        bodyType = 'json'
+      } else if (httpBody !== '') {
+        bodyType = 'text'
       }
     }
 
-    const response = await tauriFetch("http://localhost:3003", options);
+    const response = await tauriFetch('http://localhost:3003', options)
     const body =
-      bodyType === "json" ? await response.json() : await response.text();
+      bodyType === 'json' ? await response.json() : await response.text()
 
     onMessage({
       url: response.url,
       status: response.status,
       ok: response.ok,
       headers: Object.fromEntries(response.headers.entries()),
-      body,
-    });
+      body
+    })
   }
 
   /// http form
-  let foo = "baz";
-  let bar = "qux";
-  let result = null;
+  let foo = 'baz'
+  let bar = 'qux'
+  let result = null
 
   async function doPost() {
-    const form = new FormData();
-    form.append("foo", foo);
-    form.append("bar", bar);
-    const response = await tauriFetch("http://localhost:3003/tauri", {
-      method: "POST",
-      body: form,
-    });
+    const form = new FormData()
+    form.append('foo', foo)
+    form.append('bar', bar)
+    const response = await tauriFetch('http://localhost:3003/tauri', {
+      method: 'POST',
+      body: form
+    })
     result = {
       url: response.url,
       status: response.status,
       ok: response.ok,
       headers: Object.fromEntries(response.headers.entries()),
-      body: await response.text(),
-    };
+      body: await response.text()
+    }
   }
 </script>
 
@@ -82,7 +82,7 @@
     placeholder="Request body"
     rows="5"
     bind:value={httpBody}
-  />
+  ></textarea>
   <br />
   <button class="btn" id="make-request"> Make request </button>
 </form>

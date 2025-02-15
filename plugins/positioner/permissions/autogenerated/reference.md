@@ -1,9 +1,10 @@
 ## Default Permission
 
-Allows the move_window command
+Allows the moveWindow and handleIconState APIs
 
 - `allow-move-window`
-- `set-tray-icon-state`
+- `allow-move-window-constrained`
+- `allow-set-tray-icon-state`
 
 ## Permission Table
 
@@ -43,12 +44,51 @@ Denies the move_window command without any pre-configured scope.
 <tr>
 <td>
 
+`positioner:allow-move-window-constrained`
+
+</td>
+<td>
+
+Enables the move_window_constrained command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`positioner:deny-move-window-constrained`
+
+</td>
+<td>
+
+Denies the move_window_constrained command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `positioner:allow-set-tray-icon-state`
 
 </td>
 <td>
 
-Enables the set_tray_icon_state to handle events and set the TrayIcon state.
+Enables the set_tray_icon_state command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`positioner:deny-set-tray-icon-state`
+
+</td>
+<td>
+
+Denies the set_tray_icon_state command without any pre-configured scope.
 
 </td>
 </tr>

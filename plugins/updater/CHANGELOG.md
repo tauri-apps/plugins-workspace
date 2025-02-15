@@ -1,5 +1,30 @@
 # Changelog
 
+## \[2.5.0]
+
+- [`5369898d`](https://github.com/tauri-apps/plugins-workspace/commit/5369898db7a6098e3e2f43436100ea556d405628) ([#2067](https://github.com/tauri-apps/plugins-workspace/pull/2067) by [@jLynx](https://github.com/tauri-apps/plugins-workspace/../../jLynx)) Fix update installation on macOS when using an user without admin privileges.
+- [`5369898d`](https://github.com/tauri-apps/plugins-workspace/commit/5369898db7a6098e3e2f43436100ea556d405628) ([#2067](https://github.com/tauri-apps/plugins-workspace/pull/2067) by [@jLynx](https://github.com/tauri-apps/plugins-workspace/../../jLynx)) Remove the `UpdaterBuilder::new` function, use `UpdaterExt::updater_builder` instead.
+
+## \[2.4.0]
+
+- [`0afc9b6b`](https://github.com/tauri-apps/plugins-workspace/commit/0afc9b6be07bee1077f05a86285d977e57810ed9) ([#2325](https://github.com/tauri-apps/plugins-workspace/pull/2325) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) The `Update` struct/object will now contain a `raw_json`/`rawJson` property to be able to read parts of server's json response that are not handled by the plugin.
+
+## \[2.3.1]
+
+- [`57efb47c`](https://github.com/tauri-apps/plugins-workspace/commit/57efb47c116f880477f72f02a8e4239e88007d44) ([#2235](https://github.com/tauri-apps/plugins-workspace/pull/2235) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add `Builder::header` and `Builder::headers` method to configure default headers for updater.
+
+## \[2.3.0]
+
+- [`829b6326`](https://github.com/tauri-apps/plugins-workspace/commit/829b63265030bc9c61d1738c4eaca0ffb3178677) ([#1919](https://github.com/tauri-apps/plugins-workspace/pull/1919) by [@n1ght-hunter](https://github.com/tauri-apps/plugins-workspace/../../n1ght-hunter)) Add `tauri_plugin_updater::Builder::default_version_comparator` method to set the default version comparator for the updater.
+
+## \[2.2.0]
+
+- [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
+
+## \[2.1.0]
+
+- [`f8f2eefe`](https://github.com/tauri-apps/plugins-workspace/commit/f8f2eefe03ab231beafbd6a88d61b53d77f0400d) ([#1991](https://github.com/tauri-apps/plugins-workspace/pull/1991) by [@jLynx](https://github.com/tauri-apps/plugins-workspace/../../jLynx)) Added support for `.deb` package updates on Linux systems.
+
 ## \[2.0.2]
 
 - [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
@@ -133,65 +158,3 @@
 ## \[2.0.0-alpha.0]
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  ater.
-- [`1cb8311`](https://github.com/tauri-apps/plugins-workspace/commit/1cb831183c63ba5bd3f72d8a482992f6467d950d)([#405](https://github.com/tauri-apps/plugins-workspace/pull/405)) Implement passive mode on NSIS and automatically restart after NSIS update.
-- [`4ab90f0`](https://github.com/tauri-apps/plugins-workspace/commit/4ab90f048eab2918344f97dc8e04413a404e392d)([#431](https://github.com/tauri-apps/plugins-workspace/pull/431)) The updater plugin is recieving a few changes to improve consistency and ergonomics of the Rust and JS APIs
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  0f048eab2918344f97dc8e04413a404e392d)([#431](https://github.com/tauri-apps/plugins-workspace/pull/431)) The updater plugin is recieving a few changes to improve consistency and ergonomics of the Rust and JS APIs
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  1]\(https://github.com/tauri-apps/plugins-workspace/pull/431)) The updater plugin is recieving a few changes to improve consistency and ergonomics of the Rust and JS APIs
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  0f048eab2918344f97dc8e04413a404e392d)([#431](https://github.com/tauri-apps/plugins-workspace/pull/431)) The updater plugin is recieving a few changes to improve consistency and ergonomics of the Rust and JS APIs
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  918344f97dc8e04413a404e392d)([#431](https://github.com/tauri-apps/plugins-workspace/pull/431)) The updater plugin is recieving a few changes to improve consistency and ergonomics of the Rust and JS APIs
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  0f048eab2918344f97dc8e04413a404e392d)([#431](https://github.com/tauri-apps/plugins-workspace/pull/431)) The updater plugin is recieving a few changes to improve consistency and ergonomics of the Rust and JS APIs
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  1]\(https://github.com/tauri-apps/plugins-workspace/pull/431)) The updater plugin is recieving a few changes to improve consistency and ergonomics of the Rust and JS APIs
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  0f048eab2918344f97dc8e04413a404e392d)([#431](https://github.com/tauri-apps/plugins-workspace/pull/431)) The updater plugin is recieving a few changes to improve consistency and ergonomics of the Rust and JS APIs
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  92fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  i-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  92fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  to improve consistency and ergonomics of the Rust and JS APIs
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  92fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  i-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  92fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!

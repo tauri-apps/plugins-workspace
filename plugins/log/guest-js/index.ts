@@ -44,23 +44,80 @@ enum LogLevel {
   Error
 }
 
+function getCallerLocation(stack?: string) {
+  if (!stack) {
+    return
+  }
+
+  if (stack.startsWith('Error')) {
+    // Assume it's Chromium V8
+    //
+    // Error
+    //     at baz (filename.js:10:15)
+    //     at bar (filename.js:6:3)
+    //     at foo (filename.js:2:3)
+    //     at filename.js:13:1
+
+    const lines = stack.split('\n')
+    // Find the third line (caller's caller of the current location)
+    const callerLine = lines[3]?.trim()
+    if (!callerLine) {
+      return
+    }
+
+    const regex =
+      /at\s+(?<functionName>.*?)\s+\((?<fileName>.*?):(?<lineNumber>\d+):(?<columnNumber>\d+)\)/
+    const match = callerLine.match(regex)
+
+    if (match) {
+      const { functionName, fileName, lineNumber, columnNumber } =
+        match.groups as {
+          functionName: string
+          fileName: string
+          lineNumber: string
+          columnNumber: string
+        }
+      return `${functionName}@${fileName}:${lineNumber}:${columnNumber}`
+    } else {
+      // Handle cases where the regex does not match (e.g., last line without function name)
+      const regexNoFunction =
+        /at\s+(?<fileName>.*?):(?<lineNumber>\d+):(?<columnNumber>\d+)/
+      const matchNoFunction = callerLine.match(regexNoFunction)
+      if (matchNoFunction) {
+        const { fileName, lineNumber, columnNumber } =
+          matchNoFunction.groups as {
+            fileName: string
+            lineNumber: string
+            columnNumber: string
+          }
+        return `<anonymous>@${fileName}:${lineNumber}:${columnNumber}`
+      }
+    }
+  } else {
+    // Assume it's Webkit JavaScriptCore, example:
+    //
+    // baz@filename.js:10:24
+    // bar@filename.js:6:6
+    // foo@filename.js:2:6
+    // global code@filename.js:13:4
+
+    const traces = stack.split('\n').map((line) => line.split('@'))
+    const filtered = traces.filter(([name, location]) => {
+      return name.length > 0 && location !== '[native code]'
+    })
+    // Find the third line (caller's caller of the current location)
+    return filtered[2]?.filter((v) => v.length > 0).join('@')
+  }
+}
+
 async function log(
   level: LogLevel,
   message: string,
   options?: LogOptions
 ): Promise<void> {
-  const traces = new Error().stack?.split('\n').map((line) => line.split('@'))
-
-  const filtered = traces?.filter(([name, location]) => {
-    return name.length > 0 && location !== '[native code]'
-  })
+  const location = getCallerLocation(new Error().stack)
 
   const { file, line, keyValues } = options ?? {}
-
-  let location = filtered?.[0]?.filter((v) => v.length > 0).join('@')
-  if (location === 'Error') {
-    location = 'webview::unknown'
-  }
 
   await invoke('plugin:log|log', {
     level,
