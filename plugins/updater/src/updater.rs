@@ -242,7 +242,10 @@ impl UpdaterBuilder {
         self
     }
 
-    pub fn on_before_request<F: Fn(ClientBuilder) -> ClientBuilder + Send + Sync + 'static>(mut self, f: F) -> Self {
+    pub fn on_before_request<F: Fn(ClientBuilder) -> ClientBuilder + Send + Sync + 'static>(
+        mut self,
+        f: F,
+    ) -> Self {
         self.on_before_request.replace(Arc::new(f));
         self
     }
