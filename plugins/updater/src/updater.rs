@@ -93,6 +93,7 @@ impl RemoteRelease {
 }
 
 pub type OnBeforeExit = Arc<dyn Fn() + Send + Sync + 'static>;
+pub type OnBeforeRequest = Arc<dyn Fn(ClientBuilder) -> ClientBuilder + Send + Sync + 'static>;
 pub type VersionComparator = Arc<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>;
 type MainThreadClosure = Box<dyn FnOnce() + Send + Sync + 'static>;
 type RunOnMainThread =
@@ -114,6 +115,7 @@ pub struct UpdaterBuilder {
     installer_args: Vec<OsString>,
     current_exe_args: Vec<OsString>,
     on_before_exit: Option<OnBeforeExit>,
+    on_before_request: Option<OnBeforeRequest>,
 }
 
 impl UpdaterBuilder {
@@ -140,6 +142,7 @@ impl UpdaterBuilder {
             timeout: None,
             proxy: None,
             on_before_exit: None,
+            on_before_request: None,
         }
     }
 
@@ -239,6 +242,11 @@ impl UpdaterBuilder {
         self
     }
 
+    pub fn on_before_request<F: Fn(ClientBuilder) -> ClientBuilder + Send + Sync + 'static>(mut self, f: F) -> Self {
+        self.on_before_request.replace(Arc::new(f));
+        self
+    }
+
     pub fn build(self) -> Result<Updater> {
         let endpoints = self
             .endpoints
@@ -282,6 +290,7 @@ impl UpdaterBuilder {
             headers: self.headers,
             extract_path,
             on_before_exit: self.on_before_exit,
+            on_before_request: self.on_before_request,
         })
     }
 }
@@ -316,6 +325,7 @@ pub struct Updater {
     headers: HeaderMap,
     extract_path: PathBuf,
     on_before_exit: Option<OnBeforeExit>,
+    on_before_request: Option<OnBeforeRequest>,
     #[allow(unused)]
     installer_args: Vec<OsString>,
     #[allow(unused)]
@@ -376,6 +386,11 @@ impl Updater {
                 let proxy = reqwest::Proxy::all(proxy.as_str())?;
                 request = request.proxy(proxy);
             }
+
+            if let Some(ref on_before_request) = self.on_before_request {
+                request = on_before_request(request);
+            }
+
             let response = request
                 .build()?
                 .get(url)
