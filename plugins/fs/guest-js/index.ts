@@ -604,8 +604,8 @@ async function copyFile(
   options?: CopyFileOptions
 ): Promise<void> {
   if (
-    (fromPath instanceof URL && fromPath.protocol !== 'file:') ||
-    (toPath instanceof URL && toPath.protocol !== 'file:')
+    (fromPath instanceof URL && fromPath.protocol !== 'file:')
+    || (toPath instanceof URL && toPath.protocol !== 'file:')
   ) {
     throw new TypeError('Must be a file URL.')
   }
@@ -919,8 +919,8 @@ async function rename(
   options?: RenameOptions
 ): Promise<void> {
   if (
-    (oldPath instanceof URL && oldPath.protocol !== 'file:') ||
-    (newPath instanceof URL && newPath.protocol !== 'file:')
+    (oldPath instanceof URL && oldPath.protocol !== 'file:')
+    || (newPath instanceof URL && newPath.protocol !== 'file:')
   ) {
     throw new TypeError('Must be a file URL.')
   }
