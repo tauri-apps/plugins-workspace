@@ -632,12 +632,11 @@ impl Update {
 
         let install_mode = self.config.install_mode();
         let current_exe_args = self.current_exe_args();
-        let current_args =
-            current_exe_args
-                .split_first()
-                .map(|(_, args_without_exe)| args_without_exe)
-                .unwrap_or(&[]);
-        
+        let current_args = current_exe_args
+            .split_first()
+            .map(|(_, args_without_exe)| args_without_exe)
+            .unwrap_or(&[]);
+
         let msi_args;
 
         let installer_args: Vec<&OsStr> = match &updater_type {
@@ -651,7 +650,9 @@ impl Update {
                         Some(once(OsStr::new("/ARGS")).chain(current_args.iter().map(|arg| *arg)))
                     } else {
                         None
-                    }.into_iter().flatten()
+                    }
+                    .into_iter()
+                    .flatten(),
                 )
                 .chain(self.installer_args())
                 .collect(),
@@ -663,8 +664,7 @@ impl Update {
                         .collect::<Vec<_>>()
                         .join(" ");
                     msi_args = Some(OsString::from(format!("LAUNCHAPPARGS=\"{escaped_args}\"")));
-                }
-                else {
+                } else {
                     msi_args = None;
                 }
 
