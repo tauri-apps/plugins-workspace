@@ -118,8 +118,8 @@ import {
 
 let permissions = await checkPermissions()
 if (
-  permissions.location === 'prompt' ||
-  permissions.location === 'prompt-with-rationale'
+  permissions.location === 'prompt'
+  || permissions.location === 'prompt-with-rationale'
 ) {
   permissions = await requestPermissions(['location'])
 }
