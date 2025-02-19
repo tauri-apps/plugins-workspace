@@ -391,6 +391,7 @@ impl Updater {
                             return Ok(None);
                         };
 
+                        raw_json = Some(res.json().await?);
                         match serde_json::from_value::<RemoteRelease>(res.json().await?)
                             .map_err(Into::into)
                         {
