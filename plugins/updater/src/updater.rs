@@ -392,7 +392,7 @@ impl Updater {
                         };
 
                         raw_json = Some(res.json().await?);
-                        match serde_json::from_value::<RemoteRelease>(res.json().await?)
+                        match serde_json::from_value::<RemoteRelease>(raw_json.clone().unwrap())
                             .map_err(Into::into)
                         {
                             Ok(release) => {
