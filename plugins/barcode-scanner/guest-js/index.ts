@@ -23,7 +23,10 @@ export enum Format {
   ITF = 'ITF',
   Aztec = 'AZTEC',
   DataMatrix = 'DATA_MATRIX',
-  PDF417 = 'PDF_417'
+  PDF417 = 'PDF_417',
+  GS1DataBar = 'GS1_DATA_BAR',
+  GS1DataBarLimited = 'GS1_DATA_BAR_LIMITED',
+  GS1DataBarExpanded = 'GS1_DATA_BAR_EXPANDED'
 }
 
 export interface ScanOptions {
