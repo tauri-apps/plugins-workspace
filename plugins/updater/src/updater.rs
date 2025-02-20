@@ -68,26 +68,30 @@ pub struct RemoteRelease {
 
 impl RemoteRelease {
     /// The release's download URL for the given target.
-    pub fn download_url(&self, target: &str) -> Result<&Url> {
+    pub fn download_url(&self, target: &str, fallback_target: &Option<String>) -> Result<&Url> {
         match self.data {
             RemoteReleaseInner::Dynamic(ref platform) => Ok(&platform.url),
             RemoteReleaseInner::Static { ref platforms } => platforms
                 .get(target)
-                .map_or(Err(Error::TargetNotFound(target.to_string())), |p| {
-                    Ok(&p.url)
-                }),
+                .map_or_else(
+                    || match fallback_target {
+                        Some(fallback) => platforms.get(fallback).map_or(Err(Error::TargetsNotFound(target.to_string(), fallback.to_string())), |p| Ok(&p.url)),
+                        None => Err(Error::TargetNotFound(target.to_string())) 
+                    }, |p| { Ok(&p.url) })
         }
     }
 
     /// The release's signature for the given target.
-    pub fn signature(&self, target: &str) -> Result<&String> {
+    pub fn signature(&self, target: &str, fallback_target: &Option<String>) -> Result<&String> {
         match self.data {
             RemoteReleaseInner::Dynamic(ref platform) => Ok(&platform.signature),
             RemoteReleaseInner::Static { ref platforms } => platforms
                 .get(target)
-                .map_or(Err(Error::TargetNotFound(target.to_string())), |platform| {
-                    Ok(&platform.signature)
-                }),
+                .map_or_else(
+                    || match fallback_target {
+                        Some(fallback) => platforms.get(fallback).map_or(Err(Error::TargetsNotFound(target.to_string(), fallback.to_string())), |p| Ok(&p.signature)),
+                        None => Err(Error::TargetNotFound(target.to_string())) 
+                    }, |p| { Ok(&p.signature) })
         }
     }
 }
@@ -242,11 +246,16 @@ impl UpdaterBuilder {
         };
 
         let arch = get_updater_arch().ok_or(Error::UnsupportedArch)?;
-        let (target, json_target) = if let Some(target) = self.target {
-            (target.clone(), target)
+        let (target, json_target, fallback_target) = if let Some(target) = self.target {
+            (target.clone(), target,  None)
         } else {
             let target = get_updater_target().ok_or(Error::UnsupportedOs)?;
-            (target.to_string(), format!("{target}-{arch}"))
+            let installer = get_updater_installer()?;
+            let json_target = format!("{target}-{arch}");
+            match installer {
+                Some(installer) => (target.to_owned(), format!("{json_target}-{installer}"), Some(json_target)),
+                None => (target.to_owned(), json_target, None)
+            }
         };
 
         let executable_path = self.executable_path.clone().unwrap_or(current_exe()?);
@@ -271,6 +280,7 @@ impl UpdaterBuilder {
             arch,
             target,
             json_target,
+            fallback_target,
             headers: self.headers,
             extract_path,
             on_before_exit: self.on_before_exit,
@@ -299,10 +309,12 @@ pub struct Updater {
     proxy: Option<Url>,
     endpoints: Vec<Url>,
     arch: &'static str,
-    // The `{{target}}` variable we replace in the endpoint
+    // The `{{target}}` variable we replace in the endpoint and serach for in the JSON
     target: String,
     // The value we search if the updater server returns a JSON with the `platforms` object
     json_target: String,
+    // If target doesn't exist in the JSON check for this one 
+    fallback_target: Option<String>,
     headers: HeaderMap,
     extract_path: PathBuf,
     on_before_exit: Option<OnBeforeExit>,
@@ -317,7 +329,6 @@ impl Updater {
         // we want JSON only
         let mut headers = self.headers.clone();
         headers.insert("Accept", HeaderValue::from_str("application/json").unwrap());
-
         // Set SSL certs for linux if they aren't available.
         #[cfg(target_os = "linux")]
         {
@@ -420,9 +431,9 @@ impl Updater {
                 extract_path: self.extract_path.clone(),
                 version: release.version.to_string(),
                 date: release.pub_date,
-                download_url: release.download_url(&self.json_target)?.to_owned(),
+                download_url: release.download_url(&self.json_target, &self.fallback_target)?.to_owned(),
                 body: release.notes.clone(),
-                signature: release.signature(&self.json_target)?.to_owned(),
+                signature: release.signature(&self.json_target, &self.fallback_target)?.to_owned(),
                 raw_json: raw_json.unwrap(),
                 timeout: self.timeout,
                 proxy: self.proxy.clone(),
@@ -1099,6 +1110,7 @@ pub(crate) fn get_updater_target() -> Option<&'static str> {
     }
 }
 
+
 pub(crate) fn get_updater_arch() -> Option<&'static str> {
     if cfg!(target_arch = "x86") {
         Some("i686")
@@ -1110,6 +1122,18 @@ pub(crate) fn get_updater_arch() -> Option<&'static str> {
         Some("aarch64")
     } else {
         None
+    }
+}
+
+pub(crate) fn get_updater_installer() -> Result<Option<&'static str>> {
+    if cfg!(target_os = "linux") {
+        Ok(Some("deb"))
+    } else if cfg!(target_os = "windows") {
+        Ok(Some("wix"))
+    } else if cfg!(target_os = "macos") {
+       Ok(None)
+    } else {
+        Err(Error::UnknownInstaller)
     }
 }
 

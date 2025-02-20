@@ -17,6 +17,7 @@ use tauri::utils::config::{Updater, V1Compatible};
 
 const UPDATER_PRIVATE_KEY: &str = "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5TlFOMFpXYzJFOUdjeHJEVXY4WE1TMUxGNDJVUjNrMmk1WlR3UVJVUWwva0FBQkFBQUFBQUFBQUFBQUlBQUFBQUpVK3ZkM3R3eWhyN3hiUXhQb2hvWFVzUW9FbEs3NlNWYjVkK1F2VGFRU1FEaGxuRUtlell5U0gxYS9DbVRrS0YyZVJGblhjeXJibmpZeGJjS0ZKSUYwYndYc2FCNXpHalM3MHcrODMwN3kwUG9SOWpFNVhCSUd6L0E4TGRUT096TEtLR1JwT1JEVFU9Cg==";
 const UPDATED_EXIT_CODE: i32 = 0;
+const ERROR_EXIT_CODE: i32 = 1;
 const UP_TO_DATE_EXIT_CODE: i32 = 2;
 
 #[derive(Serialize)]
@@ -45,7 +46,7 @@ struct Update {
     platforms: HashMap<String, PlatformUpdate>,
 }
 
-fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTarget) {
+fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, targets: Vec<BundleTarget>) {
     let mut command = Command::new("cargo");
     command
         .args(["tauri", "build", "--debug", "--verbose"])
@@ -55,19 +56,20 @@ fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTa
         .env("TAURI_SIGNING_PRIVATE_KEY_PASSWORD", "")
         .current_dir(cwd);
 
+    command.args(["--bundles"]);
     #[cfg(target_os = "linux")]
-    command.args(["--bundles", target.name()]);
+    command.args(targets.into_iter().map(|t| t.name()).collect::<Vec<&str>>());
     #[cfg(target_os = "macos")]
-    command.args(["--bundles", target.name()]);
+    command.args([target.name()]);
 
     if bundle_updater {
         #[cfg(windows)]
-        command.args(["--bundles", "msi", "nsis"]);
+        command.args(["msi", "nsis"]);
 
-        command.args(["--bundles", "updater"]);
+        command.args(["updater"]);
     } else {
         #[cfg(windows)]
-        command.args(["--bundles", target.name()]);
+        command.args([target.name()]);
     }
 
     let status = command
@@ -82,6 +84,8 @@ fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTa
 #[derive(Copy, Clone)]
 enum BundleTarget {
     AppImage,
+    Deb,
+    Rpm,
 
     App,
 
@@ -93,6 +97,8 @@ impl BundleTarget {
     fn name(self) -> &'static str {
         match self {
             Self::AppImage => "appimage",
+            Self::Deb => "deb",
+            Self::Rpm => "rpm",
             Self::App => "app",
             Self::Msi => "msi",
             Self::Nsis => "nsis",
@@ -100,25 +106,73 @@ impl BundleTarget {
     }
 }
 
-impl Default for BundleTarget {
-    fn default() -> Self {
+impl BundleTarget {
+    fn get_targets() -> Vec<Self> {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
-        return Self::App;
+        return vec![Self::App];
         #[cfg(target_os = "linux")]
-        return Self::AppImage;
+        return vec![Self::AppImage, Self::Deb, Self::Rpm];
         #[cfg(windows)]
-        return Self::Nsis;
+        return vec![Self::Nsis];
+    }
+}
+
+fn insert_plaforms(
+    bundle_target: BundleTarget,
+    platforms: &mut HashMap<String, PlatformUpdate>,
+    target: String,
+    signature: String,
+) {
+    match bundle_target {
+        // Should use deb, no fallback
+        BundleTarget::Deb => {
+            platforms.insert(
+                format!("{target}-deb"),
+                PlatformUpdate {
+                    signature,
+                    url: "http://localhost:3007/download",
+                    with_elevated_task: false,
+                },
+            );
+        }
+        // Should fail
+        BundleTarget::Rpm => {}
+        // AppImage should use fallback
+        _ => {
+            platforms.insert(
+                target,
+                PlatformUpdate {
+                    signature,
+                    url: "http://localhost:3007/download",
+                    with_elevated_task: false,
+                },
+            );
+        }
     }
 }
 
 #[cfg(target_os = "linux")]
 fn bundle_paths(root_dir: &Path, version: &str) -> Vec<(BundleTarget, PathBuf)> {
-    vec![(
-        BundleTarget::AppImage,
-        root_dir.join(format!(
-            "target/debug/bundle/appimage/app-updater_{version}_amd64.AppImage"
-        )),
-    )]
+    vec![
+        (
+            BundleTarget::AppImage,
+            root_dir.join(format!(
+                "target/debug/bundle/appimage/app-updater_{version}_amd64.AppImage"
+            )),
+        ),
+        (
+            BundleTarget::Deb,
+            root_dir.join(format!(
+                "target/debug/bundle/deb/app-updater_{version}_amd64.deb"
+            )),
+        ),
+        (
+            BundleTarget::Rpm,
+            root_dir.join(format!(
+                "target/debug/bundle/rpm/app-updater_{version}_amd64.rpm"
+            )),
+        ),
+    ]
 }
 
 #[cfg(target_os = "macos")]
@@ -161,7 +215,6 @@ fn bundle_paths(root_dir: &Path, version: &str) -> Vec<(BundleTarget, PathBuf)> 
 }
 
 #[test]
-#[ignore]
 fn update_app() {
     let target =
         tauri_plugin_updater::target().expect("running updater test in an unsupported platform");
@@ -188,7 +241,7 @@ fn update_app() {
         );
 
         // bundle app update
-        build_app(&manifest_dir, &config, true, Default::default());
+        build_app(&manifest_dir, &config, true, BundleTarget::get_targets());
 
         let updater_zip_ext = if v1_compatible {
             if cfg!(windows) {
@@ -249,14 +302,13 @@ fn update_app() {
                         "/" => {
                             let mut platforms = HashMap::new();
 
-                            platforms.insert(
+                            insert_plaforms(
+                                bundle_target,
+                                &mut platforms,
                                 target.clone(),
-                                PlatformUpdate {
-                                    signature: signature.clone(),
-                                    url: "http://localhost:3007/download",
-                                    with_elevated_task: false,
-                                },
+                                signature.clone(),
                             );
+
                             let body = serde_json::to_vec(&Update {
                                 version: "1.0.0",
                                 date: time::OffsetDateTime::now_utc()
@@ -293,11 +345,13 @@ fn update_app() {
             config.version = "0.1.0";
 
             // bundle initial app version
-            build_app(&manifest_dir, &config, false, bundle_target);
+            build_app(&manifest_dir, &config, false, vec![bundle_target]);
 
             let status_checks = if matches!(bundle_target, BundleTarget::Msi) {
                 // for msi we can't really check if the app was updated, because we can't change the install path
                 vec![UPDATED_EXIT_CODE]
+            } else if matches!(bundle_target, BundleTarget::Rpm) {
+                vec![ERROR_EXIT_CODE]
             } else {
                 vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE]
             };

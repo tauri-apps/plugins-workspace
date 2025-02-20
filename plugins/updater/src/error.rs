@@ -30,6 +30,9 @@ pub enum Error {
     /// Operating system is not supported.
     #[error("Unsupported OS, expected one of `linux`, `darwin` or `windows`.")]
     UnsupportedOs,
+    /// Can't determine which type of installer was used for the app
+    #[error("Couldn't determinet installation method")]
+    UnknownInstaller,
     /// Failed to determine updater package extract path
     #[error("Failed to determine updater package extract path.")]
     FailedToDetermineExtractPath,
@@ -42,6 +45,9 @@ pub enum Error {
     /// The platform was not found on the updater JSON response.
     #[error("the platform `{0}` was not found on the response `platforms` object")]
     TargetNotFound(String),
+    /// Neither the platform not the fallback platform was not found on the updater JSON response.
+    #[error("the platform `{0}` and `{1}` were not found on the response `platforms` object")]
+    TargetsNotFound(String, String),
     /// Download failed
     #[error("`{0}`")]
     Network(String),
