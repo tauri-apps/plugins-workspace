@@ -2,6 +2,10 @@
 
 ## \[2.2.1]
 
+- [`ca7395a5`](https://github.com/tauri-apps/plugins-workspace/commit/ca7395a5ce971cbac25fb54285056edf3dd84e1f) ([#2378](https://github.com/tauri-apps/plugins-workspace/pull/2378) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) the `rustls-tls` feature is now enabled by default
+
+## \[2.2.1]
+
 - [`05c62d73`](https://github.com/tauri-apps/plugins-workspace/commit/05c62d731fa48fd06b8cb3694a962d8cb0db8619) ([#1523](https://github.com/tauri-apps/plugins-workspace/pull/1523) by [@enri90](https://github.com/tauri-apps/plugins-workspace/../../enri90)) Added post request on download function
 
 ## \[2.2.0]

@@ -70,7 +70,6 @@ pub trait UpdaterExt<R: Runtime> {
 impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
     fn updater_builder(&self) -> UpdaterBuilder {
         let app = self.app_handle();
-        let package_info = app.package_info();
         let UpdaterState {
             config,
             target,
@@ -78,12 +77,7 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
             headers,
         } = self.state::<UpdaterState>().inner();
 
-        let mut builder = UpdaterBuilder::new(
-            package_info.name.clone(),
-            package_info.version.clone(),
-            config.clone(),
-        )
-        .headers(headers.clone());
+        let mut builder = UpdaterBuilder::new(app, config.clone()).headers(headers.clone());
 
         if let Some(target) = target {
             builder = builder.target(target);
