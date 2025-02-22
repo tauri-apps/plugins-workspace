@@ -11,13 +11,13 @@
     "example:api:dev": "pnpm run --filter \"api\" tauri dev"
   },
   "devDependencies": {
-    "@eslint/js": "9.19.0",
+    "@eslint/js": "9.21.0",
     "@rollup/plugin-node-resolve": "16.0.0",
     "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-typescript": "11.1.6",
     "@types/eslint__js": "8.42.3",
     "covector": "^0.12.3",
-    "eslint": "9.19.0",
+    "eslint": "9.21.0",
     "eslint-config-prettier": "10.0.1",
     "eslint-plugin-security": "3.0.1",
     "prettier": "3.5.2",
