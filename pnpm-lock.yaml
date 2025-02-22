@@ -24,9 +24,6 @@ importers:
       '@rollup/plugin-typescript':
         specifier: 11.1.6
         version: 11.1.6(rollup@4.34.8)(tslib@2.8.1)(typescript@5.7.3)
-      '@types/eslint__js':
-        specifier: 9.14.0
-        version: 9.14.0
       covector:
         specifier: ^0.12.3
         version: 0.12.3(mocha@10.8.2)
@@ -1060,10 +1057,6 @@ packages:
     resolution: {integrity: sha512-ZnsS2B4BplwXP37celanNANiIy8TCYhvg5RT09n72uR/o+navFZtGpFSqljV8fy1Y4ixIPds8FrGSXJCN2BerA==}
     engines: {node: '>= 10'}
     hasBin: true
-
-  '@types/eslint__js@9.14.0':
-    resolution: {integrity: sha512-s0jepCjOJWB/GKcuba4jISaVpBudw3ClXJ3fUK4tugChUMQsp6kSwuA8Dcx6wFd/JsJqcY8n4rEpa5RTHs5ypA==}
-    deprecated: This is a stub types definition. @eslint/js provides its own type definitions, so you do not need this installed.
 
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
@@ -2954,10 +2947,6 @@ snapshots:
       '@tauri-apps/cli-win32-arm64-msvc': 2.2.7
       '@tauri-apps/cli-win32-ia32-msvc': 2.2.7
       '@tauri-apps/cli-win32-x64-msvc': 2.2.7
-
-  '@types/eslint__js@9.14.0':
-    dependencies:
-      '@eslint/js': 9.21.0
 
   '@types/estree@1.0.6': {}
 
