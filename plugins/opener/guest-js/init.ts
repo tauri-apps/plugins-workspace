@@ -9,13 +9,13 @@ window.addEventListener('click', function (evt) {
   // return early if
   if (
     // event was prevented
-    evt.defaultPrevented ||
+    evt.defaultPrevented
     // or not a left click
-    evt.button !== 0 ||
+    || evt.button !== 0
     // or meta key pressed
-    evt.metaKey ||
+    || evt.metaKey
     // or al key pressed
-    evt.altKey
+    || evt.altKey
   )
     return
 
@@ -28,16 +28,16 @@ window.addEventListener('click', function (evt) {
   // return early if
   if (
     // not tirggered from <a> element
-    !a ||
+    !a
     // or doesn't have a href
-    !a.href ||
+    || !a.href
     // or not supposed to be open in a new tab
-    !(
-      a.target === '_blank' ||
+    || !(
+      a.target === '_blank'
       // or ctrl key pressed
-      evt.ctrlKey ||
+      || evt.ctrlKey
       // or shift key pressed
-      evt.shiftKey
+      || evt.shiftKey
     )
   )
     return
@@ -47,9 +47,9 @@ window.addEventListener('click', function (evt) {
   // return early if
   if (
     // same origin (internal navigation)
-    url.origin === window.location.origin ||
+    url.origin === window.location.origin
     // not default protocols
-    ['http:', 'https:', 'mailto:', 'tel:'].every((p) => url.protocol !== p)
+    || ['http:', 'https:', 'mailto:', 'tel:'].every((p) => url.protocol !== p)
   )
     return
 
