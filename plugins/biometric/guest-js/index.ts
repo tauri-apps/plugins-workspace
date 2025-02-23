@@ -93,6 +93,9 @@ export async function authenticate(
  * using the system interface (touchID, faceID or Android Iris).
  * Rejects if the authentication fails.
  * 
+ * Warning: consider that if the data is encrypted and the user changes the biometric settings, the key needed 
+ * to decrypt the data will be lost. So, it's recommended to use this only to data that the user can get back 
+ * by other means (i.e. storing their password in a secure way so they can login passwordless with biometric authentication).
  *
  * ```javascript
  * import { biometricCipher } from "@tauri-apps/plugin-biometric";
