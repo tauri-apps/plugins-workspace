@@ -89,8 +89,8 @@ class BiometricActivity : AppCompatActivity() {
                 prefix + BiometricPlugin.ENCRYPT_DECRYPT_OPERATION, 
                 cipherOperation
             )
-
-        if (cipherOperation) {
+        
+        if (resultType == BiometryResultType.SUCCESS && cipherOperation) {
             val cryptoObject = requireNotNull(authenticationResult?.cryptoObject)
             val cipher = requireNotNull(cryptoObject.cipher)
             var dataToProcess = if (cipherType == CipherType.ENCRYPT) {
