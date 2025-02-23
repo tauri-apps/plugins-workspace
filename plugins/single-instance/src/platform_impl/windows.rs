@@ -118,6 +118,11 @@ unsafe extern "system" fn single_instance_window_proc<R: Runtime>(
 ) -> LRESULT {
     let data_ptr = GetWindowLongPtrW(hwnd, GWL_USERDATA)
         as *mut (AppHandle<R>, Box<SingleInstanceCallback<R>>);
+
+    if data_ptr.is_null() {
+        return DefWindowProcW(hwnd, msg, wparam, lparam);
+    }
+
     let (app_handle, callback) = &mut *data_ptr;
 
     match msg {
