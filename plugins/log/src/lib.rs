@@ -278,7 +278,7 @@ impl Builder {
         let format =
             time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
                 .unwrap();
-        self.dispatch = fern::Dispatch::new().format(move |out, message, record| {
+        self.dispatch = self.dispatch.format(move |out, message, record| {
             out.finish(format_args!(
                 "{}[{}][{}] {}",
                 timezone_strategy.get_now().format(&format).unwrap(),
