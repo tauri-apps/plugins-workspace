@@ -321,6 +321,11 @@ impl Builder {
         self
     }
 
+    pub fn chain<T: Into<fern::Output>>(mut self, logger: T) -> Self{
+        self.dispatch = self.dispatch.chain(logger);
+        self
+    }
+
     /// Removes all targets. Useful to ignore the default targets and reconfigure them.
     pub fn clear_targets(mut self) -> Self {
         self.targets.clear();
