@@ -20,18 +20,38 @@ use windows_sys::Win32::{
     },
     UI::WindowsAndMessaging::{
         self as w32wm, CreateWindowExW, DefWindowProcW, DestroyWindow, FindWindowW,
-        RegisterClassExW, SendMessageW, GWL_STYLE, GWL_USERDATA, WINDOW_LONG_PTR_INDEX,
-        WM_COPYDATA, WM_DESTROY, WNDCLASSEXW, WS_EX_LAYERED, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW,
-        WS_EX_TRANSPARENT, WS_OVERLAPPED, WS_POPUP, WS_VISIBLE,
+        RegisterClassExW, SendMessageW, CREATESTRUCTW, GWLP_USERDATA, GWL_STYLE,
+        WINDOW_LONG_PTR_INDEX, WM_COPYDATA, WM_CREATE, WM_DESTROY, WNDCLASSEXW, WS_EX_LAYERED,
+        WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT, WS_OVERLAPPED, WS_POPUP, WS_VISIBLE,
     },
 };
 
-struct MutexHandle(isize);
-struct TargetWindowHandle(isize);
-
 const WMCOPYDATA_SINGLE_INSTANCE_DATA: usize = 1542;
 
-pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
+struct MutexHandle(isize);
+
+struct TargetWindowHandle(isize);
+
+struct UserData<R: Runtime> {
+    app: AppHandle<R>,
+    callback: Box<SingleInstanceCallback<R>>,
+}
+
+impl<R: Runtime> UserData<R> {
+    unsafe fn from_hwnd_raw(hwnd: HWND) -> *mut Self {
+        GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut Self
+    }
+
+    unsafe fn from_hwnd<'a>(hwnd: HWND) -> &'a mut Self {
+        &mut *Self::from_hwnd_raw(hwnd)
+    }
+
+    fn run_callback(&mut self, args: Vec<String>, cwd: String) {
+        (self.callback)(&self.app, args, cwd)
+    }
+}
+
+pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(|app, _api| {
             #[allow(unused_mut)]
@@ -54,21 +74,22 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
                     let hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
 
                     if !hwnd.is_null() {
-                        let data = format!(
-                            "{}|{}\0",
-                            std::env::current_dir()
-                                .unwrap_or_default()
-                                .to_str()
-                                .unwrap_or_default(),
-                            std::env::args().collect::<Vec<String>>().join("|")
-                        );
+                        let cwd = std::env::current_dir().unwrap_or_default();
+                        let cwd = cwd.to_str().unwrap_or_default();
+
+                        let args = std::env::args().collect::<Vec<String>>().join("|");
+
+                        let data = format!("{cwd}|{args}\0",);
+
                         let bytes = data.as_bytes();
                         let cds = COPYDATASTRUCT {
                             dwData: WMCOPYDATA_SINGLE_INSTANCE_DATA,
                             cbData: bytes.len() as _,
                             lpData: bytes.as_ptr() as _,
                         };
+
                         SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
+
                         app.cleanup_before_exit();
                         std::process::exit(0);
                     }
@@ -76,15 +97,12 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
             } else {
                 app.manage(MutexHandle(hmutex as _));
 
-                let hwnd = create_event_target_window::<R>(&class_name, &window_name);
-                unsafe {
-                    SetWindowLongPtrW(
-                        hwnd,
-                        GWL_USERDATA,
-                        Box::into_raw(Box::new((app.clone(), f))) as _,
-                    )
+                let userdata = UserData {
+                    app: app.clone(),
+                    callback,
                 };
-
+                let userdata = Box::into_raw(Box::new(userdata));
+                let hwnd = create_event_target_window::<R>(&class_name, &window_name, userdata);
                 app.manage(TargetWindowHandle(hwnd as _));
             }
 
@@ -116,37 +134,43 @@ unsafe extern "system" fn single_instance_window_proc<R: Runtime>(
     wparam: WPARAM,
     lparam: LPARAM,
 ) -> LRESULT {
-    let data_ptr = GetWindowLongPtrW(hwnd, GWL_USERDATA)
-        as *mut (AppHandle<R>, Box<SingleInstanceCallback<R>>);
-
-    if data_ptr.is_null() {
-        return DefWindowProcW(hwnd, msg, wparam, lparam);
-    }
-
-    let (app_handle, callback) = &mut *data_ptr;
-
     match msg {
+        WM_CREATE => {
+            let create_struct = &*(lparam as *const CREATESTRUCTW);
+            let userdata = create_struct.lpCreateParams as *const UserData<R>;
+            SetWindowLongPtrW(hwnd, GWLP_USERDATA, userdata as _);
+            0
+        }
+
         WM_COPYDATA => {
             let cds_ptr = lparam as *const COPYDATASTRUCT;
             if (*cds_ptr).dwData == WMCOPYDATA_SINGLE_INSTANCE_DATA {
+                let userdata = UserData::<R>::from_hwnd(hwnd);
+
                 let data = CStr::from_ptr((*cds_ptr).lpData as _).to_string_lossy();
                 let mut s = data.split('|');
                 let cwd = s.next().unwrap();
                 let args = s.map(|s| s.to_string()).collect();
-                callback(app_handle, args, cwd.to_string());
+
+                userdata.run_callback(args, cwd.to_string());
             }
             1
         }
 
         WM_DESTROY => {
-            let _ = Box::from_raw(data_ptr);
+            let userdata = UserData::<R>::from_hwnd_raw(hwnd);
+            drop(Box::from_raw(userdata));
             0
         }
         _ => DefWindowProcW(hwnd, msg, wparam, lparam),
     }
 }
 
-fn create_event_target_window<R: Runtime>(class_name: &[u16], window_name: &[u16]) -> HWND {
+fn create_event_target_window<R: Runtime>(
+    class_name: &[u16],
+    window_name: &[u16],
+    userdata: *const UserData<R>,
+) -> HWND {
     unsafe {
         let class = WNDCLASSEXW {
             cbSize: std::mem::size_of::<WNDCLASSEXW>() as u32,
@@ -187,7 +211,7 @@ fn create_event_target_window<R: Runtime>(class_name: &[u16], window_name: &[u16
             std::ptr::null_mut(),
             std::ptr::null_mut(),
             GetModuleHandleW(std::ptr::null()),
-            std::ptr::null(),
+            userdata as _,
         );
         SetWindowLongPtrW(
             hwnd,
