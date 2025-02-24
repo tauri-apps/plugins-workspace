@@ -1,0 +1,23 @@
+{
+  "object" : "list",
+  "items" : [
+    {
+      "project_id" : "proj7139ead4",
+      "id" : "19b8de26-77c1-49f1-aa18-019a391603e2",
+      "first_seen_at" : 1740026777427,
+      "object" : "customer",
+      "last_seen_at" : 1740026777429,
+      "experiment" : null
+    },
+    {
+      "project_id" : "proj7139ead4",
+      "id" : "customer_123",
+      "first_seen_at" : 1740026563933,
+      "object" : "customer",
+      "last_seen_at" : 1740026563936,
+      "experiment" : null
+    }
+  ],
+  "url" : "https:\/\/api.revenuecat.com\/v2\/projects\/7139ead4\/customers",
+  "next_page" : null
+}

@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-fetchProjectOverviewData"
+description = "Enables the fetchProjectOverviewData command without any pre-configured scope."
+commands.allow = ["fetchProjectOverviewData"]
+
+[[permission]]
+identifier = "deny-fetchProjectOverviewData"
+description = "Denies the fetchProjectOverviewData command without any pre-configured scope."
+commands.deny = ["fetchProjectOverviewData"]
