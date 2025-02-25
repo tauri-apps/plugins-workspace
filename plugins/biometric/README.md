@@ -1,6 +1,6 @@
 ![biometric](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/biometric/banner.png)
 
-Prompt the user for biometric authentication on Android and iOS. Also allows to use assymetric  key protected 
+Prompt the user for biometric authentication on Android and iOS. Also allows to use assymetric cryptography with the keys protected by biometric authentication.
 
 | Platform | Supported |
 | -------- | --------- |
