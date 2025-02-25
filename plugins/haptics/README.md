@@ -69,6 +69,19 @@ fn main() {
 }
 ```
 
+Second, add the required permissions in the project:
+
+`src-tauri/capabilities/default.json`
+
+```json
+  "permissions": [
+    "haptics:allow-impact-feedback",
+    "haptics:allow-notification-feedback",
+    "haptics:allow-selection-feedback",
+    "haptics:allow-vibrate"
+  ]
+```
+
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript

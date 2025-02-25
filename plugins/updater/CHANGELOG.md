@@ -1,5 +1,14 @@
 # Changelog
 
+## \[2.5.1]
+
+- [`6f881293`](https://github.com/tauri-apps/plugins-workspace/commit/6f881293fcd67838f6f3f8063f536292431dd1f7) ([#2439](https://github.com/tauri-apps/plugins-workspace/pull/2439) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed an issue that caused the plugin to emit a `ReleaseNotFound` error instead of a `Reqwest` error when the http request in `check()` failed.
+
+## \[2.5.0]
+
+- [`5369898d`](https://github.com/tauri-apps/plugins-workspace/commit/5369898db7a6098e3e2f43436100ea556d405628) ([#2067](https://github.com/tauri-apps/plugins-workspace/pull/2067) by [@jLynx](https://github.com/tauri-apps/plugins-workspace/../../jLynx)) Fix update installation on macOS when using an user without admin privileges.
+- [`5369898d`](https://github.com/tauri-apps/plugins-workspace/commit/5369898db7a6098e3e2f43436100ea556d405628) ([#2067](https://github.com/tauri-apps/plugins-workspace/pull/2067) by [@jLynx](https://github.com/tauri-apps/plugins-workspace/../../jLynx)) Remove the `UpdaterBuilder::new` function, use `UpdaterExt::updater_builder` instead.
+
 ## \[2.4.0]
 
 - [`0afc9b6b`](https://github.com/tauri-apps/plugins-workspace/commit/0afc9b6be07bee1077f05a86285d977e57810ed9) ([#2325](https://github.com/tauri-apps/plugins-workspace/pull/2325) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) The `Update` struct/object will now contain a `raw_json`/`rawJson` property to be able to read parts of server's json response that are not handled by the plugin.

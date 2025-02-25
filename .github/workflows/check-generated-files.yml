@@ -8,6 +8,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/check-generated-files.yml'
+      - pnpm-lock.yaml
       - '**/guest-js/**'
 
 concurrency:
@@ -27,94 +28,117 @@ jobs:
           filters: |
             autostart:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/autostart/guest-js/**
               - plugins/autostart/src/api-iife.js
             cli:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/cli/guest-js/**
               - plugins/cli/src/api-iife.js
             clipboard-manager:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/clipboard-manager/guest-js/**
               - plugins/clipboard-manager/src/api-iife.js
             dialog:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/dialog/guest-js/**
               - plugins/dialog/src/api-iife.js
             fs:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/fs/guest-js/**
               - plugins/fs/src/api-iife.js
             geolocation:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/geolocation/guest-js/**
               - plugins/geolocation/src/api-iife.js
             global-shortcut:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/global-shortcut/guest-js/**
               - plugins/global-shortcut/src/api-iife.js
             opener:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/opener/guest-js/**
               - plugins/opener/src/api-iife.js
             haptics:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/haptics/guest-js/**
               - plugins/haptics/src/api-iife.js
             http:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/http/guest-js/**
               - plugins/http/src/api-iife.js
             log:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/log/guest-js/**
               - plugins/log/src/api-iife.js
             notification:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/notification/guest-js/**
               - plugins/notification/src/api-iife.js
             os:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/os/guest-js/**
               - plugins/os/src/api-iife.js
             positioner:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/positioner/guest-js/**
               - plugins/positioner/src/api-iife.js
             process:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/process/guest-js/**
               - plugins/process/src/api-iife.js
             shell:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/shell/guest-js/**
               - plugins/shell/src/api-iife.js
             sql:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/sql/guest-js/**
               - plugins/sql/src/api-iife.js
             store:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/store/guest-js/**
               - plugins/store/src/api-iife.js
             stronghold:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/stronghold/guest-js/**
               - plugins/stronghold/src/api-iife.js
             updater:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/updater/guest-js/**
               - plugins/updater/src/api-iife.js
             upload:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/upload/guest-js/**
               - plugins/upload/src/api-iife.js
             websocket:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/websocket/guest-js/**
               - plugins/websocket/src/api-iife.js
             window-state:
               - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
               - plugins/window-state/guest-js/**
               - plugins/window-state/src/api-iife.js
 
