@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-single-instance"
-version = "2.2.1"
+version = "2.2.2"
 description = "Ensure a single instance of your tauri app is running."
 authors = { workspace = true }
 license = { workspace = true }
