@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.2]
+
+- [`6b4c3917`](https://github.com/tauri-apps/plugins-workspace/commit/6b4c3917389f4bc489d03b48a837557ac0584175) ([#2401](https://github.com/tauri-apps/plugins-workspace/pull/2401) by [@Seishiin](https://github.com/tauri-apps/plugins-workspace/../../Seishiin)) Fix timezone_strategy overwriting previously set LogLevels.
+
 ## \[2.2.1]
 
 - [`784a54a3`](https://github.com/tauri-apps/plugins-workspace/commit/784a54a39094dfbaaa8dd123eb083c04dc6c3bb2) ([#2344](https://github.com/tauri-apps/plugins-workspace/pull/2344) by [@madsmtm](https://github.com/tauri-apps/plugins-workspace/../../madsmtm)) Use `objc2` instead of `objc`.

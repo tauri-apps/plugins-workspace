@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.2]
+
+- [`1ab5f157`](https://github.com/tauri-apps/plugins-workspace/commit/1ab5f1576333174095bc7dad4bef7a8576bb29ab) ([#2452](https://github.com/tauri-apps/plugins-workspace/pull/2452) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed `null pointer dereference` panic on rust nightly on Windows.
+
 ## \[2.2.1]
 
 - [`da5c59e2`](https://github.com/tauri-apps/plugins-workspace/commit/da5c59e2fe879d177e3cfd52fcacce85440423cb) ([#2271](https://github.com/tauri-apps/plugins-workspace/pull/2271) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `zbus` dependency to version 5. No API changes.
