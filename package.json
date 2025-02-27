@@ -14,8 +14,8 @@
     "@eslint/js": "9.21.0",
     "@rollup/plugin-node-resolve": "16.0.0",
     "@rollup/plugin-terser": "0.4.4",
-    "@rollup/plugin-typescript": "11.1.6",
-    "covector": "^0.12.3",
+    "@rollup/plugin-typescript": "12.1.2",
+    "covector": "^0.12.4",
     "eslint": "9.21.0",
     "eslint-config-prettier": "10.0.2",
     "eslint-plugin-security": "3.0.1",
@@ -25,11 +25,15 @@
     "typescript": "5.7.3",
     "typescript-eslint": "8.25.0"
   },
-  "resolutions": {
-    "semver": ">=7.5.2",
-    "optionator": ">=0.9.3"
+  "pnpm": {
+    "overrides": {
+      "esbuild@<0.25.0": ">=0.25.0"
+    },
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   },
   "engines": {
-    "pnpm": "^9.0.0"
+    "pnpm": "^10.0.0"
   }
 }
