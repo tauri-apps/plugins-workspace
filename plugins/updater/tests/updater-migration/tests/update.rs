@@ -67,8 +67,6 @@ mod v1 {
         if bundle_updater {
             #[cfg(windows)]
             command.args(["--bundles", "msi", "nsis"]);
-
-            command.args(["--bundles", "updater"]);
         } else {
             #[cfg(windows)]
             command.args(["--bundles", target.name()]);
