@@ -13,7 +13,7 @@ use std::{
 };
 
 #[cfg(not(target_os = "macos"))]
-use std::ffi::CStr;
+use std::ffi::OsStr;
 
 use base64::Engine;
 use futures_util::StreamExt;
