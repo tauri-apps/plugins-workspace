@@ -17,7 +17,7 @@
     "@rollup/plugin-typescript": "11.1.6",
     "covector": "^0.12.3",
     "eslint": "9.21.0",
-    "eslint-config-prettier": "10.0.1",
+    "eslint-config-prettier": "10.0.2",
     "eslint-plugin-security": "3.0.1",
     "prettier": "3.5.2",
     "rollup": "4.34.8",
