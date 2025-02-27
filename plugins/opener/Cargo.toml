@@ -40,7 +40,7 @@ glob = { workspace = true }
 dunce = { workspace = true }
 
 [target."cfg(windows)".dependencies.windows]
-version = "0.58"
+version = "0.60"
 features = [
   "Win32_Foundation",
   "Win32_UI_Shell_Common",
