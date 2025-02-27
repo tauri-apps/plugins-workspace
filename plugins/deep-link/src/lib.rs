@@ -265,10 +265,7 @@ mod imp {
                     .to_string();
 
                 let key_reg = CURRENT_USER.create(&key_base)?;
-                key_reg.set_string(
-                    "",
-                    format!("URL:{} protocol", self.app.config().identifier),
-                )?;
+                key_reg.set_string("", format!("URL:{} protocol", self.app.config().identifier))?;
                 key_reg.set_string("URL Protocol", "")?;
 
                 let icon_reg = CURRENT_USER.create(format!("{key_base}\\DefaultIcon"))?;

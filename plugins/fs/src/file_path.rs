@@ -53,8 +53,7 @@ impl FilePath {
     #[inline]
     pub fn into_path(self) -> Result<PathBuf> {
         match self {
-            Self::Url(url) => url
-                .to_file_path().map_err(|_| Error::InvalidPathUrl),
+            Self::Url(url) => url.to_file_path().map_err(|_| Error::InvalidPathUrl),
             Self::Path(p) => Ok(p),
         }
     }
@@ -89,8 +88,7 @@ impl SafeFilePath {
     #[inline]
     pub fn into_path(self) -> Result<PathBuf> {
         match self {
-            Self::Url(url) => url
-                .to_file_path().map_err(|_| Error::InvalidPathUrl),
+            Self::Url(url) => url.to_file_path().map_err(|_| Error::InvalidPathUrl),
             Self::Path(p) => Ok(p.as_ref().to_owned()),
         }
     }
