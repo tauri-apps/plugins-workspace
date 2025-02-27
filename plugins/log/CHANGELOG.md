@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.3]
+
+- [`1a984659`](https://github.com/tauri-apps/plugins-workspace/commit/1a9846599b6a71faf330845847a30f6bf9735898) ([#2469](https://github.com/tauri-apps/plugins-workspace/pull/2469) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Update `objc2` crate to 0.6. No user facing changes.
+
 ## \[2.2.2]
 
 - [`6b4c3917`](https://github.com/tauri-apps/plugins-workspace/commit/6b4c3917389f4bc489d03b48a837557ac0584175) ([#2401](https://github.com/tauri-apps/plugins-workspace/pull/2401) by [@Seishiin](https://github.com/tauri-apps/plugins-workspace/../../Seishiin)) Fix timezone_strategy overwriting previously set LogLevels.

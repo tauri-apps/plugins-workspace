@@ -1,7 +1,7 @@
 {
   "name": "api",
   "private": true,
-  "version": "2.0.14",
+  "version": "2.0.15",
   "type": "module",
   "scripts": {
     "dev": "vite --clearScreen false",
@@ -23,7 +23,7 @@
     "@tauri-apps/plugin-http": "^2.3.0",
     "@tauri-apps/plugin-nfc": "^2.2.0",
     "@tauri-apps/plugin-notification": "^2.2.1",
-    "@tauri-apps/plugin-opener": "^2.2.5",
+    "@tauri-apps/plugin-opener": "^2.2.6",
     "@tauri-apps/plugin-os": "^2.2.0",
     "@tauri-apps/plugin-process": "^2.2.0",
     "@tauri-apps/plugin-shell": "^2.2.0",

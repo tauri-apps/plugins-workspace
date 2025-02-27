@@ -206,7 +206,7 @@ checksum = "4c95c10ba0b00a02636238b814946408b1322d5ac4760326e6fb8ec956d85775"
 
 [[package]]
 name = "api"
-version = "2.0.18"
+version = "2.0.19"
 dependencies = [
  "log",
  "serde",
@@ -6722,7 +6722,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-log"
-version = "2.2.2"
+version = "2.2.3"
 dependencies = [
  "android_logger",
  "byte-unit",
@@ -6777,7 +6777,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-opener"
-version = "2.2.5"
+version = "2.2.6"
 dependencies = [
  "dunce",
  "glob",

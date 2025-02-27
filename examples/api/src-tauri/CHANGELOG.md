@@ -1,5 +1,12 @@
 # Changelog
 
+## \[2.0.19]
+
+### Dependencies
+
+- Upgraded to `log@2.2.3`
+- Upgraded to `opener@2.2.6`
+
 ## \[2.0.18]
 
 ### Dependencies
