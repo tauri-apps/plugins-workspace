@@ -4,13 +4,16 @@
 
 use std::{
     collections::HashMap,
-    ffi::{OsStr, OsString},
+    ffi::OsString,
     io::Cursor,
     path::{Path, PathBuf},
     str::FromStr,
     sync::Arc,
     time::Duration,
 };
+
+#[cfg(not(target_os = "macos"))]
+use std::ffi::CStr;
 
 use base64::Engine;
 use futures_util::StreamExt;
