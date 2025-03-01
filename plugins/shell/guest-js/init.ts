@@ -12,11 +12,11 @@ function openLinks(): void {
       if (target.matches('a')) {
         const t = target as HTMLAnchorElement
         if (
-          t.href !== '' &&
-          ['http://', 'https://', 'mailto:', 'tel:'].some((v) =>
+          t.href !== ''
+          && ['http://', 'https://', 'mailto:', 'tel:'].some((v) =>
             t.href.startsWith(v)
-          ) &&
-          t.target === '_blank'
+          )
+          && t.target === '_blank'
         ) {
           void invoke('plugin:shell|open', {
             path: t.href
@@ -31,8 +31,8 @@ function openLinks(): void {
 }
 
 if (
-  document.readyState === 'complete' ||
-  document.readyState === 'interactive'
+  document.readyState === 'complete'
+  || document.readyState === 'interactive'
 ) {
   openLinks()
 } else {
