@@ -34,6 +34,31 @@ use crate::{
 
 const UPDATER_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
+#[derive(Clone)]
+pub enum Installer {
+    AppImage,
+    Deb,
+    Rpm,
+
+    App,
+
+    Msi,
+    Nsis,
+}
+
+impl Installer{
+    fn suffix(self) -> &'static str {
+        match self {
+            Self::AppImage => "appimage",
+            Self::Deb => "deb",
+            Self::Rpm => "rpm",
+            Self::App => "app",
+            Self::Msi => "msi",
+            Self::Nsis => "nsis",
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ReleaseManifestPlatform {
     /// Download URL for the platform
@@ -68,28 +93,32 @@ pub struct RemoteRelease {
 
 impl RemoteRelease {
     /// The release's download URL for the given target.
-    pub fn download_url(&self, target: &str, fallback_target: &Option<String>) -> Result<&Url> {
+    pub fn download_url(&self, target: &str, installer: Option<Installer>) -> Result<&Url> {
+
+        let fallback_target = installer.map(|installer| format!("{target}-{}", installer.suffix()));
         match self.data {
             RemoteReleaseInner::Dynamic(ref platform) => Ok(&platform.url),
             RemoteReleaseInner::Static { ref platforms } => platforms
                 .get(target)
                 .map_or_else(
                     || match fallback_target {
-                        Some(fallback) => platforms.get(fallback).map_or(Err(Error::TargetsNotFound(target.to_string(), fallback.to_string())), |p| Ok(&p.url)),
+                        Some(fallback) => platforms.get(&fallback).map_or(Err(Error::TargetsNotFound(target.to_string(), fallback)), |p| Ok(&p.url)),
                         None => Err(Error::TargetNotFound(target.to_string())) 
                     }, |p| { Ok(&p.url) })
         }
     }
 
     /// The release's signature for the given target.
-    pub fn signature(&self, target: &str, fallback_target: &Option<String>) -> Result<&String> {
+    pub fn signature(&self, target: &str, installer: Option<Installer>) -> Result<&String> {
+        let fallback_target = installer.map(|installer| format!("{target}-{}", installer.suffix()));
+
         match self.data {
             RemoteReleaseInner::Dynamic(ref platform) => Ok(&platform.signature),
             RemoteReleaseInner::Static { ref platforms } => platforms
                 .get(target)
                 .map_or_else(
                     || match fallback_target {
-                        Some(fallback) => platforms.get(fallback).map_or(Err(Error::TargetsNotFound(target.to_string(), fallback.to_string())), |p| Ok(&p.signature)),
+                        Some(fallback) => platforms.get(&fallback).map_or(Err(Error::TargetsNotFound(target.to_string(), fallback)), |p| Ok(&p.signature)),
                         None => Err(Error::TargetNotFound(target.to_string())) 
                     }, |p| { Ok(&p.signature) })
         }
@@ -246,16 +275,12 @@ impl UpdaterBuilder {
         };
 
         let arch = get_updater_arch().ok_or(Error::UnsupportedArch)?;
-        let (target, json_target, fallback_target) = if let Some(target) = self.target {
-            (target.clone(), target,  None)
+        let (target, json_target) = if let Some(target) = self.target {
+            (target.clone(), target )
         } else {
             let target = get_updater_target().ok_or(Error::UnsupportedOs)?;
-            let installer = get_updater_installer()?;
             let json_target = format!("{target}-{arch}");
-            match installer {
-                Some(installer) => (target.to_owned(), format!("{json_target}-{installer}"), Some(json_target)),
-                None => (target.to_owned(), json_target, None)
-            }
+            (target.to_owned(), json_target)
         };
 
         let executable_path = self.executable_path.clone().unwrap_or(current_exe()?);
@@ -280,7 +305,6 @@ impl UpdaterBuilder {
             arch,
             target,
             json_target,
-            fallback_target,
             headers: self.headers,
             extract_path,
             on_before_exit: self.on_before_exit,
@@ -313,8 +337,6 @@ pub struct Updater {
     target: String,
     // The value we search if the updater server returns a JSON with the `platforms` object
     json_target: String,
-    // If target doesn't exist in the JSON check for this one 
-    fallback_target: Option<String>,
     headers: HeaderMap,
     extract_path: PathBuf,
     on_before_exit: Option<OnBeforeExit>,
@@ -325,6 +347,7 @@ pub struct Updater {
 }
 
 impl Updater {
+
     pub async fn check(&self) -> Result<Option<Update>> {
         // we want JSON only
         let mut headers = self.headers.clone();
@@ -420,6 +443,8 @@ impl Updater {
             Some(comparator) => comparator(self.current_version.clone(), release.clone()),
             None => release.version > self.current_version,
         };
+        
+        let installer = get_updater_installer(&self.extract_path)?;
 
         let update = if should_update {
             Some(Update {
@@ -431,9 +456,10 @@ impl Updater {
                 extract_path: self.extract_path.clone(),
                 version: release.version.to_string(),
                 date: release.pub_date,
-                download_url: release.download_url(&self.json_target, &self.fallback_target)?.to_owned(),
+                download_url: release.download_url(&self.json_target, installer.clone())?.to_owned(),
                 body: release.notes.clone(),
-                signature: release.signature(&self.json_target, &self.fallback_target)?.to_owned(),
+                signature: release.signature(&self.json_target, installer.clone())?.to_owned(),
+                installer,
                 raw_json: raw_json.unwrap(),
                 timeout: self.timeout,
                 proxy: self.proxy.clone(),
@@ -464,6 +490,8 @@ pub struct Update {
     pub date: Option<OffsetDateTime>,
     /// Target
     pub target: String,
+    /// Current installer 
+    pub installer: Option<Installer>,
     /// Download URL announced
     pub download_url: Url,
     /// Signature announced
@@ -791,11 +819,9 @@ impl Update {
     /// └── ...
     ///
     fn install_inner(&self, bytes: &[u8]) -> Result<()> {
-        if self.is_deb_package() {
-            self.install_deb(bytes)
-        } else {
-            // Handle AppImage or other formats
-            self.install_appimage(bytes)
+        match self.installer {
+            Some(Installer::Deb) => self.install_deb(bytes),
+            _ =>self.install_appimage(bytes)
         }
     }
 
@@ -870,38 +896,6 @@ impl Update {
         Err(Error::TempDirNotOnSameMountPoint)
     }
 
-    fn is_deb_package(&self) -> bool {
-        // First check if we're in a typical Debian installation path
-        let in_system_path = self
-            .extract_path
-            .to_str()
-            .map(|p| p.starts_with("/usr"))
-            .unwrap_or(false);
-
-        if !in_system_path {
-            return false;
-        }
-
-        // Then verify it's actually a Debian-based system by checking for dpkg
-        let dpkg_exists = std::path::Path::new("/var/lib/dpkg").exists();
-        let apt_exists = std::path::Path::new("/etc/apt").exists();
-
-        // Additional check for the package in dpkg database
-        let package_in_dpkg = if let Ok(output) = std::process::Command::new("dpkg")
-            .args(["-S", &self.extract_path.to_string_lossy()])
-            .output()
-        {
-            output.status.success()
-        } else {
-            false
-        };
-
-        // Consider it a deb package only if:
-        // 1. We're in a system path AND
-        // 2. We have Debian package management tools AND
-        // 3. The binary is tracked by dpkg
-        dpkg_exists && apt_exists && package_in_dpkg
-    }
 
     fn install_deb(&self, bytes: &[u8]) -> Result<()> {
         // First verify the bytes are actually a .deb package
@@ -1125,11 +1119,49 @@ pub(crate) fn get_updater_arch() -> Option<&'static str> {
     }
 }
 
-pub(crate) fn get_updater_installer() -> Result<Option<&'static str>> {
+fn is_deb_package(extract_path: &PathBuf) -> bool {
+    // First check if we're in a typical Debian installation path
+    let in_system_path = extract_path
+        .to_str()
+        .map(|p| p.starts_with("/usr"))
+        .unwrap_or(false);
+
+    if !in_system_path {
+        return false;
+    }
+
+    // Then verify it's actually a Debian-based system by checking for dpkg
+    let dpkg_exists = std::path::Path::new("/var/lib/dpkg").exists();
+    let apt_exists = std::path::Path::new("/etc/apt").exists();
+
+    // Additional check for the package in dpkg database
+    let package_in_dpkg = if let Ok(output) = std::process::Command::new("dpkg")
+        .args(["-S", &extract_path.to_string_lossy()])
+        .output()
+    {
+        output.status.success()
+    } else {
+        false
+    };
+
+    // Consider it a deb package only if:
+    // 1. We're in a system path AND
+    // 2. We have Debian package management tools AND
+    // 3. The binary is tracked by dpkg
+    dpkg_exists && apt_exists && package_in_dpkg
+}
+
+pub(crate) fn get_updater_installer(extract_path: &PathBuf) -> Result<Option<Installer>> {
     if cfg!(target_os = "linux") {
-        Ok(Some("deb"))
+        if std::env::var_os("APPIMAGE").is_some() {
+            Ok(Some(Installer::AppImage))
+        } else if is_deb_package(extract_path) {
+            Ok(Some(Installer::Deb))
+        } else {
+            Err(Error::UnknownInstaller)
+        }
     } else if cfg!(target_os = "windows") {
-        Ok(Some("wix"))
+        Ok(Some(Installer::Msi))
     } else if cfg!(target_os = "macos") {
        Ok(None)
     } else {

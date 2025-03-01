@@ -71,7 +71,6 @@ fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, targets: Vec<Bun
         #[cfg(windows)]
         command.args([target.name()]);
     }
-
     let status = command
         .status()
         .expect("failed to run Tauri CLI to bundle app");
@@ -111,72 +110,74 @@ impl BundleTarget {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         return vec![Self::App];
         #[cfg(target_os = "linux")]
-        return vec![Self::AppImage, Self::Deb, Self::Rpm];
+        return vec![Self::AppImage];
         #[cfg(windows)]
         return vec![Self::Nsis];
     }
 }
 
-fn insert_plaforms(
-    bundle_target: BundleTarget,
-    platforms: &mut HashMap<String, PlatformUpdate>,
-    target: String,
+fn target_to_platforms(
+    update_platform: Option<String>,
     signature: String,
-) {
-    match bundle_target {
-        // Should use deb, no fallback
-        BundleTarget::Deb => {
-            platforms.insert(
-                format!("{target}-deb"),
-                PlatformUpdate {
-                    signature,
-                    url: "http://localhost:3007/download",
-                    with_elevated_task: false,
-                },
-            );
-        }
-        // Should fail
-        BundleTarget::Rpm => {}
-        // AppImage should use fallback
-        _ => {
-            platforms.insert(
-                target,
-                PlatformUpdate {
-                    signature,
-                    url: "http://localhost:3007/download",
-                    with_elevated_task: false,
-                },
-            );
-        }
+) -> HashMap<String, PlatformUpdate> {
+    let mut platforms = HashMap::new();
+    if let Some(platform) = update_platform {
+        platforms.insert(
+            platform,
+            PlatformUpdate {
+                signature,
+                url: "http://localhost:3007/download",
+                with_elevated_task: false,
+            },
+        );
     }
+
+    platforms
 }
 
 #[cfg(target_os = "linux")]
-fn bundle_paths(root_dir: &Path, version: &str) -> Vec<(BundleTarget, PathBuf)> {
+fn test_cases(
+    root_dir: &Path,
+    version: &str,
+    target: String,
+) -> Vec<(BundleTarget, PathBuf, Option<String>, Vec<i32>)> {
     vec![
+        // update using fallback
         (
             BundleTarget::AppImage,
             root_dir.join(format!(
                 "target/debug/bundle/appimage/app-updater_{version}_amd64.AppImage"
             )),
+            Some(target.clone()),
+            vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE],
         ),
+        // update using full name
         (
-            BundleTarget::Deb,
+            BundleTarget::AppImage,
             root_dir.join(format!(
-                "target/debug/bundle/deb/app-updater_{version}_amd64.deb"
+                "target/debug/bundle/appimage/app-updater_{version}_amd64.AppImage"
             )),
+            Some(format!("{target}-{}", BundleTarget::AppImage.name())),
+            vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE],
         ),
+        // no update
         (
-            BundleTarget::Rpm,
+            BundleTarget::AppImage,
             root_dir.join(format!(
-                "target/debug/bundle/rpm/app-updater_{version}_amd64.rpm"
+                "target/debug/bundle/appimage/app-updater_{version}_amd64.AppImage"
             )),
+            None,
+            vec![ERROR_EXIT_CODE],
         ),
     ]
 }
 
 #[cfg(target_os = "macos")]
-fn bundle_paths(root_dir: &Path, _version: &str) -> Vec<(BundleTarget, PathBuf)> {
+fn bundle_paths(
+    root_dir: &Path,
+    _version: &str,
+    v1compatible: bool,
+) -> Vec<(BundleTarget, PathBuf)> {
     vec![(
         BundleTarget::App,
         root_dir.join("target/debug/bundle/macos/app-updater.app"),
@@ -184,7 +185,11 @@ fn bundle_paths(root_dir: &Path, _version: &str) -> Vec<(BundleTarget, PathBuf)>
 }
 
 #[cfg(target_os = "ios")]
-fn bundle_paths(root_dir: &Path, _version: &str) -> Vec<(BundleTarget, PathBuf)> {
+fn bundle_paths(
+    root_dir: &Path,
+    _version: &str,
+    v1compatible: bool,
+) -> Vec<(BundleTarget, PathBuf)> {
     vec![(
         BundleTarget::App,
         root_dir.join("target/debug/bundle/ios/app-updater.ipa"),
@@ -192,12 +197,16 @@ fn bundle_paths(root_dir: &Path, _version: &str) -> Vec<(BundleTarget, PathBuf)>
 }
 
 #[cfg(target_os = "android")]
-fn bundle_path(root_dir: &Path, _version: &str) -> PathBuf {
+fn bundle_path(root_dir: &Path, _version: &str, v1compatible: bool) -> PathBuf {
     root_dir.join("target/debug/bundle/android/app-updater.apk")
 }
 
 #[cfg(windows)]
-fn bundle_paths(root_dir: &Path, version: &str) -> Vec<(BundleTarget, PathBuf)> {
+fn bundle_paths(
+    root_dir: &Path,
+    version: &str,
+    v1compatible: bool,
+) -> Vec<(BundleTarget, PathBuf)> {
     vec![
         (
             BundleTarget::Nsis,
@@ -240,8 +249,6 @@ fn update_app() {
             Updater::String(V1Compatible::V1Compatible)
         );
 
-        // bundle app update
-        build_app(&manifest_dir, &config, true, BundleTarget::get_targets());
 
         let updater_zip_ext = if v1_compatible {
             if cfg!(windows) {
@@ -255,7 +262,13 @@ fn update_app() {
             None
         };
 
-        for (bundle_target, out_bundle_path) in bundle_paths(&root_dir, "1.0.0") {
+        for (bundle_target, out_bundle_path, update_platform, status_checks) in
+            test_cases(&root_dir, "1.0.0", target.clone())
+        {
+            // bundle app update
+            config.version = "1.0.0";
+            build_app(&manifest_dir, &config, true, BundleTarget::get_targets());
+
             let bundle_updater_ext = if v1_compatible {
                 out_bundle_path
                     .extension()
@@ -288,8 +301,6 @@ fn update_app() {
             ));
             std::fs::rename(&out_updater_path, &updater_path).expect("failed to rename bundle");
 
-            let target = target.clone();
-
             // start the updater server
             let server = Arc::new(
                 tiny_http::Server::http("localhost:3007").expect("failed to start updater server"),
@@ -300,14 +311,8 @@ fn update_app() {
                 for request in server_.incoming_requests() {
                     match request.url() {
                         "/" => {
-                            let mut platforms = HashMap::new();
-
-                            insert_plaforms(
-                                bundle_target,
-                                &mut platforms,
-                                target.clone(),
-                                signature.clone(),
-                            );
+                            let platforms =
+                                target_to_platforms(update_platform.clone(), signature.clone());
 
                             let body = serde_json::to_vec(&Update {
                                 version: "1.0.0",
@@ -347,21 +352,12 @@ fn update_app() {
             // bundle initial app version
             build_app(&manifest_dir, &config, false, vec![bundle_target]);
 
-            let status_checks = if matches!(bundle_target, BundleTarget::Msi) {
-                // for msi we can't really check if the app was updated, because we can't change the install path
-                vec![UPDATED_EXIT_CODE]
-            } else if matches!(bundle_target, BundleTarget::Rpm) {
-                vec![ERROR_EXIT_CODE]
-            } else {
-                vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE]
-            };
-
             for expected_exit_code in status_checks {
                 let mut binary_cmd = if cfg!(windows) {
                     Command::new(root_dir.join("target/debug/app-updater.exe"))
                 } else if cfg!(target_os = "macos") {
                     Command::new(
-                        bundle_paths(&root_dir, "0.1.0")
+                        test_cases(&root_dir, "0.1.0", target.clone())
                             .first()
                             .unwrap()
                             .1
@@ -369,11 +365,22 @@ fn update_app() {
                     )
                 } else if std::env::var("CI").map(|v| v == "true").unwrap_or_default() {
                     let mut c = Command::new("xvfb-run");
-                    c.arg("--auto-servernum")
-                        .arg(&bundle_paths(&root_dir, "0.1.0").first().unwrap().1);
+                    c.arg("--auto-servernum").arg(
+                        &test_cases(&root_dir, "0.1.0", target.clone())
+                            .first()
+                            .unwrap()
+                            .1,
+                    );
                     c
+                } else if matches!(bundle_target, BundleTarget::AppImage) {
+                    Command::new(
+                        &test_cases(&root_dir, "0.1.0", target.clone())
+                            .first()
+                            .unwrap()
+                            .1,
+                    )
                 } else {
-                    Command::new(&bundle_paths(&root_dir, "0.1.0").first().unwrap().1)
+                    Command::new(root_dir.join("target/debug/app-updater"))
                 };
 
                 binary_cmd.env("TARGET", bundle_target.name());
@@ -383,7 +390,7 @@ fn update_app() {
 
                 if code != expected_exit_code {
                     panic!(
-                        "failed to run app, expected exit code {expected_exit_code}, got {code}"
+                        "failed to run app bundled as {}, expected exit code {expected_exit_code}, got {code}", bundle_target.name()
                     );
                 }
                 #[cfg(windows)]
