@@ -343,8 +343,14 @@ impl Builder {
         self
     }
 
-    /// Skips logger acquisition and attachment. Certain functions such as split will be unusable.
+    /// Skip the creation and global registration of a logger
+    ///
+    /// If you wish to use your own global logger, you must call `skip_logger` so that the plugin does not attempt to set a second global logger. In this configuration, no logger will be created and the plugin's `log` command will rely on the result of `log::logger()`. You will be responsible for configuring the logger yourself and any included targets will be ignored. This can also be used with `tracing-log` or if running tests in parallel that require the plugin to be registered.
     /// ```rust
+    /// static LOGGER: SimpleLogger = SimpleLogger;
+    ///
+    /// log::set_logger(&SimpleLogger)?;
+    /// log::set_max_level(LevelFilter::Info);
     /// tauri_plugin_log::Builder::new()
     ///     .skip_logger();
     /// ```
