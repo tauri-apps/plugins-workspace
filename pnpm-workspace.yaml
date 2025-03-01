@@ -1,3 +1,5 @@
 packages:
   - plugins/*
   - plugins/*/examples/*
+onlyBuiltDependencies:
+  - esbuild
