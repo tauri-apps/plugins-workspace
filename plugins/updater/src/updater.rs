@@ -356,6 +356,109 @@ pub struct Updater {
     current_exe_args: Vec<OsString>,
 }
 
+/// Linux (AppImage and Deb)
+#[cfg(any(
+    target_os = "linux",
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "netbsd",
+    target_os = "openbsd"
+))]
+impl Updater {
+
+    fn is_deb_package(&self) -> bool {
+        // First check if we're in a typical Debian installation path
+        let in_system_path = self.extract_path
+            .to_str()
+            .map(|p| p.starts_with("/usr"))
+            .unwrap_or(false);
+
+        if !in_system_path {
+            return false;
+        }
+
+        // Then verify it's actually a Debian-based system by checking for dpkg
+        let dpkg_exists = std::path::Path::new("/var/lib/dpkg").exists();
+        let apt_exists = std::path::Path::new("/etc/apt").exists();
+
+        // Additional check for the package in dpkg database
+        let package_in_dpkg = if let Ok(output) = std::process::Command::new("dpkg")
+            .args(["-S", &self.extract_path.to_string_lossy()])
+            .output()
+        {
+            output.status.success()
+        } else {
+            false
+        };
+
+        // Consider it a deb package only if:
+        // 1. We're in a system path AND
+        // 2. We have Debian package management tools AND
+        // 3. The binary is tracked by dpkg
+        dpkg_exists && apt_exists && package_in_dpkg
+    }
+
+    fn is_rpm_package(&self) -> bool {
+        // First check if we're in a typical RPM installation path
+        let in_system_path = self.extract_path
+            .to_str()
+            .map(|p| p.starts_with("/usr"))
+            .unwrap_or(false);
+
+        if !in_system_path {
+            return false;
+        }
+
+        // Then verify it's actually a Debian-based system by checking for dpkg
+        let rpm_exists = std::path::Path::new("/var/lib/rpm").exists();
+        let etc_rpm_exists = std::path::Path::new("/etc/rpm").exists();
+
+        // Additional check for the package in dpkg database
+        let package_in_rpm = if let Ok(output) = std::process::Command::new("rpm")
+            .args(["-qf", &self.extract_path.to_string_lossy()])
+            .output()
+        {
+            output.status.success()
+        } else {
+            false
+        };
+
+        // Consider it a deb package only if:
+        // 1. We're in a system path AND
+        // 2. We have RPM package management tools AND
+        // 3. The binary is tracked by rpm 
+        rpm_exists && etc_rpm_exists && package_in_rpm
+    }
+
+    fn get_updater_installer(&self) -> Result<Option<Installer>> {
+        if std::env::var_os("APPIMAGE").is_some() {
+            Ok(Some(Installer::AppImage))
+        } else if self.is_deb_package() {
+            Ok(Some(Installer::Deb))
+        } else if self.is_rpm_package() {
+            Ok(Some(Installer::Rpm))
+        } else {
+            Err(Error::UnknownInstaller)
+        }
+    }
+}
+
+#[cfg(target_os = "windows")]
+impl Updater {
+    fn get_updater_installer(&self) -> Result<Option<Installer>> {
+        Ok(Some(Installer::Msi))
+    }
+
+}
+
+#[cfg(target_os = "macos")]
+impl Updater {
+    fn get_updater_installer(&self) -> Result<Option<Installer>> {
+       Ok(None)
+    }
+
+}
+
 impl Updater {
 
     pub async fn check(&self) -> Result<Option<Update>> {
@@ -457,7 +560,7 @@ impl Updater {
             None => release.version > self.current_version,
         };
         
-        let installer = get_updater_installer(&self.extract_path)?;
+        let installer = self.get_updater_installer()?;
 
         let update = if should_update {
             Some(Update {
@@ -1178,55 +1281,7 @@ pub(crate) fn get_updater_arch() -> Option<&'static str> {
     }
 }
 
-fn is_deb_package(extract_path: &PathBuf) -> bool {
-    // First check if we're in a typical Debian installation path
-    let in_system_path = extract_path
-        .to_str()
-        .map(|p| p.starts_with("/usr"))
-        .unwrap_or(false);
 
-    if !in_system_path {
-        return false;
-    }
-
-    // Then verify it's actually a Debian-based system by checking for dpkg
-    let dpkg_exists = std::path::Path::new("/var/lib/dpkg").exists();
-    let apt_exists = std::path::Path::new("/etc/apt").exists();
-
-    // Additional check for the package in dpkg database
-    let package_in_dpkg = if let Ok(output) = std::process::Command::new("dpkg")
-        .args(["-S", &extract_path.to_string_lossy()])
-        .output()
-    {
-        output.status.success()
-    } else {
-        false
-    };
-
-    // Consider it a deb package only if:
-    // 1. We're in a system path AND
-    // 2. We have Debian package management tools AND
-    // 3. The binary is tracked by dpkg
-    dpkg_exists && apt_exists && package_in_dpkg
-}
-
-pub(crate) fn get_updater_installer(extract_path: &PathBuf) -> Result<Option<Installer>> {
-    if cfg!(target_os = "linux") {
-        if std::env::var_os("APPIMAGE").is_some() {
-            Ok(Some(Installer::AppImage))
-        } else if is_deb_package(extract_path) {
-            Ok(Some(Installer::Deb))
-        } else {
-            Err(Error::UnknownInstaller)
-        }
-    } else if cfg!(target_os = "windows") {
-        Ok(Some(Installer::Msi))
-    } else if cfg!(target_os = "macos") {
-       Ok(None)
-    } else {
-        Err(Error::UnknownInstaller)
-    }
-}
 
 pub fn extract_path_from_executable(executable_path: &Path) -> Result<PathBuf> {
     // Return the path of the current executable by default
