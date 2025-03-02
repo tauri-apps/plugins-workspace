@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-
 use std::{future::Future, pin::Pin, str::FromStr, sync::Arc, time::Duration};
 
 use http::{header, HeaderMap, HeaderName, HeaderValue, Method, StatusCode};
@@ -11,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{
     async_runtime::Mutex,
     command,
-    ipc::{Channel, CommandScope, GlobalScope},
+    ipc::{CommandScope, GlobalScope},
     Manager, ResourceId, ResourceTable, Runtime, State, Webview,
 };
 use tokio::sync::oneshot::{channel, Receiver, Sender};
@@ -23,8 +22,6 @@ use crate::{
 
 const HTTP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
-// reqwest::Response is never read, but might be needed for future use.
-#[allow(dead_code)]
 struct ReqwestResponse(reqwest::Response);
 impl tauri::Resource for ReqwestResponse {}
 
@@ -129,12 +126,6 @@ pub struct BasicAuth {
     password: String,
 }
 
-#[derive(Clone, Serialize)]
-pub struct StreamMessage {
-    value: Option<Vec<u8>>,
-    done: bool,
-}
-
 #[inline]
 fn proxy_creator(
     url_or_config: UrlOrConfig,
@@ -190,7 +181,6 @@ pub async fn fetch<R: Runtime>(
     client_config: ClientConfig,
     command_scope: CommandScope<Entry>,
     global_scope: GlobalScope<Entry>,
-    stream_channel: Channel<StreamMessage>
 ) -> crate::Result<ResourceId> {
     let ClientConfig {
         method,
@@ -324,24 +314,7 @@ pub async fn fetch<R: Runtime>(
                 #[cfg(feature = "tracing")]
                 tracing::trace!("{:?}", request);
 
-                let fut = async move {
-                    let mut res = request.send().await?;
-
-                    // send response through IPC channel
-                    while let Some(chunk) = res.chunk().await? {
-                        stream_channel.send(StreamMessage{
-                            value: Some(chunk.to_vec()),
-                            done: false,
-                        })?;
-                    }
-
-                    stream_channel.send(StreamMessage { value: None, done: true })?;
-
-                    // return that response
-                    Ok(res)
-                };
-
-
+                let fut = async move { request.send().await.map_err(Into::into) };
                 let mut resources_table = webview.resources_table();
                 let rid = resources_table.add_request(Box::pin(fut));
 
@@ -435,6 +408,19 @@ pub async fn fetch_send<R: Runtime>(
         url,
         rid,
     })
+}
+
+#[tauri::command]
+pub(crate) async fn fetch_read_body<R: Runtime>(
+    webview: Webview<R>,
+    rid: ResourceId,
+) -> crate::Result<tauri::ipc::Response> {
+    let res = {
+        let mut resources_table = webview.resources_table();
+        resources_table.take::<ReqwestResponse>(rid)?
+    };
+    let res = Arc::into_inner(res).unwrap().0;
+    Ok(tauri::ipc::Response::new(res.bytes().await?.to_vec()))
 }
 
 // forbidden headers per fetch spec https://fetch.spec.whatwg.org/#terminology-headers

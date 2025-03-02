@@ -26,7 +26,7 @@
  * @module
  */
 
-import { Channel, invoke } from '@tauri-apps/api/core'
+import { invoke } from '@tauri-apps/api/core'
 
 /**
  * Configuration of a proxy that a Client should pass requests to.
@@ -104,20 +104,6 @@ export interface DangerousSettings {
    * Disables hostname verification.
    */
   acceptInvalidHostnames?: boolean
-}
-
-/**
- * Stream Packet for IPC
- */
-export interface StreamMessage {
-  /**
-   * The chunk - an array of bytes sent from Rust.
-   */
-  value?: ArrayBuffer | number[]
-  /**
-   * Is the stream done.
-   */
-  done: boolean
 }
 
 const ERROR_REQUEST_CANCELLED = 'Request canceled'
@@ -200,19 +186,6 @@ export async function fetch(
     throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
-  const streamChannel = new Channel<StreamMessage>()
-
-  const readableStreamBody = new ReadableStream({
-    start: (controller) => {
-      streamChannel.onmessage = (res: StreamMessage) => {
-        // close early if aborted
-        if (signal?.aborted) controller.error(ERROR_REQUEST_CANCELLED)
-        if (res.done) controller.close()
-        controller.enqueue(res.value)
-      }
-    }
-  })
-
   const rid = await invoke<number>('plugin:http|fetch', {
     clientConfig: {
       method: req.method,
@@ -223,8 +196,7 @@ export async function fetch(
       connectTimeout,
       proxy,
       danger
-    },
-    streamChannel
+    }
   })
 
   const abort = () => invoke('plugin:http|fetch_cancel', { rid })
@@ -251,15 +223,30 @@ export async function fetch(
     status,
     statusText,
     url,
-    headers: responseHeaders
+    headers: responseHeaders,
+    rid: responseRid
   } = await invoke<FetchSendResponse>('plugin:http|fetch_send', {
     rid
   })
 
-  const res = new Response(readableStreamBody, {
-    status,
-    statusText
-  })
+  const body = await invoke<ArrayBuffer | number[]>(
+    'plugin:http|fetch_read_body',
+    {
+      rid: responseRid
+    }
+  )
+
+  const res = new Response(
+    body instanceof ArrayBuffer && body.byteLength !== 0
+      ? body
+      : body instanceof Array && body.length > 0
+        ? new Uint8Array(body)
+        : null,
+    {
+      status,
+      statusText
+    }
+  )
 
   // url and headers are read only properties
   // but seems like we can set them like this
