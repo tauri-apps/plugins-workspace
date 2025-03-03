@@ -186,23 +186,31 @@ export async function fetch(
     throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
-  const streamChannel = new Channel<Uint8Array>()
+  const streamChannel = new Channel<ArrayBuffer | number[]>()
 
   const readableStreamBody = new ReadableStream({
     start: (controller) => {
-      streamChannel.onmessage = (res: Uint8Array) => {
+      streamChannel.onmessage = (res: ArrayBuffer | number[]) => {
         // close early if aborted
         if (signal?.aborted) {
           controller.error(ERROR_REQUEST_CANCELLED)
-          return
-        }
-
-        if (!res.length) {
           controller.close()
           return
         }
-        
-        controller.enqueue(res)
+
+        // close when the signal to close (an empty chunk)
+        // is sent from the IPC.
+        if (res instanceof ArrayBuffer
+          ? res.byteLength == 0
+          : res.length == 0) {
+          controller.close()
+          return
+        }
+
+        // the content conversion (like .text(), .json(), etc.) in Response
+        // must have Uint8Array as its content, else it will
+        // have untraceable error that's hard to debug.
+        controller.enqueue(new Uint8Array(res))
       }
     }
   })
