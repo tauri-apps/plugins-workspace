@@ -75,7 +75,7 @@ impl<R: Runtime> Shell<R> {
     #[deprecated(since = "2.1.0", note = "Use tauri-plugin-opener instead.")]
     #[allow(deprecated)]
     pub fn open(&self, path: impl Into<String>, with: Option<open::Program>) -> Result<()> {
-        open::open(&self.open_scope, path.into(), with).map_err(Into::into)
+        open::open(&self.open_scope, path.into(), with)
     }
 
     /// Open a (url) path with a default or specific browser opening program.

@@ -4,13 +4,16 @@
 
 use std::{
     collections::HashMap,
-    ffi::{OsStr, OsString},
+    ffi::OsString,
     io::Cursor,
     path::{Path, PathBuf},
     str::FromStr,
     sync::Arc,
     time::Duration,
 };
+
+#[cfg(not(target_os = "macos"))]
+use std::ffi::OsStr;
 
 use base64::Engine;
 use futures_util::StreamExt;
@@ -383,26 +386,29 @@ impl Updater {
                 .send()
                 .await;
 
-            if let Ok(res) = response {
-                if res.status().is_success() {
-                    // no updates found!
-                    if StatusCode::NO_CONTENT == res.status() {
-                        return Ok(None);
-                    };
+            match response {
+                Ok(res) => {
+                    if res.status().is_success() {
+                        // no updates found!
+                        if StatusCode::NO_CONTENT == res.status() {
+                            return Ok(None);
+                        };
 
-                    raw_json = Some(res.json().await?);
-                    match serde_json::from_value::<RemoteRelease>(raw_json.clone().unwrap())
-                        .map_err(Into::into)
-                    {
-                        Ok(release) => {
-                            last_error = None;
-                            remote_release = Some(release);
-                            // we found a relase, break the loop
-                            break;
+                        raw_json = Some(res.json().await?);
+                        match serde_json::from_value::<RemoteRelease>(raw_json.clone().unwrap())
+                            .map_err(Into::into)
+                        {
+                            Ok(release) => {
+                                last_error = None;
+                                remote_release = Some(release);
+                                // we found a relase, break the loop
+                                break;
+                            }
+                            Err(err) => last_error = Some(err),
                         }
-                        Err(err) => last_error = Some(err),
                     }
                 }
+                Err(err) => last_error = Some(err.into()),
             }
         }
 

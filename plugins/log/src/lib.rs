@@ -58,6 +58,8 @@ pub enum Error {
     TimeFormat(#[from] time::error::Format),
     #[error(transparent)]
     InvalidFormatDescription(#[from] time::error::InvalidFormatDescription),
+    #[error("Internal logger disabled and cannot be acquired or attached")]
+    LoggerNotInitialized,
 }
 
 /// An enum representing the available verbosity levels of the logger.
@@ -230,6 +232,7 @@ pub struct Builder {
     timezone_strategy: TimezoneStrategy,
     max_file_size: u128,
     targets: Vec<Target>,
+    is_skip_logger: bool,
 }
 
 impl Default for Builder {
@@ -258,6 +261,7 @@ impl Default for Builder {
             timezone_strategy: DEFAULT_TIMEZONE_STRATEGY,
             max_file_size: DEFAULT_MAX_FILE_SIZE,
             targets: DEFAULT_LOG_TARGETS.into(),
+            is_skip_logger: false,
         }
     }
 }
@@ -336,6 +340,22 @@ impl Builder {
     /// ```
     pub fn target(mut self, target: Target) -> Self {
         self.targets.push(target);
+        self
+    }
+
+    /// Skip the creation and global registration of a logger
+    ///
+    /// If you wish to use your own global logger, you must call `skip_logger` so that the plugin does not attempt to set a second global logger. In this configuration, no logger will be created and the plugin's `log` command will rely on the result of `log::logger()`. You will be responsible for configuring the logger yourself and any included targets will be ignored. This can also be used with `tracing-log` or if running tests in parallel that require the plugin to be registered.
+    /// ```rust
+    /// static LOGGER: SimpleLogger = SimpleLogger;
+    ///
+    /// log::set_logger(&SimpleLogger)?;
+    /// log::set_max_level(LevelFilter::Info);
+    /// tauri_plugin_log::Builder::new()
+    ///     .skip_logger();
+    /// ```
+    pub fn skip_logger(mut self) -> Self {
+        self.is_skip_logger = true;
         self
     }
 
@@ -481,6 +501,9 @@ impl Builder {
         self,
         app_handle: &AppHandle<R>,
     ) -> Result<(TauriPlugin<R>, log::LevelFilter, Box<dyn log::Log>), Error> {
+        if self.is_skip_logger {
+            return Err(Error::LoggerNotInitialized);
+        }
         let plugin = Self::plugin_builder();
         let (max_level, log) = Self::acquire_logger(
             app_handle,
@@ -497,17 +520,17 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         Self::plugin_builder()
             .setup(move |app_handle, _api| {
-                let (max_level, log) = Self::acquire_logger(
-                    app_handle,
-                    self.dispatch,
-                    self.rotation_strategy,
-                    self.timezone_strategy,
-                    self.max_file_size,
-                    self.targets,
-                )?;
-
-                attach_logger(max_level, log)?;
-
+                if !self.is_skip_logger {
+                    let (max_level, log) = Self::acquire_logger(
+                        app_handle,
+                        self.dispatch,
+                        self.rotation_strategy,
+                        self.timezone_strategy,
+                        self.max_file_size,
+                        self.targets,
+                    )?;
+                    attach_logger(max_level, log)?;
+                }
                 Ok(())
             })
             .build()
