@@ -202,11 +202,16 @@ export async function fetch(
     start: (controller) => {
       streamChannel.onmessage = (res: StreamMessage) => {
         // close early if aborted
-        if (signal?.aborted) controller.error(ERROR_REQUEST_CANCELLED)
+        if (signal?.aborted) {
+          controller.error(ERROR_REQUEST_CANCELLED)
+          return
+        }
+
         if (!res.bytes.length) {
           controller.close()
           return
         }
+        
         controller.enqueue(res)
       }
     }
