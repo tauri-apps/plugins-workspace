@@ -38,11 +38,17 @@ export default class Database {
    *
    * # Sqlite
    *
-   * The path is relative to `tauri::path::BaseDirectory::App` and must start with `sqlite:`.
+   * The path is relative to `tauri::path::BaseDirectory::App` by default and must start with `sqlite:`.
    *
    * @example
    * ```ts
+   * // for relative path
    * const db = await Database.load("sqlite:test.db");
+   * ```
+   * @example
+   * ```ts
+   * // for absolute path
+   * const db = await Database.load("sqlite:/home/ubuntu/test.db");
    * ```
    */
   static async load(path: string): Promise<Database> {
@@ -62,11 +68,17 @@ export default class Database {
    *
    * # Sqlite
    *
-   * The path is relative to `tauri::path::BaseDirectory::App` and must start with `sqlite:`.
+   * The path is relative to `tauri::path::BaseDirectory::App` by default and must start with `sqlite:`.
    *
    * @example
    * ```ts
-   * const db = Database.get("sqlite:test.db");
+   * // for relative path
+   * const db = await Database.load("sqlite:test.db");
+   * ```
+   * @example
+   * ```ts
+   * // for absolute path
+   * const db = await Database.load("sqlite:/home/ubuntu/test.db");
    * ```
    */
   static get(path: string): Database {
