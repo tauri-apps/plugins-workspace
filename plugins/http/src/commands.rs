@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-
 use std::{future::Future, pin::Pin, str::FromStr, sync::Arc, time::Duration};
 
 use http::{header, HeaderMap, HeaderName, HeaderValue, Method, StatusCode};
@@ -179,7 +178,7 @@ pub async fn fetch<R: Runtime>(
     client_config: ClientConfig,
     command_scope: CommandScope<Entry>,
     global_scope: GlobalScope<Entry>,
-    stream_channel: Channel<tauri::ipc::InvokeResponseBody>
+    stream_channel: Channel<tauri::ipc::InvokeResponseBody>,
 ) -> crate::Result<ResourceId> {
     let ClientConfig {
         method,
@@ -327,7 +326,6 @@ pub async fn fetch<R: Runtime>(
                     // return that response
                     Ok(res)
                 };
-
 
                 let mut resources_table = webview.resources_table();
                 let rid = resources_table.add_request(Box::pin(fut));

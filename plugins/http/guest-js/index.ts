@@ -200,9 +200,9 @@ export async function fetch(
 
         // close when the signal to close (an empty chunk)
         // is sent from the IPC.
-        if (res instanceof ArrayBuffer
-          ? res.byteLength == 0
-          : res.length == 0) {
+        if (
+          res instanceof ArrayBuffer ? res.byteLength == 0 : res.length == 0
+        ) {
           controller.close()
           return
         }
