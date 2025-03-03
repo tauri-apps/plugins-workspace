@@ -4,7 +4,6 @@
 
 #[cfg(feature = "sqlite")]
 use std::fs::create_dir_all;
-use std::path::Path;
 
 use indexmap::IndexMap;
 use serde_json::Value as JsonValue;
@@ -77,7 +76,7 @@ impl DbPool {
         {
             #[cfg(feature = "sqlite")]
             "sqlite" => {
-                let conn_url = if Path::new(conn_url).is_absolute() {
+                let conn_url = if std::path::Path::new(conn_url).is_absolute() {
                     create_dir_all(conn_url).expect("Couldn't create dir");
 
                     conn_url
