@@ -172,7 +172,7 @@ mod imp {
     use tauri::Manager;
     use tauri::{AppHandle, Runtime};
     #[cfg(windows)]
-    use windows_registry::CURRENT_USER;
+    use windows_registry::{CLASSES_ROOT, CURRENT_USER, LOCAL_MACHINE};
 
     /// Access to the deep-link APIs.
     pub struct DeepLink<R: Runtime> {
@@ -258,7 +258,8 @@ mod imp {
         pub fn register<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
             {
-                let key_base = format!("Software\\Classes\\{}", _protocol.as_ref());
+                let protocol = _protocol.as_ref();
+                let key_base = format!("Software\\Classes\\{protocol}");
 
                 let exe = dunce::simplified(&tauri::utils::platform::current_exe()?)
                     .display()
@@ -348,13 +349,21 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
+        /// - **Windows**: Requires admin rights if the protocol is registered on local machine
+        ///     (this can happen when registered from the NSIS installer when the install mode is set to both or per machine)
         /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
             {
-                CURRENT_USER.remove_tree(format!("Software\\Classes\\{}", _protocol.as_ref()))?;
-
+                let protocol = _protocol.as_ref();
+                let path = format!("Software\\Classes\\{protocol}");
+                if LOCAL_MACHINE.open(&path).is_ok() {
+                    LOCAL_MACHINE.remove_tree(&path)?;
+                }
+                if CURRENT_USER.open(&path).is_ok() {
+                    CURRENT_USER.remove_tree(&path)?;
+                }
                 Ok(())
             }
 
@@ -398,10 +407,8 @@ mod imp {
         pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
             #[cfg(windows)]
             {
-                let cmd_reg = CURRENT_USER.open(format!(
-                    "Software\\Classes\\{}\\shell\\open\\command",
-                    _protocol.as_ref()
-                ))?;
+                let protocol = _protocol.as_ref();
+                let cmd_reg = CLASSES_ROOT.open(format!("{protocol}\\shell\\open\\command"))?;
 
                 let registered_cmd = cmd_reg.get_string("")?;
 
