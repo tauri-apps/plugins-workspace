@@ -940,6 +940,7 @@ impl Update {
     fn install_inner(&self, bytes: &[u8]) -> Result<()> {
         match self.installer {
             Some(Installer::Deb) => self.install_deb(bytes),
+            Some(Installer::Rpm) => self.install_rpm(bytes),
             _ =>self.install_appimage(bytes)
         }
     }
@@ -1022,6 +1023,19 @@ impl Update {
             return Err(Error::InvalidUpdaterFormat);
         }
 
+        self.try_tmp_locations(bytes, "dpkg", "-i")
+
+    }
+
+    fn install_rpm(&self, bytes: &[u8]) -> Result<()> {
+        // First verify the bytes are actually a .rpm package
+        if !infer::archive::is_rpm(bytes) {
+            return Err(Error::InvalidUpdaterFormat);
+        }
+        self.try_tmp_locations(bytes, "rpm", "-U")
+    }
+
+    fn try_tmp_locations(&self, bytes: &[u8], install_cmd: &str, install_arg: &str) -> Result<()> {
         // Try different temp directories
         let tmp_dir_locations = vec![
             Box::new(|| Some(std::env::temp_dir())) as Box<dyn FnOnce() -> Option<PathBuf>>,
@@ -1033,15 +1047,15 @@ impl Update {
         for tmp_dir_location in tmp_dir_locations {
             if let Some(path) = tmp_dir_location() {
                 if let Ok(tmp_dir) = tempfile::Builder::new()
-                    .prefix("tauri_deb_update")
+                    .prefix("tauri_rpm_update")
                     .tempdir_in(path)
                 {
-                    let deb_path = tmp_dir.path().join("package.deb");
+                    let pkg_path = tmp_dir.path().join("package.rpm");
 
                     // Try writing the .deb file
-                    if std::fs::write(&deb_path, bytes).is_ok() {
+                    if std::fs::write(&pkg_path, bytes).is_ok() {
                         // If write succeeds, proceed with installation
-                        return self.try_install_with_privileges(&deb_path);
+                        return self.try_install_with_privileges(&pkg_path, install_cmd, install_arg);
                     }
                     // If write fails, continue to next temp location
                 }
@@ -1050,14 +1064,15 @@ impl Update {
 
         // If we get here, all temp locations failed
         Err(Error::TempDirNotFound)
+
     }
 
-    fn try_install_with_privileges(&self, deb_path: &Path) -> Result<()> {
+    fn try_install_with_privileges(&self, pkg_path: &Path, install_cmd: &str, install_arg: &str) -> Result<()> {
         // 1. First try using pkexec (graphical sudo prompt)
         if let Ok(status) = std::process::Command::new("pkexec")
-            .arg("dpkg")
-            .arg("-i")
-            .arg(deb_path)
+            .arg(install_cmd)
+            .arg(install_arg)
+            .arg(pkg_path)
             .status()
         {
             if status.success() {
@@ -1067,22 +1082,22 @@ impl Update {
 
         // 2. Try zenity or kdialog for a graphical sudo experience
         if let Ok(password) = self.get_password_graphically() {
-            if self.install_with_sudo(deb_path, &password)? {
+            if self.install_with_sudo(pkg_path, &password, install_cmd, install_arg)? {
                 return Ok(());
             }
         }
 
         // 3. Final fallback: terminal sudo
         let status = std::process::Command::new("sudo")
-            .arg("dpkg")
-            .arg("-i")
-            .arg(deb_path)
+            .arg(install_cmd)
+            .arg(install_arg)
+            .arg(pkg_path)
             .status()?;
 
         if status.success() {
             Ok(())
         } else {
-            Err(Error::DebInstallFailed)
+            Err(Error::PackageInstallFailed)
         }
     }
 
@@ -1116,15 +1131,15 @@ impl Update {
         Err(Error::AuthenticationFailed)
     }
 
-    fn install_with_sudo(&self, deb_path: &Path, password: &str) -> Result<bool> {
+    fn install_with_sudo(&self, pkg_path: &Path, password: &str, install_cmd: &str, install_arg: &str) -> Result<bool> {
         use std::io::Write;
         use std::process::{Command, Stdio};
 
         let mut child = Command::new("sudo")
             .arg("-S") // read password from stdin
-            .arg("dpkg")
-            .arg("-i")
-            .arg(deb_path)
+            .arg(install_cmd)
+            .arg(install_arg)
+            .arg(pkg_path)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())

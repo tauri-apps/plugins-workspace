@@ -372,15 +372,13 @@ fn update_app() {
                             .1,
                     );
                     c
-                } else if matches!(bundle_target, BundleTarget::AppImage) {
+                } else {
                     Command::new(
                         &test_cases(&root_dir, "0.1.0", target.clone())
                             .first()
                             .unwrap()
                             .1,
                     )
-                } else {
-                    Command::new(root_dir.join("target/debug/app-updater"))
                 };
 
                 binary_cmd.env("TARGET", bundle_target.name());
