@@ -23,8 +23,6 @@ use crate::{
 
 const HTTP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
-impl tauri::Resource for ReqwestResponse {}
-
 type CancelableResponseResult = Result<reqwest::Response>;
 type CancelableResponseFuture =
     Pin<Box<dyn Future<Output = CancelableResponseResult> + Send + Sync>>;
@@ -413,9 +411,6 @@ pub async fn fetch_send<R: Runtime>(
             String::from_utf8(val.as_bytes().to_vec())?,
         ));
     }
-
-    let mut resources_table = webview.resources_table();
-    let rid = resources_table.add(ReqwestResponse(res));
 
     Ok(FetchResponse {
         status: status.as_u16(),
