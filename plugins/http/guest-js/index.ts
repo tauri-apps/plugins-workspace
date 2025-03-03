@@ -106,16 +106,6 @@ export interface DangerousSettings {
   acceptInvalidHostnames?: boolean
 }
 
-/**
- * Stream Packet for IPC
- */
-export interface StreamMessage {
-  /**
-   * The chunk - an array of bytes sent from Rust.
-   */
-  bytes: Uint8Array
-}
-
 const ERROR_REQUEST_CANCELLED = 'Request canceled'
 
 /**
@@ -196,18 +186,18 @@ export async function fetch(
     throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
-  const streamChannel = new Channel<StreamMessage>()
+  const streamChannel = new Channel<Uint8Array>()
 
   const readableStreamBody = new ReadableStream({
     start: (controller) => {
-      streamChannel.onmessage = (res: StreamMessage) => {
+      streamChannel.onmessage = (res: Uint8Array) => {
         // close early if aborted
         if (signal?.aborted) {
           controller.error(ERROR_REQUEST_CANCELLED)
           return
         }
 
-        if (!res.bytes.length) {
+        if (!res.length) {
           controller.close()
           return
         }

@@ -129,12 +129,6 @@ pub struct BasicAuth {
     password: String,
 }
 
-#[derive(Clone, Serialize)]
-pub struct StreamMessage {
-    #[serde(with = "serde_bytes")]
-    bytes: Vec<u8>
-}
-
 #[inline]
 fn proxy_creator(
     url_or_config: UrlOrConfig,
@@ -190,7 +184,7 @@ pub async fn fetch<R: Runtime>(
     client_config: ClientConfig,
     command_scope: CommandScope<Entry>,
     global_scope: GlobalScope<Entry>,
-    stream_channel: Channel<StreamMessage>
+    stream_channel: Channel<tauri::ipc::InvokeResponseBody>
 ) -> crate::Result<ResourceId> {
     let ClientConfig {
         method,
@@ -329,11 +323,11 @@ pub async fn fetch<R: Runtime>(
 
                     // send response through IPC channel
                     while let Some(chunk) = res.chunk().await? {
-                        stream_channel.send(StreamMessage{bytes: chunk.to_vec()})?;
+                        stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(chunk.to_vec()))?;
                     }
 
                     // send empty vector when done
-                    stream_channel.send(StreamMessage{bytes: Vec::new()})?;
+                    stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(Vec::new()))?;
 
                     // return that response
                     Ok(res)
