@@ -131,8 +131,8 @@ pub struct BasicAuth {
 
 #[derive(Clone, Serialize)]
 pub struct StreamMessage {
-    value: Option<Vec<u8>>,
-    done: bool,
+    #[serde(with = "serde_bytes")]
+    bytes: Vec<u8>
 }
 
 #[inline]
@@ -329,13 +329,11 @@ pub async fn fetch<R: Runtime>(
 
                     // send response through IPC channel
                     while let Some(chunk) = res.chunk().await? {
-                        stream_channel.send(StreamMessage{
-                            value: Some(chunk.to_vec()),
-                            done: false,
-                        })?;
+                        stream_channel.send(StreamMessage{bytes: chunk.to_vec()})?;
                     }
 
-                    stream_channel.send(StreamMessage { value: None, done: true })?;
+                    // send empty vector when done
+                    stream_channel.send(StreamMessage{bytes: Vec::new()})?;
 
                     // return that response
                     Ok(res)
