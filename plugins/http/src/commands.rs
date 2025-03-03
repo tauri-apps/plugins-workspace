@@ -23,9 +23,6 @@ use crate::{
 
 const HTTP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
-// reqwest::Response is never read, but might be needed for future use.
-#[allow(dead_code)]
-struct ReqwestResponse(reqwest::Response);
 impl tauri::Resource for ReqwestResponse {}
 
 type CancelableResponseResult = Result<reqwest::Response>;
