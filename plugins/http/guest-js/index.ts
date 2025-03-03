@@ -113,11 +113,7 @@ export interface StreamMessage {
   /**
    * The chunk - an array of bytes sent from Rust.
    */
-  value?: ArrayBuffer | number[]
-  /**
-   * Is the stream done.
-   */
-  done: boolean
+  bytes: Uint8Array
 }
 
 const ERROR_REQUEST_CANCELLED = 'Request canceled'
@@ -207,8 +203,11 @@ export async function fetch(
       streamChannel.onmessage = (res: StreamMessage) => {
         // close early if aborted
         if (signal?.aborted) controller.error(ERROR_REQUEST_CANCELLED)
-        if (res.done) controller.close()
-        controller.enqueue(res.value)
+        if (!res.bytes.length) {
+          controller.close()
+          return
+        }
+        controller.enqueue(res)
       }
     }
   })
