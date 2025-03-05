@@ -3,4 +3,4 @@
 "updater-js": minor
 ---
 
-Add `on_before_request` hook to the updater plugin.
+Add `configure_client` hook to the updater plugin.
