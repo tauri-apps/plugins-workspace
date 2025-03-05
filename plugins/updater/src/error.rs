@@ -42,11 +42,11 @@ pub enum Error {
     /// `reqwest` crate errors.
     #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
-    /// The platform was not found on the updater JSON response.
-    #[error("the platform `{0}` was not found on the response `platforms` object")]
+    /// The platform was not found in the updater JSON response.
+    #[error("the platform `{0}` was not found in the response `platforms` object")]
     TargetNotFound(String),
-    /// Neither the platform not the fallback platform was not found on the updater JSON response.
-    #[error("the platform `{0}` and `{1}` were not found on the response `platforms` object")]
+    /// Neither the platform not the fallback platform was not found in the updater JSON response.
+    #[error("the platform `{0}` and `{1}` were not found in the response `platforms` object")]
     TargetsNotFound(String, String),
     /// Download failed
     #[error("`{0}`")]
