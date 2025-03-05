@@ -242,7 +242,7 @@ impl UpdaterBuilder {
         self
     }
 
-    /// Allows you to modify the `reqwest`` client builder before the HTTP request is sent.
+    /// Allows you to modify the `reqwest` client builder before the HTTP request is sent.
     ///
     /// Note that `reqwest` crate may be updated in minor releases of tauri-plugin-updater.
     /// Therefore it's recommended to pin the plugin to at least a minor version when you're using `configure_client`.
