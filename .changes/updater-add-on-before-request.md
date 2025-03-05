@@ -3,4 +3,4 @@
 "updater-js": minor
 ---
 
-Add `configure_client` hook to the updater plugin.
+Add `UpdaterBuilder::configure_client` method on Rust side, to configure rhe `reqwest` client used to check and download the update.
