@@ -26,7 +26,7 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 aho-corasick = "1"
-bincode = "1"
+bincode = "2"
 tauri-plugin-fs = { path = "../fs", version = "2.2.0" }
 
 [features]
