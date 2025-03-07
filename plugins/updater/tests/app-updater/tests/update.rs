@@ -56,20 +56,19 @@ fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, targets: Vec<Bun
         .env("TAURI_SIGNING_PRIVATE_KEY_PASSWORD", "")
         .current_dir(cwd);
 
+    let cmd_args = targets.into_iter().map(|t| t.name()).collect::<Vec<&str>>();
     command.args(["--bundles"]);
     #[cfg(target_os = "linux")]
-    command.args(targets.into_iter().map(|t| t.name()).collect::<Vec<&str>>());
+    command.args(cmd_args);
     #[cfg(target_os = "macos")]
-    command.args([target.name()]);
+    command.args(cmd_args);
 
     if bundle_updater {
         #[cfg(windows)]
         command.args(["msi", "nsis"]);
-
-        command.args(["updater"]);
     } else {
         #[cfg(windows)]
-        command.args([target.name()]);
+        command.args(cmd_args);
     }
     let status = command
         .status()
@@ -202,24 +201,60 @@ fn bundle_path(root_dir: &Path, _version: &str, v1compatible: bool) -> PathBuf {
 }
 
 #[cfg(windows)]
-fn bundle_paths(
+fn test_cases(
     root_dir: &Path,
     version: &str,
-    v1compatible: bool,
-) -> Vec<(BundleTarget, PathBuf)> {
+    target: String
+) -> Vec<(BundleTarget, PathBuf, Option<String>, Vec<i32>)> {
     vec![
         (
             BundleTarget::Nsis,
             root_dir.join(format!(
                 "target/debug/bundle/nsis/app-updater_{version}_x64-setup.exe"
             )),
+            Some(target.clone()),
+            vec![UPDATED_EXIT_CODE]
+        ),
+        (
+            BundleTarget::Nsis,
+            root_dir.join(format!(
+                "target/debug/bundle/nsis/app-updater_{version}_x64-setup.exe"
+            )),
+            Some(format!("{target}-{}", BundleTarget::Nsis.name())),
+            vec![UPDATED_EXIT_CODE]
+        ),
+        (
+            BundleTarget::Nsis,
+            root_dir.join(format!(
+                "target/debug/bundle/nsis/app-updater_{version}_x64-setup.exe"
+            )),
+            None,
+            vec![ERROR_EXIT_CODE]
         ),
         (
             BundleTarget::Msi,
             root_dir.join(format!(
                 "target/debug/bundle/msi/app-updater_{version}_x64_en-US.msi"
             )),
+            Some(target.clone()),
+            vec![UPDATED_EXIT_CODE]
         ),
+        (
+            BundleTarget::Msi,
+            root_dir.join(format!(
+                "target/debug/bundle/msi/app-updater_{version}_x64_en-US.msi"
+            )),
+            Some(format!("{target}-{}", BundleTarget::Msi.name())),
+            vec![UPDATED_EXIT_CODE]
+        ),
+        (
+            BundleTarget::Msi,
+            root_dir.join(format!(
+                "target/debug/bundle/msi/app-updater_{version}_x64_en-US.msi"
+            )),
+            None,
+            vec![ERROR_EXIT_CODE]
+        )
     ]
 }
 
