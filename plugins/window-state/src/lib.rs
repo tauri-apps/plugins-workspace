@@ -14,7 +14,7 @@ use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, WebviewWindow, Window,
+    LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, WebviewWindow, Window,
     WindowEvent,
 };
 
@@ -184,7 +184,7 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
 
             if flags.contains(StateFlags::SIZE) {
-                self.set_size(PhysicalSize {
+                self.set_size(LogicalSize {
                     width: state.width,
                     height: state.height,
                 })?;
@@ -224,9 +224,12 @@ impl<R: Runtime> WindowExt for Window<R> {
             should_show = state.visible;
         } else {
             let mut metadata = WindowState::default();
-
             if flags.contains(StateFlags::SIZE) {
-                let size = self.inner_size()?;
+                let scale_factor = self
+                  .current_monitor()?
+                  .map(|m| m.scale_factor())
+                  .unwrap_or(1.);
+                let size = self.inner_size()?.to_logical(scale_factor);
                 metadata.width = size.width;
                 metadata.height = size.height;
             }
@@ -300,7 +303,12 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
         }
 
         if flags.contains(StateFlags::SIZE) && !is_maximized && !is_minimized {
-            let size = self.inner_size()?;
+            let scale_factor = self
+              .current_monitor()?
+              .map(|m| m.scale_factor())
+              .unwrap_or(1.);
+            let size = self.inner_size()?.to_logical(scale_factor);
+
             // It doesn't make sense to save a window with 0 height or width
             if size.width > 0 && size.height > 0 {
                 state.width = size.width;
@@ -523,11 +531,13 @@ impl Builder {
 }
 
 trait MonitorExt {
-    fn intersects(&self, position: PhysicalPosition<i32>, size: PhysicalSize<u32>) -> bool;
+    fn intersects(&self, position: PhysicalPosition<i32>, size: LogicalSize<u32>) -> bool;
 }
 
 impl MonitorExt for Monitor {
-    fn intersects(&self, position: PhysicalPosition<i32>, size: PhysicalSize<u32>) -> bool {
+    fn intersects(&self, position: PhysicalPosition<i32>, size: LogicalSize<u32>) -> bool {
+        let size = size.to_physical::<u32>(self.scale_factor());
+
         let PhysicalPosition { x, y } = *self.position();
         let PhysicalSize { width, height } = *self.size();
 
