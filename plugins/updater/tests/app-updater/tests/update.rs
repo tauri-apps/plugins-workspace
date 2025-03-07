@@ -46,7 +46,7 @@ struct Update {
     platforms: HashMap<String, PlatformUpdate>,
 }
 
-fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, targets: Vec<BundleTarget>) {
+fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTarget) {
     let mut command = Command::new("cargo");
     command
         .args(["tauri", "build", "--debug", "--verbose"])
@@ -56,20 +56,19 @@ fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, targets: Vec<Bun
         .env("TAURI_SIGNING_PRIVATE_KEY_PASSWORD", "")
         .current_dir(cwd);
 
-    let cmd_args = targets.into_iter().map(|t| t.name()).collect::<Vec<&str>>();
-    command.args(["--bundles"]);
     #[cfg(target_os = "linux")]
-    command.args(cmd_args);
+    command.args(["--bundles", target.name()]);
     #[cfg(target_os = "macos")]
-    command.args(cmd_args);
+    command.args(["--bundles", target.name()]);
 
     if bundle_updater {
         #[cfg(windows)]
-        command.args(["msi", "nsis"]);
+        command.args(["--bundles", "msi", "nsis"]);
     } else {
         #[cfg(windows)]
-        command.args(cmd_args);
+        command.args(["--bundles", target.name()]);
     }
+
     let status = command
         .status()
         .expect("failed to run Tauri CLI to bundle app");
@@ -78,6 +77,7 @@ fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, targets: Vec<Bun
         panic!("failed to bundle app {:?}", status.code());
     }
 }
+
 
 #[derive(Copy, Clone)]
 enum BundleTarget {
@@ -105,13 +105,13 @@ impl BundleTarget {
 }
 
 impl BundleTarget {
-    fn get_targets() -> Vec<Self> {
+    fn default() -> Self {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
-        return vec![Self::App];
+        return Self::App;
         #[cfg(target_os = "linux")]
-        return vec![Self::AppImage];
+        return Self::AppImage;
         #[cfg(windows)]
-        return vec![Self::Nsis];
+        return Self::Nsis;
     }
 }
 
@@ -201,11 +201,11 @@ fn bundle_path(root_dir: &Path, _version: &str, v1compatible: bool) -> PathBuf {
 }
 
 #[cfg(windows)]
-fn test_cases(
+fn bundle_paths(
     root_dir: &Path,
     version: &str,
-    target: String
-) -> Vec<(BundleTarget, PathBuf, Option<String>, Vec<i32>)> {
+    v1compatible: bool,
+) -> Vec<(BundleTarget, PathBuf)> {
     vec![
         (
             BundleTarget::Nsis,
@@ -385,7 +385,7 @@ fn update_app() {
             config.version = "0.1.0";
 
             // bundle initial app version
-            build_app(&manifest_dir, &config, false, vec![bundle_target]);
+            build_app(&manifest_dir, &config, false, bundle_target);
 
             for expected_exit_code in status_checks {
                 let mut binary_cmd = if cfg!(windows) {
