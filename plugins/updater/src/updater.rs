@@ -428,7 +428,7 @@ impl Updater {
                             .map_err(Into::into)
                         {
                             Ok(release) => {
-                                println!("parsed release response {release:?}");
+                                log::debug!("parsed release response {release:?}");
                                 last_error = None;
                                 remote_release = Some(release);
                                 // we found a release, break the loop
