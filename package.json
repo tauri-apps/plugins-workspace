@@ -19,7 +19,7 @@
     "prettier": "3.5.3",
     "rollup": "4.34.9",
     "typescript": "5.8.2",
-    "typescript-eslint": "8.26.0"
+    "typescript-eslint": "8.26.1"
   },
   "resolutions": {
     "semver": ">=7.5.2",
