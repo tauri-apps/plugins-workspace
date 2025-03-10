@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.4]
+
+- [`a1b3fa27`](https://github.com/tauri-apps/plugins-workspace/commit/a1b3fa27f11022c9b6622b4fab12d93239eb05de) ([#2515](https://github.com/tauri-apps/plugins-workspace/pull/2515) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Re-exported the `Geolocation`, `Haptics`, `Notification`, and `Os` structs so that they show up on docs.rs.
+
 ## \[2.2.3]
 
 - [`406e6f48`](https://github.com/tauri-apps/plugins-workspace/commit/406e6f484cdc13d35c50fb949f7489ca9eeccc44) ([#2323](https://github.com/tauri-apps/plugins-workspace/pull/2323) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed an issue that caused build failures when the `haptics` or `geolocation` plugin was used without their `specta` feature flag enabled.

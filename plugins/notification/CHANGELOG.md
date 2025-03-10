@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.2]
+
+- [`a1b3fa27`](https://github.com/tauri-apps/plugins-workspace/commit/a1b3fa27f11022c9b6622b4fab12d93239eb05de) ([#2515](https://github.com/tauri-apps/plugins-workspace/pull/2515) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Re-exported the `Geolocation`, `Haptics`, `Notification`, and `Os` structs so that they show up on docs.rs.
+
 ## \[2.2.1]
 
 - [`da5c59e2`](https://github.com/tauri-apps/plugins-workspace/commit/da5c59e2fe879d177e3cfd52fcacce85440423cb) ([#2271](https://github.com/tauri-apps/plugins-workspace/pull/2271) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `zbus` dependency to version 5. No API changes.

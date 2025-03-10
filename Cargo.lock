@@ -206,7 +206,7 @@ checksum = "4c95c10ba0b00a02636238b814946408b1322d5ac4760326e6fb8ec956d85775"
 
 [[package]]
 name = "api"
-version = "2.0.19"
+version = "2.0.20"
 dependencies = [
  "log",
  "serde",
@@ -6596,7 +6596,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-clipboard-manager"
-version = "2.2.1"
+version = "2.2.2"
 dependencies = [
  "arboard",
  "log",
@@ -6666,7 +6666,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-geolocation"
-version = "2.2.3"
+version = "2.2.4"
 dependencies = [
  "log",
  "serde",
@@ -6692,7 +6692,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-haptics"
-version = "2.2.3"
+version = "2.2.4"
 dependencies = [
  "log",
  "serde",
@@ -6705,7 +6705,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.3.0"
+version = "2.4.0"
 dependencies = [
  "data-url",
  "http",
@@ -6739,7 +6739,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-log"
-version = "2.2.3"
+version = "2.3.0"
 dependencies = [
  "android_logger",
  "byte-unit",
@@ -6772,7 +6772,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "2.2.1"
+version = "2.2.2"
 dependencies = [
  "color-backtrace",
  "ctor",
@@ -6814,7 +6814,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-os"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "gethostname 1.0.0",
  "log",
@@ -6951,7 +6951,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.5.1"
+version = "2.6.0"
 dependencies = [
  "base64 0.22.1",
  "dirs 6.0.0",

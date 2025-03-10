@@ -1,5 +1,16 @@
 # Changelog
 
+## \[2.0.16]
+
+### Dependencies
+
+- Upgraded to `clipboard-manager-js@2.2.2`
+- Upgraded to `notification-js@2.2.2`
+- Upgraded to `os-js@2.2.1`
+- Upgraded to `http-js@2.4.0`
+- Upgraded to `log-js@2.3.0`
+- Upgraded to `updater-js@2.6.0`
+
 ## \[2.0.15]
 
 ### Dependencies

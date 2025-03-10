@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.0]
+
+- [`cb38f54f`](https://github.com/tauri-apps/plugins-workspace/commit/cb38f54f4a4ef30995283cd82166c62da17bac44) ([#2479](https://github.com/tauri-apps/plugins-workspace/pull/2479) by [@adrieljss](https://github.com/tauri-apps/plugins-workspace/../../adrieljss)) Add stream support for HTTP stream responses.
+
 ## \[2.3.0]
 
 - [`10513649`](https://github.com/tauri-apps/plugins-workspace/commit/105136494c5a5bf4b1f1cc06cc71815412d17ec8) ([#2204](https://github.com/tauri-apps/plugins-workspace/pull/2204) by [@RickeyWard](https://github.com/tauri-apps/plugins-workspace/../../RickeyWard)) Add `dangerous-settings` feature flag and new JS `danger` option to disable tls hostname/certificate validation.

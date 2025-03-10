@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-log",
-  "version": "2.2.3",
+  "version": "2.3.0",
   "description": "Configurable logging for your Tauri app.",
   "license": "MIT OR Apache-2.0",
   "authors": [

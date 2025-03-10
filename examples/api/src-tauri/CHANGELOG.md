@@ -1,5 +1,18 @@
 # Changelog
 
+## \[2.0.20]
+
+### Dependencies
+
+- Upgraded to `clipboard-manager@2.2.2`
+- Upgraded to `geolocation@2.2.4`
+- Upgraded to `haptics@2.2.4`
+- Upgraded to `notification@2.2.2`
+- Upgraded to `os@2.2.1`
+- Upgraded to `http@2.4.0`
+- Upgraded to `log@2.3.0`
+- Upgraded to `updater@2.6.0`
+
 ## \[2.0.19]
 
 ### Dependencies
