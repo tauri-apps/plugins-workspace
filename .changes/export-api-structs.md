@@ -4,7 +4,7 @@ geolocation-js: patch
 haptics: patch
 haptics-js: patch
 notification: patch
-notificationjs: patch
+notification-js: patch
 os: patch
 os-js: patch
 ---
