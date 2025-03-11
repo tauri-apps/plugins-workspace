@@ -193,7 +193,6 @@ export async function fetch(
         // close early if aborted
         if (signal?.aborted) {
           controller.error(ERROR_REQUEST_CANCELLED)
-          controller.close()
           return
         }
 
@@ -214,10 +213,10 @@ export async function fetch(
 
       // run a non-blocking body stream fetch
       invoke('plugin:http|fetch_stream_body', {
+        rid,
         streamChannel
       }).catch((e) => {
         controller.error(e)
-        controller.close()
       })
     }
   })
