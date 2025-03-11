@@ -130,4 +130,30 @@ Denies the fetch_send command without any pre-configured scope.
 
 </td>
 </tr>
+
+<tr>
+<td>
+
+`http:allow-fetch-stream-body`
+
+</td>
+<td>
+
+Enables the fetch_stream_body command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`http:deny-fetch-stream-body`
+
+</td>
+<td>
+
+Denies the fetch_stream_body command without any pre-configured scope.
+
+</td>
+</tr>
 </table>
