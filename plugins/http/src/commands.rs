@@ -360,7 +360,7 @@ pub fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::
 }
 
 #[command]
-pub async fn fetch_stream_body<R: Runtime>(
+pub async fn fetch_read_body<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
     stream_channel: Channel<tauri::ipc::InvokeResponseBody>,

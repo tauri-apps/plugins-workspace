@@ -186,6 +186,19 @@ export async function fetch(
     throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
+  const rid = await invoke<number>('plugin:http|fetch', {
+    clientConfig: {
+      method: req.method,
+      url: req.url,
+      headers: mappedHeaders,
+      data,
+      maxRedirections,
+      connectTimeout,
+      proxy,
+      danger
+    }
+  })
+
   const readableStreamBody = new ReadableStream({
     start: (controller) => {
       const streamChannel = new Channel<ArrayBuffer | number[]>()
@@ -212,25 +225,12 @@ export async function fetch(
       }
 
       // run a non-blocking body stream fetch
-      invoke('plugin:http|fetch_stream_body', {
+      invoke('plugin:http|fetch_read_body', {
         rid,
         streamChannel
       }).catch((e) => {
         controller.error(e)
       })
-    }
-  })
-
-  const rid = await invoke<number>('plugin:http|fetch', {
-    clientConfig: {
-      method: req.method,
-      url: req.url,
-      headers: mappedHeaders,
-      data,
-      maxRedirections,
-      connectTimeout,
-      proxy,
-      danger
     }
   })
 

@@ -315,6 +315,16 @@
           "const": "deny-fetch-cancel"
         },
         {
+          "description": "Enables the fetch_read_body command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-fetch-read-body"
+        },
+        {
+          "description": "Denies the fetch_read_body command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-fetch-read-body"
+        },
+        {
           "description": "Enables the fetch_send command without any pre-configured scope.",
           "type": "string",
           "const": "allow-fetch-send"

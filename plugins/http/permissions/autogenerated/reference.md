@@ -15,7 +15,7 @@ All fetch operations are enabled.
 
 - `allow-fetch`
 - `allow-fetch-cancel`
-- `allow-fetch-read-body`
+- `allow-fetch-stream-body`
 - `allow-fetch-send`
 
 ## Permission Table
