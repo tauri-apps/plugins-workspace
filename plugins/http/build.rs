@@ -6,7 +6,7 @@
 #[allow(dead_code)]
 mod scope;
 
-const COMMANDS: &[&str] = &["fetch", "fetch_cancel", "fetch_send", "fetch_stream_body"];
+const COMMANDS: &[&str] = &["fetch", "fetch_cancel", "fetch_send", "fetch_read_body"];
 
 /// HTTP scope entry.
 #[derive(schemars::JsonSchema)]
