@@ -3,4 +3,4 @@
 "http-js": minor
 ---
 
-Add stream support for HTTP stream responses.
+Fix HTTP stream not streaming the body.

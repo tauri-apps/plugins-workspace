@@ -24,6 +24,7 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@tauri-apps/api": "^2.0.0"
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-http": "link:"
   }
 }

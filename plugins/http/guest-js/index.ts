@@ -186,10 +186,9 @@ export async function fetch(
     throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
-  const streamChannel = new Channel<ArrayBuffer | number[]>()
-
   const readableStreamBody = new ReadableStream({
     start: (controller) => {
+      const streamChannel = new Channel<ArrayBuffer | number[]>()
       streamChannel.onmessage = (res: ArrayBuffer | number[]) => {
         // close early if aborted
         if (signal?.aborted) {
@@ -212,6 +211,14 @@ export async function fetch(
         // have untraceable error that's hard to debug.
         controller.enqueue(new Uint8Array(res))
       }
+
+      // run a non-blocking body stream fetch
+      invoke('plugin:http|fetch_stream_body', {
+        streamChannel
+      }).catch((e) => {
+        controller.error(e)
+        controller.close()
+      })
     }
   })
 
@@ -225,8 +232,7 @@ export async function fetch(
       connectTimeout,
       proxy,
       danger
-    },
-    streamChannel
+    }
   })
 
   const abort = () => invoke('plugin:http|fetch_cancel', { rid })
