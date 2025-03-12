@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.3.1]
+
+- [`1bb1ced5`](https://github.com/tauri-apps/plugins-workspace/commit/1bb1ced53820127204aa7adf57510c1cbce55e12) ([#2524](https://github.com/tauri-apps/plugins-workspace/pull/2524) by [@elwerene](https://github.com/tauri-apps/plugins-workspace/../../elwerene)) enable TargetKind::LogDir on mobile
+
 ## \[2.3.0]
 
 ### feat
