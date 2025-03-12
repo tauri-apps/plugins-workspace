@@ -199,6 +199,36 @@ export async function fetch(
     }
   })
 
+  const abort = () => invoke('plugin:http|fetch_cancel', { rid })
+
+  // abort early here if needed
+  if (signal?.aborted) {
+    // we don't care about the result of this proimse
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    abort()
+    throw new Error(ERROR_REQUEST_CANCELLED)
+  }
+
+  signal?.addEventListener('abort', () => void abort())
+
+  interface FetchSendResponse {
+    status: number
+    statusText: string
+    headers: [[string, string]]
+    url: string
+    rid: number
+  }
+
+  const {
+    status,
+    statusText,
+    url,
+    headers: responseHeaders,
+    rid: responseRid
+  } = await invoke<FetchSendResponse>('plugin:http|fetch_send', {
+    rid
+  })
+
   const readableStreamBody = new ReadableStream({
     start: (controller) => {
       const streamChannel = new Channel<ArrayBuffer | number[]>()
@@ -226,41 +256,12 @@ export async function fetch(
 
       // run a non-blocking body stream fetch
       invoke('plugin:http|fetch_read_body', {
-        rid,
+        rid: responseRid,
         streamChannel
       }).catch((e) => {
         controller.error(e)
       })
     }
-  })
-
-  const abort = () => invoke('plugin:http|fetch_cancel', { rid })
-
-  // abort early here if needed
-  if (signal?.aborted) {
-    // we don't care about the result of this proimse
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    abort()
-    throw new Error(ERROR_REQUEST_CANCELLED)
-  }
-
-  signal?.addEventListener('abort', () => void abort())
-
-  interface FetchSendResponse {
-    status: number
-    statusText: string
-    headers: [[string, string]]
-    url: string
-    rid: number
-  }
-
-  const {
-    status,
-    statusText,
-    url,
-    headers: responseHeaders
-  } = await invoke<FetchSendResponse>('plugin:http|fetch_send', {
-    rid
   })
 
   const res = new Response(readableStreamBody, {
