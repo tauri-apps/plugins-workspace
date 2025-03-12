@@ -423,6 +423,9 @@ pub async fn fetch_send<R: Runtime>(
         ));
     }
 
+    let mut resources_table = webview.resources_table();
+    let rid = resources_table.add(ReqwestResponse(res));
+
     Ok(FetchResponse {
         status: status.as_u16(),
         status_text: status.canonical_reason().unwrap_or_default().to_string(),
