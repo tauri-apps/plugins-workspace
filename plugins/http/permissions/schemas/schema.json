@@ -335,16 +335,6 @@
           "const": "deny-fetch-send"
         },
         {
-          "description": "Enables the fetch_stream_body command without any pre-configured scope.",
-          "type": "string",
-          "const": "allow-fetch-stream-body"
-        },
-        {
-          "description": "Denies the fetch_stream_body command without any pre-configured scope.",
-          "type": "string",
-          "const": "deny-fetch-stream-body"
-        },
-        {
           "description": "This permission set configures what kind of\nfetch operations are available from the http plugin.\n\nThis enables all fetch operations but does not\nallow explicitly any origins to be fetched. This needs to\nbe manually configured before usage.\n\n#### Granted Permissions\n\nAll fetch operations are enabled.\n\n",
           "type": "string",
           "const": "default"

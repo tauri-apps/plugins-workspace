@@ -15,7 +15,7 @@ All fetch operations are enabled.
 
 - `allow-fetch`
 - `allow-fetch-cancel`
-- `allow-fetch-stream-body`
+- `allow-fetch-read-body`
 - `allow-fetch-send`
 
 ## Permission Table
@@ -127,32 +127,6 @@ Enables the fetch_send command without any pre-configured scope.
 <td>
 
 Denies the fetch_send command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`http:allow-fetch-stream-body`
-
-</td>
-<td>
-
-Enables the fetch_stream_body command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`http:deny-fetch-stream-body`
-
-</td>
-<td>
-
-Denies the fetch_stream_body command without any pre-configured scope.
 
 </td>
 </tr>
