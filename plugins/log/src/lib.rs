@@ -159,11 +159,12 @@ pub enum TargetKind {
     ///
     /// ### Platform-specific
     ///
-    /// |Platform | Value                                                                                     | Example                                                     |
-    /// | ------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-    /// | Linux   | `$XDG_DATA_HOME/{bundleIdentifier}/logs` or `$HOME/.local/share/{bundleIdentifier}/logs`  | `/home/alice/.local/share/com.tauri.dev/logs`               |
-    /// | macOS   | `{homeDir}/Library/Logs/{bundleIdentifier}`                                               | `/Users/Alice/Library/Logs/com.tauri.dev`                   |
-    /// | Windows | `{FOLDERID_LocalAppData}/{bundleIdentifier}/logs`                                         | `C:\Users\Alice\AppData\Local\com.tauri.dev\logs`           |
+    /// |Platform   | Value                                                                                     | Example                                                     |
+    /// | --------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+    /// | Linux     | `$XDG_DATA_HOME/{bundleIdentifier}/logs` or `$HOME/.local/share/{bundleIdentifier}/logs`  | `/home/alice/.local/share/com.tauri.dev/logs`               |
+    /// | macOS/iOS | `{homeDir}/Library/Logs/{bundleIdentifier}`                                               | `/Users/Alice/Library/Logs/com.tauri.dev`                   |
+    /// | Windows   | `{FOLDERID_LocalAppData}/{bundleIdentifier}/logs`                                         | `C:\Users\Alice\AppData\Local\com.tauri.dev\logs`           |
+    /// | Android   | `{ConfigDir}/logs`                                                                        | `/data/data/com.tauri.dev/files/logs`                       |
     LogDir { file_name: Option<String> },
     /// Forward logs to the webview (via the `log://log` event).
     ///
@@ -451,9 +452,6 @@ impl Builder {
                     )?)?
                     .into()
                 }
-                #[cfg(mobile)]
-                TargetKind::LogDir { .. } => continue,
-                #[cfg(desktop)]
                 TargetKind::LogDir { file_name } => {
                     let path = app_handle.path().app_log_dir()?;
                     if !path.exists() {

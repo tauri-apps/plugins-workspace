@@ -21,9 +21,9 @@ mod models;
 pub use error::{Error, Result};
 
 #[cfg(desktop)]
-use desktop::Haptics;
+pub use desktop::Haptics;
 #[cfg(mobile)]
-use mobile::Haptics;
+pub use mobile::Haptics;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the haptics APIs.
 pub trait HapticsExt<R: Runtime> {

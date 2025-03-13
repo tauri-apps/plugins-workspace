@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.6.0]
+
+- [`faefcc9f`](https://github.com/tauri-apps/plugins-workspace/commit/faefcc9fd8c61f709d491649e255a7fcac82c09a) ([#2430](https://github.com/tauri-apps/plugins-workspace/pull/2430) by [@goenning](https://github.com/tauri-apps/plugins-workspace/../../goenning)) Add `UpdaterBuilder::configure_client` method on Rust side, to configure the `reqwest` client used to check and download the update.
+- [`ac60d589`](https://github.com/tauri-apps/plugins-workspace/commit/ac60d589eca2bbc4aed040feb18da148e66ec171) ([#2513](https://github.com/tauri-apps/plugins-workspace/pull/2513) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Enhance error logging.
+
 ## \[2.5.1]
 
 - [`6f881293`](https://github.com/tauri-apps/plugins-workspace/commit/6f881293fcd67838f6f3f8063f536292431dd1f7) ([#2439](https://github.com/tauri-apps/plugins-workspace/pull/2439) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed an issue that caused the plugin to emit a `ReleaseNotFound` error instead of a `Reqwest` error when the http request in `check()` failed.
