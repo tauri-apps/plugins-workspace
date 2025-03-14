@@ -106,7 +106,7 @@ export interface DangerousSettings {
   acceptInvalidHostnames?: boolean
 }
 
-const ERROR_REQUEST_CANCELLED = 'Request canceled'
+const ERROR_REQUEST_CANCELLED = 'Request cancelled'
 
 /**
  * Fetch a resource from the network. It returns a `Promise` that resolves to the
