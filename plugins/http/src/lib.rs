@@ -36,7 +36,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .invoke_handler(tauri::generate_handler![
             commands::fetch,
             commands::fetch_cancel,
-            commands::fetch_send
+            commands::fetch_send,
+            commands::fetch_read_body
         ])
         .build()
 }

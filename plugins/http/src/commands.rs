@@ -360,30 +360,6 @@ pub fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::
 }
 
 #[command]
-pub async fn fetch_read_body<R: Runtime>(
-    webview: Webview<R>,
-    rid: ResourceId,
-    stream_channel: Channel<tauri::ipc::InvokeResponseBody>,
-) -> crate::Result<()> {
-    let res = {
-        let mut resources_table = webview.resources_table();
-        resources_table.take::<ReqwestResponse>(rid)?
-    };
-
-    let mut res = Arc::into_inner(res).unwrap().0;
-
-    // send response through IPC channel
-    while let Some(chunk) = res.chunk().await? {
-        stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(chunk.to_vec()))?;
-    }
-
-    // send empty vector when done
-    stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(Vec::new()))?;
-
-    Ok(())
-}
-
-#[command]
 pub async fn fetch_send<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
@@ -433,6 +409,30 @@ pub async fn fetch_send<R: Runtime>(
         url,
         rid,
     })
+}
+
+#[command]
+pub async fn fetch_read_body<R: Runtime>(
+    webview: Webview<R>,
+    rid: ResourceId,
+    stream_channel: Channel<tauri::ipc::InvokeResponseBody>,
+) -> crate::Result<()> {
+    let res = {
+        let mut resources_table = webview.resources_table();
+        resources_table.take::<ReqwestResponse>(rid)?
+    };
+
+    let mut res = Arc::into_inner(res).unwrap().0;
+
+    // send response through IPC channel
+    while let Some(chunk) = res.chunk().await? {
+        stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(chunk.to_vec()))?;
+    }
+
+    // send empty vector when done
+    stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(Vec::new()))?;
+
+    Ok(())
 }
 
 // forbidden headers per fetch spec https://fetch.spec.whatwg.org/#terminology-headers
