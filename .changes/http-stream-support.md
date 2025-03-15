@@ -1,6 +1,6 @@
 ---
-"http": minor
-"http-js": minor
+"http": patch
+"http-js": patch
 ---
 
-Fix HTTP stream not streaming the body.
+Fix `fetch` blocking until the whole response is read even if it was a streaming response.
