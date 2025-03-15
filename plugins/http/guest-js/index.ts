@@ -231,34 +231,25 @@ export async function fetch(
 
   const readableStreamBody = new ReadableStream({
     start: (controller) => {
-      let alreadyClosed = false
-
       const streamChannel = new Channel<ArrayBuffer | number[]>()
       streamChannel.onmessage = (res: ArrayBuffer | number[]) => {
-        // return early if already closed
-        if (alreadyClosed) {
-          return
-        }
-
         // close early if aborted
         if (signal?.aborted) {
           controller.error(ERROR_REQUEST_CANCELLED)
           return
         }
 
-        // close when the signal to close (an empty chunk)
-        // is sent from the IPC.
-        const len = res instanceof ArrayBuffer ? res.byteLength : res.length
-        if (len == 0) {
+        const resUint8 = new Uint8Array(res)
+        const lastByte = resUint8[resUint8.byteLength - 1]
+        const actualRes = resUint8.slice(0, resUint8.byteLength - 1)
+
+        // close when the signal to close (last byte is 1) is sent from the IPC.
+        if (lastByte == 1) {
           controller.close()
-          alreadyClosed = true
           return
         }
 
-        // the content conversion (like .text(), .json(), etc.) in Response
-        // must have Uint8Array as its content, else it will
-        // have untraceable error that's hard to debug.
-        controller.enqueue(new Uint8Array(res))
+        controller.enqueue(actualRes)
       }
 
       // run a non-blocking body stream fetch
