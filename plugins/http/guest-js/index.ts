@@ -231,8 +231,15 @@ export async function fetch(
 
   const readableStreamBody = new ReadableStream({
     start: (controller) => {
+      let alreadyClosed = false
+
       const streamChannel = new Channel<ArrayBuffer | number[]>()
       streamChannel.onmessage = (res: ArrayBuffer | number[]) => {
+        // return early if already closed
+        if (alreadyClosed) {
+          return
+        }
+
         // close early if aborted
         if (signal?.aborted) {
           controller.error(ERROR_REQUEST_CANCELLED)
@@ -241,10 +248,10 @@ export async function fetch(
 
         // close when the signal to close (an empty chunk)
         // is sent from the IPC.
-        if (
-          res instanceof ArrayBuffer ? res.byteLength == 0 : res.length == 0
-        ) {
+        const len = res instanceof ArrayBuffer ? res.byteLength : res.length
+        if (len == 0) {
           controller.close()
+          alreadyClosed = true
           return
         }
 
@@ -269,12 +276,11 @@ export async function fetch(
     statusText
   })
 
-  // url and headers are read only properties
-  // but seems like we can set them like this
+  // Set `Response` properties that are ignored by the
+  // constructor, like url and some headers
   //
-  // we define theme like this, because using `Response`
-  // constructor, it removes url and some headers
-  // like `set-cookie` headers
+  // Since url and headers are read only properties
+  // this is the only way to set them.
   Object.defineProperty(res, 'url', { value: url })
   Object.defineProperty(res, 'headers', {
     value: new Headers(responseHeaders)
