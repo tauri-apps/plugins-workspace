@@ -23,7 +23,7 @@ const COOKIES_FILENAME: &str = ".cookies";
 
 pub(crate) struct Http {
     #[cfg(feature = "cookies")]
-    cookies_jar: crate::reqwest_cookie_store::CookieStoreMutex,
+    cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
@@ -57,7 +57,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
             let state = Http {
                 #[cfg(feature = "cookies")]
-                cookies_jar,
+                cookies_jar: std::sync::Arc::new(cookies_jar),
             };
 
             app.manage(state);
@@ -69,9 +69,14 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             if let tauri::RunEvent::Exit = event {
                 let state = app.state::<Http>();
 
-                if let Err(_e) = state.cookies_jar.save() {
-                    #[cfg(feature = "tracing")]
-                    tracing::error!("failed to save cookie jar: {_e}");
+                match state.cookies_jar.request_save() {
+                    Ok(rx) => {
+                        let _ = rx.recv();
+                    }
+                    Err(_e) => {
+                        #[cfg(feature = "tracing")]
+                        tracing::error!("failed to save cookie jar: {_e}");
+                    }
                 }
             }
         })

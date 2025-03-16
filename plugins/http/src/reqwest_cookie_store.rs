@@ -5,15 +5,12 @@
 // taken from https://github.com/pfernie/reqwest_cookie_store/blob/2ec4afabcd55e24d3afe3f0626ee6dc97bed938d/src/lib.rs
 
 use std::{
-    fs::File,
-    io::BufWriter,
     path::PathBuf,
-    sync::{Arc, Mutex, MutexGuard, PoisonError},
+    sync::{mpsc::Receiver, Mutex},
 };
 
 use cookie_store::{CookieStore, RawCookie, RawCookieParseError};
 use reqwest::header::HeaderValue;
-use serde::{Deserialize, Serialize};
 
 fn set_cookies(
     cookie_store: &mut CookieStore,
@@ -46,10 +43,11 @@ fn cookies(cookie_store: &CookieStore, url: &url::Url) -> Option<HeaderValue> {
 
 /// A [`cookie_store::CookieStore`] wrapped internally by a [`std::sync::Mutex`], suitable for use in
 /// async/concurrent contexts.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct CookieStoreMutex {
     pub path: PathBuf,
-    store: Arc<Mutex<CookieStore>>,
+    store: Mutex<CookieStore>,
+    save_task: Mutex<Option<CancellableTask>>,
 }
 
 impl CookieStoreMutex {
@@ -57,15 +55,9 @@ impl CookieStoreMutex {
     pub fn new(path: PathBuf, cookie_store: CookieStore) -> CookieStoreMutex {
         CookieStoreMutex {
             path,
-            store: Arc::new(Mutex::new(cookie_store)),
+            store: Mutex::new(cookie_store),
+            save_task: Default::default(),
         }
-    }
-
-    /// Lock and get a handle to the contained [`cookie_store::CookieStore`].
-    pub fn lock(
-        &self,
-    ) -> Result<MutexGuard<'_, CookieStore>, PoisonError<MutexGuard<'_, CookieStore>>> {
-        self.store.lock()
     }
 
     pub fn load<R: std::io::BufRead>(
@@ -76,31 +68,66 @@ impl CookieStoreMutex {
             .map(|store| CookieStoreMutex::new(path, store))
     }
 
-    pub fn save(&self) -> cookie_store::Result<()> {
-        let file = File::create(&self.path)?;
-        let mut writer = BufWriter::new(file);
-        let store = self.lock().expect("poisoned cookie jar mutex");
-        cookie_store::serde::save(&store, &mut writer, serde_json::to_string)
+    fn cookies_to_str(&self) -> Result<String, serde_json::Error> {
+        let mut cookies = Vec::new();
+        for cookie in self
+            .store
+            .lock()
+            .expect("poisoned cookie jar mutex")
+            .iter_unexpired()
+        {
+            if cookie.is_persistent() {
+                cookies.push(cookie.clone());
+            }
+        }
+        serde_json::to_string(&cookies)
+    }
+
+    pub fn request_save(&self) -> cookie_store::Result<Receiver<()>> {
+        let cookie_str = self.cookies_to_str()?;
+        let path = self.path.clone();
+        let (tx, rx) = std::sync::mpsc::channel();
+        let task = tauri::async_runtime::spawn(async move {
+            match tokio::fs::write(&path, &cookie_str).await {
+                Ok(()) => {
+                    let _ = tx.send(());
+                }
+                Err(_e) => {
+                    #[cfg(feature = "tracing")]
+                    tracing::error!("failed to save cookie jar: {_e}");
+                }
+            }
+        });
+        self.save_task
+            .lock()
+            .unwrap()
+            .replace(CancellableTask(task));
+        Ok(rx)
     }
 }
 
 impl reqwest::cookie::CookieStore for CookieStoreMutex {
     fn set_cookies(&self, cookie_headers: &mut dyn Iterator<Item = &HeaderValue>, url: &url::Url) {
-        let mut store = self.store.lock().unwrap();
-        set_cookies(&mut store, cookie_headers, url);
+        set_cookies(&mut self.store.lock().unwrap(), cookie_headers, url);
 
         // try to persist cookies immediately asynchronously
-        let cookies_jar = self.clone();
-        tauri::async_runtime::spawn(async move {
-            if let Err(_e) = cookies_jar.save() {
-                #[cfg(feature = "tracing")]
-                tracing::error!("failed to save cookie jar: {_e}");
-            }
-        });
+        if let Err(_e) = self.request_save() {
+            #[cfg(feature = "tracing")]
+            tracing::error!("failed to save cookie jar: {_e}");
+        }
     }
 
     fn cookies(&self, url: &url::Url) -> Option<HeaderValue> {
         let store = self.store.lock().unwrap();
         cookies(&store, url)
+    }
+}
+
+#[derive(Debug)]
+struct CancellableTask(tauri::async_runtime::JoinHandle<()>);
+
+impl Drop for CancellableTask {
+    fn drop(&mut self) {
+        self.0.abort();
     }
 }
