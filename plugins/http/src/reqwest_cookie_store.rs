@@ -4,7 +4,12 @@
 
 // taken from https://github.com/pfernie/reqwest_cookie_store/blob/2ec4afabcd55e24d3afe3f0626ee6dc97bed938d/src/lib.rs
 
-use std::sync::{Mutex, MutexGuard, PoisonError};
+use std::{
+    fs::File,
+    io::BufWriter,
+    path::PathBuf,
+    sync::{Arc, Mutex, MutexGuard, PoisonError},
+};
 
 use cookie_store::{CookieStore, RawCookie, RawCookieParseError};
 use reqwest::header::HeaderValue;
@@ -41,47 +46,61 @@ fn cookies(cookie_store: &CookieStore, url: &url::Url) -> Option<HeaderValue> {
 
 /// A [`cookie_store::CookieStore`] wrapped internally by a [`std::sync::Mutex`], suitable for use in
 /// async/concurrent contexts.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct CookieStoreMutex(Mutex<CookieStore>);
-
-impl Default for CookieStoreMutex {
-    /// Create a new, empty [`CookieStoreMutex`]
-    fn default() -> Self {
-        CookieStoreMutex::new(CookieStore::default())
-    }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CookieStoreMutex {
+    pub path: PathBuf,
+    store: Arc<Mutex<CookieStore>>,
 }
 
 impl CookieStoreMutex {
     /// Create a new [`CookieStoreMutex`] from an existing [`cookie_store::CookieStore`].
-    pub const fn new(cookie_store: CookieStore) -> CookieStoreMutex {
-        CookieStoreMutex(Mutex::new(cookie_store))
+    pub fn new(path: PathBuf, cookie_store: CookieStore) -> CookieStoreMutex {
+        CookieStoreMutex {
+            path,
+            store: Arc::new(Mutex::new(cookie_store)),
+        }
     }
 
     /// Lock and get a handle to the contained [`cookie_store::CookieStore`].
     pub fn lock(
         &self,
     ) -> Result<MutexGuard<'_, CookieStore>, PoisonError<MutexGuard<'_, CookieStore>>> {
-        self.0.lock()
+        self.store.lock()
     }
 
-    pub fn load<R: std::io::BufRead>(reader: R) -> cookie_store::Result<CookieStoreMutex> {
-        cookie_store::serde::load(reader, |c| serde_json::from_str(c)).map(CookieStoreMutex::new)
+    pub fn load<R: std::io::BufRead>(
+        path: PathBuf,
+        reader: R,
+    ) -> cookie_store::Result<CookieStoreMutex> {
+        cookie_store::serde::load(reader, |c| serde_json::from_str(c))
+            .map(|store| CookieStoreMutex::new(path, store))
     }
 
-    pub fn save<W: std::io::Write>(&self, writer: &mut W) -> cookie_store::Result<()> {
+    pub fn save(&self) -> cookie_store::Result<()> {
+        let file = File::create(&self.path)?;
+        let mut writer = BufWriter::new(file);
         let store = self.lock().expect("poisoned cookie jar mutex");
-        cookie_store::serde::save(&store, writer, serde_json::to_string)
+        cookie_store::serde::save(&store, &mut writer, serde_json::to_string)
     }
 }
 
 impl reqwest::cookie::CookieStore for CookieStoreMutex {
     fn set_cookies(&self, cookie_headers: &mut dyn Iterator<Item = &HeaderValue>, url: &url::Url) {
-        let mut store = self.0.lock().unwrap();
+        let mut store = self.store.lock().unwrap();
         set_cookies(&mut store, cookie_headers, url);
+
+        // try to persist cookies immediately asynchronously
+        let cookies_jar = self.clone();
+        tauri::async_runtime::spawn(async move {
+            if let Err(_e) = cookies_jar.save() {
+                #[cfg(feature = "tracing")]
+                tracing::error!("failed to save cookie jar: {_e}");
+            }
+        });
     }
 
     fn cookies(&self, url: &url::Url) -> Option<HeaderValue> {
-        let store = self.0.lock().unwrap();
+        let store = self.store.lock().unwrap();
         cookies(&store, url)
     }
 }

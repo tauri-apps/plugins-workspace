@@ -4,8 +4,6 @@
 
 //! Access the HTTP client written in Rust.
 
-use std::io::Cursor;
-
 pub use reqwest;
 use tauri::{
     plugin::{Builder, TauriPlugin},
@@ -22,20 +20,17 @@ mod scope;
 
 pub(crate) struct Http {
     #[cfg(feature = "cookies")]
-    cookies_jar_path: std::path::PathBuf,
-    #[cfg(feature = "cookies")]
-    cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
+    cookies_jar: crate::reqwest_cookie_store::CookieStoreMutex,
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::<R>::new("http")
         .setup(|app, _| {
             #[cfg(feature = "cookies")]
-            let (cookies_jar_path, cookies_jar) = {
+            let cookies_jar = {
                 use crate::reqwest_cookie_store::*;
                 use std::fs::File;
                 use std::io::BufReader;
-                use std::sync::Arc;
 
                 let cache_dir = app.path().app_cache_dir()?;
                 std::fs::create_dir_all(&cache_dir)?;
@@ -48,22 +43,18 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     .open(&path)?;
 
                 let reader = BufReader::new(file);
-                let store = CookieStoreMutex::load(reader)
-                    .or_else(|_e| {
-                        #[cfg(feature = "tracing")]
-                        tracing::warn!(
-                            "failed to load cookie store: {_e}, falling back to empty store"
-                        );
-                        CookieStoreMutex::load(Cursor::new("[]".to_string()))
-                    })
-                    .map_err(|e| e.to_string())?;
+                let store = CookieStoreMutex::load(path.clone(), reader).unwrap_or_else(|_e| {
+                    #[cfg(feature = "tracing")]
+                    tracing::warn!(
+                        "failed to load cookie store: {_e}, falling back to empty store"
+                    );
+                    CookieStoreMutex::new(path, Default::default())
+                });
 
-                (path, Arc::new(store))
+                store
             };
 
             let state = Http {
-                #[cfg(feature = "cookies")]
-                cookies_jar_path,
                 #[cfg(feature = "cookies")]
                 cookies_jar,
             };
@@ -75,14 +66,11 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .on_event(|app, event| {
             #[cfg(feature = "cookies")]
             if let tauri::RunEvent::Exit = event {
-                use std::fs::File;
-                use std::io::BufWriter;
-
                 let state = app.state::<Http>();
 
-                if let Ok(file) = File::create(&state.cookies_jar_path) {
-                    let mut writer = BufWriter::new(file);
-                    let _ = state.cookies_jar.save(&mut writer);
+                if let Err(_e) = state.cookies_jar.save() {
+                    #[cfg(feature = "tracing")]
+                    tracing::error!("failed to save cookie jar: {_e}");
                 }
             }
         })
