@@ -18,6 +18,7 @@ tauri-build = { workspace = true, features = ["codegen", "isolation"] }
 serde_json = { workspace = true }
 serde = { workspace = true }
 tiny_http = "0.12"
+time = "0.3"
 log = { workspace = true }
 tauri-plugin-log = { path = "../../../plugins/log", version = "2.3.1" }
 tauri-plugin-fs = { path = "../../../plugins/fs", version = "2.2.0", features = [
@@ -27,6 +28,7 @@ tauri-plugin-clipboard-manager = { path = "../../../plugins/clipboard-manager", 
 tauri-plugin-dialog = { path = "../../../plugins/dialog", version = "2.2.0" }
 tauri-plugin-http = { path = "../../../plugins/http", features = [
   "multipart",
+  "cookies",
 ], version = "2.4.1" }
 tauri-plugin-notification = { path = "../../../plugins/notification", version = "2.2.2", features = [
   "windows7-compat",
