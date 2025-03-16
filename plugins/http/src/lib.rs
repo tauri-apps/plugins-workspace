@@ -18,6 +18,9 @@ mod error;
 mod reqwest_cookie_store;
 mod scope;
 
+#[cfg(feature = "cookies")]
+const COOKIES_FILENAME: &str = ".cookies";
+
 pub(crate) struct Http {
     #[cfg(feature = "cookies")]
     cookies_jar: crate::reqwest_cookie_store::CookieStoreMutex,
@@ -35,7 +38,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 let cache_dir = app.path().app_cache_dir()?;
                 std::fs::create_dir_all(&cache_dir)?;
 
-                let path = cache_dir.join("Cookies");
+                let path = cache_dir.join(COOKIES_FILENAME);
                 let file = File::options()
                     .create(true)
                     .append(true)
