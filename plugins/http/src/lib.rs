@@ -43,15 +43,13 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     .open(&path)?;
 
                 let reader = BufReader::new(file);
-                let store = CookieStoreMutex::load(path.clone(), reader).unwrap_or_else(|_e| {
+                CookieStoreMutex::load(path.clone(), reader).unwrap_or_else(|_e| {
                     #[cfg(feature = "tracing")]
                     tracing::warn!(
                         "failed to load cookie store: {_e}, falling back to empty store"
                     );
                     CookieStoreMutex::new(path, Default::default())
-                });
-
-                store
+                })
             };
 
             let state = Http {

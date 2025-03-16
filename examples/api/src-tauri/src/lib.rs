@@ -114,8 +114,8 @@ pub fn run() {
                             headers.push(
                                 tiny_http::Header::from_bytes(
                                     &b"Set-Cookie"[..],
-                                    &format!("session-token=test-value; Secure; Path=/; Expires={expires_str}")
-                                        .as_bytes()[..],
+                                    format!("session-token=test-value; Secure; Path=/; Expires={expires_str}")
+                                        .as_bytes(),
                                 )
                                 .unwrap(),
                             );
