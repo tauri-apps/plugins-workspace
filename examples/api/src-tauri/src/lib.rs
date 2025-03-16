@@ -106,7 +106,11 @@ pub fn run() {
 
                         if !headers.iter().any(|header| header.field == tiny_http::HeaderField::from_bytes(b"Cookie").unwrap()) {
                             let expires = time::OffsetDateTime::now_utc() + time::Duration::days(1);
-                            let expires_str = expires.format(&time::format_description::well_known::Rfc2822).unwrap();
+                            // RFC 1123 format
+                            let format = time::macros::format_description!(
+                                "[weekday repr:short], [day] [month repr:short] [year] [hour]:[minute]:[second] GMT"
+                            );
+                            let expires_str = expires.format(format).unwrap();
                             headers.push(
                                 tiny_http::Header::from_bytes(
                                     &b"Set-Cookie"[..],
