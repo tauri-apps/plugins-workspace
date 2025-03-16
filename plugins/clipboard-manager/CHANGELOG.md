@@ -1,5 +1,19 @@
 # Changelog
 
+## \[2.2.2]
+
+### bug
+
+- [`d37bbdef`](https://github.com/tauri-apps/plugins-workspace/commit/d37bbdef8dc70e61e59f9fe0bb8b2a48999d0aa1) ([#2507](https://github.com/tauri-apps/plugins-workspace/pull/2507) by [@SquitchYT](https://github.com/tauri-apps/plugins-workspace/../../SquitchYT)) Fix clipboard-manager Wayland support.
+
+## \[2.2.1]
+
+- [`ce11079f`](https://github.com/tauri-apps/plugins-workspace/commit/ce11079f19852fbefdecf0e4c7d947af3624fee0) ([#2280](https://github.com/tauri-apps/plugins-workspace/pull/2280) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Explicitly drop `arboard::Clipboard` on exit. Add recommendation to not use read methods on the mainthread.
+
+## \[2.2.0]
+
+- [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
+
 ## \[2.0.1]
 
 - [`3fa0fc09`](https://github.com/tauri-apps/plugins-workspace/commit/3fa0fc09bbee0d619801e5757af9fb3c09883c97) ([#2099](https://github.com/tauri-apps/plugins-workspace/pull/2099) by [@rasteiner](https://github.com/tauri-apps/plugins-workspace/../../rasteiner)) Fix clipboard manager client side api not copying fallback alternative text when calling `writeHtml`.
@@ -116,38 +130,3 @@
 ## \[2.0.0-alpha.0]
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  te to alpha.11.
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  \`]\(https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  te to alpha.11.
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  hub.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  \`]\(https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  te to alpha.11.
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  te to alpha.11.
-
-## \[2.0.0-alpha.0]
-
-- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  !
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  ps/plugins-workspace/pull/371)) First v2 alpha release!
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  !
-  717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
-  om/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!

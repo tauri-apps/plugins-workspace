@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: MIT
 
 use serde::{ser::Serializer, Serialize};
-use specta::Type;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
 // TODO: Improve Error handling (different typed errors instead of one (stringified) PluginInvokeError for all mobile errors)
 
-#[derive(Debug, thiserror::Error, Type)]
+#[derive(Debug, thiserror::Error)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 pub enum Error {
     #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(
-        #[serde(skip)]
+        #[cfg_attr(feature = "specta", serde(skip))]
         #[from]
         tauri::plugin::mobile::PluginInvokeError,
     ),

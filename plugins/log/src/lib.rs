@@ -35,31 +35,6 @@ pub const WEBVIEW_TARGET: &str = "webview";
 
 #[cfg(target_os = "ios")]
 mod ios {
-    use cocoa::base::id;
-    use objc::*;
-
-    const UTF8_ENCODING: usize = 4;
-    pub struct NSString(pub id);
-
-    impl NSString {
-        pub fn new(s: &str) -> Self {
-            // Safety: objc runtime calls are unsafe
-            NSString(unsafe {
-                let ns_string: id = msg_send![class!(NSString), alloc];
-                let ns_string: id = msg_send![ns_string,
-                                            initWithBytes:s.as_ptr()
-                                            length:s.len()
-                                            encoding:UTF8_ENCODING];
-
-                // The thing is allocated in rust, the thing must be set to autorelease in rust to relinquish control
-                // or it can not be released correctly in OC runtime
-                let _: () = msg_send![ns_string, autorelease];
-
-                ns_string
-            })
-        }
-    }
-
     swift_rs::swift!(pub fn tauri_log(
       level: u8, message: *const std::ffi::c_void
     ));
@@ -83,6 +58,8 @@ pub enum Error {
     TimeFormat(#[from] time::error::Format),
     #[error(transparent)]
     InvalidFormatDescription(#[from] time::error::InvalidFormatDescription),
+    #[error("Internal logger disabled and cannot be acquired or attached")]
+    LoggerNotInitialized,
 }
 
 /// An enum representing the available verbosity levels of the logger.
@@ -182,11 +159,12 @@ pub enum TargetKind {
     ///
     /// ### Platform-specific
     ///
-    /// |Platform | Value                                                                                     | Example                                                     |
-    /// | ------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-    /// | Linux   | `$XDG_DATA_HOME/{bundleIdentifier}/logs` or `$HOME/.local/share/{bundleIdentifier}/logs`  | `/home/alice/.local/share/com.tauri.dev/logs`               |
-    /// | macOS   | `{homeDir}/Library/Logs/{bundleIdentifier}`                                               | `/Users/Alice/Library/Logs/com.tauri.dev`                   |
-    /// | Windows | `{FOLDERID_LocalAppData}/{bundleIdentifier}/logs`                                         | `C:\Users\Alice\AppData\Local\com.tauri.dev\logs`           |
+    /// |Platform   | Value                                                                                     | Example                                                     |
+    /// | --------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+    /// | Linux     | `$XDG_DATA_HOME/{bundleIdentifier}/logs` or `$HOME/.local/share/{bundleIdentifier}/logs`  | `/home/alice/.local/share/com.tauri.dev/logs`               |
+    /// | macOS/iOS | `{homeDir}/Library/Logs/{bundleIdentifier}`                                               | `/Users/Alice/Library/Logs/com.tauri.dev`                   |
+    /// | Windows   | `{FOLDERID_LocalAppData}/{bundleIdentifier}/logs`                                         | `C:\Users\Alice\AppData\Local\com.tauri.dev\logs`           |
+    /// | Android   | `{ConfigDir}/logs`                                                                        | `/data/data/com.tauri.dev/files/logs`                       |
     LogDir { file_name: Option<String> },
     /// Forward logs to the webview (via the `log://log` event).
     ///
@@ -255,6 +233,7 @@ pub struct Builder {
     timezone_strategy: TimezoneStrategy,
     max_file_size: u128,
     targets: Vec<Target>,
+    is_skip_logger: bool,
 }
 
 impl Default for Builder {
@@ -283,6 +262,7 @@ impl Default for Builder {
             timezone_strategy: DEFAULT_TIMEZONE_STRATEGY,
             max_file_size: DEFAULT_MAX_FILE_SIZE,
             targets: DEFAULT_LOG_TARGETS.into(),
+            is_skip_logger: false,
         }
     }
 }
@@ -303,7 +283,7 @@ impl Builder {
         let format =
             time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
                 .unwrap();
-        self.dispatch = fern::Dispatch::new().format(move |out, message, record| {
+        self.dispatch = self.dispatch.format(move |out, message, record| {
             out.finish(format_args!(
                 "{}[{}][{}] {}",
                 timezone_strategy.get_now().format(&format).unwrap(),
@@ -361,6 +341,22 @@ impl Builder {
     /// ```
     pub fn target(mut self, target: Target) -> Self {
         self.targets.push(target);
+        self
+    }
+
+    /// Skip the creation and global registration of a logger
+    ///
+    /// If you wish to use your own global logger, you must call `skip_logger` so that the plugin does not attempt to set a second global logger. In this configuration, no logger will be created and the plugin's `log` command will rely on the result of `log::logger()`. You will be responsible for configuring the logger yourself and any included targets will be ignored. This can also be used with `tracing-log` or if running tests in parallel that require the plugin to be registered.
+    /// ```rust
+    /// static LOGGER: SimpleLogger = SimpleLogger;
+    ///
+    /// log::set_logger(&SimpleLogger)?;
+    /// log::set_max_level(LevelFilter::Info);
+    /// tauri_plugin_log::Builder::new()
+    ///     .skip_logger();
+    /// ```
+    pub fn skip_logger(mut self) -> Self {
+        self.is_skip_logger = true;
         self
     }
 
@@ -429,7 +425,12 @@ impl Builder {
                                 log::Level::Info => 2,
                                 log::Level::Warn | log::Level::Error => 3,
                             },
-                            ios::NSString::new(message.as_str()).0 as _,
+                            // The string is allocated in rust, so we must
+                            // autorelease it rust to give it to the Swift
+                            // runtime.
+                            objc2::rc::Retained::autorelease_ptr(
+                                objc2_foundation::NSString::from_str(message.as_str()),
+                            ) as _,
                         );
                     }
                 }),
@@ -451,9 +452,6 @@ impl Builder {
                     )?)?
                     .into()
                 }
-                #[cfg(mobile)]
-                TargetKind::LogDir { .. } => continue,
-                #[cfg(desktop)]
                 TargetKind::LogDir { file_name } => {
                     let path = app_handle.path().app_log_dir()?;
                     if !path.exists() {
@@ -501,6 +499,9 @@ impl Builder {
         self,
         app_handle: &AppHandle<R>,
     ) -> Result<(TauriPlugin<R>, log::LevelFilter, Box<dyn log::Log>), Error> {
+        if self.is_skip_logger {
+            return Err(Error::LoggerNotInitialized);
+        }
         let plugin = Self::plugin_builder();
         let (max_level, log) = Self::acquire_logger(
             app_handle,
@@ -517,17 +518,17 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         Self::plugin_builder()
             .setup(move |app_handle, _api| {
-                let (max_level, log) = Self::acquire_logger(
-                    app_handle,
-                    self.dispatch,
-                    self.rotation_strategy,
-                    self.timezone_strategy,
-                    self.max_file_size,
-                    self.targets,
-                )?;
-
-                attach_logger(max_level, log)?;
-
+                if !self.is_skip_logger {
+                    let (max_level, log) = Self::acquire_logger(
+                        app_handle,
+                        self.dispatch,
+                        self.rotation_strategy,
+                        self.timezone_strategy,
+                        self.max_file_size,
+                        self.targets,
+                    )?;
+                    attach_logger(max_level, log)?;
+                }
                 Ok(())
             })
             .build()

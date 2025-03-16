@@ -72,7 +72,6 @@ import {
   writeText,
   readText,
   writeHtml,
-  readHtml,
   clear
 } from '@tauri-apps/plugin-clipboard-manager'
 await writeText('Tauri is awesome!')

@@ -26,7 +26,7 @@
  * @module
  */
 
-import { invoke } from '@tauri-apps/api/core'
+import { Channel, invoke } from '@tauri-apps/api/core'
 
 /**
  * Configuration of a proxy that a Client should pass requests to.
@@ -84,9 +84,29 @@ export interface ClientOptions {
    * Configuration of a proxy that a Client should pass requests to.
    */
   proxy?: Proxy
+  /**
+   * Configuration for dangerous settings on the client such as disabling SSL verification.
+   */
+  danger?: DangerousSettings
 }
 
-const ERROR_REQUEST_CANCELLED = 'Request canceled'
+/**
+ * Configuration for dangerous settings on the client such as disabling SSL verification.
+ *
+ * @since 2.3.0
+ */
+export interface DangerousSettings {
+  /**
+   * Disables SSL verification.
+   */
+  acceptInvalidCerts?: boolean
+  /**
+   * Disables hostname verification.
+   */
+  acceptInvalidHostnames?: boolean
+}
+
+const ERROR_REQUEST_CANCELLED = 'Request cancelled'
 
 /**
  * Fetch a resource from the network. It returns a `Promise` that resolves to the
@@ -115,12 +135,14 @@ export async function fetch(
   const maxRedirections = init?.maxRedirections
   const connectTimeout = init?.connectTimeout
   const proxy = init?.proxy
+  const danger = init?.danger
 
   // Remove these fields before creating the request
   if (init) {
     delete init.maxRedirections
     delete init.connectTimeout
     delete init.proxy
+    delete init.danger
   }
 
   const headers = init?.headers
@@ -172,7 +194,8 @@ export async function fetch(
       data,
       maxRedirections,
       connectTimeout,
-      proxy
+      proxy,
+      danger
     }
   })
 
@@ -206,24 +229,45 @@ export async function fetch(
     rid
   })
 
-  const body = await invoke<ArrayBuffer | number[]>(
-    'plugin:http|fetch_read_body',
-    {
-      rid: responseRid
-    }
-  )
+  const readableStreamBody = new ReadableStream({
+    start: (controller) => {
+      const streamChannel = new Channel<ArrayBuffer | number[]>()
+      streamChannel.onmessage = (res: ArrayBuffer | number[]) => {
+        // close early if aborted
+        if (signal?.aborted) {
+          controller.error(ERROR_REQUEST_CANCELLED)
+          return
+        }
 
-  const res = new Response(
-    body instanceof ArrayBuffer && body.byteLength !== 0
-      ? body
-      : body instanceof Array && body.length > 0
-        ? new Uint8Array(body)
-        : null,
-    {
-      status,
-      statusText
+        // close when the signal to close (an empty chunk)
+        // is sent from the IPC.
+        if (
+          res instanceof ArrayBuffer ? res.byteLength == 0 : res.length == 0
+        ) {
+          controller.close()
+          return
+        }
+
+        // the content conversion (like .text(), .json(), etc.) in Response
+        // must have Uint8Array as its content, else it will
+        // have untraceable error that's hard to debug.
+        controller.enqueue(new Uint8Array(res))
+      }
+
+      // run a non-blocking body stream fetch
+      invoke('plugin:http|fetch_read_body', {
+        rid: responseRid,
+        streamChannel
+      }).catch((e) => {
+        controller.error(e)
+      })
     }
-  )
+  })
+
+  const res = new Response(readableStreamBody, {
+    status,
+    statusText
+  })
 
   // url and headers are read only properties
   // but seems like we can set them like this

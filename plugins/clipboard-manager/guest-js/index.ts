@@ -91,7 +91,7 @@ async function writeImage(
  * import { readImage } from '@tauri-apps/plugin-clipboard-manager';
  *
  * const clipboardImage = await readImage();
- * const blob = new Blob([await clipboardImage.rbga()], { type: 'image' })
+ * const blob = new Blob([await clipboardImage.rgba()], { type: 'image' })
  * const url = URL.createObjectURL(blob)
  * ```
  * @since 2.0.0
@@ -111,9 +111,11 @@ async function readImage(): Promise<Image> {
  *
  * @example
  * ```typescript
- * import { writeHtml, readHtml } from '@tauri-apps/plugin-clipboard-manager';
+ * import { writeHtml } from '@tauri-apps/plugin-clipboard-manager';
  * await writeHtml('<h1>Tauri is awesome!</h1>', 'plaintext');
- * await writeHtml('<h1>Tauri is awesome!</h1>', '<h1>Tauri is awesome</h1>'); // Will write "<h1>Tauri is awesome</h1>" as plain text
+ * // The following will write "<h1>Tauri is awesome</h1>" as plain text
+ * await writeHtml('<h1>Tauri is awesome!</h1>', '<h1>Tauri is awesome</h1>');
+ * // we can read html data only as a string so there's just readText(), no readHtml()
  * assert(await readText(), '<h1>Tauri is awesome!</h1>');
  * ```
  *

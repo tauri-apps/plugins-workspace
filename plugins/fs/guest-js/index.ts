@@ -10,7 +10,7 @@
  * This module prevents path traversal, not allowing parent directory accessors to be used
  * (i.e. "/usr/path/to/../file" or "../path/to/file" paths are not allowed).
  * Paths accessed with this API must be either relative to one of the {@link BaseDirectory | base directories}
- * or created with the {@link https://v2.tauri.app/reference/javascript/api/namespacepath | path API}.
+ * or created with the {@link https://v2.tauri.app/reference/javascript/api/namespacepath/ | path API}.
  *
  * The API has a scope configuration that forces you to restrict the paths that can be accessed using glob patterns.
  *
@@ -604,8 +604,8 @@ async function copyFile(
   options?: CopyFileOptions
 ): Promise<void> {
   if (
-    (fromPath instanceof URL && fromPath.protocol !== 'file:') ||
-    (toPath instanceof URL && toPath.protocol !== 'file:')
+    (fromPath instanceof URL && fromPath.protocol !== 'file:')
+    || (toPath instanceof URL && toPath.protocol !== 'file:')
   ) {
     throw new TypeError('Must be a file URL.')
   }
@@ -919,8 +919,8 @@ async function rename(
   options?: RenameOptions
 ): Promise<void> {
   if (
-    (oldPath instanceof URL && oldPath.protocol !== 'file:') ||
-    (newPath instanceof URL && newPath.protocol !== 'file:')
+    (oldPath instanceof URL && oldPath.protocol !== 'file:')
+    || (newPath instanceof URL && newPath.protocol !== 'file:')
   ) {
     throw new TypeError('Must be a file URL.')
   }

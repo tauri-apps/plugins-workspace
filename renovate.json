@@ -1,8 +1,7 @@
 {
-  "extends": ["config:base"],
+  "extends": ["config:recommended"],
   "baseBranches": ["v2", "v1"],
   "enabledManagers": ["cargo", "npm"],
-  "semanticCommitType": "chore",
   "labels": ["dependencies"],
   "ignorePaths": [
     "**/node_modules/**",
@@ -16,6 +15,10 @@
   ],
   "rangeStrategy": "replace",
   "packageRules": [
+    {
+      "semanticCommitType": "chore",
+      "matchPackageNames": ["*"]
+    },
     {
       "description": "Disable node/pnpm version updates",
       "matchPackageNames": ["node", "pnpm"],

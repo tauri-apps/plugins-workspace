@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-stronghold"
-version = "2.0.1"
+version = "2.2.0"
 description = "Store secrets and keys using the IOTA Stronghold secret management engine."
 authors = { workspace = true }
 license = { workspace = true }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-package app.tauri.shell
+package app.tauri.opener
 
 import android.app.Activity
 import android.content.Intent

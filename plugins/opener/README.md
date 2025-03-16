@@ -70,7 +70,52 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
+import { openUrl, openPath, revealItemInDir } from '@tauri-apps/plugin-opener'
 
+// Opens the URL in the default browser
+await openUrl('https://example.com')
+// Or with a specific browser/app
+await openUrl('https://example.com', 'firefox')
+
+// Opens the path with the system's default app
+await openPath('/path/to/file')
+// Or with a specific app
+await openPath('/path/to/file', 'firefox')
+
+// Reveal a path with the system's default explorer
+await revealItemInDir('/path/to/file')
+```
+
+### Usage from Rust
+
+You can also use those APIs from Rust:
+
+```rust
+use tauri_plugin_opener::OpenerExt;
+
+fn main() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
+        .setup(|app| {
+            let opener = app.opener();
+
+            // Opens the URL in the default browser
+            opener.open_url("https://example.com", None::<&str>)?;
+            // Or with a specific browser/app
+            opener.open_url("https://example.com", Some("firefox"))?;
+
+            // Opens the path with the system's default app
+            opener.open_path("/path/to/file", None::<&str>)?;
+            // Or with a specific app
+            opener.open_path("/path/to/file", Some("firefox"))?;
+
+            // Reveal a path with the system's default explorer
+            opener.reveal_item_in_dir("/path/to/file")?;
+            Ok(())
+        })
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
 ```
 
 ## Contributing

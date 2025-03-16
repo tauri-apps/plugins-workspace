@@ -265,18 +265,15 @@ mod imp {
                     .to_string();
 
                 let key_reg = CURRENT_USER.create(&key_base)?;
-                key_reg.set_string(
-                    "",
-                    &format!("URL:{} protocol", self.app.config().identifier),
-                )?;
+                key_reg.set_string("", format!("URL:{} protocol", self.app.config().identifier))?;
                 key_reg.set_string("URL Protocol", "")?;
 
                 let icon_reg = CURRENT_USER.create(format!("{key_base}\\DefaultIcon"))?;
-                icon_reg.set_string("", &format!("{exe},0"))?;
+                icon_reg.set_string("", format!("{exe},0"))?;
 
                 let cmd_reg = CURRENT_USER.create(format!("{key_base}\\shell\\open\\command"))?;
 
-                cmd_reg.set_string("", &format!("\"{exe}\" \"%1\""))?;
+                cmd_reg.set_string("", format!("\"{exe}\" \"%1\""))?;
 
                 Ok(())
             }
