@@ -4,6 +4,8 @@
 
 //! Access the HTTP client written in Rust.
 
+use std::io::Cursor;
+
 pub use reqwest;
 use tauri::{
     plugin::{Builder, TauriPlugin},
@@ -46,7 +48,15 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     .open(&path)?;
 
                 let reader = BufReader::new(file);
-                let store = CookieStoreMutex::load(reader).map_err(|e| e.to_string())?;
+                let store = CookieStoreMutex::load(reader)
+                    .or_else(|_e| {
+                        #[cfg(feature = "tracing")]
+                        tracing::warn!(
+                            "failed to load cookie store: {_e}, falling back to empty store"
+                        );
+                        CookieStoreMutex::load(Cursor::new("[]".to_string()))
+                    })
+                    .map_err(|e| e.to_string())?;
 
                 (path, Arc::new(store))
             };
