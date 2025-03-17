@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.6.1]
+
+- [`12c4537b`](https://github.com/tauri-apps/plugins-workspace/commit/12c4537b8e4fed29b415ff817434b664c0596dac) ([#2541](https://github.com/tauri-apps/plugins-workspace/pull/2541) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Add support to the `riscv64` architecture.
+
 ## \[2.6.0]
 
 - [`faefcc9f`](https://github.com/tauri-apps/plugins-workspace/commit/faefcc9fd8c61f709d491649e255a7fcac82c09a) ([#2430](https://github.com/tauri-apps/plugins-workspace/pull/2430) by [@goenning](https://github.com/tauri-apps/plugins-workspace/../../goenning)) Add `UpdaterBuilder::configure_client` method on Rust side, to configure the `reqwest` client used to check and download the update.

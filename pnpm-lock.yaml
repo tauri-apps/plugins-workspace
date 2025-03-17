@@ -84,7 +84,7 @@ importers:
         specifier: ^2.2.0
         version: link:../../plugins/haptics
       '@tauri-apps/plugin-http':
-        specifier: ^2.4.1
+        specifier: ^2.4.2
         version: link:../../plugins/http
       '@tauri-apps/plugin-nfc':
         specifier: ^2.2.0
@@ -108,7 +108,7 @@ importers:
         specifier: ^2.2.0
         version: link:../../plugins/store
       '@tauri-apps/plugin-updater':
-        specifier: ^2.6.0
+        specifier: ^2.6.1
         version: link:../../plugins/updater
       '@zerodevx/svelte-json-view':
         specifier: 1.0.11

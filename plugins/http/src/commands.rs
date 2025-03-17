@@ -426,11 +426,14 @@ pub async fn fetch_read_body<R: Runtime>(
 
     // send response through IPC channel
     while let Some(chunk) = res.chunk().await? {
-        stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(chunk.to_vec()))?;
+        let mut chunk = chunk.to_vec();
+        // append 0 to indicate we are not done yet
+        chunk.push(0);
+        stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(chunk))?;
     }
 
-    // send empty vector when done
-    stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(Vec::new()))?;
+    // send 1 to indicate we are done
+    stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(vec![1]))?;
 
     Ok(())
 }

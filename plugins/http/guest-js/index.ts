@@ -239,19 +239,17 @@ export async function fetch(
           return
         }
 
-        // close when the signal to close (an empty chunk)
-        // is sent from the IPC.
-        if (
-          res instanceof ArrayBuffer ? res.byteLength == 0 : res.length == 0
-        ) {
+        const resUint8 = new Uint8Array(res)
+        const lastByte = resUint8[resUint8.byteLength - 1]
+        const actualRes = resUint8.slice(0, resUint8.byteLength - 1)
+
+        // close when the signal to close (last byte is 1) is sent from the IPC.
+        if (lastByte == 1) {
           controller.close()
           return
         }
 
-        // the content conversion (like .text(), .json(), etc.) in Response
-        // must have Uint8Array as its content, else it will
-        // have untraceable error that's hard to debug.
-        controller.enqueue(new Uint8Array(res))
+        controller.enqueue(actualRes)
       }
 
       // run a non-blocking body stream fetch
@@ -269,12 +267,11 @@ export async function fetch(
     statusText
   })
 
-  // url and headers are read only properties
-  // but seems like we can set them like this
+  // Set `Response` properties that are ignored by the
+  // constructor, like url and some headers
   //
-  // we define theme like this, because using `Response`
-  // constructor, it removes url and some headers
-  // like `set-cookie` headers
+  // Since url and headers are read only properties
+  // this is the only way to set them.
   Object.defineProperty(res, 'url', { value: url })
   Object.defineProperty(res, 'headers', {
     value: new Headers(responseHeaders)

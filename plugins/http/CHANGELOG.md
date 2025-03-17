@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.2]
+
+- [`a15eedf3`](https://github.com/tauri-apps/plugins-workspace/commit/a15eedf37854344f7ffbcb0d373d848563817011) ([#2535](https://github.com/tauri-apps/plugins-workspace/pull/2535) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix `fetch` occasionally throwing an error due to trying to close the underline stream twice.
+
 ## \[2.4.1]
 
 - [`d3183aa9`](https://github.com/tauri-apps/plugins-workspace/commit/d3183aa99da7ca67e627394132ddeb3b85ccef06) ([#2522](https://github.com/tauri-apps/plugins-workspace/pull/2522) by [@adrieljss](https://github.com/tauri-apps/plugins-workspace/../../adrieljss)) Fix `fetch` blocking until the whole response is read even if it was a streaming response.
