@@ -119,8 +119,11 @@ fn target_to_platforms(
     update_platform: Option<String>,
     signature: String,
 ) -> HashMap<String, PlatformUpdate> {
+
     let mut platforms = HashMap::new();
     if let Some(platform) = update_platform {
+        println!("TARGET: {}", platform.clone());
+
         platforms.insert(
             platform,
             PlatformUpdate {
@@ -201,11 +204,11 @@ fn bundle_path(root_dir: &Path, _version: &str, v1compatible: bool) -> PathBuf {
 }
 
 #[cfg(windows)]
-fn bundle_paths(
+fn test_cases(
     root_dir: &Path,
     version: &str,
-    v1compatible: bool,
-) -> Vec<(BundleTarget, PathBuf)> {
+    target: String
+) -> Vec<(BundleTarget, PathBuf, Option<String>, Vec<i32>)> {
     vec![
         (
             BundleTarget::Nsis,
@@ -302,7 +305,7 @@ fn update_app() {
         {
             // bundle app update
             config.version = "1.0.0";
-            build_app(&manifest_dir, &config, true, BundleTarget::get_targets());
+            build_app(&manifest_dir, &config, true, BundleTarget::default());
 
             let bundle_updater_ext = if v1_compatible {
                 out_bundle_path

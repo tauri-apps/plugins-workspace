@@ -446,6 +446,7 @@ impl Updater {
 #[cfg(target_os = "windows")]
 impl Updater {
     fn get_updater_installer(&self) -> Result<Option<Installer>> {
+
         Ok(Some(Installer::Msi))
     }
 
