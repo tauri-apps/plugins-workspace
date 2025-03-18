@@ -119,8 +119,7 @@ public class FilePickerController: NSObject {
 extension FilePickerController: UIDocumentPickerDelegate {
 	public func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
 		do {
-			let temporaryUrls = try urls.map { try saveTemporaryFile($0) }
-			self.plugin.onFilePickerEvent(.selected(temporaryUrls))
+			self.plugin.onFilePickerEvent(.selected(urls))
 		} catch {
 			self.plugin.onFilePickerEvent(.error("Failed to create a temporary copy of the file"))
 		}
@@ -149,8 +148,7 @@ extension FilePickerController: UIImagePickerControllerDelegate, UINavigationCon
 		dismissViewController(picker) {
 			if let url = info[.mediaURL] as? URL {
 				do {
-					let temporaryUrl = try self.saveTemporaryFile(url)
-					self.plugin.onFilePickerEvent(.selected([temporaryUrl]))
+					self.plugin.onFilePickerEvent(.selected([url]))
 				} catch {
 					self.plugin.onFilePickerEvent(.error("Failed to create a temporary copy of the file"))
 				}
