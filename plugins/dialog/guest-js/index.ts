@@ -280,6 +280,10 @@ type OpenDialogReturn<T extends OpenDialogOptions> = T['directory'] extends true
  * }
  * ```
  *
+ * ## Platform-specific
+ *
+ * - **iOS**: Returns a copy of the file to bypass [security scoped resource](https://developer.apple.com/documentation/foundation/nsurl/1417051-startaccessingsecurityscopedreso?language=objc).
+ *
  * @returns A promise resolving to the selected path(s)
  *
  * @since 2.0.0
@@ -313,6 +317,10 @@ async function open<T extends OpenDialogOptions>(
  *   }]
  * });
  * ```
+ *
+ * #### Platform-specific
+ *
+ * - **iOS**: Returns a copy of the file to bypass [security scoped resource](https://developer.apple.com/documentation/foundation/nsurl/1417051-startaccessingsecurityscopedreso?language=objc).
  *
  * @returns A promise resolving to the selected path.
  *

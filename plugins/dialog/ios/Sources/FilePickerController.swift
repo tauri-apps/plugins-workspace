@@ -95,35 +95,11 @@ public class FilePickerController: NSObject {
 			return nil
 		}
 	}
-
-	private func saveTemporaryFile(_ sourceUrl: URL) throws -> URL {
-		var directory = URL(fileURLWithPath: NSTemporaryDirectory())
-		if let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first {
-			directory = cachesDirectory
-		}
-		let targetUrl = directory.appendingPathComponent(sourceUrl.lastPathComponent)
-		do {
-			try deleteFile(targetUrl)
-		}
-		try FileManager.default.copyItem(at: sourceUrl, to: targetUrl)
-		return targetUrl
-	}
-
-	private func deleteFile(_ url: URL) throws {
-		if FileManager.default.fileExists(atPath: url.path) {
-			try FileManager.default.removeItem(atPath: url.path)
-		}
-	}
 }
 
 extension FilePickerController: UIDocumentPickerDelegate {
 	public func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-		do {
-			let temporaryUrls = try urls.map { try saveTemporaryFile($0) }
-			self.plugin.onFilePickerEvent(.selected(temporaryUrls))
-		} catch {
-			self.plugin.onFilePickerEvent(.error("Failed to create a temporary copy of the file"))
-		}
+		self.plugin.onFilePickerEvent(.selected(urls))
 	}
 
 	public func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
@@ -148,12 +124,7 @@ extension FilePickerController: UIImagePickerControllerDelegate, UINavigationCon
 	public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
 		dismissViewController(picker) {
 			if let url = info[.mediaURL] as? URL {
-				do {
-					let temporaryUrl = try self.saveTemporaryFile(url)
-					self.plugin.onFilePickerEvent(.selected([temporaryUrl]))
-				} catch {
-					self.plugin.onFilePickerEvent(.error("Failed to create a temporary copy of the file"))
-				}
+        self.plugin.onFilePickerEvent(.selected([url]))
 			} else {
 				self.plugin.onFilePickerEvent(.cancelled)
 			}
@@ -169,7 +140,7 @@ extension FilePickerController: PHPickerViewControllerDelegate {
 			self.plugin.onFilePickerEvent(.cancelled)
 			return
 		}
-		var temporaryUrls: [URL] = []
+		var urls: [URL] = []
 		var errorMessage: String?
 		let dispatchGroup = DispatchGroup()
 		for result in results {
@@ -190,12 +161,7 @@ extension FilePickerController: PHPickerViewControllerDelegate {
 						errorMessage = "Unknown error"
 						return
 					}
-					do {
-						let temporaryUrl = try self.saveTemporaryFile(url)
-						temporaryUrls.append(temporaryUrl)
-					} catch {
-						errorMessage = "Failed to create a temporary copy of the file"
-					}
+					urls.append(url)
 				})
 			} else if result.itemProvider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
 				dispatchGroup.enter()
@@ -211,12 +177,7 @@ extension FilePickerController: PHPickerViewControllerDelegate {
 						errorMessage = "Unknown error"
 						return
 					}
-					do {
-						let temporaryUrl = try self.saveTemporaryFile(url)
-						temporaryUrls.append(temporaryUrl)
-					} catch {
-						errorMessage = "Failed to create a temporary copy of the file"
-					}
+					urls.append(url)
 				})
 			} else {
 				errorMessage = "Unsupported file type identifier"
@@ -227,7 +188,7 @@ extension FilePickerController: PHPickerViewControllerDelegate {
 				self.plugin.onFilePickerEvent(.error(errorMessage))
 				return
 			}
-			self.plugin.onFilePickerEvent(.selected(temporaryUrls))
+			self.plugin.onFilePickerEvent(.selected(urls))
 		}
 	}
 }
