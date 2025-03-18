@@ -408,7 +408,10 @@ mod imp {
             #[cfg(windows)]
             {
                 let protocol = _protocol.as_ref();
-                let cmd_reg = CLASSES_ROOT.open(format!("{protocol}\\shell\\open\\command"))?;
+                let Ok(cmd_reg) = CLASSES_ROOT.open(format!("{protocol}\\shell\\open\\command"))
+                else {
+                    return Ok(false);
+                };
 
                 let registered_cmd = cmd_reg.get_string("")?;
 
