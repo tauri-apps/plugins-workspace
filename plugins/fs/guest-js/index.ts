@@ -1076,7 +1076,7 @@ async function writeFile(
   if (data instanceof ReadableStream) {
     const file = await open(path, options)
     const reader = data.getReader()
-  
+
     try {
       while (true) {
         const { done, value } = await reader.read()
@@ -1086,7 +1086,7 @@ async function writeFile(
     } finally {
       reader.releaseLock()
     }
-  
+
     await file.close()
   } else {
     await invoke('plugin:fs|write_file', data, {
