@@ -16,6 +16,8 @@ mod wrapper;
 
 pub use error::Error;
 pub use wrapper::DbPool;
+#[cfg(feature = "sqlite")]
+pub use wrapper::SqliteOptions;
 
 use futures_core::future::BoxFuture;
 use serde::{Deserialize, Serialize};
@@ -23,6 +25,8 @@ use sqlx::{
     error::BoxDynError,
     migrate::{Migration as SqlxMigration, MigrationSource, MigrationType, Migrator},
 };
+#[cfg(feature = "sqlite")]
+use sqlx::sqlite::SqliteConnectOptions;
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, RunEvent, Runtime,
@@ -33,6 +37,9 @@ use std::collections::HashMap;
 
 #[derive(Default)]
 pub struct DbInstances(pub RwLock<HashMap<String, DbPool>>);
+
+#[cfg(feature = "sqlite")]
+struct SqlLiteOptionStore(Mutex<HashMap<String, SqliteConnectOptions>>);
 
 #[derive(Serialize)]
 #[serde(untagged)]
@@ -137,6 +144,9 @@ impl Builder {
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R, Option<PluginConfig>> {
         PluginBuilder::<R, Option<PluginConfig>>::new("sql")
             .invoke_handler(tauri::generate_handler![
+                #[cfg(feature = "sqlite")]
+                commands::load,
+                #[cfg(not(feature = "sqlite"))]
                 commands::load,
                 commands::execute,
                 commands::select,
@@ -150,6 +160,10 @@ impl Builder {
                     let mut lock = instances.0.write().await;
 
                     for db in config.preload {
+                        #[cfg(feature = "sqlite")]
+                        let pool = DbPool::connect(&db, app, None).await?;
+
+                        #[cfg(not(feature = "sqlite"))]
                         let pool = DbPool::connect(&db, app).await?;
 
                         if let Some(migrations) =

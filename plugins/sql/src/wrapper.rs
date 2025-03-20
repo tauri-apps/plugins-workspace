@@ -4,9 +4,13 @@
 
 #[cfg(feature = "sqlite")]
 use std::fs::create_dir_all;
+#[cfg(feature = "sqlite")]
+use std::collections::HashMap;
 
 use indexmap::IndexMap;
 use serde_json::Value as JsonValue;
+#[cfg(feature = "sqlite")]
+use sqlx::sqlite::SqliteConnectOptions;
 #[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
 use sqlx::{migrate::MigrateDatabase, Column, Executor, Pool, Row};
 #[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
@@ -31,6 +35,20 @@ pub enum DbPool {
     Postgres(Pool<Postgres>),
     #[cfg(not(any(feature = "sqlite", feature = "mysql", feature = "postgres")))]
     None,
+}
+
+#[cfg(feature = "sqlite")]
+pub struct SqliteOptions {
+    pub pragmas: HashMap<String, String>,
+}
+
+#[cfg(feature = "sqlite")]
+impl Default for SqliteOptions {
+    fn default() -> Self {
+        Self {
+            pragmas: HashMap::new(),
+        }
+    }
 }
 
 // public methods
@@ -68,6 +86,7 @@ impl DbPool {
     pub(crate) async fn connect<R: Runtime>(
         conn_url: &str,
         _app: &AppHandle<R>,
+        #[cfg(feature = "sqlite")] sqlite_options: Option<SqliteOptions>,
     ) -> Result<Self, crate::Error> {
         match conn_url
             .split_once(':')
@@ -82,13 +101,22 @@ impl DbPool {
                     .expect("No App config path was found!");
 
                 create_dir_all(&app_path).expect("Couldn't create app config dir");
-
                 let conn_url = &path_mapper(app_path, conn_url);
+                let filename = conn_url.split_once(':').unwrap().1;
 
-                if !Sqlite::database_exists(conn_url).await.unwrap_or(false) {
-                    Sqlite::create_database(conn_url).await?;
+                let mut options = SqliteConnectOptions::new()
+                    .filename(filename)
+                    .create_if_missing(true);
+
+                // Apply pragmas if provided
+                if let Some(sqlite_opts) = sqlite_options {
+                    for (pragma_name, pragma_value) in sqlite_opts.pragmas {
+                        options = options.pragma(pragma_name, pragma_value);
+                    }
                 }
-                Ok(Self::Sqlite(Pool::connect(conn_url).await?))
+
+                // Connect with options (which includes create_if_missing)
+                Ok(Self::Sqlite(Pool::connect_with(options).await?))
             }
             #[cfg(feature = "mysql")]
             "mysql" => {
