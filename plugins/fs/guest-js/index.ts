@@ -1085,9 +1085,8 @@ async function writeFile(
       }
     } finally {
       reader.releaseLock()
+      await file.close()
     }
-
-    await file.close()
   } else {
     await invoke('plugin:fs|write_file', data, {
       headers: {
