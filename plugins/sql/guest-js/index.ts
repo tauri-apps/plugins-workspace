@@ -42,17 +42,17 @@ export default class Database {
    *
    * @example
    * ```ts
-   * // Basic connection
+   * // Basic connection to a SQLite database
    * const db = await Database.load("sqlite:test.db");
    *
-   * // With encryption key
+   * // Connecting with an encryption key for added security
    * const db = await Database.load("sqlite:encrypted.db", {
-   *   pragmas: { "key": "encryption_key" }
+   *   sqlite: { pragmas: { "key": "encryption_key" } }
    * });
    *
-   * // With pragmas
+   * // Connecting with specific pragmas for configuration
    * const db = await Database.load("sqlite:test.db", {
-   *   pragmas: { "journal_mode": "WAL", "foreign_keys": "ON" }
+   *   sqlite: { pragmas: { "journal_mode": "WAL", "foreign_keys": "ON" } }
    * });
    * ```
    */
