@@ -77,17 +77,3 @@ pub(crate) async fn select(
     let db = instances.get(&db).ok_or(Error::DatabaseNotLoaded(db))?;
     db.select(query, values).await
 }
-
-// #[command]
-// pub(crate) async fn query(
-//     db_instances: State<'_, DbInstances>,
-//     db: String,
-//     query: String,
-//     values: Vec<JsonValue>,
-// ) -> Result<Vec<IndexMap<String, JsonValue>>, crate::Error> {
-//     let instances = db_instances.0.read().await;
-
-//     let db = instances.get(&db).ok_or(Error::DatabaseNotLoaded(db))?;
-//     db.
-//     // db.select(query, values).await
-// }

@@ -140,9 +140,6 @@ impl Builder {
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R, Option<PluginConfig>> {
         PluginBuilder::<R, Option<PluginConfig>>::new("sql")
             .invoke_handler(tauri::generate_handler![
-                #[cfg(feature = "sqlite")]
-                commands::load,
-                #[cfg(not(feature = "sqlite"))]
                 commands::load,
                 commands::execute,
                 commands::select,
