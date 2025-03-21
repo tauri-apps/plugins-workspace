@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: MIT
 
 #[cfg(feature = "sqlite")]
-use std::fs::create_dir_all;
-#[cfg(feature = "sqlite")]
 use std::collections::HashMap;
+#[cfg(feature = "sqlite")]
+use std::fs::create_dir_all;
 
 use indexmap::IndexMap;
 use serde_json::Value as JsonValue;
@@ -38,6 +38,7 @@ pub enum DbPool {
 }
 
 #[cfg(feature = "sqlite")]
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct SqliteOptions {
     pub pragmas: HashMap<String, String>,
 }
@@ -47,6 +48,25 @@ impl Default for SqliteOptions {
     fn default() -> Self {
         Self {
             pragmas: HashMap::new(),
+        }
+    }
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct ConnectionOptions {
+    #[cfg(feature = "sqlite")]
+    pub sqlite: Option<SqliteOptions>,
+    // #[cfg(feature = "mysql")]
+    // mysql: Option<MySqlOptions>,
+    // #[cfg(feature = "postgres")]
+    // postgres: Option<PostgresOptions>,
+}
+
+impl Default for ConnectionOptions {
+    fn default() -> Self {
+        Self {
+            #[cfg(feature = "sqlite")]
+            sqlite: None,
         }
     }
 }
@@ -86,7 +106,7 @@ impl DbPool {
     pub(crate) async fn connect<R: Runtime>(
         conn_url: &str,
         _app: &AppHandle<R>,
-        #[cfg(feature = "sqlite")] sqlite_options: Option<SqliteOptions>,
+        options: Option<ConnectionOptions>,
     ) -> Result<Self, crate::Error> {
         match conn_url
             .split_once(':')
@@ -104,19 +124,20 @@ impl DbPool {
                 let conn_url = &path_mapper(app_path, conn_url);
                 let filename = conn_url.split_once(':').unwrap().1;
 
-                let mut options = SqliteConnectOptions::new()
+                let mut sqlite_options = SqliteConnectOptions::new()
                     .filename(filename)
                     .create_if_missing(true);
-
                 // Apply pragmas if provided
-                if let Some(sqlite_opts) = sqlite_options {
-                    for (pragma_name, pragma_value) in sqlite_opts.pragmas {
-                        options = options.pragma(pragma_name, pragma_value);
+                if let Some(conn_opts) = options {
+                    if let Some(sqlite_opts) = conn_opts.sqlite {
+                        for (pragma_name, pragma_value) in sqlite_opts.pragmas {
+                            sqlite_options = sqlite_options.pragma(pragma_name, pragma_value);
+                        }
                     }
                 }
 
                 // Connect with options (which includes create_if_missing)
-                Ok(Self::Sqlite(Pool::connect_with(options).await?))
+                Ok(Self::Sqlite(Pool::connect_with(sqlite_options).await?))
             }
             #[cfg(feature = "mysql")]
             "mysql" => {

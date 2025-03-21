@@ -59,12 +59,14 @@ export default class Database {
   static async load(
     path: string,
     options?: {
-      pragmas?: Record<string, string>
+      sqlite?: {
+        pragmas?: Record<string, string>
+      }
     }
   ): Promise<Database> {
     const _path = await invoke<string>('plugin:sql|load', {
       db: path,
-      pragmas: options?.pragmas
+      options
     })
 
     return new Database(_path)
