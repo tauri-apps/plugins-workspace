@@ -49,7 +49,7 @@
           "minimum": 1.0
         },
         "description": {
-          "description": "Human-readable description of what the permission does. Tauri convention is to use <h4> headings in markdown content for Tauri documentation generation purposes.",
+          "description": "Human-readable description of what the permission does. Tauri convention is to use `<h4>` headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -111,7 +111,7 @@
           "type": "string"
         },
         "description": {
-          "description": "Human-readable description of what the permission does. Tauri internal convention is to use <h4> headings in markdown content for Tauri documentation generation purposes.",
+          "description": "Human-readable description of what the permission does. Tauri internal convention is to use `<h4>` headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -313,6 +313,16 @@
           "description": "Denies the fetch_cancel command without any pre-configured scope.",
           "type": "string",
           "const": "deny-fetch-cancel"
+        },
+        {
+          "description": "Enables the fetch_cancel_body command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-fetch-cancel-body"
+        },
+        {
+          "description": "Denies the fetch_cancel_body command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-fetch-cancel-body"
         },
         {
           "description": "Enables the fetch_read_body command without any pre-configured scope.",

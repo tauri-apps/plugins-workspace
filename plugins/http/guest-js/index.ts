@@ -26,7 +26,7 @@
  * @module
  */
 
-import { Channel, invoke } from '@tauri-apps/api/core'
+import { invoke } from '@tauri-apps/api/core'
 
 /**
  * Configuration of a proxy that a Client should pass requests to.
@@ -229,37 +229,53 @@ export async function fetch(
     rid
   })
 
+  const dropBody = () => {
+    return invoke('plugin:http|fetch_cancel_body', { rid: responseRid })
+  }
+
+  const readChunk = async (
+    controller: ReadableStreamDefaultController<any>
+  ) => {
+    let data: ArrayBuffer
+    try {
+      data = await invoke('plugin:http|fetch_read_body', {
+        rid: responseRid
+      })
+    } catch (e) {
+      // close the stream if an error occurs
+      // and drop the body on Rust side
+      controller.error(e)
+      void dropBody()
+      return
+    }
+
+    const dataUint8 = new Uint8Array(data)
+    const lastByte = dataUint8[dataUint8.byteLength - 1]
+    const actualData = dataUint8.slice(0, dataUint8.byteLength - 1)
+
+    // close when the signal to close (last byte is 1) is sent from the IPC.
+    if (lastByte === 1) {
+      controller.close()
+    }
+
+    controller.enqueue(actualData)
+  }
+
   const readableStreamBody = new ReadableStream({
     start: (controller) => {
-      const streamChannel = new Channel<ArrayBuffer | number[]>()
-      streamChannel.onmessage = (res: ArrayBuffer | number[]) => {
-        // close early if aborted
-        if (signal?.aborted) {
-          controller.error(ERROR_REQUEST_CANCELLED)
-          return
-        }
-
-        const resUint8 = new Uint8Array(res)
-        const lastByte = resUint8[resUint8.byteLength - 1]
-        const actualRes = resUint8.slice(0, resUint8.byteLength - 1)
-
-        // close when the signal to close (last byte is 1) is sent from the IPC.
-        if (lastByte == 1) {
-          controller.close()
-          return
-        }
-
-        controller.enqueue(actualRes)
+      // abort early here if needed and drop the body
+      if (signal?.aborted) {
+        controller.error(ERROR_REQUEST_CANCELLED)
+        void dropBody()
+        return
       }
 
-      // run a non-blocking body stream fetch
-      invoke('plugin:http|fetch_read_body', {
-        rid: responseRid,
-        streamChannel
-      }).catch((e) => {
-        controller.error(e)
+      signal?.addEventListener('abort', () => {
+        controller.error(ERROR_REQUEST_CANCELLED)
+        void dropBody()
       })
-    }
+    },
+    pull: async (controller) => readChunk(controller)
   })
 
   const res = new Response(readableStreamBody, {

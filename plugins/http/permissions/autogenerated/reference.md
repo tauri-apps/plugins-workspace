@@ -15,8 +15,9 @@ All fetch operations are enabled.
 
 - `allow-fetch`
 - `allow-fetch-cancel`
-- `allow-fetch-read-body`
 - `allow-fetch-send`
+- `allow-fetch-read-body`
+- `allow-fetch-cancel-body`
 
 ## Permission Table
 
@@ -75,6 +76,32 @@ Enables the fetch_cancel command without any pre-configured scope.
 <td>
 
 Denies the fetch_cancel command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`http:allow-fetch-cancel-body`
+
+</td>
+<td>
+
+Enables the fetch_cancel_body command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`http:deny-fetch-cancel-body`
+
+</td>
+<td>
+
+Denies the fetch_cancel_body command without any pre-configured scope.
 
 </td>
 </tr>
