@@ -234,7 +234,7 @@ export async function fetch(
   }
 
   const readChunk = async (
-    controller: ReadableStreamDefaultController<any>
+    controller: ReadableStreamDefaultController<Uint8Array>
   ) => {
     let data: ArrayBuffer
     try {
@@ -261,7 +261,7 @@ export async function fetch(
     controller.enqueue(actualData)
   }
 
-  const readableStreamBody = new ReadableStream({
+  const readableStreamBody = new ReadableStream<Uint8Array>({
     start: (controller) => {
       // abort early here if needed and drop the body
       if (signal?.aborted) {
