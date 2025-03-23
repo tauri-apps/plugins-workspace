@@ -4,6 +4,31 @@
 
 import { invoke } from '@tauri-apps/api/core'
 
+class Path {
+  public path: string
+  constructor(path: string) {
+    this.path = path
+  }
+
+  destroy() {
+    return invoke('plugin:dialog|destroy_path', { path: this.path })
+  }
+
+  toPath() {
+    return this.path
+  }
+
+  toString() {
+    return this.toPath()
+  }
+
+  toJSON() {
+    return {
+      path: this.path
+    }
+  }
+}
+
 /**
  * Extension filters for the file dialog.
  *
@@ -224,13 +249,7 @@ interface ConfirmDialogOptions {
   cancelLabel?: string
 }
 
-type OpenDialogReturn<T extends OpenDialogOptions> = T['directory'] extends true
-  ? T['multiple'] extends true
-    ? string[] | null
-    : string | null
-  : T['multiple'] extends true
-    ? string[] | null
-    : string | null
+type OpenDialogReturn<T extends OpenDialogOptions> = T['multiple'] extends true ? Path[] | null : Path | null
 
 /**
  * Open a file/directory selection dialog.
@@ -295,7 +314,17 @@ async function open<T extends OpenDialogOptions>(
     Object.freeze(options)
   }
 
-  return await invoke('plugin:dialog|open', { options })
+  const path = await invoke<string[] | string | null>('plugin:dialog|open', { options })
+
+  if (Array.isArray(path)) {
+    return path.map((p) => new Path(p))
+  }
+
+  if (!path) {
+    return null
+  }
+
+  return new Path(path)
 }
 
 /**
@@ -326,12 +355,18 @@ async function open<T extends OpenDialogOptions>(
  *
  * @since 2.0.0
  */
-async function save(options: SaveDialogOptions = {}): Promise<string | null> {
+async function save(options: SaveDialogOptions = {}): Promise<Path | null> {
   if (typeof options === 'object') {
     Object.freeze(options)
   }
 
-  return await invoke('plugin:dialog|save', { options })
+  const path = await invoke<string | null>('plugin:dialog|save', { options })
+
+  if (!path) {
+    return null
+  }
+
+  return new Path(path)
 }
 
 /**

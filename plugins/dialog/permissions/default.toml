@@ -17,4 +17,5 @@ permissions = [
   "allow-message",
   "allow-save",
   "allow-open",
+  "allow-destroy-path"
 ]

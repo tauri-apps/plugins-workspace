@@ -319,6 +319,18 @@
           "markdownDescription": "Denies the confirm command without any pre-configured scope."
         },
         {
+          "description": "Enables the destroy_path command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-destroy-path",
+          "markdownDescription": "Enables the destroy_path command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the destroy_path command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-destroy-path",
+          "markdownDescription": "Denies the destroy_path command without any pre-configured scope."
+        },
+        {
           "description": "Enables the message command without any pre-configured scope.",
           "type": "string",
           "const": "allow-message",
@@ -355,10 +367,10 @@
           "markdownDescription": "Denies the save command without any pre-configured scope."
         },
         {
-          "description": "This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n\n#### This default permission set includes:\n\n- `allow-ask`\n- `allow-confirm`\n- `allow-message`\n- `allow-save`\n- `allow-open`",
+          "description": "This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n\n#### This default permission set includes:\n\n- `allow-ask`\n- `allow-confirm`\n- `allow-message`\n- `allow-save`\n- `allow-open`\n- `allow-destroy-path`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n\n#### This default permission set includes:\n\n- `allow-ask`\n- `allow-confirm`\n- `allow-message`\n- `allow-save`\n- `allow-open`"
+          "markdownDescription": "This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n\n#### This default permission set includes:\n\n- `allow-ask`\n- `allow-confirm`\n- `allow-message`\n- `allow-save`\n- `allow-open`\n- `allow-destroy-path`"
         }
       ]
     }

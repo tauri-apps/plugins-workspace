@@ -241,6 +241,11 @@ pub(crate) async fn save<R: Runtime>(
     Ok(path.map(|p| p.simplified()))
 }
 
+#[command]
+pub fn destroy_path(_path: String) -> bool {
+    true
+}
+
 fn message_dialog<R: Runtime>(
     #[allow(unused_variables)] window: Window<R>,
     dialog: State<'_, Dialog<R>>,

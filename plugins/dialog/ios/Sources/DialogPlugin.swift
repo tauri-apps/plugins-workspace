@@ -39,6 +39,10 @@ struct SaveFileDialogOptions: Decodable {
   var defaultPath: String?
 }
 
+struct StopAccessingPathOptions: Decodable {
+  var path: URL
+}
+
 class DialogPlugin: Plugin {
 
   var filePickerController: FilePickerController!
@@ -75,6 +79,7 @@ class DialogPlugin: Plugin {
     onFilePickerResult = { (event: FilePickerEvent) -> Void in
       switch event {
       case .selected(let urls):
+        urls.forEach { $0.startAccessingSecurityScopedResource() }
         invoke.resolve(["files": urls])
       case .cancelled:
         invoke.resolve(["files": nil])
@@ -150,6 +155,8 @@ class DialogPlugin: Plugin {
     onFilePickerResult = { (event: FilePickerEvent) -> Void in
       switch event {
       case .selected(let urls):
+        Logger.info("picked file to save: \(urls.first!)")
+        urls.first!.startAccessingSecurityScopedResource()
         invoke.resolve(["file": urls.first!])
       case .cancelled:
         invoke.resolve(["file": nil])
@@ -167,6 +174,12 @@ class DialogPlugin: Plugin {
       picker.modalPresentationStyle = .fullScreen
       self.presentViewController(picker)
     }
+  }
+
+  @objc public func stopAccessingPath(_ invoke: Invoke) throws {
+    let args = try invoke.parseArgs(StopAccessingPathOptions.self)
+    args.path.stopAccessingSecurityScopedResource()
+    invoke.resolve()
   }
 
   private func presentViewController(_ viewControllerToPresent: UIViewController) {

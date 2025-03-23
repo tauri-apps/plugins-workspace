@@ -211,6 +211,10 @@ pub fn save_file<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
     });
 }
 
+pub fn destroy_path<R: Runtime>(_dialog: FileDialogBuilder<R>, _path: String) -> bool {
+    true
+}
+
 /// Shows a message dialog
 pub fn show_message_dialog<R: Runtime, F: FnOnce(MessageDialogResult) + Send + 'static>(
     dialog: MessageDialogBuilder<R>,
