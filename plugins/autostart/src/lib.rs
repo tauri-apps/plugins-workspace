@@ -119,8 +119,7 @@ impl Builder {
     /// Builder::new()
     ///     .arg("--from-autostart")
     ///     .arg("--hey")
-    ///     .build()
-    ///     .unwrap();
+    ///     .build();
     /// ```
     pub fn arg<S: Into<String>>(mut self, arg: S) -> Self {
         self.args.push(arg.into());
@@ -134,8 +133,7 @@ impl Builder {
     /// ```no_run
     /// Builder::new()
     ///     .args(["--from-autostart", "--hey"])
-    ///     .build()
-    ///     .unwrap();
+    ///     .build();
     /// ```
     pub fn args<I, S>(mut self, args: I) -> Self
     where
