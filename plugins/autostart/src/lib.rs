@@ -181,7 +181,7 @@ impl Builder {
                     let exe_path = current_exe.canonicalize()?.display().to_string();
                     let parts: Vec<&str> = exe_path.split(".app/").collect();
                     let app_path = if parts.len() == 2
-                        && matches!(macos_launcher, MacosLauncher::AppleScript)
+                        && matches!(self.macos_launcher, MacosLauncher::AppleScript)
                     {
                         format!("{}.app", parts.first().unwrap())
                     } else {
