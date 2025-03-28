@@ -34,9 +34,9 @@ mod models;
 pub use error::{Error, Result};
 
 #[cfg(desktop)]
-use desktop::Notification;
+pub use desktop::Notification;
 #[cfg(mobile)]
-use mobile::Notification;
+pub use mobile::Notification;
 
 /// The notification builder.
 #[derive(Debug)]
@@ -120,7 +120,7 @@ impl<R: Runtime> NotificationBuilder<R> {
 
     /// Identifier used to group multiple notifications.
     ///
-    /// https://developer.apple.com/documentation/usernotifications/unmutablenotificationcontent/1649872-threadidentifier
+    /// <https://developer.apple.com/documentation/usernotifications/unmutablenotificationcontent/1649872-threadidentifier>
     pub fn group(mut self, group: impl Into<String>) -> Self {
         self.data.group.replace(group.into());
         self

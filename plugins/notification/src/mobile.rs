@@ -40,6 +40,8 @@ impl<R: Runtime> crate::NotificationBuilder<R> {
 }
 
 /// Access to the notification APIs.
+///
+/// You can get an instance of this type via [`NotificationExt`](crate::NotificationExt)
 pub struct Notification<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Notification<R> {

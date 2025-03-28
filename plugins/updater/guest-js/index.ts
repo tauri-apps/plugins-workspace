@@ -133,7 +133,10 @@ async function check(options?: CheckOptions): Promise<Update | null> {
 
   return await invoke<UpdateMetadata>('plugin:updater|check', {
     ...options
-  }).then((meta) => (meta.available ? new Update(meta) : null))
+  }).then((meta) =>
+    // TODO: Handle this in the rust side
+    meta.available ? new Update(meta) : null
+  )
 }
 
 export type { CheckOptions, DownloadOptions, DownloadEvent }

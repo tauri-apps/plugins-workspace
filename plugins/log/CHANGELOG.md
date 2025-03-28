@@ -1,5 +1,19 @@
 # Changelog
 
+## \[2.3.1]
+
+- [`1bb1ced5`](https://github.com/tauri-apps/plugins-workspace/commit/1bb1ced53820127204aa7adf57510c1cbce55e12) ([#2524](https://github.com/tauri-apps/plugins-workspace/pull/2524) by [@elwerene](https://github.com/tauri-apps/plugins-workspace/../../elwerene)) enable TargetKind::LogDir on mobile
+
+## \[2.3.0]
+
+### feat
+
+- [`02481501`](https://github.com/tauri-apps/plugins-workspace/commit/024815018fbc63a37afc716796a454925aa7d25e) ([#2377](https://github.com/tauri-apps/plugins-workspace/pull/2377) by [@3lpsy](https://github.com/tauri-apps/plugins-workspace/../../3lpsy)) Add a `is_skip_logger` flag to the Log Plugin `Builder` struct, a `skip_logger()` method to the Builder, and logic to avoid acquiring (creating) a logger and attaching it to the global logger. Since acquire_logger is pub, a `LoggerNotInitialized` is added and returned if it's called when the `is_skip_looger` flag is set. Overall, this feature permits a user to avoid calling `attach_logger` which can only be called once in a program's lifetime and allows the user to control the logger returned from `logger()`. Additionally, it also will allow users to generate multiple Tauri Mock apps in test suites that run and parallel and have the `log` plugin attached (assuming they use `skip_logger()`).
+
+## \[2.2.3]
+
+- [`1a984659`](https://github.com/tauri-apps/plugins-workspace/commit/1a9846599b6a71faf330845847a30f6bf9735898) ([#2469](https://github.com/tauri-apps/plugins-workspace/pull/2469) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Update `objc2` crate to 0.6. No user facing changes.
+
 ## \[2.2.2]
 
 - [`6b4c3917`](https://github.com/tauri-apps/plugins-workspace/commit/6b4c3917389f4bc489d03b48a837557ac0584175) ([#2401](https://github.com/tauri-apps/plugins-workspace/pull/2401) by [@Seishiin](https://github.com/tauri-apps/plugins-workspace/../../Seishiin)) Fix timezone_strategy overwriting previously set LogLevels.
