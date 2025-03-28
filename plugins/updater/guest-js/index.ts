@@ -38,7 +38,6 @@ interface DownloadOptions {
 
 interface UpdateMetadata {
   rid: number
-  available: boolean
   currentVersion: string
   version: string
   date?: string
@@ -53,6 +52,7 @@ type DownloadEvent =
   | { event: 'Finished' }
 
 class Update extends Resource {
+  // TODO: remove this field in v3
   available: boolean
   currentVersion: string
   version: string
@@ -63,7 +63,7 @@ class Update extends Resource {
 
   constructor(metadata: UpdateMetadata) {
     super(metadata.rid)
-    this.available = metadata.available
+    this.available = true
     this.currentVersion = metadata.currentVersion
     this.version = metadata.version
     this.date = metadata.date
@@ -131,12 +131,10 @@ async function check(options?: CheckOptions): Promise<Update | null> {
     options.headers = Array.from(new Headers(options.headers).entries())
   }
 
-  return await invoke<UpdateMetadata>('plugin:updater|check', {
+  const metadata = await invoke<UpdateMetadata | null>('plugin:updater|check', {
     ...options
-  }).then((meta) =>
-    // TODO: Handle this in the rust side
-    meta.available ? new Update(meta) : null
-  )
+  })
+  return metadata ? new Update(metadata) : null
 }
 
 export type { CheckOptions, DownloadOptions, DownloadEvent }
