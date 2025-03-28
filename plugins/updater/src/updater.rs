@@ -310,7 +310,8 @@ impl UpdaterBuilder {
         I: IntoIterator<Item = S>,
         S: Into<OsString>,
     {
-        self.current_exe_args.extend(args.into_iter().map(Into::into));
+        self.current_exe_args
+            .extend(args.into_iter().map(Into::into));
         self
     }
 }
