@@ -124,8 +124,7 @@ pub struct UpdaterBuilder {
 impl UpdaterBuilder {
     pub(crate) fn new<R: Runtime>(app: &AppHandle<R>, config: crate::Config) -> Self {
         let app_ = app.clone();
-        let run_on_main_thread =
-            move |f: Box<dyn FnOnce() + Send + Sync + 'static>| app_.run_on_main_thread(f);
+        let run_on_main_thread = move |f| app_.run_on_main_thread(f);
         Self {
             run_on_main_thread: Box::new(run_on_main_thread),
             installer_args: config
@@ -230,8 +229,7 @@ impl UpdaterBuilder {
         I: IntoIterator<Item = S>,
         S: Into<OsString>,
     {
-        let args = args.into_iter().map(|a| a.into()).collect::<Vec<_>>();
-        self.installer_args.extend_from_slice(&args);
+        self.installer_args.extend(args.into_iter().map(Into::into));
         self
     }
 
@@ -312,8 +310,7 @@ impl UpdaterBuilder {
         I: IntoIterator<Item = S>,
         S: Into<OsString>,
     {
-        let args = args.into_iter().map(|a| a.into()).collect::<Vec<_>>();
-        self.current_exe_args.extend_from_slice(&args);
+        self.installer_args.extend(args.into_iter().map(Into::into));
         self
     }
 }
@@ -478,10 +475,10 @@ impl Updater {
                 version: release.version.to_string(),
                 date: release.pub_date,
                 download_url: release.download_url(&self.json_target)?.to_owned(),
-                body: release.notes.clone(),
                 signature: release.signature(&self.json_target)?.to_owned(),
+                body: release.notes,
                 raw_json: raw_json.unwrap(),
-                timeout: self.timeout,
+                timeout: None,
                 proxy: self.proxy.clone(),
                 headers: self.headers.clone(),
                 installer_args: self.installer_args.clone(),

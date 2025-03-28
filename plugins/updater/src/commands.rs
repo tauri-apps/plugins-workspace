@@ -40,6 +40,8 @@ pub(crate) struct Metadata {
 struct DownloadedBytes(pub Vec<u8>);
 impl Resource for DownloadedBytes {}
 
+// TODO: Align this with the result of `updater.check` to Result<Option<Metadata>>
+// and remove `available` instead of handling this in the js side
 #[tauri::command]
 pub(crate) async fn check<R: Runtime>(
     webview: Webview<R>,
