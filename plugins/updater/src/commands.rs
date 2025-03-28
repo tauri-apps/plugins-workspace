@@ -71,8 +71,7 @@ pub(crate) async fn check<R: Runtime>(
         let formatted_date = if let Some(date) = update.date {
             let formatted_date = date
                 .format(&time::format_description::well_known::Rfc3339)
-                .map_err(|_| crate::Error::FormatDate)?
-                .to_string();
+                .map_err(|_| crate::Error::FormatDate)?;
             Some(formatted_date)
         } else {
             None
