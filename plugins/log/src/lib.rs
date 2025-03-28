@@ -197,6 +197,38 @@ impl Target {
     }
 }
 
+// Target becomes default and location is added as a parameter
+#[cfg(feature = "tracing")]
+fn emit_trace(
+    level: log::Level,
+    message: &String,
+    location: Option<&str>,
+    file: Option<&str>,
+    line: Option<u32>,
+    key_values: &HashMap<&str, &str>,
+) {
+    macro_rules! emit_event {
+        ($level:expr) => {
+            tracing::event!(
+                target: WEBVIEW_TARGET,
+                $level,
+                message = %message,
+                location = location,
+                file,
+                line,
+                ?key_values
+            )
+        };
+    }
+    match level {
+        log::Level::Error => emit_event!(tracing::Level::ERROR),
+        log::Level::Warn => emit_event!(tracing::Level::WARN),
+        log::Level::Info => emit_event!(tracing::Level::INFO),
+        log::Level::Debug => emit_event!(tracing::Level::DEBUG),
+        log::Level::Trace => emit_event!(tracing::Level::TRACE),
+    }
+}
+
 #[tauri::command]
 fn log(
     level: LogLevel,
@@ -223,6 +255,8 @@ fn log(
         kv.insert(k.as_str(), v.as_str());
     }
     builder.key_values(&kv);
+    #[cfg(feature = "tracing")]
+    emit_trace(level, &message, location, file, line, &kv);
 
     logger().log(&builder.args(format_args!("{message}")).build());
 }
@@ -346,7 +380,7 @@ impl Builder {
 
     /// Skip the creation and global registration of a logger
     ///
-    /// If you wish to use your own global logger, you must call `skip_logger` so that the plugin does not attempt to set a second global logger. In this configuration, no logger will be created and the plugin's `log` command will rely on the result of `log::logger()`. You will be responsible for configuring the logger yourself and any included targets will be ignored. This can also be used with `tracing-log` or if running tests in parallel that require the plugin to be registered.
+    /// If you wish to use your own global logger, you must call `skip_logger` so that the plugin does not attempt to set a second global logger. In this configuration, no logger will be created and the plugin's `log` command will rely on the result of `log::logger()`. You will be responsible for configuring the logger yourself and any included targets will be ignored. If ever initializing the plugin multiple times, such as if registering the plugin while testing, call this method to panicking when registering multiple loggers. For interacting with `tracing`, you can leverage the `tracing-log` logger to forward logs to `tracing` or enable the `tracing` for this plugin to emit events directly to the tracing system. Both scenarios require calling this method.
     /// ```rust
     /// static LOGGER: SimpleLogger = SimpleLogger;
     ///
