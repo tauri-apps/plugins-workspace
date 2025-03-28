@@ -53,6 +53,7 @@ type DownloadEvent =
 
 class Update extends Resource {
   // TODO: remove this field in v3
+  /** @deprecated This is always true, check if the return value is `null` instead when using {@linkcode check} */
   available: boolean
   currentVersion: string
   version: string
