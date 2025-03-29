@@ -205,7 +205,7 @@ fn emit_trace(
     location: Option<&str>,
     file: Option<&str>,
     line: Option<u32>,
-    key_values: &HashMap<&str, &str>,
+    kv: &HashMap<&str, &str>,
 ) {
     macro_rules! emit_event {
         ($level:expr) => {
@@ -216,7 +216,7 @@ fn emit_trace(
                 location = location,
                 file,
                 line,
-                ?key_values
+                ?kv
             )
         };
     }
