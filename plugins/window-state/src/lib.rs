@@ -184,13 +184,6 @@ impl<R: Runtime> WindowExt for Window<R> {
                 self.set_decorations(state.decorated)?;
             }
 
-            if flags.contains(StateFlags::SIZE) {
-                self.set_size(PhysicalSize {
-                    width: state.width,
-                    height: state.height,
-                })?;
-            }
-
             if flags.contains(StateFlags::POSITION) {
                 let position = (state.x, state.y).into();
                 let size = (state.width, state.height).into();
@@ -212,6 +205,13 @@ impl<R: Runtime> WindowExt for Window<R> {
                         })?;
                     }
                 }
+            }
+
+            if flags.contains(StateFlags::SIZE) {
+                self.set_size(PhysicalSize {
+                    width: state.width,
+                    height: state.height,
+                })?;
             }
 
             if flags.contains(StateFlags::MAXIMIZED) && state.maximized {
