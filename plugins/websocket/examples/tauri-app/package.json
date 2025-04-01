@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "2.4.0",
+    "@tauri-apps/cli": "2.4.1",
     "typescript": "^5.7.3",
     "vite": "^6.2.0"
   },
