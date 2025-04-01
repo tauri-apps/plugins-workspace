@@ -9,7 +9,6 @@ use tauri_plugin_updater::UpdaterExt;
 fn main() {
     #[allow(unused_mut)]
     let mut context = tauri::generate_context!();
-
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
