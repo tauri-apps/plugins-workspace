@@ -1,5 +1,14 @@
 # Changelog
 
+## \[2.4.3]
+
+- [`37c0477a`](https://github.com/tauri-apps/plugins-workspace/commit/37c0477afe926d326573f1827045875ce8bf8187) ([#2561](https://github.com/tauri-apps/plugins-workspace/pull/2561)) Add `zstd` cargo feature flag to enable `reqwest/zstd` flag.
+- [`9ebbfb2e`](https://github.com/tauri-apps/plugins-workspace/commit/9ebbfb2e3ccef8e0f277a0c02fe6b399b41feeb6) ([#1978](https://github.com/tauri-apps/plugins-workspace/pull/1978)) Persist cookies to disk and load it on next app start.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.2.1`
+
 ## \[2.4.2]
 
 - [`a15eedf3`](https://github.com/tauri-apps/plugins-workspace/commit/a15eedf37854344f7ffbcb0d373d848563817011) ([#2535](https://github.com/tauri-apps/plugins-workspace/pull/2535) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix `fetch` occasionally throwing an error due to trying to close the underline stream twice.

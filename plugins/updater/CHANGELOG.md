@@ -1,5 +1,12 @@
 # Changelog
 
+## \[2.7.0]
+
+### bug
+
+- [`2d731f80`](https://github.com/tauri-apps/plugins-workspace/commit/2d731f80224f74faf1b7170b25e04f5da1da49c8) ([#2573](https://github.com/tauri-apps/plugins-workspace/pull/2573)) Fix JS API `Update.date` not formatted to RFC 3339
+- [`0bc5d588`](https://github.com/tauri-apps/plugins-workspace/commit/0bc5d5887420ba1eb718254490b7995c771c0447) ([#2572](https://github.com/tauri-apps/plugins-workspace/pull/2572)) Fix `timeout` passed to `check` gets re-used by `download` and `downloadAndinstall`
+
 ## \[2.6.1]
 
 - [`12c4537b`](https://github.com/tauri-apps/plugins-workspace/commit/12c4537b8e4fed29b415ff817434b664c0596dac) ([#2541](https://github.com/tauri-apps/plugins-workspace/pull/2541) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Add support to the `riscv64` architecture.

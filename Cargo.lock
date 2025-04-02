@@ -206,7 +206,7 @@ checksum = "4c95c10ba0b00a02636238b814946408b1322d5ac4760326e6fb8ec956d85775"
 
 [[package]]
 name = "api"
-version = "2.0.23"
+version = "2.0.24"
 dependencies = [
  "log",
  "serde",
@@ -6560,7 +6560,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-autostart"
-version = "2.2.0"
+version = "2.3.0"
 dependencies = [
  "auto-launch",
  "serde",
@@ -6623,7 +6623,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "dunce",
  "rust-ini",
@@ -6641,7 +6641,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "log",
  "raw-window-handle",
@@ -6657,7 +6657,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "anyhow",
  "dunce",
@@ -6719,7 +6719,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.4.2"
+version = "2.4.3"
 dependencies = [
  "bytes",
  "cookie_store",
@@ -6846,7 +6846,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6873,7 +6873,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-process"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "tauri",
  "tauri-plugin",
@@ -6881,7 +6881,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-shell"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "encoding_rs",
  "log",
@@ -6900,7 +6900,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.2.2"
+version = "2.2.3"
 dependencies = [
  "semver",
  "serde",
@@ -6967,7 +6967,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.6.1"
+version = "2.7.0"
 dependencies = [
  "base64 0.22.1",
  "dirs 6.0.0",
@@ -7032,7 +7032,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "2.2.1"
+version = "2.2.2"
 dependencies = [
  "bitflags 2.7.0",
  "log",

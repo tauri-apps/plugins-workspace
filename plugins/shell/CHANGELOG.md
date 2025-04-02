@@ -1,5 +1,12 @@
 # Changelog
 
+## \[2.2.1]
+
+### bug
+
+- [`9cf0390a`](https://github.com/tauri-apps/plugins-workspace/commit/9cf0390a52497e273db1a1b613a0e26827aa327c) Apply the default open validation regex `^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+` when the open configuration is not set, preventing unchecked input from being used in this scenario (previously the plugin would skip validation when it should disable all calls). This keeps backwards compatibility while still fixing this vulnerability.
+  The scope is no longer validated for Rust calls via `ShellExt::shell()` so if you need to block JavaScript from calling the API you can simply set `tauri.conf.json > plugins > shell > open` to `false`.
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
