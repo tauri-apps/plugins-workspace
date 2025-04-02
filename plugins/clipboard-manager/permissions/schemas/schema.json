@@ -297,67 +297,80 @@
         {
           "description": "Enables the clear command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-clear"
+          "const": "allow-clear",
+          "markdownDescription": "Enables the clear command without any pre-configured scope."
         },
         {
           "description": "Denies the clear command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-clear"
+          "const": "deny-clear",
+          "markdownDescription": "Denies the clear command without any pre-configured scope."
         },
         {
           "description": "Enables the read_image command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-read-image"
+          "const": "allow-read-image",
+          "markdownDescription": "Enables the read_image command without any pre-configured scope."
         },
         {
           "description": "Denies the read_image command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-read-image"
+          "const": "deny-read-image",
+          "markdownDescription": "Denies the read_image command without any pre-configured scope."
         },
         {
           "description": "Enables the read_text command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-read-text"
+          "const": "allow-read-text",
+          "markdownDescription": "Enables the read_text command without any pre-configured scope."
         },
         {
           "description": "Denies the read_text command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-read-text"
+          "const": "deny-read-text",
+          "markdownDescription": "Denies the read_text command without any pre-configured scope."
         },
         {
           "description": "Enables the write_html command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-write-html"
+          "const": "allow-write-html",
+          "markdownDescription": "Enables the write_html command without any pre-configured scope."
         },
         {
           "description": "Denies the write_html command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-write-html"
+          "const": "deny-write-html",
+          "markdownDescription": "Denies the write_html command without any pre-configured scope."
         },
         {
           "description": "Enables the write_image command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-write-image"
+          "const": "allow-write-image",
+          "markdownDescription": "Enables the write_image command without any pre-configured scope."
         },
         {
           "description": "Denies the write_image command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-write-image"
+          "const": "deny-write-image",
+          "markdownDescription": "Denies the write_image command without any pre-configured scope."
         },
         {
           "description": "Enables the write_text command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-write-text"
+          "const": "allow-write-text",
+          "markdownDescription": "Enables the write_text command without any pre-configured scope."
         },
         {
           "description": "Denies the write_text command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-write-text"
+          "const": "deny-write-text",
+          "markdownDescription": "Denies the write_text command without any pre-configured scope."
         },
         {
           "description": "No features are enabled by default, as we believe\nthe clipboard can be inherently dangerous and it is \napplication specific if read and/or write access is needed.\n\nClipboard interaction needs to be explicitly enabled.\n",
           "type": "string",
-          "const": "default"
+          "const": "default",
+          "markdownDescription": "No features are enabled by default, as we believe\nthe clipboard can be inherently dangerous and it is \napplication specific if read and/or write access is needed.\n\nClipboard interaction needs to be explicitly enabled.\n"
         }
       ]
     }

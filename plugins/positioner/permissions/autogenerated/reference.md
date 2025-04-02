@@ -2,6 +2,8 @@
 
 Allows the moveWindow and handleIconState APIs
 
+#### This default permission set includes the following:
+
 - `allow-move-window`
 - `allow-move-window-constrained`
 - `allow-set-tray-icon-state`

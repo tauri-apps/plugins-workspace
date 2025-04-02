@@ -297,27 +297,32 @@
         {
           "description": "Enables the authenticate command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-authenticate"
+          "const": "allow-authenticate",
+          "markdownDescription": "Enables the authenticate command without any pre-configured scope."
         },
         {
           "description": "Denies the authenticate command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-authenticate"
+          "const": "deny-authenticate",
+          "markdownDescription": "Denies the authenticate command without any pre-configured scope."
         },
         {
           "description": "Enables the status command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-status"
+          "const": "allow-status",
+          "markdownDescription": "Enables the status command without any pre-configured scope."
         },
         {
           "description": "Denies the status command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-status"
+          "const": "deny-status",
+          "markdownDescription": "Denies the status command without any pre-configured scope."
         },
         {
-          "description": "This permission set configures which\nbiometric features are by default exposed.\n\n#### Granted Permissions\n\nIt allows acccess to all biometric commands.\n\n",
+          "description": "This permission set configures which\nbiometric features are by default exposed.\n\n#### Granted Permissions\n\nIt allows acccess to all biometric commands.\n\n\n#### This default permission set includes:\n\n- `allow-authenticate`\n- `allow-status`",
           "type": "string",
-          "const": "default"
+          "const": "default",
+          "markdownDescription": "This permission set configures which\nbiometric features are by default exposed.\n\n#### Granted Permissions\n\nIt allows acccess to all biometric commands.\n\n\n#### This default permission set includes:\n\n- `allow-authenticate`\n- `allow-status`"
         }
       ]
     }

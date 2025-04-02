@@ -297,47 +297,56 @@
         {
           "description": "Enables the get_current command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-get-current"
+          "const": "allow-get-current",
+          "markdownDescription": "Enables the get_current command without any pre-configured scope."
         },
         {
           "description": "Denies the get_current command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-get-current"
+          "const": "deny-get-current",
+          "markdownDescription": "Denies the get_current command without any pre-configured scope."
         },
         {
           "description": "Enables the is_registered command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-is-registered"
+          "const": "allow-is-registered",
+          "markdownDescription": "Enables the is_registered command without any pre-configured scope."
         },
         {
           "description": "Denies the is_registered command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-is-registered"
+          "const": "deny-is-registered",
+          "markdownDescription": "Denies the is_registered command without any pre-configured scope."
         },
         {
           "description": "Enables the register command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-register"
+          "const": "allow-register",
+          "markdownDescription": "Enables the register command without any pre-configured scope."
         },
         {
           "description": "Denies the register command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-register"
+          "const": "deny-register",
+          "markdownDescription": "Denies the register command without any pre-configured scope."
         },
         {
           "description": "Enables the unregister command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-unregister"
+          "const": "allow-unregister",
+          "markdownDescription": "Enables the unregister command without any pre-configured scope."
         },
         {
           "description": "Denies the unregister command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-unregister"
+          "const": "deny-unregister",
+          "markdownDescription": "Denies the unregister command without any pre-configured scope."
         },
         {
-          "description": "Allows reading the opened deep link via the get_current command",
+          "description": "Allows reading the opened deep link via the get_current command\n#### This default permission set includes:\n\n- `allow-get-current`",
           "type": "string",
-          "const": "default"
+          "const": "default",
+          "markdownDescription": "Allows reading the opened deep link via the get_current command\n#### This default permission set includes:\n\n- `allow-get-current`"
         }
       ]
     }

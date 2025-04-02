@@ -297,17 +297,20 @@
         {
           "description": "Enables the log command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-log"
+          "const": "allow-log",
+          "markdownDescription": "Enables the log command without any pre-configured scope."
         },
         {
           "description": "Denies the log command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-log"
+          "const": "deny-log",
+          "markdownDescription": "Denies the log command without any pre-configured scope."
         },
         {
-          "description": "Allows the log command",
+          "description": "Allows the log command\n#### This default permission set includes:\n\n- `allow-log`",
           "type": "string",
-          "const": "default"
+          "const": "default",
+          "markdownDescription": "Allows the log command\n#### This default permission set includes:\n\n- `allow-log`"
         }
       ]
     }

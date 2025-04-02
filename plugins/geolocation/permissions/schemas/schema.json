@@ -297,62 +297,74 @@
         {
           "description": "Enables the check_permissions command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-check-permissions"
+          "const": "allow-check-permissions",
+          "markdownDescription": "Enables the check_permissions command without any pre-configured scope."
         },
         {
           "description": "Denies the check_permissions command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-check-permissions"
+          "const": "deny-check-permissions",
+          "markdownDescription": "Denies the check_permissions command without any pre-configured scope."
         },
         {
           "description": "Enables the clear_permissions command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-clear-permissions"
+          "const": "allow-clear-permissions",
+          "markdownDescription": "Enables the clear_permissions command without any pre-configured scope."
         },
         {
           "description": "Denies the clear_permissions command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-clear-permissions"
+          "const": "deny-clear-permissions",
+          "markdownDescription": "Denies the clear_permissions command without any pre-configured scope."
         },
         {
           "description": "Enables the clear_watch command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-clear-watch"
+          "const": "allow-clear-watch",
+          "markdownDescription": "Enables the clear_watch command without any pre-configured scope."
         },
         {
           "description": "Denies the clear_watch command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-clear-watch"
+          "const": "deny-clear-watch",
+          "markdownDescription": "Denies the clear_watch command without any pre-configured scope."
         },
         {
           "description": "Enables the get_current_position command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-get-current-position"
+          "const": "allow-get-current-position",
+          "markdownDescription": "Enables the get_current_position command without any pre-configured scope."
         },
         {
           "description": "Denies the get_current_position command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-get-current-position"
+          "const": "deny-get-current-position",
+          "markdownDescription": "Denies the get_current_position command without any pre-configured scope."
         },
         {
           "description": "Enables the request_permissions command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-request-permissions"
+          "const": "allow-request-permissions",
+          "markdownDescription": "Enables the request_permissions command without any pre-configured scope."
         },
         {
           "description": "Denies the request_permissions command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-request-permissions"
+          "const": "deny-request-permissions",
+          "markdownDescription": "Denies the request_permissions command without any pre-configured scope."
         },
         {
           "description": "Enables the watch_position command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-watch-position"
+          "const": "allow-watch-position",
+          "markdownDescription": "Enables the watch_position command without any pre-configured scope."
         },
         {
           "description": "Denies the watch_position command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-watch-position"
+          "const": "deny-watch-position",
+          "markdownDescription": "Denies the watch_position command without any pre-configured scope."
         }
       ]
     }

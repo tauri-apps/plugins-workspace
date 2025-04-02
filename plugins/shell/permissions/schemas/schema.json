@@ -297,57 +297,68 @@
         {
           "description": "Enables the execute command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-execute"
+          "const": "allow-execute",
+          "markdownDescription": "Enables the execute command without any pre-configured scope."
         },
         {
           "description": "Denies the execute command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-execute"
+          "const": "deny-execute",
+          "markdownDescription": "Denies the execute command without any pre-configured scope."
         },
         {
           "description": "Enables the kill command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-kill"
+          "const": "allow-kill",
+          "markdownDescription": "Enables the kill command without any pre-configured scope."
         },
         {
           "description": "Denies the kill command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-kill"
+          "const": "deny-kill",
+          "markdownDescription": "Denies the kill command without any pre-configured scope."
         },
         {
           "description": "Enables the open command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-open"
+          "const": "allow-open",
+          "markdownDescription": "Enables the open command without any pre-configured scope."
         },
         {
           "description": "Denies the open command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-open"
+          "const": "deny-open",
+          "markdownDescription": "Denies the open command without any pre-configured scope."
         },
         {
           "description": "Enables the spawn command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-spawn"
+          "const": "allow-spawn",
+          "markdownDescription": "Enables the spawn command without any pre-configured scope."
         },
         {
           "description": "Denies the spawn command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-spawn"
+          "const": "deny-spawn",
+          "markdownDescription": "Denies the spawn command without any pre-configured scope."
         },
         {
           "description": "Enables the stdin_write command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-stdin-write"
+          "const": "allow-stdin-write",
+          "markdownDescription": "Enables the stdin_write command without any pre-configured scope."
         },
         {
           "description": "Denies the stdin_write command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-stdin-write"
+          "const": "deny-stdin-write",
+          "markdownDescription": "Denies the stdin_write command without any pre-configured scope."
         },
         {
-          "description": "This permission set configures which\nshell functionality is exposed by default.\n\n#### Granted Permissions\n\nIt allows to use the `open` functionality without any specific\nscope pre-configured. It will allow opening `http(s)://`,\n`tel:` and `mailto:` links.\n",
+          "description": "This permission set configures which\nshell functionality is exposed by default.\n\n#### Granted Permissions\n\nIt allows to use the `open` functionality without any specific\nscope pre-configured. It will allow opening `http(s)://`,\n`tel:` and `mailto:` links.\n\n#### This default permission set includes:\n\n- `allow-open`",
           "type": "string",
-          "const": "default"
+          "const": "default",
+          "markdownDescription": "This permission set configures which\nshell functionality is exposed by default.\n\n#### Granted Permissions\n\nIt allows to use the `open` functionality without any specific\nscope pre-configured. It will allow opening `http(s)://`,\n`tel:` and `mailto:` links.\n\n#### This default permission set includes:\n\n- `allow-open`"
         }
       ]
     }

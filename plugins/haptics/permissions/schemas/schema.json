@@ -297,42 +297,50 @@
         {
           "description": "Enables the impact_feedback command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-impact-feedback"
+          "const": "allow-impact-feedback",
+          "markdownDescription": "Enables the impact_feedback command without any pre-configured scope."
         },
         {
           "description": "Denies the impact_feedback command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-impact-feedback"
+          "const": "deny-impact-feedback",
+          "markdownDescription": "Denies the impact_feedback command without any pre-configured scope."
         },
         {
           "description": "Enables the notification_feedback command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-notification-feedback"
+          "const": "allow-notification-feedback",
+          "markdownDescription": "Enables the notification_feedback command without any pre-configured scope."
         },
         {
           "description": "Denies the notification_feedback command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-notification-feedback"
+          "const": "deny-notification-feedback",
+          "markdownDescription": "Denies the notification_feedback command without any pre-configured scope."
         },
         {
           "description": "Enables the selection_feedback command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-selection-feedback"
+          "const": "allow-selection-feedback",
+          "markdownDescription": "Enables the selection_feedback command without any pre-configured scope."
         },
         {
           "description": "Denies the selection_feedback command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-selection-feedback"
+          "const": "deny-selection-feedback",
+          "markdownDescription": "Denies the selection_feedback command without any pre-configured scope."
         },
         {
           "description": "Enables the vibrate command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-vibrate"
+          "const": "allow-vibrate",
+          "markdownDescription": "Enables the vibrate command without any pre-configured scope."
         },
         {
           "description": "Denies the vibrate command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-vibrate"
+          "const": "deny-vibrate",
+          "markdownDescription": "Denies the vibrate command without any pre-configured scope."
         }
       ]
     }

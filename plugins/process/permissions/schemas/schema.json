@@ -297,27 +297,32 @@
         {
           "description": "Enables the exit command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-exit"
+          "const": "allow-exit",
+          "markdownDescription": "Enables the exit command without any pre-configured scope."
         },
         {
           "description": "Denies the exit command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-exit"
+          "const": "deny-exit",
+          "markdownDescription": "Denies the exit command without any pre-configured scope."
         },
         {
           "description": "Enables the restart command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-restart"
+          "const": "allow-restart",
+          "markdownDescription": "Enables the restart command without any pre-configured scope."
         },
         {
           "description": "Denies the restart command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-restart"
+          "const": "deny-restart",
+          "markdownDescription": "Denies the restart command without any pre-configured scope."
         },
         {
-          "description": "This permission set configures which\nprocess features are by default exposed.\n\n#### Granted Permissions\n\nThis enables to quit via `allow-exit` and restart via `allow-restart`\nthe application.\n",
+          "description": "This permission set configures which\nprocess features are by default exposed.\n\n#### Granted Permissions\n\nThis enables to quit via `allow-exit` and restart via `allow-restart`\nthe application.\n\n#### This default permission set includes:\n\n- `allow-exit`\n- `allow-restart`",
           "type": "string",
-          "const": "default"
+          "const": "default",
+          "markdownDescription": "This permission set configures which\nprocess features are by default exposed.\n\n#### Granted Permissions\n\nThis enables to quit via `allow-exit` and restart via `allow-restart`\nthe application.\n\n#### This default permission set includes:\n\n- `allow-exit`\n- `allow-restart`"
         }
       ]
     }
