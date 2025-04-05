@@ -311,5 +311,5 @@ pub async fn open<R: Runtime>(
     path: String,
     with: Option<Program>,
 ) -> crate::Result<()> {
-    shell.open(path, with)
+    crate::open::open(Some(&shell.open_scope), path, with)
 }

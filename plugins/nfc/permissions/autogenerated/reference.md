@@ -11,6 +11,8 @@ Writing to tags needs to be manually enabled.
 
 
 
+#### This default permission set includes the following:
+
 - `allow-is-available`
 - `allow-scan`
 

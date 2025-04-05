@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.1]
+
+- [`a1b3fa27`](https://github.com/tauri-apps/plugins-workspace/commit/a1b3fa27f11022c9b6622b4fab12d93239eb05de) ([#2515](https://github.com/tauri-apps/plugins-workspace/pull/2515) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Re-exported the `Geolocation`, `Haptics`, `Notification`, and `Os` structs so that they show up on docs.rs.
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.

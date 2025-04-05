@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{
     async_runtime::Mutex,
     command,
-    ipc::{CommandScope, GlobalScope},
+    ipc::{Channel, CommandScope, GlobalScope},
     Manager, ResourceId, ResourceTable, Runtime, State, Webview,
 };
 use tokio::sync::oneshot::{channel, Receiver, Sender};
@@ -315,6 +315,7 @@ pub async fn fetch<R: Runtime>(
                 tracing::trace!("{:?}", request);
 
                 let fut = async move { request.send().await.map_err(Into::into) };
+
                 let mut resources_table = webview.resources_table();
                 let rid = resources_table.add_request(Box::pin(fut));
 
@@ -358,7 +359,7 @@ pub fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::
     Ok(())
 }
 
-#[tauri::command]
+#[command]
 pub async fn fetch_send<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
@@ -410,17 +411,31 @@ pub async fn fetch_send<R: Runtime>(
     })
 }
 
-#[tauri::command]
-pub(crate) async fn fetch_read_body<R: Runtime>(
+#[command]
+pub async fn fetch_read_body<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
-) -> crate::Result<tauri::ipc::Response> {
+    stream_channel: Channel<tauri::ipc::InvokeResponseBody>,
+) -> crate::Result<()> {
     let res = {
         let mut resources_table = webview.resources_table();
         resources_table.take::<ReqwestResponse>(rid)?
     };
-    let res = Arc::into_inner(res).unwrap().0;
-    Ok(tauri::ipc::Response::new(res.bytes().await?.to_vec()))
+
+    let mut res = Arc::into_inner(res).unwrap().0;
+
+    // send response through IPC channel
+    while let Some(chunk) = res.chunk().await? {
+        let mut chunk = chunk.to_vec();
+        // append 0 to indicate we are not done yet
+        chunk.push(0);
+        stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(chunk))?;
+    }
+
+    // send 1 to indicate we are done
+    stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(vec![1]))?;
+
+    Ok(())
 }
 
 // forbidden headers per fetch spec https://fetch.spec.whatwg.org/#terminology-headers

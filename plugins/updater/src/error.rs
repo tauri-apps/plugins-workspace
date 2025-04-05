@@ -77,6 +77,8 @@ pub enum Error {
     InvalidHeaderValue(#[from] http::header::InvalidHeaderValue),
     #[error(transparent)]
     InvalidHeaderName(#[from] http::header::InvalidHeaderName),
+    #[error("Failed to format date")]
+    FormatDate,
     /// The configured updater endpoint must use a secure protocol like `https`
     #[error("The configured updater endpoint must use a secure protocol like `https`.")]
     InsecureTransportProtocol,

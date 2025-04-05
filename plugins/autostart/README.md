@@ -57,11 +57,9 @@ First you need to register the core plugin with Tauri:
 `src-tauri/src/lib.rs`
 
 ```rust
-use tauri_plugin_autostart::MacosLauncher;
-
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec!["--flag1", "--flag2"]) /* arbitrary number of args to pass to your app */))
+        .plugin(tauri_plugin_autostart::Builder::new().args((["--flag1", "--flag2"])).build()))
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

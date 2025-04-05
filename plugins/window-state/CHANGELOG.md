@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.2]
+
+- [`a35fea50`](https://github.com/tauri-apps/plugins-workspace/commit/a35fea501560a3d126aad09b59600d9f1a731a9e) ([#2583](https://github.com/tauri-apps/plugins-workspace/pull/2583)) Fix window size gets bigger/smaller on secondary monitor with a different scaling than the primary one
+
 ## \[2.2.1]
 
 - [`0ec895c3`](https://github.com/tauri-apps/plugins-workspace/commit/0ec895c378d4700cf8d7a002c6d9829f3c015b9f) ([#2330](https://github.com/tauri-apps/plugins-workspace/pull/2330) by [@thewh1teagle](https://github.com/tauri-apps/plugins-workspace/../../thewh1teagle)) Add `Builder::with_filter` callback to exclude specific windows from saving their state. This allows for more flexibility by enabling dynamic exclusion of windows based on custom logic.

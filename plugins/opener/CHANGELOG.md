@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.2.6]
+
+- [`1a984659`](https://github.com/tauri-apps/plugins-workspace/commit/1a9846599b6a71faf330845847a30f6bf9735898) ([#2469](https://github.com/tauri-apps/plugins-workspace/pull/2469) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Update `objc2` crate to 0.6. No user facing changes.
+- [`71f95c9f`](https://github.com/tauri-apps/plugins-workspace/commit/71f95c9f05b29cf1be586849614c0b007757c15d) ([#2445](https://github.com/tauri-apps/plugins-workspace/pull/2445) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `windows` crate to 0.60 to match Tauri 2.3.0. No user facing changes.
+
 ## \[2.2.5]
 
 - [`5b821181`](https://github.com/tauri-apps/plugins-workspace/commit/5b8211815825ddae2dcc0c00520e0cfdff002763) ([#2332](https://github.com/tauri-apps/plugins-workspace/pull/2332) by [@betamos](https://github.com/tauri-apps/plugins-workspace/../../betamos)) Fix broken JS commands `opener.openPath` and `opener.openUrl` on mobile.

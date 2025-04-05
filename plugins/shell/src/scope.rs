@@ -142,6 +142,7 @@ impl ScopeAllowedArg {
 /// Scope for the open command
 pub struct OpenScope {
     /// The validation regex that `shell > open` paths must match against.
+    /// When set to `None`, no values are accepted.
     pub open: Option<Regex>,
 }
 
@@ -212,6 +213,12 @@ impl OpenScope {
                     validation: regex.as_str().into(),
                 });
             }
+        } else {
+            log::warn!("open() command called but the plugin configuration denies calls from JavaScript; set `tauri.conf.json > plugins > shell > open` to true or a validation regex string");
+            return Err(Error::Validation {
+                index: 0,
+                validation: "tauri^".to_string(), // purposefully impossible regex
+            });
         }
 
         // The prevention of argument escaping is handled by the usage of std::process::Command::arg by
