@@ -12,7 +12,7 @@ resolver = "2"
 serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
 log = "0.4"
-tauri = { version = "2", default-features = false }
+tauri = { path = "../tauri/crates/tauri", default-features = false }
 tauri-build = "2"
 tauri-plugin = "2"
 tauri-utils = "2"

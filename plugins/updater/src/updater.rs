@@ -103,7 +103,7 @@ impl RemoteRelease {
                 .map_or_else(
                     || match fallback_target {
                         Some(fallback) => platforms.get(&fallback).map_or(Err(Error::TargetsNotFound(target.to_string(), fallback)), |p| Ok(&p.url)),
-                        None => Err(Error::TargetNotFound(target.to_string())) 
+                        None => Err(Error::TargetNotFound(target.to_string()))
                     }, |p| { Ok(&p.url) })
         }
     }
@@ -119,7 +119,7 @@ impl RemoteRelease {
                 .map_or_else(
                     || match fallback_target {
                         Some(fallback) => platforms.get(&fallback).map_or(Err(Error::TargetsNotFound(target.to_string(), fallback)), |p| Ok(&p.signature)),
-                        None => Err(Error::TargetNotFound(target.to_string())) 
+                        None => Err(Error::TargetNotFound(target.to_string()))
                     }, |p| { Ok(&p.signature) })
         }
     }
@@ -470,7 +470,7 @@ impl Updater {
             Some(comparator) => comparator(self.current_version.clone(), release.clone()),
             None => release.version > self.current_version,
         };
-        
+
         let installer = self.get_updater_installer()?;
 
         let update = if should_update {
