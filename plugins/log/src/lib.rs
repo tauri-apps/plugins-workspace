@@ -360,7 +360,7 @@ impl Builder {
         self
     }
 
-    /// Replace the targets of the logger.
+    /// Replaces the targets of the logger.
     ///
     /// ```rust
     /// use tauri_plugin_log::{Target, TargetKind, WEBVIEW_TARGET};
