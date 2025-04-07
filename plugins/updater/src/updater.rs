@@ -46,7 +46,7 @@ pub enum Installer {
     Nsis,
 }
 
-impl Installer{
+impl Installer {
     fn suffix(self) -> &'static str {
         match self {
             Self::AppImage => "appimage",
@@ -94,17 +94,19 @@ pub struct RemoteRelease {
 impl RemoteRelease {
     /// The release's download URL for the given target.
     pub fn download_url(&self, target: &str, installer: Option<Installer>) -> Result<&Url> {
-
         let fallback_target = installer.map(|installer| format!("{target}-{}", installer.suffix()));
         match self.data {
             RemoteReleaseInner::Dynamic(ref platform) => Ok(&platform.url),
-            RemoteReleaseInner::Static { ref platforms } => platforms
-                .get(target)
-                .map_or_else(
-                    || match fallback_target {
-                        Some(fallback) => platforms.get(&fallback).map_or(Err(Error::TargetsNotFound(target.to_string(), fallback)), |p| Ok(&p.url)),
-                        None => Err(Error::TargetNotFound(target.to_string())) 
-                    }, |p| { Ok(&p.url) })
+            RemoteReleaseInner::Static { ref platforms } => platforms.get(target).map_or_else(
+                || match fallback_target {
+                    Some(fallback) => platforms.get(&fallback).map_or(
+                        Err(Error::TargetsNotFound(target.to_string(), fallback)),
+                        |p| Ok(&p.url),
+                    ),
+                    None => Err(Error::TargetNotFound(target.to_string())),
+                },
+                |p| Ok(&p.url),
+            ),
         }
     }
 
@@ -114,13 +116,16 @@ impl RemoteRelease {
 
         match self.data {
             RemoteReleaseInner::Dynamic(ref platform) => Ok(&platform.signature),
-            RemoteReleaseInner::Static { ref platforms } => platforms
-                .get(target)
-                .map_or_else(
-                    || match fallback_target {
-                        Some(fallback) => platforms.get(&fallback).map_or(Err(Error::TargetsNotFound(target.to_string(), fallback)), |p| Ok(&p.signature)),
-                        None => Err(Error::TargetNotFound(target.to_string())) 
-                    }, |p| { Ok(&p.signature) })
+            RemoteReleaseInner::Static { ref platforms } => platforms.get(target).map_or_else(
+                || match fallback_target {
+                    Some(fallback) => platforms.get(&fallback).map_or(
+                        Err(Error::TargetsNotFound(target.to_string(), fallback)),
+                        |p| Ok(&p.signature),
+                    ),
+                    None => Err(Error::TargetNotFound(target.to_string())),
+                },
+                |p| Ok(&p.signature),
+            ),
         }
     }
 }
@@ -283,7 +288,7 @@ impl UpdaterBuilder {
 
         let arch = get_updater_arch().ok_or(Error::UnsupportedArch)?;
         let (target, json_target) = if let Some(target) = self.target {
-            (target.clone(), target )
+            (target.clone(), target)
         } else {
             let target = get_updater_target().ok_or(Error::UnsupportedOs)?;
             let json_target = format!("{target}-{arch}");
@@ -356,11 +361,7 @@ pub struct Updater {
     current_exe_args: Vec<OsString>,
 }
 
-
-
-
 impl Updater {
-
     fn get_updater_installer(&self) -> Result<Option<Installer>> {
         match tauri::__TAURI_BUNDLE_TYPE {
             "DEB_BUNDLE" => Ok(Some(Installer::Deb)),
@@ -368,7 +369,7 @@ impl Updater {
             "APP_BUNDLE" => Ok(Some(Installer::AppImage)),
             "MSI_BUNDLE" => Ok(Some(Installer::Msi)),
             "NSS_BUNDLE" => Ok(Some(Installer::Nsis)),
-            _ => Err(Error::UnknownInstaller)
+            _ => Err(Error::UnknownInstaller),
         }
     }
 
@@ -470,7 +471,7 @@ impl Updater {
             Some(comparator) => comparator(self.current_version.clone(), release.clone()),
             None => release.version > self.current_version,
         };
-        
+
         let installer = self.get_updater_installer()?;
 
         let update = if should_update {
@@ -484,9 +485,13 @@ impl Updater {
                 extract_path: self.extract_path.clone(),
                 version: release.version.to_string(),
                 date: release.pub_date,
-                download_url: release.download_url(&self.json_target, installer.clone())?.to_owned(),
+                download_url: release
+                    .download_url(&self.json_target, installer.clone())?
+                    .to_owned(),
                 body: release.notes.clone(),
-                signature: release.signature(&self.json_target, installer.clone())?.to_owned(),
+                signature: release
+                    .signature(&self.json_target, installer.clone())?
+                    .to_owned(),
                 installer,
                 raw_json: raw_json.unwrap(),
                 timeout: self.timeout,
@@ -520,7 +525,7 @@ pub struct Update {
     pub date: Option<OffsetDateTime>,
     /// Target
     pub target: String,
-    /// Current installer 
+    /// Current installer
     pub installer: Option<Installer>,
     /// Download URL announced
     pub download_url: Url,
@@ -852,7 +857,7 @@ impl Update {
         match self.installer {
             Some(Installer::Deb) => self.install_deb(bytes),
             Some(Installer::Rpm) => self.install_rpm(bytes),
-            _ =>self.install_appimage(bytes)
+            _ => self.install_appimage(bytes),
         }
     }
 
@@ -927,7 +932,6 @@ impl Update {
         Err(Error::TempDirNotOnSameMountPoint)
     }
 
-
     fn install_deb(&self, bytes: &[u8]) -> Result<()> {
         // First verify the bytes are actually a .deb package
         if !infer::archive::is_deb(bytes) {
@@ -935,7 +939,6 @@ impl Update {
         }
 
         self.try_tmp_locations(bytes, "dpkg", "-i")
-
     }
 
     fn install_rpm(&self, bytes: &[u8]) -> Result<()> {
@@ -966,7 +969,11 @@ impl Update {
                     // Try writing the .deb file
                     if std::fs::write(&pkg_path, bytes).is_ok() {
                         // If write succeeds, proceed with installation
-                        return self.try_install_with_privileges(&pkg_path, install_cmd, install_arg);
+                        return self.try_install_with_privileges(
+                            &pkg_path,
+                            install_cmd,
+                            install_arg,
+                        );
                     }
                     // If write fails, continue to next temp location
                 }
@@ -975,10 +982,14 @@ impl Update {
 
         // If we get here, all temp locations failed
         Err(Error::TempDirNotFound)
-
     }
 
-    fn try_install_with_privileges(&self, pkg_path: &Path, install_cmd: &str, install_arg: &str) -> Result<()> {
+    fn try_install_with_privileges(
+        &self,
+        pkg_path: &Path,
+        install_cmd: &str,
+        install_arg: &str,
+    ) -> Result<()> {
         // 1. First try using pkexec (graphical sudo prompt)
         if let Ok(status) = std::process::Command::new("pkexec")
             .arg(install_cmd)
@@ -1042,7 +1053,13 @@ impl Update {
         Err(Error::AuthenticationFailed)
     }
 
-    fn install_with_sudo(&self, pkg_path: &Path, password: &str, install_cmd: &str, install_arg: &str) -> Result<bool> {
+    fn install_with_sudo(
+        &self,
+        pkg_path: &Path,
+        password: &str,
+        install_cmd: &str,
+        install_arg: &str,
+    ) -> Result<bool> {
         use std::io::Write;
         use std::process::{Command, Stdio};
 
@@ -1192,7 +1209,6 @@ pub(crate) fn get_updater_target() -> Option<&'static str> {
     }
 }
 
-
 pub(crate) fn get_updater_arch() -> Option<&'static str> {
     if cfg!(target_arch = "x86") {
         Some("i686")
@@ -1206,8 +1222,6 @@ pub(crate) fn get_updater_arch() -> Option<&'static str> {
         None
     }
 }
-
-
 
 pub fn extract_path_from_executable(executable_path: &Path) -> Result<PathBuf> {
     // Return the path of the current executable by default
