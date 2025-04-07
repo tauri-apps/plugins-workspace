@@ -6771,6 +6771,7 @@ dependencies = [
  "tauri-plugin",
  "thiserror 2.0.9",
  "time",
+ "tracing",
 ]
 
 [[package]]
