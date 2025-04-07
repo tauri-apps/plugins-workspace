@@ -119,8 +119,11 @@ fn target_to_platforms(
     update_platform: Option<String>,
     signature: String,
 ) -> HashMap<String, PlatformUpdate> {
+
     let mut platforms = HashMap::new();
     if let Some(platform) = update_platform {
+        println!("TARGET: {}", platform.clone());
+
         platforms.insert(
             platform,
             PlatformUpdate {
@@ -201,24 +204,60 @@ fn bundle_path(root_dir: &Path, _version: &str, v1compatible: bool) -> PathBuf {
 }
 
 #[cfg(windows)]
-fn bundle_paths(
+fn test_cases(
     root_dir: &Path,
     version: &str,
-    v1compatible: bool,
-) -> Vec<(BundleTarget, PathBuf)> {
+    target: String
+) -> Vec<(BundleTarget, PathBuf, Option<String>, Vec<i32>)> {
     vec![
         (
             BundleTarget::Nsis,
             root_dir.join(format!(
                 "target/debug/bundle/nsis/app-updater_{version}_x64-setup.exe"
             )),
+            Some(target.clone()),
+            vec![UPDATED_EXIT_CODE]
+        ),
+        (
+            BundleTarget::Nsis,
+            root_dir.join(format!(
+                "target/debug/bundle/nsis/app-updater_{version}_x64-setup.exe"
+            )),
+            Some(format!("{target}-{}", BundleTarget::Nsis.name())),
+            vec![UPDATED_EXIT_CODE]
+        ),
+        (
+            BundleTarget::Nsis,
+            root_dir.join(format!(
+                "target/debug/bundle/nsis/app-updater_{version}_x64-setup.exe"
+            )),
+            None,
+            vec![ERROR_EXIT_CODE]
         ),
         (
             BundleTarget::Msi,
             root_dir.join(format!(
                 "target/debug/bundle/msi/app-updater_{version}_x64_en-US.msi"
             )),
+            Some(target.clone()),
+            vec![UPDATED_EXIT_CODE]
         ),
+        (
+            BundleTarget::Msi,
+            root_dir.join(format!(
+                "target/debug/bundle/msi/app-updater_{version}_x64_en-US.msi"
+            )),
+            Some(format!("{target}-{}", BundleTarget::Msi.name())),
+            vec![UPDATED_EXIT_CODE]
+        ),
+        (
+            BundleTarget::Msi,
+            root_dir.join(format!(
+                "target/debug/bundle/msi/app-updater_{version}_x64_en-US.msi"
+            )),
+            None,
+            vec![ERROR_EXIT_CODE]
+        )
     ]
 }
 
