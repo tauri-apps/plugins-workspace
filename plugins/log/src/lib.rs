@@ -170,7 +170,7 @@ pub enum TargetKind {
     ///
     /// This requires the webview to subscribe to log events, via this plugins `attachConsole` function.
     Webview,
-    /// Send logs to a fern::Dispatch
+    /// Send logs to a [`fern::Dispatch`]
     ///
     /// You can use this to construct arbitrary log targets.
     Dispatch(fern::Dispatch),
