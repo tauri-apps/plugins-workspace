@@ -27,9 +27,9 @@ use tauri::{
     Manager, Runtime,
 };
 use tauri::{AppHandle, Emitter};
+use time::{macros::format_description, OffsetDateTime};
 
 pub use fern;
-use time::OffsetDateTime;
 
 pub const WEBVIEW_TARGET: &str = "webview";
 
@@ -277,9 +277,7 @@ pub struct Builder {
 impl Default for Builder {
     fn default() -> Self {
         #[cfg(desktop)]
-        let format =
-            time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
-                .unwrap();
+        let format = format_description!("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]");
         let dispatch = fern::Dispatch::new().format(move |out, message, record| {
             out.finish(
                 #[cfg(mobile)]
@@ -318,9 +316,7 @@ impl Builder {
     pub fn timezone_strategy(mut self, timezone_strategy: TimezoneStrategy) -> Self {
         self.timezone_strategy = timezone_strategy.clone();
 
-        let format =
-            time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
-                .unwrap();
+        let format = format_description!("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]");
         self.dispatch = self.dispatch.format(move |out, message, record| {
             out.finish(format_args!(
                 "{}[{}][{}] {}",
@@ -416,9 +412,7 @@ impl Builder {
 
     #[cfg(feature = "colored")]
     pub fn with_colors(self, colors: fern::colors::ColoredLevelConfig) -> Self {
-        let format =
-            time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
-                .unwrap();
+        let format = format_description!("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]");
 
         let timezone_strategy = self.timezone_strategy.clone();
         self.format(move |out, message, record| {
@@ -600,11 +594,9 @@ fn get_log_file_path(
                     let to = dir.as_ref().join(format!(
                         "{}_{}.log",
                         file_name,
-                        timezone_strategy
-                            .get_now()
-                            .format(&time::format_description::parse(
-                                "[year]-[month]-[day]_[hour]-[minute]-[second]"
-                            )?)?,
+                        timezone_strategy.get_now().format(&format_description!(
+                            "[year]-[month]-[day]_[hour]-[minute]-[second]"
+                        ))?,
                     ));
                     if to.is_file() {
                         // designated rotated log file name already exists
