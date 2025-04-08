@@ -18,6 +18,8 @@ use std::ffi::OsStr;
 use base64::Engine;
 use futures_util::StreamExt;
 use http::HeaderName;
+#[cfg(not(feature = "tracing"))]
+use log as logger;
 use minisign_verify::{PublicKey, Signature};
 use percent_encoding::{AsciiSet, CONTROLS};
 use reqwest::{
@@ -28,6 +30,8 @@ use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
 use tauri::{utils::platform::current_exe, AppHandle, Resource, Runtime};
 use time::OffsetDateTime;
+#[cfg(feature = "tracing")]
+use tracing as logger;
 use url::Url;
 
 use crate::{
@@ -387,14 +391,14 @@ impl Updater {
                 .replace("{{arch}}", self.arch)
                 .parse()?;
 
-            tracing::debug!("checking for updates {url}");
+            logger::debug!("checking for updates {url}");
 
             let mut request = ClientBuilder::new().user_agent(UPDATER_USER_AGENT);
             if let Some(timeout) = self.timeout {
                 request = request.timeout(timeout);
             }
             if let Some(ref proxy) = self.proxy {
-                tracing::debug!("using proxy {proxy}");
+                logger::debug!("using proxy {proxy}");
                 let proxy = reqwest::Proxy::all(proxy.as_str())?;
                 request = request.proxy(proxy);
             }
@@ -415,36 +419,36 @@ impl Updater {
                     if res.status().is_success() {
                         // no updates found!
                         if StatusCode::NO_CONTENT == res.status() {
-                            tracing::debug!("update endpoint returned 204 No Content");
+                            logger::debug!("update endpoint returned 204 No Content");
                             return Ok(None);
                         };
 
                         let update_response: serde_json::Value = res.json().await?;
-                        tracing::debug!("update response: {update_response:?}");
+                        logger::debug!("update response: {update_response:?}");
                         raw_json = Some(update_response.clone());
                         match serde_json::from_value::<RemoteRelease>(update_response)
                             .map_err(Into::into)
                         {
                             Ok(release) => {
-                                tracing::debug!("parsed release response {release:?}");
+                                logger::debug!("parsed release response {release:?}");
                                 last_error = None;
                                 remote_release = Some(release);
                                 // we found a release, break the loop
                                 break;
                             }
                             Err(err) => {
-                                tracing::error!("failed to deserialize update response: {err}");
+                                logger::error!("failed to deserialize update response: {err}");
                                 last_error = Some(err)
                             }
                         }
                     } else {
-                        tracing::error!(
+                        logger::error!(
                             "update endpoint did not respond with a successful status code"
                         );
                     }
                 }
                 Err(err) => {
-                    tracing::error!("failed to check for updates: {err}");
+                    logger::error!("failed to check for updates: {err}");
                     last_error = Some(err.into())
                 }
             }
@@ -713,7 +717,7 @@ impl Update {
         };
 
         if let Some(on_before_exit) = self.on_before_exit.as_ref() {
-            tracing::debug!("running on_before_exit hook");
+            logger::debug!("running on_before_exit hook");
             on_before_exit();
         }
 
@@ -882,7 +886,7 @@ impl Update {
 
                     #[cfg(feature = "zip")]
                     if infer::archive::is_gz(bytes) {
-                        tracing::debug!("extracting AppImage");
+                        logger::debug!("extracting AppImage");
                         // extract the buffer to the tmp_dir
                         // we extract our signed archive into our final directory without any temp file
                         let archive = Cursor::new(bytes);
@@ -906,7 +910,7 @@ impl Update {
                         return Err(Error::BinaryNotFoundInArchive);
                     }
 
-                    tracing::debug!("rewriting AppImage");
+                    logger::debug!("rewriting AppImage");
                     return match std::fs::write(&self.extract_path, bytes)
                         .and_then(|_| std::fs::set_permissions(&self.extract_path, permissions))
                     {
@@ -960,7 +964,7 @@ impl Update {
     fn install_deb(&self, bytes: &[u8]) -> Result<()> {
         // First verify the bytes are actually a .deb package
         if !infer::archive::is_deb(bytes) {
-            tracing::warn!("update is not a valid deb package");
+            logger::warn!("update is not a valid deb package");
             return Err(Error::InvalidUpdaterFormat);
         }
 
@@ -1003,7 +1007,7 @@ impl Update {
             .status()
         {
             if status.success() {
-                tracing::debug!("installed deb with pkexec");
+                logger::debug!("installed deb with pkexec");
                 return Ok(());
             }
         }
@@ -1011,7 +1015,7 @@ impl Update {
         // 2. Try zenity or kdialog for a graphical sudo experience
         if let Ok(password) = self.get_password_graphically() {
             if self.install_with_sudo(deb_path, &password)? {
-                tracing::debug!("installed deb with GUI sudo");
+                logger::debug!("installed deb with GUI sudo");
                 return Ok(());
             }
         }
@@ -1024,7 +1028,7 @@ impl Update {
             .status()?;
 
         if status.success() {
-            tracing::debug!("installed deb with sudo");
+            logger::debug!("installed deb with sudo");
             Ok(())
         } else {
             Err(Error::DebInstallFailed)
@@ -1148,7 +1152,7 @@ impl Update {
         };
 
         if need_authorization {
-            tracing::debug!("app installation needs admin privileges");
+            logger::debug!("app installation needs admin privileges");
             // Use AppleScript to perform moves with admin privileges
             let apple_script = format!(
                 "do shell script \"rm -rf '{src}' && mv -f '{new}' '{src}'\" with administrator privileges",
