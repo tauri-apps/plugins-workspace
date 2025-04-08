@@ -77,6 +77,13 @@ fn socket_cleanup(socket: &PathBuf) {
 fn notify_singleton(socket: &PathBuf) -> Result<(), Error> {
     let stream = UnixStream::connect(socket)?;
     let mut bf = BufWriter::new(&stream);
+    let cwd = std::env::current_dir()
+        .unwrap_or_default()
+        .to_str()
+        .unwrap_or_default()
+        .to_string();
+    bf.write_all(cwd.as_bytes())?;
+    bf.write_all(b"\0\0")?;
     let args_joined = std::env::args().collect::<Vec<String>>().join("\0");
     bf.write_all(args_joined.as_bytes())?;
     bf.flush()?;
@@ -91,12 +98,6 @@ fn listen_for_other_instances<A: Runtime>(
 ) {
     match UnixListener::bind(socket) {
         Ok(listener) => {
-            let cwd = std::env::current_dir()
-                .unwrap_or_default()
-                .to_str()
-                .unwrap_or_default()
-                .to_string();
-
             tauri::async_runtime::spawn(async move {
                 for stream in listener.incoming() {
                     match stream {
@@ -104,9 +105,16 @@ fn listen_for_other_instances<A: Runtime>(
                             let mut s = String::new();
                             match stream.read_to_string(&mut s) {
                                 Ok(_) => {
+                                    let (cwd, args) = {
+                                        let mut split = s.split("\0\0");
+                                        (
+                                            split.next().unwrap_or_default(),
+                                            split.next().unwrap_or_default(),
+                                        )
+                                    };
                                     let args: Vec<String> =
-                                        s.split('\0').map(String::from).collect();
-                                    cb(app.app_handle(), args, cwd.clone());
+                                        args.split('\0').map(String::from).collect();
+                                    cb(app.app_handle(), args, cwd.to_string());
                                 }
                                 Err(e) => {
                                     tracing::debug!("single_instance failed to be notified: {e}")
