@@ -15,7 +15,7 @@
     "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-typescript": "11.1.6",
     "eslint": "9.24.0",
-    "eslint-config-prettier": "10.1.1",
+    "eslint-config-prettier": "10.1.2",
     "prettier": "3.5.3",
     "rollup": "4.39.0",
     "typescript": "5.8.3",
