@@ -1245,15 +1245,23 @@ type WatchEventKindRemove =
   | { kind: 'folder' }
   | { kind: 'other' }
 
+// TODO: Remove this in v3, return `Watcher` instead
 /**
  * @since 2.0.0
  */
 type UnwatchFn = () => void
 
-async function unwatch(rid: number): Promise<void> {
-  await invoke('plugin:fs|unwatch', { rid })
+class Watcher extends Resource {
+  constructor(rid: number) {
+    super(rid)
+  }
+
+  unwatch = () => {
+    void this.close()
+  }
 }
 
+// TODO: Return `Watcher` instead in v3
 /**
  * Watch changes (after a delay) on files or directories.
  *
@@ -1287,11 +1295,12 @@ async function watch(
     onEvent
   })
 
-  return () => {
-    void unwatch(rid)
-  }
+  const watcher = new Watcher(rid)
+
+  return watcher.unwatch
 }
 
+// TODO: Return `Watcher` instead in v3
 /**
  * Watch changes on files or directories.
  *
@@ -1325,9 +1334,9 @@ async function watchImmediate(
     onEvent
   })
 
-  return () => {
-    void unwatch(rid)
-  }
+  const watcher = new Watcher(rid)
+
+  return watcher.unwatch
 }
 
 /**
