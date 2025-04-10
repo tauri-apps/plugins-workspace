@@ -45,16 +45,18 @@ pub fn watch<R: Runtime>(
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
 ) -> CommandResult<ResourceId> {
-    let mut resolved_paths = Vec::with_capacity(paths.capacity());
-    for path in paths {
-        resolved_paths.push(resolve_path(
-            &webview,
-            &global_scope,
-            &command_scope,
-            path,
-            options.base_dir,
-        )?);
-    }
+    let resolved_paths = paths
+        .into_iter()
+        .map(|path| {
+            resolve_path(
+                &webview,
+                &global_scope,
+                &command_scope,
+                path,
+                options.base_dir,
+            )
+        })
+        .collect::<CommandResult<Vec<_>>>()?;
 
     let recursive_mode = if options.recursive {
         RecursiveMode::Recursive
