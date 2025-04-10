@@ -31,6 +31,7 @@ impl Resource for WatcherKind {}
 #[serde(rename_all = "camelCase")]
 pub struct WatchOptions {
     base_dir: Option<BaseDirectory>,
+    #[serde(default)]
     recursive: bool,
     delay_ms: Option<u64>,
 }
