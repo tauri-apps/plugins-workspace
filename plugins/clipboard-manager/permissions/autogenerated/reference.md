@@ -7,6 +7,8 @@ application specific if read and/or write access is needed.
 Clipboard interaction needs to be explicitly enabled.
 
 
+#### This default permission set includes the following:
+
 
 ## Permission Table
 

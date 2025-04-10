@@ -10,6 +10,8 @@ All information except the host name are available.
 
 
 
+#### This default permission set includes the following:
+
 - `allow-arch`
 - `allow-exe-extension`
 - `allow-family`

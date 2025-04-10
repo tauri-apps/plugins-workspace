@@ -11,26 +11,29 @@
     "example:api:dev": "pnpm run --filter \"api\" tauri dev"
   },
   "devDependencies": {
-    "@eslint/js": "9.19.0",
-    "@rollup/plugin-node-resolve": "16.0.0",
+    "@eslint/js": "9.24.0",
+    "@rollup/plugin-node-resolve": "16.0.1",
     "@rollup/plugin-terser": "0.4.4",
-    "@rollup/plugin-typescript": "11.1.6",
-    "@types/eslint__js": "8.42.3",
-    "covector": "^0.12.3",
-    "eslint": "9.19.0",
-    "eslint-config-prettier": "10.0.1",
+    "@rollup/plugin-typescript": "12.1.2",
+    "covector": "^0.12.4",
+    "eslint": "9.24.0",
+    "eslint-config-prettier": "10.1.2",
     "eslint-plugin-security": "3.0.1",
-    "prettier": "3.5.1",
-    "rollup": "4.34.8",
+    "prettier": "3.5.3",
+    "rollup": "4.39.0",
     "tslib": "2.8.1",
-    "typescript": "5.7.3",
-    "typescript-eslint": "8.24.1"
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.29.1"
   },
-  "resolutions": {
-    "semver": ">=7.5.2",
-    "optionator": ">=0.9.3"
+  "pnpm": {
+    "overrides": {
+      "esbuild@<0.25.0": ">=0.25.0"
+    },
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   },
   "engines": {
-    "pnpm": "^9.0.0"
+    "pnpm": "^10.0.0"
   }
 }

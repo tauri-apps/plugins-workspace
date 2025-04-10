@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.2.1]
+
+### bug
+
+- [`831c35ff`](https://github.com/tauri-apps/plugins-workspace/commit/831c35ff3940e841fe4418bb4cb104038b03304b) ([#2550](https://github.com/tauri-apps/plugins-workspace/pull/2550)) Fix `writeFile` ReadableStream handling due to missing async iterator support on macOS platform
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.

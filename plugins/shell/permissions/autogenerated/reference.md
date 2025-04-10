@@ -5,10 +5,12 @@ shell functionality is exposed by default.
 
 #### Granted Permissions
 
-It allows to use the `open` functionality without any specific
+It allows to use the `open` functionality with a reasonable
 scope pre-configured. It will allow opening `http(s)://`,
 `tel:` and `mailto:` links.
 
+
+#### This default permission set includes the following:
 
 - `allow-open`
 

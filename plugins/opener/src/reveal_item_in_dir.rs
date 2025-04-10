@@ -185,7 +185,7 @@ mod imp {
             let path = path.to_string_lossy();
             let path = NSString::from_str(&path);
             let urls = vec![NSURL::fileURLWithPath(&path)];
-            let urls = NSArray::from_vec(urls);
+            let urls = NSArray::from_retained_slice(&urls);
 
             let workspace = NSWorkspace::new();
             workspace.activateFileViewerSelectingURLs(&urls);

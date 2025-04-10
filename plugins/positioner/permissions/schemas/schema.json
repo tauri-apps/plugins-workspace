@@ -49,7 +49,7 @@
           "minimum": 1.0
         },
         "description": {
-          "description": "Human-readable description of what the permission does. Tauri convention is to use <h4> headings in markdown content for Tauri documentation generation purposes.",
+          "description": "Human-readable description of what the permission does. Tauri convention is to use `<h4>` headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -111,7 +111,7 @@
           "type": "string"
         },
         "description": {
-          "description": "Human-readable description of what the permission does. Tauri internal convention is to use <h4> headings in markdown content for Tauri documentation generation purposes.",
+          "description": "Human-readable description of what the permission does. Tauri internal convention is to use `<h4>` headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -297,37 +297,44 @@
         {
           "description": "Enables the move_window command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-move-window"
+          "const": "allow-move-window",
+          "markdownDescription": "Enables the move_window command without any pre-configured scope."
         },
         {
           "description": "Denies the move_window command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-move-window"
+          "const": "deny-move-window",
+          "markdownDescription": "Denies the move_window command without any pre-configured scope."
         },
         {
           "description": "Enables the move_window_constrained command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-move-window-constrained"
+          "const": "allow-move-window-constrained",
+          "markdownDescription": "Enables the move_window_constrained command without any pre-configured scope."
         },
         {
           "description": "Denies the move_window_constrained command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-move-window-constrained"
+          "const": "deny-move-window-constrained",
+          "markdownDescription": "Denies the move_window_constrained command without any pre-configured scope."
         },
         {
           "description": "Enables the set_tray_icon_state command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-set-tray-icon-state"
+          "const": "allow-set-tray-icon-state",
+          "markdownDescription": "Enables the set_tray_icon_state command without any pre-configured scope."
         },
         {
           "description": "Denies the set_tray_icon_state command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-set-tray-icon-state"
+          "const": "deny-set-tray-icon-state",
+          "markdownDescription": "Denies the set_tray_icon_state command without any pre-configured scope."
         },
         {
-          "description": "Allows the moveWindow and handleIconState APIs",
+          "description": "Allows the moveWindow and handleIconState APIs\n#### This default permission set includes:\n\n- `allow-move-window`\n- `allow-move-window-constrained`\n- `allow-set-tray-icon-state`",
           "type": "string",
-          "const": "default"
+          "const": "default",
+          "markdownDescription": "Allows the moveWindow and handleIconState APIs\n#### This default permission set includes:\n\n- `allow-move-window`\n- `allow-move-window-constrained`\n- `allow-set-tray-icon-state`"
         }
       ]
     }

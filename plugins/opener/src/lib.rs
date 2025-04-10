@@ -56,7 +56,7 @@ impl<R: Runtime> Opener<R> {
     /// - **Android / iOS**: Always opens using default program.
     #[cfg(desktop)]
     pub fn open_url(&self, url: impl Into<String>, with: Option<impl Into<String>>) -> Result<()> {
-        crate::open::open(url.into(), with.map(Into::into)).map_err(Into::into)
+        crate::open::open(url.into(), with.map(Into::into))
     }
 
     /// Open a url with a default or specific program.
@@ -108,7 +108,7 @@ impl<R: Runtime> Opener<R> {
         path: impl Into<String>,
         with: Option<impl Into<String>>,
     ) -> Result<()> {
-        crate::open::open(path.into(), with.map(Into::into)).map_err(Into::into)
+        crate::open::open(path.into(), with.map(Into::into))
     }
 
     /// Open a path with a default or specific program.

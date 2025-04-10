@@ -21,9 +21,9 @@ mod models;
 pub use error::{Error, Result};
 
 #[cfg(desktop)]
-use desktop::Geolocation;
+pub use desktop::Geolocation;
 #[cfg(mobile)]
-use mobile::Geolocation;
+pub use mobile::Geolocation;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the geolocation APIs.
 pub trait GeolocationExt<R: Runtime> {
