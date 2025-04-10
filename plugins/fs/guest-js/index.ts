@@ -1317,7 +1317,8 @@ async function watchImmediate(
   options?: WatchOptions
 ): Promise<UnwatchFn> {
   return await watchInternal(paths, cb, {
-    ...options
+    ...options,
+    delayMs: undefined
   })
 }
 
