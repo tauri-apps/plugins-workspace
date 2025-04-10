@@ -78,7 +78,6 @@ fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTa
     }
 }
 
-
 #[derive(Copy, Clone)]
 enum BundleTarget {
     AppImage,
@@ -119,7 +118,6 @@ fn target_to_platforms(
     update_platform: Option<String>,
     signature: String,
 ) -> HashMap<String, PlatformUpdate> {
-
     let mut platforms = HashMap::new();
     if let Some(platform) = update_platform {
         println!("TARGET: {}", platform.clone());
@@ -207,7 +205,7 @@ fn bundle_path(root_dir: &Path, _version: &str, v1compatible: bool) -> PathBuf {
 fn test_cases(
     root_dir: &Path,
     version: &str,
-    target: String
+    target: String,
 ) -> Vec<(BundleTarget, PathBuf, Option<String>, Vec<i32>)> {
     vec![
         (
@@ -216,7 +214,7 @@ fn test_cases(
                 "target/debug/bundle/nsis/app-updater_{version}_x64-setup.exe"
             )),
             Some(target.clone()),
-            vec![UPDATED_EXIT_CODE]
+            vec![UPDATED_EXIT_CODE],
         ),
         (
             BundleTarget::Nsis,
@@ -224,7 +222,7 @@ fn test_cases(
                 "target/debug/bundle/nsis/app-updater_{version}_x64-setup.exe"
             )),
             Some(format!("{target}-{}", BundleTarget::Nsis.name())),
-            vec![UPDATED_EXIT_CODE]
+            vec![UPDATED_EXIT_CODE],
         ),
         (
             BundleTarget::Nsis,
@@ -232,7 +230,7 @@ fn test_cases(
                 "target/debug/bundle/nsis/app-updater_{version}_x64-setup.exe"
             )),
             None,
-            vec![ERROR_EXIT_CODE]
+            vec![ERROR_EXIT_CODE],
         ),
         (
             BundleTarget::Msi,
@@ -240,7 +238,7 @@ fn test_cases(
                 "target/debug/bundle/msi/app-updater_{version}_x64_en-US.msi"
             )),
             Some(target.clone()),
-            vec![UPDATED_EXIT_CODE]
+            vec![UPDATED_EXIT_CODE],
         ),
         (
             BundleTarget::Msi,
@@ -248,7 +246,7 @@ fn test_cases(
                 "target/debug/bundle/msi/app-updater_{version}_x64_en-US.msi"
             )),
             Some(format!("{target}-{}", BundleTarget::Msi.name())),
-            vec![UPDATED_EXIT_CODE]
+            vec![UPDATED_EXIT_CODE],
         ),
         (
             BundleTarget::Msi,
@@ -256,8 +254,8 @@ fn test_cases(
                 "target/debug/bundle/msi/app-updater_{version}_x64_en-US.msi"
             )),
             None,
-            vec![ERROR_EXIT_CODE]
-        )
+            vec![ERROR_EXIT_CODE],
+        ),
     ]
 }
 
@@ -286,7 +284,6 @@ fn update_app() {
             config.bundle.create_updater_artifacts,
             Updater::String(V1Compatible::V1Compatible)
         );
-
 
         let updater_zip_ext = if v1_compatible {
             if cfg!(windows) {

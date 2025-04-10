@@ -29,6 +29,12 @@ pub use config::Config;
 pub use error::{Error, Result};
 pub use updater::*;
 
+/// Variable holding the type of bundle the executable is stored in. This is modified by binary
+/// patching during build
+#[unsafe(no_mangle)]
+#[link_section = ".data.ta"]
+pub static __TAURI_BUNDLE_TYPE: &str = "UNK_BUNDLE";
+
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the updater APIs.
 pub trait UpdaterExt<R: Runtime> {
     /// Gets the updater builder to build and updater

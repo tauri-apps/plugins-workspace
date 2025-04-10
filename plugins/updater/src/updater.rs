@@ -29,7 +29,7 @@ use url::Url;
 
 use crate::{
     error::{Error, Result},
-    Config,
+    Config, __TAURI_BUNDLE_TYPE,
 };
 
 const UPDATER_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
@@ -363,7 +363,7 @@ pub struct Updater {
 
 impl Updater {
     fn get_updater_installer(&self) -> Result<Option<Installer>> {
-        match tauri::__TAURI_BUNDLE_TYPE {
+        match __TAURI_BUNDLE_TYPE {
             "DEB_BUNDLE" => Ok(Some(Installer::Deb)),
             "RPM_BUNDLE" => Ok(Some(Installer::Rpm)),
             "APP_BUNDLE" => Ok(Some(Installer::AppImage)),
