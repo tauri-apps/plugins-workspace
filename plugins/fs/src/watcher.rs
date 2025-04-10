@@ -37,7 +37,7 @@ pub struct WatchOptions {
 }
 
 #[tauri::command]
-pub async fn watch<R: Runtime>(
+pub fn watch<R: Runtime>(
     webview: Webview<R>,
     paths: Vec<SafeFilePath>,
     options: WatchOptions,
