@@ -17,7 +17,7 @@ use std::ffi::OsStr;
 
 use base64::Engine;
 use futures_util::StreamExt;
-use http::HeaderName;
+use http::{header::ACCEPT, HeaderName};
 use minisign_verify::{PublicKey, Signature};
 use percent_encoding::{AsciiSet, CONTROLS};
 use reqwest::{
@@ -345,7 +345,9 @@ impl Updater {
     pub async fn check(&self) -> Result<Option<Update>> {
         // we want JSON only
         let mut headers = self.headers.clone();
-        headers.insert("Accept", HeaderValue::from_str("application/json").unwrap());
+        if !headers.contains_key(ACCEPT) {
+            headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
+        }
 
         // Set SSL certs for linux if they aren't available.
         #[cfg(target_os = "linux")]
@@ -549,10 +551,9 @@ impl Update {
     ) -> Result<Vec<u8>> {
         // set our headers
         let mut headers = self.headers.clone();
-        headers.insert(
-            "Accept",
-            HeaderValue::from_str("application/octet-stream").unwrap(),
-        );
+        if !headers.contains_key(ACCEPT) {
+            headers.insert(ACCEPT, HeaderValue::from_static("application/octet-stream"));
+        }
 
         let mut request = ClientBuilder::new().user_agent(UPDATER_USER_AGENT);
         if let Some(timeout) = self.timeout {
