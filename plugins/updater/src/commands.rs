@@ -28,8 +28,7 @@ pub enum DownloadEvent {
 #[derive(Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Metadata {
-    rid: Option<ResourceId>,
-    available: bool,
+    rid: ResourceId,
     current_version: String,
     version: String,
     date: Option<String>,
@@ -47,7 +46,7 @@ pub(crate) async fn check<R: Runtime>(
     timeout: Option<u64>,
     proxy: Option<String>,
     target: Option<String>,
-) -> Result<Metadata> {
+) -> Result<Option<Metadata>> {
     let mut builder = webview.updater_builder();
     if let Some(headers) = headers {
         for (k, v) in headers {
@@ -67,18 +66,28 @@ pub(crate) async fn check<R: Runtime>(
 
     let updater = builder.build()?;
     let update = updater.check().await?;
-    let mut metadata = Metadata::default();
-    if let Some(update) = update {
-        metadata.available = true;
-        metadata.current_version.clone_from(&update.current_version);
-        metadata.version.clone_from(&update.version);
-        metadata.date = update.date.map(|d| d.to_string());
-        metadata.body.clone_from(&update.body);
-        metadata.raw_json.clone_from(&update.raw_json);
-        metadata.rid = Some(webview.resources_table().add(update));
-    }
 
-    Ok(metadata)
+    if let Some(update) = update {
+        let formatted_date = if let Some(date) = update.date {
+            let formatted_date = date
+                .format(&time::format_description::well_known::Rfc3339)
+                .map_err(|_| crate::Error::FormatDate)?;
+            Some(formatted_date)
+        } else {
+            None
+        };
+        let metadata = Metadata {
+            current_version: update.current_version.clone(),
+            version: update.version.clone(),
+            date: formatted_date,
+            body: update.body.clone(),
+            raw_json: update.raw_json.clone(),
+            rid: webview.resources_table().add(update),
+        };
+        Ok(Some(metadata))
+    } else {
+        Ok(None)
+    }
 }
 
 #[tauri::command]

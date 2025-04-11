@@ -9,6 +9,8 @@ All operations are enabled by default.
 
 
 
+#### This default permission set includes the following:
+
 - `allow-filename`
 - `allow-restore-state`
 - `allow-save-window-state`

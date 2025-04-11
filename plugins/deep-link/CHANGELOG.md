@@ -1,5 +1,12 @@
 # Changelog
 
+## \[2.2.1]
+
+### bug
+
+- [`38deef43`](https://github.com/tauri-apps/plugins-workspace/commit/38deef43dca9d5a09a38ed2da45b0f86c6afa1c5) ([#2483](https://github.com/tauri-apps/plugins-workspace/pull/2483)) Fix `is_registered` not being able to pickup deep link registered in `HKEY_LOCAL_MACHINE` on Windows
+- [`38deef43`](https://github.com/tauri-apps/plugins-workspace/commit/38deef43dca9d5a09a38ed2da45b0f86c6afa1c5) ([#2483](https://github.com/tauri-apps/plugins-workspace/pull/2483)) Fix `unregister` not being able to remove deep link registered in `HKEY_LOCAL_MACHINE` on Windows
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.

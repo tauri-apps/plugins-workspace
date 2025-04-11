@@ -1,5 +1,53 @@
 # Changelog
 
+## \[2.0.20]
+
+### Dependencies
+
+- Upgraded to `http-js@2.4.3`
+- Upgraded to `shell-js@2.2.1`
+- Upgraded to `fs-js@2.2.1`
+- Upgraded to `process-js@2.2.1`
+- Upgraded to `updater-js@2.7.0`
+- Upgraded to `dialog-js@2.2.1`
+
+## \[2.0.19]
+
+### Dependencies
+
+- Upgraded to `http-js@2.4.2`
+- Upgraded to `updater-js@2.6.1`
+
+## \[2.0.18]
+
+### Dependencies
+
+- Upgraded to `http-js@2.4.1`
+
+## \[2.0.17]
+
+### Dependencies
+
+- Upgraded to `log-js@2.3.1`
+
+## \[2.0.16]
+
+### Dependencies
+
+- Upgraded to `clipboard-manager-js@2.2.2`
+- Upgraded to `notification-js@2.2.2`
+- Upgraded to `os-js@2.2.1`
+- Upgraded to `http-js@2.4.0`
+- Upgraded to `log-js@2.3.0`
+- Upgraded to `updater-js@2.6.0`
+
+## \[2.0.15]
+
+### Dependencies
+
+- Upgraded to `log-js@2.2.3`
+- Upgraded to `opener-js@2.2.6`
+
 ## \[2.0.14]
 
 ### Dependencies

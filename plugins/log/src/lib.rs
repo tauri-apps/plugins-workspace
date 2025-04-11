@@ -27,9 +27,9 @@ use tauri::{
     Manager, Runtime,
 };
 use tauri::{AppHandle, Emitter};
+use time::{macros::format_description, OffsetDateTime};
 
 pub use fern;
-use time::OffsetDateTime;
 
 pub const WEBVIEW_TARGET: &str = "webview";
 
@@ -58,6 +58,8 @@ pub enum Error {
     TimeFormat(#[from] time::error::Format),
     #[error(transparent)]
     InvalidFormatDescription(#[from] time::error::InvalidFormatDescription),
+    #[error("Internal logger disabled and cannot be acquired or attached")]
+    LoggerNotInitialized,
 }
 
 /// An enum representing the available verbosity levels of the logger.
@@ -157,16 +159,21 @@ pub enum TargetKind {
     ///
     /// ### Platform-specific
     ///
-    /// |Platform | Value                                                                                     | Example                                                     |
-    /// | ------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-    /// | Linux   | `$XDG_DATA_HOME/{bundleIdentifier}/logs` or `$HOME/.local/share/{bundleIdentifier}/logs`  | `/home/alice/.local/share/com.tauri.dev/logs`               |
-    /// | macOS   | `{homeDir}/Library/Logs/{bundleIdentifier}`                                               | `/Users/Alice/Library/Logs/com.tauri.dev`                   |
-    /// | Windows | `{FOLDERID_LocalAppData}/{bundleIdentifier}/logs`                                         | `C:\Users\Alice\AppData\Local\com.tauri.dev\logs`           |
+    /// |Platform   | Value                                                                                     | Example                                                     |
+    /// | --------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+    /// | Linux     | `$XDG_DATA_HOME/{bundleIdentifier}/logs` or `$HOME/.local/share/{bundleIdentifier}/logs`  | `/home/alice/.local/share/com.tauri.dev/logs`               |
+    /// | macOS/iOS | `{homeDir}/Library/Logs/{bundleIdentifier}`                                               | `/Users/Alice/Library/Logs/com.tauri.dev`                   |
+    /// | Windows   | `{FOLDERID_LocalAppData}/{bundleIdentifier}/logs`                                         | `C:\Users\Alice\AppData\Local\com.tauri.dev\logs`           |
+    /// | Android   | `{ConfigDir}/logs`                                                                        | `/data/data/com.tauri.dev/files/logs`                       |
     LogDir { file_name: Option<String> },
     /// Forward logs to the webview (via the `log://log` event).
     ///
     /// This requires the webview to subscribe to log events, via this plugins `attachConsole` function.
     Webview,
+    /// Send logs to a [`fern::Dispatch`]
+    ///
+    /// You can use this to construct arbitrary log targets.
+    Dispatch(fern::Dispatch),
 }
 
 /// A log target.
@@ -191,6 +198,38 @@ impl Target {
     {
         self.filters.push(Box::new(filter));
         self
+    }
+}
+
+// Target becomes default and location is added as a parameter
+#[cfg(feature = "tracing")]
+fn emit_trace(
+    level: log::Level,
+    message: &String,
+    location: Option<&str>,
+    file: Option<&str>,
+    line: Option<u32>,
+    kv: &HashMap<&str, &str>,
+) {
+    macro_rules! emit_event {
+        ($level:expr) => {
+            tracing::event!(
+                target: WEBVIEW_TARGET,
+                $level,
+                message = %message,
+                location = location,
+                file,
+                line,
+                ?kv
+            )
+        };
+    }
+    match level {
+        log::Level::Error => emit_event!(tracing::Level::ERROR),
+        log::Level::Warn => emit_event!(tracing::Level::WARN),
+        log::Level::Info => emit_event!(tracing::Level::INFO),
+        log::Level::Debug => emit_event!(tracing::Level::DEBUG),
+        log::Level::Trace => emit_event!(tracing::Level::TRACE),
     }
 }
 
@@ -220,6 +259,8 @@ fn log(
         kv.insert(k.as_str(), v.as_str());
     }
     builder.key_values(&kv);
+    #[cfg(feature = "tracing")]
+    emit_trace(level, &message, location, file, line, &kv);
 
     logger().log(&builder.args(format_args!("{message}")).build());
 }
@@ -230,14 +271,13 @@ pub struct Builder {
     timezone_strategy: TimezoneStrategy,
     max_file_size: u128,
     targets: Vec<Target>,
+    is_skip_logger: bool,
 }
 
 impl Default for Builder {
     fn default() -> Self {
         #[cfg(desktop)]
-        let format =
-            time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
-                .unwrap();
+        let format = format_description!("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]");
         let dispatch = fern::Dispatch::new().format(move |out, message, record| {
             out.finish(
                 #[cfg(mobile)]
@@ -258,6 +298,7 @@ impl Default for Builder {
             timezone_strategy: DEFAULT_TIMEZONE_STRATEGY,
             max_file_size: DEFAULT_MAX_FILE_SIZE,
             targets: DEFAULT_LOG_TARGETS.into(),
+            is_skip_logger: false,
         }
     }
 }
@@ -275,9 +316,7 @@ impl Builder {
     pub fn timezone_strategy(mut self, timezone_strategy: TimezoneStrategy) -> Self {
         self.timezone_strategy = timezone_strategy.clone();
 
-        let format =
-            time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
-                .unwrap();
+        let format = format_description!("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]");
         self.dispatch = self.dispatch.format(move |out, message, record| {
             out.finish(format_args!(
                 "{}[{}][{}] {}",
@@ -339,12 +378,27 @@ impl Builder {
         self
     }
 
-    /// Adds a collection of targets to the logger.
+    /// Skip the creation and global registration of a logger
+    ///
+    /// If you wish to use your own global logger, you must call `skip_logger` so that the plugin does not attempt to set a second global logger. In this configuration, no logger will be created and the plugin's `log` command will rely on the result of `log::logger()`. You will be responsible for configuring the logger yourself and any included targets will be ignored. If ever initializing the plugin multiple times, such as if registering the plugin while testing, call this method to avoid panicking when registering multiple loggers. For interacting with `tracing`, you can leverage the `tracing-log` logger to forward logs to `tracing` or enable the `tracing` feature for this plugin to emit events directly to the tracing system. Both scenarios require calling this method.
+    /// ```rust
+    /// static LOGGER: SimpleLogger = SimpleLogger;
+    ///
+    /// log::set_logger(&SimpleLogger)?;
+    /// log::set_max_level(LevelFilter::Info);
+    /// tauri_plugin_log::Builder::new()
+    ///     .skip_logger();
+    /// ```
+    pub fn skip_logger(mut self) -> Self {
+        self.is_skip_logger = true;
+        self
+    }
+
+    /// Replaces the targets of the logger.
     ///
     /// ```rust
     /// use tauri_plugin_log::{Target, TargetKind, WEBVIEW_TARGET};
     /// tauri_plugin_log::Builder::new()
-    ///     .clear_targets()
     ///     .targets([
     ///         Target::new(TargetKind::Webview),
     ///         Target::new(TargetKind::LogDir { file_name: Some("webview".into()) }).filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),
@@ -358,9 +412,7 @@ impl Builder {
 
     #[cfg(feature = "colored")]
     pub fn with_colors(self, colors: fern::colors::ColoredLevelConfig) -> Self {
-        let format =
-            time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
-                .unwrap();
+        let format = format_description!("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]");
 
         let timezone_strategy = self.timezone_strategy.clone();
         self.format(move |out, message, record| {
@@ -431,9 +483,6 @@ impl Builder {
                     )?)?
                     .into()
                 }
-                #[cfg(mobile)]
-                TargetKind::LogDir { .. } => continue,
-                #[cfg(desktop)]
                 TargetKind::LogDir { file_name } => {
                     let path = app_handle.path().app_log_dir()?;
                     if !path.exists() {
@@ -463,6 +512,7 @@ impl Builder {
                         });
                     })
                 }
+                TargetKind::Dispatch(dispatch) => dispatch.into(),
             };
             target_dispatch = target_dispatch.chain(logger);
 
@@ -481,6 +531,9 @@ impl Builder {
         self,
         app_handle: &AppHandle<R>,
     ) -> Result<(TauriPlugin<R>, log::LevelFilter, Box<dyn log::Log>), Error> {
+        if self.is_skip_logger {
+            return Err(Error::LoggerNotInitialized);
+        }
         let plugin = Self::plugin_builder();
         let (max_level, log) = Self::acquire_logger(
             app_handle,
@@ -497,17 +550,17 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         Self::plugin_builder()
             .setup(move |app_handle, _api| {
-                let (max_level, log) = Self::acquire_logger(
-                    app_handle,
-                    self.dispatch,
-                    self.rotation_strategy,
-                    self.timezone_strategy,
-                    self.max_file_size,
-                    self.targets,
-                )?;
-
-                attach_logger(max_level, log)?;
-
+                if !self.is_skip_logger {
+                    let (max_level, log) = Self::acquire_logger(
+                        app_handle,
+                        self.dispatch,
+                        self.rotation_strategy,
+                        self.timezone_strategy,
+                        self.max_file_size,
+                        self.targets,
+                    )?;
+                    attach_logger(max_level, log)?;
+                }
                 Ok(())
             })
             .build()
@@ -541,11 +594,9 @@ fn get_log_file_path(
                     let to = dir.as_ref().join(format!(
                         "{}_{}.log",
                         file_name,
-                        timezone_strategy
-                            .get_now()
-                            .format(&time::format_description::parse(
-                                "[year]-[month]-[day]_[hour]-[minute]-[second]"
-                            )?)?,
+                        timezone_strategy.get_now().format(&format_description!(
+                            "[year]-[month]-[day]_[hour]-[minute]-[second]"
+                        ))?,
                     ));
                     if to.is_file() {
                         // designated rotated log file name already exists

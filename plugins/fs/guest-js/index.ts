@@ -1075,10 +1075,18 @@ async function writeFile(
 
   if (data instanceof ReadableStream) {
     const file = await open(path, options)
-    for await (const chunk of data) {
-      await file.write(chunk)
+    const reader = data.getReader()
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        await file.write(value)
+      }
+    } finally {
+      reader.releaseLock()
+      await file.close()
     }
-    await file.close()
   } else {
     await invoke('plugin:fs|write_file', data, {
       headers: {

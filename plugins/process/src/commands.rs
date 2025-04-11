@@ -11,5 +11,5 @@ pub fn exit<R: Runtime>(app: AppHandle<R>, code: i32) {
 
 #[tauri::command]
 pub fn restart<R: Runtime>(app: AppHandle<R>) {
-    app.restart()
+    app.request_restart()
 }

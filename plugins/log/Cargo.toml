@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-log"
-version = "2.2.2"
+version = "2.3.1"
 description = "Configurable logging for your Tauri app."
 authors = { workspace = true }
 license = { workspace = true }
@@ -31,19 +31,22 @@ thiserror = { workspace = true }
 serde_repr = "0.1"
 byte-unit = "5"
 log = { workspace = true, features = ["kv_unstable"] }
-time = { version = "0.3", features = ["formatting", "local-offset"] }
+time = { version = "0.3", features = ["formatting", "local-offset", "macros"] }
 fern = "0.7"
+tracing = { workspace = true, optional = true }
+
 
 [target."cfg(target_os = \"android\")".dependencies]
-android_logger = "0.14"
+android_logger = "0.15"
 
 [target."cfg(target_os = \"ios\")".dependencies]
 swift-rs = "1"
-objc2 = "0.5"
-objc2-foundation = { version = "0.2", default-features = false, features = [
+objc2 = "0.6"
+objc2-foundation = { version = "0.3", default-features = false, features = [
   "std",
   "NSString",
 ] }
 
 [features]
 colored = ["fern/colored"]
+tracing = ["dep:tracing"]

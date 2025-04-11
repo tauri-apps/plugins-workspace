@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.2.3]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.2.1`
+
 ## \[2.2.2]
 
 - [`1ab5f157`](https://github.com/tauri-apps/plugins-workspace/commit/1ab5f1576333174095bc7dad4bef7a8576bb29ab) ([#2452](https://github.com/tauri-apps/plugins-workspace/pull/2452) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed `null pointer dereference` panic on rust nightly on Windows.

@@ -2,6 +2,8 @@
 
 Allows reading the opened deep link via the get_current command
 
+#### This default permission set includes the following:
+
 - `allow-get-current`
 
 ## Permission Table

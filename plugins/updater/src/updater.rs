@@ -4,13 +4,16 @@
 
 use std::{
     collections::HashMap,
-    ffi::{OsStr, OsString},
+    ffi::OsString,
     io::Cursor,
     path::{Path, PathBuf},
     str::FromStr,
     sync::Arc,
     time::Duration,
 };
+
+#[cfg(not(target_os = "macos"))]
+use std::ffi::OsStr;
 
 use base64::Engine;
 use futures_util::StreamExt;
@@ -93,6 +96,7 @@ impl RemoteRelease {
 }
 
 pub type OnBeforeExit = Arc<dyn Fn() + Send + Sync + 'static>;
+pub type OnBeforeRequest = Arc<dyn Fn(ClientBuilder) -> ClientBuilder + Send + Sync + 'static>;
 pub type VersionComparator = Arc<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>;
 type MainThreadClosure = Box<dyn FnOnce() + Send + Sync + 'static>;
 type RunOnMainThread =
@@ -114,13 +118,13 @@ pub struct UpdaterBuilder {
     installer_args: Vec<OsString>,
     current_exe_args: Vec<OsString>,
     on_before_exit: Option<OnBeforeExit>,
+    configure_client: Option<OnBeforeRequest>,
 }
 
 impl UpdaterBuilder {
     pub(crate) fn new<R: Runtime>(app: &AppHandle<R>, config: crate::Config) -> Self {
         let app_ = app.clone();
-        let run_on_main_thread =
-            move |f: Box<dyn FnOnce() + Send + Sync + 'static>| app_.run_on_main_thread(f);
+        let run_on_main_thread = move |f| app_.run_on_main_thread(f);
         Self {
             run_on_main_thread: Box::new(run_on_main_thread),
             installer_args: config
@@ -140,6 +144,7 @@ impl UpdaterBuilder {
             timeout: None,
             proxy: None,
             on_before_exit: None,
+            configure_client: None,
         }
     }
 
@@ -224,8 +229,7 @@ impl UpdaterBuilder {
         I: IntoIterator<Item = S>,
         S: Into<OsString>,
     {
-        let args = args.into_iter().map(|a| a.into()).collect::<Vec<_>>();
-        self.installer_args.extend_from_slice(&args);
+        self.installer_args.extend(args.into_iter().map(Into::into));
         self
     }
 
@@ -236,6 +240,19 @@ impl UpdaterBuilder {
 
     pub fn on_before_exit<F: Fn() + Send + Sync + 'static>(mut self, f: F) -> Self {
         self.on_before_exit.replace(Arc::new(f));
+        self
+    }
+
+    /// Allows you to modify the `reqwest` client builder before the HTTP request is sent.
+    ///
+    /// Note that `reqwest` crate may be updated in minor releases of tauri-plugin-updater.
+    /// Therefore it's recommended to pin the plugin to at least a minor version when you're using `configure_client`.
+    ///
+    pub fn configure_client<F: Fn(ClientBuilder) -> ClientBuilder + Send + Sync + 'static>(
+        mut self,
+        f: F,
+    ) -> Self {
+        self.configure_client.replace(Arc::new(f));
         self
     }
 
@@ -282,6 +299,7 @@ impl UpdaterBuilder {
             headers: self.headers,
             extract_path,
             on_before_exit: self.on_before_exit,
+            configure_client: self.configure_client,
         })
     }
 }
@@ -292,8 +310,8 @@ impl UpdaterBuilder {
         I: IntoIterator<Item = S>,
         S: Into<OsString>,
     {
-        let args = args.into_iter().map(|a| a.into()).collect::<Vec<_>>();
-        self.current_exe_args.extend_from_slice(&args);
+        self.current_exe_args
+            .extend(args.into_iter().map(Into::into));
         self
     }
 }
@@ -316,6 +334,7 @@ pub struct Updater {
     headers: HeaderMap,
     extract_path: PathBuf,
     on_before_exit: Option<OnBeforeExit>,
+    configure_client: Option<OnBeforeRequest>,
     #[allow(unused)]
     installer_args: Vec<OsString>,
     #[allow(unused)]
@@ -368,14 +387,22 @@ impl Updater {
                 .replace("{{arch}}", self.arch)
                 .parse()?;
 
+            log::debug!("checking for updates {url}");
+
             let mut request = ClientBuilder::new().user_agent(UPDATER_USER_AGENT);
             if let Some(timeout) = self.timeout {
                 request = request.timeout(timeout);
             }
             if let Some(ref proxy) = self.proxy {
+                log::debug!("using proxy {proxy}");
                 let proxy = reqwest::Proxy::all(proxy.as_str())?;
                 request = request.proxy(proxy);
             }
+
+            if let Some(ref configure_client) = self.configure_client {
+                request = configure_client(request);
+            }
+
             let response = request
                 .build()?
                 .get(url)
@@ -388,24 +415,38 @@ impl Updater {
                     if res.status().is_success() {
                         // no updates found!
                         if StatusCode::NO_CONTENT == res.status() {
+                            log::debug!("update endpoint returned 204 No Content");
                             return Ok(None);
                         };
 
-                        raw_json = Some(res.json().await?);
-                        match serde_json::from_value::<RemoteRelease>(raw_json.clone().unwrap())
+                        let update_response: serde_json::Value = res.json().await?;
+                        log::debug!("update response: {update_response:?}");
+                        raw_json = Some(update_response.clone());
+                        match serde_json::from_value::<RemoteRelease>(update_response)
                             .map_err(Into::into)
                         {
                             Ok(release) => {
+                                log::debug!("parsed release response {release:?}");
                                 last_error = None;
                                 remote_release = Some(release);
-                                // we found a relase, break the loop
+                                // we found a release, break the loop
                                 break;
                             }
-                            Err(err) => last_error = Some(err),
+                            Err(err) => {
+                                log::error!("failed to deserialize update response: {err}");
+                                last_error = Some(err)
+                            }
                         }
+                    } else {
+                        log::error!(
+                            "update endpoint did not respond with a successful status code"
+                        );
                     }
                 }
-                Err(err) => last_error = Some(err.into()),
+                Err(err) => {
+                    log::error!("failed to check for updates: {err}");
+                    last_error = Some(err.into())
+                }
             }
         }
 
@@ -435,14 +476,15 @@ impl Updater {
                 version: release.version.to_string(),
                 date: release.pub_date,
                 download_url: release.download_url(&self.json_target)?.to_owned(),
-                body: release.notes.clone(),
                 signature: release.signature(&self.json_target)?.to_owned(),
+                body: release.notes,
                 raw_json: raw_json.unwrap(),
-                timeout: self.timeout,
+                timeout: None,
                 proxy: self.proxy.clone(),
                 headers: self.headers.clone(),
                 installer_args: self.installer_args.clone(),
                 current_exe_args: self.current_exe_args.clone(),
+                configure_client: self.configure_client.clone(),
             })
         } else {
             None
@@ -491,6 +533,7 @@ pub struct Update {
     installer_args: Vec<OsString>,
     #[allow(unused)]
     current_exe_args: Vec<OsString>,
+    configure_client: Option<OnBeforeRequest>,
 }
 
 impl Resource for Update {}
@@ -518,6 +561,9 @@ impl Update {
         if let Some(ref proxy) = self.proxy {
             let proxy = reqwest::Proxy::all(proxy.as_str())?;
             request = request.proxy(proxy);
+        }
+        if let Some(ref configure_client) = self.configure_client {
+            request = configure_client(request);
         }
         let response = request
             .build()?
@@ -667,6 +713,7 @@ impl Update {
         };
 
         if let Some(on_before_exit) = self.on_before_exit.as_ref() {
+            log::debug!("running on_before_exit hook");
             on_before_exit();
         }
 
@@ -835,6 +882,7 @@ impl Update {
 
                     #[cfg(feature = "zip")]
                     if infer::archive::is_gz(bytes) {
+                        log::debug!("extracting AppImage");
                         // extract the buffer to the tmp_dir
                         // we extract our signed archive into our final directory without any temp file
                         let archive = Cursor::new(bytes);
@@ -858,6 +906,7 @@ impl Update {
                         return Err(Error::BinaryNotFoundInArchive);
                     }
 
+                    log::debug!("rewriting AppImage");
                     return match std::fs::write(&self.extract_path, bytes)
                         .and_then(|_| std::fs::set_permissions(&self.extract_path, permissions))
                     {
@@ -911,6 +960,7 @@ impl Update {
     fn install_deb(&self, bytes: &[u8]) -> Result<()> {
         // First verify the bytes are actually a .deb package
         if !infer::archive::is_deb(bytes) {
+            log::warn!("update is not a valid deb package");
             return Err(Error::InvalidUpdaterFormat);
         }
 
@@ -953,6 +1003,7 @@ impl Update {
             .status()
         {
             if status.success() {
+                log::debug!("installed deb with pkexec");
                 return Ok(());
             }
         }
@@ -960,6 +1011,7 @@ impl Update {
         // 2. Try zenity or kdialog for a graphical sudo experience
         if let Ok(password) = self.get_password_graphically() {
             if self.install_with_sudo(deb_path, &password)? {
+                log::debug!("installed deb with GUI sudo");
                 return Ok(());
             }
         }
@@ -972,6 +1024,7 @@ impl Update {
             .status()?;
 
         if status.success() {
+            log::debug!("installed deb with sudo");
             Ok(())
         } else {
             Err(Error::DebInstallFailed)
@@ -1095,6 +1148,7 @@ impl Update {
         };
 
         if need_authorization {
+            log::debug!("app installation needs admin privileges");
             // Use AppleScript to perform moves with admin privileges
             let apple_script = format!(
                 "do shell script \"rm -rf '{src}' && mv -f '{new}' '{src}'\" with administrator privileges",
@@ -1167,6 +1221,8 @@ pub(crate) fn get_updater_arch() -> Option<&'static str> {
         Some("armv7")
     } else if cfg!(target_arch = "aarch64") {
         Some("aarch64")
+    } else if cfg!(target_arch = "riscv64") {
+        Some("riscv64")
     } else {
         None
     }
