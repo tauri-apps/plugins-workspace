@@ -120,8 +120,6 @@ fn target_to_platforms(
 ) -> HashMap<String, PlatformUpdate> {
     let mut platforms = HashMap::new();
     if let Some(platform) = update_platform {
-        println!("TARGET: {}", platform.clone());
-
         platforms.insert(
             platform,
             PlatformUpdate {
