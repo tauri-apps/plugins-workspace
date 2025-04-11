@@ -6675,7 +6675,6 @@ dependencies = [
  "thiserror 2.0.9",
  "toml",
  "url",
- "uuid",
 ]
 
 [[package]]
