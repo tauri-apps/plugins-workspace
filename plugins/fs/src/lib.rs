@@ -397,7 +397,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             commands::create,
             commands::open,
             commands::copy_file,
-            commands::close,
             commands::mkdir,
             commands::read_dir,
             commands::read,
