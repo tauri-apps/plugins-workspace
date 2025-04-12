@@ -26,13 +26,15 @@ use reqwest::{
 };
 use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
-use tauri::{utils::platform::current_exe, AppHandle, Resource, Runtime};
+use tauri::{
+    utils::platform::current_exe, utils::__TAURI_BUNDLE_TYPE, AppHandle, Resource, Runtime,
+};
 use time::OffsetDateTime;
 use url::Url;
 
 use crate::{
     error::{Error, Result},
-    Config, __TAURI_BUNDLE_TYPE,
+    Config,
 };
 
 const UPDATER_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
