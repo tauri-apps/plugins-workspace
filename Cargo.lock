@@ -6920,6 +6920,7 @@ version = "2.2.0"
 dependencies = [
  "futures-core",
  "indexmap 2.7.0",
+ "libsqlite3-sys",
  "log",
  "serde",
  "serde_json",

@@ -42,12 +42,31 @@ export default class Database {
    *
    * @example
    * ```ts
+   * // Basic connection to a SQLite database
    * const db = await Database.load("sqlite:test.db");
+   *
+   * // Connecting with an encryption key for added security
+   * const db = await Database.load("sqlite:encrypted.db", {
+   *   sqlite: { pragmas: { "key": "encryption_key" } }
+   * });
+   *
+   * // Connecting with specific pragmas for configuration
+   * const db = await Database.load("sqlite:test.db", {
+   *   sqlite: { pragmas: { "journal_mode": "WAL", "foreign_keys": "ON" } }
+   * });
    * ```
    */
-  static async load(path: string): Promise<Database> {
+  static async load(
+    path: string,
+    options?: {
+      sqlite?: {
+        pragmas?: Record<string, string>
+      }
+    }
+  ): Promise<Database> {
     const _path = await invoke<string>('plugin:sql|load', {
-      db: path
+      db: path,
+      options
     })
 
     return new Database(_path)

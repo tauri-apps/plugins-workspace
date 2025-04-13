@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use crate::{wrapper::ConnectionOptions, DbInstances, DbPool, Error, LastInsertId, Migrations};
 use indexmap::IndexMap;
 use serde_json::Value as JsonValue;
 use sqlx::migrate::Migrator;
 use tauri::{command, AppHandle, Runtime, State};
-
-use crate::{DbInstances, DbPool, Error, LastInsertId, Migrations};
 
 #[command]
 pub(crate) async fn load<R: Runtime>(
@@ -15,9 +14,9 @@ pub(crate) async fn load<R: Runtime>(
     db_instances: State<'_, DbInstances>,
     migrations: State<'_, Migrations>,
     db: String,
+    options: Option<ConnectionOptions>,
 ) -> Result<String, crate::Error> {
-    let pool = DbPool::connect(&db, &app).await?;
-
+    let pool = DbPool::connect(&db, &app, options).await?;
     if let Some(migrations) = migrations.0.lock().await.remove(&db) {
         let migrator = Migrator::new(migrations).await?;
         pool.migrate(&migrator).await?;
