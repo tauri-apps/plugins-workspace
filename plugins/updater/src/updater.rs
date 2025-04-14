@@ -27,7 +27,11 @@ use reqwest::{
 use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
 use tauri::{
-    utils::platform::current_exe, utils::__TAURI_BUNDLE_TYPE, AppHandle, Resource, Runtime,
+    utils::{
+        config::{get_current_bundle_type, PackageType},
+        platform::current_exe,
+    },
+    AppHandle, Resource, Runtime,
 };
 use time::OffsetDateTime;
 use url::Url;
@@ -384,12 +388,12 @@ pub struct Updater {
 
 impl Updater {
     fn get_updater_installer(&self) -> Result<Option<Installer>> {
-        match __TAURI_BUNDLE_TYPE {
-            "DEB_BUNDLE" => Ok(Some(Installer::Deb)),
-            "RPM_BUNDLE" => Ok(Some(Installer::Rpm)),
-            "APP_BUNDLE" => Ok(Some(Installer::AppImage)),
-            "MSI_BUNDLE" => Ok(Some(Installer::Msi)),
-            "NSS_BUNDLE" => Ok(Some(Installer::Nsis)),
+        match get_current_bundle_type() {
+            PackageType::Deb => Ok(Some(Installer::Deb)),
+            PackageType::Rpm => Ok(Some(Installer::Rpm)),
+            PackageType::AppImage => Ok(Some(Installer::AppImage)),
+            PackageType::Msi => Ok(Some(Installer::Msi)),
+            PackageType::Nsis => Ok(Some(Installer::Nsis)),
             _ => Err(Error::UnknownInstaller),
         }
     }
