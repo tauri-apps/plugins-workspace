@@ -6915,6 +6915,7 @@ dependencies = [
  "thiserror 2.0.12",
  "time",
  "tokio",
+ "tracing",
  "url",
  "windows-sys 0.59.0",
  "zip",
