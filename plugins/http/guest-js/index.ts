@@ -262,7 +262,7 @@ export async function fetch(
     }
   })
 
-  const res = new Response(readableStreamBody, {
+  const res = new Response(status !== 204 ? readableStreamBody : null, {
     status,
     statusText
   })
