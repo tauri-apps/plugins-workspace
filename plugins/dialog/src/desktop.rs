@@ -13,7 +13,7 @@ use rfd::{AsyncFileDialog, AsyncMessageDialog};
 use serde::de::DeserializeOwned;
 use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
-use crate::{models::*, FileDialogBuilder, FilePath, MessageDialogBuilder, CANCEL, NO, YES};
+use crate::{models::*, FileDialogBuilder, FilePath, MessageDialogBuilder};
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
