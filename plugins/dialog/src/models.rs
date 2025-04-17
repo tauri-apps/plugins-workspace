@@ -73,13 +73,13 @@ pub enum MessageDialogButtons {
 
 /// Result of a message dialog
 #[derive(Debug, Default, Clone, PartialEq, Eq, Deserialize, Serialize)]
-#[serde(untagged)]
 pub enum MessageDialogResult {
     Yes,
     No,
     Ok,
     #[default]
     Cancel,
+    #[serde(untagged)]
     Custom(String),
 }
 
