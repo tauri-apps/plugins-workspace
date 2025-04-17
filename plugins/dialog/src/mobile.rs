@@ -121,7 +121,7 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(MessageDialogResult) + Send + '
             .0
             .run_mobile_plugin::<ShowMessageDialogResponse>("showMessageDialog", dialog.payload());
 
-        let res = res.map(|res| res.value.parse::<MessageDialogResult>().unwrap_or_default());
+        let res = res.map(|res| res.value.into());
         f(res.unwrap_or_default())
     });
 }

@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::str::FromStr;
-
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// Types of message, ask and confirm dialogs.
@@ -95,16 +93,14 @@ impl From<rfd::MessageDialogResult> for MessageDialogResult {
     }
 }
 
-impl FromStr for MessageDialogResult {
-    type Err = std::convert::Infallible;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "Yes" => Ok(Self::Yes),
-            "No" => Ok(Self::No),
-            "Ok" => Ok(Self::Ok),
-            "Cancel" => Ok(Self::Cancel),
-            _ => Ok(Self::Custom(s.to_string())),
+impl From<String> for MessageDialogResult {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "Yes" => Self::Yes,
+            "No" => Self::No,
+            "Ok" => Self::Ok,
+            "Cancel" => Self::Cancel,
+            _ => Self::Custom(value),
         }
     }
 }

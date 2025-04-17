@@ -279,18 +279,13 @@ pub(crate) async fn message<R: Runtime>(
     ok_button_label: Option<String>,
     buttons: Option<MessageDialogButtons>,
 ) -> Result<MessageDialogResult> {
-    let buttons = buttons.unwrap_or_else(|| {
-        if let Some(ok_button_label) = ok_button_label {
-            MessageDialogButtons::OkCustom(ok_button_label)
-        } else {
-            MessageDialogButtons::Ok
-        }
+    let buttons = buttons.unwrap_or(if let Some(ok_button_label) = ok_button_label {
+        MessageDialogButtons::OkCustom(ok_button_label)
+    } else {
+        MessageDialogButtons::Ok
     });
 
-    Ok(dbg!(message_dialog(
-        window, dialog, title, message, kind, buttons
-    )
-    .blocking_show_with_result()))
+    Ok(message_dialog(window, dialog, title, message, kind, buttons).blocking_show_with_result())
 }
 
 #[command]
