@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use std::str::FromStr;
+
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// Types of message, ask and confirm dialogs.
@@ -52,7 +54,7 @@ impl Serialize for MessageDialogKind {
 
 /// Set of button that will be displayed on the dialog
 #[non_exhaustive]
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub enum MessageDialogButtons {
     #[default]
     /// A single `Ok` button with OS default dialog text
@@ -65,4 +67,44 @@ pub enum MessageDialogButtons {
     OkCustom(String),
     /// 2 buttons `Ok` and `Cancel` with custom texts
     OkCancelCustom(String, String),
+    /// 3 buttons `Yes`, `No` and `Cancel` with custom texts
+    YesNoCancelCustom(String, String, String),
+}
+
+/// Result of a message dialog
+#[derive(Debug, Default, Clone, PartialEq, Eq, Deserialize, Serialize)]
+pub enum MessageDialogResult {
+    Yes,
+    No,
+    Ok,
+    #[default]
+    Cancel,
+    Custom(String),
+}
+
+#[cfg(desktop)]
+impl From<rfd::MessageDialogResult> for MessageDialogResult {
+    fn from(result: rfd::MessageDialogResult) -> Self {
+        match result {
+            rfd::MessageDialogResult::Yes => Self::Yes,
+            rfd::MessageDialogResult::No => Self::No,
+            rfd::MessageDialogResult::Ok => Self::Ok,
+            rfd::MessageDialogResult::Cancel => Self::Cancel,
+            rfd::MessageDialogResult::Custom(s) => Self::Custom(s),
+        }
+    }
+}
+
+impl FromStr for MessageDialogResult {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Yes" => Ok(Self::Yes),
+            "No" => Ok(Self::No),
+            "Ok" => Ok(Self::Ok),
+            "Cancel" => Ok(Self::Cancel),
+            _ => Ok(Self::Custom(s.to_string())),
+        }
+    }
 }

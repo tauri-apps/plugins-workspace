@@ -38,6 +38,7 @@ class MessageOptions {
   var title: String? = null
   lateinit var message: String
   var okButtonLabel: String? = null
+  var noButtonLabel: String? = null
   var cancelButtonLabel: String? = null
 }
 
@@ -169,9 +170,8 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
       return
     }
 
-    val handler = { cancelled: Boolean, value: Boolean ->
+    val handler = { value: String ->
       val ret = JSObject()
-      ret.put("cancelled", cancelled)
       ret.put("value", value)
       invoke.resolve(ret)
     }
@@ -183,24 +183,34 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
         if (args.title != null) {
           builder.setTitle(args.title)
         }
+
+        val okButtonLabel = args.okButtonLabel ?: "Ok"
+
         builder
           .setMessage(args.message)
-          .setPositiveButton(
-            args.okButtonLabel ?: "OK"
-          ) { dialog, _ ->
+          .setPositiveButton(okButtonLabel) { dialog, _ ->
             dialog.dismiss()
-            handler(false, true)
+            handler(okButtonLabel)
           }
           .setOnCancelListener { dialog ->
             dialog.dismiss()
-            handler(true, false)
+            handler(args.cancelButtonLabel ?: "Cancel")
           }
+
+        if (args.noButtonLabel != null) {
+          builder.setNeutralButton(args.noButtonLabel) { dialog, _ ->
+            dialog.dismiss()
+            handler(args.noButtonLabel!!)
+          }
+        }
+
         if (args.cancelButtonLabel != null) {
           builder.setNegativeButton( args.cancelButtonLabel) { dialog, _ ->
             dialog.dismiss()
-            handler(false, false)
+            handler(args.cancelButtonLabel!!)
           }
         }
+
         val dialog = builder.create()
         dialog.show()
       }

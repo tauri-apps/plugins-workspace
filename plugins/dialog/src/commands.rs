@@ -9,8 +9,8 @@ use tauri::{command, Manager, Runtime, State, Window};
 use tauri_plugin_fs::FsExt;
 
 use crate::{
-    Dialog, FileDialogBuilder, FilePath, MessageDialogButtons, MessageDialogKind, Result, CANCEL,
-    NO, OK, YES,
+    Dialog, FileDialogBuilder, FilePath, MessageDialogBuilder, MessageDialogButtons,
+    MessageDialogKind, MessageDialogResult, Result, CANCEL, NO, OK, YES,
 };
 
 #[derive(Serialize)]
@@ -248,7 +248,7 @@ fn message_dialog<R: Runtime>(
     message: String,
     kind: Option<MessageDialogKind>,
     buttons: MessageDialogButtons,
-) -> bool {
+) -> MessageDialogBuilder<R> {
     let mut builder = dialog.message(message);
 
     builder = builder.buttons(buttons);
@@ -266,7 +266,7 @@ fn message_dialog<R: Runtime>(
         builder = builder.kind(kind);
     }
 
-    builder.blocking_show()
+    builder
 }
 
 #[command]
@@ -277,19 +277,20 @@ pub(crate) async fn message<R: Runtime>(
     message: String,
     kind: Option<MessageDialogKind>,
     ok_button_label: Option<String>,
-) -> Result<bool> {
-    Ok(message_dialog(
-        window,
-        dialog,
-        title,
-        message,
-        kind,
+    buttons: Option<MessageDialogButtons>,
+) -> Result<MessageDialogResult> {
+    let buttons = buttons.unwrap_or_else(|| {
         if let Some(ok_button_label) = ok_button_label {
             MessageDialogButtons::OkCustom(ok_button_label)
         } else {
             MessageDialogButtons::Ok
-        },
-    ))
+        }
+    });
+
+    Ok(dbg!(message_dialog(
+        window, dialog, title, message, kind, buttons
+    )
+    .blocking_show_with_result()))
 }
 
 #[command]
@@ -302,7 +303,7 @@ pub(crate) async fn ask<R: Runtime>(
     yes_button_label: Option<String>,
     no_button_label: Option<String>,
 ) -> Result<bool> {
-    Ok(message_dialog(
+    let dialog = message_dialog(
         window,
         dialog,
         title,
@@ -318,7 +319,9 @@ pub(crate) async fn ask<R: Runtime>(
         } else {
             MessageDialogButtons::YesNo
         },
-    ))
+    );
+
+    Ok(dialog.blocking_show())
 }
 
 #[command]
@@ -331,7 +334,7 @@ pub(crate) async fn confirm<R: Runtime>(
     ok_button_label: Option<String>,
     cancel_button_label: Option<String>,
 ) -> Result<bool> {
-    Ok(message_dialog(
+    let dialog = message_dialog(
         window,
         dialog,
         title,
@@ -347,5 +350,7 @@ pub(crate) async fn confirm<R: Runtime>(
         } else {
             MessageDialogButtons::OkCancel
         },
-    ))
+    );
+
+    Ok(dialog.blocking_show())
 }

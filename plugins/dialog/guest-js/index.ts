@@ -78,6 +78,68 @@ interface SaveDialogOptions {
 }
 
 /**
+ * Default buttons for a message dialog.
+ *
+ * @since 2.3.0
+ */
+export type MessageDialogDefaultButtons = 'Ok' | 'OkCancel' | 'YesNo'
+
+/**
+ * The Yes, No and Cancel buttons of a message dialog.
+ *
+ * @since 2.3.0
+ */
+export type MessageDialogButtonsYesNoCancel = {
+  /** The Yes button. */
+  yes?: string
+  /** The No button. */
+  no?: string
+  /** The Cancel button. */
+  cancel?: string
+}
+
+/**
+ * The Ok and Cancel buttons of a message dialog.
+ *
+ * @since 2.3.0
+ */
+export type MessageDialogButtonsOkCancel = {
+  /** The Ok button. */
+  ok?: string
+  /** The Cancel button. */
+  cancel?: string
+}
+
+/**
+ * The Ok button of a message dialog.
+ *
+ * @since 2.3.0
+ */
+export type MessageDialogButtonsOk = {
+  /** The Ok button. */
+  ok?: string
+}
+
+/**
+ * Custom buttons for a message dialog.
+ *
+ * @since 2.3.0
+ */
+export type MessageDialogCustomButtons =
+  | MessageDialogButtonsYesNoCancel
+  | MessageDialogButtonsOkCancel
+  | MessageDialogButtonsOk
+
+/**
+ * The buttons of a message dialog.
+ *
+ * @since 2.3.0
+ */
+export type MessageDialogButtons =
+  | MessageDialogDefaultButtons
+  | MessageDialogCustomButtons
+
+/**
  * @since 2.0.0
  */
 interface MessageDialogOptions {
@@ -85,8 +147,41 @@ interface MessageDialogOptions {
   title?: string
   /** The kind of the dialog. Defaults to `info`. */
   kind?: 'info' | 'warning' | 'error'
-  /** The label of the confirm button. */
+  /**
+   * The label of the Ok button.
+   *
+   * @deprecated Use {@linkcode MessageDialogOptions.buttons} instead.
+   */
   okLabel?: string
+  /**
+   * The buttons of the dialog.
+   *
+   * @since 2.3.0
+   */
+  buttons?: MessageDialogButtons
+}
+
+/**
+ * Internal function to convert the buttons to the Rust type.
+ */
+function buttonsToRust(buttons: MessageDialogButtons | undefined) {
+  if (buttons === undefined) {
+    return undefined
+  }
+
+  if (typeof buttons === 'string') {
+    return buttons
+  } else if ('ok' in buttons && 'cancel' in buttons) {
+    return { OkCancelCustom: [buttons.ok, buttons.cancel] }
+  } else if ('yes' in buttons && 'no' in buttons && 'cancel' in buttons) {
+    return {
+      YesNoCancelCustom: [buttons.yes, buttons.no, buttons.cancel]
+    }
+  } else if ('ok' in buttons) {
+    return { OkCustom: buttons.ok }
+  }
+
+  return undefined
 }
 
 interface ConfirmDialogOptions {
@@ -203,6 +298,32 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
 }
 
 /**
+ * The result of a message dialog.
+ *
+ * The result is a string if the dialog has custom buttons,
+ * otherwise it is one of the default buttons.
+ *
+ * @since 2.3.0
+ */
+export type MessageDialogResult = 'Yes' | 'No' | 'Ok' | 'Cancel' | (string & {})
+
+type MessageDialogResultRust =
+  | 'Yes'
+  | 'No'
+  | 'Ok'
+  | 'Cancel'
+  | { Custom: string }
+
+/** Internal function to convert the result to JS. */
+function resultToJS(res: MessageDialogResultRust): MessageDialogResult {
+  if (typeof res === 'string') {
+    return res
+  } else {
+    return res.Custom
+  }
+}
+
+/**
  * Shows a message dialog with an `Ok` button.
  * @example
  * ```typescript
@@ -222,14 +343,18 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
 async function message(
   message: string,
   options?: string | MessageDialogOptions
-): Promise<void> {
+): Promise<MessageDialogResult> {
   const opts = typeof options === 'string' ? { title: options } : options
-  await invoke('plugin:dialog|message', {
+
+  const res = await invoke<MessageDialogResultRust>('plugin:dialog|message', {
     message: message.toString(),
     title: opts?.title?.toString(),
     kind: opts?.kind,
-    okButtonLabel: opts?.okLabel?.toString()
+    okButtonLabel: opts?.okLabel?.toString(),
+    buttons: buttonsToRust(opts?.buttons)
   })
+
+  return resultToJS(res)
 }
 
 /**
