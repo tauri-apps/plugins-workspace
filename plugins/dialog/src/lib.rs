@@ -243,6 +243,7 @@ impl<R: Runtime> MessageDialogBuilder<R> {
             MessageDialogButtons::Ok => (Some(OK), None, None),
             MessageDialogButtons::OkCancel => (Some(OK), None, Some(CANCEL)),
             MessageDialogButtons::YesNo => (Some(YES), Some(NO), None),
+            MessageDialogButtons::YesNoCancel => (Some(YES), Some(NO), Some(CANCEL)),
             MessageDialogButtons::OkCustom(ok) => (Some(ok.as_str()), None, None),
             MessageDialogButtons::OkCancelCustom(ok, cancel) => {
                 (Some(ok.as_str()), None, Some(cancel.as_str()))

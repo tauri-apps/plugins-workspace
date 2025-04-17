@@ -13,7 +13,7 @@ use rfd::{AsyncFileDialog, AsyncMessageDialog};
 use serde::de::DeserializeOwned;
 use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
-use crate::{models::*, FileDialogBuilder, FilePath, MessageDialogBuilder};
+use crate::{models::*, FileDialogBuilder, FilePath, MessageDialogBuilder, CANCEL, NO, YES};
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
@@ -115,6 +115,9 @@ impl From<MessageDialogButtons> for rfd::MessageButtons {
             MessageDialogButtons::YesNo => Self::YesNo,
             MessageDialogButtons::OkCustom(ok) => Self::OkCustom(ok),
             MessageDialogButtons::OkCancelCustom(ok, cancel) => Self::OkCancelCustom(ok, cancel),
+            MessageDialogButtons::YesNoCancel => {
+                Self::YesNoCancelCustom(YES.into(), NO.into(), CANCEL.into())
+            }
             MessageDialogButtons::YesNoCancelCustom(yes, no, cancel) => {
                 Self::YesNoCancelCustom(yes, no, cancel)
             }

@@ -61,6 +61,8 @@ pub enum MessageDialogButtons {
     OkCancel,
     /// 2 buttons `Yes` and `No` with OS default dialog texts
     YesNo,
+    /// 3 buttons `Yes`, `No` and `Cancel` with OS default dialog texts
+    YesNoCancel,
     /// A single `Ok` button with custom text
     OkCustom(String),
     /// 2 buttons `Ok` and `Cancel` with custom texts
@@ -71,6 +73,7 @@ pub enum MessageDialogButtons {
 
 /// Result of a message dialog
 #[derive(Debug, Default, Clone, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(untagged)]
 pub enum MessageDialogResult {
     Yes,
     No,

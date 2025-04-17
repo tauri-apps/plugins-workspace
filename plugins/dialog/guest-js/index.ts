@@ -82,7 +82,11 @@ interface SaveDialogOptions {
  *
  * @since 2.3.0
  */
-export type MessageDialogDefaultButtons = 'Ok' | 'OkCancel' | 'YesNo'
+export type MessageDialogDefaultButtons =
+  | 'Ok'
+  | 'OkCancel'
+  | 'YesNo'
+  | 'YesNoCancel'
 
 /**
  * The Yes, No and Cancel buttons of a message dialog.
@@ -307,22 +311,6 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
  */
 export type MessageDialogResult = 'Yes' | 'No' | 'Ok' | 'Cancel' | (string & {})
 
-type MessageDialogResultRust =
-  | 'Yes'
-  | 'No'
-  | 'Ok'
-  | 'Cancel'
-  | { Custom: string }
-
-/** Internal function to convert the result to JS. */
-function resultToJS(res: MessageDialogResultRust): MessageDialogResult {
-  if (typeof res === 'string') {
-    return res
-  } else {
-    return res.Custom
-  }
-}
-
 /**
  * Shows a message dialog with an `Ok` button.
  * @example
@@ -346,15 +334,13 @@ async function message(
 ): Promise<MessageDialogResult> {
   const opts = typeof options === 'string' ? { title: options } : options
 
-  const res = await invoke<MessageDialogResultRust>('plugin:dialog|message', {
+  return invoke<MessageDialogResult>('plugin:dialog|message', {
     message: message.toString(),
     title: opts?.title?.toString(),
     kind: opts?.kind,
     okButtonLabel: opts?.okLabel?.toString(),
     buttons: buttonsToRust(opts?.buttons)
   })
-
-  return resultToJS(res)
 }
 
 /**
