@@ -95,11 +95,11 @@ export type MessageDialogDefaultButtons =
  */
 export type MessageDialogButtonsYesNoCancel = {
   /** The Yes button. */
-  yes?: string
+  yes: string
   /** The No button. */
-  no?: string
+  no: string
   /** The Cancel button. */
-  cancel?: string
+  cancel: string
 }
 
 /**
@@ -109,9 +109,9 @@ export type MessageDialogButtonsYesNoCancel = {
  */
 export type MessageDialogButtonsOkCancel = {
   /** The Ok button. */
-  ok?: string
+  ok: string
   /** The Cancel button. */
-  cancel?: string
+  cancel: string
 }
 
 /**
@@ -121,7 +121,7 @@ export type MessageDialogButtonsOkCancel = {
  */
 export type MessageDialogButtonsOk = {
   /** The Ok button. */
-  ok?: string
+  ok: string
 }
 
 /**
