@@ -115,9 +115,7 @@ impl From<MessageDialogButtons> for rfd::MessageButtons {
             MessageDialogButtons::YesNo => Self::YesNo,
             MessageDialogButtons::OkCustom(ok) => Self::OkCustom(ok),
             MessageDialogButtons::OkCancelCustom(ok, cancel) => Self::OkCancelCustom(ok, cancel),
-            MessageDialogButtons::YesNoCancel => {
-                Self::YesNoCancelCustom(YES.into(), NO.into(), CANCEL.into())
-            }
+            MessageDialogButtons::YesNoCancel => Self::YesNoCancel,
             MessageDialogButtons::YesNoCancelCustom(yes, no, cancel) => {
                 Self::YesNoCancelCustom(yes, no, cancel)
             }
