@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.25]
+
+### Dependencies
+
+- Upgraded to `log@2.4.0`
+- Upgraded to `biometric@2.2.1`
+- Upgraded to `updater@2.7.1`
+
 ## \[2.0.24]
 
 ### Dependencies

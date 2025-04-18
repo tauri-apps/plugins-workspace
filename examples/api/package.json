@@ -1,7 +1,7 @@
 {
   "name": "api",
   "private": true,
-  "version": "2.0.20",
+  "version": "2.0.21",
   "type": "module",
   "scripts": {
     "dev": "vite --clearScreen false",
@@ -12,7 +12,7 @@
   "dependencies": {
     "@tauri-apps/api": "2.5.0",
     "@tauri-apps/plugin-barcode-scanner": "^2.2.0",
-    "@tauri-apps/plugin-biometric": "^2.2.0",
+    "@tauri-apps/plugin-biometric": "^2.2.1",
     "@tauri-apps/plugin-cli": "^2.2.0",
     "@tauri-apps/plugin-clipboard-manager": "^2.2.2",
     "@tauri-apps/plugin-dialog": "^2.2.1",
@@ -28,7 +28,7 @@
     "@tauri-apps/plugin-process": "^2.2.1",
     "@tauri-apps/plugin-shell": "^2.2.1",
     "@tauri-apps/plugin-store": "^2.2.0",
-    "@tauri-apps/plugin-updater": "^2.7.0",
+    "@tauri-apps/plugin-updater": "^2.7.1",
     "@zerodevx/svelte-json-view": "1.0.11"
   },
   "devDependencies": {
