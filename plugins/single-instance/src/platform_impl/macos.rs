@@ -105,13 +105,7 @@ fn listen_for_other_instances<A: Runtime>(
                             let mut s = String::new();
                             match stream.read_to_string(&mut s) {
                                 Ok(_) => {
-                                    let (cwd, args) = {
-                                        let mut split = s.split("\0\0");
-                                        (
-                                            split.next().unwrap_or_default(),
-                                            split.next().unwrap_or_default(),
-                                        )
-                                    };
+                                    let (cwd, args) = s.split_once("\0\0").unwrap_or_default();
                                     let args: Vec<String> =
                                         args.split('\0').map(String::from).collect();
                                     cb(app.app_handle(), args, cwd.to_string());
