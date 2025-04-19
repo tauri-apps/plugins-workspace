@@ -297,117 +297,140 @@
         {
           "description": "Enables the create_client command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-create-client"
+          "const": "allow-create-client",
+          "markdownDescription": "Enables the create_client command without any pre-configured scope."
         },
         {
           "description": "Denies the create_client command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-create-client"
+          "const": "deny-create-client",
+          "markdownDescription": "Denies the create_client command without any pre-configured scope."
         },
         {
           "description": "Enables the destroy command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-destroy"
+          "const": "allow-destroy",
+          "markdownDescription": "Enables the destroy command without any pre-configured scope."
         },
         {
           "description": "Denies the destroy command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-destroy"
+          "const": "deny-destroy",
+          "markdownDescription": "Denies the destroy command without any pre-configured scope."
         },
         {
           "description": "Enables the execute_procedure command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-execute-procedure"
+          "const": "allow-execute-procedure",
+          "markdownDescription": "Enables the execute_procedure command without any pre-configured scope."
         },
         {
           "description": "Denies the execute_procedure command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-execute-procedure"
+          "const": "deny-execute-procedure",
+          "markdownDescription": "Denies the execute_procedure command without any pre-configured scope."
         },
         {
           "description": "Enables the get_store_record command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-get-store-record"
+          "const": "allow-get-store-record",
+          "markdownDescription": "Enables the get_store_record command without any pre-configured scope."
         },
         {
           "description": "Denies the get_store_record command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-get-store-record"
+          "const": "deny-get-store-record",
+          "markdownDescription": "Denies the get_store_record command without any pre-configured scope."
         },
         {
           "description": "Enables the initialize command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-initialize"
+          "const": "allow-initialize",
+          "markdownDescription": "Enables the initialize command without any pre-configured scope."
         },
         {
           "description": "Denies the initialize command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-initialize"
+          "const": "deny-initialize",
+          "markdownDescription": "Denies the initialize command without any pre-configured scope."
         },
         {
           "description": "Enables the load_client command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-load-client"
+          "const": "allow-load-client",
+          "markdownDescription": "Enables the load_client command without any pre-configured scope."
         },
         {
           "description": "Denies the load_client command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-load-client"
+          "const": "deny-load-client",
+          "markdownDescription": "Denies the load_client command without any pre-configured scope."
         },
         {
           "description": "Enables the remove_secret command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-remove-secret"
+          "const": "allow-remove-secret",
+          "markdownDescription": "Enables the remove_secret command without any pre-configured scope."
         },
         {
           "description": "Denies the remove_secret command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-remove-secret"
+          "const": "deny-remove-secret",
+          "markdownDescription": "Denies the remove_secret command without any pre-configured scope."
         },
         {
           "description": "Enables the remove_store_record command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-remove-store-record"
+          "const": "allow-remove-store-record",
+          "markdownDescription": "Enables the remove_store_record command without any pre-configured scope."
         },
         {
           "description": "Denies the remove_store_record command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-remove-store-record"
+          "const": "deny-remove-store-record",
+          "markdownDescription": "Denies the remove_store_record command without any pre-configured scope."
         },
         {
           "description": "Enables the save command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-save"
+          "const": "allow-save",
+          "markdownDescription": "Enables the save command without any pre-configured scope."
         },
         {
           "description": "Denies the save command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-save"
+          "const": "deny-save",
+          "markdownDescription": "Denies the save command without any pre-configured scope."
         },
         {
           "description": "Enables the save_secret command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-save-secret"
+          "const": "allow-save-secret",
+          "markdownDescription": "Enables the save_secret command without any pre-configured scope."
         },
         {
           "description": "Denies the save_secret command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-save-secret"
+          "const": "deny-save-secret",
+          "markdownDescription": "Denies the save_secret command without any pre-configured scope."
         },
         {
           "description": "Enables the save_store_record command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-save-store-record"
+          "const": "allow-save-store-record",
+          "markdownDescription": "Enables the save_store_record command without any pre-configured scope."
         },
         {
           "description": "Denies the save_store_record command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-save-store-record"
+          "const": "deny-save-store-record",
+          "markdownDescription": "Denies the save_store_record command without any pre-configured scope."
         },
         {
-          "description": "This permission set configures what kind of\noperations are available from the stronghold plugin.\n\n#### Granted Permissions\n\nAll non-destructive operations are enabled by default.\n\n",
+          "description": "This permission set configures what kind of\noperations are available from the stronghold plugin.\n\n#### Granted Permissions\n\nAll non-destructive operations are enabled by default.\n\n\n#### This default permission set includes:\n\n- `allow-create-client`\n- `allow-get-store-record`\n- `allow-initialize`\n- `allow-execute-procedure`\n- `allow-load-client`\n- `allow-save-secret`\n- `allow-save-store-record`\n- `allow-save`",
           "type": "string",
-          "const": "default"
+          "const": "default",
+          "markdownDescription": "This permission set configures what kind of\noperations are available from the stronghold plugin.\n\n#### Granted Permissions\n\nAll non-destructive operations are enabled by default.\n\n\n#### This default permission set includes:\n\n- `allow-create-client`\n- `allow-get-store-record`\n- `allow-initialize`\n- `allow-execute-procedure`\n- `allow-load-client`\n- `allow-save-secret`\n- `allow-save-store-record`\n- `allow-save`"
         }
       ]
     }

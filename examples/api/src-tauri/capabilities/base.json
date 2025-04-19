@@ -53,7 +53,7 @@
         }
       ]
     },
-    "shell:allow-open",
+    "shell:default",
     "shell:allow-kill",
     "shell:allow-stdin-write",
     "process:allow-exit",

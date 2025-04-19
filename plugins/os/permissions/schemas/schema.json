@@ -297,87 +297,104 @@
         {
           "description": "Enables the arch command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-arch"
+          "const": "allow-arch",
+          "markdownDescription": "Enables the arch command without any pre-configured scope."
         },
         {
           "description": "Denies the arch command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-arch"
+          "const": "deny-arch",
+          "markdownDescription": "Denies the arch command without any pre-configured scope."
         },
         {
           "description": "Enables the exe_extension command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-exe-extension"
+          "const": "allow-exe-extension",
+          "markdownDescription": "Enables the exe_extension command without any pre-configured scope."
         },
         {
           "description": "Denies the exe_extension command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-exe-extension"
+          "const": "deny-exe-extension",
+          "markdownDescription": "Denies the exe_extension command without any pre-configured scope."
         },
         {
           "description": "Enables the family command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-family"
+          "const": "allow-family",
+          "markdownDescription": "Enables the family command without any pre-configured scope."
         },
         {
           "description": "Denies the family command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-family"
+          "const": "deny-family",
+          "markdownDescription": "Denies the family command without any pre-configured scope."
         },
         {
           "description": "Enables the hostname command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-hostname"
+          "const": "allow-hostname",
+          "markdownDescription": "Enables the hostname command without any pre-configured scope."
         },
         {
           "description": "Denies the hostname command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-hostname"
+          "const": "deny-hostname",
+          "markdownDescription": "Denies the hostname command without any pre-configured scope."
         },
         {
           "description": "Enables the locale command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-locale"
+          "const": "allow-locale",
+          "markdownDescription": "Enables the locale command without any pre-configured scope."
         },
         {
           "description": "Denies the locale command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-locale"
+          "const": "deny-locale",
+          "markdownDescription": "Denies the locale command without any pre-configured scope."
         },
         {
           "description": "Enables the os_type command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-os-type"
+          "const": "allow-os-type",
+          "markdownDescription": "Enables the os_type command without any pre-configured scope."
         },
         {
           "description": "Denies the os_type command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-os-type"
+          "const": "deny-os-type",
+          "markdownDescription": "Denies the os_type command without any pre-configured scope."
         },
         {
           "description": "Enables the platform command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-platform"
+          "const": "allow-platform",
+          "markdownDescription": "Enables the platform command without any pre-configured scope."
         },
         {
           "description": "Denies the platform command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-platform"
+          "const": "deny-platform",
+          "markdownDescription": "Denies the platform command without any pre-configured scope."
         },
         {
           "description": "Enables the version command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-version"
+          "const": "allow-version",
+          "markdownDescription": "Enables the version command without any pre-configured scope."
         },
         {
           "description": "Denies the version command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-version"
+          "const": "deny-version",
+          "markdownDescription": "Denies the version command without any pre-configured scope."
         },
         {
-          "description": "This permission set configures which\noperating system information are available\nto gather from the frontend.\n\n#### Granted Permissions\n\nAll information except the host name are available.\n\n",
+          "description": "This permission set configures which\noperating system information are available\nto gather from the frontend.\n\n#### Granted Permissions\n\nAll information except the host name are available.\n\n\n#### This default permission set includes:\n\n- `allow-arch`\n- `allow-exe-extension`\n- `allow-family`\n- `allow-locale`\n- `allow-os-type`\n- `allow-platform`\n- `allow-version`",
           "type": "string",
-          "const": "default"
+          "const": "default",
+          "markdownDescription": "This permission set configures which\noperating system information are available\nto gather from the frontend.\n\n#### Granted Permissions\n\nAll information except the host name are available.\n\n\n#### This default permission set includes:\n\n- `allow-arch`\n- `allow-exe-extension`\n- `allow-family`\n- `allow-locale`\n- `allow-os-type`\n- `allow-platform`\n- `allow-version`"
         }
       ]
     }

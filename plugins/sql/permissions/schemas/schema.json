@@ -297,47 +297,56 @@
         {
           "description": "Enables the close command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-close"
+          "const": "allow-close",
+          "markdownDescription": "Enables the close command without any pre-configured scope."
         },
         {
           "description": "Denies the close command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-close"
+          "const": "deny-close",
+          "markdownDescription": "Denies the close command without any pre-configured scope."
         },
         {
           "description": "Enables the execute command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-execute"
+          "const": "allow-execute",
+          "markdownDescription": "Enables the execute command without any pre-configured scope."
         },
         {
           "description": "Denies the execute command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-execute"
+          "const": "deny-execute",
+          "markdownDescription": "Denies the execute command without any pre-configured scope."
         },
         {
           "description": "Enables the load command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-load"
+          "const": "allow-load",
+          "markdownDescription": "Enables the load command without any pre-configured scope."
         },
         {
           "description": "Denies the load command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-load"
+          "const": "deny-load",
+          "markdownDescription": "Denies the load command without any pre-configured scope."
         },
         {
           "description": "Enables the select command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-select"
+          "const": "allow-select",
+          "markdownDescription": "Enables the select command without any pre-configured scope."
         },
         {
           "description": "Denies the select command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-select"
+          "const": "deny-select",
+          "markdownDescription": "Denies the select command without any pre-configured scope."
         },
         {
-          "description": "### Default Permissions\n\nThis permission set configures what kind of\ndatabase operations are available from the sql plugin.\n\n### Granted Permissions\n\nAll reading related operations are enabled.\nAlso allows to load or close a connection.\n\n",
+          "description": "### Default Permissions\n\nThis permission set configures what kind of\ndatabase operations are available from the sql plugin.\n\n### Granted Permissions\n\nAll reading related operations are enabled.\nAlso allows to load or close a connection.\n\n\n#### This default permission set includes:\n\n- `allow-close`\n- `allow-load`\n- `allow-select`",
           "type": "string",
-          "const": "default"
+          "const": "default",
+          "markdownDescription": "### Default Permissions\n\nThis permission set configures what kind of\ndatabase operations are available from the sql plugin.\n\n### Granted Permissions\n\nAll reading related operations are enabled.\nAlso allows to load or close a connection.\n\n\n#### This default permission set includes:\n\n- `allow-close`\n- `allow-load`\n- `allow-select`"
         }
       ]
     }

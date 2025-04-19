@@ -297,17 +297,20 @@
         {
           "description": "Enables the cli_matches command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-cli-matches"
+          "const": "allow-cli-matches",
+          "markdownDescription": "Enables the cli_matches command without any pre-configured scope."
         },
         {
           "description": "Denies the cli_matches command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-cli-matches"
+          "const": "deny-cli-matches",
+          "markdownDescription": "Denies the cli_matches command without any pre-configured scope."
         },
         {
-          "description": "Allows reading the CLI matches",
+          "description": "Allows reading the CLI matches\n#### This default permission set includes:\n\n- `allow-cli-matches`",
           "type": "string",
-          "const": "default"
+          "const": "default",
+          "markdownDescription": "Allows reading the CLI matches\n#### This default permission set includes:\n\n- `allow-cli-matches`"
         }
       ]
     }

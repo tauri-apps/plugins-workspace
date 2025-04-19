@@ -2,6 +2,8 @@
 
 Allows reading the CLI matches
 
+#### This default permission set includes the following:
+
 - `allow-cli-matches`
 
 ## Permission Table

@@ -297,42 +297,50 @@
         {
           "description": "This enables opening `mailto:`, `tel:`, `https://` and `http://` urls using their default application.",
           "type": "string",
-          "const": "allow-default-urls"
+          "const": "allow-default-urls",
+          "markdownDescription": "This enables opening `mailto:`, `tel:`, `https://` and `http://` urls using their default application."
         },
         {
           "description": "Enables the open_path command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-open-path"
+          "const": "allow-open-path",
+          "markdownDescription": "Enables the open_path command without any pre-configured scope."
         },
         {
           "description": "Denies the open_path command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-open-path"
+          "const": "deny-open-path",
+          "markdownDescription": "Denies the open_path command without any pre-configured scope."
         },
         {
           "description": "Enables the open_url command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-open-url"
+          "const": "allow-open-url",
+          "markdownDescription": "Enables the open_url command without any pre-configured scope."
         },
         {
           "description": "Denies the open_url command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-open-url"
+          "const": "deny-open-url",
+          "markdownDescription": "Denies the open_url command without any pre-configured scope."
         },
         {
           "description": "Enables the reveal_item_in_dir command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-reveal-item-in-dir"
+          "const": "allow-reveal-item-in-dir",
+          "markdownDescription": "Enables the reveal_item_in_dir command without any pre-configured scope."
         },
         {
           "description": "Denies the reveal_item_in_dir command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-reveal-item-in-dir"
+          "const": "deny-reveal-item-in-dir",
+          "markdownDescription": "Denies the reveal_item_in_dir command without any pre-configured scope."
         },
         {
-          "description": "This permission set allows opening `mailto:`, `tel:`, `https://` and `http://` urls using their default application\nas well as reveal file in directories using default file explorer",
+          "description": "This permission set allows opening `mailto:`, `tel:`, `https://` and `http://` urls using their default application\nas well as reveal file in directories using default file explorer\n#### This default permission set includes:\n\n- `allow-open-url`\n- `allow-reveal-item-in-dir`\n- `allow-default-urls`",
           "type": "string",
-          "const": "default"
+          "const": "default",
+          "markdownDescription": "This permission set allows opening `mailto:`, `tel:`, `https://` and `http://` urls using their default application\nas well as reveal file in directories using default file explorer\n#### This default permission set includes:\n\n- `allow-open-url`\n- `allow-reveal-item-in-dir`\n- `allow-default-urls`"
         }
       ]
     }

@@ -278,7 +278,7 @@ export async function fetch(
     pull: async (controller) => readChunk(controller)
   })
 
-  const res = new Response(readableStreamBody, {
+  const res = new Response(status !== 204 ? readableStreamBody : null, {
     status,
     statusText
   })
