@@ -1251,15 +1251,7 @@ type WatchEventKindRemove =
  */
 type UnwatchFn = () => void
 
-class Watcher extends Resource {
-  constructor(rid: number) {
-    super(rid)
-  }
-
-  unwatch = () => {
-    void this.close()
-  }
-}
+class Watcher extends Resource {}
 
 async function watchInternal(
   paths: string | string[] | URL | URL[],
@@ -1285,7 +1277,9 @@ async function watchInternal(
 
   const watcher = new Watcher(rid)
 
-  return watcher.unwatch
+  return () => {
+    void watcher.close()
+  }
 }
 
 // TODO: Return `Watcher` instead in v3
