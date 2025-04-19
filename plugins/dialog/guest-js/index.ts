@@ -82,16 +82,11 @@ interface SaveDialogOptions {
  *
  * @since 2.3.0
  */
-export enum MessageDialogDefaultButtons {
-  /** A single `Ok` button with OS default dialog text */
-  Ok = 'Ok',
-  /** 2 buttons `Ok` and `Cancel` with OS default dialog texts */
-  OkCancel = 'OkCancel',
-  /** 2 buttons `Yes` and `No` with OS default dialog texts */
-  YesNo = 'YesNo',
-  /** 3 buttons `Yes`, `No` and `Cancel` with OS default dialog texts */
-  YesNoCancel = 'YesNoCancel'
-}
+export type MessageDialogDefaultButtons =
+  | 'Ok'
+  | 'OkCancel'
+  | 'YesNo'
+  | 'YesNoCancel'
 
 /**
  * The Yes, No and Cancel buttons of a message dialog.
