@@ -38,37 +38,38 @@ class BiometricActivity : AppCompatActivity() {
         var title = intent.getStringExtra(BiometricPlugin.TITLE)
         val subtitle = intent.getStringExtra(BiometricPlugin.SUBTITLE)
         val description = intent.getStringExtra(BiometricPlugin.REASON)
-        allowDeviceCredential = intent.getBooleanExtra(BiometricPlugin.DEVICE_CREDENTIAL, false)
-
+        val allowDeviceCredentialArg = intent.getBooleanExtra(BiometricPlugin.DEVICE_CREDENTIAL, false)
         // Android docs say we should check if the device is secure before enabling device credential fallback
         val manager = getSystemService(
             Context.KEYGUARD_SERVICE
         ) as KeyguardManager
-        if (allowDeviceCredential && manager.isDeviceSecure) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                var authenticators = BiometricManager.Authenticators.BIOMETRIC_WEAK
-                if (allowDeviceCredential) {
-                    authenticators = authenticators or BiometricManager.Authenticators.DEVICE_CREDENTIAL
-                }
-                builder.setAllowedAuthenticators(authenticators)
-            } else {
-                @Suppress("DEPRECATION")
-                builder.setDeviceCredentialAllowed(allowDeviceCredential)
+        val allowDeviceCredential = allowDeviceCredentialArg && manager.isDeviceSecure;
+
+        if (title.isNullOrEmpty()) {
+            title = "Authenticate"
+        }
+
+        builder.setTitle(title).setSubtitle(subtitle).setDescription(description)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            var authenticators = BiometricManager.Authenticators.BIOMETRIC_WEAK
+            if (allowDeviceCredential) {
+                authenticators = authenticators or BiometricManager.Authenticators.DEVICE_CREDENTIAL
             }
+            builder.setAllowedAuthenticators(authenticators)
         } else {
-            // From the Android docs:
-            //  You can't call setNegativeButtonText() and setAllowedAuthenticators(... or DEVICE_CREDENTIAL)
-            //  at the same time on a BiometricPrompt.PromptInfo.Builder instance.
+            @Suppress("DEPRECATION")
+            builder.setDeviceCredentialAllowed(allowDeviceCredential)
+        }
+
+        // From the Android docs:
+        //  You can't call setNegativeButtonText() and setAllowedAuthenticators(... or DEVICE_CREDENTIAL)
+        //  at the same time on a BiometricPrompt.PromptInfo.Builder instance.
+        if (!allowDeviceCredential) {
             val negativeButtonText = intent.getStringExtra(BiometricPlugin.CANCEL_TITLE)
             builder.setNegativeButtonText(
                 if (negativeButtonText.isNullOrEmpty()) "Cancel" else negativeButtonText
             )
         }
-
-        if (title.isNullOrEmpty()) {
-            title = "Authenticate"
-        }
-        builder.setTitle(title).setSubtitle(subtitle).setDescription(description)
 
         builder.setConfirmationRequired(
             intent.getBooleanExtra(BiometricPlugin.CONFIRMATION_REQUIRED, true)
@@ -85,8 +86,7 @@ class BiometricActivity : AppCompatActivity() {
                     var errorCode = errorCode
                     var errorMessage = errorMessage
                     // override error to properly report no device credential if needed
-                    if (allowDeviceCredential
-                        && errorCode == BiometricPrompt.ERROR_NO_BIOMETRICS) {
+                    if (allowDeviceCredentialArg && errorCode == BiometricPrompt.ERROR_NO_BIOMETRICS) {
                         errorCode = BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL
                         errorMessage = "No device credential set"
                     }
@@ -126,9 +126,5 @@ class BiometricActivity : AppCompatActivity() {
             )
         setResult(Activity.RESULT_OK, intent)
         finish()
-    }
-
-    companion object {
-        var allowDeviceCredential = false
     }
 }
