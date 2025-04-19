@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.2.1]
+
+### bug
+
+- [`10f9e66e`](https://github.com/tauri-apps/plugins-workspace/commit/10f9e66e32141dd35f4bf884fbf9102691187e92) ([#2633](https://github.com/tauri-apps/plugins-workspace/pull/2633) by [@pjf-dev](https://github.com/tauri-apps/plugins-workspace/../../pjf-dev)) Fix biometric plugin ignoring fallback logic when biometry status is unavailable or not enrolled on iOS.
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.

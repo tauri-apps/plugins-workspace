@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.7.1]
+
+- [`c5b0f51c`](https://github.com/tauri-apps/plugins-workspace/commit/c5b0f51cfd911cca9317b59efc718b570980129b) ([#2621](https://github.com/tauri-apps/plugins-workspace/pull/2621) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `check` and `download` overrides the `accept` header
+
 ## \[2.7.0]
 
 ### bug
