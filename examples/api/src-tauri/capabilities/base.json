@@ -69,6 +69,7 @@
     "fs:allow-mkdir",
     "fs:allow-remove",
     "fs:allow-write-text-file",
+    "fs:read-meta",
     "fs:scope-download-recursive",
     "fs:scope-resource-recursive",
     {
