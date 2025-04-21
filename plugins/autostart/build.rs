@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-const COMMANDS: &[&str] = &["enable", "disable", "is_enabled"];
+const COMMANDS: &[&str] = &["enable", "disable", "is_enabled", "is_autostart"];
 
 fn main() {
     tauri_plugin::Builder::new(COMMANDS)

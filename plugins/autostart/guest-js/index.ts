@@ -15,3 +15,7 @@ export async function enable(): Promise<void> {
 export async function disable(): Promise<void> {
   await invoke('plugin:autostart|disable')
 }
+
+export async function isAutostart(): Promise<boolean> {
+  await invoke('plugin:autostart|is_autostart')
+}

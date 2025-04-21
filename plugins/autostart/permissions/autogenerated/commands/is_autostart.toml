@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-is-autostart"
+description = "Enables the is_autostart command without any pre-configured scope."
+commands.allow = ["is_autostart"]
+
+[[permission]]
+identifier = "deny-is-autostart"
+description = "Denies the is_autostart command without any pre-configured scope."
+commands.deny = ["is_autostart"]

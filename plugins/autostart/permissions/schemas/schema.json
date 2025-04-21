@@ -319,6 +319,18 @@
           "markdownDescription": "Denies the enable command without any pre-configured scope."
         },
         {
+          "description": "Enables the is_autostart command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-is-autostart",
+          "markdownDescription": "Enables the is_autostart command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the is_autostart command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-is-autostart",
+          "markdownDescription": "Denies the is_autostart command without any pre-configured scope."
+        },
+        {
           "description": "Enables the is_enabled command without any pre-configured scope.",
           "type": "string",
           "const": "allow-is-enabled",
@@ -331,10 +343,10 @@
           "markdownDescription": "Denies the is_enabled command without any pre-configured scope."
         },
         {
-          "description": "This permission set configures if your\napplication can enable or disable auto\nstarting the application on boot.\n\n#### Granted Permissions\n\nIt allows all to check, enable and\ndisable the automatic start on boot.\n\n\n#### This default permission set includes:\n\n- `allow-enable`\n- `allow-disable`\n- `allow-is-enabled`",
+          "description": "This permission set configures if your\napplication can enable or disable auto\nstarting the application on boot.\n\n#### Granted Permissions\n\nIt allows all to check, enable and\ndisable the automatic start on boot.\n\n\n#### This default permission set includes:\n\n- `allow-enable`\n- `allow-disable`\n- `allow-is-enabled`\n- `allow-is-autostart`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "This permission set configures if your\napplication can enable or disable auto\nstarting the application on boot.\n\n#### Granted Permissions\n\nIt allows all to check, enable and\ndisable the automatic start on boot.\n\n\n#### This default permission set includes:\n\n- `allow-enable`\n- `allow-disable`\n- `allow-is-enabled`"
+          "markdownDescription": "This permission set configures if your\napplication can enable or disable auto\nstarting the application on boot.\n\n#### Granted Permissions\n\nIt allows all to check, enable and\ndisable the automatic start on boot.\n\n\n#### This default permission set includes:\n\n- `allow-enable`\n- `allow-disable`\n- `allow-is-enabled`\n- `allow-is-autostart`"
         }
       ]
     }

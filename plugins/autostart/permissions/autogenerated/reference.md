@@ -16,6 +16,7 @@ disable the automatic start on boot.
 - `allow-enable`
 - `allow-disable`
 - `allow-is-enabled`
+- `allow-is-autostart`
 
 ## Permission Table
 
@@ -74,6 +75,32 @@ Enables the enable command without any pre-configured scope.
 <td>
 
 Denies the enable command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`autostart:allow-is-autostart`
+
+</td>
+<td>
+
+Enables the is_autostart command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`autostart:deny-is-autostart`
+
+</td>
+<td>
+
+Denies the is_autostart command without any pre-configured scope.
 
 </td>
 </tr>
