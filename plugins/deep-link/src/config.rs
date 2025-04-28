@@ -10,7 +10,7 @@ use serde::{Deserialize, Deserializer};
 
 #[derive(Deserialize)]
 pub struct AssociatedDomain {
-    #[serde(default)]
+    #[serde(default = "default_schemes")]
     pub scheme: Vec<String>,
 
     #[serde(deserialize_with = "deserialize_associated_host")]
@@ -24,6 +24,11 @@ pub struct AssociatedDomain {
     pub path_prefix: Vec<String>,
     #[serde(default, alias = "path-suffix", rename = "pathSuffix")]
     pub path_suffix: Vec<String>,
+}
+
+// TODO: Consider removing this in v3
+fn default_schemes() -> Vec<String> {
+    vec!["https", "http"]
 }
 
 fn deserialize_associated_host<'de, D>(deserializer: D) -> Result<String, D::Error>
