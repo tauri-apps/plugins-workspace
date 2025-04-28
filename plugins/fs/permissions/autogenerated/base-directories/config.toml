@@ -7,15 +7,19 @@
 
 [[permission]]
 identifier = "scope-config-recursive"
-description = "This scope recursive access to the complete `$CONFIG` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$CONFIG` folder, including sub directories and files."
 
+[[permission.scope.allow]]
+path = "$CONFIG"
 [[permission.scope.allow]]
 path = "$CONFIG/**"
 
 [[permission]]
 identifier = "scope-config"
-description = "This scope permits access to all files and list content of top level directories in the `$CONFIG`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$CONFIG` folder."
 
+[[permission.scope.allow]]
+path = "$CONFIG"
 [[permission.scope.allow]]
 path = "$CONFIG/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-config-index"
 description = "This scope permits to list all files and folders in the `$CONFIG`folder."
 
 [[permission.scope.allow]]
-path = "$CONFIG/"
+path = "$CONFIG"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands
@@ -39,7 +43,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-config-write-recursive"
-description = "This allows full recusrive write access to the complete `$CONFIG` folder, files and subdirectories."
+description = "This allows full recursive write access to the complete `$CONFIG` folder, files and subdirectories."
 permissions = [
     "write-all",
     "scope-config-recursive"
@@ -63,7 +67,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-config-meta-recursive"
-description = "This allows read access to metadata of the `$CONFIG` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$CONFIG` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-config-recursive"
@@ -71,7 +75,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-config-meta"
-description = "This allows read access to metadata of the `$CONFIG` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$CONFIG` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-config-index"

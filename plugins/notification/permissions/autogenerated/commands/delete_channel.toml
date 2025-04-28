@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-delete-channel"
+description = "Enables the delete_channel command without any pre-configured scope."
+commands.allow = ["delete_channel"]
+
+[[permission]]
+identifier = "deny-delete-channel"
+description = "Denies the delete_channel command without any pre-configured scope."
+commands.deny = ["delete_channel"]

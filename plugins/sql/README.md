@@ -2,9 +2,17 @@
 
 Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx). It supports the `sqlite`, `mysql` and `postgres` drivers, enabled by a Cargo feature.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | ✓         |
+| iOS      | x         |
+
 ## Install
 
-_This plugin requires a Rust version of at least **1.75**_
+_This plugin requires a Rust version of at least **1.77.2**_
 
 There are three general methods of installation that we can recommend.
 
@@ -19,7 +27,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 [dependencies.tauri-plugin-sql]
 features = ["sqlite"] # or "postgres", or "mysql"
-version = "2.0.0-beta"
+version = "2.0.0"
 # alternatively with Git
 git = "https://github.com/tauri-apps/plugins-workspace"
 branch = "v2"
@@ -48,7 +56,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-sql#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {
@@ -62,16 +70,16 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import Database from "@tauri-apps/plugin-sql";
+import Database from '@tauri-apps/plugin-sql'
 
-// sqlite. The path is relative to `tauri::api::path::BaseDirectory::App`.
-const db = await Database.load("sqlite:test.db");
+// sqlite. The path is relative to `tauri::api::path::BaseDirectory::AppConfig`.
+const db = await Database.load('sqlite:test.db')
 // mysql
-const db = await Database.load("mysql://user:pass@host/database");
+const db = await Database.load('mysql://user:pass@host/database')
 // postgres
-const db = await Database.load("postgres://postgres:password@localhost/test");
+const db = await Database.load('postgres://postgres:password@localhost/test')
 
-await db.execute("INSERT INTO ...");
+await db.execute('INSERT INTO ...')
 ```
 
 ## Syntax
@@ -84,25 +92,25 @@ We use sqlx as our underlying library, adopting their query syntax:
 ```javascript
 // INSERT and UPDATE examples for sqlite and postgres
 const result = await db.execute(
-  "INSERT into todos (id, title, status) VALUES ($1, $2, $3)",
-  [todos.id, todos.title, todos.status],
-);
+  'INSERT into todos (id, title, status) VALUES ($1, $2, $3)',
+  [todos.id, todos.title, todos.status]
+)
 
 const result = await db.execute(
-  "UPDATE todos SET title = $1, completed = $2 WHERE id = $3",
-  [todos.title, todos.status, todos.id],
-);
+  'UPDATE todos SET title = $1, status = $2 WHERE id = $3',
+  [todos.title, todos.status, todos.id]
+)
 
 // INSERT and UPDATE examples for mysql
 const result = await db.execute(
-  "INSERT into todos (id, title, status) VALUES (?, ?, ?)",
-  [todos.id, todos.title, todos.status],
-);
+  'INSERT into todos (id, title, status) VALUES (?, ?, ?)',
+  [todos.id, todos.title, todos.status]
+)
 
 const result = await db.execute(
-  "UPDATE todos SET title = ?, completed = ? WHERE id = ?",
-  [todos.title, todos.status, todos.id],
-);
+  'UPDATE todos SET title = ?, status = ? WHERE id = ?',
+  [todos.title, todos.status, todos.id]
+)
 ```
 
 ## Migrations
@@ -158,7 +166,26 @@ fn main() {
 
 ### Applying Migrations
 
-Migrations are applied automatically when the plugin is initialized. The plugin runs these migrations against the database specified by the connection string. Ensure that the migrations are defined in the correct order and are idempotent (safe to run multiple times).
+To apply the migrations when the plugin is initialized, add the connection string to the `tauri.conf.json` file:
+
+```json
+{
+  "plugins": {
+    "sql": {
+      "preload": ["sqlite:mydatabase.db"]
+    }
+  }
+}
+```
+
+Alternatively, the client side `load()` also runs the migrations for a given connection string:
+
+```ts
+import Database from '@tauri-apps/plugin-sql'
+const db = await Database.load('sqlite:mydatabase.db')
+```
+
+Ensure that the migrations are defined in the correct order and are safe to run multiple times.
 
 ### Migration Management
 

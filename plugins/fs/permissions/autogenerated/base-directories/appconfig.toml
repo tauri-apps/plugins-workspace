@@ -7,15 +7,19 @@
 
 [[permission]]
 identifier = "scope-appconfig-recursive"
-description = "This scope recursive access to the complete `$APPCONFIG` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$APPCONFIG` folder, including sub directories and files."
 
+[[permission.scope.allow]]
+path = "$APPCONFIG"
 [[permission.scope.allow]]
 path = "$APPCONFIG/**"
 
 [[permission]]
 identifier = "scope-appconfig"
-description = "This scope permits access to all files and list content of top level directories in the `$APPCONFIG`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$APPCONFIG` folder."
 
+[[permission.scope.allow]]
+path = "$APPCONFIG"
 [[permission.scope.allow]]
 path = "$APPCONFIG/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-appconfig-index"
 description = "This scope permits to list all files and folders in the `$APPCONFIG`folder."
 
 [[permission.scope.allow]]
-path = "$APPCONFIG/"
+path = "$APPCONFIG"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands
@@ -39,7 +43,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-appconfig-write-recursive"
-description = "This allows full recusrive write access to the complete `$APPCONFIG` folder, files and subdirectories."
+description = "This allows full recursive write access to the complete `$APPCONFIG` folder, files and subdirectories."
 permissions = [
     "write-all",
     "scope-appconfig-recursive"
@@ -63,7 +67,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-appconfig-meta-recursive"
-description = "This allows read access to metadata of the `$APPCONFIG` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$APPCONFIG` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-appconfig-recursive"
@@ -71,7 +75,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-appconfig-meta"
-description = "This allows read access to metadata of the `$APPCONFIG` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$APPCONFIG` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-appconfig-index"

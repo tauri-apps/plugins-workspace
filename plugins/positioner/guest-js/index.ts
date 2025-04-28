@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from '@tauri-apps/api/core'
+import type { TrayIconEvent } from '@tauri-apps/api/tray'
 
 /**
  * Well known window positions.
@@ -23,7 +24,7 @@ export enum Position {
   TrayRight,
   TrayBottomRight,
   TrayCenter,
-  TrayBottomCenter,
+  TrayBottomCenter
 }
 
 /**
@@ -33,7 +34,27 @@ export enum Position {
  * @param to The {@link Position} to move to.
  */
 export async function moveWindow(to: Position): Promise<void> {
-  await invoke("plugin:positioner|move_window", {
-    position: to,
-  });
+  await invoke('plugin:positioner|move_window', {
+    position: to
+  })
+}
+
+/**
+ * Moves the `Window` to the given {@link Position} using `WindowExt.move_window_constrained()`
+ *
+ * This move operation constrains the window to the screen dimensions in case of
+ * tray-icon positions.
+ * @param to The (tray) {@link Position} to move to.
+ */
+export async function moveWindowConstrained(to: Position): Promise<void> {
+  await invoke('plugin:positioner|move_window_constrained', {
+    position: to
+  })
+}
+
+export async function handleIconState(event: TrayIconEvent): Promise<void> {
+  await invoke('plugin:positioner|set_tray_icon_state', {
+    position: event.rect.position,
+    size: event.rect.size
+  })
 }

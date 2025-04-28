@@ -17,7 +17,6 @@
     },
     "set": {
       "description": "A list of permissions sets defined",
-      "default": [],
       "type": "array",
       "items": {
         "$ref": "#/definitions/PermissionSet"
@@ -50,7 +49,7 @@
           "minimum": 1.0
         },
         "description": {
-          "description": "Human-readable description of what the permission does.",
+          "description": "Human-readable description of what the permission does. Tauri convention is to use `<h4>` headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -112,7 +111,7 @@
           "type": "string"
         },
         "description": {
-          "description": "Human-readable description of what the permission does.",
+          "description": "Human-readable description of what the permission does. Tauri internal convention is to use `<h4>` headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -132,12 +131,21 @@
         },
         "scope": {
           "description": "Allowed or denied scoped when using this permission.",
-          "default": {},
           "allOf": [
             {
               "$ref": "#/definitions/Scopes"
             }
           ]
+        },
+        "platforms": {
+          "description": "Target platforms this permission applies. By default all platforms are affected by this permission.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/Target"
+          }
         }
       }
     },
@@ -164,7 +172,7 @@
       }
     },
     "Scopes": {
-      "description": "A restriction of the command/endpoint functionality.\n\nIt can be of any serde serializable type and is used for allowing or preventing certain actions inside a Tauri command.\n\nThe scope is passed to the command and handled/enforced by the command itself.",
+      "description": "An argument for fine grained behavior control of Tauri commands.\n\nIt can be of any serde serializable type and is used to allow or prevent certain actions inside a Tauri command. The configured scope is passed to the command and will be enforced by the command implementation.\n\n## Example\n\n```json { \"allow\": [{ \"path\": \"$HOME/**\" }], \"deny\": [{ \"path\": \"$HOME/secret.txt\" }] } ```",
       "type": "object",
       "properties": {
         "allow": {
@@ -178,7 +186,7 @@
           }
         },
         "deny": {
-          "description": "Data that defines what is denied by the scope.",
+          "description": "Data that defines what is denied by the scope. This should be prioritized by validation logic.",
           "type": [
             "array",
             "null"
@@ -243,78 +251,114 @@
         }
       ]
     },
+    "Target": {
+      "description": "Platform target.",
+      "oneOf": [
+        {
+          "description": "MacOS.",
+          "type": "string",
+          "enum": [
+            "macOS"
+          ]
+        },
+        {
+          "description": "Windows.",
+          "type": "string",
+          "enum": [
+            "windows"
+          ]
+        },
+        {
+          "description": "Linux.",
+          "type": "string",
+          "enum": [
+            "linux"
+          ]
+        },
+        {
+          "description": "Android.",
+          "type": "string",
+          "enum": [
+            "android"
+          ]
+        },
+        {
+          "description": "iOS.",
+          "type": "string",
+          "enum": [
+            "iOS"
+          ]
+        }
+      ]
+    },
     "PermissionKind": {
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-is-registered -> Enables the is_registered command without any pre-configured scope.",
+          "description": "Enables the is_registered command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-is-registered"
-          ]
+          "const": "allow-is-registered",
+          "markdownDescription": "Enables the is_registered command without any pre-configured scope."
         },
         {
-          "description": "deny-is-registered -> Denies the is_registered command without any pre-configured scope.",
+          "description": "Denies the is_registered command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-is-registered"
-          ]
+          "const": "deny-is-registered",
+          "markdownDescription": "Denies the is_registered command without any pre-configured scope."
         },
         {
-          "description": "allow-register -> Enables the register command without any pre-configured scope.",
+          "description": "Enables the register command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-register"
-          ]
+          "const": "allow-register",
+          "markdownDescription": "Enables the register command without any pre-configured scope."
         },
         {
-          "description": "deny-register -> Denies the register command without any pre-configured scope.",
+          "description": "Denies the register command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-register"
-          ]
+          "const": "deny-register",
+          "markdownDescription": "Denies the register command without any pre-configured scope."
         },
         {
-          "description": "allow-register-all -> Enables the register_all command without any pre-configured scope.",
+          "description": "Enables the register_all command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-register-all"
-          ]
+          "const": "allow-register-all",
+          "markdownDescription": "Enables the register_all command without any pre-configured scope."
         },
         {
-          "description": "deny-register-all -> Denies the register_all command without any pre-configured scope.",
+          "description": "Denies the register_all command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-register-all"
-          ]
+          "const": "deny-register-all",
+          "markdownDescription": "Denies the register_all command without any pre-configured scope."
         },
         {
-          "description": "allow-unregister -> Enables the unregister command without any pre-configured scope.",
+          "description": "Enables the unregister command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-unregister"
-          ]
+          "const": "allow-unregister",
+          "markdownDescription": "Enables the unregister command without any pre-configured scope."
         },
         {
-          "description": "deny-unregister -> Denies the unregister command without any pre-configured scope.",
+          "description": "Denies the unregister command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-unregister"
-          ]
+          "const": "deny-unregister",
+          "markdownDescription": "Denies the unregister command without any pre-configured scope."
         },
         {
-          "description": "allow-unregister-all -> Enables the unregister_all command without any pre-configured scope.",
+          "description": "Enables the unregister_all command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-unregister-all"
-          ]
+          "const": "allow-unregister-all",
+          "markdownDescription": "Enables the unregister_all command without any pre-configured scope."
         },
         {
-          "description": "deny-unregister-all -> Denies the unregister_all command without any pre-configured scope.",
+          "description": "Denies the unregister_all command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-unregister-all"
-          ]
+          "const": "deny-unregister-all",
+          "markdownDescription": "Denies the unregister_all command without any pre-configured scope."
+        },
+        {
+          "description": "No features are enabled by default, as we believe\nthe shortcuts can be inherently dangerous and it is\napplication specific if specific shortcuts should be\nregistered or unregistered.\n",
+          "type": "string",
+          "const": "default",
+          "markdownDescription": "No features are enabled by default, as we believe\nthe shortcuts can be inherently dangerous and it is\napplication specific if specific shortcuts should be\nregistered or unregistered.\n"
         }
       ]
     }

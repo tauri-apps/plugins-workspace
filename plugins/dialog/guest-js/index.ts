@@ -2,19 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/core";
-
-interface FileResponse {
-  base64Data?: string;
-  duration?: number;
-  height?: number;
-  width?: number;
-  mimeType?: string;
-  modifiedAt?: number;
-  name?: string;
-  path: string;
-  size: number;
-}
+import { invoke } from '@tauri-apps/api/core'
 
 /**
  * Extension filters for the file dialog.
@@ -23,7 +11,7 @@ interface FileResponse {
  */
 interface DialogFilter {
   /** Filter name. */
-  name: string;
+  name: string
   /**
    * Extensions to filter, without a `.` prefix.
    * @example
@@ -31,7 +19,7 @@ interface DialogFilter {
    * extensions: ['svg', 'png']
    * ```
    */
-  extensions: string[];
+  extensions: string[]
 }
 
 /**
@@ -40,23 +28,30 @@ interface DialogFilter {
  * @since 2.0.0
  */
 interface OpenDialogOptions {
-  /** The title of the dialog window. */
-  title?: string;
+  /** The title of the dialog window (desktop only). */
+  title?: string
   /** The filters of the dialog. */
-  filters?: DialogFilter[];
-  /** Initial directory or file path. */
-  defaultPath?: string;
+  filters?: DialogFilter[]
+  /**
+   * Initial directory or file path.
+   * If it's a directory path, the dialog interface will change to that folder.
+   * If it's not an existing directory, the file name will be set to the dialog's file name input and the dialog will be set to the parent folder.
+   *
+   * On mobile the file name is always used on the dialog's file name input.
+   * If not provided, Android uses `(invalid).txt` as default file name.
+   */
+  defaultPath?: string
   /** Whether the dialog allows multiple selection or not. */
-  multiple?: boolean;
+  multiple?: boolean
   /** Whether the dialog is a directory selection or not. */
-  directory?: boolean;
+  directory?: boolean
   /**
    * If `directory` is true, indicates that it will be read recursively later.
    * Defines whether subdirectories will be allowed on the scope or not.
    */
-  recursive?: boolean;
+  recursive?: boolean
   /** Whether to allow creating directories in the dialog. Enabled by default. **macOS Only** */
-  canCreateDirectories?: boolean;
+  canCreateDirectories?: boolean
 }
 
 /**
@@ -65,18 +60,21 @@ interface OpenDialogOptions {
  * @since 2.0.0
  */
 interface SaveDialogOptions {
-  /** The title of the dialog window. */
-  title?: string;
+  /** The title of the dialog window (desktop only). */
+  title?: string
   /** The filters of the dialog. */
-  filters?: DialogFilter[];
+  filters?: DialogFilter[]
   /**
    * Initial directory or file path.
    * If it's a directory path, the dialog interface will change to that folder.
    * If it's not an existing directory, the file name will be set to the dialog's file name input and the dialog will be set to the parent folder.
+   *
+   * On mobile the file name is always used on the dialog's file name input.
+   * If not provided, Android uses `(invalid).txt` as default file name.
    */
-  defaultPath?: string;
+  defaultPath?: string
   /** Whether to allow creating directories in the dialog. Enabled by default. **macOS Only** */
-  canCreateDirectories?: boolean;
+  canCreateDirectories?: boolean
 }
 
 /**
@@ -84,31 +82,31 @@ interface SaveDialogOptions {
  */
 interface MessageDialogOptions {
   /** The title of the dialog. Defaults to the app name. */
-  title?: string;
+  title?: string
   /** The kind of the dialog. Defaults to `info`. */
-  kind?: "info" | "warning" | "error";
+  kind?: 'info' | 'warning' | 'error'
   /** The label of the confirm button. */
-  okLabel?: string;
+  okLabel?: string
 }
 
 interface ConfirmDialogOptions {
   /** The title of the dialog. Defaults to the app name. */
-  title?: string;
+  title?: string
   /** The kind of the dialog. Defaults to `info`. */
-  kind?: "info" | "warning" | "error";
+  kind?: 'info' | 'warning' | 'error'
   /** The label of the confirm button. */
-  okLabel?: string;
+  okLabel?: string
   /** The label of the cancel button. */
-  cancelLabel?: string;
+  cancelLabel?: string
 }
 
-type OpenDialogReturn<T extends OpenDialogOptions> = T["directory"] extends true
-  ? T["multiple"] extends true
+type OpenDialogReturn<T extends OpenDialogOptions> = T['directory'] extends true
+  ? T['multiple'] extends true
     ? string[] | null
     : string | null
-  : T["multiple"] extends true
-    ? FileResponse[] | null
-    : FileResponse | null;
+  : T['multiple'] extends true
+    ? string[] | null
+    : string | null
 
 /**
  * Open a file/directory selection dialog.
@@ -163,13 +161,13 @@ type OpenDialogReturn<T extends OpenDialogOptions> = T["directory"] extends true
  * @since 2.0.0
  */
 async function open<T extends OpenDialogOptions>(
-  options: T = {} as T,
+  options: T = {} as T
 ): Promise<OpenDialogReturn<T>> {
-  if (typeof options === "object") {
-    Object.freeze(options);
+  if (typeof options === 'object') {
+    Object.freeze(options)
   }
 
-  return invoke("plugin:dialog|open", { options });
+  return await invoke('plugin:dialog|open', { options })
 }
 
 /**
@@ -197,11 +195,11 @@ async function open<T extends OpenDialogOptions>(
  * @since 2.0.0
  */
 async function save(options: SaveDialogOptions = {}): Promise<string | null> {
-  if (typeof options === "object") {
-    Object.freeze(options);
+  if (typeof options === 'object') {
+    Object.freeze(options)
   }
 
-  return invoke("plugin:dialog|save", { options });
+  return await invoke('plugin:dialog|save', { options })
 }
 
 /**
@@ -223,15 +221,15 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
  */
 async function message(
   message: string,
-  options?: string | MessageDialogOptions,
+  options?: string | MessageDialogOptions
 ): Promise<void> {
-  const opts = typeof options === "string" ? { title: options } : options;
-  return invoke("plugin:dialog|message", {
+  const opts = typeof options === 'string' ? { title: options } : options
+  await invoke('plugin:dialog|message', {
     message: message.toString(),
     title: opts?.title?.toString(),
     kind: opts?.kind,
-    okButtonLabel: opts?.okLabel?.toString(),
-  });
+    okButtonLabel: opts?.okLabel?.toString()
+  })
 }
 
 /**
@@ -252,16 +250,16 @@ async function message(
  */
 async function ask(
   message: string,
-  options?: string | ConfirmDialogOptions,
+  options?: string | ConfirmDialogOptions
 ): Promise<boolean> {
-  const opts = typeof options === "string" ? { title: options } : options;
-  return invoke("plugin:dialog|ask", {
+  const opts = typeof options === 'string' ? { title: options } : options
+  return await invoke('plugin:dialog|ask', {
     message: message.toString(),
     title: opts?.title?.toString(),
     kind: opts?.kind,
-    okButtonLabel: opts?.okLabel?.toString() ?? "Yes",
-    cancelButtonLabel: opts?.cancelLabel?.toString() ?? "No",
-  });
+    yesButtonLabel: opts?.okLabel?.toString(),
+    noButtonLabel: opts?.cancelLabel?.toString()
+  })
 }
 
 /**
@@ -282,26 +280,25 @@ async function ask(
  */
 async function confirm(
   message: string,
-  options?: string | ConfirmDialogOptions,
+  options?: string | ConfirmDialogOptions
 ): Promise<boolean> {
-  const opts = typeof options === "string" ? { title: options } : options;
-  return invoke("plugin:dialog|confirm", {
+  const opts = typeof options === 'string' ? { title: options } : options
+  return await invoke('plugin:dialog|confirm', {
     message: message.toString(),
     title: opts?.title?.toString(),
     kind: opts?.kind,
-    okButtonLabel: opts?.okLabel?.toString() ?? "Ok",
-    cancelButtonLabel: opts?.cancelLabel?.toString() ?? "Cancel",
-  });
+    okButtonLabel: opts?.okLabel?.toString(),
+    cancelButtonLabel: opts?.cancelLabel?.toString()
+  })
 }
 
 export type {
   DialogFilter,
-  FileResponse,
   OpenDialogOptions,
   OpenDialogReturn,
   SaveDialogOptions,
   MessageDialogOptions,
-  ConfirmDialogOptions,
-};
+  ConfirmDialogOptions
+}
 
-export { open, save, message, ask, confirm };
+export { open, save, message, ask, confirm }

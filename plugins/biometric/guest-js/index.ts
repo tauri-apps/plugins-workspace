@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from '@tauri-apps/api/core'
 
 export enum BiometryType {
   None = 0,
@@ -11,39 +11,39 @@ export enum BiometryType {
   // Apple FaceID or Android face authentication
   FaceID = 2,
   // Android iris authentication
-  Iris = 3,
+  Iris = 3
 }
 
 export interface Status {
-  isAvailable: boolean;
-  biometryType: BiometryType;
-  error?: string;
+  isAvailable: boolean
+  biometryType: BiometryType
+  error?: string
   errorCode?:
-    | "appCancel"
-    | "authenticationFailed"
-    | "invalidContext"
-    | "notInteractive"
-    | "passcodeNotSet"
-    | "systemCancel"
-    | "userCancel"
-    | "userFallback"
-    | "biometryLockout"
-    | "biometryNotAvailable"
-    | "biometryNotEnrolled";
+    | 'appCancel'
+    | 'authenticationFailed'
+    | 'invalidContext'
+    | 'notInteractive'
+    | 'passcodeNotSet'
+    | 'systemCancel'
+    | 'userCancel'
+    | 'userFallback'
+    | 'biometryLockout'
+    | 'biometryNotAvailable'
+    | 'biometryNotEnrolled'
 }
 
 export interface AuthOptions {
-  allowDeviceCredential?: boolean;
-  cancelTitle?: string;
+  allowDeviceCredential?: boolean
+  cancelTitle?: string
 
   // iOS options
-  fallbackTitle?: string;
+  fallbackTitle?: string
 
   // android options
-  title?: string;
-  subtitle?: string;
-  confirmationRequired?: boolean;
-  maxAttemps?: number;
+  title?: string
+  subtitle?: string
+  confirmationRequired?: boolean
+  maxAttemps?: number
 }
 
 /**
@@ -51,7 +51,7 @@ export interface AuthOptions {
  * @returns a promise resolving to an object containing all the information about the status of the biometry.
  */
 export async function checkStatus(): Promise<Status> {
-  return invoke("plugin:biometric|status");
+  return await invoke('plugin:biometric|status')
 }
 
 /**
@@ -68,10 +68,10 @@ export async function checkStatus(): Promise<Status> {
  */
 export async function authenticate(
   reason: string,
-  options?: AuthOptions,
+  options?: AuthOptions
 ): Promise<void> {
-  return invoke("plugin:biometric|authenticate", {
+  await invoke('plugin:biometric|authenticate', {
     reason,
-    ...options,
-  });
+    ...options
+  })
 }

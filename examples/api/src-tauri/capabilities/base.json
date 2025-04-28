@@ -8,27 +8,28 @@
     {
       "identifier": "http:default",
       "allow": [
+        "https://tauri.app",
         {
           "url": "http://localhost:3003"
         }
       ]
     },
-    "app:default",
-    "resources:default",
+    "core:default",
     "fs:default",
-    "menu:default",
-    "path:default",
-    "tray:default",
-    "event:default",
-    "window:default",
+    "core:window:allow-minimize",
+    "core:window:allow-maximize",
+    "core:window:allow-unmaximize",
+    "core:window:allow-close",
+    "core:window:allow-start-dragging",
     "notification:default",
     "os:allow-platform",
     "dialog:allow-open",
+    "dialog:allow-ask",
     "dialog:allow-save",
     "dialog:allow-confirm",
     "dialog:allow-message",
     {
-      "identifier": "shell:allow-execute",
+      "identifier": "shell:allow-spawn",
       "allow": [
         {
           "name": "sh",
@@ -36,7 +37,7 @@
           "args": [
             "-c",
             {
-              "validator": "\\S+"
+              "validator": ".+"
             }
           ]
         },
@@ -46,20 +47,29 @@
           "args": [
             "/C",
             {
-              "validator": "\\S+"
+              "validator": ".+"
             }
           ]
         }
       ]
     },
+    "shell:default",
     "shell:allow-kill",
     "shell:allow-stdin-write",
-    "clipboard-manager:allow-read",
-    "clipboard-manager:allow-write",
+    "process:allow-exit",
+    "process:allow-restart",
+    "clipboard-manager:allow-read-text",
+    "clipboard-manager:allow-write-text",
+    "clipboard-manager:allow-read-image",
+    "clipboard-manager:allow-write-image",
+    "fs:allow-open",
+    "fs:allow-write",
+    "fs:allow-read",
     "fs:allow-rename",
     "fs:allow-mkdir",
     "fs:allow-remove",
     "fs:allow-write-text-file",
+    "fs:read-meta",
     "fs:scope-download-recursive",
     "fs:scope-resource-recursive",
     {
@@ -69,11 +79,13 @@
           "path": "$APPDATA/db/**"
         }
       ],
-      "deny": [
-        {
-          "path": "$APPDATA/db/*.stronghold"
-        }
-      ]
+      "deny": ["$APPDATA/db/*.stronghold"]
+    },
+    "store:default",
+    "opener:default",
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [{ "path": "$APPDATA" }, { "path": "$APPDATA/**" }]
     }
   ]
 }

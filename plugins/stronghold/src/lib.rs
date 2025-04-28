@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/stronghold/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/stronghold)
-//!
 //! Store secrets and keys using the [IOTA Stronghold](https://github.com/iotaledger/stronghold.rs) encrypted database and secure runtime.
 
 #![doc(
@@ -19,9 +17,10 @@ use std::{
     time::Duration,
 };
 
+use crypto::keys::bip39;
 use iota_stronghold::{
     procedures::{
-        BIP39Generate, BIP39Recover, Chain, Ed25519Sign, KeyType as StrongholdKeyType,
+        BIP39Generate, BIP39Recover, Curve, Ed25519Sign, KeyType as StrongholdKeyType,
         MnemonicLanguage, PublicKey, Slip10Derive, Slip10DeriveInput, Slip10Generate,
         StrongholdProcedure,
     },
@@ -33,7 +32,7 @@ use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, Runtime, State,
 };
-use zeroize::Zeroize;
+use zeroize::{Zeroize, Zeroizing};
 
 #[cfg(feature = "kdf")]
 pub mod kdf;
@@ -126,7 +125,7 @@ impl<'de> Deserialize<'de> for KeyType {
     {
         struct KeyTypeVisitor;
 
-        impl<'de> Visitor<'de> for KeyTypeVisitor {
+        impl Visitor<'_> for KeyTypeVisitor {
             type Value = KeyType;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -199,7 +198,8 @@ impl From<ProcedureDto> for StrongholdProcedure {
                 input,
                 output,
             } => StrongholdProcedure::Slip10Derive(Slip10Derive {
-                chain: Chain::from_u32_hardened(chain),
+                curve: Curve::Ed25519,
+                chain,
                 input: input.into(),
                 output: output.into(),
             }),
@@ -208,13 +208,13 @@ impl From<ProcedureDto> for StrongholdProcedure {
                 passphrase,
                 output,
             } => StrongholdProcedure::BIP39Recover(BIP39Recover {
-                mnemonic,
-                passphrase,
+                mnemonic: bip39::Mnemonic::from(mnemonic),
+                passphrase: bip39::Passphrase::from(passphrase.unwrap_or_default()),
                 output: output.into(),
             }),
             ProcedureDto::BIP39Generate { passphrase, output } => {
                 StrongholdProcedure::BIP39Generate(BIP39Generate {
-                    passphrase,
+                    passphrase: bip39::Passphrase::from(passphrase.unwrap_or_default()),
                     output: output.into(),
                     language: MnemonicLanguage::English,
                 })
@@ -351,7 +351,10 @@ async fn save_secret(
     let client = get_client(collection, snapshot_path, client)?;
     client
         .vault(&vault)
-        .write_secret(Location::generic(vault, record_path), secret)
+        .write_secret(
+            Location::generic(vault, record_path),
+            Zeroizing::new(secret),
+        )
         .map_err(Into::into)
 }
 
@@ -456,19 +459,17 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let password_hash_function = self.password_hash_function;
 
-        let plugin_builder = PluginBuilder::new("stronghold")
-            .js_init_script(include_str!("api-iife.js").to_string())
-            .setup(move |app, _api| {
-                app.manage(StrongholdCollection::default());
-                app.manage(PasswordHashFunction(match password_hash_function {
-                    #[cfg(feature = "kdf")]
-                    PasswordHashFunctionKind::Argon2(path) => {
-                        Box::new(move |p| kdf::KeyDerivation::argon2(p, &path))
-                    }
-                    PasswordHashFunctionKind::Custom(f) => f,
-                }));
-                Ok(())
-            });
+        let plugin_builder = PluginBuilder::new("stronghold").setup(move |app, _api| {
+            app.manage(StrongholdCollection::default());
+            app.manage(PasswordHashFunction(match password_hash_function {
+                #[cfg(feature = "kdf")]
+                PasswordHashFunctionKind::Argon2(path) => {
+                    Box::new(move |p| kdf::KeyDerivation::argon2(p, &path))
+                }
+                PasswordHashFunctionKind::Custom(f) => f,
+            }));
+            Ok(())
+        });
 
         Builder::invoke_stronghold_handlers_and_build(plugin_builder)
     }

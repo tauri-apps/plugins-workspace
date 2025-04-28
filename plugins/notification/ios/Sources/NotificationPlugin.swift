@@ -34,13 +34,13 @@ enum ScheduleEveryKind: String, Decodable {
 }
 
 struct ScheduleInterval: Decodable {
-  let year: Int?
-  let month: Int?
-  let day: Int?
-  let weekday: Int?
-  let hour: Int?
-  let minute: Int?
-  let second: Int?
+  var year: Int?
+  var month: Int?
+  var day: Int?
+  var weekday: Int?
+  var hour: Int?
+  var minute: Int?
+  var second: Int?
 }
 
 enum NotificationSchedule: Decodable {
@@ -64,16 +64,16 @@ struct NotificationAttachment: Codable {
 
 struct Notification: Decodable {
   let id: Int
-  var title: String = ""
-  var body: String = ""
-  var extra: [String: String] = [:]
-  let schedule: NotificationSchedule?
-  let attachments: [NotificationAttachment]?
-  let sound: String?
-  let group: String?
-  let actionTypeId: String?
-  let summary: String?
-  var silent = false
+  var title: String
+  var body: String?
+  var extra: [String: String]?
+  var schedule: NotificationSchedule?
+  var attachments: [NotificationAttachment]?
+  var sound: String?
+  var group: String?
+  var actionTypeId: String?
+  var summary: String?
+  var silent: Bool?
 }
 
 struct RemoveActiveNotification: Decodable {
@@ -126,23 +126,23 @@ struct CancelArgs: Decodable {
 struct Action: Decodable {
   let id: String
   let title: String
-  var requiresAuthentication: Bool = false
-  var foreground: Bool = false
-  var destructive: Bool = false
-  var input: Bool = false
-  let inputButtonTitle: String?
-  let inputPlaceholder: String?
+  var requiresAuthentication: Bool?
+  var foreground: Bool?
+  var destructive: Bool?
+  var input: Bool?
+  var inputButtonTitle: String?
+  var inputPlaceholder: String?
 }
 
 struct ActionType: Decodable {
   let id: String
   let actions: [Action]
-  let hiddenPreviewsBodyPlaceholder: String?
-  var customDismissAction = false
-  var allowInCarPlay = false
-  var hiddenPreviewsShowTitle = false
-  var hiddenPreviewsShowSubtitle = false
-  let hiddenBodyPlaceholder: String?
+  var hiddenPreviewsBodyPlaceholder: String?
+  var customDismissAction: Bool?
+  var allowInCarPlay: Bool?
+  var hiddenPreviewsShowTitle: Bool?
+  var hiddenPreviewsShowSubtitle: Bool?
+  var hiddenBodyPlaceholder: String?
 }
 
 struct RegisterActionTypesArgs: Decodable {

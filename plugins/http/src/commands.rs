@@ -2,38 +2,68 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{collections::HashMap, future::Future, pin::Pin, sync::Arc, time::Duration};
+use std::{future::Future, pin::Pin, str::FromStr, sync::Arc, time::Duration};
 
-use http::{header, HeaderName, HeaderValue, Method, StatusCode};
+use http::{header, HeaderMap, HeaderName, HeaderValue, Method, StatusCode};
 use reqwest::{redirect::Policy, NoProxy};
 use serde::{Deserialize, Serialize};
 use tauri::{
     async_runtime::Mutex,
     command,
-    ipc::{CommandScope, GlobalScope},
-    AppHandle, Manager, ResourceId, Runtime,
+    ipc::{Channel, CommandScope, GlobalScope},
+    Manager, ResourceId, ResourceTable, Runtime, State, Webview,
 };
+use tokio::sync::oneshot::{channel, Receiver, Sender};
 
 use crate::{
     scope::{Entry, Scope},
-    Error, Result,
+    Error, Http, Result,
 };
 
-struct ReqwestResponse(reqwest::Response);
+const HTTP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
-type CancelableResponseResult = Result<Result<reqwest::Response>>;
+struct ReqwestResponse(reqwest::Response);
+impl tauri::Resource for ReqwestResponse {}
+
+type CancelableResponseResult = Result<reqwest::Response>;
 type CancelableResponseFuture =
     Pin<Box<dyn Future<Output = CancelableResponseResult> + Send + Sync>>;
 
-struct FetchRequest(Mutex<CancelableResponseFuture>);
-impl FetchRequest {
-    fn new(f: CancelableResponseFuture) -> Self {
-        Self(Mutex::new(f))
+struct FetchRequest {
+    fut: Mutex<CancelableResponseFuture>,
+    abort_tx_rid: ResourceId,
+    abort_rx_rid: ResourceId,
+}
+impl tauri::Resource for FetchRequest {}
+
+struct AbortSender(Sender<()>);
+impl tauri::Resource for AbortRecveiver {}
+
+impl AbortSender {
+    fn abort(self) {
+        let _ = self.0.send(());
     }
 }
 
-impl tauri::Resource for FetchRequest {}
-impl tauri::Resource for ReqwestResponse {}
+struct AbortRecveiver(Receiver<()>);
+impl tauri::Resource for AbortSender {}
+
+trait AddRequest {
+    fn add_request(&mut self, fut: CancelableResponseFuture) -> ResourceId;
+}
+
+impl AddRequest for ResourceTable {
+    fn add_request(&mut self, fut: CancelableResponseFuture) -> ResourceId {
+        let (tx, rx) = channel::<()>();
+        let (tx, rx) = (AbortSender(tx), AbortRecveiver(rx));
+        let req = FetchRequest {
+            fut: Mutex::new(fut),
+            abort_tx_rid: self.add(tx),
+            abort_rx_rid: self.add(rx),
+        };
+        self.add(req)
+    }
+}
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -45,7 +75,15 @@ pub struct FetchResponse {
     rid: ResourceId,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[allow(dead_code)] //feature flags shoudln't affect api
+pub struct DangerousSettings {
+    accept_invalid_certs: bool,
+    accept_invalid_hostnames: bool,
+}
+
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientConfig {
     method: String,
@@ -55,9 +93,10 @@ pub struct ClientConfig {
     connect_timeout: Option<u64>,
     max_redirections: Option<usize>,
     proxy: Option<Proxy>,
+    danger: Option<DangerousSettings>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Proxy {
     all: Option<UrlOrConfig>,
@@ -65,7 +104,7 @@ pub struct Proxy {
     https: Option<UrlOrConfig>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(untagged)]
 pub enum UrlOrConfig {
@@ -73,7 +112,7 @@ pub enum UrlOrConfig {
     Config(ProxyConfig),
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProxyConfig {
     url: String,
@@ -81,7 +120,7 @@ pub struct ProxyConfig {
     no_proxy: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct BasicAuth {
     username: String,
     password: String,
@@ -137,7 +176,8 @@ fn attach_proxy(
 
 #[command]
 pub async fn fetch<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
+    state: State<'_, Http>,
     client_config: ClientConfig,
     command_scope: CommandScope<Entry>,
     global_scope: GlobalScope<Entry>,
@@ -145,16 +185,32 @@ pub async fn fetch<R: Runtime>(
     let ClientConfig {
         method,
         url,
-        headers,
+        headers: headers_raw,
         data,
         connect_timeout,
         max_redirections,
         proxy,
+        danger,
     } = client_config;
 
     let scheme = url.scheme();
     let method = Method::from_bytes(method.as_bytes())?;
-    let headers: HashMap<String, String> = HashMap::from_iter(headers);
+
+    let mut headers = HeaderMap::new();
+    for (h, v) in headers_raw {
+        let name = HeaderName::from_str(&h)?;
+        #[cfg(not(feature = "unsafe-headers"))]
+        if is_unsafe_header(&name) {
+            #[cfg(debug_assertions)]
+            {
+                eprintln!("[\x1b[33mWARNING\x1b[0m] Skipping {name} header as it is a forbidden header per fetch spec https://fetch.spec.whatwg.org/#terminology-headers");
+                eprintln!("[\x1b[33mWARNING\x1b[0m] if keeping the header is a desired behavior, you can enable `unsafe-headers` feature flag in your Cargo.toml");
+            }
+            continue;
+        }
+
+        headers.append(name, HeaderValue::from_str(&v)?);
+    }
 
     match scheme {
         "http" | "https" => {
@@ -174,6 +230,24 @@ pub async fn fetch<R: Runtime>(
             {
                 let mut builder = reqwest::ClientBuilder::new();
 
+                if let Some(danger_config) = danger {
+                    #[cfg(not(feature = "dangerous-settings"))]
+                    {
+                        #[cfg(debug_assertions)]
+                        {
+                            eprintln!("[\x1b[33mWARNING\x1b[0m] using dangerous settings requires `dangerous-settings` feature flag in your Cargo.toml");
+                        }
+                        let _ = danger_config;
+                        return Err(Error::DangerousSettings);
+                    }
+                    #[cfg(feature = "dangerous-settings")]
+                    {
+                        builder = builder
+                            .danger_accept_invalid_certs(danger_config.accept_invalid_certs)
+                            .danger_accept_invalid_hostnames(danger_config.accept_invalid_hostnames)
+                    }
+                }
+
                 if let Some(timeout) = connect_timeout {
                     builder = builder.connect_timeout(Duration::from_millis(timeout));
                 }
@@ -190,64 +264,60 @@ pub async fn fetch<R: Runtime>(
                     builder = attach_proxy(proxy_config, builder)?;
                 }
 
-                let mut request = builder.build()?.request(method.clone(), url);
-
-                for (name, value) in &headers {
-                    let name = HeaderName::from_bytes(name.as_bytes())?;
-                    let value = HeaderValue::from_bytes(value.as_bytes())?;
-                    if !matches!(
-                        name,
-                        // forbidden headers per fetch spec https://fetch.spec.whatwg.org/#terminology-headers
-                        header::ACCEPT_CHARSET
-                            | header::ACCEPT_ENCODING
-                            | header::ACCESS_CONTROL_REQUEST_HEADERS
-                            | header::ACCESS_CONTROL_REQUEST_METHOD
-                            | header::CONNECTION
-                            | header::CONTENT_LENGTH
-                            | header::COOKIE
-                            | header::DATE
-                            | header::DNT
-                            | header::EXPECT
-                            | header::HOST
-                            | header::ORIGIN
-                            | header::REFERER
-                            | header::SET_COOKIE
-                            | header::TE
-                            | header::TRAILER
-                            | header::TRANSFER_ENCODING
-                            | header::UPGRADE
-                            | header::VIA
-                    ) {
-                        request = request.header(name, value);
-                    }
+                #[cfg(feature = "cookies")]
+                {
+                    builder = builder.cookie_provider(state.cookies_jar.clone());
                 }
+
+                let mut request = builder.build()?.request(method.clone(), url);
 
                 // POST and PUT requests should always have a 0 length content-length,
                 // if there is no body. https://fetch.spec.whatwg.org/#http-network-or-cache-fetch
                 if data.is_none() && matches!(method, Method::POST | Method::PUT) {
-                    request = request.header(header::CONTENT_LENGTH, HeaderValue::from(0));
+                    headers.append(header::CONTENT_LENGTH, HeaderValue::from_str("0")?);
                 }
 
-                if headers.contains_key(header::RANGE.as_str()) {
+                if headers.contains_key(header::RANGE) {
                     // https://fetch.spec.whatwg.org/#http-network-or-cache-fetch step 18
                     // If httpRequest’s header list contains `Range`, then append (`Accept-Encoding`, `identity`)
-                    request = request.header(
-                        header::ACCEPT_ENCODING,
-                        HeaderValue::from_static("identity"),
-                    );
+                    headers.append(header::ACCEPT_ENCODING, HeaderValue::from_str("identity")?);
                 }
 
-                if !headers.contains_key(header::USER_AGENT.as_str()) {
-                    request = request.header(header::USER_AGENT, HeaderValue::from_static("tauri"));
+                if !headers.contains_key(header::USER_AGENT) {
+                    headers.append(header::USER_AGENT, HeaderValue::from_str(HTTP_USER_AGENT)?);
                 }
+
+                // ensure we have an Origin header set
+                if cfg!(not(feature = "unsafe-headers")) || !headers.contains_key(header::ORIGIN) {
+                    if let Ok(url) = webview.url() {
+                        headers.append(
+                            header::ORIGIN,
+                            HeaderValue::from_str(&url.origin().ascii_serialization())?,
+                        );
+                    }
+                }
+
+                // In case empty origin is passed, remove it. Some services do not like Origin header
+                // so this way we can remove it in explicit way. The default behaviour is still to set it
+                if cfg!(feature = "unsafe-headers")
+                    && headers.get(header::ORIGIN) == Some(&HeaderValue::from_static(""))
+                {
+                    headers.remove(header::ORIGIN);
+                };
 
                 if let Some(data) = data {
                     request = request.body(data);
                 }
 
-                let fut = async move { Ok(request.send().await.map_err(Into::into)) };
-                let mut resources_table = app.resources_table();
-                let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
+                request = request.headers(headers);
+
+                #[cfg(feature = "tracing")]
+                tracing::trace!("{:?}", request);
+
+                let fut = async move { request.send().await.map_err(Into::into) };
+
+                let mut resources_table = webview.resources_table();
+                let rid = resources_table.add_request(Box::pin(fut));
 
                 Ok(rid)
             } else {
@@ -266,9 +336,12 @@ pub async fn fetch<R: Runtime>(
                 .header(header::CONTENT_TYPE, data_url.mime_type().to_string())
                 .body(reqwest::Body::from(body))?;
 
-            let fut = async move { Ok(Ok(reqwest::Response::from(response))) };
-            let mut resources_table = app.resources_table();
-            let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
+            #[cfg(feature = "tracing")]
+            tracing::trace!("{:?}", response);
+
+            let fut = async move { Ok(reqwest::Response::from(response)) };
+            let mut resources_table = webview.resources_table();
+            let rid = resources_table.add_request(Box::pin(fut));
             Ok(rid)
         }
         _ => Err(Error::SchemeNotSupport(scheme.to_string())),
@@ -276,31 +349,45 @@ pub async fn fetch<R: Runtime>(
 }
 
 #[command]
-pub async fn fetch_cancel<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> crate::Result<()> {
-    let req = {
-        let resources_table = app.resources_table();
-        resources_table.get::<FetchRequest>(rid)?
-    };
-    let mut req = req.0.lock().await;
-    *req = Box::pin(async { Err(Error::RequestCanceled) });
-
+pub fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::Result<()> {
+    let mut resources_table = webview.resources_table();
+    let req = resources_table.get::<FetchRequest>(rid)?;
+    let abort_tx = resources_table.take::<AbortSender>(req.abort_tx_rid)?;
+    if let Some(abort_tx) = Arc::into_inner(abort_tx) {
+        abort_tx.abort();
+    }
     Ok(())
 }
 
-#[tauri::command]
+#[command]
 pub async fn fetch_send<R: Runtime>(
-    app: AppHandle<R>,
+    webview: Webview<R>,
     rid: ResourceId,
 ) -> crate::Result<FetchResponse> {
-    let req = {
-        let mut resources_table = app.resources_table();
-        resources_table.take::<FetchRequest>(rid)?
+    let (req, abort_rx) = {
+        let mut resources_table = webview.resources_table();
+        let req = resources_table.get::<FetchRequest>(rid)?;
+        let abort_rx = resources_table.take::<AbortRecveiver>(req.abort_rx_rid)?;
+        (req, abort_rx)
     };
 
-    let res = match req.0.lock().await.as_mut().await {
-        Ok(Ok(res)) => res,
-        Ok(Err(e)) | Err(e) => return Err(e),
+    let Some(abort_rx) = Arc::into_inner(abort_rx) else {
+        return Err(Error::RequestCanceled);
     };
+
+    let mut fut = req.fut.lock().await;
+
+    let res = tokio::select! {
+        res = fut.as_mut() => res?,
+        _ = abort_rx.0 => {
+            let mut resources_table = webview.resources_table();
+            resources_table.close(rid)?;
+            return Err(Error::RequestCanceled);
+        }
+    };
+
+    #[cfg(feature = "tracing")]
+    tracing::trace!("{:?}", res);
 
     let status = res.status();
     let url = res.url().to_string();
@@ -312,7 +399,7 @@ pub async fn fetch_send<R: Runtime>(
         ));
     }
 
-    let mut resources_table = app.resources_table();
+    let mut resources_table = webview.resources_table();
     let rid = resources_table.add(ReqwestResponse(res));
 
     Ok(FetchResponse {
@@ -324,15 +411,59 @@ pub async fn fetch_send<R: Runtime>(
     })
 }
 
-#[tauri::command]
-pub(crate) async fn fetch_read_body<R: Runtime>(
-    app: AppHandle<R>,
+#[command]
+pub async fn fetch_read_body<R: Runtime>(
+    webview: Webview<R>,
     rid: ResourceId,
-) -> crate::Result<tauri::ipc::Response> {
+    stream_channel: Channel<tauri::ipc::InvokeResponseBody>,
+) -> crate::Result<()> {
     let res = {
-        let mut resources_table = app.resources_table();
+        let mut resources_table = webview.resources_table();
         resources_table.take::<ReqwestResponse>(rid)?
     };
-    let res = Arc::into_inner(res).unwrap().0;
-    Ok(tauri::ipc::Response::new(res.bytes().await?.to_vec()))
+
+    let mut res = Arc::into_inner(res).unwrap().0;
+
+    // send response through IPC channel
+    while let Some(chunk) = res.chunk().await? {
+        let mut chunk = chunk.to_vec();
+        // append 0 to indicate we are not done yet
+        chunk.push(0);
+        stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(chunk))?;
+    }
+
+    // send 1 to indicate we are done
+    stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(vec![1]))?;
+
+    Ok(())
+}
+
+// forbidden headers per fetch spec https://fetch.spec.whatwg.org/#terminology-headers
+#[cfg(not(feature = "unsafe-headers"))]
+fn is_unsafe_header(header: &HeaderName) -> bool {
+    matches!(
+        *header,
+        header::ACCEPT_CHARSET
+            | header::ACCEPT_ENCODING
+            | header::ACCESS_CONTROL_REQUEST_HEADERS
+            | header::ACCESS_CONTROL_REQUEST_METHOD
+            | header::CONNECTION
+            | header::CONTENT_LENGTH
+            | header::COOKIE
+            | header::DATE
+            | header::DNT
+            | header::EXPECT
+            | header::HOST
+            | header::ORIGIN
+            | header::REFERER
+            | header::SET_COOKIE
+            | header::TE
+            | header::TRAILER
+            | header::TRANSFER_ENCODING
+            | header::UPGRADE
+            | header::VIA
+    ) || {
+        let lower = header.as_str().to_lowercase();
+        lower.starts_with("proxy-") || lower.starts_with("sec-")
+    }
 }

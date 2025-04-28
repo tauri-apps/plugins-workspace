@@ -17,27 +17,31 @@ enum FilePickerEvent {
 }
 
 struct MessageDialogOptions: Decodable {
-  let title: String?
+  var title: String?
   let message: String
-  var okButtonLabel = "OK"
-  var cancelButtonLabel = "Cancel"
+  var okButtonLabel: String?
+  var cancelButtonLabel: String?
 }
 
 struct Filter: Decodable {
-  var extensions: [String] = []
+  var extensions: [String]?
 }
 
 struct FilePickerOptions: Decodable {
-  var multiple = false
-  var readData = false
-  var filters: [Filter] = []
+  var multiple: Bool?
+  var filters: [Filter]?
+  var defaultPath: String?
+}
+
+struct SaveFileDialogOptions: Decodable {
+  var fileName: String?
+  var defaultPath: String?
 }
 
 class DialogPlugin: Plugin {
 
   var filePickerController: FilePickerController!
-  var pendingInvoke: Invoke? = nil
-  var pendingInvokeArgs: FilePickerOptions? = nil
+  var onFilePickerResult: ((FilePickerEvent) -> Void)? = nil
 
   override init() {
     super.init()
@@ -47,9 +51,9 @@ class DialogPlugin: Plugin {
   @objc public func showFilePicker(_ invoke: Invoke) throws {
     let args = try invoke.parseArgs(FilePickerOptions.self)
 
-    let parsedTypes = parseFiltersOption(args.filters)
+    let parsedTypes = parseFiltersOption(args.filters ?? [])
 
-    var isMedia = true
+    var isMedia = !parsedTypes.isEmpty
     var uniqueMimeType: Bool? = nil
     var mimeKind: String? = nil
     if !parsedTypes.isEmpty {
@@ -67,14 +71,22 @@ class DialogPlugin: Plugin {
       }
     }
 
-    pendingInvoke = invoke
-    pendingInvokeArgs = args
+    onFilePickerResult = { (event: FilePickerEvent) -> Void in
+      switch event {
+      case .selected(let urls):
+        invoke.resolve(["files": urls])
+      case .cancelled:
+        invoke.resolve(["files": nil])
+      case .error(let error):
+        invoke.reject(error)
+      }
+    }
 
     if uniqueMimeType == true || isMedia {
       DispatchQueue.main.async {
         if #available(iOS 14, *) {
           var configuration = PHPickerConfiguration(photoLibrary: PHPhotoLibrary.shared())
-          configuration.selectionLimit = args.multiple ? 0 : 1
+          configuration.selectionLimit = (args.multiple ?? false) ? 0 : 1
 
           if uniqueMimeType == true {
             if mimeKind == "image" {
@@ -105,11 +117,54 @@ class DialogPlugin: Plugin {
       let documentTypes = parsedTypes.isEmpty ? ["public.data"] : parsedTypes
       DispatchQueue.main.async {
         let picker = UIDocumentPickerViewController(documentTypes: documentTypes, in: .import)
+        if let defaultPath = args.defaultPath {
+          picker.directoryURL = URL(string: defaultPath)
+        }
         picker.delegate = self.filePickerController
-        picker.allowsMultipleSelection = args.multiple
+        picker.allowsMultipleSelection = args.multiple ?? false
         picker.modalPresentationStyle = .fullScreen
         self.presentViewController(picker)
       }
+    }
+  }
+
+  @objc public func saveFileDialog(_ invoke: Invoke) throws {
+    let args = try invoke.parseArgs(SaveFileDialogOptions.self)
+
+    // The Tauri save dialog API prompts the user to select a path where a file must be saved
+    // This behavior maps to the operating system interfaces on all platforms except iOS,
+    // which only exposes a mechanism to "move file `srcPath` to a location defined by the user"
+    //
+    // so we have to work around it by creating an empty file matching the requested `args.fileName`,
+    // and using it as `srcPath` for the operation - returning the path the user selected
+    // so the app dev can write to it later - matching cross platform behavior as mentioned above
+    let fileManager = FileManager.default
+    let srcFolder = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+    let srcPath = srcFolder.appendingPathComponent(args.fileName ?? "file")
+    if !fileManager.fileExists(atPath: srcPath.path) {
+      // the file contents must be actually provided by the tauri dev after the path is resolved by the save API
+      try "".write(to: srcPath, atomically: true, encoding: .utf8)
+    }
+
+    onFilePickerResult = { (event: FilePickerEvent) -> Void in
+      switch event {
+      case .selected(let urls):
+        invoke.resolve(["file": urls.first!])
+      case .cancelled:
+        invoke.resolve(["file": nil])
+      case .error(let error):
+        invoke.reject(error)
+      }
+    }
+
+    DispatchQueue.main.async {
+      let picker = UIDocumentPickerViewController(url: srcPath, in: .exportToService)
+      if let defaultPath = args.defaultPath {
+        picker.directoryURL = URL(string: defaultPath)
+      }
+      picker.delegate = self.filePickerController
+      picker.modalPresentationStyle = .fullScreen
+      self.presentViewController(picker)
     }
   }
 
@@ -120,7 +175,7 @@ class DialogPlugin: Plugin {
   private func parseFiltersOption(_ filters: [Filter]) -> [String] {
     var parsedTypes: [String] = []
     for filter in filters {
-      for ext in filter.extensions {
+      for ext in filter.extensions ?? [] {
         guard
           let utType: String = UTTypeCreatePreferredIdentifierForTag(
             kUTTagClassMIMEType, ext as CFString, nil)?.takeRetainedValue() as String?
@@ -134,60 +189,7 @@ class DialogPlugin: Plugin {
   }
 
   public func onFilePickerEvent(_ event: FilePickerEvent) {
-    switch event {
-    case .selected(let urls):
-      let readData = pendingInvokeArgs?.readData ?? false
-      do {
-        let filesResult = try urls.map { (url: URL) -> JSObject in
-          var file = JSObject()
-
-          let mimeType = filePickerController.getMimeTypeFromUrl(url)
-          let isVideo = mimeType.hasPrefix("video")
-          let isImage = mimeType.hasPrefix("image")
-
-          if readData {
-            file["data"] = try Data(contentsOf: url).base64EncodedString()
-          }
-
-          if isVideo {
-            file["duration"] = filePickerController.getVideoDuration(url)
-            let (height, width) = filePickerController.getVideoDimensions(url)
-            if let height = height {
-              file["height"] = height
-            }
-            if let width = width {
-              file["width"] = width
-            }
-          } else if isImage {
-            let (height, width) = filePickerController.getImageDimensions(url)
-            if let height = height {
-              file["height"] = height
-            }
-            if let width = width {
-              file["width"] = width
-            }
-          }
-
-          file["modifiedAt"] = filePickerController.getModifiedAtFromUrl(url)
-          file["mimeType"] = mimeType
-          file["name"] = url.lastPathComponent
-          file["path"] = url.absoluteString
-          file["size"] = try filePickerController.getSizeFromUrl(url)
-          return file
-        }
-        pendingInvoke?.resolve(["files": filesResult])
-      } catch let error as NSError {
-        pendingInvoke?.reject(error.localizedDescription, error: error)
-        return
-      }
-
-      pendingInvoke?.resolve(["files": urls])
-    case .cancelled:
-      let files: JSArray = []
-      pendingInvoke?.resolve(["files": files])
-    case .error(let error):
-      pendingInvoke?.reject(error)
-    }
+    self.onFilePickerResult?(event)
   }
 
   @objc public func showMessageDialog(_ invoke: Invoke) throws {
@@ -197,24 +199,36 @@ class DialogPlugin: Plugin {
     DispatchQueue.main.async { [] in
       let alert = UIAlertController(
         title: args.title, message: args.message, preferredStyle: UIAlertController.Style.alert)
-      alert.addAction(
-        UIAlertAction(
-          title: args.cancelButtonLabel, style: UIAlertAction.Style.default,
-          handler: { (_) -> Void in
-            invoke.resolve([
-              "value": false,
-              "cancelled": false,
-            ])
-          }))
-      alert.addAction(
-        UIAlertAction(
-          title: args.okButtonLabel, style: UIAlertAction.Style.default,
-          handler: { (_) -> Void in
-            invoke.resolve([
-              "value": true,
-              "cancelled": false,
-            ])
-          }))
+
+      let cancelButtonLabel = args.cancelButtonLabel ?? ""
+      if !cancelButtonLabel.isEmpty {
+        alert.addAction(
+          UIAlertAction(
+            title: cancelButtonLabel, style: UIAlertAction.Style.default,
+            handler: { (_) -> Void in
+              Logger.error("cancel")
+
+              invoke.resolve([
+                "value": false,
+                "cancelled": false,
+              ])
+            }))
+      }
+
+      let okButtonLabel = args.okButtonLabel ?? (cancelButtonLabel.isEmpty ? "OK" : "")
+      if !okButtonLabel.isEmpty {
+        alert.addAction(
+          UIAlertAction(
+            title: okButtonLabel, style: UIAlertAction.Style.default,
+            handler: { (_) -> Void in
+              Logger.error("ok")
+
+              invoke.resolve([
+                "value": true,
+                "cancelled": false,
+              ])
+            }))
+      }
 
       manager.viewController?.present(alert, animated: true, completion: nil)
     }

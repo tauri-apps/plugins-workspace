@@ -29,5 +29,17 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "cli": {
+      "description": "Testing single-instance on MacOS",
+      "args": [
+        {
+          "name": "somearg",
+          "index": 1,
+          "takesValue": true
+        }
+      ]
+    }
   }
 }

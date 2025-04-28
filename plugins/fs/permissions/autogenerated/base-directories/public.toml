@@ -7,15 +7,19 @@
 
 [[permission]]
 identifier = "scope-public-recursive"
-description = "This scope recursive access to the complete `$PUBLIC` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$PUBLIC` folder, including sub directories and files."
 
+[[permission.scope.allow]]
+path = "$PUBLIC"
 [[permission.scope.allow]]
 path = "$PUBLIC/**"
 
 [[permission]]
 identifier = "scope-public"
-description = "This scope permits access to all files and list content of top level directories in the `$PUBLIC`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$PUBLIC` folder."
 
+[[permission.scope.allow]]
+path = "$PUBLIC"
 [[permission.scope.allow]]
 path = "$PUBLIC/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-public-index"
 description = "This scope permits to list all files and folders in the `$PUBLIC`folder."
 
 [[permission.scope.allow]]
-path = "$PUBLIC/"
+path = "$PUBLIC"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands
@@ -39,7 +43,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-public-write-recursive"
-description = "This allows full recusrive write access to the complete `$PUBLIC` folder, files and subdirectories."
+description = "This allows full recursive write access to the complete `$PUBLIC` folder, files and subdirectories."
 permissions = [
     "write-all",
     "scope-public-recursive"
@@ -63,7 +67,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-public-meta-recursive"
-description = "This allows read access to metadata of the `$PUBLIC` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$PUBLIC` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-public-recursive"
@@ -71,7 +75,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-public-meta"
-description = "This allows read access to metadata of the `$PUBLIC` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$PUBLIC` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-public-index"

@@ -1,6 +1,6 @@
 {
   "productName": "deep-link-example",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "identifier": "com.tauri.deep-link-example",
   "build": {
     "devUrl": "http://localhost:1420",
@@ -28,7 +28,7 @@
       "hello": "world"
     },
     "deep-link": {
-      "domains": [
+      "mobile": [
         {
           "host": "fabianlars.de",
           "pathPrefix": ["/intent"]
@@ -36,7 +36,10 @@
         {
           "host": "tauri.app"
         }
-      ]
+      ],
+      "desktop": {
+        "schemes": ["fabianlars", "my-tauri-app"]
+      }
     }
   },
   "bundle": {

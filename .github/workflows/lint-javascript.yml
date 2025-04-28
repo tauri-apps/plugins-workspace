@@ -10,23 +10,23 @@ on:
       - v1
       - v2
     paths:
-      - ".github/workflows/lint-javascript.yml"
-      - "plugins/*/guest-js/**"
-      - ".eslintignore"
-      - ".eslintrc.json"
-      - ".prettierignore"
-      - "**/package.json"
+      - '.github/workflows/lint-javascript.yml'
+      - 'plugins/*/guest-js/**'
+      - '.eslintignore'
+      - '.eslintrc.json'
+      - '.prettierignore'
+      - '**/package.json'
   pull_request:
     branches:
       - v1
       - v2
     paths:
-      - ".github/workflows/lint-javascript.yml"
-      - "plugins/*/guest-js/**"
-      - ".eslintignore"
-      - ".eslintrc.json"
-      - ".prettierignore"
-      - "**/package.json"
+      - '.github/workflows/lint-javascript.yml'
+      - 'plugins/*/guest-js/**'
+      - '.eslintignore'
+      - '.eslintrc.json'
+      - '.prettierignore'
+      - '**/package.json'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -36,40 +36,20 @@ jobs:
   eslint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Cache pnpm modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
-      - uses: pnpm/action-setup@v2
+          node-version: 'lts/*'
+      - uses: pnpm/action-setup@v4
         with:
-          version: 7.x.x
+          version: 10.x.x
           run_install: true
       - name: eslint
         run: pnpm lint
-  prettier:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Cache pnpm modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 7.x.x
-          run_install: true
-      - name: prettier check
-        run: pnpm format-check

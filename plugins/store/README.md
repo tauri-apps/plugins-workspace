@@ -2,9 +2,17 @@
 
 Simple, persistent key-value store.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | ✓         |
+| iOS      | ✓         |
+
 ## Install
 
-_This plugin requires a Rust version of at least **1.75**_
+_This plugin requires a Rust version of at least **1.77.2**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,7 +26,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-store = "2.0.0-beta"
+tauri-plugin-store = "2.0.0"
 # alternatively with Git:
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -46,7 +54,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-store#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {
@@ -59,58 +67,77 @@ fn main() {
 
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
-```javascript
-import { Store } from "@tauri-apps/plugin-store";
+```typescript
+import { Store } from '@tauri-apps/plugin-store'
 
-const store = new Store(".settings.dat");
+const store = await Store.load('settings.json')
 
-await store.set("some-key", { value: 5 });
+await store.set('some-key', { value: 5 })
 
-const val = await store.get("some-key");
-assert(val, { value: 5 });
+const val = await store.get<{ value: number }>('some-key')
 
-await store.save(); // this manually saves the store, otherwise the store is only saved when your app is closed
+if (val) {
+  console.log(val)
+} else {
+  console.log('val is null')
+}
 ```
 
-### Persisting values
+### Persisting Values
 
-Values added to the store are not persisted between application loads unless:
+Modifications made to the store are automatically saved by default
 
-1. The application is closed gracefully (plugin automatically saves)
-2. The store is manually saved (using `store.save()`)
+You can manually save a store with:
+
+```javascript
+await store.save()
+```
+
+Stores are loaded automatically when used from the JavaScript bindings.  
+However, you can also load them manually later like so:
+
+```javascript
+await store.load()
+```
+
+### LazyStore
+
+There's also a high level API `LazyStore` which only loads the store on first access, note that the options will be ignored if a `Store` with that path has already been created
+
+```typescript
+import { LazyStore } from '@tauri-apps/plugin-store'
+
+const store = new LazyStore('settings.json')
+```
 
 ## Usage from Rust
 
-You can also access Stores from Rust, you can create new stores:
+You can also create `Store` instances directly in Rust:
 
 ```rust
-use tauri_plugin_store::StoreBuilder;
+use tauri_plugin_store::StoreExt;
 use serde_json::json;
 
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
         .setup(|app| {
-            let mut store = StoreBuilder::new(app.handle(), "path/to/store.bin".parse()?).build();
+            // This loads the store from disk
+            let store = app.store("app_data.json")?;
 
-            store.insert("a".to_string(), json!("b")) // note that values must be serd_json::Value to be compatible with JS
+            // Note that values must be serde_json::Value instances,
+            // otherwise, they will not be compatible with the JavaScript bindings.
+            store.set("a".to_string(), json!("b"));
+            Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 ```
 
-As you may have noticed, the Store crated above isn't accessible to the frontend. To interoperate with stores created by JS use the exported `with_store` method:
+### Frontend Interoperability
 
-```rust
-use tauri::Wry;
-use tauri_plugin_store::with_store;
-
-let stores = app.state::<StoreCollection<Wry>>();
-let path = PathBuf::from("path/to/the/storefile");
-
-with_store(app_handle, stores, path, |store| store.insert("a".to_string(), json!("b")))
-```
+The store created from both Rust side and JavaScript side are stored in the app's resource table and can be accessed by both sides, you can access it by using the same path, with `getStore` and `LazyStore` in the JavaScript side and `get_store` and `store` in the Rust side
 
 ## Contributing
 

@@ -7,15 +7,19 @@
 
 [[permission]]
 identifier = "scope-applog-recursive"
-description = "This scope recursive access to the complete `$APPLOG` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$APPLOG` folder, including sub directories and files."
 
+[[permission.scope.allow]]
+path = "$APPLOG"
 [[permission.scope.allow]]
 path = "$APPLOG/**"
 
 [[permission]]
 identifier = "scope-applog"
-description = "This scope permits access to all files and list content of top level directories in the `$APPLOG`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$APPLOG` folder."
 
+[[permission.scope.allow]]
+path = "$APPLOG"
 [[permission.scope.allow]]
 path = "$APPLOG/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-applog-index"
 description = "This scope permits to list all files and folders in the `$APPLOG`folder."
 
 [[permission.scope.allow]]
-path = "$APPLOG/"
+path = "$APPLOG"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands
@@ -39,7 +43,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-applog-write-recursive"
-description = "This allows full recusrive write access to the complete `$APPLOG` folder, files and subdirectories."
+description = "This allows full recursive write access to the complete `$APPLOG` folder, files and subdirectories."
 permissions = [
     "write-all",
     "scope-applog-recursive"
@@ -63,7 +67,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-applog-meta-recursive"
-description = "This allows read access to metadata of the `$APPLOG` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$APPLOG` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-applog-recursive"
@@ -71,7 +75,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-applog-meta"
-description = "This allows read access to metadata of the `$APPLOG` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$APPLOG` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-applog-index"

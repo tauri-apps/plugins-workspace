@@ -16,24 +16,24 @@ enum ScanKind: Decodable {
 
 struct ScanOptions: Decodable {
   let kind: ScanKind
-  let keepSessionAlive: Bool?
-  let message: String?
-  let successMessage: String?
+  var keepSessionAlive: Bool?
+  var message: String?
+  var successMessage: String?
 }
 
 struct NDEFRecord: Decodable {
-  let format: UInt8?
-  let kind: [UInt8]?
-  let identifier: [UInt8]?
-  let payload: [UInt8]?
+  var format: UInt8?
+  var kind: [UInt8]?
+  var identifier: [UInt8]?
+  var payload: [UInt8]?
 }
 
 struct WriteOptions: Decodable {
-  let kind: ScanKind?
+  var kind: ScanKind?
   let records: [NDEFRecord]
-  let message: String?
-  let successMessage: String?
-  let successfulReadMessage: String?
+  var message: String?
+  var successMessage: String?
+  var successfulReadMessage: String?
 }
 
 enum TagProcessMode {

@@ -1,4 +1,8 @@
 "$schema" = "schemas/schema.json"
 [default]
-description = "Allows the move_window command"
-permissions = ["allow-move-window"]
+description = "Allows the moveWindow and handleIconState APIs"
+permissions = [
+  "allow-move-window",
+  "allow-move-window-constrained",
+  "allow-set-tray-icon-state",
+]

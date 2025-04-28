@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-#![cfg(target_os = "linux")]
+#[cfg(feature = "semver")]
+use crate::semver_compat::semver_compat_string;
 
 use crate::SingleInstanceCallback;
 use tauri::{
@@ -28,6 +29,15 @@ impl<R: Runtime> SingleInstanceDBus<R> {
     }
 }
 
+#[cfg(feature = "semver")]
+fn dbus_id(config: &Config, version: semver::Version) -> String {
+    let mut id = config.identifier.replace(['.', '-'], "_");
+    id.push('_');
+    id.push_str(semver_compat_string(version).as_str());
+    id
+}
+
+#[cfg(not(feature = "semver"))]
 fn dbus_id(config: &Config) -> String {
     config.identifier.replace(['.', '-'], "_")
 }
@@ -35,7 +45,11 @@ fn dbus_id(config: &Config) -> String {
 pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(|app, _api| {
+            #[cfg(feature = "semver")]
+            let id = dbus_id(app.config(), app.package_info().version.clone());
+            #[cfg(not(feature = "semver"))]
             let id = dbus_id(app.config());
+
             let single_instance_dbus = SingleInstanceDBus {
                 callback: f,
                 app_handle: app.clone(),
@@ -70,7 +84,8 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
                             ),
                         );
                     }
-                    std::process::exit(0)
+                    app.cleanup_before_exit();
+                    std::process::exit(0);
                 }
                 _ => {}
             }
@@ -87,7 +102,15 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
 
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
     if let Some(connection) = manager.try_state::<ConnectionHandle>() {
-        let dbus_name = format!("org.{}.SingleInstance", dbus_id(manager.config()));
+        #[cfg(feature = "semver")]
+        let id = dbus_id(
+            manager.config(),
+            manager.app_handle().package_info().version.clone(),
+        );
+        #[cfg(not(feature = "semver"))]
+        let id = dbus_id(manager.config());
+
+        let dbus_name = format!("org.{id}.SingleInstance",);
         let _ = connection.0.release_name(dbus_name);
     }
 }

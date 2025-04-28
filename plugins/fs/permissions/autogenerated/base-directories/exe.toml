@@ -7,15 +7,19 @@
 
 [[permission]]
 identifier = "scope-exe-recursive"
-description = "This scope recursive access to the complete `$EXE` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$EXE` folder, including sub directories and files."
 
+[[permission.scope.allow]]
+path = "$EXE"
 [[permission.scope.allow]]
 path = "$EXE/**"
 
 [[permission]]
 identifier = "scope-exe"
-description = "This scope permits access to all files and list content of top level directories in the `$EXE`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$EXE` folder."
 
+[[permission.scope.allow]]
+path = "$EXE"
 [[permission.scope.allow]]
 path = "$EXE/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-exe-index"
 description = "This scope permits to list all files and folders in the `$EXE`folder."
 
 [[permission.scope.allow]]
-path = "$EXE/"
+path = "$EXE"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands
@@ -39,7 +43,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-exe-write-recursive"
-description = "This allows full recusrive write access to the complete `$EXE` folder, files and subdirectories."
+description = "This allows full recursive write access to the complete `$EXE` folder, files and subdirectories."
 permissions = [
     "write-all",
     "scope-exe-recursive"
@@ -63,7 +67,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-exe-meta-recursive"
-description = "This allows read access to metadata of the `$EXE` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$EXE` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-exe-recursive"
@@ -71,7 +75,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-exe-meta"
-description = "This allows read access to metadata of the `$EXE` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$EXE` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-exe-index"

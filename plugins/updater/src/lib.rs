@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/updater/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/updater)
-//!
 //! In-app updates for Tauri applications.
 //!
 //! - Supported platforms: Windows, Linux and macOS.crypted database and secure runtime.
@@ -13,8 +11,10 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use std::ffi::{OsStr, OsString};
+use std::{ffi::OsString, sync::Arc};
 
+use http::{HeaderMap, HeaderName, HeaderValue};
+use semver::Version;
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, Runtime,
@@ -29,7 +29,7 @@ pub use config::Config;
 pub use error::{Error, Result};
 pub use updater::*;
 
-/// Extension trait to use the updater on [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`].
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the updater APIs.
 pub trait UpdaterExt<R: Runtime> {
     /// Gets the updater builder to build and updater
     /// that can manually check if an update is available.
@@ -70,10 +70,14 @@ pub trait UpdaterExt<R: Runtime> {
 impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
     fn updater_builder(&self) -> UpdaterBuilder {
         let app = self.app_handle();
-        let version = app.package_info().version.clone();
-        let UpdaterState { config, target } = self.state::<UpdaterState>().inner();
+        let UpdaterState {
+            config,
+            target,
+            version_comparator,
+            headers,
+        } = self.state::<UpdaterState>().inner();
 
-        let mut builder = UpdaterBuilder::new(version, config.clone());
+        let mut builder = UpdaterBuilder::new(app, config.clone()).headers(headers.clone());
 
         if let Some(target) = target {
             builder = builder.target(target);
@@ -81,8 +85,10 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
 
         let args = self.env().args_os;
         if !args.is_empty() {
-            builder = builder.installer_arg("/ARGS").installer_args(args);
+            builder = builder.current_exe_args(args);
         }
+
+        builder.version_comparator = version_comparator.clone();
 
         #[cfg(any(
             target_os = "linux",
@@ -98,6 +104,11 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
             }
         }
 
+        let app_handle = app.app_handle().clone();
+        builder = builder.on_before_exit(move || {
+            app_handle.cleanup_before_exit();
+        });
+
         builder
     }
 
@@ -109,6 +120,8 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
 struct UpdaterState {
     target: Option<String>,
     config: Config,
+    version_comparator: Option<VersionComparator>,
+    headers: HeaderMap,
 }
 
 #[derive(Default)]
@@ -116,6 +129,8 @@ pub struct Builder {
     target: Option<String>,
     pubkey: Option<String>,
     installer_args: Vec<OsString>,
+    headers: HeaderMap,
+    default_version_comparator: Option<VersionComparator>,
 }
 
 impl Builder {
@@ -136,21 +151,17 @@ impl Builder {
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
-        S: AsRef<OsStr>,
+        S: Into<OsString>,
     {
-        let args = args
-            .into_iter()
-            .map(|a| a.as_ref().to_os_string())
-            .collect::<Vec<_>>();
-        self.installer_args.extend_from_slice(&args);
+        self.installer_args.extend(args.into_iter().map(Into::into));
         self
     }
 
     pub fn installer_arg<S>(mut self, arg: S) -> Self
     where
-        S: AsRef<OsStr>,
+        S: Into<OsString>,
     {
-        self.installer_args.push(arg.as_ref().to_os_string());
+        self.installer_args.push(arg.into());
         self
     }
 
@@ -159,26 +170,64 @@ impl Builder {
         self
     }
 
+    pub fn header<K, V>(mut self, key: K, value: V) -> Result<Self>
+    where
+        HeaderName: TryFrom<K>,
+        <HeaderName as TryFrom<K>>::Error: Into<http::Error>,
+        HeaderValue: TryFrom<V>,
+        <HeaderValue as TryFrom<V>>::Error: Into<http::Error>,
+    {
+        let key: std::result::Result<HeaderName, http::Error> = key.try_into().map_err(Into::into);
+        let value: std::result::Result<HeaderValue, http::Error> =
+            value.try_into().map_err(Into::into);
+        self.headers.insert(key?, value?);
+
+        Ok(self)
+    }
+
+    pub fn headers(mut self, headers: HeaderMap) -> Self {
+        self.headers = headers;
+        self
+    }
+
+    pub fn default_version_comparator<
+        F: Fn(Version, RemoteRelease) -> bool + Send + Sync + 'static,
+    >(
+        mut self,
+        f: F,
+    ) -> Self {
+        self.default_version_comparator.replace(Arc::new(f));
+        self
+    }
+
     pub fn build<R: Runtime>(self) -> TauriPlugin<R, Config> {
         let pubkey = self.pubkey;
         let target = self.target;
+        let version_comparator = self.default_version_comparator;
         let installer_args = self.installer_args;
+        let headers = self.headers;
         PluginBuilder::<R, Config>::new("updater")
-            .js_init_script(include_str!("api-iife.js").to_string())
             .setup(move |app, api| {
                 let mut config = api.config().clone();
                 if let Some(pubkey) = pubkey {
                     config.pubkey = pubkey;
                 }
                 if let Some(windows) = &mut config.windows {
-                    windows.installer_args.extend_from_slice(&installer_args);
+                    windows.installer_args.extend(installer_args);
                 }
-                app.manage(UpdaterState { target, config });
+                app.manage(UpdaterState {
+                    target,
+                    config,
+                    version_comparator,
+                    headers,
+                });
                 Ok(())
             })
             .invoke_handler(tauri::generate_handler![
                 commands::check,
-                commands::download_and_install
+                commands::download,
+                commands::install,
+                commands::download_and_install,
             ])
             .build()
     }

@@ -1,23 +1,59 @@
 <script>
-  import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
+  import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
+  import { open } from '@tauri-apps/plugin-dialog'
+  import { arrayBufferToBase64 } from '../lib/utils'
+  import { readFile } from '@tauri-apps/plugin-fs'
 
-  export let onMessage;
-  let text = "clipboard message";
+  export let onMessage
+  export let insecureRenderHtml
+  let text = 'clipboard message'
 
-  function write() {
-    writeText(text)
+  function writeText() {
+    clipboard
+      .writeText(text)
       .then(() => {
-        onMessage("Wrote to the clipboard");
+        onMessage('Wrote to the clipboard')
       })
-      .catch(onMessage);
+      .catch(onMessage)
   }
 
-  function read() {
-    readText()
-      .then((contents) => {
-        onMessage(`Clipboard contents: ${contents}`);
+  async function writeImage() {
+    try {
+      const path = await open({
+        title: 'Image to write to clipboard',
+        filters: [
+          {
+            name: 'Clipboard IMG',
+            extensions: ['png', 'jpg', 'jpeg']
+          }
+        ]
       })
-      .catch(onMessage);
+      const bytes = await readFile(path)
+      await clipboard.writeImage(bytes)
+      onMessage('wrote image')
+    } catch (e) {
+      onMessage(e)
+    }
+  }
+
+  async function read() {
+    try {
+      const image = await clipboard.readImage()
+      arrayBufferToBase64(await image.rgba(), function (base64) {
+        const src = 'data:image/png;base64,' + base64
+        insecureRenderHtml('<img src="' + src + '"></img>')
+      })
+      return
+    } catch (_) {}
+
+    clipboard
+      .readText()
+      .then((contents) => {
+        onMessage(`Clipboard contents: ${contents}`)
+      })
+      .catch((e) => {
+        onMessage(e)
+      })
   }
 </script>
 
@@ -27,6 +63,7 @@
     placeholder="Text to write to the clipboard"
     bind:value={text}
   />
-  <button class="btn" type="button" on:click={write}>Write</button>
+  <button class="btn" type="button" on:click={writeText}>Write</button>
+  <button class="btn" type="button" on:click={writeImage}>Pick Image</button>
   <button class="btn" type="button" on:click={read}>Read</button>
 </div>

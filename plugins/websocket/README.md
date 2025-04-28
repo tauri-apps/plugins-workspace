@@ -1,10 +1,18 @@
 ![plugin-websocket](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/websocket/banner.png)
 
-Expose a WebSocket server to your Tauri frontend.
+Open a WebSocket connection using a Rust client in JS.
+
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | ✓         |
+| iOS      | ✓         |
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.75**_
+_This plugin requires a Rust version of at least **1.77.2**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,7 +26,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-websocket = "2.0.0-beta"
+tauri-plugin-websocket = "2.0.0"
 # alternatively with Git:
 tauri-plugin-websocket = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -46,7 +54,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-websocket#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {
@@ -60,13 +68,13 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import WebSocket from "@tauri-apps/plugin-websocket";
+import WebSocket from '@tauri-apps/plugin-websocket'
 
-const ws = await WebSocket.connect("wss://example.com");
+const ws = await WebSocket.connect('wss://example.com')
 
-await ws.send("Hello World");
+await ws.send('Hello World')
 
-await ws.disconnect();
+await ws.disconnect()
 ```
 
 ## Contributing

@@ -10,6 +10,7 @@ use crate::scope::OpenScope;
 use std::str::FromStr;
 
 /// Program to use on the [`open()`] call.
+#[deprecated(since = "2.1.0", note = "Use tauri-plugin-opener instead.")]
 pub enum Program {
     /// Use the `open` program.
     Open,
@@ -117,6 +118,21 @@ impl Program {
 ///     Ok(())
 ///   });
 /// ```
-pub fn open<P: AsRef<str>>(scope: &OpenScope, path: P, with: Option<Program>) -> crate::Result<()> {
-    scope.open(path.as_ref(), with).map_err(Into::into)
+#[deprecated(since = "2.1.0", note = "Use tauri-plugin-opener instead.")]
+pub fn open<P: AsRef<str>>(
+    scope: Option<&OpenScope>,
+    path: P,
+    with: Option<Program>,
+) -> crate::Result<()> {
+    // validate scope if we have any (JS calls)
+    if let Some(scope) = scope {
+        scope.open(path.as_ref(), with).map_err(Into::into)
+    } else {
+        // when running directly from Rust code we don't need to validate the path
+        match with.map(Program::name) {
+            Some(program) => ::open::with_detached(path.as_ref(), program),
+            None => ::open::that_detached(path.as_ref()),
+        }
+        .map_err(Into::into)
+    }
 }

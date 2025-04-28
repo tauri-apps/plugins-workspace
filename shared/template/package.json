@@ -1,10 +1,11 @@
 {
-  "name": "@tauri-apps/plugin-{{name}}",
+  "name": "@tauri-apps/plugin-PLUGIN_NAME",
   "version": "1.0.0",
-  "license": "MIT or APACHE-2.0",
+  "license": "MIT OR Apache-2.0",
   "authors": [
     "Tauri Programme within The Commons Conservancy"
   ],
+  "repository": "https://github.com/tauri-apps/plugins-workspace",
   "type": "module",
   "types": "./dist-js/index.d.ts",
   "main": "./dist-js/index.cjs",
@@ -23,6 +24,6 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@tauri-apps/api": "2.0.0-beta.2"
+    "@tauri-apps/api": "^2.0.0"
   }
 }

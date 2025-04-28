@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -17,26 +17,28 @@
 		D01EC573029B7BEC701F6012 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6BDF5DBBA740DA7D86791DEC /* WebKit.framework */; };
 		D4D232DBB85C5C1594FACC3D /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = D99665C1C3247732C6BF25F4 /* main.mm */; };
 		D7A9EBD47413746EDE96BDF8 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B18865218362A4BE07527DBD /* CoreGraphics.framework */; };
-		FBB3FE3EDDEAF717E61F2AD4 /* libdeep_link_example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEEC42BAB5E4A4757C89C2 /* libdeep_link_example.a */; };
+		E26F7FA923DA1EABEE42B63A /* libapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 403FB4BAE59F74EE98EF1EC6 /* libapp.a */; };
+		E6992F2651B864B15ED14925 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1846ADCEDC2C208E1037ADC6 /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1846ADCEDC2C208E1037ADC6 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1C21C8B4A18EC7D0B5808C10 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
-		1CAAFA750FD735A285DC1238 /* deep-link-example_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "deep-link-example_iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1CAAFA750FD735A285DC1238 /* deep-link-example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "deep-link-example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F316D1CD78DD2E070DA5C17 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		3DD32303BEC377C10162CF69 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
+		403FB4BAE59F74EE98EF1EC6 /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
 		486CAFD81CB14F9A2DF72FDF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		4A33212233BFAA738F6A46FC /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
+		4A33212233BFAA738F6A46FC /* lib.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = lib.rs; sourceTree = "<group>"; };
 		4BDECB1ED2EEEB5A6A8B8372 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		6BDF5DBBA740DA7D86791DEC /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		8AB0099573FE8BF1DC82CDBA /* deep-link-example_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "deep-link-example_iOS.entitlements"; sourceTree = "<group>"; };
 		9435FC7E183EA6260CE76637 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		AEA78299D25FEC31E2988090 /* main.rs */ = {isa = PBXFileReference; path = main.rs; sourceTree = "<group>"; };
+		AEA78299D25FEC31E2988090 /* main.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.rs; sourceTree = "<group>"; };
 		B005488D1B56B657AB52E28C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B18865218362A4BE07527DBD /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		BF7ECB9AB55B71692A21D5F7 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
 		D99665C1C3247732C6BF25F4 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
-		DCAEEC42BAB5E4A4757C89C2 /* libdeep_link_example.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libdeep_link_example.a; sourceTree = "<group>"; };
 		ED2B1BC06DFE0498ECDEEE51 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -45,7 +47,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FBB3FE3EDDEAF717E61F2AD4 /* libdeep_link_example.a in Frameworks */,
+				E26F7FA923DA1EABEE42B63A /* libapp.a in Frameworks */,
 				D7A9EBD47413746EDE96BDF8 /* CoreGraphics.framework in Frameworks */,
 				017AE826151E36372534A964 /* Metal.framework in Frameworks */,
 				BC36958BBBA7FE61066213D7 /* MetalKit.framework in Frameworks */,
@@ -81,6 +83,7 @@
 			children = (
 				BF7ECB9AB55B71692A21D5F7 /* assets */,
 				486CAFD81CB14F9A2DF72FDF /* Assets.xcassets */,
+				1846ADCEDC2C208E1037ADC6 /* LaunchScreen.storyboard */,
 				7D12035C470ED9DAF55A709E /* deep-link-example_iOS */,
 				84EADC52DA26583ACE816A6D /* Externals */,
 				146BAF1D709F8A0FE5B07709 /* Sources */,
@@ -94,7 +97,7 @@
 			isa = PBXGroup;
 			children = (
 				B18865218362A4BE07527DBD /* CoreGraphics.framework */,
-				DCAEEC42BAB5E4A4757C89C2 /* libdeep_link_example.a */,
+				403FB4BAE59F74EE98EF1EC6 /* libapp.a */,
 				ED2B1BC06DFE0498ECDEEE51 /* Metal.framework */,
 				1C21C8B4A18EC7D0B5808C10 /* MetalKit.framework */,
 				9435FC7E183EA6260CE76637 /* QuartzCore.framework */,
@@ -142,7 +145,7 @@
 		F9EEBB3248B74B1D6CDA4D84 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1CAAFA750FD735A285DC1238 /* deep-link-example_iOS.app */,
+				1CAAFA750FD735A285DC1238 /* deep-link-example.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -165,7 +168,7 @@
 			);
 			name = "deep-link-example_iOS";
 			productName = "deep-link-example_iOS";
-			productReference = 1CAAFA750FD735A285DC1238 /* deep-link-example_iOS.app */;
+			productReference = 1CAAFA750FD735A285DC1238 /* deep-link-example.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -174,15 +177,11 @@
 		BCB4BA6E81088C5B470E3436 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1200;
-				TargetAttributes = {
-					A1C635908C823A89928264CD = {
-						DevelopmentTeam = Q93MBH6S2F;
-					};
-				};
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
 			};
 			buildConfigurationList = 8FCB58B8ADB9F9CB9ECE01FA /* Build configuration list for PBXProject "deep-link-example" */;
-			compatibilityVersion = "Xcode 11.0";
+			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -204,6 +203,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				65A8D948440EDAA7F62BA1F4 /* Assets.xcassets in Resources */,
+				E6992F2651B864B15ED14925 /* LaunchScreen.storyboard in Resources */,
 				C384FB77F116B05F8E642CA8 /* assets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -225,8 +225,9 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(SRCROOT)/target/aarch64-apple-ios/${CONFIGURATION}/deps/libdeep_link_example.a",
-				"$(SRCROOT)/target/x86_64-apple-ios/${CONFIGURATION}/deps/libdeep_link_example.a",
+				"$(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapp.a",
+				"$(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapp.a",
+				"$(SRCROOT)/Externals/arm64-sim/${CONFIGURATION}/libapp.a",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -320,8 +321,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "deep-link-example_iOS/deep-link-example_iOS.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = Q93MBH6S2F;
 				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = "arm64-sim x86_64";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\".\"",
@@ -331,10 +335,28 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				"LIBRARY_SEARCH_PATHS[arch=arm64-sim]" = "$(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
-				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
-				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.tauri.deep-link-example";
+				"LIBRARY_SEARCH_PATHS[arch=arm64-sim]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/arm64-sim/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tauri.deep-link-example;
 				PRODUCT_NAME = "deep-link-example";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -409,8 +431,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "deep-link-example_iOS/deep-link-example_iOS.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = Q93MBH6S2F;
 				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = "arm64-sim x86_64";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\".\"",
@@ -420,10 +445,28 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				"LIBRARY_SEARCH_PATHS[arch=arm64-sim]" = "$(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
-				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
-				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.tauri.deep-link-example";
+				"LIBRARY_SEARCH_PATHS[arch=arm64-sim]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/arm64-sim/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tauri.deep-link-example;
 				PRODUCT_NAME = "deep-link-example";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

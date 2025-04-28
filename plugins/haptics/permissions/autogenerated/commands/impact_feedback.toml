@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-impact-feedback"
+description = "Enables the impact_feedback command without any pre-configured scope."
+commands.allow = ["impact_feedback"]
+
+[[permission]]
+identifier = "deny-impact-feedback"
+description = "Denies the impact_feedback command without any pre-configured scope."
+commands.deny = ["impact_feedback"]

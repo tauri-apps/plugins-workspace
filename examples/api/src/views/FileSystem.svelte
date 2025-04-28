@@ -1,16 +1,19 @@
 <script>
   import * as fs from "@tauri-apps/plugin-fs";
   import { convertFileSrc } from "@tauri-apps/api/core";
+  import { arrayBufferToBase64 } from "../lib/utils";
+  import { onDestroy } from "svelte";
 
   export let onMessage;
   export let insecureRenderHtml;
 
   let path = "";
   let img;
+  /** @type {fs.FileHandle} */
   let file;
   let renameTo;
   let watchPath = "";
-  let watchDebounceDelay = 0;
+  let watchDebounceDelay = "0";
   let watchRecursive = false;
   let unwatchFn;
   let unwatchPath = "";
@@ -18,18 +21,6 @@
   function getDir() {
     const dirSelect = document.getElementById("dir");
     return dirSelect.value ? parseInt(dir.value) : null;
-  }
-
-  function arrayBufferToBase64(buffer, callback) {
-    const blob = new Blob([buffer], {
-      type: "application/octet-binary",
-    });
-    const reader = new FileReader();
-    reader.onload = function (evt) {
-      const dataurl = evt.target.result;
-      callback(dataurl.substr(dataurl.indexOf(",") + 1));
-    };
-    reader.readAsDataURL(blob);
   }
 
   const DirOptions = Object.keys(fs.BaseDirectory)
@@ -129,7 +120,7 @@
                     .getElementById("file-save")
                     .addEventListener("click", function () {
                       fs.writeTextFile(path, fileInput.value, {
-                        dir: getDir(),
+                        baseDir: getDir(),
                       }).catch(onMessage);
                     });
                 });
@@ -181,6 +172,15 @@
     unwatchFn = undefined;
     unwatchPath = undefined;
   }
+
+  onDestroy(() => {
+    if (file) {
+      file.close();
+    }
+    if (unwatchFn) {
+      unwatchFn();
+    }
+  })
 </script>
 
 <div class="flex flex-col">
@@ -215,7 +215,7 @@
       <button class="btn" on:click={stat}>Stat</button>
     </div>
   {/if}
-  
+
   <h3>Watch</h3>
 
   <input
@@ -225,7 +225,9 @@
   />
   <br />
   <div>
-    <label for="watch-debounce-delay">Debounce delay in milliseconds (`0` disables the debouncer)</label>
+    <label for="watch-debounce-delay"
+      >Debounce delay in milliseconds (`0` disables the debouncer)</label
+    >
     <input
       class="input"
       id="watch-debounce-delay"

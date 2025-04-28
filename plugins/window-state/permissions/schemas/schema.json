@@ -17,7 +17,6 @@
     },
     "set": {
       "description": "A list of permissions sets defined",
-      "default": [],
       "type": "array",
       "items": {
         "$ref": "#/definitions/PermissionSet"
@@ -50,7 +49,7 @@
           "minimum": 1.0
         },
         "description": {
-          "description": "Human-readable description of what the permission does.",
+          "description": "Human-readable description of what the permission does. Tauri convention is to use `<h4>` headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -112,7 +111,7 @@
           "type": "string"
         },
         "description": {
-          "description": "Human-readable description of what the permission does.",
+          "description": "Human-readable description of what the permission does. Tauri internal convention is to use `<h4>` headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -132,12 +131,21 @@
         },
         "scope": {
           "description": "Allowed or denied scoped when using this permission.",
-          "default": {},
           "allOf": [
             {
               "$ref": "#/definitions/Scopes"
             }
           ]
+        },
+        "platforms": {
+          "description": "Target platforms this permission applies. By default all platforms are affected by this permission.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/Target"
+          }
         }
       }
     },
@@ -164,7 +172,7 @@
       }
     },
     "Scopes": {
-      "description": "A restriction of the command/endpoint functionality.\n\nIt can be of any serde serializable type and is used for allowing or preventing certain actions inside a Tauri command.\n\nThe scope is passed to the command and handled/enforced by the command itself.",
+      "description": "An argument for fine grained behavior control of Tauri commands.\n\nIt can be of any serde serializable type and is used to allow or prevent certain actions inside a Tauri command. The configured scope is passed to the command and will be enforced by the command implementation.\n\n## Example\n\n```json { \"allow\": [{ \"path\": \"$HOME/**\" }], \"deny\": [{ \"path\": \"$HOME/secret.txt\" }] } ```",
       "type": "object",
       "properties": {
         "allow": {
@@ -178,7 +186,7 @@
           }
         },
         "deny": {
-          "description": "Data that defines what is denied by the scope.",
+          "description": "Data that defines what is denied by the scope. This should be prioritized by validation logic.",
           "type": [
             "array",
             "null"
@@ -243,36 +251,90 @@
         }
       ]
     },
+    "Target": {
+      "description": "Platform target.",
+      "oneOf": [
+        {
+          "description": "MacOS.",
+          "type": "string",
+          "enum": [
+            "macOS"
+          ]
+        },
+        {
+          "description": "Windows.",
+          "type": "string",
+          "enum": [
+            "windows"
+          ]
+        },
+        {
+          "description": "Linux.",
+          "type": "string",
+          "enum": [
+            "linux"
+          ]
+        },
+        {
+          "description": "Android.",
+          "type": "string",
+          "enum": [
+            "android"
+          ]
+        },
+        {
+          "description": "iOS.",
+          "type": "string",
+          "enum": [
+            "iOS"
+          ]
+        }
+      ]
+    },
     "PermissionKind": {
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-restore-window-state -> Enables the restore_window_state command without any pre-configured scope.",
+          "description": "Enables the filename command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-restore-window-state"
-          ]
+          "const": "allow-filename",
+          "markdownDescription": "Enables the filename command without any pre-configured scope."
         },
         {
-          "description": "deny-restore-window-state -> Denies the restore_window_state command without any pre-configured scope.",
+          "description": "Denies the filename command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-restore-window-state"
-          ]
+          "const": "deny-filename",
+          "markdownDescription": "Denies the filename command without any pre-configured scope."
         },
         {
-          "description": "allow-save-window-state -> Enables the save_window_state command without any pre-configured scope.",
+          "description": "Enables the restore_state command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-save-window-state"
-          ]
+          "const": "allow-restore-state",
+          "markdownDescription": "Enables the restore_state command without any pre-configured scope."
         },
         {
-          "description": "deny-save-window-state -> Denies the save_window_state command without any pre-configured scope.",
+          "description": "Denies the restore_state command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-save-window-state"
-          ]
+          "const": "deny-restore-state",
+          "markdownDescription": "Denies the restore_state command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the save_window_state command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-save-window-state",
+          "markdownDescription": "Enables the save_window_state command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the save_window_state command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-save-window-state",
+          "markdownDescription": "Denies the save_window_state command without any pre-configured scope."
+        },
+        {
+          "description": "This permission set configures what kind of\noperations are available from the window state plugin.\n\n#### Granted Permissions\n\nAll operations are enabled by default.\n\n\n#### This default permission set includes:\n\n- `allow-filename`\n- `allow-restore-state`\n- `allow-save-window-state`",
+          "type": "string",
+          "const": "default",
+          "markdownDescription": "This permission set configures what kind of\noperations are available from the window state plugin.\n\n#### Granted Permissions\n\nAll operations are enabled by default.\n\n\n#### This default permission set includes:\n\n- `allow-filename`\n- `allow-restore-state`\n- `allow-save-window-state`"
         }
       ]
     }

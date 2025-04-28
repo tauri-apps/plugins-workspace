@@ -17,7 +17,6 @@
     },
     "set": {
       "description": "A list of permissions sets defined",
-      "default": [],
       "type": "array",
       "items": {
         "$ref": "#/definitions/PermissionSet"
@@ -50,7 +49,7 @@
           "minimum": 1.0
         },
         "description": {
-          "description": "Human-readable description of what the permission does.",
+          "description": "Human-readable description of what the permission does. Tauri convention is to use `<h4>` headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -112,7 +111,7 @@
           "type": "string"
         },
         "description": {
-          "description": "Human-readable description of what the permission does.",
+          "description": "Human-readable description of what the permission does. Tauri internal convention is to use `<h4>` headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -132,12 +131,21 @@
         },
         "scope": {
           "description": "Allowed or denied scoped when using this permission.",
-          "default": {},
           "allOf": [
             {
               "$ref": "#/definitions/Scopes"
             }
           ]
+        },
+        "platforms": {
+          "description": "Target platforms this permission applies. By default all platforms are affected by this permission.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/Target"
+          }
         }
       }
     },
@@ -164,7 +172,7 @@
       }
     },
     "Scopes": {
-      "description": "A restriction of the command/endpoint functionality.\n\nIt can be of any serde serializable type and is used for allowing or preventing certain actions inside a Tauri command.\n\nThe scope is passed to the command and handled/enforced by the command itself.",
+      "description": "An argument for fine grained behavior control of Tauri commands.\n\nIt can be of any serde serializable type and is used to allow or prevent certain actions inside a Tauri command. The configured scope is passed to the command and will be enforced by the command implementation.\n\n## Example\n\n```json { \"allow\": [{ \"path\": \"$HOME/**\" }], \"deny\": [{ \"path\": \"$HOME/secret.txt\" }] } ```",
       "type": "object",
       "properties": {
         "allow": {
@@ -178,7 +186,7 @@
           }
         },
         "deny": {
-          "description": "Data that defines what is denied by the scope.",
+          "description": "Data that defines what is denied by the scope. This should be prioritized by validation logic.",
           "type": [
             "array",
             "null"
@@ -243,64 +251,102 @@
         }
       ]
     },
+    "Target": {
+      "description": "Platform target.",
+      "oneOf": [
+        {
+          "description": "MacOS.",
+          "type": "string",
+          "enum": [
+            "macOS"
+          ]
+        },
+        {
+          "description": "Windows.",
+          "type": "string",
+          "enum": [
+            "windows"
+          ]
+        },
+        {
+          "description": "Linux.",
+          "type": "string",
+          "enum": [
+            "linux"
+          ]
+        },
+        {
+          "description": "Android.",
+          "type": "string",
+          "enum": [
+            "android"
+          ]
+        },
+        {
+          "description": "iOS.",
+          "type": "string",
+          "enum": [
+            "iOS"
+          ]
+        }
+      ]
+    },
     "PermissionKind": {
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-close -> Enables the close command without any pre-configured scope.",
+          "description": "Enables the close command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-close"
-          ]
+          "const": "allow-close",
+          "markdownDescription": "Enables the close command without any pre-configured scope."
         },
         {
-          "description": "deny-close -> Denies the close command without any pre-configured scope.",
+          "description": "Denies the close command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-close"
-          ]
+          "const": "deny-close",
+          "markdownDescription": "Denies the close command without any pre-configured scope."
         },
         {
-          "description": "allow-execute -> Enables the execute command without any pre-configured scope.",
+          "description": "Enables the execute command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-execute"
-          ]
+          "const": "allow-execute",
+          "markdownDescription": "Enables the execute command without any pre-configured scope."
         },
         {
-          "description": "deny-execute -> Denies the execute command without any pre-configured scope.",
+          "description": "Denies the execute command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-execute"
-          ]
+          "const": "deny-execute",
+          "markdownDescription": "Denies the execute command without any pre-configured scope."
         },
         {
-          "description": "allow-load -> Enables the load command without any pre-configured scope.",
+          "description": "Enables the load command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-load"
-          ]
+          "const": "allow-load",
+          "markdownDescription": "Enables the load command without any pre-configured scope."
         },
         {
-          "description": "deny-load -> Denies the load command without any pre-configured scope.",
+          "description": "Denies the load command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-load"
-          ]
+          "const": "deny-load",
+          "markdownDescription": "Denies the load command without any pre-configured scope."
         },
         {
-          "description": "allow-select -> Enables the select command without any pre-configured scope.",
+          "description": "Enables the select command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-select"
-          ]
+          "const": "allow-select",
+          "markdownDescription": "Enables the select command without any pre-configured scope."
         },
         {
-          "description": "deny-select -> Denies the select command without any pre-configured scope.",
+          "description": "Denies the select command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-select"
-          ]
+          "const": "deny-select",
+          "markdownDescription": "Denies the select command without any pre-configured scope."
+        },
+        {
+          "description": "### Default Permissions\n\nThis permission set configures what kind of\ndatabase operations are available from the sql plugin.\n\n### Granted Permissions\n\nAll reading related operations are enabled.\nAlso allows to load or close a connection.\n\n\n#### This default permission set includes:\n\n- `allow-close`\n- `allow-load`\n- `allow-select`",
+          "type": "string",
+          "const": "default",
+          "markdownDescription": "### Default Permissions\n\nThis permission set configures what kind of\ndatabase operations are available from the sql plugin.\n\n### Granted Permissions\n\nAll reading related operations are enabled.\nAlso allows to load or close a connection.\n\n\n#### This default permission set includes:\n\n- `allow-close`\n- `allow-load`\n- `allow-select`"
         }
       ]
     }

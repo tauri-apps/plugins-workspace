@@ -135,7 +135,6 @@ internal class NotificationScheduleSerializer @JvmOverloads constructor(t: Class
 
         jgen.writeEndObject()
       }
-      else -> {}
     }
 
     jgen.writeEndObject()

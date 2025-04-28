@@ -2,9 +2,17 @@
 
 Save window positions and sizes and restore them when the app is reopened.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | x         |
+| iOS      | x         |
+
 ## Install
 
-_This plugin requires a Rust version of at least **1.75**_
+_This plugin requires a Rust version of at least **1.77.2**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,7 +26,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-window-state = "2.0.0-beta"
+tauri-plugin-window-state = "2.0.0"
 # alternatively with Git:
 tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -46,7 +54,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-window-state#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {
@@ -71,9 +79,9 @@ app.save_window_state(StateFlags::all()); // will save the state of all open win
 or through Javascript
 
 ```javascript
-import { saveWindowState, StateFlags } from "@tauri-apps/plugin-window-state";
+import { saveWindowState, StateFlags } from '@tauri-apps/plugin-window-state'
 
-saveWindowState(StateFlags.ALL);
+saveWindowState(StateFlags.ALL)
 ```
 
 To manually restore a windows state from disk you can call the `restore_state()` method exposed by the `WindowExt` trait:
@@ -90,10 +98,10 @@ or through Javascript
 ```javascript
 import {
   restoreStateCurrent,
-  StateFlags,
-} from "@tauri-apps/plugin-window-state";
+  StateFlags
+} from '@tauri-apps/plugin-window-state'
 
-restoreStateCurrent(StateFlags.ALL);
+restoreStateCurrent(StateFlags.ALL)
 ```
 
 ## Contributing

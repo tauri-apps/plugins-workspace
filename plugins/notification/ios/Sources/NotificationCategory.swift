@@ -40,7 +40,7 @@ func makeActions(_ actions: [Action]) -> [UNNotificationAction] {
 
   for action in actions {
     var newAction: UNNotificationAction
-    if action.input {
+    if action.input ?? false {
       if action.inputButtonTitle != nil {
         newAction = UNTextInputNotificationAction(
           identifier: action.id,
@@ -66,30 +66,30 @@ func makeActions(_ actions: [Action]) -> [UNNotificationAction] {
 }
 
 func makeActionOptions(_ action: Action) -> UNNotificationActionOptions {
-  if action.foreground {
+  if action.foreground ?? false {
     return .foreground
   }
-  if action.destructive {
+  if action.destructive ?? false {
     return .destructive
   }
-  if action.requiresAuthentication {
+  if action.requiresAuthentication ?? false {
     return .authenticationRequired
   }
   return UNNotificationActionOptions(rawValue: 0)
 }
 
 func makeCategoryOptions(_ type: ActionType) -> UNNotificationCategoryOptions {
-  if type.customDismissAction {
+  if type.customDismissAction ?? false {
     return .customDismissAction
   }
-  if type.allowInCarPlay {
+  if type.allowInCarPlay ?? false {
     return .allowInCarPlay
   }
 
-  if type.hiddenPreviewsShowTitle {
+  if type.hiddenPreviewsShowTitle ?? false {
     return .hiddenPreviewsShowTitle
   }
-  if type.hiddenPreviewsShowSubtitle {
+  if type.hiddenPreviewsShowSubtitle ?? false {
     return .hiddenPreviewsShowSubtitle
   }
 

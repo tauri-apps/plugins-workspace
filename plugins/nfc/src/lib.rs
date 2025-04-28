@@ -57,7 +57,7 @@ impl<R: Runtime> Nfc<R> {
     }
 }
 
-/// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the nfc APIs.
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the NFC APIs.
 pub trait NfcExt<R: Runtime> {
     fn nfc(&self) -> &Nfc<R>;
 }
@@ -71,7 +71,6 @@ impl<R: Runtime, T: Manager<R>> crate::NfcExt<R> for T {
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("nfc")
-        .js_init_script(include_str!("api-iife.js").to_string())
         .setup(|app, api| {
             #[cfg(target_os = "android")]
             let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "NfcPlugin")?;

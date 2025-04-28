@@ -2,11 +2,54 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{fs::create_dir_all, path::Path};
+use std::{
+    fs::create_dir_all,
+    path::{Path, PathBuf},
+};
+
+use tauri_utils::acl::manifest::PermissionFile;
 
 #[path = "src/scope.rs"]
 #[allow(dead_code)]
 mod scope;
+
+/// FS scope entry.
+#[derive(schemars::JsonSchema)]
+#[serde(untagged)]
+#[allow(unused)]
+enum FsScopeEntry {
+    /// A path that can be accessed by the webview when using the fs APIs.
+    /// FS scope path pattern.
+    ///
+    /// The pattern can start with a variable that resolves to a system base directory.
+    /// The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`,
+    /// `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`,
+    /// `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$APP`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`,
+    /// `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.
+    Value(PathBuf),
+    Object {
+        /// A path that can be accessed by the webview when using the fs APIs.
+        ///
+        /// The pattern can start with a variable that resolves to a system base directory.
+        /// The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`,
+        /// `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`,
+        /// `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$APP`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`,
+        /// `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.
+        path: PathBuf,
+    },
+}
+
+// Ensure `FsScopeEntry` and `scope::EntryRaw` is kept in sync
+fn _f() {
+    match scope::EntryRaw::Value(PathBuf::new()) {
+        scope::EntryRaw::Value(path) => FsScopeEntry::Value(path),
+        scope::EntryRaw::Object { path } => FsScopeEntry::Object { path },
+    };
+    match FsScopeEntry::Value(PathBuf::new()) {
+        FsScopeEntry::Value(path) => scope::EntryRaw::Value(path),
+        FsScopeEntry::Object { path } => scope::EntryRaw::Object { path },
+    };
+}
 
 const BASE_DIR_VARS: &[&str] = &[
     "AUDIO",
@@ -26,7 +69,6 @@ const BASE_DIR_VARS: &[&str] = &[
     "TEMPLATE",
     "VIDEO",
     "RESOURCE",
-    "APP",
     "LOG",
     "TEMP",
     "APPCONFIG",
@@ -35,31 +77,33 @@ const BASE_DIR_VARS: &[&str] = &[
     "APPCACHE",
     "APPLOG",
 ];
-const COMMANDS: &[&str] = &[
-    "mkdir",
-    "create",
-    "copy_file",
-    "remove",
-    "rename",
-    "truncate",
-    "ftruncate",
-    "write",
-    "write_file",
-    "write_text_file",
-    "read_dir",
-    "read_file",
-    "read",
-    "open",
-    "read_text_file",
-    "read_text_file_lines",
-    "read_text_file_lines_next",
-    "seek",
-    "stat",
-    "lstat",
-    "fstat",
-    "exists",
-    "watch",
-    "unwatch",
+const COMMANDS: &[(&str, &[&str])] = &[
+    ("mkdir", &[]),
+    ("create", &[]),
+    ("copy_file", &[]),
+    ("remove", &[]),
+    ("rename", &[]),
+    ("truncate", &[]),
+    ("ftruncate", &[]),
+    ("write", &[]),
+    ("write_file", &["open", "write"]),
+    ("write_text_file", &[]),
+    ("read_dir", &[]),
+    ("read_file", &[]),
+    ("read", &[]),
+    ("open", &[]),
+    ("read_text_file", &[]),
+    ("read_text_file_lines", &["read_text_file_lines_next"]),
+    ("read_text_file_lines_next", &[]),
+    ("seek", &[]),
+    ("stat", &[]),
+    ("lstat", &[]),
+    ("fstat", &[]),
+    ("exists", &[]),
+    ("watch", &[]),
+    // TODO: Remove this in v3
+    ("unwatch", &[]),
+    ("size", &[]),
 ];
 
 fn main() {
@@ -83,15 +127,19 @@ fn main() {
 
 [[permission]]
 identifier = "scope-{lower}-recursive"
-description = "This scope recursive access to the complete `${upper}` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `${upper}` folder, including sub directories and files."
 
+[[permission.scope.allow]]
+path = "${upper}"
 [[permission.scope.allow]]
 path = "${upper}/**"
 
 [[permission]]
 identifier = "scope-{lower}"
-description = "This scope permits access to all files and list content of top level directories in the `${upper}`folder."
+description = "This scope permits access to all files and list content of top level directories in the `${upper}` folder."
 
+[[permission.scope.allow]]
+path = "${upper}"
 [[permission.scope.allow]]
 path = "${upper}/*"
 
@@ -100,7 +148,7 @@ identifier = "scope-{lower}-index"
 description = "This scope permits to list all files and folders in the `${upper}`folder."
 
 [[permission.scope.allow]]
-path = "${upper}/"
+path = "${upper}"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands
@@ -115,7 +163,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-{lower}-write-recursive"
-description = "This allows full recusrive write access to the complete `${upper}` folder, files and subdirectories."
+description = "This allows full recursive write access to the complete `${upper}` folder, files and subdirectories."
 permissions = [
     "write-all",
     "scope-{lower}-recursive"
@@ -139,7 +187,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-{lower}-meta-recursive"
-description = "This allows read access to metadata of the `${upper}` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `${upper}` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-{lower}-recursive"
@@ -147,18 +195,73 @@ permissions = [
 
 [[set]]
 identifier = "allow-{lower}-meta"
-description = "This allows read access to metadata of the `${upper}` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `${upper}` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-{lower}-index"
 ]"###
         );
 
-        std::fs::write(base_dirs.join(format!("{lower}.toml")), toml)
-            .unwrap_or_else(|e| panic!("unable to autogenerate ${upper}: {e}"));
+        let permission_path = base_dirs.join(format!("{lower}.toml"));
+        if toml != std::fs::read_to_string(&permission_path).unwrap_or_default() {
+            std::fs::write(permission_path, toml)
+                .unwrap_or_else(|e| panic!("unable to autogenerate ${lower}: {e}"));
+        }
     }
 
-    tauri_plugin::Builder::new(COMMANDS)
-        .global_scope_schema(schemars::schema_for!(scope::Entry))
-        .build();
+    tauri_plugin::Builder::new(
+        &COMMANDS
+            .iter()
+            // FIXME: https://docs.rs/crate/tauri-plugin-fs/2.1.0/builds/1571296
+            .filter(|c| c.1.is_empty())
+            .map(|c| c.0)
+            .collect::<Vec<_>>(),
+    )
+    .global_api_script_path("./api-iife.js")
+    .global_scope_schema(schemars::schema_for!(FsScopeEntry))
+    .android_path("android")
+    .build();
+
+    // workaround to include nested permissions as `tauri_plugin` doesn't support it
+    let permissions_dir = autogenerated.join("commands");
+    for (command, nested_commands) in COMMANDS {
+        if nested_commands.is_empty() {
+            continue;
+        }
+
+        let permission_path = permissions_dir.join(format!("{command}.toml"));
+
+        let content = std::fs::read_to_string(&permission_path)
+            .unwrap_or_else(|_| panic!("failed to read {command}.toml"));
+
+        let mut permission_file = toml::from_str::<PermissionFile>(&content)
+            .unwrap_or_else(|_| panic!("failed to deserialize {command}.toml"));
+
+        for p in permission_file
+            .permission
+            .iter_mut()
+            .filter(|p| p.identifier.starts_with("allow"))
+        {
+            for c in nested_commands.iter().map(|s| s.to_string()) {
+                if !p.commands.allow.contains(&c) {
+                    p.commands.allow.push(c);
+                }
+            }
+        }
+
+        let out = toml::to_string_pretty(&permission_file)
+            .unwrap_or_else(|_| panic!("failed to serialize {command}.toml"));
+        let out = format!(
+            r#"# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+{out}"#
+        );
+
+        if content != out {
+            std::fs::write(permission_path, out)
+                .unwrap_or_else(|_| panic!("failed to write {command}.toml"));
+        }
+    }
 }

@@ -141,7 +141,6 @@ sealed class ScanKind {
                 addDataFilters(intentFilter, uri, mimeType)
                 arrayOf(intentFilter)
             }
-            else -> null
         }
     }
 
@@ -163,7 +162,6 @@ sealed class ScanKind {
                     null
                 }
             }
-            else -> null
         }
     }
 }

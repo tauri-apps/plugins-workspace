@@ -2,9 +2,17 @@
 
 Access the file system.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | ✓         |
+| iOS      | ✓         |
+
 ## Install
 
-_This plugin requires a Rust version of at least **1.75**_
+_This plugin requires a Rust version of at least **1.77.2**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,7 +26,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-fs = "2.0.0-beta"
+tauri-plugin-fs = "2.0.0"
 # alternatively with Git:
 tauri-plugin-fs = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -46,7 +54,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-fs#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {
@@ -60,9 +68,9 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { metadata } from "@tauri-apps/plugin-fs";
+import { stat } from '@tauri-apps/plugin-fs'
 
-await metadata("/path/to/file");
+await stat('/path/to/file')
 ```
 
 ## Contributing

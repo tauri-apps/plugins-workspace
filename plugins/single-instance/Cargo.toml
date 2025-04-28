@@ -1,26 +1,36 @@
 [package]
 name = "tauri-plugin-single-instance"
-version = "2.0.0-beta.2"
+version = "2.2.3"
 description = "Ensure a single instance of your tauri app is running."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
-exclude = [ "/examples" ]
+repository = { workspace = true }
+exclude = ["/examples"]
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[package.metadata.platforms.support]
+windows = { level = "full", notes = "" }
+linux = { level = "full", notes = "" }
+macos = { level = "full", notes = "" }
+android = { level = "none", notes = "" }
+ios = { level = "none", notes = "" }
 
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 thiserror = { workspace = true }
+tauri-plugin-deep-link = { path = "../deep-link", version = "2.2.1", optional = true }
+semver = { version = "1", optional = true }
 
 [target."cfg(target_os = \"windows\")".dependencies.windows-sys]
-version = "0.52"
+version = "0.59"
 features = [
   "Win32_System_Threading",
   "Win32_System_DataExchange",
@@ -28,8 +38,12 @@ features = [
   "Win32_UI_WindowsAndMessaging",
   "Win32_Security",
   "Win32_System_LibraryLoader",
-  "Win32_Graphics_Gdi"
+  "Win32_Graphics_Gdi",
 ]
 
 [target."cfg(target_os = \"linux\")".dependencies]
-zbus = "4"
+zbus = { workspace = true }
+
+[features]
+semver = ["dep:semver"]
+deep-link = ["dep:tauri-plugin-deep-link"]

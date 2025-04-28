@@ -8,43 +8,49 @@
  * @module
  */
 
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from '@tauri-apps/api/core'
 
 /** @ignore */
 declare global {
   interface Window {
     __TAURI_OS_PLUGIN_INTERNALS__: {
-      eol: string;
-    };
+      eol: string
+      os_type: OsType
+      platform: Platform
+      family: Family
+      version: string
+      arch: Arch
+      exe_extension: string
+    }
   }
 }
 
 type Platform =
-  | "linux"
-  | "macos"
-  | "ios"
-  | "freebsd"
-  | "dragonfly"
-  | "netbsd"
-  | "openbsd"
-  | "solaris"
-  | "android"
-  | "windows";
+  | 'linux'
+  | 'macos'
+  | 'ios'
+  | 'freebsd'
+  | 'dragonfly'
+  | 'netbsd'
+  | 'openbsd'
+  | 'solaris'
+  | 'android'
+  | 'windows'
 
-type OsType = "linux" | "windows" | "macos" | "ios" | "android";
+type OsType = 'linux' | 'windows' | 'macos' | 'ios' | 'android'
 
 type Arch =
-  | "x86"
-  | "x86_64"
-  | "arm"
-  | "aarch64"
-  | "mips"
-  | "mips64"
-  | "powerpc"
-  | "powerpc64"
-  | "riscv64"
-  | "s390x"
-  | "sparc64";
+  | 'x86'
+  | 'x86_64'
+  | 'arm'
+  | 'aarch64'
+  | 'mips'
+  | 'mips64'
+  | 'powerpc'
+  | 'powerpc64'
+  | 'riscv64'
+  | 's390x'
+  | 'sparc64'
 
 /**
  * Returns the operating system-specific end-of-line marker.
@@ -53,8 +59,8 @@ type Arch =
  *
  * @since 2.0.0
  * */
-function eol() {
-  return window.__TAURI_OS_PLUGIN_INTERNALS__.eol;
+function eol(): string {
+  return window.__TAURI_OS_PLUGIN_INTERNALS__.eol
 }
 
 /**
@@ -64,14 +70,14 @@ function eol() {
  * @example
  * ```typescript
  * import { platform } from '@tauri-apps/plugin-os';
- * const platformName = await platform();
+ * const platformName = platform();
  * ```
  *
  * @since 2.0.0
  *
  */
-async function platform(): Promise<Platform> {
-  return invoke("plugin:os|platform");
+function platform(): Platform {
+  return window.__TAURI_OS_PLUGIN_INTERNALS__.platform
 }
 
 /**
@@ -79,29 +85,29 @@ async function platform(): Promise<Platform> {
  * @example
  * ```typescript
  * import { version } from '@tauri-apps/plugin-os';
- * const osVersion = await version();
+ * const osVersion = version();
  * ```
  *
  * @since 2.0.0
  */
-async function version(): Promise<string> {
-  return invoke("plugin:os|version");
+function version(): string {
+  return window.__TAURI_OS_PLUGIN_INTERNALS__.version
 }
 
-type Family = "unix" | "windows";
+type Family = 'unix' | 'windows'
 
 /**
  * Returns the current operating system family. Possible values are `'unix'`, `'windows'`.
  * @example
  * ```typescript
  * import { family } from '@tauri-apps/plugin-os';
- * const family = await family();
+ * const family = family();
  * ```
  *
  * @since 2.0.0
  */
-async function family(): Promise<Family> {
-  return invoke("plugin:os|family");
+function family(): Family {
+  return window.__TAURI_OS_PLUGIN_INTERNALS__.family
 }
 
 /**
@@ -109,13 +115,13 @@ async function family(): Promise<Family> {
  * @example
  * ```typescript
  * import { type } from '@tauri-apps/plugin-os';
- * const osType = await type();
+ * const osType = type();
  * ```
  *
  * @since 2.0.0
  */
-async function type(): Promise<OsType> {
-  return invoke("plugin:os|os_type");
+function type(): OsType {
+  return window.__TAURI_OS_PLUGIN_INTERNALS__.os_type
 }
 
 /**
@@ -124,13 +130,27 @@ async function type(): Promise<OsType> {
  * @example
  * ```typescript
  * import { arch } from '@tauri-apps/plugin-os';
- * const archName = await arch();
+ * const archName = arch();
  * ```
  *
  * @since 2.0.0
  */
-async function arch(): Promise<Arch> {
-  return invoke("plugin:os|arch");
+function arch(): Arch {
+  return window.__TAURI_OS_PLUGIN_INTERNALS__.arch
+}
+
+/**
+ * Returns the file extension, if any, used for executable binaries on this platform. Possible values are `'exe'` and `''` (empty string).
+ * @example
+ * ```typescript
+ * import { exeExtension } from '@tauri-apps/plugin-os';
+ * const exeExt = exeExtension();
+ * ```
+ *
+ * @since 2.0.0
+ */
+function exeExtension(): string {
+  return window.__TAURI_OS_PLUGIN_INTERNALS__.exe_extension
 }
 
 /**
@@ -147,21 +167,7 @@ async function arch(): Promise<Arch> {
  * @since 2.0.0
  */
 async function locale(): Promise<string | null> {
-  return invoke("plugin:os|locale");
-}
-
-/**
- * Returns the file extension, if any, used for executable binaries on this platform. Possible values are `'exe'` and `''` (empty string).
- * @example
- * ```typescript
- * import { exeExtension } from '@tauri-apps/plugin-os';
- * const exeExt = await exeExtension();
- * ```
- *
- * @since 2.0.0
- */
-async function exeExtension(): Promise<string | null> {
-  return invoke("plugin:os|exe_extension");
+  return await invoke('plugin:os|locale')
 }
 
 /**
@@ -173,7 +179,7 @@ async function exeExtension(): Promise<string | null> {
  * ```
  */
 async function hostname(): Promise<string | null> {
-  return invoke("plugin:os|hostname");
+  return await invoke('plugin:os|hostname')
 }
 
 export {
@@ -185,6 +191,6 @@ export {
   arch,
   locale,
   exeExtension,
-  hostname,
-};
-export type { Platform, OsType, Arch, Family };
+  hostname
+}
+export type { Platform, OsType, Arch, Family }

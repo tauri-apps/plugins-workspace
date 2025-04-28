@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-spawn"
+description = "Enables the spawn command without any pre-configured scope."
+commands.allow = ["spawn"]
+
+[[permission]]
+identifier = "deny-spawn"
+description = "Denies the spawn command without any pre-configured scope."
+commands.deny = ["spawn"]

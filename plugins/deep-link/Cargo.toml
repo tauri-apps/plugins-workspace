@@ -1,27 +1,45 @@
 [package]
 name = "tauri-plugin-deep-link"
-version = "2.0.0-beta.1"
+version = "2.2.1"
 description = "Set your Tauri application as the default handler for an URL"
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-deep-link"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
-targets = [ "x86_64-linux-android" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+targets = ["x86_64-linux-android"]
+
+[package.metadata.platforms.support]
+windows = { level = "full", notes = "" }
+linux = { level = "full", notes = "" }
+macos = { level = "partial", notes = "Runtime deep link registration is not supported" }
+android = { level = "partial", notes = "Runtime deep link registration is not supported" }
+ios = { level = "partial", notes = "Runtime deep link registration is not supported" }
 
 [build-dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-utils = { workspace = true }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
-log = { workspace = true }
+tauri-utils = { workspace = true }
+tracing = { workspace = true }
 thiserror = { workspace = true }
 url = { workspace = true }
+
+[target."cfg(windows)".dependencies]
+dunce = "1"
+windows-registry = "0.5"
+windows-result = "0.3"
+
+[target."cfg(target_os = \"linux\")".dependencies]
+rust-ini = "0.21"

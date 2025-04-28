@@ -1,17 +1,29 @@
 [package]
-name = "tauri-plugin-{{name}}"
+name = "tauri-plugin-PLUGIN_NAME"
 version = "1.0.0"
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
-links = "tauri-plugin-{{name}}"
+repository = { workspace = true }
+links = "tauri-plugin-PLUGIN_NAME"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+# Platforms supported by the plugin
+# Support levels are "full", "partial", "none", "unknown"
+# Details of the support level are left to plugin maintainer
+[package.metadata.platforms]
+windows = { level = "unknown", notes = "" }
+linux = { level = "unknown", notes = "" }
+macos = { level = "unknown", notes = "" }
+android = { level = "unknown", notes = "" }
+ios = { level = "unknown", notes = "" }
+
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

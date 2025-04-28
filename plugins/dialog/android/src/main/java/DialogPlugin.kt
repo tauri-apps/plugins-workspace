@@ -10,6 +10,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.webkit.MimeTypeMap
 import androidx.activity.result.ActivityResult
 import app.tauri.Logger
 import app.tauri.annotation.ActivityCallback
@@ -30,7 +31,6 @@ class Filter {
 class FilePickerOptions {
   lateinit var filters: Array<Filter>
   var multiple: Boolean? = null
-  var readData: Boolean? = null
 }
 
 @InvokeArg
@@ -39,6 +39,12 @@ class MessageOptions {
   lateinit var message: String
   var okButtonLabel: String? = null
   var cancelButtonLabel: String? = null
+}
+
+@InvokeArg
+class SaveFileDialogOptions {
+  var fileName: String? = null
+  lateinit var filters: Array<Filter>
 }
 
 @TauriPlugin
@@ -53,20 +59,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
       
       val intent = if (parsedTypes.isNotEmpty()) {
         val intent = Intent(Intent.ACTION_PICK)
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, parsedTypes)
-        
-        var uniqueMimeType = true
-        var mimeKind: String? = null
-        for (mime in parsedTypes) {
-          val kind = mime.split("/")[0]
-          if (mimeKind == null) {
-            mimeKind = kind
-          } else if (mimeKind != kind) {
-            uniqueMimeType = false
-          }
-        }
-        
-        intent.type = if (uniqueMimeType) Intent.normalizeMimeType("$mimeKind/*") else "*/*"
+        setIntentMimeTypes(intent, parsedTypes)
         intent
       } else {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
@@ -90,7 +83,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     try {
       when (result.resultCode) {
         Activity.RESULT_OK -> {
-          val callResult = createPickFilesResult(result.data, filePickerOptions?.readData ?: false)
+          val callResult = createPickFilesResult(result.data)
           invoke.resolve(callResult)
         }
         Activity.RESULT_CANCELED -> invoke.reject("File picker cancelled")
@@ -103,60 +96,68 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     }
   }
 
-  private fun createPickFilesResult(data: Intent?, readData: Boolean): JSObject {
+  private fun createPickFilesResult(data: Intent?): JSObject {
     val callResult = JSObject()
-    val filesResultList: MutableList<JSObject> = ArrayList()
     if (data == null) {
-      callResult.put("files", JSArray.from(filesResultList))
+      callResult.put("files", null)
       return callResult
     }
-    val uris: MutableList<Uri?> = ArrayList()
+    val uris: MutableList<String?> = ArrayList()
     if (data.clipData == null) {
       val uri: Uri? = data.data
-      uris.add(uri)
+      uris.add(uri?.toString())
     } else {
       for (i in 0 until data.clipData!!.itemCount) {
         val uri: Uri = data.clipData!!.getItemAt(i).uri
-        uris.add(uri)
+        uris.add(uri.toString())
       }
     }
-    for (i in uris.indices) {
-      val uri = uris[i] ?: continue
-      val fileResult = JSObject()
-      if (readData) {
-        fileResult.put("base64Data", FilePickerUtils.getDataFromUri(activity, uri))
-      }
-      val duration = FilePickerUtils.getDurationFromUri(activity, uri)
-      if (duration != null) {
-        fileResult.put("duration", duration)
-      }
-      val resolution = FilePickerUtils.getHeightAndWidthFromUri(activity, uri)
-      if (resolution != null) {
-        fileResult.put("height", resolution.height)
-        fileResult.put("width", resolution.width)
-      }
-      fileResult.put("mimeType", FilePickerUtils.getMimeTypeFromUri(activity, uri))
-      val modifiedAt = FilePickerUtils.getModifiedAtFromUri(activity, uri)
-      if (modifiedAt != null) {
-        fileResult.put("modifiedAt", modifiedAt)
-      }
-      fileResult.put("name", FilePickerUtils.getNameFromUri(activity, uri))
-      fileResult.put("path", FilePickerUtils.getPathFromUri(uri))
-      fileResult.put("size", FilePickerUtils.getSizeFromUri(activity, uri))
-      filesResultList.add(fileResult)
-    }
-    callResult.put("files", JSArray.from(filesResultList.toTypedArray()))
+    callResult.put("files", JSArray.from(uris.toTypedArray()))
     return callResult
   }
   
   private fun parseFiltersOption(filters: Array<Filter>): Array<String> {
     val mimeTypes = mutableListOf<String>()
     for (filter in filters) {
-      for (mime in filter.extensions) {
-        mimeTypes.add(if (mime == "text/csv") "text/comma-separated-values" else mime)
+      for (ext in filter.extensions) {
+        if (ext.contains('/')) {
+          mimeTypes.add(if (ext == "text/csv") "text/comma-separated-values" else ext)
+        } else {
+          MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)?.let {
+            mimeTypes.add(it)
+          }
+        }
       }
     }
     return mimeTypes.toTypedArray()
+  }
+
+  private fun setIntentMimeTypes(intent: Intent, mimeTypes: Array<String>) {
+    if (mimeTypes.isNotEmpty()) {
+      var uniqueMimeKind = true
+      var mimeKind: String? = null
+      for (mime in mimeTypes) {
+        val kind = mime.split("/")[0]
+        if (mimeKind == null) {
+          mimeKind = kind
+        } else if (mimeKind != kind) {
+          uniqueMimeKind = false
+        }
+      }
+
+      if (uniqueMimeKind) {
+        if (mimeTypes.size > 1) {
+          intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
+          intent.type = Intent.normalizeMimeType("$mimeKind/*")
+        } else {
+          intent.type = mimeTypes[0]
+        }
+      } else {
+        intent.type = "*/*"
+      }
+    } else {
+      intent.type = "*/*"
+    }
   }
   
   @Command
@@ -203,5 +204,49 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
         val dialog = builder.create()
         dialog.show()
       }
+  }
+
+  @Command
+  fun saveFileDialog(invoke: Invoke) {
+    try {
+      val args = invoke.parseArgs(SaveFileDialogOptions::class.java)
+      val parsedTypes = parseFiltersOption(args.filters)
+
+      val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+      setIntentMimeTypes(intent, parsedTypes)
+
+      intent.addCategory(Intent.CATEGORY_OPENABLE)
+      intent.putExtra(Intent.EXTRA_TITLE, args.fileName ?: "")
+      startActivityForResult(invoke, intent, "saveFileDialogResult")
+    } catch (ex: Exception) {
+      val message = ex.message ?: "Failed to pick save file"
+      Logger.error(message)
+      invoke.reject(message)
+    }
+  }
+
+  @ActivityCallback
+  fun saveFileDialogResult(invoke: Invoke, result: ActivityResult) {
+    try {
+      when (result.resultCode) {
+        Activity.RESULT_OK -> {
+          val callResult = JSObject()
+          val intent: Intent? = result.data
+          if (intent != null) {
+            val uri = intent.data
+            if (uri != null) {
+              callResult.put("file", uri.toString())
+            }
+          }
+          invoke.resolve(callResult)
+        }
+        Activity.RESULT_CANCELED -> invoke.reject("File picker cancelled")
+        else -> invoke.reject("Failed to pick files")
+      }
+    } catch (ex: java.lang.Exception) {
+      val message = ex.message ?: "Failed to read file pick result"
+      Logger.error(message)
+      invoke.reject(message)
+    }
   }
 }

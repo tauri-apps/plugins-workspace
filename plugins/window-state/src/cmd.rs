@@ -26,9 +26,12 @@ pub async fn restore_state<R: Runtime>(
         .ok_or_else(|| format!("Invalid state flags bits: {}", flags))?;
     app.get_webview_window(&label)
         .ok_or_else(|| format!("Couldn't find window with label: {}", label))?
-        .as_ref()
-        .window()
         .restore_state(flags)
         .map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[command]
+pub fn filename<R: Runtime>(app: AppHandle<R>) -> String {
+    app.filename()
 }

@@ -23,11 +23,7 @@
 
   async function prompt() {
     confirm("Do you want to do something?")
-      .then((res) =>
-        onMessage(
-          res ? "Yes" : "No"
-        )
-      )
+      .then((res) => onMessage(res ? "Yes" : "No"))
       .catch(onMessage);
   }
 
@@ -67,14 +63,15 @@
         if (Array.isArray(res)) {
           onMessage(res);
         } else {
-          var pathToRead = typeof res === "string" ? res : res.path;
+          var pathToRead = res;
           var isFile = pathToRead.match(/\S+\.\S+$/g);
           readFile(pathToRead)
             .then(function (response) {
               if (isFile) {
                 if (
                   pathToRead.includes(".png") ||
-                  pathToRead.includes(".jpg")
+                  pathToRead.includes(".jpg") ||
+                  pathToRead.includes(".jpeg")
                 ) {
                   arrayBufferToBase64(
                     new Uint8Array(response),
@@ -144,5 +141,7 @@
   >Open save dialog</button
 >
 <button class="btn" id="prompt-dialog" on:click={prompt}>Prompt</button>
-<button class="btn" id="custom-prompt-dialog" on:click={promptCustom}>Prompt (custom)</button>
+<button class="btn" id="custom-prompt-dialog" on:click={promptCustom}
+  >Prompt (custom)</button
+>
 <button class="btn" id="message-dialog" on:click={msg}>Message</button>

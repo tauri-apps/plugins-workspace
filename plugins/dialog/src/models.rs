@@ -49,3 +49,20 @@ impl Serialize for MessageDialogKind {
         }
     }
 }
+
+/// Set of button that will be displayed on the dialog
+#[non_exhaustive]
+#[derive(Debug, Default, Clone)]
+pub enum MessageDialogButtons {
+    #[default]
+    /// A single `Ok` button with OS default dialog text
+    Ok,
+    /// 2 buttons `Ok` and `Cancel` with OS default dialog texts
+    OkCancel,
+    /// 2 buttons `Yes` and `No` with OS default dialog texts
+    YesNo,
+    /// A single `Ok` button with custom text
+    OkCustom(String),
+    /// 2 buttons `Ok` and `Cancel` with custom texts
+    OkCancelCustom(String, String),
+}

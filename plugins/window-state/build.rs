@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-const COMMANDS: &[&str] = &["save_window_state", "restore_window_state"];
+const COMMANDS: &[&str] = &["save_window_state", "restore_state", "filename"];
 
 fn main() {
-    tauri_plugin::Builder::new(COMMANDS).build();
+    tauri_plugin::Builder::new(COMMANDS)
+        .global_api_script_path("./api-iife.js")
+        .build();
 }

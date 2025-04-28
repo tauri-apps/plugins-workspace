@@ -16,7 +16,7 @@ enum ReadClipData: Codable {
 }
 
 class ClipboardPlugin: Plugin {
-  @objc public func write(_ invoke: Invoke) throws {
+  @objc public func writeText(_ invoke: Invoke) throws {
     let options = try invoke.parseArgs(WriteOptions.self)
     let clipboard = UIPasteboard.general
     switch options {
@@ -30,7 +30,7 @@ class ClipboardPlugin: Plugin {
 
   }
 
-  @objc public func read(_ invoke: Invoke) throws {
+  @objc public func readText(_ invoke: Invoke) throws {
     let clipboard = UIPasteboard.general
     if let text = clipboard.string {
       invoke.resolve(ReadClipData.plainText(text: text))
@@ -38,6 +38,12 @@ class ClipboardPlugin: Plugin {
       invoke.reject("Clipboard is empty")
     }
   }
+    
+  @objc public func clear(_ invoke: Invoke) throws {
+      let clipboard = UIPasteboard.general
+      clipboard.items = []
+      invoke.resolve()
+    }
 }
 
 @_cdecl("init_plugin_clipboard")

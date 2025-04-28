@@ -25,8 +25,8 @@ class BiometricStatus {
 struct AuthOptions: Decodable {
   let reason: String
   var allowDeviceCredential: Bool?
-  let fallbackTitle: String?
-  let cancelTitle: String?
+  var fallbackTitle: String?
+  var cancelTitle: String?
 }
 
 class BiometricPlugin: Plugin {
@@ -98,7 +98,12 @@ class BiometricPlugin: Plugin {
   }
 
   @objc func authenticate(_ invoke: Invoke) throws {
-    guard self.status.available else {
+    let args = try invoke.parseArgs(AuthOptions.self)
+
+    let allowDeviceCredential = args.allowDeviceCredential ?? false
+
+    guard self.status.available || allowDeviceCredential else {
+      // Biometry unavailable, fallback disabled
       invoke.reject(
         self.status.errorReason ?? "",
         code: self.status.errorCode ?? ""
@@ -106,14 +111,10 @@ class BiometricPlugin: Plugin {
       return
     }
 
-    let args = try invoke.parseArgs(AuthOptions.self)
-
     let context = LAContext()
     context.localizedFallbackTitle = args.fallbackTitle
     context.localizedCancelTitle = args.cancelTitle
     context.touchIDAuthenticationAllowableReuseDuration = 0
-
-    let allowDeviceCredential = args.allowDeviceCredential ?? false
 
     // force system default fallback title if an empty string is provided (the OS hides the fallback button in this case)
     if allowDeviceCredential,

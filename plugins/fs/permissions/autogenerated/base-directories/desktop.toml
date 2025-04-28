@@ -7,15 +7,19 @@
 
 [[permission]]
 identifier = "scope-desktop-recursive"
-description = "This scope recursive access to the complete `$DESKTOP` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$DESKTOP` folder, including sub directories and files."
 
+[[permission.scope.allow]]
+path = "$DESKTOP"
 [[permission.scope.allow]]
 path = "$DESKTOP/**"
 
 [[permission]]
 identifier = "scope-desktop"
-description = "This scope permits access to all files and list content of top level directories in the `$DESKTOP`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$DESKTOP` folder."
 
+[[permission.scope.allow]]
+path = "$DESKTOP"
 [[permission.scope.allow]]
 path = "$DESKTOP/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-desktop-index"
 description = "This scope permits to list all files and folders in the `$DESKTOP`folder."
 
 [[permission.scope.allow]]
-path = "$DESKTOP/"
+path = "$DESKTOP"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands
@@ -39,7 +43,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-desktop-write-recursive"
-description = "This allows full recusrive write access to the complete `$DESKTOP` folder, files and subdirectories."
+description = "This allows full recursive write access to the complete `$DESKTOP` folder, files and subdirectories."
 permissions = [
     "write-all",
     "scope-desktop-recursive"
@@ -63,7 +67,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-desktop-meta-recursive"
-description = "This allows read access to metadata of the `$DESKTOP` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$DESKTOP` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-desktop-recursive"
@@ -71,7 +75,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-desktop-meta"
-description = "This allows read access to metadata of the `$DESKTOP` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$DESKTOP` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-desktop-index"

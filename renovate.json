@@ -1,7 +1,8 @@
 {
-  "extends": ["config:base"],
+  "extends": ["config:recommended"],
+  "baseBranches": ["v2", "v1"],
   "enabledManagers": ["cargo", "npm"],
-  "semanticCommitType": "chore",
+  "labels": ["dependencies"],
   "ignorePaths": [
     "**/node_modules/**",
     "**/bower_components/**",
@@ -9,9 +10,15 @@
     "**/__tests__/**",
     "**/test/**",
     "**/tests/**",
-    "**/__fixtures__/**"
+    "**/__fixtures__/**",
+    "shared/**"
   ],
+  "rangeStrategy": "replace",
   "packageRules": [
+    {
+      "semanticCommitType": "chore",
+      "matchPackageNames": ["*"]
+    },
     {
       "description": "Disable node/pnpm version updates",
       "matchPackageNames": ["node", "pnpm"],

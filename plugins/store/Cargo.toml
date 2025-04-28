@@ -1,23 +1,39 @@
 [package]
 name = "tauri-plugin-store"
-version = "2.0.0-beta.1"
+version = "2.2.0"
 description = "Simple, persistent key-value store."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-store"
 
 [package.metadata.docs.rs]
-rustc-args = [ "--cfg", "docsrs" ]
-rustdoc-args = [ "--cfg", "docsrs" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[package.metadata.platforms.support]
+windows = { level = "full", notes = "" }
+linux = { level = "full", notes = "" }
+macos = { level = "full", notes = "" }
+android = { level = "full", notes = "" }
+ios = { level = "full", notes = "" }
 
 [build-dependencies]
-tauri-plugin = { workspace = true, features = [ "build" ] }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 thiserror = { workspace = true }
+dunce = { workspace = true }
+tokio = { version = "1", features = ["sync", "time", "macros"] }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+tauri = { workspace = true, features = ["wry"] }
+
+[dev-dependencies]
+tauri = { workspace = true, features = ["wry"] }

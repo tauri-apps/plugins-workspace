@@ -2,11 +2,17 @@
 
 Register global shortcuts.
 
-- Supported platforms: Windows, Linux and macOS.
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | x         |
+| iOS      | x         |
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.75**_
+_This plugin requires a Rust version of at least **1.77.2**_
 
 There are three general methods of installation that we can recommend.
 
@@ -21,7 +27,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 # you can add the dependencies on the `[dependencies]` section if you do not target mobile
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
-tauri-plugin-global-shortcut = "2.0.0-beta"
+tauri-plugin-global-shortcut = "2.0.0"
 # alternatively with Git:
 tauri-plugin-global-shortcut = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -49,7 +55,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-global-shortcut#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {
@@ -57,20 +63,24 @@ fn main() {
         .setup(|app| {
             #[cfg(desktop)]
             {
-                use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
+                use tauri::Manager;
+                use tauri_plugin_global_shortcut::{Code, Modifiers, ShortcutState};
 
-                let ctrl_n_shortcut = Shortcut::new(Some(Modifiers::CONTROL), Code::KeyN);
                 app.handle().plugin(
-                    tauri_plugin_global_shortcut::Builder::with_handler(move |_app, shortcut| {
-                        println!("{:?}", shortcut);
-                        if shortcut == &ctrl_n_shortcut {
-                            println!("Ctrl-N Detected!");
-                        }
-                    })
-                    .build(),
+                    tauri_plugin_global_shortcut::Builder::new()
+                        .with_shortcuts(["ctrl+d", "alt+space"])?
+                        .with_handler(|app, shortcut, event| {
+                            if event.state == ShortcutState::Pressed  {
+                                if shortcut.matches(Modifiers::CONTROL, Code::KeyD) {
+                                    let _ = app.emit("shortcut-event", "Ctrl+D triggered");
+                                }
+                                if shortcut.matches(Modifiers::ALT, Code::Space) {
+                                    let _ = app.emit("shortcut-event", "Alt+Space triggered");
+                                }
+                            }
+                        })
+                        .build(),
                 )?;
-
-                app.global_shortcut().register(ctrl_n_shortcut)?;
             }
 
             Ok(())
@@ -83,10 +93,12 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript bindings:
 
 ```javascript
-import { register } from "@tauri-apps/plugin-global-shortcut";
-await register("CommandOrControl+Shift+C", () => {
-  console.log("Shortcut triggered");
-});
+import { register } from '@tauri-apps/plugin-global-shortcut'
+await register('CommandOrControl+Shift+C', (event) => {
+  if (event.state === 'Pressed') {
+    console.log('Shortcut triggered')
+  }
+})
 ```
 
 ## Contributing

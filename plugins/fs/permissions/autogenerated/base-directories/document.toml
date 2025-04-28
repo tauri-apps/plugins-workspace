@@ -7,15 +7,19 @@
 
 [[permission]]
 identifier = "scope-document-recursive"
-description = "This scope recursive access to the complete `$DOCUMENT` folder, including sub directories and files."
+description = "This scope permits recursive access to the complete `$DOCUMENT` folder, including sub directories and files."
 
+[[permission.scope.allow]]
+path = "$DOCUMENT"
 [[permission.scope.allow]]
 path = "$DOCUMENT/**"
 
 [[permission]]
 identifier = "scope-document"
-description = "This scope permits access to all files and list content of top level directories in the `$DOCUMENT`folder."
+description = "This scope permits access to all files and list content of top level directories in the `$DOCUMENT` folder."
 
+[[permission.scope.allow]]
+path = "$DOCUMENT"
 [[permission.scope.allow]]
 path = "$DOCUMENT/*"
 
@@ -24,7 +28,7 @@ identifier = "scope-document-index"
 description = "This scope permits to list all files and folders in the `$DOCUMENT`folder."
 
 [[permission.scope.allow]]
-path = "$DOCUMENT/"
+path = "$DOCUMENT"
 
 # Sets Section
 # This section combines the scope elements with enablement of commands
@@ -39,7 +43,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-document-write-recursive"
-description = "This allows full recusrive write access to the complete `$DOCUMENT` folder, files and subdirectories."
+description = "This allows full recursive write access to the complete `$DOCUMENT` folder, files and subdirectories."
 permissions = [
     "write-all",
     "scope-document-recursive"
@@ -63,7 +67,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-document-meta-recursive"
-description = "This allows read access to metadata of the `$DOCUMENT` folder, including file listing and statistics."
+description = "This allows full recursive read access to metadata of the `$DOCUMENT` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-document-recursive"
@@ -71,7 +75,7 @@ permissions = [
 
 [[set]]
 identifier = "allow-document-meta"
-description = "This allows read access to metadata of the `$DOCUMENT` folder, including file listing and statistics."
+description = "This allows non-recursive read access to metadata of the `$DOCUMENT` folder, including file listing and statistics."
 permissions = [
     "read-meta",
     "scope-document-index"

@@ -8,9 +8,9 @@ import UIKit
 import WebKit
 
 struct ScanOptions: Decodable {
-  var formats: [SupportedFormat] = []
-  let windowed: Bool?
-  let cameraDirection: String?
+  var formats: [SupportedFormat]?
+  var windowed: Bool?
+  var cameraDirection: String?
 }
 
 enum SupportedFormat: String, CaseIterable, Decodable {
@@ -241,7 +241,7 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
   private func runScanner(_ invoke: Invoke, args: ScanOptions) {
     scanFormats = [AVMetadataObject.ObjectType]()
 
-    args.formats.forEach { format in
+    (args.formats ?? []).forEach { format in
       scanFormats.append(format.value)
     }
 
@@ -261,6 +261,13 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
     let args = try invoke.parseArgs(ScanOptions.self)
 
     self.invoke = invoke
+
+    let entry = Bundle.main.infoDictionary?["NSCameraUsageDescription"] as? String
+
+    if entry == nil || entry?.count == 0 {
+      invoke.reject("NSCameraUsageDescription is not in the app Info.plist")
+      return
+    }
 
     var iOS14min: Bool = false
     if #available(iOS 14.0, *) { iOS14min = true }

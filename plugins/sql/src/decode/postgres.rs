@@ -14,7 +14,7 @@ pub(crate) fn to_json(v: PgValueRef) -> Result<JsonValue, Error> {
     }
 
     let res = match v.type_info().name() {
-        "CHAR" | "VARCHAR" | "TEXT" | "NAME" => {
+        "CHAR" | "VARCHAR" | "TEXT" | "NAME" | "UUID" => {
             if let Ok(v) = ValueRef::to_owned(&v).try_decode() {
                 JsonValue::String(v)
             } else {

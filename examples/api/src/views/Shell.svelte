@@ -59,7 +59,7 @@
   }
 
   function writeToStdin() {
-    child.write(stdin).catch(onMessage);
+    child.write(`${stdin}\n`).catch(onMessage);
   }
 </script>
 

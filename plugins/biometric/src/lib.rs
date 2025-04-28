@@ -45,7 +45,7 @@ impl<R: Runtime> Biometric<R> {
     }
 }
 
-/// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the biometric APIs.
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the biometric APIs.
 pub trait BiometricExt<R: Runtime> {
     fn biometric(&self) -> &Biometric<R>;
 }
@@ -59,7 +59,6 @@ impl<R: Runtime, T: Manager<R>> crate::BiometricExt<R> for T {
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("biometric")
-        .js_init_script(include_str!("api-iife.js").to_string())
         .setup(|app, api| {
             #[cfg(target_os = "android")]
             let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "BiometricPlugin")?;

@@ -2,9 +2,17 @@
 
 Save filesystem and asset scopes and restore them when the app is reopened.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | ✓         |
+| iOS      | ✓         |
+
 ## Install
 
-_This plugin requires a Rust version of at least **1.75**_
+_This plugin requires a Rust version of at least **1.77.2**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,7 +26,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-persisted-scope = "2.0.0-beta"
+tauri-plugin-persisted-scope = "2.0.0"
 # alternatively with Git:
 tauri-plugin-persisted-scope = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -27,7 +35,7 @@ tauri-plugin-persisted-scope = { git = "https://github.com/tauri-apps/plugins-wo
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {

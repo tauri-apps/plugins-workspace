@@ -7,7 +7,10 @@ mod cmd;
 mod tray;
 
 use serde::Serialize;
-use tauri::{webview::WebviewWindowBuilder, App, AppHandle, Manager, RunEvent, WebviewUrl};
+use tauri::{
+    webview::{PageLoadEvent, WebviewWindowBuilder},
+    App, AppHandle, Emitter, Listener, RunEvent, WebviewUrl,
+};
 
 #[derive(Clone, Serialize)]
 struct Reply {
@@ -33,7 +36,9 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_store::Builder::default().build())
         .setup(move |app| {
             #[cfg(desktop)]
             {
@@ -42,6 +47,8 @@ pub fn run() {
                 app.handle()
                     .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
                 app.handle()
+                    .plugin(tauri_plugin_window_state::Builder::new().build())?;
+                app.handle()
                     .plugin(tauri_plugin_updater::Builder::new().build())?;
             }
             #[cfg(mobile)]
@@ -49,6 +56,8 @@ pub fn run() {
                 app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
                 app.handle().plugin(tauri_plugin_nfc::init())?;
                 app.handle().plugin(tauri_plugin_biometric::init())?;
+                app.handle().plugin(tauri_plugin_geolocation::init())?;
+                app.handle().plugin(tauri_plugin_haptics::init())?;
             }
 
             let mut webview_window_builder =
@@ -60,7 +69,7 @@ pub fn run() {
                     .title("Tauri API Validation")
                     .inner_size(1000., 800.)
                     .min_inner_size(600., 400.)
-                    .content_protected(true);
+                    .visible(false);
             }
 
             #[cfg(target_os = "windows")]
@@ -93,9 +102,28 @@ pub fn run() {
                     if let Ok(mut request) = server.recv() {
                         let mut body = Vec::new();
                         let _ = request.as_reader().read_to_end(&mut body);
+                        let mut headers = request.headers().to_vec();
+
+                        if !headers.iter().any(|header| header.field == tiny_http::HeaderField::from_bytes(b"Cookie").unwrap()) {
+                            let expires = time::OffsetDateTime::now_utc() + time::Duration::days(1);
+                            // RFC 1123 format
+                            let format = time::macros::format_description!(
+                                "[weekday repr:short], [day] [month repr:short] [year] [hour]:[minute]:[second] GMT"
+                            );
+                            let expires_str = expires.format(format).unwrap();
+                            headers.push(
+                                tiny_http::Header::from_bytes(
+                                    &b"Set-Cookie"[..],
+                                    format!("session-token=test-value; Secure; Path=/; Expires={expires_str}")
+                                        .as_bytes(),
+                                )
+                                .unwrap(),
+                            );
+                        }
+
                         let response = tiny_http::Response::new(
                             tiny_http::StatusCode(200),
-                            request.headers().to_vec(),
+                            headers,
                             std::io::Cursor::new(body),
                             request.body_length(),
                             None,
@@ -107,18 +135,20 @@ pub fn run() {
 
             Ok(())
         })
-        .on_page_load(|webview, _| {
-            let webview_ = webview.clone();
-            webview.listen("js-event", move |event| {
-                println!("got js-event with message '{:?}'", event.payload());
-                let reply = Reply {
-                    data: "something else".to_string(),
-                };
+        .on_page_load(|webview, payload| {
+            if payload.event() == PageLoadEvent::Finished {
+                let webview_ = webview.clone();
+                webview.listen("js-event", move |event| {
+                    println!("got js-event with message '{:?}'", event.payload());
+                    let reply = Reply {
+                        data: "something else".to_string(),
+                    };
 
-                webview_
-                    .emit("rust-event", Some(reply))
-                    .expect("failed to emit");
-            });
+                    webview_
+                        .emit("rust-event", Some(reply))
+                        .expect("failed to emit");
+                });
+            }
         });
 
     #[cfg(target_os = "macos")]
@@ -132,7 +162,7 @@ pub fn run() {
             cmd::log_operation,
             cmd::perform_request,
         ])
-        .build(tauri::tauri_build_context!())
+        .build(tauri::generate_context!())
         .expect("error while building tauri application");
 
     #[cfg(target_os = "macos")]
@@ -140,10 +170,12 @@ pub fn run() {
 
     app.run(move |_app_handle, _event| {
         #[cfg(desktop)]
-        if let RunEvent::ExitRequested { api, .. } = &_event {
-            // Keep the event loop running even if all windows are closed
-            // This allow us to catch system tray events when there is no window
-            api.prevent_exit();
+        if let RunEvent::ExitRequested { code, api, .. } = &_event {
+            if code.is_none() {
+                // Keep the event loop running even if all windows are closed
+                // This allow us to catch system tray events when there is no window
+                api.prevent_exit();
+            }
         }
     })
 }

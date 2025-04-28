@@ -1,15 +1,15 @@
 <script>
-  import { getCurrent } from "@tauri-apps/api/window";
+  import { getCurrentWebview } from "@tauri-apps/api/webview";
   import { invoke } from "@tauri-apps/api/core";
   import { onMount, onDestroy } from "svelte";
 
-  const appWindow = getCurrent();
+  const webview = getCurrentWebview();
 
   export let onMessage;
   let unlisten;
 
   onMount(async () => {
-    unlisten = await appWindow.listen("rust-event", onMessage);
+    unlisten = await webview.listen("rust-event", onMessage);
   });
   onDestroy(() => {
     if (unlisten) {
@@ -37,7 +37,7 @@
   }
 
   function emitEvent() {
-    appWindow.emit("js-event", "this is the payload string");
+    webview.emit("js-event", "this is the payload string");
   }
 </script>
 

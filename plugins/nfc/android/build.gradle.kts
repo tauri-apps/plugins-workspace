@@ -5,11 +5,10 @@ plugins {
 
 android {
     namespace = "app.tauri.nfc"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
-        minSdk = 24
-        targetSdk = 33
+        minSdk = 24        
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")

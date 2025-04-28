@@ -17,7 +17,6 @@
     },
     "set": {
       "description": "A list of permissions sets defined",
-      "default": [],
       "type": "array",
       "items": {
         "$ref": "#/definitions/PermissionSet"
@@ -50,7 +49,7 @@
           "minimum": 1.0
         },
         "description": {
-          "description": "Human-readable description of what the permission does.",
+          "description": "Human-readable description of what the permission does. Tauri convention is to use `<h4>` headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -112,7 +111,7 @@
           "type": "string"
         },
         "description": {
-          "description": "Human-readable description of what the permission does.",
+          "description": "Human-readable description of what the permission does. Tauri internal convention is to use `<h4>` headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -132,12 +131,21 @@
         },
         "scope": {
           "description": "Allowed or denied scoped when using this permission.",
-          "default": {},
           "allOf": [
             {
               "$ref": "#/definitions/Scopes"
             }
           ]
+        },
+        "platforms": {
+          "description": "Target platforms this permission applies. By default all platforms are affected by this permission.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/Target"
+          }
         }
       }
     },
@@ -164,7 +172,7 @@
       }
     },
     "Scopes": {
-      "description": "A restriction of the command/endpoint functionality.\n\nIt can be of any serde serializable type and is used for allowing or preventing certain actions inside a Tauri command.\n\nThe scope is passed to the command and handled/enforced by the command itself.",
+      "description": "An argument for fine grained behavior control of Tauri commands.\n\nIt can be of any serde serializable type and is used to allow or prevent certain actions inside a Tauri command. The configured scope is passed to the command and will be enforced by the command implementation.\n\n## Example\n\n```json { \"allow\": [{ \"path\": \"$HOME/**\" }], \"deny\": [{ \"path\": \"$HOME/secret.txt\" }] } ```",
       "type": "object",
       "properties": {
         "allow": {
@@ -178,7 +186,7 @@
           }
         },
         "deny": {
-          "description": "Data that defines what is denied by the scope.",
+          "description": "Data that defines what is denied by the scope. This should be prioritized by validation logic.",
           "type": [
             "array",
             "null"
@@ -243,78 +251,114 @@
         }
       ]
     },
+    "Target": {
+      "description": "Platform target.",
+      "oneOf": [
+        {
+          "description": "MacOS.",
+          "type": "string",
+          "enum": [
+            "macOS"
+          ]
+        },
+        {
+          "description": "Windows.",
+          "type": "string",
+          "enum": [
+            "windows"
+          ]
+        },
+        {
+          "description": "Linux.",
+          "type": "string",
+          "enum": [
+            "linux"
+          ]
+        },
+        {
+          "description": "Android.",
+          "type": "string",
+          "enum": [
+            "android"
+          ]
+        },
+        {
+          "description": "iOS.",
+          "type": "string",
+          "enum": [
+            "iOS"
+          ]
+        }
+      ]
+    },
     "PermissionKind": {
       "type": "string",
       "oneOf": [
         {
-          "description": "allow-ask -> Enables the ask command without any pre-configured scope.",
+          "description": "Enables the ask command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-ask"
-          ]
+          "const": "allow-ask",
+          "markdownDescription": "Enables the ask command without any pre-configured scope."
         },
         {
-          "description": "deny-ask -> Denies the ask command without any pre-configured scope.",
+          "description": "Denies the ask command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-ask"
-          ]
+          "const": "deny-ask",
+          "markdownDescription": "Denies the ask command without any pre-configured scope."
         },
         {
-          "description": "allow-confirm -> Enables the confirm command without any pre-configured scope.",
+          "description": "Enables the confirm command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-confirm"
-          ]
+          "const": "allow-confirm",
+          "markdownDescription": "Enables the confirm command without any pre-configured scope."
         },
         {
-          "description": "deny-confirm -> Denies the confirm command without any pre-configured scope.",
+          "description": "Denies the confirm command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-confirm"
-          ]
+          "const": "deny-confirm",
+          "markdownDescription": "Denies the confirm command without any pre-configured scope."
         },
         {
-          "description": "allow-message -> Enables the message command without any pre-configured scope.",
+          "description": "Enables the message command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-message"
-          ]
+          "const": "allow-message",
+          "markdownDescription": "Enables the message command without any pre-configured scope."
         },
         {
-          "description": "deny-message -> Denies the message command without any pre-configured scope.",
+          "description": "Denies the message command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-message"
-          ]
+          "const": "deny-message",
+          "markdownDescription": "Denies the message command without any pre-configured scope."
         },
         {
-          "description": "allow-open -> Enables the open command without any pre-configured scope.",
+          "description": "Enables the open command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-open"
-          ]
+          "const": "allow-open",
+          "markdownDescription": "Enables the open command without any pre-configured scope."
         },
         {
-          "description": "deny-open -> Denies the open command without any pre-configured scope.",
+          "description": "Denies the open command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-open"
-          ]
+          "const": "deny-open",
+          "markdownDescription": "Denies the open command without any pre-configured scope."
         },
         {
-          "description": "allow-save -> Enables the save command without any pre-configured scope.",
+          "description": "Enables the save command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "allow-save"
-          ]
+          "const": "allow-save",
+          "markdownDescription": "Enables the save command without any pre-configured scope."
         },
         {
-          "description": "deny-save -> Denies the save command without any pre-configured scope.",
+          "description": "Denies the save command without any pre-configured scope.",
           "type": "string",
-          "enum": [
-            "deny-save"
-          ]
+          "const": "deny-save",
+          "markdownDescription": "Denies the save command without any pre-configured scope."
+        },
+        {
+          "description": "This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n\n#### This default permission set includes:\n\n- `allow-ask`\n- `allow-confirm`\n- `allow-message`\n- `allow-save`\n- `allow-open`",
+          "type": "string",
+          "const": "default",
+          "markdownDescription": "This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n\n#### This default permission set includes:\n\n- `allow-ask`\n- `allow-confirm`\n- `allow-message`\n- `allow-save`\n- `allow-open`"
         }
       ]
     }

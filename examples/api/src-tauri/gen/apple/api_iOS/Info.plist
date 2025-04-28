@@ -2,10 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NFCReaderUsageDescription</key>
-	<string>NFC Test</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Request camera access for barcode scanner</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -45,6 +41,12 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Biometric Test</string>
+	<string>Authenticate with biometrics</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Request camera access for WebRTC</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Request microphone access for WebRTC</string>
+	<key>NFCReaderUsageDescription</key>
+	<string>Read and write to NFC tags for testing</string>
 </dict>
 </plist>
