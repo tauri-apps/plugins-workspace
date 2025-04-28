@@ -28,7 +28,7 @@ pub struct AssociatedDomain {
 
 // TODO: Consider removing this in v3
 fn default_schemes() -> Vec<String> {
-    vec!["https", "http"]
+    vec!["https".to_string(), "http".to_string()]
 }
 
 fn deserialize_associated_host<'de, D>(deserializer: D) -> Result<String, D::Error>
