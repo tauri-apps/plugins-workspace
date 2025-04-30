@@ -129,7 +129,7 @@ importers:
         version: 5.8.3
       vite:
         specifier: ^6.2.5
-        version: 6.2.5(terser@5.33.0)
+        version: 6.3.4(terser@5.33.0)
 
   plugins/stronghold:
     dependencies:
@@ -175,7 +175,7 @@ importers:
         version: 5.8.3
       vite:
         specifier: ^6.2.5
-        version: 6.2.5(terser@5.33.0)
+        version: 6.3.4(terser@5.33.0)
 
   plugins/window-state:
     dependencies:
@@ -848,6 +848,14 @@ packages:
   fastq@1.17.1:
     resolution: {integrity: sha512-sRVD3lWVIXWg6By68ZN7vho9a1pQcN/WBFaAAsDDFzlJjvoGx0P8z7V1t72grFJfJhu3YPZBuu25f7Kaw2jN1w==}
 
+  fdir@6.4.4:
+    resolution: {integrity: sha512-1NZP+GK4GfuAv3PqKvxQRDMjdSRZjnkq7KfhlNrCNNlZ0ygQFpebfrnfnq/W7fpUnAv9aGWmY1zKx7FYL3gwhg==}
+    peerDependencies:
+      picomatch: ^3 || ^4
+    peerDependenciesMeta:
+      picomatch:
+        optional: true
+
   file-entry-cache@8.0.0:
     resolution: {integrity: sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==}
     engines: {node: '>=16.0.0'}
@@ -1116,6 +1124,10 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  tinyglobby@0.2.13:
+    resolution: {integrity: sha512-mEwzpUgrLySlveBwEVDMKk5B57bhLPYovRfPAXD5gA/98Opn0rCDj3GtLwFvCvH5RK9uPCExUROW5NjDwvqkxw==}
+    engines: {node: '>=12.0.0'}
+
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
@@ -1148,8 +1160,8 @@ packages:
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
-  vite@6.2.5:
-    resolution: {integrity: sha512-j023J/hCAa4pRIUH6J9HemwYfjB5llR2Ps0CWeikOtdR8+pAURAk0DoJC5/mm9kd+UgdnIy7d6HE4EAvlYhPhA==}
+  vite@6.3.4:
+    resolution: {integrity: sha512-BiReIiMS2fyFqbqNT/Qqt4CVITDU9M9vE+DKcVAsB+ZV0wvTKd+3hMbkpxz1b+NmEDMegpVbisKiAZOnvO92Sw==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
     peerDependencies:
@@ -1782,6 +1794,10 @@ snapshots:
     dependencies:
       reusify: 1.0.4
 
+  fdir@6.4.4(picomatch@4.0.2):
+    optionalDependencies:
+      picomatch: 4.0.2
+
   file-entry-cache@8.0.0:
     dependencies:
       flat-cache: 4.0.1
@@ -2027,6 +2043,11 @@ snapshots:
       commander: 2.20.3
       source-map-support: 0.5.21
 
+  tinyglobby@0.2.13:
+    dependencies:
+      fdir: 6.4.4(picomatch@4.0.2)
+      picomatch: 4.0.2
+
   to-regex-range@5.0.1:
     dependencies:
       is-number: 7.0.0
@@ -2057,11 +2078,14 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  vite@6.2.5(terser@5.33.0):
+  vite@6.3.4(terser@5.33.0):
     dependencies:
       esbuild: 0.25.0
+      fdir: 6.4.4(picomatch@4.0.2)
+      picomatch: 4.0.2
       postcss: 8.5.3
       rollup: 4.40.1
+      tinyglobby: 0.2.13
     optionalDependencies:
       fsevents: 2.3.3
       terser: 5.33.0
