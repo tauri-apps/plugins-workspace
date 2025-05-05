@@ -1,5 +1,9 @@
 # Changelog
 
+## \[Unreleased]
+
+- Added sound support for desktop notifications which was previously only available on mobile platforms.
+
 ## \[2.2.2]
 
 - [`a1b3fa27`](https://github.com/tauri-apps/plugins-workspace/commit/a1b3fa27f11022c9b6622b4fab12d93239eb05de) ([#2515](https://github.com/tauri-apps/plugins-workspace/pull/2515) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Re-exported the `Geolocation`, `Haptics`, `Notification`, and `Os` structs so that they show up on docs.rs.
