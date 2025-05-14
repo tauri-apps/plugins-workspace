@@ -38,7 +38,10 @@ import { invoke } from '@tauri-apps/api/core'
  *
  * @since 2.0.0
  */
-export async function openUrl(url: string, openWith?: string): Promise<void> {
+export async function openUrl(
+  url: string | URL,
+  openWith?: string
+): Promise<void> {
   await invoke('plugin:opener|open_url', {
     url,
     with: openWith
