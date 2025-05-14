@@ -1,4 +1,5 @@
 ---
+"opener": patch
 "opener-js": patch
 ---
 
