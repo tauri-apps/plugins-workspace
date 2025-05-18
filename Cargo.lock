@@ -3396,7 +3396,7 @@ dependencies = [
  "tar",
  "ureq",
  "vcpkg",
- "zip",
+ "zip 2.6.1",
 ]
 
 [[package]]
@@ -6917,7 +6917,7 @@ dependencies = [
  "tokio",
  "url",
  "windows-sys 0.59.0",
- "zip",
+ "zip 3.0.0",
 ]
 
 [[package]]
@@ -9064,6 +9064,18 @@ dependencies = [
  "indexmap 2.9.0",
  "memchr",
  "zopfli",
+]
+
+[[package]]
+name = "zip"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12598812502ed0105f607f941c386f43d441e00148fce9dec3ca5ffb0bde9308"
+dependencies = [
+ "arbitrary",
+ "crc32fast",
+ "indexmap 2.9.0",
+ "memchr",
 ]
 
 [[package]]
