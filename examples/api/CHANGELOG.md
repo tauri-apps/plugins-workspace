@@ -1,5 +1,15 @@
 # Changelog
 
+## \[2.0.22]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.3.0`
+- Upgraded to `global-shortcut-js@2.2.1`
+- Upgraded to `http-js@2.4.4`
+- Upgraded to `opener-js@2.2.7`
+- Upgraded to `dialog-js@2.2.2`
+
 ## \[2.0.21]
 
 ### Dependencies

@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.2.7]
+
+- [`6c9e08dc`](https://github.com/tauri-apps/plugins-workspace/commit/6c9e08dccb3ac99fccfce586fa2b69717ba81b52) ([#2695](https://github.com/tauri-apps/plugins-workspace/pull/2695) by [@ShaunSHamilton](https://github.com/tauri-apps/plugins-workspace/../../ShaunSHamilton)) Adjust `open_url` url type to allow `URL`
+- [`dde6f3c3`](https://github.com/tauri-apps/plugins-workspace/commit/dde6f3c31c1b79942abb556be31757dc583f509e) ([#2549](https://github.com/tauri-apps/plugins-workspace/pull/2549) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update `windows` crate to 0.61 to align with Tauri 2.5
+
 ## \[2.2.6]
 
 - [`1a984659`](https://github.com/tauri-apps/plugins-workspace/commit/1a9846599b6a71faf330845847a30f6bf9735898) ([#2469](https://github.com/tauri-apps/plugins-workspace/pull/2469) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Update `objc2` crate to 0.6. No user facing changes.

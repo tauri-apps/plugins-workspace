@@ -1,5 +1,15 @@
 # Changelog
 
+## \[2.0.26]
+
+### Dependencies
+
+- Upgraded to `fs@2.3.0`
+- Upgraded to `global-shortcut@2.2.1`
+- Upgraded to `http@2.4.4`
+- Upgraded to `opener@2.2.7`
+- Upgraded to `dialog@2.2.2`
+
 ## \[2.0.25]
 
 ### Dependencies
