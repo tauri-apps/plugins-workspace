@@ -13,9 +13,7 @@
 use auto_launch::{AutoLaunch, AutoLaunchBuilder};
 use serde::{ser::Serializer, Serialize};
 use tauri::{
-    command,
-    plugin::{Builder as PluginBuilder, TauriPlugin},
-    Manager, Runtime, State,
+    command, plugin::{Builder as PluginBuilder, TauriPlugin}, AppHandle, Manager, Runtime, State
 };
 
 use std::env::current_exe;
@@ -28,6 +26,16 @@ pub enum MacosLauncher {
     LaunchAgent,
     AppleScript,
 }
+
+#[derive(Debug, Clone)]
+pub enum PreferedName {
+    PackageInfoName,
+    PackageInfoCrateName,
+    ConfigIdentifier,
+    ConfigProductName,
+    Custom(String)
+}
+
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -43,6 +51,32 @@ impl Serialize for Error {
         S: Serializer,
     {
         serializer.serialize_str(self.to_string().as_ref())
+    }
+}
+
+impl Default for PreferedName {
+    fn default() -> Self {
+        PreferedName::PackageInfoName
+    }
+}
+
+impl PreferedName {
+    pub fn get_value<R: Runtime>(&self, app: &AppHandle<R>) -> String {
+        match self {
+            PreferedName::PackageInfoName => {
+                app.package_info().name.to_string()
+            },
+            PreferedName::PackageInfoCrateName => {
+                app.package_info().crate_name.to_string()
+            },
+            PreferedName::ConfigIdentifier => {
+                app.config().identifier.to_string()
+            },
+            PreferedName::ConfigProductName => {
+                app.config().product_name.clone().unwrap_or("TauriAPP".to_string())
+            },
+            PreferedName::Custom(s) => s.clone(),
+        }
     }
 }
 
@@ -103,6 +137,7 @@ pub struct Builder {
     #[cfg(target_os = "macos")]
     macos_launcher: MacosLauncher,
     args: Vec<String>,
+    prefered_name: PreferedName,
 }
 
 impl Builder {
@@ -154,12 +189,35 @@ impl Builder {
         self
     }
 
+    /// Sets the preferred name to be used for the auto start entry.
+    ///
+    /// ## Examples
+    ///
+    /// ```no_run
+    /// Builder::new()
+    ///     .prefered_name(PreferedName::PackageInfoName)
+    ///     .build();
+    /// ```
+    ///
+    /// ```no_run
+    /// Builder::new()
+    ///     .prefered_name(PreferedName::Custom("My Custom Name".into()))
+    ///     .build();
+    /// ```
+    pub fn prefered_name(mut self, prefered_name: PreferedName) -> Self {
+        self.prefered_name = prefered_name;
+        self
+    }
+
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         PluginBuilder::new("autostart")
             .invoke_handler(tauri::generate_handler![enable, disable, is_enabled])
             .setup(move |app, _api| {
                 let mut builder = AutoLaunchBuilder::new();
-                builder.set_app_name(&app.package_info().name);
+
+                let prefered_name = self.prefered_name.get_value(&app);
+                builder.set_app_name(&prefered_name);
+
                 builder.set_args(&self.args);
 
                 let current_exe = current_exe()?;
@@ -216,6 +274,7 @@ impl Builder {
 pub fn init<R: Runtime>(
     #[allow(unused)] macos_launcher: MacosLauncher,
     args: Option<Vec<&'static str>>,
+    prefered_name: Option<PreferedName>
 ) -> TauriPlugin<R> {
     let mut builder = Builder::new();
     if let Some(args) = args {
@@ -225,5 +284,6 @@ pub fn init<R: Runtime>(
     {
         builder = builder.macos_launcher(macos_launcher);
     }
+    builder = builder.prefered_name(prefered_name.unwrap_or_default());
     builder.build()
 }

@@ -57,9 +57,13 @@ First you need to register the core plugin with Tauri:
 `src-tauri/src/lib.rs`
 
 ```rust
+
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_autostart::Builder::new().args((["--flag1", "--flag2"])).build()))
+        .plugin(tauri_plugin_autostart::Builder::new()
+            .args(["--flag1", "--flag2"])
+            .prefered_name(tauri_plugin_autostart::PreferedName::PackageInfoName)
+            .build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
