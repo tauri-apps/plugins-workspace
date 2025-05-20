@@ -57,7 +57,6 @@ First you need to register the core plugin with Tauri:
 `src-tauri/src/lib.rs`
 
 ```rust
-
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_autostart::Builder::new()
