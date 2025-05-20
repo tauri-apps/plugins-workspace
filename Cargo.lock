@@ -207,7 +207,7 @@ checksum = "e16d2d3311acee920a9eb8d33b8cbc1787ce4a264e85f964c2404b969bdcd487"
 
 [[package]]
 name = "api"
-version = "2.0.25"
+version = "2.0.26"
 dependencies = [
  "log",
  "serde",
@@ -6548,7 +6548,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.2.1"
+version = "2.3.0"
 dependencies = [
  "dunce",
  "rust-ini",
@@ -6566,7 +6566,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.2.1"
+version = "2.2.2"
 dependencies = [
  "log",
  "raw-window-handle",
@@ -6582,7 +6582,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.2.1"
+version = "2.3.0"
 dependencies = [
  "anyhow",
  "dunce",
@@ -6617,7 +6617,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-global-shortcut"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "global-hotkey",
  "log",
@@ -6643,7 +6643,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.4.3"
+version = "2.4.4"
 dependencies = [
  "bytes",
  "cookie_store",
@@ -6735,7 +6735,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-opener"
-version = "2.2.6"
+version = "2.2.7"
 dependencies = [
  "dunce",
  "glob",
@@ -6771,7 +6771,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.2.1"
+version = "2.2.2"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6825,7 +6825,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.2.3"
+version = "2.2.4"
 dependencies = [
  "semver",
  "serde",

@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.4.4]
+
+- [`ff384cba`](https://github.com/tauri-apps/plugins-workspace/commit/ff384cbabe82ae715798a4ee49fd07ffcfbcdb5d) ([#2636](https://github.com/tauri-apps/plugins-workspace/pull/2636) by [@asomethings](https://github.com/tauri-apps/plugins-workspace/../../asomethings)) Properly handle responses with status code 204.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.3.0`
+
 ## \[2.4.3]
 
 - [`37c0477a`](https://github.com/tauri-apps/plugins-workspace/commit/37c0477afe926d326573f1827045875ce8bf8187) ([#2561](https://github.com/tauri-apps/plugins-workspace/pull/2561)) Add `zstd` cargo feature flag to enable `reqwest/zstd` flag.

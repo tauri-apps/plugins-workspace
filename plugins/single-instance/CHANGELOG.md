@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.2.4]
+
+- [`dc84f8d8`](https://github.com/tauri-apps/plugins-workspace/commit/dc84f8d8bbaa70de3bb3185fbacb472993b996ef) ([#2609](https://github.com/tauri-apps/plugins-workspace/pull/2609) by [@Simon-Laux](https://github.com/tauri-apps/plugins-workspace/../../Simon-Laux)) fix `cwd` in single instance on macOS, which was the cwd of the first instance, instead of the second (like it is on windows and linux)
+
+### Dependencies
+
+- Upgraded to `deep-link@2.3.0`
+
 ## \[2.2.3]
 
 ### Dependencies
