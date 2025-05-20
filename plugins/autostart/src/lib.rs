@@ -13,7 +13,9 @@
 use auto_launch::{AutoLaunch, AutoLaunchBuilder};
 use serde::{ser::Serializer, Serialize};
 use tauri::{
-    command, plugin::{Builder as PluginBuilder, TauriPlugin}, AppHandle, Manager, Runtime, State
+    command,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
+    AppHandle, Manager, Runtime, State,
 };
 
 use std::env::current_exe;
@@ -27,15 +29,15 @@ pub enum MacosLauncher {
     AppleScript,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Default)]
 pub enum PreferedName {
-    PackageInfoName,
-    PackageInfoCrateName,
-    ConfigIdentifier,
-    ConfigProductName,
-    Custom(String)
+    #[default]
+    AppName,
+    CrateName,
+    Identifier,
+    ProductName,
+    Custom(String),
 }
-
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -54,29 +56,25 @@ impl Serialize for Error {
     }
 }
 
-impl Default for PreferedName {
-    fn default() -> Self {
-        PreferedName::PackageInfoName
-    }
-}
-
 impl PreferedName {
     pub fn get_value<R: Runtime>(&self, app: &AppHandle<R>) -> String {
         match self {
-            PreferedName::PackageInfoName => {
-                app.package_info().name.to_string()
-            },
-            PreferedName::PackageInfoCrateName => {
-                app.package_info().crate_name.to_string()
-            },
-            PreferedName::ConfigIdentifier => {
-                app.config().identifier.to_string()
-            },
-            PreferedName::ConfigProductName => {
-                app.config().product_name.clone().unwrap_or("TauriAPP".to_string())
-            },
+            PreferedName::AppName => app.package_info().name.to_string(),
+            PreferedName::CrateName => app.package_info().crate_name.to_string(),
+            PreferedName::Identifier => app.config().identifier.to_string(),
+            PreferedName::ProductName => app
+                .config()
+                .product_name
+                .clone()
+                .unwrap_or("TauriAPP".to_string()),
             PreferedName::Custom(s) => s.clone(),
         }
+    }
+}
+
+impl<S: Into<String>> From<S> for PreferedName {
+    fn from(name: S) -> Self {
+        PreferedName::Custom(name.into())
     }
 }
 
@@ -137,7 +135,7 @@ pub struct Builder {
     #[cfg(target_os = "macos")]
     macos_launcher: MacosLauncher,
     args: Vec<String>,
-    prefered_name: PreferedName,
+    app_name: PreferedName,
 }
 
 impl Builder {
@@ -189,23 +187,23 @@ impl Builder {
         self
     }
 
-    /// Sets the preferred name to be used for the auto start entry.
+    /// Sets the app name to be used for the auto start entry.
     ///
     /// ## Examples
     ///
     /// ```no_run
     /// Builder::new()
-    ///     .prefered_name(PreferedName::PackageInfoName)
+    ///     .app_name(PreferedName::AppName)
     ///     .build();
     /// ```
     ///
     /// ```no_run
     /// Builder::new()
-    ///     .prefered_name(PreferedName::Custom("My Custom Name".into()))
+    ///     .app_name("My Custom Name"))
     ///     .build();
     /// ```
-    pub fn prefered_name(mut self, prefered_name: PreferedName) -> Self {
-        self.prefered_name = prefered_name;
+    pub fn app_name(mut self, app_name: impl Into<PreferedName>) -> Self {
+        self.app_name = app_name.into();
         self
     }
 
@@ -215,7 +213,7 @@ impl Builder {
             .setup(move |app, _api| {
                 let mut builder = AutoLaunchBuilder::new();
 
-                let prefered_name = self.prefered_name.get_value(&app);
+                let prefered_name = self.app_name.get_value(app);
                 builder.set_app_name(&prefered_name);
 
                 builder.set_args(&self.args);
@@ -274,7 +272,6 @@ impl Builder {
 pub fn init<R: Runtime>(
     #[allow(unused)] macos_launcher: MacosLauncher,
     args: Option<Vec<&'static str>>,
-    prefered_name: Option<PreferedName>
 ) -> TauriPlugin<R> {
     let mut builder = Builder::new();
     if let Some(args) = args {
@@ -284,6 +281,5 @@ pub fn init<R: Runtime>(
     {
         builder = builder.macos_launcher(macos_launcher);
     }
-    builder = builder.prefered_name(prefered_name.unwrap_or_default());
     builder.build()
 }

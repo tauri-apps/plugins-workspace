@@ -62,7 +62,7 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_autostart::Builder::new()
             .args(["--flag1", "--flag2"])
-            .prefered_name(tauri_plugin_autostart::PreferedName::PackageInfoName)
+            .app_name(tauri_plugin_autostart::PreferedName::AppName)
             .build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
