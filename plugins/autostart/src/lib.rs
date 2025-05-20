@@ -15,7 +15,7 @@ use serde::{ser::Serializer, Serialize};
 use tauri::{
     command,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    AppHandle, Manager, Runtime, State,
+    Manager, Runtime, State,
 };
 
 use std::env::current_exe;
@@ -27,16 +27,6 @@ pub enum MacosLauncher {
     #[default]
     LaunchAgent,
     AppleScript,
-}
-
-#[derive(Default)]
-pub enum PreferedName {
-    #[default]
-    AppName,
-    CrateName,
-    Identifier,
-    ProductName,
-    Custom(String),
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -53,28 +43,6 @@ impl Serialize for Error {
         S: Serializer,
     {
         serializer.serialize_str(self.to_string().as_ref())
-    }
-}
-
-impl PreferedName {
-    pub fn get_value<R: Runtime>(&self, app: &AppHandle<R>) -> String {
-        match self {
-            PreferedName::AppName => app.package_info().name.to_string(),
-            PreferedName::CrateName => app.package_info().crate_name.to_string(),
-            PreferedName::Identifier => app.config().identifier.to_string(),
-            PreferedName::ProductName => app
-                .config()
-                .product_name
-                .clone()
-                .unwrap_or("TauriAPP".to_string()),
-            PreferedName::Custom(s) => s.clone(),
-        }
-    }
-}
-
-impl<S: Into<String>> From<S> for PreferedName {
-    fn from(name: S) -> Self {
-        PreferedName::Custom(name.into())
     }
 }
 
@@ -135,7 +103,7 @@ pub struct Builder {
     #[cfg(target_os = "macos")]
     macos_launcher: MacosLauncher,
     args: Vec<String>,
-    app_name: PreferedName,
+    app_name: Option<String>,
 }
 
 impl Builder {
@@ -193,17 +161,11 @@ impl Builder {
     ///
     /// ```no_run
     /// Builder::new()
-    ///     .app_name(PreferedName::AppName)
-    ///     .build();
-    /// ```
-    ///
-    /// ```no_run
-    /// Builder::new()
     ///     .app_name("My Custom Name"))
     ///     .build();
     /// ```
-    pub fn app_name(mut self, app_name: impl Into<PreferedName>) -> Self {
-        self.app_name = app_name.into();
+    pub fn app_name(mut self, app_name: &str) -> Self {
+        self.app_name = Some(app_name.to_string());
         self
     }
 
@@ -213,8 +175,8 @@ impl Builder {
             .setup(move |app, _api| {
                 let mut builder = AutoLaunchBuilder::new();
 
-                let prefered_name = self.app_name.get_value(app);
-                builder.set_app_name(&prefered_name);
+                let app_name = self.app_name.unwrap_or(app.package_info().name.clone());
+                builder.set_app_name(&app_name);
 
                 builder.set_args(&self.args);
 
