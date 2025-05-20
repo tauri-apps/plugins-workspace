@@ -164,8 +164,8 @@ impl Builder {
     ///     .app_name("My Custom Name"))
     ///     .build();
     /// ```
-    pub fn app_name(mut self, app_name: &str) -> Self {
-        self.app_name = Some(app_name.to_string());
+    pub fn app_name<S: Into<String>>(mut self, app_name: S) -> Self {
+        self.app_name = Some(app_name.into());
         self
     }
 
@@ -175,8 +175,11 @@ impl Builder {
             .setup(move |app, _api| {
                 let mut builder = AutoLaunchBuilder::new();
 
-                let app_name = self.app_name.unwrap_or(app.package_info().name.clone());
-                builder.set_app_name(&app_name);
+                let app_name = self
+                    .app_name
+                    .as_ref()
+                    .unwrap_or_else(|| &app.package_info().name);
+                builder.set_app_name(app_name);
 
                 builder.set_args(&self.args);
 
