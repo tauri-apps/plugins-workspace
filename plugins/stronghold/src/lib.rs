@@ -20,9 +20,9 @@ use std::{
 use crypto::keys::bip39;
 use iota_stronghold::{
     procedures::{
-        BIP39Generate, BIP39Recover, Curve, Ed25519Sign, KeyType as StrongholdKeyType,
-        MnemonicLanguage, PublicKey, Slip10Derive, Slip10DeriveInput, Slip10Generate,
-        StrongholdProcedure,
+        BIP39Generate, BIP39Recover, Curve, Ed25519Sign, GetEvmAddress,
+        KeyType as StrongholdKeyType, MnemonicLanguage, PublicKey, Secp256k1EcdsaFlavor,
+        Secp256k1EcdsaSign, Slip10Derive, Slip10DeriveInput, Slip10Generate, StrongholdProcedure,
     },
     Client, Location,
 };
@@ -107,6 +107,7 @@ impl From<Slip10DeriveInputDto> for Slip10DeriveInput {
 pub enum KeyType {
     Ed25519,
     X25519,
+    Secp256k1Ecdsa,
 }
 
 impl From<KeyType> for StrongholdKeyType {
@@ -114,6 +115,7 @@ impl From<KeyType> for StrongholdKeyType {
         match ty {
             KeyType::Ed25519 => StrongholdKeyType::Ed25519,
             KeyType::X25519 => StrongholdKeyType::X25519,
+            KeyType::Secp256k1Ecdsa => StrongholdKeyType::Secp256k1Ecdsa,
         }
     }
 }
@@ -129,7 +131,7 @@ impl<'de> Deserialize<'de> for KeyType {
             type Value = KeyType;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("ed25519 or x25519")
+                formatter.write_str("ed25519, x25519, or secp256k1_ecdsa")
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -139,6 +141,7 @@ impl<'de> Deserialize<'de> for KeyType {
                 match value.to_lowercase().as_str() {
                     "ed25519" => Ok(KeyType::Ed25519),
                     "x25519" => Ok(KeyType::X25519),
+                    "secp256k1_ecdsa" => Ok(KeyType::Secp256k1Ecdsa),
                     _ => Err(serde::de::Error::custom("unknown key type")),
                 }
             }
@@ -178,6 +181,16 @@ enum ProcedureDto {
         private_key: LocationDto,
     },
     Ed25519Sign {
+        #[serde(rename = "privateKey")]
+        private_key: LocationDto,
+        msg: String,
+    },
+    GetEvmAddress {
+        #[serde(rename = "privateKey")]
+        private_key: LocationDto,
+    },
+    Secp256k1EcdsaSign {
+        flavor: Secp256k1EcdsaFlavor,
         #[serde(rename = "privateKey")]
         private_key: LocationDto,
         msg: String,
@@ -231,6 +244,20 @@ impl From<ProcedureDto> for StrongholdProcedure {
                     msg: msg.as_bytes().to_vec(),
                 })
             }
+            ProcedureDto::GetEvmAddress { private_key } => {
+                StrongholdProcedure::GetEvmAddress(GetEvmAddress {
+                    private_key: private_key.into(),
+                })
+            }
+            ProcedureDto::Secp256k1EcdsaSign {
+                flavor,
+                private_key,
+                msg,
+            } => StrongholdProcedure::Secp256k1EcdsaSign(Secp256k1EcdsaSign {
+                flavor,
+                private_key: private_key.into(),
+                msg: msg.as_bytes().to_vec(),
+            }),
         }
     }
 }

@@ -256,6 +256,72 @@ class ProcedureExecutor {
       }
     }).then((n) => Uint8Array.from(n))
   }
+
+  /**
+   * Gets the Secp256k1Ecdsa public key of a SLIP10 private key.
+   * @param privateKeyLocation The location of the private key. Must be the `outputLocation` of a previous call to `deriveSLIP10`.
+   * @returns A promise resolving to the public key hex string.
+   *
+   * @since 2.1.0
+   */
+  async getSecp256k1EcdsaPublicKey(privateKeyLocation: Location): Promise<Uint8Array> {
+    return await invoke<number[]>('plugin:stronghold|execute_procedure', {
+      ...this.procedureArgs,
+      procedure: {
+        type: 'PublicKey',
+        payload: {
+          type: 'Secp256k1Ecdsa',
+          privateKey: privateKeyLocation
+        }
+      }
+    }).then((n) => Uint8Array.from(n))
+  }
+
+  /**
+   * Gets the EVM address of a SLIP10 private key.
+   * @param privateKeyLocation The location of the private key. Must be the `outputLocation` of a previous call to `deriveSLIP10`.
+   * @returns A promise resolving to the EVM address
+   *
+   * @since 2.1.0
+   */
+  async getSecp256k1EcdsaEvmAddress(privateKeyLocation: Location): Promise<Uint8Array> {
+    return await invoke<number[]>('plugin:stronghold|execute_procedure', {
+      ...this.procedureArgs,
+      procedure: {
+        type: 'GetEvmAddress',
+        payload: {
+          privateKey: privateKeyLocation
+        }
+      }
+    }).then((n) => Uint8Array.from(n))
+  }
+
+  /**
+   * Creates a Secp256k1Ecdsa signature from a private key.
+   * @param flavor The hash type
+   * @param privateKeyLocation The location of the record where the private key is stored. Must be the `outputLocation` of a previous call to `deriveSLIP10`.
+   * @param msg The message to sign.
+   * @returns A promise resolving to the signature hex string.
+   *
+   * @since 2.1.0
+   */
+  async signSecp256k1Ecdsa(
+    flavor: 'Keccak256' | 'Sha256', 
+    privateKeyLocation: Location,
+    msg: string
+  ): Promise<Uint8Array> {
+    return await invoke<number[]>('plugin:stronghold|execute_procedure', {
+      ...this.procedureArgs,
+      procedure: {
+        type: 'Secp256k1EcdsaSign',
+        payload: {
+          flavor,
+          privateKey: privateKeyLocation,
+          msg
+        }
+      }
+    }).then((n) => Uint8Array.from(n))
+  }
 }
 
 export class Client {
