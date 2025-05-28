@@ -264,7 +264,9 @@ class ProcedureExecutor {
    *
    * @since 2.1.0
    */
-  async getSecp256k1EcdsaPublicKey(privateKeyLocation: Location): Promise<Uint8Array> {
+  async getSecp256k1EcdsaPublicKey(
+    privateKeyLocation: Location
+  ): Promise<Uint8Array> {
     return await invoke<number[]>('plugin:stronghold|execute_procedure', {
       ...this.procedureArgs,
       procedure: {
@@ -284,7 +286,9 @@ class ProcedureExecutor {
    *
    * @since 2.1.0
    */
-  async getSecp256k1EcdsaEvmAddress(privateKeyLocation: Location): Promise<Uint8Array> {
+  async getSecp256k1EcdsaEvmAddress(
+    privateKeyLocation: Location
+  ): Promise<Uint8Array> {
     return await invoke<number[]>('plugin:stronghold|execute_procedure', {
       ...this.procedureArgs,
       procedure: {
@@ -306,7 +310,7 @@ class ProcedureExecutor {
    * @since 2.1.0
    */
   async signSecp256k1Ecdsa(
-    flavor: 'Keccak256' | 'Sha256', 
+    flavor: 'Keccak256' | 'Sha256',
     privateKeyLocation: Location,
     msg: string
   ): Promise<Uint8Array> {

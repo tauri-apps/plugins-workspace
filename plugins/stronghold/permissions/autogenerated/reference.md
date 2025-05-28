@@ -7,8 +7,6 @@ operations are available from the stronghold plugin.
 
 All non-destructive operations are enabled by default.
 
-
-
 #### This default permission set includes the following:
 
 - `allow-create-client`
@@ -27,7 +25,6 @@ All non-destructive operations are enabled by default.
 <th>Identifier</th>
 <th>Description</th>
 </tr>
-
 
 <tr>
 <td>
