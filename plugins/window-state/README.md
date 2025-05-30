@@ -104,6 +104,25 @@ import {
 restoreStateCurrent(StateFlags.ALL)
 ```
 
+If you want to reset the window state, this will start all over again:
+
+```rust
+use tauri_plugin_window_state::{AppHandleExt};
+
+// `tauri::AppHandle` now has the following additional method
+app.reset_window_state(); // will reset the state of all windows from disk and restart app
+```
+
+or through Javascript
+
+```javascript
+import {
+  resetWindowState
+} from '@tauri-apps/plugin-window-state'
+
+resetWindowState()
+```
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.

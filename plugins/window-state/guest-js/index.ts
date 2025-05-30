@@ -33,6 +33,13 @@ async function restoreState(
 }
 
 /**
+ * Reset the state of all windows from disk.
+ */
+async function resetWindowState(restart: boolean): Promise<void> {
+  await invoke('plugin:window-state|reset_window_state', {restart})
+}
+
+/**
  *  Restore the state for the current window from disk.
  */
 async function restoreStateCurrent(flags: StateFlags): Promise<void> {
@@ -45,4 +52,4 @@ async function filename(): Promise<string> {
   return await invoke('plugin:window-state|filename')
 }
 
-export { restoreState, restoreStateCurrent, saveWindowState, filename }
+export { restoreState, restoreStateCurrent, resetWindowState, saveWindowState, filename }

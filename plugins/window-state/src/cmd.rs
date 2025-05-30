@@ -17,6 +17,15 @@ pub async fn save_window_state<R: Runtime>(
 }
 
 #[command]
+pub async fn reset_window_state<R: Runtime>(
+    app: AppHandle<R>,
+    restart: Option<bool>,
+) -> std::result::Result<(), String> {
+    app.reset_window_state(restart).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[command]
 pub async fn restore_state<R: Runtime>(
     app: AppHandle<R>,
     label: String,
