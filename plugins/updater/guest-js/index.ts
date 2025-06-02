@@ -22,6 +22,10 @@ interface CheckOptions {
    * Target identifier for the running application. This is sent to the backend.
    */
   target?: string
+  /**
+   * Allow downgrades to previous versions by not checking if the current version is greater than the available version.
+   */
+  allowDowngrades?: boolean
 }
 
 /** Options used when downloading an update */
