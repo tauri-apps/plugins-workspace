@@ -1,6 +1,6 @@
 ---
-"@tauri-apps/plugin-updater": minor
-"tauri-plugin-updater": minor
+"updater": minor
+"updater-js": minor
 ---
 
 Add allowDowngrades parameter to check command
