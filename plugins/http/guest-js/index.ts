@@ -26,7 +26,7 @@
  * @module
  */
 
-import { invoke } from '@tauri-apps/api/core'
+import { Channel, invoke } from '@tauri-apps/api/core'
 
 /**
  * Configuration of a proxy that a Client should pass requests to.
@@ -106,7 +106,7 @@ export interface DangerousSettings {
   acceptInvalidHostnames?: boolean
 }
 
-const ERROR_REQUEST_CANCELLED = 'Request canceled'
+const ERROR_REQUEST_CANCELLED = 'Request cancelled'
 
 /**
  * Fetch a resource from the network. It returns a `Promise` that resolves to the
@@ -229,31 +229,53 @@ export async function fetch(
     rid
   })
 
-  const body = await invoke<ArrayBuffer | number[]>(
-    'plugin:http|fetch_read_body',
-    {
-      rid: responseRid
-    }
-  )
+  // no body for 101, 103, 204, 205 and 304
+  // see https://fetch.spec.whatwg.org/#null-body-status
+  const body = [101, 103, 204, 205, 304].includes(status)
+    ? null
+    : new ReadableStream({
+        start: (controller) => {
+          const streamChannel = new Channel<ArrayBuffer | number[]>()
+          streamChannel.onmessage = (res: ArrayBuffer | number[]) => {
+            // close early if aborted
+            if (signal?.aborted) {
+              controller.error(ERROR_REQUEST_CANCELLED)
+              return
+            }
 
-  const res = new Response(
-    body instanceof ArrayBuffer && body.byteLength !== 0
-      ? body
-      : body instanceof Array && body.length > 0
-        ? new Uint8Array(body)
-        : null,
-    {
-      status,
-      statusText
-    }
-  )
+            const resUint8 = new Uint8Array(res)
+            const lastByte = resUint8[resUint8.byteLength - 1]
+            const actualRes = resUint8.slice(0, resUint8.byteLength - 1)
 
-  // url and headers are read only properties
-  // but seems like we can set them like this
+            // close when the signal to close (last byte is 1) is sent from the IPC.
+            if (lastByte == 1) {
+              controller.close()
+              return
+            }
+
+            controller.enqueue(actualRes)
+          }
+
+          // run a non-blocking body stream fetch
+          invoke('plugin:http|fetch_read_body', {
+            rid: responseRid,
+            streamChannel
+          }).catch((e) => {
+            controller.error(e)
+          })
+        }
+      })
+
+  const res = new Response(body, {
+    status,
+    statusText
+  })
+
+  // Set `Response` properties that are ignored by the
+  // constructor, like url and some headers
   //
-  // we define theme like this, because using `Response`
-  // constructor, it removes url and some headers
-  // like `set-cookie` headers
+  // Since url and headers are read only properties
+  // this is the only way to set them.
   Object.defineProperty(res, 'url', { value: url })
   Object.defineProperty(res, 'headers', {
     value: new Headers(responseHeaders)

@@ -9,6 +9,8 @@ This enables to quit via `allow-exit` and restart via `allow-restart`
 the application.
 
 
+#### This default permission set includes the following:
+
 - `allow-exit`
 - `allow-restart`
 

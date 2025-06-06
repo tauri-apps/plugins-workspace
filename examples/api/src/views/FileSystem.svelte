@@ -2,16 +2,18 @@
   import * as fs from "@tauri-apps/plugin-fs";
   import { convertFileSrc } from "@tauri-apps/api/core";
   import { arrayBufferToBase64 } from "../lib/utils";
+  import { onDestroy } from "svelte";
 
   export let onMessage;
   export let insecureRenderHtml;
 
   let path = "";
   let img;
+  /** @type {fs.FileHandle} */
   let file;
   let renameTo;
   let watchPath = "";
-  let watchDebounceDelay = 0;
+  let watchDebounceDelay = "0";
   let watchRecursive = false;
   let unwatchFn;
   let unwatchPath = "";
@@ -118,7 +120,7 @@
                     .getElementById("file-save")
                     .addEventListener("click", function () {
                       fs.writeTextFile(path, fileInput.value, {
-                        dir: getDir(),
+                        baseDir: getDir(),
                       }).catch(onMessage);
                     });
                 });
@@ -170,6 +172,15 @@
     unwatchFn = undefined;
     unwatchPath = undefined;
   }
+
+  onDestroy(() => {
+    if (file) {
+      file.close();
+    }
+    if (unwatchFn) {
+      unwatchFn();
+    }
+  })
 </script>
 
 <div class="flex flex-col">

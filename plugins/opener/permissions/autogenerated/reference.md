@@ -3,6 +3,8 @@
 This permission set allows opening `mailto:`, `tel:`, `https://` and `http://` urls using their default application
 as well as reveal file in directories using default file explorer
 
+#### This default permission set includes the following:
+
 - `allow-open-url`
 - `allow-reveal-item-in-dir`
 - `allow-default-urls`

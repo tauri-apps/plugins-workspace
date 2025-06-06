@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-opener"
-version = "2.2.5"
+version = "2.2.7"
 description = "Open files and URLs using their default application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -40,7 +40,7 @@ glob = { workspace = true }
 dunce = { workspace = true }
 
 [target."cfg(windows)".dependencies.windows]
-version = "0.58"
+version = "0.61"
 features = [
   "Win32_Foundation",
   "Win32_UI_Shell_Common",
@@ -54,12 +54,12 @@ zbus = { workspace = true }
 url = { workspace = true }
 
 [target."cfg(target_os = \"macos\")".dependencies.objc2-app-kit]
-version = "0.2"
+version = "0.3"
 default-features = false
 features = ["std", "NSWorkspace"]
 
 [target."cfg(target_os = \"macos\")".dependencies.objc2-foundation]
-version = "0.2"
+version = "0.3"
 default-features = false
 features = ["std", "NSURL", "NSArray", "NSString"]
 

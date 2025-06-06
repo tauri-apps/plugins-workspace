@@ -1,5 +1,73 @@
 # Changelog
 
+## \[2.0.26]
+
+### Dependencies
+
+- Upgraded to `fs@2.3.0`
+- Upgraded to `global-shortcut@2.2.1`
+- Upgraded to `http@2.4.4`
+- Upgraded to `opener@2.2.7`
+- Upgraded to `dialog@2.2.2`
+
+## \[2.0.25]
+
+### Dependencies
+
+- Upgraded to `log@2.4.0`
+- Upgraded to `biometric@2.2.1`
+- Upgraded to `updater@2.7.1`
+
+## \[2.0.24]
+
+### Dependencies
+
+- Upgraded to `http@2.4.3`
+- Upgraded to `shell@2.2.1`
+- Upgraded to `fs@2.2.1`
+- Upgraded to `process@2.2.1`
+- Upgraded to `updater@2.7.0`
+- Upgraded to `dialog@2.2.1`
+
+## \[2.0.23]
+
+### Dependencies
+
+- Upgraded to `http@2.4.2`
+- Upgraded to `updater@2.6.1`
+
+## \[2.0.22]
+
+### Dependencies
+
+- Upgraded to `http@2.4.1`
+
+## \[2.0.21]
+
+### Dependencies
+
+- Upgraded to `log@2.3.1`
+
+## \[2.0.20]
+
+### Dependencies
+
+- Upgraded to `clipboard-manager@2.2.2`
+- Upgraded to `geolocation@2.2.4`
+- Upgraded to `haptics@2.2.4`
+- Upgraded to `notification@2.2.2`
+- Upgraded to `os@2.2.1`
+- Upgraded to `http@2.4.0`
+- Upgraded to `log@2.3.0`
+- Upgraded to `updater@2.6.0`
+
+## \[2.0.19]
+
+### Dependencies
+
+- Upgraded to `log@2.2.3`
+- Upgraded to `opener@2.2.6`
+
 ## \[2.0.18]
 
 ### Dependencies
