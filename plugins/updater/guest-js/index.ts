@@ -81,6 +81,7 @@ class Update extends Resource {
     onEvent?: (progress: DownloadEvent) => void,
     options?: DownloadOptions
   ): Promise<void> {
+    convertToRustHeaders(options)
     const channel = new Channel<DownloadEvent>()
     if (onEvent) {
       channel.onmessage = onEvent
@@ -113,6 +114,7 @@ class Update extends Resource {
     onEvent?: (progress: DownloadEvent) => void,
     options?: DownloadOptions
   ): Promise<void> {
+    convertToRustHeaders(options)
     const channel = new Channel<DownloadEvent>()
     if (onEvent) {
       channel.onmessage = onEvent
@@ -132,14 +134,21 @@ class Update extends Resource {
 
 /** Check for updates, resolves to `null` if no updates are available */
 async function check(options?: CheckOptions): Promise<Update | null> {
-  if (options?.headers) {
-    options.headers = Array.from(new Headers(options.headers).entries())
-  }
+  convertToRustHeaders(options)
 
   const metadata = await invoke<UpdateMetadata | null>('plugin:updater|check', {
     ...options
   })
   return metadata ? new Update(metadata) : null
+}
+
+/**
+ * Converts the headers in options to be an {@linkcode Array<[string, string]>} which is what the Rust side expects
+ */
+function convertToRustHeaders(options?: { headers?: HeadersInit }) {
+  if (options?.headers) {
+    options.headers = Array.from(new Headers(options.headers).entries())
+  }
 }
 
 export type { CheckOptions, DownloadOptions, DownloadEvent }
