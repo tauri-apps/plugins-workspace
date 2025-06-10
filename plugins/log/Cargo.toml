@@ -35,7 +35,7 @@ time = { version = "0.3", features = [
   "formatting",
   "local-offset",
   "macros",
-  "parsing"
+  "parsing",
 ] }
 fern = "0.7"
 tracing = { workspace = true, optional = true }
