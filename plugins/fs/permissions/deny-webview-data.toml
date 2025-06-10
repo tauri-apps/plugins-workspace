@@ -1,0 +1,19 @@
+"$schema" = "schemas/schema.json"
+
+[[permission]]
+identifier = "deny-webview-data-linux"
+description = """This denies read access to the
+`$APPLOCALDATA` folder on linux as the webview data and configuration values are stored here.
+Allowing access can lead to sensitive information disclosure and should be well considered."""
+
+[[scope.deny]]
+path = "$APPLOCALDATA/**"
+
+[[permission]]
+identifier = "deny-webview-data-windows"
+description = """This denies read access to the
+`$APPLOCALDATA/EBWebView` folder on windows as the webview data and configuration values are stored here.
+Allowing access can lead to sensitive information disclosure and should be well considered."""
+
+[[scope.deny]]
+path = "$APPLOCALDATA/EBWebView/**"

@@ -2,93 +2,89 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/http/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/http)
-//!
 //! Access the HTTP client written in Rust.
 
-use std::sync::atomic::AtomicU32;
-use std::{collections::HashMap, future::Future, pin::Pin};
-
 pub use reqwest;
-use reqwest::Response;
-use tauri::async_runtime::Mutex;
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    AppHandle, Manager, Runtime,
+    Manager, Runtime,
 };
 
-use crate::config::{Config, HttpAllowlistScope};
 pub use error::{Error, Result};
 
 mod commands;
-mod config;
 mod error;
+#[cfg(feature = "cookies")]
+mod reqwest_cookie_store;
 mod scope;
 
-type RequestId = u32;
-type CancelableResponseResult = Result<Result<reqwest::Response>>;
-type CancelableResponseFuture =
-    Pin<Box<dyn Future<Output = CancelableResponseResult> + Send + Sync>>;
-type RequestTable = HashMap<RequestId, FetchRequest>;
-type ResponseTable = HashMap<RequestId, Response>;
+#[cfg(feature = "cookies")]
+const COOKIES_FILENAME: &str = ".cookies";
 
-struct FetchRequest(Mutex<CancelableResponseFuture>);
-impl FetchRequest {
-    fn new(f: CancelableResponseFuture) -> Self {
-        Self(Mutex::new(f))
-    }
+pub(crate) struct Http {
+    #[cfg(feature = "cookies")]
+    cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
 }
 
-struct Http<R: Runtime> {
-    #[allow(dead_code)]
-    app: AppHandle<R>,
-    scope: scope::Scope,
-    current_id: AtomicU32,
-    requests: Mutex<RequestTable>,
-    responses: Mutex<ResponseTable>,
-}
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    Builder::<R>::new("http")
+        .setup(|app, _| {
+            #[cfg(feature = "cookies")]
+            let cookies_jar = {
+                use crate::reqwest_cookie_store::*;
+                use std::fs::File;
+                use std::io::BufReader;
 
-impl<R: Runtime> Http<R> {
-    fn next_id(&self) -> RequestId {
-        self.current_id
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
-    }
-}
+                let cache_dir = app.path().app_cache_dir()?;
+                std::fs::create_dir_all(&cache_dir)?;
 
-trait HttpExt<R: Runtime> {
-    fn http(&self) -> &Http<R>;
-}
+                let path = cache_dir.join(COOKIES_FILENAME);
+                let file = File::options()
+                    .create(true)
+                    .append(true)
+                    .read(true)
+                    .open(&path)?;
 
-impl<R: Runtime, T: Manager<R>> HttpExt<R> for T {
-    fn http(&self) -> &Http<R> {
-        self.state::<Http<R>>().inner()
-    }
-}
+                let reader = BufReader::new(file);
+                CookieStoreMutex::load(path.clone(), reader).unwrap_or_else(|_e| {
+                    #[cfg(feature = "tracing")]
+                    tracing::warn!(
+                        "failed to load cookie store: {_e}, falling back to empty store"
+                    );
+                    CookieStoreMutex::new(path, Default::default())
+                })
+            };
 
-pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
-    Builder::<R, Option<Config>>::new("http")
-        .js_init_script(include_str!("api-iife.js").to_string())
+            let state = Http {
+                #[cfg(feature = "cookies")]
+                cookies_jar: std::sync::Arc::new(cookies_jar),
+            };
+
+            app.manage(state);
+
+            Ok(())
+        })
+        .on_event(|app, event| {
+            #[cfg(feature = "cookies")]
+            if let tauri::RunEvent::Exit = event {
+                let state = app.state::<Http>();
+
+                match state.cookies_jar.request_save() {
+                    Ok(rx) => {
+                        let _ = rx.recv();
+                    }
+                    Err(_e) => {
+                        #[cfg(feature = "tracing")]
+                        tracing::error!("failed to save cookie jar: {_e}");
+                    }
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             commands::fetch,
             commands::fetch_cancel,
             commands::fetch_send,
-            commands::fetch_read_body,
+            commands::fetch_read_body
         ])
-        .setup(|app, api| {
-            let default_scope = HttpAllowlistScope::default();
-            app.manage(Http {
-                app: app.clone(),
-                current_id: 0.into(),
-                requests: Default::default(),
-                responses: Default::default(),
-                scope: scope::Scope::new(
-                    api.config()
-                        .as_ref()
-                        .map(|c| &c.scope)
-                        .unwrap_or(&default_scope),
-                ),
-            });
-            Ok(())
-        })
         .build()
 }

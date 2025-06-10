@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-cli-matches"
+description = "Enables the cli_matches command without any pre-configured scope."
+commands.allow = ["cli_matches"]
+
+[[permission]]
+identifier = "deny-cli-matches"
+description = "Denies the cli_matches command without any pre-configured scope."
+commands.deny = ["cli_matches"]

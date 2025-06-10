@@ -10,15 +10,15 @@ on:
       - v1
       - v2
     paths:
-      - ".github/workflows/integration-tests.yml"
-      - "plugins/updater/src/**"
+      - '.github/workflows/integration-tests.yml'
+      - 'plugins/updater/src/**'
   pull_request:
     branches:
       - v1
       - v2
     paths:
-      - ".github/workflows/integration-tests.yml"
-      - "plugins/updater/src/**"
+      - '.github/workflows/integration-tests.yml'
+      - 'plugins/updater/src/**'
 
 jobs:
   run-integration-tests:
@@ -27,23 +27,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        platform: [ubuntu-22.04, macos-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: install stable
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
+        uses: dtolnay/rust-toolchain@stable
 
       - name: install Linux dependencies
-        if: matrix.platform == 'ubuntu-latest'
+        if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y webkit2gtk-4.1 libayatana-appindicator3-dev libfuse2
+          sudo apt-get install -y webkit2gtk-4.0 libwebkit2gtk-4.1-dev libayatana-appindicator3-dev libfuse2
 
       - uses: Swatinem/rust-cache@v2
 

@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/notification/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/notification)
-//!
 //! Send message notifications (brief auto-expiring OS window element) to your user. Can also be used with the Notification Web API.
 
 #![doc(
@@ -22,6 +20,7 @@ use tauri::{
 };
 
 pub use models::*;
+pub use tauri::plugin::PermissionState;
 
 #[cfg(desktop)]
 mod desktop;
@@ -35,9 +34,9 @@ mod models;
 pub use error::{Error, Result};
 
 #[cfg(desktop)]
-use desktop::Notification;
+pub use desktop::Notification;
 #[cfg(mobile)]
-use mobile::Notification;
+pub use mobile::Notification;
 
 /// The notification builder.
 #[derive(Debug)]
@@ -121,7 +120,7 @@ impl<R: Runtime> NotificationBuilder<R> {
 
     /// Identifier used to group multiple notifications.
     ///
-    /// https://developer.apple.com/documentation/usernotifications/unmutablenotificationcontent/1649872-threadidentifier
+    /// <https://developer.apple.com/documentation/usernotifications/unmutablenotificationcontent/1649872-threadidentifier>
     pub fn group(mut self, group: impl Into<String>) -> Self {
         self.data.group.replace(group.into());
         self
@@ -208,7 +207,7 @@ impl<R: Runtime> NotificationBuilder<R> {
     }
 }
 
-/// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the notification APIs.
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the notification APIs.
 pub trait NotificationExt<R: Runtime> {
     fn notification(&self) -> &Notification<R>;
 }
@@ -221,15 +220,16 @@ impl<R: Runtime, T: Manager<R>> crate::NotificationExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    let mut init_script = include_str!("init-iife.js").to_string();
-    init_script.push_str(include_str!("api-iife.js"));
     Builder::new("notification")
         .invoke_handler(tauri::generate_handler![
             commands::notify,
             commands::request_permission,
             commands::is_permission_granted
         ])
-        .js_init_script(init_script)
+        .js_init_script(include_str!("init-iife.js").replace(
+            "__TEMPLATE_windows__",
+            if cfg!(windows) { "true" } else { "false" },
+        ))
         .setup(|app, api| {
             #[cfg(mobile)]
             let notification = mobile::init(app, api)?;

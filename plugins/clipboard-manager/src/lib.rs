@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/clipboard-manager/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/clipboard-manager)
-//!
 //! Read and write to the system clipboard.
 
 #![doc(
@@ -13,10 +11,8 @@
 
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    Manager, Runtime,
+    Manager, RunEvent, Runtime,
 };
-
-pub use models::*;
 
 #[cfg(desktop)]
 mod desktop;
@@ -25,16 +21,15 @@ mod mobile;
 
 mod commands;
 mod error;
-mod models;
 
 pub use error::{Error, Result};
 
 #[cfg(desktop)]
-use desktop::Clipboard;
+pub use desktop::Clipboard;
 #[cfg(mobile)]
-use mobile::Clipboard;
+pub use mobile::Clipboard;
 
-/// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the clipboard APIs.
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the clipboard APIs.
 pub trait ClipboardExt<R: Runtime> {
     fn clipboard(&self) -> &Clipboard<R>;
 }
@@ -47,9 +42,15 @@ impl<R: Runtime, T: Manager<R>> crate::ClipboardExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("clipboard")
-        .js_init_script(include_str!("api-iife.js").to_string())
-        .invoke_handler(tauri::generate_handler![commands::write, commands::read])
+    Builder::new("clipboard-manager")
+        .invoke_handler(tauri::generate_handler![
+            commands::write_text,
+            commands::read_text,
+            commands::read_image,
+            commands::write_image,
+            commands::write_html,
+            commands::clear
+        ])
         .setup(|app, api| {
             #[cfg(mobile)]
             let clipboard = mobile::init(app, api)?;
@@ -57,6 +58,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             let clipboard = desktop::init(app, api)?;
             app.manage(clipboard);
             Ok(())
+        })
+        .on_event(|_app, _event| {
+            #[cfg(desktop)]
+            if let RunEvent::Exit = _event {
+                _app.clipboard().cleanup();
+            }
         })
         .build()
 }

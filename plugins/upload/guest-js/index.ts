@@ -2,37 +2,39 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke, Channel } from "@tauri-apps/api/primitives";
+import { invoke, Channel } from '@tauri-apps/api/core'
 
 interface ProgressPayload {
-  progress: number;
-  total: number;
+  progress: number
+  progressTotal: number
+  total: number
+  transferSpeed: number
 }
 
-type ProgressHandler = (progress: ProgressPayload) => void;
+type ProgressHandler = (progress: ProgressPayload) => void
 
 async function upload(
   url: string,
   filePath: string,
   progressHandler?: ProgressHandler,
-  headers?: Map<string, string>,
-): Promise<void> {
-  const ids = new Uint32Array(1);
-  window.crypto.getRandomValues(ids);
-  const id = ids[0];
+  headers?: Map<string, string>
+): Promise<string> {
+  const ids = new Uint32Array(1)
+  window.crypto.getRandomValues(ids)
+  const id = ids[0]
 
-  const onProgress = new Channel<ProgressPayload>();
-  if (progressHandler != null) {
-    onProgress.onmessage = progressHandler;
+  const onProgress = new Channel<ProgressPayload>()
+  if (progressHandler) {
+    onProgress.onmessage = progressHandler
   }
 
-  await invoke("plugin:upload|upload", {
+  return await invoke('plugin:upload|upload', {
     id,
     url,
     filePath,
     headers: headers ?? {},
-    onProgress,
-  });
+    onProgress
+  })
 }
 
 /// Download file from given url.
@@ -44,23 +46,25 @@ async function download(
   filePath: string,
   progressHandler?: ProgressHandler,
   headers?: Map<string, string>,
+  body?: string
 ): Promise<void> {
-  const ids = new Uint32Array(1);
-  window.crypto.getRandomValues(ids);
-  const id = ids[0];
+  const ids = new Uint32Array(1)
+  window.crypto.getRandomValues(ids)
+  const id = ids[0]
 
-  const onProgress = new Channel<ProgressPayload>();
-  if (progressHandler != null) {
-    onProgress.onmessage = progressHandler;
+  const onProgress = new Channel<ProgressPayload>()
+  if (progressHandler) {
+    onProgress.onmessage = progressHandler
   }
 
-  await invoke("plugin:upload|download", {
+  await invoke('plugin:upload|download', {
     id,
     url,
     filePath,
     headers: headers ?? {},
     onProgress,
-  });
+    body
+  })
 }
 
-export { download, upload };
+export { download, upload }

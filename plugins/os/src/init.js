@@ -2,7 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-__RAW_global_os_api__;
-
 // eslint-disable-next-line
-window.__TAURI__.os.__eol = __TEMPLATE_eol__;
+Object.defineProperty(window, '__TAURI_OS_PLUGIN_INTERNALS__', {
+  value: {
+    eol: __TEMPLATE_eol__,
+    os_type: __TEMPLATE_os_type__,
+    platform: __TEMPLATE_platform__,
+    family: __TEMPLATE_family__,
+    version: __TEMPLATE_version__,
+    arch: __TEMPLATE_arch__,
+    exe_extension: __TEMPLATE_exe_extension__
+  }
+})

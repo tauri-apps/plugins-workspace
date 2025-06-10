@@ -1,24 +1,49 @@
 [package]
 name = "tauri-plugin-fs"
-version = "2.0.0-alpha.2"
+version = "2.3.0"
 description = "Access the file system."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
+links = "tauri-plugin-fs"
 
 [package.metadata.docs.rs]
-features = [ "tauri/dox" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[package.metadata.platforms.support]
+windows = { level = "full", notes = "Apps installed via MSI or NSIS in `perMachine` and `both` mode require admin permissions for write access in `$RESOURCES` folder" }
+linux = { level = "full", notes = "No write access to `$RESOURCES` folder" }
+macos = { level = "full", notes = "No write access to `$RESOURCES` folder" }
+android = { level = "partial", notes = "Access is restricted to Application folder by default" }
+ios = { level = "partial", notes = "Access is restricted to Application folder by default" }
+
+[build-dependencies]
+tauri-plugin = { workspace = true, features = ["build"] }
+schemars = { workspace = true }
+serde = { workspace = true }
+toml = "0.8"
+tauri-utils = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }
+serde_json = { workspace = true }
+serde_repr = "0.1"
 tauri = { workspace = true }
 thiserror = { workspace = true }
+url = { workspace = true }
 anyhow = "1"
-uuid = { version = "1", features = [ "v4" ] }
-glob = "0.3"
-notify = { version = "5", optional = true, features = [ "serde" ] }
-notify-debouncer-mini = { version = "0.2.1", optional = true, features = [ "serde" ] }
+glob = { workspace = true }
+# TODO: Remove `serialization-compat-6` in v3
+notify = { version = "8", optional = true, features = [
+  "serde",
+  "serialization-compat-6",
+] }
+notify-debouncer-full = { version = "0.5", optional = true }
+dunce = { workspace = true }
+percent-encoding = "2"
 
 [features]
-watch = [ "notify", "notify-debouncer-mini" ]
+watch = ["notify", "notify-debouncer-full"]

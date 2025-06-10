@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-family"
+description = "Enables the family command without any pre-configured scope."
+commands.allow = ["family"]
+
+[[permission]]
+identifier = "deny-family"
+description = "Denies the family command without any pre-configured scope."
+commands.deny = ["family"]

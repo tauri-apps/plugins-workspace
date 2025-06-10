@@ -1,0 +1,24 @@
+{
+  "$schema": "../gen/schemas/mobile-schema.json",
+  "identifier": "run-app-mobile",
+  "description": "Permissions to run the app (mobile only)",
+  "windows": ["main"],
+  "platforms": ["android", "iOS"],
+  "permissions": [
+    "nfc:allow-write",
+    "nfc:allow-scan",
+    "biometric:allow-authenticate",
+    "barcode-scanner:allow-scan",
+    "barcode-scanner:allow-cancel",
+    "barcode-scanner:allow-request-permissions",
+    "barcode-scanner:allow-check-permissions",
+    "geolocation:allow-check-permissions",
+    "geolocation:allow-request-permissions",
+    "geolocation:allow-watch-position",
+    "geolocation:allow-get-current-position",
+    "haptics:allow-impact-feedback",
+    "haptics:allow-notification-feedback",
+    "haptics:allow-selection-feedback",
+    "haptics:allow-vibrate"
+  ]
+}

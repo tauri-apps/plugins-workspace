@@ -4,9 +4,17 @@ Position your windows at well-known locations.
 
 This plugin is a port of [electron-positioner](https://github.com/jenslind/electron-positioner) for Tauri.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | x         |
+| iOS      | x         |
+
 ## Install
 
-_This plugin requires a Rust version of at least **1.70**_
+_This plugin requires a Rust version of at least **1.77.2**_
 
 There are three general methods of installation that we can recommend.
 
@@ -20,7 +28,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-positioner = "2.0.0-alpha"
+tauri-plugin-positioner = "2.0.0"
 # alternatively with Git:
 tauri-plugin-positioner = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -48,27 +56,69 @@ yarn add https://github.com/tauri-apps/tauri-plugin-positioner#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
+use tauri::tray::TrayIconBuilder;
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_positioner::init())
         // This is required to get tray-relative positions to work
-        .on_system_tray_event(|app, event| {
-           tauri_plugin_positioner::on_tray_event(app, &event);
+        .setup(|app| {
+            // note that this will create a new TrayIcon
+            TrayIconBuilder::new()
+                .on_tray_icon_event(|app, event| {
+                    tauri_plugin_positioner::on_tray_event(app.app_handle(), &event);
+                })
+                .build(app)?;
+            Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 ```
 
+Alternatively, you may handle the tray events through JavaScript. Register the plugin as previously noted.
+
+```rust
+fn main() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_positioner::init())
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+```
+
+And in JavaScript, the `action` passed to the TrayIcon should include the handler.
+
+```javascript
+import {
+  moveWindow,
+  Position,
+  handleIconState,
+} from "@tauri-apps/plugin-positioner";
+
+const action = async (event: TrayIconEvent) => {
+  // add the handle in the action to update the state
+  await handleIconState(event);
+
+  if (event.type === "Click") {
+    // note this option requires enabling the `tray-icon`
+    //   feature in the Cargo.toml
+    await moveWindow(Position.TrayLeft);
+  }
+};
+
+const tray = await TrayIcon.new({ id: "main", action });
+```
+
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { move_window, Position } from "@tauri-apps/plugin-positioner";
+import { moveWindow, Position } from '@tauri-apps/plugin-positioner'
 
-move_window(Position.TopRight);
+moveWindow(Position.TopRight)
 ```
 
 If you only intend on moving the window from rust code, you can import the Window trait extension instead of registering the plugin:
@@ -83,6 +133,22 @@ let _ = win.move_window(Position::TopRight);
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
+
+## Partners
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v2/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+For the complete list of sponsors please visit our [website](https://tauri.app#sponsors) and [Open Collective](https://opencollective.com/tauri).
 
 ## License
 

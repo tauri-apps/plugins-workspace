@@ -2,17 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use crate::{PendingUpdate, Result, UpdaterExt};
+use crate::{Result, Update, UpdaterExt};
 
+use http::{HeaderMap, HeaderName, HeaderValue};
 use serde::Serialize;
-use tauri::{ipc::Channel, AppHandle, Runtime, State};
+use tauri::{ipc::Channel, Manager, Resource, ResourceId, Runtime, Webview};
 
-use std::{
-    sync::atomic::{AtomicBool, Ordering},
-    time::Duration,
-};
+use std::{str::FromStr, time::Duration};
+use url::Url;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 #[serde(tag = "event", content = "data")]
 pub enum DownloadEvent {
     #[serde(rename_all = "camelCase")]
@@ -29,75 +28,170 @@ pub enum DownloadEvent {
 #[derive(Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Metadata {
-    available: bool,
+    rid: ResourceId,
     current_version: String,
     version: String,
     date: Option<String>,
     body: Option<String>,
+    raw_json: serde_json::Value,
 }
+
+struct DownloadedBytes(pub Vec<u8>);
+impl Resource for DownloadedBytes {}
 
 #[tauri::command]
 pub(crate) async fn check<R: Runtime>(
-    app: AppHandle<R>,
-    pending: State<'_, PendingUpdate>,
+    webview: Webview<R>,
     headers: Option<Vec<(String, String)>>,
     timeout: Option<u64>,
+    proxy: Option<String>,
     target: Option<String>,
-) -> Result<Metadata> {
-    let mut builder = app.updater_builder();
+    allow_downgrades: Option<bool>,
+) -> Result<Option<Metadata>> {
+    let mut builder = webview.updater_builder();
     if let Some(headers) = headers {
         for (k, v) in headers {
             builder = builder.header(k, v)?;
         }
     }
     if let Some(timeout) = timeout {
-        builder = builder.timeout(Duration::from_secs(timeout));
+        builder = builder.timeout(Duration::from_millis(timeout));
+    }
+    if let Some(ref proxy) = proxy {
+        let url = Url::parse(proxy.as_str())?;
+        builder = builder.proxy(url);
     }
     if let Some(target) = target {
         builder = builder.target(target);
     }
+    if allow_downgrades.unwrap_or(false) {
+        builder = builder.version_comparator(|current, update| update.version != current);
+    }
 
     let updater = builder.build()?;
     let update = updater.check().await?;
-    let mut metadata = Metadata::default();
+
     if let Some(update) = update {
-        metadata.available = true;
-        metadata.current_version = update.current_version.clone();
-        metadata.version = update.version.clone();
-        metadata.date = update.date.map(|d| d.to_string());
-        metadata.body = update.body.clone();
-        pending.0.lock().await.replace(update);
+        let formatted_date = if let Some(date) = update.date {
+            let formatted_date = date
+                .format(&time::format_description::well_known::Rfc3339)
+                .map_err(|_| crate::Error::FormatDate)?;
+            Some(formatted_date)
+        } else {
+            None
+        };
+        let metadata = Metadata {
+            current_version: update.current_version.clone(),
+            version: update.version.clone(),
+            date: formatted_date,
+            body: update.body.clone(),
+            raw_json: update.raw_json.clone(),
+            rid: webview.resources_table().add(update),
+        };
+        Ok(Some(metadata))
+    } else {
+        Ok(None)
+    }
+}
+
+#[tauri::command]
+pub(crate) async fn download<R: Runtime>(
+    webview: Webview<R>,
+    rid: ResourceId,
+    on_event: Channel<DownloadEvent>,
+    headers: Option<Vec<(String, String)>>,
+    timeout: Option<u64>,
+) -> Result<ResourceId> {
+    let update = webview.resources_table().get::<Update>(rid)?;
+
+    let mut update = (*update).clone();
+
+    if let Some(headers) = headers {
+        let mut map = HeaderMap::new();
+        for (k, v) in headers {
+            map.append(HeaderName::from_str(&k)?, HeaderValue::from_str(&v)?);
+        }
+        update.headers = map;
     }
 
-    Ok(metadata)
+    if let Some(timeout) = timeout {
+        update.timeout = Some(Duration::from_millis(timeout));
+    }
+
+    let mut first_chunk = true;
+    let bytes = update
+        .download(
+            |chunk_length, content_length| {
+                if first_chunk {
+                    first_chunk = !first_chunk;
+                    let _ = on_event.send(DownloadEvent::Started { content_length });
+                }
+                let _ = on_event.send(DownloadEvent::Progress { chunk_length });
+            },
+            || {
+                let _ = on_event.send(DownloadEvent::Finished);
+            },
+        )
+        .await?;
+
+    Ok(webview.resources_table().add(DownloadedBytes(bytes)))
+}
+
+#[tauri::command]
+pub(crate) async fn install<R: Runtime>(
+    webview: Webview<R>,
+    update_rid: ResourceId,
+    bytes_rid: ResourceId,
+) -> Result<()> {
+    let update = webview.resources_table().get::<Update>(update_rid)?;
+    let bytes = webview
+        .resources_table()
+        .get::<DownloadedBytes>(bytes_rid)?;
+    update.install(&bytes.0)?;
+    let _ = webview.resources_table().close(bytes_rid);
+    Ok(())
 }
 
 #[tauri::command]
 pub(crate) async fn download_and_install<R: Runtime>(
-    _app: AppHandle<R>,
-    pending: State<'_, PendingUpdate>,
-    on_event: Channel,
+    webview: Webview<R>,
+    rid: ResourceId,
+    on_event: Channel<DownloadEvent>,
+    headers: Option<Vec<(String, String)>>,
+    timeout: Option<u64>,
 ) -> Result<()> {
-    if let Some(pending) = &*pending.0.lock().await {
-        let first_chunk = AtomicBool::new(false);
-        let on_event_c = on_event.clone();
-        pending
-            .download_and_install(
-                move |chunk_length, content_length| {
-                    if first_chunk.swap(false, Ordering::Acquire) {
-                        on_event
-                            .send(DownloadEvent::Started { content_length })
-                            .unwrap();
-                    }
-                    on_event
-                        .send(DownloadEvent::Progress { chunk_length })
-                        .unwrap();
-                },
-                move || {
-                    on_event_c.send(&DownloadEvent::Finished).unwrap();
-                },
-            )
-            .await?;
+    let update = webview.resources_table().get::<Update>(rid)?;
+
+    let mut update = (*update).clone();
+
+    if let Some(headers) = headers {
+        let mut map = HeaderMap::new();
+        for (k, v) in headers {
+            map.append(HeaderName::from_str(&k)?, HeaderValue::from_str(&v)?);
+        }
+        update.headers = map;
     }
+
+    if let Some(timeout) = timeout {
+        update.timeout = Some(Duration::from_millis(timeout));
+    }
+
+    let mut first_chunk = true;
+
+    update
+        .download_and_install(
+            |chunk_length, content_length| {
+                if first_chunk {
+                    first_chunk = !first_chunk;
+                    let _ = on_event.send(DownloadEvent::Started { content_length });
+                }
+                let _ = on_event.send(DownloadEvent::Progress { chunk_length });
+            },
+            || {
+                let _ = on_event.send(DownloadEvent::Finished);
+            },
+        )
+        .await?;
+
     Ok(())
 }

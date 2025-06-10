@@ -1,6 +1,6 @@
 <script>
-  import { open, save, confirm } from "@tauri-apps/plugin-dialog";
-  import { readBinaryFile } from "@tauri-apps/plugin-fs";
+  import { open, save, confirm, message } from "@tauri-apps/plugin-dialog";
+  import { readFile } from "@tauri-apps/plugin-fs";
 
   export let onMessage;
   export let insecureRenderHtml;
@@ -22,6 +22,12 @@
   }
 
   async function prompt() {
+    confirm("Do you want to do something?")
+      .then((res) => onMessage(res ? "Yes" : "No"))
+      .catch(onMessage);
+  }
+
+  async function promptCustom() {
     confirm("Is Tauri awesome?", {
       okLabel: "Absolutely",
       cancelLabel: "Totally",
@@ -32,6 +38,10 @@
         )
       )
       .catch(onMessage);
+  }
+
+  async function msg() {
+    await message("Tauri is awesome!");
   }
 
   function openDialog() {
@@ -53,14 +63,15 @@
         if (Array.isArray(res)) {
           onMessage(res);
         } else {
-          var pathToRead = typeof res === "string" ? res : res.path;
+          var pathToRead = res;
           var isFile = pathToRead.match(/\S+\.\S+$/g);
-          readBinaryFile(pathToRead)
+          readFile(pathToRead)
             .then(function (response) {
               if (isFile) {
                 if (
                   pathToRead.includes(".png") ||
-                  pathToRead.includes(".jpg")
+                  pathToRead.includes(".jpg") ||
+                  pathToRead.includes(".jpeg")
                 ) {
                   arrayBufferToBase64(
                     new Uint8Array(response),
@@ -130,3 +141,7 @@
   >Open save dialog</button
 >
 <button class="btn" id="prompt-dialog" on:click={prompt}>Prompt</button>
+<button class="btn" id="custom-prompt-dialog" on:click={promptCustom}
+  >Prompt (custom)</button
+>
+<button class="btn" id="message-dialog" on:click={msg}>Message</button>

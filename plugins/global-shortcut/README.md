@@ -2,11 +2,17 @@
 
 Register global shortcuts.
 
-- Supported platforms: Windows, Linux and macOS.
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | x         |
+| iOS      | x         |
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.70**_
+_This plugin requires a Rust version of at least **1.77.2**_
 
 There are three general methods of installation that we can recommend.
 
@@ -21,9 +27,9 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 # you can add the dependencies on the `[dependencies]` section if you do not target mobile
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
-tauri-plugin-global-shortcut = "2.0.0-alpha"
+tauri-plugin-global-shortcut = "2.0.0"
 # alternatively with Git:
-tauri-plugin-shortcut = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
+tauri-plugin-global-shortcut = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -49,14 +55,34 @@ yarn add https://github.com/tauri-apps/tauri-plugin-global-shortcut#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
             #[cfg(desktop)]
-            app.handle().plugin(tauri_plugin_shortcut::init())?;
+            {
+                use tauri::Manager;
+                use tauri_plugin_global_shortcut::{Code, Modifiers, ShortcutState};
+
+                app.handle().plugin(
+                    tauri_plugin_global_shortcut::Builder::new()
+                        .with_shortcuts(["ctrl+d", "alt+space"])?
+                        .with_handler(|app, shortcut, event| {
+                            if event.state == ShortcutState::Pressed  {
+                                if shortcut.matches(Modifiers::CONTROL, Code::KeyD) {
+                                    let _ = app.emit("shortcut-event", "Ctrl+D triggered");
+                                }
+                                if shortcut.matches(Modifiers::ALT, Code::Space) {
+                                    let _ = app.emit("shortcut-event", "Alt+Space triggered");
+                                }
+                            }
+                        })
+                        .build(),
+                )?;
+            }
+
             Ok(())
         })
         .run(tauri::generate_context!())
@@ -64,15 +90,36 @@ fn main() {
 }
 ```
 
-Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
+Afterwards all the plugin's APIs are available through the JavaScript bindings:
 
 ```javascript
-
+import { register } from '@tauri-apps/plugin-global-shortcut'
+await register('CommandOrControl+Shift+C', (event) => {
+  if (event.state === 'Pressed') {
+    console.log('Shortcut triggered')
+  }
+})
 ```
 
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
+
+## Partners
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v2/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+For the complete list of sponsors please visit our [website](https://tauri.app#sponsors) and [Open Collective](https://opencollective.com/tauri).
 
 ## License
 

@@ -1,0 +1,82 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+# Scopes Section
+# This section contains scopes, which define file level access
+
+[[permission]]
+identifier = "scope-localdata-recursive"
+description = "This scope permits recursive access to the complete `$LOCALDATA` folder, including sub directories and files."
+
+[[permission.scope.allow]]
+path = "$LOCALDATA"
+[[permission.scope.allow]]
+path = "$LOCALDATA/**"
+
+[[permission]]
+identifier = "scope-localdata"
+description = "This scope permits access to all files and list content of top level directories in the `$LOCALDATA` folder."
+
+[[permission.scope.allow]]
+path = "$LOCALDATA"
+[[permission.scope.allow]]
+path = "$LOCALDATA/*"
+
+[[permission]]
+identifier = "scope-localdata-index"
+description = "This scope permits to list all files and folders in the `$LOCALDATA`folder."
+
+[[permission.scope.allow]]
+path = "$LOCALDATA"
+
+# Sets Section
+# This section combines the scope elements with enablement of commands
+
+[[set]]
+identifier = "allow-localdata-read-recursive"
+description = "This allows full recursive read access to the complete `$LOCALDATA` folder, files and subdirectories."
+permissions = [
+    "read-all",
+    "scope-localdata-recursive"
+]
+
+[[set]]
+identifier = "allow-localdata-write-recursive"
+description = "This allows full recursive write access to the complete `$LOCALDATA` folder, files and subdirectories."
+permissions = [
+    "write-all",
+    "scope-localdata-recursive"
+]
+
+[[set]]
+identifier = "allow-localdata-read"
+description = "This allows non-recursive read access to the `$LOCALDATA` folder."
+permissions = [
+    "read-all",
+    "scope-localdata"
+]
+
+[[set]]
+identifier = "allow-localdata-write"
+description = "This allows non-recursive write access to the `$LOCALDATA` folder."
+permissions = [
+    "write-all",
+    "scope-localdata"
+]
+
+[[set]]
+identifier = "allow-localdata-meta-recursive"
+description = "This allows full recursive read access to metadata of the `$LOCALDATA` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-localdata-recursive"
+]
+
+[[set]]
+identifier = "allow-localdata-meta"
+description = "This allows non-recursive read access to metadata of the `$LOCALDATA` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-localdata-index"
+]

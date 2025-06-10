@@ -7,5 +7,5 @@ ignore = [
   # wry needs kuchiki on Android
   "RUSTSEC-2023-0019",
   # atty is only used when the `colored` feature is enabled on tauri-plugin-log
-  "RUSTSEC-2021-0145"
+  "RUSTSEC-2021-0145",
 ]

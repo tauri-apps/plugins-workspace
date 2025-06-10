@@ -1,20 +1,36 @@
 [workspace]
-members = ["plugins/*", "plugins/*/tests/*", "plugins/*/examples/*/src-tauri", "examples/*/src-tauri"]
+members = [
+  "plugins/*",
+  "plugins/*/tests/*",
+  "plugins/updater/tests/updater-migration/v2-app",
+  "plugins/*/examples/*/src-tauri",
+  "examples/*/src-tauri",
+]
 resolver = "2"
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
+tracing = "0.1"
 log = "0.4"
-tauri = "2.0.0-alpha.16"
-tauri-build = "2.0.0-alpha.10"
+tauri = { version = "2", default-features = false }
+tauri-build = "2"
+tauri-plugin = "2"
+tauri-utils = "2"
 serde_json = "1"
-thiserror = "1"
+thiserror = "2"
+url = "2"
+schemars = "0.8"
+dunce = "1"
+specta = "^2.0.0-rc.16"
+glob = "0.3"
+zbus = "5"
 
 [workspace.package]
 edition = "2021"
-authors = [ "Tauri Programme within The Commons Conservancy" ]
+authors = ["Tauri Programme within The Commons Conservancy"]
 license = "Apache-2.0 OR MIT"
-rust-version = "1.70"
+rust-version = "1.77.2"
+repository = "https://github.com/tauri-apps/plugins-workspace"
 
 # default to small, optimized release binaries
 [profile.release]

@@ -1,0 +1,82 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+# Scopes Section
+# This section contains scopes, which define file level access
+
+[[permission]]
+identifier = "scope-audio-recursive"
+description = "This scope permits recursive access to the complete `$AUDIO` folder, including sub directories and files."
+
+[[permission.scope.allow]]
+path = "$AUDIO"
+[[permission.scope.allow]]
+path = "$AUDIO/**"
+
+[[permission]]
+identifier = "scope-audio"
+description = "This scope permits access to all files and list content of top level directories in the `$AUDIO` folder."
+
+[[permission.scope.allow]]
+path = "$AUDIO"
+[[permission.scope.allow]]
+path = "$AUDIO/*"
+
+[[permission]]
+identifier = "scope-audio-index"
+description = "This scope permits to list all files and folders in the `$AUDIO`folder."
+
+[[permission.scope.allow]]
+path = "$AUDIO"
+
+# Sets Section
+# This section combines the scope elements with enablement of commands
+
+[[set]]
+identifier = "allow-audio-read-recursive"
+description = "This allows full recursive read access to the complete `$AUDIO` folder, files and subdirectories."
+permissions = [
+    "read-all",
+    "scope-audio-recursive"
+]
+
+[[set]]
+identifier = "allow-audio-write-recursive"
+description = "This allows full recursive write access to the complete `$AUDIO` folder, files and subdirectories."
+permissions = [
+    "write-all",
+    "scope-audio-recursive"
+]
+
+[[set]]
+identifier = "allow-audio-read"
+description = "This allows non-recursive read access to the `$AUDIO` folder."
+permissions = [
+    "read-all",
+    "scope-audio"
+]
+
+[[set]]
+identifier = "allow-audio-write"
+description = "This allows non-recursive write access to the `$AUDIO` folder."
+permissions = [
+    "write-all",
+    "scope-audio"
+]
+
+[[set]]
+identifier = "allow-audio-meta-recursive"
+description = "This allows full recursive read access to metadata of the `$AUDIO` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-audio-recursive"
+]
+
+[[set]]
+identifier = "allow-audio-meta"
+description = "This allows non-recursive read access to metadata of the `$AUDIO` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-audio-index"
+]

@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-notify"
+description = "Enables the notify command without any pre-configured scope."
+commands.allow = ["notify"]
+
+[[permission]]
+identifier = "deny-notify"
+description = "Denies the notify command without any pre-configured scope."
+commands.deny = ["notify"]

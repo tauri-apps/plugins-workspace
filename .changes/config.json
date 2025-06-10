@@ -3,24 +3,50 @@
   "pkgManagers": {
     "javascript": {
       "version": true,
-      "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.cjs npm ${ pkgFile.pkg.name } ${ pkgFile.pkg.version }",
-      "publish": ["pnpm build", "pnpm publish --access public --no-git-checks"]
+      "getPublishedVersion": {
+        "use": "fetch:check",
+        "options": {
+          "url": "https://registry.npmjs.com/${ pkg.pkgFile.pkg.name }/${ pkg.pkgFile.version }"
+        }
+      },
+      "publish": [
+        {
+          "command": "pnpm build",
+          "dryRunCommand": "pnpm build"
+        },
+        {
+          "command": "echo '<details>\n<summary><em><h4>PNPM Publish</h4></em></summary>\n\n```'",
+          "dryRunCommand": true,
+          "pipe": true
+        },
+        {
+          "command": "npm publish --provenance --access public",
+          "dryRunCommand": "npm publish --provenance --access public --dry-run",
+          "pipe": true
+        },
+        {
+          "command": "echo '```\n\n</details>\n'",
+          "dryRunCommand": true,
+          "pipe": true
+        }
+      ]
     },
     "rust": {
       "version": true,
-      "getPublishedVersion": "node ../../.scripts/covector/package-latest-version.cjs cargo ${ pkgFile.pkg.package.name } ${ pkgFile.pkg.package.version }",
+      "getPublishedVersion": {
+        "use": "fetch:check",
+        "options": {
+          "url": "https://crates.io/api/v1/crates/${ pkg.pkgFile.pkg.package.name }/${ pkg.pkgFile.version }"
+        }
+      },
       "publish": [
-        {
-          "command": "cargo package --no-verify",
-          "dryRunCommand": true
-        },
         {
           "command": "echo '<details>\n<summary><em><h4>Cargo Publish</h4></em></summary>\n\n```'",
           "dryRunCommand": true,
           "pipe": true
         },
         {
-          "command": "cargo publish",
+          "command": "cargo publish --no-verify",
           "dryRunCommand": "cargo publish --dry-run",
           "pipe": true
         },
@@ -39,18 +65,24 @@
       "publish": false,
       "dependencies": [
         "barcode-scanner",
-        "log-plugin",
+        "biometric",
+        "log",
         "cli",
         "clipboard-manager",
         "dialog",
         "fs",
         "global-shortcut",
+        "opener",
         "http",
+        "nfc",
         "notification",
         "os",
         "process",
         "shell",
-        "updater"
+        "store",
+        "updater",
+        "geolocation",
+        "haptics"
       ]
     },
     "api-example-js": {
@@ -59,22 +91,25 @@
       "publish": false,
       "dependencies": [
         "barcode-scanner-js",
+        "biometric-js",
         "log-js",
         "cli-js",
         "clipboard-manager-js",
         "dialog-js",
         "fs-js",
         "global-shortcut-js",
+        "opener-js",
         "http-js",
+        "nfc-js",
         "notification-js",
         "os-js",
         "process-js",
         "shell-js",
+        "store-js",
         "updater-js"
       ],
       "postversion": "pnpm install --no-frozen-lockfile"
     },
-
     "deep-link-example-js": {
       "path": "./plugins/deep-link/examples/app",
       "manager": "javascript",
@@ -82,16 +117,6 @@
       "dependencies": ["deep-link-js"],
       "postversion": "pnpm install --no-frozen-lockfile"
     },
-
-    "authenticator": {
-      "path": "./plugins/authenticator",
-      "manager": "rust"
-    },
-    "authenticator-js": {
-      "path": "./plugins/authenticator",
-      "manager": "javascript"
-    },
-
     "autostart": {
       "path": "./plugins/autostart",
       "manager": "rust"
@@ -100,7 +125,6 @@
       "path": "./plugins/autostart",
       "manager": "javascript"
     },
-
     "barcode-scanner": {
       "path": "./plugins/barcode-scanner",
       "manager": "rust"
@@ -109,7 +133,14 @@
       "path": "./plugins/barcode-scanner",
       "manager": "javascript"
     },
-
+    "biometric": {
+      "path": "./plugins/biometric",
+      "manager": "rust"
+    },
+    "biometric-js": {
+      "path": "./plugins/biometric",
+      "manager": "javascript"
+    },
     "cli": {
       "path": "./plugins/cli",
       "manager": "rust"
@@ -118,7 +149,6 @@
       "path": "./plugins/cli",
       "manager": "javascript"
     },
-
     "clipboard-manager": {
       "path": "./plugins/clipboard-manager",
       "manager": "rust"
@@ -127,7 +157,6 @@
       "path": "./plugins/clipboard-manager",
       "manager": "javascript"
     },
-
     "deep-link": {
       "path": "./plugins/deep-link",
       "manager": "rust"
@@ -136,7 +165,6 @@
       "path": "./plugins/deep-link",
       "manager": "javascript"
     },
-
     "fs": {
       "path": "./plugins/fs",
       "manager": "rust"
@@ -145,7 +173,6 @@
       "path": "./plugins/fs",
       "manager": "javascript"
     },
-
     "dialog": {
       "path": "./plugins/dialog",
       "manager": "rust",
@@ -153,9 +180,17 @@
     },
     "dialog-js": {
       "path": "./plugins/dialog",
+      "manager": "javascript",
+      "dependencies": ["fs-js"]
+    },
+    "geolocation": {
+      "path": "./plugins/geolocation",
+      "manager": "rust"
+    },
+    "geolocation-js": {
+      "path": "./plugins/geolocation",
       "manager": "javascript"
     },
-
     "global-shortcut": {
       "path": "./plugins/global-shortcut",
       "manager": "rust"
@@ -164,7 +199,22 @@
       "path": "./plugins/global-shortcut",
       "manager": "javascript"
     },
-
+    "opener": {
+      "path": "./plugins/opener",
+      "manager": "rust"
+    },
+    "opener-js": {
+      "path": "./plugins/opener",
+      "manager": "javascript"
+    },
+    "haptics": {
+      "path": "./plugins/haptics",
+      "manager": "rust"
+    },
+    "haptics-js": {
+      "path": "./plugins/haptics",
+      "manager": "javascript"
+    },
     "http": {
       "path": "./plugins/http",
       "manager": "rust",
@@ -172,15 +222,14 @@
     },
     "http-js": {
       "path": "./plugins/http",
-      "manager": "javascript"
+      "manager": "javascript",
+      "dependencies": ["fs-js"]
     },
-
     "localhost": {
       "path": "./plugins/localhost",
       "manager": "rust"
     },
-
-    "log-plugin": {
+    "log": {
       "path": "./plugins/log",
       "manager": "rust"
     },
@@ -188,7 +237,14 @@
       "path": "./plugins/log",
       "manager": "javascript"
     },
-
+    "nfc": {
+      "path": "./plugins/nfc",
+      "manager": "rust"
+    },
+    "nfc-js": {
+      "path": "./plugins/nfc",
+      "manager": "javascript"
+    },
     "notification": {
       "path": "./plugins/notification",
       "manager": "rust"
@@ -197,7 +253,6 @@
       "path": "./plugins/notification",
       "manager": "javascript"
     },
-
     "os": {
       "path": "./plugins/os",
       "manager": "rust"
@@ -206,13 +261,11 @@
       "path": "./plugins/os",
       "manager": "javascript"
     },
-
     "persisted-scope": {
       "path": "./plugins/persisted-scope",
       "manager": "rust",
       "dependencies": ["fs"]
     },
-
     "positioner": {
       "path": "./plugins/positioner",
       "manager": "rust"
@@ -221,7 +274,6 @@
       "path": "./plugins/positioner",
       "manager": "javascript"
     },
-
     "process": {
       "path": "./plugins/process",
       "manager": "rust"
@@ -230,7 +282,6 @@
       "path": "./plugins/process",
       "manager": "javascript"
     },
-
     "shell": {
       "path": "./plugins/shell",
       "manager": "rust"
@@ -239,42 +290,19 @@
       "path": "./plugins/shell",
       "manager": "javascript"
     },
-
     "single-instance": {
       "path": "./plugins/single-instance",
-      "manager": "rust"
+      "manager": "rust",
+      "dependencies": ["deep-link"]
     },
-
     "sql": {
       "path": "./plugins/sql",
-      "manager": "rust",
-      "publish": [
-        {
-          "command": "cargo package --no-verify",
-          "dryRunCommand": true
-        },
-        {
-          "command": "echo '<details>\n<summary><em><h4>Cargo Publish</h4></em></summary>\n\n```'",
-          "dryRunCommand": true,
-          "pipe": true
-        },
-        {
-          "command": "cargo publish --features sqlite",
-          "dryRunCommand": "cargo publish --features sqlite --dry-run",
-          "pipe": true
-        },
-        {
-          "command": "echo '```\n\n</details>\n'",
-          "dryRunCommand": true,
-          "pipe": true
-        }
-      ]
+      "manager": "rust"
     },
     "sql-js": {
       "path": "./plugins/sql",
       "manager": "javascript"
     },
-
     "store": {
       "path": "./plugins/store",
       "manager": "rust"
@@ -283,7 +311,6 @@
       "path": "./plugins/store",
       "manager": "javascript"
     },
-
     "stronghold": {
       "path": "./plugins/stronghold",
       "manager": "rust"
@@ -292,7 +319,6 @@
       "path": "./plugins/stronghold",
       "manager": "javascript"
     },
-
     "updater": {
       "path": "./plugins/updater",
       "manager": "rust"
@@ -301,7 +327,6 @@
       "path": "./plugins/updater",
       "manager": "javascript"
     },
-
     "upload": {
       "path": "./plugins/upload",
       "manager": "rust"
@@ -310,7 +335,6 @@
       "path": "./plugins/upload",
       "manager": "javascript"
     },
-
     "websocket": {
       "path": "./plugins/websocket",
       "manager": "rust"
@@ -319,7 +343,6 @@
       "path": "./plugins/websocket",
       "manager": "javascript"
     },
-
     "window-state": {
       "path": "./plugins/window-state",
       "manager": "rust"

@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/os/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/os)
-//!
 //! Read information about the operating system.
 
 #![doc(
@@ -90,7 +88,7 @@ pub fn exe_extension() -> &'static str {
     std::env::consts::EXE_EXTENSION
 }
 
-/// Returns the current operating system locale with the `BCP-47` language tag. If the locale couldn’t be obtained, `None` is returned instead.
+/// Returns the current operating system locale with the `BCP-47` language tag. If the locale couldn't be obtained, `None` is returned instead.
 pub fn locale() -> Option<String> {
     sys_locale::get_locale()
 }
@@ -102,33 +100,42 @@ pub fn hostname() -> String {
 
 #[derive(Template)]
 #[default_template("./init.js")]
-struct InitJavascript {
-    #[raw]
-    global_os_api: &'static str,
+struct InitJavascript<'a> {
     eol: &'static str,
+    os_type: String,
+    platform: &'a str,
+    family: &'a str,
+    version: String,
+    arch: &'a str,
+    exe_extension: &'a str,
+}
+
+impl InitJavascript<'_> {
+    fn new() -> Self {
+        Self {
+            #[cfg(windows)]
+            eol: "\r\n",
+            #[cfg(not(windows))]
+            eol: "\n",
+            os_type: crate::type_().to_string(),
+            platform: crate::platform(),
+            family: crate::family(),
+            version: crate::version().to_string(),
+            arch: crate::arch(),
+            exe_extension: crate::exe_extension(),
+        }
+    }
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    let init_js = InitJavascript {
-        global_os_api: include_str!("api-iife.js"),
-        #[cfg(windows)]
-        eol: "\r\n",
-        #[cfg(not(windows))]
-        eol: "\n",
-    }
-    .render_default(&Default::default())
-    // this will never fail with the above global_os_api eol values
-    .unwrap();
+    let init_js = InitJavascript::new()
+        .render_default(&Default::default())
+        // this will never fail with the above global_os_api values
+        .unwrap();
 
     Builder::new("os")
         .js_init_script(init_js.to_string())
         .invoke_handler(tauri::generate_handler![
-            commands::platform,
-            commands::version,
-            commands::os_type,
-            commands::family,
-            commands::arch,
-            commands::exe_extension,
             commands::locale,
             commands::hostname
         ])

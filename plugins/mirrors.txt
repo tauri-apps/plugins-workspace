@@ -1,4 +1,3 @@
-authenticator
 autostart
 cli
 clipboard-manager

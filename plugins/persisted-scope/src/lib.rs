@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/persisted-scope/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/persisted-scope)
-//!
 //! Save filesystem and asset scopes and restore them when the app is reopened.
 
 #![doc(
@@ -13,17 +11,14 @@
 
 use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
+
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    scope::fs::Pattern as GlobPattern,
     Manager, Runtime,
 };
-#[cfg(feature = "protocol-asset")]
-use tauri::{FsScope, FsScopeEvent};
-use tauri_plugin_fs::{FsExt, Scope as FsPluginScope, ScopeEvent as FsPluginScopeEvent};
+use tauri_plugin_fs::FsExt;
 
 use std::{
-    collections::HashSet,
     fs::{create_dir_all, File},
     io::Write,
     path::Path,
@@ -46,70 +41,6 @@ const PATTERNS: &[&str] = &[
     r"\\?\\\?\",
 ];
 const REPLACE_WITH: &[&str] = &[r"[", r"]", r"?", r"*", r"\?", r"\\?\", r"\\?\"];
-
-trait ScopeExt {
-    fn allow_file(&self, path: &Path);
-    fn allow_directory(&self, path: &Path, recursive: bool);
-
-    fn forbid_file(&self, path: &Path);
-    fn forbid_directory(&self, path: &Path, recursive: bool);
-
-    fn allowed_patterns(&self) -> HashSet<GlobPattern>;
-    fn forbidden_patterns(&self) -> HashSet<GlobPattern>;
-}
-
-impl ScopeExt for &FsPluginScope {
-    fn allow_file(&self, path: &Path) {
-        let _ = FsPluginScope::allow_file(self, path);
-    }
-
-    fn allow_directory(&self, path: &Path, recursive: bool) {
-        let _ = FsPluginScope::allow_directory(self, path, recursive);
-    }
-
-    fn forbid_file(&self, path: &Path) {
-        let _ = FsPluginScope::forbid_file(self, path);
-    }
-
-    fn forbid_directory(&self, path: &Path, recursive: bool) {
-        let _ = FsPluginScope::forbid_directory(self, path, recursive);
-    }
-
-    fn allowed_patterns(&self) -> HashSet<GlobPattern> {
-        FsPluginScope::allowed_patterns(self)
-    }
-
-    fn forbidden_patterns(&self) -> HashSet<GlobPattern> {
-        FsPluginScope::forbidden_patterns(self)
-    }
-}
-
-#[cfg(feature = "protocol-asset")]
-impl ScopeExt for &FsScope {
-    fn allow_file(&self, path: &Path) {
-        let _ = FsScope::allow_file(self, path);
-    }
-
-    fn allow_directory(&self, path: &Path, recursive: bool) {
-        let _ = FsScope::allow_directory(self, path, recursive);
-    }
-
-    fn forbid_file(&self, path: &Path) {
-        let _ = FsScope::forbid_file(self, path);
-    }
-
-    fn forbid_directory(&self, path: &Path, recursive: bool) {
-        let _ = FsScope::forbid_directory(self, path, recursive);
-    }
-
-    fn allowed_patterns(&self) -> HashSet<GlobPattern> {
-        FsScope::allowed_patterns(self)
-    }
-
-    fn forbidden_patterns(&self) -> HashSet<GlobPattern> {
-        FsScope::forbidden_patterns(self)
-    }
-}
 
 #[derive(Debug, thiserror::Error)]
 enum Error {
@@ -171,41 +102,41 @@ fn fix_directory(path_str: &str) -> &Path {
     path
 }
 
-fn allow_path(scope: impl ScopeExt, path: &str) {
+fn allow_path(scope: &tauri::fs::Scope, path: &str) {
     let target_type = detect_scope_type(path);
 
     match target_type {
         TargetType::File => {
-            scope.allow_file(Path::new(path));
+            let _ = scope.allow_file(Path::new(path));
         }
         TargetType::Directory => {
             // We remove the '*' at the end of it, else it will be escaped by the pattern.
-            scope.allow_directory(fix_directory(path), false);
+            let _ = scope.allow_directory(fix_directory(path), false);
         }
         TargetType::RecursiveDirectory => {
             // We remove the '**' at the end of it, else it will be escaped by the pattern.
-            scope.allow_directory(fix_directory(path), true);
+            let _ = scope.allow_directory(fix_directory(path), true);
         }
     }
 }
 
-fn forbid_path(scope: impl ScopeExt, path: &str) {
+fn forbid_path(scope: &tauri::fs::Scope, path: &str) {
     let target_type = detect_scope_type(path);
 
     match target_type {
         TargetType::File => {
-            scope.forbid_file(Path::new(path));
+            let _ = scope.forbid_file(Path::new(path));
         }
         TargetType::Directory => {
-            scope.forbid_directory(fix_directory(path), false);
+            let _ = scope.forbid_directory(fix_directory(path), false);
         }
         TargetType::RecursiveDirectory => {
-            scope.forbid_directory(fix_directory(path), true);
+            let _ = scope.forbid_directory(fix_directory(path), true);
         }
     }
 }
 
-fn save_scopes(scope: impl ScopeExt, app_dir: &Path, scope_state_path: &Path) {
+fn save_scopes(scope: &tauri::fs::Scope, app_dir: &Path, scope_state_path: &Path) {
     let scope = Scope {
         allowed_paths: scope
             .allowed_patterns()
@@ -242,8 +173,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 #[cfg(feature = "protocol-asset")]
                 let asset_scope_state_path = app_dir.join(ASSET_SCOPE_STATE_FILENAME);
 
-                if let Some(fs_scope) = fs_scope {
-                let _ = fs_scope.forbid_file(&fs_scope_state_path);}
+                if let Some(fs_scope) = &fs_scope {
+                     let _ = fs_scope.forbid_file(&fs_scope_state_path);
+                } else {
+                    #[cfg(debug_assertions)]
+                    eprintln!("Please make sure to register the `fs` plugin before the `persisted-scope` plugin!");
+                }
                 #[cfg(feature = "protocol-asset")]
                 let _ = asset_protocol_scope.forbid_file(&asset_scope_state_path);
 
@@ -251,7 +186,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 // We will still save some semi-broken values because the scope events are quite spammy and we don't want to reduce runtime performance any further.
                 let ac = AhoCorasick::new(PATTERNS).unwrap(/* This should be impossible to fail since we're using a small static input */);
 
-                if let Some(fs_scope) = fs_scope {
+                if let Some(fs_scope) = &fs_scope {
                     if fs_scope_state_path.exists() {
                     let scope: Scope = std::fs::read(&fs_scope_state_path)
                         .map_err(Error::from)
@@ -271,7 +206,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     // This is needed to fix broken .peristed-scope files in case the app doesn't update the scope itself.
                     save_scopes(fs_scope, &app_dir, &fs_scope_state_path);
                 }
-                }
+            }
 
                 #[cfg(feature = "protocol-asset")]
                 if asset_scope_state_path.exists() {
@@ -295,11 +230,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
                 #[cfg(feature = "protocol-asset")]
                 let app_dir_ = app_dir.clone();
-                if let Some(fs_scope) = fs_scope {
-                    let fs_scope_ = fs_scope.clone();
+
+                if let Some(fs_scope) = &fs_scope {
+                    let app_ = app.clone();
                     fs_scope.listen(move |event| {
-                        if let FsPluginScopeEvent::PathAllowed(_) = event {
-                            save_scopes(&fs_scope_, &app_dir, &fs_scope_state_path);
+                        if let tauri::fs::Event::PathAllowed(_) = event {
+                            save_scopes(&app_.fs_scope(), &app_dir, &fs_scope_state_path);
                         }
                     });
                 }
@@ -308,10 +244,11 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 {
                     let asset_protocol_scope_ = asset_protocol_scope.clone();
                     asset_protocol_scope.listen(move |event| {
-                    if let FsScopeEvent::PathAllowed(_) = event {
-                        save_scopes(&asset_protocol_scope_, &app_dir_, &asset_scope_state_path);
-                    }
-                });}
+                        if let tauri::scope::fs::Event::PathAllowed(_) = event {
+                            save_scopes(&asset_protocol_scope_, &app_dir_, &asset_scope_state_path);
+                        }
+                    });
+                }
             }
             Ok(())
         })

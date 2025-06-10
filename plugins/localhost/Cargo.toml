@@ -1,14 +1,23 @@
 [package]
 name = "tauri-plugin-localhost"
-version = "2.0.0-alpha.2"
+version = "2.2.0"
 description = "Expose your apps assets through a localhost server instead of the default custom protocol."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 
 [package.metadata.docs.rs]
-features = [ "tauri/dox" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[package.metadata.platforms.support]
+windows = { level = "full", notes = "" }
+linux = { level = "full", notes = "" }
+macos = { level = "full", notes = "" }
+android = { level = "none", notes = "" }
+ios = { level = "none", notes = "" }
 
 [dependencies]
 serde = { workspace = true }
@@ -17,4 +26,4 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 tiny_http = "0.12"
-http = "0.2"
+http = "1"

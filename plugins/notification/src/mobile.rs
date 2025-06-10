@@ -4,7 +4,7 @@
 
 use serde::{de::DeserializeOwned, Deserialize};
 use tauri::{
-    plugin::{PluginApi, PluginHandle},
+    plugin::{PermissionState, PluginApi, PluginHandle},
     AppHandle, Runtime,
 };
 
@@ -33,13 +33,15 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 impl<R: Runtime> crate::NotificationBuilder<R> {
     pub fn show(self) -> crate::Result<()> {
         self.handle
-            .run_mobile_plugin::<ShowResponse>("show", self.data)
+            .run_mobile_plugin::<i32>("show", self.data)
             .map(|_| ())
             .map_err(Into::into)
     }
 }
 
 /// Access to the notification APIs.
+///
+/// You can get an instance of this type via [`NotificationExt`](crate::NotificationExt)
 pub struct Notification<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Notification<R> {
@@ -89,8 +91,7 @@ impl<R: Runtime> Notification<R> {
 
     pub fn active(&self) -> crate::Result<Vec<ActiveNotification>> {
         self.0
-            .run_mobile_plugin::<ActiveResponse>("getActive", ())
-            .map(|r| r.notifications)
+            .run_mobile_plugin("getActive", ())
             .map_err(Into::into)
     }
 
@@ -102,8 +103,7 @@ impl<R: Runtime> Notification<R> {
 
     pub fn pending(&self) -> crate::Result<Vec<PendingNotification>> {
         self.0
-            .run_mobile_plugin::<PendingResponse>("getPending", ())
-            .map(|r| r.notifications)
+            .run_mobile_plugin("getPending", ())
             .map_err(Into::into)
     }
 
@@ -138,32 +138,9 @@ impl<R: Runtime> Notification<R> {
     #[cfg(target_os = "android")]
     pub fn list_channels(&self) -> crate::Result<Vec<Channel>> {
         self.0
-            .run_mobile_plugin::<ListChannelsResult>("listChannels", ())
-            .map(|r| r.channels)
+            .run_mobile_plugin("listChannels", ())
             .map_err(Into::into)
     }
-}
-
-#[cfg(target_os = "android")]
-#[derive(Deserialize)]
-struct ListChannelsResult {
-    channels: Vec<Channel>,
-}
-
-#[derive(Deserialize)]
-struct PendingResponse {
-    notifications: Vec<PendingNotification>,
-}
-
-#[derive(Deserialize)]
-struct ActiveResponse {
-    notifications: Vec<ActiveNotification>,
-}
-
-#[derive(Deserialize)]
-struct ShowResponse {
-    #[allow(dead_code)]
-    id: i32,
 }
 
 #[derive(Deserialize)]

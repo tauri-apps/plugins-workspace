@@ -1,0 +1,82 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+# Scopes Section
+# This section contains scopes, which define file level access
+
+[[permission]]
+identifier = "scope-log-recursive"
+description = "This scope permits recursive access to the complete `$LOG` folder, including sub directories and files."
+
+[[permission.scope.allow]]
+path = "$LOG"
+[[permission.scope.allow]]
+path = "$LOG/**"
+
+[[permission]]
+identifier = "scope-log"
+description = "This scope permits access to all files and list content of top level directories in the `$LOG` folder."
+
+[[permission.scope.allow]]
+path = "$LOG"
+[[permission.scope.allow]]
+path = "$LOG/*"
+
+[[permission]]
+identifier = "scope-log-index"
+description = "This scope permits to list all files and folders in the `$LOG`folder."
+
+[[permission.scope.allow]]
+path = "$LOG"
+
+# Sets Section
+# This section combines the scope elements with enablement of commands
+
+[[set]]
+identifier = "allow-log-read-recursive"
+description = "This allows full recursive read access to the complete `$LOG` folder, files and subdirectories."
+permissions = [
+    "read-all",
+    "scope-log-recursive"
+]
+
+[[set]]
+identifier = "allow-log-write-recursive"
+description = "This allows full recursive write access to the complete `$LOG` folder, files and subdirectories."
+permissions = [
+    "write-all",
+    "scope-log-recursive"
+]
+
+[[set]]
+identifier = "allow-log-read"
+description = "This allows non-recursive read access to the `$LOG` folder."
+permissions = [
+    "read-all",
+    "scope-log"
+]
+
+[[set]]
+identifier = "allow-log-write"
+description = "This allows non-recursive write access to the `$LOG` folder."
+permissions = [
+    "write-all",
+    "scope-log"
+]
+
+[[set]]
+identifier = "allow-log-meta-recursive"
+description = "This allows full recursive read access to metadata of the `$LOG` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-log-recursive"
+]
+
+[[set]]
+identifier = "allow-log-meta"
+description = "This allows non-recursive read access to metadata of the `$LOG` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-log-index"
+]

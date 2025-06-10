@@ -1,10 +1,18 @@
 ![plugin-autostart](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/autostart/banner.png)
 
-Automatically launch your application at startup. Supports Windows, Mac (via AppleScript or Launch Agent), and Linux.
+Automatically launch your application at startup.
+
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | x         |
+| iOS      | x         |
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.70**_
+_This plugin requires a Rust version of at least **1.77.2**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,7 +26,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-autostart = "2.0.0-alpha"
+tauri-plugin-autostart = "2.0.0"
 # alternatively with Git:
 tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -46,14 +54,15 @@ yarn add https://github.com/tauri-apps/tauri-plugin-autostart#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
-use tauri_plugin_autostart::MacosLauncher;
-
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec!["--flag1", "--flag2"]) /* arbitrary number of args to pass to your app */))
+        .plugin(tauri_plugin_autostart::Builder::new()
+            .args(["--flag1", "--flag2"])
+            .app_name("My Custom Name")
+            .build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -62,18 +71,34 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { enable, isEnabled, disable } from "@tauri-apps/plugin-autostart";
+import { enable, isEnabled, disable } from '@tauri-apps/plugin-autostart'
 
-await enable();
+await enable()
 
-console.log(`registered for autostart? ${await isEnabled()}`);
+console.log(`registered for autostart? ${await isEnabled()}`)
 
-disable();
+disable()
 ```
 
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
+
+## Partners
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v2/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+For the complete list of sponsors please visit our [website](https://tauri.app#sponsors) and [Open Collective](https://opencollective.com/tauri).
 
 ## License
 

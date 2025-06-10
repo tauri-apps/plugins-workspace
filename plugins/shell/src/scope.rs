@@ -2,13 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use std::sync::Arc;
+
+#[allow(deprecated)]
 use crate::open::Program;
 use crate::process::Command;
-use crate::{Manager, Runtime};
 
 use regex::Regex;
-
-use std::collections::HashMap;
+use tauri::ipc::ScopeObject;
+use tauri::Manager;
 
 /// Allowed representation of `Execute` command arguments.
 #[derive(Debug, Clone, serde::Deserialize)]
@@ -55,19 +57,12 @@ impl From<Vec<String>> for ExecuteArgs {
     }
 }
 
-/// Shell scope configuration.
-#[derive(Debug, Clone)]
-pub struct ScopeConfig {
-    /// The validation regex that `shell > open` paths must match against.
-    pub open: Option<Regex>,
-
-    /// All allowed commands, using their unique command name as the keys.
-    pub scopes: HashMap<String, ScopeAllowedCommand>,
-}
-
 /// A configured scoped shell command.
 #[derive(Debug, Clone)]
 pub struct ScopeAllowedCommand {
+    /// Name of the command (key).
+    pub name: String,
+
     /// The shell command to be called.
     pub command: std::path::PathBuf,
 
@@ -76,6 +71,52 @@ pub struct ScopeAllowedCommand {
 
     /// If this command is a sidecar command.
     pub sidecar: bool,
+}
+
+impl ScopeObject for ScopeAllowedCommand {
+    type Error = crate::Error;
+    fn deserialize<R: tauri::Runtime>(
+        app: &tauri::AppHandle<R>,
+        raw: tauri::utils::acl::Value,
+    ) -> Result<Self, Self::Error> {
+        let scope = serde_json::from_value::<crate::scope_entry::Entry>(raw.into())?;
+
+        let args = match scope.args.clone() {
+            crate::scope_entry::ShellAllowedArgs::Flag(true) => None,
+            crate::scope_entry::ShellAllowedArgs::Flag(false) => Some(Vec::new()),
+            crate::scope_entry::ShellAllowedArgs::List(list) => {
+                let list = list.into_iter().map(|arg| match arg {
+                    crate::scope_entry::ShellAllowedArg::Fixed(fixed) => {
+                        crate::scope::ScopeAllowedArg::Fixed(fixed)
+                    }
+                    crate::scope_entry::ShellAllowedArg::Var { validator, raw } => {
+                        let regex = if raw {
+                            validator
+                        } else {
+                            format!("^{validator}$")
+                        };
+                        let validator = Regex::new(&regex)
+                            .unwrap_or_else(|e| panic!("invalid regex {regex}: {e}"));
+                        crate::scope::ScopeAllowedArg::Var { validator }
+                    }
+                });
+                Some(list.collect())
+            }
+        };
+
+        let command = if let Ok(path) = app.path().parse(&scope.command) {
+            path
+        } else {
+            scope.command.clone()
+        };
+
+        Ok(Self {
+            name: scope.name,
+            command,
+            args,
+            sidecar: scope.sidecar,
+        })
+    }
 }
 
 /// A configured argument to a scoped shell command.
@@ -98,9 +139,19 @@ impl ScopeAllowedArg {
     }
 }
 
-/// Scope for filesystem access.
+/// Scope for the open command
+pub struct OpenScope {
+    /// The validation regex that `shell > open` paths must match against.
+    /// When set to `None`, no values are accepted.
+    pub open: Option<Regex>,
+}
+
+/// Scope for shell process spawning.
 #[derive(Clone)]
-pub struct Scope(ScopeConfig);
+pub struct ShellScope<'a> {
+    /// All allowed commands, using their unique command name as the keys.
+    pub scopes: Vec<&'a Arc<ScopeAllowedCommand>>,
+}
 
 /// All errors that can happen while validating a scoped command.
 #[derive(Debug, thiserror::Error)]
@@ -147,17 +198,40 @@ pub enum Error {
     Io(#[from] std::io::Error),
 }
 
-impl Scope {
-    /// Creates a new shell scope.
-    pub(crate) fn new<R: Runtime, M: Manager<R>>(manager: &M, mut scope: ScopeConfig) -> Self {
-        for cmd in scope.scopes.values_mut() {
-            if let Ok(path) = manager.path().parse(&cmd.command) {
-                cmd.command = path;
+impl OpenScope {
+    /// Open a path in the default (or specified) browser.
+    ///
+    /// The path is validated against the `plugins > shell > open` validation regex, which
+    /// defaults to `^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+`.
+    #[allow(deprecated)]
+    pub fn open(&self, path: &str, with: Option<Program>) -> Result<(), Error> {
+        // ensure we pass validation if the configuration has one
+        if let Some(regex) = &self.open {
+            if !regex.is_match(path) {
+                return Err(Error::Validation {
+                    index: 0,
+                    validation: regex.as_str().into(),
+                });
             }
+        } else {
+            log::warn!("open() command called but the plugin configuration denies calls from JavaScript; set `tauri.conf.json > plugins > shell > open` to true or a validation regex string");
+            return Err(Error::Validation {
+                index: 0,
+                validation: "tauri^".to_string(), // purposefully impossible regex
+            });
         }
-        Self(scope)
-    }
 
+        // The prevention of argument escaping is handled by the usage of std::process::Command::arg by
+        // the `open` dependency. This behavior should be re-confirmed during upgrades of `open`.
+        match with.map(Program::name) {
+            Some(program) => ::open::with_detached(path, program),
+            None => ::open::that_detached(path),
+        }
+        .map_err(Into::into)
+    }
+}
+
+impl ShellScope<'_> {
     /// Validates argument inputs and creates a Tauri sidecar [`Command`].
     pub fn prepare_sidecar(
         &self,
@@ -180,7 +254,7 @@ impl Scope {
         args: ExecuteArgs,
         sidecar: Option<&str>,
     ) -> Result<Command, Error> {
-        let command = match self.0.scopes.get(command_name) {
+        let command = match self.scopes.iter().find(|s| s.name == command_name) {
             Some(command) => command,
             None => return Err(Error::NotFound(command_name.into())),
         };
@@ -230,7 +304,7 @@ impl Scope {
             .map(|s| {
                 std::path::PathBuf::from(s)
                     .components()
-                    .last()
+                    .next_back()
                     .unwrap()
                     .as_os_str()
                     .to_string_lossy()
@@ -244,29 +318,5 @@ impl Scope {
         };
 
         Ok(command.args(args))
-    }
-
-    /// Open a path in the default (or specified) browser.
-    ///
-    /// The path is validated against the `plugins > shell > open` validation regex, which
-    /// defaults to `^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+`.
-    pub fn open(&self, path: &str, with: Option<Program>) -> Result<(), Error> {
-        // ensure we pass validation if the configuration has one
-        if let Some(regex) = &self.0.open {
-            if !regex.is_match(path) {
-                return Err(Error::Validation {
-                    index: 0,
-                    validation: regex.as_str().into(),
-                });
-            }
-        }
-
-        // The prevention of argument escaping is handled by the usage of std::process::Command::arg by
-        // the `open` dependency. This behavior should be re-confirmed during upgrades of `open`.
-        match with.map(Program::name) {
-            Some(program) => ::open::with_detached(path, program),
-            None => ::open::that_detached(path),
-        }
-        .map_err(Into::into)
     }
 }

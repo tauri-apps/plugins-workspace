@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-confirm"
+description = "Enables the confirm command without any pre-configured scope."
+commands.allow = ["confirm"]
+
+[[permission]]
+identifier = "deny-confirm"
+description = "Denies the confirm command without any pre-configured scope."
+commands.deny = ["confirm"]

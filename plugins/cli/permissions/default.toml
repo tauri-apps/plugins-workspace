@@ -1,0 +1,4 @@
+"$schema" = "schemas/schema.json"
+[default]
+description = "Allows reading the CLI matches"
+permissions = ["allow-cli-matches"]

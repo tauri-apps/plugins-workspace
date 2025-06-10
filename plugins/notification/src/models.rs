@@ -51,14 +51,14 @@ impl Display for ScheduleEvery {
             f,
             "{}",
             match self {
-                Self::Year => "Year",
-                Self::Month => "Month",
-                Self::TwoWeeks => "TwoWeeks",
-                Self::Week => "Week",
-                Self::Day => "Day",
-                Self::Hour => "Hour",
-                Self::Minute => "Minute",
-                Self::Second => "Second",
+                Self::Year => "year",
+                Self::Month => "month",
+                Self::TwoWeeks => "twoWeeks",
+                Self::Week => "week",
+                Self::Day => "day",
+                Self::Hour => "hour",
+                Self::Minute => "minute",
+                Self::Second => "second",
             }
         )
     }
@@ -94,8 +94,9 @@ impl<'de> Deserialize<'de> for ScheduleEvery {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "kind", content = "data")]
+#[serde(rename_all = "camelCase")]
 pub enum Schedule {
+    #[serde(rename_all = "camelCase")]
     At {
         #[serde(
             serialize_with = "iso8601::serialize",
@@ -104,10 +105,21 @@ pub enum Schedule {
         date: time::OffsetDateTime,
         #[serde(default)]
         repeating: bool,
+        #[serde(default)]
+        allow_while_idle: bool,
     },
-    Interval(ScheduleInterval),
+    #[serde(rename_all = "camelCase")]
+    Interval {
+        interval: ScheduleInterval,
+        #[serde(default)]
+        allow_while_idle: bool,
+    },
+    #[serde(rename_all = "camelCase")]
     Every {
         interval: ScheduleEvery,
+        count: u8,
+        #[serde(default)]
+        allow_while_idle: bool,
     },
 }
 
@@ -193,51 +205,6 @@ impl Default for NotificationData {
             ongoing: false,
             auto_cancel: false,
             silent: false,
-        }
-    }
-}
-
-/// Permission state.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum PermissionState {
-    /// Permission access has been granted.
-    Granted,
-    /// Permission access has been denied.
-    Denied,
-    /// Unknown state. Must request permission.
-    Unknown,
-}
-
-impl Display for PermissionState {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Granted => write!(f, "granted"),
-            Self::Denied => write!(f, "denied"),
-            Self::Unknown => write!(f, "Unknown"),
-        }
-    }
-}
-
-impl Serialize for PermissionState {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(self.to_string().as_ref())
-    }
-}
-
-impl<'de> Deserialize<'de> for PermissionState {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        match s.to_lowercase().as_str() {
-            "granted" => Ok(Self::Granted),
-            "denied" => Ok(Self::Denied),
-            "prompt" => Ok(Self::Unknown),
-            _ => Err(DeError::custom(format!("unknown permission state '{s}'"))),
         }
     }
 }
@@ -340,6 +307,7 @@ impl ActiveNotification {
     }
 }
 
+#[cfg(mobile)]
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ActionType {
@@ -352,6 +320,7 @@ pub struct ActionType {
     hidden_previews_show_subtitle: bool,
 }
 
+#[cfg(mobile)]
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Action {

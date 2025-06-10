@@ -5,11 +5,10 @@ plugins {
 
 android {
     namespace = "app.tauri.barcodescanner"
-    compileSdk = 32
+    compileSdk = 34
 
     defaultConfig {
-        minSdk = 24
-        targetSdk = 32
+        minSdk = 24        
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -48,9 +47,5 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    implementation("com.journeyapps:zxing-android-embedded:4.3.0") {
-        isTransitive = false
-    }
-    implementation("com.google.zxing:core:3.3.0")
     implementation(project(":tauri-android"))
 }

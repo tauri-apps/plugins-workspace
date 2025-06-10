@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-load-client"
+description = "Enables the load_client command without any pre-configured scope."
+commands.allow = ["load_client"]
+
+[[permission]]
+identifier = "deny-load-client"
+description = "Denies the load_client command without any pre-configured scope."
+commands.deny = ["load_client"]

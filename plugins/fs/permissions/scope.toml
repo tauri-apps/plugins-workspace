@@ -1,0 +1,5 @@
+"$schema" = "schemas/schema.json"
+
+[[permission]]
+identifier = "scope"
+description = "An empty permission you can use to modify the global scope."

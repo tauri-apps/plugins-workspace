@@ -1,6 +1,14 @@
-![Barcode Scanner](banner.png)
+![Barcode Scanner](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/barcode-scanner/banner.png)
 
 Allows your mobile application to use the camera to scan QR codes, EAN-13 and other kinds of barcodes.
+
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | x         |
+| Windows  | x         |
+| macOS    | x         |
+| Android  | ✓         |
+| iOS      | ✓         |
 
 ## Install
 
@@ -18,7 +26,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-barcode-scanner = "2.0.0-alpha"
+tauri-plugin-barcode-scanner = "2.0.0"
 # alternatively with Git:
 tauri-plugin-barcode-scanner = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -46,7 +54,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-barcode-scanner#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {
@@ -60,12 +68,12 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { scan } from "@tauri-apps/plugin-barcode-scanner";
+import { scan } from '@tauri-apps/plugin-barcode-scanner'
 
 // `windowed: true` actually sets the webview to transparent
 // instead of opening a separate view for the camera
 // make sure your user interface is ready to show what is underneath with a transparent element
-scan({ windowed: true, formats: [""] })
+scan({ windowed: true, formats: [''] })
 ```
 
 ## Contributing
@@ -90,6 +98,22 @@ PRs accepted. Please make sure to read the Contributing Guide before making a pu
     </tr>
   </tbody>
 </table>
+
+## Partners
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v2/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+For the complete list of sponsors please visit our [website](https://tauri.app#sponsors) and [Open Collective](https://opencollective.com/tauri).
 
 ## License
 

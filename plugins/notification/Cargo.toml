@@ -1,22 +1,28 @@
 [package]
 name = "tauri-plugin-notification"
-version = "2.0.0-alpha.3"
+version = "2.2.2"
 description = "Send desktop and mobile notifications on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
 links = "tauri-plugin-notification"
 
 [package.metadata.docs.rs]
-features = [ "dox" ]
-targets = [
-  "x86_64-unknown-linux-gnu",
-  "x86_64-linux-android"
-]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+targets = ["x86_64-unknown-linux-gnu", "x86_64-linux-android"]
+
+[package.metadata.platforms.support]
+windows = { level = "full", notes = "Only works for installed apps. Shows powershell name & icon in development." }
+linux = { level = "full", notes = "" }
+macos = { level = "full", notes = "" }
+android = { level = "full", notes = "" }
+ios = { level = "full", notes = "" }
 
 [build-dependencies]
-tauri-build = { workspace = true }
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }
@@ -25,16 +31,24 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 rand = "0.8"
-time = { version = "0.3", features = [ "serde", "parsing", "formatting" ] }
-url = { version = "2", features = [ "serde" ] }
+time = { version = "0.3", features = ["serde", "parsing", "formatting"] }
+url = { version = "2", features = ["serde"] }
 serde_repr = "0.1"
 
-[target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
-notify-rust = "4.5"
+[target.'cfg(target_os = "ios")'.dependencies]
+tauri = { workspace = true, features = ["wry"] }
 
 [target."cfg(windows)".dependencies]
-win7-notifications = { version = "0.3.1", optional = true }
+win7-notifications = { version = "0.4.5", optional = true }
+windows-version = { version = "0.1", optional = true }
+
+[target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
+notify-rust = "4.11"
+
+[dev-dependencies]
+color-backtrace = "0.7"
+ctor = "0.2"
+maplit = "1"
 
 [features]
-windows7-compat = [ "win7-notifications" ]
-dox = [ "tauri/dox" ]
+windows7-compat = ["win7-notifications", "windows-version"]

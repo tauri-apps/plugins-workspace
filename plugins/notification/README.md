@@ -2,9 +2,17 @@
 
 Send message notifications (brief auto-expiring OS window element) to your user. Can also be used with the Notification Web API.
 
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | ✓         |
+| iOS      | ✓         |
+
 ## Install
 
-_This plugin requires a Rust version of at least **1.70**_
+_This plugin requires a Rust version of at least **1.77.2**_
 
 There are three general methods of installation that we can recommend.
 
@@ -18,7 +26,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-notification = "2.0.0-alpha"
+tauri-plugin-notification = "2.0.0"
 # alternatively with Git:
 tauri-plugin-notification = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -46,7 +54,7 @@ yarn add https://github.com/tauri-apps/tauri-plugin-notification#v2
 
 First you need to register the core plugin with Tauri:
 
-`src-tauri/src/main.rs`
+`src-tauri/src/lib.rs`
 
 ```rust
 fn main() {
@@ -57,15 +65,64 @@ fn main() {
 }
 ```
 
+Then you need to add the permissions to your capabilities file:
+
+`src-tauri/capabilities/main.json`
+
+```json
+{
+  ...
+  "permissions": [
+    ...
+    "notification:default"
+  ],
+  ...
+}
+```
+
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification
+} from '@tauri-apps/plugin-notification'
 
+async function checkPermission() {
+  if (!(await isPermissionGranted())) {
+    return (await requestPermission()) === 'granted'
+  }
+  return true
+}
+
+export async function enqueueNotification(title, body) {
+  if (!(await checkPermission())) {
+    return
+  }
+  sendNotification({ title, body })
+}
 ```
 
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
+
+## Partners
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://crabnebula.dev" target="_blank">
+          <img src="https://github.com/tauri-apps/plugins-workspace/raw/v2/.github/sponsors/crabnebula.svg" alt="CrabNebula" width="283">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+For the complete list of sponsors please visit our [website](https://tauri.app#sponsors) and [Open Collective](https://opencollective.com/tauri).
 
 ## License
 

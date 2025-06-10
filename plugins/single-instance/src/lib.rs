@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/single-instance/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/single-instance)
-//!
 //! Ensure a single instance of your tauri app is running.
 
 #![doc(
@@ -24,13 +22,22 @@ mod platform_impl;
 #[path = "platform_impl/macos.rs"]
 mod platform_impl;
 
+#[cfg(feature = "semver")]
+mod semver_compat;
+
 pub(crate) type SingleInstanceCallback<R> =
     dyn FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static;
 
 pub fn init<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static>(
-    f: F,
+    mut f: F,
 ) -> TauriPlugin<R> {
-    platform_impl::init(Box::new(f))
+    platform_impl::init(Box::new(move |app, args, cwd| {
+        #[cfg(feature = "deep-link")]
+        if let Some(deep_link) = app.try_state::<tauri_plugin_deep_link::DeepLink<R>>() {
+            deep_link.handle_cli_arguments(args.iter());
+        }
+        f(app, args, cwd)
+    }))
 }
 
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {

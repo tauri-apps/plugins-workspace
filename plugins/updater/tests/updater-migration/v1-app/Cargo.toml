@@ -1,0 +1,18 @@
+workspace = {}
+
+[package]
+name = "app-updater-v1"
+version = "0.1.0"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1", features = [] }
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tiny_http = "0.11"
+tauri = { version = "1", features = ["updater"] }
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]
