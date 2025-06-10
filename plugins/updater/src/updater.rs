@@ -681,7 +681,12 @@ impl Update {
         let updater_type = self.extract(bytes)?;
 
         let install_mode = self.config.install_mode();
-        let current_args = &self.current_exe_args()[1..];
+        let current_exe_args = self.current_exe_args();
+        let current_args = current_exe_args
+            .split_first()
+            .map(|(_, args_without_exe)| args_without_exe)
+            .unwrap_or(&[]);
+
         let msi_args;
 
         let installer_args: Vec<&OsStr> = match &updater_type {
@@ -690,17 +695,28 @@ impl Update {
                 .iter()
                 .map(OsStr::new)
                 .chain(once(OsStr::new("/UPDATE")))
-                .chain(once(OsStr::new("/ARGS")))
-                .chain(current_args.to_vec())
+                .chain(
+                    if current_args.len() > 0 {
+                        Some(once(OsStr::new("/ARGS")).chain(current_args.iter().map(|arg| *arg)))
+                    } else {
+                        None
+                    }
+                    .into_iter()
+                    .flatten(),
+                )
                 .chain(self.installer_args())
                 .collect(),
             WindowsUpdaterType::Msi { path, .. } => {
-                let escaped_args = current_args
-                    .iter()
-                    .map(escape_msi_property_arg)
-                    .collect::<Vec<_>>()
-                    .join(" ");
-                msi_args = OsString::from(format!("LAUNCHAPPARGS=\"{escaped_args}\""));
+                if current_args.len() > 0 {
+                    let escaped_args = current_args
+                        .iter()
+                        .map(escape_msi_property_arg)
+                        .collect::<Vec<_>>()
+                        .join(" ");
+                    msi_args = Some(OsString::from(format!("LAUNCHAPPARGS=\"{escaped_args}\"")));
+                } else {
+                    msi_args = None;
+                }
 
                 [OsStr::new("/i"), path.as_os_str()]
                     .into_iter()
@@ -708,7 +724,7 @@ impl Update {
                     .chain(once(OsStr::new("/promptrestart")))
                     .chain(self.installer_args())
                     .chain(once(OsStr::new("AUTOLAUNCHAPP=True")))
-                    .chain(once(msi_args.as_os_str()))
+                    .chain(msi_args.iter().map(|args| args.as_os_str()))
                     .collect()
             }
         };
