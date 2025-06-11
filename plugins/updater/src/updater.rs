@@ -1373,7 +1373,7 @@ impl PathExt for PathBuf {
 
 #[cfg(windows)]
 fn escape_nsis_current_exe_arg(arg: &&OsStr) -> String {
-    let mut arg = dbg!(arg.to_string_lossy().to_string());
+    let mut arg = arg.to_string_lossy().to_string();
 
     /* if arg.contains('"') {
         arg = arg.replace('"', r#""""#);
