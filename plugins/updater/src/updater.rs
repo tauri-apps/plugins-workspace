@@ -683,17 +683,25 @@ impl Update {
         let install_mode = self.config.install_mode();
         let current_args = &self.current_exe_args()[1..];
         let msi_args;
+        let nsis_args;
 
         let installer_args: Vec<&OsStr> = match &updater_type {
-            WindowsUpdaterType::Nsis { .. } => install_mode
-                .nsis_args()
-                .iter()
-                .map(OsStr::new)
-                .chain(once(OsStr::new("/UPDATE")))
-                .chain(once(OsStr::new("/ARGS")))
-                .chain(current_args.to_vec())
-                .chain(self.installer_args())
-                .collect(),
+            WindowsUpdaterType::Nsis { .. } => {
+                nsis_args = current_args
+                    .iter()
+                    .map(escape_nsis_current_exe_arg)
+                    .collect::<Vec<_>>();
+
+                install_mode
+                    .nsis_args()
+                    .iter()
+                    .map(OsStr::new)
+                    .chain(once(OsStr::new("/UPDATE")))
+                    .chain(once(OsStr::new("/ARGS")))
+                    .chain(nsis_args.iter().map(OsStr::new))
+                    .chain(self.installer_args())
+                    .collect()
+            }
             WindowsUpdaterType::Msi { path, .. } => {
                 let escaped_args = current_args
                     .iter()
@@ -1364,6 +1372,21 @@ impl PathExt for PathBuf {
 }
 
 #[cfg(windows)]
+fn escape_nsis_current_exe_arg(arg: &&OsStr) -> String {
+    let mut arg = dbg!(arg.to_string_lossy().to_string());
+
+    /* if arg.contains('"') {
+        arg = arg.replace('"', r#""""#);
+    } */
+
+    if arg.contains(' ') || arg.contains('\t') || arg.contains('/') {
+        arg = format!("\"{arg}\"");
+    }
+
+    arg
+}
+
+#[cfg(windows)]
 fn escape_msi_property_arg(arg: impl AsRef<OsStr>) -> String {
     let mut arg = arg.as_ref().to_string_lossy().to_string();
 
@@ -1375,7 +1398,7 @@ fn escape_msi_property_arg(arg: impl AsRef<OsStr>) -> String {
     }
 
     if arg.contains('"') {
-        arg = arg.replace('"', r#""""""#)
+        arg = arg.replace('"', r#""""""#);
     }
 
     if arg.starts_with('-') {
