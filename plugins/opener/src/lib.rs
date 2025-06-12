@@ -191,9 +191,9 @@ impl Builder {
         let mut builder = tauri::plugin::Builder::<R, Option<config::Config>>::new("opener")
             .setup(|app, api| {
                 #[cfg(target_os = "android")]
-                let handle = _api.register_android_plugin(PLUGIN_IDENTIFIER, "OpenerPlugin")?;
+                let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "OpenerPlugin")?;
                 #[cfg(target_os = "ios")]
-                let handle = _api.register_ios_plugin(init_plugin_opener)?;
+                let handle = api.register_ios_plugin(init_plugin_opener)?;
 
                 app.manage(Opener {
                     #[cfg(not(mobile))]
