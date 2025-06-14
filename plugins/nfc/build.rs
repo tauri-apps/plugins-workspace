@@ -11,8 +11,9 @@ fn main() {
         .ios_path("ios")
         .try_build();
 
-    // when building documentation for Android the plugin build result is always Err() and is irrelevant to the crate documentation build
-    if !(cfg!(docsrs) && std::env::var("TARGET").unwrap().contains("android")) {
+    // - when building documentation for Android the plugin build result is always Err() and is irrelevant to the crate documentation build
+    // - FIXME: Temporarily ignore writing errors on docs.rs, this is a mitigation for <https://github.com/tauri-apps/tauri/pull/13597#issuecomment-2961321899>
+    if !cfg!(docsrs) {
         result.unwrap();
     }
 

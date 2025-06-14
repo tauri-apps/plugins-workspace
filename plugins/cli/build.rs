@@ -5,7 +5,12 @@
 const COMMANDS: &[&str] = &["cli_matches"];
 
 fn main() {
-    tauri_plugin::Builder::new(COMMANDS)
+    let result = tauri_plugin::Builder::new(COMMANDS)
         .global_api_script_path("./api-iife.js")
-        .build();
+        .try_build();
+
+    // - FIXME: Temporarily ignore writing errors on docs.rs, this is a mitigation for <https://github.com/tauri-apps/tauri/pull/13597#issuecomment-2961321899>
+    if !cfg!(docsrs) {
+        result.unwrap();
+    }
 }

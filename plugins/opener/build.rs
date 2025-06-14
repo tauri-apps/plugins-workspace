@@ -113,12 +113,17 @@ fn _f() {
 const COMMANDS: &[&str] = &["open_url", "open_path", "reveal_item_in_dir"];
 
 fn main() {
-    tauri_plugin::Builder::new(COMMANDS)
+    let result = tauri_plugin::Builder::new(COMMANDS)
         .global_api_script_path("./api-iife.js")
         .android_path("android")
         .ios_path("ios")
         .global_scope_schema(schemars::schema_for!(OpenerScopeEntry))
-        .build();
+        .try_build();
+
+    // - FIXME: Temporarily ignore writing errors on docs.rs, this is a mitigation for <https://github.com/tauri-apps/tauri/pull/13597#issuecomment-2961321899>
+    if !cfg!(docsrs) {
+        result.unwrap();
+    }
 
     let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
     let mobile = target_os == "ios" || target_os == "android";
