@@ -278,5 +278,7 @@ fn get_arg(arg_name: String, arg: &Arg) -> ClapArg {
     clap_arg = bind_value_arg!(arg, clap_arg, require_equals);
     clap_arg = bind_value_arg!(arg, clap_arg, index);
 
+    clap_arg = clap_arg.global(arg.global);
+
     clap_arg
 }
