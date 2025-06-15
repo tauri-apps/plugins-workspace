@@ -11,8 +11,8 @@
 "clipboard-manager-js": patch:fix
 "deep-link": patch:fix
 "deep-link-js": patch:fix
-"dialog: patch:fix
-"dialog-js: patch:fix
+"dialog": patch:fix
+"dialog-js": patch:fix
 "autostart": patch:fix
 "autostart-js": patch:fix
 "fs": patch:fix
