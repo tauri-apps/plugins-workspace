@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.2.2]
+
+- [`f634e524`](https://github.com/tauri-apps/plugins-workspace/commit/f634e5248ebe428f8305a59f74c13fc15147fb8e) This is an "empty" release to update the plugins' source files on crates.io and docs.rs. This should fix docs.rs build failures for projects using tauri plugins as dependencies.
+
 ## \[2.2.1]
 
 - [`d2aef2fd`](https://github.com/tauri-apps/plugins-workspace/commit/d2aef2fddbdfad6526935c55ac10a94171a4f5f5) ([#2581](https://github.com/tauri-apps/plugins-workspace/pull/2581)) Migrate restart to use tauri's new `AppHandle::request_restart` method

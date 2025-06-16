@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.3.0]
+
+- [`ce9888a2`](https://github.com/tauri-apps/plugins-workspace/commit/ce9888a2d4c9b449bd2a306f0fa6c76507fd46d3) ([#2762](https://github.com/tauri-apps/plugins-workspace/pull/2762)) Similar to the `fs` plugin the `opener` plugin now supports a `requireLiteralLeadingDot` configuration in `tauri.conf.json`.
+
 ## \[2.2.7]
 
 - [`6c9e08dc`](https://github.com/tauri-apps/plugins-workspace/commit/6c9e08dccb3ac99fccfce586fa2b69717ba81b52) ([#2695](https://github.com/tauri-apps/plugins-workspace/pull/2695) by [@ShaunSHamilton](https://github.com/tauri-apps/plugins-workspace/../../ShaunSHamilton)) Adjust `open_url` url type to allow `URL`

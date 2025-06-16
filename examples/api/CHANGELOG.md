@@ -1,5 +1,23 @@
 # Changelog
 
+## \[2.0.23]
+
+### Dependencies
+
+- Upgraded to `updater-js@2.8.0`
+- Upgraded to `barcode-scanner-js@2.2.1`
+- Upgraded to `biometric-js@2.2.2`
+- Upgraded to `cli-js@2.2.1`
+- Upgraded to `clipboard-manager-js@2.2.3`
+- Upgraded to `nfc-js@2.2.1`
+- Upgraded to `notification-js@2.2.3`
+- Upgraded to `os-js@2.2.2`
+- Upgraded to `process-js@2.2.2`
+- Upgraded to `shell-js@2.2.2`
+- Upgraded to `store-js@2.2.1`
+- Upgraded to `log-js@2.5.0`
+- Upgraded to `opener-js@2.3.0`
+
 ## \[2.0.22]
 
 ### Dependencies

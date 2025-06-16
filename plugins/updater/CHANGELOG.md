@@ -1,5 +1,12 @@
 # Changelog
 
+## \[2.8.0]
+
+- [`87afa23c`](https://github.com/tauri-apps/plugins-workspace/commit/87afa23cad077c09bc1eb743800ae3396b531146) ([#2726](https://github.com/tauri-apps/plugins-workspace/pull/2726)) Add allowDowngrades parameter to check command
+
+  Added a new optional `allowDowngrades` parameter to the JavaScript check command that allows the updater to consider versions that are lower than the current version as valid updates. When enabled, the version comparator will accept any version that is different from the current version, effectively allowing downgrades.
+- [`73ff15de`](https://github.com/tauri-apps/plugins-workspace/commit/73ff15de5d07d476693e40e8e5d138c16da5211e) ([#2757](https://github.com/tauri-apps/plugins-workspace/pull/2757)) Fix headers option in `Update.download` and `Update.downloadAndInstall` doesn't work with `Record<string, string> | Headers` types
+
 ## \[2.7.1]
 
 - [`c5b0f51c`](https://github.com/tauri-apps/plugins-workspace/commit/c5b0f51cfd911cca9317b59efc718b570980129b) ([#2621](https://github.com/tauri-apps/plugins-workspace/pull/2621) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `check` and `download` overrides the `accept` header
