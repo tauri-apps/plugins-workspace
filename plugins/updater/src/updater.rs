@@ -1371,19 +1371,38 @@ impl PathExt for PathBuf {
     }
 }
 
+// adapted from https://github.com/rust-lang/rust/blob/1c047506f94cd2d05228eb992b0a6bbed1942349/library/std/src/sys/args/windows.rs#L174
 #[cfg(windows)]
 fn escape_nsis_current_exe_arg(arg: &&OsStr) -> String {
-    let mut arg = arg.to_string_lossy().to_string();
+    let arg = arg.to_string_lossy();
+    let mut cmd: Vec<char> = Vec::new();
 
-    /* if arg.contains('"') {
-        arg = arg.replace('"', r#""""#);
-    } */
-
-    if arg.contains(' ') || arg.contains('\t') || arg.contains('/') {
-        arg = format!("\"{arg}\"");
+    let quote = arg.chars().any(|c| c == ' ' || c == '\t' || c == '/') || arg.is_empty();
+    let escape = true;
+    if quote {
+        cmd.push('"');
     }
-
-    arg
+    let mut backslashes: usize = 0;
+    for x in arg.chars() {
+        if escape {
+            if x == '\\' {
+                backslashes += 1;
+            } else {
+                if x == '"' {
+                    // Add n+1 backslashes to total 2n+1 before internal '"'.
+                    cmd.extend((0..=backslashes).map(|_| '\\'));
+                }
+                backslashes = 0;
+            }
+        }
+        cmd.push(x);
+    }
+    if quote {
+        // Add n backslashes to total 2n before ending '"'.
+        cmd.extend((0..backslashes).map(|_| '\\'));
+        cmd.push('"');
+    }
+    cmd.into_iter().collect()
 }
 
 #[cfg(windows)]
