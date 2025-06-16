@@ -1377,6 +1377,7 @@ fn escape_nsis_current_exe_arg(arg: &&OsStr) -> String {
     let arg = arg.to_string_lossy();
     let mut cmd: Vec<char> = Vec::new();
 
+    // compared to std we additionally escape `/` so that nsis won't interpret them as a beginning of an nsis argument.
     let quote = arg.chars().any(|c| c == ' ' || c == '\t' || c == '/') || arg.is_empty();
     let escape = true;
     if quote {
