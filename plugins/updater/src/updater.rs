@@ -1448,7 +1448,7 @@ mod tests {
 
     #[test]
     #[cfg(windows)]
-    fn it_escapes_correctly() {
+    fn it_escapes_correctly_for_msi() {
         use crate::updater::escape_msi_property_arg;
 
         // Explanation for quotes:
@@ -1491,6 +1491,49 @@ mod tests {
 
         for (orig, escaped) in cases.iter().zip(cases_escaped) {
             assert_eq!(escape_msi_property_arg(orig), escaped);
+        }
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn it_escapes_correctly_for_nsis() {
+        use crate::updater::escape_nsis_current_exe_arg;
+        use std::ffi::OsStr;
+
+        let cases = [
+            "something",
+            "--flag",
+            "--empty=",
+            "--arg=value",
+            "some space",                     // This simulates `./my-app "some string"`.
+            "--arg value", // -> This simulates `./my-app "--arg value"`. Same as above but it triggers the startsWith(`-`) logic.
+            "--arg=unwrapped space", // `./my-app --arg="unwrapped space"`
+            "--arg=\"wrapped\"", // `./my-app --args=""wrapped""`
+            "--arg=\"wrapped space\"", // `./my-app --args=""wrapped space""`
+            "--arg=midword\"wrapped space\"", // `./my-app --args=midword""wrapped""`
+            "",            // `./my-app '""'`
+        ];
+        // Note: These may not be the results we actually want (monitor this!).
+        // We only make sure the implementation doesn't unintentionally change.
+        let cases_escaped = [
+            "something",
+            "--flag",
+            "--empty=",
+            "--arg=value",
+            "\"some space\"",
+            "\"--arg value\"",
+            "\"--arg=unwrapped space\"",
+            "--arg=\\\"wrapped\\\"",
+            "\"--arg=\\\"wrapped space\\\"\"",
+            "\"--arg=midword\\\"wrapped space\\\"\"",
+            "\"\"",
+        ];
+
+        // Just to be sure we didn't mess that up
+        assert_eq!(cases.len(), cases_escaped.len());
+
+        for (orig, escaped) in cases.iter().zip(cases_escaped) {
+            assert_eq!(escape_nsis_current_exe_arg(&OsStr::new(orig)), escaped);
         }
     }
 }
