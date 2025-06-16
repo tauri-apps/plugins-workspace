@@ -10,7 +10,7 @@ Hi! We, the maintainers, are really excited that you are interested in contribut
 
 - The issue list of this repo is **exclusively** for bug reports and feature requests. Non-conforming issues will be closed immediately.
 
-- If you have a question, you can get quick answers from the [Tauri Discord chat](https://discord.gg/SpmNs4S).
+- If you have a question, you can get quick answers from the [Tauri Discord chat](https://discord.com/invite/tauri).
 
 - Try to search for your issue, it may have already been answered or even fixed in the development branch (`v2`).
 
@@ -22,7 +22,7 @@ Hi! We, the maintainers, are really excited that you are interested in contribut
 
 - Issues with no clear repro steps will not be triaged. If an issue labeled "need repro" receives no further input from the issue author for more than 5 days, it will be closed.
 
-- If your issue is resolved but still open, don't hesitate to close it. In case you found a solution by yourself, it could be helpful to explain how you fixed it.
+- If your issue is resolved but still open, don't hesitate to close it. In case you found a solution by yourself, it could be helpful for others to explain how you fixed it.
 
 - Most importantly, we beg your patience: the team must balance your request against many other responsibilities — fixing other bugs, answering other questions, new features, new documentation, etc. The issue list is not paid support and we cannot make guarantees about how fast your issue can be resolved.
 
@@ -49,9 +49,9 @@ Hi! We, the maintainers, are really excited that you are interested in contribut
 
 ### General Setup
 
-First, [join our Discord server](https://discord.gg/SpmNs4S) and let us know that you want to contribute. This way we can point you in the right direction and help ensure your contribution will be as helpful as possible.
+First, [join our Discord server](https://discord.com/invite/tauri) and let us know that you want to contribute. This way we can point you in the right direction and help ensure your contribution will be as helpful as possible.
 
-To set up your machine for development, follow the [Tauri setup guide](https://v2.tauri.app/start/prerequisites/) to get all the tools you need to develop Tauri apps. The only additional tool you may need is [PNPM](https://pnpm.io/), it is only required if you are developing the Node CLI or API packages (`packages/cli` and `packages/api`).
+To set up your machine for development, follow the [Tauri setup guide](https://v2.tauri.app/start/prerequisites/) to get all the tools you need to develop Tauri apps. The only additional tool you may need is [PNPM](https://pnpm.io/).
 
 Next, [fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) and clone [this repository](https://github.com/tauri-apps/plugins-workspace/tree/v2).
 
