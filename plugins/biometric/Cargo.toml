@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-biometric"
-version = "2.2.1"
+version = "2.2.2"
 description = "Prompt the user for biometric authentication on Android and iOS."
 edition = { workspace = true }
 authors = { workspace = true }

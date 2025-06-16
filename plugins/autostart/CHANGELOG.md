@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.0]
+
+- [`764e8f77`](https://github.com/tauri-apps/plugins-workspace/commit/764e8f7719247da515243d9c9cafa6d087d21769) ([#2707](https://github.com/tauri-apps/plugins-workspace/pull/2707)) Added a new builder method app_name() to allow customizing the application name in the autostart entry.
+
 ## \[2.3.0]
 
 - [`8ecb418a`](https://github.com/tauri-apps/plugins-workspace/commit/8ecb418a1a35d7f234dc5d833746ac2d8e062aec) ([#2569](https://github.com/tauri-apps/plugins-workspace/pull/2569)) Add a `Builder` for more flexible settings

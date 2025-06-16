@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-log"
-version = "2.4.0"
+version = "2.5.0"
 description = "Configurable logging for your Tauri app."
 authors = { workspace = true }
 license = { workspace = true }
