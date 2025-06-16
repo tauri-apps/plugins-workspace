@@ -13,8 +13,6 @@
 "deep-link-js": patch:fix
 "dialog": patch:fix
 "dialog-js": patch:fix
-"autostart": patch:fix
-"autostart-js": patch:fix
 "fs": patch:fix
 "fs-js": patch:fix
 "geolocation": patch:fix
