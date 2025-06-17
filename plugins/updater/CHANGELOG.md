@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.8.1]
+
+- [`735d209d`](https://github.com/tauri-apps/plugins-workspace/commit/735d209d5d1d92dcac70c6083bcfcd34ec7d84be) ([#2761](https://github.com/tauri-apps/plugins-workspace/pull/2761) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed an issue preventing updates via the NSIS installer from succeeding when the app was launched with command line arguments containing spaces.
+
 ## \[2.8.0]
 
 - [`87afa23c`](https://github.com/tauri-apps/plugins-workspace/commit/87afa23cad077c09bc1eb743800ae3396b531146) ([#2726](https://github.com/tauri-apps/plugins-workspace/pull/2726)) Add allowDowngrades parameter to check command
