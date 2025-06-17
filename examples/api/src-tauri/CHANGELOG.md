@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.28]
+
+### Dependencies
+
+- Upgraded to `updater@2.8.1`
+
 ## \[2.0.27]
 
 ### Dependencies
