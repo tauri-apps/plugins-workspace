@@ -88,7 +88,12 @@ impl DbPool {
                 if !Sqlite::database_exists(conn_url).await.unwrap_or(false) {
                     Sqlite::create_database(conn_url).await?;
                 }
-                Ok(Self::Sqlite(Pool::connect(conn_url).await?))
+
+                let pool = sqlx::sqlite::SqlitePoolOptions::new()
+                    .max_connections(1)
+                    .connect(conn_url);
+
+                Ok(Self::Sqlite(pool.await?))
             }
             #[cfg(feature = "mysql")]
             "mysql" => {
