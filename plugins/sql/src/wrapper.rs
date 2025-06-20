@@ -33,6 +33,25 @@ pub enum DbPool {
     None,
 }
 
+#[cfg(feature = "sqlite")]
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct SqlitePoolOptions {
+    max_connections: Option<u32>,
+    min_connections: Option<u32>,
+}
+
+#[cfg(feature = "sqlite")]
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct SqliteOptions {
+    pub pool: Option<SqlitePoolOptions>,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct ConnectionOptions {
+    #[cfg(feature = "sqlite")]
+    pub sqlite: Option<SqliteOptions>,
+}
+
 // public methods
 /* impl DbPool {
     /// Get the inner Sqlite Pool. Returns None for MySql and Postgres pools.
@@ -68,6 +87,7 @@ impl DbPool {
     pub(crate) async fn connect<R: Runtime>(
         conn_url: &str,
         _app: &AppHandle<R>,
+        options: Option<ConnectionOptions>,
     ) -> Result<Self, crate::Error> {
         match conn_url
             .split_once(':')
@@ -89,11 +109,23 @@ impl DbPool {
                     Sqlite::create_database(conn_url).await?;
                 }
 
-                let pool = sqlx::sqlite::SqlitePoolOptions::new()
-                    .max_connections(1)
-                    .connect(conn_url);
+                let mut pool_options = sqlx::sqlite::SqlitePoolOptions::new();
 
-                Ok(Self::Sqlite(pool.await?))
+                let sqlite_pool_options = options
+                    .and_then(|opts| opts.sqlite)
+                    .and_then(|sqlite_opts| sqlite_opts.pool);
+
+                if let Some(custom_pool_opts) = sqlite_pool_options {
+                    if let Some(max_connections) = custom_pool_opts.max_connections {
+                        pool_options = pool_options.max_connections(max_connections);
+                    }
+
+                    if let Some(min_connections) = custom_pool_opts.min_connections {
+                        pool_options = pool_options.min_connections(min_connections);
+                    }
+                }
+
+                Ok(Self::Sqlite(pool_options.connect(conn_url).await?))
             }
             #[cfg(feature = "mysql")]
             "mysql" => {
