@@ -97,10 +97,7 @@ pub fn get_matches(
         cli,
     );
 
-    let matches = if let Some(mut args) = args {
-        // try_get_matches_from assumes the first argument is the command name,
-        // so we prepend something to get the correct matches.
-        args.insert(0, package_info.name.clone());
+    let matches = if let Some(args) = args {
         app.try_get_matches_from(args)
     } else {
         app.try_get_matches()
