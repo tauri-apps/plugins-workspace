@@ -28,8 +28,8 @@ pub use parser::{ArgData, Matches, SubcommandMatches};
 pub struct Cli<R: Runtime>(PluginApi<R, Config>);
 
 impl<R: Runtime> Cli<R> {
-    pub fn matches(&self) -> Result<parser::Matches> {
-        parser::get_matches(self.0.config(), self.0.app().package_info())
+    pub fn matches(&self, args: Option<Vec<String>>) -> Result<parser::Matches> {
+        parser::get_matches(self.0.config(), self.0.app().package_info(), args)
     }
 }
 
@@ -45,7 +45,7 @@ impl<R: Runtime, T: Manager<R>> CliExt<R> for T {
 
 #[tauri::command]
 fn cli_matches<R: Runtime>(_app: AppHandle<R>, cli: State<'_, Cli<R>>) -> Result<parser::Matches> {
-    cli.matches()
+    cli.matches(None::<Vec<String>>)
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R, Config> {

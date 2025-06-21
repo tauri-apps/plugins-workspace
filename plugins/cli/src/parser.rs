@@ -79,7 +79,11 @@ impl Matches {
 ///     Ok(())
 ///   });
 /// ```
-pub fn get_matches(cli: &Config, package_info: &PackageInfo) -> crate::Result<Matches> {
+pub fn get_matches(
+    cli: &Config,
+    package_info: &PackageInfo,
+    args: Option<Vec<String>>,
+) -> crate::Result<Matches> {
     let about = cli
         .description()
         .unwrap_or(&package_info.description.to_string())
@@ -92,7 +96,17 @@ pub fn get_matches(cli: &Config, package_info: &PackageInfo) -> crate::Result<Ma
         Some(&about),
         cli,
     );
-    match app.try_get_matches() {
+
+    let matches = if let Some(mut args) = args {
+        // try_get_matches_from assumes the first argument is the command name,
+        // so we prepend something to get the correct matches.
+        args.insert(0, package_info.name.clone());
+        app.try_get_matches_from(args)
+    } else {
+        app.try_get_matches()
+    };
+
+    match matches {
         Ok(matches) => Ok(get_matches_internal(cli, &matches)),
         Err(e) => match e.kind() {
             ErrorKind::DisplayHelp => {
