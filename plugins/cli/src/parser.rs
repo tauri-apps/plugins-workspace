@@ -19,7 +19,7 @@ use std::collections::HashMap;
 mod macros;
 
 /// The resolution of a argument match.
-#[derive(Default, Debug, Serialize)]
+#[derive(Default, Debug, Serialize, Clone)]
 #[non_exhaustive]
 pub struct ArgData {
     /// - [`Value::Bool`] if it's a flag,
@@ -33,7 +33,7 @@ pub struct ArgData {
 }
 
 /// The matched subcommand.
-#[derive(Default, Debug, Serialize)]
+#[derive(Default, Debug, Serialize, Clone)]
 #[non_exhaustive]
 pub struct SubcommandMatches {
     /// The subcommand name.
@@ -43,7 +43,7 @@ pub struct SubcommandMatches {
 }
 
 /// The argument matches of a command.
-#[derive(Default, Debug, Serialize)]
+#[derive(Default, Debug, Serialize, Clone)]
 #[non_exhaustive]
 pub struct Matches {
     /// Data structure mapping each found arg with its resolution.
