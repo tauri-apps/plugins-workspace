@@ -29,7 +29,11 @@ pub struct Cli<R: Runtime>(PluginApi<R, Config>);
 
 impl<R: Runtime> Cli<R> {
     pub fn matches(&self) -> Result<parser::Matches> {
-        parser::get_matches(self.0.config(), self.0.app().package_info())
+        parser::get_matches(self.0.config(), self.0.app().package_info(), None)
+    }
+
+    pub fn matches_from(&self, args: Vec<String>) -> Result<parser::Matches> {
+        parser::get_matches(self.0.config(), self.0.app().package_info(), Some(args))
     }
 }
 

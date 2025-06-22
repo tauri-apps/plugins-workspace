@@ -19,7 +19,7 @@ use std::collections::HashMap;
 mod macros;
 
 /// The resolution of a argument match.
-#[derive(Default, Debug, Serialize)]
+#[derive(Default, Debug, Serialize, Clone)]
 #[non_exhaustive]
 pub struct ArgData {
     /// - [`Value::Bool`] if it's a flag,
@@ -33,7 +33,7 @@ pub struct ArgData {
 }
 
 /// The matched subcommand.
-#[derive(Default, Debug, Serialize)]
+#[derive(Default, Debug, Serialize, Clone)]
 #[non_exhaustive]
 pub struct SubcommandMatches {
     /// The subcommand name.
@@ -43,7 +43,7 @@ pub struct SubcommandMatches {
 }
 
 /// The argument matches of a command.
-#[derive(Default, Debug, Serialize)]
+#[derive(Default, Debug, Serialize, Clone)]
 #[non_exhaustive]
 pub struct Matches {
     /// Data structure mapping each found arg with its resolution.
@@ -79,7 +79,11 @@ impl Matches {
 ///     Ok(())
 ///   });
 /// ```
-pub fn get_matches(cli: &Config, package_info: &PackageInfo) -> crate::Result<Matches> {
+pub fn get_matches(
+    cli: &Config,
+    package_info: &PackageInfo,
+    args: Option<Vec<String>>,
+) -> crate::Result<Matches> {
     let about = cli
         .description()
         .unwrap_or(&package_info.description.to_string())
@@ -92,7 +96,14 @@ pub fn get_matches(cli: &Config, package_info: &PackageInfo) -> crate::Result<Ma
         Some(&about),
         cli,
     );
-    match app.try_get_matches() {
+
+    let matches = if let Some(args) = args {
+        app.try_get_matches_from(args)
+    } else {
+        app.try_get_matches()
+    };
+
+    match matches {
         Ok(matches) => Ok(get_matches_internal(cli, &matches)),
         Err(e) => match e.kind() {
             ErrorKind::DisplayHelp => {
