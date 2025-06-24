@@ -84,6 +84,15 @@
     "store:default",
     "opener:default",
     {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://*",
+          "app": "inAppBrowser"
+        }
+      ]
+    },
+    {
       "identifier": "opener:allow-open-path",
       "allow": [{ "path": "$APPDATA" }, { "path": "$APPDATA/**" }]
     }
