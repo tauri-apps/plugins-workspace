@@ -48,14 +48,10 @@ func flushLogs() {
 }
 
 func os_log(_ level: Int, _ message: NSString) {
-  os_log("%{public}@", log: OSLog.default, type: osLogType(from: level), message)
-}
-
-func osLogType(from level: Int) -> OSLogType {
   switch level {
-  case 1: return .debug
-  case 2: return .info
-  case 3: return .error
-  default: return .default
+  case 1: Logger.debug(message as String)
+  case 2: Logger.info(message as String)
+  case 3: Logger.error(message as String)
+  default: break
   }
 }
