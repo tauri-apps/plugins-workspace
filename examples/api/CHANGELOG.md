@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.25]
+
+### Dependencies
+
+- Upgraded to `cli-js@2.3.0`
+- Upgraded to `log-js@2.5.1`
+- Upgraded to `opener-js@2.3.1`
+
 ## \[2.0.24]
 
 ### Dependencies
