@@ -55,7 +55,7 @@ impl<R: Runtime> Opener<R> {
     ///
     /// ## Platform-specific:
     ///
-    /// - **Android / iOS**: Always opens using default program.
+    /// - **Android / iOS**: Always opens using default program, unless `with` is provided as "inAppBrowser".
     #[cfg(desktop)]
     pub fn open_url(&self, url: impl Into<String>, with: Option<impl Into<String>>) -> Result<()> {
         crate::open::open(url.into(), with.map(Into::into))
@@ -78,11 +78,14 @@ impl<R: Runtime> Opener<R> {
     ///
     /// ## Platform-specific:
     ///
-    /// - **Android / iOS**: Always opens using default program.
+    /// - **Android / iOS**: Always opens using default program, unless `with` is provided as "inAppBrowser".
     #[cfg(mobile)]
-    pub fn open_url(&self, url: impl Into<String>, _with: Option<impl Into<String>>) -> Result<()> {
+    pub fn open_url(&self, url: impl Into<String>, with: Option<impl Into<String>>) -> Result<()> {
         self.mobile_plugin_handle
-            .run_mobile_plugin("open", url.into())
+            .run_mobile_plugin(
+                "open",
+                serde_json::json!({ "url": url.into(), "with": with.map(Into::into) }),
+            )
             .map_err(Into::into)
     }
 
