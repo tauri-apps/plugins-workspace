@@ -63,7 +63,7 @@ importers:
         specifier: ^2.2.2
         version: link:../../plugins/biometric
       '@tauri-apps/plugin-cli':
-        specifier: ^2.2.1
+        specifier: ^2.3.0
         version: link:../../plugins/cli
       '@tauri-apps/plugin-clipboard-manager':
         specifier: ^2.2.3
@@ -93,7 +93,7 @@ importers:
         specifier: ^2.2.3
         version: link:../../plugins/notification
       '@tauri-apps/plugin-opener':
-        specifier: ^2.3.0
+        specifier: ^2.3.1
         version: link:../../plugins/opener
       '@tauri-apps/plugin-os':
         specifier: ^2.2.2

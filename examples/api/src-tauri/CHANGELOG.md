@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.0.29]
+
+### Dependencies
+
+- Upgraded to `cli@2.3.0`
+- Upgraded to `log@2.5.1`
+- Upgraded to `opener@2.3.1`
+
 ## \[2.0.28]
 
 ### Dependencies
