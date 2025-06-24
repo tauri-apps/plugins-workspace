@@ -35,7 +35,8 @@ func scheduleLogFlush() {
   guard !logFlushScheduled else { return }
   logFlushScheduled = true
 
-  DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+  DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+    logReady = true
     flushLogs()
   }
 }
