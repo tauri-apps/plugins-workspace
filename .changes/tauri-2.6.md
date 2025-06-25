@@ -55,7 +55,7 @@
 "websocket": minor
 "websocket-js": minor
 "window-state": minor
-"window-state-js: minor
+"window-state-js": minor
 ---
 
 Updated tauri to 2.6
