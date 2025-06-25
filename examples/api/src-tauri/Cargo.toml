@@ -43,7 +43,8 @@ tauri-plugin-store = { path = "../../../plugins/store", version = "2.2.1" }
 workspace = true
 features = [
   "wry",
-  "compression",
+  "common-controls-v6",
+  "x11",
   "image-ico",
   "image-png",
   "isolation",
