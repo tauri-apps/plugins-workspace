@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
 ## \[2.3.0]
 
 - [`f6e11282`](https://github.com/tauri-apps/plugins-workspace/commit/f6e11282a7f4036dd6d1dbb8f100e777e9e42f11) ([#2787](https://github.com/tauri-apps/plugins-workspace/pull/2787) by [@mikew](https://github.com/tauri-apps/plugins-workspace/../../mikew)) Added `Cli.matches_from(args)`. This can be combined with the `args` passed to the callback of `tauri_plugin_single_instance::init` to parse the command line arguments passed to subsequent instances of the application.
