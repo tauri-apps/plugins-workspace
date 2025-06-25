@@ -6431,7 +6431,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f5df493a1075a241065bc865ed5ef8d0fbc1e76c7afdc0bf0eccfaa7d4f0e406"
 dependencies = [
  "base64 0.22.1",
- "brotli",
  "ico",
  "json-patch",
  "plist",
@@ -7024,7 +7023,6 @@ checksum = "41743bbbeb96c3a100d234e5a0b60a46d5aa068f266160862c7afdbf828ca02e"
 dependencies = [
  "aes-gcm",
  "anyhow",
- "brotli",
  "cargo_metadata",
  "ctor",
  "dunce",
