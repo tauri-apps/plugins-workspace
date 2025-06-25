@@ -83,3 +83,4 @@ jobs:
           labels: 'version updates'
           branch: 'ci/release-${{ github.ref_name }}'
           body: ${{ steps.covector.outputs.change }}
+          sign-commits: true
