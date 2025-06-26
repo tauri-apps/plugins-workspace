@@ -101,6 +101,7 @@ const COMMANDS: &[(&str, &[&str])] = &[
     ("fstat", &[]),
     ("exists", &[]),
     ("watch", &[]),
+    // TODO: Remove this in v3
     ("unwatch", &[]),
     ("size", &[]),
 ];

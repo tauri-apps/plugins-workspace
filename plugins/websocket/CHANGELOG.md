@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.4.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.3.1]
+
+- [`f634e524`](https://github.com/tauri-apps/plugins-workspace/commit/f634e5248ebe428f8305a59f74c13fc15147fb8e) This is an "empty" release to update the plugins' source files on crates.io and docs.rs. This should fix docs.rs build failures for projects using tauri plugins as dependencies.
+
 ## \[2.3.0]
 
 - [`78acfa45`](https://github.com/tauri-apps/plugins-workspace/commit/78acfa456f343c0af5fbf35660802d14ff7a5eca) ([#2027](https://github.com/tauri-apps/plugins-workspace/pull/2027) by [@twlite](https://github.com/tauri-apps/plugins-workspace/../../twlite)) `addListener` now returns a cleanup function instead of `void` to remove the listener.

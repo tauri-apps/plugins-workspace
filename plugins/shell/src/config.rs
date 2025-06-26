@@ -18,6 +18,9 @@ pub struct Config {
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
 pub enum ShellAllowlistOpen {
+    /// Shell open API allowlist is not defined by the user.
+    /// In this case we add the default validation regex (same as [`Self::Flag(true)`]).
+    Unset,
     /// If the shell open API should be enabled.
     ///
     /// If enabled, the default validation regex (`^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+`) is used.
@@ -35,6 +38,6 @@ pub enum ShellAllowlistOpen {
 
 impl Default for ShellAllowlistOpen {
     fn default() -> Self {
-        Self::Flag(false)
+        Self::Unset
     }
 }

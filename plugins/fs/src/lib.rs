@@ -397,7 +397,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             commands::create,
             commands::open,
             commands::copy_file,
-            commands::close,
             commands::mkdir,
             commands::read_dir,
             commands::read,
@@ -420,8 +419,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             commands::size,
             #[cfg(feature = "watch")]
             watcher::watch,
-            #[cfg(feature = "watch")]
-            watcher::unwatch
         ])
         .setup(|app, api| {
             let scope = Scope {

@@ -63,8 +63,6 @@ fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTa
     if bundle_updater {
         #[cfg(windows)]
         command.args(["--bundles", "msi", "nsis"]);
-
-        command.args(["--bundles", "updater"]);
     } else {
         #[cfg(windows)]
         command.args(["--bundles", target.name()]);

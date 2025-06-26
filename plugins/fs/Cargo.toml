@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-fs"
-version = "2.2.0"
+version = "2.4.0"
 description = "Access the file system."
 authors = { workspace = true }
 license = { workspace = true }
@@ -14,7 +14,7 @@ rustc-args = ["--cfg", "docsrs"]
 rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.platforms.support]
-windows = { level = "full", notes = "Apps installed via MSI or NSIS in `perMachine` and `both` mode require admin permissions for write acces in `$RESOURCES` folder" }
+windows = { level = "full", notes = "Apps installed via MSI or NSIS in `perMachine` and `both` mode require admin permissions for write access in `$RESOURCES` folder" }
 linux = { level = "full", notes = "No write access to `$RESOURCES` folder" }
 macos = { level = "full", notes = "No write access to `$RESOURCES` folder" }
 android = { level = "partial", notes = "Access is restricted to Application folder by default" }
@@ -35,7 +35,6 @@ tauri = { workspace = true }
 thiserror = { workspace = true }
 url = { workspace = true }
 anyhow = "1"
-uuid = { version = "1", features = ["v4"] }
 glob = { workspace = true }
 # TODO: Remove `serialization-compat-6` in v3
 notify = { version = "8", optional = true, features = [
