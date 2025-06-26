@@ -9,6 +9,7 @@ It allows to use the `open` functionality with a reasonable
 scope pre-configured. It will allow opening `http(s)://`,
 `tel:` and `mailto:` links.
 
+#### This default permission set includes the following:
 
 - `allow-open`
 
