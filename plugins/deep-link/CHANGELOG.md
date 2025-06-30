@@ -1,5 +1,14 @@
 # Changelog
 
+## \[2.4.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.3.0]
+
+- [`4d10acee`](https://github.com/tauri-apps/plugins-workspace/commit/4d10acee61bad8045705508121424ed5f2d381f6) ([#993](https://github.com/tauri-apps/plugins-workspace/pull/993) by [@m00nwtchr](https://github.com/tauri-apps/plugins-workspace/../../m00nwtchr)) Exposed Android's `path`, `pathPattern` and `pathSuffix` configurations.
+- [`4d10acee`](https://github.com/tauri-apps/plugins-workspace/commit/4d10acee61bad8045705508121424ed5f2d381f6) ([#993](https://github.com/tauri-apps/plugins-workspace/pull/993) by [@m00nwtchr](https://github.com/tauri-apps/plugins-workspace/../../m00nwtchr)) Added a `scheme` configuration to set a scheme other than http/https. This is only supported on Android and will still default to http,https if not set.
+
 ## \[2.2.1]
 
 ### bug
