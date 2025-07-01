@@ -60,12 +60,14 @@ bitflags! {
 }
 
 impl Default for StateFlags {
+    /// Default to [`all`](Self::all)
     fn default() -> Self {
         Self::all()
     }
 }
 
 struct PluginState {
+    pub(crate) state_flags: StateFlags,
     filename: String,
     map_label: Option<Box<LabelMapperFn>>,
 }
@@ -381,7 +383,7 @@ impl Builder {
     }
 
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
-        let flags = self.state_flags;
+        let state_flags = self.state_flags;
         let filename = self.filename.unwrap_or_else(|| DEFAULT_FILENAME.into());
         let map_label = self.map_label;
 
@@ -391,11 +393,12 @@ impl Builder {
                 cmd::restore_state,
                 cmd::filename
             ])
-            .setup(|app, _api| {
+            .setup(move |app, _api| {
                 let cache = load_saved_window_states(app, &filename).unwrap_or_default();
                 app.manage(WindowStateCache(Arc::new(Mutex::new(cache))));
                 app.manage(RestoringWindowState(Mutex::new(())));
                 app.manage(PluginState {
+                    state_flags,
                     filename,
                     map_label,
                 });
@@ -423,14 +426,13 @@ impl Builder {
                 }
 
                 if !self.skip_initial_state.contains(label) {
-                    let _ = window.restore_state(self.state_flags);
+                    let _ = window.restore_state(state_flags);
                 }
 
                 let cache = window.state::<WindowStateCache>();
                 let cache = cache.0.clone();
                 let label = label.to_string();
                 let window_clone = window.clone();
-                let flags = self.state_flags;
 
                 // insert a default state if this window should be tracked and
                 // the disk cache doesn't have a state for it
@@ -446,11 +448,11 @@ impl Builder {
                     WindowEvent::CloseRequested { .. } => {
                         let mut c = cache.lock().unwrap();
                         if let Some(state) = c.get_mut(&label) {
-                            let _ = window_clone.update_state(state, flags);
+                            let _ = window_clone.update_state(state, state_flags);
                         }
                     }
 
-                    WindowEvent::Moved(position) if flags.contains(StateFlags::POSITION) => {
+                    WindowEvent::Moved(position) if state_flags.contains(StateFlags::POSITION) => {
                         if window_clone
                             .state::<RestoringWindowState>()
                             .0
@@ -468,7 +470,7 @@ impl Builder {
                             }
                         }
                     }
-                    WindowEvent::Resized(size) if flags.contains(StateFlags::SIZE) => {
+                    WindowEvent::Resized(size) if state_flags.contains(StateFlags::SIZE) => {
                         if window_clone
                             .state::<RestoringWindowState>()
                             .0
@@ -499,7 +501,7 @@ impl Builder {
             })
             .on_event(move |app, event| {
                 if let RunEvent::Exit = event {
-                    let _ = app.save_window_state(flags);
+                    let _ = app.save_window_state(state_flags);
                 }
             })
             .build()
