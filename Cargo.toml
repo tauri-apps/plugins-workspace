@@ -1,7 +1,6 @@
 [workspace]
 # Listed without globs to prevent issues with renovate's baseBranches config.
 members = [
-  "plugins/authenticator",
   "plugins/autostart",
   "plugins/fs-extra",
   "plugins/fs-watch",
@@ -34,4 +33,4 @@ thiserror = "1"
 authors = ["Tauri Programme within The Commons Conservancy"]
 edition = "2021"
 license = "Apache-2.0 OR MIT"
-rust-version = "1.64"
+rust-version = "1.67"

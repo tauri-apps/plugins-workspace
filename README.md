@@ -2,7 +2,6 @@
 
 |                                            |                                                           | Win | Mac | Lin | iOS | And |
 | ------------------------------------------ | --------------------------------------------------------- | --- | --- | --- | --- | --- |
-| [authenticator](plugins/authenticator)     | Interface with hardware security keys.                    | ✅  | ✅  | ✅  | ?   | ?   |
 | [autostart](plugins/autostart)             | Automatically launch your app at system startup.          | ✅  | ✅  | ✅  | ?   | ?   |
 | [fs-extra](plugins/fs-extra)               | File system methods that aren't included in the core API. | ✅  | ✅  | ✅  | ?   | ?   |
 | [fs-watch](plugins/fs-watch)               | Watch the filesystem for changes.                         | ✅  | ✅  | ✅  | ?   | ?   |
@@ -18,7 +17,7 @@
 | [websocket](plugins/websocket)             | Open a WebSocket connection using a Rust client in JS.    | ✅  | ✅  | ✅  | ?   | ?   |
 | [window-state](plugins/window-state)       | Persist window sizes and positions.                       | ✅  | ✅  | ✅  | ?   | ?   |
 
-_This repo and all plugins require a Rust version of at least **1.64**_
+_This repo and all plugins require a Rust version of at least **1.67**_
 
 ## Partners
 

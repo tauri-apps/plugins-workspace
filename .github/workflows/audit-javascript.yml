@@ -42,7 +42,7 @@ jobs:
           node-version: 20
       - uses: pnpm/action-setup@v2
         with:
-          version: 9.x.x
+          version: 10.x.x
           run_install: true
       - name: audit
         run: pnpm audit
