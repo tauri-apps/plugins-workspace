@@ -19,7 +19,14 @@ http = "1"
 rand = "0.8"
 futures-util = "0.3"
 tokio = { version = "1", features = ["net", "sync"] }
-tokio-tungstenite = { version = "0.27", features = ["native-tls"] }
+tokio-tungstenite = "0.27"
 hyper = { version = "1", features = ["client"] }
 hyper-util = { version = "0.1", features = ["tokio", "http1"] }
 base64 = "0.22"
+
+[features]
+default = ["rustls-tls"]
+native-tls = ["tokio-tungstenite/native-tls"]
+native-tls-vendored = ["native-tls", "tokio-tungstenite/native-tls-vendored"]
+rustls-tls = ["tokio-tungstenite/rustls-tls-webpki-roots"]
+rustls-tls-native-roots = ["tokio-tungstenite/rustls-tls-native-roots"]
