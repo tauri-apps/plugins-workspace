@@ -27,9 +27,9 @@ use tauri::{
     Manager, Runtime,
 };
 use tauri::{AppHandle, Emitter};
+use time::{macros::format_description, OffsetDateTime};
 
 pub use fern;
-use time::OffsetDateTime;
 
 pub const WEBVIEW_TARGET: &str = "webview";
 
@@ -47,6 +47,7 @@ const DEFAULT_LOG_TARGETS: [Target; 2] = [
     Target::new(TargetKind::Stdout),
     Target::new(TargetKind::LogDir { file_name: None }),
 ];
+const LOG_DATE_FORMAT: &str = "[year]-[month]-[day]_[hour]-[minute]-[second]";
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -115,8 +116,12 @@ impl From<log::Level> for LogLevel {
 }
 
 pub enum RotationStrategy {
+    /// Will keep all the logs, renaming them to include the date.
     KeepAll,
+    /// Will only keep the most recent log up to its maximal size.
     KeepOne,
+    /// Will keep some of the most recent logs, renaming them to include the date.
+    KeepSome(usize),
 }
 
 #[derive(Debug, Clone)]
@@ -170,6 +175,10 @@ pub enum TargetKind {
     ///
     /// This requires the webview to subscribe to log events, via this plugins `attachConsole` function.
     Webview,
+    /// Send logs to a [`fern::Dispatch`]
+    ///
+    /// You can use this to construct arbitrary log targets.
+    Dispatch(fern::Dispatch),
 }
 
 /// A log target.
@@ -194,6 +203,38 @@ impl Target {
     {
         self.filters.push(Box::new(filter));
         self
+    }
+}
+
+// Target becomes default and location is added as a parameter
+#[cfg(feature = "tracing")]
+fn emit_trace(
+    level: log::Level,
+    message: &String,
+    location: Option<&str>,
+    file: Option<&str>,
+    line: Option<u32>,
+    kv: &HashMap<&str, &str>,
+) {
+    macro_rules! emit_event {
+        ($level:expr) => {
+            tracing::event!(
+                target: WEBVIEW_TARGET,
+                $level,
+                message = %message,
+                location = location,
+                file,
+                line,
+                ?kv
+            )
+        };
+    }
+    match level {
+        log::Level::Error => emit_event!(tracing::Level::ERROR),
+        log::Level::Warn => emit_event!(tracing::Level::WARN),
+        log::Level::Info => emit_event!(tracing::Level::INFO),
+        log::Level::Debug => emit_event!(tracing::Level::DEBUG),
+        log::Level::Trace => emit_event!(tracing::Level::TRACE),
     }
 }
 
@@ -223,6 +264,8 @@ fn log(
         kv.insert(k.as_str(), v.as_str());
     }
     builder.key_values(&kv);
+    #[cfg(feature = "tracing")]
+    emit_trace(level, &message, location, file, line, &kv);
 
     logger().log(&builder.args(format_args!("{message}")).build());
 }
@@ -239,9 +282,7 @@ pub struct Builder {
 impl Default for Builder {
     fn default() -> Self {
         #[cfg(desktop)]
-        let format =
-            time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
-                .unwrap();
+        let format = format_description!("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]");
         let dispatch = fern::Dispatch::new().format(move |out, message, record| {
             out.finish(
                 #[cfg(mobile)]
@@ -280,9 +321,7 @@ impl Builder {
     pub fn timezone_strategy(mut self, timezone_strategy: TimezoneStrategy) -> Self {
         self.timezone_strategy = timezone_strategy.clone();
 
-        let format =
-            time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
-                .unwrap();
+        let format = format_description!("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]");
         self.dispatch = self.dispatch.format(move |out, message, record| {
             out.finish(format_args!(
                 "{}[{}][{}] {}",
@@ -346,7 +385,7 @@ impl Builder {
 
     /// Skip the creation and global registration of a logger
     ///
-    /// If you wish to use your own global logger, you must call `skip_logger` so that the plugin does not attempt to set a second global logger. In this configuration, no logger will be created and the plugin's `log` command will rely on the result of `log::logger()`. You will be responsible for configuring the logger yourself and any included targets will be ignored. This can also be used with `tracing-log` or if running tests in parallel that require the plugin to be registered.
+    /// If you wish to use your own global logger, you must call `skip_logger` so that the plugin does not attempt to set a second global logger. In this configuration, no logger will be created and the plugin's `log` command will rely on the result of `log::logger()`. You will be responsible for configuring the logger yourself and any included targets will be ignored. If ever initializing the plugin multiple times, such as if registering the plugin while testing, call this method to avoid panicking when registering multiple loggers. For interacting with `tracing`, you can leverage the `tracing-log` logger to forward logs to `tracing` or enable the `tracing` feature for this plugin to emit events directly to the tracing system. Both scenarios require calling this method.
     /// ```rust
     /// static LOGGER: SimpleLogger = SimpleLogger;
     ///
@@ -360,12 +399,11 @@ impl Builder {
         self
     }
 
-    /// Adds a collection of targets to the logger.
+    /// Replaces the targets of the logger.
     ///
     /// ```rust
     /// use tauri_plugin_log::{Target, TargetKind, WEBVIEW_TARGET};
     /// tauri_plugin_log::Builder::new()
-    ///     .clear_targets()
     ///     .targets([
     ///         Target::new(TargetKind::Webview),
     ///         Target::new(TargetKind::LogDir { file_name: Some("webview".into()) }).filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),
@@ -379,9 +417,7 @@ impl Builder {
 
     #[cfg(feature = "colored")]
     pub fn with_colors(self, colors: fern::colors::ColoredLevelConfig) -> Self {
-        let format =
-            time::format_description::parse("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]")
-                .unwrap();
+        let format = format_description!("[[[year]-[month]-[day]][[[hour]:[minute]:[second]]");
 
         let timezone_strategy = self.timezone_strategy.clone();
         self.format(move |out, message, record| {
@@ -481,6 +517,7 @@ impl Builder {
                         });
                     })
                 }
+                TargetKind::Dispatch(dispatch) => dispatch.into(),
             };
             target_dispatch = target_dispatch.chain(logger);
 
@@ -545,6 +582,34 @@ pub fn attach_logger(
     Ok(())
 }
 
+fn rename_file_to_dated(
+    path: &impl AsRef<Path>,
+    dir: &impl AsRef<Path>,
+    file_name: &str,
+    timezone_strategy: &TimezoneStrategy,
+) -> Result<(), Error> {
+    let to = dir.as_ref().join(format!(
+        "{}_{}.log",
+        file_name,
+        timezone_strategy
+            .get_now()
+            .format(&time::format_description::parse(LOG_DATE_FORMAT).unwrap())
+            .unwrap(),
+    ));
+    if to.is_file() {
+        // designated rotated log file name already exists
+        // highly unlikely but defensively handle anyway by adding .bak to filename
+        let mut to_bak = to.clone();
+        to_bak.set_file_name(format!(
+            "{}.bak",
+            to_bak.file_name().unwrap().to_string_lossy()
+        ));
+        fs::rename(&to, to_bak)?;
+    }
+    fs::rename(path, to)?;
+    Ok(())
+}
+
 fn get_log_file_path(
     dir: &impl AsRef<Path>,
     file_name: &str,
@@ -559,29 +624,37 @@ fn get_log_file_path(
         if log_size > max_file_size {
             match rotation_strategy {
                 RotationStrategy::KeepAll => {
-                    let to = dir.as_ref().join(format!(
-                        "{}_{}.log",
-                        file_name,
-                        timezone_strategy
-                            .get_now()
-                            .format(&time::format_description::parse(
-                                "[year]-[month]-[day]_[hour]-[minute]-[second]"
-                            )?)?,
-                    ));
-                    if to.is_file() {
-                        // designated rotated log file name already exists
-                        // highly unlikely but defensively handle anyway by adding .bak to filename
-                        let mut to_bak = to.clone();
-                        to_bak.set_file_name(format!(
-                            "{}.bak",
-                            to_bak
-                                .file_name()
-                                .map(|f| f.to_string_lossy())
-                                .unwrap_or_default()
-                        ));
-                        fs::rename(&to, to_bak)?;
+                    rename_file_to_dated(&path, dir, file_name, timezone_strategy)?;
+                }
+                RotationStrategy::KeepSome(how_many) => {
+                    let mut files = fs::read_dir(dir)?
+                        .filter_map(|entry| {
+                            let entry = entry.ok()?;
+                            let path = entry.path();
+                            let old_file_name = path.file_name()?.to_string_lossy().into_owned();
+                            if old_file_name.starts_with(file_name) {
+                                let date = old_file_name
+                                    .strip_prefix(file_name)?
+                                    .strip_prefix("_")?
+                                    .strip_suffix(".log")?;
+                                Some((path, date.to_string()))
+                            } else {
+                                None
+                            }
+                        })
+                        .collect::<Vec<_>>();
+                    // Regular sorting, so the oldest files are first. Lexicographical
+                    // sorting is fine due to the date format.
+                    files.sort_by(|a, b| a.1.cmp(&b.1));
+                    // We want to make space for the file we will be soon renaming, AND
+                    // the file we will be creating. Thus we need to keep how_many - 2 files.
+                    if files.len() > (*how_many - 2) {
+                        files.truncate(files.len() + 2 - *how_many);
+                        for (old_log_path, _) in files {
+                            fs::remove_file(old_log_path)?;
+                        }
                     }
-                    fs::rename(&path, to)?;
+                    rename_file_to_dated(&path, dir, file_name, timezone_strategy)?;
                 }
                 RotationStrategy::KeepOne => {
                     fs::remove_file(&path)?;
@@ -589,6 +662,5 @@ fn get_log_file_path(
             }
         }
     }
-
     Ok(path)
 }

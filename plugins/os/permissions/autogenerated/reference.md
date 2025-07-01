@@ -8,8 +8,6 @@ to gather from the frontend.
 
 All information except the host name are available.
 
-
-
 #### This default permission set includes the following:
 
 - `allow-arch`

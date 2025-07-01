@@ -17,7 +17,7 @@ use std::ffi::OsStr;
 
 use base64::Engine;
 use futures_util::StreamExt;
-use http::HeaderName;
+use http::{header::ACCEPT, HeaderName};
 use minisign_verify::{PublicKey, Signature};
 use percent_encoding::{AsciiSet, CONTROLS};
 use reqwest::{
@@ -345,7 +345,9 @@ impl Updater {
     pub async fn check(&self) -> Result<Option<Update>> {
         // we want JSON only
         let mut headers = self.headers.clone();
-        headers.insert("Accept", HeaderValue::from_str("application/json").unwrap());
+        if !headers.contains_key(ACCEPT) {
+            headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
+        }
 
         // Set SSL certs for linux if they aren't available.
         #[cfg(target_os = "linux")]
@@ -549,10 +551,9 @@ impl Update {
     ) -> Result<Vec<u8>> {
         // set our headers
         let mut headers = self.headers.clone();
-        headers.insert(
-            "Accept",
-            HeaderValue::from_str("application/octet-stream").unwrap(),
-        );
+        if !headers.contains_key(ACCEPT) {
+            headers.insert(ACCEPT, HeaderValue::from_static("application/octet-stream"));
+        }
 
         let mut request = ClientBuilder::new().user_agent(UPDATER_USER_AGENT);
         if let Some(timeout) = self.timeout {
@@ -682,17 +683,25 @@ impl Update {
         let install_mode = self.config.install_mode();
         let current_args = &self.current_exe_args()[1..];
         let msi_args;
+        let nsis_args;
 
         let installer_args: Vec<&OsStr> = match &updater_type {
-            WindowsUpdaterType::Nsis { .. } => install_mode
-                .nsis_args()
-                .iter()
-                .map(OsStr::new)
-                .chain(once(OsStr::new("/UPDATE")))
-                .chain(once(OsStr::new("/ARGS")))
-                .chain(current_args.to_vec())
-                .chain(self.installer_args())
-                .collect(),
+            WindowsUpdaterType::Nsis { .. } => {
+                nsis_args = current_args
+                    .iter()
+                    .map(escape_nsis_current_exe_arg)
+                    .collect::<Vec<_>>();
+
+                install_mode
+                    .nsis_args()
+                    .iter()
+                    .map(OsStr::new)
+                    .chain(once(OsStr::new("/UPDATE")))
+                    .chain(once(OsStr::new("/ARGS")))
+                    .chain(nsis_args.iter().map(OsStr::new))
+                    .chain(self.installer_args())
+                    .collect()
+            }
             WindowsUpdaterType::Msi { path, .. } => {
                 let escaped_args = current_args
                     .iter()
@@ -1362,6 +1371,41 @@ impl PathExt for PathBuf {
     }
 }
 
+// adapted from https://github.com/rust-lang/rust/blob/1c047506f94cd2d05228eb992b0a6bbed1942349/library/std/src/sys/args/windows.rs#L174
+#[cfg(windows)]
+fn escape_nsis_current_exe_arg(arg: &&OsStr) -> String {
+    let arg = arg.to_string_lossy();
+    let mut cmd: Vec<char> = Vec::new();
+
+    // compared to std we additionally escape `/` so that nsis won't interpret them as a beginning of an nsis argument.
+    let quote = arg.chars().any(|c| c == ' ' || c == '\t' || c == '/') || arg.is_empty();
+    let escape = true;
+    if quote {
+        cmd.push('"');
+    }
+    let mut backslashes: usize = 0;
+    for x in arg.chars() {
+        if escape {
+            if x == '\\' {
+                backslashes += 1;
+            } else {
+                if x == '"' {
+                    // Add n+1 backslashes to total 2n+1 before internal '"'.
+                    cmd.extend((0..=backslashes).map(|_| '\\'));
+                }
+                backslashes = 0;
+            }
+        }
+        cmd.push(x);
+    }
+    if quote {
+        // Add n backslashes to total 2n before ending '"'.
+        cmd.extend((0..backslashes).map(|_| '\\'));
+        cmd.push('"');
+    }
+    cmd.into_iter().collect()
+}
+
 #[cfg(windows)]
 fn escape_msi_property_arg(arg: impl AsRef<OsStr>) -> String {
     let mut arg = arg.as_ref().to_string_lossy().to_string();
@@ -1374,7 +1418,7 @@ fn escape_msi_property_arg(arg: impl AsRef<OsStr>) -> String {
     }
 
     if arg.contains('"') {
-        arg = arg.replace('"', r#""""""#)
+        arg = arg.replace('"', r#""""""#);
     }
 
     if arg.starts_with('-') {
@@ -1405,7 +1449,7 @@ mod tests {
 
     #[test]
     #[cfg(windows)]
-    fn it_escapes_correctly() {
+    fn it_escapes_correctly_for_msi() {
         use crate::updater::escape_msi_property_arg;
 
         // Explanation for quotes:
@@ -1448,6 +1492,49 @@ mod tests {
 
         for (orig, escaped) in cases.iter().zip(cases_escaped) {
             assert_eq!(escape_msi_property_arg(orig), escaped);
+        }
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn it_escapes_correctly_for_nsis() {
+        use crate::updater::escape_nsis_current_exe_arg;
+        use std::ffi::OsStr;
+
+        let cases = [
+            "something",
+            "--flag",
+            "--empty=",
+            "--arg=value",
+            "some space",                     // This simulates `./my-app "some string"`.
+            "--arg value", // -> This simulates `./my-app "--arg value"`. Same as above but it triggers the startsWith(`-`) logic.
+            "--arg=unwrapped space", // `./my-app --arg="unwrapped space"`
+            "--arg=\"wrapped\"", // `./my-app --args=""wrapped""`
+            "--arg=\"wrapped space\"", // `./my-app --args=""wrapped space""`
+            "--arg=midword\"wrapped space\"", // `./my-app --args=midword""wrapped""`
+            "",            // `./my-app '""'`
+        ];
+        // Note: These may not be the results we actually want (monitor this!).
+        // We only make sure the implementation doesn't unintentionally change.
+        let cases_escaped = [
+            "something",
+            "--flag",
+            "--empty=",
+            "--arg=value",
+            "\"some space\"",
+            "\"--arg value\"",
+            "\"--arg=unwrapped space\"",
+            "--arg=\\\"wrapped\\\"",
+            "\"--arg=\\\"wrapped space\\\"\"",
+            "\"--arg=midword\\\"wrapped space\\\"\"",
+            "\"\"",
+        ];
+
+        // Just to be sure we didn't mess that up
+        assert_eq!(cases.len(), cases_escaped.len());
+
+        for (orig, escaped) in cases.iter().zip(cases_escaped) {
+            assert_eq!(escape_nsis_current_exe_arg(&OsStr::new(orig)), escaped);
         }
     }
 }

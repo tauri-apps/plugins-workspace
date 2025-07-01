@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-opener"
-version = "2.2.6"
+version = "2.4.0"
 description = "Open files and URLs using their default application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -40,7 +40,7 @@ glob = { workspace = true }
 dunce = { workspace = true }
 
 [target."cfg(windows)".dependencies.windows]
-version = "0.60"
+version = "0.61"
 features = [
   "Win32_Foundation",
   "Win32_UI_Shell_Common",

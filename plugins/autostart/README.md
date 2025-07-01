@@ -59,7 +59,10 @@ First you need to register the core plugin with Tauri:
 ```rust
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_autostart::Builder::new().args((["--flag1", "--flag2"])).build()))
+        .plugin(tauri_plugin_autostart::Builder::new()
+            .args(["--flag1", "--flag2"])
+            .app_name("My Custom Name")
+            .build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

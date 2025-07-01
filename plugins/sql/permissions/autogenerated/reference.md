@@ -10,8 +10,6 @@ database operations are available from the sql plugin.
 All reading related operations are enabled.
 Also allows to load or close a connection.
 
-
-
 #### This default permission set includes the following:
 
 - `allow-close`

@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.3.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.2.2]
+
+- [`f634e524`](https://github.com/tauri-apps/plugins-workspace/commit/f634e5248ebe428f8305a59f74c13fc15147fb8e) This is an "empty" release to update the plugins' source files on crates.io and docs.rs. This should fix docs.rs build failures for projects using tauri plugins as dependencies.
+
 ## \[2.2.1]
 
 - [`ca7395a5`](https://github.com/tauri-apps/plugins-workspace/commit/ca7395a5ce971cbac25fb54285056edf3dd84e1f) ([#2378](https://github.com/tauri-apps/plugins-workspace/pull/2378) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) the `rustls-tls` feature is now enabled by default
