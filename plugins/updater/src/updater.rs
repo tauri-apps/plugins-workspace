@@ -1143,7 +1143,7 @@ impl Update {
 
         if let Some(mut stdin) = child.stdin.take() {
             // Write password to stdin
-            writeln!(stdin, "{}", password)?;
+            writeln!(stdin, "{password}")?;
         }
 
         let status = child.wait()?;
