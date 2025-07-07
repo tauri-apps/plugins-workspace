@@ -72,7 +72,7 @@ This plugin automatically adds the following permissions to your `AndroidManifes
 If your app requires GPS functionality to function, **you** should add the following to your `AndroidManifest.xml` file:
 
 ```xml
-<uses-feature android:name="android.hardware.gps" android:required="true" />
+<uses-feature android:name="android.hardware.location.gps" android:required="true" />
 ```
 
 The Google Play Store uses this property to decide whether it should show the app to devices without GPS capabilities.

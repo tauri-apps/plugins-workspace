@@ -1,5 +1,24 @@
 # Changelog
 
+## \[2.9.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.8.1]
+
+- [`735d209d`](https://github.com/tauri-apps/plugins-workspace/commit/735d209d5d1d92dcac70c6083bcfcd34ec7d84be) ([#2761](https://github.com/tauri-apps/plugins-workspace/pull/2761) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed an issue preventing updates via the NSIS installer from succeeding when the app was launched with command line arguments containing spaces.
+
+## \[2.8.0]
+
+- [`87afa23c`](https://github.com/tauri-apps/plugins-workspace/commit/87afa23cad077c09bc1eb743800ae3396b531146) ([#2726](https://github.com/tauri-apps/plugins-workspace/pull/2726)) Add allowDowngrades parameter to check command
+
+  Added a new optional `allowDowngrades` parameter to the JavaScript check command that allows the updater to consider versions that are lower than the current version as valid updates. When enabled, the version comparator will accept any version that is different from the current version, effectively allowing downgrades.
+- [`73ff15de`](https://github.com/tauri-apps/plugins-workspace/commit/73ff15de5d07d476693e40e8e5d138c16da5211e) ([#2757](https://github.com/tauri-apps/plugins-workspace/pull/2757)) Fix headers option in `Update.download` and `Update.downloadAndInstall` doesn't work with `Record<string, string> | Headers` types
+
+## \[2.7.1]
+
+- [`c5b0f51c`](https://github.com/tauri-apps/plugins-workspace/commit/c5b0f51cfd911cca9317b59efc718b570980129b) ([#2621](https://github.com/tauri-apps/plugins-workspace/pull/2621) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `check` and `download` overrides the `accept` header
+
 ## \[2.7.0]
 
 ### bug

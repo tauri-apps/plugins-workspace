@@ -114,8 +114,8 @@ mod imp {
         /// ## Platform-specific:
         ///
         /// - **Windows / Linux**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
-        ///     Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
-        ///     Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
+        ///   Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
+        ///   Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
             self.plugin_handle
                 .run_mobile_plugin::<GetCurrentResponse>("getCurrent", ())
@@ -226,8 +226,8 @@ mod imp {
         /// ## Platform-specific:
         ///
         /// - **Windows / Linux**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
-        ///     Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
-        ///     Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
+        ///   Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
+        ///   Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
             return Ok(self.current.lock().unwrap().clone());
         }
@@ -350,7 +350,7 @@ mod imp {
         /// ## Platform-specific:
         ///
         /// - **Windows**: Requires admin rights if the protocol is registered on local machine
-        ///     (this can happen when registered from the NSIS installer when the install mode is set to both or per machine)
+        ///   (this can happen when registered from the NSIS installer when the install mode is set to both or per machine)
         /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {

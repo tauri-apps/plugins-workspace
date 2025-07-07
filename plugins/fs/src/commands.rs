@@ -150,11 +150,6 @@ pub fn open<R: Runtime>(
     Ok(rid)
 }
 
-#[tauri::command]
-pub fn close<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> CommandResult<()> {
-    webview.resources_table().close(rid).map_err(Into::into)
-}
-
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CopyFileOptions {
