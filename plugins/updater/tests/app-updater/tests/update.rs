@@ -171,15 +171,33 @@ fn test_cases(
 }
 
 #[cfg(target_os = "macos")]
-fn bundle_paths(
+fn test_cases(
     root_dir: &Path,
     _version: &str,
-    v1compatible: bool,
-) -> Vec<(BundleTarget, PathBuf)> {
-    vec![(
-        BundleTarget::App,
-        root_dir.join("target/debug/bundle/macos/app-updater.app"),
-    )]
+    target: String,
+) -> Vec<(BundleTarget, PathBuf, Option<String>, Vec<i32>)> {
+    vec![
+        (
+            BundleTarget::App,
+            root_dir.join("target/debug/bundle/macos/app-updater.app"),
+            Some(target.clone()),
+            vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE],
+        ),
+        // update with installer
+        (
+            BundleTarget::App,
+            root_dir.join("target/debug/bundle/macos/app-updater.app"),
+            Some(format!("{target}-{}", BundleTarget::App.name())),
+            vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE],
+        ),
+        // no update
+        (
+            BundleTarget::App,
+            root_dir.join("target/debug/bundle/macos/app-updater.app"),
+            None,
+            vec![ERROR_EXIT_CODE],
+        ),
+    ]
 }
 
 #[cfg(target_os = "ios")]

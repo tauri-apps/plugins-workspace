@@ -28,8 +28,8 @@ use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
 use tauri::{
     utils::{
-        config::{get_current_bundle_type, PackageType},
-        platform::current_exe,
+        config::BundleType,
+        platform::{bundle_type, current_exe},
     },
     AppHandle, Resource, Runtime,
 };
@@ -43,7 +43,7 @@ use crate::{
 
 const UPDATER_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub enum Installer {
     AppImage,
     Deb,
@@ -387,15 +387,16 @@ pub struct Updater {
 }
 
 impl Updater {
-    fn get_updater_installer(&self) -> Result<Option<Installer>> {
-        match get_current_bundle_type() {
-            PackageType::Deb => Ok(Some(Installer::Deb)),
-            PackageType::Rpm => Ok(Some(Installer::Rpm)),
-            PackageType::AppImage => Ok(Some(Installer::AppImage)),
-            PackageType::Msi => Ok(Some(Installer::Msi)),
-            PackageType::Nsis => Ok(Some(Installer::Nsis)),
-            _ => Err(Error::UnknownInstaller),
-        }
+    fn get_updater_installer(&self) -> Option<Installer> {
+        bundle_type().and_then(|t| match t {
+            BundleType::Deb => Some(Installer::Deb),
+            BundleType::Rpm => Some(Installer::Rpm),
+            BundleType::AppImage => Some(Installer::AppImage),
+            BundleType::Msi => Some(Installer::Msi),
+            BundleType::Nsis => Some(Installer::Nsis),
+            BundleType::App => Some(Installer::App),
+            BundleType::Dmg => None,
+        })
     }
 
     pub async fn check(&self) -> Result<Option<Update>> {
@@ -522,7 +523,7 @@ impl Updater {
             None => release.version > self.current_version,
         };
 
-        let installer = self.get_updater_installer()?;
+        let installer = self.get_updater_installer();
 
         let update = if should_update {
             Some(Update {
@@ -536,12 +537,10 @@ impl Updater {
                 version: release.version.to_string(),
                 date: release.pub_date,
                 download_url: release
-                    .download_url(&self.json_target, installer.clone())?
+                    .download_url(&self.json_target, installer)?
                     .to_owned(),
                 body: release.notes.clone(),
-                signature: release
-                    .signature(&self.json_target, installer.clone())?
-                    .to_owned(),
+                signature: release.signature(&self.json_target, installer)?.to_owned(),
                 installer,
                 raw_json: raw_json.unwrap(),
                 timeout: None,
@@ -1144,7 +1143,7 @@ impl Update {
 
         if let Some(mut stdin) = child.stdin.take() {
             // Write password to stdin
-            writeln!(stdin, "{}", password)?;
+            writeln!(stdin, "{password}")?;
         }
 
         let status = child.wait()?;

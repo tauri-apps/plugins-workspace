@@ -39,3 +39,6 @@ codegen-units = 1
 lto = true
 incremental = false
 opt-level = "s"
+
+[patch.crates-io]
+tauri = { git = "https://github.com/tauri-apps/tauri", rev = "232265c70e1c213bbb3f84b5541ddc07d330fce1" }

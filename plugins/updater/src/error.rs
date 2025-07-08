@@ -30,9 +30,6 @@ pub enum Error {
     /// Operating system is not supported.
     #[error("Unsupported OS, expected one of `linux`, `darwin` or `windows`.")]
     UnsupportedOs,
-    /// Can't determine which type of installer was used for the app
-    #[error("Couldn't determinet installation method")]
-    UnknownInstaller,
     /// Failed to determine updater package extract path
     #[error("Failed to determine updater package extract path.")]
     FailedToDetermineExtractPath,
