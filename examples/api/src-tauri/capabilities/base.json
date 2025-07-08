@@ -69,6 +69,7 @@
     "fs:allow-mkdir",
     "fs:allow-remove",
     "fs:allow-write-text-file",
+    "fs:read-meta",
     "fs:scope-download-recursive",
     "fs:scope-resource-recursive",
     {
@@ -82,6 +83,15 @@
     },
     "store:default",
     "opener:default",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://*",
+          "app": "inAppBrowser"
+        }
+      ]
+    },
     {
       "identifier": "opener:allow-open-path",
       "allow": [{ "path": "$APPDATA" }, { "path": "$APPDATA/**" }]
