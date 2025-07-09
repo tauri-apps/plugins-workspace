@@ -102,18 +102,15 @@ pub struct RemoteRelease {
 
 impl RemoteRelease {
     /// The release's download URL for the given target.
-    pub fn download_url(&self, target: &str, installer: Option<Installer>) -> Result<&Url> {
-        let fallback_target = installer.map(|installer| format!("{target}-{}", installer.suffix()));
+    pub fn download_url(&self, fallback_target: &str, installer: Option<Installer>) -> Result<&Url> {
+        let target = installer.map(|installer| format!("{fallback_target}-{}", installer.suffix())).unwrap_or("".to_string());
         match self.data {
             RemoteReleaseInner::Dynamic(ref platform) => Ok(&platform.url),
-            RemoteReleaseInner::Static { ref platforms } => platforms.get(target).map_or_else(
-                || match fallback_target {
-                    Some(fallback) => platforms.get(&fallback).map_or(
-                        Err(Error::TargetsNotFound(target.to_string(), fallback)),
+            RemoteReleaseInner::Static { ref platforms } => platforms.get(&target).map_or_else(
+                || platforms.get(fallback_target).map_or(
+                        Err(Error::TargetsNotFound(target.to_string(), fallback_target.to_string())),
                         |p| Ok(&p.url),
                     ),
-                    None => Err(Error::TargetNotFound(target.to_string())),
-                },
                 |p| Ok(&p.url),
             ),
         }
