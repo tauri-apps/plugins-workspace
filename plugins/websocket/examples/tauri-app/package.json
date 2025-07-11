@@ -11,7 +11,7 @@
   "devDependencies": {
     "@tauri-apps/cli": "2.6.2",
     "typescript": "^5.7.3",
-    "vite": "^6.2.6"
+    "vite": "^7.0.0"
   },
   "dependencies": {
     "tauri-plugin-websocket-api": "link:..\\.."
