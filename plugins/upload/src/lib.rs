@@ -74,7 +74,7 @@ async fn download(
 ) -> Result<()> {
     let url = url.to_string();
     let file_path = file_path.to_string();
-    
+
     tokio::spawn(async move {
         let client = reqwest::Client::new();
         let mut request = if let Some(body) = body {
@@ -115,7 +115,7 @@ async fn download(
         Ok(())
     })
     .await
-    .map_err(|e| Error::Io(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?
+    .map_err(|e| Error::Io(std::io::Error::other(e.to_string())))?
 }
 
 #[command]
@@ -127,7 +127,7 @@ async fn upload(
 ) -> Result<String> {
     let url = url.to_string();
     let file_path = file_path.to_string();
-    
+
     tokio::spawn(async move {
         // Read the file
         let file = File::open(&file_path).await?;
@@ -157,7 +157,7 @@ async fn upload(
         }
     })
     .await
-    .map_err(|e| Error::Io(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?
+    .map_err(|e| Error::Io(std::io::Error::other(e.to_string())))?
 }
 
 fn file_to_body(channel: Channel<ProgressPayload>, file: File, file_len: u64) -> reqwest::Body {
