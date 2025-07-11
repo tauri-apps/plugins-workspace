@@ -138,7 +138,7 @@ async fn upload(
         let mut request = client
             .post(&url)
             .header(reqwest::header::CONTENT_LENGTH, file_len)
-            .body(file_to_body(on_progress, file));
+            .body(file_to_body(on_progress, file, file_len));
 
         // Loop through the headers keys and values
         // and add them to the request object.
@@ -160,18 +160,18 @@ async fn upload(
     .map_err(|e| Error::Io(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?
 }
 
-fn file_to_body(channel: Channel<ProgressPayload>, file: File) -> reqwest::Body {
+fn file_to_body(channel: Channel<ProgressPayload>, file: File, file_len: u64) -> reqwest::Body {
     let stream = FramedRead::new(file, BytesCodec::new()).map_ok(|r| r.freeze());
 
     let mut stats = TransferStats::default();
     reqwest::Body::wrap_stream(ReadProgressStream::new(
         stream,
-        Box::new(move |progress, total| {
+        Box::new(move |progress, _total| {
             stats.record_chunk_transfer(progress as usize);
             let _ = channel.send(ProgressPayload {
                 progress,
                 progress_total: stats.total_transferred,
-                total,
+                total: file_len,
                 transfer_speed: stats.transfer_speed,
             });
         }),
