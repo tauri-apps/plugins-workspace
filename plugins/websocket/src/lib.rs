@@ -1,16 +1,23 @@
+use base64::prelude::{Engine, BASE64_STANDARD};
 use futures_util::{stream::SplitSink, SinkExt, StreamExt};
-use http::header::{HeaderName, HeaderValue};
+use http::{
+    header::{HeaderName, HeaderValue},
+    Request,
+};
+use hyper::client::conn;
+use hyper_util::rt::TokioIo;
 use serde::{ser::Serializer, Deserialize, Serialize};
 use tauri::{
     api::ipc::{format_callback, CallbackFn},
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Manager, Runtime, State, Window,
+    AppHandle, Manager, Runtime, State, Window,
 };
 use tokio::{net::TcpStream, sync::Mutex};
 use tokio_tungstenite::{
-    connect_async_tls_with_config,
+    client_async_tls_with_config, connect_async_tls_with_config,
     tungstenite::{
         client::IntoClientRequest,
+        error::UrlError,
         protocol::{CloseFrame as ProtocolCloseFrame, WebSocketConfig},
         Message,
     },
@@ -19,10 +26,12 @@ use tokio_tungstenite::{
 
 use std::collections::HashMap;
 use std::str::FromStr;
+use std::sync::Mutex as StdMutex;
 
 type Id = u32;
 type WebSocket = WebSocketStream<MaybeTlsStream<TcpStream>>;
-type WebSocketWriter = SplitSink<WebSocket, Message>;
+type WebSocketWriter =
+    SplitSink<WebSocketStream<tokio_tungstenite::MaybeTlsStream<TcpStream>>, Message>;
 type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
@@ -35,6 +44,16 @@ enum Error {
     InvalidHeaderValue(#[from] tokio_tungstenite::tungstenite::http::header::InvalidHeaderValue),
     #[error(transparent)]
     InvalidHeaderName(#[from] tokio_tungstenite::tungstenite::http::header::InvalidHeaderName),
+    #[error(transparent)]
+    ProxyConnection(#[from] hyper::Error),
+    #[error("proxy returned status code: {0}")]
+    ProxyStatus(u16),
+    #[error(transparent)]
+    ProxyIo(#[from] std::io::Error),
+    #[error(transparent)]
+    ProxyHttp(#[from] http::Error),
+    #[error(transparent)]
+    ProxyJoinHandle(#[from] tokio::task::JoinError),
 }
 
 impl Serialize for Error {
@@ -49,7 +68,27 @@ impl Serialize for Error {
 #[derive(Default)]
 struct ConnectionManager(Mutex<HashMap<Id, WebSocketWriter>>);
 
-struct TlsConnector(Mutex<Option<Connector>>);
+struct TlsConnector(StdMutex<Option<Connector>>);
+struct ProxyConfigurationInternal(StdMutex<Option<ProxyConfiguration>>);
+
+#[derive(Clone)]
+pub struct ProxyAuth {
+    pub username: String,
+    pub password: String,
+}
+
+impl ProxyAuth {
+    pub fn encode(&self) -> String {
+        BASE64_STANDARD.encode(format!("{}:{}", self.username, self.password))
+    }
+}
+
+#[derive(Clone)]
+pub struct ProxyConfiguration {
+    pub proxy_url: String,
+    pub proxy_port: u16,
+    pub auth: Option<ProxyAuth>,
+}
 
 #[derive(Deserialize)]
 #[serde(untagged, rename_all = "camelCase")]
@@ -133,10 +172,6 @@ async fn connect<R: Runtime>(
 ) -> Result<Id> {
     let id = rand::random();
     let mut request = url.into_client_request()?;
-    let tls_connector = match window.try_state::<TlsConnector>() {
-        Some(tls_connector) => tls_connector.0.lock().await.clone(),
-        None => None,
-    };
 
     if let Some(headers) = config.as_ref().and_then(|c| c.headers.as_ref()) {
         for (k, v) in headers {
@@ -146,9 +181,21 @@ async fn connect<R: Runtime>(
         }
     }
 
-    let (ws_stream, _) =
+    let tls_connector = window
+        .try_state::<TlsConnector>()
+        .and_then(|c| c.0.lock().unwrap().clone());
+
+    let proxy_config = window
+        .try_state::<ProxyConfigurationInternal>()
+        .and_then(|c| c.0.lock().unwrap().clone());
+
+    let ws_stream = if let Some(proxy_config) = proxy_config {
+        connect_using_proxy(request, config, proxy_config, tls_connector).await?
+    } else {
         connect_async_tls_with_config(request, config.map(Into::into), false, tls_connector)
-            .await?;
+            .await?
+            .0
+    };
 
     tauri::async_runtime::spawn(async move {
         let (write, read) = ws_stream.split();
@@ -182,7 +229,7 @@ async fn connect<R: Runtime>(
                         })))
                         .unwrap()
                     }
-                    Ok(Message::Frame(_)) => serde_json::Value::Null, // This value can't be recieved.
+                    Ok(Message::Frame(_)) => serde_json::Value::Null, // This value can't be received.
                     Err(e) => serde_json::to_value(Error::from(e)).unwrap(),
                 };
                 let js = format_callback(callback_function, &response)
@@ -194,6 +241,62 @@ async fn connect<R: Runtime>(
     });
 
     Ok(id)
+}
+
+async fn connect_using_proxy(
+    request: Request<()>,
+    config: Option<ConnectionConfig>,
+    proxy_config: ProxyConfiguration,
+    tls_connector: Option<Connector>,
+) -> Result<WebSocket> {
+    let domain = domain(&request)?;
+    let port = request
+        .uri()
+        .port_u16()
+        .or_else(|| match request.uri().scheme_str() {
+            Some("wss") => Some(443),
+            Some("ws") => Some(80),
+            _ => None,
+        })
+        .ok_or(Error::Websocket(
+            tokio_tungstenite::tungstenite::Error::Url(UrlError::UnsupportedUrlScheme),
+        ))?;
+
+    let tcp = TcpStream::connect(format!(
+        "{}:{}",
+        proxy_config.proxy_url, proxy_config.proxy_port
+    ))
+    .await?;
+    let io = TokioIo::new(tcp);
+
+    let (mut request_sender, proxy_connection) =
+        conn::http1::handshake::<TokioIo<tokio::net::TcpStream>, String>(io).await?;
+    let proxy_connection_task = tokio::spawn(proxy_connection.without_shutdown());
+
+    let addr = format!("{domain}:{port}");
+    let mut req_builder = Request::connect(addr);
+
+    if let Some(auth) = proxy_config.auth {
+        req_builder = req_builder.header("Proxy-Authorization", format!("Basic {}", auth.encode()));
+    }
+
+    // TODO: This looks super fishy
+    let req = req_builder.body("".to_string())?;
+    let res = request_sender.send_request(req).await?;
+    if !res.status().is_success() {
+        return Err(Error::ProxyStatus(res.status().as_u16()));
+    }
+
+    let proxied_tcp_socket = proxy_connection_task.await??.io.into_inner();
+    let (ws_stream, _) = client_async_tls_with_config(
+        request,
+        proxied_tcp_socket,
+        config.map(Into::into),
+        tls_connector,
+    )
+    .await?;
+
+    Ok(ws_stream)
 }
 
 #[tauri::command]
@@ -228,12 +331,14 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 #[derive(Default)]
 pub struct Builder {
     tls_connector: Option<Connector>,
+    proxy_configuration: Option<ProxyConfiguration>,
 }
 
 impl Builder {
     pub fn new() -> Self {
         Self {
             tls_connector: None,
+            proxy_configuration: None,
         }
     }
 
@@ -242,14 +347,52 @@ impl Builder {
         self
     }
 
+    pub fn proxy_configuration(mut self, proxy_configuration: ProxyConfiguration) -> Self {
+        self.proxy_configuration.replace(proxy_configuration);
+        self
+    }
+
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         PluginBuilder::new("websocket")
             .invoke_handler(tauri::generate_handler![connect, send])
             .setup(|app| {
                 app.manage(ConnectionManager::default());
-                app.manage(TlsConnector(Mutex::new(self.tls_connector)));
+                app.manage(TlsConnector(StdMutex::new(self.tls_connector)));
+                app.manage(ProxyConfigurationInternal(StdMutex::new(
+                    self.proxy_configuration,
+                )));
+
                 Ok(())
             })
             .build()
+    }
+}
+
+pub async fn reconfigure_proxy(app: &AppHandle, proxy_config: Option<ProxyConfiguration>) {
+    if let Some(state) = app.try_state::<ProxyConfigurationInternal>() {
+        *state.0.lock().unwrap() = proxy_config;
+    }
+}
+
+pub async fn reconfigure_tls_connector(app: &AppHandle, tls_connector: Option<Connector>) {
+    if let Some(state) = app.try_state::<TlsConnector>() {
+        *state.0.lock().unwrap() = tls_connector;
+    }
+}
+
+// Copied from tokio-tungstenite internal function (tokio-tungstenite/src/lib.rs) with the same name
+// Get a domain from an URL.
+#[allow(clippy::result_large_err)]
+#[inline]
+fn domain(
+    request: &tokio_tungstenite::tungstenite::handshake::client::Request,
+) -> tokio_tungstenite::tungstenite::Result<String, tokio_tungstenite::tungstenite::Error> {
+    match request.uri().host() {
+        // rustls expects IPv6 addresses without the surrounding [] brackets
+        Some(d) if d.starts_with('[') && d.ends_with(']') => Ok(d[1..d.len() - 1].to_string()),
+        Some(d) => Ok(d.to_string()),
+        None => Err(tokio_tungstenite::tungstenite::Error::Url(
+            tokio_tungstenite::tungstenite::error::UrlError::NoHostName,
+        )),
     }
 }
