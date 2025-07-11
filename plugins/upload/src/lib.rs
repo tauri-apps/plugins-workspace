@@ -72,44 +72,50 @@ async fn download(
     body: Option<String>,
     on_progress: Channel<ProgressPayload>,
 ) -> Result<()> {
-    let client = reqwest::Client::new();
-    let mut request = if let Some(body) = body {
-        client.post(url).body(body)
-    } else {
-        client.get(url)
-    };
-    // Loop trought the headers keys and values
-    // and add them to the request object.
-    for (key, value) in headers {
-        request = request.header(&key, value);
-    }
+    let url = url.to_string();
+    let file_path = file_path.to_string();
+    
+    tokio::spawn(async move {
+        let client = reqwest::Client::new();
+        let mut request = if let Some(body) = body {
+            client.post(&url).body(body)
+        } else {
+            client.get(&url)
+        };
+        // Loop trought the headers keys and values
+        // and add them to the request object.
+        for (key, value) in headers {
+            request = request.header(&key, value);
+        }
 
-    let response = request.send().await?;
-    if !response.status().is_success() {
-        return Err(Error::HttpErrorCode(
-            response.status().as_u16(),
-            response.text().await.unwrap_or_default(),
-        ));
-    }
-    let total = response.content_length().unwrap_or(0);
+        let response = request.send().await?;
+        if !response.status().is_success() {
+            return Err(Error::HttpErrorCode(
+                response.status().as_u16(),
+                response.text().await.unwrap_or_default(),
+            ));
+        }
+        let total = response.content_length().unwrap_or(0);
 
-    let mut file = BufWriter::new(File::create(file_path).await?);
-    let mut stream = response.bytes_stream();
+        let mut file = BufWriter::new(File::create(&file_path).await?);
+        let mut stream = response.bytes_stream();
 
-    let mut stats = TransferStats::default();
-    while let Some(chunk) = stream.try_next().await? {
-        file.write_all(&chunk).await?;
-        stats.record_chunk_transfer(chunk.len());
-        let _ = on_progress.send(ProgressPayload {
-            progress: chunk.len() as u64,
-            progress_total: stats.total_transferred,
-            total,
-            transfer_speed: stats.transfer_speed,
-        });
-    }
-    file.flush().await?;
-
-    Ok(())
+        let mut stats = TransferStats::default();
+        while let Some(chunk) = stream.try_next().await? {
+            file.write_all(&chunk).await?;
+            stats.record_chunk_transfer(chunk.len());
+            let _ = on_progress.send(ProgressPayload {
+                progress: chunk.len() as u64,
+                progress_total: stats.total_transferred,
+                total,
+                transfer_speed: stats.transfer_speed,
+            });
+        }
+        file.flush().await?;
+        Ok(())
+    })
+    .await
+    .map_err(|e| Error::Io(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?
 }
 
 #[command]
@@ -119,32 +125,39 @@ async fn upload(
     headers: HashMap<String, String>,
     on_progress: Channel<ProgressPayload>,
 ) -> Result<String> {
-    // Read the file
-    let file = File::open(file_path).await?;
-    let file_len = file.metadata().await.unwrap().len();
+    let url = url.to_string();
+    let file_path = file_path.to_string();
+    
+    tokio::spawn(async move {
+        // Read the file
+        let file = File::open(&file_path).await?;
+        let file_len = file.metadata().await.unwrap().len();
 
-    // Create the request and attach the file to the body
-    let client = reqwest::Client::new();
-    let mut request = client
-        .post(url)
-        .header(reqwest::header::CONTENT_LENGTH, file_len)
-        .body(file_to_body(on_progress, file));
+        // Create the request and attach the file to the body
+        let client = reqwest::Client::new();
+        let mut request = client
+            .post(&url)
+            .header(reqwest::header::CONTENT_LENGTH, file_len)
+            .body(file_to_body(on_progress, file));
 
-    // Loop through the headers keys and values
-    // and add them to the request object.
-    for (key, value) in headers {
-        request = request.header(&key, value);
-    }
+        // Loop through the headers keys and values
+        // and add them to the request object.
+        for (key, value) in headers {
+            request = request.header(&key, value);
+        }
 
-    let response = request.send().await?;
-    if response.status().is_success() {
-        response.text().await.map_err(Into::into)
-    } else {
-        Err(Error::HttpErrorCode(
-            response.status().as_u16(),
-            response.text().await.unwrap_or_default(),
-        ))
-    }
+        let response = request.send().await?;
+        if response.status().is_success() {
+            response.text().await.map_err(Into::into)
+        } else {
+            Err(Error::HttpErrorCode(
+                response.status().as_u16(),
+                response.text().await.unwrap_or_default(),
+            ))
+        }
+    })
+    .await
+    .map_err(|e| Error::Io(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?
 }
 
 fn file_to_body(channel: Channel<ProgressPayload>, file: File) -> reqwest::Body {
