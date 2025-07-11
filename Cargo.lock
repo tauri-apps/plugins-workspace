@@ -233,6 +233,7 @@ dependencies = [
  "tauri-plugin-shell",
  "tauri-plugin-store",
  "tauri-plugin-updater",
+ "tauri-plugin-upload",
  "tauri-plugin-window-state",
  "time",
  "tiny_http",
