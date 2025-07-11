@@ -14,7 +14,7 @@ use tauri::{
 };
 use tokio::{net::TcpStream, sync::Mutex};
 use tokio_tungstenite::{
-    client_async_tls_with_config, connect_async_with_config,
+    client_async_tls_with_config, connect_async_tls_with_config,
     tungstenite::{
         client::IntoClientRequest,
         error::UrlError,
@@ -26,6 +26,7 @@ use tokio_tungstenite::{
 
 use std::collections::HashMap;
 use std::str::FromStr;
+use std::sync::Mutex as StdMutex;
 
 type Id = u32;
 type WebSocket = WebSocketStream<MaybeTlsStream<TcpStream>>;
@@ -44,13 +45,15 @@ enum Error {
     #[error(transparent)]
     InvalidHeaderName(#[from] tokio_tungstenite::tungstenite::http::header::InvalidHeaderName),
     #[error(transparent)]
-    ProxyConnectionError(#[from] hyper::Error),
+    ProxyConnection(#[from] hyper::Error),
     #[error("proxy returned status code: {0}")]
-    ProxyStatusError(u16),
+    ProxyStatus(u16),
     #[error(transparent)]
-    ProxyIoError(std::io::Error),
+    ProxyIo(#[from] std::io::Error),
     #[error(transparent)]
-    ProxyHttpError(http::Error),
+    ProxyHttp(#[from] http::Error),
+    #[error(transparent)]
+    ProxyJoinHandle(#[from] tokio::task::JoinError),
 }
 
 impl Serialize for Error {
@@ -65,8 +68,8 @@ impl Serialize for Error {
 #[derive(Default)]
 struct ConnectionManager(Mutex<HashMap<Id, WebSocketWriter>>);
 
-struct TlsConnector(Mutex<Option<Connector>>);
-struct ProxyConfigurationInternal(Mutex<Option<ProxyConfiguration>>);
+struct TlsConnector(StdMutex<Option<Connector>>);
+struct ProxyConfigurationInternal(StdMutex<Option<ProxyConfiguration>>);
 
 #[derive(Clone)]
 pub struct ProxyAuth {
@@ -178,31 +181,20 @@ async fn connect<R: Runtime>(
         }
     }
 
-    #[cfg(any(feature = "rustls-tls", feature = "native-tls"))]
-    let tls_connector = match window.try_state::<TlsConnector>() {
-        Some(tls_connector) => tls_connector.0.lock().await.clone(),
-        None => None,
-    };
-    #[cfg(not(any(feature = "rustls-tls", feature = "native-tls")))]
-    let tls_connector = None;
+    let tls_connector = window
+        .try_state::<TlsConnector>()
+        .and_then(|c| c.0.lock().unwrap().clone());
 
-    let proxy_config = match window.try_state::<ProxyConfigurationInternal>() {
-        Some(proxy_config) => proxy_config.0.lock().await.clone(),
-        None => None,
-    };
+    let proxy_config = window
+        .try_state::<ProxyConfigurationInternal>()
+        .and_then(|c| c.0.lock().unwrap().clone());
 
     let ws_stream = if let Some(proxy_config) = proxy_config {
         connect_using_proxy(request, config, proxy_config, tls_connector).await?
     } else {
-        #[cfg(any(feature = "rustls-tls", feature = "native-tls"))]
-        let (ws_stream, _) =
-            connect_async_tls_with_config(request, config.map(Into::into), false, tls_connector)
-                .await?;
-        #[cfg(not(any(feature = "rustls-tls", feature = "native-tls")))]
-        let (ws_stream, _) =
-            connect_async_with_config(request, config.map(Into::into), false).await?;
-
-        ws_stream
+        connect_async_tls_with_config(request, config.map(Into::into), false, tls_connector)
+            .await?
+            .0
     };
 
     tauri::async_runtime::spawn(async move {
@@ -237,7 +229,7 @@ async fn connect<R: Runtime>(
                         })))
                         .unwrap()
                     }
-                    Ok(Message::Frame(_)) => serde_json::Value::Null, // This value can't be recieved.
+                    Ok(Message::Frame(_)) => serde_json::Value::Null, // This value can't be received.
                     Err(e) => serde_json::to_value(Error::from(e)).unwrap(),
                 };
                 let js = format_callback(callback_function, &response)
@@ -274,8 +266,7 @@ async fn connect_using_proxy(
         "{}:{}",
         proxy_config.proxy_url, proxy_config.proxy_port
     ))
-    .await
-    .map_err(|original| Error::ProxyIoError(original))?;
+    .await?;
     let io = TokioIo::new(tcp);
 
     let (mut request_sender, proxy_connection) =
@@ -289,21 +280,14 @@ async fn connect_using_proxy(
         req_builder = req_builder.header("Proxy-Authorization", format!("Basic {}", auth.encode()));
     }
 
-    let req = req_builder
-        .body("".to_string())
-        .map_err(|orig| Error::ProxyHttpError(orig))?;
+    // TODO: This looks super fishy
+    let req = req_builder.body("".to_string())?;
     let res = request_sender.send_request(req).await?;
-    if res.status().as_u16() < 200 || res.status().as_u16() >= 300 {
-        return Err(Error::ProxyStatusError(res.status().as_u16()));
+    if !res.status().is_success() {
+        return Err(Error::ProxyStatus(res.status().as_u16()));
     }
 
-    // expect is fine since it would only rely panics from within the tokio task (or a cancellation which does not happen)
-    let proxy_connection = proxy_connection_task
-        .await
-        .expect("Panic in tokio task during websocket proxy initialization")?;
-
-    let proxy_tcp_wrapper = proxy_connection.io;
-    let proxied_tcp_socket = proxy_tcp_wrapper.into_inner();
+    let proxied_tcp_socket = proxy_connection_task.await??.io.into_inner();
     let (ws_stream, _) = client_async_tls_with_config(
         request,
         proxied_tcp_socket,
@@ -373,8 +357,8 @@ impl Builder {
             .invoke_handler(tauri::generate_handler![connect, send])
             .setup(|app| {
                 app.manage(ConnectionManager::default());
-                app.manage(TlsConnector(Mutex::new(self.tls_connector)));
-                app.manage(ProxyConfigurationInternal(Mutex::new(
+                app.manage(TlsConnector(StdMutex::new(self.tls_connector)));
+                app.manage(ProxyConfigurationInternal(StdMutex::new(
                     self.proxy_configuration,
                 )));
 
@@ -387,9 +371,9 @@ impl Builder {
 pub async fn reconfigure_proxy(app: &AppHandle, proxy_config: Option<ProxyConfiguration>) {
     if let Some(state) = app.try_state::<ProxyConfigurationInternal>() {
         if let Some(proxy_config) = proxy_config {
-            state.0.lock().await.replace(proxy_config);
+            state.0.lock().unwrap().replace(proxy_config);
         } else {
-            state.0.lock().await.take();
+            state.0.lock().unwrap().take();
         }
     }
 }
@@ -397,22 +381,22 @@ pub async fn reconfigure_proxy(app: &AppHandle, proxy_config: Option<ProxyConfig
 pub async fn reconfigure_tls_connector(app: &AppHandle, tls_connector: Option<Connector>) {
     if let Some(state) = app.try_state::<TlsConnector>() {
         if let Some(tls_connector) = tls_connector {
-            state.0.lock().await.replace(tls_connector);
+            state.0.lock().unwrap().replace(tls_connector);
         } else {
-            state.0.lock().await.take();
+            state.0.lock().unwrap().take();
         }
     }
 }
 
 // Copied from tokio-tungstenite internal function (tokio-tungstenite/src/lib.rs) with the same name
 // Get a domain from an URL.
+#[allow(clippy::result_large_err)]
 #[inline]
 fn domain(
     request: &tokio_tungstenite::tungstenite::handshake::client::Request,
 ) -> tokio_tungstenite::tungstenite::Result<String, tokio_tungstenite::tungstenite::Error> {
     match request.uri().host() {
         // rustls expects IPv6 addresses without the surrounding [] brackets
-        #[cfg(feature = "__rustls-tls")]
         Some(d) if d.starts_with('[') && d.ends_with(']') => Ok(d[1..d.len() - 1].to_string()),
         Some(d) => Ok(d.to_string()),
         None => Err(tokio_tungstenite::tungstenite::Error::Url(
