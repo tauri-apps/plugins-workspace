@@ -370,21 +370,13 @@ impl Builder {
 
 pub async fn reconfigure_proxy(app: &AppHandle, proxy_config: Option<ProxyConfiguration>) {
     if let Some(state) = app.try_state::<ProxyConfigurationInternal>() {
-        if let Some(proxy_config) = proxy_config {
-            state.0.lock().unwrap().replace(proxy_config);
-        } else {
-            state.0.lock().unwrap().take();
-        }
+        *state.0.lock().unwrap() = proxy_config;
     }
 }
 
 pub async fn reconfigure_tls_connector(app: &AppHandle, tls_connector: Option<Connector>) {
     if let Some(state) = app.try_state::<TlsConnector>() {
-        if let Some(tls_connector) = tls_connector {
-            state.0.lock().unwrap().replace(tls_connector);
-        } else {
-            state.0.lock().unwrap().take();
-        }
+        *state.0.lock().unwrap() = tls_connector;
     }
 }
 
