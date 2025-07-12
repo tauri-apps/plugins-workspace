@@ -284,6 +284,8 @@ impl<R: Runtime> StoreInner<R> {
     }
 
     /// Update the store from the on-disk state
+    ///
+    /// Note: This method loads the data and merges it with the current store
     pub fn load(&mut self) -> crate::Result<()> {
         let bytes = fs::read(&self.path)?;
 
@@ -499,6 +501,12 @@ impl<R: Runtime> Store<R> {
     }
 
     /// Update the store from the on-disk state
+    ///
+    /// Note:
+    ///   - This method loads the data and merges it with the current store,
+    ///     this behavior will be changed to overriding from on-disk state in v3,
+    ///     for now, call [`clear`](Self::clear) first for the store to fully match the on-disk state
+    ///   - This method does not emit change events
     pub fn reload(&self) -> crate::Result<()> {
         self.store.lock().unwrap().load()
     }

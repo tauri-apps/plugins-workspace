@@ -396,7 +396,12 @@ interface IStore {
    *
    * This method is useful if the on-disk state was edited by the user and you want to synchronize the changes.
    *
-   * Note: This method does not emit change events.
+   * Note:
+   *   - This method loads the data and merges it with the current store,
+   *     this behavior will be changed to overriding from on-disk state in v3,
+   *     for now, call {@linkcode clear} first for the store to fully match the on-disk state
+   *   - This method does not emit change events.
+   *
    * @returns
    */
   reload(): Promise<void>
