@@ -333,7 +333,7 @@ mod imp {
                     .status()?;
 
                 Command::new("xdg-mime")
-                    .args(["default", &file_name, _protocol.as_ref()])
+                    .args(["default", &file_name, mime_type.as_str()])
                     .status()?;
 
                 Ok(())
