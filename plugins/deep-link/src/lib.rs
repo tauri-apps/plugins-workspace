@@ -308,7 +308,6 @@ mod imp {
                         let old_mimes = section.remove("MimeType").unwrap_or_default();
 
                         if !old_mimes.split(';').any(|mime| mime == mime_type) {
-                            section.remove("MimeType");
                             section.append("MimeType", format!("{mime_type};{}", old_mimes));
                             desktop_file.write_to_file(&target_file)?;
                         }
