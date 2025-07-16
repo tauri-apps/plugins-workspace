@@ -196,7 +196,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn should_error_if_status_not_success() {
+    async fn should_error_on_download_if_status_not_success() {
         let mocked_server = spawn_server_mocked(400).await;
         let result = download_file(&mocked_server.url).await;
         mocked_server.mocked_endpoint.assert();
@@ -215,6 +215,51 @@ mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn should_error_on_upload_if_status_not_success() {
+        let mocked_server = spawn_upload_server_mocked(500).await;
+        let result = upload_file(&mocked_server.url).await;
+        mocked_server.mocked_endpoint.assert();
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            Error::HttpErrorCode(status, _) => assert_eq!(status, 500),
+            _ => panic!("Expected HttpErrorCode error"),
+        }
+    }
+
+    #[tokio::test]
+    async fn should_error_on_upload_if_file_not_found() {
+        let mocked_server = spawn_upload_server_mocked(200).await;
+        let file_path = "/nonexistent/file.txt";
+        let headers = HashMap::new();
+        let sender: Channel<ProgressPayload> =
+            Channel::new(|msg: InvokeResponseBody| -> tauri::Result<()> {
+                let _ = msg;
+                Ok(())
+            });
+
+        let result = upload(&mocked_server.url, file_path, headers, sender).await;
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            Error::Io(_) => {}
+            _ => panic!("Expected IO error for missing file"),
+        }
+    }
+
+    #[tokio::test]
+    async fn should_upload_file_successfully() {
+        let mocked_server = spawn_upload_server_mocked(200).await;
+        let result = upload_file(&mocked_server.url).await;
+        mocked_server.mocked_endpoint.assert();
+        assert!(
+            result.is_ok(),
+            "failed to upload file: {}",
+            result.unwrap_err()
+        );
+        let response_body = result.unwrap();
+        assert_eq!(response_body, "upload successful");
+    }
+
     async fn download_file(url: &str) -> Result<()> {
         let file_path = concat!(env!("CARGO_MANIFEST_DIR"), "/test/test.txt");
         let headers = HashMap::new();
@@ -226,6 +271,17 @@ mod tests {
         download(url, file_path, headers, None, sender).await
     }
 
+    async fn upload_file(url: &str) -> Result<String> {
+        let file_path = concat!(env!("CARGO_MANIFEST_DIR"), "/test/test.txt");
+        let headers = HashMap::new();
+        let sender: Channel<ProgressPayload> =
+            Channel::new(|msg: InvokeResponseBody| -> tauri::Result<()> {
+                let _ = msg;
+                Ok(())
+            });
+        upload(url, file_path, headers, sender).await
+    }
+
     async fn spawn_server_mocked(return_status: usize) -> MockedServer {
         let mut _server = Server::new_async().await;
         let path = "/mock_test";
@@ -233,6 +289,25 @@ mod tests {
             .mock("GET", path)
             .with_status(return_status)
             .with_body("mocked response body")
+            .create_async()
+            .await;
+
+        let url = _server.url() + path;
+        MockedServer {
+            _server,
+            url,
+            mocked_endpoint: mock,
+        }
+    }
+
+    async fn spawn_upload_server_mocked(return_status: usize) -> MockedServer {
+        let mut _server = Server::new_async().await;
+        let path = "/upload_test";
+        let mock = _server
+            .mock("POST", path)
+            .with_status(return_status)
+            .with_body("upload successful")
+            .match_header("content-length", "20")
             .create_async()
             .await;
 
