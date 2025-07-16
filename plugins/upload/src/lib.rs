@@ -66,15 +66,12 @@ struct ProgressPayload {
 
 #[command]
 async fn download(
-    url: &str,
-    file_path: &str,
+    url: String,
+    file_path: String,
     headers: HashMap<String, String>,
     body: Option<String>,
     on_progress: Channel<ProgressPayload>,
 ) -> Result<()> {
-    let url = url.to_string();
-    let file_path = file_path.to_string();
-
     tokio::spawn(async move {
         let client = reqwest::Client::new();
         let mut request = if let Some(body) = body {
@@ -120,14 +117,11 @@ async fn download(
 
 #[command]
 async fn upload(
-    url: &str,
-    file_path: &str,
+    url: String,
+    file_path: String,
     headers: HashMap<String, String>,
     on_progress: Channel<ProgressPayload>,
 ) -> Result<String> {
-    let url = url.to_string();
-    let file_path = file_path.to_string();
-
     tokio::spawn(async move {
         // Read the file
         let file = File::open(&file_path).await?;
@@ -198,7 +192,7 @@ mod tests {
     #[tokio::test]
     async fn should_error_on_download_if_status_not_success() {
         let mocked_server = spawn_server_mocked(400).await;
-        let result = download_file(&mocked_server.url).await;
+        let result = download_file(mocked_server.url).await;
         mocked_server.mocked_endpoint.assert();
         assert!(result.is_err());
     }
@@ -206,7 +200,7 @@ mod tests {
     #[tokio::test]
     async fn should_download_file_successfully() {
         let mocked_server = spawn_server_mocked(200).await;
-        let result = download_file(&mocked_server.url).await;
+        let result = download_file(mocked_server.url).await;
         mocked_server.mocked_endpoint.assert();
         assert!(
             result.is_ok(),
@@ -218,7 +212,7 @@ mod tests {
     #[tokio::test]
     async fn should_error_on_upload_if_status_not_success() {
         let mocked_server = spawn_upload_server_mocked(500).await;
-        let result = upload_file(&mocked_server.url).await;
+        let result = upload_file(mocked_server.url).await;
         mocked_server.mocked_endpoint.assert();
         assert!(result.is_err());
         match result.unwrap_err() {
@@ -230,7 +224,7 @@ mod tests {
     #[tokio::test]
     async fn should_error_on_upload_if_file_not_found() {
         let mocked_server = spawn_upload_server_mocked(200).await;
-        let file_path = "/nonexistent/file.txt";
+        let file_path = "/nonexistent/file.txt".to_string();
         let headers = HashMap::new();
         let sender: Channel<ProgressPayload> =
             Channel::new(|msg: InvokeResponseBody| -> tauri::Result<()> {
@@ -238,7 +232,7 @@ mod tests {
                 Ok(())
             });
 
-        let result = upload(&mocked_server.url, file_path, headers, sender).await;
+        let result = upload(mocked_server.url, file_path, headers, sender).await;
         assert!(result.is_err());
         match result.unwrap_err() {
             Error::Io(_) => {}
@@ -249,7 +243,7 @@ mod tests {
     #[tokio::test]
     async fn should_upload_file_successfully() {
         let mocked_server = spawn_upload_server_mocked(200).await;
-        let result = upload_file(&mocked_server.url).await;
+        let result = upload_file(mocked_server.url).await;
         mocked_server.mocked_endpoint.assert();
         assert!(
             result.is_ok(),
@@ -260,8 +254,8 @@ mod tests {
         assert_eq!(response_body, "upload successful");
     }
 
-    async fn download_file(url: &str) -> Result<()> {
-        let file_path = concat!(env!("CARGO_MANIFEST_DIR"), "/test/test.txt");
+    async fn download_file(url: String) -> Result<()> {
+        let file_path = concat!(env!("CARGO_MANIFEST_DIR"), "/test/test.txt").to_string();
         let headers = HashMap::new();
         let sender: Channel<ProgressPayload> =
             Channel::new(|msg: InvokeResponseBody| -> tauri::Result<()> {
@@ -271,8 +265,8 @@ mod tests {
         download(url, file_path, headers, None, sender).await
     }
 
-    async fn upload_file(url: &str) -> Result<String> {
-        let file_path = concat!(env!("CARGO_MANIFEST_DIR"), "/test/test.txt");
+    async fn upload_file(url: String) -> Result<String> {
+        let file_path = concat!(env!("CARGO_MANIFEST_DIR"), "/test/test.txt").to_string();
         let headers = HashMap::new();
         let sender: Channel<ProgressPayload> =
             Channel::new(|msg: InvokeResponseBody| -> tauri::Result<()> {
