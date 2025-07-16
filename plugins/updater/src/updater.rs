@@ -102,7 +102,7 @@ pub struct RemoteRelease {
 
 impl RemoteRelease {
     /// The release's download URL for the given target.
-       pub fn download_url(&self, target: &str) -> Result<&Url> {
+    pub fn download_url(&self, target: &str) -> Result<&Url> {
         match self.data {
             RemoteReleaseInner::Dynamic(ref platform) => Ok(&platform.url),
             RemoteReleaseInner::Static { ref platforms } => platforms
@@ -520,10 +520,20 @@ impl Updater {
 
         if let Some(installer) = installer {
             let target = &format!("{}-{}", &self.json_target, installer.suffix());
-            download_url = release.download_url(target).or(download_url.or(Err(Error::TargetsNotFound(self.json_target.clone(), target.clone()))));
-            signature = release.signature(target).or(signature.or(Err(Error::TargetsNotFound(self.json_target.clone(), target.clone()))));
+            download_url =
+                release
+                    .download_url(target)
+                    .or(download_url.or(Err(Error::TargetsNotFound(
+                        self.json_target.clone(),
+                        target.clone(),
+                    ))));
+            signature = release
+                .signature(target)
+                .or(signature.or(Err(Error::TargetsNotFound(
+                    self.json_target.clone(),
+                    target.clone(),
+                ))));
         }
-
 
         let update = if should_update {
             Some(Update {
