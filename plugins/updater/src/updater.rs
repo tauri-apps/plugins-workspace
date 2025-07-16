@@ -102,47 +102,26 @@ pub struct RemoteRelease {
 
 impl RemoteRelease {
     /// The release's download URL for the given target.
-    pub fn download_url(
-        &self,
-        fallback_target: &str,
-        installer: Option<Installer>,
-    ) -> Result<&Url> {
-        let target = installer
-            .map(|installer| format!("{fallback_target}-{}", installer.suffix()))
-            .unwrap_or("".to_string());
+       pub fn download_url(&self, target: &str) -> Result<&Url> {
         match self.data {
             RemoteReleaseInner::Dynamic(ref platform) => Ok(&platform.url),
-            RemoteReleaseInner::Static { ref platforms } => platforms.get(&target).map_or_else(
-                || {
-                    platforms.get(fallback_target).map_or(
-                        Err(Error::TargetsNotFound(
-                            target.to_string(),
-                            fallback_target.to_string(),
-                        )),
-                        |p| Ok(&p.url),
-                    )
-                },
-                |p| Ok(&p.url),
-            ),
+            RemoteReleaseInner::Static { ref platforms } => platforms
+                .get(target)
+                .map_or(Err(Error::TargetNotFound(target.to_string())), |p| {
+                    Ok(&p.url)
+                }),
         }
     }
 
     /// The release's signature for the given target.
-    pub fn signature(&self, target: &str, installer: Option<Installer>) -> Result<&String> {
-        let fallback_target = installer.map(|installer| format!("{target}-{}", installer.suffix()));
-
+    pub fn signature(&self, target: &str) -> Result<&String> {
         match self.data {
             RemoteReleaseInner::Dynamic(ref platform) => Ok(&platform.signature),
-            RemoteReleaseInner::Static { ref platforms } => platforms.get(target).map_or_else(
-                || match fallback_target {
-                    Some(fallback) => platforms.get(&fallback).map_or(
-                        Err(Error::TargetsNotFound(target.to_string(), fallback)),
-                        |p| Ok(&p.signature),
-                    ),
-                    None => Err(Error::TargetNotFound(target.to_string())),
-                },
-                |p| Ok(&p.signature),
-            ),
+            RemoteReleaseInner::Static { ref platforms } => platforms
+                .get(target)
+                .map_or(Err(Error::TargetNotFound(target.to_string())), |platform| {
+                    Ok(&platform.signature)
+                }),
         }
     }
 }
@@ -531,7 +510,20 @@ impl Updater {
             None => release.version > self.current_version,
         };
 
+        let mut download_url = release.download_url(&self.json_target);
+        let mut signature = release.signature(&self.json_target);
+
         let installer = self.get_updater_installer();
+        if installer.is_none() && (download_url.is_err() || signature.is_err()) {
+            return Err(Error::TargetNotFound(self.json_target.clone()));
+        }
+
+        if let Some(installer) = installer {
+            let target = &format!("{}-{}", &self.json_target, installer.suffix());
+            download_url = release.download_url(target).or(download_url.or(Err(Error::TargetsNotFound(self.json_target.clone(), target.clone()))));
+            signature = release.signature(target).or(signature.or(Err(Error::TargetsNotFound(self.json_target.clone(), target.clone()))));
+        }
+
 
         let update = if should_update {
             Some(Update {
@@ -544,11 +536,9 @@ impl Updater {
                 extract_path: self.extract_path.clone(),
                 version: release.version.to_string(),
                 date: release.pub_date,
-                download_url: release
-                    .download_url(&self.json_target, installer)?
-                    .to_owned(),
+                download_url: download_url?.to_owned(),
                 body: release.notes.clone(),
-                signature: release.signature(&self.json_target, installer)?.to_owned(),
+                signature: signature?.to_owned(),
                 installer,
                 raw_json: raw_json.unwrap(),
                 timeout: None,

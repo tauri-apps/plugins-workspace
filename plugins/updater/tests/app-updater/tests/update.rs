@@ -49,7 +49,7 @@ struct Update {
 fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTarget) {
     let mut command = Command::new("cargo");
     command
-        .args(["tauri", "build", "--debug", "--verbose"])
+        .args(["tauri", "build", "--verbose"])
         .arg("--config")
         .arg(serde_json::to_string(config).unwrap())
         .env("TAURI_SIGNING_PRIVATE_KEY", UPDATER_PRIVATE_KEY)
@@ -144,7 +144,7 @@ fn test_cases(
         (
             BundleTarget::AppImage,
             root_dir.join(format!(
-                "target/debug/bundle/appimage/app-updater_{version}_amd64.AppImage"
+                "target/release/bundle/appimage/app-updater_{version}_amd64.AppImage"
             )),
             Some(target.clone()),
             vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE],
@@ -153,7 +153,7 @@ fn test_cases(
         (
             BundleTarget::AppImage,
             root_dir.join(format!(
-                "target/debug/bundle/appimage/app-updater_{version}_amd64.AppImage"
+                "target/release/bundle/appimage/app-updater_{version}_amd64.AppImage"
             )),
             Some(format!("{target}-{}", BundleTarget::AppImage.name())),
             vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE],
@@ -162,7 +162,7 @@ fn test_cases(
         (
             BundleTarget::AppImage,
             root_dir.join(format!(
-                "target/debug/bundle/appimage/app-updater_{version}_amd64.AppImage"
+                "target/release/bundle/appimage/app-updater_{version}_amd64.AppImage"
             )),
             None,
             vec![ERROR_EXIT_CODE],
@@ -179,21 +179,21 @@ fn test_cases(
     vec![
         (
             BundleTarget::App,
-            root_dir.join("target/debug/bundle/macos/app-updater.app"),
+            root_dir.join("target/release/bundle/macos/app-updater.app"),
             Some(target.clone()),
             vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE],
         ),
         // update with installer
         (
             BundleTarget::App,
-            root_dir.join("target/debug/bundle/macos/app-updater.app"),
+            root_dir.join("target/release/bundle/macos/app-updater.app"),
             Some(format!("{target}-{}", BundleTarget::App.name())),
             vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE],
         ),
         // no update
         (
             BundleTarget::App,
-            root_dir.join("target/debug/bundle/macos/app-updater.app"),
+            root_dir.join("target/release/bundle/macos/app-updater.app"),
             None,
             vec![ERROR_EXIT_CODE],
         ),
@@ -208,13 +208,13 @@ fn bundle_paths(
 ) -> Vec<(BundleTarget, PathBuf)> {
     vec![(
         BundleTarget::App,
-        root_dir.join("target/debug/bundle/ios/app-updater.ipa"),
+        root_dir.join("target/release/bundle/ios/app-updater.ipa"),
     )]
 }
 
 #[cfg(target_os = "android")]
 fn bundle_path(root_dir: &Path, _version: &str, v1compatible: bool) -> PathBuf {
-    root_dir.join("target/debug/bundle/android/app-updater.apk")
+    root_dir.join("target/release/bundle/android/app-updater.apk")
 }
 
 #[cfg(windows)]
@@ -227,7 +227,7 @@ fn test_cases(
         (
             BundleTarget::Nsis,
             root_dir.join(format!(
-                "target/debug/bundle/nsis/app-updater_{version}_x64-setup.exe"
+                "target/release/bundle/nsis/app-updater_{version}_x64-setup.exe"
             )),
             Some(target.clone()),
             vec![UPDATED_EXIT_CODE],
@@ -235,7 +235,7 @@ fn test_cases(
         (
             BundleTarget::Nsis,
             root_dir.join(format!(
-                "target/debug/bundle/nsis/app-updater_{version}_x64-setup.exe"
+                "target/release/bundle/nsis/app-updater_{version}_x64-setup.exe"
             )),
             Some(format!("{target}-{}", BundleTarget::Nsis.name())),
             vec![UPDATED_EXIT_CODE],
@@ -243,7 +243,7 @@ fn test_cases(
         (
             BundleTarget::Nsis,
             root_dir.join(format!(
-                "target/debug/bundle/nsis/app-updater_{version}_x64-setup.exe"
+                "target/release/bundle/nsis/app-updater_{version}_x64-setup.exe"
             )),
             None,
             vec![ERROR_EXIT_CODE],
@@ -251,7 +251,7 @@ fn test_cases(
         (
             BundleTarget::Msi,
             root_dir.join(format!(
-                "target/debug/bundle/msi/app-updater_{version}_x64_en-US.msi"
+                "target/release/bundle/msi/app-updater_{version}_x64_en-US.msi"
             )),
             Some(target.clone()),
             vec![UPDATED_EXIT_CODE],
@@ -259,7 +259,7 @@ fn test_cases(
         (
             BundleTarget::Msi,
             root_dir.join(format!(
-                "target/debug/bundle/msi/app-updater_{version}_x64_en-US.msi"
+                "target/release/bundle/msi/app-updater_{version}_x64_en-US.msi"
             )),
             Some(format!("{target}-{}", BundleTarget::Msi.name())),
             vec![UPDATED_EXIT_CODE],
@@ -267,7 +267,7 @@ fn test_cases(
         (
             BundleTarget::Msi,
             root_dir.join(format!(
-                "target/debug/bundle/msi/app-updater_{version}_x64_en-US.msi"
+                "target/release/bundle/msi/app-updater_{version}_x64_en-US.msi"
             )),
             None,
             vec![ERROR_EXIT_CODE],
@@ -347,7 +347,7 @@ fn update_app() {
             });
             let out_updater_path = out_bundle_path.with_extension(updater_extension);
             let updater_path = root_dir.join(format!(
-                "target/debug/{}",
+                "target/release/{}",
                 out_updater_path.file_name().unwrap().to_str().unwrap()
             ));
             std::fs::rename(&out_updater_path, &updater_path).expect("failed to rename bundle");
@@ -405,7 +405,7 @@ fn update_app() {
 
             for expected_exit_code in status_checks {
                 let mut binary_cmd = if cfg!(windows) {
-                    Command::new(root_dir.join("target/debug/app-updater.exe"))
+                    Command::new(root_dir.join("target/release/app-updater.exe"))
                 } else if cfg!(target_os = "macos") {
                     Command::new(
                         test_cases(&root_dir, "0.1.0", target.clone())
