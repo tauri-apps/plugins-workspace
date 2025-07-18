@@ -31,6 +31,7 @@ use tokio_util::codec::{BytesCodec, FramedRead};
 use read_progress_stream::ReadProgressStream;
 
 use std::collections::HashMap;
+use std::path::Path;
 
 type Result<T> = std::result::Result<T, Error>;
 
@@ -78,7 +79,7 @@ async fn download(
     } else {
         client.get(url)
     };
-    // Loop trought the headers keys and values
+    // Loop through the headers keys and values
     // and add them to the request object.
     for (key, value) in headers {
         request = request.header(&key, value);
@@ -93,7 +94,30 @@ async fn download(
     }
     let total = response.content_length().unwrap_or(0);
 
-    let mut file = BufWriter::new(File::create(file_path).await?);
+    // Check if file_path is a directory
+    let path = Path::new(file_path);
+    let mut final_file_path = file_path.to_string();
+    if path.is_dir() {
+        if let Some(content_disposition) = response.headers().get("content-disposition") {
+            if let Ok(content_disposition) = content_disposition.to_str() {
+                if let Some(filename) = content_disposition.split(';').find_map(|part| {
+                    if part.trim().starts_with("filename=") {
+                        Some(
+                            part.trim()
+                                .trim_start_matches("filename=")
+                                .trim_matches('"'),
+                        )
+                    } else {
+                        None
+                    }
+                }) {
+                    final_file_path = path.join(filename).to_string_lossy().to_string();
+                }
+            }
+        }
+    }
+
+    let mut file = BufWriter::new(File::create(&final_file_path).await?);
     let mut stream = response.bytes_stream();
 
     let mut stats = TransferStats::default();
