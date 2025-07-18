@@ -16,6 +16,7 @@
   import Opener from './views/Opener.svelte'
   import Store from './views/Store.svelte'
   import Updater from './views/Updater.svelte'
+  import Upload from './views/Upload.svelte'
   import Clipboard from './views/Clipboard.svelte'
   import WebRTC from './views/WebRTC.svelte'
   import Scanner from './views/Scanner.svelte'
@@ -106,6 +107,11 @@
       label: 'Updater',
       component: Updater,
       icon: 'i-codicon-cloud-download'
+    },
+    {
+      label: 'Upload',
+      component: Upload,
+      icon: 'i-codicon-cloud-upload'
     },
     {
       label: 'Clipboard',
