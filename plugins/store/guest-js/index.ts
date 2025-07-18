@@ -34,6 +34,10 @@ export type StoreOptions = {
    * Force create a new store with default values even if it already exists.
    */
   createNew?: boolean
+  /**
+   * When creating the store, override the store with the on-disk state if it exists, ignoring defaults
+   */
+  overrideDefaults?: boolean
 }
 
 /**
@@ -145,8 +149,8 @@ export class LazyStore implements IStore {
     return (await this.store).length()
   }
 
-  async reload(): Promise<void> {
-    await (await this.store).reload()
+  async reload(options?: ReloadOptions): Promise<void> {
+    await (await this.store).reload(options)
   }
 
   async save(): Promise<void> {
@@ -280,8 +284,8 @@ export class Store extends Resource implements IStore {
     return await invoke('plugin:store|length', { rid: this.rid })
   }
 
-  async reload(): Promise<void> {
-    await invoke('plugin:store|reload', { rid: this.rid })
+  async reload(options?: ReloadOptions): Promise<void> {
+    await invoke('plugin:store|reload', { rid: this.rid, ...options })
   }
 
   async save(): Promise<void> {
@@ -399,7 +403,7 @@ interface IStore {
    * Note: This method does not emit change events.
    * @returns
    */
-  reload(): Promise<void>
+  reload(options?: ReloadOptions): Promise<void>
 
   /**
    * Saves the store to disk at the store's `path`.
@@ -436,4 +440,14 @@ interface IStore {
    * **You should not call any method on this object anymore and should drop any reference to it.**
    */
   close(): Promise<void>
+}
+
+/**
+ * Options to {@linkcode IStore.reload} a {@linkcode IStore}
+ */
+export type ReloadOptions = {
+  /**
+   * Override the store with the on-disk state, ignoring defaults
+   */
+  overrideDefaults?: boolean
 }

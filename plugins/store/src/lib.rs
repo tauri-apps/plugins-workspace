@@ -61,6 +61,7 @@ fn builder<R: Runtime>(
     serialize_fn_name: Option<String>,
     deserialize_fn_name: Option<String>,
     create_new: bool,
+    override_defaults: bool,
 ) -> Result<StoreBuilder<R>> {
     let mut builder = app.store_builder(path);
     if let Some(auto_save) = auto_save {
@@ -95,6 +96,10 @@ fn builder<R: Runtime>(
         builder = builder.create_new();
     }
 
+    if override_defaults {
+        builder = builder.override_defaults();
+    }
+
     Ok(builder)
 }
 
@@ -107,6 +112,7 @@ async fn load<R: Runtime>(
     serialize_fn_name: Option<String>,
     deserialize_fn_name: Option<String>,
     create_new: Option<bool>,
+    override_defaults: Option<bool>,
 ) -> Result<ResourceId> {
     let builder = builder(
         app,
@@ -116,6 +122,7 @@ async fn load<R: Runtime>(
         serialize_fn_name,
         deserialize_fn_name,
         create_new.unwrap_or_default(),
+        override_defaults.unwrap_or_default(),
     )?;
     let (_, rid) = builder.build_inner()?;
     Ok(rid)
@@ -209,9 +216,17 @@ async fn length<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<usize>
 }
 
 #[tauri::command]
-async fn reload<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
+async fn reload<R: Runtime>(
+    app: AppHandle<R>,
+    rid: ResourceId,
+    override_defaults: Option<bool>,
+) -> Result<()> {
     let store = app.resources_table().get::<Store<R>>(rid)?;
-    store.reload()
+    if override_defaults.unwrap_or_default() {
+        store.reload_override_defaults()
+    } else {
+        store.reload()
+    }
 }
 
 #[tauri::command]
