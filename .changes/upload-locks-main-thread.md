@@ -1,6 +1,6 @@
 ---
-upload: minor
-upload-js: minor
+upload: patch
+upload-js: patch
 ---
 
 Fix `download` and `upload` locks main thread on Android.
