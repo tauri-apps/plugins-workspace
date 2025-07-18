@@ -398,8 +398,8 @@ interface IStore {
    *
    * Note:
    *   - This method loads the data and merges it with the current store,
-   *     this behavior will be changed to overriding from on-disk state in v3,
-   *     for now, call {@linkcode clear} first for the store to fully match the on-disk state
+   *     call {@linkcode clear} or {@linkcode reset} first for the store to fully match the on-disk state
+   *     (be careful with the auto save settings as they both trigger that)
    *   - This method does not emit change events.
    *
    * @returns
