@@ -400,7 +400,12 @@ interface IStore {
    *
    * This method is useful if the on-disk state was edited by the user and you want to synchronize the changes.
    *
-   * Note: This method does not emit change events.
+   * Note:
+   *   - This method loads the data and merges it with the current store,
+   *     this behavior will be changed to resetting to default first and then merging with the on-disk state in v3,
+   *     to fully match the store with the on-disk state, set {@linkcode ReloadOptions.overrideDefaults} to `true`
+   *   - This method does not emit change events.
+   *
    * @returns
    */
   reload(options?: ReloadOptions): Promise<void>

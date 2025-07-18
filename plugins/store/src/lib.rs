@@ -53,6 +53,7 @@ enum AutoSave {
     Bool(bool),
 }
 
+#[allow(clippy::too_many_arguments)]
 fn builder<R: Runtime>(
     app: AppHandle<R>,
     store_state: State<'_, StoreState>,
@@ -103,6 +104,7 @@ fn builder<R: Runtime>(
     Ok(builder)
 }
 
+#[allow(clippy::too_many_arguments)]
 #[tauri::command]
 async fn load<R: Runtime>(
     app: AppHandle<R>,
