@@ -27,7 +27,7 @@
   }
 
   onMount(async () => {
-    path = await resolve(`${await appDataDir()}/${storeName}`)
+    path = await resolve(await appDataDir(), storeName)
     await refreshEntries()
   })
 
