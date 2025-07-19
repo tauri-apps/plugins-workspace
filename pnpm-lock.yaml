@@ -110,6 +110,9 @@ importers:
       '@tauri-apps/plugin-updater':
         specifier: ^2.9.0
         version: link:../../plugins/updater
+      '@tauri-apps/plugin-upload':
+        specifier: ^2.3.0
+        version: link:../../plugins/upload
       '@zerodevx/svelte-json-view':
         specifier: 1.0.11
         version: 1.0.11(svelte@5.28.2)

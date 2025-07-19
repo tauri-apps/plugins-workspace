@@ -38,6 +38,7 @@ tauri-plugin-process = { path = "../../../plugins/process", version = "2.3.0" }
 tauri-plugin-opener = { path = "../../../plugins/opener", version = "2.4.0" }
 tauri-plugin-shell = { path = "../../../plugins/shell", version = "2.3.0" }
 tauri-plugin-store = { path = "../../../plugins/store", version = "2.3.0" }
+tauri-plugin-upload = { path = "../../../plugins/upload", version = "2.3.0" }
 
 [dependencies.tauri]
 workspace = true
