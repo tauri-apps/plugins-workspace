@@ -53,19 +53,36 @@ enum AutoSave {
     Bool(bool),
 }
 
-#[allow(clippy::too_many_arguments)]
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct LoadStoreOptions {
+    defaults: Option<HashMap<String, JsonValue>>,
+    auto_save: Option<AutoSave>,
+    serialize_fn_name: Option<String>,
+    deserialize_fn_name: Option<String>,
+    #[serde(default)]
+    create_new: bool,
+    #[serde(default)]
+    override_defaults: bool,
+}
+
 fn builder<R: Runtime>(
     app: AppHandle<R>,
     store_state: State<'_, StoreState>,
     path: PathBuf,
-    auto_save: Option<AutoSave>,
-    serialize_fn_name: Option<String>,
-    deserialize_fn_name: Option<String>,
-    create_new: bool,
-    override_defaults: bool,
+    options: Option<LoadStoreOptions>,
 ) -> Result<StoreBuilder<R>> {
     let mut builder = app.store_builder(path);
-    if let Some(auto_save) = auto_save {
+
+    let Some(options) = options else {
+        return Ok(builder);
+    };
+
+    if let Some(defaults) = options.defaults {
+        builder = builder.defaults(defaults);
+    }
+
+    if let Some(auto_save) = options.auto_save {
         match auto_save {
             AutoSave::DebounceDuration(duration) => {
                 builder = builder.auto_save(Duration::from_millis(duration));
@@ -77,7 +94,7 @@ fn builder<R: Runtime>(
         }
     }
 
-    if let Some(serialize_fn_name) = serialize_fn_name {
+    if let Some(serialize_fn_name) = options.serialize_fn_name {
         let serialize_fn = store_state
             .serialize_fns
             .get(&serialize_fn_name)
@@ -85,7 +102,7 @@ fn builder<R: Runtime>(
         builder = builder.serialize(*serialize_fn);
     }
 
-    if let Some(deserialize_fn_name) = deserialize_fn_name {
+    if let Some(deserialize_fn_name) = options.deserialize_fn_name {
         let deserialize_fn = store_state
             .deserialize_fns
             .get(&deserialize_fn_name)
@@ -93,39 +110,25 @@ fn builder<R: Runtime>(
         builder = builder.deserialize(*deserialize_fn);
     }
 
-    if create_new {
+    if options.create_new {
         builder = builder.create_new();
     }
 
-    if override_defaults {
+    if options.override_defaults {
         builder = builder.override_defaults();
     }
 
     Ok(builder)
 }
 
-#[allow(clippy::too_many_arguments)]
 #[tauri::command]
 async fn load<R: Runtime>(
     app: AppHandle<R>,
     store_state: State<'_, StoreState>,
     path: PathBuf,
-    auto_save: Option<AutoSave>,
-    serialize_fn_name: Option<String>,
-    deserialize_fn_name: Option<String>,
-    create_new: Option<bool>,
-    override_defaults: Option<bool>,
+    options: Option<LoadStoreOptions>,
 ) -> Result<ResourceId> {
-    let builder = builder(
-        app,
-        store_state,
-        path,
-        auto_save,
-        serialize_fn_name,
-        deserialize_fn_name,
-        create_new.unwrap_or_default(),
-        override_defaults.unwrap_or_default(),
-    )?;
+    let builder = builder(app, store_state, path, options)?;
     let (_, rid) = builder.build_inner()?;
     Ok(rid)
 }

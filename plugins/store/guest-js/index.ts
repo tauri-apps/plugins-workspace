@@ -19,6 +19,10 @@ interface ChangePayload<T> {
  */
 export type StoreOptions = {
   /**
+   * Default value of the store
+   */
+  defaults: { [key: string]: unknown }
+  /**
    * Auto save on modification with debounce duration in milliseconds, it's 100ms by default, pass in `false` to disable it
    */
   autoSave?: boolean | number
@@ -200,7 +204,7 @@ export class Store extends Resource implements IStore {
   static async load(path: string, options?: StoreOptions): Promise<Store> {
     const rid = await invoke<number>('plugin:store|load', {
       path,
-      ...options
+      options
     })
     return new Store(rid)
   }
