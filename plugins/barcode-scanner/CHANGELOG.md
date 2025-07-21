@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.0]
+
+- [`aa9140e1`](https://github.com/tauri-apps/plugins-workspace/commit/aa9140e1ac239ab9f015f92b2ed52bbf0eda7c12) ([#2437](https://github.com/tauri-apps/plugins-workspace/pull/2437) by [@enkhjile](https://github.com/tauri-apps/plugins-workspace/../../enkhjile)) Added support for GS1 DataBar on iOS 15.4+
+
 ## \[2.3.0]
 
 - [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6

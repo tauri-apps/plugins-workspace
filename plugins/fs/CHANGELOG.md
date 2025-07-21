@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.1]
+
+- [`44a1f659`](https://github.com/tauri-apps/plugins-workspace/commit/44a1f659125a341191420e650608b0b6ff316a0e) ([#2846](https://github.com/tauri-apps/plugins-workspace/pull/2846) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `writeFile` doesn't create a new file by default when the data is a `ReadableStream`
+
 ## \[2.4.0]
 
 - [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
