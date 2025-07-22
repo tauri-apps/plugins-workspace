@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.5.1]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.1`
+
 ## \[2.5.0]
 
 - [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
