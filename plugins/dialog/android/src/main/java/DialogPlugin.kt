@@ -55,21 +55,13 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
   fun showFilePicker(invoke: Invoke) {
     try {
       val args = invoke.parseArgs(FilePickerOptions::class.java)
+      filePickerOptions = args
       val parsedTypes = parseFiltersOption(args.filters)
-      
-      val intent = if (parsedTypes.isNotEmpty()) {
-        val intent = Intent(Intent.ACTION_PICK)
-        setIntentMimeTypes(intent, parsedTypes)
-        intent
-      } else {
-        val intent = Intent(Intent.ACTION_GET_CONTENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        intent.type = "*/*"
-        intent
-      }
+      val intent = Intent(Intent.ACTION_GET_CONTENT)
+      intent.addCategory(Intent.CATEGORY_OPENABLE)
+      intent.type = "*/*"
 
       intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, args.multiple ?: false)
-      
       startActivityForResult(invoke, intent, "filePickerResult")
     } catch (ex: Exception) {
       val message = ex.message ?: "Failed to pick file"
@@ -83,13 +75,38 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     try {
       when (result.resultCode) {
         Activity.RESULT_OK -> {
-          val callResult = createPickFilesResult(result.data)
+          val data = result.data
+          val uris = mutableListOf<Uri>()
+          if (data?.clipData != null) {
+            for (i in 0 until data.clipData!!.itemCount) {
+              uris.add(data.clipData!!.getItemAt(i).uri)
+            }
+          } else {
+            data?.data?.let { uris.add(it) }
+          }
+
+          val allowedExtensions = filePickerOptions?.filters?.flatMap { it.extensions.asList() }?.map { it.lowercase() } ?: emptyList()
+          val context = activity.applicationContext
+
+          val filteredUris = uris.filter { uri ->
+            val name = FilePickerUtils.getNameFromUri(context, uri)?.lowercase() ?: ""
+            allowedExtensions.isEmpty() || allowedExtensions.any { name.endsWith(".$it") }
+          }
+
+          if (filteredUris.isEmpty()) {
+            invoke.reject("No files matched allowed extensions: ${allowedExtensions.joinToString(", ")}")
+            return
+          }
+
+          val resultArray = filteredUris.map { it.toString() }
+          val callResult = JSObject()
+          callResult.put("files", JSArray.from(resultArray.toTypedArray()))
           invoke.resolve(callResult)
         }
         Activity.RESULT_CANCELED -> invoke.reject("File picker cancelled")
         else -> invoke.reject("Failed to pick files")
       }
-    } catch (ex: java.lang.Exception) {
+    } catch (ex: Exception) {
       val message = ex.message ?: "Failed to read file pick result"
       Logger.error(message)
       invoke.reject(message)
