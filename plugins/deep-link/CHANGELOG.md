@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.4.1]
+
+- [`d4f8299b`](https://github.com/tauri-apps/plugins-workspace/commit/d4f8299b12f107718c70692840a63768d65baaf9) ([#2844](https://github.com/tauri-apps/plugins-workspace/pull/2844) by [@yobson1](https://github.com/tauri-apps/plugins-workspace/../../yobson1)) Fix deep link protocol handler not set as default on linux
+  Fix duplicate protocols added to MimeType section in .desktop files on linux
+
 ## \[2.4.0]
 
 - [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
