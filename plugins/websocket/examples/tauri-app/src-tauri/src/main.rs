@@ -29,7 +29,7 @@ async fn accept_connection(stream: TcpStream) {
 
   let (write, read) = ws_stream.split();
   if let Err(e) = read.forward(write).await {
-    eprintln!("Error: {}", e);
+    eprintln!("Error: {e}");
   }
 }
 

@@ -95,7 +95,7 @@ pub fn run() {
                 let server = match tiny_http::Server::http("localhost:3003") {
                     Ok(s) => s,
                     Err(e) => {
-                        eprintln!("{}", e);
+                        eprintln!("{e}");
                         std::process::exit(1);
                     }
                 };
