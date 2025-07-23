@@ -11,10 +11,8 @@ use tauri_utils::config::DeepLinkProtocol;
 pub struct AssociatedDomain {
     #[serde(default = "default_schemes")]
     pub scheme: Vec<String>,
-
     #[serde(default, deserialize_with = "deserialize_associated_host")]
     pub host: Option<String>, // Optional custom uri schemes dont NEED a host (may have one still), but required for https/http schemes
-
     #[serde(default)]
     pub path: Vec<String>,
     #[serde(default, alias = "path-pattern", rename = "pathPattern")]
@@ -23,13 +21,38 @@ pub struct AssociatedDomain {
     pub path_prefix: Vec<String>,
     #[serde(default, alias = "path-suffix", rename = "pathSuffix")]
     pub path_suffix: Vec<String>,
+    #[serde(default, alias = "app-link", rename = "appLink")]
+    pub app_link: bool,
 }
 
 impl AssociatedDomain {
+    /// Returns true if the domain uses http or https scheme and has a host.
+    pub fn is_web_link(&self) -> bool {
+        self.host.is_some() && self.scheme.iter().any(|s| s == "https" || s == "http")
+    }
+
+    /// Returns true if marked as AppLink and has proper configuration.
+    pub fn is_app_link(&self) -> bool {
+        self.app_link && self.is_web_link() && self.host.is_some()
+    }
+
     pub fn validate(&self) -> Result<(), String> {
-        if self.host.is_none() && self.scheme.iter().any(|s| s == "https" || s == "http") {
-            return Err("host is required when using https/http schemes".into());
+        // Rule 1: All web links require a host.
+        if self.is_web_link() && self.host.is_none() {
+            return Err("Web link requires a host".into());
         }
+
+        // Rule 2: If it's an App Link, ensure http(s) and host.
+        if self.app_link {
+            if !self.is_web_link() {
+                return Err("AppLink must be a valid web link (https/http + host)".into());
+            }
+
+            if self.scheme.iter().any(|s| s == "http") && !self.scheme.iter().any(|s| s == "https") {
+                eprintln!("Warning: AppLink uses only 'http' — allowed on Android but not secure for production.");
+            }
+        }
+
         Ok(())
     }
 }

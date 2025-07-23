@@ -84,7 +84,6 @@ fn main() {
             panic!("Deep link config validation failed:\n{}", errors.join("\n"));
         }
 
-        
         tauri_plugin::mobile::update_android_manifest(
             "DEEP LINK PLUGIN",
             "activity",
@@ -98,21 +97,38 @@ fn main() {
         .expect("failed to rewrite AndroidManifest.xml");
 
 
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
-            tauri_plugin::mobile::update_entitlements(|entitlements| {
-                entitlements.insert(
-                    "com.apple.developer.associated-domains".into(),
-                    config
+            // we need to ensure that the entitlements are only 
+            // generated for explicit app links and not 
+            // other deep links or web links because then they
+            // are just going to complain and not be built or signed
+            let has_app_links = config
+                .mobile
+                .iter()
+                .any(|d| d.is_app_link());
+
+            if !has_app_links {
+                tauri_plugin::mobile::update_entitlements(|entitlements| {
+                    entitlements.remove("com.apple.developer.associated-domains");
+                })
+                .expect("failed to update entitlements");
+            } else {
+                tauri_plugin::mobile::update_entitlements(|entitlements| {
+                    entitlements.insert(
+                        "com.apple.developer.associated-domains".into(),
+                        config
                         .mobile
                         .iter()
+                        .filter(|d| d.is_app_link())
                         .filter_map(|d| d.host.as_ref())
                         .map(|host| format!("applinks:{}", host).into())
                         .collect::<Vec<_>>()
                         .into(),
-                );
-            })
-            .expect("failed to update entitlements");
+                    );
+                })
+                .expect("failed to update entitlements");
+            }
         }
     }
 }

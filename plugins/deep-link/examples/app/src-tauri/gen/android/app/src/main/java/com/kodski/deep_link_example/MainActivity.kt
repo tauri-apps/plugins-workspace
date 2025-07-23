@@ -1,4 +1,4 @@
-package com.tauri.deep_link_example
+package com.kodski.deep_link_example
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
