@@ -1,0 +1,1 @@
+if("__TAURI__"in window){var __TAURI_PLUGIN_SECURE_STORAGE__=function(_){"use strict";return _.x=function(){},_}({});Object.defineProperty(window.__TAURI__,"secureStorage",{value:__TAURI_PLUGIN_SECURE_STORAGE__})}

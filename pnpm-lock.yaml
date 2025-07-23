@@ -275,6 +275,12 @@ importers:
         specifier: ^2.6.0
         version: 2.7.0
 
+  plugins/secure-storage:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: ^2.6.0
+        version: 2.7.0
+
   plugins/shell:
     dependencies:
       '@tauri-apps/api':
@@ -2373,7 +2379,7 @@ snapshots:
 
   '@covector/command@0.8.0(mocha@10.8.2)':
     dependencies:
-      '@effection/process': 2.1.4(mocha@10.8.2)
+      '@effection/process': 2.1.4
       effection: 2.0.8(mocha@10.8.2)
     transitivePeerDependencies:
       - encoding
@@ -2425,15 +2431,12 @@ snapshots:
       effection: 2.0.8(mocha@10.8.2)
       mocha: 10.8.2
 
-  '@effection/process@2.1.4(mocha@10.8.2)':
+  '@effection/process@2.1.4':
     dependencies:
       cross-spawn: 7.0.6
       ctrlc-windows: 2.2.0
       effection: 2.0.8(mocha@10.8.2)
       shellwords: 0.1.1
-    transitivePeerDependencies:
-      - encoding
-      - mocha
 
   '@effection/stream@2.0.6':
     dependencies:
