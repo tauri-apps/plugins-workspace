@@ -31,10 +31,12 @@ struct SetEventHandlerArgs: Decodable {
     @objc public func getCurrent(_ invoke: Invoke) throws {
         var ret = JSObject()
         ret["url"] = self.currentUrl
+        Logger.info("getCurrent: \(String(describing: ret))")
         invoke.resolve(ret)
     }
 
-    // JS command: set the JS callback handler channel
+    // This command should not be added to the `build.rs` and exposed as it is only
+    // used internally from the rust backend.
     @objc public func setEventHandler(_ invoke: Invoke) throws {
         let args = try invoke.parseArgs(SetEventHandlerArgs.self)
         self.channel = args.handler
@@ -64,33 +66,34 @@ struct SetEventHandlerArgs: Decodable {
 class AppDelegate: UIResponder, UIApplicationDelegate {
   func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
     DeepLinkPlugin.handleOpenUrl(url)
+      Logger.info("AppDelegate: Opened URL: \(url)")
     return true
   }
 }
 
 
 
-class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+// class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
-    var window: UIWindow?
+//     var window: UIWindow?
 
-    // Called when a scene is being created and connected
-    func scene(_ scene: UIScene,
-               willConnectTo session: UISceneSession,
-               options connectionOptions: UIScene.ConnectionOptions) {
+//     // Called when a scene is being created and connected
+//     func scene(_ scene: UIScene,
+//                willConnectTo session: UISceneSession,
+//                options connectionOptions: UIScene.ConnectionOptions) {
 
-        // Handle initial URL if app was launched via a deep link
-        if let urlContext = connectionOptions.urlContexts.first {
-            DeepLinkPlugin.handleOpenUrl(urlContext.url)
-        }
-    }
+//         // Handle initial URL if app was launched via a deep link
+//         if let urlContext = connectionOptions.urlContexts.first {
+//             DeepLinkPlugin.handleOpenUrl(urlContext.url)
+//         }
+//     }
 
-    // Called when the app receives a deep link while already running
-    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-        guard let url = URLContexts.first?.url else { return }
-        DeepLinkPlugin.handleOpenUrl(url)
-    }
-}
+//     // Called when the app receives a deep link while already running
+//     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+//         guard let url = URLContexts.first?.url else { return }
+//         DeepLinkPlugin.handleOpenUrl(url)
+//     }
+// }
 
 @_cdecl("init_plugin_deep_link")
 func initPlugin() -> Plugin {
