@@ -40,5 +40,16 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.kodski.deep-link-example</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>taurideeplink</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
