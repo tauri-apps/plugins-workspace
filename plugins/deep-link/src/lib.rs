@@ -16,11 +16,14 @@ pub use error::{Error, Result};
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "app.tauri.deep_link";
 
+#[cfg(target_os = "ios")]
+tauri::ios_plugin_binding!(init_plugin_deep_link);
+
 fn init_deep_link<R: Runtime>(
     app: &AppHandle<R>,
     api: PluginApi<R, Option<config::Config>>,
 ) -> crate::Result<DeepLink<R>> {
-    #[cfg(target_os = "android")]
+    #[cfg(mobile)]
     {
         let _api = api;
 
@@ -29,7 +32,11 @@ fn init_deep_link<R: Runtime>(
             Emitter,
         };
 
+        #[cfg(target_os = "android")]
         let handle = _api.register_android_plugin(PLUGIN_IDENTIFIER, "DeepLinkPlugin")?;
+
+        #[cfg(target_os = "ios")]
+        let handle = _api.register_ios_plugin(init_plugin_deep_link)?;
 
         #[derive(serde::Deserialize)]
         struct Event {
@@ -56,19 +63,48 @@ fn init_deep_link<R: Runtime>(
                 }),
             },
         )?;
+        
+        #[cfg(target_os = "android")]
+        {
+            return Ok(DeepLink {
+                app: app.clone(),
+                plugin_handle: handle,
+            });
+        }
 
-        return Ok(DeepLink {
-            app: app.clone(),
-            plugin_handle: handle,
-        });
+        #[cfg(target_os = "ios")]
+        {
+            return Ok(DeepLink {
+                app: app.clone(),
+                current: Default::default(),
+                config: api.config().clone(),
+                plugin_handle: handle,
+            })
+        }
     }
 
-    #[cfg(target_os = "ios")]
-    return Ok(DeepLink {
-        app: app.clone(),
-        current: Default::default(),
-        config: api.config().clone(),
-    });
+    #[cfg(target_os = "ios")] 
+    {
+
+        let _api = api;
+
+        use tauri::{
+            ipc::{Channel, InvokeResponseBody},
+            Emitter,
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Event {
+            url: String,
+        }
+
+        let handle = _api.register_ios_plugin(init_plugin_deep_link)?;
+        return Ok(DeepLink {
+            app: app.clone(),
+            current: Default::default(),
+            config: api.config().clone(),
+        });
+    }
 
     #[cfg(desktop)]
     {

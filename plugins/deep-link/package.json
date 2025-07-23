@@ -26,5 +26,8 @@
   ],
   "dependencies": {
     "@tauri-apps/api": "^2.6.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.7.1"
   }
 }

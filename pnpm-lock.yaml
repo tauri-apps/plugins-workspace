@@ -177,6 +177,10 @@ importers:
       '@tauri-apps/api':
         specifier: ^2.6.0
         version: 2.7.0
+    devDependencies:
+      '@tauri-apps/cli':
+        specifier: 2.7.1
+        version: 2.7.1
 
   plugins/deep-link/examples/app:
     dependencies:
