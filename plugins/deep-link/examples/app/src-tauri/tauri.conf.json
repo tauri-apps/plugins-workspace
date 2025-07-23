@@ -1,7 +1,7 @@
 {
   "productName": "deep-link-example",
   "version": "0.1.0",
-  "identifier": "com.tauri.deep-link-example",
+  "identifier": "com.kodski.deep-link-example",
   "build": {
     "devUrl": "http://localhost:1420",
     "frontendDist": "../dist",
@@ -35,6 +35,9 @@
         },
         {
           "host": "tauri.app"
+        },
+        {
+          "scheme": ["taurideeplink"]
         }
       ],
       "desktop": {

@@ -184,7 +184,7 @@ importers:
         specifier: 2.7.0
         version: 2.7.0
       '@tauri-apps/plugin-deep-link':
-        specifier: 2.4.1
+        specifier: link:../..
         version: link:../..
     devDependencies:
       '@tauri-apps/cli':

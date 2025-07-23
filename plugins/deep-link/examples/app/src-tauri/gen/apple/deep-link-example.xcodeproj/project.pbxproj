@@ -322,7 +322,7 @@
 				CODE_SIGN_ENTITLEMENTS = "deep-link-example_iOS/deep-link-example_iOS.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Q93MBH6S2F;
+				DEVELOPMENT_TEAM = 7F2T2WK6DR;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphoneos*]" = "arm64-sim x86_64";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
@@ -356,7 +356,7 @@
 					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
 					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.tauri.deep-link-example;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kodski.deep-link-example;
 				PRODUCT_NAME = "deep-link-example";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -432,7 +432,7 @@
 				CODE_SIGN_ENTITLEMENTS = "deep-link-example_iOS/deep-link-example_iOS.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Q93MBH6S2F;
+				DEVELOPMENT_TEAM = 7F2T2WK6DR;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphoneos*]" = "arm64-sim x86_64";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
@@ -466,7 +466,7 @@
 					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
 					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.tauri.deep-link-example;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kodski.deep-link-example;
 				PRODUCT_NAME = "deep-link-example";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

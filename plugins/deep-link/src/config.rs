@@ -12,8 +12,8 @@ pub struct AssociatedDomain {
     #[serde(default = "default_schemes")]
     pub scheme: Vec<String>,
 
-    #[serde(deserialize_with = "deserialize_associated_host")]
-    pub host: String,
+    #[serde(default, deserialize_with = "deserialize_associated_host")]
+    pub host: Option<String>, // Optional custom uri schemes dont NEED a host (may have one still), but required for https/http schemes
 
     #[serde(default)]
     pub path: Vec<String>,
@@ -25,23 +25,34 @@ pub struct AssociatedDomain {
     pub path_suffix: Vec<String>,
 }
 
+impl AssociatedDomain {
+    pub fn validate(&self) -> Result<(), String> {
+        if self.host.is_none() && self.scheme.iter().any(|s| s == "https" || s == "http") {
+            return Err("host is required when using https/http schemes".into());
+        }
+        Ok(())
+    }
+}
+
+
 // TODO: Consider removing this in v3
 fn default_schemes() -> Vec<String> {
     vec!["https".to_string(), "http".to_string()]
 }
 
-fn deserialize_associated_host<'de, D>(deserializer: D) -> Result<String, D::Error>
+fn deserialize_associated_host<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
 where
     D: Deserializer<'de>,
-{
-    let host = String::deserialize(deserializer)?;
-    if let Some((scheme, _host)) = host.split_once("://") {
-        Err(serde::de::Error::custom(format!(
-            "host `{host}` cannot start with a scheme, please remove the `{scheme}://` prefix"
-        )))
-    } else {
-        Ok(host)
+{   
+    let opt = Option::<String>::deserialize(deserializer)?;
+    if let Some(ref host) = opt {
+        if let Some((scheme, _)) = host.split_once("://") {
+            return Err(serde::de::Error::custom(format!(
+                "host `{host}` cannot start with a scheme, please remove the `{scheme}://` prefix"
+            )));
+        }
     }
+    Ok(opt)
 }
 
 #[derive(Deserialize, Clone)]
