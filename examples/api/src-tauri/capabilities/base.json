@@ -96,6 +96,8 @@
       "identifier": "opener:allow-open-path",
       "allow": [{ "path": "$APPDATA" }, { "path": "$APPDATA/**" }]
     },
-    "upload:default"
+    "upload:default",
+    "secure-storage:allow-get-string",
+    "secure-storage:allow-set-string"
   ]
 }

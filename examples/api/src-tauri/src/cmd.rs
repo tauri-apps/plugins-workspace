@@ -14,11 +14,11 @@ pub struct RequestBody {
 
 #[command]
 pub fn log_operation(event: String, payload: Option<String>) {
-    log::info!("{} {:?}", event, payload);
+    log::info!("{event} {payload:?}");
 }
 
 #[command]
 pub fn perform_request(endpoint: String, body: RequestBody) -> String {
-    println!("{} {:?}", endpoint, body);
+    println!("{endpoint} {body:?}");
     "message response".into()
 }

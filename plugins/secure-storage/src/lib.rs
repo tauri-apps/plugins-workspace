@@ -9,9 +9,9 @@ use tauri::{
 
 pub use models::*;
 
-#[cfg(desktop)]
+#[cfg(not(target_os = "android"))]
 mod desktop;
-#[cfg(mobile)]
+#[cfg(target_os = "android")]
 mod mobile;
 
 mod commands;
@@ -20,10 +20,12 @@ mod models;
 
 pub use error::{Error, Result};
 
-#[cfg(desktop)]
+#[cfg(not(target_os = "android"))]
 pub use desktop::SecureStorage;
-#[cfg(mobile)]
+#[cfg(target_os = "android")]
 pub use mobile::SecureStorage;
+
+// TODO: Consider using a worker thread to handle caveats mentioned by keyring-rs
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the secure-storage APIs.
 pub trait SecureStorageExt<R: Runtime> {
@@ -39,11 +41,16 @@ impl<R: Runtime, T: Manager<R>> crate::SecureStorageExt<R> for T {
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("secure-storage")
-        .invoke_handler(tauri::generate_handler![commands::execute])
+        .invoke_handler(tauri::generate_handler![
+            commands::set_string,
+            commands::get_string,
+            commands::set_binary,
+            commands::get_binary
+        ])
         .setup(|app, api| {
-            #[cfg(mobile)]
+            #[cfg(target_os = "android")]
             let secure_storage = mobile::init(app, api)?;
-            #[cfg(desktop)]
+            #[cfg(not(target_os = "android"))]
             let secure_storage = desktop::init(app, api)?;
             app.manage(secure_storage);
             Ok(())

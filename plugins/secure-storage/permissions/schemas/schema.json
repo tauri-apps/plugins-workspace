@@ -305,6 +305,54 @@
           "type": "string",
           "const": "deny-execute",
           "markdownDescription": "Denies the execute command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the get_binary command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-binary",
+          "markdownDescription": "Enables the get_binary command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_binary command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-binary",
+          "markdownDescription": "Denies the get_binary command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the get_string command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-string",
+          "markdownDescription": "Enables the get_string command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_string command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-string",
+          "markdownDescription": "Denies the get_string command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the set_binary command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-set-binary",
+          "markdownDescription": "Enables the set_binary command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the set_binary command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-set-binary",
+          "markdownDescription": "Denies the set_binary command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the set_string command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-set-string",
+          "markdownDescription": "Enables the set_string command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the set_string command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-set-string",
+          "markdownDescription": "Denies the set_string command without any pre-configured scope."
         }
       ]
     }

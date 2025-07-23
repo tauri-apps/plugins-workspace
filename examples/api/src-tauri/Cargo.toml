@@ -12,7 +12,7 @@ name = "api_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { workspace = true, features = ["codegen", "isolation"] }
+tauri-build = { workspace = true, features = ["codegen"] }
 
 [dependencies]
 serde_json = { workspace = true }
@@ -36,6 +36,7 @@ tauri-plugin-notification = { path = "../../../plugins/notification", version = 
 tauri-plugin-os = { path = "../../../plugins/os", version = "2.3.0" }
 tauri-plugin-process = { path = "../../../plugins/process", version = "2.3.0" }
 tauri-plugin-opener = { path = "../../../plugins/opener", version = "2.4.0" }
+tauri-plugin-secure-storage = { path = "../../../plugins/secure-storage" }
 tauri-plugin-shell = { path = "../../../plugins/shell", version = "2.3.0" }
 tauri-plugin-store = { path = "../../../plugins/store", version = "2.3.0" }
 tauri-plugin-upload = { path = "../../../plugins/upload", version = "2.3.0" }
@@ -48,7 +49,6 @@ features = [
   "x11",
   "image-ico",
   "image-png",
-  "isolation",
   "macos-private-api",
   "tray-icon",
   "protocol-asset",
