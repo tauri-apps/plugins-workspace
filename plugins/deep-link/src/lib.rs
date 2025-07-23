@@ -303,12 +303,14 @@ mod imp {
 
                 if let Ok(mut desktop_file) = ini::Ini::load_from_file(&target_file) {
                     if let Some(section) = desktop_file.section_mut(Some("Desktop Entry")) {
-                        let old_mimes = section.remove("MimeType");
-                        section.append(
-                            "MimeType",
-                            format!("{mime_type};{}", old_mimes.unwrap_or_default()),
-                        );
-                        desktop_file.write_to_file(&target_file)?;
+                        // it's ok to remove it - we only write to the file if it's missing
+                        // and in that case we include old_mimes
+                        let old_mimes = section.remove("MimeType").unwrap_or_default();
+
+                        if !old_mimes.split(';').any(|mime| mime == mime_type) {
+                            section.append("MimeType", format!("{mime_type};{old_mimes}"));
+                            desktop_file.write_to_file(&target_file)?;
+                        }
                     }
                 } else {
                     let mut file = File::create(target_file)?;
@@ -333,7 +335,7 @@ mod imp {
                     .status()?;
 
                 Command::new("xdg-mime")
-                    .args(["default", &file_name, _protocol.as_ref()])
+                    .args(["default", &file_name, mime_type.as_str()])
                     .status()?;
 
                 Ok(())
