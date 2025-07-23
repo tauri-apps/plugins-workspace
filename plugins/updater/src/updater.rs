@@ -514,25 +514,34 @@ impl Updater {
         let mut signature = release.signature(&self.json_target);
 
         let installer = self.get_updater_installer();
-        if installer.is_none() && (download_url.is_err() || signature.is_err()) {
-            return Err(Error::TargetNotFound(self.json_target.clone()));
-        }
 
         if let Some(installer) = installer {
             let target = &format!("{}-{}", &self.json_target, installer.suffix());
-            download_url =
-                release
-                    .download_url(target)
-                    .or(download_url.or(Err(Error::TargetsNotFound(
+            log::debug!(
+                "Bundle type is {}. Checking for plattform {target} in response",
+                installer.suffix()
+            );
+            let bundle_url = release.download_url(target);
+            let bundle_signature = release.signature(target);
+            if bundle_url.is_err() || bundle_signature.is_err() {
+                if download_url.is_err() || signature.is_err() {
+                    return Err(Error::TargetsNotFound(
                         self.json_target.clone(),
                         target.clone(),
-                    ))));
-            signature = release
-                .signature(target)
-                .or(signature.or(Err(Error::TargetsNotFound(
-                    self.json_target.clone(),
-                    target.clone(),
-                ))));
+                    ));
+                }
+                log::debug!("Plattform {target} not found in response. Using fallback URL");
+            } else {
+                log::debug!("Plattform {target} found in response");
+                download_url = bundle_url;
+                signature = bundle_signature;
+            }
+        } else if download_url.is_err() || signature.is_err() {
+            log::debug!(
+                "Bundle type is not known and fallback platform {} was not found in response",
+                self.json_target
+            );
+            return Err(Error::TargetNotFound(self.json_target.clone()));
         }
 
         let update = if should_update {
