@@ -7,6 +7,10 @@
 use serde::{Deserialize, Deserializer};
 use tauri_utils::config::DeepLinkProtocol;
 
+fn default_true() -> bool {
+    true
+}
+
 #[derive(Deserialize, Clone)]
 pub struct AssociatedDomain {
     #[serde(default = "default_schemes")]
@@ -21,17 +25,19 @@ pub struct AssociatedDomain {
     pub path_prefix: Vec<String>,
     #[serde(default, alias = "path-suffix", rename = "pathSuffix")]
     pub path_suffix: Vec<String>,
+    #[serde(default = "default_true", alias = "app-link", rename = "appLink")]
+    pub app_link: bool,
 }
 
 impl AssociatedDomain {
     /// Returns true if the domain uses http or https scheme.
-    fn is_web_link(&self) -> bool {
+    pub fn is_web_link(&self) -> bool {
         self.scheme.iter().any(|s| s == "https" || s == "http")
     }
 
     /// Returns true if the domain uses http or https scheme and has proper host configuration.
     pub fn is_app_link(&self) -> bool {
-        self.is_web_link() && self.host.is_some()
+        self.app_link && self.is_web_link() && self.host.is_some()
     }
 
     pub fn validate(&self) -> Result<(), String> {
@@ -41,7 +47,7 @@ impl AssociatedDomain {
         }
 
         // Rule 2: If it's an App Link, ensure http(s) and host.
-        if self.host.is_some() {
+        if self.app_link {
             if !self.is_web_link() {
                 return Err("AppLink must be a valid web link (https/http + host)".into());
             }
