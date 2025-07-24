@@ -39,3 +39,7 @@ codegen-units = 1
 lto = true
 incremental = false
 opt-level = "s"
+
+[patch.crates-io]
+tauri = { git = "https://github.com/tauri-apps/tauri", branch = "feat/update-info-plist-fn" }
+tauri-plugin = { git = "https://github.com/tauri-apps/tauri", branch = "feat/update-info-plist-fn" }

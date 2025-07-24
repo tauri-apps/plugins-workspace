@@ -133,6 +133,60 @@ fn main() {
                 })
                 .expect("failed to update entitlements");
             }
+
+            let deep_link_domains = config
+                .mobile
+                .iter()
+                .filter_map(|domain| {
+                    if domain.is_app_link() {
+                        return None;
+                    }
+
+                    Some(domain)
+                })
+                .collect::<Vec<_>>();
+
+            if deep_link_domains.is_empty() {
+                tauri_plugin::mobile::update_info_plist(|info_plist| {
+                    info_plist.remove("CFBundleURLTypes");
+                })
+                .expect("failed to update Info.plist");
+            } else {
+                tauri_plugin::mobile::update_info_plist(|info_plist| {
+                    info_plist.insert(
+                        "CFBundleURLTypes".into(),
+                        deep_link_domains
+                            .iter()
+                            .map(|domain| {
+                                let schemes = domain
+                                    .scheme
+                                    .iter()
+                                    .filter(|scheme| {
+                                        scheme.as_str() != "https" && scheme.as_str() != "http"
+                                    })
+                                    .collect::<Vec<_>>();
+
+                                let mut dict = plist::Dictionary::new();
+                                dict.insert(
+                                    "CFBundleURLSchemes".into(),
+                                    schemes
+                                        .iter()
+                                        .map(|s| s.to_string().into())
+                                        .collect::<Vec<_>>()
+                                        .into(),
+                                );
+                                dict.insert(
+                                    "CFBundleURLName".into(),
+                                    format!("{}", domain.scheme[0]).into(),
+                                );
+                                plist::Value::Dictionary(dict)
+                            })
+                            .collect::<Vec<_>>()
+                            .into(),
+                    );
+                })
+                .expect("failed to update Info.plist");
+            }
         }
     }
 }
