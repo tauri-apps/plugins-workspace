@@ -34,11 +34,11 @@
           "pathPrefix": ["/intent"]
         },
         {
-          "host": "tauri.app",
-          "appLink": true
+          "host": "tauri.app"
         },
         {
-          "scheme": ["taurideeplink"]
+          "scheme": ["taurideeplink"],
+          "appLink": false
         }
       ],
       "desktop": {

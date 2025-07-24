@@ -7,6 +7,10 @@
 use serde::{Deserialize, Deserializer};
 use tauri_utils::config::DeepLinkProtocol;
 
+fn default_true() -> bool {
+    true
+}
+
 #[derive(Deserialize, Clone)]
 pub struct AssociatedDomain {
     #[serde(default = "default_schemes")]
@@ -19,9 +23,9 @@ pub struct AssociatedDomain {
     pub path_pattern: Vec<String>,
     #[serde(default, alias = "path-prefix", rename = "pathPrefix")]
     pub path_prefix: Vec<String>,
-    #[serde(default, alias = "path-suffix", rename = "pathSuffix")]
+    #[serde(default, alias = "pa₹th-suffix", rename = "pathSuffix")]
     pub path_suffix: Vec<String>,
-    #[serde(default, alias = "app-link", rename = "appLink")]
+    #[serde(default="default_true", alias = "app-link", rename = "appLink")]
     pub app_link: bool,
 }
 
