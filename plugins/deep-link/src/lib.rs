@@ -16,14 +16,11 @@ pub use error::{Error, Result};
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "app.tauri.deep_link";
 
-#[cfg(target_os = "ios")]
-tauri::ios_plugin_binding!(init_plugin_deep_link);
-
 fn init_deep_link<R: Runtime>(
     app: &AppHandle<R>,
     api: PluginApi<R, Option<config::Config>>,
 ) -> crate::Result<DeepLink<R>> {
-    #[cfg(mobile)]
+    #[cfg(target_os = "android")]
     {
         let _api = api;
 
@@ -32,11 +29,7 @@ fn init_deep_link<R: Runtime>(
             Emitter,
         };
 
-        #[cfg(target_os = "android")]
         let handle = _api.register_android_plugin(PLUGIN_IDENTIFIER, "DeepLinkPlugin")?;
-
-        #[cfg(target_os = "ios")]
-        let handle = _api.register_ios_plugin(init_plugin_deep_link)?;
 
         #[derive(serde::Deserialize)]
         struct Event {
@@ -64,25 +57,23 @@ fn init_deep_link<R: Runtime>(
             },
         )?;
         
-        #[cfg(target_os = "android")]
-        {
-            return Ok(DeepLink {
-                app: app.clone(),
-                plugin_handle: handle,
-            });
-        }
-
-        #[cfg(target_os = "ios")]
-        {
-            return Ok(DeepLink {
-                app: app.clone(),
-                plugin_handle: handle,
-                current: Default::default(),
-            })
-        }
+        return Ok(DeepLink {
+            app: app.clone(),
+            plugin_handle: handle,
+        });
     }
 
-    #[cfg(desktop)]
+    #[cfg(target_os = "ios")]
+    {
+        let deep_link = DeepLink {
+            app: app.clone(),
+            current: Default::default(),
+            config: api.config().clone(),
+        };
+        Ok(deep_link)
+    }
+
+    #[cfg(any(desktop))]
     {
         let args = std::env::args();
         let deep_link = DeepLink {
@@ -96,7 +87,7 @@ fn init_deep_link<R: Runtime>(
     }
 }
 
-#[cfg(mobile)]
+#[cfg(target_os = "android")]
 mod imp {
     use std::sync::Mutex;
     use tauri::{ipc::Channel, plugin::PluginHandle, AppHandle, Runtime};
@@ -113,14 +104,6 @@ mod imp {
     #[serde(rename_all = "camelCase")]
     pub struct GetCurrentResponse {
         pub url: Option<url::Url>,
-    }
-
-    /// Access to the deep-link APIs.
-    pub struct DeepLink<R: Runtime> {
-        pub(crate) app: AppHandle<R>,
-        pub(crate) plugin_handle: PluginHandle<R>,
-        #[cfg(target_os = "ios")]
-        pub(crate) current: Mutex<Option<Vec<url::Url>>>,
     }
 
     impl<R: Runtime> DeepLink<R> {
@@ -174,7 +157,7 @@ mod imp {
     }
 }
 
-#[cfg(not(mobile))]
+#[cfg(not(target_os = "android"))]
 mod imp {
     use std::sync::Mutex;
     #[cfg(target_os = "linux")]
