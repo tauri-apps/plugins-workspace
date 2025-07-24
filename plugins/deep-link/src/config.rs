@@ -28,7 +28,7 @@ pub struct AssociatedDomain {
 impl AssociatedDomain {
     /// Returns true if the domain uses http or https scheme and has a host.
     pub fn is_web_link(&self) -> bool {
-        self.host.is_some() && self.scheme.iter().any(|s| s == "https" || s == "http")
+        self.scheme.iter().any(|s| s == "https" || s == "http")
     }
 
     /// Returns true if marked as AppLink and has proper configuration.
