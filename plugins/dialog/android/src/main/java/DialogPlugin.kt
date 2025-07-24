@@ -130,34 +130,6 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     return mimeTypes.toTypedArray()
   }
 
-  private fun setIntentMimeTypes(intent: Intent, mimeTypes: Array<String>) {
-    if (mimeTypes.isNotEmpty()) {
-      var uniqueMimeKind = true
-      var mimeKind: String? = null
-      for (mime in mimeTypes) {
-        val kind = mime.split("/")[0]
-        if (mimeKind == null) {
-          mimeKind = kind
-        } else if (mimeKind != kind) {
-          uniqueMimeKind = false
-        }
-      }
-
-      if (uniqueMimeKind) {
-        if (mimeTypes.size > 1) {
-          intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
-          intent.type = Intent.normalizeMimeType("$mimeKind/*")
-        } else {
-          intent.type = mimeTypes[0]
-        }
-      } else {
-        intent.type = "*/*"
-      }
-    } else {
-      intent.type = "*/*"
-    }
-  }
-
   @Command
   fun showMessageDialog(invoke: Invoke) {
     val args = invoke.parseArgs(MessageOptions::class.java)
@@ -211,10 +183,14 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
       val parsedTypes = parseFiltersOption(args.filters)
 
       val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-      setIntentMimeTypes(intent, parsedTypes)
-
       intent.addCategory(Intent.CATEGORY_OPENABLE)
       intent.putExtra(Intent.EXTRA_TITLE, args.fileName ?: "")
+      intent.type = "*/*"
+
+      if (parsedTypes.isNotEmpty()) {
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, parsedTypes)
+      }
+
       startActivityForResult(invoke, intent, "saveFileDialogResult")
     } catch (ex: Exception) {
       val message = ex.message ?: "Failed to pick save file"
