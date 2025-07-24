@@ -66,6 +66,8 @@ fn intent_filter(domain: &AssociatedDomain) -> String {
             .collect::<Vec<_>>()
             .join("\n    "),
     )
+    .trim()
+    .to_string()
 }
 
 fn main() {
