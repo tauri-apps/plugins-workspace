@@ -1,6 +1,6 @@
 name: deep-link-example
 options:
-  bundleIdPrefix: com.kodski.deep-link-example
+  bundleIdPrefix: com.tauri.deep-link-example
   deploymentTarget:
     iOS: 13.0
 fileGroups: [../../src]
@@ -11,7 +11,7 @@ settingGroups:
   app:
     base:
       PRODUCT_NAME: deep-link-example
-      PRODUCT_BUNDLE_IDENTIFIER: com.kodski.deep-link-example
+      PRODUCT_BUNDLE_IDENTIFIER: com.tauri.deep-link-example
 targetTemplates:
   app:
     type: application

@@ -6,7 +6,7 @@
     <array>
       <dict>
         <key>CFBundleURLName</key>
-        <string>com.kodski.deep-link-example</string> 
+        <string>com.tauri.deep-link-example</string> 
         <key>CFBundleURLSchemes</key>
         <array>
           <string>taurideeplink</string>

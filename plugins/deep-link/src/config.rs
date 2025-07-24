@@ -7,10 +7,6 @@
 use serde::{Deserialize, Deserializer};
 use tauri_utils::config::DeepLinkProtocol;
 
-fn default_true() -> bool {
-    true
-}
-
 #[derive(Deserialize, Clone)]
 pub struct AssociatedDomain {
     #[serde(default = "default_schemes")]
@@ -25,19 +21,17 @@ pub struct AssociatedDomain {
     pub path_prefix: Vec<String>,
     #[serde(default, alias = "path-suffix", rename = "pathSuffix")]
     pub path_suffix: Vec<String>,
-    #[serde(default="default_true", alias = "app-link", rename = "appLink")]
-    pub app_link: bool,
 }
 
 impl AssociatedDomain {
-    /// Returns true if the domain uses http or https scheme and has a host.
-    pub fn is_web_link(&self) -> bool {
+    /// Returns true if the domain uses http or https scheme.
+    fn is_web_link(&self) -> bool {
         self.scheme.iter().any(|s| s == "https" || s == "http")
     }
 
-    /// Returns true if marked as AppLink and has proper configuration.
+    /// Returns true if the domain uses http or https scheme and has proper host configuration.
     pub fn is_app_link(&self) -> bool {
-        self.app_link && self.is_web_link() && self.host.is_some()
+        self.is_web_link() && self.host.is_some()
     }
 
     pub fn validate(&self) -> Result<(), String> {
@@ -47,12 +41,12 @@ impl AssociatedDomain {
         }
 
         // Rule 2: If it's an App Link, ensure http(s) and host.
-        if self.app_link {
+        if self.host.is_some() {
             if !self.is_web_link() {
                 return Err("AppLink must be a valid web link (https/http + host)".into());
             }
-
-            if self.scheme.iter().any(|s| s == "http") && !self.scheme.iter().any(|s| s == "https") {
+            if self.scheme.iter().any(|s| s == "http") && !self.scheme.iter().any(|s| s == "https")
+            {
                 eprintln!("Warning: AppLink uses only 'http' — allowed on Android but not secure for production.");
             }
         }
@@ -60,7 +54,6 @@ impl AssociatedDomain {
         Ok(())
     }
 }
-
 
 // TODO: Consider removing this in v3
 fn default_schemes() -> Vec<String> {
@@ -70,7 +63,7 @@ fn default_schemes() -> Vec<String> {
 fn deserialize_associated_host<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
 where
     D: Deserializer<'de>,
-{   
+{
     let opt = Option::<String>::deserialize(deserializer)?;
     if let Some(ref host) = opt {
         if let Some((scheme, _)) = host.split_once("://") {

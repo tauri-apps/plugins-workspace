@@ -11,10 +11,10 @@ const COMMANDS: &[&str] = &["get_current", "register", "unregister", "is_registe
 // TODO: Consider using activity-alias in case users may have multiple activities in their app.
 fn intent_filter(domain: &AssociatedDomain) -> String {
     let host = domain
-    .host
-    .as_ref()
-    .map(|h| format!(r#"<data android:host="{h}" />"#))
-    .unwrap_or_default();
+        .host
+        .as_ref()
+        .map(|h| format!(r#"<data android:host="{h}" />"#))
+        .unwrap_or_default();
 
     let auto_verify = if domain.is_app_link() {
         r#"android:autoVerify="true" "#.to_string()
@@ -27,39 +27,39 @@ fn intent_filter(domain: &AssociatedDomain) -> String {
     <action android:name="android.intent.action.VIEW" />
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
-    {}
-    {}
-    {}
-    {}
-    {}
-    {}
+    {schemes}
+    {host}
+    {domains}
+    {path_patterns}
+    {path_prefixes}
+    {path_suffixes}
 </intent-filter>"#,
-        domain
+        schemes = domain
             .scheme
             .iter()
             .map(|scheme| format!(r#"<data android:scheme="{scheme}" />"#))
             .collect::<Vec<_>>()
             .join("\n    "),
-        host,
-        domain
+        host = host,
+        domains = domain
             .path
             .iter()
             .map(|path| format!(r#"<data android:path="{path}" />"#))
             .collect::<Vec<_>>()
             .join("\n    "),
-        domain
+        path_patterns = domain
             .path_pattern
             .iter()
             .map(|pattern| format!(r#"<data android:pathPattern="{pattern}" />"#))
             .collect::<Vec<_>>()
             .join("\n    "),
-        domain
+        path_prefixes = domain
             .path_prefix
             .iter()
             .map(|prefix| format!(r#"<data android:pathPrefix="{prefix}" />"#))
             .collect::<Vec<_>>()
             .join("\n    "),
-        domain
+        path_suffixes = domain
             .path_suffix
             .iter()
             .map(|suffix| format!(r#"<data android:pathSuffix="{suffix}" />"#))
@@ -102,17 +102,13 @@ fn main() {
         )
         .expect("failed to rewrite AndroidManifest.xml");
 
-
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
-            // we need to ensure that the entitlements are only 
-            // generated for explicit app links and not 
-            // other deep links or web links because then they
+            // we need to ensure that the entitlements are only
+            // generated for explicit app links and not
+            // other deep links because then they
             // are just going to complain and not be built or signed
-            let has_app_links = config
-                .mobile
-                .iter()
-                .any(|d| d.is_app_link());
+            let has_app_links = config.mobile.iter().any(|d| d.is_app_link());
 
             if !has_app_links {
                 tauri_plugin::mobile::update_entitlements(|entitlements| {
@@ -124,13 +120,13 @@ fn main() {
                     entitlements.insert(
                         "com.apple.developer.associated-domains".into(),
                         config
-                        .mobile
-                        .iter()
-                        .filter(|d| d.is_app_link())
-                        .filter_map(|d| d.host.as_ref())
-                        .map(|host| format!("applinks:{}", host).into())
-                        .collect::<Vec<_>>()
-                        .into(),
+                            .mobile
+                            .iter()
+                            .filter(|d| d.is_app_link())
+                            .filter_map(|d| d.host.as_ref())
+                            .map(|host| format!("applinks:{}", host).into())
+                            .collect::<Vec<_>>()
+                            .into(),
                     );
                 })
                 .expect("failed to update entitlements");
