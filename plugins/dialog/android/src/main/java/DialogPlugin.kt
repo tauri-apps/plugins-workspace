@@ -56,20 +56,18 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     try {
       val args = invoke.parseArgs(FilePickerOptions::class.java)
       val parsedTypes = parseFiltersOption(args.filters)
-      
-      val intent = if (parsedTypes.isNotEmpty()) {
-        val intent = Intent(Intent.ACTION_PICK)
-        setIntentMimeTypes(intent, parsedTypes)
-        intent
-      } else {
-        val intent = Intent(Intent.ACTION_GET_CONTENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        intent.type = "*/*"
-        intent
+
+      // TODO: ACTION_OPEN_DOCUMENT ??
+      val intent = Intent(Intent.ACTION_GET_CONTENT)
+      intent.addCategory(Intent.CATEGORY_OPENABLE)
+      intent.type = "*/*"
+
+      if (parsedTypes.isNotEmpty()) {
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, parsedTypes)
       }
 
       intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, args.multiple ?: false)
-      
+
       startActivityForResult(invoke, intent, "filePickerResult")
     } catch (ex: Exception) {
       val message = ex.message ?: "Failed to pick file"
@@ -115,7 +113,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     callResult.put("files", JSArray.from(uris.toTypedArray()))
     return callResult
   }
-  
+
   private fun parseFiltersOption(filters: Array<Filter>): Array<String> {
     val mimeTypes = mutableListOf<String>()
     for (filter in filters) {
@@ -159,11 +157,11 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
       intent.type = "*/*"
     }
   }
-  
+
   @Command
   fun showMessageDialog(invoke: Invoke) {
     val args = invoke.parseArgs(MessageOptions::class.java)
-    
+
     if (activity.isFinishing) {
       invoke.reject("App is finishing")
       return
@@ -179,7 +177,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     Handler(Looper.getMainLooper())
       .post {
         val builder = AlertDialog.Builder(activity)
-        
+
         if (args.title != null) {
           builder.setTitle(args.title)
         }
