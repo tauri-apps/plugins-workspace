@@ -56,7 +56,7 @@ fn init_deep_link<R: Runtime>(
                 }),
             },
         )?;
-        
+
         return Ok(DeepLink {
             app: app.clone(),
             plugin_handle: handle,
@@ -64,16 +64,13 @@ fn init_deep_link<R: Runtime>(
     }
 
     #[cfg(target_os = "ios")]
-    {
-        let deep_link = DeepLink {
-            app: app.clone(),
-            current: Default::default(),
-            config: api.config().clone(),
-        };
-        Ok(deep_link)
-    }
+    return Ok(DeepLink {
+        app: app.clone(),
+        current: Default::default(),
+        config: api.config().clone(),
+    });
 
-    #[cfg(any(desktop))]
+    #[cfg(desktop)]
     {
         let args = std::env::args();
         let deep_link = DeepLink {
@@ -89,7 +86,6 @@ fn init_deep_link<R: Runtime>(
 
 #[cfg(target_os = "android")]
 mod imp {
-    use std::sync::Mutex;
     use tauri::{ipc::Channel, plugin::PluginHandle, AppHandle, Runtime};
 
     use serde::{Deserialize, Serialize};
@@ -104,6 +100,12 @@ mod imp {
     #[serde(rename_all = "camelCase")]
     pub struct GetCurrentResponse {
         pub url: Option<url::Url>,
+    }
+
+    /// Access to the deep-link APIs.
+    pub struct DeepLink<R: Runtime> {
+        pub(crate) app: AppHandle<R>,
+        pub(crate) plugin_handle: PluginHandle<R>,
     }
 
     impl<R: Runtime> DeepLink<R> {
