@@ -16,8 +16,14 @@ fn intent_filter(domain: &AssociatedDomain) -> String {
     .map(|h| format!(r#"<data android:host="{h}" />"#))
     .unwrap_or_default();
 
+    let auto_verify = if domain.is_app_link() {
+        r#"android:autoVerify="true" "#.to_string()
+    } else {
+        String::new()
+    };
+
     format!(
-        r#"<intent-filter android:autoVerify="true">
+        r#"<intent-filter {auto_verify}>
     <action android:name="android.intent.action.VIEW" />
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
