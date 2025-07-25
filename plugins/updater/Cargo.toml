@@ -26,6 +26,7 @@ ios = { level = "none", notes = "" }
 tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
+# Change this back to `workspace = true` when the workspace tauri is bumped to >2.7
 tauri = { version = "2.7", default-features = false }
 serde = { workspace = true }
 serde_json = { workspace = true }
