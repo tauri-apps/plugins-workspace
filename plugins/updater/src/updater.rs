@@ -56,7 +56,7 @@ pub enum Installer {
 }
 
 impl Installer {
-    fn suffix(self) -> &'static str {
+    fn name(self) -> &'static str {
         match self {
             Self::AppImage => "appimage",
             Self::Deb => "deb",
@@ -554,7 +554,7 @@ impl Updater {
         let arch = self.arch;
         let mut targets = Vec::new();
         if let Some(installer) = installer {
-            let installer = installer.suffix();
+            let installer = installer.name();
             targets.push(format!("{os}-{arch}-{installer}"));
         }
         targets.push(format!("{os}-{arch}"));

@@ -103,7 +103,7 @@ impl BundleTarget {
     }
 }
 
-impl BundleTarget {
+impl Default for BundleTarget {
     fn default() -> Self {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         return Self::App;
