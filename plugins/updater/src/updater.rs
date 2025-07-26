@@ -421,11 +421,11 @@ impl Updater {
                 .to_string()
                 // url::Url automatically url-encodes the path components
                 .replace("%7B%7Bcurrent_version%7D%7D", &encoded_version)
-                .replace("%7B%7Btarget%7D%7D", &target)
+                .replace("%7B%7Btarget%7D%7D", target)
                 .replace("%7B%7Barch%7D%7D", self.arch)
                 // but not query parameters
                 .replace("{{current_version}}", &encoded_version)
-                .replace("{{target}}", &target)
+                .replace("{{target}}", target)
                 .replace("{{arch}}", self.arch)
                 .parse()?;
 
