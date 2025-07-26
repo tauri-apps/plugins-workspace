@@ -394,12 +394,10 @@ impl Updater {
                 std::env::set_var("SSL_CERT_DIR", "/etc/ssl/certs");
             }
         }
-        let (target, json_target) = if let Some(target) = &self.target {
-            (target.clone(), target.clone())
+        let target = if let Some(target) = &self.target {
+            target
         } else {
-            let os = updater_os().ok_or(Error::UnsupportedOs)?;
-            let json_target = format!("{os}-{}", self.arch);
-            (os.to_owned(), json_target)
+            updater_os().ok_or(Error::UnsupportedOs)?
         };
 
         let mut remote_release: Option<RemoteRelease> = None;
@@ -508,33 +506,8 @@ impl Updater {
             None => release.version > self.current_version,
         };
 
-        let mut download_url = release.download_url(&json_target);
-        let mut signature = release.signature(&json_target);
-
         let installer = self.get_updater_installer();
-
-        if let Some(installer) = installer {
-            let target = &format!("{}-{}", &json_target, installer.suffix());
-            log::debug!(
-                "Bundle type is {}. Checking for platform {target} in response",
-                installer.suffix()
-            );
-            let bundle_url = release.download_url(target);
-            let bundle_signature = release.signature(target);
-            if bundle_url.is_err() || bundle_signature.is_err() {
-                if download_url.is_err() || signature.is_err() {
-                    return Err(Error::TargetsNotFound(json_target.clone(), target.clone()));
-                }
-                log::debug!("Platform {target} not found in response. Using fallback URL");
-            } else {
-                log::debug!("Platform {target} found in response");
-                download_url = bundle_url;
-                signature = bundle_signature;
-            }
-        } else if download_url.is_err() || signature.is_err() {
-            log::debug!("Bundle type is not known and fallback platform {json_target} was not found in response");
-            return Err(Error::TargetNotFound(json_target.clone()));
-        }
+        let (download_url, signature) = self.get_urls(&release, &installer)?;
 
         let update = if should_update {
             Some(Update {
@@ -546,9 +519,9 @@ impl Updater {
                 extract_path: self.extract_path.clone(),
                 version: release.version.to_string(),
                 date: release.pub_date,
-                download_url: download_url?.to_owned(),
+                download_url: download_url.clone(),
                 body: release.notes.clone(),
-                signature: signature?.to_owned(),
+                signature: signature.to_owned(),
                 installer,
                 raw_json: raw_json.unwrap(),
                 timeout: None,
@@ -563,6 +536,38 @@ impl Updater {
         };
 
         Ok(update)
+    }
+
+    fn get_urls<'a>(
+        &self,
+        release: &'a RemoteRelease,
+        installer: &Option<Installer>,
+    ) -> Result<(&'a Url, &'a String)> {
+        // Use the user provided target
+        if let Some(target) = &self.target {
+            return Ok((release.download_url(target)?, release.signature(target)?));
+        }
+
+        // Or else we search for [`{os}-{arch}-{installer}`, `{os}-{arch}`] in order
+        let os = updater_os().ok_or(Error::UnsupportedOs)?;
+        let arch = self.arch;
+        let mut targets = Vec::new();
+        if let Some(installer) = installer {
+            let installer = installer.suffix();
+            targets.push(format!("{os}-{arch}-{installer}"));
+        }
+        targets.push(format!("{os}-{arch}"));
+
+        for target in &targets {
+            log::debug!("Searching for updater target '{target}' in release data");
+            if let (Ok(download_url), Ok(signature)) =
+                (release.download_url(target), release.signature(target))
+            {
+                return Ok((download_url, signature));
+            };
+        }
+
+        Err(Error::TargetsNotFound(targets))
     }
 }
 
