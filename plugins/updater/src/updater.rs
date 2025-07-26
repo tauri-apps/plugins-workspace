@@ -1271,8 +1271,9 @@ impl Update {
     }
 }
 
-/// Gets the base target string used by the updater. If bundle type infromation is available it
+/// Gets the base target string used by the updater. If bundle type is available it
 /// will be added to this string when selecting the download URL and signature.
+/// `tauri::utils::platform::bundle_type` method is used to obtain current bundle type.
 pub fn target() -> Option<String> {
     if let (Some(target), Some(arch)) = (updater_os(), updater_arch()) {
         Some(format!("{target}-{arch}"))
