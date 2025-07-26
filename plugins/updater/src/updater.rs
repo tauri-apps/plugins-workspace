@@ -516,12 +516,13 @@ impl Updater {
                 on_before_exit: self.on_before_exit.clone(),
                 app_name: self.app_name.clone(),
                 current_version: self.current_version.to_string(),
+                target: target.to_owned(),
                 extract_path: self.extract_path.clone(),
                 version: release.version.to_string(),
                 date: release.pub_date,
                 download_url: download_url.clone(),
-                body: release.notes.clone(),
                 signature: signature.to_owned(),
+                body: release.notes,
                 installer,
                 raw_json: raw_json.unwrap(),
                 timeout: None,
@@ -586,6 +587,9 @@ pub struct Update {
     pub version: String,
     /// Update publish date
     pub date: Option<OffsetDateTime>,
+    /// The `{{target}}` variable we replace in the endpoint and serach for in the JSON,
+    /// this is either the user provided target or the current operating system by default
+    pub target: String,
     /// Current installer
     pub installer: Option<Installer>,
     /// Download URL announced
