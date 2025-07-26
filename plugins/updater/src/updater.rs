@@ -297,13 +297,6 @@ impl UpdaterBuilder {
         };
 
         let arch = get_updater_arch().ok_or(Error::UnsupportedArch)?;
-        let (target, json_target) = if let Some(target) = self.target {
-            (target.clone(), target)
-        } else {
-            let target = get_updater_target().ok_or(Error::UnsupportedOs)?;
-            let json_target = format!("{target}-{arch}");
-            (target.to_owned(), json_target)
-        };
 
         let executable_path = self.executable_path.clone().unwrap_or(current_exe()?);
 
@@ -326,8 +319,7 @@ impl UpdaterBuilder {
             installer_args: self.installer_args,
             current_exe_args: self.current_exe_args,
             arch,
-            target,
-            json_target,
+            target: self.target,
             headers: self.headers,
             extract_path,
             on_before_exit: self.on_before_exit,
@@ -359,10 +351,7 @@ pub struct Updater {
     proxy: Option<Url>,
     endpoints: Vec<Url>,
     arch: &'static str,
-    // The `{{target}}` variable we replace in the endpoint and serach for in the JSON
-    target: String,
-    // The value we search if the updater server returns a JSON with the `platforms` object
-    json_target: String,
+    target: Option<String>,
     headers: HeaderMap,
     extract_path: PathBuf,
     on_before_exit: Option<OnBeforeExit>,
@@ -403,6 +392,13 @@ impl Updater {
                 std::env::set_var("SSL_CERT_DIR", "/etc/ssl/certs");
             }
         }
+        let (target, json_target) = if let Some(target) = &self.target {
+            (target.clone(), target.clone())
+        } else {
+            let target = get_updater_target().ok_or(Error::UnsupportedOs)?;
+            let json_target = format!("{target}-{}", self.arch);
+            (target.to_owned(), json_target)
+        };
 
         let mut remote_release: Option<RemoteRelease> = None;
         let mut raw_json: Option<serde_json::Value> = None;
@@ -425,11 +421,11 @@ impl Updater {
                 .to_string()
                 // url::Url automatically url-encodes the path components
                 .replace("%7B%7Bcurrent_version%7D%7D", &encoded_version)
-                .replace("%7B%7Btarget%7D%7D", &self.target)
+                .replace("%7B%7Btarget%7D%7D", &target)
                 .replace("%7B%7Barch%7D%7D", self.arch)
                 // but not query parameters
                 .replace("{{current_version}}", &encoded_version)
-                .replace("{{target}}", &self.target)
+                .replace("{{target}}", &target)
                 .replace("{{arch}}", self.arch)
                 .parse()?;
 
@@ -510,13 +506,13 @@ impl Updater {
             None => release.version > self.current_version,
         };
 
-        let mut download_url = release.download_url(&self.json_target);
-        let mut signature = release.signature(&self.json_target);
+        let mut download_url = release.download_url(&json_target);
+        let mut signature = release.signature(&json_target);
 
         let installer = self.get_updater_installer();
 
         if let Some(installer) = installer {
-            let target = &format!("{}-{}", &self.json_target, installer.suffix());
+            let target = &format!("{}-{}", &json_target, installer.suffix());
             log::debug!(
                 "Bundle type is {}. Checking for plattform {target} in response",
                 installer.suffix()
@@ -525,10 +521,7 @@ impl Updater {
             let bundle_signature = release.signature(target);
             if bundle_url.is_err() || bundle_signature.is_err() {
                 if download_url.is_err() || signature.is_err() {
-                    return Err(Error::TargetsNotFound(
-                        self.json_target.clone(),
-                        target.clone(),
-                    ));
+                    return Err(Error::TargetsNotFound(json_target.clone(), target.clone()));
                 }
                 log::debug!("Plattform {target} not found in response. Using fallback URL");
             } else {
@@ -537,11 +530,8 @@ impl Updater {
                 signature = bundle_signature;
             }
         } else if download_url.is_err() || signature.is_err() {
-            log::debug!(
-                "Bundle type is not known and fallback platform {} was not found in response",
-                self.json_target
-            );
-            return Err(Error::TargetNotFound(self.json_target.clone()));
+            log::debug!("Bundle type is not known and fallback platform {json_target} was not found in response");
+            return Err(Error::TargetNotFound(json_target.clone()));
         }
 
         let update = if should_update {
@@ -551,7 +541,6 @@ impl Updater {
                 on_before_exit: self.on_before_exit.clone(),
                 app_name: self.app_name.clone(),
                 current_version: self.current_version.to_string(),
-                target: self.target.clone(),
                 extract_path: self.extract_path.clone(),
                 version: release.version.to_string(),
                 date: release.pub_date,
@@ -590,8 +579,6 @@ pub struct Update {
     pub version: String,
     /// Update publish date
     pub date: Option<OffsetDateTime>,
-    /// Target
-    pub target: String,
     /// Current installer
     pub installer: Option<Installer>,
     /// Download URL announced
