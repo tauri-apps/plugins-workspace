@@ -1271,7 +1271,8 @@ impl Update {
     }
 }
 
-/// Gets the target string used on the updater.
+/// Gets the base target string used by the updater. If bundle type infromation is available it
+/// will be added to this string when selecting the download URL and signature.
 pub fn target() -> Option<String> {
     if let (Some(target), Some(arch)) = (updater_os(), updater_arch()) {
         Some(format!("{target}-{arch}"))
