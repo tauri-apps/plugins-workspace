@@ -296,7 +296,7 @@ impl UpdaterBuilder {
             return Err(Error::EmptyEndpoints);
         };
 
-        let arch = get_updater_arch().ok_or(Error::UnsupportedArch)?;
+        let arch = updater_arch().ok_or(Error::UnsupportedArch)?;
 
         let executable_path = self.executable_path.clone().unwrap_or(current_exe()?);
 
@@ -351,6 +351,8 @@ pub struct Updater {
     proxy: Option<Url>,
     endpoints: Vec<Url>,
     arch: &'static str,
+    // The `{{target}}` variable we replace in the endpoint and serach for in the JSON,
+    // this is either the user provided target or the current operating system by default
     target: Option<String>,
     headers: HeaderMap,
     extract_path: PathBuf,
@@ -364,7 +366,7 @@ pub struct Updater {
 
 impl Updater {
     fn get_updater_installer(&self) -> Option<Installer> {
-        bundle_type().and_then(|t| match t {
+        match bundle_type()? {
             BundleType::Deb => Some(Installer::Deb),
             BundleType::Rpm => Some(Installer::Rpm),
             BundleType::AppImage => Some(Installer::AppImage),
@@ -372,7 +374,7 @@ impl Updater {
             BundleType::Nsis => Some(Installer::Nsis),
             BundleType::App => Some(Installer::App),
             BundleType::Dmg => None,
-        })
+        }
     }
 
     pub async fn check(&self) -> Result<Option<Update>> {
@@ -395,9 +397,9 @@ impl Updater {
         let (target, json_target) = if let Some(target) = &self.target {
             (target.clone(), target.clone())
         } else {
-            let target = get_updater_target().ok_or(Error::UnsupportedOs)?;
-            let json_target = format!("{target}-{}", self.arch);
-            (target.to_owned(), json_target)
+            let os = updater_os().ok_or(Error::UnsupportedOs)?;
+            let json_target = format!("{os}-{}", self.arch);
+            (os.to_owned(), json_target)
         };
 
         let mut remote_release: Option<RemoteRelease> = None;
@@ -514,7 +516,7 @@ impl Updater {
         if let Some(installer) = installer {
             let target = &format!("{}-{}", &json_target, installer.suffix());
             log::debug!(
-                "Bundle type is {}. Checking for plattform {target} in response",
+                "Bundle type is {}. Checking for platform {target} in response",
                 installer.suffix()
             );
             let bundle_url = release.download_url(target);
@@ -523,9 +525,9 @@ impl Updater {
                 if download_url.is_err() || signature.is_err() {
                     return Err(Error::TargetsNotFound(json_target.clone(), target.clone()));
                 }
-                log::debug!("Plattform {target} not found in response. Using fallback URL");
+                log::debug!("Platform {target} not found in response. Using fallback URL");
             } else {
-                log::debug!("Plattform {target} found in response");
+                log::debug!("Platform {target} found in response");
                 download_url = bundle_url;
                 signature = bundle_signature;
             }
@@ -1262,14 +1264,14 @@ impl Update {
 
 /// Gets the target string used on the updater.
 pub fn target() -> Option<String> {
-    if let (Some(target), Some(arch)) = (get_updater_target(), get_updater_arch()) {
+    if let (Some(target), Some(arch)) = (updater_os(), updater_arch()) {
         Some(format!("{target}-{arch}"))
     } else {
         None
     }
 }
 
-pub(crate) fn get_updater_target() -> Option<&'static str> {
+fn updater_os() -> Option<&'static str> {
     if cfg!(target_os = "linux") {
         Some("linux")
     } else if cfg!(target_os = "macos") {
@@ -1282,7 +1284,7 @@ pub(crate) fn get_updater_target() -> Option<&'static str> {
     }
 }
 
-pub(crate) fn get_updater_arch() -> Option<&'static str> {
+fn updater_arch() -> Option<&'static str> {
     if cfg!(target_arch = "x86") {
         Some("i686")
     } else if cfg!(target_arch = "x86_64") {
