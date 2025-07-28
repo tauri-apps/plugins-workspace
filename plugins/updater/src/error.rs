@@ -42,7 +42,7 @@ pub enum Error {
     /// The platform was not found in the updater JSON response.
     #[error("the platform `{0}` was not found in the response `platforms` object")]
     TargetNotFound(String),
-    /// Neither the platform not the fallback platform was not found in the updater JSON response.
+    /// Neither the platform nor the fallback platform was found in the updater JSON response.
     #[error(
         "None of the fallback platforms `{0:?}` were found in the response `platforms` object"
     )]
