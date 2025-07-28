@@ -587,7 +587,7 @@ pub struct Update {
     pub version: String,
     /// Update publish date
     pub date: Option<OffsetDateTime>,
-    /// The `{{target}}` variable we replace in the endpoint and serach for in the JSON,
+    /// The `{{target}}` variable we replace in the endpoint and search for in the JSON,
     /// this is either the user provided target or the current operating system by default
     pub target: String,
     /// Current installer
