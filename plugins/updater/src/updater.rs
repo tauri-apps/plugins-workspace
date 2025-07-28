@@ -590,7 +590,7 @@ pub struct Update {
     /// The `{{target}}` variable we replace in the endpoint and search for in the JSON,
     /// this is either the user provided target or the current operating system by default
     pub target: String,
-    /// Current installer
+    /// Current installer type
     pub installer: Option<Installer>,
     /// Download URL announced
     pub download_url: Url,
