@@ -365,18 +365,6 @@ pub struct Updater {
 }
 
 impl Updater {
-    fn get_updater_installer(&self) -> Option<Installer> {
-        match bundle_type()? {
-            BundleType::Deb => Some(Installer::Deb),
-            BundleType::Rpm => Some(Installer::Rpm),
-            BundleType::AppImage => Some(Installer::AppImage),
-            BundleType::Msi => Some(Installer::Msi),
-            BundleType::Nsis => Some(Installer::Nsis),
-            BundleType::App => Some(Installer::App),
-            BundleType::Dmg => None,
-        }
-    }
-
     pub async fn check(&self) -> Result<Option<Update>> {
         // we want JSON only
         let mut headers = self.headers.clone();
@@ -506,7 +494,7 @@ impl Updater {
             None => release.version > self.current_version,
         };
 
-        let installer = self.get_updater_installer();
+        let installer = installer_for_bundle_type(bundle_type());
         let (download_url, signature) = self.get_urls(&release, &installer)?;
 
         let update = if should_update {
@@ -523,7 +511,6 @@ impl Updater {
                 download_url: download_url.clone(),
                 signature: signature.to_owned(),
                 body: release.notes,
-                installer,
                 raw_json: raw_json.unwrap(),
                 timeout: None,
                 proxy: self.proxy.clone(),
@@ -590,8 +577,6 @@ pub struct Update {
     /// The `{{target}}` variable we replace in the endpoint and search for in the JSON,
     /// this is either the user provided target or the current operating system by default
     pub target: String,
-    /// Current installer type
-    pub installer: Option<Installer>,
     /// Download URL announced
     pub download_url: Url,
     /// Signature announced
@@ -931,7 +916,7 @@ impl Update {
     /// └── ...
     ///
     fn install_inner(&self, bytes: &[u8]) -> Result<()> {
-        match self.installer {
+        match installer_for_bundle_type(bundle_type()) {
             Some(Installer::Deb) => self.install_deb(bytes),
             Some(Installer::Rpm) => self.install_rpm(bytes),
             _ => self.install_appimage(bytes),
@@ -1386,6 +1371,18 @@ impl<'de> Deserialize<'de> for RemoteRelease {
                 })
             },
         })
+    }
+}
+
+fn installer_for_bundle_type(bundle: Option<BundleType>) -> Option<Installer> {
+    match bundle? {
+        BundleType::Deb => Some(Installer::Deb),
+        BundleType::Rpm => Some(Installer::Rpm),
+        BundleType::AppImage => Some(Installer::AppImage),
+        BundleType::Msi => Some(Installer::Msi),
+        BundleType::Nsis => Some(Installer::Nsis),
+        BundleType::App => Some(Installer::App),
+        _ => None,
     }
 }
 
