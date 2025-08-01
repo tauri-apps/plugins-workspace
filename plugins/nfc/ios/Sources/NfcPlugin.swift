@@ -148,8 +148,8 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
 
   func tagReaderSession(_ session: NFCTagReaderSession, didInvalidateWithError error: Error) {
     Logger.error("Tag reader session error \(error)")
-    self.closeSession(session, error: "Tag reader session error: \(error)")
     self.session?.invoke.reject("session invalidated with error: \(error)")
+    self.session = nil
   }
 
   func readerSession(_ session: NFCNDEFReaderSession, didDetectNDEFs messages: [NFCNDEFMessage]) {
@@ -200,8 +200,8 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
       Logger.debug("readerSessionInvalidationErrorFirstNDEFTagRead")
     } else {
       Logger.error("NDEF reader session error \(error)")
-      self.closeSession(session, error: "NDEF reader session error: \(error)")
       self.session?.invoke.reject("session invalidated with error: \(error)")
+      self.session = nil
     }
   }
 
