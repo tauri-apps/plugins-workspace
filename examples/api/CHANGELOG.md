@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.28]
+
+### Dependencies
+
+- Upgraded to `dialog-js@2.3.2`
+
 ## \[2.0.27]
 
 ### Dependencies
