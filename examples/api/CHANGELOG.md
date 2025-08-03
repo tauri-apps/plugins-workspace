@@ -1,5 +1,20 @@
 # Changelog
 
+## \[2.0.28]
+
+### Dependencies
+
+- Upgraded to `dialog-js@2.3.2`
+
+## \[2.0.27]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@2.4.0`
+- Upgraded to `fs-js@2.4.1`
+- Upgraded to `dialog-js@2.3.1`
+- Upgraded to `http-js@2.5.1`
+
 ## \[2.0.26]
 
 ### Dependencies

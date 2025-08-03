@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.0]
+
+- [`6a8f2558`](https://github.com/tauri-apps/plugins-workspace/commit/6a8f25587852b958a9e48b8c2e8884cc94a7dc7f) ([#2619](https://github.com/tauri-apps/plugins-workspace/pull/2619) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Making `flags` optional in the `saveWindowState`, `restoreState`, `restoreStateCurrent` JavaScripts APIs, leaving it empty will make it use plugin's default flags
+
 ## \[2.3.0]
 
 - [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6

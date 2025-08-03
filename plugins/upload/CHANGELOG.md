@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.3.1]
+
+- [`b7292030`](https://github.com/tauri-apps/plugins-workspace/commit/b7292030594daa04e78979214478031241b6e38e) ([#2838](https://github.com/tauri-apps/plugins-workspace/pull/2838) by [@velocitysystems](https://github.com/tauri-apps/plugins-workspace/../../velocitysystems)) Fix `download` and `upload` locks main thread on Android.
+  Use Tokio to spawn task when invoking commands.
+
 ## \[2.3.0]
 
 - [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6

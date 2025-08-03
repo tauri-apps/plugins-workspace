@@ -1,5 +1,16 @@
 # Changelog
 
+## \[2.3.2]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.1`
+
+## \[2.3.1]
+
+- [`6f345870`](https://github.com/tauri-apps/plugins-workspace/commit/6f345870df4e7b187deb869df03b79858e03b4fe) ([#2860](https://github.com/tauri-apps/plugins-workspace/pull/2860) by [@MorpheusXAUT](https://github.com/tauri-apps/plugins-workspace/../../MorpheusXAUT)) Fix D-Bus name replacement logic on Linux to prevent multiple instances from acquiring the same well-known name.\
+  This patch updates the `zbus` dependency to the latest compatible version (`^5.9`) and explicitly sets `RequestNameFlags` to ensure a second instance fails to acquire the D-Bus name when another one is already running.
+
 ## \[2.3.0]
 
 - [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6

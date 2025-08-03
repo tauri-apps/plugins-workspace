@@ -207,7 +207,7 @@ checksum = "e16d2d3311acee920a9eb8d33b8cbc1787ce4a264e85f964c2404b969bdcd487"
 
 [[package]]
 name = "api"
-version = "2.0.30"
+version = "2.0.32"
 dependencies = [
  "log",
  "serde",
@@ -233,6 +233,7 @@ dependencies = [
  "tauri-plugin-shell",
  "tauri-plugin-store",
  "tauri-plugin-updater",
+ "tauri-plugin-upload",
  "tauri-plugin-window-state",
  "time",
  "tiny_http",
@@ -401,17 +402,6 @@ dependencies = [
  "fastrand",
  "futures-lite",
  "slab",
-]
-
-[[package]]
-name = "async-fs"
-version = "2.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebcd09b382f40fcd159c2d695175b2ae620ffa5f3bd6f664131efff4e8b9e04a"
-dependencies = [
- "async-lock",
- "blocking",
- "futures-lite",
 ]
 
 [[package]]
@@ -3701,9 +3691,9 @@ dependencies = [
 
 [[package]]
 name = "nix"
-version = "0.29.0"
+version = "0.30.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71e2746dc3a24dd78b3cfcb7be93368c6de9963d30f43a6a73998a9cf4b17b46"
+checksum = "74523f3a35e05aba87a1d978330aef40f67b0304ac79c1c00b294c9830543db6"
 dependencies = [
  "bitflags 2.9.0",
  "cfg-if",
@@ -6495,7 +6485,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-barcode-scanner"
-version = "2.3.0"
+version = "2.4.0"
 dependencies = [
  "log",
  "serde",
@@ -6546,7 +6536,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.4.0"
+version = "2.4.1"
 dependencies = [
  "dunce",
  "rust-ini",
@@ -6564,7 +6554,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.3.0"
+version = "2.3.2"
 dependencies = [
  "log",
  "raw-window-handle",
@@ -6580,7 +6570,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.4.0"
+version = "2.4.1"
 dependencies = [
  "anyhow",
  "dunce",
@@ -6641,7 +6631,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.5.0"
+version = "2.5.1"
 dependencies = [
  "bytes",
  "cookie_store",
@@ -6769,7 +6759,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.3.0"
+version = "2.3.1"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6823,7 +6813,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.3.0"
+version = "2.3.2"
 dependencies = [
  "semver",
  "serde",
@@ -6920,7 +6910,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-upload"
-version = "2.3.0"
+version = "2.3.1"
 dependencies = [
  "futures-util",
  "log",
@@ -6955,7 +6945,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "2.3.0"
+version = "2.4.0"
 dependencies = [
  "bitflags 2.9.0",
  "log",
@@ -8844,16 +8834,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "xdg-home"
-version = "1.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec1cdab258fb55c0da61328dc52c8764709b249011b2cad0454c72f0bf10a1f6"
-dependencies = [
- "libc",
- "windows-sys 0.59.0",
-]
-
-[[package]]
 name = "xkeysym"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8885,13 +8865,12 @@ dependencies = [
 
 [[package]]
 name = "zbus"
-version = "5.5.0"
+version = "5.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59c333f648ea1b647bc95dc1d34807c8e25ed7a6feff3394034dc4776054b236"
+checksum = "4bb4f9a464286d42851d18a605f7193b8febaf5b0919d71c6399b7b26e5b0aad"
 dependencies = [
  "async-broadcast",
  "async-executor",
- "async-fs",
  "async-io",
  "async-lock",
  "async-process",
@@ -8904,17 +8883,15 @@ dependencies = [
  "futures-core",
  "futures-lite",
  "hex",
- "nix 0.29.0",
+ "nix 0.30.1",
  "ordered-stream",
  "serde",
  "serde_repr",
- "static_assertions",
  "tokio",
  "tracing",
  "uds_windows",
  "windows-sys 0.59.0",
  "winnow 0.7.6",
- "xdg-home",
  "zbus_macros",
  "zbus_names",
  "zvariant",
@@ -8922,9 +8899,9 @@ dependencies = [
 
 [[package]]
 name = "zbus_macros"
-version = "5.5.0"
+version = "5.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f325ad10eb0d0a3eb060203494c3b7ec3162a01a59db75d2deee100339709fc0"
+checksum = "ef9859f68ee0c4ee2e8cde84737c78e3f4c54f946f2a38645d0d4c7a95327659"
 dependencies = [
  "proc-macro-crate 3.3.0",
  "proc-macro2",
@@ -9122,14 +9099,13 @@ dependencies = [
 
 [[package]]
 name = "zvariant"
-version = "5.4.0"
+version = "5.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2df9ee044893fcffbdc25de30546edef3e32341466811ca18421e3cd6c5a3ac"
+checksum = "d91b3680bb339216abd84714172b5138a4edac677e641ef17e1d8cb1b3ca6e6f"
 dependencies = [
  "endi",
  "enumflags2",
  "serde",
- "static_assertions",
  "url",
  "winnow 0.7.6",
  "zvariant_derive",
@@ -9138,9 +9114,9 @@ dependencies = [
 
 [[package]]
 name = "zvariant_derive"
-version = "5.4.0"
+version = "5.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74170caa85b8b84cc4935f2d56a57c7a15ea6185ccdd7eadb57e6edd90f94b2f"
+checksum = "3a8c68501be459a8dbfffbe5d792acdd23b4959940fc87785fb013b32edbc208"
 dependencies = [
  "proc-macro-crate 3.3.0",
  "proc-macro2",
