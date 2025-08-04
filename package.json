@@ -23,7 +23,7 @@
     "rollup": "4.46.2",
     "tslib": "2.8.1",
     "typescript": "5.9.2",
-    "typescript-eslint": "8.38.0"
+    "typescript-eslint": "8.39.0"
   },
   "pnpm": {
     "overrides": {
