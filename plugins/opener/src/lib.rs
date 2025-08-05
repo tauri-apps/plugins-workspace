@@ -149,7 +149,7 @@ impl<R: Runtime> Opener<R> {
         crate::reveal_item_in_dir::reveal_item_in_dir(p)
     }
 
-    pub fn reveal_items_in_dir<P: AsRef<Path>>(&self, p: &Vec<P>) -> Result<()> {
+    pub fn reveal_items_in_dir<P: AsRef<Path>>(&self, p: &[P]) -> Result<()> {
         crate::reveal_item_in_dir::reveal_items_in_dir(p)
     }
 }

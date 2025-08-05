@@ -40,7 +40,7 @@ pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
 /// ## Platform-specific:
 ///
 /// - **Android / iOS:** Unsupported.
-pub fn reveal_items_in_dir<P: AsRef<Path>>(paths: &Vec<P>) -> crate::Result<()> {
+pub fn reveal_items_in_dir<P: AsRef<Path>>(paths: &[P]) -> crate::Result<()> {
     let mut path_bufs = vec![];
 
     for path in paths.iter() {
@@ -184,10 +184,8 @@ mod imp {
         }
 
         // The function expects a slice of *const ITEMIDLIST, so we must cast our *mut pointers.
-        let item_id_lists_const: Vec<*const ITEMIDLIST> = created_file_items
-            .iter()
-            .map(|&p| p as *const _)
-            .collect();
+        let item_id_lists_const: Vec<*const ITEMIDLIST> =
+            created_file_items.iter().map(|&p| p as *const _).collect();
 
         let result = unsafe {
             if let Err(e) = SHOpenFolderAndSelectItems(dir_item, Some(&item_id_lists_const), 0) {
@@ -312,9 +310,9 @@ mod imp {
 mod imp {
     use objc2_app_kit::NSWorkspace;
     use objc2_foundation::{NSArray, NSString, NSURL};
-    use std::path::PathBuf;
+    use std::path::{Path, PathBuf};
 
-    pub fn reveal_item_in_dir(path: &PathBuf) -> crate::Result<()> {
+    pub fn reveal_item_in_dir(path: &Path) -> crate::Result<()> {
         unsafe {
             let path = path.to_string_lossy();
             let path = NSString::from_str(&path);
