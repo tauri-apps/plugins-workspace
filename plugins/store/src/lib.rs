@@ -224,11 +224,11 @@ async fn length<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<usize>
 async fn reload<R: Runtime>(
     app: AppHandle<R>,
     rid: ResourceId,
-    override_defaults: Option<bool>,
+    ignore_defaults: Option<bool>,
 ) -> Result<()> {
     let store = app.resources_table().get::<Store<R>>(rid)?;
-    if override_defaults.unwrap_or_default() {
-        store.reload_override_defaults()
+    if ignore_defaults.unwrap_or_default() {
+        store.reload_ignore_defaults()
     } else {
         store.reload()
     }

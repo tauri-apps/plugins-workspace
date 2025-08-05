@@ -214,7 +214,7 @@ impl<R: Runtime> StoreBuilder<R> {
 
         if !self.create_new {
             if self.override_defaults {
-                let _ = store_inner.load_override_defaults();
+                let _ = store_inner.load_ignore_defaults();
             } else {
                 let _ = store_inner.load();
             }
@@ -308,7 +308,7 @@ impl<R: Runtime> StoreInner<R> {
     }
 
     /// Load the store from the on-disk state, ignoring defaults
-    pub fn load_override_defaults(&mut self) -> crate::Result<()> {
+    pub fn load_ignore_defaults(&mut self) -> crate::Result<()> {
         let bytes = fs::read(&self.path)?;
         self.cache = (self.deserialize_fn)(&bytes).map_err(crate::Error::Deserialize)?;
         Ok(())
@@ -534,8 +534,8 @@ impl<R: Runtime> Store<R> {
     /// Load the store from the on-disk state, ignoring defaults
     ///
     /// Note: This method does not emit change events
-    pub fn reload_override_defaults(&self) -> crate::Result<()> {
-        self.store.lock().unwrap().load_override_defaults()
+    pub fn reload_ignore_defaults(&self) -> crate::Result<()> {
+        self.store.lock().unwrap().load_ignore_defaults()
     }
 
     /// Saves the store to disk at the store's `path`.

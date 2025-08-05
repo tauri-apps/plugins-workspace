@@ -407,7 +407,7 @@ interface IStore {
    * Note:
    *   - This method loads the data and merges it with the current store,
    *     this behavior will be changed to resetting to default first and then merging with the on-disk state in v3,
-   *     to fully match the store with the on-disk state, set {@linkcode ReloadOptions.overrideDefaults} to `true`
+   *     to fully match the store with the on-disk state, set {@linkcode ReloadOptions.ignoreDefaults} to `true`
    *   - This method does not emit change events.
    *
    * @returns
@@ -456,7 +456,7 @@ interface IStore {
  */
 export type ReloadOptions = {
   /**
-   * Override the store with the on-disk state, ignoring defaults
+   * To fully match the store with the on-disk state, ignoring defaults
    */
-  overrideDefaults?: boolean
+  ignoreDefaults?: boolean
 }
