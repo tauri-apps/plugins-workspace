@@ -30,7 +30,7 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
-rand = "0.8"
+rand = "0.9"
 time = { version = "0.3", features = ["serde", "parsing", "formatting"] }
 url = { version = "2", features = ["serde"] }
 serde_repr = "0.1"
