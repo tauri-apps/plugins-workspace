@@ -7,6 +7,7 @@ as well as reveal file in directories using default file explorer
 
 - `allow-open-url`
 - `allow-reveal-item-in-dir`
+- `allow-reveal-items-in-dir`
 - `allow-default-urls`
 
 ## Permission Table
@@ -105,6 +106,32 @@ Enables the reveal_item_in_dir command without any pre-configured scope.
 <td>
 
 Denies the reveal_item_in_dir command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`opener:allow-reveal-items-in-dir`
+
+</td>
+<td>
+
+Enables the reveal_items_in_dir command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`opener:deny-reveal-items-in-dir`
+
+</td>
+<td>
+
+Denies the reveal_items_in_dir command without any pre-configured scope.
 
 </td>
 </tr>
