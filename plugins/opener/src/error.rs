@@ -31,6 +31,8 @@ pub enum Error {
     Win32Error(#[from] windows::core::Error),
     #[error("Path doesn't have a parent: {0}")]
     NoParent(PathBuf),
+    #[error("Path is invalid: {0}")]
+    InvalidPath(PathBuf),
     #[error("Failed to convert path to file:// url")]
     FailedToConvertPathToFileUrl,
     #[error(transparent)]
