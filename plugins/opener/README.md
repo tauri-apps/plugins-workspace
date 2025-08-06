@@ -2,13 +2,13 @@
 
 <!-- description -->
 
-| Platform | Supported | Notes                                                                     |
-|----------|-----------|---------------------------------------------------------------------------|
-| Linux    | ✓         |                                                                           |
-| Windows  | ✓         | Revealing multiple files placed in different directories is not supported |
-| macOS    | ✓         |                                                                           |
-| Android  | ?         |                                                                           |
-| iOS      | ?         |                                                                           |
+| Platform | Supported | Notes |
+| -------- | --------- | ----- |
+| Linux    | ✓         |       |
+| Windows  | ✓         |       |
+| macOS    | ✓         |       |
+| Android  | ?         |       |
+| iOS      | ?         |       |
 
 ## Install
 
@@ -77,8 +77,7 @@ await openPath('/path/to/file', 'firefox')
 await revealItemInDir('/path/to/file')
 
 // Reveal multiple paths with the system's default explorer
-// Note: on Windows, files have to be in the same directory
-await revealItemsInDir([ '/path/to/file', '/path/to/another/file' ])
+await revealItemsInDir(['/path/to/file', '/path/to/another/file'])
 ```
 
 ### Usage from Rust
@@ -108,8 +107,7 @@ fn main() {
             opener.reveal_item_in_dir("/path/to/file")?;
 
             // Reveal multiple paths with the system's default explorer
-            // Note: on Windows, files have to be in the same directory
-            opener.reveal_items_in_dir(&["/path/to/file"])?;
+            opener.reveal_items_in_dir(["/path/to/file"])?;
             Ok(())
         })
         .run(tauri::generate_context!())

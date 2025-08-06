@@ -10,7 +10,7 @@ use std::path::Path;
 ///
 /// - **Android / iOS:** Unsupported.
 pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
-    let path = path.as_ref().canonicalize()?;
+    let path = dunce::canonicalize(path.as_ref())?;
 
     #[cfg(any(
         windows,
@@ -40,7 +40,6 @@ pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
 /// ## Platform-specific:
 ///
 /// - **Android / iOS:** Unsupported.
-/// - **Windows:** Only supports revealing items in the same directory.
 pub fn reveal_items_in_dir<I, P>(paths: I) -> crate::Result<()>
 where
     I: IntoIterator<Item = P>,
@@ -49,7 +48,7 @@ where
     let mut canonicalized = vec![];
 
     for path in paths {
-        let path = path.as_ref().canonicalize()?;
+        let path = dunce::canonicalize(path.as_ref())?;
         canonicalized.push(path);
     }
 
@@ -78,7 +77,8 @@ where
 
 #[cfg(windows)]
 mod imp {
-    use std::path::PathBuf;
+    use std::collections::HashMap;
+    use std::path::{Path, PathBuf};
 
     use windows::Win32::UI::Shell::Common::ITEMIDLIST;
     use windows::{
@@ -101,74 +101,90 @@ mod imp {
             return Ok(());
         }
 
-        let first_path = dunce::simplified(&paths[0]);
-        let parent_dir = first_path
-            .parent()
-            .ok_or_else(|| crate::Error::NoParent(first_path.to_path_buf()))?;
-
-        // On Windows, SHOpenFolderAndSelectItems requires all items to be in the same directory.
-        // We filter the paths to ensure they all share the same parent as the first path.
-        let files_in_same_dir: Vec<_> = paths
-            .iter()
-            .map(|p| dunce::simplified(p))
-            .filter(|p| p.parent() == Some(parent_dir))
-            .collect();
-
-        if files_in_same_dir.is_empty() {
-            // This case can happen if the original list had paths from different directories.
-            // We can't open multiple directories, so we do nothing.
-            return Ok(());
+        let mut grouped_paths: HashMap<&Path, Vec<&Path>> = HashMap::new();
+        for path in paths {
+            let parent = path
+                .parent()
+                .ok_or_else(|| crate::Error::NoParent(path.to_path_buf()))?;
+            grouped_paths.entry(parent).or_default().push(path);
         }
 
         let _ = unsafe { CoInitialize(None) };
 
-        let dir_hstring = HSTRING::from(parent_dir);
-        let dir_item = unsafe { ILCreateFromPathW(&dir_hstring) };
-
-        // Ensure dir_item is freed even if subsequent operations fail.
-        let mut created_file_items = Vec::new();
-
-        for path in &files_in_same_dir {
-            let file_hstring = HSTRING::from(path.as_os_str());
-            let file_item = unsafe { ILCreateFromPathW(&file_hstring) };
-            if !file_item.is_null() {
-                created_file_items.push(file_item);
-            }
-        }
-
-        // The function expects a slice of *const ITEMIDLIST, so we must cast our *mut pointers.
-        let item_id_lists_const: Vec<*const ITEMIDLIST> =
-            created_file_items.iter().map(|&p| p as *const _).collect();
-
-        let result = unsafe {
-            if let Err(e) = SHOpenFolderAndSelectItems(dir_item, Some(&item_id_lists_const), 0) {
-                // Fallback logic from the original function.
+        for (parent, to_reveals) in grouped_paths {
+            let parent_item_id_list = OwnedItemIdList::new(parent)?;
+            let to_reveals_item_id_list = to_reveals
+                .iter()
+                .map(|to_reveal| OwnedItemIdList::new(*to_reveal))
+                .collect::<crate::Result<Vec<_>>>()?;
+            if let Err(e) = unsafe {
+                SHOpenFolderAndSelectItems(
+                    parent_item_id_list.item,
+                    Some(
+                        &to_reveals_item_id_list
+                            .iter()
+                            .map(|item| item.item)
+                            .collect::<Vec<_>>(),
+                    ),
+                    0,
+                )
+            } {
+                // from https://github.com/electron/electron/blob/10d967028af2e72382d16b7e2025d243b9e204ae/shell/common/platform_util_win.cc#L302
+                // On some systems, the above call mysteriously fails with "file not
+                // found" even though the file is there.  In these cases, ShellExecute()
+                // seems to work as a fallback (although it won't select the file).
+                //
+                // Note: we only handle the first file here if multiple of are present
                 if e.code().0 == ERROR_FILE_NOT_FOUND.0 as i32 {
+                    let first_path = to_reveals[0];
+                    let is_dir = first_path.is_dir();
                     let mut info = SHELLEXECUTEINFOW {
                         cbSize: std::mem::size_of::<SHELLEXECUTEINFOW>() as _,
                         nShow: SW_SHOWNORMAL.0,
-                        lpFile: PCWSTR(dir_hstring.as_ptr()),
-                        lpVerb: w!("explore"),
+                        lpFile: PCWSTR(parent_item_id_list.hstring.as_ptr()),
+                        lpClass: if is_dir { w!("folder") } else { PCWSTR::null() },
+                        lpVerb: if is_dir {
+                            w!("explore")
+                        } else {
+                            PCWSTR::null()
+                        },
                         ..Default::default()
                     };
-                    ShellExecuteExW(&mut info).map(|_| ()).map_err(Into::into)
-                } else {
-                    Err(e.into())
-                }
-            } else {
-                Ok(())
-            }
-        };
 
-        // Free all allocated ITEMIDLISTs
-        unsafe {
-            for item in created_file_items {
-                ILFree(Some(item));
+                    unsafe { ShellExecuteExW(&mut info) }?;
+                }
             }
-            ILFree(Some(dir_item));
         }
 
-        result
+        Ok(())
+    }
+
+    struct OwnedItemIdList {
+        hstring: HSTRING,
+        item: *const ITEMIDLIST,
+    }
+
+    impl OwnedItemIdList {
+        fn new(path: &Path) -> crate::Result<Self> {
+            let path_hstring = HSTRING::from(path);
+            let item_id_list = unsafe { ILCreateFromPathW(&path_hstring) };
+            if item_id_list.is_null() {
+                Err(crate::Error::InvalidPath(path.to_owned()))
+            } else {
+                Ok(Self {
+                    hstring: path_hstring,
+                    item: item_id_list,
+                })
+            }
+        }
+    }
+
+    impl Drop for OwnedItemIdList {
+        fn drop(&mut self) {
+            if !self.item.is_null() {
+                unsafe { ILFree(Some(self.item)) };
+            }
+        }
     }
 }
 
