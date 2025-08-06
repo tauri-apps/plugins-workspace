@@ -146,11 +146,15 @@ impl<R: Runtime> Opener<R> {
     }
 
     pub fn reveal_item_in_dir<P: AsRef<Path>>(&self, p: P) -> Result<()> {
-        crate::reveal_item_in_dir::reveal_item_in_dir(p)
+        reveal_item_in_dir(p)
     }
 
-    pub fn reveal_items_in_dir<P: AsRef<Path>>(&self, p: &[P]) -> Result<()> {
-        crate::reveal_item_in_dir::reveal_items_in_dir(p)
+    pub fn reveal_items_in_dir<I, P>(&self, paths: I) -> Result<()>
+    where
+        I: IntoIterator<Item = P>,
+        P: AsRef<Path>,
+    {
+        reveal_items_in_dir(paths)
     }
 }
 

@@ -21,7 +21,7 @@ pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
         target_os = "netbsd",
         target_os = "openbsd"
     ))]
-    return imp::reveal_item_in_dir(&path);
+    return imp::reveal_items_in_dir(&[path]);
 
     #[cfg(not(any(
         windows,
@@ -40,12 +40,17 @@ pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
 /// ## Platform-specific:
 ///
 /// - **Android / iOS:** Unsupported.
-pub fn reveal_items_in_dir<P: AsRef<Path>>(paths: &[P]) -> crate::Result<()> {
-    let mut path_bufs = vec![];
+/// - **Windows:** Only supports revealing items in the same directory.
+pub fn reveal_items_in_dir<I, P>(paths: I) -> crate::Result<()>
+where
+    I: IntoIterator<Item = P>,
+    P: AsRef<Path>,
+{
+    let mut canonicalized = vec![];
 
-    for path in paths.iter() {
+    for path in paths {
         let path = path.as_ref().canonicalize()?;
-        path_bufs.push(path);
+        canonicalized.push(path);
     }
 
     #[cfg(any(
@@ -57,7 +62,7 @@ pub fn reveal_items_in_dir<P: AsRef<Path>>(paths: &[P]) -> crate::Result<()> {
         target_os = "netbsd",
         target_os = "openbsd"
     ))]
-    return imp::reveal_items_in_dir(&path_bufs);
+    return imp::reveal_items_in_dir(&canonicalized);
 
     #[cfg(not(any(
         windows,
@@ -90,58 +95,6 @@ mod imp {
             },
         },
     };
-
-    pub fn reveal_item_in_dir(path: &PathBuf) -> crate::Result<()> {
-        let file = dunce::simplified(path);
-
-        let _ = unsafe { CoInitialize(None) };
-
-        let dir = file
-            .parent()
-            .ok_or_else(|| crate::Error::NoParent(file.to_path_buf()))?;
-
-        let dir_h = HSTRING::from(dir);
-        let dir_item = unsafe { ILCreateFromPathW(&dir_h) };
-
-        let file_h = HSTRING::from(file.as_os_str());
-        let file_item = unsafe { ILCreateFromPathW(&file_h) };
-
-        unsafe {
-            if let Err(e) = SHOpenFolderAndSelectItems(dir_item, Some(&[file_item]), 0) {
-                // from https://github.com/electron/electron/blob/10d967028af2e72382d16b7e2025d243b9e204ae/shell/common/platform_util_win.cc#L302
-                // On some systems, the above call mysteriously fails with "file not
-                // found" even though the file is there.  In these cases, ShellExecute()
-                // seems to work as a fallback (although it won't select the file).
-                if e.code().0 == ERROR_FILE_NOT_FOUND.0 as i32 {
-                    let is_dir = file.is_dir();
-                    let mut info = SHELLEXECUTEINFOW {
-                        cbSize: std::mem::size_of::<SHELLEXECUTEINFOW>() as _,
-                        nShow: SW_SHOWNORMAL.0,
-                        lpFile: PCWSTR(dir_h.as_ptr()),
-                        lpClass: if is_dir { w!("folder") } else { PCWSTR::null() },
-                        lpVerb: if is_dir {
-                            w!("explore")
-                        } else {
-                            PCWSTR::null()
-                        },
-                        ..std::mem::zeroed()
-                    };
-
-                    ShellExecuteExW(&mut info).inspect_err(|_| {
-                        ILFree(Some(dir_item));
-                        ILFree(Some(file_item));
-                    })?;
-                }
-            }
-        }
-
-        unsafe {
-            ILFree(Some(dir_item));
-            ILFree(Some(file_item));
-        }
-
-        Ok(())
-    }
 
     pub fn reveal_items_in_dir(paths: &[PathBuf]) -> crate::Result<()> {
         if paths.is_empty() {
@@ -231,13 +184,6 @@ mod imp {
     use std::collections::HashMap;
     use std::path::PathBuf;
 
-    pub fn reveal_item_in_dir(path: &PathBuf) -> crate::Result<()> {
-        let connection = zbus::blocking::Connection::session()?;
-
-        reveal_with_filemanager1(&[path.clone()], &connection)
-            .or_else(|_| reveal_with_open_uri_portal(path, &connection))
-    }
-
     pub fn reveal_items_in_dir(paths: &[PathBuf]) -> crate::Result<()> {
         let connection = zbus::blocking::Connection::session()?;
 
@@ -310,27 +256,13 @@ mod imp {
 mod imp {
     use objc2_app_kit::NSWorkspace;
     use objc2_foundation::{NSArray, NSString, NSURL};
-    use std::path::{Path, PathBuf};
-
-    pub fn reveal_item_in_dir(path: &Path) -> crate::Result<()> {
-        unsafe {
-            let path = path.to_string_lossy();
-            let path = NSString::from_str(&path);
-            let urls = vec![NSURL::fileURLWithPath(&path)];
-            let urls = NSArray::from_retained_slice(&urls);
-
-            let workspace = NSWorkspace::new();
-            workspace.activateFileViewerSelectingURLs(&urls);
-        }
-
-        Ok(())
-    }
+    use std::path::PathBuf;
 
     pub fn reveal_items_in_dir(paths: &[PathBuf]) -> crate::Result<()> {
         unsafe {
             let mut urls = Vec::new();
 
-            for path in paths.iter() {
+            for path in paths {
                 let path = path.to_string_lossy();
                 let path = NSString::from_str(&path);
                 let url = NSURL::fileURLWithPath(&path);
