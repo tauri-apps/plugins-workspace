@@ -102,6 +102,7 @@ export async function revealItemInDir(path: string) {
  * #### Platform-specific:
  *
  * - **Android / iOS:** Unsupported.
+ * - **Windows:** Only supports revealing items in the same directory.
  *
  * @example
  * ```typescript
