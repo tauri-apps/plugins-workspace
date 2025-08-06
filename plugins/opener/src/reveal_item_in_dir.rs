@@ -235,7 +235,7 @@ mod imp {
         let connection = zbus::blocking::Connection::session()?;
 
         reveal_with_filemanager1(&[path.clone()], &connection)
-            .or_else(|_| reveal_with_open_uri_portal(&path, &connection))
+            .or_else(|_| reveal_with_open_uri_portal(path, &connection))
     }
 
     pub fn reveal_items_in_dir(paths: &[PathBuf]) -> crate::Result<()> {
