@@ -1,7 +1,8 @@
 [package]
 name = "tauri-plugin-secure-storage"
 version = "2.0.0"
-edition = { workspace = true }
+edition = "2024"
+rust-version = "1.85"
 authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }

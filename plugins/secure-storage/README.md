@@ -14,9 +14,7 @@ Store data in the platforms' keychains.
 
 ## Install
 
-<!-- TODO: This will change with keyring v4 -->
-
-_This plugin requires a Rust version of at least **1.77.2**_
+_This plugin requires a Rust version of at least **1.85**_
 
 There are three general methods of installation that we can recommend.
 
