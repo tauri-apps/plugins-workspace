@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.32]
+
+### Dependencies
+
+- Upgraded to `dialog@2.3.2`
+
 ## \[2.0.31]
 
 ### Dependencies
