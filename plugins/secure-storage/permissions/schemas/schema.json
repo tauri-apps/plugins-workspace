@@ -295,18 +295,6 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "Enables the execute command without any pre-configured scope.",
-          "type": "string",
-          "const": "allow-execute",
-          "markdownDescription": "Enables the execute command without any pre-configured scope."
-        },
-        {
-          "description": "Denies the execute command without any pre-configured scope.",
-          "type": "string",
-          "const": "deny-execute",
-          "markdownDescription": "Denies the execute command without any pre-configured scope."
-        },
-        {
           "description": "Enables the get_binary command without any pre-configured scope.",
           "type": "string",
           "const": "allow-get-binary",

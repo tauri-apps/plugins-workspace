@@ -98,6 +98,8 @@
     },
     "upload:default",
     "secure-storage:allow-get-string",
-    "secure-storage:allow-set-string"
+    "secure-storage:allow-set-string",
+    "secure-storage:allow-get-binary",
+    "secure-storage:allow-set-binary"
   ]
 }
