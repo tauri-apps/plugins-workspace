@@ -2,28 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use keyring::Entry;
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    Manager, Runtime,
+    AppHandle, Manager, Runtime,
 };
-
-pub use models::*;
-
-#[cfg(not(target_os = "android"))]
-mod desktop;
-#[cfg(target_os = "android")]
-mod mobile;
 
 mod commands;
 mod error;
-mod models;
 
 pub use error::{Error, Result};
-
-#[cfg(not(target_os = "android"))]
-pub use desktop::SecureStorage;
-#[cfg(target_os = "android")]
-pub use mobile::SecureStorage;
 
 // TODO: Consider using a worker thread to handle caveats mentioned by keyring-rs
 
@@ -47,13 +35,33 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::set_binary,
             commands::get_binary
         ])
-        .setup(|app, api| {
+        .setup(|app, _api| {
             #[cfg(target_os = "android")]
-            let secure_storage = mobile::init(app, api)?;
-            #[cfg(not(target_os = "android"))]
-            let secure_storage = desktop::init(app, api)?;
-            app.manage(secure_storage);
+            android_keyring::set_android_keyring_credential_builder()?;
+
+            app.manage(SecureStorage(app.clone()));
             Ok(())
         })
         .build()
+}
+
+/// Access to the secure-storage APIs.
+pub struct SecureStorage<R: Runtime>(AppHandle<R>);
+
+impl<R: Runtime> SecureStorage<R> {
+    pub fn set_string(&self, key: &str, value: &str) -> Result<()> {
+        Ok(Entry::new(&self.0.config().identifier, key)?.set_password(value)?)
+    }
+
+    pub fn get_string(&self, key: &str) -> Result<String> {
+        Ok(Entry::new(&self.0.config().identifier, key)?.get_password()?)
+    }
+
+    pub fn set_binary(&self, key: &str, value: &[u8]) -> Result<()> {
+        Ok(Entry::new(&self.0.config().identifier, key)?.set_secret(value)?)
+    }
+
+    pub fn get_binary(&self, key: &str) -> Result<Vec<u8>> {
+        Ok(Entry::new(&self.0.config().identifier, key)?.get_secret()?)
+    }
 }

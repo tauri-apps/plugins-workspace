@@ -7,7 +7,7 @@ const COMMANDS: &[&str] = &["set_string", "get_string", "set_binary", "get_binar
 fn main() {
     let result = tauri_plugin::Builder::new(COMMANDS)
         .global_api_script_path("./api-iife.js")
-        .android_path("android")
+        //.android_path("android")
         //.ios_path("ios")
         .try_build();
 

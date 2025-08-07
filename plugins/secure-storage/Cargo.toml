@@ -15,17 +15,14 @@ rustdoc-args = ["--cfg", "docsrs"]
 # Support levels are "full", "partial", "none", "unknown"
 # Details of the support level are left to plugin maintainer
 [package.metadata.platforms]
-windows = { level = "unknown", notes = "" }
-linux = { level = "unknown", notes = "" }
-macos = { level = "unknown", notes = "" }
-android = { level = "unknown", notes = "" }
-ios = { level = "unknown", notes = "" }
-
+windows = { level = "full", notes = "Windows' credentials storage only protects from other accounts on that system. The main user and their apps can access your app's data." }
+linux = { level = "partial", notes = "For this PoC on Linux the storage is in-memory only and will be reset on reboot." }
+macos = { level = "full", notes = "May prompt for passwords twice." }
+android = { level = "full", notes = "The implementation is very new and therefore not battle-tested nor audited." }
+ios = { level = "full", notes = "" }
 
 [build-dependencies]
 tauri-plugin = { workspace = true, features = ["build"] }
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 serde = { workspace = true }
@@ -33,8 +30,9 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
-# TODO: Non-android only:
-keyring = { git = "https://github.com/open-source-cooperative/keyring-rs", rev = "9635a2f53a19eb7f188cdc4e38982dcb19caee00" }
+# When updating to v4 we likely won't use linux-native aka keyutils but we need to look into which backend to use.
+# Also, `linux-native` is non persistent.
+keyring = { version = "3.6", features = ["apple-native", "windows-native", "linux-native"]}
 
-[features]
-vendored = ["keyring/vendored"]
+[target."cfg(target_os = \"android\")".dependencies]
+android-keyring = "0.2.0"
