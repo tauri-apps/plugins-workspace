@@ -1,13 +1,16 @@
 [package]
 name = "tauri-plugin-stronghold"
 version = "2.3.0"
-description = "Store secrets and keys using the IOTA Stronghold secret management engine."
+description = "Deprecated - Store secrets and keys using the IOTA Stronghold secret management engine."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-stronghold"
+
+[badges]
+maintenance = { status = "deprecated" }
 
 [package.metadata.docs.rs]
 rustc-args = ["--cfg", "docsrs"]

@@ -1,5 +1,11 @@
 ![plugin-stronghold](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/stronghold/banner.png)
 
+## Deprecation Notice
+
+This plugin is deprecated and will be removed in line with Tauri's v3 release. The [Secure Storage] plugin is an alternative for most users.
+
+## Stronghold plugin
+
 Store secrets and keys using the [IOTA Stronghold](https://github.com/iotaledger/stronghold.rs) secret management engine.
 
 | Platform | Supported |
