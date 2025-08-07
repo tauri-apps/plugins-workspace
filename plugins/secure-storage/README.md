@@ -1,6 +1,8 @@
 ![secure-storage](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/secure-storage/banner.png)
 
-<!-- description -->
+Store data in the platforms' keychains.
+
+<!-- TODO: List the keychains we use -->
 
 | Platform | Supported |
 | -------- | --------- |
@@ -11,6 +13,8 @@
 | iOS      | ✓         |
 
 ## Install
+
+<!-- TODO: This will change with keyring v4 -->
 
 _This plugin requires a Rust version of at least **1.77.2**_
 
@@ -33,23 +37,12 @@ tauri-plugin-secure-storage = { git = "https://github.com/tauri-apps/plugins-wor
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
-
-<!-- Add the branch for installations using git! -->
-
 ```sh
 pnpm add @tauri-apps/plugin-secure-storage
 # or
 npm add @tauri-apps/plugin-secure-storage
 # or
 yarn add @tauri-apps/plugin-secure-storage
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-secure-storage#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-secure-storage#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-secure-storage#v2
 ```
 
 ## Usage
@@ -69,8 +62,24 @@ fn main() {
 
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
-```javascript
+```typescript
+import { setString, getString } from '@tauri-apps/plugin-secure-storage'
 
+await setString('some-key', 'some-secret-value')
+
+const storedData = getString('some-key')
+
+console.log(storedData) // Should return `some-secret-value`
+```
+
+Similarily, the plugin also has Rust APIs:
+
+```rs
+use tauri_plugin_secure_storage::SecureStorageExt;
+
+app.secure_storage().set_string("some-key", "some-secret-value");
+
+let stored_data = app.secure_storage().get_string("some-key");
 ```
 
 ## Contributing

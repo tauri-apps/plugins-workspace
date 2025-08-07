@@ -6,6 +6,7 @@ authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-secure-storage"
+description = "Store data in the platforms' keychains."
 
 [package.metadata.docs.rs]
 rustc-args = ["--cfg", "docsrs"]
