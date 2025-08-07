@@ -33,7 +33,11 @@ log = { workspace = true }
 thiserror = { workspace = true }
 # When updating to v4 we likely won't use linux-native aka keyutils but we need to look into which backend to use.
 # Also, `linux-native` is non persistent.
-keyring = { version = "3.6", features = ["apple-native", "windows-native", "linux-native"]}
+keyring = { version = "3.6", features = [
+  "apple-native",
+  "windows-native",
+  "linux-native",
+] }
 
 [target."cfg(target_os = \"android\")".dependencies]
 android-keyring = "0.2.0"
