@@ -61,6 +61,8 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
                 .unwrap()
                 .name(dbus_name.as_str())
                 .unwrap()
+                .replace_existing_names(false)
+                .allow_name_replacements(false)
                 .serve_at(dbus_path.as_str(), single_instance_dbus)
                 .unwrap()
                 .build()

@@ -39,6 +39,7 @@ pub struct StoreBuilder<R: Runtime> {
     deserialize_fn: DeserializeFn,
     auto_save: Option<Duration>,
     create_new: bool,
+    override_defaults: bool,
 }
 
 impl<R: Runtime> StoreBuilder<R> {
@@ -66,6 +67,7 @@ impl<R: Runtime> StoreBuilder<R> {
             deserialize_fn,
             auto_save: Some(Duration::from_millis(100)),
             create_new: false,
+            override_defaults: false,
         }
     }
 
@@ -178,6 +180,12 @@ impl<R: Runtime> StoreBuilder<R> {
         self
     }
 
+    /// Override the store values when creating the store, ignoring defaults.
+    pub fn override_defaults(mut self) -> Self {
+        self.override_defaults = true;
+        self
+    }
+
     pub(crate) fn build_inner(mut self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
         let stores = self.app.state::<StoreState>().stores.clone();
         let mut stores = stores.lock().unwrap();
@@ -205,7 +213,11 @@ impl<R: Runtime> StoreBuilder<R> {
         );
 
         if !self.create_new {
-            let _ = store_inner.load();
+            if self.override_defaults {
+                let _ = store_inner.load_ignore_defaults();
+            } else {
+                let _ = store_inner.load();
+            }
         }
 
         let store = Store {
@@ -284,12 +296,21 @@ impl<R: Runtime> StoreInner<R> {
     }
 
     /// Update the store from the on-disk state
+    ///
+    /// Note: This method loads the data and merges it with the current store
     pub fn load(&mut self) -> crate::Result<()> {
         let bytes = fs::read(&self.path)?;
 
         self.cache
             .extend((self.deserialize_fn)(&bytes).map_err(crate::Error::Deserialize)?);
 
+        Ok(())
+    }
+
+    /// Load the store from the on-disk state, ignoring defaults
+    pub fn load_ignore_defaults(&mut self) -> crate::Result<()> {
+        let bytes = fs::read(&self.path)?;
+        self.cache = (self.deserialize_fn)(&bytes).map_err(crate::Error::Deserialize)?;
         Ok(())
     }
 
@@ -499,8 +520,22 @@ impl<R: Runtime> Store<R> {
     }
 
     /// Update the store from the on-disk state
+    ///
+    /// Note:
+    ///   - This method loads the data and merges it with the current store,
+    ///     this behavior will be changed to resetting to default first and then merging with the on-disk state in v3,
+    ///     to fully match the store with the on-disk state,
+    ///     use [`reload_override_defaults`](Self::reload_override_defaults) instead
+    ///   - This method does not emit change events
     pub fn reload(&self) -> crate::Result<()> {
         self.store.lock().unwrap().load()
+    }
+
+    /// Load the store from the on-disk state, ignoring defaults
+    ///
+    /// Note: This method does not emit change events
+    pub fn reload_ignore_defaults(&self) -> crate::Result<()> {
+        self.store.lock().unwrap().load_ignore_defaults()
     }
 
     /// Saves the store to disk at the store's `path`.

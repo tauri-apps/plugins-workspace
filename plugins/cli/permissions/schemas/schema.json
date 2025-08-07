@@ -49,7 +49,7 @@
           "minimum": 1.0
         },
         "description": {
-          "description": "Human-readable description of what the permission does. Tauri convention is to use <h4> headings in markdown content for Tauri documentation generation purposes.",
+          "description": "Human-readable description of what the permission does. Tauri convention is to use `<h4>` headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -111,7 +111,7 @@
           "type": "string"
         },
         "description": {
-          "description": "Human-readable description of what the permission does. Tauri internal convention is to use <h4> headings in markdown content for Tauri documentation generation purposes.",
+          "description": "Human-readable description of what the permission does. Tauri internal convention is to use `<h4>` headings in markdown content for Tauri documentation generation purposes.",
           "type": [
             "string",
             "null"
@@ -297,17 +297,20 @@
         {
           "description": "Enables the cli_matches command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-cli-matches"
+          "const": "allow-cli-matches",
+          "markdownDescription": "Enables the cli_matches command without any pre-configured scope."
         },
         {
           "description": "Denies the cli_matches command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-cli-matches"
+          "const": "deny-cli-matches",
+          "markdownDescription": "Denies the cli_matches command without any pre-configured scope."
         },
         {
-          "description": "Allows reading the CLI matches",
+          "description": "Allows reading the CLI matches\n#### This default permission set includes:\n\n- `allow-cli-matches`",
           "type": "string",
-          "const": "default"
+          "const": "default",
+          "markdownDescription": "Allows reading the CLI matches\n#### This default permission set includes:\n\n- `allow-cli-matches`"
         }
       ]
     }

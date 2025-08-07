@@ -1,5 +1,23 @@
 # Changelog
 
+## \[2.4.1]
+
+- [`44a1f659`](https://github.com/tauri-apps/plugins-workspace/commit/44a1f659125a341191420e650608b0b6ff316a0e) ([#2846](https://github.com/tauri-apps/plugins-workspace/pull/2846) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `writeFile` doesn't create a new file by default when the data is a `ReadableStream`
+
+## \[2.4.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.3.0]
+
+- [`dac4d537`](https://github.com/tauri-apps/plugins-workspace/commit/dac4d53724bb3430a00a3f0119857cba32a031e8) ([#2613](https://github.com/tauri-apps/plugins-workspace/pull/2613) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Reduce the overhead of `watch` and `unwatch`
+
+## \[2.2.1]
+
+### bug
+
+- [`831c35ff`](https://github.com/tauri-apps/plugins-workspace/commit/831c35ff3940e841fe4418bb4cb104038b03304b) ([#2550](https://github.com/tauri-apps/plugins-workspace/pull/2550)) Fix `writeFile` ReadableStream handling due to missing async iterator support on macOS platform
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.

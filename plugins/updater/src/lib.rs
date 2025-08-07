@@ -153,8 +153,7 @@ impl Builder {
         I: IntoIterator<Item = S>,
         S: Into<OsString>,
     {
-        let args = args.into_iter().map(|a| a.into()).collect::<Vec<_>>();
-        self.installer_args.extend_from_slice(&args);
+        self.installer_args.extend(args.into_iter().map(Into::into));
         self
     }
 
@@ -214,7 +213,7 @@ impl Builder {
                     config.pubkey = pubkey;
                 }
                 if let Some(windows) = &mut config.windows {
-                    windows.installer_args.extend_from_slice(&installer_args);
+                    windows.installer_args.extend(installer_args);
                 }
                 app.manage(UpdaterState {
                     target,

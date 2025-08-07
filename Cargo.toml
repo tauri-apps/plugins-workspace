@@ -12,10 +12,10 @@ resolver = "2"
 serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
 log = "0.4"
-tauri = { version = "2", default-features = false }
-tauri-build = "2"
-tauri-plugin = "2"
-tauri-utils = "2"
+tauri = { version = "2.6", default-features = false }
+tauri-build = "2.3"
+tauri-plugin = "2.3"
+tauri-utils = "2.5"
 serde_json = "1"
 thiserror = "2"
 url = "2"
@@ -23,7 +23,7 @@ schemars = "0.8"
 dunce = "1"
 specta = "^2.0.0-rc.16"
 glob = "0.3"
-zbus = "5"
+zbus = "5.9"
 
 [workspace.package]
 edition = "2021"

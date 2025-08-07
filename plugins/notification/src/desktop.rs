@@ -18,6 +18,8 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 }
 
 /// Access to the notification APIs.
+///
+/// You can get an instance of this type via [`NotificationExt`](crate::NotificationExt)
 pub struct Notification<R: Runtime>(AppHandle<R>);
 
 impl<R: Runtime> crate::NotificationBuilder<R> {

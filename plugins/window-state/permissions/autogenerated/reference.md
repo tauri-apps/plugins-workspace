@@ -7,7 +7,7 @@ operations are available from the window state plugin.
 
 All operations are enabled by default.
 
-
+#### This default permission set includes the following:
 
 - `allow-filename`
 - `allow-restore-state`

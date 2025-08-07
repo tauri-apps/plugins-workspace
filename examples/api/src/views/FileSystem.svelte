@@ -4,12 +4,14 @@
   import { convertFileSrc } from '@tauri-apps/api/core'
   import { arrayBufferToBase64 } from '../lib/utils'
   import { onMount } from 'svelte'
+  import { onDestroy } from "svelte";
 
   export let onMessage
   export let insecureRenderHtml
 
   let path = ''
   let img
+  /** @type {fs.FileHandle} */
   let file
   let renameTo
   let watchPath = ''
@@ -136,7 +138,7 @@
                     .getElementById('file-save')
                     .addEventListener('click', function () {
                       fs.writeTextFile(path, fileInput.value, {
-                        dir: getDir()
+                        baseDir: getDir()
                       }).catch(onMessage)
                     })
                 })
@@ -188,6 +190,15 @@
     unwatchFn = undefined
     unwatchPath = undefined
   }
+
+  onDestroy(() => {
+    if (file) {
+      file.close();
+    }
+    if (unwatchFn) {
+      unwatchFn();
+    }
+  })
 </script>
 
 <div class="flex flex-col">

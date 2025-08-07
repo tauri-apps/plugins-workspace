@@ -7,7 +7,7 @@ operations are available from the store plugin.
 
 All operations are enabled by default.
 
-
+#### This default permission set includes the following:
 
 - `allow-load`
 - `allow-get-store`

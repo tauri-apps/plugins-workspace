@@ -7,8 +7,7 @@ available from the dialog plugin.
 
 All dialog types are enabled.
 
-
-
+#### This default permission set includes the following:
 
 - `allow-ask`
 - `allow-confirm`

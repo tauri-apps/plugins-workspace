@@ -1,10 +1,12 @@
 <script>
   import * as opener from '@tauri-apps/plugin-opener'
+  import { platform } from '@tauri-apps/plugin-os'
 
   export let onMessage
 
-  let url = ''
-  let urlProgram = ''
+  let url = 'https://tauri.app'
+  let urlProgram =
+    platform() === 'ios' || platform() === 'android' ? 'inAppBrowser' : ''
   function openUrl() {
     opener.openUrl(url, urlProgram ? urlProgram : undefined).catch(onMessage)
   }
