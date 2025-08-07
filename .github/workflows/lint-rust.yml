@@ -10,19 +10,19 @@ on:
       - v1
       - v2
     paths:
-      - '.github/workflows/lint-rust.yml'
-      - 'plugins/*/src/**'
-      - '!plugins/*/src/api-iife.js'
-      - '**/Cargo.toml'
+      - ".github/workflows/lint-rust.yml"
+      - "plugins/*/src/**"
+      - "!plugins/*/src/api-iife.js"
+      - "**/Cargo.toml"
   pull_request:
     branches:
       - v1
       - v2
     paths:
-      - '.github/workflows/lint-rust.yml'
-      - 'plugins/*/src/**'
-      - '!plugins/*/src/api-iife.js'
-      - '**/Cargo.toml'
+      - ".github/workflows/lint-rust.yml"
+      - "plugins/*/src/**"
+      - "!plugins/*/src/api-iife.js"
+      - "**/Cargo.toml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -98,6 +98,9 @@ jobs:
             tauri-plugin-process:
               - .github/workflows/lint-rust.yml
               - plugins/process/**
+            tauri-plugin-secure-storage:
+              - .github/workflows/lint-rust.yml
+              - plugins/secure-storage/**
             tauri-plugin-shell:
               - .github/workflows/lint-rust.yml
               - plugins/shell/**
