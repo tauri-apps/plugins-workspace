@@ -33,21 +33,12 @@ tauri-plugin-shell = { git = "https://github.com/tauri-apps/plugins-workspace", 
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
-
 ```sh
 pnpm add @tauri-apps/plugin-shell
 # or
 npm add @tauri-apps/plugin-shell
 # or
 yarn add @tauri-apps/plugin-shell
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-shell#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-shell#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-shell#v2
 ```
 
 ## Usage
