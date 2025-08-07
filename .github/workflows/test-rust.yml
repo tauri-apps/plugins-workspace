@@ -224,7 +224,7 @@ jobs:
               target: aarch64-linux-android,
               os: ubuntu-latest,
               runner: 'cross',
-              command: 'build'
+              command: 'build --verbose'
             }
 
     runs-on: ${{ matrix.platform.os }}
