@@ -2,13 +2,13 @@
 
 <!-- description -->
 
-| Platform | Supported | Notes |
-| -------- | --------- | ----- |
-| Linux    | ✓         |       |
-| Windows  | ✓         |       |
-| macOS    | ✓         |       |
-| Android  | ?         |       |
-| iOS      | ?         |       |
+| Platform | Supported |
+| -------- | --------- |
+| Linux    | ✓         |
+| Windows  | ✓         |
+| macOS    | ✓         |
+| Android  | ?         |
+| iOS      | ?         |
 
 ## Install
 
@@ -77,7 +77,8 @@ await openPath('/path/to/file', 'firefox')
 await revealItemInDir('/path/to/file')
 
 // Reveal multiple paths with the system's default explorer
-await revealItemsInDir(['/path/to/file', '/path/to/another/file'])
+// Note: will be renamed to `revealItemsInDir` in the next major version
+await revealItemInDir(['/path/to/file', '/path/to/another/file'])
 ```
 
 ### Usage from Rust

@@ -6,6 +6,5 @@ as well as reveal file in directories using default file explorer"""
 permissions = [
   "allow-open-url",
   "allow-reveal-item-in-dir",
-  "allow-reveal-items-in-dir",
   "allow-default-urls",
 ]

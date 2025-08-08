@@ -222,7 +222,6 @@ impl Builder {
                 commands::open_url,
                 commands::open_path,
                 commands::reveal_item_in_dir,
-                commands::reveal_items_in_dir,
             ]);
 
         if self.open_js_links_on_click {
