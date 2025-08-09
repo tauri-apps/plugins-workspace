@@ -35,8 +35,6 @@ tauri = { workspace = true }
 thiserror = { workspace = true }
 open = { version = "5", features = ["shellexecute-on-windows"] }
 glob = { workspace = true }
-
-[target."cfg(windows)".dependencies]
 dunce = { workspace = true }
 
 [target."cfg(windows)".dependencies.windows]

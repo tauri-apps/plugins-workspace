@@ -75,6 +75,10 @@ await openPath('/path/to/file', 'firefox')
 
 // Reveal a path with the system's default explorer
 await revealItemInDir('/path/to/file')
+
+// Reveal multiple paths with the system's default explorer
+// Note: will be renamed to `revealItemsInDir` in the next major version
+await revealItemInDir(['/path/to/file', '/path/to/another/file'])
 ```
 
 ### Usage from Rust
@@ -102,6 +106,9 @@ fn main() {
 
             // Reveal a path with the system's default explorer
             opener.reveal_item_in_dir("/path/to/file")?;
+
+            // Reveal multiple paths with the system's default explorer
+            opener.reveal_items_in_dir(["/path/to/file"])?;
             Ok(())
         })
         .run(tauri::generate_context!())
