@@ -246,21 +246,9 @@ jobs:
         with:
           key: cache-${{ matrix.package }}-${{ matrix.platform.target }}
 
-      - run: cargo fetch
-
       - name: install cross
         if: ${{ matrix.platform.runner == 'cross' }}
         run: cargo +stable install cross --git https://github.com/cross-rs/cross
-
-      - name: test ${{ matrix.package }}
-        if: matrix.package == 'tauri-plugin-secure-storage'
-        run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets
-
-      - run: rm -rf plugins/secure-storage
-
-      - uses: dtolnay/rust-toolchain@1.77.2
-        with:
-          targets: ${{ matrix.platform.target }}
 
       - name: test ${{ matrix.package }}
         if: matrix.package != 'tauri-plugin-http' && matrix.package != 'tauri-plugin-secure-storage'
