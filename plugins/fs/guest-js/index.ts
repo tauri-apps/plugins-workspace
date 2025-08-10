@@ -1074,7 +1074,12 @@ async function writeFile(
   }
 
   if (data instanceof ReadableStream) {
-    const file = await open(path, { create: true, ...options })
+    const file = await open(path, {
+      read: false,
+      create: true,
+      write: true,
+      ...options
+    })
     const reader = data.getReader()
 
     try {
