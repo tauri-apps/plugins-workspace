@@ -169,7 +169,9 @@ mod imp {
             let path_hstring = HSTRING::from(path);
             let item_id_list = unsafe { ILCreateFromPathW(&path_hstring) };
             if item_id_list.is_null() {
-                Err(crate::Error::InvalidPath(path.to_owned()))
+                Err(crate::Error::FailedToConvertPathToItemIdList(
+                    path.to_owned(),
+                ))
             } else {
                 Ok(Self {
                     hstring: path_hstring,
