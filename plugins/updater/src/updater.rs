@@ -1381,7 +1381,7 @@ fn installer_for_bundle_type(bundle: Option<BundleType>) -> Option<Installer> {
         BundleType::AppImage => Some(Installer::AppImage),
         BundleType::Msi => Some(Installer::Msi),
         BundleType::Nsis => Some(Installer::Nsis),
-        BundleType::App => Some(Installer::App),
+        BundleType::App => Some(Installer::App), // App is also returned for Dmg type
         _ => None,
     }
 }
