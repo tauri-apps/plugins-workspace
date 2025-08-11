@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8E12E6982E4A879F0019CC26 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E12E6962E4A862B0019CC26 /* CoreNFC.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		A0E2115A2BF552D2003BCF4D /* ExamplePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E211592BF552D2003BCF4D /* ExamplePlugin.swift */; };
 		A0E211622BF55305003BCF4D /* Tauri in Frameworks */ = {isa = PBXBuildFile; productRef = A0E211612BF55305003BCF4D /* Tauri */; };
 /* End PBXBuildFile section */
@@ -24,6 +25,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8E12E6962E4A862B0019CC26 /* CoreNFC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreNFC.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/System/iOSSupport/System/Library/Frameworks/CoreNFC.framework; sourceTree = DEVELOPER_DIR; };
 		A0E211562BF552D2003BCF4D /* libtauri-plugin-nfc.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libtauri-plugin-nfc.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A0E211592BF552D2003BCF4D /* ExamplePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExamplePlugin.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -33,6 +35,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E12E6982E4A879F0019CC26 /* CoreNFC.framework in Frameworks */,
 				A0E211622BF55305003BCF4D /* Tauri in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -40,10 +43,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8E12E6952E4A862B0019CC26 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8E12E6962E4A862B0019CC26 /* CoreNFC.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		A0E2114D2BF552D2003BCF4D = {
 			isa = PBXGroup;
 			children = (
 				A0E211582BF552D2003BCF4D /* tauri-plugin-nfc */,
+				8E12E6952E4A862B0019CC26 /* Frameworks */,
 				A0E211572BF552D2003BCF4D /* Products */,
 			);
 			sourceTree = "<group>";
