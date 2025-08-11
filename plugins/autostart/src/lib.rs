@@ -234,6 +234,7 @@ impl Builder {
 /// Initializes the plugin.
 ///
 /// `args` - are passed to your app on startup.
+// TODO: Remove `init` function or `args` argument in v3
 pub fn init<R: Runtime, I, S>(
     #[allow(unused)] macos_launcher: MacosLauncher,
     args: Option<I>,
