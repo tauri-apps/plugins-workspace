@@ -72,6 +72,8 @@ pub enum Error {
     TempDirNotFound,
     #[error("Authentication failed or was cancelled")]
     AuthenticationFailed,
+    #[error("Failed to install .deb package")]
+    DebInstallFailed,
     #[error("Failed to install package")]
     PackageInstallFailed,
     #[error("invalid updater binary format")]
