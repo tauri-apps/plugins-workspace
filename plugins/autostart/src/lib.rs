@@ -234,10 +234,14 @@ impl Builder {
 /// Initializes the plugin.
 ///
 /// `args` - are passed to your app on startup.
-pub fn init<R: Runtime>(
+pub fn init<R: Runtime, I, S>(
     #[allow(unused)] macos_launcher: MacosLauncher,
-    args: Option<Vec<&'static str>>,
-) -> TauriPlugin<R> {
+    args: Option<I>,
+) -> TauriPlugin<R>
+where
+    I: IntoIterator<Item = S>,
+    S: Into<String>,
+{
     let mut builder = Builder::new();
     if let Some(args) = args {
         builder = builder.args(args)
