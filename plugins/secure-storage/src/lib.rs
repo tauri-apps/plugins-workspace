@@ -4,8 +4,8 @@
 
 use keyring::Entry;
 use tauri::{
-    AppHandle, Manager, Runtime,
     plugin::{Builder, TauriPlugin},
+    AppHandle, Manager, Runtime,
 };
 
 mod commands;

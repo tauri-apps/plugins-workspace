@@ -1295,6 +1295,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1bfb12502f3fc46cca1bb51ac28df9d618d813cdc3d2f25b9fe775a34af26bb3"
 dependencies = [
  "generic-array",
+ "rand_core 0.6.4",
  "typenum",
 ]
 
@@ -6421,6 +6422,7 @@ dependencies = [
  "tray-icon",
  "url",
  "urlpattern",
+ "uuid",
  "webkit2gtk",
  "webview2-com",
  "window-vibrancy",
@@ -7062,10 +7064,12 @@ version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "41743bbbeb96c3a100d234e5a0b60a46d5aa068f266160862c7afdbf828ca02e"
 dependencies = [
+ "aes-gcm",
  "anyhow",
  "cargo_metadata",
  "ctor",
  "dunce",
+ "getrandom 0.2.15",
  "glob",
  "html5ever",
  "http",
@@ -7084,6 +7088,7 @@ dependencies = [
  "serde-untagged",
  "serde_json",
  "serde_with",
+ "serialize-to-javascript",
  "swift-rs",
  "thiserror 2.0.12",
  "toml",

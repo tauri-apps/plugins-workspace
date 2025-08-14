@@ -13,6 +13,12 @@
     "withGlobalTauri": true,
     "macOSPrivateApi": true,
     "security": {
+      "pattern": {
+        "use": "isolation",
+        "options": {
+          "dir": "../isolation-dist/"
+        }
+      },
       "csp": {
         "default-src": "'self' customprotocol: asset:",
         "connect-src": "ipc: http://ipc.localhost",

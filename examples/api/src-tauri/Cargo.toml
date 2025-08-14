@@ -12,7 +12,7 @@ name = "api_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { workspace = true, features = ["codegen"] }
+tauri-build = { workspace = true, features = ["codegen", "isolation"] }
 
 [dependencies]
 serde_json = { workspace = true }
@@ -49,6 +49,7 @@ features = [
   "x11",
   "image-ico",
   "image-png",
+  "isolation",
   "macos-private-api",
   "tray-icon",
   "protocol-asset",
