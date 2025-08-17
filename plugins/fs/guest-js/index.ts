@@ -739,7 +739,7 @@ interface ReadFileOptions {
 async function readFile(
   path: string | URL,
   options?: ReadFileOptions
-): Promise<Uint8Array> {
+): Promise<Uint8Array<ArrayBuffer>> {
   if (path instanceof URL && path.protocol !== 'file:') {
     throw new TypeError('Must be a file URL.')
   }
