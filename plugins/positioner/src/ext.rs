@@ -10,7 +10,7 @@ use serde_repr::Deserialize_repr;
 use tauri::Manager;
 #[cfg(feature = "tray-icon")]
 use tauri::Monitor;
-use tauri::{PhysicalPosition, PhysicalSize, Result, Runtime, WebviewWindow, Window};
+use tauri::{PhysicalPosition, PhysicalSize, Result, Runtime, Webview, WebviewWindow, Window};
 
 /// Well known window positions.
 #[derive(Debug, Deserialize_repr)]
@@ -57,12 +57,16 @@ pub trait WindowExt {
 
 impl<R: Runtime> WindowExt for WebviewWindow<R> {
     fn move_window(&self, pos: Position) -> Result<()> {
-        self.as_ref().window().move_window(pos)
+        // TODO: Use `let webview: &Window<R> = self.as_ref()` instead after tauri 2.8 released
+        let webview: &Webview<R> = self.as_ref();
+        webview.window().move_window(pos)
     }
 
     #[cfg(feature = "tray-icon")]
     fn move_window_constrained(&self, position: Position) -> Result<()> {
-        self.as_ref().window().move_window_constrained(position)
+        // TODO: Use `let webview: &Window<R> = self.as_ref()` instead after tauri 2.8 released
+        let webview: &Webview<R> = self.as_ref();
+        webview.window().move_window_constrained(position)
     }
 }
 

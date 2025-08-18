@@ -14,8 +14,8 @@ use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    AppHandle, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, WebviewWindow,
-    Window, WindowEvent,
+    AppHandle, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, Webview,
+    WebviewWindow, Window, WindowEvent,
 };
 
 use std::{
@@ -158,7 +158,9 @@ pub trait WindowExt {
 
 impl<R: Runtime> WindowExt for WebviewWindow<R> {
     fn restore_state(&self, flags: StateFlags) -> tauri::Result<()> {
-        self.as_ref().window().restore_state(flags)
+        // TODO: Use `let webview: &Window<R> = self.as_ref()` instead after tauri 2.8 released
+        let webview: &Webview<R> = self.as_ref();
+        webview.window().restore_state(flags)
     }
 }
 
@@ -274,7 +276,9 @@ trait WindowExtInternal {
 
 impl<R: Runtime> WindowExtInternal for WebviewWindow<R> {
     fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()> {
-        self.as_ref().window().update_state(state, flags)
+        // TODO: Use `let webview: &Window<R> = self.as_ref()` instead after tauri 2.8 released
+        let webview: &Webview<R> = self.as_ref();
+        webview.window().update_state(state, flags)
     }
 }
 
