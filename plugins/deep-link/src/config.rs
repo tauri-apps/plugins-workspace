@@ -7,10 +7,6 @@
 use serde::{Deserialize, Deserializer};
 use tauri_utils::config::DeepLinkProtocol;
 
-fn default_true() -> bool {
-    true
-}
-
 #[derive(Deserialize, Clone)]
 pub struct AssociatedDomain {
     #[serde(default = "default_schemes")]
