@@ -10,11 +10,11 @@
     "format-check": "prettier --check ."
   },
   "devDependencies": {
-    "@eslint/js": "9.32.0",
+    "@eslint/js": "9.33.0",
     "@rollup/plugin-node-resolve": "16.0.1",
     "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-typescript": "11.1.6",
-    "eslint": "9.32.0",
+    "eslint": "9.33.0",
     "eslint-config-prettier": "10.1.8",
     "prettier": "3.6.2",
     "rollup": "4.46.3",
