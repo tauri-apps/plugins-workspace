@@ -11,7 +11,7 @@
 
 use futures_util::{SinkExt, StreamExt, stream::SplitSink};
 use http::{
-    Request,
+    HeaderMap,
     header::{HeaderName, HeaderValue},
 };
 use serde::{Deserialize, Serialize, ser::Serializer};
@@ -162,7 +162,7 @@ async fn connect<R: Runtime>(
     config: Option<ConnectionConfig>,
 ) -> Result<Id> {
     let id = rand::random();
-    let mut request = url.into_client_request()?;
+    let mut request = url.as_str().into_client_request()?;
 
     if let Some(headers) = config.as_ref().and_then(|c| c.headers.as_ref()) {
         for (k, v) in headers {
@@ -173,7 +173,7 @@ async fn connect<R: Runtime>(
     }
 
     if let Some(state) = window.app_handle().try_state::<RequestCallback<R>>() {
-        (state.inner().0)(&mut request, window.app_handle());
+        (state.inner().0)(url, request.headers_mut(), window.app_handle());
     }
 
     #[cfg(any(
@@ -276,10 +276,11 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new().build()
 }
 
+type RqCb<R> =
+    Box<dyn Fn(String, &mut HeaderMap<HeaderValue>, &AppHandle<R>) + Send + Sync + 'static>;
+
 /// Struct to provide concrete type for the manager
-struct RequestCallback<R: Runtime>(
-    Box<dyn Fn(&mut Request<()>, &AppHandle<R>) + Send + Sync + 'static>,
-);
+struct RequestCallback<R: Runtime>(RqCb<R>);
 
 pub struct Builder<R: Runtime> {
     tls_connector: Option<Connector>,
@@ -300,10 +301,7 @@ where
     /// add a callback which is able to modify the initial headers of the http upgrade request.
     /// This is useful for scenarios where the frontend may not know all the required headers that must be sent.
     /// e.g. in the scenario of http-only cookies
-    pub fn merge_header_callback(
-        mut self,
-        cb: Box<dyn Fn(&mut Request<()>, &AppHandle<R>) + Send + Sync + 'static>,
-    ) -> Self {
+    pub fn merge_header_callback(mut self, cb: RqCb<R>) -> Self {
         self.merge_headers.replace(RequestCallback(cb));
         self
     }
