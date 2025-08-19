@@ -11,6 +11,8 @@ target/
 
 # dotenv environment variables file
 .env
+.envrc
+.direnv
 
 # .vscode workspace settings file
 .vscode/settings.json
