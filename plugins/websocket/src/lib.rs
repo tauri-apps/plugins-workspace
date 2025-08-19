@@ -11,12 +11,12 @@
 
 use futures_util::{SinkExt, StreamExt, stream::SplitSink};
 use http::{
-    HeaderMap, Request,
+    Request,
     header::{HeaderName, HeaderValue},
 };
 use serde::{Deserialize, Serialize, ser::Serializer};
 use tauri::{
-    AppHandle, Manager, Runtime, State, Url, Window,
+    AppHandle, Manager, Runtime, State, Window,
     ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
 };
@@ -42,8 +42,8 @@ use tokio_tungstenite::{
     },
 };
 
+use std::collections::HashMap;
 use std::str::FromStr;
-use std::{collections::HashMap, marker::PhantomData};
 
 type Id = u32;
 type WebSocket = WebSocketStream<MaybeTlsStream<TcpStream>>;
