@@ -10,7 +10,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "2.7.0",
+    "@tauri-apps/api": "2.8.0",
     "@tauri-apps/plugin-deep-link": "link:../.."
   },
   "devDependencies": {
