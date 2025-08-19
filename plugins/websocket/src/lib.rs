@@ -9,13 +9,16 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use futures_util::{stream::SplitSink, SinkExt, StreamExt};
-use http::header::{HeaderName, HeaderValue};
-use serde::{ser::Serializer, Deserialize, Serialize};
+use futures_util::{SinkExt, StreamExt, stream::SplitSink};
+use http::{
+    HeaderMap, Request,
+    header::{HeaderName, HeaderValue},
+};
+use serde::{Deserialize, Serialize, ser::Serializer};
 use tauri::{
+    AppHandle, Manager, Runtime, State, Url, Window,
     ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Manager, Runtime, State, Window,
 };
 use tokio::{net::TcpStream, sync::Mutex};
 #[cfg(any(
@@ -31,16 +34,16 @@ use tokio_tungstenite::connect_async_tls_with_config;
 )))]
 use tokio_tungstenite::connect_async_with_config;
 use tokio_tungstenite::{
+    Connector, MaybeTlsStream, WebSocketStream,
     tungstenite::{
+        Message,
         client::IntoClientRequest,
         protocol::{CloseFrame as ProtocolCloseFrame, WebSocketConfig},
-        Message,
     },
-    Connector, MaybeTlsStream, WebSocketStream,
 };
 
-use std::collections::HashMap;
 use std::str::FromStr;
+use std::{collections::HashMap, marker::PhantomData};
 
 type Id = u32;
 type WebSocket = WebSocketStream<MaybeTlsStream<TcpStream>>;
@@ -169,6 +172,10 @@ async fn connect<R: Runtime>(
         }
     }
 
+    if let Some(state) = window.app_handle().try_state::<RequestCallback<R>>() {
+        (state.inner().0)(&mut request, window.app_handle());
+    }
+
     #[cfg(any(
         feature = "rustls-tls",
         feature = "rustls-tls-native-roots",
@@ -266,19 +273,39 @@ async fn send(
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::default().build()
+    Builder::new().build()
 }
 
-#[derive(Default)]
-pub struct Builder {
+/// Struct to provide concrete type for the manager
+struct RequestCallback<R: Runtime>(
+    Box<dyn Fn(&mut Request<()>, &AppHandle<R>) + Send + Sync + 'static>,
+);
+
+pub struct Builder<R: Runtime> {
     tls_connector: Option<Connector>,
+    merge_headers: Option<RequestCallback<R>>,
 }
 
-impl Builder {
+impl<R> Builder<R>
+where
+    R: Runtime,
+{
     pub fn new() -> Self {
         Self {
             tls_connector: None,
+            merge_headers: None,
         }
+    }
+
+    /// add a callback which is able to modify the initial headers of the http upgrade request.
+    /// This is useful for scenarios where the frontend may not know all the required headers that must be sent.
+    /// e.g. in the scenario of http-only cookies
+    pub fn merge_header_callback(
+        mut self,
+        cb: Box<dyn Fn(&mut Request<()>, &AppHandle<R>) + Send + Sync + 'static>,
+    ) -> Self {
+        self.merge_headers.replace(RequestCallback(cb));
+        self
     }
 
     pub fn tls_connector(mut self, connector: Connector) -> Self {
@@ -286,7 +313,7 @@ impl Builder {
         self
     }
 
-    pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
+    pub fn build(self) -> TauriPlugin<R> {
         PluginBuilder::new("websocket")
             .invoke_handler(tauri::generate_handler![connect, send])
             .setup(|app, _api| {
@@ -300,6 +327,11 @@ impl Builder {
                 }
 
                 app.manage(ConnectionManager::default());
+
+                if let Some(cb) = self.merge_headers {
+                    app.manage(cb);
+                }
+
                 #[cfg(any(
                     feature = "rustls-tls",
                     feature = "rustls-tls-native-roots",
