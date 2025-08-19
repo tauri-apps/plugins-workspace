@@ -6562,6 +6562,7 @@ name = "tauri-plugin-deep-link"
 version = "2.4.1"
 dependencies = [
  "dunce",
+ "plist",
  "rust-ini",
  "serde",
  "serde_json",

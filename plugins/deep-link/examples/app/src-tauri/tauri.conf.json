@@ -35,6 +35,9 @@
         },
         {
           "host": "tauri.app"
+        },
+        {
+          "scheme": ["taurideeplink"]
         }
       ],
       "desktop": {
