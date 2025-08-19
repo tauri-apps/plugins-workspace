@@ -6,8 +6,8 @@
 
 pub use reqwest;
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 pub use error::{Error, Result};
@@ -21,9 +21,9 @@ mod scope;
 #[cfg(feature = "cookies")]
 const COOKIES_FILENAME: &str = ".cookies";
 
-pub(crate) struct Http {
+pub struct Http {
     #[cfg(feature = "cookies")]
-    cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
+    pub cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
