@@ -25,7 +25,7 @@ pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 
 pub use open::{open_path, open_url};
-pub use reveal_item_in_dir::reveal_item_in_dir;
+pub use reveal_item_in_dir::{reveal_item_in_dir, reveal_items_in_dir};
 
 pub struct Opener<R: Runtime> {
     // we use `fn() -> R` to silence the unused generic error
@@ -146,7 +146,15 @@ impl<R: Runtime> Opener<R> {
     }
 
     pub fn reveal_item_in_dir<P: AsRef<Path>>(&self, p: P) -> Result<()> {
-        crate::reveal_item_in_dir::reveal_item_in_dir(p)
+        reveal_item_in_dir(p)
+    }
+
+    pub fn reveal_items_in_dir<I, P>(&self, paths: I) -> Result<()>
+    where
+        I: IntoIterator<Item = P>,
+        P: AsRef<Path>,
+    {
+        reveal_items_in_dir(paths)
     }
 }
 
@@ -213,7 +221,7 @@ impl Builder {
             .invoke_handler(tauri::generate_handler![
                 commands::open_url,
                 commands::open_path,
-                commands::reveal_item_in_dir
+                commands::reveal_item_in_dir,
             ]);
 
         if self.open_js_links_on_click {
