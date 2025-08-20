@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.3.3]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.2`
+
 ## \[2.3.2]
 
 - [`af08c66f`](https://github.com/tauri-apps/plugins-workspace/commit/af08c66faafe0dffc4b0a80aef030cd3f0f89a9c) ([#2871](https://github.com/tauri-apps/plugins-workspace/pull/2871) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed an issue that caused the file picker not to open on Android when extension filters were set.

@@ -207,7 +207,7 @@ checksum = "e16d2d3311acee920a9eb8d33b8cbc1787ce4a264e85f964c2404b969bdcd487"
 
 [[package]]
 name = "api"
-version = "2.0.32"
+version = "2.0.33"
 dependencies = [
  "log",
  "serde",
@@ -6578,7 +6578,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.3.2"
+version = "2.3.3"
 dependencies = [
  "log",
  "raw-window-handle",
@@ -6594,7 +6594,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.4.1"
+version = "2.4.2"
 dependencies = [
  "anyhow",
  "dunce",
@@ -6655,7 +6655,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.5.1"
+version = "2.5.2"
 dependencies = [
  "bytes",
  "cookie_store",
@@ -6712,7 +6712,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-nfc"
-version = "2.3.0"
+version = "2.3.1"
 dependencies = [
  "log",
  "serde",
@@ -6747,7 +6747,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-opener"
-version = "2.4.0"
+version = "2.5.0"
 dependencies = [
  "dunce",
  "glob",
@@ -6767,7 +6767,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-os"
-version = "2.3.0"
+version = "2.3.1"
 dependencies = [
  "gethostname 1.0.1",
  "log",
@@ -6783,7 +6783,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.3.1"
+version = "2.3.2"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6869,7 +6869,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-store"
-version = "2.3.0"
+version = "2.4.0"
 dependencies = [
  "dunce",
  "serde",
