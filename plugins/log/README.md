@@ -35,26 +35,33 @@ If you want the single instance mechanism to only trigger for semver compatible 
 
 Then you can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
-
 ```sh
 pnpm add @tauri-apps/plugin-log
 # or
 npm add @tauri-apps/plugin-log
 # or
 yarn add @tauri-apps/plugin-log
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-log#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-log#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-log#v2
 ```
 
 ## Usage
 
-First you need to register the core plugin with Tauri:
+First, you should enable the `log:default` capability:
+
+```json
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "log:default" # add this!
+  ]
+}
+```
+
+Then, you need to register the core plugin with Tauri:
 
 `src-tauri/src/lib.rs`
 

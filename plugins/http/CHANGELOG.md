@@ -1,5 +1,58 @@
 # Changelog
 
+## \[2.5.2]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.2`
+
+## \[2.5.1]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.1`
+
+## \[2.5.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.0`
+
+## \[2.4.4]
+
+- [`ff384cba`](https://github.com/tauri-apps/plugins-workspace/commit/ff384cbabe82ae715798a4ee49fd07ffcfbcdb5d) ([#2636](https://github.com/tauri-apps/plugins-workspace/pull/2636) by [@asomethings](https://github.com/tauri-apps/plugins-workspace/../../asomethings)) Properly handle responses with status code 204.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.3.0`
+
+## \[2.4.3]
+
+- [`37c0477a`](https://github.com/tauri-apps/plugins-workspace/commit/37c0477afe926d326573f1827045875ce8bf8187) ([#2561](https://github.com/tauri-apps/plugins-workspace/pull/2561)) Add `zstd` cargo feature flag to enable `reqwest/zstd` flag.
+- [`9ebbfb2e`](https://github.com/tauri-apps/plugins-workspace/commit/9ebbfb2e3ccef8e0f277a0c02fe6b399b41feeb6) ([#1978](https://github.com/tauri-apps/plugins-workspace/pull/1978)) Persist cookies to disk and load it on next app start.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.2.1`
+
+## \[2.4.2]
+
+- [`a15eedf3`](https://github.com/tauri-apps/plugins-workspace/commit/a15eedf37854344f7ffbcb0d373d848563817011) ([#2535](https://github.com/tauri-apps/plugins-workspace/pull/2535) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix `fetch` occasionally throwing an error due to trying to close the underline stream twice.
+
+## \[2.4.1]
+
+- [`d3183aa9`](https://github.com/tauri-apps/plugins-workspace/commit/d3183aa99da7ca67e627394132ddeb3b85ccef06) ([#2522](https://github.com/tauri-apps/plugins-workspace/pull/2522) by [@adrieljss](https://github.com/tauri-apps/plugins-workspace/../../adrieljss)) Fix `fetch` blocking until the whole response is read even if it was a streaming response.
+
+## \[2.4.0]
+
+- [`cb38f54f`](https://github.com/tauri-apps/plugins-workspace/commit/cb38f54f4a4ef30995283cd82166c62da17bac44) ([#2479](https://github.com/tauri-apps/plugins-workspace/pull/2479) by [@adrieljss](https://github.com/tauri-apps/plugins-workspace/../../adrieljss)) Add stream support for HTTP stream responses.
+
+## \[2.3.0]
+
+- [`10513649`](https://github.com/tauri-apps/plugins-workspace/commit/105136494c5a5bf4b1f1cc06cc71815412d17ec8) ([#2204](https://github.com/tauri-apps/plugins-workspace/pull/2204) by [@RickeyWard](https://github.com/tauri-apps/plugins-workspace/../../RickeyWard)) Add `dangerous-settings` feature flag and new JS `danger` option to disable tls hostname/certificate validation.
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.

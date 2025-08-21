@@ -21,9 +21,9 @@ mod models;
 pub use error::{Error, Result};
 
 #[cfg(desktop)]
-use desktop::{{ plugin_name_pascal_case }};
+pub use desktop::{{ plugin_name_pascal_case }};
 #[cfg(mobile)]
-use mobile::{{ plugin_name_pascal_case }};
+pub use mobile::{{ plugin_name_pascal_case }};
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the {{ plugin_name }} APIs.
 pub trait {{ plugin_name_pascal_case }}Ext<R: Runtime> {

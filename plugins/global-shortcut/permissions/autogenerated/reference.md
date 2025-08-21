@@ -5,8 +5,6 @@ the shortcuts can be inherently dangerous and it is
 application specific if specific shortcuts should be
 registered or unregistered.
 
-
-
 ## Permission Table
 
 <table>

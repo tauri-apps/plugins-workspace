@@ -39,6 +39,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::default().build())
+        .plugin(tauri_plugin_upload::init())
         .setup(move |app| {
             #[cfg(desktop)]
             {
@@ -102,9 +103,28 @@ pub fn run() {
                     if let Ok(mut request) = server.recv() {
                         let mut body = Vec::new();
                         let _ = request.as_reader().read_to_end(&mut body);
+                        let mut headers = request.headers().to_vec();
+
+                        if !headers.iter().any(|header| header.field == tiny_http::HeaderField::from_bytes(b"Cookie").unwrap()) {
+                            let expires = time::OffsetDateTime::now_utc() + time::Duration::days(1);
+                            // RFC 1123 format
+                            let format = time::macros::format_description!(
+                                "[weekday repr:short], [day] [month repr:short] [year] [hour]:[minute]:[second] GMT"
+                            );
+                            let expires_str = expires.format(format).unwrap();
+                            headers.push(
+                                tiny_http::Header::from_bytes(
+                                    &b"Set-Cookie"[..],
+                                    format!("session-token=test-value; Secure; Path=/; Expires={expires_str}")
+                                        .as_bytes(),
+                                )
+                                .unwrap(),
+                            );
+                        }
+
                         let response = tiny_http::Response::new(
                             tiny_http::StatusCode(200),
-                            request.headers().to_vec(),
+                            headers,
                             std::io::Cursor::new(body),
                             request.body_length(),
                             None,

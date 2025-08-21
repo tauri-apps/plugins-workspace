@@ -41,6 +41,8 @@ pub enum Error {
     Tauri(#[from] tauri::Error),
     #[error(transparent)]
     Utf8(#[from] std::string::FromUtf8Error),
+    #[error("dangerous settings used but are not enabled")]
+    DangerousSettings,
 }
 
 impl Serialize for Error {

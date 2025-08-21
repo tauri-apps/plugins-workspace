@@ -7,7 +7,7 @@ notification features are by default exposed.
 
 It allows all notification related features.
 
-
+#### This default permission set includes the following:
 
 - `allow-is-permission-granted`
 - `allow-request-permission`

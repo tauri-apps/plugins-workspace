@@ -7,6 +7,7 @@ use serde::{de::Error as DeError, Deserialize, Deserializer};
 use std::path::PathBuf;
 
 /// A command allowed to be executed by the webview API.
+#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct Entry {
     pub(crate) name: String,
@@ -15,6 +16,7 @@ pub(crate) struct Entry {
     pub(crate) sidecar: bool,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize)]
 pub(crate) struct EntryRaw {
     pub(crate) name: String,

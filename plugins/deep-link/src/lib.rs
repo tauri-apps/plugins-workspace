@@ -114,8 +114,8 @@ mod imp {
         /// ## Platform-specific:
         ///
         /// - **Windows / Linux**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
-        ///     Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
-        ///     Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
+        ///   Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
+        ///   Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
             self.plugin_handle
                 .run_mobile_plugin::<GetCurrentResponse>("getCurrent", ())
@@ -172,7 +172,7 @@ mod imp {
     use tauri::Manager;
     use tauri::{AppHandle, Runtime};
     #[cfg(windows)]
-    use windows_registry::CURRENT_USER;
+    use windows_registry::{CLASSES_ROOT, CURRENT_USER, LOCAL_MACHINE};
 
     /// Access to the deep-link APIs.
     pub struct DeepLink<R: Runtime> {
@@ -226,8 +226,8 @@ mod imp {
         /// ## Platform-specific:
         ///
         /// - **Windows / Linux**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
-        ///     Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
-        ///     Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
+        ///   Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
+        ///   Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
             return Ok(self.current.lock().unwrap().clone());
         }
@@ -258,25 +258,23 @@ mod imp {
         pub fn register<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
             {
-                let key_base = format!("Software\\Classes\\{}", _protocol.as_ref());
+                let protocol = _protocol.as_ref();
+                let key_base = format!("Software\\Classes\\{protocol}");
 
                 let exe = dunce::simplified(&tauri::utils::platform::current_exe()?)
                     .display()
                     .to_string();
 
                 let key_reg = CURRENT_USER.create(&key_base)?;
-                key_reg.set_string(
-                    "",
-                    &format!("URL:{} protocol", self.app.config().identifier),
-                )?;
+                key_reg.set_string("", format!("URL:{} protocol", self.app.config().identifier))?;
                 key_reg.set_string("URL Protocol", "")?;
 
                 let icon_reg = CURRENT_USER.create(format!("{key_base}\\DefaultIcon"))?;
-                icon_reg.set_string("", &format!("{exe},0"))?;
+                icon_reg.set_string("", format!("{exe},0"))?;
 
                 let cmd_reg = CURRENT_USER.create(format!("{key_base}\\shell\\open\\command"))?;
 
-                cmd_reg.set_string("", &format!("\"{exe}\" \"%1\""))?;
+                cmd_reg.set_string("", format!("\"{exe}\" \"%1\""))?;
 
                 Ok(())
             }
@@ -305,12 +303,14 @@ mod imp {
 
                 if let Ok(mut desktop_file) = ini::Ini::load_from_file(&target_file) {
                     if let Some(section) = desktop_file.section_mut(Some("Desktop Entry")) {
-                        let old_mimes = section.remove("MimeType");
-                        section.append(
-                            "MimeType",
-                            format!("{mime_type};{}", old_mimes.unwrap_or_default()),
-                        );
-                        desktop_file.write_to_file(&target_file)?;
+                        // it's ok to remove it - we only write to the file if it's missing
+                        // and in that case we include old_mimes
+                        let old_mimes = section.remove("MimeType").unwrap_or_default();
+
+                        if !old_mimes.split(';').any(|mime| mime == mime_type) {
+                            section.append("MimeType", format!("{mime_type};{old_mimes}"));
+                            desktop_file.write_to_file(&target_file)?;
+                        }
                     }
                 } else {
                     let mut file = File::create(target_file)?;
@@ -335,7 +335,7 @@ mod imp {
                     .status()?;
 
                 Command::new("xdg-mime")
-                    .args(["default", &file_name, _protocol.as_ref()])
+                    .args(["default", &file_name, mime_type.as_str()])
                     .status()?;
 
                 Ok(())
@@ -351,13 +351,21 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
+        /// - **Windows**: Requires admin rights if the protocol is registered on local machine
+        ///   (this can happen when registered from the NSIS installer when the install mode is set to both or per machine)
         /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
             {
-                CURRENT_USER.remove_tree(format!("Software\\Classes\\{}", _protocol.as_ref()))?;
-
+                let protocol = _protocol.as_ref();
+                let path = format!("Software\\Classes\\{protocol}");
+                if LOCAL_MACHINE.open(&path).is_ok() {
+                    LOCAL_MACHINE.remove_tree(&path)?;
+                }
+                if CURRENT_USER.open(&path).is_ok() {
+                    CURRENT_USER.remove_tree(&path)?;
+                }
                 Ok(())
             }
 
@@ -401,10 +409,11 @@ mod imp {
         pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
             #[cfg(windows)]
             {
-                let cmd_reg = CURRENT_USER.open(format!(
-                    "Software\\Classes\\{}\\shell\\open\\command",
-                    _protocol.as_ref()
-                ))?;
+                let protocol = _protocol.as_ref();
+                let Ok(cmd_reg) = CLASSES_ROOT.open(format!("{protocol}\\shell\\open\\command"))
+                else {
+                    return Ok(false);
+                };
 
                 let registered_cmd = cmd_reg.get_string("")?;
 

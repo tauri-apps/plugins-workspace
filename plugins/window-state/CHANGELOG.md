@@ -1,5 +1,25 @@
 # Changelog
 
+## \[2.4.0]
+
+- [`6a8f2558`](https://github.com/tauri-apps/plugins-workspace/commit/6a8f25587852b958a9e48b8c2e8884cc94a7dc7f) ([#2619](https://github.com/tauri-apps/plugins-workspace/pull/2619) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Making `flags` optional in the `saveWindowState`, `restoreState`, `restoreStateCurrent` JavaScripts APIs, leaving it empty will make it use plugin's default flags
+
+## \[2.3.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.2.3]
+
+- [`f634e524`](https://github.com/tauri-apps/plugins-workspace/commit/f634e5248ebe428f8305a59f74c13fc15147fb8e) This is an "empty" release to update the plugins' source files on crates.io and docs.rs. This should fix docs.rs build failures for projects using tauri plugins as dependencies.
+
+## \[2.2.2]
+
+- [`a35fea50`](https://github.com/tauri-apps/plugins-workspace/commit/a35fea501560a3d126aad09b59600d9f1a731a9e) ([#2583](https://github.com/tauri-apps/plugins-workspace/pull/2583)) Fix window size gets bigger/smaller on secondary monitor with a different scaling than the primary one
+
+## \[2.2.1]
+
+- [`0ec895c3`](https://github.com/tauri-apps/plugins-workspace/commit/0ec895c378d4700cf8d7a002c6d9829f3c015b9f) ([#2330](https://github.com/tauri-apps/plugins-workspace/pull/2330) by [@thewh1teagle](https://github.com/tauri-apps/plugins-workspace/../../thewh1teagle)) Add `Builder::with_filter` callback to exclude specific windows from saving their state. This allows for more flexibility by enabling dynamic exclusion of windows based on custom logic.
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.

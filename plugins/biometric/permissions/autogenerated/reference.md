@@ -7,7 +7,7 @@ biometric features are by default exposed.
 
 It allows acccess to all biometric commands.
 
-
+#### This default permission set includes the following:
 
 - `allow-authenticate`
 - `allow-status`

@@ -11,7 +11,7 @@ be manually configured before usage.
 
 All fetch operations are enabled.
 
-
+#### This default permission set includes the following:
 
 - `allow-fetch`
 - `allow-fetch-cancel`

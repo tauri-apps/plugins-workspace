@@ -32,8 +32,8 @@ const ignore = [
 
 async function checkFile(file) {
   if (
-    extensions.some((e) => file.endsWith(e)) &&
-    !ignore.some((i) => file.includes(`${path.sep}${i}`))
+    extensions.some((e) => file.endsWith(e))
+    && !ignore.some((i) => file.includes(`${path.sep}${i}`))
   ) {
     const fileStream = fs.createReadStream(file)
     const rl = readline.createInterface({
@@ -46,10 +46,10 @@ async function checkFile(file) {
     for await (let line of rl) {
       // ignore empty lines, allow shebang, swift-tools-version and bundler license
       if (
-        line.length === 0 ||
-        line.startsWith('#!') ||
-        line.startsWith('// swift-tools-version:') ||
-        ignoredLicenses.includes(line)
+        line.length === 0
+        || line.startsWith('#!')
+        || line.startsWith('// swift-tools-version:')
+        || ignoredLicenses.includes(line)
       ) {
         continue
       }
