@@ -280,10 +280,6 @@ mod imp {
                 if let Some(icon) = app_.default_window_icon() {
                     notification.icon(icon.rgba().to_vec(), icon.width(), icon.height());
                 }
-                // Enable sound if specified
-                if self.sound.is_some() {
-                    notification.sound(true);
-                }
                 let _ = notification.show();
             });
 

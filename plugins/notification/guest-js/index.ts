@@ -72,7 +72,7 @@ interface Options {
   groupSummary?: boolean
   /**
    * The sound resource name or file path for the notification.
-   * 
+   *
    * Platform specific behavior:
    * - On macOS: use system sounds (e.g., "Ping", "Blow") or sound files in the app bundle
    * - On Linux: use XDG theme sounds (e.g., "message-new-instant") or file paths

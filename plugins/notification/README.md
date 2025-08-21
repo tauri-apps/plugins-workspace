@@ -113,7 +113,7 @@ sendNotification({
 // Platform-specific sounds
 async function sendPlatformSpecificNotification() {
   const platformName = platform()
-  
+
   let soundPath
   if (platformName === 'darwin') {
     // On macOS: use system sounds or sound files in the app bundle
@@ -125,7 +125,7 @@ async function sendPlatformSpecificNotification() {
     // On Windows: use file paths
     soundPath = 'notification.wav'
   }
-  
+
   sendNotification({
     title: 'Platform-specific Notification',
     body: 'This notification uses platform-specific sound',
