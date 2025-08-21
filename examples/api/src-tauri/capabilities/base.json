@@ -68,6 +68,9 @@
     "fs:allow-rename",
     "fs:allow-mkdir",
     "fs:allow-remove",
+    "fs:allow-stat",
+    "fs:allow-fstat",
+    "fs:allow-lstat",
     "fs:allow-write-text-file",
     "fs:read-meta",
     "fs:scope-download-recursive",
@@ -75,6 +78,9 @@
     {
       "identifier": "fs:scope-appdata-recursive",
       "allow": [
+        {
+          "path": "$APPDATA/db/"
+        },
         {
           "path": "$APPDATA/db/**"
         }
