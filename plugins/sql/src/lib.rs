@@ -80,7 +80,7 @@ pub struct Migration {
 }
 
 #[derive(Debug)]
-struct MigrationList(Vec<Migration>);
+pub struct MigrationList(pub Vec<Migration>);
 
 impl MigrationSource<'static> for MigrationList {
     fn resolve(self) -> BoxFuture<'static, std::result::Result<Vec<SqlxMigration>, BoxDynError>> {
