@@ -33,21 +33,12 @@ tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspac
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
-
 ```sh
 pnpm add @tauri-apps/plugin-autostart
 # or
 npm add @tauri-apps/plugin-autostart
 # or
 yarn add @tauri-apps/plugin-autostart
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-autostart#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-autostart#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-autostart#v2
 ```
 
 ## Usage
@@ -59,7 +50,10 @@ First you need to register the core plugin with Tauri:
 ```rust
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_autostart::Builder::new().args((["--flag1", "--flag2"])).build()))
+        .plugin(tauri_plugin_autostart::Builder::new()
+            .args(["--flag1", "--flag2"])
+            .app_name("My Custom Name")
+            .build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

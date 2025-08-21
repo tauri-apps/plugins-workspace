@@ -15,11 +15,12 @@
             </builds>
           </compositeBuild>
         </compositeConfiguration>
+        <option name="testRunner" value="CHOOSE_PER_TEST" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="$USER_HOME$/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tauri-2.0.2/mobile/android" />
+            <option value="$USER_HOME$/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.5.0/mobile/android" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/buildSrc" />
@@ -32,10 +33,10 @@
             <option value="$PROJECT_DIR$/../../../../../plugins/haptics/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/nfc/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/notification/android" />
+            <option value="$PROJECT_DIR$/../../../../../plugins/opener/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/shell/android" />
           </set>
         </option>
-        <option name="resolveExternalAnnotations" value="false" />
       </GradleProjectSettings>
     </option>
   </component>

@@ -5,10 +5,6 @@ the shortcuts can be inherently dangerous and it is
 application specific if specific shortcuts should be
 registered or unregistered.
 
-
-#### This default permission set includes the following:
-
-
 ## Permission Table
 
 <table>

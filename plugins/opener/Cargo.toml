@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-opener"
-version = "2.2.6"
+version = "2.5.0"
 description = "Open files and URLs using their default application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -35,8 +35,6 @@ tauri = { workspace = true }
 thiserror = { workspace = true }
 open = { version = "5", features = ["shellexecute-on-windows"] }
 glob = { workspace = true }
-
-[target."cfg(windows)".dependencies]
 dunce = { workspace = true }
 
 [target."cfg(windows)".dependencies.windows]

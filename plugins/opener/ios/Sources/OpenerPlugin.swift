@@ -3,21 +3,35 @@
 // SPDX-License-Identifier: MIT
 
 import Foundation
+import SafariServices
 import SwiftRs
 import Tauri
 import UIKit
 import WebKit
 
+struct OpenArgs: Decodable {
+  let url: String
+  let with: String?
+}
+
 class OpenerPlugin: Plugin {
   @objc public func open(_ invoke: Invoke) throws {
     do {
-      let urlString = try invoke.parseArgs(String.self)
-      if let url = URL(string: urlString) {
-        if #available(iOS 10, *) {
-          UIApplication.shared.open(url, options: [:])
+      let args = try invoke.parseArgs(OpenArgs.self)
+      if let url = URL(string: args.url) {
+        if args.with == "inAppBrowser" {
+          DispatchQueue.main.async {
+            let safariVC = SFSafariViewController(url: url)
+            self.manager.viewController?.present(safariVC, animated: true)
+          }
         } else {
-          UIApplication.shared.openURL(url)
+          if #available(iOS 10, *) {
+            UIApplication.shared.open(url, options: [:])
+          } else {
+            UIApplication.shared.openURL(url)
+          }
         }
+
       }
       invoke.resolve()
     } catch {
