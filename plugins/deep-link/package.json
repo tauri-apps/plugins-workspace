@@ -25,6 +25,9 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@tauri-apps/api": "^2.6.0"
+    "@tauri-apps/api": "^2.8.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.8.1"
   }
 }

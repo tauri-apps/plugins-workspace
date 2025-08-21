@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.5.0]
+
+### enhance
+
+- [`b8056f48`](https://github.com/tauri-apps/plugins-workspace/commit/b8056f484c7144af095d4d6ded1e8adbb9b8a865) ([#2897](https://github.com/tauri-apps/plugins-workspace/pull/2897) by [@petersamokhin](https://github.com/tauri-apps/plugins-workspace/../../petersamokhin)) Allow reveal multiple items in the file explorer.
+
 ## \[2.4.0]
 
 - [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6

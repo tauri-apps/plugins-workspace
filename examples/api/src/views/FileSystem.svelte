@@ -3,41 +3,36 @@
   import * as os from '@tauri-apps/plugin-os'
   import { convertFileSrc } from '@tauri-apps/api/core'
   import { arrayBufferToBase64 } from '../lib/utils'
-  import { onMount } from 'svelte'
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from 'svelte'
 
-  export let onMessage
-  export let insecureRenderHtml
+  const { onMessage, insecureRenderHtml } = $props()
 
-  let path = ''
+  let path = $state('')
   let img
   /** @type {fs.FileHandle} */
-  let file
-  let renameTo
-  let watchPath = ''
-  let watchDebounceDelay = 0
-  let watchRecursive = false
+  let file = $state()
+  let renameTo = $state()
+  let watchPath = $state('')
+  let watchDebounceDelay = $state(0)
+  let watchRecursive = $state(false)
+  /** @type {fs.BaseDirectory | undefined} */
+  let baseDir = $state()
   let unwatchFn
   let unwatchPath = ''
+  let isMobile = $state(false)
 
-  let isMobile
-  onMount(async () => {
-    let platform = await os.platform()
+  onMount(() => {
+    let platform = os.platform()
     isMobile = platform === 'android' || platform === 'ios'
   })
 
-  function getDir() {
-    const dirSelect = document.getElementById('dir')
-    return dirSelect.value ? parseInt(dir.value) : null
-  }
-
-  const DirOptions = Object.keys(fs.BaseDirectory)
-    .filter((key) => isNaN(parseInt(key)))
-    .map((dir) => [dir, fs.BaseDirectory[dir]])
+  const dirOptions = Object.keys(fs.BaseDirectory).filter((key) =>
+    isNaN(parseInt(key))
+  )
 
   function open() {
     fs.open(path, {
-      baseDir: getDir(),
+      baseDir,
       read: true,
       write: true,
       create: true
@@ -50,7 +45,7 @@
   }
 
   function mkdir() {
-    fs.mkdir(path, { baseDir: getDir(), recursive: true })
+    fs.mkdir(path, { baseDir, recursive: true })
       .then(() => {
         onMessage(`Created dir ${path}`)
       })
@@ -58,7 +53,7 @@
   }
 
   function remove() {
-    fs.remove(path, { baseDir: getDir() })
+    fs.remove(path, { baseDir })
       .then(() => {
         onMessage(`Removed ${path}`)
       })
@@ -67,8 +62,8 @@
 
   function rename() {
     fs.rename(path, renameTo, {
-      oldPathBaseDir: getDir(),
-      newPathBaseDir: getDir()
+      oldPathBaseDir,
+      newPathBaseDir
     })
       .then(() => {
         onMessage(`Renamed ${path} to ${renameTo}`)
@@ -106,7 +101,7 @@
 
   function read() {
     const opts = {
-      baseDir: getDir()
+      baseDir
     }
     fs.stat(path, opts)
       .then((stat) => {
@@ -138,7 +133,7 @@
                     .getElementById('file-save')
                     .addEventListener('click', function () {
                       fs.writeTextFile(path, fileInput.value, {
-                        baseDir: getDir()
+                        baseDir
                       }).catch(onMessage)
                     })
                 })
@@ -162,7 +157,7 @@
       onMessage(`Watching ${watchPath} for changes`)
       let options = {
         recursive: watchRecursive,
-        delayMs: parseInt(watchDebounceDelay)
+        delayMs: watchDebounceDelay
       }
       if (options.delayMs === 0) {
         fs.watchImmediate(watchPath, onMessage, options)
@@ -193,10 +188,10 @@
 
   onDestroy(() => {
     if (file) {
-      file.close();
+      file.close()
     }
     if (unwatchFn) {
-      unwatchFn();
+      unwatchFn()
     }
   })
 </script>
@@ -210,10 +205,10 @@
     <br />
   {/if}
   <div class="flex gap-1">
-    <select class="input" id="dir">
-      <option value="">None</option>
-      {#each DirOptions as dir}
-        <option value={dir[1]}>{dir[0]}</option>
+    <select class="input" bind:value={baseDir}>
+      <option value={undefined} selected>None</option>
+      {#each dirOptions as dir}
+        <option value={fs.BaseDirectory[dir]}>{dir}</option>
       {/each}
     </select>
     <input
@@ -224,21 +219,21 @@
   </div>
   <br />
   <div>
-    <button class="btn" on:click={open}>Open</button>
-    <button class="btn" on:click={read}>Read</button>
-    <button class="btn" on:click={mkdir}>Mkdir</button>
-    <button class="btn" on:click={remove}>Remove</button>
+    <button class="btn" onclick={open}>Open</button>
+    <button class="btn" onclick={read}>Read</button>
+    <button class="btn" onclick={mkdir}>Mkdir</button>
+    <button class="btn" onclick={remove}>Remove</button>
     <div class="flex flex-row">
-      <button class="btn" on:click={rename}>Rename</button>
+      <button class="btn" onclick={rename}>Rename</button>
       <input class="input" bind:value={renameTo} placeholder="To" />
     </div>
-    <button class="btn" type="button" on:click={setSrc}>Use as img src</button>
+    <button class="btn" type="button" onclick={setSrc}>Use as img src</button>
   </div>
   {#if file}
     <div>
-      <button class="btn" on:click={write}>Write</button>
-      <button class="btn" on:click={truncate}>Truncate</button>
-      <button class="btn" on:click={stat}>Stat</button>
+      <button class="btn" onclick={write}>Write</button>
+      <button class="btn" onclick={truncate}>Truncate</button>
+      <button class="btn" onclick={stat}>Stat</button>
     </div>
   {/if}
 
@@ -267,8 +262,8 @@
   </div>
   <br />
   <div>
-    <button class="btn" on:click={watch}>Watch</button>
-    <button class="btn" on:click={unwatch}>Unwatch</button>
+    <button class="btn" onclick={watch}>Watch</button>
+    <button class="btn" onclick={unwatch}>Unwatch</button>
   </div>
 </div>
 

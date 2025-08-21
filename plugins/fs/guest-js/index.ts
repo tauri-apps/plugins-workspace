@@ -739,7 +739,7 @@ interface ReadFileOptions {
 async function readFile(
   path: string | URL,
   options?: ReadFileOptions
-): Promise<Uint8Array> {
+): Promise<Uint8Array<ArrayBuffer>> {
   if (path instanceof URL && path.protocol !== 'file:') {
     throw new TypeError('Must be a file URL.')
   }
@@ -1074,7 +1074,12 @@ async function writeFile(
   }
 
   if (data instanceof ReadableStream) {
-    const file = await open(path, { create: true, ...options })
+    const file = await open(path, {
+      read: false,
+      create: true,
+      write: true,
+      ...options
+    })
     const reader = data.getReader()
 
     try {
