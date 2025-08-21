@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.2]
+
+- [`21d721a0`](https://github.com/tauri-apps/plugins-workspace/commit/21d721a0c2731fc201872f5b99ea8bbdc61b0b60) ([#2928](https://github.com/tauri-apps/plugins-workspace/pull/2928) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Linux, improved error messages when OS commands fail.
+
 ## \[2.4.1]
 
 - [`d4f8299b`](https://github.com/tauri-apps/plugins-workspace/commit/d4f8299b12f107718c70692840a63768d65baaf9) ([#2844](https://github.com/tauri-apps/plugins-workspace/pull/2844) by [@yobson1](https://github.com/tauri-apps/plugins-workspace/../../yobson1)) Fix deep link protocol handler not set as default on linux

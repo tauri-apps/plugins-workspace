@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.34]
+
+### Dependencies
+
+- Upgraded to `notification@2.3.1`
+
 ## \[2.0.33]
 
 ### Dependencies

@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.2.5]
+
+### Dependencies
+
+- Upgraded to `deep-link-js@2.4.2`
+
 ## \[2.2.4]
 
 ### Dependencies

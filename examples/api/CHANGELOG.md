@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.0.30]
+
+### Dependencies
+
+- Upgraded to `notification-js@2.3.1`
+
 ## \[2.0.29]
 
 ### Dependencies
