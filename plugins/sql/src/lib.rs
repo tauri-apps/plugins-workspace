@@ -55,7 +55,7 @@ pub struct PluginConfig {
     preload: Vec<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum MigrationKind {
     Up,
     Down,
@@ -71,7 +71,7 @@ impl From<MigrationKind> for MigrationType {
 }
 
 /// A migration definition.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Migration {
     pub version: i64,
     pub description: &'static str,
@@ -79,7 +79,7 @@ pub struct Migration {
     pub kind: MigrationKind,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MigrationList(pub Vec<Migration>);
 
 impl MigrationSource<'static> for MigrationList {
