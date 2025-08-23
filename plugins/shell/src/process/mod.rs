@@ -116,13 +116,24 @@ pub struct Output {
 }
 
 fn relative_command_path(command: &Path) -> crate::Result<PathBuf> {
-    match platform::current_exe()?.parent() {
-        #[cfg(windows)]
-        Some(exe_dir) => Ok(exe_dir.join(command).with_extension("exe")),
-        #[cfg(not(windows))]
-        Some(exe_dir) => Ok(exe_dir.join(command)),
-        None => Err(crate::Error::CurrentExeHasNoParent),
-    }
+    let exe_path = platform::current_exe()?;
+
+    let exe_dir = exe_path
+        .parent()
+        .ok_or(crate::Error::CurrentExeHasNoParent)?;
+
+    let base_dir = if exe_dir.ends_with("deps") {
+        exe_dir.parent().unwrap_or(exe_dir)
+    } else {
+        exe_dir
+    };
+
+    let mut sidecar_path = base_dir.join(command);
+
+    #[cfg(windows)]
+    sidecar_path.set_extension("exe");
+
+    Ok(sidecar_path)
 }
 
 impl From<Command> for StdCommand {
