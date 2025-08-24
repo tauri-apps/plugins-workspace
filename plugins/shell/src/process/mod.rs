@@ -463,7 +463,6 @@ fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
 // tests for the commands functions.
 #[cfg(test)]
 mod tests {
-    #[cfg(not(windows))]
     use super::*;
 
     #[test]
