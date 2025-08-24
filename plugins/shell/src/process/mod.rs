@@ -115,9 +115,6 @@ pub struct Output {
     pub stderr: Vec<u8>,
 }
 
-#[cfg(windows)]
-fn append_extension(path: &Path, ext: &str) -> PathBuf {}
-
 fn relative_command_path(command: &Path) -> crate::Result<PathBuf> {
     match platform::current_exe()?.parent() {
         #[cfg(windows)]
