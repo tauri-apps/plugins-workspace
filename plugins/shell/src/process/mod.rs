@@ -120,7 +120,7 @@ fn relative_command_path(command: &Path) -> crate::Result<PathBuf> {
         #[cfg(windows)]
         Some(exe_dir) => {
             let mut command_path = exe_dir.join(command);
-            let already_exe = command_path.extension().map_or(false, |ext| ext == "exe");
+            let already_exe = command_path.extension().is_some_and(|ext| ext == "exe");
             if !already_exe {
                 // do not use with_extension to retain dots in the command filename
                 command_path.as_mut_os_string().push(".exe");
@@ -130,7 +130,7 @@ fn relative_command_path(command: &Path) -> crate::Result<PathBuf> {
         #[cfg(not(windows))]
         Some(exe_dir) => {
             let mut command_path = exe_dir.join(command);
-            if command_path.extension().map_or(false, |ext| ext == "exe") {
+            if command_path.extension().is_some_and(|ext| ext == "exe") {
                 command_path.set_extension("");
             }
             Ok(command_path)
