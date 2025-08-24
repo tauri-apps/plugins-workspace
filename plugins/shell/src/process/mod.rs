@@ -120,12 +120,21 @@ fn relative_command_path(command: &Path) -> crate::Result<PathBuf> {
         #[cfg(windows)]
         Some(exe_dir) => {
             let mut command_path = exe_dir.join(command);
-            // do not use with_extension to retain dots in the command filename
-            command_path.as_mut_os_string().push(".exe");
+            let already_exe = command_path.extension().map_or(false, |ext| ext == "exe");
+            if !already_exe {
+                // do not use with_extension to retain dots in the command filename
+                command_path.as_mut_os_string().push(".exe");
+            }
             Ok(command_path)
         }
         #[cfg(not(windows))]
-        Some(exe_dir) => Ok(exe_dir.join(command)),
+        Some(exe_dir) => {
+            let mut command_path = exe_dir.join(command);
+            if command_path.extension().map_or(false, |ext| ext == "exe") {
+                command_path.set_extension("");
+            }
+            Ok(command_path)
+        }
         None => Err(crate::Error::CurrentExeHasNoParent),
     }
 }
@@ -471,6 +480,14 @@ mod tests {
             .to_owned();
         assert_eq!(
             relative_command_path(Path::new("Tauri.Example")).unwrap(),
+            cwd_parent.join(if cfg!(windows) {
+                "Tauri.Example.exe"
+            } else {
+                "Tauri.Example"
+            })
+        );
+        assert_eq!(
+            relative_command_path(Path::new("Tauri.Example.exe")).unwrap(),
             cwd_parent.join(if cfg!(windows) {
                 "Tauri.Example.exe"
             } else {
