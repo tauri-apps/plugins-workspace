@@ -392,7 +392,7 @@ impl Updater {
         let mut raw_json: Option<serde_json::Value> = None;
         let mut last_error: Option<Error> = None;
         for url in &self.endpoints {
-            // replace {{current_version}}, {{target}} and {{arch}} in the provided URL
+            // replace {{current_version}}, {{target}}, {{arch}} and {{bundle_type}} in the provided URL
             // this is useful if we need to query example
             // https://releases.myapp.com/update/{{target}}/{{arch}}/{{current_version}}
             // will be translated into ->
@@ -405,7 +405,7 @@ impl Updater {
             let encoded_version = percent_encoding::percent_encode(version, CONTROLS_ADD);
             let encoded_version = encoded_version.to_string();
 
-            let url: Url = url
+            let mut url = url
                 .to_string()
                 // url::Url automatically url-encodes the path components
                 .replace("%7B%7Bcurrent_version%7D%7D", &encoded_version)
@@ -414,8 +414,15 @@ impl Updater {
                 // but not query parameters
                 .replace("{{current_version}}", &encoded_version)
                 .replace("{{target}}", target)
-                .replace("{{arch}}", self.arch)
-                .parse()?;
+                .replace("{{arch}}", self.arch);
+
+            if let Some(installer) = installer_for_bundle_type(bundle_type()) {
+                url = url
+                    .replace("%7B%7Bbundle_type%7D%7D", installer.name())
+                    .replace("{{bundle_type}}", installer.name());
+            }
+
+            let url: Url = url.parse()?;
 
             log::debug!("checking for updates {url}");
 

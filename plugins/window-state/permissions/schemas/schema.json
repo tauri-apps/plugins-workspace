@@ -331,10 +331,10 @@
           "markdownDescription": "Denies the save_window_state command without any pre-configured scope."
         },
         {
-          "description": "This permission set configures what kind of\noperations are available from the window state plugin.\n\n#### Granted Permissions\n\nAll operations are enabled by default.\n\n\n#### This default permission set includes:\n\n- `allow-filename`\n- `allow-restore-state`\n- `allow-save-window-state`",
+          "description": "This permission set configures what kind of\r\noperations are available from the window state plugin.\r\n\r\n#### Granted Permissions\r\n\r\nAll operations are enabled by default.\r\n\r\n\n#### This default permission set includes:\n\n- `allow-filename`\n- `allow-restore-state`\n- `allow-save-window-state`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "This permission set configures what kind of\noperations are available from the window state plugin.\n\n#### Granted Permissions\n\nAll operations are enabled by default.\n\n\n#### This default permission set includes:\n\n- `allow-filename`\n- `allow-restore-state`\n- `allow-save-window-state`"
+          "markdownDescription": "This permission set configures what kind of\r\noperations are available from the window state plugin.\r\n\r\n#### Granted Permissions\r\n\r\nAll operations are enabled by default.\r\n\r\n\n#### This default permission set includes:\n\n- `allow-filename`\n- `allow-restore-state`\n- `allow-save-window-state`"
         }
       ]
     }
