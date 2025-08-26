@@ -220,7 +220,38 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(MessageDialogResult) + Send + '
 
     let handle = dialog.dialog.app_handle().to_owned();
     let _ = handle.run_on_main_thread(move || {
+        let buttons = dialog.buttons.clone();
         let dialog = AsyncMessageDialog::from(dialog).show();
-        std::thread::spawn(move || f(tauri::async_runtime::block_on(dialog)));
+        std::thread::spawn(move || {
+            let result = tauri::async_runtime::block_on(dialog);
+            // on Linux rfd does not return rfd::MessageDialogResult::Custom, so we must map manually
+            let result = match (result, buttons) {
+                (rfd::MessageDialogResult::Ok, MessageDialogButtons::OkCustom(s)) => {
+                    rfd::MessageDialogResult::Custom(s)
+                }
+                (
+                    rfd::MessageDialogResult::Ok,
+                    MessageDialogButtons::OkCancelCustom(ok, _cancel),
+                ) => rfd::MessageDialogResult::Custom(ok),
+                (
+                    rfd::MessageDialogResult::Cancel,
+                    MessageDialogButtons::OkCancelCustom(_ok, cancel),
+                ) => rfd::MessageDialogResult::Custom(cancel),
+                (
+                    rfd::MessageDialogResult::Yes,
+                    MessageDialogButtons::YesNoCancelCustom(yes, _no, _cancel),
+                ) => rfd::MessageDialogResult::Custom(yes),
+                (
+                    rfd::MessageDialogResult::No,
+                    MessageDialogButtons::YesNoCancelCustom(_yes, no, _cancel),
+                ) => rfd::MessageDialogResult::Custom(no),
+                (
+                    rfd::MessageDialogResult::Cancel,
+                    MessageDialogButtons::YesNoCancelCustom(_yes, _no, cancel),
+                ) => rfd::MessageDialogResult::Custom(cancel),
+                (result, _) => result,
+            };
+            f(result);
+        });
     });
 }
