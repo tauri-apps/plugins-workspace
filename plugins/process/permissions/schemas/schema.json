@@ -319,10 +319,10 @@
           "markdownDescription": "Denies the restart command without any pre-configured scope."
         },
         {
-          "description": "This permission set configures which\r\nprocess features are by default exposed.\r\n\r\n#### Granted Permissions\r\n\r\nThis enables to quit via `allow-exit` and restart via `allow-restart`\r\nthe application.\r\n\n#### This default permission set includes:\n\n- `allow-exit`\n- `allow-restart`",
+          "description": "This permission set configures which\nprocess features are by default exposed.\n\n#### Granted Permissions\n\nThis enables to quit via `allow-exit` and restart via `allow-restart`\nthe application.\n\n#### This default permission set includes:\n\n- `allow-exit`\n- `allow-restart`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "This permission set configures which\r\nprocess features are by default exposed.\r\n\r\n#### Granted Permissions\r\n\r\nThis enables to quit via `allow-exit` and restart via `allow-restart`\r\nthe application.\r\n\n#### This default permission set includes:\n\n- `allow-exit`\n- `allow-restart`"
+          "markdownDescription": "This permission set configures which\nprocess features are by default exposed.\n\n#### Granted Permissions\n\nThis enables to quit via `allow-exit` and restart via `allow-restart`\nthe application.\n\n#### This default permission set includes:\n\n- `allow-exit`\n- `allow-restart`"
         }
       ]
     }

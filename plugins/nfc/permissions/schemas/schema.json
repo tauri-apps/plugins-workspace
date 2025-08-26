@@ -331,10 +331,10 @@
           "markdownDescription": "Denies the write command without any pre-configured scope."
         },
         {
-          "description": "This permission set configures what kind of\r\noperations are available from the nfc plugin.\r\n\r\n#### Granted Permissions\r\n\r\nChecking if the NFC functionality is available\r\nand scanning nearby tags is allowed.\r\nWriting to tags needs to be manually enabled.\r\n\r\n\n#### This default permission set includes:\n\n- `allow-is-available`\n- `allow-scan`",
+          "description": "This permission set configures what kind of\noperations are available from the nfc plugin.\n\n#### Granted Permissions\n\nChecking if the NFC functionality is available\nand scanning nearby tags is allowed.\nWriting to tags needs to be manually enabled.\n\n\n#### This default permission set includes:\n\n- `allow-is-available`\n- `allow-scan`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "This permission set configures what kind of\r\noperations are available from the nfc plugin.\r\n\r\n#### Granted Permissions\r\n\r\nChecking if the NFC functionality is available\r\nand scanning nearby tags is allowed.\r\nWriting to tags needs to be manually enabled.\r\n\r\n\n#### This default permission set includes:\n\n- `allow-is-available`\n- `allow-scan`"
+          "markdownDescription": "This permission set configures what kind of\noperations are available from the nfc plugin.\n\n#### Granted Permissions\n\nChecking if the NFC functionality is available\nand scanning nearby tags is allowed.\nWriting to tags needs to be manually enabled.\n\n\n#### This default permission set includes:\n\n- `allow-is-available`\n- `allow-scan`"
         }
       ]
     }

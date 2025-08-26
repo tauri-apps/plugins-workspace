@@ -343,10 +343,10 @@
           "markdownDescription": "Denies the select command without any pre-configured scope."
         },
         {
-          "description": "### Default Permissions\r\n\r\nThis permission set configures what kind of\r\ndatabase operations are available from the sql plugin.\r\n\r\n### Granted Permissions\r\n\r\nAll reading related operations are enabled.\r\nAlso allows to load or close a connection.\r\n\r\n\n#### This default permission set includes:\n\n- `allow-close`\n- `allow-load`\n- `allow-select`",
+          "description": "### Default Permissions\n\nThis permission set configures what kind of\ndatabase operations are available from the sql plugin.\n\n### Granted Permissions\n\nAll reading related operations are enabled.\nAlso allows to load or close a connection.\n\n\n#### This default permission set includes:\n\n- `allow-close`\n- `allow-load`\n- `allow-select`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "### Default Permissions\r\n\r\nThis permission set configures what kind of\r\ndatabase operations are available from the sql plugin.\r\n\r\n### Granted Permissions\r\n\r\nAll reading related operations are enabled.\r\nAlso allows to load or close a connection.\r\n\r\n\n#### This default permission set includes:\n\n- `allow-close`\n- `allow-load`\n- `allow-select`"
+          "markdownDescription": "### Default Permissions\n\nThis permission set configures what kind of\ndatabase operations are available from the sql plugin.\n\n### Granted Permissions\n\nAll reading related operations are enabled.\nAlso allows to load or close a connection.\n\n\n#### This default permission set includes:\n\n- `allow-close`\n- `allow-load`\n- `allow-select`"
         }
       ]
     }
