@@ -1,8 +1,9 @@
 <script>
   import * as fs from '@tauri-apps/plugin-fs'
+  import * as os from '@tauri-apps/plugin-os'
   import { convertFileSrc } from '@tauri-apps/api/core'
   import { arrayBufferToBase64 } from '../lib/utils'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
 
   const { onMessage, insecureRenderHtml } = $props()
 
@@ -18,6 +19,12 @@
   let baseDir = $state()
   let unwatchFn
   let unwatchPath = ''
+  let isMobile = $state(false)
+
+  onMount(() => {
+    let platform = os.platform()
+    isMobile = platform === 'android' || platform === 'ios'
+  })
 
   const dirOptions = Object.keys(fs.BaseDirectory).filter((key) =>
     isNaN(parseInt(key))
@@ -38,7 +45,7 @@
   }
 
   function mkdir() {
-    fs.mkdir(path, { baseDir })
+    fs.mkdir(path, { baseDir, recursive: true })
       .then(() => {
         onMessage(`Created dir ${path}`)
       })
@@ -69,6 +76,16 @@
       .truncate(0)
       .then(() => {
         onMessage(`Truncated file`)
+      })
+      .catch(onMessage)
+  }
+
+  function write() {
+    const encoder = new TextEncoder()
+    file
+      .write(encoder.encode('Hello from Tauri :)'))
+      .then(() => {
+        onMessage(`wrote to file`)
       })
       .catch(onMessage)
   }
@@ -180,6 +197,13 @@
 </script>
 
 <div class="flex flex-col">
+  {#if isMobile}
+    <div>
+      On mobile, paths outside of App* paths require the use of dialogs
+      regardless of Tauri's scope mechanism.
+    </div>
+    <br />
+  {/if}
   <div class="flex gap-1">
     <select class="input" bind:value={baseDir}>
       <option value={undefined} selected>None</option>
@@ -207,6 +231,7 @@
   </div>
   {#if file}
     <div>
+      <button class="btn" onclick={write}>Write</button>
       <button class="btn" onclick={truncate}>Truncate</button>
       <button class="btn" onclick={stat}>Stat</button>
     </div>

@@ -254,6 +254,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
+        /// - **Linux**: Needs the `xdg-mime` and `update-desktop-database` commands available on the system.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn register<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
@@ -332,11 +333,13 @@ mod imp {
 
                 Command::new("update-desktop-database")
                     .arg(target)
-                    .status()?;
+                    .status()
+                    .map_err(|error| crate::Error::Execute("update-desktop-database", error))?;
 
                 Command::new("xdg-mime")
                     .args(["default", &file_name, mime_type.as_str()])
-                    .status()?;
+                    .status()
+                    .map_err(|error| crate::Error::Execute("xdg-mime", error))?;
 
                 Ok(())
             }
@@ -405,6 +408,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
+        /// - **Linux**: Needs the `xdg-mime` command available on the system.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
             #[cfg(windows)]
@@ -439,7 +443,8 @@ mod imp {
                         "default",
                         &format!("x-scheme-handler/{}", _protocol.as_ref()),
                     ])
-                    .output()?;
+                    .output()
+                    .map_err(|error| crate::Error::Execute("xdg-mime", error))?;
 
                 Ok(String::from_utf8_lossy(&output.stdout).contains(&file_name))
             }

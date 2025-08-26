@@ -132,7 +132,7 @@ impl<R: Runtime> NotificationBuilder<R> {
         self
     }
 
-    /// The sound resource name. Only available on mobile.
+    /// The sound resource name for the notification.
     pub fn sound(mut self, sound: impl Into<String>) -> Self {
         self.data.sound.replace(sound.into());
         self

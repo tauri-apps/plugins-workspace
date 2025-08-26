@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-deep-link"
-version = "2.4.1"
+version = "2.4.2"
 description = "Set your Tauri application as the default handler for an URL"
 authors = { workspace = true }
 license = { workspace = true }
@@ -26,6 +26,9 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tauri-utils = { workspace = true }
 tauri-plugin = { workspace = true, features = ["build"] }
+
+[target."cfg(target_os = \"macos\")".build-dependencies]
+plist = "1"
 
 [dependencies]
 serde = { workspace = true }

@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.4.0]
+
+- [`5ac8fbb1`](https://github.com/tauri-apps/plugins-workspace/commit/5ac8fbb1fa76714aa8cc9c0d74e0aebab12f9755) ([#2857](https://github.com/tauri-apps/plugins-workspace/pull/2857) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Allow setting defaults from the JavaScript API
+- [`5ac8fbb1`](https://github.com/tauri-apps/plugins-workspace/commit/5ac8fbb1fa76714aa8cc9c0d74e0aebab12f9755) ([#2857](https://github.com/tauri-apps/plugins-workspace/pull/2857) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Add an new option `overrideDefaults` for creating/loading and reloading the store that overrides the store with the on-disk state, ignoring defaults
+
 ## \[2.3.0]
 
 - [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
