@@ -12,8 +12,6 @@ resolver = "2"
 serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
 log = "0.4"
-# Make sure to update the one in `plugins/updater/Cargo.toml` when we bump this
-# since it is not using `workspace = true`
 tauri = { version = "2.6", default-features = false }
 tauri-build = "2.3"
 tauri-plugin = "2.3"
