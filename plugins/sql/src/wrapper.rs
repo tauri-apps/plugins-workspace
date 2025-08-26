@@ -87,7 +87,7 @@ impl DbPool {
     pub(crate) async fn connect<R: Runtime>(
         conn_url: &str,
         _app: &AppHandle<R>,
-        options: Option<ConnectionOptions>,
+        #[allow(unused_variables)] options: Option<ConnectionOptions>,
     ) -> Result<Self, crate::Error> {
         match conn_url
             .split_once(':')
