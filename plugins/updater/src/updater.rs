@@ -404,25 +404,23 @@ impl Updater {
             const CONTROLS_ADD: &AsciiSet = &CONTROLS.add(b'+');
             let encoded_version = percent_encoding::percent_encode(version, CONTROLS_ADD);
             let encoded_version = encoded_version.to_string();
+            let installer = installer_for_bundle_type(bundle_type())
+                .map(|i| i.name())
+                .unwrap_or("unknown");
 
-            let mut url = url
+            let url: Url = url
                 .to_string()
                 // url::Url automatically url-encodes the path components
                 .replace("%7B%7Bcurrent_version%7D%7D", &encoded_version)
                 .replace("%7B%7Btarget%7D%7D", target)
                 .replace("%7B%7Barch%7D%7D", self.arch)
+                .replace("%7B%7Bbundle_type%7D%7D", installer)
                 // but not query parameters
                 .replace("{{current_version}}", &encoded_version)
                 .replace("{{target}}", target)
-                .replace("{{arch}}", self.arch);
-
-            if let Some(installer) = installer_for_bundle_type(bundle_type()) {
-                url = url
-                    .replace("%7B%7Bbundle_type%7D%7D", installer.name())
-                    .replace("{{bundle_type}}", installer.name());
-            }
-
-            let url: Url = url.parse()?;
+                .replace("{{arch}}", self.arch)
+                .replace("{{bundle_type}}", installer)
+                .parse()?;
 
             log::debug!("checking for updates {url}");
 
