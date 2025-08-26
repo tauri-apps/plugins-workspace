@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-fs"
-version = "2.3.0"
+version = "2.4.2"
 description = "Access the file system."
 authors = { workspace = true }
 license = { workspace = true }
@@ -24,7 +24,7 @@ ios = { level = "partial", notes = "Access is restricted to Application folder b
 tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
-toml = "0.8"
+toml = "0.9"
 tauri-utils = { workspace = true, features = ["build"] }
 
 [dependencies]
@@ -41,7 +41,7 @@ notify = { version = "8", optional = true, features = [
   "serde",
   "serialization-compat-6",
 ] }
-notify-debouncer-full = { version = "0.5", optional = true }
+notify-debouncer-full = { version = "0.6", optional = true }
 dunce = { workspace = true }
 percent-encoding = "2"
 

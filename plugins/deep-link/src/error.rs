@@ -23,6 +23,9 @@ pub enum Error {
     #[cfg(target_os = "linux")]
     #[error(transparent)]
     ParseIni(#[from] ini::ParseError),
+    #[cfg(target_os = "linux")]
+    #[error("Failed to run OS command `{0}`: {1}")]
+    Execute(&'static str, #[source] std::io::Error),
     #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),

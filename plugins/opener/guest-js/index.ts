@@ -35,12 +35,14 @@ import { invoke } from '@tauri-apps/api/core'
  *
  * @param url The URL to open.
  * @param openWith The app to open the URL with. If not specified, defaults to the system default application for the specified url type.
+ * On mobile, `openWith` can be provided as `inAppBrowser` to open the URL in an in-app browser. Otherwise, it will open the URL in the system default browser.
  *
  * @since 2.0.0
  */
 export async function openUrl(
   url: string | URL,
-  openWith?: string
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  openWith?: 'inAppBrowser' | string
 ): Promise<void> {
   await invoke('plugin:opener|open_url', {
     url,
@@ -84,12 +86,14 @@ export async function openPath(path: string, openWith?: string): Promise<void> {
  * ```typescript
  * import { revealItemInDir } from '@tauri-apps/plugin-opener';
  * await revealItemInDir('/path/to/file');
+ * await revealItemInDir([ '/path/to/file', '/path/to/another/file' ]);
  * ```
  *
  * @param path The path to reveal.
  *
  * @since 2.0.0
  */
-export async function revealItemInDir(path: string) {
-  return invoke('plugin:opener|reveal_item_in_dir', { path })
+export async function revealItemInDir(path: string | string[]): Promise<void> {
+  const paths = typeof path === 'string' ? [path] : path
+  return invoke('plugin:opener|reveal_item_in_dir', { paths })
 }

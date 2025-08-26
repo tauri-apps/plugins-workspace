@@ -1,194 +1,214 @@
 <script>
-  import * as fs from "@tauri-apps/plugin-fs";
-  import { convertFileSrc } from "@tauri-apps/api/core";
-  import { arrayBufferToBase64 } from "../lib/utils";
-  import { onDestroy } from "svelte";
+  import * as fs from '@tauri-apps/plugin-fs'
+  import * as os from '@tauri-apps/plugin-os'
+  import { convertFileSrc } from '@tauri-apps/api/core'
+  import { arrayBufferToBase64 } from '../lib/utils'
+  import { onDestroy, onMount } from 'svelte'
 
-  export let onMessage;
-  export let insecureRenderHtml;
+  const { onMessage, insecureRenderHtml } = $props()
 
-  let path = "";
-  let img;
+  let path = $state('')
+  let img
   /** @type {fs.FileHandle} */
-  let file;
-  let renameTo;
-  let watchPath = "";
-  let watchDebounceDelay = "0";
-  let watchRecursive = false;
-  let unwatchFn;
-  let unwatchPath = "";
+  let file = $state()
+  let renameTo = $state()
+  let watchPath = $state('')
+  let watchDebounceDelay = $state(0)
+  let watchRecursive = $state(false)
+  /** @type {fs.BaseDirectory | undefined} */
+  let baseDir = $state()
+  let unwatchFn
+  let unwatchPath = ''
+  let isMobile = $state(false)
 
-  function getDir() {
-    const dirSelect = document.getElementById("dir");
-    return dirSelect.value ? parseInt(dir.value) : null;
-  }
+  onMount(() => {
+    let platform = os.platform()
+    isMobile = platform === 'android' || platform === 'ios'
+  })
 
-  const DirOptions = Object.keys(fs.BaseDirectory)
-    .filter((key) => isNaN(parseInt(key)))
-    .map((dir) => [dir, fs.BaseDirectory[dir]]);
+  const dirOptions = Object.keys(fs.BaseDirectory).filter((key) =>
+    isNaN(parseInt(key))
+  )
 
   function open() {
     fs.open(path, {
-      baseDir: getDir(),
+      baseDir,
       read: true,
       write: true,
-      create: true,
+      create: true
     })
       .then((f) => {
-        file = f;
-        onMessage(`Opened ${path}`);
+        file = f
+        onMessage(`Opened ${path}`)
       })
-      .catch(onMessage);
+      .catch(onMessage)
   }
 
   function mkdir() {
-    fs.mkdir(path, { baseDir: getDir() })
+    fs.mkdir(path, { baseDir, recursive: true })
       .then(() => {
-        onMessage(`Created dir ${path}`);
+        onMessage(`Created dir ${path}`)
       })
-      .catch(onMessage);
+      .catch(onMessage)
   }
 
   function remove() {
-    fs.remove(path, { baseDir: getDir() })
+    fs.remove(path, { baseDir })
       .then(() => {
-        onMessage(`Removed ${path}`);
+        onMessage(`Removed ${path}`)
       })
-      .catch(onMessage);
+      .catch(onMessage)
   }
 
   function rename() {
     fs.rename(path, renameTo, {
-      oldPathBaseDir: getDir(),
-      newPathBaseDir: getDir(),
+      oldPathBaseDir,
+      newPathBaseDir
     })
       .then(() => {
-        onMessage(`Renamed ${path} to ${renameTo}`);
+        onMessage(`Renamed ${path} to ${renameTo}`)
       })
-      .catch(onMessage);
+      .catch(onMessage)
   }
 
   function truncate() {
     file
       .truncate(0)
       .then(() => {
-        onMessage(`Truncated file`);
+        onMessage(`Truncated file`)
       })
-      .catch(onMessage);
+      .catch(onMessage)
+  }
+
+  function write() {
+    const encoder = new TextEncoder()
+    file
+      .write(encoder.encode('Hello from Tauri :)'))
+      .then(() => {
+        onMessage(`wrote to file`)
+      })
+      .catch(onMessage)
   }
 
   function stat() {
     file
       .stat()
       .then((stat) => {
-        onMessage(`File stat ${JSON.stringify(stat)}`);
+        onMessage(`File stat ${JSON.stringify(stat)}`)
       })
-      .catch(onMessage);
+      .catch(onMessage)
   }
 
   function read() {
     const opts = {
-      baseDir: getDir(),
-    };
+      baseDir
+    }
     fs.stat(path, opts)
       .then((stat) => {
-        const isFile = stat.isFile;
+        const isFile = stat.isFile
 
         const promise = isFile
           ? fs.readFile(path, opts)
-          : fs.readDir(path, opts);
+          : fs.readDir(path, opts)
         promise
           .then(function (response) {
             if (isFile) {
-              if (path.includes(".png") || path.includes(".jpg")) {
+              if (path.includes('.png') || path.includes('.jpg')) {
                 arrayBufferToBase64(
                   new Uint8Array(response),
                   function (base64) {
-                    const src = "data:image/png;base64," + base64;
-                    insecureRenderHtml('<img src="' + src + '"></img>');
+                    const src = 'data:image/png;base64,' + base64
+                    insecureRenderHtml('<img src="' + src + '"></img>')
                   }
-                );
+                )
               } else {
-                const value = String.fromCharCode.apply(null, response);
+                const value = String.fromCharCode.apply(null, response)
                 insecureRenderHtml(
                   '<textarea id="file-response"></textarea><button id="file-save">Save</button>'
-                );
+                )
                 setTimeout(() => {
-                  const fileInput = document.getElementById("file-response");
-                  fileInput.value = value;
+                  const fileInput = document.getElementById('file-response')
+                  fileInput.value = value
                   document
-                    .getElementById("file-save")
-                    .addEventListener("click", function () {
+                    .getElementById('file-save')
+                    .addEventListener('click', function () {
                       fs.writeTextFile(path, fileInput.value, {
-                        baseDir: getDir(),
-                      }).catch(onMessage);
-                    });
-                });
+                        baseDir
+                      }).catch(onMessage)
+                    })
+                })
               }
             } else {
-              onMessage(response);
+              onMessage(response)
             }
           })
-          .catch(onMessage);
+          .catch(onMessage)
       })
-      .catch(onMessage);
+      .catch(onMessage)
   }
 
   function setSrc() {
-    img.src = convertFileSrc(path);
+    img.src = convertFileSrc(path)
   }
 
   function watch() {
-    unwatch();
+    unwatch()
     if (watchPath) {
-      onMessage(`Watching ${watchPath} for changes`);
+      onMessage(`Watching ${watchPath} for changes`)
       let options = {
         recursive: watchRecursive,
-        delayMs: parseInt(watchDebounceDelay),
-      };
+        delayMs: watchDebounceDelay
+      }
       if (options.delayMs === 0) {
         fs.watchImmediate(watchPath, onMessage, options)
           .then((fn) => {
-            unwatchFn = fn;
-            unwatchPath = watchPath;
+            unwatchFn = fn
+            unwatchPath = watchPath
           })
-          .catch(onMessage);
+          .catch(onMessage)
       } else {
         fs.watch(watchPath, onMessage, options)
           .then((fn) => {
-            unwatchFn = fn;
-            unwatchPath = watchPath;
+            unwatchFn = fn
+            unwatchPath = watchPath
           })
-          .catch(onMessage);
+          .catch(onMessage)
       }
     }
   }
 
   function unwatch() {
     if (unwatchFn) {
-      onMessage(`Stopped watching ${unwatchPath} for changes`);
-      unwatchFn();
+      onMessage(`Stopped watching ${unwatchPath} for changes`)
+      unwatchFn()
     }
-    unwatchFn = undefined;
-    unwatchPath = undefined;
+    unwatchFn = undefined
+    unwatchPath = undefined
   }
 
   onDestroy(() => {
     if (file) {
-      file.close();
+      file.close()
     }
     if (unwatchFn) {
-      unwatchFn();
+      unwatchFn()
     }
   })
 </script>
 
 <div class="flex flex-col">
+  {#if isMobile}
+    <div>
+      On mobile, paths outside of App* paths require the use of dialogs
+      regardless of Tauri's scope mechanism.
+    </div>
+    <br />
+  {/if}
   <div class="flex gap-1">
-    <select class="input" id="dir">
-      <option value="">None</option>
-      {#each DirOptions as dir}
-        <option value={dir[1]}>{dir[0]}</option>
+    <select class="input" bind:value={baseDir}>
+      <option value={undefined} selected>None</option>
+      {#each dirOptions as dir}
+        <option value={fs.BaseDirectory[dir]}>{dir}</option>
       {/each}
     </select>
     <input
@@ -199,20 +219,21 @@
   </div>
   <br />
   <div>
-    <button class="btn" on:click={open}>Open</button>
-    <button class="btn" on:click={read}>Read</button>
-    <button class="btn" on:click={mkdir}>Mkdir</button>
-    <button class="btn" on:click={remove}>Remove</button>
+    <button class="btn" onclick={open}>Open</button>
+    <button class="btn" onclick={read}>Read</button>
+    <button class="btn" onclick={mkdir}>Mkdir</button>
+    <button class="btn" onclick={remove}>Remove</button>
     <div class="flex flex-row">
-      <button class="btn" on:click={rename}>Rename</button>
+      <button class="btn" onclick={rename}>Rename</button>
       <input class="input" bind:value={renameTo} placeholder="To" />
     </div>
-    <button class="btn" type="button" on:click={setSrc}>Use as img src</button>
+    <button class="btn" type="button" onclick={setSrc}>Use as img src</button>
   </div>
   {#if file}
     <div>
-      <button class="btn" on:click={truncate}>Truncate</button>
-      <button class="btn" on:click={stat}>Stat</button>
+      <button class="btn" onclick={write}>Write</button>
+      <button class="btn" onclick={truncate}>Truncate</button>
+      <button class="btn" onclick={stat}>Stat</button>
     </div>
   {/if}
 
@@ -241,8 +262,8 @@
   </div>
   <br />
   <div>
-    <button class="btn" on:click={watch}>Watch</button>
-    <button class="btn" on:click={unwatch}>Unwatch</button>
+    <button class="btn" onclick={watch}>Watch</button>
+    <button class="btn" onclick={unwatch}>Unwatch</button>
   </div>
 </div>
 
