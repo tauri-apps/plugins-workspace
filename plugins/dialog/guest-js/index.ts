@@ -80,7 +80,7 @@ interface SaveDialogOptions {
 /**
  * Default buttons for a message dialog.
  *
- * @since 2.3.0
+ * @since 2.4.0
  */
 export type MessageDialogDefaultButtons =
   | 'Ok'
@@ -91,7 +91,7 @@ export type MessageDialogDefaultButtons =
 /**
  * The Yes, No and Cancel buttons of a message dialog.
  *
- * @since 2.3.0
+ * @since 2.4.0
  */
 export type MessageDialogButtonsYesNoCancel = {
   /** The Yes button. */
@@ -105,7 +105,7 @@ export type MessageDialogButtonsYesNoCancel = {
 /**
  * The Ok and Cancel buttons of a message dialog.
  *
- * @since 2.3.0
+ * @since 2.4.0
  */
 export type MessageDialogButtonsOkCancel = {
   /** The Ok button. */
@@ -117,7 +117,7 @@ export type MessageDialogButtonsOkCancel = {
 /**
  * The Ok button of a message dialog.
  *
- * @since 2.3.0
+ * @since 2.4.0
  */
 export type MessageDialogButtonsOk = {
   /** The Ok button. */
@@ -127,7 +127,7 @@ export type MessageDialogButtonsOk = {
 /**
  * Custom buttons for a message dialog.
  *
- * @since 2.3.0
+ * @since 2.4.0
  */
 export type MessageDialogCustomButtons =
   | MessageDialogButtonsYesNoCancel
@@ -137,7 +137,7 @@ export type MessageDialogCustomButtons =
 /**
  * The buttons of a message dialog.
  *
- * @since 2.3.0
+ * @since 2.4.0
  */
 export type MessageDialogButtons =
   | MessageDialogDefaultButtons
@@ -160,7 +160,7 @@ interface MessageDialogOptions {
   /**
    * The buttons of the dialog.
    *
-   * @since 2.3.0
+   * @since 2.4.0
    */
   buttons?: MessageDialogButtons
 }
@@ -307,7 +307,7 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
  * The result is a string if the dialog has custom buttons,
  * otherwise it is one of the default buttons.
  *
- * @since 2.3.0
+ * @since 2.4.0
  */
 export type MessageDialogResult = 'Yes' | 'No' | 'Ok' | 'Cancel' | (string & {})
 
