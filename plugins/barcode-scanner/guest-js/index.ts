@@ -12,6 +12,9 @@ export type { PermissionState } from '@tauri-apps/api/core'
 
 export enum Format {
   QRCode = 'QR_CODE',
+  /**
+   * Not supported on iOS.
+   */
   UPC_A = 'UPC_A',
   UPC_E = 'UPC_E',
   EAN8 = 'EAN_8',
@@ -19,11 +22,26 @@ export enum Format {
   Code39 = 'CODE_39',
   Code93 = 'CODE_93',
   Code128 = 'CODE_128',
+  /**
+   * Not supported on iOS.
+   */
   Codabar = 'CODABAR',
   ITF = 'ITF',
   Aztec = 'AZTEC',
   DataMatrix = 'DATA_MATRIX',
-  PDF417 = 'PDF_417'
+  PDF417 = 'PDF_417',
+  /**
+   * Not supported on Android. Requires iOS 15.4+
+   */
+  GS1DataBar = 'GS1_DATA_BAR',
+  /**
+   * Not supported on Android. Requires iOS 15.4+
+   */
+  GS1DataBarLimited = 'GS1_DATA_BAR_LIMITED',
+  /**
+   * Not supported on Android. Requires iOS 15.4+
+   */
+  GS1DataBarExpanded = 'GS1_DATA_BAR_EXPANDED'
 }
 
 export interface ScanOptions {

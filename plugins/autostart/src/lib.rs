@@ -103,6 +103,7 @@ pub struct Builder {
     #[cfg(target_os = "macos")]
     macos_launcher: MacosLauncher,
     args: Vec<String>,
+    app_name: Option<String>,
 }
 
 impl Builder {
@@ -154,12 +155,32 @@ impl Builder {
         self
     }
 
+    /// Sets the app name to be used for the auto start entry.
+    ///
+    /// ## Examples
+    ///
+    /// ```no_run
+    /// Builder::new()
+    ///     .app_name("My Custom Name"))
+    ///     .build();
+    /// ```
+    pub fn app_name<S: Into<String>>(mut self, app_name: S) -> Self {
+        self.app_name = Some(app_name.into());
+        self
+    }
+
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         PluginBuilder::new("autostart")
             .invoke_handler(tauri::generate_handler![enable, disable, is_enabled])
             .setup(move |app, _api| {
                 let mut builder = AutoLaunchBuilder::new();
-                builder.set_app_name(&app.package_info().name);
+
+                let app_name = self
+                    .app_name
+                    .as_ref()
+                    .unwrap_or_else(|| &app.package_info().name);
+                builder.set_app_name(app_name);
+
                 builder.set_args(&self.args);
 
                 let current_exe = current_exe()?;

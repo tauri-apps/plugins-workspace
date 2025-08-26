@@ -19,7 +19,7 @@ tauri-build = { workspace = true }
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
-tauri = { workspace = true, features = ["wry", "compression"] }
+tauri = { workspace = true, features = ["wry", "common-controls-v6", "x11"] }
 tauri-plugin-deep-link = { path = "../../../" }
 tauri-plugin-log = { path = "../../../../log" }
 tauri-plugin-single-instance = { path = "../../../../single-instance", features = [

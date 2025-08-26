@@ -1,5 +1,22 @@
 # Changelog
 
+## \[2.4.2]
+
+- [`4eb36b0f`](https://github.com/tauri-apps/plugins-workspace/commit/4eb36b0ff57acb0bb1b911c583efa3bf2f56aa32) ([#2907](https://github.com/tauri-apps/plugins-workspace/pull/2907) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fixed calling `writeFile` with `data: ReadableStream` throws `Invalid argument`
+- [`515182a1`](https://github.com/tauri-apps/plugins-workspace/commit/515182a179d4439079b2b7f6927555ba5ab0b035) ([#2915](https://github.com/tauri-apps/plugins-workspace/pull/2915) by [@samhinshaw](https://github.com/tauri-apps/plugins-workspace/../../samhinshaw)) `readFile` now returns a more specific type `Promise<Uint8Array<ArrayBuffer>>` instead of the default `Promise<Uint8Array<ArrayBufferLike>`
+
+## \[2.4.1]
+
+- [`44a1f659`](https://github.com/tauri-apps/plugins-workspace/commit/44a1f659125a341191420e650608b0b6ff316a0e) ([#2846](https://github.com/tauri-apps/plugins-workspace/pull/2846) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `writeFile` doesn't create a new file by default when the data is a `ReadableStream`
+
+## \[2.4.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.3.0]
+
+- [`dac4d537`](https://github.com/tauri-apps/plugins-workspace/commit/dac4d53724bb3430a00a3f0119857cba32a031e8) ([#2613](https://github.com/tauri-apps/plugins-workspace/pull/2613) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Reduce the overhead of `watch` and `unwatch`
+
 ## \[2.2.1]
 
 ### bug

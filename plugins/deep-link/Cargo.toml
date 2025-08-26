@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-deep-link"
-version = "2.2.1"
+version = "2.4.2"
 description = "Set your Tauri application as the default handler for an URL"
 authors = { workspace = true }
 license = { workspace = true }
@@ -17,15 +17,18 @@ targets = ["x86_64-linux-android"]
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }
 linux = { level = "full", notes = "" }
-macos = { level = "partial", notes = "Runtime deep link registration is not supported" }
-android = { level = "partial", notes = "Runtime deep link registration is not supported" }
-ios = { level = "partial", notes = "Runtime deep link registration is not supported" }
+macos = { level = "partial", notes = "Deep links must be registered in config. Dynamic registration at runtime is not supported." }
+android = { level = "partial", notes = "Deep links must be registered in config. Dynamic registration at runtime is not supported." }
+ios = { level = "partial", notes = "Deep links must be registered in config. Dynamic registration at runtime is not supported." }
 
 [build-dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri-utils = { workspace = true }
 tauri-plugin = { workspace = true, features = ["build"] }
+
+[target."cfg(target_os = \"macos\")".build-dependencies]
+plist = "1"
 
 [dependencies]
 serde = { workspace = true }

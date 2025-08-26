@@ -14,6 +14,7 @@ const PLUGIN_IDENTIFIER: &str = "app.tauri.opener";
 tauri::ios_plugin_binding!(init_plugin_opener);
 
 mod commands;
+mod config;
 mod error;
 mod open;
 mod reveal_item_in_dir;
@@ -24,15 +25,16 @@ pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 
 pub use open::{open_path, open_url};
-pub use reveal_item_in_dir::reveal_item_in_dir;
+pub use reveal_item_in_dir::{reveal_item_in_dir, reveal_items_in_dir};
 
 pub struct Opener<R: Runtime> {
-    // we use `fn() -> R` to slicence the unused generic error
+    // we use `fn() -> R` to silence the unused generic error
     // while keeping this struct `Send + Sync` without requiring `R` to be
     #[cfg(not(mobile))]
     _marker: std::marker::PhantomData<fn() -> R>,
     #[cfg(mobile)]
     mobile_plugin_handle: PluginHandle<R>,
+    require_literal_leading_dot: Option<bool>,
 }
 
 impl<R: Runtime> Opener<R> {
@@ -53,7 +55,7 @@ impl<R: Runtime> Opener<R> {
     ///
     /// ## Platform-specific:
     ///
-    /// - **Android / iOS**: Always opens using default program.
+    /// - **Android / iOS**: Always opens using default program, unless `with` is provided as "inAppBrowser".
     #[cfg(desktop)]
     pub fn open_url(&self, url: impl Into<String>, with: Option<impl Into<String>>) -> Result<()> {
         crate::open::open(url.into(), with.map(Into::into))
@@ -76,11 +78,14 @@ impl<R: Runtime> Opener<R> {
     ///
     /// ## Platform-specific:
     ///
-    /// - **Android / iOS**: Always opens using default program.
+    /// - **Android / iOS**: Always opens using default program, unless `with` is provided as "inAppBrowser".
     #[cfg(mobile)]
-    pub fn open_url(&self, url: impl Into<String>, _with: Option<impl Into<String>>) -> Result<()> {
+    pub fn open_url(&self, url: impl Into<String>, with: Option<impl Into<String>>) -> Result<()> {
         self.mobile_plugin_handle
-            .run_mobile_plugin("open", url.into())
+            .run_mobile_plugin(
+                "open",
+                serde_json::json!({ "url": url.into(), "with": with.map(Into::into) }),
+            )
             .map_err(Into::into)
     }
 
@@ -141,7 +146,15 @@ impl<R: Runtime> Opener<R> {
     }
 
     pub fn reveal_item_in_dir<P: AsRef<Path>>(&self, p: P) -> Result<()> {
-        crate::reveal_item_in_dir::reveal_item_in_dir(p)
+        reveal_item_in_dir(p)
+    }
+
+    pub fn reveal_items_in_dir<I, P>(&self, paths: I) -> Result<()>
+    where
+        I: IntoIterator<Item = P>,
+        P: AsRef<Path>,
+    {
+        reveal_items_in_dir(paths)
     }
 }
 
@@ -185,26 +198,30 @@ impl Builder {
     }
 
     /// Build and Initializes the plugin.
-    pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
-        let mut builder = tauri::plugin::Builder::new("opener")
-            .setup(|app, _api| {
+    pub fn build<R: Runtime>(self) -> TauriPlugin<R, Option<config::Config>> {
+        let mut builder = tauri::plugin::Builder::<R, Option<config::Config>>::new("opener")
+            .setup(|app, api| {
                 #[cfg(target_os = "android")]
-                let handle = _api.register_android_plugin(PLUGIN_IDENTIFIER, "OpenerPlugin")?;
+                let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "OpenerPlugin")?;
                 #[cfg(target_os = "ios")]
-                let handle = _api.register_ios_plugin(init_plugin_opener)?;
+                let handle = api.register_ios_plugin(init_plugin_opener)?;
 
                 app.manage(Opener {
                     #[cfg(not(mobile))]
                     _marker: std::marker::PhantomData::<fn() -> R>,
                     #[cfg(mobile)]
                     mobile_plugin_handle: handle,
+                    require_literal_leading_dot: api
+                        .config()
+                        .as_ref()
+                        .and_then(|c| c.require_literal_leading_dot),
                 });
                 Ok(())
             })
             .invoke_handler(tauri::generate_handler![
                 commands::open_url,
                 commands::open_path,
-                commands::reveal_item_in_dir
+                commands::reveal_item_in_dir,
             ]);
 
         if self.open_js_links_on_click {
@@ -216,6 +233,6 @@ impl Builder {
 }
 
 /// Initializes the plugin.
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
+pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
     Builder::default().build()
 }

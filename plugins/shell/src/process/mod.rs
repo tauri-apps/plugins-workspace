@@ -118,9 +118,23 @@ pub struct Output {
 fn relative_command_path(command: &Path) -> crate::Result<PathBuf> {
     match platform::current_exe()?.parent() {
         #[cfg(windows)]
-        Some(exe_dir) => Ok(exe_dir.join(command).with_extension("exe")),
+        Some(exe_dir) => {
+            let mut command_path = exe_dir.join(command);
+            let already_exe = command_path.extension().is_some_and(|ext| ext == "exe");
+            if !already_exe {
+                // do not use with_extension to retain dots in the command filename
+                command_path.as_mut_os_string().push(".exe");
+            }
+            Ok(command_path)
+        }
         #[cfg(not(windows))]
-        Some(exe_dir) => Ok(exe_dir.join(command)),
+        Some(exe_dir) => {
+            let mut command_path = exe_dir.join(command);
+            if command_path.extension().is_some_and(|ext| ext == "exe") {
+                command_path.set_extension("");
+            }
+            Ok(command_path)
+        }
         None => Err(crate::Error::CurrentExeHasNoParent),
     }
 }
@@ -133,6 +147,10 @@ impl From<Command> for StdCommand {
 
 impl Command {
     pub(crate) fn new<S: AsRef<OsStr>>(program: S) -> Self {
+        log::debug!(
+            "Creating sidecar {}",
+            program.as_ref().to_str().unwrap_or("")
+        );
         let mut command = StdCommand::new(program);
 
         command.stdout(Stdio::piped());
@@ -451,8 +469,32 @@ fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
 // tests for the commands functions.
 #[cfg(test)]
 mod tests {
-    #[cfg(not(windows))]
     use super::*;
+
+    #[test]
+    fn relative_command_path_resolves() {
+        let cwd_parent = platform::current_exe()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .to_owned();
+        assert_eq!(
+            relative_command_path(Path::new("Tauri.Example")).unwrap(),
+            cwd_parent.join(if cfg!(windows) {
+                "Tauri.Example.exe"
+            } else {
+                "Tauri.Example"
+            })
+        );
+        assert_eq!(
+            relative_command_path(Path::new("Tauri.Example.exe")).unwrap(),
+            cwd_parent.join(if cfg!(windows) {
+                "Tauri.Example.exe"
+            } else {
+                "Tauri.Example"
+            })
+        );
+    }
 
     #[cfg(not(windows))]
     #[test]
