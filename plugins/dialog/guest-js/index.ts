@@ -88,6 +88,14 @@ export type MessageDialogDefaultButtons =
   | 'YesNo'
   | 'YesNoCancel'
 
+/** All possible button keys. */
+type ButtonKey = 'ok' | 'cancel' | 'yes' | 'no'
+
+/** Ban everything except a set of keys. */
+type BanExcept<Allowed extends ButtonKey> = Partial<
+  Record<Exclude<ButtonKey, Allowed>, never>
+>
+
 /**
  * The Yes, No and Cancel buttons of a message dialog.
  *
@@ -100,7 +108,7 @@ export type MessageDialogButtonsYesNoCancel = {
   no: string
   /** The Cancel button. */
   cancel: string
-}
+} & BanExcept<'yes' | 'no' | 'cancel'>
 
 /**
  * The Ok and Cancel buttons of a message dialog.
@@ -112,7 +120,7 @@ export type MessageDialogButtonsOkCancel = {
   ok: string
   /** The Cancel button. */
   cancel: string
-}
+} & BanExcept<'ok' | 'cancel'>
 
 /**
  * The Ok button of a message dialog.
@@ -122,7 +130,7 @@ export type MessageDialogButtonsOkCancel = {
 export type MessageDialogButtonsOk = {
   /** The Ok button. */
   ok: string
-}
+} & BanExcept<'ok'>
 
 /**
  * Custom buttons for a message dialog.
