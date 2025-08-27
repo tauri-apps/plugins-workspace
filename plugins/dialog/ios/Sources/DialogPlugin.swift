@@ -20,6 +20,7 @@ struct MessageDialogOptions: Decodable {
   var title: String?
   let message: String
   var okButtonLabel: String?
+  var noButtonLabel: String?
   var cancelButtonLabel: String?
 }
 
@@ -200,35 +201,37 @@ class DialogPlugin: Plugin {
       let alert = UIAlertController(
         title: args.title, message: args.message, preferredStyle: UIAlertController.Style.alert)
 
-      let cancelButtonLabel = args.cancelButtonLabel ?? ""
-      if !cancelButtonLabel.isEmpty {
+      if let cancelButtonLabel = args.cancelButtonLabel {
         alert.addAction(
           UIAlertAction(
             title: cancelButtonLabel, style: UIAlertAction.Style.default,
             handler: { (_) -> Void in
-              Logger.error("cancel")
-
-              invoke.resolve([
-                "value": false,
-                "cancelled": false,
-              ])
-            }))
+              invoke.resolve(["value": cancelButtonLabel])
+            }
+          )
+        )
       }
 
-      let okButtonLabel = args.okButtonLabel ?? (cancelButtonLabel.isEmpty ? "OK" : "")
-      if !okButtonLabel.isEmpty {
+      if let noButtonLabel = args.noButtonLabel {
         alert.addAction(
           UIAlertAction(
-            title: okButtonLabel, style: UIAlertAction.Style.default,
+            title: noButtonLabel, style: UIAlertAction.Style.default,
             handler: { (_) -> Void in
-              Logger.error("ok")
-
-              invoke.resolve([
-                "value": true,
-                "cancelled": false,
-              ])
-            }))
+              invoke.resolve(["value": noButtonLabel])
+            }
+          )
+        )
       }
+
+      let okButtonLabel = args.okButtonLabel ?? "Ok"
+      alert.addAction(
+        UIAlertAction(
+          title: okButtonLabel, style: UIAlertAction.Style.default,
+          handler: { (_) -> Void in
+            invoke.resolve(["value": okButtonLabel])
+          }
+        )
+      )
 
       manager.viewController?.present(alert, animated: true, completion: nil)
     }
