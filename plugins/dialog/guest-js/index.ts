@@ -168,6 +168,23 @@ interface MessageDialogOptions {
   /**
    * The buttons of the dialog.
    *
+   * @example
+   *
+   * ```ts
+   * // Use system default buttons texts
+   * await message('Hello World!', { buttons: 'Ok' })
+   * await message('Hello World!', { buttons: 'OkCancel' })
+   *
+   * // Or with custom button texts
+   * await message('Hello World!', { buttons: { ok: 'Yes!' } })
+   * await message('Take on the task?', {
+   *   buttons: { ok: 'Accept', cancel: 'Cancel' }
+   * })
+   * await message('Show the file content?', {
+   *   buttons: { yes: 'Show content', no: 'Show in folder', cancel: 'Cancel' }
+   * })
+   * ```
+   *
    * @since 2.4.0
    */
   buttons?: MessageDialogButtons
