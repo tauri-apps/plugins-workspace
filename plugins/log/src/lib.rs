@@ -30,6 +30,7 @@ use tauri::{AppHandle, Emitter};
 use time::{macros::format_description, OffsetDateTime};
 
 pub use fern;
+pub use log;
 
 pub const WEBVIEW_TARGET: &str = "webview";
 
