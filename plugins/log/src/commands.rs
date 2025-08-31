@@ -39,3 +39,35 @@ pub fn log(
 
     log::logger().log(&builder.args(format_args!("{message}")).build());
 }
+
+// Target becomes default and location is added as a parameter
+#[cfg(feature = "tracing")]
+fn emit_trace(
+    level: log::Level,
+    message: &String,
+    location: Option<&str>,
+    file: Option<&str>,
+    line: Option<u32>,
+    kv: &HashMap<&str, &str>,
+) {
+    macro_rules! emit_event {
+        ($level:expr) => {
+            tracing::event!(
+                target: WEBVIEW_TARGET,
+                $level,
+                message = %message,
+                location = location,
+                file,
+                line,
+                ?kv
+            )
+        };
+    }
+    match level {
+        log::Level::Error => emit_event!(tracing::Level::ERROR),
+        log::Level::Warn => emit_event!(tracing::Level::WARN),
+        log::Level::Info => emit_event!(tracing::Level::INFO),
+        log::Level::Debug => emit_event!(tracing::Level::DEBUG),
+        log::Level::Trace => emit_event!(tracing::Level::TRACE),
+    }
+}
