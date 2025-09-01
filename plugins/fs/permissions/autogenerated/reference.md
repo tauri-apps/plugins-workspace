@@ -3759,7 +3759,7 @@ An empty permission you can use to modify the global scope.
     {
       "identifier": "fs:scope",
       "allow": [
-        "$APPDATA/documents/**"
+        "$APPDATA/documents/**/*"
       ],
       "deny": [
         "$APPDATA/documents/secret.txt"
