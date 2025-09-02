@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.3]
+
+- [`2522b71f`](https://github.com/tauri-apps/plugins-workspace/commit/2522b71f6bcae65c03b24415eb9295c9e7c84ffc) ([#2970](https://github.com/tauri-apps/plugins-workspace/pull/2970) by [@WSH032](https://github.com/tauri-apps/plugins-workspace/../../WSH032)) Revert the breaking change introduced by [#2928](https://github.com/tauri-apps/plugins-workspace/pull/2928).
+
 ## \[2.4.2]
 
 - [`21d721a0`](https://github.com/tauri-apps/plugins-workspace/commit/21d721a0c2731fc201872f5b99ea8bbdc61b0b60) ([#2928](https://github.com/tauri-apps/plugins-workspace/pull/2928) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Linux, improved error messages when OS commands fail.
