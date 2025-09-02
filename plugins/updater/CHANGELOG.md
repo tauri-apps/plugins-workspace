@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.10.0]
+
+- [`9ac5fe84`](https://github.com/tauri-apps/plugins-workspace/commit/9ac5fe84e704ef20c437456cb1017b54b101b333) ([#2624](https://github.com/tauri-apps/plugins-workspace/pull/2624) by [@kandrelczyk](https://github.com/tauri-apps/plugins-workspace/../../kandrelczyk)) Updater plugin now supports all bundle types: Deb, Rpm and AppImage for Linux; NSiS, MSI for Windows.
+
 ## \[2.9.0]
 
 - [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6

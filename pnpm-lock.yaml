@@ -69,7 +69,7 @@ importers:
         specifier: ^2.3.0
         version: link:../../plugins/clipboard-manager
       '@tauri-apps/plugin-dialog':
-        specifier: ^2.3.3
+        specifier: ^2.4.0
         version: link:../../plugins/dialog
       '@tauri-apps/plugin-fs':
         specifier: ^2.4.2
@@ -108,7 +108,7 @@ importers:
         specifier: ^2.4.0
         version: link:../../plugins/store
       '@tauri-apps/plugin-updater':
-        specifier: ^2.9.0
+        specifier: ^2.10.0
         version: link:../../plugins/updater
       '@tauri-apps/plugin-upload':
         specifier: ^2.3.0
@@ -188,7 +188,7 @@ importers:
         specifier: 2.8.0
         version: 2.8.0
       '@tauri-apps/plugin-deep-link':
-        specifier: 2.4.2
+        specifier: 2.4.3
         version: link:../..
     devDependencies:
       '@tauri-apps/cli':
