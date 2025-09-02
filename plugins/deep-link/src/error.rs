@@ -23,12 +23,19 @@ pub enum Error {
     #[cfg(target_os = "linux")]
     #[error(transparent)]
     ParseIni(#[from] ini::ParseError),
-    #[cfg(target_os = "linux")]
-    #[error("Failed to run OS command `{0}`: {1}")]
-    Execute(&'static str, #[source] std::io::Error),
     #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
+}
+
+// TODO(v3): change this into an error in v3,
+// see <https://github.com/tauri-apps/plugins-workspace/pull/2970#issuecomment-3244660138>.
+#[inline]
+#[cfg(target_os = "linux")]
+pub(crate) fn inspect_command_error<'a>(command: &'a str) -> impl Fn(&std::io::Error) + 'a {
+    move |e| {
+        tracing::error!("Failed to run OS command `{command}`: {e}");
+    }
 }
 
 impl Serialize for Error {
