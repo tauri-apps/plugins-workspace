@@ -41,7 +41,7 @@ url = { workspace = true }
 
 [target."cfg(windows)".dependencies]
 dunce = "1"
-windows-registry = "0.5"
+windows-registry = "0.6"
 windows-result = "0.3"
 
 [target."cfg(target_os = \"linux\")".dependencies]
