@@ -309,7 +309,7 @@ type OpenDialogReturn<T extends OpenDialogOptions> = T['multiple'] extends true 
  */
 async function open<T extends OpenDialogOptions>(
   options: T = {} as T
-): Promise<OpenDialogReturn<T>> {
+): Promise<Path | Path[] | null> {
   if (typeof options === 'object') {
     Object.freeze(options)
   }
