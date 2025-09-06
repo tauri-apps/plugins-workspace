@@ -216,6 +216,7 @@ pub(crate) struct MessageDialogPayload<'a> {
     message: &'a String,
     kind: &'a MessageDialogKind,
     ok_button_label: Option<&'a str>,
+    no_button_label: Option<&'a str>,
     cancel_button_label: Option<&'a str>,
 }
 
@@ -238,13 +239,17 @@ impl<R: Runtime> MessageDialogBuilder<R> {
 
     #[cfg(mobile)]
     pub(crate) fn payload(&self) -> MessageDialogPayload<'_> {
-        let (ok_button_label, cancel_button_label) = match &self.buttons {
-            MessageDialogButtons::Ok => (Some(OK), None),
-            MessageDialogButtons::OkCancel => (Some(OK), Some(CANCEL)),
-            MessageDialogButtons::YesNo => (Some(YES), Some(NO)),
-            MessageDialogButtons::OkCustom(ok) => (Some(ok.as_str()), Some(CANCEL)),
+        let (ok_button_label, no_button_label, cancel_button_label) = match &self.buttons {
+            MessageDialogButtons::Ok => (Some(OK), None, None),
+            MessageDialogButtons::OkCancel => (Some(OK), None, Some(CANCEL)),
+            MessageDialogButtons::YesNo => (Some(YES), Some(NO), None),
+            MessageDialogButtons::YesNoCancel => (Some(YES), Some(NO), Some(CANCEL)),
+            MessageDialogButtons::OkCustom(ok) => (Some(ok.as_str()), None, None),
             MessageDialogButtons::OkCancelCustom(ok, cancel) => {
-                (Some(ok.as_str()), Some(cancel.as_str()))
+                (Some(ok.as_str()), None, Some(cancel.as_str()))
+            }
+            MessageDialogButtons::YesNoCancelCustom(yes, no, cancel) => {
+                (Some(yes.as_str()), Some(no.as_str()), Some(cancel.as_str()))
             }
         };
         MessageDialogPayload {
@@ -252,6 +257,7 @@ impl<R: Runtime> MessageDialogBuilder<R> {
             message: &self.message,
             kind: &self.kind,
             ok_button_label,
+            no_button_label,
             cancel_button_label,
         }
     }
@@ -295,15 +301,54 @@ impl<R: Runtime> MessageDialogBuilder<R> {
     }
 
     /// Shows a message dialog
+    ///
+    /// Returns `true` if the user pressed the OK/Yes button,
     pub fn show<F: FnOnce(bool) + Send + 'static>(self, f: F) {
+        let ok_label = match &self.buttons {
+            MessageDialogButtons::OkCustom(ok) => Some(ok.clone()),
+            MessageDialogButtons::OkCancelCustom(ok, _) => Some(ok.clone()),
+            MessageDialogButtons::YesNoCancelCustom(yes, _, _) => Some(yes.clone()),
+            _ => None,
+        };
+
+        show_message_dialog(self, move |res| {
+            let sucess = match res {
+                MessageDialogResult::Ok | MessageDialogResult::Yes => true,
+                MessageDialogResult::Custom(s) => {
+                    ok_label.map_or(s == OK, |ok_label| ok_label == s)
+                }
+                _ => false,
+            };
+
+            f(sucess)
+        })
+    }
+
+    /// Shows a message dialog and returns the button that was pressed.
+    ///
+    /// Returns a [`MessageDialogResult`] enum that indicates which button was pressed.
+    pub fn show_with_result<F: FnOnce(MessageDialogResult) + Send + 'static>(self, f: F) {
         show_message_dialog(self, f)
     }
 
     /// Shows a message dialog.
+    ///
+    /// Returns `true` if the user pressed the OK/Yes button,
+    ///
     /// This is a blocking operation,
     /// and should *NOT* be used when running on the main thread context.
     pub fn blocking_show(self) -> bool {
         blocking_fn!(self, show)
+    }
+
+    /// Shows a message dialog and returns the button that was pressed.
+    ///
+    /// Returns a [`MessageDialogResult`] enum that indicates which button was pressed.
+    ///
+    /// This is a blocking operation,
+    /// and should *NOT* be used when running on the main thread context.
+    pub fn blocking_show_with_result(self) -> MessageDialogResult {
+        blocking_fn!(self, show_with_result)
     }
 }
 #[derive(Debug, Serialize)]

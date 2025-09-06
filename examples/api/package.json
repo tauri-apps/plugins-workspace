@@ -1,7 +1,7 @@
 {
   "name": "api",
   "private": true,
-  "version": "2.0.31",
+  "version": "2.0.32",
   "type": "module",
   "scripts": {
     "dev": "vite --clearScreen false",
@@ -15,7 +15,7 @@
     "@tauri-apps/plugin-biometric": "^2.3.0",
     "@tauri-apps/plugin-cli": "^2.4.0",
     "@tauri-apps/plugin-clipboard-manager": "^2.3.0",
-    "@tauri-apps/plugin-dialog": "^2.3.3",
+    "@tauri-apps/plugin-dialog": "^2.4.0",
     "@tauri-apps/plugin-fs": "^2.4.2",
     "@tauri-apps/plugin-geolocation": "^2.2.0",
     "@tauri-apps/plugin-global-shortcut": "^2.3.0",
@@ -36,7 +36,7 @@
     "@iconify-json/codicon": "^1.2.12",
     "@iconify-json/ph": "^1.2.2",
     "@sveltejs/vite-plugin-svelte": "^6.0.0",
-    "@tauri-apps/cli": "2.8.3",
+    "@tauri-apps/cli": "2.8.4",
     "@unocss/extractor-svelte": "^66.3.3",
     "svelte": "^5.20.4",
     "unocss": "^66.3.3",
