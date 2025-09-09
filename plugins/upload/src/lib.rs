@@ -15,7 +15,7 @@ mod transfer_stats;
 use transfer_stats::TransferStats;
 
 use futures_util::TryStreamExt;
-use serde::{ser::Serializer, Serialize};
+use serde::{ser::Serializer, Deserialize, Serialize};
 use tauri::{
     command,
     ipc::Channel,
@@ -31,6 +31,14 @@ use tokio_util::codec::{BytesCodec, FramedRead};
 use read_progress_stream::ReadProgressStream;
 
 use std::collections::HashMap;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum HttpMethod {
+    Post,
+    Put,
+    Patch,
+}
 
 type Result<T> = std::result::Result<T, Error>;
 
@@ -120,6 +128,7 @@ async fn upload(
     url: String,
     file_path: String,
     headers: HashMap<String, String>,
+    method: Option<HttpMethod>,
     on_progress: Channel<ProgressPayload>,
 ) -> Result<String> {
     tokio::spawn(async move {
@@ -127,12 +136,18 @@ async fn upload(
         let file = File::open(&file_path).await?;
         let file_len = file.metadata().await.unwrap().len();
 
+        // Get HTTP method (defaults to POST)
+        let http_method = method.unwrap_or(HttpMethod::Post);
+
         // Create the request and attach the file to the body
         let client = reqwest::Client::new();
-        let mut request = client
-            .post(&url)
-            .header(reqwest::header::CONTENT_LENGTH, file_len)
-            .body(file_to_body(on_progress, file, file_len));
+        let mut request = match http_method {
+            HttpMethod::Put => client.put(&url),
+            HttpMethod::Patch => client.patch(&url),
+            HttpMethod::Post => client.post(&url),
+        }
+        .header(reqwest::header::CONTENT_LENGTH, file_len)
+        .body(file_to_body(on_progress, file, file_len));
 
         // Loop through the headers keys and values
         // and add them to the request object.
@@ -211,8 +226,8 @@ mod tests {
 
     #[tokio::test]
     async fn should_error_on_upload_if_status_not_success() {
-        let mocked_server = spawn_upload_server_mocked(500).await;
-        let result = upload_file(mocked_server.url).await;
+        let mocked_server = spawn_upload_server_mocked(500, "POST").await;
+        let result = upload_file(mocked_server.url, None).await;
         mocked_server.mocked_endpoint.assert();
         assert!(result.is_err());
         match result.unwrap_err() {
@@ -223,7 +238,7 @@ mod tests {
 
     #[tokio::test]
     async fn should_error_on_upload_if_file_not_found() {
-        let mocked_server = spawn_upload_server_mocked(200).await;
+        let mocked_server = spawn_upload_server_mocked(200, "POST").await;
         let file_path = "/nonexistent/file.txt".to_string();
         let headers = HashMap::new();
         let sender: Channel<ProgressPayload> =
@@ -232,7 +247,7 @@ mod tests {
                 Ok(())
             });
 
-        let result = upload(mocked_server.url, file_path, headers, sender).await;
+        let result = upload(mocked_server.url, file_path, headers, None, sender).await;
         assert!(result.is_err());
         match result.unwrap_err() {
             Error::Io(_) => {}
@@ -241,13 +256,41 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn should_upload_file_successfully() {
-        let mocked_server = spawn_upload_server_mocked(200).await;
-        let result = upload_file(mocked_server.url).await;
+    async fn should_upload_file_with_post_method() {
+        let mocked_server = spawn_upload_server_mocked(200, "POST").await;
+        let result = upload_file(mocked_server.url, Some(HttpMethod::Post)).await;
         mocked_server.mocked_endpoint.assert();
         assert!(
             result.is_ok(),
             "failed to upload file: {}",
+            result.unwrap_err()
+        );
+        let response_body = result.unwrap();
+        assert_eq!(response_body, "upload successful");
+    }
+
+    #[tokio::test]
+    async fn should_upload_file_with_put_method() {
+        let mocked_server = spawn_upload_server_mocked(200, "PUT").await;
+        let result = upload_file(mocked_server.url, Some(HttpMethod::Put)).await;
+        mocked_server.mocked_endpoint.assert();
+        assert!(
+            result.is_ok(),
+            "failed to upload file with PUT: {}",
+            result.unwrap_err()
+        );
+        let response_body = result.unwrap();
+        assert_eq!(response_body, "upload successful");
+    }
+
+    #[tokio::test]
+    async fn should_upload_file_with_patch_method() {
+        let mocked_server = spawn_upload_server_mocked(200, "PATCH").await;
+        let result = upload_file(mocked_server.url, Some(HttpMethod::Patch)).await;
+        mocked_server.mocked_endpoint.assert();
+        assert!(
+            result.is_ok(),
+            "failed to upload file with PATCH: {}",
             result.unwrap_err()
         );
         let response_body = result.unwrap();
@@ -265,7 +308,7 @@ mod tests {
         download(url, file_path, headers, None, sender).await
     }
 
-    async fn upload_file(url: String) -> Result<String> {
+    async fn upload_file(url: String, method: Option<HttpMethod>) -> Result<String> {
         let file_path = concat!(env!("CARGO_MANIFEST_DIR"), "/test/test.txt").to_string();
         let headers = HashMap::new();
         let sender: Channel<ProgressPayload> =
@@ -273,7 +316,7 @@ mod tests {
                 let _ = msg;
                 Ok(())
             });
-        upload(url, file_path, headers, sender).await
+        upload(url, file_path, headers, method, sender).await
     }
 
     async fn spawn_server_mocked(return_status: usize) -> MockedServer {
@@ -294,11 +337,11 @@ mod tests {
         }
     }
 
-    async fn spawn_upload_server_mocked(return_status: usize) -> MockedServer {
+    async fn spawn_upload_server_mocked(return_status: usize, method: &str) -> MockedServer {
         let mut _server = Server::new_async().await;
         let path = "/upload_test";
         let mock = _server
-            .mock("POST", path)
+            .mock(method, path)
             .with_status(return_status)
             .with_body("upload successful")
             .match_header("content-length", "20")
