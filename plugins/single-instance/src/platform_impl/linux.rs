@@ -86,6 +86,9 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
                             ),
                         );
                     }
+                    tracing::info!(
+                        "Closing this duplicate instance as DBus name {dbus_name} is already taken"
+                    );
                     app.cleanup_before_exit();
                     std::process::exit(0);
                 }
