@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.7.0]
+
+- [`625bb1c0`](https://github.com/tauri-apps/plugins-workspace/commit/625bb1c0965394b88522643731f78ccbcca84add) ([#2965](https://github.com/tauri-apps/plugins-workspace/pull/2965) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Re-export the log crate.
+
 ## \[2.6.0]
 
 - [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6

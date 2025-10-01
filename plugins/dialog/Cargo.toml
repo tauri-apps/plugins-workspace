@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-dialog"
-version = "2.3.3"
+version = "2.4.0"
 description = "Native system dialogs for opening and saving files along with message dialogs on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
