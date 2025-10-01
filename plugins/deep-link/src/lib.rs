@@ -317,7 +317,7 @@ mod imp {
                         }
 
                         // if the exec command doesnt match, update to the new one
-                        let old_exec = section.remove("Exec").unwrap_or(qualified_exec.clone());
+                        let old_exec = section.remove("Exec").unwrap_or_default();
                         if old_exec != qualified_exec {
                             section.append("Exec", qualified_exec);
                             change = true;
