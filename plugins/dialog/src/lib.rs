@@ -551,7 +551,6 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///     Ok(())
     ///   });
     /// ```
-    #[cfg(desktop)]
     pub fn pick_folder<F: FnOnce(Option<FilePath>) + Send + 'static>(self, f: F) {
         pick_folder(self, f)
     }
@@ -573,7 +572,6 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///     Ok(())
     ///   });
     /// ```
-    #[cfg(desktop)]
     pub fn pick_folders<F: FnOnce(Option<Vec<FilePath>>) + Send + 'static>(self, f: F) {
         pick_folders(self, f)
     }
@@ -656,7 +654,6 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   // the folder path is `None` if the user closed the dialog
     /// }
     /// ```
-    #[cfg(desktop)]
     pub fn blocking_pick_folder(self) -> Option<FilePath> {
         blocking_fn!(self, pick_folder)
     }
@@ -676,7 +673,6 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   // the folder paths value is `None` if the user closed the dialog
     /// }
     /// ```
-    #[cfg(desktop)]
     pub fn blocking_pick_folders(self) -> Option<Vec<FilePath>> {
         blocking_fn!(self, pick_folders)
     }

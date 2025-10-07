@@ -198,6 +198,22 @@ class FilePickerUtils {
       }
       return os.toByteArray()
     }
+
+    private fun isTreeUri(uri: Uri): Boolean {
+      return DocumentsContract.isTreeUri(uri)
+    }
+
+    fun getTreePathFromUri(context: Context, uri: Uri): String? {
+      if (!isTreeUri(uri)) return null
+      
+      val docId = DocumentsContract.getTreeDocumentId(uri)
+      val split = docId.split(":")
+      return if ("primary".equals(split[0], ignoreCase = true)) {
+        "${Environment.getExternalStorageDirectory()}/${split[1]}"
+      } else {
+        null
+      }
+    }
   }
 }
 

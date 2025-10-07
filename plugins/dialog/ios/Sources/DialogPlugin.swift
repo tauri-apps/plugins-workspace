@@ -39,6 +39,14 @@ struct SaveFileDialogOptions: Decodable {
   var defaultPath: String?
 }
 
+struct FolderPickerOptions: Decodable {
+  var title: String?
+  var defaultPath: String?
+  var multiple: Bool?
+  var recursive: Bool?
+  var canCreateDirectories: Bool?
+}
+
 class DialogPlugin: Plugin {
 
   var filePickerController: FilePickerController!
@@ -164,6 +172,47 @@ class DialogPlugin: Plugin {
         picker.directoryURL = URL(string: defaultPath)
       }
       picker.delegate = self.filePickerController
+      picker.modalPresentationStyle = .fullScreen
+      self.presentViewController(picker)
+    }
+  }
+
+  @objc public func showFolderPicker(_ invoke: Invoke) throws {
+    let args = try invoke.parseArgs(FolderPickerOptions.self)
+    
+    onFilePickerResult = { (event: FilePickerEvent) -> Void in
+      switch event {
+      case .selected(let urls):
+        invoke.resolve(["directories": urls])
+      case .cancelled:
+        invoke.resolve(["directories": nil])
+      case .error(let error):
+        invoke.reject(error)
+      }
+    }
+
+    DispatchQueue.main.async {
+      let picker: UIDocumentPickerViewController
+      if #available(iOS 14.0, *) {
+        picker = UIDocumentPickerViewController(forOpeningContentTypes: [.folder])
+      } else {
+        picker = UIDocumentPickerViewController(documentTypes: [kUTTypeFolder as String], in: .open)
+      }
+      
+      if let title = args.title {
+        picker.title = title
+      }
+      
+      if let defaultPath = args.defaultPath {
+        picker.directoryURL = URL(string: defaultPath)
+      }
+      
+      picker.delegate = self.filePickerController
+      picker.allowsMultipleSelection = args.multiple ?? false
+      
+      // Note: canCreateDirectories is only supported on macOS
+      // recursive is handled at the filesystem access level, not in the picker
+      
       picker.modalPresentationStyle = .fullScreen
       self.presentViewController(picker)
     }

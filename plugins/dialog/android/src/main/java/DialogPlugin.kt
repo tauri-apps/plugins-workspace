@@ -48,6 +48,14 @@ class SaveFileDialogOptions {
   lateinit var filters: Array<Filter>
 }
 
+@InvokeArg
+class FolderPickerOptions {
+  var title: String? = null
+  var multiple: Boolean? = null
+  var recursive: Boolean? = null
+  var canCreateDirectories: Boolean? = null
+}
+
 @TauriPlugin
 class DialogPlugin(private val activity: Activity): Plugin(activity) {
   var filePickerOptions: FilePickerOptions? = null
@@ -232,5 +240,56 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
       Logger.error(message)
       invoke.reject(message)
     }
+  }
+
+  @Command
+  fun showFolderPicker(invoke: Invoke) {
+    try {
+      val args = invoke.parseArgs(FolderPickerOptions::class.java)
+      val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+      
+      if (args.title != null) {
+        intent.putExtra(Intent.EXTRA_TITLE, args.title)
+      }
+      
+      // Note: Android's document tree picker doesn't support multiple selection natively
+      // recursive and canCreateDirectories are handled at filesystem level
+      
+      startActivityForResult(invoke, intent, "folderPickerResult")
+    } catch (ex: Exception) {
+      val message = ex.message ?: "Failed to pick folder"
+      Logger.error(message)
+      invoke.reject(message)
+    }
+  }
+
+  @ActivityCallback
+  fun folderPickerResult(invoke: Invoke, result: ActivityResult) {
+    try {
+      when (result.resultCode) {
+        Activity.RESULT_OK -> {
+          val callResult = createFolderPickerResult(result.data)
+          invoke.resolve(callResult)
+        }
+        Activity.RESULT_CANCELED -> invoke.reject("Folder picker cancelled")
+        else -> invoke.reject("Failed to pick folder")
+      }
+    } catch (ex: java.lang.Exception) {
+      val message = ex.message ?: "Failed to read folder pick result"
+      Logger.error(message)
+      invoke.reject(message)
+    }
+  }
+
+  private fun createFolderPickerResult(data: Intent?): JSObject {
+    val callResult = JSObject()
+    if (data == null) {
+      callResult.put("directories", null)
+      return callResult
+    }
+    val uri = data.data
+    val directories = JSArray.from(arrayOf(uri.toString()))
+    callResult.put("directories", directories)
+    return callResult
   }
 }
