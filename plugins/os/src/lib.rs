@@ -88,7 +88,7 @@ pub fn exe_extension() -> &'static str {
     std::env::consts::EXE_EXTENSION
 }
 
-/// Returns the current operating system locale with the `BCP-47` language tag. If the locale couldn’t be obtained, `None` is returned instead.
+/// Returns the current operating system locale with the `BCP-47` language tag. If the locale couldn't be obtained, `None` is returned instead.
 pub fn locale() -> Option<String> {
     sys_locale::get_locale()
 }

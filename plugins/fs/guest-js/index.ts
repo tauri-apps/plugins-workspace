@@ -10,7 +10,7 @@
  * This module prevents path traversal, not allowing parent directory accessors to be used
  * (i.e. "/usr/path/to/../file" or "../path/to/file" paths are not allowed).
  * Paths accessed with this API must be either relative to one of the {@link BaseDirectory | base directories}
- * or created with the {@link https://v2.tauri.app/reference/javascript/api/namespacepath | path API}.
+ * or created with the {@link https://v2.tauri.app/reference/javascript/api/namespacepath/ | path API}.
  *
  * The API has a scope configuration that forces you to restrict the paths that can be accessed using glob patterns.
  *
@@ -604,8 +604,8 @@ async function copyFile(
   options?: CopyFileOptions
 ): Promise<void> {
   if (
-    (fromPath instanceof URL && fromPath.protocol !== 'file:') ||
-    (toPath instanceof URL && toPath.protocol !== 'file:')
+    (fromPath instanceof URL && fromPath.protocol !== 'file:')
+    || (toPath instanceof URL && toPath.protocol !== 'file:')
   ) {
     throw new TypeError('Must be a file URL.')
   }
@@ -739,7 +739,7 @@ interface ReadFileOptions {
 async function readFile(
   path: string | URL,
   options?: ReadFileOptions
-): Promise<Uint8Array> {
+): Promise<Uint8Array<ArrayBuffer>> {
   if (path instanceof URL && path.protocol !== 'file:') {
     throw new TypeError('Must be a file URL.')
   }
@@ -919,8 +919,8 @@ async function rename(
   options?: RenameOptions
 ): Promise<void> {
   if (
-    (oldPath instanceof URL && oldPath.protocol !== 'file:') ||
-    (newPath instanceof URL && newPath.protocol !== 'file:')
+    (oldPath instanceof URL && oldPath.protocol !== 'file:')
+    || (newPath instanceof URL && newPath.protocol !== 'file:')
   ) {
     throw new TypeError('Must be a file URL.')
   }
@@ -1074,11 +1074,24 @@ async function writeFile(
   }
 
   if (data instanceof ReadableStream) {
-    const file = await open(path, options)
-    for await (const chunk of data) {
-      await file.write(chunk)
+    const file = await open(path, {
+      read: false,
+      create: true,
+      write: true,
+      ...options
+    })
+    const reader = data.getReader()
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        await file.write(value)
+      }
+    } finally {
+      reader.releaseLock()
+      await file.close()
     }
-    await file.close()
   } else {
     await invoke('plugin:fs|write_file', data, {
       headers: {
@@ -1237,15 +1250,44 @@ type WatchEventKindRemove =
   | { kind: 'folder' }
   | { kind: 'other' }
 
+// TODO: Remove this in v3, return `Watcher` instead
 /**
  * @since 2.0.0
  */
 type UnwatchFn = () => void
 
-async function unwatch(rid: number): Promise<void> {
-  await invoke('plugin:fs|unwatch', { rid })
+class Watcher extends Resource {}
+
+async function watchInternal(
+  paths: string | string[] | URL | URL[],
+  cb: (event: WatchEvent) => void,
+  options: DebouncedWatchOptions
+): Promise<UnwatchFn> {
+  const watchPaths = Array.isArray(paths) ? paths : [paths]
+
+  for (const path of watchPaths) {
+    if (path instanceof URL && path.protocol !== 'file:') {
+      throw new TypeError('Must be a file URL.')
+    }
+  }
+
+  const onEvent = new Channel<WatchEvent>()
+  onEvent.onmessage = cb
+
+  const rid: number = await invoke('plugin:fs|watch', {
+    paths: watchPaths.map((p) => (p instanceof URL ? p.toString() : p)),
+    options,
+    onEvent
+  })
+
+  const watcher = new Watcher(rid)
+
+  return () => {
+    void watcher.close()
+  }
 }
 
+// TODO: Return `Watcher` instead in v3
 /**
  * Watch changes (after a delay) on files or directories.
  *
@@ -1256,34 +1298,13 @@ async function watch(
   cb: (event: WatchEvent) => void,
   options?: DebouncedWatchOptions
 ): Promise<UnwatchFn> {
-  const opts = {
-    recursive: false,
+  return await watchInternal(paths, cb, {
     delayMs: 2000,
     ...options
-  }
-
-  const watchPaths = Array.isArray(paths) ? paths : [paths]
-
-  for (const path of watchPaths) {
-    if (path instanceof URL && path.protocol !== 'file:') {
-      throw new TypeError('Must be a file URL.')
-    }
-  }
-
-  const onEvent = new Channel<WatchEvent>()
-  onEvent.onmessage = cb
-
-  const rid: number = await invoke('plugin:fs|watch', {
-    paths: watchPaths.map((p) => (p instanceof URL ? p.toString() : p)),
-    options: opts,
-    onEvent
   })
-
-  return () => {
-    void unwatch(rid)
-  }
 }
 
+// TODO: Return `Watcher` instead in v3
 /**
  * Watch changes on files or directories.
  *
@@ -1294,32 +1315,10 @@ async function watchImmediate(
   cb: (event: WatchEvent) => void,
   options?: WatchOptions
 ): Promise<UnwatchFn> {
-  const opts = {
-    recursive: false,
+  return await watchInternal(paths, cb, {
     ...options,
-    delayMs: null
-  }
-
-  const watchPaths = Array.isArray(paths) ? paths : [paths]
-
-  for (const path of watchPaths) {
-    if (path instanceof URL && path.protocol !== 'file:') {
-      throw new TypeError('Must be a file URL.')
-    }
-  }
-
-  const onEvent = new Channel<WatchEvent>()
-  onEvent.onmessage = cb
-
-  const rid: number = await invoke('plugin:fs|watch', {
-    paths: watchPaths.map((p) => (p instanceof URL ? p.toString() : p)),
-    options: opts,
-    onEvent
+    delayMs: undefined
   })
-
-  return () => {
-    void unwatch(rid)
-  }
 }
 
 /**

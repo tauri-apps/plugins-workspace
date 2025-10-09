@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: MIT
 
 use serde::{Deserialize, Serialize};
-use specta::Type;
 /*
-#[derive(Debug, Clone, Default, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub struct HapticsOptions {
     // TODO: support array to match web api
@@ -13,7 +13,8 @@ pub struct HapticsOptions {
 }
  */
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub enum ImpactFeedbackStyle {
     Light,
@@ -24,7 +25,8 @@ pub enum ImpactFeedbackStyle {
     Rigid,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub enum NotificationFeedbackType {
     #[default]

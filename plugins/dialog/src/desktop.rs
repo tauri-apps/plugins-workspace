@@ -13,7 +13,7 @@ use rfd::{AsyncFileDialog, AsyncMessageDialog};
 use serde::de::DeserializeOwned;
 use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
-use crate::{models::*, FileDialogBuilder, FilePath, MessageDialogBuilder, OK};
+use crate::{models::*, FileDialogBuilder, FilePath, MessageDialogBuilder};
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
@@ -115,6 +115,10 @@ impl From<MessageDialogButtons> for rfd::MessageButtons {
             MessageDialogButtons::YesNo => Self::YesNo,
             MessageDialogButtons::OkCustom(ok) => Self::OkCustom(ok),
             MessageDialogButtons::OkCancelCustom(ok, cancel) => Self::OkCancelCustom(ok, cancel),
+            MessageDialogButtons::YesNoCancel => Self::YesNoCancel,
+            MessageDialogButtons::YesNoCancelCustom(yes, no, cancel) => {
+                Self::YesNoCancelCustom(yes, no, cancel)
+            }
         }
     }
 }
@@ -208,28 +212,46 @@ pub fn save_file<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
 }
 
 /// Shows a message dialog
-pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
+pub fn show_message_dialog<R: Runtime, F: FnOnce(MessageDialogResult) + Send + 'static>(
     dialog: MessageDialogBuilder<R>,
-    f: F,
+    callback: F,
 ) {
-    use rfd::MessageDialogResult;
-
-    let ok_label = match &dialog.buttons {
-        MessageDialogButtons::OkCustom(ok) => Some(ok.clone()),
-        MessageDialogButtons::OkCancelCustom(ok, _) => Some(ok.clone()),
-        _ => None,
-    };
-    let f = move |res| {
-        f(match res {
-            MessageDialogResult::Ok | MessageDialogResult::Yes => true,
-            MessageDialogResult::Custom(s) => ok_label.map_or(s == OK, |ok_label| ok_label == s),
-            _ => false,
-        });
-    };
+    let f = move |res: rfd::MessageDialogResult| callback(res.into());
 
     let handle = dialog.dialog.app_handle().to_owned();
     let _ = handle.run_on_main_thread(move || {
+        let buttons = dialog.buttons.clone();
         let dialog = AsyncMessageDialog::from(dialog).show();
-        std::thread::spawn(move || f(tauri::async_runtime::block_on(dialog)));
+        std::thread::spawn(move || {
+            let result = tauri::async_runtime::block_on(dialog);
+            // on Linux rfd does not return rfd::MessageDialogResult::Custom, so we must map manually
+            let result = match (result, buttons) {
+                (rfd::MessageDialogResult::Ok, MessageDialogButtons::OkCustom(s)) => {
+                    rfd::MessageDialogResult::Custom(s)
+                }
+                (
+                    rfd::MessageDialogResult::Ok,
+                    MessageDialogButtons::OkCancelCustom(ok, _cancel),
+                ) => rfd::MessageDialogResult::Custom(ok),
+                (
+                    rfd::MessageDialogResult::Cancel,
+                    MessageDialogButtons::OkCancelCustom(_ok, cancel),
+                ) => rfd::MessageDialogResult::Custom(cancel),
+                (
+                    rfd::MessageDialogResult::Yes,
+                    MessageDialogButtons::YesNoCancelCustom(yes, _no, _cancel),
+                ) => rfd::MessageDialogResult::Custom(yes),
+                (
+                    rfd::MessageDialogResult::No,
+                    MessageDialogButtons::YesNoCancelCustom(_yes, no, _cancel),
+                ) => rfd::MessageDialogResult::Custom(no),
+                (
+                    rfd::MessageDialogResult::Cancel,
+                    MessageDialogButtons::YesNoCancelCustom(_yes, _no, cancel),
+                ) => rfd::MessageDialogResult::Custom(cancel),
+                (result, _) => result,
+            };
+            f(result);
+        });
     });
 }

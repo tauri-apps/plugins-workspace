@@ -2,6 +2,8 @@
 
 Allows connecting and sending data to a WebSocket server
 
+#### This default permission set includes the following:
+
 - `allow-connect`
 - `allow-send`
 

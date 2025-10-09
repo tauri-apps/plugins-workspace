@@ -2,6 +2,8 @@
 
 Allows the log command
 
+#### This default permission set includes the following:
+
 - `allow-log`
 
 ## Permission Table

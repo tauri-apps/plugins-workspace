@@ -1,5 +1,66 @@
 # Changelog
 
+## \[2.3.4]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.3`
+
+## \[2.3.3]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.2`
+
+## \[2.3.2]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.1`
+
+## \[2.3.1]
+
+- [`6f345870`](https://github.com/tauri-apps/plugins-workspace/commit/6f345870df4e7b187deb869df03b79858e03b4fe) ([#2860](https://github.com/tauri-apps/plugins-workspace/pull/2860) by [@MorpheusXAUT](https://github.com/tauri-apps/plugins-workspace/../../MorpheusXAUT)) Fix D-Bus name replacement logic on Linux to prevent multiple instances from acquiring the same well-known name.\
+  This patch updates the `zbus` dependency to the latest compatible version (`^5.9`) and explicitly sets `RequestNameFlags` to ensure a second instance fails to acquire the D-Bus name when another one is already running.
+
+## \[2.3.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.0`
+
+## \[2.2.4]
+
+- [`dc84f8d8`](https://github.com/tauri-apps/plugins-workspace/commit/dc84f8d8bbaa70de3bb3185fbacb472993b996ef) ([#2609](https://github.com/tauri-apps/plugins-workspace/pull/2609) by [@Simon-Laux](https://github.com/tauri-apps/plugins-workspace/../../Simon-Laux)) fix `cwd` in single instance on macOS, which was the cwd of the first instance, instead of the second (like it is on windows and linux)
+
+### Dependencies
+
+- Upgraded to `deep-link@2.3.0`
+
+## \[2.2.3]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.2.1`
+
+## \[2.2.2]
+
+- [`1ab5f157`](https://github.com/tauri-apps/plugins-workspace/commit/1ab5f1576333174095bc7dad4bef7a8576bb29ab) ([#2452](https://github.com/tauri-apps/plugins-workspace/pull/2452) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed `null pointer dereference` panic on rust nightly on Windows.
+
+## \[2.2.1]
+
+- [`da5c59e2`](https://github.com/tauri-apps/plugins-workspace/commit/da5c59e2fe879d177e3cfd52fcacce85440423cb) ([#2271](https://github.com/tauri-apps/plugins-workspace/pull/2271) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `zbus` dependency to version 5. No API changes.
+
+## \[2.2.0]
+
+- [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.1.0`
+
 ## \[2.0.2]
 
 ### Dependencies

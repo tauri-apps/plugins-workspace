@@ -44,6 +44,13 @@
     await message("Tauri is awesome!");
   }
 
+  async function msgCustom(result) {
+    const buttons = { yes: "awesome", no: "amazing", cancel: "stunning" };
+    await message(`Tauri is: `, { buttons })
+      .then((res) => onMessage(`Tauri is ${res}`))
+      .catch(onMessage);
+  }
+
   function openDialog() {
     open({
       title: "My wonderful open dialog",
@@ -136,12 +143,17 @@
   <label for="dialog-directory">Directory</label>
 </div>
 <br />
-<button class="btn" id="open-dialog" on:click={openDialog}>Open dialog</button>
-<button class="btn" id="save-dialog" on:click={saveDialog}
-  >Open save dialog</button
->
-<button class="btn" id="prompt-dialog" on:click={prompt}>Prompt</button>
-<button class="btn" id="custom-prompt-dialog" on:click={promptCustom}
-  >Prompt (custom)</button
->
-<button class="btn" id="message-dialog" on:click={msg}>Message</button>
+
+<div class="flex flex-wrap flex-col md:flex-row gap-2 children:flex-shrink-0">
+  <button class="btn" id="open-dialog" on:click={openDialog}>Open dialog</button>
+  <button class="btn" id="save-dialog" on:click={saveDialog}
+    >Open save dialog</button
+  >
+  <button class="btn" id="prompt-dialog" on:click={prompt}>Prompt</button>
+  <button class="btn" id="custom-prompt-dialog" on:click={promptCustom}
+    >Prompt (custom)</button
+  >
+  <button class="btn" id="message-dialog" on:click={msg}>Message</button>
+  <button class="btn" id="message-dialog" on:click={msgCustom}>Message (custom)</button>
+
+</div>

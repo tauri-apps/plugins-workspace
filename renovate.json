@@ -1,8 +1,7 @@
 {
-  "extends": ["config:base"],
+  "extends": ["config:recommended"],
   "baseBranches": ["v2", "v1"],
   "enabledManagers": ["cargo", "npm"],
-  "semanticCommitType": "chore",
   "labels": ["dependencies"],
   "ignorePaths": [
     "**/node_modules/**",
@@ -17,10 +16,23 @@
   "rangeStrategy": "replace",
   "packageRules": [
     {
+      "matchPackageNames": ["*"],
+      "semanticCommitType": "chore",
+      "minimumReleaseAge": "3 days"
+    },
+    {
       "description": "Disable node/pnpm version updates",
       "matchPackageNames": ["node", "pnpm"],
       "matchDepTypes": ["engines", "packageManager"],
       "enabled": false
+    },
+    {
+      "description": "Group windows-rs / webview2-com crates",
+      "groupName": "windows-rs and webview2 crates",
+      "matchSourceUrls": [
+        "https://github.com/microsoft/windows-rs",
+        "https://github.com/wravery/webview2-rs"
+      ]
     }
   ],
   "postUpdateOptions": ["pnpmDedupe"]

@@ -78,6 +78,80 @@ interface SaveDialogOptions {
 }
 
 /**
+ * Default buttons for a message dialog.
+ *
+ * @since 2.4.0
+ */
+export type MessageDialogDefaultButtons =
+  | 'Ok'
+  | 'OkCancel'
+  | 'YesNo'
+  | 'YesNoCancel'
+
+/** All possible button keys. */
+type ButtonKey = 'ok' | 'cancel' | 'yes' | 'no'
+
+/** Ban everything except a set of keys. */
+type BanExcept<Allowed extends ButtonKey> = Partial<
+  Record<Exclude<ButtonKey, Allowed>, never>
+>
+
+/**
+ * The Yes, No and Cancel buttons of a message dialog.
+ *
+ * @since 2.4.0
+ */
+export type MessageDialogButtonsYesNoCancel = {
+  /** The Yes button. */
+  yes: string
+  /** The No button. */
+  no: string
+  /** The Cancel button. */
+  cancel: string
+} & BanExcept<'yes' | 'no' | 'cancel'>
+
+/**
+ * The Ok and Cancel buttons of a message dialog.
+ *
+ * @since 2.4.0
+ */
+export type MessageDialogButtonsOkCancel = {
+  /** The Ok button. */
+  ok: string
+  /** The Cancel button. */
+  cancel: string
+} & BanExcept<'ok' | 'cancel'>
+
+/**
+ * The Ok button of a message dialog.
+ *
+ * @since 2.4.0
+ */
+export type MessageDialogButtonsOk = {
+  /** The Ok button. */
+  ok: string
+} & BanExcept<'ok'>
+
+/**
+ * Custom buttons for a message dialog.
+ *
+ * @since 2.4.0
+ */
+export type MessageDialogCustomButtons =
+  | MessageDialogButtonsYesNoCancel
+  | MessageDialogButtonsOkCancel
+  | MessageDialogButtonsOk
+
+/**
+ * The buttons of a message dialog.
+ *
+ * @since 2.4.0
+ */
+export type MessageDialogButtons =
+  | MessageDialogDefaultButtons
+  | MessageDialogCustomButtons
+
+/**
  * @since 2.0.0
  */
 interface MessageDialogOptions {
@@ -85,8 +159,58 @@ interface MessageDialogOptions {
   title?: string
   /** The kind of the dialog. Defaults to `info`. */
   kind?: 'info' | 'warning' | 'error'
-  /** The label of the confirm button. */
+  /**
+   * The label of the Ok button.
+   *
+   * @deprecated Use {@linkcode MessageDialogOptions.buttons} instead.
+   */
   okLabel?: string
+  /**
+   * The buttons of the dialog.
+   *
+   * @example
+   *
+   * ```ts
+   * // Use system default buttons texts
+   * await message('Hello World!', { buttons: 'Ok' })
+   * await message('Hello World!', { buttons: 'OkCancel' })
+   *
+   * // Or with custom button texts
+   * await message('Hello World!', { buttons: { ok: 'Yes!' } })
+   * await message('Take on the task?', {
+   *   buttons: { ok: 'Accept', cancel: 'Cancel' }
+   * })
+   * await message('Show the file content?', {
+   *   buttons: { yes: 'Show content', no: 'Show in folder', cancel: 'Cancel' }
+   * })
+   * ```
+   *
+   * @since 2.4.0
+   */
+  buttons?: MessageDialogButtons
+}
+
+/**
+ * Internal function to convert the buttons to the Rust type.
+ */
+function buttonsToRust(buttons: MessageDialogButtons | undefined) {
+  if (buttons === undefined) {
+    return undefined
+  }
+
+  if (typeof buttons === 'string') {
+    return buttons
+  } else if ('ok' in buttons && 'cancel' in buttons) {
+    return { OkCancelCustom: [buttons.ok, buttons.cancel] }
+  } else if ('yes' in buttons && 'no' in buttons && 'cancel' in buttons) {
+    return {
+      YesNoCancelCustom: [buttons.yes, buttons.no, buttons.cancel]
+    }
+  } else if ('ok' in buttons) {
+    return { OkCustom: buttons.ok }
+  }
+
+  return undefined
 }
 
 interface ConfirmDialogOptions {
@@ -203,6 +327,16 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
 }
 
 /**
+ * The result of a message dialog.
+ *
+ * The result is a string if the dialog has custom buttons,
+ * otherwise it is one of the default buttons.
+ *
+ * @since 2.4.0
+ */
+export type MessageDialogResult = 'Yes' | 'No' | 'Ok' | 'Cancel' | (string & {})
+
+/**
  * Shows a message dialog with an `Ok` button.
  * @example
  * ```typescript
@@ -222,13 +356,15 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
 async function message(
   message: string,
   options?: string | MessageDialogOptions
-): Promise<void> {
+): Promise<MessageDialogResult> {
   const opts = typeof options === 'string' ? { title: options } : options
-  await invoke('plugin:dialog|message', {
+
+  return invoke<MessageDialogResult>('plugin:dialog|message', {
     message: message.toString(),
     title: opts?.title?.toString(),
     kind: opts?.kind,
-    okButtonLabel: opts?.okLabel?.toString()
+    okButtonLabel: opts?.okLabel?.toString(),
+    buttons: buttonsToRust(opts?.buttons)
   })
 }
 

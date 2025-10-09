@@ -7,8 +7,6 @@ use tauri::{
     Manager, Runtime,
 };
 
-//use tauri_specta::*;
-
 pub use models::*;
 
 #[cfg(desktop)]
@@ -23,27 +21,9 @@ mod models;
 pub use error::{Error, Result};
 
 #[cfg(desktop)]
-use desktop::Geolocation;
+pub use desktop::Geolocation;
 #[cfg(mobile)]
-use mobile::Geolocation;
-
-/* macro_rules! specta_builder {
-    () => {
-        ts::builder()
-            .commands(collect_commands![
-                commands::get_current_position,
-                commands::watch_position,
-                commands::clear_watch,
-                commands::check_permissions,
-                commands::request_permissions
-            ])
-            .header("// @ts-nocheck")
-            .config(
-                specta::ts::ExportConfig::default()
-                    .bigint(specta::ts::BigIntExportBehavior::Number),
-            )
-    };
-} */
+pub use mobile::Geolocation;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the geolocation APIs.
 pub trait GeolocationExt<R: Runtime> {
@@ -58,9 +38,6 @@ impl<R: Runtime, T: Manager<R>> crate::GeolocationExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    /*     let (invoke_handler, register_events) =
-    specta_builder!().build_plugin_utils("geolocation").unwrap(); */
-
     Builder::new("geolocation")
         .invoke_handler(tauri::generate_handler![
             commands::get_current_position,
@@ -79,22 +56,3 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         })
         .build()
 }
-
-/* #[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn export_types() {
-        specta_builder!()
-            .path("./guest-js/bindings.ts")
-            .config(
-                specta::ts::ExportConfig::default()
-                    .formatter(specta::ts::formatter::prettier)
-                    .bigint(specta::ts::BigIntExportBehavior::Number),
-            )
-            .export_for_plugin("geolocation")
-            .expect("failed to export specta types");
-    }
-}
- */

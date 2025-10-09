@@ -12,10 +12,14 @@
     isChecking = true
     try {
       const update = await check()
-      onMessage(`Should update: ${update.available}`)
-      onMessage(update)
+      if (update) {
+        onMessage(`Should update: ${update.available}`)
+        onMessage(update)
 
-      newUpdate = update
+        newUpdate = update
+      } else {
+        onMessage('No update available')
+      }
     } catch (e) {
       onMessage(e)
     } finally {

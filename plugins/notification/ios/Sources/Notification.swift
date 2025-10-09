@@ -38,10 +38,17 @@ func makeNotificationContent(_ notification: Notification) throws -> UNNotificat
       arguments: nil)
   }
 
-  content.userInfo = [
-    "__EXTRA__": notification.extra as Any,
-    "__SCHEDULE__": notification.schedule as Any,
-  ]
+  var userInfo: [String: Any] = [:]
+  
+  if let extra = notification.extra {
+    userInfo["__EXTRA__"] = extra
+  }
+  
+  if let schedule = notification.schedule {
+    userInfo["__SCHEDULE__"] = scheduleToDictionary(schedule)
+  }
+  
+  content.userInfo = userInfo
 
   if let actionTypeId = notification.actionTypeId {
     content.categoryIdentifier = actionTypeId
@@ -64,6 +71,56 @@ func makeNotificationContent(_ notification: Notification) throws -> UNNotificat
   }
 
   return content
+}
+
+func scheduleToDictionary(_ schedule: NotificationSchedule) -> [String: Any] {
+  switch schedule {
+  case .at(let date, let repeating):
+    return [
+      "type": "at",
+      "date": date,
+      "repeating": repeating
+    ]
+  case .interval(let interval):
+    return [
+      "type": "interval",
+      "interval": scheduleIntervalToDictionary(interval)
+    ]
+  case .every(let interval, let count):
+    return [
+      "type": "every",
+      "interval": interval.rawValue,
+      "count": count
+    ]
+  }
+}
+
+func scheduleIntervalToDictionary(_ interval: ScheduleInterval) -> [String: Any] {
+  var dict: [String: Any] = [:]
+  
+  if let year = interval.year {
+    dict["year"] = year
+  }
+  if let month = interval.month {
+    dict["month"] = month
+  }
+  if let day = interval.day {
+    dict["day"] = day
+  }
+  if let weekday = interval.weekday {
+    dict["weekday"] = weekday
+  }
+  if let hour = interval.hour {
+    dict["hour"] = hour
+  }
+  if let minute = interval.minute {
+    dict["minute"] = minute
+  }
+  if let second = interval.second {
+    dict["second"] = second
+  }
+  
+  return dict
 }
 
 func makeAttachments(_ attachments: [NotificationAttachment]) throws -> [UNNotificationAttachment] {

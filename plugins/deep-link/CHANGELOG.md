@@ -1,5 +1,38 @@
 # Changelog
 
+## \[2.4.3]
+
+- [`2522b71f`](https://github.com/tauri-apps/plugins-workspace/commit/2522b71f6bcae65c03b24415eb9295c9e7c84ffc) ([#2970](https://github.com/tauri-apps/plugins-workspace/pull/2970) by [@WSH032](https://github.com/tauri-apps/plugins-workspace/../../WSH032)) Revert the breaking change introduced by [#2928](https://github.com/tauri-apps/plugins-workspace/pull/2928).
+
+## \[2.4.2]
+
+- [`21d721a0`](https://github.com/tauri-apps/plugins-workspace/commit/21d721a0c2731fc201872f5b99ea8bbdc61b0b60) ([#2928](https://github.com/tauri-apps/plugins-workspace/pull/2928) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Linux, improved error messages when OS commands fail.
+
+## \[2.4.1]
+
+- [`d4f8299b`](https://github.com/tauri-apps/plugins-workspace/commit/d4f8299b12f107718c70692840a63768d65baaf9) ([#2844](https://github.com/tauri-apps/plugins-workspace/pull/2844) by [@yobson1](https://github.com/tauri-apps/plugins-workspace/../../yobson1)) Fix deep link protocol handler not set as default on linux
+  Fix duplicate protocols added to MimeType section in .desktop files on linux
+
+## \[2.4.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.3.0]
+
+- [`4d10acee`](https://github.com/tauri-apps/plugins-workspace/commit/4d10acee61bad8045705508121424ed5f2d381f6) ([#993](https://github.com/tauri-apps/plugins-workspace/pull/993) by [@m00nwtchr](https://github.com/tauri-apps/plugins-workspace/../../m00nwtchr)) Exposed Android's `path`, `pathPattern` and `pathSuffix` configurations.
+- [`4d10acee`](https://github.com/tauri-apps/plugins-workspace/commit/4d10acee61bad8045705508121424ed5f2d381f6) ([#993](https://github.com/tauri-apps/plugins-workspace/pull/993) by [@m00nwtchr](https://github.com/tauri-apps/plugins-workspace/../../m00nwtchr)) Added a `scheme` configuration to set a scheme other than http/https. This is only supported on Android and will still default to http,https if not set.
+
+## \[2.2.1]
+
+### bug
+
+- [`38deef43`](https://github.com/tauri-apps/plugins-workspace/commit/38deef43dca9d5a09a38ed2da45b0f86c6afa1c5) ([#2483](https://github.com/tauri-apps/plugins-workspace/pull/2483)) Fix `is_registered` not being able to pickup deep link registered in `HKEY_LOCAL_MACHINE` on Windows
+- [`38deef43`](https://github.com/tauri-apps/plugins-workspace/commit/38deef43dca9d5a09a38ed2da45b0f86c6afa1c5) ([#2483](https://github.com/tauri-apps/plugins-workspace/pull/2483)) Fix `unregister` not being able to remove deep link registered in `HKEY_LOCAL_MACHINE` on Windows
+
+## \[2.2.0]
+
+- [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
+
 ## \[2.0.1]
 
 - [`b2aea045`](https://github.com/tauri-apps/plugins-workspace/commit/b2aea0456799775a7243706fdd7a5abf9a193992) ([#2008](https://github.com/tauri-apps/plugins-workspace/pull/2008) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) `onOpenUrl()` will now not call `getCurrent()` anymore, matching the documented behavior.
