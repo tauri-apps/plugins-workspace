@@ -8,6 +8,7 @@
   let filter = null;
   let multiple = false;
   let directory = false;
+  let pickerMode = "";
 
   function arrayBufferToBase64(buffer, callback) {
     var blob = new Blob([buffer], {
@@ -65,6 +66,7 @@
         : [],
       multiple,
       directory,
+      pickerMode: pickerMode === "" ? undefined : pickerMode,
     })
       .then(function (res) {
         if (Array.isArray(res)) {
@@ -94,7 +96,7 @@
                 onMessage(res);
               }
             })
-            .catch(onMessage(res));
+            .catch(onMessage);
         }
       })
       .catch(onMessage);
@@ -112,7 +114,7 @@
             },
           ]
         : [],
-    })
+      })
       .then(onMessage)
       .catch(onMessage);
   }
@@ -141,6 +143,16 @@
 <div>
   <input type="checkbox" id="dialog-directory" bind:checked={directory} />
   <label for="dialog-directory">Directory</label>
+</div>
+<div>
+  <label for="dialog-picker-mode">Picker Mode:</label>
+  <select id="dialog-picker-mode" bind:value={pickerMode}>
+    <option value="">None</option>
+    <option value="media">Media</option>
+    <option value="image">Image</option>
+    <option value="video">Video</option>
+    <option value="document">Document</option>
+  </select>
 </div>
 <br />
 
