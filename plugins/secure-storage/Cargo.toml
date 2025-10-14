@@ -45,11 +45,13 @@ windows-native-keyring-store = "0.2"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 # TODO: upstream is on keyring-core@0.6 while windows & apple backends only have 0.5 and 0.7 releases.
-zbus-secret-service-keyring-store = { git = "https://github.com/FabianLars/zbus-secret-service-keyring-store", features = ["rt-tokio-crypto-rust"] }
+zbus-secret-service-keyring-store = { git = "https://github.com/FabianLars/zbus-secret-service-keyring-store", features = [
+  "rt-tokio-crypto-rust",
+] }
 
 [target.'cfg(any(target_os = "ios", target_os = "macos"))'.dependencies]
 apple-native-keyring-store = "0.2"
 
 [target.'cfg(target_os = "android")'.dependencies]
 # TODO: upstream is on keyring-core@0.6 while windows & apple backends only have 0.5 and 0.7 releases.
-android-native-keyring-store =  { git = "https://github.com/FabianLars/android-native-keyring-store" }
+android-native-keyring-store = { git = "https://github.com/FabianLars/android-native-keyring-store" }

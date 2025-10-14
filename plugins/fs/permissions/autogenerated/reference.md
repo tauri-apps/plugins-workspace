@@ -1,6 +1,6 @@
 ## Default Permission
 
-This set of permissions describes the what kind of
+This set of permissions describes what kind of
 file system access the `fs` plugin has enabled or denied by default.
 
 #### Granted Permissions
