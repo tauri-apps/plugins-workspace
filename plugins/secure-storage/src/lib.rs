@@ -32,8 +32,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .invoke_handler(tauri::generate_handler![
             commands::set_string,
             commands::get_string,
-            commands::set_binary,
-            commands::get_binary
+            commands::set_bytes,
+            commands::get_bytes
         ])
         .setup(|app, _api| {
             #[cfg(target_os = "android")]
@@ -62,20 +62,25 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 /// Access to the secure-storage APIs.
 pub struct SecureStorage<R: Runtime>(AppHandle<R>);
 
+// TODO: docs
 impl<R: Runtime> SecureStorage<R> {
+    /// Corresponds to [`set_password`](https://docs.rs/keyring-core/latest/keyring_core/struct.Entry.html#method.set_password) in keyring-rs.
     pub fn set_string(&self, key: &str, value: &str) -> Result<()> {
         Ok(Entry::new(&self.0.config().identifier, key)?.set_password(value)?)
     }
 
+    /// Corresponds to [`get_password`](https://docs.rs/keyring-core/latest/keyring_core/struct.Entry.html#method.get_password) in keyring-rs.
     pub fn get_string(&self, key: &str) -> Result<String> {
         Ok(Entry::new(&self.0.config().identifier, key)?.get_password()?)
     }
 
-    pub fn set_binary(&self, key: &str, value: &[u8]) -> Result<()> {
+    /// Corresponds to [`set_secret`](https://docs.rs/keyring-core/latest/keyring_core/struct.Entry.html#method.set_secret) in keyring-rs.
+    pub fn set_bytes(&self, key: &str, value: &[u8]) -> Result<()> {
         Ok(Entry::new(&self.0.config().identifier, key)?.set_secret(value)?)
     }
 
-    pub fn get_binary(&self, key: &str) -> Result<Vec<u8>> {
+    /// Corresponds to [`get_secret`](https://docs.rs/keyring-core/latest/keyring_core/struct.Entry.html#method.set_password) in keyring-rs.
+    pub fn get_bytes(&self, key: &str) -> Result<Vec<u8>> {
         Ok(Entry::new(&self.0.config().identifier, key)?.get_secret()?)
     }
 }

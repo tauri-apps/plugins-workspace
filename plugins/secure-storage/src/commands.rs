@@ -17,11 +17,11 @@ pub(crate) fn get_string<R: Runtime>(app: AppHandle<R>, key: &str) -> Result<Str
 }
 
 #[command]
-pub(crate) fn set_binary<R: Runtime>(app: AppHandle<R>, key: &str, value: &[u8]) -> Result<()> {
-    app.secure_storage().set_binary(key, value)
+pub(crate) fn set_bytes<R: Runtime>(app: AppHandle<R>, key: &str, value: &[u8]) -> Result<()> {
+    app.secure_storage().set_bytes(key, value)
 }
 
 #[command]
-pub(crate) fn get_binary<R: Runtime>(app: AppHandle<R>, key: &str) -> Result<Vec<u8>> {
-    app.secure_storage().get_binary(key)
+pub(crate) fn get_bytes<R: Runtime>(app: AppHandle<R>, key: &str) -> Result<Vec<u8>> {
+    app.secure_storage().get_bytes(key)
 }
