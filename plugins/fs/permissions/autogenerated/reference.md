@@ -3748,6 +3748,28 @@ This enables all index or metadata related commands without any pre-configured a
 
 An empty permission you can use to modify the global scope.
 
+## Example
+
+```json
+{
+  "identifier": "read-documents",
+  "windows": ["main"],
+  "permissions": [
+    "fs:allow-read",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        "$APPDATA/documents/**/*"
+      ],
+      "deny": [
+        "$APPDATA/documents/secret.txt"
+      ]
+    }
+  ]
+}
+```
+
+
 </td>
 </tr>
 

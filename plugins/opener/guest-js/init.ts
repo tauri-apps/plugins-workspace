@@ -46,10 +46,8 @@ window.addEventListener('click', function (evt) {
 
   // return early if
   if (
-    // same origin (internal navigation)
-    url.origin === window.location.origin
     // not default protocols
-    || ['http:', 'https:', 'mailto:', 'tel:'].every((p) => url.protocol !== p)
+    ['http:', 'https:', 'mailto:', 'tel:'].every((p) => url.protocol !== p)
   )
     return
 

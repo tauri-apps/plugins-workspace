@@ -293,6 +293,7 @@ mod imp {
                     .unwrap_or_else(|| bin.into_os_string())
                     .to_string_lossy()
                     .to_string();
+                let qualified_exec = format!("{} %u", exec);
 
                 let target = self.app.path().data_dir()?.join("applications");
 
@@ -304,12 +305,28 @@ mod imp {
 
                 if let Ok(mut desktop_file) = ini::Ini::load_from_file(&target_file) {
                     if let Some(section) = desktop_file.section_mut(Some("Desktop Entry")) {
-                        // it's ok to remove it - we only write to the file if it's missing
-                        // and in that case we include old_mimes
                         let old_mimes = section.remove("MimeType").unwrap_or_default();
+                        let mut change = false;
 
+                        // if the mime type is not present, append it to the list
                         if !old_mimes.split(';').any(|mime| mime == mime_type) {
                             section.append("MimeType", format!("{mime_type};{old_mimes}"));
+                            change = true;
+                        } else {
+                            section.insert("MimeType".to_string(), old_mimes);
+                        }
+
+                        // if the exec command doesnt match, update to the new one
+                        let old_exec = section.remove("Exec").unwrap_or_default();
+                        if old_exec != qualified_exec {
+                            section.append("Exec", qualified_exec);
+                            change = true;
+                        } else {
+                            section.insert("Exec".to_string(), old_exec.to_string());
+                        }
+
+                        // if any property has changed, rewrite the .desktop file
+                        if change {
                             desktop_file.write_to_file(&target_file)?;
                         }
                     }
@@ -324,7 +341,7 @@ mod imp {
                                 .product_name
                                 .clone()
                                 .unwrap_or_else(|| file_name.clone()),
-                            exec = exec,
+                            qualified_exec = qualified_exec,
                             mime_type = mime_type
                         )
                         .as_bytes(),
