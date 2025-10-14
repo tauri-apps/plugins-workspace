@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use keyring::Entry;
+use keyring_core::{set_default_store, Entry};
 use tauri::{
     plugin::{Builder, TauriPlugin},
     AppHandle, Manager, Runtime,
@@ -37,7 +37,21 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         ])
         .setup(|app, _api| {
             #[cfg(target_os = "android")]
-            android_keyring::set_android_keyring_credential_builder()?;
+            set_default_store(android_native_keyring_store::AndroidStore::from_ndk_context()?);
+
+            // TODO: (maybe) config to change used keychain.
+            #[cfg(all(target_os = "android", feature = "apple-keychain"))]
+            set_default_store(apple_native_keyring_store::keychain::Store::new()?);
+
+            // TODO: config. most notably icloud sync and biometrics
+            #[cfg(all(target_os = "android", feature = "apple-protected"))]
+            set_default_store(apple_native_keyring_store::protected::Store::new()?);
+
+            #[cfg(windows)]
+            set_default_store(windows_native_keyring_store::Store::new()?);
+
+            #[cfg(target_os = "linux")]
+            set_default_store(zbus_secret_service_keyring_store::Store::new()?);
 
             app.manage(SecureStorage(app.clone()));
             Ok(())

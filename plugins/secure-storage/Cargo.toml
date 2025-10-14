@@ -26,19 +26,30 @@ ios = { level = "full", notes = "" }
 [build-dependencies]
 tauri-plugin = { workspace = true, features = ["build"] }
 
+[features]
+# TODO: docs
+# TODO: Check if protected works on intel as well, otherwise we may have to split this up. using protected for ios and keychain for macos and somehow making protected opt-in for apple silicon macs.
+apple-keychain = ["apple-native-keyring-store/keychain"]
+apple-protected = ["apple-native-keyring-store/protected"]
+
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
-# When updating to v4 we likely won't use linux-native aka keyutils but we need to look into which backend to use.
-# Also, `linux-native` is non persistent.
-keyring = { version = "3.6", features = [
-  "apple-native",
-  "windows-native",
-  "linux-native",
-] }
+keyring-core = "0.7"
 
-[target."cfg(target_os = \"android\")".dependencies]
-android-keyring = "0.2.0"
+[target.'cfg(windows)'.dependencies]
+windows-native-keyring-store = "0.2"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# TODO: upstream is on keyring-core@0.6 while windows & apple backends only have 0.5 and 0.7 releases.
+zbus-secret-service-keyring-store = { git = "https://github.com/FabianLars/zbus-secret-service-keyring-store", features = ["rt-tokio-crypto-rust"] }
+
+[target.'cfg(any(target_os = "ios", target_os = "macos"))'.dependencies]
+apple-native-keyring-store = "0.2"
+
+[target.'cfg(target_os = "android")'.dependencies]
+# TODO: upstream is on keyring-core@0.6 while windows & apple backends only have 0.5 and 0.7 releases.
+android-native-keyring-store =  { git = "https://github.com/FabianLars/android-native-keyring-store" }

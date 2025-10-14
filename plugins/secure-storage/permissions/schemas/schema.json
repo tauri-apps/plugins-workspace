@@ -341,6 +341,12 @@
           "type": "string",
           "const": "deny-set-string",
           "markdownDescription": "Denies the set_string command without any pre-configured scope."
+        },
+        {
+          "description": "This permission set configures which\nSecure Storage APIs are available by defaultt.\n\n#### Granted Permissions\n\nIn the PoC phase all commands are allowed by default.\n\n\n#### This default permission set includes:\n\n- `allow-arch`\n- `allow-exe-extension`\n- `allow-family`\n- `allow-locale`\n- `allow-os-type`\n- `allow-platform`\n- `allow-version`",
+          "type": "string",
+          "const": "default",
+          "markdownDescription": "This permission set configures which\nSecure Storage APIs are available by defaultt.\n\n#### Granted Permissions\n\nIn the PoC phase all commands are allowed by default.\n\n\n#### This default permission set includes:\n\n- `allow-arch`\n- `allow-exe-extension`\n- `allow-family`\n- `allow-locale`\n- `allow-os-type`\n- `allow-platform`\n- `allow-version`"
         }
       ]
     }

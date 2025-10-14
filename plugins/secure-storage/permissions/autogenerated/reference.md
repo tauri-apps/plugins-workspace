@@ -1,3 +1,22 @@
+## Default Permission
+
+This permission set configures which
+Secure Storage APIs are available by defaultt.
+
+#### Granted Permissions
+
+In the PoC phase all commands are allowed by default.
+
+#### This default permission set includes the following:
+
+- `allow-arch`
+- `allow-exe-extension`
+- `allow-family`
+- `allow-locale`
+- `allow-os-type`
+- `allow-platform`
+- `allow-version`
+
 ## Permission Table
 
 <table>
