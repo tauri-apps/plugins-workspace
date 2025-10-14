@@ -26,7 +26,13 @@ use reqwest::{
 };
 use semver::Version;
 use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
-use tauri::{utils::platform::current_exe, AppHandle, Resource, Runtime};
+use tauri::{
+    utils::{
+        config::BundleType,
+        platform::{bundle_type, current_exe},
+    },
+    AppHandle, Resource, Runtime,
+};
 use time::OffsetDateTime;
 use url::Url;
 
@@ -36,6 +42,31 @@ use crate::{
 };
 
 const UPDATER_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
+
+#[derive(Copy, Clone)]
+pub enum Installer {
+    AppImage,
+    Deb,
+    Rpm,
+
+    App,
+
+    Msi,
+    Nsis,
+}
+
+impl Installer {
+    fn name(self) -> &'static str {
+        match self {
+            Self::AppImage => "appimage",
+            Self::Deb => "deb",
+            Self::Rpm => "rpm",
+            Self::App => "app",
+            Self::Msi => "msi",
+            Self::Nsis => "nsis",
+        }
+    }
+}
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ReleaseManifestPlatform {
@@ -265,13 +296,7 @@ impl UpdaterBuilder {
             return Err(Error::EmptyEndpoints);
         };
 
-        let arch = get_updater_arch().ok_or(Error::UnsupportedArch)?;
-        let (target, json_target) = if let Some(target) = self.target {
-            (target.clone(), target)
-        } else {
-            let target = get_updater_target().ok_or(Error::UnsupportedOs)?;
-            (target.to_string(), format!("{target}-{arch}"))
-        };
+        let arch = updater_arch().ok_or(Error::UnsupportedArch)?;
 
         let executable_path = self.executable_path.clone().unwrap_or(current_exe()?);
 
@@ -294,8 +319,7 @@ impl UpdaterBuilder {
             installer_args: self.installer_args,
             current_exe_args: self.current_exe_args,
             arch,
-            target,
-            json_target,
+            target: self.target,
             headers: self.headers,
             extract_path,
             on_before_exit: self.on_before_exit,
@@ -327,10 +351,9 @@ pub struct Updater {
     proxy: Option<Url>,
     endpoints: Vec<Url>,
     arch: &'static str,
-    // The `{{target}}` variable we replace in the endpoint
-    target: String,
-    // The value we search if the updater server returns a JSON with the `platforms` object
-    json_target: String,
+    // The `{{target}}` variable we replace in the endpoint and serach for in the JSON,
+    // this is either the user provided target or the current operating system by default
+    target: Option<String>,
     headers: HeaderMap,
     extract_path: PathBuf,
     on_before_exit: Option<OnBeforeExit>,
@@ -359,12 +382,17 @@ impl Updater {
                 std::env::set_var("SSL_CERT_DIR", "/etc/ssl/certs");
             }
         }
+        let target = if let Some(target) = &self.target {
+            target
+        } else {
+            updater_os().ok_or(Error::UnsupportedOs)?
+        };
 
         let mut remote_release: Option<RemoteRelease> = None;
         let mut raw_json: Option<serde_json::Value> = None;
         let mut last_error: Option<Error> = None;
         for url in &self.endpoints {
-            // replace {{current_version}}, {{target}} and {{arch}} in the provided URL
+            // replace {{current_version}}, {{target}}, {{arch}} and {{bundle_type}} in the provided URL
             // this is useful if we need to query example
             // https://releases.myapp.com/update/{{target}}/{{arch}}/{{current_version}}
             // will be translated into ->
@@ -376,17 +404,22 @@ impl Updater {
             const CONTROLS_ADD: &AsciiSet = &CONTROLS.add(b'+');
             let encoded_version = percent_encoding::percent_encode(version, CONTROLS_ADD);
             let encoded_version = encoded_version.to_string();
+            let installer = installer_for_bundle_type(bundle_type())
+                .map(|i| i.name())
+                .unwrap_or("unknown");
 
             let url: Url = url
                 .to_string()
                 // url::Url automatically url-encodes the path components
                 .replace("%7B%7Bcurrent_version%7D%7D", &encoded_version)
-                .replace("%7B%7Btarget%7D%7D", &self.target)
+                .replace("%7B%7Btarget%7D%7D", target)
                 .replace("%7B%7Barch%7D%7D", self.arch)
+                .replace("%7B%7Bbundle_type%7D%7D", installer)
                 // but not query parameters
                 .replace("{{current_version}}", &encoded_version)
-                .replace("{{target}}", &self.target)
+                .replace("{{target}}", target)
                 .replace("{{arch}}", self.arch)
+                .replace("{{bundle_type}}", installer)
                 .parse()?;
 
             log::debug!("checking for updates {url}");
@@ -466,6 +499,9 @@ impl Updater {
             None => release.version > self.current_version,
         };
 
+        let installer = installer_for_bundle_type(bundle_type());
+        let (download_url, signature) = self.get_urls(&release, &installer)?;
+
         let update = if should_update {
             Some(Update {
                 run_on_main_thread: self.run_on_main_thread.clone(),
@@ -473,12 +509,12 @@ impl Updater {
                 on_before_exit: self.on_before_exit.clone(),
                 app_name: self.app_name.clone(),
                 current_version: self.current_version.to_string(),
-                target: self.target.clone(),
+                target: target.to_owned(),
                 extract_path: self.extract_path.clone(),
                 version: release.version.to_string(),
                 date: release.pub_date,
-                download_url: release.download_url(&self.json_target)?.to_owned(),
-                signature: release.signature(&self.json_target)?.to_owned(),
+                download_url: download_url.clone(),
+                signature: signature.to_owned(),
                 body: release.notes,
                 raw_json: raw_json.unwrap(),
                 timeout: None,
@@ -493,6 +529,38 @@ impl Updater {
         };
 
         Ok(update)
+    }
+
+    fn get_urls<'a>(
+        &self,
+        release: &'a RemoteRelease,
+        installer: &Option<Installer>,
+    ) -> Result<(&'a Url, &'a String)> {
+        // Use the user provided target
+        if let Some(target) = &self.target {
+            return Ok((release.download_url(target)?, release.signature(target)?));
+        }
+
+        // Or else we search for [`{os}-{arch}-{installer}`, `{os}-{arch}`] in order
+        let os = updater_os().ok_or(Error::UnsupportedOs)?;
+        let arch = self.arch;
+        let mut targets = Vec::new();
+        if let Some(installer) = installer {
+            let installer = installer.name();
+            targets.push(format!("{os}-{arch}-{installer}"));
+        }
+        targets.push(format!("{os}-{arch}"));
+
+        for target in &targets {
+            log::debug!("Searching for updater target '{target}' in release data");
+            if let (Ok(download_url), Ok(signature)) =
+                (release.download_url(target), release.signature(target))
+            {
+                return Ok((download_url, signature));
+            };
+        }
+
+        Err(Error::TargetsNotFound(targets))
     }
 }
 
@@ -511,7 +579,8 @@ pub struct Update {
     pub version: String,
     /// Update publish date
     pub date: Option<OffsetDateTime>,
-    /// Target
+    /// The `{{target}}` variable we replace in the endpoint and search for in the JSON,
+    /// this is either the user provided target or the current operating system by default
     pub target: String,
     /// Download URL announced
     pub download_url: Url,
@@ -852,11 +921,10 @@ impl Update {
     /// └── ...
     ///
     fn install_inner(&self, bytes: &[u8]) -> Result<()> {
-        if self.is_deb_package() {
-            self.install_deb(bytes)
-        } else {
-            // Handle AppImage or other formats
-            self.install_appimage(bytes)
+        match installer_for_bundle_type(bundle_type()) {
+            Some(Installer::Deb) => self.install_deb(bytes),
+            Some(Installer::Rpm) => self.install_rpm(bytes),
+            _ => self.install_appimage(bytes),
         }
     }
 
@@ -933,39 +1001,6 @@ impl Update {
         Err(Error::TempDirNotOnSameMountPoint)
     }
 
-    fn is_deb_package(&self) -> bool {
-        // First check if we're in a typical Debian installation path
-        let in_system_path = self
-            .extract_path
-            .to_str()
-            .map(|p| p.starts_with("/usr"))
-            .unwrap_or(false);
-
-        if !in_system_path {
-            return false;
-        }
-
-        // Then verify it's actually a Debian-based system by checking for dpkg
-        let dpkg_exists = std::path::Path::new("/var/lib/dpkg").exists();
-        let apt_exists = std::path::Path::new("/etc/apt").exists();
-
-        // Additional check for the package in dpkg database
-        let package_in_dpkg = if let Ok(output) = std::process::Command::new("dpkg")
-            .args(["-S", &self.extract_path.to_string_lossy()])
-            .output()
-        {
-            output.status.success()
-        } else {
-            false
-        };
-
-        // Consider it a deb package only if:
-        // 1. We're in a system path AND
-        // 2. We have Debian package management tools AND
-        // 3. The binary is tracked by dpkg
-        dpkg_exists && apt_exists && package_in_dpkg
-    }
-
     fn install_deb(&self, bytes: &[u8]) -> Result<()> {
         // First verify the bytes are actually a .deb package
         if !infer::archive::is_deb(bytes) {
@@ -973,6 +1008,18 @@ impl Update {
             return Err(Error::InvalidUpdaterFormat);
         }
 
+        self.try_tmp_locations(bytes, "dpkg", "-i")
+    }
+
+    fn install_rpm(&self, bytes: &[u8]) -> Result<()> {
+        // First verify the bytes are actually a .rpm package
+        if !infer::archive::is_rpm(bytes) {
+            return Err(Error::InvalidUpdaterFormat);
+        }
+        self.try_tmp_locations(bytes, "rpm", "-U")
+    }
+
+    fn try_tmp_locations(&self, bytes: &[u8], install_cmd: &str, install_arg: &str) -> Result<()> {
         // Try different temp directories
         let tmp_dir_locations = vec![
             Box::new(|| Some(std::env::temp_dir())) as Box<dyn FnOnce() -> Option<PathBuf>>,
@@ -984,15 +1031,19 @@ impl Update {
         for tmp_dir_location in tmp_dir_locations {
             if let Some(path) = tmp_dir_location() {
                 if let Ok(tmp_dir) = tempfile::Builder::new()
-                    .prefix("tauri_deb_update")
+                    .prefix("tauri_rpm_update")
                     .tempdir_in(path)
                 {
-                    let deb_path = tmp_dir.path().join("package.deb");
+                    let pkg_path = tmp_dir.path().join("package.rpm");
 
                     // Try writing the .deb file
-                    if std::fs::write(&deb_path, bytes).is_ok() {
+                    if std::fs::write(&pkg_path, bytes).is_ok() {
                         // If write succeeds, proceed with installation
-                        return self.try_install_with_privileges(&deb_path);
+                        return self.try_install_with_privileges(
+                            &pkg_path,
+                            install_cmd,
+                            install_arg,
+                        );
                     }
                     // If write fails, continue to next temp location
                 }
@@ -1003,12 +1054,17 @@ impl Update {
         Err(Error::TempDirNotFound)
     }
 
-    fn try_install_with_privileges(&self, deb_path: &Path) -> Result<()> {
+    fn try_install_with_privileges(
+        &self,
+        pkg_path: &Path,
+        install_cmd: &str,
+        install_arg: &str,
+    ) -> Result<()> {
         // 1. First try using pkexec (graphical sudo prompt)
         if let Ok(status) = std::process::Command::new("pkexec")
-            .arg("dpkg")
-            .arg("-i")
-            .arg(deb_path)
+            .arg(install_cmd)
+            .arg(install_arg)
+            .arg(pkg_path)
             .status()
         {
             if status.success() {
@@ -1019,7 +1075,7 @@ impl Update {
 
         // 2. Try zenity or kdialog for a graphical sudo experience
         if let Ok(password) = self.get_password_graphically() {
-            if self.install_with_sudo(deb_path, &password)? {
+            if self.install_with_sudo(pkg_path, &password, install_cmd, install_arg)? {
                 log::debug!("installed deb with GUI sudo");
                 return Ok(());
             }
@@ -1027,16 +1083,16 @@ impl Update {
 
         // 3. Final fallback: terminal sudo
         let status = std::process::Command::new("sudo")
-            .arg("dpkg")
-            .arg("-i")
-            .arg(deb_path)
+            .arg(install_cmd)
+            .arg(install_arg)
+            .arg(pkg_path)
             .status()?;
 
         if status.success() {
             log::debug!("installed deb with sudo");
             Ok(())
         } else {
-            Err(Error::DebInstallFailed)
+            Err(Error::PackageInstallFailed)
         }
     }
 
@@ -1070,15 +1126,21 @@ impl Update {
         Err(Error::AuthenticationFailed)
     }
 
-    fn install_with_sudo(&self, deb_path: &Path, password: &str) -> Result<bool> {
+    fn install_with_sudo(
+        &self,
+        pkg_path: &Path,
+        password: &str,
+        install_cmd: &str,
+        install_arg: &str,
+    ) -> Result<bool> {
         use std::io::Write;
         use std::process::{Command, Stdio};
 
         let mut child = Command::new("sudo")
             .arg("-S") // read password from stdin
-            .arg("dpkg")
-            .arg("-i")
-            .arg(deb_path)
+            .arg(install_cmd)
+            .arg(install_arg)
+            .arg(pkg_path)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
@@ -1086,7 +1148,7 @@ impl Update {
 
         if let Some(mut stdin) = child.stdin.take() {
             // Write password to stdin
-            writeln!(stdin, "{}", password)?;
+            writeln!(stdin, "{password}")?;
         }
 
         let status = child.wait()?;
@@ -1199,16 +1261,18 @@ impl Update {
     }
 }
 
-/// Gets the target string used on the updater.
+/// Gets the base target string used by the updater. If bundle type is available it
+/// will be added to this string when selecting the download URL and signature.
+/// `tauri::utils::platform::bundle_type` method is used to obtain current bundle type.
 pub fn target() -> Option<String> {
-    if let (Some(target), Some(arch)) = (get_updater_target(), get_updater_arch()) {
+    if let (Some(target), Some(arch)) = (updater_os(), updater_arch()) {
         Some(format!("{target}-{arch}"))
     } else {
         None
     }
 }
 
-pub(crate) fn get_updater_target() -> Option<&'static str> {
+fn updater_os() -> Option<&'static str> {
     if cfg!(target_os = "linux") {
         Some("linux")
     } else if cfg!(target_os = "macos") {
@@ -1221,7 +1285,7 @@ pub(crate) fn get_updater_target() -> Option<&'static str> {
     }
 }
 
-pub(crate) fn get_updater_arch() -> Option<&'static str> {
+fn updater_arch() -> Option<&'static str> {
     if cfg!(target_arch = "x86") {
         Some("i686")
     } else if cfg!(target_arch = "x86_64") {
@@ -1312,6 +1376,18 @@ impl<'de> Deserialize<'de> for RemoteRelease {
                 })
             },
         })
+    }
+}
+
+fn installer_for_bundle_type(bundle: Option<BundleType>) -> Option<Installer> {
+    match bundle? {
+        BundleType::Deb => Some(Installer::Deb),
+        BundleType::Rpm => Some(Installer::Rpm),
+        BundleType::AppImage => Some(Installer::AppImage),
+        BundleType::Msi => Some(Installer::Msi),
+        BundleType::Nsis => Some(Installer::Nsis),
+        BundleType::App => Some(Installer::App), // App is also returned for Dmg type
+        _ => None,
     }
 }
 
