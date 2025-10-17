@@ -96,38 +96,37 @@ fn listen_for_other_instances<A: Runtime>(
     app: AppHandle<A>,
     mut cb: Box<SingleInstanceCallback<A>>,
 ) {
-    match UnixListener::bind(socket) {
-        Ok(listener) => {
-            tauri::async_runtime::spawn(async move {
-                for stream in listener.incoming() {
-                    match stream {
-                        Ok(mut stream) => {
-                            let mut s = String::new();
-                            match stream.read_to_string(&mut s) {
-                                Ok(_) => {
-                                    let (cwd, args) = s.split_once("\0\0").unwrap_or_default();
-                                    let args: Vec<String> =
-                                        args.split('\0').map(String::from).collect();
-                                    cb(app.app_handle(), args, cwd.to_string());
-                                }
-                                Err(e) => {
-                                    tracing::debug!("single_instance failed to be notified: {e}")
-                                }
-                            }
-                        }
-                        Err(err) => {
-                            tracing::debug!("single_instance failed to be notified: {}", err);
-                            continue;
-                        }
-                    }
-                }
-            });
-        }
+    let listener = match UnixListener::bind(socket) {
+        Ok(listener) => listener,
         Err(err) => {
             tracing::error!(
                 "single_instance failed to listen to other processes - launching normally: {}",
                 err
             );
+            return;
         }
-    }
+    };
+    std::thread::spawn(move || {
+        for stream in listener.incoming() {
+            match stream {
+                Ok(mut stream) => {
+                    let mut s = String::new();
+                    match stream.read_to_string(&mut s) {
+                        Ok(_) => {
+                            let (cwd, args) = s.split_once("\0\0").unwrap_or_default();
+                            let args: Vec<String> = args.split('\0').map(String::from).collect();
+                            cb(app.app_handle(), args, cwd.to_string());
+                        }
+                        Err(e) => {
+                            tracing::debug!("single_instance failed to be notified: {e}")
+                        }
+                    }
+                }
+                Err(err) => {
+                    tracing::debug!("single_instance failed to be notified: {}", err);
+                    continue;
+                }
+            }
+        }
+    });
 }
