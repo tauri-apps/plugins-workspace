@@ -25,4 +25,4 @@ shell: patch
 shell-js: patch
 ---
 
-On Android, updated compileSdk to 35.
+On Android, updated compileSdk to 36.

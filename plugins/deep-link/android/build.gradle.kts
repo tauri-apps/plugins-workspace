@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "app.tauri.deep_link"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24

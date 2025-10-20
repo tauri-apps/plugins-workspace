@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "app.tauri.dialog"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
