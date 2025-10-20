@@ -5,10 +5,10 @@ plugins {
 
 android {
     namespace = "app.tauri.deep_link"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
-        minSdk = 24        
+        minSdk = 24
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
