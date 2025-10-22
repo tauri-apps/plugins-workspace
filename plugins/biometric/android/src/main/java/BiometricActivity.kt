@@ -18,9 +18,7 @@ import androidx.biometric.BiometricPrompt
 import androidx.biometric.BiometricPrompt.CryptoObject
 import java.util.concurrent.Executor
 import javax.crypto.Cipher
-import java.nio.charset.Charset
-import java.util.Base64;
-import java.util.EnumMap
+import java.util.Base64
 
 class BiometricActivity : AppCompatActivity() {
     private lateinit var cryptographyManager: CryptographyManager
