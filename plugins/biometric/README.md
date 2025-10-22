@@ -65,6 +65,38 @@ import { authenticate } from '@tauri-apps/plugin-biometric'
 await authenticate('Open your wallet')
 ```
 
+To encrypt:
+
+```javascript
+import { authenticate, AuthMode, type EncryptedCipherData } from '@tauri-apps/plugin-biometric';
+let encryptedData = await authenticate('Encrypt your data', {
+    allowDeviceCredential: false,
+    cancelTitle: "Cancel",
+    fallbackTitle: 'Sorry, authentication failed',
+    title: 'Authentication',
+    confirmationRequired: true,
+    mode: AuthMode.ENCRYPT,
+    cipherKey: "YourKey",
+    cipherData: {
+        data: "Your secret data",
+    },
+}) as EncryptedCipherData;
+```
+
+Then to decrypt it:
+```javascript
+let decryptedData = await authenticate('Decrypt your data', {
+    allowDeviceCredential: false,
+    cancelTitle: "Cancel",
+    fallbackTitle: 'Sorry, authentication failed',
+    title: 'Authentication',
+    confirmationRequired: true,
+    mode: AuthMode.DECRYPT,
+    cipherKey: "OPNManagerKey",
+    cipherData: encryptedData,
+});
+```
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
