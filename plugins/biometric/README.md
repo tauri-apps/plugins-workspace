@@ -92,7 +92,7 @@ let decryptedData = await authenticate('Decrypt your data', {
     title: 'Authentication',
     confirmationRequired: true,
     mode: AuthMode.DECRYPT,
-    cipherKey: "OPNManagerKey",
+    cipherKey: "YourKey",
     cipherData: encryptedData,
 });
 ```
