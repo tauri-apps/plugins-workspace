@@ -28,6 +28,10 @@ enum class BiometryResultType {
     SUCCESS, FAILURE, ERROR
 }
 
+enum class AuthMode {
+    PROMPT, ENCRYPT, DECRYPT
+}
+
 private const val MAX_ATTEMPTS = "maxAttemps"
 private const val BIOMETRIC_FAILURE = "authenticationFailed"
 private const val INVALID_CONTEXT_ERROR = "invalidContext"
@@ -41,18 +45,34 @@ class AuthOptions {
     var cancelTitle: String? = null
     var confirmationRequired: Boolean? = null
     var maxAttemps: Int = 3
+    var mode: AuthMode = AuthMode.PROMPT
+    var cipherKey: String? = null
+    var cipherData: CipherData? = null
 }
+
+@InvokeArg
+class CipherData (
+    var data: String? = null,
+    var initializationVector: String? = null
+)
 
 @TauriPlugin
 class BiometricPlugin(private val activity: Activity): Plugin(activity) {
     private var biometryTypes: ArrayList<BiometryType> = arrayListOf()
+    private lateinit var mode: AuthMode
 
     companion object {
         var RESULT_EXTRA_PREFIX = ""
+        const val MODE = "mode"
+        const val CIPHER_KEY = "cipherKey"
+        const val CIPHER_DATA_DATA = "cipherDataData"
+        const val CIPHER_DATA_INITIALIZATION_VECTOR = "cipherDataInitializationVector"
         const val TITLE = "title"
         const val SUBTITLE = "subtitle"
         const val REASON = "reason"
         const val CANCEL_TITLE = "cancelTitle"
+        const val RESULT_DATA = "data"
+        const val RESULT_IV = "initializationVector"
         const val RESULT_TYPE = "type"
         const val RESULT_ERROR_CODE = "errorCode"
         const val RESULT_ERROR_MESSAGE = "errorMessage"
@@ -183,6 +203,32 @@ class BiometricPlugin(private val activity: Activity): Plugin(activity) {
             intent.putExtra(CONFIRMATION_REQUIRED, it)
         }
 
+        mode = (args.mode as AuthMode) ?: AuthMode.PROMPT
+        intent.putExtra(MODE, mode.name)
+        if (mode != AuthMode.PROMPT) {
+            if(args.cipherData == null || args.cipherKey == null) {
+                invoke.reject(
+                    "Cipher key and cipher data must be provided for ENCRYPT and DECRYPT modes",
+                    biometryErrorCodeMap[BiometricPrompt.ERROR_CANCELED]
+                )
+                return
+            }
+            if(mode == AuthMode.DECRYPT && args.cipherData?.initializationVector == null) {
+                invoke.reject(
+                    "Initialization Vector must be provided for DECRYPT mode",
+                    biometryErrorCodeMap[BiometricPrompt.ERROR_CANCELED]
+                )
+                return
+            }
+
+            intent.putExtra(CIPHER_KEY, args.cipherKey)
+
+            val cipherDataData = args.cipherData?.data
+            val cipherDataIV = args.cipherData?.initializationVector
+            intent.putExtra(CIPHER_DATA_DATA, cipherDataData)
+            intent.putExtra(CIPHER_DATA_INITIALIZATION_VECTOR, cipherDataIV)
+        }
+
         val maxAttemptsConfig = args.maxAttemps
         val maxAttempts = max(maxAttemptsConfig, 1)
         intent.putExtra(MAX_ATTEMPTS, maxAttempts)
@@ -205,6 +251,13 @@ class BiometricPlugin(private val activity: Activity): Plugin(activity) {
 
         // Convert the string result type to an enum
         val data = result.data
+        val resultData = data?.getStringExtra(
+            RESULT_EXTRA_PREFIX + RESULT_DATA
+        )
+        val resultIV = data?.getStringExtra(
+            RESULT_EXTRA_PREFIX + RESULT_IV
+        )
+
         val resultTypeName = data?.getStringExtra(
             RESULT_EXTRA_PREFIX + RESULT_TYPE
         )
@@ -232,7 +285,19 @@ class BiometricPlugin(private val activity: Activity): Plugin(activity) {
             RESULT_EXTRA_PREFIX + RESULT_ERROR_MESSAGE
         )
         when (resultType) {
-            BiometryResultType.SUCCESS -> invoke.resolve()
+            BiometryResultType.SUCCESS -> {
+                when(mode) {
+                    AuthMode.ENCRYPT, AuthMode.DECRYPT -> {
+                        val ret = JSObject()
+
+                        ret.put("data", resultData)
+                        ret.put("initializationVector", resultIV)
+
+                        invoke.resolve(ret)
+                    }
+                    else -> invoke.resolve()
+                }
+            }
             BiometryResultType.FAILURE ->         // Biometry was successfully presented but was not recognized
                 invoke.reject(errorMessage, BIOMETRIC_FAILURE)
 

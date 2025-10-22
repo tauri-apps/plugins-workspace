@@ -4,6 +4,12 @@
 
 import { invoke } from '@tauri-apps/api/core'
 
+export enum AuthMode {
+  PROMPT = 0,
+  ENCRYPT = 1,
+  DECRYPT = 2,
+}
+
 export enum BiometryType {
   None = 0,
   // Apple TouchID or Android fingerprint
@@ -32,19 +38,38 @@ export interface Status {
     | 'biometryNotEnrolled'
 }
 
-export interface AuthOptions {
-  allowDeviceCredential?: boolean
-  cancelTitle?: string
-
-  // iOS options
-  fallbackTitle?: string
-
-  // android options
-  title?: string
-  subtitle?: string
-  confirmationRequired?: boolean
-  maxAttemps?: number
+interface EncryptCipherData {
+  data: string,
 }
+interface DecryptCipherData {
+  data: string,
+  initializationVector: string,
+}
+export type CipherData = EncryptCipherData | DecryptCipherData;
+
+interface BaseAuthOptions {
+    allowDeviceCredential?: boolean;
+    cancelTitle?: string;
+    fallbackTitle?: string;
+    title?: string;
+    subtitle?: string;
+    confirmationRequired?: boolean;
+    maxAttemps?: number;
+}
+interface PromptAuthOptions extends BaseAuthOptions {
+    mode: AuthMode.PROMPT;
+}
+interface EncryptAuthOptions extends BaseAuthOptions {
+    mode: AuthMode.ENCRYPT;
+    cipherKey: string;
+    cipherData: EncryptCipherData;
+}
+interface DecryptAuthOptions extends BaseAuthOptions {
+    mode: AuthMode.DECRYPT;
+    cipherKey: string;
+    cipherData: DecryptCipherData;
+}
+export type AuthOptions = BaseAuthOptions | PromptAuthOptions | EncryptAuthOptions | DecryptAuthOptions;
 
 /**
  * Checks if the biometric authentication is available.
@@ -64,13 +89,13 @@ export async function checkStatus(): Promise<Status> {
  * ```
  * @param reason
  * @param options
- * @returns
+ * @returns a promise resolving to an object containing the encrypted or decrypted data if any
  */
 export async function authenticate(
   reason: string,
   options?: AuthOptions
-): Promise<void> {
-  await invoke('plugin:biometric|authenticate', {
+): Promise<CipherData> {
+  return await invoke('plugin:biometric|authenticate', {
     reason,
     ...options
   })

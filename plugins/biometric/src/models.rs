@@ -19,6 +19,18 @@ pub struct AuthOptions {
     pub subtitle: Option<String>,
     /// Specifies whether additional user confirmation is required, such as pressing a button after successful biometric authentication. This feature is available Android only.
     pub confirmation_required: Option<bool>,
+    pub max_attemps: Option<u32>,
+    pub mode: Option<AuthMode>,
+    pub cipher_key: Option<String>,
+    pub cipher_data: Option<CipherData>,
+}
+
+#[derive(Debug, Clone, Serialize, serde_repr::Deserialize_repr)]
+#[repr(u8)]
+pub enum AuthMode {
+    PROMPT = 0,
+    ENCRYPT = 1,
+    DECRYPT = 2,
 }
 
 #[derive(Debug, Clone, serde_repr::Deserialize_repr)]
@@ -36,4 +48,11 @@ pub struct Status {
     pub biometry_type: BiometryType,
     pub error: Option<String>,
     pub error_code: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CipherData {
+    pub data: Option<String>,
+    pub initialization_vector: Option<String>,
 }
