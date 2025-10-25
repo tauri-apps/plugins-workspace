@@ -186,6 +186,7 @@ pub enum TargetKind {
 pub struct Target {
     kind: TargetKind,
     filters: Vec<Box<Filter>>,
+    formatter: Option<Box<dyn Fn(FormatCallback, &Arguments, &Record) + Send + Sync + 'static>>,
 }
 
 impl Target {
@@ -194,6 +195,7 @@ impl Target {
         Self {
             kind,
             filters: Vec::new(),
+            formatter: None,
         }
     }
 
@@ -203,6 +205,15 @@ impl Target {
         F: Fn(&log::Metadata) -> bool + Send + Sync + 'static,
     {
         self.filters.push(Box::new(filter));
+        self
+    }
+
+    #[inline]
+    pub fn format<F>(mut self, formatter: F) -> Self
+    where
+        F: Fn(FormatCallback, &Arguments, &Record) + Send + Sync + 'static,
+    {
+        self.formatter.replace(Box::new(formatter));
         self
     }
 }
@@ -383,6 +394,9 @@ impl Builder {
             let mut target_dispatch = fern::Dispatch::new();
             for filter in target.filters {
                 target_dispatch = target_dispatch.filter(filter);
+            }
+            if let Some(formatter) = target.formatter {
+                target_dispatch = target_dispatch.format(formatter);
             }
 
             let logger = match target.kind {
