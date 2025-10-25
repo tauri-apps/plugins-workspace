@@ -21,8 +21,8 @@ importers:
         specifier: 0.4.4
         version: 0.4.4(rollup@4.52.5)
       '@rollup/plugin-typescript':
-        specifier: 12.1.4
-        version: 12.1.4(rollup@4.52.5)(tslib@2.8.1)(typescript@5.9.3)
+        specifier: 12.2.0
+        version: 12.2.0(rollup@4.52.5)(tslib@2.8.1)(typescript@5.9.3)
       covector:
         specifier: ^0.12.4
         version: 0.12.4(mocha@10.8.2)
@@ -734,8 +734,8 @@ packages:
       rollup:
         optional: true
 
-  '@rollup/plugin-typescript@12.1.4':
-    resolution: {integrity: sha512-s5Hx+EtN60LMlDBvl5f04bEiFZmAepk27Q+mr85L/00zPDn1jtzlTV6FWn81MaIwqfWzKxmOJrBWHU6vtQyedQ==}
+  '@rollup/plugin-typescript@12.2.0':
+    resolution: {integrity: sha512-g7krmoYCaNhL/jSF1wCYiiUNsWPTj0HwcPDnxIyaonxsQIVp/jc08muGpSz+eGGK+0ajHfl8tpf1lahHXSOF7Q==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: ^2.14.0||^3.0.0||^4.0.0
@@ -2675,7 +2675,7 @@ snapshots:
     optionalDependencies:
       rollup: 4.52.5
 
-  '@rollup/plugin-typescript@12.1.4(rollup@4.52.5)(tslib@2.8.1)(typescript@5.9.3)':
+  '@rollup/plugin-typescript@12.2.0(rollup@4.52.5)(tslib@2.8.1)(typescript@5.9.3)':
     dependencies:
       '@rollup/pluginutils': 5.1.4(rollup@4.52.5)
       resolve: 1.22.10
