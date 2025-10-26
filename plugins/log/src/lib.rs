@@ -182,11 +182,13 @@ pub enum TargetKind {
     Dispatch(fern::Dispatch),
 }
 
+type Formatter = dyn Fn(FormatCallback, &Arguments, &Record) + Send + Sync + 'static;
+
 /// A log target.
 pub struct Target {
     kind: TargetKind,
     filters: Vec<Box<Filter>>,
-    formatter: Option<Box<dyn Fn(FormatCallback, &Arguments, &Record) + Send + Sync + 'static>>,
+    formatter: Option<Box<Formatter>>,
 }
 
 impl Target {
