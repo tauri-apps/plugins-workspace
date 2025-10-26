@@ -289,6 +289,13 @@ impl Builder {
         self
     }
 
+    pub fn clear_format(mut self) -> Self {
+        self.dispatch = self.dispatch.format(|out, message, _record| {
+            out.finish(format_args!("{message}"));
+        });
+        self
+    }
+
     pub fn format<F>(mut self, formatter: F) -> Self
     where
         F: Fn(FormatCallback, &Arguments, &Record) + Sync + Send + 'static,
