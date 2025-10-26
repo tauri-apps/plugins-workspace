@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.4.3]
+
+- [`6c9b61fb`](https://github.com/tauri-apps/plugins-workspace/commit/6c9b61fb658145d13893626112fc489f7458aa17) ([#3039](https://github.com/tauri-apps/plugins-workspace/pull/3039) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Android, updated compileSdk to 36.
+- [`6b5b1053`](https://github.com/tauri-apps/plugins-workspace/commit/6b5b1053ba8aeb789dd5cb5fb05b7e98f3b8de0b) ([#1939](https://github.com/tauri-apps/plugins-workspace/pull/1939) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Enhance error messages.
+
 ## \[2.4.2]
 
 - [`4eb36b0f`](https://github.com/tauri-apps/plugins-workspace/commit/4eb36b0ff57acb0bb1b911c583efa3bf2f56aa32) ([#2907](https://github.com/tauri-apps/plugins-workspace/pull/2907) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fixed calling `writeFile` with `data: ReadableStream` throws `Invalid argument`

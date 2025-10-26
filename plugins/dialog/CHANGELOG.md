@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.4.1]
+
+- [`6c9b61fb`](https://github.com/tauri-apps/plugins-workspace/commit/6c9b61fb658145d13893626112fc489f7458aa17) ([#3039](https://github.com/tauri-apps/plugins-workspace/pull/3039) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Android, updated compileSdk to 36.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.3`
+
 ## \[2.4.0]
 
 - [`509eba8d`](https://github.com/tauri-apps/plugins-workspace/commit/509eba8d441c4f6ecf0af77b572cb2afd69a752d) ([#2641](https://github.com/tauri-apps/plugins-workspace/pull/2641) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add support for showing a message dialog with 3 buttons.

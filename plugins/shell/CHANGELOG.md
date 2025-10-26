@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.3.2]
+
+- [`6c9b61fb`](https://github.com/tauri-apps/plugins-workspace/commit/6c9b61fb658145d13893626112fc489f7458aa17) ([#3039](https://github.com/tauri-apps/plugins-workspace/pull/3039) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Android, updated compileSdk to 36.
+
 ## \[2.3.1]
 
 - [`d865ed47`](https://github.com/tauri-apps/plugins-workspace/commit/d865ed47685c3923e894f7d10ee4c037507037e6) ([#2950](https://github.com/tauri-apps/plugins-workspace/pull/2950) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fix sidecar with dots in the filename not working on Windows.

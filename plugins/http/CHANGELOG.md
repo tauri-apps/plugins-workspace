@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.5.3]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.3`
+
 ## \[2.5.2]
 
 ### Dependencies
