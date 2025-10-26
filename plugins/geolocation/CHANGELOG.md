@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.3.1]
+
+- [`6c9b61fb`](https://github.com/tauri-apps/plugins-workspace/commit/6c9b61fb658145d13893626112fc489f7458aa17) ([#3039](https://github.com/tauri-apps/plugins-workspace/pull/3039) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Android, updated compileSdk to 36.
+- [`e933acb0`](https://github.com/tauri-apps/plugins-workspace/commit/e933acb0044b4d49053eae6492b542351160e66a) ([#3010](https://github.com/tauri-apps/plugins-workspace/pull/3010) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Android, use the `timeout` value for `setMinUpdateIntervalMillis`, `setMaxUpdateDelayMillis` and `setIntervalMillis` instead of just `minUpdateInterval`.
+
 ## \[2.3.0]
 
 - [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6

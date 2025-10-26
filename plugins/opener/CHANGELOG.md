@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.5.1]
+
+- [`6c9b61fb`](https://github.com/tauri-apps/plugins-workspace/commit/6c9b61fb658145d13893626112fc489f7458aa17) ([#3039](https://github.com/tauri-apps/plugins-workspace/pull/3039) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Android, updated compileSdk to 36.
+- [`67a7bf80`](https://github.com/tauri-apps/plugins-workspace/commit/67a7bf80f8e6f3aec76ebaba0983f0cf0103d3ff) ([#3018](https://github.com/tauri-apps/plugins-workspace/pull/3018) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix opener doesn't open same origin links in the browser
+
 ## \[2.5.0]
 
 ### enhance

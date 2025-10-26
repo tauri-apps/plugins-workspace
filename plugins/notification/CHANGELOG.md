@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.3.2]
+
+- [`6c9b61fb`](https://github.com/tauri-apps/plugins-workspace/commit/6c9b61fb658145d13893626112fc489f7458aa17) ([#3039](https://github.com/tauri-apps/plugins-workspace/pull/3039) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Android, updated compileSdk to 36.
+
 ## \[2.3.1]
 
 - [`8abb31ee`](https://github.com/tauri-apps/plugins-workspace/commit/8abb31ee59c68197102c0aa699d690b34646ec3c) ([#2905](https://github.com/tauri-apps/plugins-workspace/pull/2905) by [@ChristianPavilonis](https://github.com/tauri-apps/plugins-workspace/../../ChristianPavilonis)) Fix notification scheduling on iOS.
