@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.2]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
 ## \[2.4.1]
 
 - [`654bf489`](https://github.com/tauri-apps/plugins-workspace/commit/654bf4891a35769f7e82971641d3ad99974b2dfe) ([#3038](https://github.com/tauri-apps/plugins-workspace/pull/3038) by [@daniel-mader](https://github.com/tauri-apps/plugins-workspace/../../daniel-mader)) Update `androidx.camera` from `1.1.0` to `1.5.1` to support 16 KB memory page sizes.
