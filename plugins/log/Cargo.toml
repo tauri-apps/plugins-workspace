@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-log"
-version = "2.7.0"
+version = "2.7.1"
 description = "Configurable logging for your Tauri app."
 authors = { workspace = true }
 license = { workspace = true }
@@ -8,10 +8,6 @@ edition = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-log"
-
-[package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }

@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.7.1]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
 ## \[2.7.0]
 
 - [`625bb1c0`](https://github.com/tauri-apps/plugins-workspace/commit/625bb1c0965394b88522643731f78ccbcca84add) ([#2965](https://github.com/tauri-apps/plugins-workspace/pull/2965) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Re-export the log crate.
