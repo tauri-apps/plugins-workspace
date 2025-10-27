@@ -1,0 +1,6 @@
+---
+"biometric": minor
+"biometric-js": minor
+---
+
+Update `biometric` from `2.3.0` to `2.4.0` to support encrypting and decrypting data using android keystore requiring biometric login.
