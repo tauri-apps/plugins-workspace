@@ -9,10 +9,6 @@ rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-os"
 
-[package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
-
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }
 linux = { level = "full", notes = "" }

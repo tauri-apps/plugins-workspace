@@ -9,8 +9,6 @@ repository = { workspace = true }
 links = "tauri-plugin-biometric"
 
 [package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
 targets = ["x86_64-linux-android"]
 
 [package.metadata.platforms.support]
