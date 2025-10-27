@@ -1,5 +1,28 @@
 # Changelog
 
+## \[2.0.38]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.4.2`
+- Upgraded to `biometric@2.3.2`
+- Upgraded to `cli@2.4.1`
+- Upgraded to `clipboard-manager@2.3.2`
+- Upgraded to `dialog@2.4.2`
+- Upgraded to `fs@2.4.4`
+- Upgraded to `geolocation@2.3.2`
+- Upgraded to `global-shortcut@2.3.1`
+- Upgraded to `haptics@2.3.2`
+- Upgraded to `http@2.5.4`
+- Upgraded to `log@2.7.1`
+- Upgraded to `nfc@2.3.3`
+- Upgraded to `notification@2.3.3`
+- Upgraded to `opener@2.5.2`
+- Upgraded to `os@2.3.2`
+- Upgraded to `process@2.3.1`
+- Upgraded to `shell@2.3.3`
+- Upgraded to `store@2.4.1`
+
 ## \[2.0.37]
 
 ### Dependencies

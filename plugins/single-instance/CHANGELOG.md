@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.3.6]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.5`
+
 ## \[2.3.5]
 
 ### Dependencies
