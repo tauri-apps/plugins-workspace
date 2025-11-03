@@ -126,7 +126,7 @@ export async function fetch(
   input: URL | Request | string,
   init?: RequestInit & ClientOptions
 ): Promise<Response> {
-  // abort early here if needed
+  // Optimistically check for abort signal and avoid doing any work
   const signal = init?.signal
   if (signal?.aborted) {
     throw new Error(ERROR_REQUEST_CANCELLED)
@@ -181,7 +181,7 @@ export async function fetch(
     ]
   )
 
-  // abort early here if needed
+  // Optimistically check for abort signal and avoid doing any work on the Rust side
   if (signal?.aborted) {
     throw new Error(ERROR_REQUEST_CANCELLED)
   }
@@ -201,7 +201,8 @@ export async function fetch(
 
   const abort = () => invoke('plugin:http|fetch_cancel', { rid })
 
-  // abort early here if needed
+  // Optimistically check for abort signal
+  // and avoid doing any work after doing intial work on the Rust side
   if (signal?.aborted) {
     // we don't care about the result of this proimse
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -256,6 +257,7 @@ export async function fetch(
     // close when the signal to close (last byte is 1) is sent from the IPC.
     if (lastByte === 1) {
       controller.close()
+      return
     }
 
     controller.enqueue(actualData)
@@ -267,19 +269,13 @@ export async function fetch(
     ? null
     : new ReadableStream<Uint8Array>({
         start: (controller) => {
-          // abort early here if needed and drop the body
-          if (signal?.aborted) {
-            controller.error(ERROR_REQUEST_CANCELLED)
-            void dropBody()
-            return
-          }
-
+          // listen for abort events to cancel reading
           signal?.addEventListener('abort', () => {
             controller.error(ERROR_REQUEST_CANCELLED)
             void dropBody()
           })
         },
-        pull: async (controller) => readChunk(controller)
+        pull: (controller) => readChunk(controller)
       })
 
   const res = new Response(body, {
