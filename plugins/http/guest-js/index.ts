@@ -261,24 +261,28 @@ export async function fetch(
     controller.enqueue(actualData)
   }
 
-  const readableStreamBody = new ReadableStream<Uint8Array>({
-    start: (controller) => {
-      // abort early here if needed and drop the body
-      if (signal?.aborted) {
-        controller.error(ERROR_REQUEST_CANCELLED)
-        void dropBody()
-        return
-      }
+  // no body for 101, 103, 204, 205 and 304
+  // see https://fetch.spec.whatwg.org/#null-body-status
+  const body = [101, 103, 204, 205, 304].includes(status)
+    ? null
+    : new ReadableStream<Uint8Array>({
+        start: (controller) => {
+          // abort early here if needed and drop the body
+          if (signal?.aborted) {
+            controller.error(ERROR_REQUEST_CANCELLED)
+            void dropBody()
+            return
+          }
 
-      signal?.addEventListener('abort', () => {
-        controller.error(ERROR_REQUEST_CANCELLED)
-        void dropBody()
+          signal?.addEventListener('abort', () => {
+            controller.error(ERROR_REQUEST_CANCELLED)
+            void dropBody()
+          })
+        },
+        pull: async (controller) => readChunk(controller)
       })
-    },
-    pull: async (controller) => readChunk(controller)
-  })
 
-  const res = new Response(status !== 204 ? readableStreamBody : null, {
+  const res = new Response(body, {
     status,
     statusText
   })

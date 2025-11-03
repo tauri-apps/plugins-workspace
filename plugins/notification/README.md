@@ -33,21 +33,12 @@ tauri-plugin-notification = { git = "https://github.com/tauri-apps/plugins-works
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
-
 ```sh
 pnpm add @tauri-apps/plugin-notification
 # or
 npm add @tauri-apps/plugin-notification
 # or
 yarn add @tauri-apps/plugin-notification
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-notification#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-notification#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-notification#v2
 ```
 
 ## Usage
@@ -101,6 +92,45 @@ export async function enqueueNotification(title, body) {
     return
   }
   sendNotification({ title, body })
+}
+```
+
+### Notification with Sound
+
+You can add sound to your notifications on all platforms (desktop and mobile):
+
+```javascript
+import { sendNotification } from '@tauri-apps/plugin-notification'
+import { platform } from '@tauri-apps/api/os'
+
+// Basic notification with sound
+sendNotification({
+  title: 'New Message',
+  body: 'You have a new message',
+  sound: 'notification.wav' // Path to sound file
+})
+
+// Platform-specific sounds
+async function sendPlatformSpecificNotification() {
+  const platformName = platform()
+
+  let soundPath
+  if (platformName === 'darwin') {
+    // On macOS: use system sounds or sound files in the app bundle
+    soundPath = 'Ping' // macOS system sound
+  } else if (platformName === 'linux') {
+    // On Linux: use XDG theme sounds or file paths
+    soundPath = 'message-new-instant' // XDG theme sound
+  } else {
+    // On Windows: use file paths
+    soundPath = 'notification.wav'
+  }
+
+  sendNotification({
+    title: 'Platform-specific Notification',
+    body: 'This notification uses platform-specific sound',
+    sound: soundPath
+  })
 }
 ```
 

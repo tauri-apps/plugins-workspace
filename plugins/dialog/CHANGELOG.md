@@ -1,5 +1,55 @@
 # Changelog
 
+## \[2.4.2]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.4`
+
+## \[2.4.1]
+
+- [`6c9b61fb`](https://github.com/tauri-apps/plugins-workspace/commit/6c9b61fb658145d13893626112fc489f7458aa17) ([#3039](https://github.com/tauri-apps/plugins-workspace/pull/3039) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Android, updated compileSdk to 36.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.3`
+
+## \[2.4.0]
+
+- [`509eba8d`](https://github.com/tauri-apps/plugins-workspace/commit/509eba8d441c4f6ecf0af77b572cb2afd69a752d) ([#2641](https://github.com/tauri-apps/plugins-workspace/pull/2641) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Add support for showing a message dialog with 3 buttons.
+
+## \[2.3.3]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.2`
+
+## \[2.3.2]
+
+- [`af08c66f`](https://github.com/tauri-apps/plugins-workspace/commit/af08c66faafe0dffc4b0a80aef030cd3f0f89a9c) ([#2871](https://github.com/tauri-apps/plugins-workspace/pull/2871) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed an issue that caused the file picker not to open on Android when extension filters were set.
+
+## \[2.3.1]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.1`
+
+## \[2.3.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.0`
+
+## \[2.2.2]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.3.0`
+
 ## \[2.2.1]
 
 ### Dependencies

@@ -39,6 +39,9 @@ impl<R: Runtime> crate::NotificationBuilder<R> {
         if let Some(icon) = self.data.icon {
             notification = notification.icon(icon);
         }
+        if let Some(sound) = self.data.sound {
+            notification = notification.sound(sound);
+        }
         #[cfg(feature = "windows7-compat")]
         {
             notification.notify(&self.app)?;
@@ -102,6 +105,8 @@ mod imp {
         title: Option<String>,
         /// The notification icon.
         icon: Option<String>,
+        /// The notification sound.
+        sound: Option<String>,
         /// The notification identifier
         identifier: String,
     }
@@ -133,6 +138,13 @@ mod imp {
         #[must_use]
         pub fn icon(mut self, icon: impl Into<String>) -> Self {
             self.icon = Some(icon.into());
+            self
+        }
+
+        /// Sets the notification sound file.
+        #[must_use]
+        pub fn sound(mut self, sound: impl Into<String>) -> Self {
+            self.sound = Some(sound.into());
             self
         }
 
@@ -176,6 +188,9 @@ mod imp {
                 notification.icon(&icon);
             } else {
                 notification.auto_icon();
+            }
+            if let Some(sound) = self.sound {
+                notification.sound_name(&sound);
             }
             #[cfg(windows)]
             {
@@ -250,6 +265,7 @@ mod imp {
             }
         }
 
+        /// Shows the notification on Windows 7.
         #[cfg(all(windows, feature = "windows7-compat"))]
         fn notify_win7<R: tauri::Runtime>(self, app: &tauri::AppHandle<R>) -> crate::Result<()> {
             let app_ = app.clone();

@@ -1,5 +1,27 @@
 # Changelog
 
+## \[2.7.1]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
+## \[2.7.0]
+
+- [`625bb1c0`](https://github.com/tauri-apps/plugins-workspace/commit/625bb1c0965394b88522643731f78ccbcca84add) ([#2965](https://github.com/tauri-apps/plugins-workspace/pull/2965) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Re-export the log crate.
+
+## \[2.6.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.5.1]
+
+### bug
+
+- [`9799f0db`](https://github.com/tauri-apps/plugins-workspace/commit/9799f0dbabea0b572a9b9111954fbf9aca63da71) ([#2802](https://github.com/tauri-apps/plugins-workspace/pull/2802) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fixes iOS simulator still freezing sometimes due to early logging.
+
+## \[2.5.0]
+
+- [`106e46ed`](https://github.com/tauri-apps/plugins-workspace/commit/106e46ed5125be33d0427cab9c5c066802f68791) ([#677](https://github.com/tauri-apps/plugins-workspace/pull/677)) Added the `KeepSome` rotation strategy. Like `KeepAll` it will rename files when the max file size is exceeded but will keep only the specified amount of files around.
+
 ## \[2.4.0]
 
 - [`c9b21f6f`](https://github.com/tauri-apps/plugins-workspace/commit/c9b21f6f4345806eff5f495885f20dea0082b7d7) ([#2625](https://github.com/tauri-apps/plugins-workspace/pull/2625) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Export the `LogLevel` type.

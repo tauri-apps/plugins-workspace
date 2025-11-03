@@ -24,7 +24,6 @@ This default permission set prevents access to critical components
 of the Tauri application by default.
 On Windows the webview data folder access is denied.
 
-
 #### This default permission set includes the following:
 
 - `create-app-specific-dirs`
@@ -3748,6 +3747,28 @@ This enables all index or metadata related commands without any pre-configured a
 <td>
 
 An empty permission you can use to modify the global scope.
+
+## Example
+
+```json
+{
+  "identifier": "read-documents",
+  "windows": ["main"],
+  "permissions": [
+    "fs:allow-read",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        "$APPDATA/documents/**/*"
+      ],
+      "deny": [
+        "$APPDATA/documents/secret.txt"
+      ]
+    }
+  ]
+}
+```
+
 
 </td>
 </tr>

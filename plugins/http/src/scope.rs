@@ -52,7 +52,7 @@ impl<'de> Deserialize<'de> for Entry {
             };
             Ok(Entry {
                 url: parse_url_pattern(&url).map_err(|e| {
-                    serde::de::Error::custom(format!("`{}` is not a valid URL pattern: {e}", url))
+                    serde::de::Error::custom(format!("`{url}` is not a valid URL pattern: {e}"))
                 })?,
             })
         })

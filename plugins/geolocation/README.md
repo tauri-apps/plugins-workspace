@@ -33,8 +33,6 @@ tauri-plugin-geolocation = { git = "https://github.com/tauri-apps/plugins-worksp
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
-
 <!-- Add the branch for installations using git! -->
 
 ```sh
@@ -43,13 +41,6 @@ pnpm add @tauri-apps/plugin-geolocation
 npm add @tauri-apps/plugin-geolocation
 # or
 yarn add @tauri-apps/plugin-geolocation
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-geolocation#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-geolocation#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-geolocation#v2
 ```
 
 ## Setting up
@@ -72,7 +63,7 @@ This plugin automatically adds the following permissions to your `AndroidManifes
 If your app requires GPS functionality to function, **you** should add the following to your `AndroidManifest.xml` file:
 
 ```xml
-<uses-feature android:name="android.hardware.gps" android:required="true" />
+<uses-feature android:name="android.hardware.location.gps" android:required="true" />
 ```
 
 The Google Play Store uses this property to decide whether it should show the app to devices without GPS capabilities.

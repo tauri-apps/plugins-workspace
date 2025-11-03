@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-store"
-version = "2.2.0"
+version = "2.4.1"
 description = "Simple, persistent key-value store."
 authors = { workspace = true }
 license = { workspace = true }
@@ -8,10 +8,6 @@ edition = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-store"
-
-[package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }

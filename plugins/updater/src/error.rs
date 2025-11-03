@@ -39,9 +39,14 @@ pub enum Error {
     /// `reqwest` crate errors.
     #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
-    /// The platform was not found on the updater JSON response.
-    #[error("the platform `{0}` was not found on the response `platforms` object")]
+    /// The platform was not found in the updater JSON response.
+    #[error("the platform `{0}` was not found in the response `platforms` object")]
     TargetNotFound(String),
+    /// Neither the platform nor the fallback platform was found in the updater JSON response.
+    #[error(
+        "None of the fallback platforms `{0:?}` were found in the response `platforms` object"
+    )]
+    TargetsNotFound(Vec<String>),
     /// Download failed
     #[error("`{0}`")]
     Network(String),
@@ -69,6 +74,8 @@ pub enum Error {
     AuthenticationFailed,
     #[error("Failed to install .deb package")]
     DebInstallFailed,
+    #[error("Failed to install package")]
+    PackageInstallFailed,
     #[error("invalid updater binary format")]
     InvalidUpdaterFormat,
     #[error(transparent)]
