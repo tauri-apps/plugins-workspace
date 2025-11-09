@@ -37,4 +37,3 @@ pub enum ShellAllowlistOpen {
     /// that allow flag-like strings to pass validation. e.g. `--enable-debugging`, `-i`, `/R`.
     Validate(String),
 }
-

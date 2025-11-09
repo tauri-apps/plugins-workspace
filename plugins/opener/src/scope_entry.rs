@@ -16,7 +16,6 @@ pub enum Application {
     App(String),
 }
 
-
 #[derive(Deserialize)]
 #[serde(untagged, rename_all = "camelCase")]
 pub(crate) enum EntryRaw {

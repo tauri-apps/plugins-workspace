@@ -23,7 +23,6 @@ enum Application {
     App(String),
 }
 
-
 /// Opener scope entry.
 #[derive(schemars::JsonSchema)]
 #[serde(untagged)]

@@ -59,7 +59,6 @@ impl Display for WindowsUpdateInstallMode {
     }
 }
 
-
 #[derive(Debug, Clone, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct WindowsConfig {
