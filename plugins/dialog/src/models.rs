@@ -6,20 +6,15 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// Types of message, ask and confirm dialogs.
 #[non_exhaustive]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Default)]
 pub enum MessageDialogKind {
     /// Information dialog.
+    #[default]
     Info,
     /// Warning dialog.
     Warning,
     /// Error dialog.
     Error,
-}
-
-impl Default for MessageDialogKind {
-    fn default() -> Self {
-        Self::Info
-    }
 }
 
 impl<'de> Deserialize<'de> for MessageDialogKind {
