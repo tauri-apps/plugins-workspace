@@ -467,10 +467,11 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to select a single file.
+    ///
     /// This is not a blocking operation,
     /// and should be used when running on the main thread to avoid deadlocks with the event loop.
     ///
-    /// For usage in other contexts such as commands, prefer [`Self::pick_file`].
+    /// See [`Self::blocking_pick_file`] for a blocking version for use in other contexts.
     ///
     /// # Examples
     ///
@@ -490,8 +491,11 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to select multiple files.
+    ///
     /// This is not a blocking operation,
     /// and should be used when running on the main thread to avoid deadlocks with the event loop.
+    ///
+    /// See [`Self::blocking_pick_files`] for a blocking version for use in other contexts.
     ///
     /// # Reading the files
     ///
@@ -535,8 +539,11 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to select a single folder.
+    ///
     /// This is not a blocking operation,
     /// and should be used when running on the main thread to avoid deadlocks with the event loop.
+    ///
+    /// See [`Self::blocking_pick_folder`] for a blocking version for use in other contexts.
     ///
     /// # Examples
     ///
@@ -557,8 +564,11 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to select multiple folders.
+    ///
     /// This is not a blocking operation,
     /// and should be used when running on the main thread to avoid deadlocks with the event loop.
+    ///
+    /// See [`Self::blocking_pick_folders`] for a blocking version for use in other contexts.
     ///
     /// # Examples
     ///
@@ -583,6 +593,8 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// This is not a blocking operation,
     /// and should be used when running on the main thread to avoid deadlocks with the event loop.
     ///
+    /// See [`Self::blocking_save_file`] for a blocking version for use in other contexts.
+    ///
     /// # Examples
     ///
     /// ```
@@ -604,8 +616,11 @@ impl<R: Runtime> FileDialogBuilder<R> {
 /// Blocking APIs.
 impl<R: Runtime> FileDialogBuilder<R> {
     /// Shows the dialog to select a single file.
+    ///
     /// This is a blocking operation,
-    /// and should *NOT* be used when running on the main thread context.
+    /// and should *NOT* be used when running on the main thread.
+    ///
+    /// See [`Self::pick_file`] for a non-blocking version for use in main-thread contexts.
     ///
     /// # Examples
     ///
@@ -623,8 +638,11 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to select multiple files.
+    ///
     /// This is a blocking operation,
-    /// and should *NOT* be used when running on the main thread context.
+    /// and should *NOT* be used when running on the main thread.
+    ///
+    /// See [`Self::pick_files`] for a non-blocking version for use in main-thread contexts.
     ///
     /// # Examples
     ///
@@ -642,8 +660,11 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to select a single folder.
+    ///
     /// This is a blocking operation,
-    /// and should *NOT* be used when running on the main thread context.
+    /// and should *NOT* be used when running on the main thread.
+    ///
+    /// See [`Self::pick_folder`] for a non-blocking version for use in main-thread contexts.
     ///
     /// # Examples
     ///
@@ -662,8 +683,11 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to select multiple folders.
+    ///
     /// This is a blocking operation,
-    /// and should *NOT* be used when running on the main thread context.
+    /// and should *NOT* be used when running on the main thread.
+    ///
+    /// See [`Self::pick_folders`] for a non-blocking version for use in main-thread contexts.
     ///
     /// # Examples
     ///
@@ -682,8 +706,11 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to save a file.
+    ///
     /// This is a blocking operation,
-    /// and should *NOT* be used when running on the main thread context.
+    /// and should *NOT* be used when running on the main thread.
+    ///
+    /// See [`Self::save_file`] for a non-blocking version for use in main-thread contexts.
     ///
     /// # Examples
     ///
