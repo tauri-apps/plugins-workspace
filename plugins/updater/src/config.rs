@@ -10,6 +10,7 @@ use url::Url;
 /// Install modes for the Windows update.
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub enum WindowsUpdateInstallMode {
     /// Specifies there's a basic UI during the installation process, including a final dialog box at the end.
     BasicUi,
@@ -17,6 +18,7 @@ pub enum WindowsUpdateInstallMode {
     /// Requires admin privileges if the installer does.
     Quiet,
     /// Specifies unattended mode, which means the installation only shows a progress bar.
+    #[default]
     Passive,
 }
 
@@ -57,11 +59,6 @@ impl Display for WindowsUpdateInstallMode {
     }
 }
 
-impl Default for WindowsUpdateInstallMode {
-    fn default() -> Self {
-        Self::Passive
-    }
-}
 
 #[derive(Debug, Clone, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]

@@ -17,9 +17,11 @@ pub struct Config {
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
+#[derive(Default)]
 pub enum ShellAllowlistOpen {
     /// Shell open API allowlist is not defined by the user.
     /// In this case we add the default validation regex (same as [`Self::Flag(true)`]).
+    #[default]
     Unset,
     /// If the shell open API should be enabled.
     ///
@@ -36,8 +38,3 @@ pub enum ShellAllowlistOpen {
     Validate(String),
 }
 
-impl Default for ShellAllowlistOpen {
-    fn default() -> Self {
-        Self::Unset
-    }
-}
