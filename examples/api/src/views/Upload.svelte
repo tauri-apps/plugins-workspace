@@ -1,5 +1,5 @@
 <script>
-  import { download, upload } from '@tauri-apps/plugin-upload'
+  import { download, upload, HttpMethod } from '@tauri-apps/plugin-upload'
   import { open } from '@tauri-apps/plugin-dialog'
   import { JsonView } from '@zerodevx/svelte-json-view'
   import { appDataDir } from '@tauri-apps/api/path'
@@ -16,6 +16,22 @@
 
   let uploadUrl = 'https://httpbin.org/post'
   let uploadFilePath = ''
+  let uploadMethod = HttpMethod.Post
+
+  // Update URL when method changes
+  $: {
+    switch (uploadMethod) {
+      case HttpMethod.Post:
+        uploadUrl = 'https://httpbin.org/post'
+        break
+      case HttpMethod.Put:
+        uploadUrl = 'https://httpbin.org/put'
+        break
+      case HttpMethod.Patch:
+        uploadUrl = 'https://httpbin.org/patch'
+        break
+    }
+  }
   let uploadProgress = null
   let uploadResult = null
   let isUploading = false
@@ -197,7 +213,8 @@
         },
         new Map([
           ['User-Agent', 'Tauri Upload Plugin Demo']
-        ])
+        ]),
+        uploadMethod
       )
 
       uploadResult = {
@@ -340,12 +357,36 @@
         </div>
       </div>
 
+      <div>
+        <label for="upload-method" class="block text-sm font-medium text-gray-700 mb-1">HTTP Method:</label>
+        <select
+          id="upload-method"
+          bind:value={uploadMethod}
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          disabled={isUploading}
+        >
+          <option value={HttpMethod.Post}>POST</option>
+          <option value={HttpMethod.Put}>PUT</option>
+          <option value={HttpMethod.Patch}>PATCH</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-1">Choose the HTTP method for the upload request</p>
+      </div>
+
+      <div class="bg-blue-50 border border-blue-200 p-3 rounded-md">
+        <div class="text-sm text-blue-800">
+          <strong>Upload Configuration:</strong>
+          <div class="font-mono text-xs mt-1">
+            Method: {uploadMethod} | URL: {uploadUrl || 'Not set'}
+          </div>
+        </div>
+      </div>
+
       <button
         on:click={startUpload}
         class="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={isUploading || !uploadUrl || !uploadFilePath}
       >
-        {isUploading ? 'Uploading...' : 'Upload File'}
+        {isUploading ? `Uploading (${uploadMethod})...` : `Upload File (${uploadMethod})`}
       </button>
 
       {#if uploadProgress}
