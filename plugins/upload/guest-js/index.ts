@@ -23,6 +23,7 @@ async function upload(
   url: string,
   filePath: string,
   progressHandler?: ProgressHandler,
+  // TODO: V3 - Combine headers and methods into one `options` object
   headers?: Map<string, string>,
   method?: HttpMethod
 ): Promise<string> {
