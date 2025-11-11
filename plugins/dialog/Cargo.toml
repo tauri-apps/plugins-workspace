@@ -9,6 +9,11 @@ rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-dialog"
 
+[features]
+default = ["gtk3"]
+xdg-portal = ["rfd/xdg-portal"]
+gtk3 = ["rfd/gtk3"]
+
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu", "x86_64-linux-android"]
 
@@ -40,7 +45,7 @@ tauri = { workspace = true, features = ["wry"] }
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 rfd = { version = "0.15", default-features = false, features = [
   "tokio",
-  "gtk3",
   "common-controls-v6",
 ] }
+
 raw-window-handle = "0.6"
