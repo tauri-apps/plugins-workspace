@@ -134,7 +134,7 @@ async fn upload(
     tokio::spawn(async move {
         // Read the file
         let file = File::open(&file_path).await?;
-        let file_len = file.metadata().await.unwrap().len();
+        let file_len = dbg!(file.metadata().await.unwrap().len());
 
         // Get HTTP method (defaults to POST)
         let http_method = method.unwrap_or(HttpMethod::Post);
@@ -309,7 +309,7 @@ mod tests {
     }
 
     async fn upload_file(url: String, method: Option<HttpMethod>) -> Result<String> {
-        let file_path = concat!(env!("CARGO_MANIFEST_DIR"), "/test/test.txt").to_string();
+        let file_path = dbg!(concat!(env!("CARGO_MANIFEST_DIR"), "/test/test.txt").to_string());
         let headers = HashMap::new();
         let sender: Channel<ProgressPayload> =
             Channel::new(|msg: InvokeResponseBody| -> tauri::Result<()> {
