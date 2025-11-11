@@ -227,7 +227,7 @@ mod tests {
     #[tokio::test]
     async fn should_error_on_upload_if_status_not_success() {
         let mocked_server = spawn_upload_server_mocked(500, "POST").await;
-        let result = upload_file(mocked_server.url, None).await;
+        let result = dbg!(upload_file(mocked_server.url, None).await);
         mocked_server.mocked_endpoint.assert();
         assert!(result.is_err());
         match result.unwrap_err() {

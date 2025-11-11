@@ -247,7 +247,7 @@ jobs:
 
       - name: test ${{ matrix.package }}
         if: matrix.package != 'tauri-plugin-http'
-        run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features
+        run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features -- --nocapture
 
       - name: test ${{ matrix.package }}
         if: matrix.package == 'tauri-plugin-http'
