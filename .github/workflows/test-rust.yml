@@ -195,19 +195,22 @@ jobs:
               target: x86_64-pc-windows-msvc,
               os: windows-latest,
               runner: 'cargo',
-              command: 'test'
+              command: 'test',
+              args: '-- --nocapture'
             }
           - {
               target: x86_64-unknown-linux-gnu,
               os: ubuntu-22.04,
               runner: 'cargo',
-              command: 'test'
+              command: 'test',
+              args: '-- --nocapture'
             }
           - {
               target: aarch64-apple-darwin,
               os: macos-latest,
               runner: 'cargo',
-              command: 'test'
+              command: 'test',
+              args: '-- --nocapture'
             }
           - {
               target: aarch64-apple-ios,
@@ -247,7 +250,7 @@ jobs:
 
       - name: test ${{ matrix.package }}
         if: matrix.package != 'tauri-plugin-http'
-        run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features -- --nocapture
+        run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features ${{ matrix.args }}
 
       - name: test ${{ matrix.package }}
         if: matrix.package == 'tauri-plugin-http'
