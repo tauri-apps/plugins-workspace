@@ -247,6 +247,7 @@ impl UpdaterBuilder {
         self
     }
 
+    /// Adds an argument to pass to the Windows installer.
     pub fn installer_arg<S>(mut self, arg: S) -> Self
     where
         S: Into<OsString>,
@@ -255,6 +256,7 @@ impl UpdaterBuilder {
         self
     }
 
+    /// Adds multiple arguments to pass to the Windows installer.
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
@@ -264,11 +266,17 @@ impl UpdaterBuilder {
         self
     }
 
+    /// Removes all the additional arguments to pass to the Windows installer.
+    ///
+    /// Note: this only removes the additional arguments added through
+    /// [`Self::installer_arg`], [`crate::Builder::installer_arg`]
+    /// and the `plugins > updater > windows > installerArgs` config
     pub fn clear_installer_args(mut self) -> Self {
         self.installer_args.clear();
         self
     }
 
+    /// Function to run before we run the installer and exist the app through `std::process::exit(0)` on Windows
     pub fn on_before_exit<F: Fn() + Send + Sync + 'static>(mut self, f: F) -> Self {
         self.on_before_exit.replace(Arc::new(f));
         self
@@ -278,7 +286,6 @@ impl UpdaterBuilder {
     ///
     /// Note that `reqwest` crate may be updated in minor releases of tauri-plugin-updater.
     /// Therefore it's recommended to pin the plugin to at least a minor version when you're using `configure_client`.
-    ///
     pub fn configure_client<F: Fn(ClientBuilder) -> ClientBuilder + Send + Sync + 'static>(
         mut self,
         f: F,

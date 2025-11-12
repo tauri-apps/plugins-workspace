@@ -148,6 +148,7 @@ impl Builder {
         self
     }
 
+    /// Adds an additional argument to pass to the Windows installer.
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
@@ -157,6 +158,7 @@ impl Builder {
         self
     }
 
+    /// Adds multiple additional arguments to pass to the Windows installer.
     pub fn installer_arg<S>(mut self, arg: S) -> Self
     where
         S: Into<OsString>,
@@ -165,6 +167,9 @@ impl Builder {
         self
     }
 
+    /// Remove all the additional arguments to pass to the Windows installer.
+    ///
+    /// Note: this only removes the additional arguments added through [`Self::installer_args`]
     pub fn clear_installer_args(mut self) -> Self {
         self.installer_args.clear();
         self
