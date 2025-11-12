@@ -167,7 +167,7 @@ impl Builder {
         self
     }
 
-    /// Remove all the additional arguments to pass to the Windows installer.
+    /// Removes all the additional arguments to pass to the Windows installer.
     ///
     /// Note: this only removes the additional arguments added through [`Self::installer_args`],
     /// not the ones managed by us (e.g. `/UPDATER` flag passed to the NSIS installer)
