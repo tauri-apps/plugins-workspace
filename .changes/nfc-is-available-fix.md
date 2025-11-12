@@ -1,4 +1,5 @@
 ---
+"nfc": "minor"
 "nfc-js": "minor"
 ---
 
