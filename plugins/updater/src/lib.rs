@@ -169,7 +169,8 @@ impl Builder {
 
     /// Remove all the additional arguments to pass to the Windows installer.
     ///
-    /// Note: this only removes the additional arguments added through [`Self::installer_args`]
+    /// Note: this only removes the additional arguments added through [`Self::installer_args`],
+    /// not the ones managed by us (e.g. `/UPDATER` flag passed to the NSIS installer)
     pub fn clear_installer_args(mut self) -> Self {
         self.installer_args.clear();
         self
