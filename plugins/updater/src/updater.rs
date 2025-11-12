@@ -276,7 +276,7 @@ impl UpdaterBuilder {
         self
     }
 
-    /// Function to run before we run the installer and exist the app through `std::process::exit(0)` on Windows
+    /// Function to run before we run the installer and exit the app through `std::process::exit(0)` on Windows
     pub fn on_before_exit<F: Fn() + Send + Sync + 'static>(mut self, f: F) -> Self {
         self.on_before_exit.replace(Arc::new(f));
         self
