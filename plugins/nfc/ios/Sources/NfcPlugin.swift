@@ -397,7 +397,7 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
 
   @objc func isAvailable(_ invoke: Invoke) {
     invoke.resolve([
-        "available": self.status.available
+      "available": self.status.available
     ])
   }
 
