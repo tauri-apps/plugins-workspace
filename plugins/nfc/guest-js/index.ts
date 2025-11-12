@@ -269,6 +269,8 @@ export async function write(
 }
 
 export async function isAvailable(): Promise<boolean> {
-  const { available } : { available: boolean } = await invoke('plugin:nfc|is_available')
-  return available;
+  const { available }: { available: boolean } = await invoke(
+    'plugin:nfc|is_available'
+  )
+  return available
 }
