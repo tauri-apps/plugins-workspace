@@ -299,9 +299,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
 
     @Command
     fun isAvailable(invoke: Invoke) {
-        val ret = JSObject()
-        ret.put("available", isAvailable().first)
-        invoke.resolve(ret)
+        invoke.resolveObject(isAvailable().first)
     }
 
     @Command
