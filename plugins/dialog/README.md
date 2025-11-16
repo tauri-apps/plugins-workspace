@@ -43,7 +43,7 @@ tauri-plugin-dialog = { git = "https://github.com/tauri-apps/plugins-workspace",
 
 ```
 
-Do note if use the `xdg-portal` feature, ensure that [`zenity`](https://gitlab.gnome.org/GNOME/zenity) and an [XDG Desktop Portal backend](https://flatpak.github.io/xdg-desktop-portal#using-portals) is installed with your program.
+Do note if you use the `xdg-portal` feature, you need to ensure that [`zenity`](https://gitlab.gnome.org/GNOME/zenity) and an [XDG Desktop Portal backend](https://flatpak.github.io/xdg-desktop-portal#using-portals) is installed with your program.
 
 For more information, see [XDG Desktop Portal documentation](https://flatpak.github.io/xdg-desktop-portal/) and [`rfd` documentation](https://docs.rs/rfd/latest/rfd#xdg-desktop-portal-backend).
 
