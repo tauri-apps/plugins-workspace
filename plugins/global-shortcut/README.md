@@ -34,21 +34,12 @@ tauri-plugin-global-shortcut = { git = "https://github.com/tauri-apps/plugins-wo
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
-
 ```sh
 pnpm add @tauri-apps/plugin-global-shortcut
 # or
 npm add @tauri-apps/plugin-global-shortcut
 # or
 yarn add @tauri-apps/plugin-global-shortcut
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-global-shortcut#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-global-shortcut#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-global-shortcut#v2
 ```
 
 ## Usage
@@ -63,7 +54,7 @@ fn main() {
         .setup(|app| {
             #[cfg(desktop)]
             {
-                use tauri::Manager;
+                use tauri::Emitter;
                 use tauri_plugin_global_shortcut::{Code, Modifiers, ShortcutState};
 
                 app.handle().plugin(

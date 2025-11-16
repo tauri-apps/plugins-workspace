@@ -1,5 +1,36 @@
 # Changelog
 
+## \[2.4.5]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
+## \[2.4.4]
+
+- [`6c9b61fb`](https://github.com/tauri-apps/plugins-workspace/commit/6c9b61fb658145d13893626112fc489f7458aa17) ([#3039](https://github.com/tauri-apps/plugins-workspace/pull/3039) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Android, updated compileSdk to 36.
+- [`e25a9339`](https://github.com/tauri-apps/plugins-workspace/commit/e25a9339f46268f70dc9afd0c5ab3decbf79b330) ([#3019](https://github.com/tauri-apps/plugins-workspace/pull/3019) by [@kevinschoonover](https://github.com/tauri-apps/plugins-workspace/../../kevinschoonover)) Fix Exec= field in desktop handler if executable path changes
+
+## \[2.4.3]
+
+- [`2522b71f`](https://github.com/tauri-apps/plugins-workspace/commit/2522b71f6bcae65c03b24415eb9295c9e7c84ffc) ([#2970](https://github.com/tauri-apps/plugins-workspace/pull/2970) by [@WSH032](https://github.com/tauri-apps/plugins-workspace/../../WSH032)) Revert the breaking change introduced by [#2928](https://github.com/tauri-apps/plugins-workspace/pull/2928).
+
+## \[2.4.2]
+
+- [`21d721a0`](https://github.com/tauri-apps/plugins-workspace/commit/21d721a0c2731fc201872f5b99ea8bbdc61b0b60) ([#2928](https://github.com/tauri-apps/plugins-workspace/pull/2928) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Linux, improved error messages when OS commands fail.
+
+## \[2.4.1]
+
+- [`d4f8299b`](https://github.com/tauri-apps/plugins-workspace/commit/d4f8299b12f107718c70692840a63768d65baaf9) ([#2844](https://github.com/tauri-apps/plugins-workspace/pull/2844) by [@yobson1](https://github.com/tauri-apps/plugins-workspace/../../yobson1)) Fix deep link protocol handler not set as default on linux
+  Fix duplicate protocols added to MimeType section in .desktop files on linux
+
+## \[2.4.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.3.0]
+
+- [`4d10acee`](https://github.com/tauri-apps/plugins-workspace/commit/4d10acee61bad8045705508121424ed5f2d381f6) ([#993](https://github.com/tauri-apps/plugins-workspace/pull/993) by [@m00nwtchr](https://github.com/tauri-apps/plugins-workspace/../../m00nwtchr)) Exposed Android's `path`, `pathPattern` and `pathSuffix` configurations.
+- [`4d10acee`](https://github.com/tauri-apps/plugins-workspace/commit/4d10acee61bad8045705508121424ed5f2d381f6) ([#993](https://github.com/tauri-apps/plugins-workspace/pull/993) by [@m00nwtchr](https://github.com/tauri-apps/plugins-workspace/../../m00nwtchr)) Added a `scheme` configuration to set a scheme other than http/https. This is only supported on Android and will still default to http,https if not set.
+
 ## \[2.2.1]
 
 ### bug

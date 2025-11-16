@@ -27,8 +27,11 @@ enum SupportedFormat: String, CaseIterable, Decodable {
   case DATA_MATRIX
   case PDF_417
   case QR_CODE
+  case GS1_DATA_BAR
+  case GS1_DATA_BAR_LIMITED
+  case GS1_DATA_BAR_EXPANDED
 
-  var value: AVMetadataObject.ObjectType {
+  var value: AVMetadataObject.ObjectType? {
     switch self {
     case .UPC_E: return AVMetadataObject.ObjectType.upce
     case .EAN_8: return AVMetadataObject.ObjectType.ean8
@@ -41,6 +44,24 @@ enum SupportedFormat: String, CaseIterable, Decodable {
     case .DATA_MATRIX: return AVMetadataObject.ObjectType.dataMatrix
     case .PDF_417: return AVMetadataObject.ObjectType.pdf417
     case .QR_CODE: return AVMetadataObject.ObjectType.qr
+    case .GS1_DATA_BAR:
+      if #available(iOS 15.4, *) {
+        return AVMetadataObject.ObjectType.gs1DataBar
+      } else {
+        return nil
+      }
+    case .GS1_DATA_BAR_LIMITED:
+      if #available(iOS 15.4, *) {
+        return AVMetadataObject.ObjectType.gs1DataBarLimited
+      } else {
+        return nil
+      }
+    case .GS1_DATA_BAR_EXPANDED:
+      if #available(iOS 15.4, *) {
+        return AVMetadataObject.ObjectType.gs1DataBarExpanded
+      } else {
+        return nil
+      }
     }
   }
 }
@@ -243,13 +264,20 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
     scanFormats = [AVMetadataObject.ObjectType]()
 
     (args.formats ?? []).forEach { format in
-      scanFormats.append(format.value)
+        if let formatValue = format.value {
+            scanFormats.append(formatValue)
+        } else {
+            invoke.reject("Unsupported barcode format on this iOS version: \(format)")
+            return
+        }
     }
 
-    if scanFormats.count == 0 {
-      for supportedFormat in SupportedFormat.allCases {
-        scanFormats.append(supportedFormat.value)
-      }
+    if scanFormats.isEmpty {
+        for supportedFormat in SupportedFormat.allCases {
+            if let formatValue = supportedFormat.value {
+                scanFormats.append(formatValue)
+            }
+        }
     }
 
     self.metaOutput!.metadataObjectTypes = self.scanFormats

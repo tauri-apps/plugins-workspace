@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-clipboard-manager"
-version = "2.2.2"
+version = "2.3.2"
 description = "Read and write to the system clipboard."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -10,8 +10,7 @@ repository = { workspace = true }
 links = "tauri-plugin-clipboard-manager"
 
 [package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
+
 targets = ["x86_64-unknown-linux-gnu", "x86_64-linux-android"]
 
 [package.metadata.platforms.support]

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
-use notify_debouncer_full::{new_debouncer, DebounceEventResult, Debouncer, RecommendedCache};
+use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
+use notify_debouncer_full::{new_debouncer, DebouncedEvent, Debouncer, RecommendedCache};
 use serde::Deserialize;
 use tauri::{
     ipc::{Channel, CommandScope, GlobalScope},
@@ -11,15 +11,7 @@ use tauri::{
     Manager, Resource, ResourceId, Runtime, Webview,
 };
 
-use std::{
-    path::PathBuf,
-    sync::{
-        mpsc::{channel, Receiver},
-        Mutex,
-    },
-    thread::spawn,
-    time::Duration,
-};
+use std::time::Duration;
 
 use crate::{
     commands::{resolve_path, CommandResult},
@@ -27,79 +19,45 @@ use crate::{
     SafeFilePath,
 };
 
-struct InnerWatcher {
-    pub kind: WatcherKind,
-    paths: Vec<PathBuf>,
-}
-
-pub struct WatcherResource(Mutex<InnerWatcher>);
-impl WatcherResource {
-    fn new(kind: WatcherKind, paths: Vec<PathBuf>) -> Self {
-        Self(Mutex::new(InnerWatcher { kind, paths }))
-    }
-
-    fn with_lock<R, F: FnMut(&mut InnerWatcher) -> R>(&self, mut f: F) -> R {
-        let mut watcher = self.0.lock().unwrap();
-        f(&mut watcher)
-    }
-}
-
-impl Resource for WatcherResource {}
-
+#[allow(unused)]
 enum WatcherKind {
     Debouncer(Debouncer<RecommendedWatcher, RecommendedCache>),
     Watcher(RecommendedWatcher),
 }
 
-fn watch_raw(on_event: Channel<Event>, rx: Receiver<notify::Result<Event>>) {
-    spawn(move || {
-        while let Ok(event) = rx.recv() {
-            if let Ok(event) = event {
-                // TODO: Should errors be emitted too?
-                let _ = on_event.send(event);
-            }
-        }
-    });
-}
-
-fn watch_debounced(on_event: Channel<Event>, rx: Receiver<DebounceEventResult>) {
-    spawn(move || {
-        while let Ok(Ok(events)) = rx.recv() {
-            for event in events {
-                // TODO: Should errors be emitted too?
-                let _ = on_event.send(event.event);
-            }
-        }
-    });
-}
+impl Resource for WatcherKind {}
 
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WatchOptions {
     base_dir: Option<BaseDirectory>,
+    #[serde(default)]
     recursive: bool,
     delay_ms: Option<u64>,
 }
 
 #[tauri::command]
-pub async fn watch<R: Runtime>(
+pub fn watch<R: Runtime>(
     webview: Webview<R>,
     paths: Vec<SafeFilePath>,
     options: WatchOptions,
-    on_event: Channel<Event>,
+    on_event: Channel<notify::Event>,
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
 ) -> CommandResult<ResourceId> {
-    let mut resolved_paths = Vec::with_capacity(paths.capacity());
-    for path in paths {
-        resolved_paths.push(resolve_path(
-            &webview,
-            &global_scope,
-            &command_scope,
-            path,
-            options.base_dir,
-        )?);
-    }
+    let resolved_paths = paths
+        .into_iter()
+        .map(|path| {
+            resolve_path(
+                "watch",
+                &webview,
+                &global_scope,
+                &command_scope,
+                path,
+                options.base_dir,
+            )
+        })
+        .collect::<CommandResult<Vec<_>>>()?;
 
     let recursive_mode = if options.recursive {
         RecursiveMode::Recursive
@@ -107,52 +65,40 @@ pub async fn watch<R: Runtime>(
         RecursiveMode::NonRecursive
     };
 
-    let kind = if let Some(delay) = options.delay_ms {
-        let (tx, rx) = channel();
-        let mut debouncer = new_debouncer(Duration::from_millis(delay), None, tx)?;
+    let watcher_kind = if let Some(delay) = options.delay_ms {
+        let mut debouncer = new_debouncer(
+            Duration::from_millis(delay),
+            None,
+            move |events: Result<Vec<DebouncedEvent>, Vec<notify::Error>>| {
+                if let Ok(events) = events {
+                    for event in events {
+                        // TODO: Should errors be emitted too?
+                        let _ = on_event.send(event.event);
+                    }
+                }
+            },
+        )?;
         for path in &resolved_paths {
             debouncer.watch(path, recursive_mode)?;
         }
-        watch_debounced(on_event, rx);
         WatcherKind::Debouncer(debouncer)
     } else {
-        let (tx, rx) = channel();
-        let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
+        let mut watcher = RecommendedWatcher::new(
+            move |event| {
+                if let Ok(event) = event {
+                    // TODO: Should errors be emitted too?
+                    let _ = on_event.send(event);
+                }
+            },
+            Config::default(),
+        )?;
         for path in &resolved_paths {
             watcher.watch(path, recursive_mode)?;
         }
-        watch_raw(on_event, rx);
         WatcherKind::Watcher(watcher)
     };
 
-    let rid = webview
-        .resources_table()
-        .add(WatcherResource::new(kind, resolved_paths));
+    let rid = webview.resources_table().add(watcher_kind);
 
     Ok(rid)
-}
-
-#[tauri::command]
-pub async fn unwatch<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> CommandResult<()> {
-    let watcher = webview.resources_table().take::<WatcherResource>(rid)?;
-    WatcherResource::with_lock(&watcher, |watcher| {
-        match &mut watcher.kind {
-            WatcherKind::Debouncer(ref mut debouncer) => {
-                for path in &watcher.paths {
-                    debouncer.unwatch(path).map_err(|e| {
-                        format!("failed to unwatch path: {} with error: {e}", path.display())
-                    })?;
-                }
-            }
-            WatcherKind::Watcher(ref mut w) => {
-                for path in &watcher.paths {
-                    w.unwatch(path).map_err(|e| {
-                        format!("failed to unwatch path: {} with error: {e}", path.display())
-                    })?;
-                }
-            }
-        }
-
-        Ok(())
-    })
 }

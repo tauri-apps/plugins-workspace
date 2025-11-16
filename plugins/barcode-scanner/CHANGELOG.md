@@ -1,5 +1,26 @@
 # Changelog
 
+## \[2.4.2]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
+## \[2.4.1]
+
+- [`654bf489`](https://github.com/tauri-apps/plugins-workspace/commit/654bf4891a35769f7e82971641d3ad99974b2dfe) ([#3038](https://github.com/tauri-apps/plugins-workspace/pull/3038) by [@daniel-mader](https://github.com/tauri-apps/plugins-workspace/../../daniel-mader)) Update `androidx.camera` from `1.1.0` to `1.5.1` to support 16 KB memory page sizes.
+- [`6c9b61fb`](https://github.com/tauri-apps/plugins-workspace/commit/6c9b61fb658145d13893626112fc489f7458aa17) ([#3039](https://github.com/tauri-apps/plugins-workspace/pull/3039) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Android, updated compileSdk to 36.
+
+## \[2.4.0]
+
+- [`aa9140e1`](https://github.com/tauri-apps/plugins-workspace/commit/aa9140e1ac239ab9f015f92b2ed52bbf0eda7c12) ([#2437](https://github.com/tauri-apps/plugins-workspace/pull/2437) by [@enkhjile](https://github.com/tauri-apps/plugins-workspace/../../enkhjile)) Added support for GS1 DataBar on iOS 15.4+
+
+## \[2.3.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.2.1]
+
+- [`f634e524`](https://github.com/tauri-apps/plugins-workspace/commit/f634e5248ebe428f8305a59f74c13fc15147fb8e) This is an "empty" release to update the plugins' source files on crates.io and docs.rs. This should fix docs.rs build failures for projects using tauri plugins as dependencies.
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.

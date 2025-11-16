@@ -19,6 +19,10 @@ interface ChangePayload<T> {
  */
 export type StoreOptions = {
   /**
+   * Default value of the store
+   */
+  defaults: { [key: string]: unknown }
+  /**
    * Auto save on modification with debounce duration in milliseconds, it's 100ms by default, pass in `false` to disable it
    */
   autoSave?: boolean | number
@@ -34,6 +38,10 @@ export type StoreOptions = {
    * Force create a new store with default values even if it already exists.
    */
   createNew?: boolean
+  /**
+   * When creating the store, override the store with the on-disk state if it exists, ignoring defaults
+   */
+  overrideDefaults?: boolean
 }
 
 /**
@@ -145,8 +153,8 @@ export class LazyStore implements IStore {
     return (await this.store).length()
   }
 
-  async reload(): Promise<void> {
-    await (await this.store).reload()
+  async reload(options?: ReloadOptions): Promise<void> {
+    await (await this.store).reload(options)
   }
 
   async save(): Promise<void> {
@@ -196,7 +204,7 @@ export class Store extends Resource implements IStore {
   static async load(path: string, options?: StoreOptions): Promise<Store> {
     const rid = await invoke<number>('plugin:store|load', {
       path,
-      ...options
+      options
     })
     return new Store(rid)
   }
@@ -280,8 +288,8 @@ export class Store extends Resource implements IStore {
     return await invoke('plugin:store|length', { rid: this.rid })
   }
 
-  async reload(): Promise<void> {
-    await invoke('plugin:store|reload', { rid: this.rid })
+  async reload(options?: ReloadOptions): Promise<void> {
+    await invoke('plugin:store|reload', { rid: this.rid, ...options })
   }
 
   async save(): Promise<void> {
@@ -396,10 +404,15 @@ interface IStore {
    *
    * This method is useful if the on-disk state was edited by the user and you want to synchronize the changes.
    *
-   * Note: This method does not emit change events.
+   * Note:
+   *   - This method loads the data and merges it with the current store,
+   *     this behavior will be changed to resetting to default first and then merging with the on-disk state in v3,
+   *     to fully match the store with the on-disk state, set {@linkcode ReloadOptions | ignoreDefaults} to `true`
+   *   - This method does not emit change events.
+   *
    * @returns
    */
-  reload(): Promise<void>
+  reload(options?: ReloadOptions): Promise<void>
 
   /**
    * Saves the store to disk at the store's `path`.
@@ -436,4 +449,14 @@ interface IStore {
    * **You should not call any method on this object anymore and should drop any reference to it.**
    */
   close(): Promise<void>
+}
+
+/**
+ * Options to {@linkcode IStore.reload} a {@linkcode IStore}
+ */
+export type ReloadOptions = {
+  /**
+   * To fully match the store with the on-disk state, ignoring defaults
+   */
+  ignoreDefaults?: boolean
 }

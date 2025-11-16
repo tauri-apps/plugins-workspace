@@ -9,8 +9,6 @@ Checking if the NFC functionality is available
 and scanning nearby tags is allowed.
 Writing to tags needs to be manually enabled.
 
-
-
 #### This default permission set includes the following:
 
 - `allow-is-available`

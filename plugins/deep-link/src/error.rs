@@ -28,6 +28,16 @@ pub enum Error {
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
 }
 
+// TODO(v3): change this into an error in v3,
+// see <https://github.com/tauri-apps/plugins-workspace/pull/2970#issuecomment-3244660138>.
+#[inline]
+#[cfg(target_os = "linux")]
+pub(crate) fn inspect_command_error<'a>(command: &'a str) -> impl Fn(&std::io::Error) + 'a {
+    move |e| {
+        tracing::error!("Failed to run OS command `{command}`: {e}");
+    }
+}
+
 impl Serialize for Error {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
