@@ -105,7 +105,9 @@ impl Builder {
                                     .insert("Content-Security-Policy".into(), csp);
                             }
 
-                            response.headers.insert("Cache-Control".into(), "no-cache".into());
+                            response
+                                .headers
+                                .insert("Cache-Control".into(), "no-cache".into());
 
                             if let Some(on_request) = &on_request {
                                 on_request(&request, &mut response);
