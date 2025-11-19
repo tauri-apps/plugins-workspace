@@ -299,7 +299,8 @@ impl Write for RotatingFile {
             self.open_file().map_err(std::io::Error::other)?;
         }
 
-        if self.current_size + (self.buffer.len() as u64) > self.max_size {
+        if self.current_size != 0 && self.current_size + (self.buffer.len() as u64) > self.max_size
+        {
             self.rotate().map_err(std::io::Error::other)?;
         }
 
