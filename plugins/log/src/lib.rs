@@ -14,6 +14,8 @@ use log::{LevelFilter, Record};
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::borrow::Cow;
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::{
     fmt::Arguments,
     fs::{self, File},
@@ -48,7 +50,8 @@ const DEFAULT_LOG_TARGETS: [Target; 2] = [
     Target::new(TargetKind::Stdout),
     Target::new(TargetKind::LogDir { file_name: None }),
 ];
-const LOG_DATE_FORMAT: &str = "[year]-[month]-[day]_[hour]-[minute]-[second]";
+const LOG_DATE_FORMAT: &[time::format_description::FormatItem<'_>] =
+    format_description!("[year]-[month]-[day]_[hour]-[minute]-[second]");
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -116,6 +119,7 @@ impl From<log::Level> for LogLevel {
     }
 }
 
+#[derive(Debug, Clone)]
 pub enum RotationStrategy {
     /// Will keep all the logs, renaming them to include the date.
     KeepAll,
@@ -139,6 +143,175 @@ impl TimezoneStrategy {
                 OffsetDateTime::now_local().unwrap_or_else(|_| OffsetDateTime::now_utc())
             } // Fallback to UTC since Rust cannot determine local timezone
         }
+    }
+}
+
+/// A custom log writer that rotates the log file when it exceeds specified size.
+struct RotatingFile {
+    dir: PathBuf,
+    file_name: String,
+    path: PathBuf,
+    max_size: u128,
+    current_size: u128,
+    rotation_strategy: RotationStrategy,
+    timezone_strategy: TimezoneStrategy,
+    inner: Option<File>,
+    buffer: Vec<u8>,
+}
+
+impl RotatingFile {
+    pub fn new(
+        dir: impl AsRef<Path>,
+        file_name: String,
+        max_size: u128,
+        rotation_strategy: RotationStrategy,
+        timezone_strategy: TimezoneStrategy,
+    ) -> Result<Self, Error> {
+        let dir = dir.as_ref().to_path_buf();
+        let path = dir.join(&file_name).with_extension("log");
+
+        let mut rotator = Self {
+            dir,
+            file_name,
+            path,
+            max_size,
+            current_size: 0,
+            rotation_strategy,
+            timezone_strategy,
+            inner: None,
+            buffer: Vec::new(),
+        };
+
+        rotator.open_file()?;
+        if rotator.current_size >= rotator.max_size {
+            rotator.rotate()?;
+        }
+        if let RotationStrategy::KeepSome(keep_count) = rotator.rotation_strategy {
+            rotator.remove_old_files(keep_count)?;
+        }
+
+        Ok(rotator)
+    }
+
+    fn open_file(&mut self) -> Result<(), Error> {
+        let file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&self.path)?;
+        self.current_size = file.metadata()?.len() as u128;
+        self.inner = Some(file);
+        Ok(())
+    }
+
+    fn rotate(&mut self) -> Result<(), Error> {
+        if let Some(mut file) = self.inner.take() {
+            let _ = file.flush();
+        }
+        if self.path.exists() {
+            match self.rotation_strategy {
+                RotationStrategy::KeepAll => {
+                    self.rename_file_to_dated()?;
+                }
+                RotationStrategy::KeepSome(keep_count) => {
+                    // remove_old_files excludes the active file.
+                    // So we need to keep (keep_count - 1) archived files to make room for the one we are about to archive.
+                    self.remove_old_files(keep_count - 1)?;
+                    self.rename_file_to_dated()?;
+                }
+                RotationStrategy::KeepOne => {
+                    fs::remove_file(&self.path)?;
+                }
+            }
+        }
+        self.open_file()?;
+        Ok(())
+    }
+
+    /// Remove old log files until the number of old log files is equal to the keep_count,
+    /// the current active log file is not included in the keep_count.
+    fn remove_old_files(&self, keep_count: usize) -> Result<(), Error> {
+        let mut files = fs::read_dir(&self.dir)?
+            .filter_map(|entry| {
+                let entry = entry.ok()?;
+                let path = entry.path();
+                let old_file_name = path.file_name()?.to_string_lossy().into_owned();
+                if old_file_name.starts_with(&self.file_name)
+                  // exclude the current active file
+                  && old_file_name != format!("{}.log", self.file_name)
+                {
+                    let date = old_file_name
+                        .strip_prefix(&self.file_name)?
+                        .strip_prefix("_")?
+                        .strip_suffix(".log")?;
+                    Some((path, date.to_string()))
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
+
+        files.sort_by(|a, b| a.1.cmp(&b.1));
+
+        if files.len() > keep_count {
+            let files_to_remove = files.len() - keep_count;
+            for (old_log_path, _) in files.iter().take(files_to_remove) {
+                fs::remove_file(old_log_path)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn rename_file_to_dated(&self) -> Result<(), Error> {
+        let to = self.dir.join(format!(
+            "{}_{}.log",
+            self.file_name,
+            self.timezone_strategy
+                .get_now()
+                .format(LOG_DATE_FORMAT)
+                .unwrap(),
+        ));
+        if to.is_file() {
+            // designated rotated log file name already exists
+            // highly unlikely but defensively handle anyway by adding .bak to filename
+            let mut to_bak = to.clone();
+            to_bak.set_file_name(format!(
+                "{}.bak",
+                to_bak.file_name().unwrap().to_string_lossy()
+            ));
+            fs::rename(&to, to_bak)?;
+        }
+        fs::rename(&self.path, &to)?;
+        Ok(())
+    }
+}
+
+impl Write for RotatingFile {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        self.buffer.extend_from_slice(buf);
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        if self.buffer.is_empty() {
+            return Ok(());
+        }
+        if self.inner.is_none() {
+            self.open_file()
+                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        }
+
+        if self.current_size + (self.buffer.len() as u128) > self.max_size {
+            self.rotate()
+                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        }
+
+        if let Some(file) = self.inner.as_mut() {
+            file.write_all(&self.buffer)?;
+            self.current_size += self.buffer.len() as u128;
+            file.flush()?;
+        }
+        self.buffer.clear();
+        Ok(())
     }
 }
 
@@ -439,14 +612,14 @@ impl Builder {
                         fs::create_dir_all(&path)?;
                     }
 
-                    fern::log_file(get_log_file_path(
+                    let rotator = RotatingFile::new(
                         &path,
-                        file_name.as_deref().unwrap_or(app_name),
-                        &rotation_strategy,
-                        &timezone_strategy,
+                        file_name.unwrap_or(app_name.clone()),
                         max_file_size,
-                    )?)?
-                    .into()
+                        rotation_strategy.clone(),
+                        timezone_strategy.clone(),
+                    )?;
+                    fern::Output::writer(Box::new(rotator), "\n")
                 }
                 TargetKind::LogDir { file_name } => {
                     let path = app_handle.path().app_log_dir()?;
@@ -454,14 +627,14 @@ impl Builder {
                         fs::create_dir_all(&path)?;
                     }
 
-                    fern::log_file(get_log_file_path(
+                    let rotator = RotatingFile::new(
                         &path,
-                        file_name.as_deref().unwrap_or(app_name),
-                        &rotation_strategy,
-                        &timezone_strategy,
+                        file_name.unwrap_or(app_name.clone()),
                         max_file_size,
-                    )?)?
-                    .into()
+                        rotation_strategy.clone(),
+                        timezone_strategy.clone(),
+                    )?;
+                    fern::Output::writer(Box::new(rotator), "\n")
                 }
                 TargetKind::Webview => {
                     let app_handle = app_handle.clone();
@@ -540,87 +713,4 @@ pub fn attach_logger(
     log::set_boxed_logger(log)?;
     log::set_max_level(max_level);
     Ok(())
-}
-
-fn rename_file_to_dated(
-    path: &impl AsRef<Path>,
-    dir: &impl AsRef<Path>,
-    file_name: &str,
-    timezone_strategy: &TimezoneStrategy,
-) -> Result<(), Error> {
-    let to = dir.as_ref().join(format!(
-        "{}_{}.log",
-        file_name,
-        timezone_strategy
-            .get_now()
-            .format(&time::format_description::parse(LOG_DATE_FORMAT).unwrap())
-            .unwrap(),
-    ));
-    if to.is_file() {
-        // designated rotated log file name already exists
-        // highly unlikely but defensively handle anyway by adding .bak to filename
-        let mut to_bak = to.clone();
-        to_bak.set_file_name(format!(
-            "{}.bak",
-            to_bak.file_name().unwrap().to_string_lossy()
-        ));
-        fs::rename(&to, to_bak)?;
-    }
-    fs::rename(path, to)?;
-    Ok(())
-}
-
-fn get_log_file_path(
-    dir: &impl AsRef<Path>,
-    file_name: &str,
-    rotation_strategy: &RotationStrategy,
-    timezone_strategy: &TimezoneStrategy,
-    max_file_size: u128,
-) -> Result<PathBuf, Error> {
-    let path = dir.as_ref().join(format!("{file_name}.log"));
-
-    if path.exists() {
-        let log_size = File::open(&path)?.metadata()?.len() as u128;
-        if log_size > max_file_size {
-            match rotation_strategy {
-                RotationStrategy::KeepAll => {
-                    rename_file_to_dated(&path, dir, file_name, timezone_strategy)?;
-                }
-                RotationStrategy::KeepSome(how_many) => {
-                    let mut files = fs::read_dir(dir)?
-                        .filter_map(|entry| {
-                            let entry = entry.ok()?;
-                            let path = entry.path();
-                            let old_file_name = path.file_name()?.to_string_lossy().into_owned();
-                            if old_file_name.starts_with(file_name) {
-                                let date = old_file_name
-                                    .strip_prefix(file_name)?
-                                    .strip_prefix("_")?
-                                    .strip_suffix(".log")?;
-                                Some((path, date.to_string()))
-                            } else {
-                                None
-                            }
-                        })
-                        .collect::<Vec<_>>();
-                    // Regular sorting, so the oldest files are first. Lexicographical
-                    // sorting is fine due to the date format.
-                    files.sort_by(|a, b| a.1.cmp(&b.1));
-                    // We want to make space for the file we will be soon renaming, AND
-                    // the file we will be creating. Thus we need to keep how_many - 2 files.
-                    if files.len() > (*how_many - 2) {
-                        files.truncate(files.len() + 2 - *how_many);
-                        for (old_log_path, _) in files {
-                            fs::remove_file(old_log_path)?;
-                        }
-                    }
-                    rename_file_to_dated(&path, dir, file_name, timezone_strategy)?;
-                }
-                RotationStrategy::KeepOne => {
-                    fs::remove_file(&path)?;
-                }
-            }
-        }
-    }
-    Ok(path)
 }
