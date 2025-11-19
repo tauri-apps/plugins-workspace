@@ -296,13 +296,11 @@ impl Write for RotatingFile {
             return Ok(());
         }
         if self.inner.is_none() {
-            self.open_file()
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            self.open_file().map_err(std::io::Error::other)?;
         }
 
         if self.current_size + (self.buffer.len() as u128) > self.max_size {
-            self.rotate()
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            self.rotate().map_err(std::io::Error::other)?;
         }
 
         if let Some(file) = self.inner.as_mut() {
