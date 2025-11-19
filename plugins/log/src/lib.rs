@@ -43,7 +43,7 @@ mod ios {
     ));
 }
 
-const DEFAULT_MAX_FILE_SIZE: u128 = 40000;
+const DEFAULT_MAX_FILE_SIZE: u64 = 40000;
 const DEFAULT_ROTATION_STRATEGY: RotationStrategy = RotationStrategy::KeepOne;
 const DEFAULT_TIMEZONE_STRATEGY: TimezoneStrategy = TimezoneStrategy::UseUtc;
 const DEFAULT_LOG_TARGETS: [Target; 2] = [
@@ -151,8 +151,8 @@ struct RotatingFile {
     dir: PathBuf,
     file_name: String,
     path: PathBuf,
-    max_size: u128,
-    current_size: u128,
+    max_size: u64,
+    current_size: u64,
     rotation_strategy: RotationStrategy,
     timezone_strategy: TimezoneStrategy,
     inner: Option<File>,
@@ -163,7 +163,7 @@ impl RotatingFile {
     pub fn new(
         dir: impl AsRef<Path>,
         file_name: String,
-        max_size: u128,
+        max_size: u64,
         rotation_strategy: RotationStrategy,
         timezone_strategy: TimezoneStrategy,
     ) -> Result<Self, Error> {
@@ -198,7 +198,7 @@ impl RotatingFile {
             .create(true)
             .append(true)
             .open(&self.path)?;
-        self.current_size = file.metadata()?.len() as u128;
+        self.current_size = file.metadata()?.len();
         self.inner = Some(file);
         Ok(())
     }
@@ -299,13 +299,13 @@ impl Write for RotatingFile {
             self.open_file().map_err(std::io::Error::other)?;
         }
 
-        if self.current_size + (self.buffer.len() as u128) > self.max_size {
+        if self.current_size + (self.buffer.len() as u64) > self.max_size {
             self.rotate().map_err(std::io::Error::other)?;
         }
 
         if let Some(file) = self.inner.as_mut() {
             file.write_all(&self.buffer)?;
-            self.current_size += self.buffer.len() as u128;
+            self.current_size += self.buffer.len() as u64;
             file.flush()?;
         }
         self.buffer.clear();
@@ -422,7 +422,7 @@ impl Default for Builder {
             dispatch,
             rotation_strategy: DEFAULT_ROTATION_STRATEGY,
             timezone_strategy: DEFAULT_TIMEZONE_STRATEGY,
-            max_file_size: DEFAULT_MAX_FILE_SIZE,
+            max_file_size: DEFAULT_MAX_FILE_SIZE as u128,
             targets: DEFAULT_LOG_TARGETS.into(),
             is_skip_logger: false,
         }
@@ -455,8 +455,12 @@ impl Builder {
         self
     }
 
+    /// Sets the maximum file size for log rotation.
+    ///
+    /// Values larger than `u64::MAX` will be clamped to `u64::MAX`.
+    /// In v3, this parameter will be changed to `u64`.
     pub fn max_file_size(mut self, max_file_size: u128) -> Self {
-        self.max_file_size = max_file_size;
+        self.max_file_size = max_file_size.min(u64::MAX as u128);
         self
     }
 
@@ -564,7 +568,7 @@ impl Builder {
         mut dispatch: fern::Dispatch,
         rotation_strategy: RotationStrategy,
         timezone_strategy: TimezoneStrategy,
-        max_file_size: u128,
+        max_file_size: u64,
         targets: Vec<Target>,
     ) -> Result<(log::LevelFilter, Box<dyn log::Log>), Error> {
         let app_name = &app_handle.package_info().name;
@@ -676,7 +680,7 @@ impl Builder {
             self.dispatch,
             self.rotation_strategy,
             self.timezone_strategy,
-            self.max_file_size,
+            self.max_file_size as u64,
             self.targets,
         )?;
 
@@ -692,7 +696,7 @@ impl Builder {
                         self.dispatch,
                         self.rotation_strategy,
                         self.timezone_strategy,
-                        self.max_file_size,
+                        self.max_file_size as u64,
                         self.targets,
                     )?;
                     attach_logger(max_level, log)?;
