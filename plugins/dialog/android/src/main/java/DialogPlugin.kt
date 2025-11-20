@@ -31,6 +31,7 @@ class Filter {
 class FilePickerOptions {
   lateinit var filters: Array<Filter>
   var multiple: Boolean? = null
+  var pickerMode: String? = null
 }
 
 @InvokeArg
@@ -61,10 +62,19 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
       // TODO: ACTION_OPEN_DOCUMENT ??
       val intent = Intent(Intent.ACTION_GET_CONTENT)
       intent.addCategory(Intent.CATEGORY_OPENABLE)
-      intent.type = "*/*"
 
-      if (parsedTypes.isNotEmpty()) {
+      if (args.pickerMode == "image") {
+        intent.type = "image/*"
+      } else if (args.pickerMode == "video") {
+        intent.type = "video/*"
+      } else if (args.pickerMode == "media") {
+        intent.type = "*/*"
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("video/*", "image/*"))
+      } else if (parsedTypes.isNotEmpty()) {
+        intent.type = "*/*"
         intent.putExtra(Intent.EXTRA_MIME_TYPES, parsedTypes)
+      } else {
+        intent.type = "*/*"
       }
 
       intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, args.multiple ?: false)
