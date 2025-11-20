@@ -243,7 +243,7 @@ impl UpdaterBuilder {
     }
 
     pub fn pubkey<S: Into<String>>(mut self, pubkey: S) -> Self {
-        self.config.pubkey = pubkey.into();
+        self.config.pubkey = Some(pubkey.into());
         self
     }
 
@@ -673,7 +673,11 @@ impl Update {
         }
         on_download_finish();
 
-        verify_signature(&buffer, &self.signature, &self.config.pubkey)?;
+        let pubkey = match &self.config.pubkey {
+            Some(pk) => pk,
+            None => return Err(Error::MissingPubKey),
+        };
+        verify_signature(&buffer, &self.signature, pubkey)?;
 
         Ok(buffer)
     }

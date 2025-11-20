@@ -215,9 +215,11 @@ impl Builder {
         PluginBuilder::<R, Config>::new("updater")
             .setup(move |app, api| {
                 let mut config = api.config().clone();
-                if let Some(pubkey) = pubkey {
-                    config.pubkey = pubkey;
+
+                if config.pubkey.is_none() && pubkey.is_none() {
+                    log::warn!("Updater pubkey is not set in tauri config. It must set in the config or at runtime");
                 }
+                config.pubkey = pubkey;
                 if let Some(windows) = &mut config.windows {
                     windows.installer_args.extend(installer_args);
                 }
