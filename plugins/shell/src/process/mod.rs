@@ -89,7 +89,7 @@ impl CommandChild {
 /// Describes the result of a process after it has terminated.
 #[derive(Debug)]
 pub struct ExitStatus {
-    code: Option<i32>,
+    pub code: Option<i32>,
 }
 
 impl ExitStatus {
