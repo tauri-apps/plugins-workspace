@@ -9,7 +9,7 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 #[non_exhaustive]
 pub enum Error {
-    #[error("Updater pubkey was not found in tauri config or set at runtime.")]
+    #[error("Updater pubkey was not found in tauri config nor set at runtime.")]
     MissingPubKey,
     /// Endpoints are not sent.
     #[error("Updater does not have any endpoints set.")]

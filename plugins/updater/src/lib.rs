@@ -217,9 +217,14 @@ impl Builder {
                 let mut config = api.config().clone();
 
                 if config.pubkey.is_none() && pubkey.is_none() {
-                    log::warn!("Updater pubkey is not set in tauri config. It must set in the config or at runtime");
-                }
-                config.pubkey = pubkey;
+                    return Err(Box::new(Error::MissingPubKey));
+                } else if pubkey.is_some() {
+                    log::warn!(
+                        "Updater pubkey is set at runtime. It will overwrite the config pubkey if set."
+                    );
+                    config.pubkey = pubkey;
+                };
+
                 if let Some(windows) = &mut config.windows {
                     windows.installer_args.extend(installer_args);
                 }
