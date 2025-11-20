@@ -41,27 +41,43 @@ First you need to register the core plugin with Tauri:
 `src-tauri/src/lib.rs`
 
 ```rust
-use tauri::{Manager, window::WindowBuilder, WindowUrl};
+#[cfg(not(dev))]
+use tauri::{ipc::CapabilityBuilder, Manager, Url};
+use tauri::{WebviewUrl, WebviewWindowBuilder};
 
-fn main() {
-  let port = portpicker::pick_unused_port().expect("failed to find unused port");
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    let port = portpicker::pick_unused_port().expect("failed to find unused port");
 
-  tauri::Builder::default()
-    .plugin(tauri_plugin_localhost::Builder::new(port).build())
-    .setup(move |app| {
-      app.ipc_scope().configure_remote_access(
-        RemoteDomainAccessScope::new("localhost")
-          .add_window("main")
-      );
+    tauri::Builder::default()
+        .plugin(tauri_plugin_localhost::Builder::new(port).build())
+        .setup(move |app| {
+            // In `tauri dev` mode you usually use your dev server.
+            #[cfg(dev)]
+            let url = WebviewUrl::App(std::path::PathBuf::from("/"));
 
-      let url = format!("http://localhost:{}", port).parse().unwrap();
-      WindowBuilder::new(app, "main".to_string(), WindowUrl::External(url))
-        .title("Localhost Example")
-        .build()?;
-      Ok(())
-    })
-    .run(tauri::generate_context!())
-    .expect("error while running tauri application");
+            #[cfg(not(dev))]
+            let url = {
+                let url: Url = format!("http://localhost:{}", port).parse().unwrap();
+
+                app.add_capability(
+                    CapabilityBuilder::new("localhost")
+                        .remote(url.to_string())
+                        .window("main"),
+                )?;
+
+                WebviewUrl::External(url)
+            };
+
+            // This requires you to remove the window from tauri.conf.json
+            WebviewWindowBuilder::new(app, "main".to_string(), url)
+                .title("Localhost Example")
+                .build()?;
+
+            Ok(())
+        })
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
 }
 ```
 
