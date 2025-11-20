@@ -180,6 +180,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .invoke_handler(tauri::generate_handler![
             commands::open,
             commands::save,
+            commands::destroy_path,
             commands::message,
             commands::ask,
             commands::confirm
@@ -486,6 +487,12 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///     Ok(())
     ///   });
     /// ```
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **iOS**: Returns a copy of the file to bypass [security scoped resource].
+    ///
+    /// [security scoped resource]: https://developer.apple.com/documentation/foundation/nsurl/1417051-startaccessingsecurityscopedreso?language=objc
     pub fn pick_file<F: FnOnce(Option<FilePath>) + Send + 'static>(self, f: F) {
         pick_file(self, f)
     }
@@ -608,8 +615,18 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///     Ok(())
     ///   });
     /// ```
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **iOS**: Returns a [security scoped resource] so you must request access before reading or writing to the file.
+    ///
+    /// [security scoped resource]: https://developer.apple.com/documentation/foundation/nsurl/1417051-startaccessingsecurityscopedreso?language=objc
     pub fn save_file<F: FnOnce(Option<FilePath>) + Send + 'static>(self, f: F) {
         save_file(self, f)
+    }
+
+    pub fn destroy_path(self, path: String) -> bool {
+        destroy_path(self, path)
     }
 }
 
@@ -633,6 +650,12 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   // the file path is `None` if the user closed the dialog
     /// }
     /// ```
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **iOS**: Returns a copy of the file to bypass [security scoped resource].
+    ///
+    /// [security scoped resource]: https://developer.apple.com/documentation/foundation/nsurl/1417051-startaccessingsecurityscopedreso?language=objc
     pub fn blocking_pick_file(self) -> Option<FilePath> {
         blocking_fn!(self, pick_file)
     }
@@ -723,7 +746,17 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///   // the file path is `None` if the user closed the dialog
     /// }
     /// ```
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **iOS**: Returns a [security scoped resource] so you must request access before reading or writing to the file.
+    ///
+    /// [security scoped resource]: https://developer.apple.com/documentation/foundation/nsurl/1417051-startaccessingsecurityscopedreso?language=objc
     pub fn blocking_save_file(self) -> Option<FilePath> {
         blocking_fn!(self, save_file)
+    }
+
+    pub fn blocking_destroy_path(self, path: String) -> bool {
+        self.destroy_path(path)
     }
 }

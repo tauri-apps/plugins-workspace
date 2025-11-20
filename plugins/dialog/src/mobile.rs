@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use serde::{de::DeserializeOwned, Deserialize};
+use serde::{de::DeserializeOwned, Serialize, Deserialize};
 use tauri::{
     plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
@@ -103,6 +103,28 @@ pub fn save_file<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
             f(None)
         }
     });
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DestroyPathOptions {
+    path: String,
+}
+
+#[allow(unused_variables)]
+pub fn destroy_path<R: Runtime>(dialog: FileDialogBuilder<R>, path: String) -> bool {
+    #[cfg(target_os = "ios")]
+    {
+        let res = dialog
+            .dialog
+            .0
+            .run_mobile_plugin::<()>("stopAccessingPath", DestroyPathOptions { path });
+
+        if res.is_err() {
+            return false;
+        }
+    }
+
+    true
 }
 
 #[derive(Debug, Deserialize)]

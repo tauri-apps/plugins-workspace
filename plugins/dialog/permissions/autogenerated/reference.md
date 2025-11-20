@@ -14,6 +14,7 @@ All dialog types are enabled.
 - `allow-message`
 - `allow-save`
 - `allow-open`
+- `allow-destroy-path`
 
 ## Permission Table
 
@@ -72,6 +73,32 @@ Enables the confirm command without any pre-configured scope.
 <td>
 
 Denies the confirm command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`dialog:allow-destroy-path`
+
+</td>
+<td>
+
+Enables the destroy_path command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`dialog:deny-destroy-path`
+
+</td>
+<td>
+
+Denies the destroy_path command without any pre-configured scope.
 
 </td>
 </tr>

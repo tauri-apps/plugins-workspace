@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-const COMMANDS: &[&str] = &["open", "save", "message", "ask", "confirm"];
+const COMMANDS: &[&str] = &[
+    "open",
+    "save",
+    "destroy_path",
+    "message",
+    "ask",
+    "confirm",
+];
 
 fn main() {
     let result = tauri_plugin::Builder::new(COMMANDS)
