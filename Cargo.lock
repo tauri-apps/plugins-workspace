@@ -1563,7 +1563,7 @@ dependencies = [
  "libc",
  "option-ext",
  "redox_users 0.5.0",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -7095,7 +7095,7 @@ dependencies = [
  "tauri-plugin",
  "thiserror 2.0.12",
  "tokio",
- "tokio-tungstenite 0.28.0",
+ "tokio-tungstenite",
 ]
 
 [[package]]
@@ -7469,18 +7469,6 @@ checksum = "d25a406cddcc431a75d3d9afc6a7c0f7428d4891dd973e4d54c56b46127bf857"
 dependencies = [
  "futures-util",
  "log",
- "tokio",
- "tungstenite 0.27.0",
-]
-
-[[package]]
-name = "tokio-tungstenite"
-version = "0.28.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d25a406cddcc431a75d3d9afc6a7c0f7428d4891dd973e4d54c56b46127bf857"
-dependencies = [
- "futures-util",
- "log",
  "native-tls",
  "rustls",
  "rustls-native-certs",
@@ -7488,7 +7476,7 @@ dependencies = [
  "tokio",
  "tokio-native-tls",
  "tokio-rustls",
- "tungstenite 0.28.0",
+ "tungstenite",
  "webpki-roots",
 ]
 
@@ -7705,23 +7693,6 @@ name = "try-lock"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
-
-[[package]]
-name = "tungstenite"
-version = "0.28.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8628dcc84e5a09eb3d8423d6cb682965dea9133204e8fb3efee74c2a0c259442"
-dependencies = [
- "bytes",
- "data-encoding",
- "http",
- "httparse",
- "log",
- "rand 0.9.0",
- "sha1",
- "thiserror 2.0.12",
- "utf-8",
-]
 
 [[package]]
 name = "tungstenite"
@@ -8294,7 +8265,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-websocket",
  "tokio",
- "tokio-tungstenite 0.27.0",
+ "tokio-tungstenite",
 ]
 
 [[package]]
@@ -9125,9 +9096,9 @@ dependencies = [
 
 [[package]]
 name = "zbus"
-version = "5.11.0"
+version = "5.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d07e46d035fb8e375b2ce63ba4e4ff90a7f73cf2ffb0138b29e1158d2eaadf7"
+checksum = "b622b18155f7a93d1cd2dc8c01d2d6a44e08fb9ebb7b3f9e6ed101488bad6c91"
 dependencies = [
  "async-broadcast",
  "async-executor",
@@ -9150,7 +9121,8 @@ dependencies = [
  "tokio",
  "tracing",
  "uds_windows",
- "windows-sys 0.60.2",
+ "uuid",
+ "windows-sys 0.61.2",
  "winnow 0.7.12",
  "zbus_macros",
  "zbus_names",
@@ -9159,8 +9131,9 @@ dependencies = [
 
 [[package]]
 name = "zbus-secret-service-keyring-store"
-version = "0.1.0"
-source = "git+https://github.com/FabianLars/zbus-secret-service-keyring-store#e465bd217f68350a969229c5fcbc758ebb6819c4"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0371a7e111fe248bf8e2d4648faa87b9d59ce4eabc0ff515bc3432a7d8ccf84f"
 dependencies = [
  "keyring-core",
  "secret-service",
@@ -9169,9 +9142,9 @@ dependencies = [
 
 [[package]]
 name = "zbus_macros"
-version = "5.11.0"
+version = "5.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57e797a9c847ed3ccc5b6254e8bcce056494b375b511b3d6edcec0aeb4defaca"
+checksum = "1cdb94821ca8a87ca9c298b5d1cbd80e2a8b67115d99f6e4551ac49e42b6a314"
 dependencies = [
  "proc-macro-crate 3.3.0",
  "proc-macro2",
