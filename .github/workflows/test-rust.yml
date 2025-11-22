@@ -251,9 +251,9 @@ jobs:
         run: cargo +stable install cross --git https://github.com/cross-rs/cross
 
       - name: test ${{ matrix.package }}
-        if: matrix.package != 'tauri-plugin-http' && matrix.package != 'tauri-plugin-secure-storage'
+        if: matrix.package != 'tauri-plugin-http' && matrix.package != 'tauri-plugin-secure-storage' && matrix.package != 'tauri-plugin-dialog'
         run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features
 
       - name: test ${{ matrix.package }}
-        if: matrix.package == 'tauri-plugin-http'
+        if: ${{ matrix.package == 'tauri-plugin-http' || matrix.package == 'tauri-plugin-dialog' }}
         run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets

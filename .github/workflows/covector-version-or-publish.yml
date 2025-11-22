@@ -11,7 +11,7 @@ on:
       - v2
 
 permissions:
-  # required for npm provenance
+  # required for oidc token
   id-token: write
   # required to create the GitHub Release
   contents: write
@@ -62,7 +62,6 @@ jobs:
         id: covector
         env:
           CARGO_TARGET_DIR: /mnt/target
-          NODE_AUTH_TOKEN: ${{ secrets.ORG_NPM_TOKEN }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           command: 'version-or-publish'

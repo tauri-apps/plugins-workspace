@@ -115,7 +115,7 @@ mod imp {
             let parent_item_id_list = OwnedItemIdList::new(parent)?;
             let to_reveals_item_id_list = to_reveals
                 .iter()
-                .map(|to_reveal| OwnedItemIdList::new(*to_reveal))
+                .map(|to_reveal| OwnedItemIdList::new(to_reveal))
                 .collect::<crate::Result<Vec<_>>>()?;
             if let Err(e) = unsafe {
                 SHOpenFolderAndSelectItems(
