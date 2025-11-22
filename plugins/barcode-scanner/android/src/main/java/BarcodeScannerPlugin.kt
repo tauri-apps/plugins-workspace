@@ -54,7 +54,6 @@ import java.util.concurrent.ExecutionException
 
 private const val PERMISSION_ALIAS_CAMERA = "camera"
 private const val PERMISSION_NAME = Manifest.permission.CAMERA
-private const val PREFS_PERMISSION_FIRST_TIME_ASKING = "PREFS_PERMISSION_FIRST_TIME_ASKING"
 
 @InvokeArg
 class ScanOptions {
