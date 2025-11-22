@@ -369,9 +369,7 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
             requestPermissionResponse.put(PERMISSION_ALIAS_CAMERA, PermissionState.GRANTED)
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (!activity.shouldShowRequestPermissionRationale(PERMISSION_NAME)) {
-                    requestPermissionResponse.put(PERMISSION_ALIAS_CAMERA, PermissionState.DENIED)
-                }
+                requestPermissionResponse.put(PERMISSION_ALIAS_CAMERA, PermissionState.DENIED)
             } else {
                 requestPermissionResponse.put(PERMISSION_ALIAS_CAMERA, PermissionState.GRANTED)
             }
