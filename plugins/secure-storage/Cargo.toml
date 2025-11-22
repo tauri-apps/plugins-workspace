@@ -18,7 +18,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 # Details of the support level are left to plugin maintainer
 [package.metadata.platforms]
 windows = { level = "full", notes = "Windows' credentials storage only protects from other accounts on that system. The main user and their apps can access your app's data." }
-linux = { level = "partial", notes = "For this PoC on Linux the storage is in-memory only and will be reset on reboot." }
+linux = { level = "full", notes = "May not work in WSL." }
 macos = { level = "full", notes = "May prompt for passwords twice." }
 android = { level = "full", notes = "The implementation is very new and therefore not battle-tested nor audited." }
 ios = { level = "full", notes = "" }
@@ -44,8 +44,7 @@ keyring-core = "0.7"
 windows-native-keyring-store = "0.2"
 
 [target.'cfg(target_os = "linux")'.dependencies]
-# TODO: upstream is on keyring-core@0.6 while windows & apple backends only have 0.5 and 0.7 releases.
-zbus-secret-service-keyring-store = { git = "https://github.com/FabianLars/zbus-secret-service-keyring-store", features = [
+zbus-secret-service-keyring-store = { version = "0.2", features = [
   "rt-tokio-crypto-rust",
 ] }
 
@@ -53,5 +52,5 @@ zbus-secret-service-keyring-store = { git = "https://github.com/FabianLars/zbus-
 apple-native-keyring-store = "0.2"
 
 [target.'cfg(target_os = "android")'.dependencies]
-# TODO: upstream is on keyring-core@0.6 while windows & apple backends only have 0.5 and 0.7 releases.
+# TODO: upstream is on keyring-core@0.6
 android-native-keyring-store = { git = "https://github.com/FabianLars/android-native-keyring-store" }
