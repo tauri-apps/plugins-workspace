@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-License-Identifier: MIT
 
-blank_issues_enabled: false
+#blank_issues_enabled: false
 contact_links:
   - name: 💡 Request a new plugin
     url: https://github.com/orgs/tauri-apps/discussions/new?category=plugin-requests
