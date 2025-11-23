@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 
 name: 💡 Feature Request
-title: ''
 description: Request a feature or enhancement for an existing plugin
 labels: ['type: feature request']
 
