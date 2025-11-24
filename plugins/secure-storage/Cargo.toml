@@ -1,0 +1,56 @@
+[package]
+name = "tauri-plugin-secure-storage"
+version = "2.0.0"
+edition = { workspace = true }
+rust-version = "1.85"
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+links = "tauri-plugin-secure-storage"
+description = "Store data in the platforms' keychains."
+
+[package.metadata.docs.rs]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+# Platforms supported by the plugin
+# Support levels are "full", "partial", "none", "unknown"
+# Details of the support level are left to plugin maintainer
+[package.metadata.platforms]
+windows = { level = "full", notes = "Windows' credentials storage only protects from other accounts on that system. The main user and their apps can access your app's data." }
+linux = { level = "full", notes = "May not work in WSL." }
+macos = { level = "full", notes = "May prompt for passwords twice." }
+android = { level = "full", notes = "The implementation is very new and therefore not battle-tested nor audited." }
+ios = { level = "full", notes = "" }
+
+[build-dependencies]
+tauri-plugin = { workspace = true, features = ["build"] }
+
+[features]
+# TODO: docs
+# TODO: Check if protected works on intel as well, otherwise we may have to split this up. using protected for ios and keychain for macos and somehow making protected opt-in for apple silicon macs.
+apple-keychain = ["apple-native-keyring-store/keychain"]
+apple-protected = ["apple-native-keyring-store/protected"]
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+keyring-core = "0.7"
+
+[target.'cfg(windows)'.dependencies]
+windows-native-keyring-store = "0.2"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+zbus-secret-service-keyring-store = { version = "0.2", features = [
+  "rt-tokio-crypto-rust",
+] }
+
+[target.'cfg(any(target_os = "ios", target_os = "macos"))'.dependencies]
+apple-native-keyring-store = "0.2"
+
+[target.'cfg(target_os = "android")'.dependencies]
+# TODO: upstream is on keyring-core@0.6
+android-native-keyring-store = { git = "https://github.com/FabianLars/android-native-keyring-store" }

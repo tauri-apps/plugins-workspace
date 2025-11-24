@@ -23,6 +23,7 @@
   import Biometric from './views/Biometric.svelte'
   import Geolocation from './views/Geolocation.svelte'
   import Haptics from './views/Haptics.svelte'
+  import SecureStorage from './views/SecureStorage.svelte'
 
   import { onMount, tick } from 'svelte'
   import { ask } from '@tauri-apps/plugin-dialog'
@@ -101,6 +102,11 @@
     {
       label: 'Store',
       component: Store,
+      icon: 'i-codicon-file-code'
+    },
+    {
+      label: 'SecureStorage',
+      component: SecureStorage,
       icon: 'i-codicon-file-code'
     },
     !isMobile && {
@@ -213,9 +219,9 @@
       ...r,
       {
         html:
-          `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> ` +
-          (typeof value === 'string' ? value : JSON.stringify(value, null, 1)) +
-          '</pre>'
+          `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> `
+          + (typeof value === 'string' ? value : JSON.stringify(value, null, 1))
+          + '</pre>'
       }
     ])
     await tick()
@@ -229,9 +235,9 @@
       ...r,
       {
         html:
-          `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> ` +
-          html +
-          '</pre>'
+          `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> `
+          + html
+          + '</pre>'
       }
     ])
     await tick()

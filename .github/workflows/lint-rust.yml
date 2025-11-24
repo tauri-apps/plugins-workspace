@@ -98,6 +98,9 @@ jobs:
             tauri-plugin-process:
               - .github/workflows/lint-rust.yml
               - plugins/process/**
+            tauri-plugin-secure-storage:
+              - .github/workflows/lint-rust.yml
+              - plugins/secure-storage/**
             tauri-plugin-shell:
               - .github/workflows/lint-rust.yml
               - plugins/shell/**

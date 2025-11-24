@@ -36,6 +36,7 @@ tauri-plugin-notification = { path = "../../../plugins/notification", version = 
 tauri-plugin-os = { path = "../../../plugins/os", version = "2.3.2" }
 tauri-plugin-process = { path = "../../../plugins/process", version = "2.3.1" }
 tauri-plugin-opener = { path = "../../../plugins/opener", version = "2.5.2" }
+tauri-plugin-secure-storage = { path = "../../../plugins/secure-storage" }
 tauri-plugin-shell = { path = "../../../plugins/shell", version = "2.3.3" }
 tauri-plugin-store = { path = "../../../plugins/store", version = "2.4.1" }
 tauri-plugin-upload = { path = "../../../plugins/upload", version = "2.3.0" }

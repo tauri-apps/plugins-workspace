@@ -101,6 +101,11 @@ jobs:
               - pnpm-lock.yaml
               - plugins/process/guest-js/**
               - plugins/process/src/api-iife.js
+            secure-storage:
+              - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
+              - plugins/secure-storage/guest-js/**
+              - plugins/secure-storage/src/api-iife.js
             shell:
               - .github/workflows/check-generated-files.yml
               - pnpm-lock.yaml

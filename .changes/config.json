@@ -78,6 +78,7 @@
         "notification",
         "os",
         "process",
+        "secure-storage",
         "shell",
         "store",
         "updater",
@@ -104,6 +105,7 @@
         "notification-js",
         "os-js",
         "process-js",
+        "secure-storage-js",
         "shell-js",
         "store-js",
         "updater-js"
@@ -280,6 +282,14 @@
     },
     "process-js": {
       "path": "./plugins/process",
+      "manager": "javascript"
+    },
+    "secure-storage": {
+      "path": "./plugins/secure-storage",
+      "manager": "rust"
+    },
+    "secure-storage-js": {
+      "path": "./plugins/secure-storage",
       "manager": "javascript"
     },
     "shell": {

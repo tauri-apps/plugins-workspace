@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-set-binary"
+description = "Enables the set_binary command without any pre-configured scope."
+commands.allow = ["set_binary"]
+
+[[permission]]
+identifier = "deny-set-binary"
+description = "Denies the set_binary command without any pre-configured scope."
+commands.deny = ["set_binary"]

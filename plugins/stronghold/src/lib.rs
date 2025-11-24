@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: MIT
 
 //! Store secrets and keys using the [IOTA Stronghold](https://github.com/iotaledger/stronghold.rs) encrypted database and secure runtime.
+//!
+//! Note that this plugin is deprecated and should not be used!
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",

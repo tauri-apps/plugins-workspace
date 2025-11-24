@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-set-string"
+description = "Enables the set_string command without any pre-configured scope."
+commands.allow = ["set_string"]
+
+[[permission]]
+identifier = "deny-set-string"
+description = "Denies the set_string command without any pre-configured scope."
+commands.deny = ["set_string"]
