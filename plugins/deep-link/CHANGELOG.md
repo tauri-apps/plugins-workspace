@@ -1,5 +1,14 @@
 # Changelog
 
+## \[2.4.5]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
+## \[2.4.4]
+
+- [`6c9b61fb`](https://github.com/tauri-apps/plugins-workspace/commit/6c9b61fb658145d13893626112fc489f7458aa17) ([#3039](https://github.com/tauri-apps/plugins-workspace/pull/3039) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Android, updated compileSdk to 36.
+- [`e25a9339`](https://github.com/tauri-apps/plugins-workspace/commit/e25a9339f46268f70dc9afd0c5ab3decbf79b330) ([#3019](https://github.com/tauri-apps/plugins-workspace/pull/3019) by [@kevinschoonover](https://github.com/tauri-apps/plugins-workspace/../../kevinschoonover)) Fix Exec= field in desktop handler if executable path changes
+
 ## \[2.4.3]
 
 - [`2522b71f`](https://github.com/tauri-apps/plugins-workspace/commit/2522b71f6bcae65c03b24415eb9295c9e7c84ffc) ([#2970](https://github.com/tauri-apps/plugins-workspace/pull/2970) by [@WSH032](https://github.com/tauri-apps/plugins-workspace/../../WSH032)) Revert the breaking change introduced by [#2928](https://github.com/tauri-apps/plugins-workspace/pull/2928).

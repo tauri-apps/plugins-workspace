@@ -54,7 +54,7 @@ fn main() {
         .setup(|app| {
             #[cfg(desktop)]
             {
-                use tauri::Manager;
+                use tauri::Emitter;
                 use tauri_plugin_global_shortcut::{Code, Modifiers, ShortcutState};
 
                 app.handle().plugin(

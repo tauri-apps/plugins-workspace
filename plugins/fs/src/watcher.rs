@@ -49,6 +49,7 @@ pub fn watch<R: Runtime>(
         .into_iter()
         .map(|path| {
             resolve_path(
+                "watch",
                 &webview,
                 &global_scope,
                 &command_scope,

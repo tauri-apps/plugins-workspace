@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-biometric"
-version = "2.3.0"
+version = "2.3.2"
 description = "Prompt the user for biometric authentication on Android and iOS."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -9,8 +9,6 @@ repository = { workspace = true }
 links = "tauri-plugin-biometric"
 
 [package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
 targets = ["x86_64-linux-android"]
 
 [package.metadata.platforms.support]

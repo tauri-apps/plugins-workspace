@@ -60,13 +60,23 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { upload } from '@tauri-apps/plugin-upload'
+import { upload, HttpMethod } from '@tauri-apps/plugin-upload'
 
+// Upload with default POST method
 upload(
   'https://example.com/file-upload',
   './path/to/my/file.txt',
   (progress, total) => console.log(`Uploaded ${progress} of ${total} bytes`), // a callback that will be called with the upload progress
   { 'Content-Type': 'text/plain' } // optional headers to send with the request
+)
+
+// Upload with specific HTTP method
+upload(
+  'https://example.com/file-upload',
+  './path/to/my/file.txt',
+  (progress, total) => console.log(`Uploaded ${progress} of ${total} bytes`),
+  { 'Content-Type': 'text/plain' },
+  HttpMethod.Put // Use HttpMethod enum - supports POST, PUT, PATCH
 )
 ```
 

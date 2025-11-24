@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.3.2]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
 ## \[2.3.1]
 
 - [`d3d290ab`](https://github.com/tauri-apps/plugins-workspace/commit/d3d290ab8a8913981a98e2eb7f2c5d4aba3bc36c) ([#2912](https://github.com/tauri-apps/plugins-workspace/pull/2912) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Unlocked version of `serialize-to-javascript` from `=0.1.1` to `^0.1.1` for compatibility with Tauri's upcoming version `2.8`.
