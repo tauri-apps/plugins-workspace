@@ -6965,6 +6965,7 @@ dependencies = [
  "http",
  "log",
  "rand 0.9.0",
+ "rustls",
  "serde",
  "serde_json",
  "tauri",
