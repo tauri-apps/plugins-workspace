@@ -5,19 +5,15 @@
 import { invoke } from '@tauri-apps/api/core'
 
 async function addRecentDocument(path: string): Promise<void> {
-  return invoke('plugin:recent-doc|add_recent_document', { path });
+  return invoke('plugin:recent-doc|add_recent_document', { path })
 }
 
 async function getRecentDocuments(): Promise<string[]> {
-  return invoke<string[]>('plugin:recent-doc|get_recent_documents');
+  return invoke<string[]>('plugin:recent-doc|get_recent_documents')
 }
 
 async function clearRecentDocuments(): Promise<void> {
-  return invoke('plugin:recent-doc|clear_recent_documents');
+  return invoke('plugin:recent-doc|clear_recent_documents')
 }
 
-export {
-  addRecentDocument,
-  getRecentDocuments,
-  clearRecentDocuments
-}
+export { addRecentDocument, getRecentDocuments, clearRecentDocuments }
