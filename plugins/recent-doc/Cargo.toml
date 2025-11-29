@@ -1,0 +1,31 @@
+[package]
+name = "tauri-plugin-PLUGIN_NAME"
+version = "1.0.0"
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+links = "tauri-plugin-PLUGIN_NAME"
+
+# Platforms supported by the plugin
+# Support levels are "full", "partial", "none", "unknown"
+# Details of the support level are left to plugin maintainer
+[package.metadata.platforms]
+windows = { level = "unknown", notes = "" }
+linux = { level = "unknown", notes = "" }
+macos = { level = "unknown", notes = "" }
+android = { level = "unknown", notes = "" }
+ios = { level = "unknown", notes = "" }
+
+
+[build-dependencies]
+tauri-plugin = { workspace = true, features = ["build"] }
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }

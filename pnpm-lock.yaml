@@ -279,6 +279,12 @@ importers:
         specifier: ^2.8.0
         version: 2.9.0
 
+  plugins/recent-doc:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: ^2.6.0
+        version: 2.9.0
+
   plugins/shell:
     dependencies:
       '@tauri-apps/api':

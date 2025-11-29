@@ -6520,6 +6520,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-PLUGIN_NAME"
+version = "1.0.0"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.12",
+]
+
+[[package]]
 name = "tauri-plugin-autostart"
 version = "2.5.1"
 dependencies = [
