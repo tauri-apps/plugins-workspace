@@ -30,7 +30,7 @@ pub(crate) fn add_recent_document(path: &str) -> Result<()> {
 
   #[cfg(target_os = "macos")]
   {
-    use objc2_appkit::NSDocumentController;
+    use objc2_app_kit::NSDocumentController;
     use objc2::rc::Id;
     use objc2::foundation::{NSString, NSURL};
 
@@ -64,7 +64,7 @@ pub(crate) fn clear_recent_documents() -> Result<()> {
 
   #[cfg(target_os = "macos")]
   {
-    use objc2_appkit::NSDocumentController;
+    use objc2_app_kit::NSDocumentController;
     use objc2::rc::Id;
 
     unsafe {
@@ -122,7 +122,7 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
 
   #[cfg(target_os = "macos")]
   {
-    use objc2_appkit::NSDocumentController;
+    use objc2_app_kit::NSDocumentController;
     use objc2::rc::Id;
     use objc2::foundation::{NSArray, NSString};
 

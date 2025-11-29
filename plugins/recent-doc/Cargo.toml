@@ -1,21 +1,23 @@
 [package]
-name = "tauri-plugin-PLUGIN_NAME"
+name = "tauri-plugin-recent-doc"
 version = "1.0.0"
+description = "Manage recent documents in your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
+rust-version = { workspace = true }
 repository = { workspace = true }
-links = "tauri-plugin-PLUGIN_NAME"
+links = "tauri-plugin-recent-doc"
 
 # Platforms supported by the plugin
 # Support levels are "full", "partial", "none", "unknown"
 # Details of the support level are left to plugin maintainer
 [package.metadata.platforms]
-windows = { level = "unknown", notes = "" }
-linux = { level = "unknown", notes = "" }
-macos = { level = "unknown", notes = "" }
-android = { level = "unknown", notes = "" }
-ios = { level = "unknown", notes = "" }
+windows = { level = "full", notes = "" }
+linux = { level = "none", notes = "" }
+macos = { level = "full", notes = "" }
+android = { level = "none", notes = "" }
+ios = { level = "none", notes = "" }
 
 
 [build-dependencies]
@@ -29,3 +31,13 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
+
+[target."cfg(target_os = \"macos\")".dependencies]
+objc2 = "0.6.0"
+
+[target."cfg(target_os = \"windows\")".dependencies]
+windows = { version = "0.62.2", features = [
+  "Win32_Foundation",
+  "Win32_System_Com",
+  "Win32_UI_Shell",
+] }
