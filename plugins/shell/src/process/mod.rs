@@ -89,6 +89,8 @@ impl CommandChild {
 /// Describes the result of a process after it has terminated.
 #[derive(Debug)]
 pub struct ExitStatus {
+    // This field is intentionally left private.
+    // See: https://github.com/tauri-apps/plugins-workspace/pull/3115.
     code: Option<i32>,
 }
 
