@@ -24,9 +24,9 @@ use tauri::async_runtime::{block_on as block_on_task, channel, Receiver, Sender}
 
 pub use encoding_rs::Encoding;
 #[cfg(not(windows))]
-use encoding_rs::UTF_8;
+use encoding_rs::UTF_8 as SYSTEM_ENCODING;
 #[cfg(windows)]
-use encoding_rs::WINDOWS_1252;
+use encoding_rs::WINDOWS_1252 as SYSTEM_ENCODING;
 use os_pipe::{pipe, PipeReader, PipeWriter};
 use serde::Serialize;
 use shared_child::SharedChild;
@@ -432,7 +432,6 @@ fn read_line<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
     tx: Sender<CommandEvent>,
     wrapper: F,
 ) {
-    let encoder = get_system_encoding();
     loop {
         let mut buf = Vec::new();
         match tauri::utils::io::read_line(&mut reader, &mut buf) {
@@ -440,7 +439,7 @@ fn read_line<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
                 if n == 0 {
                     break;
                 }
-                let (cow, _, _) = encoder.decode(&buf);
+                let (cow, _, _) = SYSTEM_ENCODING.decode(&buf);
                 let decode_bytes = cow.into_owned().into_bytes();
                 let tx_ = tx.clone();
                 let _ = block_on_task(async move { tx_.send(wrapper(decode_bytes)).await });
@@ -473,16 +472,6 @@ fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
             read_line(reader, tx, wrapper);
         }
     });
-}
-
-#[cfg(windows)]
-const fn get_system_encoding() -> &'static Encoding {
-    WINDOWS_1252
-}
-
-#[cfg(not(windows))]
-const fn get_system_encoding() -> &'static Encoding {
-    UTF_8
 }
 
 // tests for the commands functions.
