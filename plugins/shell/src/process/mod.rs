@@ -23,6 +23,10 @@ const NEWLINE_BYTE: u8 = b'\n';
 use tauri::async_runtime::{block_on as block_on_task, channel, Receiver, Sender};
 
 pub use encoding_rs::Encoding;
+#[cfg(not(windows))]
+use encoding_rs::UTF_8;
+#[cfg(windows)]
+use encoding_rs::WINDOWS_1252;
 use os_pipe::{pipe, PipeReader, PipeWriter};
 use serde::Serialize;
 use shared_child::SharedChild;
@@ -473,17 +477,12 @@ fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
 
 #[cfg(windows)]
 const fn get_system_encoding() -> &'static Encoding {
-    use encoding_rs::WINDOWS_1252;
     WINDOWS_1252
 }
 
-#[cfg(unix)]
+#[cfg(not(windows))]
 const fn get_system_encoding() -> &'static Encoding {
-    // ! Remove afetr dev
-    use encoding_rs::WINDOWS_1252;
-    WINDOWS_1252
-    // use encoding_rs::UTF_8;
-    // UTF_8
+    UTF_8
 }
 
 // tests for the commands functions.
