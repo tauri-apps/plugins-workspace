@@ -401,7 +401,6 @@ fn read_raw_bytes<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
     tx: Sender<CommandEvent>,
     wrapper: F,
 ) {
-    let encoder = get_system_encoding();
     loop {
         let result = reader.fill_buf();
         match result {
@@ -410,10 +409,8 @@ fn read_raw_bytes<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
                 if length == 0 {
                     break;
                 }
-                let (cow, _, _) = encoder.decode(buf);
-                let decode_bytes = cow.into_owned().into_bytes();
                 let tx_ = tx.clone();
-                let _ = block_on_task(async move { tx_.send(wrapper(decode_bytes)).await });
+                let _ = block_on_task(async move { tx_.send(wrapper(buf.to_vec())).await });
                 reader.consume(length);
             }
             Err(e) => {
