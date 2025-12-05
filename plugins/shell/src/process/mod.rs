@@ -401,6 +401,7 @@ fn read_raw_bytes<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
     tx: Sender<CommandEvent>,
     wrapper: F,
 ) {
+    let encoder = get_system_encoding();
     loop {
         let result = reader.fill_buf();
         match result {
@@ -409,8 +410,10 @@ fn read_raw_bytes<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
                 if length == 0 {
                     break;
                 }
+                let (cow, _, _) = encoder.decode(buf);
+                let decode_bytes = cow.into_owned().into_bytes();
                 let tx_ = tx.clone();
-                let _ = block_on_task(async move { tx_.send(wrapper(buf.to_vec())).await });
+                let _ = block_on_task(async move { tx_.send(wrapper(decode_bytes)).await });
                 reader.consume(length);
             }
             Err(e) => {
@@ -428,6 +431,7 @@ fn read_line<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
     tx: Sender<CommandEvent>,
     wrapper: F,
 ) {
+    let encoder = get_system_encoding();
     loop {
         let mut buf = Vec::new();
         match tauri::utils::io::read_line(&mut reader, &mut buf) {
@@ -435,8 +439,10 @@ fn read_line<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
                 if n == 0 {
                     break;
                 }
+                let (cow, _, _) = encoder.decode(&buf);
+                let decode_bytes = cow.into_owned().into_bytes();
                 let tx_ = tx.clone();
-                let _ = block_on_task(async move { tx_.send(wrapper(buf)).await });
+                let _ = block_on_task(async move { tx_.send(wrapper(decode_bytes)).await });
             }
             Err(e) => {
                 let tx_ = tx.clone();
@@ -466,6 +472,21 @@ fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
             read_line(reader, tx, wrapper);
         }
     });
+}
+
+#[cfg(windows)]
+const fn get_system_encoding() -> &'static Encoding {
+    use encoding_rs::WINDOWS_1252;
+    WINDOWS_1252
+}
+
+#[cfg(unix)]
+const fn get_system_encoding() -> &'static Encoding {
+    // ! Remove afetr dev
+    use encoding_rs::WINDOWS_1252;
+    WINDOWS_1252
+    // use encoding_rs::UTF_8;
+    // UTF_8
 }
 
 // tests for the commands functions.
