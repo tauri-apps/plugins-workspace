@@ -33,7 +33,7 @@ sqlx = { version = "0.8", features = ["json", "time", "uuid"] }
 time = "0.3"
 tokio = { version = "1", features = ["sync"] }
 indexmap = { version = "2", features = ["serde"] }
-uuid = "1.19.0"
+uuid = "1"
 
 [features]
 sqlite = ["sqlx/sqlite", "sqlx/runtime-tokio"]
