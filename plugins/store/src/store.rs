@@ -197,7 +197,10 @@ impl<R: Runtime> StoreBuilder<R> {
                 let _ = self.app.resources_table().take::<Store<R>>(rid);
             }
         } else if let Some(rid) = stores.get(&self.path) {
-            return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
+            // The resource id we stored can be invalid due to
+            // the resource table getting modified by an external source
+            // (e.g. `App::cleanup_before_exit` > `manager.resources_table.clear()`)
+            return Ok((self.app.resources_table().get(*rid)?, *rid));
         }
 
         // if stores.contains_key(&self.path) {
