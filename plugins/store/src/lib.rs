@@ -15,7 +15,7 @@ pub use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, Weak},
     time::Duration,
 };
 pub use store::{resolve_store_path, DeserializeFn, SerializeFn, Store, StoreBuilder};
@@ -37,13 +37,56 @@ struct ChangePayload<'a> {
     exists: bool,
 }
 
+type Stores<R> = HashMap<PathBuf, (Weak<Store<R>>, Option<ResourceId>)>;
+
 #[derive(Debug)]
-struct StoreState {
-    stores: Arc<Mutex<HashMap<PathBuf, ResourceId>>>,
+struct StoreState<R: Runtime> {
+    // The entry is removed in `Store`'s drop implementation,
+    // The `Weak<Store<R>>` will always point to a valid `Store` unless we're inside a `Store`'s deconstructor
+    // The `Option<ResourceId>` is only updated in `validate_or_add_resource`, so this is not always up to date
+    stores: Arc<Mutex<Stores<R>>>,
     serialize_fns: HashMap<String, SerializeFn>,
     deserialize_fns: HashMap<String, DeserializeFn>,
     default_serialize: SerializeFn,
     default_deserialize: DeserializeFn,
+}
+
+pub(crate) fn validate_or_add_resource<R: Runtime>(
+    app: &AppHandle<R>,
+    store_state: Option<&mut (Weak<Store<R>>, Option<ResourceId>)>,
+    add: bool,
+) -> Option<(Arc<Store<R>>, ResourceId)> {
+    let (weak_store, resource_id) = store_state?;
+    let store = weak_store.upgrade()?;
+
+    if let Some(rid) = resource_id {
+        if app
+            .resources_table()
+            .get::<Store<R>>(*rid)
+            .is_ok_and(|store_| Arc::ptr_eq(&store, &store_))
+        {
+            // Valid
+            return Some((store, *rid));
+        } else {
+            resource_id.take();
+        }
+    }
+
+    if add {
+        let rid = app.resources_table().add_arc(store.clone());
+        resource_id.replace(rid);
+        Some((store, rid))
+    } else {
+        None
+    }
+}
+
+pub(crate) fn validate_resource_id<R: Runtime>(
+    app: &AppHandle<R>,
+    store_state: Option<&mut (Weak<Store<R>>, Option<ResourceId>)>,
+) -> Option<ResourceId> {
+    let (_store, rid) = validate_or_add_resource(app, store_state, false)?;
+    Some(rid)
 }
 
 #[derive(Serialize, Deserialize)]
@@ -68,7 +111,7 @@ struct LoadStoreOptions {
 
 fn builder<R: Runtime>(
     app: AppHandle<R>,
-    store_state: State<'_, StoreState>,
+    store_state: State<'_, StoreState<R>>,
     path: PathBuf,
     options: Option<LoadStoreOptions>,
 ) -> Result<StoreBuilder<R>> {
@@ -124,7 +167,7 @@ fn builder<R: Runtime>(
 #[tauri::command]
 async fn load<R: Runtime>(
     app: AppHandle<R>,
-    store_state: State<'_, StoreState>,
+    store_state: State<'_, StoreState<R>>,
     path: PathBuf,
     options: Option<LoadStoreOptions>,
 ) -> Result<ResourceId> {
@@ -136,11 +179,14 @@ async fn load<R: Runtime>(
 #[tauri::command]
 async fn get_store<R: Runtime>(
     app: AppHandle<R>,
-    store_state: State<'_, StoreState>,
+    store_state: State<'_, StoreState<R>>,
     path: PathBuf,
 ) -> Result<Option<ResourceId>> {
-    let stores = store_state.stores.lock().unwrap();
-    Ok(stores.get(&resolve_store_path(&app, path)?).copied())
+    let mut stores = store_state.stores.lock().unwrap();
+    Ok(validate_resource_id(
+        &app,
+        stores.get_mut(&resolve_store_path(&app, path)?),
+    ))
 }
 
 #[tauri::command]
@@ -316,11 +362,11 @@ impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     }
 
     fn get_store(&self, path: impl AsRef<Path>) -> Option<Arc<Store<R>>> {
-        let collection = self.state::<StoreState>();
+        let collection = self.state::<StoreState<R>>();
         let stores = collection.stores.lock().unwrap();
         stores
             .get(&resolve_store_path(self.app_handle(), path.as_ref()).ok()?)
-            .and_then(|rid| self.resources_table().get(*rid).ok())
+            .and_then(|(weak_store, _)| weak_store.upgrade())
     }
 }
 
@@ -436,7 +482,7 @@ impl Builder {
                 entries, reload, save,
             ])
             .setup(move |app_handle, _api| {
-                app_handle.manage(StoreState {
+                app_handle.manage(StoreState::<R> {
                     stores: Arc::new(Mutex::new(HashMap::new())),
                     serialize_fns: self.serialize_fns,
                     deserialize_fns: self.deserialize_fns,
@@ -447,10 +493,10 @@ impl Builder {
             })
             .on_event(|app_handle, event| {
                 if let RunEvent::Exit = event {
-                    let collection = app_handle.state::<StoreState>();
+                    let collection = app_handle.state::<StoreState<R>>();
                     let stores = collection.stores.lock().unwrap();
-                    for (path, rid) in stores.iter() {
-                        if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid) {
+                    for (path, (weak_store, _)) in stores.iter() {
+                        if let Some(store) = weak_store.upgrade() {
                             if let Err(err) = store.save() {
                                 tracing::error!("failed to save store {path:?} with error {err:?}");
                             }

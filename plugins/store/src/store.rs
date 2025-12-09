@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use crate::{ChangePayload, StoreState};
+use crate::{validate_or_add_resource, validate_resource_id, ChangePayload, StoreState};
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
@@ -56,7 +56,7 @@ impl<R: Runtime> StoreBuilder<R> {
     /// ```
     pub fn new<M: Manager<R>, P: AsRef<Path>>(manager: &M, path: P) -> Self {
         let app = manager.app_handle().clone();
-        let state = app.state::<StoreState>();
+        let state = app.state::<StoreState<R>>();
         let serialize_fn = state.default_serialize;
         let deserialize_fn = state.default_deserialize;
         Self {
@@ -187,17 +187,19 @@ impl<R: Runtime> StoreBuilder<R> {
     }
 
     pub(crate) fn build_inner(mut self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
-        let stores = self.app.state::<StoreState>().stores.clone();
+        let stores = self.app.state::<StoreState<R>>().stores.clone();
         let mut stores = stores.lock().unwrap();
 
         self.path = resolve_store_path(&self.app, self.path)?;
 
         if self.create_new {
-            if let Some(rid) = stores.remove(&self.path) {
+            if let Some(rid) = validate_resource_id(&self.app, stores.remove(&self.path).as_mut()) {
                 let _ = self.app.resources_table().take::<Store<R>>(rid);
             }
-        } else if let Some(rid) = stores.get(&self.path) {
-            return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
+        } else if let Some((store, rid)) =
+            validate_or_add_resource(&self.app, stores.get_mut(&self.path), true)
+        {
+            return Ok((store, rid));
         }
 
         // if stores.contains_key(&self.path) {
@@ -228,7 +230,7 @@ impl<R: Runtime> StoreBuilder<R> {
 
         let store = Arc::new(store);
         let rid = self.app.resources_table().add_arc(store.clone());
-        stores.insert(self.path, rid);
+        stores.insert(self.path, (Arc::downgrade(&store), Some(rid)));
 
         Ok((store, rid))
     }
@@ -237,7 +239,9 @@ impl<R: Runtime> StoreBuilder<R> {
     ///
     /// If a store with the same path has already been loaded its instance is returned.
     ///
-    /// # Examples
+    /// Note: to close the store, you need to call [`Store::close_resource`] besides dropping it
+    ///
+    /// ## Examples
     /// ```
     /// tauri::Builder::default()
     ///   .plugin(tauri_plugin_store::Builder::default().build())
@@ -399,14 +403,14 @@ impl<R: Runtime> StoreInner<R> {
     }
 
     fn emit_change_event(&self, key: &str, value: Option<&JsonValue>) -> crate::Result<()> {
-        let state = self.app.state::<StoreState>();
-        let stores = state.stores.lock().unwrap();
+        let state = self.app.state::<StoreState<R>>();
+        let mut stores = state.stores.lock().unwrap();
         let exists = value.is_some();
         self.app.emit(
             "store://change",
             ChangePayload {
                 path: &self.path,
-                resource_id: stores.get(&self.path).copied(),
+                resource_id: validate_resource_id(&self.app, stores.get_mut(&self.path)),
                 key,
                 value,
                 exists,
@@ -431,14 +435,7 @@ pub struct Store<R: Runtime> {
     store: Arc<Mutex<StoreInner<R>>>,
 }
 
-impl<R: Runtime> Resource for Store<R> {
-    fn close(self: Arc<Self>) {
-        let store = self.store.lock().unwrap();
-        let state = store.app.state::<StoreState>();
-        let mut stores = state.stores.lock().unwrap();
-        stores.remove(&store.path);
-    }
-}
+impl<R: Runtime> Resource for Store<R> {}
 
 impl<R: Runtime> Store<R> {
     // /// Do something with the inner store,
@@ -550,11 +547,9 @@ impl<R: Runtime> Store<R> {
     pub fn close_resource(&self) {
         let store = self.store.lock().unwrap();
         let app = store.app.clone();
-        let state = app.state::<StoreState>();
-        let stores = state.stores.lock().unwrap();
-        if let Some(rid) = stores.get(&store.path).copied() {
-            drop(store);
-            drop(stores);
+        let state = app.state::<StoreState<R>>();
+        let mut stores = state.stores.lock().unwrap();
+        if let Some(rid) = validate_resource_id(&app, stores.get_mut(&store.path)) {
             let _ = app.resources_table().close(rid);
         }
     }
@@ -607,5 +602,16 @@ impl<R: Runtime> Store<R> {
 impl<R: Runtime> Drop for Store<R> {
     fn drop(&mut self) {
         self.apply_pending_auto_save();
+
+        let store = self.store.lock().unwrap();
+        let state = store.app.state::<StoreState<R>>();
+        let mut stores = state.stores.lock().unwrap();
+        // This is to make sure that we're indeed removing ourselves, not the one added during the time
+        if stores
+            .get(&store.path)
+            .is_some_and(|(weak_store, _)| weak_store.strong_count() == 0)
+        {
+            stores.remove(&store.path);
+        }
     }
 }
