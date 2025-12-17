@@ -10,7 +10,7 @@ repository = { workspace = true }
 links = "tauri-plugin-dialog"
 
 [features]
-default = ["gtk3"]
+default = ["xdg-portal"]
 xdg-portal = ["rfd/xdg-portal", "rfd/tokio", "rfd/wayland"]
 gtk3 = ["rfd/gtk3"]
 
