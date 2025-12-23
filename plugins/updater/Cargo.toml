@@ -46,7 +46,7 @@ infer = "0.19"
 percent-encoding = "2.3"
 
 [target."cfg(target_os = \"windows\")".dependencies]
-zip = { version = "4", default-features = false, optional = true }
+zip = { version = "7", default-features = false, optional = true }
 windows-sys = { version = "0.60.0", features = [
   "Win32_Foundation",
   "Win32_UI_WindowsAndMessaging",
