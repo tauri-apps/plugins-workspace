@@ -237,7 +237,7 @@ impl Command {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use tauri_plugin_shell::{process::CommandEvent, ShellExt};
+    /// use tauri_plugin_shell::{process::{CommandEvent, Encoding}, ShellExt};
     /// tauri::Builder::default()
     ///   .setup(|app| {
     ///     let handle = app.handle().clone();
@@ -247,10 +247,13 @@ impl Command {
     ///         .spawn()
     ///         .expect("Failed to spawn cargo");
     ///
+    ///       let encoding = Encoding::for_label(b"utf-8").unwrap();
     ///       let mut i = 0;
     ///       while let Some(event) = rx.recv().await {
     ///         if let CommandEvent::Stdout(line) = event {
+    ///           let (decoded, _, _) = encoding.decode(&line);
     ///           println!("got: {}", String::from_utf8(line).unwrap());
+    ///           println!("decoded: {}", decoded);
     ///           i += 1;
     ///           if i == 4 {
     ///             child.write("message from Rust\n".as_bytes()).unwrap();
