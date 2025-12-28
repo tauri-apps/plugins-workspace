@@ -271,8 +271,8 @@ impl Command {
     ///   .setup(|app| {
     ///     let handle = app.handle().clone();
     ///     tauri::async_runtime::spawn(async move {
-    ///       let (mut rx, mut child) = handle.shell().command("cargo")
-    ///         .args(["tauri", "dev"])
+    ///       let (mut rx, mut child) = handle.shell().command("some-program")
+    ///         .args(["some-arg"])
     ///         .spawn()
     ///         .expect("Failed to spawn cargo");
     ///
