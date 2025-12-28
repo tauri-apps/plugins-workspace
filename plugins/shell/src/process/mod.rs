@@ -237,6 +237,35 @@ impl Command {
     /// # Examples
     ///
     /// ```rust,no_run
+    /// use tauri_plugin_shell::{process::CommandEvent, ShellExt};
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let handle = app.handle().clone();
+    ///     tauri::async_runtime::spawn(async move {
+    ///       let (mut rx, mut child) = handle.shell().command("cargo")
+    ///         .args(["tauri", "dev"])
+    ///         .spawn()
+    ///         .expect("Failed to spawn cargo");
+    ///
+    ///       let mut i = 0;
+    ///       while let Some(event) = rx.recv().await {
+    ///         if let CommandEvent::Stdout(line) = event {
+    ///           println!("got: {}", String::from_utf8(line).unwrap());
+    ///           i += 1;
+    ///           if i == 4 {
+    ///             child.write("message from Rust\n".as_bytes()).unwrap();
+    ///             i = 0;
+    ///           }
+    ///         }
+    ///       }
+    ///     });
+    ///     Ok(())
+    /// });
+    /// ```
+    ///
+    /// # Examples Mannual Encoding
+    ///
+    /// ```rust,no_run
     /// use tauri_plugin_shell::{process::{CommandEvent, Encoding}, ShellExt};
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -247,18 +276,11 @@ impl Command {
     ///         .spawn()
     ///         .expect("Failed to spawn cargo");
     ///
-    ///       let encoding = Encoding::for_label(b"utf-8").unwrap();
-    ///       let mut i = 0;
+    ///      let encoding = Encoding::for_label(b"utf-8").unwrap();
     ///       while let Some(event) = rx.recv().await {
     ///         if let CommandEvent::Stdout(line) = event {
     ///           let (decoded, _, _) = encoding.decode(&line);
-    ///           println!("got: {}", String::from_utf8(line).unwrap());
-    ///           println!("decoded: {}", decoded);
-    ///           i += 1;
-    ///           if i == 4 {
-    ///             child.write("message from Rust\n".as_bytes()).unwrap();
-    ///             i = 0;
-    ///           }
+    ///           println!("got: {}", decoded);
     ///         }
     ///       }
     ///     });
