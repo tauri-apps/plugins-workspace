@@ -276,7 +276,7 @@ impl Command {
     ///         .spawn()
     ///         .expect("Failed to spawn cargo");
     ///
-    ///      let encoding = Encoding::for_label(b"utf-8").unwrap();
+    ///      let encoding = Encoding::for_label(b"windows-1252").unwrap();
     ///       while let Some(event) = rx.recv().await {
     ///         if let CommandEvent::Stdout(line) = event {
     ///           let (decoded, _, _) = encoding.decode(&line);
