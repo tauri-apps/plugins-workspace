@@ -280,7 +280,7 @@ impl Command {
     ///       while let Some(event) = rx.recv().await {
     ///         if let CommandEvent::Stdout(line) = event {
     ///           let (decoded, _, _) = encoding.decode(&line);
-    ///           println!("got: {}", decoded);
+    ///           println!("got: {decoded}");
     ///         }
     ///       }
     ///     });
