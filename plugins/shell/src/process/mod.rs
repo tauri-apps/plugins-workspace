@@ -263,7 +263,7 @@ impl Command {
     /// });
     /// ```
     ///
-    /// # Examples Mannual Encoding
+    /// Depending on the command you spawn, it might output in a specific encoding, to parse the output lines in this case:
     ///
     /// ```rust,no_run
     /// use tauri_plugin_shell::{process::{CommandEvent, Encoding}, ShellExt};
