@@ -19,26 +19,26 @@ use tauri::{
     AppHandle, DragDropEvent, Manager, RunEvent, Runtime, WindowEvent,
 };
 
+#[cfg(target_os = "android")]
+mod android;
 mod commands;
 mod config;
 #[cfg(desktop)]
 mod desktop;
-#[cfg(target_os = "android")]
-mod android;
-#[cfg(target_os = "ios")]
-mod ios;
 mod error;
 mod file_path;
+#[cfg(target_os = "ios")]
+mod ios;
 #[cfg(target_os = "android")]
 mod models;
 mod scope;
 #[cfg(feature = "watch")]
 mod watcher;
 
-#[cfg(desktop)]
-pub use desktop::Fs;
 #[cfg(target_os = "android")]
 pub use android::Fs;
+#[cfg(desktop)]
+pub use desktop::Fs;
 #[cfg(target_os = "ios")]
 pub use ios::Fs;
 

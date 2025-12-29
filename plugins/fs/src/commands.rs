@@ -1023,7 +1023,9 @@ pub fn stop_accessing_security_scoped_resource<R: Runtime>(
             SafeFilePath::Url(url) => FilePath::Url(url),
             SafeFilePath::Path(safe_path) => FilePath::Path(safe_path.as_ref().to_owned()),
         };
-        webview.fs().stop_accessing_security_scoped_resource(file_path)?;
+        webview
+            .fs()
+            .stop_accessing_security_scoped_resource(file_path)?;
         Ok(())
     }
     #[cfg(not(target_os = "ios"))]
@@ -1126,7 +1128,7 @@ pub fn resolve_path<R: Runtime>(
         if let SafeFilePath::Url(url) = &path {
             if url.scheme() == "file" {
                 use objc2_foundation::{NSString, NSURL};
-                
+
                 let url_string = url.as_str();
                 let url_nsstring = NSString::from_str(url_string);
                 let ns_url = unsafe { NSURL::URLWithString(&url_nsstring) };

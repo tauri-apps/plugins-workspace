@@ -3,10 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use serde::de::DeserializeOwned;
-use tauri::{
-    plugin::PluginApi,
-    AppHandle, Runtime,
-};
+use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
 use crate::{FilePath, OpenOptions};
 
@@ -36,7 +33,7 @@ impl<R: Runtime> Fs<R> {
                 // Handle security-scoped URLs on iOS
                 let url_string = url.as_str();
                 let url_nsstring = NSString::from_str(url_string);
-                
+
                 // Create NSURL from the URL string
                 // URLWithString may return None for invalid URLs, but file:// URLs should be valid
                 let ns_url = unsafe { NSURL::URLWithString(&url_nsstring) };
@@ -52,14 +49,9 @@ impl<R: Runtime> Fs<R> {
                 }
 
                 // Convert URL to path and open the file
-                let path = url
-                    .to_file_path()
-                    .map_err(|_| {
-                        std::io::Error::new(
-                            std::io::ErrorKind::InvalidInput,
-                            "invalid file URL",
-                        )
-                    })?;
+                let path = url.to_file_path().map_err(|_| {
+                    std::io::Error::new(std::io::ErrorKind::InvalidInput, "invalid file URL")
+                })?;
                 std::fs::OpenOptions::from(opts).open(path)
             }
             FilePath::Url(_) => Err(std::io::Error::new(
@@ -119,4 +111,3 @@ impl<R: Runtime> Fs<R> {
         Ok(())
     }
 }
-
