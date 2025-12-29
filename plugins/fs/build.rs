@@ -104,6 +104,7 @@ const COMMANDS: &[(&str, &[&str])] = &[
     // TODO: Remove this in v3
     ("unwatch", &[]),
     ("size", &[]),
+    ("stop_accessing_security_scoped_resource", &[]),
 ];
 
 fn main() {

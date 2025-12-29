@@ -1010,7 +1010,32 @@ fn get_dir_size(path: &PathBuf) -> CommandResult<u64> {
     Ok(size)
 }
 
-#[cfg(not(target_os = "android"))]
+#[tauri::command]
+pub fn stop_accessing_security_scoped_resource<R: Runtime>(
+    webview: Webview<R>,
+    path: SafeFilePath,
+) -> CommandResult<()> {
+    #[cfg(target_os = "ios")]
+    {
+        use crate::{FilePath, FsExt};
+        // Convert SafeFilePath to FilePath
+        let file_path: FilePath = match path {
+            SafeFilePath::Url(url) => FilePath::Url(url),
+            SafeFilePath::Path(safe_path) => FilePath::Path(safe_path.as_ref().to_owned()),
+        };
+        webview.fs().stop_accessing_security_scoped_resource(file_path)?;
+        Ok(())
+    }
+    #[cfg(not(target_os = "ios"))]
+    {
+        // No-op on non-iOS platforms
+        let _ = webview;
+        let _ = path;
+        Ok(())
+    }
+}
+
+#[cfg(desktop)]
 pub fn resolve_file<R: Runtime>(
     permission: &str,
     webview: &Webview<R>,
@@ -1057,7 +1082,7 @@ fn resolve_file_in_fs<R: Runtime>(
     Ok((file, path))
 }
 
-#[cfg(target_os = "android")]
+#[cfg(mobile)]
 pub fn resolve_file<R: Runtime>(
     permission: &str,
     webview: &Webview<R>,
@@ -1095,6 +1120,27 @@ pub fn resolve_path<R: Runtime>(
     path: SafeFilePath,
     base_dir: Option<BaseDirectory>,
 ) -> CommandResult<PathBuf> {
+    // On iOS, start accessing security-scoped resource if the path is a file URL
+    #[cfg(target_os = "ios")]
+    {
+        if let SafeFilePath::Url(url) = &path {
+            if url.scheme() == "file" {
+                use objc2_foundation::{NSString, NSURL};
+                
+                let url_string = url.as_str();
+                let url_nsstring = NSString::from_str(url_string);
+                let ns_url = unsafe { NSURL::URLWithString(&url_nsstring) };
+                if let Some(ns_url) = ns_url {
+                    // Start accessing the security-scoped resource
+                    // This is required for files outside the app's sandbox (e.g., from file picker)
+                    unsafe {
+                        let _ = ns_url.startAccessingSecurityScopedResource();
+                    }
+                }
+            }
+        }
+    }
+
     let path = path.into_path()?;
     let path = if let Some(base_dir) = base_dir {
         webview.path().resolve(&path, base_dir)?

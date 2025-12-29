@@ -6626,6 +6626,7 @@ dependencies = [
  "glob",
  "notify",
  "notify-debouncer-full",
+ "objc2-foundation 0.3.0",
  "percent-encoding",
  "schemars",
  "serde",

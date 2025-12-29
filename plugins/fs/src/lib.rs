@@ -21,22 +21,26 @@ use tauri::{
 
 mod commands;
 mod config;
-#[cfg(not(target_os = "android"))]
+#[cfg(desktop)]
 mod desktop;
+#[cfg(target_os = "android")]
+mod android;
+#[cfg(target_os = "ios")]
+mod ios;
 mod error;
 mod file_path;
-#[cfg(target_os = "android")]
-mod mobile;
 #[cfg(target_os = "android")]
 mod models;
 mod scope;
 #[cfg(feature = "watch")]
 mod watcher;
 
-#[cfg(not(target_os = "android"))]
+#[cfg(desktop)]
 pub use desktop::Fs;
 #[cfg(target_os = "android")]
-pub use mobile::Fs;
+pub use android::Fs;
+#[cfg(target_os = "ios")]
+pub use ios::Fs;
 
 pub use error::Error;
 
@@ -417,6 +421,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             commands::write_text_file,
             commands::exists,
             commands::size,
+            commands::stop_accessing_security_scoped_resource,
             #[cfg(feature = "watch")]
             watcher::watch,
         ])
@@ -431,10 +436,15 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
 
             #[cfg(target_os = "android")]
             {
-                let fs = mobile::init(app, api)?;
+                let fs = android::init(app, api)?;
                 app.manage(fs);
             }
-            #[cfg(not(target_os = "android"))]
+            #[cfg(target_os = "ios")]
+            {
+                let fs = ios::init(app, api)?;
+                app.manage(fs);
+            }
+            #[cfg(desktop)]
             app.manage(Fs(app.clone()));
 
             app.manage(scope);

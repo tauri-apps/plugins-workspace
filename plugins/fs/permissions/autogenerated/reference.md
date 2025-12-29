@@ -3461,6 +3461,32 @@ Denies the stat command without any pre-configured scope.
 <tr>
 <td>
 
+`fs:allow-stop-accessing-security-scoped-resource`
+
+</td>
+<td>
+
+Enables the stop_accessing_security_scoped_resource command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fs:deny-stop-accessing-security-scoped-resource`
+
+</td>
+<td>
+
+Denies the stop_accessing_security_scoped_resource command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `fs:allow-truncate`
 
 </td>
