@@ -1,4 +1,6 @@
 ---
-"shell": patch
+shell: patch
+shell-js: patch
 ---
+
 Docs on example to Encoding usage in `Command::spawn`. No user facing changes.
