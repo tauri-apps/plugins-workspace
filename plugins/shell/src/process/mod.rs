@@ -242,7 +242,9 @@ impl Command {
     ///   .setup(|app| {
     ///     let handle = app.handle().clone();
     ///     tauri::async_runtime::spawn(async move {
-    ///       let (mut rx, mut child) = handle.shell().command("cargo")
+    ///       let (mut rx, mut child) = handle
+    ///         .shell()
+    ///         .command("cargo")
     ///         .args(["tauri", "dev"])
     ///         .spawn()
     ///         .expect("Failed to spawn cargo");
@@ -260,7 +262,7 @@ impl Command {
     ///       }
     ///     });
     ///     Ok(())
-    /// });
+    ///   });
     /// ```
     ///
     /// Depending on the command you spawn, it might output in a specific encoding, to parse the output lines in this case:
@@ -271,12 +273,14 @@ impl Command {
     ///   .setup(|app| {
     ///     let handle = app.handle().clone();
     ///     tauri::async_runtime::spawn(async move {
-    ///       let (mut rx, mut child) = handle.shell().command("some-program")
-    ///         .args(["some-arg"])
+    ///       let (mut rx, mut child) = handle
+    ///         .shell()
+    ///         .command("some-program")
+    ///         .arg("some-arg")
     ///         .spawn()
-    ///         .expect("Failed to spawn cargo");
+    ///         .expect("Failed to spawn some-program");
     ///
-    ///      let encoding = Encoding::for_label(b"windows-1252").unwrap();
+    ///       let encoding = Encoding::for_label(b"windows-1252").unwrap();
     ///       while let Some(event) = rx.recv().await {
     ///         if let CommandEvent::Stdout(line) = event {
     ///           let (decoded, _, _) = encoding.decode(&line);
@@ -285,7 +289,7 @@ impl Command {
     ///       }
     ///     });
     ///     Ok(())
-    /// });
+    ///   });
     /// ```
     pub fn spawn(self) -> crate::Result<(Receiver<CommandEvent>, CommandChild)> {
         let raw = self.raw_out;
