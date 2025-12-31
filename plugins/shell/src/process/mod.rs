@@ -236,7 +236,9 @@ impl Command {
 
     /// Sets a pre-exec closure for the command.
     ///
-    /// Unsafe block needed as the stdlib requires it.
+    /// # Safety
+    ///  
+    ///  Unsafe block needed as the stdlib requires it.
     ///
     /// # Examples
     ///
