@@ -5,13 +5,14 @@
 use std::{
     ffi::OsStr,
     io::{BufRead, BufReader, Write},
-    os::unix::process::CommandExt,
     path::{Path, PathBuf},
     process::{Command as StdCommand, Stdio},
     sync::{Arc, RwLock},
     thread::spawn,
 };
 
+#[cfg(unix)]
+use std::os::unix::process::CommandExt;
 #[cfg(unix)]
 use std::os::unix::process::ExitStatusExt;
 #[cfg(windows)]
@@ -261,6 +262,7 @@ impl Command {
     ///     Ok(())
     ///   })
     /// ```
+    #[cfg(unix)]
     #[must_use]
     pub unsafe fn pre_exec<F>(mut self, f: F) -> Self
     where
