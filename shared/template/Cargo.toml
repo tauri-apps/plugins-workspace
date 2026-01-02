@@ -1,3 +1,4 @@
+# NOTE: Placeholder 	auri-plugin-PLUGIN_NAME prevents invalid characters when this repo is used as a git dependency.
 [package]
 name = "tauri-plugin-PLUGIN_NAME"
 version = "1.0.0"
@@ -29,3 +30,4 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
+
