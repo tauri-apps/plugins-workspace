@@ -34,7 +34,7 @@ tauri-plugin-fs = { path = "../fs", version = "2.4.4" }
 urlpattern = "0.3"
 regex = "1"
 http = "1"
-reqwest = { version = "0.12", default-features = false }
+reqwest = { version = "0.13", default-features = false }
 url = { workspace = true }
 data-url = "0.3"
 cookie_store = { version = "0.21.1", optional = true, features = ["serde"] }
@@ -43,10 +43,9 @@ tracing = { workspace = true, optional = true }
 
 [features]
 default = [
-  "rustls-tls",
+  "rustls",
   "http2",
   "charset",
-  "macos-system-configuration",
   "cookies",
 ]
 multipart = ["reqwest/multipart"]
@@ -55,10 +54,8 @@ stream = ["reqwest/stream"]
 native-tls = ["reqwest/native-tls"]
 native-tls-vendored = ["reqwest/native-tls-vendored"]
 native-tls-alpn = ["reqwest/native-tls-alpn"]
-rustls-tls = ["reqwest/rustls-tls"]
-rustls-tls-manual-roots = ["reqwest/rustls-tls-manual-roots"]
-rustls-tls-webpki-roots = ["reqwest/rustls-tls-webpki-roots"]
-rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
+rustls-no-provider = ["reqwest/rustls-no-provider"]
+rustls-native-certs = ["reqwest/rustls-native-certs"]
 blocking = ["reqwest/blocking"]
 cookies = ["reqwest/cookies", "dep:cookie_store", "dep:bytes"]
 gzip = ["reqwest/gzip"]
