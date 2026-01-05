@@ -1385,7 +1385,7 @@ async function size(path: string | URL): Promise<number> {
  * // ... use the resource ...
  * ```
  *
- * @since 2.4.4
+ * @since 2.5.0
  */
 async function startAccessingSecurityScopedResource(
   path: string | URL
@@ -1420,7 +1420,7 @@ async function startAccessingSecurityScopedResource(
  * await stopAccessingSecurityScopedResource(filePath);
  * ```
  *
- * @since 2.4.4
+ * @since 2.5.0
  */
 async function stopAccessingSecurityScopedResource(
   path: string | URL
