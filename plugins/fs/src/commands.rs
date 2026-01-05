@@ -93,7 +93,7 @@ impl<R: Runtime> PathKind<R> {
     pub fn as_path_buf(&self) -> &PathBuf {
         match self {
             PathKind::Path(p) => p,
-            PathKind::Handle(h) => &**h, // Use Deref to get &PathBuf
+            PathKind::Handle(h) => h,
         }
     }
 }
@@ -1591,8 +1591,7 @@ impl<R: Runtime> StdFileResource<R> {
 
     fn with_lock<Ret, F: FnMut(&mut File) -> Ret>(&self, mut f: F) -> Ret {
         let mut file_handle = self.0.lock().unwrap();
-        // FileHandle implements DerefMut to File, so we can use it directly
-        f(&mut *file_handle)
+        f(&mut file_handle)
     }
 }
 
