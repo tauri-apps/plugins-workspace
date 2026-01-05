@@ -1136,8 +1136,13 @@ pub fn resolve_path<R: Runtime>(
                     // Start accessing the security-scoped resource
                     // This is required for files outside the app's sandbox (e.g., from file picker)
                     unsafe {
-                        let _ = ns_url.startAccessingSecurityScopedResource();
+                        let success = ns_url.startAccessingSecurityScopedResource();
+                        if !success {
+                            log::warn!("Failed to start accessing security-scoped resource for URL: {}", url.as_str());
+                        }
                     }
+                } else {
+                    log::debug!("Failed to create NSURL from URL: {}, ignoring security-scoped resource access request", url.as_str());
                 }
             }
         }

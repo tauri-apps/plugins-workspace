@@ -44,8 +44,13 @@ impl<R: Runtime> Fs<R> {
                     // the file handle needs to remain accessible while the File is in use.
                     // The access will be automatically stopped when the app is backgrounded or terminated.
                     unsafe {
-                        let _ = ns_url.startAccessingSecurityScopedResource();
+                        let success = ns_url.startAccessingSecurityScopedResource();
+                        if !success {
+                            log::warn!("Failed to start accessing security-scoped resource for URL: {}", url_string);
+                        }
                     }
+                } else {
+                    log::debug!("Failed to create NSURL from URL: {}, ignoring security-scoped resource access request", url_string);
                 }
 
                 // Convert URL to path and open the file
@@ -106,6 +111,8 @@ impl<R: Runtime> Fs<R> {
             unsafe {
                 ns_url.stopAccessingSecurityScopedResource();
             }
+        } else {
+            return Err(crate::Error::Io(std::io::Error::new(std::io::ErrorKind::InvalidInput, "failed to create NSURL from URL")));
         }
 
         Ok(())
