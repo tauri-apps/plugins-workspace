@@ -5,6 +5,19 @@
 /**
  * Access the file system.
  *
+ * ## iOS security-scoped resources
+ *
+ * On iOS, the `fs` plugin automatically manages access to security-scoped resources when a file URL is accessed.
+ * This is required for files outside the app's sandbox (e.g., from file picker).
+ *
+ * @example
+ * ```typescript
+ * import { open } from '@tauri-apps/plugin-fs';
+ *
+ * const file = await open('file:///path/to/file.txt');
+ * await file.close();
+ * ```
+ *
  * ## Security
  *
  * This module prevents path traversal, not allowing parent directory accessors to be used
@@ -1348,38 +1361,6 @@ async function size(path: string | URL): Promise<number> {
   })
 }
 
-/**
- * Stops accessing a security-scoped resource for the given file URL.
- * This should be called when you're done accessing a file that was opened
- * using a security-scoped URL (e.g., from a file picker).
- *
- * #### Platform-specific
- *
- * - **iOS:** Stops accessing the security-scoped resource.
- * - **Other platforms:** No-op (does nothing).
- *
- * @example
- * ```typescript
- * import { stopAccessingSecurityScopedResource } from '@tauri-apps/plugin-fs';
- *
- * // After you're done with a file from a file picker
- * await stopAccessingSecurityScopedResource('file:///path/to/file.txt');
- * ```
- *
- * @since 2.4.4
- */
-async function stopAccessingSecurityScopedResource(
-  path: string | URL
-): Promise<void> {
-  if (path instanceof URL && path.protocol !== 'file:') {
-    throw new TypeError('Must be a file URL.')
-  }
-
-  await invoke('plugin:fs|stop_accessing_security_scoped_resource', {
-    path: path instanceof URL ? path.toString() : path
-  })
-}
-
 export type {
   CreateOptions,
   OpenOptions,
@@ -1428,6 +1409,5 @@ export {
   exists,
   watch,
   watchImmediate,
-  size,
-  stopAccessingSecurityScopedResource
+  size
 }

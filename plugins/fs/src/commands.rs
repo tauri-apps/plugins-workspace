@@ -16,6 +16,7 @@ use std::{
     borrow::Cow,
     fs::File,
     io::{BufRead, BufReader, Read, Write},
+    ops::{Deref, DerefMut},
     path::{Path, PathBuf},
     str::FromStr,
     sync::Mutex,
@@ -70,6 +71,174 @@ impl Serialize for CommandError {
 
 pub type CommandResult<T> = std::result::Result<T, CommandError>;
 
+/// Represents either a plain PathBuf or a PathHandle that manages security-scoped resources.
+pub enum PathKind<R: Runtime> {
+    /// A plain path that doesn't manage security-scoped resources.
+    #[allow(dead_code)] // only used on mobile
+    Path(PathBuf),
+    /// A path handle that manages security-scoped resources and will clean them up on drop.
+    Handle(PathHandle<R>),
+}
+
+impl<R: Runtime> PathKind<R> {
+    /// Get a reference to the underlying path.
+    pub fn as_path(&self) -> &Path {
+        match self {
+            PathKind::Path(p) => p.as_ref(),
+            PathKind::Handle(h) => h.as_ref(),
+        }
+    }
+
+    /// Get a reference to the underlying PathBuf.
+    pub fn as_path_buf(&self) -> &PathBuf {
+        match self {
+            PathKind::Path(p) => p,
+            PathKind::Handle(h) => &**h, // Use Deref to get &PathBuf
+        }
+    }
+}
+
+impl<R: Runtime> AsRef<Path> for PathKind<R> {
+    fn as_ref(&self) -> &Path {
+        self.as_path()
+    }
+}
+
+impl<R: Runtime> AsRef<PathBuf> for PathKind<R> {
+    fn as_ref(&self) -> &PathBuf {
+        self.as_path_buf()
+    }
+}
+
+/// A file handle that automatically stops accessing security-scoped resources on iOS when dropped.
+pub struct FileHandle<R: Runtime> {
+    file: File,
+    path: PathKind<R>,
+    #[allow(dead_code)] // Used in Drop implementation
+    path_: SafeFilePath,
+    #[allow(dead_code)] // Used in Drop implementation
+    app_handle: tauri::AppHandle<R>,
+}
+
+impl<R: Runtime> FileHandle<R> {
+    fn new(
+        file: File,
+        path: PathKind<R>,
+        path_: SafeFilePath,
+        app_handle: tauri::AppHandle<R>,
+    ) -> Self {
+        Self {
+            file,
+            path,
+            path_,
+            app_handle,
+        }
+    }
+
+    /// Get the resolved path.
+    pub fn path(&self) -> &Path {
+        self.path.as_path()
+    }
+}
+
+impl<R: Runtime> Deref for FileHandle<R> {
+    type Target = File;
+
+    fn deref(&self) -> &Self::Target {
+        &self.file
+    }
+}
+
+impl<R: Runtime> DerefMut for FileHandle<R> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.file
+    }
+}
+
+impl<R: Runtime> Drop for FileHandle<R> {
+    fn drop(&mut self) {
+        #[cfg(target_os = "ios")]
+        {
+            // Only clean up if we have a plain PathBuf, not a PathHandle
+            // PathHandle will handle its own cleanup when it's dropped
+            if let PathKind::Path(_) = &self.path {
+                use crate::{FilePath, FsExt};
+                // Convert SafeFilePath to FilePath
+                let file_path: FilePath = match &self.path_ {
+                    SafeFilePath::Url(url) => FilePath::Url(url.clone()),
+                    SafeFilePath::Path(safe_path) => FilePath::Path(safe_path.as_ref().to_owned()),
+                };
+                // Try to stop accessing the security-scoped resource
+                // Ignore errors during drop as we can't propagate them
+                log::debug!("Stopping accessing security-scoped resource for path: {file_path}");
+                let _ = self.app_handle.fs().stop_accessing_security_scoped_resource(file_path);
+            }
+        }
+    }
+}
+
+/// A path handle that automatically stops accessing security-scoped resources on iOS when dropped.
+pub struct PathHandle<R: Runtime> {
+    path: PathBuf,
+    #[allow(dead_code)] // Used in Drop implementation
+    path_: SafeFilePath,
+    #[allow(dead_code)] // Used in Drop implementation
+    app_handle: tauri::AppHandle<R>,
+}
+
+impl<R: Runtime> PathHandle<R> {
+    fn new(
+        path: PathBuf,
+        path_: SafeFilePath,
+        app_handle: tauri::AppHandle<R>,
+    ) -> Self {
+        Self {
+            path,
+            path_,
+            app_handle,
+        }
+    }
+
+}
+
+impl<R: Runtime> Deref for PathHandle<R> {
+    type Target = PathBuf;
+
+    fn deref(&self) -> &Self::Target {
+        &self.path
+    }
+}
+
+impl<R: Runtime> AsRef<Path> for PathHandle<R> {
+    fn as_ref(&self) -> &Path {
+        self.path.as_ref()
+    }
+}
+
+impl<R: Runtime> AsRef<PathBuf> for PathHandle<R> {
+    fn as_ref(&self) -> &PathBuf {
+        &self.path
+    }
+}
+
+impl<R: Runtime> Drop for PathHandle<R> {
+    fn drop(&mut self) {
+        #[cfg(target_os = "ios")]
+        {
+            use crate::{FilePath, FsExt};
+            // Convert SafeFilePath to FilePath
+            let file_path: FilePath = match &self.path_ {
+                SafeFilePath::Url(url) => FilePath::Url(url.clone()),
+                SafeFilePath::Path(safe_path) => FilePath::Path(safe_path.as_ref().to_owned()),
+            };
+            // Try to stop accessing the security-scoped resource
+            // Ignore errors during drop as we can't propagate them
+            log::debug!("Stopping accessing security-scoped resource for path: {file_path}");
+            let _ = self.app_handle.fs().stop_accessing_security_scoped_resource(file_path);
+        }
+    }
+}
+
 #[derive(Debug, Default, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BaseOptions {
@@ -84,7 +253,8 @@ pub fn create<R: Runtime>(
     path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
-    let resolved_path = resolve_path(
+    let path_ = path.clone();
+    let resolved_path_handle = resolve_path(
         "create",
         &webview,
         &global_scope,
@@ -92,13 +262,15 @@ pub fn create<R: Runtime>(
         path,
         options.and_then(|o| o.base_dir),
     )?;
-    let file = File::create(&resolved_path).map_err(|e| {
+    let file = File::create(&*resolved_path_handle).map_err(|e| {
         format!(
             "failed to create file at path: {} with error: {e}",
-            resolved_path.display()
+            resolved_path_handle.display()
         )
     })?;
-    let rid = webview.resources_table().add(StdFileResource::new(file));
+    let app_handle = webview.app_handle().clone();
+    let file_handle = FileHandle::new(file, PathKind::Handle(resolved_path_handle), path_, app_handle);
+    let rid = webview.resources_table().add(StdFileResource::new(file_handle));
     Ok(rid)
 }
 
@@ -119,7 +291,7 @@ pub fn open<R: Runtime>(
     path: SafeFilePath,
     options: Option<OpenOptions>,
 ) -> CommandResult<ResourceId> {
-    let (file, _path) = resolve_file(
+    let file_handle = resolve_file(
         "open",
         &webview,
         &global_scope,
@@ -147,7 +319,7 @@ pub fn open<R: Runtime>(
         },
     )?;
 
-    let rid = webview.resources_table().add(StdFileResource::new(file));
+    let rid = webview.resources_table().add(StdFileResource::new(file_handle));
 
     Ok(rid)
 }
@@ -308,8 +480,8 @@ pub async fn read<R: Runtime>(
     len: usize,
 ) -> CommandResult<tauri::ipc::Response> {
     let mut data = vec![0; len];
-    let file = webview.resources_table().get::<StdFileResource>(rid)?;
-    let nread = StdFileResource::with_lock(&file, |mut file| file.read(&mut data))
+    let file: std::sync::Arc<StdFileResource<R>> = webview.resources_table().get(rid)?;
+    let nread = StdFileResource::with_lock(&file, |file| file.read(&mut data))
         .map_err(|e| format!("faied to read bytes from file with error: {e}"))?;
 
     // This is an optimization to include the number of read bytes (as bigendian bytes)
@@ -345,7 +517,7 @@ async fn read_file_inner<R: Runtime>(
     path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<tauri::ipc::Response> {
-    let (mut file, path) = resolve_file(
+    let mut file_handle = resolve_file(
         permission,
         &webview,
         &global_scope,
@@ -364,10 +536,10 @@ async fn read_file_inner<R: Runtime>(
 
     let mut contents = Vec::new();
 
-    file.read_to_end(&mut contents).map_err(|e| {
+    file_handle.read_to_end(&mut contents).map_err(|e| {
         format!(
             "failed to read file as text at path: {} with error: {e}",
-            path.display()
+            file_handle.path().display()
         )
     })?;
 
@@ -599,8 +771,8 @@ pub async fn seek<R: Runtime>(
     whence: SeekMode,
 ) -> CommandResult<u64> {
     use std::io::{Seek, SeekFrom};
-    let file = webview.resources_table().get::<StdFileResource>(rid)?;
-    StdFileResource::with_lock(&file, |mut file| {
+    let file: std::sync::Arc<StdFileResource<R>> = webview.resources_table().get(rid)?;
+    StdFileResource::with_lock(&file, |file| {
         file.seek(match whence {
             SeekMode::Start => SeekFrom::Start(offset as u64),
             SeekMode::Current => SeekFrom::Current(offset),
@@ -623,7 +795,7 @@ fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Meta
 ) -> CommandResult<std::fs::Metadata> {
     match path {
         SafeFilePath::Url(url) => {
-            let (file, path) = resolve_file(
+            let file_handle = resolve_file(
                 permission,
                 webview,
                 global_scope,
@@ -637,10 +809,10 @@ fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Meta
                     },
                 },
             )?;
-            file.metadata().map_err(|e| {
+            file_handle.metadata().map_err(|e| {
                 format!(
                     "failed to get metadata of path: {} with error: {e}",
-                    path.display()
+                    file_handle.path().display()
                 )
                 .into()
             })
@@ -747,7 +919,7 @@ pub fn lstat<R: Runtime>(
 
 #[tauri::command]
 pub fn fstat<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> CommandResult<FileInfo> {
-    let file = webview.resources_table().get::<StdFileResource>(rid)?;
+    let file: std::sync::Arc<StdFileResource<R>> = webview.resources_table().get(rid)?;
     let metadata = StdFileResource::with_lock(&file, |file| file.metadata())
         .map_err(|e| format!("failed to get metadata of file with error: {e}"))?;
     Ok(get_stat(metadata))
@@ -795,7 +967,7 @@ pub async fn ftruncate<R: Runtime>(
     rid: ResourceId,
     len: Option<u64>,
 ) -> CommandResult<()> {
-    let file = webview.resources_table().get::<StdFileResource>(rid)?;
+    let file: std::sync::Arc<StdFileResource<R>> = webview.resources_table().get(rid)?;
     StdFileResource::with_lock(&file, |file| file.set_len(len.unwrap_or(0)))
         .map_err(|e| format!("failed to truncate file with error: {e}"))
         .map_err(Into::into)
@@ -807,8 +979,8 @@ pub async fn write<R: Runtime>(
     rid: ResourceId,
     data: Vec<u8>,
 ) -> CommandResult<usize> {
-    let file = webview.resources_table().get::<StdFileResource>(rid)?;
-    StdFileResource::with_lock(&file, |mut file| file.write(&data))
+    let file: std::sync::Arc<StdFileResource<R>> = webview.resources_table().get(rid)?;
+    StdFileResource::with_lock(&file, |file| file.write(&data))
         .map_err(|e| format!("failed to write bytes to file with error: {e}"))
         .map_err(Into::into)
 }
@@ -856,7 +1028,7 @@ async fn write_file_inner<R: Runtime>(
         .and_then(|p| p.to_str().ok())
         .and_then(|opts| serde_json::from_str(opts).ok());
 
-    let (mut file, path) = resolve_file(
+    let mut file_handle = resolve_file(
         permission,
         &webview,
         &global_scope,
@@ -903,11 +1075,11 @@ async fn write_file_inner<R: Runtime>(
         _ => return Err(anyhow::anyhow!("unexpected invoke body").into()),
     };
 
-    file.write_all(&data)
+    file_handle.write_all(&data)
         .map_err(|e| {
             format!(
                 "failed to write bytes to file at path: {} with error: {e}",
-                path.display()
+                file_handle.path().display()
             )
         })
         .map_err(Into::into)
@@ -1010,32 +1182,6 @@ fn get_dir_size(path: &PathBuf) -> CommandResult<u64> {
     Ok(size)
 }
 
-#[tauri::command]
-pub fn stop_accessing_security_scoped_resource<R: Runtime>(
-    webview: Webview<R>,
-    path: SafeFilePath,
-) -> CommandResult<()> {
-    #[cfg(target_os = "ios")]
-    {
-        use crate::{FilePath, FsExt};
-        // Convert SafeFilePath to FilePath
-        let file_path: FilePath = match path {
-            SafeFilePath::Url(url) => FilePath::Url(url),
-            SafeFilePath::Path(safe_path) => FilePath::Path(safe_path.as_ref().to_owned()),
-        };
-        webview
-            .fs()
-            .stop_accessing_security_scoped_resource(file_path)?;
-        Ok(())
-    }
-    #[cfg(not(target_os = "ios"))]
-    {
-        // No-op on non-iOS platforms
-        let _ = webview;
-        let _ = path;
-        Ok(())
-    }
-}
 
 #[cfg(desktop)]
 pub fn resolve_file<R: Runtime>(
@@ -1045,7 +1191,7 @@ pub fn resolve_file<R: Runtime>(
     command_scope: &CommandScope<Entry>,
     path: SafeFilePath,
     open_options: OpenOptions,
-) -> CommandResult<(File, PathBuf)> {
+) -> CommandResult<FileHandle<R>> {
     resolve_file_in_fs(
         permission,
         webview,
@@ -1063,8 +1209,9 @@ fn resolve_file_in_fs<R: Runtime>(
     command_scope: &CommandScope<Entry>,
     path: SafeFilePath,
     open_options: OpenOptions,
-) -> CommandResult<(File, PathBuf)> {
-    let path = resolve_path(
+) -> CommandResult<FileHandle<R>> {
+    let path_ = path.clone();
+    let resolved_path_handle = resolve_path(
         permission,
         webview,
         global_scope,
@@ -1074,14 +1221,16 @@ fn resolve_file_in_fs<R: Runtime>(
     )?;
 
     let file = std::fs::OpenOptions::from(open_options.options)
-        .open(&path)
+        .open(&*resolved_path_handle)
         .map_err(|e| {
             format!(
                 "failed to open file at path: {} with error: {e}",
-                path.display()
+                resolved_path_handle.display()
             )
         })?;
-    Ok((file, path))
+    
+    let app_handle = webview.app_handle().clone();
+    Ok(FileHandle::new(file, PathKind::Handle(resolved_path_handle), path_, app_handle))
 }
 
 #[cfg(mobile)]
@@ -1092,16 +1241,18 @@ pub fn resolve_file<R: Runtime>(
     command_scope: &CommandScope<Entry>,
     path: SafeFilePath,
     open_options: OpenOptions,
-) -> CommandResult<(File, PathBuf)> {
+) -> CommandResult<FileHandle<R>> {
     use crate::FsExt;
 
+    let path_ = path.clone();
     match path {
         SafeFilePath::Url(url) => {
-            let path = url.as_str().into();
+            let resolved_path = url.as_str().into();
             let file = webview
                 .fs()
-                .open(SafeFilePath::Url(url), open_options.options)?;
-            Ok((file, path))
+                .open(SafeFilePath::Url(url.clone()), open_options.options)?;
+            let app_handle = webview.app_handle().clone();
+            Ok(FileHandle::new(file, PathKind::Path(resolved_path), path_, app_handle))
         }
         SafeFilePath::Path(path) => resolve_file_in_fs(
             permission,
@@ -1121,7 +1272,8 @@ pub fn resolve_path<R: Runtime>(
     command_scope: &CommandScope<Entry>,
     path: SafeFilePath,
     base_dir: Option<BaseDirectory>,
-) -> CommandResult<PathBuf> {
+) -> CommandResult<PathHandle<R>> {
+    let path_ = path.clone();
     // On iOS, start accessing security-scoped resource if the path is a file URL
     #[cfg(target_os = "ios")]
     {
@@ -1137,7 +1289,9 @@ pub fn resolve_path<R: Runtime>(
                     // This is required for files outside the app's sandbox (e.g., from file picker)
                     unsafe {
                         let success = ns_url.startAccessingSecurityScopedResource();
-                        if !success {
+                        if success {
+                            log::debug!("Started accessing security-scoped resource for URL: {}", url.as_str());
+                        } else {
                             log::warn!("Failed to start accessing security-scoped resource for URL: {}", url.as_str());
                         }
                     }
@@ -1149,7 +1303,7 @@ pub fn resolve_path<R: Runtime>(
     }
 
     let path = path.into_path()?;
-    let path = if let Some(base_dir) = base_dir {
+    let resolved_path = if let Some(base_dir) = base_dir {
         webview.path().resolve(&path, base_dir)?
     } else {
         path
@@ -1178,23 +1332,24 @@ pub fn resolve_path<R: Runtime>(
 
     let require_literal_leading_dot = fs_scope.require_literal_leading_dot.unwrap_or(cfg!(unix));
 
-    if is_forbidden(&fs_scope.scope, &path, require_literal_leading_dot)
-        || is_forbidden(&scope, &path, require_literal_leading_dot)
+    if is_forbidden(&fs_scope.scope, &resolved_path, require_literal_leading_dot)
+        || is_forbidden(&scope, &resolved_path, require_literal_leading_dot)
     {
-        return Err(CommandError::Plugin(Error::PathForbidden(path)));
+        return Err(CommandError::Plugin(Error::PathForbidden(resolved_path)));
     }
 
-    if fs_scope.scope.is_allowed(&path) || scope.is_allowed(&path) {
-        Ok(path)
+    if fs_scope.scope.is_allowed(&resolved_path) || scope.is_allowed(&resolved_path) {
+        let app_handle = webview.app_handle().clone();
+        Ok(PathHandle::new(resolved_path, path_, app_handle))
     } else {
         #[cfg(not(debug_assertions))]
-        return Err(CommandError::Plugin(Error::PathForbidden(path)));
+        return Err(CommandError::Plugin(Error::PathForbidden(resolved_path)));
 
         #[cfg(debug_assertions)]
         Err(
             anyhow::anyhow!(
                 "forbidden path: {}, maybe it is not allowed on the scope for `allow-{permission}` permission in your capability file",
-                path.display()
+                resolved_path.display()
             )
         )
         .map_err(Into::into)
@@ -1240,20 +1395,21 @@ fn is_forbidden<P: AsRef<Path>>(
     }
 }
 
-struct StdFileResource(Mutex<File>);
+struct StdFileResource<R: Runtime>(Mutex<FileHandle<R>>);
 
-impl StdFileResource {
-    fn new(file: File) -> Self {
-        Self(Mutex::new(file))
+impl<R: Runtime> StdFileResource<R> {
+    fn new(file_handle: FileHandle<R>) -> Self {
+        Self(Mutex::new(file_handle))
     }
 
-    fn with_lock<R, F: FnMut(&File) -> R>(&self, mut f: F) -> R {
-        let file = self.0.lock().unwrap();
-        f(&file)
+    fn with_lock<Ret, F: FnMut(&mut File) -> Ret>(&self, mut f: F) -> Ret {
+        let mut file_handle = self.0.lock().unwrap();
+        // FileHandle implements DerefMut to File, so we can use it directly
+        f(&mut *file_handle)
     }
 }
 
-impl Resource for StdFileResource {}
+impl<R: Runtime> Resource for StdFileResource<R> {}
 
 /// Same as [std::io::Lines] but with bytes
 struct LinesBytes<T: BufRead>(T);

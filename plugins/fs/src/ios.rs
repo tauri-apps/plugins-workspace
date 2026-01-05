@@ -51,7 +51,9 @@ impl<R: Runtime> Fs<R> {
                     // The access will be automatically stopped when the app is backgrounded or terminated.
                     unsafe {
                         let success = ns_url.startAccessingSecurityScopedResource();
-                        if !success {
+                        if success {
+                            log::debug!("Started accessing security-scoped resource for URL: {}", url_string);
+                        } else {
                             log::warn!("Failed to start accessing security-scoped resource for URL: {}", url_string);
                         }
                     }
