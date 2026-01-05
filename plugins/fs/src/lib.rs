@@ -10,6 +10,8 @@
 )]
 
 use std::io::Read;
+#[cfg(target_os = "ios")]
+use std::sync::Mutex;
 
 use serde::Deserialize;
 use tauri::{
@@ -373,6 +375,56 @@ pub(crate) struct Scope {
     pub(crate) require_literal_leading_dot: Option<bool>,
 }
 
+/// Tracks which paths have active security-scoped resource access on iOS.
+#[cfg(target_os = "ios")]
+pub(crate) struct SecurityScopedResources {
+    /// Set of file URLs that are currently accessing security-scoped resources.
+    /// The key is the URL string representation.
+    pub(crate) active_urls: Mutex<std::collections::HashSet<String>>,
+}
+
+#[cfg(target_os = "ios")]
+impl SecurityScopedResources {
+    pub(crate) fn new() -> Self {
+        Self {
+            active_urls: Mutex::new(std::collections::HashSet::new()),
+        }
+    }
+
+    pub(crate) fn is_tracked_manually(&self, url: &str) -> bool {
+        self.active_urls.lock().unwrap().contains(url)
+    }
+
+    pub(crate) fn track_manually(&self, url: String) {
+        self.active_urls.lock().unwrap().insert(url);
+    }
+
+    pub(crate) fn remove(&self, url: &str) {
+        self.active_urls.lock().unwrap().remove(url);
+    }
+}
+
+#[cfg(not(target_os = "ios"))]
+pub(crate) struct SecurityScopedResources;
+
+#[cfg(not(target_os = "ios"))]
+impl SecurityScopedResources {
+    pub(crate) fn new() -> Self {
+        Self
+    }
+
+    #[allow(dead_code)] // Used on iOS, but not on other platforms
+    pub(crate) fn is_tracked_manually(&self, _url: &str) -> bool {
+        false
+    }
+
+    #[allow(dead_code)] // Used on iOS, but not on other platforms
+    pub(crate) fn track_manually(&self, _url: String) {}
+
+    #[allow(dead_code)] // Used on iOS, but not on other platforms
+    pub(crate) fn remove(&self, _url: &str) {}
+}
+
 pub trait FsExt<R: Runtime> {
     fn fs_scope(&self) -> tauri::fs::Scope;
     fn try_fs_scope(&self) -> Option<tauri::fs::Scope>;
@@ -421,6 +473,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             commands::write_text_file,
             commands::exists,
             commands::size,
+            commands::start_accessing_security_scoped_resource,
+            commands::stop_accessing_security_scoped_resource,
             #[cfg(feature = "watch")]
             watcher::watch,
         ])
@@ -447,6 +501,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             app.manage(Fs(app.clone()));
 
             app.manage(scope);
+            app.manage(SecurityScopedResources::new());
             Ok(())
         })
         .on_event(|app, event| {

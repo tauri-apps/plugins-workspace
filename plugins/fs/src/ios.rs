@@ -52,9 +52,15 @@ impl<R: Runtime> Fs<R> {
                     unsafe {
                         let success = ns_url.startAccessingSecurityScopedResource();
                         if success {
-                            log::debug!("Started accessing security-scoped resource for URL: {}", url_string);
+                            log::debug!(
+                                "Started accessing security-scoped resource for URL: {}",
+                                url_string
+                            );
                         } else {
-                            log::warn!("Failed to start accessing security-scoped resource for URL: {}", url_string);
+                            log::warn!(
+                                "Failed to start accessing security-scoped resource for URL: {}",
+                                url_string
+                            );
                         }
                     }
                 } else {
@@ -120,7 +126,10 @@ impl<R: Runtime> Fs<R> {
                 ns_url.stopAccessingSecurityScopedResource();
             }
         } else {
-            return Err(crate::Error::Io(std::io::Error::new(std::io::ErrorKind::InvalidInput, "failed to create NSURL from URL")));
+            return Err(crate::Error::Io(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "failed to create NSURL from URL",
+            )));
         }
 
         Ok(())

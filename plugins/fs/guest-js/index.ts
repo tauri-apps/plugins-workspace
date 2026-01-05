@@ -1361,6 +1361,79 @@ async function size(path: string | URL): Promise<number> {
   })
 }
 
+/**
+ * Starts accessing a security-scoped resource for the given file URL.
+ * This should be called when you're accessing a file that was opened
+ * using a security-scoped URL (e.g., from a file picker).
+ *
+ * Note that accessing security-scoped resources is automatically managed by the plugin on iOS, so you don't need to call this function
+ * unless you want to manage the scope manually.
+ *
+ * You must call {@linkcode stopAccessingSecurityScopedResource} when you're done accessing the resource.
+ *
+ * #### Platform-specific
+ *
+ * - **iOS:** Starts accessing the security-scoped resource.
+ * - **Other platforms:** does nothing.
+ *
+ * @example
+ * ```typescript
+ * import { startAccessingSecurityScopedResource } from '@tauri-apps/plugin-fs';
+ *
+ * const filePath = 'file:///path/to/file.txt';
+ * await startAccessingSecurityScopedResource(filePath);
+ * // ... use the resource ...
+ * ```
+ *
+ * @since 2.4.4
+ */
+async function startAccessingSecurityScopedResource(
+  path: string | URL
+): Promise<void> {
+  if (path instanceof URL && path.protocol !== 'file:') {
+    throw new TypeError('Must be a file URL.')
+  }
+
+  await invoke('plugin:fs|start_accessing_security_scoped_resource', {
+    path: path instanceof URL ? path.toString() : path
+  })
+}
+
+/**
+ * Stops accessing a security-scoped resource for the given file URL.
+ * This should be called when you're done accessing a file that was opened
+ * using a security-scoped URL (e.g., from a file picker) when using manual tracking via {@linkcode startAccessingSecurityScopedResource}.
+ *
+ * #### Platform-specific
+ *
+ * - **iOS:** Stops accessing the security-scoped resource.
+ * - **Other platforms:** does nothing.
+ *
+ * @example
+ * ```typescript
+ * import { stopAccessingSecurityScopedResource } from '@tauri-apps/plugin-fs';
+ *
+ * const filePath = 'file:///path/to/file.txt';
+ * await startAccessingSecurityScopedResource(filePath);
+ * // ... use the resource ...
+ * // when you're done with the resource:
+ * await stopAccessingSecurityScopedResource(filePath);
+ * ```
+ *
+ * @since 2.4.4
+ */
+async function stopAccessingSecurityScopedResource(
+  path: string | URL
+): Promise<void> {
+  if (path instanceof URL && path.protocol !== 'file:') {
+    throw new TypeError('Must be a file URL.')
+  }
+
+  await invoke('plugin:fs|stop_accessing_security_scoped_resource', {
+    path: path instanceof URL ? path.toString() : path
+  })
+}
+
 export type {
   CreateOptions,
   OpenOptions,
@@ -1409,5 +1482,7 @@ export {
   exists,
   watch,
   watchImmediate,
-  size
+  size,
+  startAccessingSecurityScopedResource,
+  stopAccessingSecurityScopedResource
 }
