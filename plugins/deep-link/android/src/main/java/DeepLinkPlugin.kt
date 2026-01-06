@@ -6,7 +6,6 @@ package app.tauri.deep_link
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.PatternMatcher
 import android.webkit.WebView
 import app.tauri.annotation.InvokeArg
@@ -16,6 +15,7 @@ import app.tauri.plugin.Channel
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 import app.tauri.plugin.Invoke
+import androidx.core.net.toUri
 
 @InvokeArg
 class SetEventHandlerArgs {
@@ -106,8 +106,8 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
         }
 
         val uri = try {
-            Uri.parse(url)
-        } catch (e: Exception) {
+            url.toUri()
+        } catch (_: Exception) {
             // not a URL
             return false
         }
@@ -119,13 +119,13 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
         // Check if URL matches any configured mobile deep link
         for (domain in config.mobile) {
             // Check scheme
-            if (!domain.scheme.contains(scheme)) {
+            if (!domain.scheme.any { it.equals(scheme, ignoreCase = true) }) {
                 continue
             }
 
             // Check host (if configured)
             if (domain.host != null) {
-                if (host != domain.host) {
+                if (!host.equals(domain.host, ignoreCase = true)) {
                     continue
                 }
             }
