@@ -34,6 +34,7 @@ struct FilePickerOptions: Decodable {
   var filters: [Filter]?
   var defaultPath: String?
   var pickerMode: PickerMode?
+  var fileAccessMode: String?
 }
 
 struct SaveFileDialogOptions: Decodable {
@@ -52,12 +53,14 @@ class DialogPlugin: Plugin {
 
   var filePickerController: FilePickerController!
   var onFilePickerResult: ((FilePickerEvent) -> Void)? = nil
+  
 
   override init() {
     super.init()
     filePickerController = FilePickerController(self)
+    
   }
-
+  
   @objc public func showFilePicker(_ invoke: Invoke) throws {
     let args = try invoke.parseArgs(FilePickerOptions.self)
 
@@ -70,7 +73,7 @@ class DialogPlugin: Plugin {
       case .error(let error):
         invoke.reject(error)
       }
-      }
+    }
 
     if #available(iOS 14, *) {
       let parsedTypes = parseFiltersOption(args.filters ?? [])
@@ -107,7 +110,9 @@ class DialogPlugin: Plugin {
         DispatchQueue.main.async {
           // The UTType.item is the catch-all, allowing for any file type to be selected.
           let contentTypes = parsedTypes.isEmpty ? [UTType.item] : parsedTypes
-          let picker: UIDocumentPickerViewController = UIDocumentPickerViewController(forOpeningContentTypes: contentTypes, asCopy: true)
+          let picker: UIDocumentPickerViewController = UIDocumentPickerViewController(
+            forOpeningContentTypes: contentTypes,
+            asCopy: args.fileAccessMode == "scoped" ? false : true)
           
           if let defaultPath = args.defaultPath {
             picker.directoryURL = URL(string: defaultPath)
@@ -292,6 +297,8 @@ class DialogPlugin: Plugin {
       manager.viewController?.present(alert, animated: true, completion: nil)
     }
   }
+
+
 }
 
 @_cdecl("init_plugin_dialog")

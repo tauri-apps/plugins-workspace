@@ -125,3 +125,4 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(MessageDialogResult) + Send + '
         f(res.unwrap_or_default())
     });
 }
+
