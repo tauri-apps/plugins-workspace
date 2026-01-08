@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.4.5]
+
+- [`521cd8b3`](https://github.com/tauri-apps/plugins-workspace/commit/521cd8b372c862d96b1637775710e4d7cf2443e2) ([#3155](https://github.com/tauri-apps/plugins-workspace/pull/3155) by [@EliasStar](https://github.com/tauri-apps/plugins-workspace/../../EliasStar)) Fix off by one error in the implementation of readTextFileLines causing all lines to end with an (additional) null byte.
+  Issue: [#3154](https://github.com/tauri-apps/plugins-workspace/issues/3154)
+  PR: [#3155](https://github.com/tauri-apps/plugins-workspace/pull/3155)
+
 ## \[2.4.4]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

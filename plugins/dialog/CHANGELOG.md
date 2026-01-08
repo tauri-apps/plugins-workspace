@@ -1,5 +1,17 @@
 # Changelog
 
+## \[2.5.0]
+
+- [`dff6fa98`](https://github.com/tauri-apps/plugins-workspace/commit/dff6fa986a9a05ba98b6ca660fea78ae97251fc2) ([#3034](https://github.com/tauri-apps/plugins-workspace/pull/3034) by [@onehumandev](https://github.com/tauri-apps/plugins-workspace/../../onehumandev)) Add `pickerMode` option to file picker (currently only used on iOS)
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.5`
+
+### feat
+
+- [`c23fa03f`](https://github.com/tauri-apps/plugins-workspace/commit/c23fa03f07d5c1c220bcf0bca482364513e3f754) ([#3098](https://github.com/tauri-apps/plugins-workspace/pull/3098) by [@Lepidopteran](https://github.com/tauri-apps/plugins-workspace/../../Lepidopteran)) Add `xdg-portal` as an optional feature for `rfd`
+
 ## \[2.4.2]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
