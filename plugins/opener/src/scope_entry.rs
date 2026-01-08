@@ -8,16 +8,12 @@ use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
 #[serde(untagged)]
+#[derive(Default)]
 pub enum Application {
+    #[default]
     Default,
     Enable(bool),
     App(String),
-}
-
-impl Default for Application {
-    fn default() -> Self {
-        Self::Default
-    }
 }
 
 #[derive(Deserialize)]

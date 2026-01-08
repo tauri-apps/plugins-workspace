@@ -49,8 +49,6 @@ public class Geolocation(private val context: Context) {
                 val lowPrio = if (networkEnabled) Priority.PRIORITY_BALANCED_POWER_ACCURACY else Priority.PRIORITY_LOW_POWER
                 val prio = if (enableHighAccuracy) Priority.PRIORITY_HIGH_ACCURACY else lowPrio
 
-                Logger.error(prio.toString())
-
                 LocationServices
                     .getFusedLocationProviderClient(context)
                     .getCurrentLocation(prio, null)
@@ -91,11 +89,9 @@ public class Geolocation(private val context: Context) {
                 val lowPrio = if (networkEnabled) Priority.PRIORITY_BALANCED_POWER_ACCURACY else Priority.PRIORITY_LOW_POWER
                 val prio = if (enableHighAccuracy) Priority.PRIORITY_HIGH_ACCURACY else lowPrio
 
-                Logger.error(prio.toString())
-
-                val locationRequest = LocationRequest.Builder(10000)
+                val locationRequest = LocationRequest.Builder(timeout)
                     .setMaxUpdateDelayMillis(timeout)
-                    .setMinUpdateIntervalMillis(5000)
+                    .setMinUpdateIntervalMillis(timeout)
                     .setPriority(prio)
                     .build()
 

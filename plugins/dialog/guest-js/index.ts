@@ -14,6 +14,16 @@ interface DialogFilter {
   name: string
   /**
    * Extensions to filter, without a `.` prefix.
+   *
+   * **Note:** Mobile platforms have different APIs for filtering that may not support extensions.
+   * iOS: Extensions are supported in the document picker, but not in the media picker.
+   * Android: Extensions are not supported.
+   *
+   * For these platforms, MIME types are the primary way to filter files, as opposed to extensions.
+   * This means the string values here labeled as `extensions` may also be a MIME type.
+   * This property name of `extensions` is being kept for backwards compatibility, but this may be revisited to
+   * specify the difference between extension or MIME type filtering.
+   *
    * @example
    * ```typescript
    * extensions: ['svg', 'png']
@@ -30,7 +40,14 @@ interface DialogFilter {
 interface OpenDialogOptions {
   /** The title of the dialog window (desktop only). */
   title?: string
-  /** The filters of the dialog. */
+  /**
+   * The filters of the dialog.
+   * On mobile platforms, if either:
+   * A) the {@linkcode pickerMode} is set to `media`, `image`, or `video`
+   * -- or --
+   * B) the filters include **only** either image or video mime types, the media picker will be displayed.
+   * Otherwise, the document picker will be displayed.
+   */
   filters?: DialogFilter[]
   /**
    * Initial directory or file path.
@@ -52,6 +69,13 @@ interface OpenDialogOptions {
   recursive?: boolean
   /** Whether to allow creating directories in the dialog. Enabled by default. **macOS Only** */
   canCreateDirectories?: boolean
+  /**
+   * The preferred mode of the dialog.
+   * This is meant for mobile platforms (iOS and Android) which have distinct file and media pickers.
+   * If not provided, the dialog will automatically choose the best mode based on the MIME types or extensions of the {@linkcode filters}.
+   * On desktop, this option is ignored.
+   */
+  pickerMode?: PickerMode
 }
 
 /**
@@ -76,6 +100,16 @@ interface SaveDialogOptions {
   /** Whether to allow creating directories in the dialog. Enabled by default. **macOS Only** */
   canCreateDirectories?: boolean
 }
+
+/**
+ * The preferred mode of the dialog.
+ * This is meant for mobile platforms (iOS and Android) which have distinct file and media pickers.
+ * On desktop, this option is ignored.
+ * If not provided, the dialog will automatically choose the best mode based on the MIME types or extensions of the {@linkcode filters}.
+ *
+ * **Note:** This option is only supported on iOS 14 and above. This parameter is ignored on iOS 13 and below.
+ */
+export type PickerMode = 'document' | 'media' | 'image' | 'video'
 
 /**
  * Default buttons for a message dialog.

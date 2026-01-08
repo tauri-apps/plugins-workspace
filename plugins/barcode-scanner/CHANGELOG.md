@@ -1,5 +1,14 @@
 # Changelog
 
+## \[2.4.2]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
+## \[2.4.1]
+
+- [`654bf489`](https://github.com/tauri-apps/plugins-workspace/commit/654bf4891a35769f7e82971641d3ad99974b2dfe) ([#3038](https://github.com/tauri-apps/plugins-workspace/pull/3038) by [@daniel-mader](https://github.com/tauri-apps/plugins-workspace/../../daniel-mader)) Update `androidx.camera` from `1.1.0` to `1.5.1` to support 16 KB memory page sizes.
+- [`6c9b61fb`](https://github.com/tauri-apps/plugins-workspace/commit/6c9b61fb658145d13893626112fc489f7458aa17) ([#3039](https://github.com/tauri-apps/plugins-workspace/pull/3039) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Android, updated compileSdk to 36.
+
 ## \[2.4.0]
 
 - [`aa9140e1`](https://github.com/tauri-apps/plugins-workspace/commit/aa9140e1ac239ab9f015f92b2ed52bbf0eda7c12) ([#2437](https://github.com/tauri-apps/plugins-workspace/pull/2437) by [@enkhjile](https://github.com/tauri-apps/plugins-workspace/../../enkhjile)) Added support for GS1 DataBar on iOS 15.4+

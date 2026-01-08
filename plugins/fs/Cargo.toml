@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-fs"
-version = "2.4.2"
+version = "2.4.4"
 description = "Access the file system."
 authors = { workspace = true }
 license = { workspace = true }
@@ -8,10 +8,6 @@ edition = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-fs"
-
-[package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "Apps installed via MSI or NSIS in `perMachine` and `both` mode require admin permissions for write access in `$RESOURCES` folder" }

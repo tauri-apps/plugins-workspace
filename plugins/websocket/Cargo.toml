@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-websocket"
-version = "2.4.0"
+version = "2.4.1"
 description = "Expose a WebSocket server to your Tauri frontend."
 authors = { workspace = true }
 license = { workspace = true }
@@ -9,10 +9,6 @@ rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-websocket"
 exclude = ["/examples"]
-
-[package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }
@@ -34,11 +30,17 @@ http = "1"
 rand = "0.9"
 futures-util = "0.3"
 tokio = { version = "1", features = ["net", "sync"] }
-tokio-tungstenite = { version = "0.27" }
+tokio-tungstenite = { version = "0.28" }
+rustls = { version = "0.23", default-features = false, features = [
+  "ring",
+], optional = true }
 
 [features]
 default = ["rustls-tls"]
 native-tls = ["tokio-tungstenite/native-tls"]
 native-tls-vendored = ["native-tls", "tokio-tungstenite/native-tls-vendored"]
-rustls-tls = ["tokio-tungstenite/rustls-tls-webpki-roots"]
-rustls-tls-native-roots = ["tokio-tungstenite/rustls-tls-native-roots"]
+rustls-tls = ["tokio-tungstenite/rustls-tls-webpki-roots", "dep:rustls"]
+rustls-tls-native-roots = [
+  "tokio-tungstenite/rustls-tls-native-roots",
+  "dep:rustls",
+]

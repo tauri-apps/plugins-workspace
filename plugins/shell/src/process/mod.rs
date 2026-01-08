@@ -89,6 +89,8 @@ impl CommandChild {
 /// Describes the result of a process after it has terminated.
 #[derive(Debug)]
 pub struct ExitStatus {
+    // This field is intentionally left private.
+    // See: https://github.com/tauri-apps/plugins-workspace/pull/3115.
     code: Option<i32>,
 }
 
@@ -240,7 +242,9 @@ impl Command {
     ///   .setup(|app| {
     ///     let handle = app.handle().clone();
     ///     tauri::async_runtime::spawn(async move {
-    ///       let (mut rx, mut child) = handle.shell().command("cargo")
+    ///       let (mut rx, mut child) = handle
+    ///         .shell()
+    ///         .command("cargo")
     ///         .args(["tauri", "dev"])
     ///         .spawn()
     ///         .expect("Failed to spawn cargo");
@@ -258,7 +262,34 @@ impl Command {
     ///       }
     ///     });
     ///     Ok(())
-    /// });
+    ///   });
+    /// ```
+    ///
+    /// Depending on the command you spawn, it might output in a specific encoding, to parse the output lines in this case:
+    ///
+    /// ```rust,no_run
+    /// use tauri_plugin_shell::{process::{CommandEvent, Encoding}, ShellExt};
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let handle = app.handle().clone();
+    ///     tauri::async_runtime::spawn(async move {
+    ///       let (mut rx, mut child) = handle
+    ///         .shell()
+    ///         .command("some-program")
+    ///         .arg("some-arg")
+    ///         .spawn()
+    ///         .expect("Failed to spawn some-program");
+    ///
+    ///       let encoding = Encoding::for_label(b"windows-1252").unwrap();
+    ///       while let Some(event) = rx.recv().await {
+    ///         if let CommandEvent::Stdout(line) = event {
+    ///           let (decoded, _, _) = encoding.decode(&line);
+    ///           println!("got: {decoded}");
+    ///         }
+    ///       }
+    ///     });
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn spawn(self) -> crate::Result<(Receiver<CommandEvent>, CommandChild)> {
         let raw = self.raw_out;

@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-sql"
-version = "2.3.0"
+version = "2.3.1"
 description = "Interface with SQL databases."
 authors = { workspace = true }
 license = { workspace = true }
@@ -11,8 +11,6 @@ links = "tauri-plugin-sql"
 
 [package.metadata.docs.rs]
 features = ["sqlite"]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }
