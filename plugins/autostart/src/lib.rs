@@ -98,6 +98,17 @@ async fn is_enabled(manager: State<'_, AutoLaunchManager>) -> Result<bool> {
     manager.is_enabled()
 }
 
+#[command]
+async fn is_autostart(manager: State<'_, AutoLaunchManager>) -> Result<bool> {
+    let process_args: Vec<String> = std::env::args().collect();
+
+    let passed_args = manager.0.get_args();
+
+    let is_autostart = passed_args.iter().all(|arg| process_args.contains(arg));
+
+    Ok(is_autostart)
+}
+
 #[derive(Default)]
 pub struct Builder {
     #[cfg(target_os = "macos")]
@@ -171,7 +182,12 @@ impl Builder {
 
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         PluginBuilder::new("autostart")
-            .invoke_handler(tauri::generate_handler![enable, disable, is_enabled])
+            .invoke_handler(tauri::generate_handler![
+                enable,
+                disable,
+                is_enabled,
+                is_autostart
+            ])
             .setup(move |app, _api| {
                 let mut builder = AutoLaunchBuilder::new();
 
