@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.3.4]
+
+- [`b4348cee`](https://github.com/tauri-apps/plugins-workspace/commit/b4348cee926ee3d1db151bc831cdb9049bee717f) ([#3101](https://github.com/tauri-apps/plugins-workspace/pull/3101) by [@bclarke123](https://github.com/tauri-apps/plugins-workspace/../../bclarke123)) Update return value of `isAvailable` to match TypeScript function signature
+
 ## \[2.3.3]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
