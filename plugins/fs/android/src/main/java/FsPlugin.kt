@@ -45,8 +45,11 @@ class FsPlugin(private val activity: Activity): Plugin(activity) {
         if (args.uri.startsWith(app.tauri.TAURI_ASSETS_DIRECTORY_URI)) {
             val path = args.uri.substring(app.tauri.TAURI_ASSETS_DIRECTORY_URI.length)
             try {
-                val fd = activity.assets.openFd(path).parcelFileDescriptor?.detachFd()
+                val assetFd = activity.assets.openFd(path)
+                val fd = assetFd.parcelFileDescriptor?.detachFd()
                 res.put("fd", fd)
+                res.put("offset", assetFd.startOffset)
+                res.put("size", assetFd.length)
             } catch (e: IOException) {
                 // if the asset is compressed, we cannot open a file descriptor directly
                 // so we copy it to the cache and get a fd from there
