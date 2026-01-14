@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.2]
+
+- [`eebfd2ed`](https://github.com/tauri-apps/plugins-workspace/commit/eebfd2ed3e4bae4ef195f20c992f01657a5f5121) ([#3157](https://github.com/tauri-apps/plugins-workspace/pull/3157) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Return an error instead of panic when the internally tracked resource id is invalid on creating new stores
+
 ## \[2.4.1]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
