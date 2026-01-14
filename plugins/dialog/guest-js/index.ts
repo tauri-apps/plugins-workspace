@@ -76,6 +76,31 @@ interface OpenDialogOptions {
    * On desktop, this option is ignored.
    */
   pickerMode?: PickerMode
+  /**
+   * The file access mode of the dialog.
+   * If not provided, `copy` is used, which matches the behavior of the {@linkcode open} method before the introduction of this option.
+   *
+   * **Usage**
+   * If a file is opened with {@linkcode fileAccessMode: 'copy'}, it will be copied to the app's sandbox.
+   * This means the file can be read, edited, deleted, copied, or any other operation without any issues, since the file
+   * now belongs to the app.
+   * This also means that the caller has responsibility of deleting the file if this file is not meant to be retained
+   * in the app sandbox.
+   *
+   * If a file is opened with {@linkcode fileAccessMode: 'scoped'}, the file will remain in its original location
+   * and security-scoped access will be automatically managed by the system.
+   *
+   * **Note**
+   * This is specifically meant for document pickers on iOS or MacOS, in conjunction with [security scoped resources](https://developer.apple.com/documentation/foundation/nsurl/startaccessingsecurityscopedresource()).
+   *
+   * Why only document pickers, and not image or video pickers?
+   * The image and video pickers on iOS behave differently from the document pickers, and return [NSItemProvider](https://developer.apple.com/documentation/foundation/nsitemprovider) objects instead of file URLs.
+   * These are meant to be ephemeral (only available within the callback of the picker), and are not accessible outside of the callback.
+   * So for image and video pickers, the only way to access the file is to copy it to the app's sandbox, and this is the URL that is returned from this API.
+   * This means there is no provision for using `scoped` mode with image or video pickers.
+   * If an image or video picker is used, `copy` is always used.
+   */
+  fileAccessMode?: FileAccessMode
 }
 
 /**
@@ -110,6 +135,16 @@ interface SaveDialogOptions {
  * **Note:** This option is only supported on iOS 14 and above. This parameter is ignored on iOS 13 and below.
  */
 export type PickerMode = 'document' | 'media' | 'image' | 'video'
+
+/**
+ * The file access mode of the dialog.
+ *
+ * - `copy`: copy/move the picked file to the app sandbox; no scoped access required.
+ * - `scoped`: keep file in place; security-scoped access is automatically managed.
+ *
+ * **Note:** This option is only supported on iOS 14 and above. This parameter is ignored on iOS 13 and below.
+ */
+export type FileAccessMode = 'copy' | 'scoped'
 
 /**
  * Default buttons for a message dialog.
