@@ -60,7 +60,6 @@ pub enum FileAccessMode {
     Scoped,
 }
 
-
 pub(crate) const OK: &str = "Ok";
 pub(crate) const CANCEL: &str = "Cancel";
 pub(crate) const YES: &str = "Yes";

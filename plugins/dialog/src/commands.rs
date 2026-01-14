@@ -5,7 +5,7 @@
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager, Runtime, State, Window, command};
+use tauri::{command, Manager, Runtime, State, Window};
 use tauri_plugin_fs::FsExt;
 
 use crate::{
@@ -367,4 +367,3 @@ pub(crate) async fn confirm<R: Runtime>(
 
     Ok(dialog.blocking_show())
 }
-
