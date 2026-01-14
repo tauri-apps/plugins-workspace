@@ -279,7 +279,7 @@ pub async fn fetch<R: Runtime>(
 
                 if headers.contains_key(header::RANGE) {
                     // https://fetch.spec.whatwg.org/#http-network-or-cache-fetch step 18
-                    // If httpRequest’s header list contains `Range`, then append (`Accept-Encoding`, `identity`)
+                    // If httpRequest's header list contains `Range`, then append (`Accept-Encoding`, `identity`)
                     headers.append(header::ACCEPT_ENCODING, HeaderValue::from_str("identity")?);
                 }
 
@@ -292,11 +292,11 @@ pub async fn fetch<R: Runtime>(
                     if let Ok(url) = webview.url() {
                         // The url crate returns OpaqueOrigin for tauri://localhost which serializes to "null"
                         let origin = if url.scheme() == "tauri" {
-                            "tauri://localhost"
+                            "tauri://localhost".to_string()
                         } else {
-                            &url.origin().ascii_serialization()
+                            url.origin().ascii_serialization()
                         };
-                        headers.append(header::ORIGIN, HeaderValue::from_str(origin)?);
+                        headers.append(header::ORIGIN, HeaderValue::from_str(&origin)?);
                     }
                 }
 
