@@ -290,10 +290,13 @@ pub async fn fetch<R: Runtime>(
                 // ensure we have an Origin header set
                 if cfg!(not(feature = "unsafe-headers")) || !headers.contains_key(header::ORIGIN) {
                     if let Ok(url) = webview.url() {
-                        headers.append(
-                            header::ORIGIN,
-                            HeaderValue::from_str(&url.origin().ascii_serialization())?,
-                        );
+                        // The url crate returns OpaqueOrigin for tauri://localhost which serializes to "null"
+                        let origin = if url.scheme() == "tauri" {
+                            "tauri://localhost"
+                        } else {
+                            &url.origin().ascii_serialization()
+                        };
+                        headers.append(header::ORIGIN, HeaderValue::from_str(origin)?);
                     }
                 }
 
