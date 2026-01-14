@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.5.6]
+
+- [`b1dbee2c`](https://github.com/tauri-apps/plugins-workspace/commit/b1dbee2c55c1aa7b64732c4cc9f8cb20520b8666) ([#3210](https://github.com/tauri-apps/plugins-workspace/pull/3210) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed an issue that caused the Origin header to always be `null` on macOS, iOS and Linux.
+
 ## \[2.5.5]
 
 - [`e8915f17`](https://github.com/tauri-apps/plugins-workspace/commit/e8915f17e418138f0776870353cd6ce7254b0473) ([#2562](https://github.com/tauri-apps/plugins-workspace/pull/2562) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix aborting a request in the middle of a streaming response.

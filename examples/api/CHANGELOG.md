@@ -1,5 +1,12 @@
 # Changelog
 
+## \[2.0.36]
+
+### Dependencies
+
+- Upgraded to `http-js@2.5.6`
+- Upgraded to `dialog-js@2.6.0`
+
 ## \[2.0.35]
 
 ### Dependencies
