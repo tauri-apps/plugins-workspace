@@ -34,12 +34,17 @@ struct FilePickerOptions: Decodable {
   var filters: [Filter]?
   var defaultPath: String?
   var pickerMode: PickerMode?
-  var fileAccessMode: String?
+  var fileAccessMode: FileAccessMode?
 }
 
 struct SaveFileDialogOptions: Decodable {
   var fileName: String?
   var defaultPath: String?
+}
+
+enum FileAccessMode: String, Decodable {
+  case copy
+  case scoped
 }
 
 enum PickerMode: String, Decodable {
@@ -53,14 +58,13 @@ class DialogPlugin: Plugin {
 
   var filePickerController: FilePickerController!
   var onFilePickerResult: ((FilePickerEvent) -> Void)? = nil
-  
 
   override init() {
     super.init()
     filePickerController = FilePickerController(self)
-    
+
   }
-  
+
   @objc public func showFilePicker(_ invoke: Invoke) throws {
     let args = try invoke.parseArgs(FilePickerOptions.self)
 
@@ -78,7 +82,8 @@ class DialogPlugin: Plugin {
     if #available(iOS 14, *) {
       let parsedTypes = parseFiltersOption(args.filters ?? [])
 
-      let mimeKinds = Set(parsedTypes.compactMap { $0.preferredMIMEType?.components(separatedBy: "/")[0] })
+      let mimeKinds = Set(
+        parsedTypes.compactMap { $0.preferredMIMEType?.components(separatedBy: "/")[0] })
       let filtersIncludeImage = mimeKinds.contains("image")
       let filtersIncludeVideo = mimeKinds.contains("video")
       let filtersIncludeNonMedia = mimeKinds.contains(where: { $0 != "image" && $0 != "video" })
@@ -88,7 +93,8 @@ class DialogPlugin: Plugin {
       if args.pickerMode == .media
         || args.pickerMode == .image
         || args.pickerMode == .video
-        || (!filtersIncludeNonMedia && (filtersIncludeImage || filtersIncludeVideo)) {
+        || (!filtersIncludeNonMedia && (filtersIncludeImage || filtersIncludeVideo))
+      {
         DispatchQueue.main.async {
           var configuration = PHPickerConfiguration(photoLibrary: PHPhotoLibrary.shared())
           configuration.selectionLimit = (args.multiple ?? false) ? 0 : 1
@@ -112,8 +118,8 @@ class DialogPlugin: Plugin {
           let contentTypes = parsedTypes.isEmpty ? [UTType.item] : parsedTypes
           let picker: UIDocumentPickerViewController = UIDocumentPickerViewController(
             forOpeningContentTypes: contentTypes,
-            asCopy: args.fileAccessMode == "scoped" ? false : true)
-          
+            asCopy: args.fileAccessMode == .scoped ? false : true)
+
           if let defaultPath = args.defaultPath {
             picker.directoryURL = URL(string: defaultPath)
           }
@@ -186,7 +192,7 @@ class DialogPlugin: Plugin {
         }
       }
     }
-    
+
     return parsedTypes
   }
 
@@ -208,14 +214,14 @@ class DialogPlugin: Plugin {
     if !filtersIncludeNonMedia && (filtersIncludeImage || filtersIncludeVideo) {
       DispatchQueue.main.async {
         let picker = UIImagePickerController()
-          picker.delegate = self.filePickerController
+        picker.delegate = self.filePickerController
 
-          if filtersIncludeImage && !filtersIncludeVideo {
-            picker.sourceType = .photoLibrary
-          }
+        if filtersIncludeImage && !filtersIncludeVideo {
+          picker.sourceType = .photoLibrary
+        }
 
-          picker.modalPresentationStyle = .fullScreen
-          self.presentViewController(picker)
+        picker.modalPresentationStyle = .fullScreen
+        self.presentViewController(picker)
       }
     } else {
       let documentTypes = parsedTypes.isEmpty ? ["public.data"] : parsedTypes
@@ -239,7 +245,8 @@ class DialogPlugin: Plugin {
     for filter in filters {
       for ext in filter.extensions ?? [] {
         guard
-          let utType: String = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, ext as CFString, nil)?.takeRetainedValue() as String?
+          let utType: String = UTTypeCreatePreferredIdentifierForTag(
+            kUTTagClassMIMEType, ext as CFString, nil)?.takeRetainedValue() as String?
         else {
           continue
         }
@@ -297,7 +304,6 @@ class DialogPlugin: Plugin {
       manager.viewController?.present(alert, animated: true, completion: nil)
     }
   }
-
 
 }
 
