@@ -31,6 +31,11 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
 
     companion object {
         var instance: DeepLinkPlugin? = null
+        private const val CHROMEOS_ACTION_VIEW = "org.chromium.arc.intent.action.VIEW"
+    }
+
+    private fun isViewIntent(action: String?): Boolean {
+        return action == Intent.ACTION_VIEW || action == CHROMEOS_ACTION_VIEW
     }
 
     @Command
@@ -54,7 +59,7 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
 
         val intent = activity.intent
 
-        if (intent.action == Intent.ACTION_VIEW) {
+        if (isViewIntent(intent.action)) {
             // TODO: check if it makes sense to split up init url and last url
             this.currentUrl = intent.data.toString()
             val event = JSObject()
@@ -67,7 +72,7 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
     }
 
     override fun onNewIntent(intent: Intent) {
-        if (intent.action == Intent.ACTION_VIEW) {
+        if (isViewIntent(intent.action)) {
             this.currentUrl = intent.data.toString()
             val event = JSObject()
             event.put("url", this.currentUrl)
