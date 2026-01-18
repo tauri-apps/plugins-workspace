@@ -16,5 +16,6 @@ permissions = [
   "allow-open-app-settings",
   "allow-request-permissions",
   "allow-scan",
+  "allow-set-torch",
   "allow-vibrate",
 ]

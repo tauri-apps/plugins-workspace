@@ -8,6 +8,7 @@ const COMMANDS: &[&str] = &[
     "request_permissions",
     "check_permissions",
     "open_app_settings",
+    "set_torch",
     "vibrate",
 ];
 

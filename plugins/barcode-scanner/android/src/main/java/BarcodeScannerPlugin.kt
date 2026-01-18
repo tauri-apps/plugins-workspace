@@ -62,6 +62,12 @@ class ScanOptions {
     var cameraDirection: String? = null
 }
 
+@InvokeArg
+class TorchArgs {
+    var enabled: Boolean = false
+}
+
+
 @TauriPlugin(
     permissions = [
         Permission(strings = [Manifest.permission.CAMERA], alias = "camera")
@@ -349,6 +355,21 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
                 webViewBackground = null
                 prepare(args.cameraDirection ?: "back", args.windowed)
                 configureCamera(getFormats(args))
+            }
+        }
+    }
+
+
+    @Command
+    fun setTorch(invoke: Invoke) {
+        val args = invoke.parseArgs(TorchArgs::class.java)
+
+        activity.runOnUiThread {
+            try {
+                camera?.cameraControl?.enableTorch(args.enabled)
+                invoke.resolve()
+            } catch (e: Exception) {
+                invoke.reject("TORCH_ERROR", e.message)
             }
         }
     }
