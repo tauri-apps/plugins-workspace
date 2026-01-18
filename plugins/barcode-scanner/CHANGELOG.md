@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.4.3]
+
+- [`d8bfe61f`](https://github.com/tauri-apps/plugins-workspace/commit/d8bfe61f20f235314bad93a9c50d8b7f3eade734) ([#3121](https://github.com/tauri-apps/plugins-workspace/pull/3121) by [@NKIPSC](https://github.com/tauri-apps/plugins-workspace/../../NKIPSC)) Remove unnecessary checks on Android when requesting camera permission.
+- [`631d0e25`](https://github.com/tauri-apps/plugins-workspace/commit/631d0e256a37946b6a9102ca35511abfbebb92c5) ([#2440](https://github.com/tauri-apps/plugins-workspace/pull/2440) by [@kingsword09](https://github.com/tauri-apps/plugins-workspace/../../kingsword09)) Fix the `cameraView` is not removed after scanning in iOS.
+
 ## \[2.4.2]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

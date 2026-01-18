@@ -1,5 +1,26 @@
 # Changelog
 
+## \[2.0.36]
+
+### Dependencies
+
+- Upgraded to `http-js@2.5.6`
+- Upgraded to `dialog-js@2.6.0`
+
+## \[2.0.35]
+
+### Dependencies
+
+- Upgraded to `dialog-js@2.5.0`
+- Upgraded to `log-js@2.8.0`
+- Upgraded to `shell-js@2.3.4`
+- Upgraded to `barcode-scanner-js@2.4.3`
+- Upgraded to `fs-js@2.4.5`
+- Upgraded to `http-js@2.5.5`
+- Upgraded to `nfc-js@2.3.4`
+- Upgraded to `opener-js@2.5.3`
+- Upgraded to `store-js@2.4.2`
+
 ## \[2.0.34]
 
 ### Dependencies
