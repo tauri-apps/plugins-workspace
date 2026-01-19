@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+import AudioToolbox
+import CoreHaptics
 import SwiftRs
 import Tauri
 import UIKit
 import WebKit
-import CoreHaptics
-import AudioToolbox
 
 class ImpactFeedbackOptions: Decodable {
   let style: ImpactFeedbackStyle
@@ -69,19 +69,21 @@ class HapticsPlugin: Plugin {
         try engine.start()
         engine.resetHandler = { [] in
           do {
-              try engine.start()
+            try engine.start()
           } catch {
             AudioServicesPlayAlertSound(kSystemSoundID_Vibrate)
           }
         }
         // TODO: Make some of this (or all) configurable?
-        let intensity: CHHapticEventParameter = CHHapticEventParameter(parameterID: .hapticIntensity, value: 1.0)
-        let sharpness: CHHapticEventParameter = CHHapticEventParameter(parameterID: .hapticSharpness, value: 1.0)
+        let intensity: CHHapticEventParameter = CHHapticEventParameter(
+          parameterID: .hapticIntensity, value: 1.0)
+        let sharpness: CHHapticEventParameter = CHHapticEventParameter(
+          parameterID: .hapticSharpness, value: 1.0)
         let continuousEvent = CHHapticEvent(
           eventType: .hapticContinuous,
           parameters: [intensity, sharpness],
           relativeTime: 0.0,
-          duration: args.duration/1000
+          duration: args.duration / 1000
         )
         let pattern = try CHHapticPattern(events: [continuousEvent], parameters: [])
         let player = try engine.makePlayer(with: pattern)
@@ -93,8 +95,6 @@ class HapticsPlugin: Plugin {
     } else {
       AudioServicesPlayAlertSound(kSystemSoundID_Vibrate)
     }
-
-    Logger.error("VIBRATE END")
 
     invoke.resolve()
   }

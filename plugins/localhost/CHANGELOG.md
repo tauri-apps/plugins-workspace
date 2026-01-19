@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.3.2]
+
+- [`8bfa4450`](https://github.com/tauri-apps/plugins-workspace/commit/8bfa4450230d6a00f836bd27944c34cd7fe43e08) ([#3112](https://github.com/tauri-apps/plugins-workspace/pull/3112) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Disable caching on responses.
+
 ## \[2.3.1]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.3.4]
+
+- [`31415eff`](https://github.com/tauri-apps/plugins-workspace/commit/31415effdf5a9ced19934a681cb044a732174088) ([#3183](https://github.com/tauri-apps/plugins-workspace/pull/3183) by [@Tunglies](https://github.com/tauri-apps/plugins-workspace/../../Tunglies)) Docs on example to Encoding usage in `Command::spawn`. No user facing changes.
+
 ## \[2.3.3]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

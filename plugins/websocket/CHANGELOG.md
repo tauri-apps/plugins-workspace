@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.4.2]
+
+### bug
+
+- [`66a75ece`](https://github.com/tauri-apps/plugins-workspace/commit/66a75ece27ee2f4e7364ef9ddc8db6cbeeb56919) ([#3124](https://github.com/tauri-apps/plugins-workspace/pull/3124) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) The WebSocket plugin will now install the default crypto provider if needed, preventing panics on WSS connections.
+
 ## \[2.4.1]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

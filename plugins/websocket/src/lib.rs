@@ -18,9 +18,17 @@ use tauri::{
     Manager, Runtime, State, Window,
 };
 use tokio::{net::TcpStream, sync::Mutex};
-#[cfg(any(feature = "rustls-tls", feature = "native-tls"))]
+#[cfg(any(
+    feature = "rustls-tls",
+    feature = "rustls-tls-native-roots",
+    feature = "native-tls"
+))]
 use tokio_tungstenite::connect_async_tls_with_config;
-#[cfg(not(any(feature = "rustls-tls", feature = "native-tls")))]
+#[cfg(not(any(
+    feature = "rustls-tls",
+    feature = "rustls-tls-native-roots",
+    feature = "native-tls"
+)))]
 use tokio_tungstenite::connect_async_with_config;
 use tokio_tungstenite::{
     tungstenite::{
@@ -63,7 +71,11 @@ impl Serialize for Error {
 #[derive(Default)]
 struct ConnectionManager(Mutex<HashMap<Id, WebSocketWriter>>);
 
-#[cfg(any(feature = "rustls-tls", feature = "native-tls"))]
+#[cfg(any(
+    feature = "rustls-tls",
+    feature = "rustls-tls-native-roots",
+    feature = "native-tls"
+))]
 struct TlsConnector(Mutex<Option<Connector>>);
 
 #[derive(Deserialize)]
@@ -157,17 +169,29 @@ async fn connect<R: Runtime>(
         }
     }
 
-    #[cfg(any(feature = "rustls-tls", feature = "native-tls"))]
+    #[cfg(any(
+        feature = "rustls-tls",
+        feature = "rustls-tls-native-roots",
+        feature = "native-tls"
+    ))]
     let tls_connector = match window.try_state::<TlsConnector>() {
         Some(tls_connector) => tls_connector.0.lock().await.clone(),
         None => None,
     };
 
-    #[cfg(any(feature = "rustls-tls", feature = "native-tls"))]
+    #[cfg(any(
+        feature = "rustls-tls",
+        feature = "rustls-tls-native-roots",
+        feature = "native-tls"
+    ))]
     let (ws_stream, _) =
         connect_async_tls_with_config(request, config.map(Into::into), false, tls_connector)
             .await?;
-    #[cfg(not(any(feature = "rustls-tls", feature = "native-tls")))]
+    #[cfg(not(any(
+        feature = "rustls-tls",
+        feature = "rustls-tls-native-roots",
+        feature = "native-tls"
+    )))]
     let (ws_stream, _) = connect_async_with_config(request, config.map(Into::into), false).await?;
 
     tauri::async_runtime::spawn(async move {
@@ -266,8 +290,21 @@ impl Builder {
         PluginBuilder::new("websocket")
             .invoke_handler(tauri::generate_handler![connect, send])
             .setup(|app, _api| {
+                #[cfg(any(feature = "rustls-tls", feature = "rustls-tls-native-roots"))]
+                if (self.tls_connector.is_none()
+                    || matches!(self.tls_connector, Some(Connector::Plain)))
+                    && rustls::crypto::CryptoProvider::get_default().is_none()
+                {
+                    // This can only fail if there is already a default provider which we checked for already.
+                    let _ = rustls::crypto::ring::default_provider().install_default();
+                }
+
                 app.manage(ConnectionManager::default());
-                #[cfg(any(feature = "rustls-tls", feature = "native-tls"))]
+                #[cfg(any(
+                    feature = "rustls-tls",
+                    feature = "rustls-tls-native-roots",
+                    feature = "native-tls"
+                ))]
                 app.manage(TlsConnector(Mutex::new(self.tls_connector)));
                 Ok(())
             })
