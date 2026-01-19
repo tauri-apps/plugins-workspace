@@ -269,20 +269,20 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
     scanFormats = [AVMetadataObject.ObjectType]()
 
     (args.formats ?? []).forEach { format in
-        if let formatValue = format.value {
-            scanFormats.append(formatValue)
-        } else {
-            invoke.reject("Unsupported barcode format on this iOS version: \(format)")
-            return
-        }
+      if let formatValue = format.value {
+        scanFormats.append(formatValue)
+      } else {
+        invoke.reject("Unsupported barcode format on this iOS version: \(format)")
+        return
+      }
     }
 
     if scanFormats.isEmpty {
-        for supportedFormat in SupportedFormat.allCases {
-            if let formatValue = supportedFormat.value {
-                scanFormats.append(formatValue)
-            }
+      for supportedFormat in SupportedFormat.allCases {
+        if let formatValue = supportedFormat.value {
+          scanFormats.append(formatValue)
         }
+      }
     }
 
     self.metaOutput!.metadataObjectTypes = self.scanFormats
@@ -300,6 +300,13 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
 
     if entry == nil || entry?.count == 0 {
       invoke.reject("NSCameraUsageDescription is not in the app Info.plist")
+      return
+    }
+
+    // Check if camera is available on this platform (iOS simulator doesn't have cameras)
+    let availableVideoDevices = discoverCaptureDevices()
+    if availableVideoDevices.isEmpty {
+      invoke.reject("No camera available on this device (e.g., iOS Simulator)")
       return
     }
 
