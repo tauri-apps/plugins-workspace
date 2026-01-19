@@ -528,7 +528,7 @@ impl<R: Runtime> Store<R> {
     ///   - This method loads the data and merges it with the current store,
     ///     this behavior will be changed to resetting to default first and then merging with the on-disk state in v3,
     ///     to fully match the store with the on-disk state,
-    ///     use [`reload_override_defaults`](Self::reload_override_defaults) instead
+    ///     use [`reload_ignore_defaults`](Self::reload_ignore_defaults) instead
     ///   - This method does not emit change events
     pub fn reload(&self) -> crate::Result<()> {
         self.store.lock().unwrap().load()

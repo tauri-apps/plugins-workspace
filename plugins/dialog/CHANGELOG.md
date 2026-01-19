@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.6.0]
+
+- [`d7a0bb32`](https://github.com/tauri-apps/plugins-workspace/commit/d7a0bb325dad919d6cc132eb3898c33540de77c4) ([#3136](https://github.com/tauri-apps/plugins-workspace/pull/3136) by [@onehumandev](https://github.com/tauri-apps/plugins-workspace/../../onehumandev)) Add `fileAccessMode` option to file picker.
+
 ## \[2.5.0]
 
 - [`dff6fa98`](https://github.com/tauri-apps/plugins-workspace/commit/dff6fa986a9a05ba98b6ca660fea78ae97251fc2) ([#3034](https://github.com/tauri-apps/plugins-workspace/pull/3034) by [@onehumandev](https://github.com/tauri-apps/plugins-workspace/../../onehumandev)) Add `pickerMode` option to file picker (currently only used on iOS)
