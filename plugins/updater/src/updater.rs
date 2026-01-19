@@ -244,6 +244,7 @@ impl UpdaterBuilder {
         self
     }
 
+    /// Clear all proxies. See [`reqwest::ClientBuilder::no_proxy`](https://docs.rs/reqwest/latest/reqwest/struct.ClientBuilder.html#method.no_proxy).
     pub fn no_proxy(mut self) -> Self {
         self.no_proxy = true;
         self
