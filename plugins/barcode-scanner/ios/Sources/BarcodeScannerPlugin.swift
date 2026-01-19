@@ -286,7 +286,9 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
     }
 
     self.metaOutput!.metadataObjectTypes = self.scanFormats
-    self.captureSession!.startRunning()
+    DispatchQueue.main.async {
+      self.captureSession!.startRunning()
+    }
 
     self.isScanning = true
   }
