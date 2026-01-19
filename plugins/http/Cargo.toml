@@ -21,7 +21,7 @@ tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
 url = { workspace = true }
-urlpattern = "0.3"
+urlpattern = "0.5"
 regex = "1"
 
 [dependencies]
@@ -31,7 +31,7 @@ tauri = { workspace = true }
 thiserror = { workspace = true }
 tokio = { version = "1", features = ["sync", "macros"] }
 tauri-plugin-fs = { path = "../fs", version = "2.4.5" }
-urlpattern = "0.3"
+urlpattern = "0.5"
 regex = "1"
 http = "1"
 reqwest = { version = "0.12", default-features = false }
