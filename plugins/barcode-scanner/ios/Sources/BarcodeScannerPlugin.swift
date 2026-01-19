@@ -261,6 +261,11 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
   }
 
   private func runScanner(_ invoke: Invoke, args: ScanOptions) {
+    if getPermissionState() != "granted" {
+      invoke.reject("Camera permission denied or not yet requested")
+      return
+    }
+
     scanFormats = [AVMetadataObject.ObjectType]()
 
     (args.formats ?? []).forEach { format in
