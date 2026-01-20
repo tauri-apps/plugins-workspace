@@ -12,6 +12,8 @@
 mod commands;
 mod decode;
 mod error;
+#[cfg(feature = "sqlite")]
+mod update_hook;
 mod wrapper;
 
 pub use error::Error;
@@ -140,7 +142,11 @@ impl Builder {
                 commands::load,
                 commands::execute,
                 commands::select,
-                commands::close
+                commands::close,
+                #[cfg(feature = "sqlite")]
+                update_hook::setup_update_hook,
+                #[cfg(feature = "sqlite")]
+                update_hook::remove_update_hook,
             ])
             .setup(|app, api| {
                 let config = api.config().clone().unwrap_or_default();

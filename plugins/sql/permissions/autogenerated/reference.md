@@ -106,6 +106,32 @@ Denies the load command without any pre-configured scope.
 <tr>
 <td>
 
+`sql:allow-remove-update-hook`
+
+</td>
+<td>
+
+Enables the remove_update_hook command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`sql:deny-remove-update-hook`
+
+</td>
+<td>
+
+Denies the remove_update_hook command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `sql:allow-select`
 
 </td>
@@ -125,6 +151,32 @@ Enables the select command without any pre-configured scope.
 <td>
 
 Denies the select command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`sql:allow-setup-update-hook`
+
+</td>
+<td>
+
+Enables the setup_update_hook command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`sql:deny-setup-update-hook`
+
+</td>
+<td>
+
+Denies the setup_update_hook command without any pre-configured scope.
 
 </td>
 </tr>
