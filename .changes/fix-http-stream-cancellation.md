@@ -1,5 +1,5 @@
 ---
-http-js: patch
+http-js: patch:bug
 ---
 
-Added the cancel hook to ReadableStream to ensure resources are released via dropBody() when a consumer stops reading.
+Cleanup resource when the returned `ReadableStream.cancel` is called to avoid memory leaks
