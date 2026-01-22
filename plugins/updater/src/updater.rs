@@ -892,7 +892,7 @@ impl Update {
         Ok(tempfile::Builder::new()
             .prefix(&format!("{}-{}-updater-", self.app_name, self.version))
             .tempdir()?
-            .into_path())
+            .keep())
     }
 
     #[cfg(feature = "zip")]

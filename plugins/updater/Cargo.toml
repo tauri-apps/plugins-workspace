@@ -44,7 +44,7 @@ time = { version = "0.3", features = ["parsing", "formatting"] }
 base64 = "0.22"
 semver = { version = "1", features = ["serde"] }
 futures-util = "0.3"
-tempfile = "3"
+tempfile = "3.20"
 infer = "0.19"
 percent-encoding = "2.3"
 
