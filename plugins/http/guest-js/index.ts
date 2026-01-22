@@ -275,7 +275,11 @@ export async function fetch(
             void dropBody()
           })
         },
-        pull: (controller) => readChunk(controller)
+        pull: (controller) => readChunk(controller),
+        cancel: () => {
+          // Ensure body resources are released on stream cancellation
+          void dropBody()
+        }
       })
 
   const res = new Response(body, {
