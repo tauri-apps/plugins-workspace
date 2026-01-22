@@ -1,5 +1,6 @@
 ---
-http-js: patch:bug
+http: patch
+http-js: patch
 ---
 
 Cleanup resource when the returned `ReadableStream.cancel` is called to avoid memory leaks
