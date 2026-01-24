@@ -519,6 +519,8 @@ mod tests {
             .unwrap()
             .parent()
             .unwrap()
+            .parent() // Go up once more to get out of the "deps" directory
+            .unwrap()
             .to_owned();
         assert_eq!(
             relative_command_path(Path::new("Tauri.Example")).unwrap(),
