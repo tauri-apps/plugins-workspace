@@ -1,4 +1,4 @@
-// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// Copyright 2019-2026 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
@@ -45,7 +45,7 @@ class FsPlugin(private val activity: Activity): Plugin(activity) {
         if (args.uri.startsWith(app.tauri.TAURI_ASSETS_DIRECTORY_URI)) {
             val path = args.uri.substring(app.tauri.TAURI_ASSETS_DIRECTORY_URI.length)
             try {
-                val fd = activity.assets.openFd(path).parcelFileDescriptor?.detachFd()
+                val fd = activity.assets.openFd(path).parcelFileDescriptor.detachFd()
                 res.put("fd", fd)
             } catch (e: IOException) {
                 // if the asset is compressed, we cannot open a file descriptor directly
@@ -64,6 +64,7 @@ class FsPlugin(private val activity: Activity): Plugin(activity) {
                 Uri.parse(args.uri),
                 args.mode
             )?.parcelFileDescriptor?.detachFd()
+            if (fd == null) throw IOException("No file or permission")
             res.put("fd", fd)
         }
 
