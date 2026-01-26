@@ -1,5 +1,26 @@
 # Changelog
 
+## \[2.0.40]
+
+### Dependencies
+
+- Upgraded to `http@2.5.6`
+- Upgraded to `dialog@2.6.0`
+
+## \[2.0.39]
+
+### Dependencies
+
+- Upgraded to `dialog@2.5.0`
+- Upgraded to `log@2.8.0`
+- Upgraded to `shell@2.3.4`
+- Upgraded to `barcode-scanner@2.4.3`
+- Upgraded to `fs@2.4.5`
+- Upgraded to `http@2.5.5`
+- Upgraded to `nfc@2.3.4`
+- Upgraded to `opener@2.5.3`
+- Upgraded to `store@2.4.2`
+
 ## \[2.0.38]
 
 ### Dependencies

@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.6]
+
+- [`28048039`](https://github.com/tauri-apps/plugins-workspace/commit/28048039496e84b46847c008416d341f1349e30e) ([#3143](https://github.com/tauri-apps/plugins-workspace/pull/3143) by [@Tunglies](https://github.com/tauri-apps/plugins-workspace/../../Tunglies)) Fix clippy warnings. No user facing changes.
+
 ## \[2.4.5]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

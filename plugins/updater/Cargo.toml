@@ -30,10 +30,13 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 log = { workspace = true }
 tokio = "1"
-reqwest = { version = "0.12", default-features = false, features = [
+reqwest = { version = "0.13", default-features = false, features = [
   "json",
   "stream",
 ] }
+rustls = { version = "0.23", default-features = false, features = [
+  "ring",
+], optional = true }
 url = { workspace = true }
 http = "1"
 minisign-verify = "0.2"
@@ -41,7 +44,7 @@ time = { version = "0.3", features = ["parsing", "formatting"] }
 base64 = "0.22"
 semver = { version = "1", features = ["serde"] }
 futures-util = "0.3"
-tempfile = "3"
+tempfile = "3.20"
 infer = "0.19"
 percent-encoding = "2.3"
 
@@ -68,4 +71,4 @@ default = ["rustls-tls", "zip"]
 zip = ["dep:zip", "dep:tar", "dep:flate2"]
 native-tls = ["reqwest/native-tls"]
 native-tls-vendored = ["reqwest/native-tls-vendored"]
-rustls-tls = ["reqwest/rustls-tls"]
+rustls-tls = ["reqwest/rustls-no-provider", "dep:rustls"]

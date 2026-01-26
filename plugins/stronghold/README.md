@@ -31,6 +31,13 @@ tauri-plugin-stronghold = "2.0.0"
 tauri-plugin-stronghold = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
+Due to an [upstream bug](https://github.com/tauri-apps/plugins-workspace/issues/2048) we also recommend that you add this to your `Cargo.toml` file:
+
+```toml
+[profile.dev.package.scrypt]
+opt-level = 3
+```
+
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
 > Note: If your JavaScript package manager cannot install packages from git monorepos, you can still use the code by manually copying the [Guest bindings](./guest-js/index.ts) into your source files.
