@@ -59,6 +59,10 @@ fn main() {
 
 Note that currently, plugins run in the order they were added in to the builder, so make sure that this plugin is registered first.
 
+## Usage with Flatpak/Snap
+
+If you use Flatpak/Snap to publish your package and your Tauri identifier doesn't match the package id, set the ``DBUS_ID`` variable at compile time.
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.

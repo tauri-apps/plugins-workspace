@@ -146,6 +146,7 @@ pub struct UpdaterBuilder {
     headers: HeaderMap,
     timeout: Option<Duration>,
     proxy: Option<Url>,
+    no_proxy: bool,
     installer_args: Vec<OsString>,
     current_exe_args: Vec<OsString>,
     on_before_exit: Option<OnBeforeExit>,
@@ -174,6 +175,7 @@ impl UpdaterBuilder {
             headers: Default::default(),
             timeout: None,
             proxy: None,
+            no_proxy: false,
             on_before_exit: None,
             configure_client: None,
         }
@@ -239,6 +241,12 @@ impl UpdaterBuilder {
 
     pub fn proxy(mut self, proxy: Url) -> Self {
         self.proxy.replace(proxy);
+        self
+    }
+
+    /// Clear all proxies. See [`reqwest::ClientBuilder::no_proxy`](https://docs.rs/reqwest/latest/reqwest/struct.ClientBuilder.html#method.no_proxy).
+    pub fn no_proxy(mut self) -> Self {
+        self.no_proxy = true;
         self
     }
 
@@ -323,6 +331,7 @@ impl UpdaterBuilder {
             version_comparator: self.version_comparator,
             timeout: self.timeout,
             proxy: self.proxy,
+            no_proxy: self.no_proxy,
             endpoints,
             installer_args: self.installer_args,
             current_exe_args: self.current_exe_args,
@@ -357,6 +366,7 @@ pub struct Updater {
     version_comparator: Option<VersionComparator>,
     timeout: Option<Duration>,
     proxy: Option<Url>,
+    no_proxy: bool,
     endpoints: Vec<Url>,
     arch: &'static str,
     // The `{{target}}` variable we replace in the endpoint and serach for in the JSON,
@@ -432,6 +442,12 @@ impl Updater {
 
             log::debug!("checking for updates {url}");
 
+            #[cfg(feature = "rustls-tls")]
+            if rustls::crypto::CryptoProvider::get_default().is_none() {
+                // This can only fail if there is already a default provider which we checked for already.
+                let _ = rustls::crypto::ring::default_provider().install_default();
+            }
+
             let mut request = ClientBuilder::new().user_agent(UPDATER_USER_AGENT);
             if self.config.dangerous_accept_invalid_certs {
                 request = request.danger_accept_invalid_certs(true);
@@ -442,7 +458,10 @@ impl Updater {
             if let Some(timeout) = self.timeout {
                 request = request.timeout(timeout);
             }
-            if let Some(ref proxy) = self.proxy {
+            if self.no_proxy {
+                log::debug!("disabling proxy");
+                request = request.no_proxy();
+            } else if let Some(ref proxy) = self.proxy {
                 log::debug!("using proxy {proxy}");
                 let proxy = reqwest::Proxy::all(proxy.as_str())?;
                 request = request.proxy(proxy);
@@ -533,6 +552,7 @@ impl Updater {
                 raw_json: raw_json.unwrap(),
                 timeout: None,
                 proxy: self.proxy.clone(),
+                no_proxy: self.no_proxy,
                 headers: self.headers.clone(),
                 installer_args: self.installer_args.clone(),
                 current_exe_args: self.current_exe_args.clone(),
@@ -606,6 +626,8 @@ pub struct Update {
     pub timeout: Option<Duration>,
     /// Request proxy
     pub proxy: Option<Url>,
+    /// Disable system proxy
+    pub no_proxy: bool,
     /// Request headers
     pub headers: HeaderMap,
     /// Extract path
@@ -648,7 +670,9 @@ impl Update {
         if let Some(timeout) = self.timeout {
             request = request.timeout(timeout);
         }
-        if let Some(ref proxy) = self.proxy {
+        if self.no_proxy {
+            request = request.no_proxy();
+        } else if let Some(ref proxy) = self.proxy {
             let proxy = reqwest::Proxy::all(proxy.as_str())?;
             request = request.proxy(proxy);
         }
@@ -868,7 +892,7 @@ impl Update {
         Ok(tempfile::Builder::new()
             .prefix(&format!("{}-{}-updater-", self.app_name, self.version))
             .tempdir()?
-            .into_path())
+            .keep())
     }
 
     #[cfg(feature = "zip")]

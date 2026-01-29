@@ -30,15 +30,36 @@ impl<R: Runtime> SingleInstanceDBus<R> {
 }
 
 #[cfg(feature = "semver")]
-fn dbus_id(config: &Config, version: semver::Version) -> String {
+fn dbus_id(config: &Config, version: semver::Version) -> (String, bool) {
+    let mut override_id = crate::OVERRIDE_DBUS_ID.try_lock();
+    while override_id.is_err() {
+        override_id = crate::OVERRIDE_DBUS_ID.try_lock();
+    }
+    let override_id = override_id.unwrap();
+    if let Some(ovr_id) = override_id.as_ref() {
+        return (ovr_id.to_owned(), true);
+    }
     let mut id = config.identifier.replace(['.', '-'], "_");
     id.push('_');
     id.push_str(semver_compat_string(version).as_str());
-    id
+    (id, false)
 }
 
+// Return a bool in order to indicate that the DBUS ID was set at runtime
 #[cfg(not(feature = "semver"))]
-fn dbus_id(config: &Config) -> String {
+fn dbus_id(config: &Config) -> (String, bool) {
+    let mut override_id = crate::OVERRIDE_DBUS_ID.try_lock();
+    while override_id.is_err() {
+        override_id = crate::OVERRIDE_DBUS_ID.try_lock();
+    }
+    let override_id = override_id.unwrap();
+    if let Some(ovr_id) = override_id.as_ref() {
+        return (ovr_id.to_owned(), true);
+    }
+    (config.identifier.clone(), false)
+}
+
+fn dbus_path(config: &Config) -> String {
     config.identifier.replace(['.', '-'], "_")
 }
 
@@ -48,14 +69,20 @@ pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
             #[cfg(feature = "semver")]
             let id = dbus_id(app.config(), app.package_info().version.clone());
             #[cfg(not(feature = "semver"))]
-            let id = dbus_id(app.config());
+            let (id, is_id_custom) = dbus_id(app.config());
 
             let single_instance_dbus = SingleInstanceDBus {
                 callback: f,
                 app_handle: app.clone(),
             };
-            let dbus_name = format!("org.{id}.SingleInstance");
-            let dbus_path = format!("/org/{id}/SingleInstance");
+
+            let path = dbus_path(app.config());
+            let dbus_path = format!("/{path}/SingleInstance");
+            let dbus_name = if is_id_custom {
+                id
+            } else {
+                format!("{id}.SingleInstance")
+            };
 
             match Builder::session()
                 .unwrap()
@@ -110,9 +137,13 @@ pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
             manager.app_handle().package_info().version.clone(),
         );
         #[cfg(not(feature = "semver"))]
-        let id = dbus_id(manager.config());
+        let (id, is_id_custom) = dbus_id(manager.config());
 
-        let dbus_name = format!("org.{id}.SingleInstance",);
+        let dbus_name = if is_id_custom {
+            id.clone()
+        } else {
+            format!("{id}.SingleInstance",)
+        };
         let _ = connection.0.release_name(dbus_name);
     }
 }

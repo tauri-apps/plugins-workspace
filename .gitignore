@@ -59,3 +59,4 @@ pids
 debug.log
 TODO.md
 .aider.*
+plugins/single-instance/examples/vanilla/bun.lock

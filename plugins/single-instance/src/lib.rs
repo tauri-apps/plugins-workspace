@@ -10,6 +10,11 @@
 )]
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 
+#[cfg(target_os = "linux")]
+use std::sync::LazyLock;
+
+#[cfg(target_os = "linux")]
+use tauri::async_runtime::Mutex;
 use tauri::{plugin::TauriPlugin, AppHandle, Manager, Runtime};
 
 #[cfg(target_os = "windows")]
@@ -42,4 +47,13 @@ pub fn init<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sy
 
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
     platform_impl::destroy(manager)
+}
+
+#[cfg(target_os = "linux")]
+static OVERRIDE_DBUS_ID: LazyLock<Mutex<Option<String>>> = LazyLock::new(|| Mutex::new(None));
+
+#[cfg(target_os = "linux")]
+pub async fn set_dbus_id(dbus_id: String) {
+    let mut id = OVERRIDE_DBUS_ID.lock().await;
+    *id = Some(dbus_id);
 }
