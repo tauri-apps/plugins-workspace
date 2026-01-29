@@ -21,6 +21,7 @@ target/
 package-lock.json
 yarn.lock
 bun.lockb
+bun.lock
 
 # rust compiled folders
 target/
@@ -59,4 +60,3 @@ pids
 debug.log
 TODO.md
 .aider.*
-plugins/single-instance/examples/vanilla/bun.lock
