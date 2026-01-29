@@ -369,8 +369,8 @@ pub struct Updater {
     no_proxy: bool,
     endpoints: Vec<Url>,
     arch: &'static str,
-    // The `{{target}}` variable we replace in the endpoint and serach for in the JSON,
-    // this is either the user provided target or the current operating system by default
+    // The user-provided custom target for platform selection in the JSON response.
+    // This does NOT affect the `{{target}}` URL token, which always uses the OS name.
     target: Option<String>,
     headers: HeaderMap,
     extract_path: PathBuf,
@@ -400,11 +400,9 @@ impl Updater {
                 std::env::set_var("SSL_CERT_DIR", "/etc/ssl/certs");
             }
         }
-        let target = if let Some(target) = &self.target {
-            target
-        } else {
-            updater_os().ok_or(Error::UnsupportedOs)?
-        };
+        // The OS-only value is always used for URL token replacement ({{target}})
+        // This is separate from the custom target which is only used for platform selection
+        let os = updater_os().ok_or(Error::UnsupportedOs)?;
 
         let mut remote_release: Option<RemoteRelease> = None;
         let mut raw_json: Option<serde_json::Value> = None;
@@ -417,6 +415,10 @@ impl Updater {
             // https://releases.myapp.com/update/darwin/aarch64/1.0.0
             // The main objective is if the update URL is defined via the Cargo.toml
             // the URL will be generated dynamically
+            //
+            // Note: {{target}} is always the OS name (darwin, linux, windows), regardless of
+            // whether a custom target is set. The custom target only affects platform selection
+            // in the JSON response, not the URL token replacement.
             let version = self.current_version.to_string();
             let version = version.as_bytes();
             const CONTROLS_ADD: &AsciiSet = &CONTROLS.add(b'+');
@@ -430,12 +432,12 @@ impl Updater {
                 .to_string()
                 // url::Url automatically url-encodes the path components
                 .replace("%7B%7Bcurrent_version%7D%7D", &encoded_version)
-                .replace("%7B%7Btarget%7D%7D", target)
+                .replace("%7B%7Btarget%7D%7D", os)
                 .replace("%7B%7Barch%7D%7D", self.arch)
                 .replace("%7B%7Bbundle_type%7D%7D", installer)
                 // but not query parameters
                 .replace("{{current_version}}", &encoded_version)
-                .replace("{{target}}", target)
+                .replace("{{target}}", os)
                 .replace("{{arch}}", self.arch)
                 .replace("{{bundle_type}}", installer)
                 .parse()?;
@@ -542,7 +544,7 @@ impl Updater {
                 on_before_exit: self.on_before_exit.clone(),
                 app_name: self.app_name.clone(),
                 current_version: self.current_version.to_string(),
-                target: target.to_owned(),
+                target: os.to_owned(),
                 extract_path: self.extract_path.clone(),
                 version: release.version.to_string(),
                 date: release.pub_date,
@@ -613,8 +615,8 @@ pub struct Update {
     pub version: String,
     /// Update publish date
     pub date: Option<OffsetDateTime>,
-    /// The `{{target}}` variable we replace in the endpoint and search for in the JSON,
-    /// this is either the user provided target or the current operating system by default
+    /// The OS name used for the `{{target}}` URL token replacement (e.g., "darwin", "linux", "windows").
+    /// This is always the current operating system, regardless of any custom target setting.
     pub target: String,
     /// Download URL announced
     pub download_url: Url,
