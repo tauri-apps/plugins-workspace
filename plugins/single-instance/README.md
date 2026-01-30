@@ -61,7 +61,7 @@ Note that currently, plugins run in the order they were added in to the builder,
 
 ## Usage with Flatpak/Snap
 
-If you use Flatpak/Snap to publish your package and your Tauri identifier doesn't match the package id, set the ``DBUS_ID`` variable at compile time.
+If you use Flatpak/Snap to publish your package and your Tauri identifier doesn't match the package id, set the `DBUS_ID` variable using the builder for the plugin, look at example.
 
 ## Contributing
 
