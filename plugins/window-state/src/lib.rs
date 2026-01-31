@@ -72,7 +72,7 @@ struct PluginState {
     map_label: Option<Box<LabelMapperFn>>,
 }
 
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq)]
 struct WindowState {
     width: u32,
     height: u32,
@@ -124,9 +124,13 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
         let state_path = app_dir.join(&plugin_state.filename);
         let windows = self.webview_windows();
         let cache = self.state::<WindowStateCache>();
-        let mut state = cache.0.lock().unwrap();
 
-        for (label, s) in state.iter_mut() {
+        let mut state_snapshot = {
+            let state = cache.0.lock().unwrap();
+            state.clone()
+        };
+
+        for (label, s) in state_snapshot.iter_mut() {
             let window = if let Some(map) = &plugin_state.map_label {
                 windows
                     .iter()
@@ -140,8 +144,14 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
             }
         }
 
+        let data = serde_json::to_vec_pretty(&state_snapshot)?;
+        {
+            let mut state = cache.0.lock().unwrap();
+            *state = state_snapshot;
+        }
+
         create_dir_all(app_dir)?;
-        std::fs::write(state_path, serde_json::to_vec_pretty(&*state)?)?;
+        std::fs::write(state_path, data)?;
 
         Ok(())
     }
