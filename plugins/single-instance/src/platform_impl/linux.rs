@@ -65,12 +65,6 @@ pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M, custom_dbus_id: Option<St
     }
 }
 
-impl Default for Builder {
-    fn default() -> Self {
-        Self { dbus_id: None }
-    }
-}
-
 impl Builder {
     pub fn new() -> Self {
         Self::default()

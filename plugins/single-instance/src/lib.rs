@@ -53,6 +53,7 @@ pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
 }
 
 #[cfg(target_os = "linux")]
+#[derive(Default)]
 pub struct Builder {
     dbus_id: Option<String>,
 }
