@@ -125,10 +125,7 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
         let windows = self.webview_windows();
         let cache = self.state::<WindowStateCache>();
 
-        let mut state_snapshot = {
-            let state = cache.0.lock().unwrap();
-            state.clone()
-        };
+        let mut state_snapshot = cache.0.lock().unwrap().clone();
 
         for (label, s) in state_snapshot.iter_mut() {
             let window = if let Some(map) = &plugin_state.map_label {
