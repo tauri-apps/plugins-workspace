@@ -722,7 +722,8 @@ async function readDir(
  */
 interface ReadFileOptions {
   /** Base directory for `path` */
-  baseDir?: BaseDirectory
+  baseDir?: BaseDirectory,
+  encoding?: string
 }
 
 /**
@@ -753,7 +754,7 @@ async function readFile(
 }
 
 /**
- * Reads and returns the entire contents of a file as UTF-8 string.
+ * Reads and returns the entire contents of a file as a string using the specified encoding (default: UTF-8).
  * @example
  * ```typescript
  * import { readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
@@ -777,7 +778,7 @@ async function readTextFile(
 
   const bytes = arr instanceof ArrayBuffer ? arr : Uint8Array.from(arr)
 
-  return new TextDecoder().decode(bytes)
+  return new TextDecoder(options?.encoding ?? 'utf-8').decode(bytes)
 }
 
 /**
