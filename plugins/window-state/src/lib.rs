@@ -145,10 +145,7 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
         }
 
         let data = serde_json::to_vec_pretty(&state_snapshot)?;
-        {
-            let mut state = cache.0.lock().unwrap();
-            *state = state_snapshot;
-        }
+        *cache.0.lock().unwrap() = state_snapshot;
 
         create_dir_all(app_dir)?;
         std::fs::write(state_path, data)?;
