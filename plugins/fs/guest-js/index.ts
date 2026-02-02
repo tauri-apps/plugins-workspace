@@ -722,7 +722,8 @@ async function readDir(
  */
 interface ReadFileOptions {
   /** Base directory for `path` */
-  baseDir?: BaseDirectory,
+  baseDir?: BaseDirectory
+  /** Text encoding to use when reading a text file. Defaults to 'utf-8'. */
   encoding?: string
 }
 
@@ -782,7 +783,7 @@ async function readTextFile(
 }
 
 /**
- * Returns an async {@linkcode AsyncIterableIterator} over the lines of a file as UTF-8 string.
+ * Returns an async {@linkcode AsyncIterableIterator} over the lines of a file, decoded using the specified encoding (default: UTF-8).
  * @example
  * ```typescript
  * import { readTextFileLines, BaseDirectory } from '@tauri-apps/plugin-fs';
@@ -839,7 +840,7 @@ async function readTextFileLines(
         return { value: null, done }
       }
 
-      const line = new TextDecoder().decode(
+      const line = new TextDecoder(options?.encoding ?? 'utf-8').decode(
         bytes.slice(0, bytes.byteLength - 1)
       )
 
