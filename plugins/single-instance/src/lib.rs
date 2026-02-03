@@ -46,10 +46,10 @@ pub struct Builder<R: Runtime> {
 impl<R: Runtime> Default for Builder<R> {
     fn default() -> Self {
         Self {
-            callback: Box::new(move |app, args, _| {
+            callback: Box::new(move |_app, _args, _| {
                 #[cfg(feature = "deep-link")]
-                if let Some(deep_link) = app.try_state::<tauri_plugin_deep_link::DeepLink<R>>() {
-                    deep_link.handle_cli_arguments(args.iter());
+                if let Some(deep_link) = _app.try_state::<tauri_plugin_deep_link::DeepLink<R>>() {
+                    deep_link.handle_cli_arguments(_args.iter());
                 }
             }),
             dbus_id: None,
