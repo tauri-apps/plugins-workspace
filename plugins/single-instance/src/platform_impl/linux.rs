@@ -42,6 +42,7 @@ fn dbus_id(config: &Config) -> String {
 fn dbus_path(config: &Config) -> String {
     config.identifier.replace(['.', '-'], "_")
 }
+
 pub fn init<R: Runtime>(f: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     Builder::new().build(f)
 }
