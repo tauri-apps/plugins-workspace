@@ -2,8 +2,7 @@
 "single-instance": minor:fix
 ---
 
-I believe this should be a MINOR increase in version number.
+On Linux, the DBus ID/name will now be `<bundle-id>.SingleInstance` instead of `org.<bundle_id_underscores>.SingleInstance` to follow DBus specifications to primarily fix FlatPak compatibility.
+**Breaking:** This will break the single-instance mechanism across multiple app versions which should only matter for very few use-cases where multiple installs of the same app are to be expected.
 
-First and most important change is that now by default the single instance plugin will use the app's reverse domain with `.SingleInstance` in the end as the DBus ID instead of `org.apps_reverse_id.SingleInstance` (e.g `apps.reverse.id.SingleInstance`). This will make the developer's lives easier as they won't have to get extra approvals from Flathub and Snap stores.
-
-There is now a builder on Linux, letting users set a custom DBus ID
+Added `dbus_id` builder method to set the ID manually, which can be used to restore previous behavior. For an example bundle identifier of `com.tauri.my-example` this would be `dbus_id("org.com_tauri_my_example.SingleInstance")`.

@@ -29,31 +29,68 @@ pub(crate) type SingleInstanceCallback<R> =
     dyn FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static;
 
 pub fn init<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static>(
-    mut f: F,
+    f: F,
 ) -> TauriPlugin<R> {
-    platform_impl::init(Box::new(move |app, args, cwd| {
-        #[cfg(feature = "deep-link")]
-        if let Some(deep_link) = app.try_state::<tauri_plugin_deep_link::DeepLink<R>>() {
-            deep_link.handle_cli_arguments(args.iter());
-        }
-        f(app, args, cwd)
-    }))
+    Builder::new().callback(f).build()
 }
 
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
-    #[cfg(not(target_os = "linux"))]
-    {
-        platform_impl::destroy(manager)
-    }
-    #[cfg(target_os = "linux")]
-    {
-        let dbus_id = manager.state::<Builder>().dbus_id.clone();
-        platform_impl::destroy(manager, dbus_id)
+    platform_impl::destroy(manager)
+}
+
+pub struct Builder<R: Runtime> {
+    callback: Box<SingleInstanceCallback<R>>,
+    dbus_id: Option<String>,
+}
+
+impl<R: Runtime> Default for Builder<R> {
+    fn default() -> Self {
+        Self {
+            callback: Box::new(move |app, args, _| {
+                #[cfg(feature = "deep-link")]
+                if let Some(deep_link) = app.try_state::<tauri_plugin_deep_link::DeepLink<R>>() {
+                    deep_link.handle_cli_arguments(args.iter());
+                }
+            }),
+            dbus_id: None,
+        }
     }
 }
 
-#[cfg(target_os = "linux")]
-#[derive(Default)]
-pub struct Builder {
-    dbus_id: Option<String>,
+impl<R: Runtime> Builder<R> {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    /// Function to call when a secondary instance was opened by the user and killed by the plugin.
+    /// If the `deep-link` is enabled, the plugin triggers the deep-link plugin before executing the callback.
+    pub fn callback<F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static>(
+        mut self,
+        mut f: F,
+    ) -> Self {
+        self.callback = Box::new(move |app, args, cwd| {
+            #[cfg(feature = "deep-link")]
+            if let Some(deep_link) = app.try_state::<tauri_plugin_deep_link::DeepLink<R>>() {
+                deep_link.handle_cli_arguments(args.iter());
+            }
+            f(app, args, cwd)
+        });
+        self
+    }
+
+    /// Set a custom DBus ID, used on Linux.
+    ///
+    /// This overwrites the `semver` feature.
+    pub fn dbus_id(mut self, dbus_id: impl Into<String>) -> Self {
+        self.dbus_id = Some(dbus_id.into());
+        self
+    }
+
+    pub fn build(self) -> TauriPlugin<R> {
+        platform_impl::init(
+            self.callback,
+            #[cfg(target_os = "linux")]
+            self.dbus_id,
+        )
+    }
 }
