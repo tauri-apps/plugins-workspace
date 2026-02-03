@@ -1,5 +1,12 @@
 # Changelog
 
+## \[2.10.0]
+
+- [`4375c98b`](https://github.com/tauri-apps/plugins-workspace/commit/4375c98bed1769a1fc1be26eded4db9f7c095d95) ([#3073](https://github.com/tauri-apps/plugins-workspace/pull/3073)) Add no_proxy config to disable system proxy for updater plugin.
+- [`f122ee98`](https://github.com/tauri-apps/plugins-workspace/commit/f122ee98c6954075891ac3cd530f5e29da117b39) Allow configuring the updater client to accept invalid TLS certificates and hostnames for internal/self-signed update servers. These options are available via the plugin config (`dangerousAcceptInvalidCerts`, `dangerousAcceptInvalidHostnames`) and via the `UpdaterBuilder` (`dangerous_accept_invalid_certs`, `dangerous_accept_invalid_hostnames`).
+- [`f122ee98`](https://github.com/tauri-apps/plugins-workspace/commit/f122ee98c6954075891ac3cd530f5e29da117b39) Updater plugin now supports all bundle types: Deb, Rpm and AppImage for Linux; NSiS, MSI for Windows. This was added in https://github.com/tauri-apps/plugins-workspace/pull/2624
+- [`05c5da07`](https://github.com/tauri-apps/plugins-workspace/commit/05c5da072b6e3254c19ee69024f80f4dfe1b779b) ([#3213](https://github.com/tauri-apps/plugins-workspace/pull/3213)) Updated `reqwest` to 0.13, make sure to update your `reqwest` dependency if you're using `UpdaterBuilder::configure_client`
+
 ## \[2.9.0]
 
 - [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
