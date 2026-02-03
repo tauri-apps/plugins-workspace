@@ -63,7 +63,7 @@ impl<R: Runtime> Builder<R> {
     }
 
     /// Function to call when a secondary instance was opened by the user and killed by the plugin.
-    /// If the `deep-link` is enabled, the plugin triggers the deep-link plugin before executing the callback.
+    /// If the `deep-link` feature is enabled, the plugin triggers the deep-link plugin before executing the callback.
     pub fn callback<F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static>(
         mut self,
         mut f: F,
