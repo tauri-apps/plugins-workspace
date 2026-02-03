@@ -30,7 +30,7 @@ struct DBusName(String);
 
 #[cfg(feature = "semver")]
 fn default_dbus_id(config: &Config, version: semver::Version) -> String {
-    let mut id = config.identifier.replace(['.', '-'], "_");
+    let mut id = config.identifier.clone();
     id.push('_');
     id.push_str(semver_compat_string(version).as_str());
     id
