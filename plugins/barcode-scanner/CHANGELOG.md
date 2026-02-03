@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.4.4]
+
+- [`82fbb0c7`](https://github.com/tauri-apps/plugins-workspace/commit/82fbb0c790288eca72af9ade13828ded7700ff90) ([#3221](https://github.com/tauri-apps/plugins-workspace/pull/3221)) On iOS, fixed an application crash happening when the scanner was started when user denied permission before.
+- [`b60dd887`](https://github.com/tauri-apps/plugins-workspace/commit/b60dd88702a2be2af942a3d104d728970a4c42d6) ([#3223](https://github.com/tauri-apps/plugins-workspace/pull/3223)) On iOS, start the scanning session on a separate thread to fix performance issues.
+- [`c27af912`](https://github.com/tauri-apps/plugins-workspace/commit/c27af9128d6cc7a2424ec49e98005e68b2d0eb1a) ([#3222](https://github.com/tauri-apps/plugins-workspace/pull/3222)) On iOS, fixed an application crash happening when the scanner was started on the iOS Simulator (no camera available).
+
 ## \[2.4.3]
 
 - [`d8bfe61f`](https://github.com/tauri-apps/plugins-workspace/commit/d8bfe61f20f235314bad93a9c50d8b7f3eade734) ([#3121](https://github.com/tauri-apps/plugins-workspace/pull/3121) by [@NKIPSC](https://github.com/tauri-apps/plugins-workspace/../../NKIPSC)) Remove unnecessary checks on Android when requesting camera permission.

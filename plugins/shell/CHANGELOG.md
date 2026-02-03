@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.3.5]
+
+### bug
+
+- [`d4613ff0`](https://github.com/tauri-apps/plugins-workspace/commit/d4613ff0029ea65f5c6895c3a6f8f5668dd1b55e) ([#3234](https://github.com/tauri-apps/plugins-workspace/pull/3234)) Make sidecars work in tests. Executable resolution is aware of the "deps" directory.
+
 ## \[2.3.4]
 
 - [`31415eff`](https://github.com/tauri-apps/plugins-workspace/commit/31415effdf5a9ced19934a681cb044a732174088) ([#3183](https://github.com/tauri-apps/plugins-workspace/pull/3183) by [@Tunglies](https://github.com/tauri-apps/plugins-workspace/../../Tunglies)) Docs on example to Encoding usage in `Command::spawn`. No user facing changes.
