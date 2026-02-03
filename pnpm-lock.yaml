@@ -145,19 +145,19 @@ importers:
   plugins/autostart:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/barcode-scanner:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/biometric:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/cli:
@@ -169,13 +169,13 @@ importers:
   plugins/clipboard-manager:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/deep-link:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
     devDependencies:
       '@tauri-apps/cli':
@@ -185,7 +185,7 @@ importers:
   plugins/deep-link/examples/app:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
       '@tauri-apps/plugin-deep-link':
         specifier: 2.4.6
@@ -204,31 +204,31 @@ importers:
   plugins/dialog:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/fs:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/geolocation:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/global-shortcut:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/haptics:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/http:
@@ -246,19 +246,19 @@ importers:
   plugins/nfc:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/notification:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/opener:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/os:
@@ -282,7 +282,7 @@ importers:
   plugins/shell:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/single-instance/examples/vanilla:
@@ -300,7 +300,7 @@ importers:
   plugins/store:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/store/examples/AppSettingsManager:
@@ -330,7 +330,7 @@ importers:
   plugins/upload:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.10.0
+        specifier: ^2.10.1
         version: 2.10.1
 
   plugins/websocket:
@@ -2368,9 +2368,9 @@ snapshots:
       - encoding
       - mocha
 
-  '@covector/assemble@0.12.0(mocha@10.8.2)':
+  '@covector/assemble@0.12.0':
     dependencies:
-      '@covector/command': 0.8.0(mocha@10.8.2)
+      '@covector/command': 0.8.0
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.8.2)
       js-yaml: 4.1.1
@@ -2381,10 +2381,9 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
-      - mocha
       - supports-color
 
-  '@covector/changelog@0.12.0(mocha@10.8.2)':
+  '@covector/changelog@0.12.0':
     dependencies:
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.8.2)
@@ -2394,16 +2393,14 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
-      - mocha
       - supports-color
 
-  '@covector/command@0.8.0(mocha@10.8.2)':
+  '@covector/command@0.8.0':
     dependencies:
-      '@effection/process': 2.1.4(mocha@10.8.2)
+      '@effection/process': 2.1.4
       effection: 2.0.8(mocha@10.8.2)
     transitivePeerDependencies:
       - encoding
-      - mocha
 
   '@covector/files@0.8.0':
     dependencies:
@@ -2450,8 +2447,10 @@ snapshots:
     dependencies:
       effection: 2.0.8(mocha@10.8.2)
       mocha: 10.8.2
+    transitivePeerDependencies:
+      - encoding
 
-  '@effection/process@2.1.4(mocha@10.8.2)':
+  '@effection/process@2.1.4':
     dependencies:
       cross-spawn: 7.0.6
       ctrlc-windows: 2.2.0
@@ -2459,7 +2458,6 @@ snapshots:
       shellwords: 0.1.1
     transitivePeerDependencies:
       - encoding
-      - mocha
 
   '@effection/stream@2.0.6':
     dependencies:
@@ -3307,9 +3305,9 @@ snapshots:
     dependencies:
       '@clack/prompts': 0.7.0
       '@covector/apply': 0.10.0(mocha@10.8.2)
-      '@covector/assemble': 0.12.0(mocha@10.8.2)
-      '@covector/changelog': 0.12.0(mocha@10.8.2)
-      '@covector/command': 0.8.0(mocha@10.8.2)
+      '@covector/assemble': 0.12.0
+      '@covector/changelog': 0.12.0
+      '@covector/command': 0.8.0
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.8.2)
       globby: 11.1.0
