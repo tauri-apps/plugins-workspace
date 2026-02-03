@@ -63,7 +63,7 @@ fn socket_path(config: &Config, _package_info: &tauri::PackageInfo) -> PathBuf {
     #[cfg(feature = "semver")]
     let identifier = format!(
         "{identifier}_{}",
-        semver_compat_string(_package_info.version.clone()),
+        &semver_compat_string(_package_info.version),
     );
 
     // Use /tmp as socket path must be shorter than 100 chars.

@@ -8,7 +8,7 @@ use crate::semver_compat::semver_compat_string;
 use crate::SingleInstanceCallback;
 use tauri::{
     plugin::{self, TauriPlugin},
-    AppHandle, Config, Manager, RunEvent, Runtime,
+    AppHandle, Manager, RunEvent, Runtime,
 };
 use zbus::{blocking::Connection, interface, names::WellKnownName};
 
@@ -28,40 +28,22 @@ impl<R: Runtime> SingleInstanceDBus<R> {
 
 struct DBusName(String);
 
-#[cfg(feature = "semver")]
-fn default_dbus_id(config: &Config, version: semver::Version) -> String {
-    let mut id = config.identifier.clone();
-    id.push('_');
-    id.push_str(semver_compat_string(version).as_str());
-    id
-}
-
-#[cfg(not(feature = "semver"))]
-fn default_dbus_id(config: &Config) -> String {
-    config.identifier.clone()
-}
-
-fn dbus_path(dbus_name: &str) -> String {
-    dbus_name.replace('.', "/")
-}
-
 pub fn init<R: Runtime>(
     callback: Box<SingleInstanceCallback<R>>,
     dbus_id: Option<String>,
 ) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(move |app, _api| {
-            let dbus_name = if let Some(dbus_id) = dbus_id {
-                dbus_id
-            } else {
-                let id = default_dbus_id(
-                    app.config(),
-                    #[cfg(feature = "semver")]
-                    app.package_info().version.clone(),
-                );
-                format!("{id}.SingleInstance")
-            };
-            let dbus_path = dbus_path(&dbus_name);
+            let mut dbus_name = dbus_id.unwrap_or_else(|| app.config().identifier.clone());
+            dbus_name.push_str(".SingleInstance");
+
+            #[cfg(feature = "semver")]
+            {
+                dbus_name.push('_');
+                dbus_name.push_str(semver_compat_string(&app.package_info().version).as_str());
+            }
+
+            let dbus_path = dbus_name.replace('.', "/");
 
             let single_instance_dbus = SingleInstanceDBus {
                 callback,

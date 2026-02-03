@@ -78,9 +78,11 @@ impl<R: Runtime> Builder<R> {
         self
     }
 
-    /// Set a custom DBus ID, used on Linux.
+    /// Set a custom D-Bus ID, used on Linux. The plugin will append a `.SingleInstance` subname.
+    /// For example `com.mycompany.myapp` will result in the plugin registering its D-Bus service on `com.mycompany.myapp.SingleInstance`.
+    /// Usually you want the same base ID across all components in your app.
     ///
-    /// This overwrites the `semver` feature.
+    /// Defaults to the app's bundle identifier set in tauri.conf.json.
     pub fn dbus_id(mut self, dbus_id: impl Into<String>) -> Self {
         self.dbus_id = Some(dbus_id.into());
         self
