@@ -37,6 +37,7 @@ pub fn setup_single_instance<R: Runtime>(
         dbus_name.push('_');
         dbus_name.push_str(semver_compat_string(&app.package_info().version).as_str());
     }
+
     dbus_name.push_str(".SingleInstance");
 
     let mut dbus_path = dbus_name.replace('.', "/").replace('-', "_");
