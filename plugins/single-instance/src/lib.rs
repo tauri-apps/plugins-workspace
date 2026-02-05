@@ -10,7 +10,7 @@
 )]
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 
-use tauri::{plugin::TauriPlugin, AppHandle, Manager, Runtime};
+use tauri::{plugin, plugin::TauriPlugin, AppHandle, Manager, RunEvent, Runtime};
 
 #[cfg(target_os = "windows")]
 #[path = "platform_impl/windows.rs"]
@@ -32,6 +32,17 @@ pub fn init<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sy
     f: F,
 ) -> TauriPlugin<R> {
     Builder::new().callback(f).build()
+}
+
+/// Runs the single-instance setup flow with the given app and callback.
+/// Use this when you need to run single-instance from your own plugin or app setup.
+/// On Linux, pass `dbus_id` (e.g. `Some("com.mycompany.myapp".into())`); on other platforms it is ignored.
+pub fn setup<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static>(
+    app: &AppHandle<R>,
+    callback: F,
+    dbus_id: Option<String>,
+) -> Result<(), ()> {
+    platform_impl::setup_single_instance(app, Box::new(callback), dbus_id)
 }
 
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
@@ -89,10 +100,18 @@ impl<R: Runtime> Builder<R> {
     }
 
     pub fn build(self) -> TauriPlugin<R> {
-        platform_impl::init(
-            self.callback,
-            #[cfg(target_os = "linux")]
-            self.dbus_id,
-        )
+        let callback = self.callback;
+        let dbus_id = self.dbus_id;
+        plugin::Builder::new("single-instance")
+            .setup(move |app, _api| {
+                let _ = platform_impl::setup_single_instance(app, callback, dbus_id);
+                Ok(())
+            })
+            .on_event(|app, event| {
+                if let RunEvent::Exit = event {
+                    destroy(app);
+                }
+            })
+            .build()
     }
 }

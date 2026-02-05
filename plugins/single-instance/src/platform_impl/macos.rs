@@ -11,45 +11,37 @@ use std::{
 #[cfg(feature = "semver")]
 use crate::semver_compat::semver_compat_string;
 use crate::SingleInstanceCallback;
-use tauri::{
-    plugin::{self, TauriPlugin},
-    AppHandle, Config, Manager, RunEvent, Runtime,
-};
+use tauri::{AppHandle, Config, Manager, Runtime};
 
-pub fn init<R: Runtime>(cb: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
-    plugin::Builder::new("single-instance")
-        .setup(|app, _api| {
-            let socket = socket_path(app.config(), app.package_info());
+pub fn setup_single_instance<R: Runtime>(
+    app: &AppHandle<R>,
+    cb: Box<SingleInstanceCallback<R>>,
+    _dbus_id: Option<String>,
+) -> Result<(), ()> {
+    let socket = socket_path(app.config(), app.package_info());
 
-            // Notify the singleton which may or may not exist.
-            match notify_singleton(&socket) {
-                Ok(_) => {
-                    std::process::exit(0);
+    // Notify the singleton which may or may not exist.
+    match notify_singleton(&socket) {
+        Ok(_) => {
+            std::process::exit(0);
+        }
+        Err(e) => {
+            match e.kind() {
+                ErrorKind::NotFound | ErrorKind::ConnectionRefused => {
+                    // This process claims itself as singleton as likely none exists
+                    socket_cleanup(&socket);
+                    listen_for_other_instances(&socket, app.clone(), cb);
                 }
-                Err(e) => {
-                    match e.kind() {
-                        ErrorKind::NotFound | ErrorKind::ConnectionRefused => {
-                            // This process claims itself as singleton as likely none exists
-                            socket_cleanup(&socket);
-                            listen_for_other_instances(&socket, app.clone(), cb);
-                        }
-                        _ => {
-                            tracing::debug!(
-                                "single_instance failed to notify - launching normally: {}",
-                                e
-                            );
-                        }
-                    }
+                _ => {
+                    tracing::debug!(
+                        "single_instance failed to notify - launching normally: {}",
+                        e
+                    );
                 }
             }
-            Ok(())
-        })
-        .on_event(|app, event| {
-            if let RunEvent::Exit = event {
-                destroy(app);
-            }
-        })
-        .build()
+        }
+    }
+    Ok(())
 }
 
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {

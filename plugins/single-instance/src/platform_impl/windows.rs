@@ -7,10 +7,7 @@ use crate::semver_compat::semver_compat_string;
 
 use crate::SingleInstanceCallback;
 use std::ffi::CStr;
-use tauri::{
-    plugin::{self, TauriPlugin},
-    AppHandle, Manager, RunEvent, Runtime,
-};
+use tauri::{AppHandle, Manager, Runtime};
 use windows_sys::Win32::{
     Foundation::{CloseHandle, GetLastError, ERROR_ALREADY_EXISTS, HWND, LPARAM, LRESULT, WPARAM},
     System::{
@@ -51,69 +48,63 @@ impl<R: Runtime> UserData<R> {
     }
 }
 
-pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
-    plugin::Builder::new("single-instance")
-        .setup(|app, _api| {
-            #[allow(unused_mut)]
-            let mut id = app.config().identifier.clone();
-            #[cfg(feature = "semver")]
-            {
-                id.push('_');
-                id.push_str(semver_compat_string(&app.package_info().version).as_str());
-            }
+pub fn setup_single_instance<R: Runtime>(
+    app: &AppHandle<R>,
+    callback: Box<SingleInstanceCallback<R>>,
+    _dbus_id: Option<String>,
+) -> Result<(), ()> {
+    #[allow(unused_mut)]
+    let mut id = app.config().identifier.clone();
+    #[cfg(feature = "semver")]
+    {
+        id.push('_');
+        id.push_str(semver_compat_string(&app.package_info().version).as_str());
+    }
 
-            let class_name = encode_wide(format!("{id}-sic"));
-            let window_name = encode_wide(format!("{id}-siw"));
-            let mutex_name = encode_wide(format!("{id}-sim"));
+    let class_name = encode_wide(format!("{id}-sic"));
+    let window_name = encode_wide(format!("{id}-siw"));
+    let mutex_name = encode_wide(format!("{id}-sim"));
 
-            let hmutex =
-                unsafe { CreateMutexW(std::ptr::null(), true.into(), mutex_name.as_ptr()) };
+    let hmutex = unsafe { CreateMutexW(std::ptr::null(), true.into(), mutex_name.as_ptr()) };
 
-            if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
-                unsafe {
-                    let hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
+    if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
+        unsafe {
+            let hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
 
-                    if !hwnd.is_null() {
-                        let cwd = std::env::current_dir().unwrap_or_default();
-                        let cwd = cwd.to_str().unwrap_or_default();
+            if !hwnd.is_null() {
+                let cwd = std::env::current_dir().unwrap_or_default();
+                let cwd = cwd.to_str().unwrap_or_default();
 
-                        let args = std::env::args().collect::<Vec<String>>().join("|");
+                let args = std::env::args().collect::<Vec<String>>().join("|");
 
-                        let data = format!("{cwd}|{args}\0",);
+                let data = format!("{cwd}|{args}\0",);
 
-                        let bytes = data.as_bytes();
-                        let cds = COPYDATASTRUCT {
-                            dwData: WMCOPYDATA_SINGLE_INSTANCE_DATA,
-                            cbData: bytes.len() as _,
-                            lpData: bytes.as_ptr() as _,
-                        };
-
-                        SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
-
-                        app.cleanup_before_exit();
-                        std::process::exit(0);
-                    }
-                }
-            } else {
-                app.manage(MutexHandle(hmutex as _));
-
-                let userdata = UserData {
-                    app: app.clone(),
-                    callback,
+                let bytes = data.as_bytes();
+                let cds = COPYDATASTRUCT {
+                    dwData: WMCOPYDATA_SINGLE_INSTANCE_DATA,
+                    cbData: bytes.len() as _,
+                    lpData: bytes.as_ptr() as _,
                 };
-                let userdata = Box::into_raw(Box::new(userdata));
-                let hwnd = create_event_target_window::<R>(&class_name, &window_name, userdata);
-                app.manage(TargetWindowHandle(hwnd as _));
-            }
 
-            Ok(())
-        })
-        .on_event(|app, event| {
-            if let RunEvent::Exit = event {
-                destroy(app);
+                SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
+
+                app.cleanup_before_exit();
+                std::process::exit(0);
             }
-        })
-        .build()
+        }
+    } else {
+        app.manage(MutexHandle(hmutex as _));
+
+        let userdata = UserData {
+            app: app.clone(),
+            callback,
+        };
+        let userdata = Box::into_raw(Box::new(userdata));
+        let hwnd = create_event_target_window::<R>(&class_name, &window_name, userdata);
+        app.manage(TargetWindowHandle(hwnd as _));
+    }
+
+    Ok(())
 }
 
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
