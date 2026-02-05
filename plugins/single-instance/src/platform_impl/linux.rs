@@ -35,15 +35,18 @@ pub fn init<R: Runtime>(
     plugin::Builder::new("single-instance")
         .setup(move |app, _api| {
             let mut dbus_name = dbus_id.unwrap_or_else(|| app.config().identifier.clone());
-            dbus_name.push_str(".SingleInstance");
 
             #[cfg(feature = "semver")]
             {
                 dbus_name.push('_');
                 dbus_name.push_str(semver_compat_string(&app.package_info().version).as_str());
             }
+            dbus_name.push_str(".SingleInstance");
 
-            let dbus_path = dbus_name.replace('.', "/");
+            let mut dbus_path = dbus_name.replace('.', "/").replace('-', "_");
+            if !dbus_path.starts_with('/') {
+                dbus_path = format!("/{dbus_path}");
+            }
 
             let single_instance_dbus = SingleInstanceDBus {
                 callback,
