@@ -540,6 +540,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             Ok(())
         })
         .on_event(|_app, _event| {
+            #[cfg(desktop)]
             if let tauri::RunEvent::Opened { urls } = _event {
                 use tauri::Emitter;
 
