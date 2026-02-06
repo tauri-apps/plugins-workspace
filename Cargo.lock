@@ -4034,6 +4034,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "objc2-local-authentication"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6fc4c269ebb5210f5ae57ce061e08ec05cf35a6fb4a5d8287c7d4b1776ea6700"
+dependencies = [
+ "block2 0.6.2",
+ "objc2 0.6.3",
+ "objc2-foundation 0.3.0",
+]
+
+[[package]]
 name = "objc2-metal"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6646,7 +6657,11 @@ dependencies = [
 name = "tauri-plugin-biometric"
 version = "2.3.2"
 dependencies = [
+ "block2 0.6.2",
  "log",
+ "objc2 0.6.3",
+ "objc2-foundation 0.3.0",
+ "objc2-local-authentication",
  "serde",
  "serde_json",
  "serde_repr",

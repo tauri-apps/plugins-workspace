@@ -13,6 +13,12 @@ pub enum Error {
     #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
+    #[cfg(desktop)]
+    #[error("Biometric authentication failed: {0}")]
+    AuthenticationFailed(String),
+    #[cfg(desktop)]
+    #[error("Biometric unavailable: {0}")]
+    Unavailable(String),
 }
 
 impl Serialize for Error {

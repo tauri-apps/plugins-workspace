@@ -30,6 +30,7 @@ pub fn run() {
                 .build(),
         )
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_biometric::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_http::init())
@@ -56,7 +57,6 @@ pub fn run() {
             {
                 app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
                 app.handle().plugin(tauri_plugin_nfc::init())?;
-                app.handle().plugin(tauri_plugin_biometric::init())?;
                 app.handle().plugin(tauri_plugin_geolocation::init())?;
                 app.handle().plugin(tauri_plugin_haptics::init())?;
             }

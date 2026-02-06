@@ -7,6 +7,8 @@
   "permissions": [
     "cli:default",
     "updater:default",
+    "biometric:allow-authenticate",
+    "biometric:allow-status",
     "global-shortcut:allow-unregister",
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister-all",
