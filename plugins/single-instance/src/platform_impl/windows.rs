@@ -69,7 +69,7 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
             let hmutex =
                 unsafe { CreateMutexW(std::ptr::null(), true.into(), mutex_name.as_ptr()) };
 
-            if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
+            let become_primary = if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
                 unsafe {
                     let hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
 
@@ -94,7 +94,14 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                         std::process::exit(0);
                     }
                 }
+                // Mutex exists but IPC window not found — the previous owner is gone.
+                // Recover by becoming the primary instance.
+                true
             } else {
+                true
+            };
+
+            if become_primary {
                 app.manage(MutexHandle(hmutex as _));
 
                 let userdata = UserData {
