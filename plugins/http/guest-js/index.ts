@@ -26,7 +26,7 @@
  * @module
  */
 
-import { Channel, invoke } from '@tauri-apps/api/core'
+import { invoke } from '@tauri-apps/api/core'
 
 /**
  * Configuration of a proxy that a Client should pass requests to.
@@ -126,7 +126,7 @@ export async function fetch(
   input: URL | Request | string,
   init?: RequestInit & ClientOptions
 ): Promise<Response> {
-  // abort early here if needed
+  // Optimistically check for abort signal and avoid doing any work
   const signal = init?.signal
   if (signal?.aborted) {
     throw new Error(ERROR_REQUEST_CANCELLED)
@@ -181,7 +181,7 @@ export async function fetch(
     ]
   )
 
-  // abort early here if needed
+  // Optimistically check for abort signal and avoid doing any work on the Rust side
   if (signal?.aborted) {
     throw new Error(ERROR_REQUEST_CANCELLED)
   }
@@ -201,7 +201,8 @@ export async function fetch(
 
   const abort = () => invoke('plugin:http|fetch_cancel', { rid })
 
-  // abort early here if needed
+  // Optimistically check for abort signal
+  // and avoid doing any work after doing intial work on the Rust side
   if (signal?.aborted) {
     // we don't care about the result of this proimse
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -229,40 +230,55 @@ export async function fetch(
     rid
   })
 
+  const dropBody = () => {
+    return invoke('plugin:http|fetch_cancel_body', { rid: responseRid })
+  }
+
+  const readChunk = async (
+    controller: ReadableStreamDefaultController<Uint8Array>
+  ) => {
+    let data: ArrayBuffer
+    try {
+      data = await invoke('plugin:http|fetch_read_body', {
+        rid: responseRid
+      })
+    } catch (e) {
+      // close the stream if an error occurs
+      // and drop the body on Rust side
+      controller.error(e)
+      void dropBody()
+      return
+    }
+
+    const dataUint8 = new Uint8Array(data)
+    const lastByte = dataUint8[dataUint8.byteLength - 1]
+    const actualData = dataUint8.slice(0, dataUint8.byteLength - 1)
+
+    // close when the signal to close (last byte is 1) is sent from the IPC.
+    if (lastByte === 1) {
+      controller.close()
+      return
+    }
+
+    controller.enqueue(actualData)
+  }
+
   // no body for 101, 103, 204, 205 and 304
   // see https://fetch.spec.whatwg.org/#null-body-status
   const body = [101, 103, 204, 205, 304].includes(status)
     ? null
-    : new ReadableStream({
+    : new ReadableStream<Uint8Array>({
         start: (controller) => {
-          const streamChannel = new Channel<ArrayBuffer | number[]>()
-          streamChannel.onmessage = (res: ArrayBuffer | number[]) => {
-            // close early if aborted
-            if (signal?.aborted) {
-              controller.error(ERROR_REQUEST_CANCELLED)
-              return
-            }
-
-            const resUint8 = new Uint8Array(res)
-            const lastByte = resUint8[resUint8.byteLength - 1]
-            const actualRes = resUint8.slice(0, resUint8.byteLength - 1)
-
-            // close when the signal to close (last byte is 1) is sent from the IPC.
-            if (lastByte == 1) {
-              controller.close()
-              return
-            }
-
-            controller.enqueue(actualRes)
-          }
-
-          // run a non-blocking body stream fetch
-          invoke('plugin:http|fetch_read_body', {
-            rid: responseRid,
-            streamChannel
-          }).catch((e) => {
-            controller.error(e)
+          // listen for abort events to cancel reading
+          signal?.addEventListener('abort', () => {
+            controller.error(ERROR_REQUEST_CANCELLED)
+            void dropBody()
           })
+        },
+        pull: (controller) => readChunk(controller),
+        cancel: () => {
+          // Ensure body resources are released on stream cancellation
+          void dropBody()
         }
       })
 

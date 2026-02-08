@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.3.2]
+
+- [`2dc3f3f0`](https://github.com/tauri-apps/plugins-workspace/commit/2dc3f3f0397fa91b1f3ffbc4b42ca2b4ae55bbe0) ([#3144](https://github.com/tauri-apps/plugins-workspace/pull/3144)) Fixes issue with UUIDs returned as null in sql query results.
+
 ## \[2.3.1]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

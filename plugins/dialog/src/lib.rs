@@ -9,7 +9,7 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::{
     plugin::{Builder, TauriPlugin},
     Manager, Runtime,
@@ -43,6 +43,22 @@ use mobile::*;
 pub use desktop::Dialog;
 #[cfg(mobile)]
 pub use mobile::Dialog;
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum PickerMode {
+    Document,
+    Media,
+    Image,
+    Video,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum FileAccessMode {
+    Copy,
+    Scoped,
+}
 
 pub(crate) const OK: &str = "Ok";
 pub(crate) const CANCEL: &str = "Cancel";
@@ -182,7 +198,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::save,
             commands::message,
             commands::ask,
-            commands::confirm
+            commands::confirm,
         ])
         .setup(|app, api| {
             #[cfg(mobile)]
@@ -369,6 +385,8 @@ pub struct FileDialogBuilder<R: Runtime> {
     pub(crate) file_name: Option<String>,
     pub(crate) title: Option<String>,
     pub(crate) can_create_directories: Option<bool>,
+    pub(crate) picker_mode: Option<PickerMode>,
+    pub(crate) file_access_mode: Option<FileAccessMode>,
     #[cfg(desktop)]
     pub(crate) parent: Option<crate::desktop::WindowHandle>,
 }
@@ -380,6 +398,8 @@ pub(crate) struct FileDialogPayload<'a> {
     file_name: &'a Option<String>,
     filters: &'a Vec<Filter>,
     multiple: bool,
+    picker_mode: &'a Option<PickerMode>,
+    file_access_mode: &'a Option<FileAccessMode>,
 }
 
 // raw window handle :(
@@ -395,6 +415,8 @@ impl<R: Runtime> FileDialogBuilder<R> {
             file_name: None,
             title: None,
             can_create_directories: None,
+            picker_mode: None,
+            file_access_mode: None,
             #[cfg(desktop)]
             parent: None,
         }
@@ -406,6 +428,8 @@ impl<R: Runtime> FileDialogBuilder<R> {
             file_name: &self.file_name,
             filters: &self.filters,
             multiple,
+            picker_mode: &self.picker_mode,
+            file_access_mode: &self.file_access_mode,
         }
     }
 
@@ -463,6 +487,23 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// Set whether it should be possible to create new directories in the dialog. Enabled by default. **macOS only**.
     pub fn set_can_create_directories(mut self, can: bool) -> Self {
         self.can_create_directories.replace(can);
+        self
+    }
+
+    /// Set the picker mode of the dialog.
+    /// This is meant for mobile platforms (iOS and Android) which have distinct file and media pickers.
+    /// On desktop, this option is ignored.
+    /// If not provided, the dialog will automatically choose the best mode based on the MIME types of the filters.
+    pub fn set_picker_mode(mut self, mode: PickerMode) -> Self {
+        self.picker_mode.replace(mode);
+        self
+    }
+
+    /// Set the file access mode of the dialog.
+    /// This is only used on iOS.
+    /// On desktop and Android, this option is ignored.
+    pub fn set_file_access_mode(mut self, mode: FileAccessMode) -> Self {
+        self.file_access_mode.replace(mode);
         self
     }
 
