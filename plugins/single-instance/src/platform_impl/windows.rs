@@ -51,6 +51,13 @@ impl<R: Runtime> UserData<R> {
     }
 }
 
+/// Check if the current process is a WebView2 child process.
+/// WebView2 spawns child processes with --type= arguments (renderer, gpu-process, etc.)
+/// These should not trigger the single-instance check as they are not user-facing instances.
+fn is_webview2_child_process() -> bool {
+    std::env::args().any(|arg| arg.starts_with("--type="))
+}
+
 pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
         .setup(|app, _api| {
@@ -70,6 +77,13 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                 unsafe { CreateMutexW(std::ptr::null(), true.into(), mutex_name.as_ptr()) };
 
             if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
+                // WebView2 child processes (renderer, gpu-process, etc.) should not
+                // participate in single-instance arbitration at all.
+                if is_webview2_child_process() {
+                    unsafe { CloseHandle(hmutex) };
+                    return Ok(());
+                }
+
                 unsafe {
                     let hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
 
