@@ -5,6 +5,7 @@
 use serde_json::Value as JsonValue;
 use sqlx::{postgres::PgValueRef, TypeInfo, Value, ValueRef};
 use time::{Date, OffsetDateTime, PrimitiveDateTime, Time};
+use uuid::Uuid;
 
 use crate::Error;
 
@@ -14,9 +15,16 @@ pub(crate) fn to_json(v: PgValueRef) -> Result<JsonValue, Error> {
     }
 
     let res = match v.type_info().name() {
-        "CHAR" | "VARCHAR" | "TEXT" | "NAME" | "UUID" => {
+        "CHAR" | "VARCHAR" | "TEXT" | "NAME" => {
             if let Ok(v) = ValueRef::to_owned(&v).try_decode() {
                 JsonValue::String(v)
+            } else {
+                JsonValue::Null
+            }
+        }
+        "UUID" => {
+            if let Ok(v) = ValueRef::to_owned(&v).try_decode::<Uuid>() {
+                JsonValue::String(v.to_string())
             } else {
                 JsonValue::Null
             }

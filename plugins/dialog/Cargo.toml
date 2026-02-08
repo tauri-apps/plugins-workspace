@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-dialog"
-version = "2.4.2"
+version = "2.6.0"
 description = "Native system dialogs for opening and saving files along with message dialogs on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -8,6 +8,11 @@ license = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-dialog"
+
+[features]
+default = ["gtk3"]
+xdg-portal = ["rfd/xdg-portal", "rfd/tokio", "rfd/wayland"]
+gtk3 = ["rfd/gtk3"]
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu", "x86_64-linux-android"]
@@ -32,15 +37,14 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 url = { workspace = true }
-tauri-plugin-fs = { path = "../fs", version = "2.4.4" }
+tauri-plugin-fs = { path = "../fs", version = "2.4.5" }
 
 [target.'cfg(target_os = "ios")'.dependencies]
 tauri = { workspace = true, features = ["wry"] }
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
-rfd = { version = "0.15", default-features = false, features = [
-  "tokio",
-  "gtk3",
+rfd = { version = "0.16", default-features = false, features = [
   "common-controls-v6",
 ] }
+
 raw-window-handle = "0.6"

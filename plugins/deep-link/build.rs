@@ -137,13 +137,7 @@ fn main() {
             let deep_link_domains = config
                 .mobile
                 .iter()
-                .filter_map(|domain| {
-                    if domain.is_app_link() {
-                        return None;
-                    }
-
-                    Some(domain)
-                })
+                .filter(|domain| domain.is_app_link())
                 .collect::<Vec<_>>();
 
             if deep_link_domains.is_empty() {
@@ -177,7 +171,7 @@ fn main() {
                                 );
                                 dict.insert(
                                     "CFBundleURLName".into(),
-                                    format!("{}", domain.scheme[0]).into(),
+                                    domain.scheme[0].clone().into(),
                                 );
                                 plist::Value::Dictionary(dict)
                             })

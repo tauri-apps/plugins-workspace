@@ -9,9 +9,14 @@
 
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
-            println!("{}, {argv:?}, {cwd}", app.package_info().name);
-        }))
+        .plugin(
+            tauri_plugin_single_instance::Builder::new()
+                .callback(move |app, argv, cwd| {
+                    println!("{}, {argv:?}, {cwd}", app.package_info().name);
+                })
+                .dbus_id("org.Tauri.SIExampleApp".to_owned())
+                .build(),
+        )
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

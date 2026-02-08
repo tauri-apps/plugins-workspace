@@ -9,8 +9,9 @@ use tauri::{command, Manager, Runtime, State, Window};
 use tauri_plugin_fs::FsExt;
 
 use crate::{
-    Dialog, FileDialogBuilder, FilePath, MessageDialogBuilder, MessageDialogButtons,
-    MessageDialogKind, MessageDialogResult, Result, CANCEL, NO, OK, YES,
+    Dialog, FileAccessMode, FileDialogBuilder, FilePath, MessageDialogBuilder,
+    MessageDialogButtons, MessageDialogKind, MessageDialogResult, PickerMode, Result, CANCEL, NO,
+    OK, YES,
 };
 
 #[derive(Serialize)]
@@ -56,6 +57,17 @@ pub struct OpenDialogOptions {
     recursive: bool,
     /// Whether to allow creating directories in the dialog **macOS Only**
     can_create_directories: Option<bool>,
+    /// The preferred mode of the dialog.
+    /// This is meant for mobile platforms (iOS and Android) which have distinct file and media pickers.
+    /// On desktop, this option is ignored.
+    /// If not provided, the dialog will automatically choose the best mode based on the MIME types of the filters.
+    #[serde(default)]
+    #[cfg_attr(mobile, allow(dead_code))]
+    picker_mode: Option<PickerMode>,
+    /// The file access mode of the dialog.
+    #[serde(default)]
+    #[cfg_attr(mobile, allow(dead_code))]
+    file_access_mode: Option<FileAccessMode>,
 }
 
 /// The options for the save dialog API.
@@ -127,9 +139,15 @@ pub(crate) async fn open<R: Runtime>(
     if let Some(can) = options.can_create_directories {
         dialog_builder = dialog_builder.set_can_create_directories(can);
     }
+    if let Some(picker_mode) = options.picker_mode {
+        dialog_builder = dialog_builder.set_picker_mode(picker_mode);
+    }
     for filter in options.filters {
         let extensions: Vec<&str> = filter.extensions.iter().map(|s| &**s).collect();
         dialog_builder = dialog_builder.add_filter(filter.name, &extensions);
+    }
+    if let Some(file_access_mode) = options.file_access_mode {
+        dialog_builder = dialog_builder.set_file_access_mode(file_access_mode);
     }
 
     let res = if options.directory {

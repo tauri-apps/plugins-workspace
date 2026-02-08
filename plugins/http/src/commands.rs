@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{
     async_runtime::Mutex,
     command,
-    ipc::{Channel, CommandScope, GlobalScope},
+    ipc::{CommandScope, GlobalScope},
     Manager, ResourceId, ResourceTable, Runtime, State, Webview,
 };
 use tokio::sync::oneshot::{channel, Receiver, Sender};
@@ -279,7 +279,7 @@ pub async fn fetch<R: Runtime>(
 
                 if headers.contains_key(header::RANGE) {
                     // https://fetch.spec.whatwg.org/#http-network-or-cache-fetch step 18
-                    // If httpRequest’s header list contains `Range`, then append (`Accept-Encoding`, `identity`)
+                    // If httpRequest's header list contains `Range`, then append (`Accept-Encoding`, `identity`)
                     headers.append(header::ACCEPT_ENCODING, HeaderValue::from_str("identity")?);
                 }
 
@@ -290,10 +290,13 @@ pub async fn fetch<R: Runtime>(
                 // ensure we have an Origin header set
                 if cfg!(not(feature = "unsafe-headers")) || !headers.contains_key(header::ORIGIN) {
                     if let Ok(url) = webview.url() {
-                        headers.append(
-                            header::ORIGIN,
-                            HeaderValue::from_str(&url.origin().ascii_serialization())?,
-                        );
+                        // The url crate returns OpaqueOrigin for tauri://localhost which serializes to "null"
+                        let origin = if url.scheme() == "tauri" {
+                            "tauri://localhost".to_string()
+                        } else {
+                            url.origin().ascii_serialization()
+                        };
+                        headers.append(header::ORIGIN, HeaderValue::from_str(&origin)?);
                     }
                 }
 
@@ -415,26 +418,42 @@ pub async fn fetch_send<R: Runtime>(
 pub async fn fetch_read_body<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
-    stream_channel: Channel<tauri::ipc::InvokeResponseBody>,
-) -> crate::Result<()> {
+) -> crate::Result<tauri::ipc::Response> {
     let res = {
-        let mut resources_table = webview.resources_table();
-        resources_table.take::<ReqwestResponse>(rid)?
+        let resources_table = webview.resources_table();
+        resources_table.get::<ReqwestResponse>(rid)?
     };
 
-    let mut res = Arc::into_inner(res).unwrap().0;
+    // SAFETY: we can access the inner value mutably
+    // because we are the only ones with a reference to it
+    // and we don't want to use `Arc::into_inner` because we want to keep the value in the table
+    // for potential future calls to `fetch_cancel_body`
+    let res_ptr = Arc::as_ptr(&res) as *mut ReqwestResponse;
+    let res = unsafe { &mut *res_ptr };
+    let res = &mut res.0;
 
-    // send response through IPC channel
-    while let Some(chunk) = res.chunk().await? {
-        let mut chunk = chunk.to_vec();
-        // append 0 to indicate we are not done yet
-        chunk.push(0);
-        stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(chunk))?;
-    }
+    let Some(chunk) = res.chunk().await? else {
+        let mut resources_table = webview.resources_table();
+        resources_table.close(rid)?;
 
-    // send 1 to indicate we are done
-    stream_channel.send(tauri::ipc::InvokeResponseBody::Raw(vec![1]))?;
+        // return a response with a single byte to indicate that the body is empty
+        return Ok(tauri::ipc::Response::new(vec![1]));
+    };
 
+    let mut chunk = chunk.to_vec();
+    // append a 0 byte to indicate that the body is not empty
+    chunk.push(0);
+
+    Ok(tauri::ipc::Response::new(chunk))
+}
+
+#[command]
+pub async fn fetch_cancel_body<R: Runtime>(
+    webview: Webview<R>,
+    rid: ResourceId,
+) -> crate::Result<()> {
+    let mut resources_table = webview.resources_table();
+    resources_table.close(rid)?;
     Ok(())
 }
 

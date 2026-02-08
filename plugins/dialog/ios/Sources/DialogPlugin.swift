@@ -8,6 +8,7 @@ import PhotosUI
 import SwiftRs
 import Tauri
 import UIKit
+import UniformTypeIdentifiers
 import WebKit
 
 enum FilePickerEvent {
@@ -32,11 +33,25 @@ struct FilePickerOptions: Decodable {
   var multiple: Bool?
   var filters: [Filter]?
   var defaultPath: String?
+  var pickerMode: PickerMode?
+  var fileAccessMode: FileAccessMode?
 }
 
 struct SaveFileDialogOptions: Decodable {
   var fileName: String?
   var defaultPath: String?
+}
+
+enum FileAccessMode: String, Decodable {
+  case copy
+  case scoped
+}
+
+enum PickerMode: String, Decodable {
+  case document
+  case media
+  case image
+  case video
 }
 
 class DialogPlugin: Plugin {
@@ -47,30 +62,11 @@ class DialogPlugin: Plugin {
   override init() {
     super.init()
     filePickerController = FilePickerController(self)
+
   }
 
   @objc public func showFilePicker(_ invoke: Invoke) throws {
     let args = try invoke.parseArgs(FilePickerOptions.self)
-
-    let parsedTypes = parseFiltersOption(args.filters ?? [])
-
-    var isMedia = !parsedTypes.isEmpty
-    var uniqueMimeType: Bool? = nil
-    var mimeKind: String? = nil
-    if !parsedTypes.isEmpty {
-      uniqueMimeType = true
-      for mime in parsedTypes {
-        let kind = mime.components(separatedBy: "/")[0]
-        if kind != "image" && kind != "video" {
-          isMedia = false
-        }
-        if mimeKind == nil {
-          mimeKind = kind
-        } else if mimeKind != kind {
-          uniqueMimeType = false
-        }
-      }
-    }
 
     onFilePickerResult = { (event: FilePickerEvent) -> Void in
       switch event {
@@ -83,49 +79,59 @@ class DialogPlugin: Plugin {
       }
     }
 
-    if uniqueMimeType == true || isMedia {
-      DispatchQueue.main.async {
-        if #available(iOS 14, *) {
+    if #available(iOS 14, *) {
+      let parsedTypes = parseFiltersOption(args.filters ?? [])
+
+      let mimeKinds = Set(
+        parsedTypes.compactMap { $0.preferredMIMEType?.components(separatedBy: "/")[0] })
+      let filtersIncludeImage = mimeKinds.contains("image")
+      let filtersIncludeVideo = mimeKinds.contains("video")
+      let filtersIncludeNonMedia = mimeKinds.contains(where: { $0 != "image" && $0 != "video" })
+
+      // If the picker mode is media, images, or videos, we always want to show the media picker regardless of what's in the filters.
+      // Otherwise, if the filters A) do not include non-media types and B) include either image or video, we want to show the media picker.
+      if args.pickerMode == .media
+        || args.pickerMode == .image
+        || args.pickerMode == .video
+        || (!filtersIncludeNonMedia && (filtersIncludeImage || filtersIncludeVideo))
+      {
+        DispatchQueue.main.async {
           var configuration = PHPickerConfiguration(photoLibrary: PHPhotoLibrary.shared())
           configuration.selectionLimit = (args.multiple ?? false) ? 0 : 1
 
-          if uniqueMimeType == true {
-            if mimeKind == "image" {
-              configuration.filter = .images
-            } else if mimeKind == "video" {
-              configuration.filter = .videos
-            }
+          // If the filters include image or video, use the appropriate filter.
+          // If both are true, don't define a filter, which means we will display all media.
+          if args.pickerMode == .image || (filtersIncludeImage && !filtersIncludeVideo) {
+            configuration.filter = .images
+          } else if args.pickerMode == .video || (filtersIncludeVideo && !filtersIncludeImage) {
+            configuration.filter = .videos
           }
 
           let picker = PHPickerViewController(configuration: configuration)
           picker.delegate = self.filePickerController
           picker.modalPresentationStyle = .fullScreen
           self.presentViewController(picker)
-        } else {
-          let picker = UIImagePickerController()
-          picker.delegate = self.filePickerController
+        }
+      } else {
+        DispatchQueue.main.async {
+          // The UTType.item is the catch-all, allowing for any file type to be selected.
+          let contentTypes = parsedTypes.isEmpty ? [UTType.item] : parsedTypes
+          let picker: UIDocumentPickerViewController = UIDocumentPickerViewController(
+            forOpeningContentTypes: contentTypes,
+            asCopy: args.fileAccessMode == .scoped ? false : true)
 
-          if uniqueMimeType == true && mimeKind == "image" {
-            picker.sourceType = .photoLibrary
+          if let defaultPath = args.defaultPath {
+            picker.directoryURL = URL(string: defaultPath)
           }
 
-          picker.sourceType = .photoLibrary
+          picker.delegate = self.filePickerController
+          picker.allowsMultipleSelection = args.multiple ?? false
           picker.modalPresentationStyle = .fullScreen
           self.presentViewController(picker)
         }
       }
     } else {
-      let documentTypes = parsedTypes.isEmpty ? ["public.data"] : parsedTypes
-      DispatchQueue.main.async {
-        let picker = UIDocumentPickerViewController(documentTypes: documentTypes, in: .import)
-        if let defaultPath = args.defaultPath {
-          picker.directoryURL = URL(string: defaultPath)
-        }
-        picker.delegate = self.filePickerController
-        picker.allowsMultipleSelection = args.multiple ?? false
-        picker.modalPresentationStyle = .fullScreen
-        self.presentViewController(picker)
-      }
+      showFilePickerLegacy(args: args)
     }
   }
 
@@ -173,7 +179,68 @@ class DialogPlugin: Plugin {
     self.manager.viewController?.present(viewControllerToPresent, animated: true, completion: nil)
   }
 
-  private func parseFiltersOption(_ filters: [Filter]) -> [String] {
+  @available(iOS 14, *)
+  private func parseFiltersOption(_ filters: [Filter]) -> [UTType] {
+    var parsedTypes: [UTType] = []
+    for filter in filters {
+      for ext in filter.extensions ?? [] {
+        // We need to support extensions as well as MIME types.
+        if let utType = UTType(mimeType: ext) {
+          parsedTypes.append(utType)
+        } else if let utType = UTType(filenameExtension: ext) {
+          parsedTypes.append(utType)
+        }
+      }
+    }
+
+    return parsedTypes
+  }
+
+  /// This function is only used for iOS < 14, and should be removed if/when the deployment target is raised to 14.
+  private func showFilePickerLegacy(args: FilePickerOptions) {
+    let parsedTypes = parseFiltersOptionLegacy(args.filters ?? [])
+
+    var filtersIncludeImage: Bool = false
+    var filtersIncludeVideo: Bool = false
+    var filtersIncludeNonMedia: Bool = false
+
+    if !parsedTypes.isEmpty {
+      let mimeKinds = Set(parsedTypes.map { $0.components(separatedBy: "/")[0] })
+      filtersIncludeImage = mimeKinds.contains("image")
+      filtersIncludeVideo = mimeKinds.contains("video")
+      filtersIncludeNonMedia = mimeKinds.contains(where: { $0 != "image" && $0 != "video" })
+    }
+
+    if !filtersIncludeNonMedia && (filtersIncludeImage || filtersIncludeVideo) {
+      DispatchQueue.main.async {
+        let picker = UIImagePickerController()
+        picker.delegate = self.filePickerController
+
+        if filtersIncludeImage && !filtersIncludeVideo {
+          picker.sourceType = .photoLibrary
+        }
+
+        picker.modalPresentationStyle = .fullScreen
+        self.presentViewController(picker)
+      }
+    } else {
+      let documentTypes = parsedTypes.isEmpty ? ["public.data"] : parsedTypes
+      DispatchQueue.main.async {
+        let picker = UIDocumentPickerViewController(documentTypes: documentTypes, in: .import)
+        if let defaultPath = args.defaultPath {
+          picker.directoryURL = URL(string: defaultPath)
+        }
+
+        picker.delegate = self.filePickerController
+        picker.allowsMultipleSelection = args.multiple ?? false
+        picker.modalPresentationStyle = .fullScreen
+        self.presentViewController(picker)
+      }
+    }
+  }
+
+  /// This function is only used for iOS < 14, and should be removed if/when the deployment target is raised to 14.
+  private func parseFiltersOptionLegacy(_ filters: [Filter]) -> [String] {
     var parsedTypes: [String] = []
     for filter in filters {
       for ext in filter.extensions ?? [] {
@@ -186,6 +253,7 @@ class DialogPlugin: Plugin {
         parsedTypes.append(utType)
       }
     }
+
     return parsedTypes
   }
 
@@ -236,6 +304,7 @@ class DialogPlugin: Plugin {
       manager.viewController?.present(alert, animated: true, completion: nil)
     }
   }
+
 }
 
 @_cdecl("init_plugin_dialog")
