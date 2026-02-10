@@ -87,6 +87,8 @@ struct WindowState {
     visible: bool,
     decorated: bool,
     fullscreen: bool,
+    #[serde(default)]
+    scale_factor: Option<f64>,
 }
 
 impl Default for WindowState {
@@ -102,6 +104,7 @@ impl Default for WindowState {
             visible: true,
             decorated: true,
             fullscreen: Default::default(),
+            scale_factor: None,
         }
     }
 }
@@ -182,6 +185,18 @@ impl<R: Runtime> WindowExt for Window<R> {
             .get(label)
             .filter(|state| state != &&WindowState::default())
         {
+            // For legacy states without scale_factor, skip scaling (scale = 1.0)
+            let scale = match state.scale_factor {
+                Some(saved_sf) => {
+                    if let Ok(Some(monitor)) = self.current_monitor() {
+                        monitor.scale_factor() / saved_sf
+                    } else {
+                        1.0
+                    }
+                }
+                None => 1.0,
+            };
+
             if flags.contains(StateFlags::DECORATIONS) {
                 self.set_decorations(state.decorated)?;
             }
@@ -195,14 +210,14 @@ impl<R: Runtime> WindowExt for Window<R> {
                     if m.intersects(position, size) {
                         self.set_position(PhysicalPosition {
                             x: if state.maximized {
-                                state.prev_x
+                                (state.prev_x as f64 * scale).round() as i32
                             } else {
-                                state.x
+                                (state.x as f64 * scale).round() as i32
                             },
                             y: if state.maximized {
-                                state.prev_y
+                                (state.prev_y as f64 * scale).round() as i32
                             } else {
-                                state.y
+                                (state.y as f64 * scale).round() as i32
                             },
                         })?;
                     }
@@ -211,8 +226,8 @@ impl<R: Runtime> WindowExt for Window<R> {
 
             if flags.contains(StateFlags::SIZE) {
                 self.set_size(PhysicalSize {
-                    width: state.width,
-                    height: state.height,
+                    width: (state.width as f64 * scale).round().max(0.0) as u32,
+                    height: (state.height as f64 * scale).round().max(0.0) as u32,
                 })?;
             }
 
@@ -285,6 +300,8 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
             && self.is_maximized()?;
         let is_minimized =
             flags.intersects(StateFlags::POSITION | StateFlags::SIZE) && self.is_minimized()?;
+
+        state.scale_factor = Some(self.scale_factor()?);
 
         if flags.contains(StateFlags::MAXIMIZED) {
             state.maximized = is_maximized;
