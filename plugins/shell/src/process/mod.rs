@@ -118,27 +118,38 @@ pub struct Output {
 }
 
 fn relative_command_path(command: &Path) -> crate::Result<PathBuf> {
-    match platform::current_exe()?.parent() {
-        #[cfg(windows)]
-        Some(exe_dir) => {
-            let mut command_path = exe_dir.join(command);
-            let already_exe = command_path.extension().is_some_and(|ext| ext == "exe");
-            if !already_exe {
-                // do not use with_extension to retain dots in the command filename
-                command_path.as_mut_os_string().push(".exe");
-            }
-            Ok(command_path)
+    let exe_path = platform::current_exe()?;
+
+    let exe_dir = exe_path
+        .parent()
+        .ok_or(crate::Error::CurrentExeHasNoParent)?;
+
+    // If a test is being run, the executable is in the "deps" directory, so we need to go up one level.
+    let base_dir = if exe_dir.ends_with("deps") {
+        exe_dir.parent().unwrap_or(exe_dir)
+    } else {
+        exe_dir
+    };
+
+    let mut command_path = base_dir.join(command);
+
+    #[cfg(windows)]
+    {
+        let already_exe = command_path.extension().is_some_and(|ext| ext == "exe");
+        if !already_exe {
+            // do not use with_extension to retain dots in the command filename
+            command_path.as_mut_os_string().push(".exe");
         }
-        #[cfg(not(windows))]
-        Some(exe_dir) => {
-            let mut command_path = exe_dir.join(command);
-            if command_path.extension().is_some_and(|ext| ext == "exe") {
-                command_path.set_extension("");
-            }
-            Ok(command_path)
-        }
-        None => Err(crate::Error::CurrentExeHasNoParent),
     }
+
+    #[cfg(not(windows))]
+    {
+        if command_path.extension().is_some_and(|ext| ext == "exe") {
+            command_path.set_extension("");
+        }
+    }
+
+    Ok(command_path)
 }
 
 impl From<Command> for StdCommand {
@@ -507,6 +518,8 @@ mod tests {
         let cwd_parent = platform::current_exe()
             .unwrap()
             .parent()
+            .unwrap()
+            .parent() // Go up once more to get out of the "deps" directory
             .unwrap()
             .to_owned();
         assert_eq!(
