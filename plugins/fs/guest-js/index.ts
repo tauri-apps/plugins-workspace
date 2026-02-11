@@ -783,6 +783,28 @@ async function readTextFile(
 }
 
 /**
+ * Asserts that the given encoding is ASCII-compatible for LF (0x0A) and CR (0x0D).
+ *
+ * @throws if the encoding is UTF-16, "replacement", or otherwise invalid.
+ */
+function assertLfCrAsciiCompatibleEncoding(encodingLabel?: string): void {
+  // Normalize the encoding label.
+  // If it is invalid, a RangeError is thrown here.
+  const encoding = (new TextDecoder(encodingLabel)).encoding
+
+  // Reject encodings defined in the Web Encoding Standard
+  // that do not represent LF and CR as 0x0A and 0x0D.
+  // https://developer.mozilla.org/en-US/docs/Web/API/Encoding_API/Encodings
+  if (
+    encoding === "utf-16le" ||
+    encoding === "utf-16be" ||
+    encoding === "replacement"
+  ) {
+    throw new Error(`Unsupported encoding label: ${encodingLabel}`)
+  }
+}
+
+/**
  * Returns an async {@linkcode AsyncIterableIterator} over the lines of a file, decoded using the specified encoding (default: UTF-8).
  * @example
  * ```typescript
@@ -803,6 +825,10 @@ async function readTextFileLines(
 ): Promise<AsyncIterableIterator<string>> {
   if (path instanceof URL && path.protocol !== 'file:') {
     throw new TypeError('Must be a file URL.')
+  }
+  if (options?.encoding != null) {
+    // https://github.com/tauri-apps/plugins-workspace/pull/3244#issuecomment-3869568792
+    assertLfCrAsciiCompatibleEncoding(options.encoding)
   }
 
   const pathStr = path instanceof URL ? path.toString() : path
