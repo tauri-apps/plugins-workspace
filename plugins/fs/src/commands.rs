@@ -1435,25 +1435,64 @@ mod test {
 
     #[test]
     fn test_lines_bytes() {
-        let base = String::from("line 1\nline2\nline 3\nline 4");
-        let bytes = base.as_bytes();
+        // ASCII
+        {
+            let base = String::from("line 1\nline2\nline 3\r\nline 4");
+            let bytes = base.as_bytes();
 
-        let string1 = base.lines().collect::<String>();
-        let string2 = BufReader::new(bytes)
-            .lines()
-            .map_while(Result::ok)
-            .collect::<String>();
-        let string3 = LinesBytes {
-            bytes: BufReader::new(bytes),
-            lf_bytes: vec![b'\n'],
-            cr_bytes: vec![b'\r'],
+            let string1 = base.lines().collect::<String>();
+            let string2 = BufReader::new(bytes)
+                .lines()
+                .map_while(Result::ok)
+                .collect::<String>();
+            let string3 = LinesBytes::new(BufReader::new(bytes), vec![b'\n'], vec![b'\r'])
+                .flatten()
+                .flat_map(String::from_utf8)
+                .collect::<String>();
+
+            assert_eq!(string1, string2);
+            assert_eq!(string1, string3);
+            assert_eq!(string2, string3);
         }
-        .flatten()
-        .flat_map(String::from_utf8)
-        .collect::<String>();
 
-        assert_eq!(string1, string2);
-        assert_eq!(string1, string3);
-        assert_eq!(string2, string3);
+        // UTF-16 LE
+        {
+            fn utf16(text: &str) -> Vec<u8> {
+                text.encode_utf16()
+                    .flat_map(|u| u.to_le_bytes())
+                    .collect()
+            }
+
+            let base = String::from("line 1\nline2\nline 3\r\nline 4\n");
+            let bytes = utf16(&base);
+
+            let mut lines = LinesBytes::new(BufReader::new(&bytes[..]), utf16("\n"), utf16("\r"));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 1")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line2")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 3")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 4")));
+            assert!(lines.next().is_none());
+        }
+
+        // UTF-16 BE
+        {
+            fn utf16(text: &str) -> Vec<u8> {
+                text.encode_utf16()
+                    .flat_map(|u| u.to_be_bytes())
+                    .collect()
+            }
+
+            // ਗ (U+0A41) encodes to 0x0A 0x41,
+            // which contains 0x0A but is not a line feed (U+000A = 0x00 0x0A).
+            let base = String::from("line 1\nline2ਗ\nline 3\r\nline 4");
+            let bytes = utf16(&base);
+
+            let mut lines = LinesBytes::new(BufReader::new(&bytes[..]), utf16("\n"), utf16("\r"));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 1")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line2ਗ")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 3")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 4")));
+            assert!(lines.next().is_none());
+        }
     }
 }
