@@ -40,6 +40,7 @@ notify = { version = "8", optional = true, features = [
 notify-debouncer-full = { version = "0.6", optional = true }
 dunce = { workspace = true }
 percent-encoding = "2"
+encoding_rs = "0.8"
 
 [features]
 watch = ["notify", "notify-debouncer-full"]

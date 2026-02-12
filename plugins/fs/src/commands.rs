@@ -393,6 +393,14 @@ pub async fn read_file<R: Runtime>(
     .await
 }
 
+#[derive(Debug, Default, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReadTextFileOptions {
+    #[serde(flatten)]
+    base: BaseOptions,
+    encoding: Option<String>,
+}
+
 // TODO, remove in v3, rely on `read_file` command instead
 #[tauri::command]
 pub async fn read_text_file<R: Runtime>(
@@ -419,7 +427,7 @@ pub fn read_text_file_lines<R: Runtime>(
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafeFilePath,
-    options: Option<BaseOptions>,
+    options: Option<ReadTextFileOptions>,
 ) -> CommandResult<ResourceId> {
     let resolved_path = resolve_path(
         "read-text-file-lines",
@@ -427,7 +435,7 @@ pub fn read_text_file_lines<R: Runtime>(
         &global_scope,
         &command_scope,
         path,
-        options.as_ref().and_then(|o| o.base_dir),
+        options.as_ref().and_then(|o| o.base.base_dir),
     )?;
 
     let file = File::open(&resolved_path).map_err(|e| {
@@ -437,10 +445,34 @@ pub fn read_text_file_lines<R: Runtime>(
         )
     })?;
 
+    let encoding = options.as_ref().and_then(|o| o.encoding.as_deref());
+    let (lf_bytes, cr_bytes) = lf_cr_bytes_for_encoding_label(encoding)?;
     let lines = BufReader::new(file);
-    let rid = webview.resources_table().add(StdLinesResource::new(lines));
+    let rid = webview.resources_table().add(StdLinesResource::new(lines, lf_bytes, cr_bytes));
 
     Ok(rid)
+}
+
+/// Returns the byte sequences for LF (`\n`) and CR (`\r`) in the encoding label.
+/// 
+/// <https://developer.mozilla.org/ja/docs/Web/API/Encoding_API/Encodings>
+fn lf_cr_bytes_for_encoding_label(label: Option<&str>) -> Result<(Vec<u8>, Vec<u8>), Error> {
+    // https://developer.mozilla.org/ja/docs/Web/API/TextDecoder/TextDecoder#label
+    let label = label.unwrap_or("utf-8");
+    let encoding = encoding_rs::Encoding::for_label_no_replacement(label.as_bytes())
+        .ok_or_else(|| Error::InvalidEncodingLabel(label.to_string()))?;
+
+    // In encoding_rs, encoding to UTF-16LE/BE falls back to UTF-8.
+    // So, we handle these cases directly.
+    if encoding == encoding_rs::UTF_16LE {
+        Ok((vec![0x0A, 0x00], vec![0x0D, 0x00]))
+    } else if encoding == encoding_rs::UTF_16BE {
+        Ok((vec![0x00, 0x0A], vec![0x00, 0x0D]))
+    } else {
+        let (lf, _, _) = encoding.encode("\n");
+        let (cr, _, _) = encoding.encode("\r");
+        Ok((lf.to_vec(), cr.to_vec()))
+    }
 }
 
 #[tauri::command]
@@ -1203,22 +1235,29 @@ impl StdFileResource {
 impl Resource for StdFileResource {}
 
 /// Same as [std::io::Lines] but with bytes
-struct LinesBytes<T: BufRead>(T);
+struct LinesBytes<T: BufRead> {
+    bytes: T,
+    lf_bytes: Vec<u8>,
+    cr_bytes: Vec<u8>
+}
 
 impl<B: BufRead> Iterator for LinesBytes<B> {
     type Item = std::io::Result<Vec<u8>>;
 
     fn next(&mut self) -> Option<std::io::Result<Vec<u8>>> {
         let mut buf = Vec::new();
-        match self.0.read_until(b'\n', &mut buf) {
+        // Search for '\n'
+        match read_until_bytes(&mut self.bytes, &self.lf_bytes, &mut buf) {
             Ok(0) => None,
             Ok(_n) => {
-                if buf.last() == Some(&b'\n') {
-                    buf.pop();
-                    if buf.last() == Some(&b'\r') {
-                        buf.pop();
+                // Remove '\n' or '\r\n'
+                if buf.ends_with(&self.lf_bytes) {
+                    buf.truncate(buf.len() - self.lf_bytes.len()); 
+                    if buf.ends_with(&self.cr_bytes) {
+                        buf.truncate(buf.len() - self.cr_bytes.len());
                     }
                 }
+
                 Some(Ok(buf))
             }
             Err(e) => Some(Err(e)),
@@ -1226,11 +1265,39 @@ impl<B: BufRead> Iterator for LinesBytes<B> {
     }
 }
 
+fn read_until_bytes(
+    r: &mut impl BufRead,
+    bytes: &[u8],
+    buf: &mut Vec<u8>,
+) -> std::io::Result<usize> {
+
+    let last_byte = *bytes.last()
+        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::Other, "invalid empty bytes"))?;
+
+    if bytes.len() == 1 {
+        return Ok(r.read_until(last_byte, buf)?);
+    }
+
+    let mut total_n = 0;
+    loop {
+        let n = r.read_until(last_byte, buf)?;
+        total_n += n;
+
+        if n == 0 || buf.ends_with(bytes) {
+            return Ok(total_n)
+        }
+    }
+}
+
 struct StdLinesResource(Mutex<LinesBytes<BufReader<File>>>);
 
 impl StdLinesResource {
-    fn new(lines: BufReader<File>) -> Self {
-        Self(Mutex::new(LinesBytes(lines)))
+    fn new(lines: BufReader<File>, lf_bytes: Vec<u8>, cr_bytes: Vec<u8>) -> Self {
+        Self(Mutex::new(LinesBytes {
+            bytes: lines,
+            lf_bytes,
+            cr_bytes
+        }))
     }
 
     fn with_lock<R, F: FnMut(&mut LinesBytes<BufReader<File>>) -> R>(&self, mut f: F) -> R {
@@ -1362,7 +1429,7 @@ mod test {
             .lines()
             .map_while(Result::ok)
             .collect::<String>();
-        let string3 = LinesBytes(BufReader::new(bytes))
+        let string3 = LinesBytes { bytes: BufReader::new(bytes), lf_bytes: vec![b'\n'], cr_bytes: vec![b'\r'] }
             .flatten()
             .flat_map(String::from_utf8)
             .collect::<String>();
