@@ -1243,6 +1243,13 @@ struct LinesBytes<T: BufRead> {
     cr_bytes: Vec<u8>,
 }
 
+impl<T: BufRead> LinesBytes<T> {
+
+    fn new(bytes: T, lf_bytes: Vec<u8>, cr_bytes: Vec<u8>) -> Self {
+        LinesBytes { bytes, lf_bytes, cr_bytes }
+    }
+}
+
 impl<B: BufRead> Iterator for LinesBytes<B> {
     type Item = std::io::Result<Vec<u8>>;
 
@@ -1295,11 +1302,7 @@ struct StdLinesResource(Mutex<LinesBytes<BufReader<File>>>);
 
 impl StdLinesResource {
     fn new(lines: BufReader<File>, lf_bytes: Vec<u8>, cr_bytes: Vec<u8>) -> Self {
-        Self(Mutex::new(LinesBytes {
-            bytes: lines,
-            lf_bytes,
-            cr_bytes,
-        }))
+        Self(Mutex::new(LinesBytes::new(lines, lf_bytes, cr_bytes)))
     }
 
     fn with_lock<R, F: FnMut(&mut LinesBytes<BufReader<File>>) -> R>(&self, mut f: F) -> R {
