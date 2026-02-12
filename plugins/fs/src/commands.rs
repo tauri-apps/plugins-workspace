@@ -1482,7 +1482,7 @@ mod test {
                     .collect()
             }
 
-            // ਗ (U+0A41) encodes to 0x0A 0x41,
+            // ਗ (U+0A17) encodes to 0x0A 0x17,
             // which contains 0x0A but is not a line feed (U+000A = 0x00 0x0A).
             let base = String::from("line 1\nline2ਗ\nline 3\r\nline 4");
             let bytes = utf16(&base);
