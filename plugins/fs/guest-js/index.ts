@@ -813,9 +813,15 @@ async function readTextFileLines(
 
     async next(): Promise<IteratorResult<string>> {
       if (this.rid === null) {
+        // Normalize the encoding label.
+        // If it is invalid, a RangeError is thrown here.
+        const encoding = options?.encoding != null
+          ? (new TextDecoder(options.encoding)).encoding
+          : undefined
+
         this.rid = await invoke<number>('plugin:fs|read_text_file_lines', {
           path: pathStr,
-          options
+          options: options != null ? { ...options, encoding } : undefined
         })
       }
 

@@ -446,7 +446,7 @@ pub fn read_text_file_lines<R: Runtime>(
     })?;
 
     let encoding = options.as_ref().and_then(|o| o.encoding.as_deref());
-    let (lf_bytes, cr_bytes) = lf_cr_bytes_for_encoding_label(encoding)?;
+    let (lf_bytes, cr_bytes) = lf_cr_bytes_for_encoding_label(encoding);
     let lines = BufReader::new(file);
     let rid = webview
         .resources_table()
@@ -457,24 +457,29 @@ pub fn read_text_file_lines<R: Runtime>(
 
 /// Returns the byte sequences for LF (`\n`) and CR (`\r`) in the encoding label.
 ///
+/// The provided encoding label must be a normalized, lowercase string, 
+/// such as one obtained via `(new TextDecoder(encoding)).encoding`.
+///
 /// <https://developer.mozilla.org/ja/docs/Web/API/Encoding_API/Encodings>
-fn lf_cr_bytes_for_encoding_label(label: Option<&str>) -> Result<(Vec<u8>, Vec<u8>), Error> {
+fn lf_cr_bytes_for_encoding_label(label: Option<&str>) -> (Vec<u8>, Vec<u8>) {
+    // Defaults to utf-8
     // https://developer.mozilla.org/ja/docs/Web/API/TextDecoder/TextDecoder#label
     let label = label.unwrap_or("utf-8");
-    let encoding = encoding_rs::Encoding::for_label_no_replacement(label.as_bytes())
-        .ok_or_else(|| Error::InvalidEncodingLabel(label.to_string()))?;
 
-    // In encoding_rs, encoding to UTF-16LE/BE falls back to UTF-8.
-    // So, we handle these cases directly.
-    if encoding == encoding_rs::UTF_16LE {
-        Ok((vec![0x0A, 0x00], vec![0x0D, 0x00]))
-    } else if encoding == encoding_rs::UTF_16BE {
-        Ok((vec![0x00, 0x0A], vec![0x00, 0x0D]))
-    } else {
-        let (lf, _, _) = encoding.encode("\n");
-        let (cr, _, _) = encoding.encode("\r");
-        Ok((lf.to_vec(), cr.to_vec()))
+    // Currently, according to the Web Standard, 
+    // the ASCII-incompatible encodings are UTF-16LE/BE and ISO-2022-JP. 
+    // However, ISO-2022-JP can still detect line breaks in the same way as ASCII.
+    //
+    // https://encoding.spec.whatwg.org/#security-background
+    if label == "utf-16le" {
+        return (vec![0x0A, 0x00], vec![0x0D, 0x00]);
     }
+    if label == "utf-16be" {
+        return (vec![0x00, 0x0A], vec![0x00, 0x0D]);
+    }
+
+    // Ascii
+    return (vec![b'\n'], vec![b'\r']);
 }
 
 #[tauri::command]
