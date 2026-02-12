@@ -478,7 +478,7 @@ fn lf_cr_bytes_for_encoding_label(label: Option<&str>) -> (Vec<u8>, Vec<u8>) {
         return (vec![0x00, 0x0A], vec![0x00, 0x0D]);
     }
 
-    // ASCII-incompatible
+    // ASCII-compatible
     (vec![b'\n'], vec![b'\r'])
 }
 
