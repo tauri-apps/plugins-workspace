@@ -845,9 +845,7 @@ async function readTextFileLines(
         return { value: null, done }
       }
 
-      const line = decoder.decode(
-        bytes.slice(0, bytes.byteLength - 1)
-      )
+      const line = decoder.decode(bytes.slice(0, bytes.byteLength - 1))
 
       return {
         value: line,

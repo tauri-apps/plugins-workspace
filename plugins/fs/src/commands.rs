@@ -1249,7 +1249,6 @@ struct LinesBytes<T: BufRead> {
 }
 
 impl<T: BufRead> LinesBytes<T> {
-
     fn new(bytes: T, lf_bytes: Vec<u8>, cr_bytes: Vec<u8>) -> Self {
         LinesBytes {
             bytes,
@@ -1458,9 +1457,7 @@ mod test {
         // UTF-16 LE
         {
             fn utf16(text: &str) -> Vec<u8> {
-                text.encode_utf16()
-                    .flat_map(|u| u.to_le_bytes())
-                    .collect()
+                text.encode_utf16().flat_map(|u| u.to_le_bytes()).collect()
             }
 
             let base = String::from("line 1\nline2\nline 3\r\nline 4\n");
@@ -1477,9 +1474,7 @@ mod test {
         // UTF-16 BE
         {
             fn utf16(text: &str) -> Vec<u8> {
-                text.encode_utf16()
-                    .flat_map(|u| u.to_be_bytes())
-                    .collect()
+                text.encode_utf16().flat_map(|u| u.to_be_bytes()).collect()
             }
 
             // ਗ (U+0A17) encodes to 0x0A 0x17,
