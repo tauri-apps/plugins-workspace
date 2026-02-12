@@ -29,8 +29,6 @@ pub enum Error {
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
     #[error("URL is not a valid path")]
     InvalidPathUrl,
-    #[error("invalid encoding label: {0}")]
-    InvalidEncodingLabel(String),
     #[error("Unsafe PathBuf: {0}")]
     UnsafePathBuf(&'static str),
 }
