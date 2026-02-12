@@ -6722,6 +6722,7 @@ version = "2.4.5"
 dependencies = [
  "anyhow",
  "dunce",
+ "encoding_rs",
  "glob",
  "notify",
  "notify-debouncer-full",

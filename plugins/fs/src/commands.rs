@@ -448,13 +448,15 @@ pub fn read_text_file_lines<R: Runtime>(
     let encoding = options.as_ref().and_then(|o| o.encoding.as_deref());
     let (lf_bytes, cr_bytes) = lf_cr_bytes_for_encoding_label(encoding)?;
     let lines = BufReader::new(file);
-    let rid = webview.resources_table().add(StdLinesResource::new(lines, lf_bytes, cr_bytes));
+    let rid = webview
+        .resources_table()
+        .add(StdLinesResource::new(lines, lf_bytes, cr_bytes));
 
     Ok(rid)
 }
 
 /// Returns the byte sequences for LF (`\n`) and CR (`\r`) in the encoding label.
-/// 
+///
 /// <https://developer.mozilla.org/ja/docs/Web/API/Encoding_API/Encodings>
 fn lf_cr_bytes_for_encoding_label(label: Option<&str>) -> Result<(Vec<u8>, Vec<u8>), Error> {
     // https://developer.mozilla.org/ja/docs/Web/API/TextDecoder/TextDecoder#label
@@ -1238,7 +1240,7 @@ impl Resource for StdFileResource {}
 struct LinesBytes<T: BufRead> {
     bytes: T,
     lf_bytes: Vec<u8>,
-    cr_bytes: Vec<u8>
+    cr_bytes: Vec<u8>,
 }
 
 impl<B: BufRead> Iterator for LinesBytes<B> {
@@ -1252,7 +1254,7 @@ impl<B: BufRead> Iterator for LinesBytes<B> {
             Ok(_n) => {
                 // Remove '\n' or '\r\n'
                 if buf.ends_with(&self.lf_bytes) {
-                    buf.truncate(buf.len() - self.lf_bytes.len()); 
+                    buf.truncate(buf.len() - self.lf_bytes.len());
                     if buf.ends_with(&self.cr_bytes) {
                         buf.truncate(buf.len() - self.cr_bytes.len());
                     }
@@ -1270,12 +1272,12 @@ fn read_until_bytes(
     bytes: &[u8],
     buf: &mut Vec<u8>,
 ) -> std::io::Result<usize> {
-
-    let last_byte = *bytes.last()
+    let last_byte = *bytes
+        .last()
         .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::Other, "invalid empty bytes"))?;
 
     if bytes.len() == 1 {
-        return Ok(r.read_until(last_byte, buf)?);
+        return r.read_until(last_byte, buf);
     }
 
     let mut total_n = 0;
@@ -1284,7 +1286,7 @@ fn read_until_bytes(
         total_n += n;
 
         if n == 0 || buf.ends_with(bytes) {
-            return Ok(total_n)
+            return Ok(total_n);
         }
     }
 }
@@ -1296,7 +1298,7 @@ impl StdLinesResource {
         Self(Mutex::new(LinesBytes {
             bytes: lines,
             lf_bytes,
-            cr_bytes
+            cr_bytes,
         }))
     }
 
@@ -1429,10 +1431,14 @@ mod test {
             .lines()
             .map_while(Result::ok)
             .collect::<String>();
-        let string3 = LinesBytes { bytes: BufReader::new(bytes), lf_bytes: vec![b'\n'], cr_bytes: vec![b'\r'] }
-            .flatten()
-            .flat_map(String::from_utf8)
-            .collect::<String>();
+        let string3 = LinesBytes {
+            bytes: BufReader::new(bytes), 
+            lf_bytes: vec![b'\n'],
+            cr_bytes: vec![b'\r'] 
+        }
+        .flatten()
+        .flat_map(String::from_utf8)
+        .collect::<String>();
 
         assert_eq!(string1, string2);
         assert_eq!(string1, string3);
