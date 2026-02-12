@@ -1435,7 +1435,7 @@ mod test {
 
     #[test]
     fn test_lines_bytes() {
-        // ASCII
+        // UTF-8
         {
             let base = String::from("line 1\nline2\nline 3\r\nline 4");
             let bytes = base.as_bytes();
