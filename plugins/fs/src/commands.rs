@@ -457,7 +457,7 @@ pub fn read_text_file_lines<R: Runtime>(
 
 /// Returns the byte sequences for LF (`\n`) and CR (`\r`) in the encoding label.
 ///
-/// The provided encoding label must be a normalized, lowercase string, 
+/// The provided encoding label must be a normalized, lowercase string,
 /// such as one obtained via `(new TextDecoder(encoding)).encoding`.
 ///
 /// <https://developer.mozilla.org/ja/docs/Web/API/Encoding_API/Encodings>
@@ -466,8 +466,8 @@ fn lf_cr_bytes_for_encoding_label(label: Option<&str>) -> (Vec<u8>, Vec<u8>) {
     // https://developer.mozilla.org/ja/docs/Web/API/TextDecoder/TextDecoder#label
     let label = label.unwrap_or("utf-8");
 
-    // Currently, according to the Web Standard, 
-    // the ASCII-incompatible encodings are UTF-16LE/BE and ISO-2022-JP. 
+    // Currently, according to the Web Standard,
+    // the ASCII-incompatible encodings are UTF-16LE/BE and ISO-2022-JP.
     // However, ISO-2022-JP can still detect line breaks in the same way as ASCII.
     //
     // https://encoding.spec.whatwg.org/#security-background
@@ -478,8 +478,8 @@ fn lf_cr_bytes_for_encoding_label(label: Option<&str>) -> (Vec<u8>, Vec<u8>) {
         return (vec![0x00, 0x0A], vec![0x00, 0x0D]);
     }
 
-    // Ascii
-    return (vec![b'\n'], vec![b'\r']);
+    // ASCII-incompatible
+    (vec![b'\n'], vec![b'\r'])
 }
 
 #[tauri::command]
@@ -1251,7 +1251,11 @@ struct LinesBytes<T: BufRead> {
 impl<T: BufRead> LinesBytes<T> {
 
     fn new(bytes: T, lf_bytes: Vec<u8>, cr_bytes: Vec<u8>) -> Self {
-        LinesBytes { bytes, lf_bytes, cr_bytes }
+        LinesBytes {
+            bytes,
+            lf_bytes,
+            cr_bytes,
+        }
     }
 }
 
@@ -1286,7 +1290,7 @@ fn read_until_bytes(
 ) -> std::io::Result<usize> {
     let last_byte = *bytes
         .last()
-        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::Other, "invalid empty bytes"))?;
+        .ok_or_else(|| std::io::Error::other("invalid empty bytes"))?;
 
     if bytes.len() == 1 {
         return r.read_until(last_byte, buf);
@@ -1440,9 +1444,9 @@ mod test {
             .map_while(Result::ok)
             .collect::<String>();
         let string3 = LinesBytes {
-            bytes: BufReader::new(bytes), 
+            bytes: BufReader::new(bytes),
             lf_bytes: vec![b'\n'],
-            cr_bytes: vec![b'\r'] 
+            cr_bytes: vec![b'\r'],
         }
         .flatten()
         .flat_map(String::from_utf8)
