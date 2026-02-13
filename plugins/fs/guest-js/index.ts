@@ -812,10 +812,15 @@ async function readTextFileLines(
     rid: null as number | null,
 
     async next(): Promise<IteratorResult<string>> {
+      const decoder = new TextDecoder(options?.encoding ?? 'utf-8')
+
       if (this.rid === null) {
+        // Use the normalized encoding label for options.
+        const encoding = decoder.encoding
+
         this.rid = await invoke<number>('plugin:fs|read_text_file_lines', {
           path: pathStr,
-          options
+          options: options != null ? { ...options, encoding } : undefined
         })
       }
 
@@ -840,9 +845,7 @@ async function readTextFileLines(
         return { value: null, done }
       }
 
-      const line = new TextDecoder(options?.encoding ?? 'utf-8').decode(
-        bytes.slice(0, bytes.byteLength - 1)
-      )
+      const line = decoder.decode(bytes.slice(0, bytes.byteLength - 1))
 
       return {
         value: line,
