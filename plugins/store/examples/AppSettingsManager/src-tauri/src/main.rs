@@ -21,7 +21,7 @@ fn main() {
             app.listen("store://change", |event| {
                 dbg!(event);
             });
-            let app_settings = AppSettings::load_from_store(&store);
+            let app_settings = AppSettings::try_from(store.as_ref());
             match app_settings {
                 Ok(app_settings) => {
                     let theme = app_settings.theme;

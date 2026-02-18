@@ -10,10 +10,10 @@ pub struct AppSettings {
     pub theme: String,
 }
 
-impl AppSettings {
-    pub fn load_from_store<R: tauri::Runtime>(
-        store: &Store<R>,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+impl<R: tauri::Runtime> TryFrom<&Store<R>> for AppSettings {
+    type Error = Box<dyn std::error::Error>;
+
+    fn try_from(store: &Store) -> Result<Self, Self::Error> {
         let launch_at_login = store
             .get("appSettings.launchAtLogin")
             .and_then(|v| v.as_bool())
