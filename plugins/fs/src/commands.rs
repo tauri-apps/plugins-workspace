@@ -393,6 +393,14 @@ pub async fn read_file<R: Runtime>(
     .await
 }
 
+#[derive(Debug, Default, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReadTextFileOptions {
+    #[serde(flatten)]
+    base: BaseOptions,
+    encoding: Option<String>,
+}
+
 // TODO, remove in v3, rely on `read_file` command instead
 #[tauri::command]
 pub async fn read_text_file<R: Runtime>(
@@ -419,7 +427,7 @@ pub fn read_text_file_lines<R: Runtime>(
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafeFilePath,
-    options: Option<BaseOptions>,
+    options: Option<ReadTextFileOptions>,
 ) -> CommandResult<ResourceId> {
     let resolved_path = resolve_path(
         "read-text-file-lines",
@@ -427,7 +435,7 @@ pub fn read_text_file_lines<R: Runtime>(
         &global_scope,
         &command_scope,
         path,
-        options.as_ref().and_then(|o| o.base_dir),
+        options.as_ref().and_then(|o| o.base.base_dir),
     )?;
 
     let file = File::open(&resolved_path).map_err(|e| {
@@ -437,10 +445,41 @@ pub fn read_text_file_lines<R: Runtime>(
         )
     })?;
 
+    let encoding = options.as_ref().and_then(|o| o.encoding.as_deref());
+    let (lf_bytes, cr_bytes) = lf_cr_bytes_for_encoding_label(encoding);
     let lines = BufReader::new(file);
-    let rid = webview.resources_table().add(StdLinesResource::new(lines));
+    let rid = webview
+        .resources_table()
+        .add(StdLinesResource::new(lines, lf_bytes, cr_bytes));
 
     Ok(rid)
+}
+
+/// Returns the byte sequences for LF (`\n`) and CR (`\r`) in the encoding label.
+///
+/// The provided encoding label must be a normalized, lowercase string,
+/// such as one obtained via `(new TextDecoder(encoding)).encoding`.
+///
+/// <https://developer.mozilla.org/ja/docs/Web/API/Encoding_API/Encodings>
+fn lf_cr_bytes_for_encoding_label(label: Option<&str>) -> (Vec<u8>, Vec<u8>) {
+    // Defaults to utf-8
+    // https://developer.mozilla.org/ja/docs/Web/API/TextDecoder/TextDecoder#label
+    let label = label.unwrap_or("utf-8");
+
+    // Currently, according to the Web Standard,
+    // the ASCII-incompatible encodings are UTF-16LE/BE and ISO-2022-JP.
+    // However, ISO-2022-JP can still detect line breaks in the same way as ASCII.
+    //
+    // https://encoding.spec.whatwg.org/#security-background
+    if label == "utf-16le" {
+        return (vec![0x0A, 0x00], vec![0x0D, 0x00]);
+    }
+    if label == "utf-16be" {
+        return (vec![0x00, 0x0A], vec![0x00, 0x0D]);
+    }
+
+    // ASCII-compatible
+    (vec![b'\n'], vec![b'\r'])
 }
 
 #[tauri::command]
@@ -1203,22 +1242,39 @@ impl StdFileResource {
 impl Resource for StdFileResource {}
 
 /// Same as [std::io::Lines] but with bytes
-struct LinesBytes<T: BufRead>(T);
+struct LinesBytes<T: BufRead> {
+    bytes: T,
+    lf_bytes: Vec<u8>,
+    cr_bytes: Vec<u8>,
+}
+
+impl<T: BufRead> LinesBytes<T> {
+    fn new(bytes: T, lf_bytes: Vec<u8>, cr_bytes: Vec<u8>) -> Self {
+        LinesBytes {
+            bytes,
+            lf_bytes,
+            cr_bytes,
+        }
+    }
+}
 
 impl<B: BufRead> Iterator for LinesBytes<B> {
     type Item = std::io::Result<Vec<u8>>;
 
     fn next(&mut self) -> Option<std::io::Result<Vec<u8>>> {
         let mut buf = Vec::new();
-        match self.0.read_until(b'\n', &mut buf) {
+        // Search for '\n'
+        match read_until_bytes(&mut self.bytes, &self.lf_bytes, &mut buf) {
             Ok(0) => None,
             Ok(_n) => {
-                if buf.last() == Some(&b'\n') {
-                    buf.pop();
-                    if buf.last() == Some(&b'\r') {
-                        buf.pop();
+                // Remove '\n' or '\r\n'
+                if buf.ends_with(&self.lf_bytes) {
+                    buf.truncate(buf.len() - self.lf_bytes.len());
+                    if buf.ends_with(&self.cr_bytes) {
+                        buf.truncate(buf.len() - self.cr_bytes.len());
                     }
                 }
+
                 Some(Ok(buf))
             }
             Err(e) => Some(Err(e)),
@@ -1226,11 +1282,35 @@ impl<B: BufRead> Iterator for LinesBytes<B> {
     }
 }
 
+fn read_until_bytes(
+    r: &mut impl BufRead,
+    bytes: &[u8],
+    buf: &mut Vec<u8>,
+) -> std::io::Result<usize> {
+    let last_byte = *bytes
+        .last()
+        .ok_or_else(|| std::io::Error::other("invalid empty bytes"))?;
+
+    if bytes.len() == 1 {
+        return r.read_until(last_byte, buf);
+    }
+
+    let mut total_n = 0;
+    loop {
+        let n = r.read_until(last_byte, buf)?;
+        total_n += n;
+
+        if n == 0 || buf.ends_with(bytes) {
+            return Ok(total_n);
+        }
+    }
+}
+
 struct StdLinesResource(Mutex<LinesBytes<BufReader<File>>>);
 
 impl StdLinesResource {
-    fn new(lines: BufReader<File>) -> Self {
-        Self(Mutex::new(LinesBytes(lines)))
+    fn new(lines: BufReader<File>, lf_bytes: Vec<u8>, cr_bytes: Vec<u8>) -> Self {
+        Self(Mutex::new(LinesBytes::new(lines, lf_bytes, cr_bytes)))
     }
 
     fn with_lock<R, F: FnMut(&mut LinesBytes<BufReader<File>>) -> R>(&self, mut f: F) -> R {
@@ -1354,21 +1434,60 @@ mod test {
 
     #[test]
     fn test_lines_bytes() {
-        let base = String::from("line 1\nline2\nline 3\nline 4");
-        let bytes = base.as_bytes();
+        // UTF-8
+        {
+            let base = String::from("line 1\nline2\nline 3\r\nline 4");
+            let bytes = base.as_bytes();
 
-        let string1 = base.lines().collect::<String>();
-        let string2 = BufReader::new(bytes)
-            .lines()
-            .map_while(Result::ok)
-            .collect::<String>();
-        let string3 = LinesBytes(BufReader::new(bytes))
-            .flatten()
-            .flat_map(String::from_utf8)
-            .collect::<String>();
+            let string1 = base.lines().collect::<String>();
+            let string2 = BufReader::new(bytes)
+                .lines()
+                .map_while(Result::ok)
+                .collect::<String>();
+            let string3 = LinesBytes::new(BufReader::new(bytes), vec![b'\n'], vec![b'\r'])
+                .flatten()
+                .flat_map(String::from_utf8)
+                .collect::<String>();
 
-        assert_eq!(string1, string2);
-        assert_eq!(string1, string3);
-        assert_eq!(string2, string3);
+            assert_eq!(string1, string2);
+            assert_eq!(string1, string3);
+            assert_eq!(string2, string3);
+        }
+
+        // UTF-16 LE
+        {
+            fn utf16(text: &str) -> Vec<u8> {
+                text.encode_utf16().flat_map(|u| u.to_le_bytes()).collect()
+            }
+
+            let base = String::from("line 1\nline2\nline 3\r\nline 4\n");
+            let bytes = utf16(&base);
+
+            let mut lines = LinesBytes::new(BufReader::new(&bytes[..]), utf16("\n"), utf16("\r"));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 1")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line2")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 3")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 4")));
+            assert!(lines.next().is_none());
+        }
+
+        // UTF-16 BE
+        {
+            fn utf16(text: &str) -> Vec<u8> {
+                text.encode_utf16().flat_map(|u| u.to_be_bytes()).collect()
+            }
+
+            // ਗ (U+0A17) encodes to 0x0A 0x17,
+            // which contains 0x0A but is not a line feed (U+000A = 0x00 0x0A).
+            let base = String::from("line 1\nline2ਗ\nline 3\r\nline 4");
+            let bytes = utf16(&base);
+
+            let mut lines = LinesBytes::new(BufReader::new(&bytes[..]), utf16("\n"), utf16("\r"));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 1")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line2ਗ")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 3")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 4")));
+            assert!(lines.next().is_none());
+        }
     }
 }
