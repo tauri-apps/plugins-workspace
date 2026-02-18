@@ -10,10 +10,8 @@ pub struct AppSettings {
     pub theme: String,
 }
 
-impl<R: tauri::Runtime> TryFrom<&Store<R>> for AppSettings {
-    type Error = Box<dyn std::error::Error>;
-
-    fn try_from(store: &Store) -> Result<Self, Self::Error> {
+impl<R: tauri::Runtime> From<&Store<R>> for AppSettings {
+    fn from(store: &Store<R>) -> Self {
         let launch_at_login = store
             .get("appSettings.launchAtLogin")
             .and_then(|v| v.as_bool())
@@ -24,9 +22,9 @@ impl<R: tauri::Runtime> TryFrom<&Store<R>> for AppSettings {
             .and_then(|v| v.as_str().map(String::from))
             .unwrap_or_else(|| "dark".to_owned());
 
-        Ok(AppSettings {
+        AppSettings {
             launch_at_login,
             theme,
-        })
+        }
     }
 }
