@@ -19,7 +19,7 @@ tauri-utils = "2.8"
 serde_json = "1"
 thiserror = "2"
 url = "2"
-schemars = "0.8"
+schemars = "1"
 dunce = "1"
 specta = "^2.0.0-rc.16"
 glob = "0.3"
@@ -39,3 +39,8 @@ codegen-units = 1
 lto = true
 incremental = false
 opt-level = "s"
+
+[patch.crates-io]
+tauri = { git = "https://github.com/tauri-apps/tauri.git", branch = "feat/cef" }
+tauri-utils = { git = "https://github.com/tauri-apps/tauri.git", branch = "feat/cef" }
+tauri-plugin = { git = "https://github.com/tauri-apps/tauri.git", branch = "feat/cef" }
