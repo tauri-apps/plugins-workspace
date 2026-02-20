@@ -199,6 +199,23 @@ class TauriNotificationManager(
     }
     mBuilder.setVisibility(notification.visibility ?: NotificationCompat.VISIBILITY_PRIVATE)
     mBuilder.setOnlyAlertOnce(true)
+
+    // Chronometer support
+    if (notification.`when` != null) {
+      mBuilder.setWhen(notification.`when`!!)
+      mBuilder.setShowWhen(true)
+    }
+    if (notification.usesChronometer) {
+      mBuilder.setUsesChronometer(true)
+      if (notification.`when` == null) {
+        mBuilder.setWhen(System.currentTimeMillis())
+        mBuilder.setShowWhen(true)
+      }
+    }
+    if (notification.chronometerCountDown) {
+      mBuilder.setChronometerCountDown(true)
+    }
+
     mBuilder.setSmallIcon(notification.getSmallIcon(context, getDefaultSmallIcon(context)))
     mBuilder.setLargeIcon(notification.getLargeIcon(context))
     val iconColor = notification.getIconColor(config?.iconColor ?: "")

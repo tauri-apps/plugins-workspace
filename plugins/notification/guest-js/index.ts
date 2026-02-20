@@ -136,6 +136,31 @@ interface Options {
    * Sets the number of items this notification represents on Android.
    */
   number?: number
+  /**
+   * Set the time that the event occurred. Notifications in the panel are sorted by this time.
+   * Represented as milliseconds since the epoch (e.g. `Date.now()`).
+   *
+   * **Android only.**
+   */
+  when?: number
+  /**
+   * Show the {@link when} field as a stopwatch. Instead of presenting `when` as a timestamp,
+   * the notification will show an automatically updating display of the minutes and seconds
+   * since `when`. Useful when showing an elapsed time (like an ongoing phone call or timer).
+   *
+   * **Android only.**
+   */
+  usesChronometer?: boolean
+  /**
+   * Sets the Chronometer to count down instead of counting up.
+   * This is only relevant if {@link usesChronometer} is `true`.
+   * If `when` is set to a time in the future, the chronometer will count down to zero then stop.
+   *
+   * **Android only.**
+   *
+   * @since API 24 (Android 7.0+)
+   */
+  chronometerCountDown?: boolean
 }
 
 interface ScheduleInterval {

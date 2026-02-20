@@ -205,6 +205,36 @@ impl<R: Runtime> NotificationBuilder<R> {
         self.data.silent = true;
         self
     }
+
+    /// Set the time that the event occurred (milliseconds since epoch).
+    /// Notifications in the panel are sorted by this time.
+    /// When used with `uses_chronometer`, the notification shows elapsed time since this value.
+    ///
+    /// **Android only.**
+    pub fn when(mut self, when: i64) -> Self {
+        self.data.when = Some(when);
+        self
+    }
+
+    /// Show the `when` field as a stopwatch.
+    /// Instead of presenting `when` as a timestamp, the notification will show an automatically
+    /// updating display of the minutes and seconds since `when`.
+    ///
+    /// **Android only.**
+    pub fn uses_chronometer(mut self) -> Self {
+        self.data.uses_chronometer = true;
+        self
+    }
+
+    /// Sets the Chronometer to count down instead of counting up.
+    /// Only relevant if `uses_chronometer` is true.
+    /// If `when` is set to a time in the future, the chronometer will count down to zero then stop.
+    ///
+    /// **Android only (API 24+).**
+    pub fn chronometer_count_down(mut self) -> Self {
+        self.data.chronometer_count_down = true;
+        self
+    }
 }
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the notification APIs.
