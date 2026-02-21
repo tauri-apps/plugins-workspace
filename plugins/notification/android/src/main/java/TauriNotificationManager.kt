@@ -70,6 +70,10 @@ class TauriNotificationManager(
     val input = results?.getCharSequence(REMOTE_INPUT_KEY)
     dataJson.put("inputValue", input?.toString())
     val menuAction = data.getStringExtra(ACTION_INTENT_KEY)
+    Logger.debug(
+      Logger.tags("Notification"),
+      "Action performed id=$notificationId actionId=$menuAction removable=$isRemovable"
+    )
     dismissVisibleNotification(notificationId)
     dataJson.put("actionId", menuAction)
     var request: JSONObject? = null
@@ -87,6 +91,10 @@ class TauriNotificationManager(
       if (savedNotification?.actionTypeId != null) {
         request.put("actionTypeId", savedNotification.actionTypeId)
       }
+      Logger.debug(
+        Logger.tags("Notification"),
+        "Recovered missing notification metadata from storage id=$notificationId actionTypeId=${savedNotification?.actionTypeId}"
+      )
     } else if (!request.has("id")) {
       request.put("id", notificationId)
     }
@@ -136,17 +144,23 @@ class TauriNotificationManager(
 
   fun schedule(notification: Notification): Int {
     val notificationManager = NotificationManagerCompat.from(context)
+    Logger.debug(
+      Logger.tags("Notification"),
+      "Scheduling notification id=${notification.id} actionTypeId=${notification.actionTypeId} hasSchedule=${notification.schedule != null}"
+    )
     return trigger(notificationManager, notification)
   }
 
   fun schedule(notifications: List<Notification>): List<Int> {
     val ids = mutableListOf<Int>()
     val notificationManager = NotificationManagerCompat.from(context)
+    Logger.debug(Logger.tags("Notification"), "Scheduling batch notifications count=${notifications.size}")
 
     for (notification in notifications) {
       val id = trigger(notificationManager, notification)
       ids.add(id)
     }
+    Logger.debug(Logger.tags("Notification"), "Scheduled batch notification ids=$ids")
 
     return ids
   }
@@ -324,6 +338,10 @@ class TauriNotificationManager(
     intent.putExtra(NOTIFICATION_OBJ_INTENT_KEY, notificationJson.toString())
     val schedule = notification.schedule
     intent.putExtra(NOTIFICATION_IS_REMOVABLE_KEY, schedule == null || schedule.isRemovable())
+    Logger.debug(
+      Logger.tags("Notification"),
+      "Built action intent notificationId=${notification.id} action=$action removable=${schedule == null || schedule.isRemovable()}"
+    )
     return intent
   }
 

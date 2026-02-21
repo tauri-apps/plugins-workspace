@@ -75,10 +75,17 @@ public class NotificationHandler: NSObject, NotificationHandlerProtocol {
     // Delivery note:
     // This event is emitted as soon as the OS callback arrives. If the JS side has
     // not attached `onAction` yet (for example during cold start), the event may be
-    // missed. Android currently mitigates this with a pending-action queue drained
-    // by JS after listener registration.
+    // missed. Android mitigates this with a pending-action queue and an explicit
+    // "listener ready" handshake from JS.
     //
-    // TODO: Consider applying the same queue/drain handshake on iOS for parity.
+    // iOS parity guidance:
+    // 1. Queue `ReceivedNotification` payloads at this boundary when listeners are not ready.
+    // 2. Expose a small command that JS calls after `onAction` registration to drain the queue.
+    // 3. Consider persistence (for example `UserDefaults`) so queued actions survive process restarts.
+    // 4. Keep the payload contract aligned with Android (`actionId`, `inputValue`, `notification`).
+    //
+    // Important: queue payloads should be built from `UNNotificationResponse` fields directly
+    // where possible, since `notificationsMap` is in-memory and may be unavailable after restart.
     try? self.plugin?.trigger(
       "actionPerformed",
       data: ReceivedNotification(
