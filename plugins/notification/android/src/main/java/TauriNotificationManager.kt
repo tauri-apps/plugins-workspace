@@ -61,12 +61,11 @@ class TauriNotificationManager(
       Logger.debug(Logger.tags("Notification"), "Activity started without notification attached")
       return null
     }
+    val savedNotification = notificationStorage.getSavedNotification(notificationId.toString())
     val isRemovable =
       data.getBooleanExtra(NOTIFICATION_IS_REMOVABLE_KEY, true)
-    if (isRemovable) {
-      notificationStorage.deleteNotification(notificationId.toString())
-    }
     val dataJson = JSObject()
+    dataJson.put("id", notificationId)
     val results = RemoteInput.getResultsFromIntent(data)
     val input = results?.getCharSequence(REMOTE_INPUT_KEY)
     dataJson.put("inputValue", input?.toString())
@@ -82,7 +81,19 @@ class TauriNotificationManager(
       }
     } catch (_: JSONException) {
     }
+    if (request == null) {
+      request = JSObject()
+      request.put("id", notificationId)
+      if (savedNotification?.actionTypeId != null) {
+        request.put("actionTypeId", savedNotification.actionTypeId)
+      }
+    } else if (!request.has("id")) {
+      request.put("id", notificationId)
+    }
     dataJson.put("notification", request)
+    if (isRemovable) {
+      notificationStorage.deleteNotification(notificationId.toString())
+    }
     return dataJson
   }
 
@@ -299,7 +310,18 @@ class TauriNotificationManager(
     intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
     intent.putExtra(NOTIFICATION_INTENT_KEY, notification.id)
     intent.putExtra(ACTION_INTENT_KEY, action)
-    intent.putExtra(NOTIFICATION_OBJ_INTENT_KEY, notification.sourceJson)
+    val notificationJson = JSObject()
+    notificationJson.put("id", notification.id)
+    notification.actionTypeId?.let { actionTypeId ->
+      notificationJson.put("actionTypeId", actionTypeId)
+    }
+    notification.title?.let { title ->
+      notificationJson.put("title", title)
+    }
+    notification.body?.let { body ->
+      notificationJson.put("body", body)
+    }
+    intent.putExtra(NOTIFICATION_OBJ_INTENT_KEY, notificationJson.toString())
     val schedule = notification.schedule
     intent.putExtra(NOTIFICATION_IS_REMOVABLE_KEY, schedule == null || schedule.isRemovable())
     return intent

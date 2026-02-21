@@ -286,6 +286,13 @@ interface ActiveNotification {
   sound?: string
 }
 
+interface ActionPerformedNotification {
+  actionId: string
+  id?: number
+  inputValue?: string
+  notification?: ActiveNotification | null
+}
+
 enum Importance {
   None = 0,
   Min,
@@ -567,7 +574,7 @@ async function onNotificationReceived(
 }
 
 async function onAction(
-  cb: (notification: Options) => void
+  cb: (notification: ActionPerformedNotification) => void
 ): Promise<PluginListener> {
   return await addPluginListener('notification', 'actionPerformed', cb)
 }
@@ -579,6 +586,7 @@ export type {
   ActionType,
   PendingNotification,
   ActiveNotification,
+  ActionPerformedNotification,
   Channel,
   ScheduleInterval
 }
