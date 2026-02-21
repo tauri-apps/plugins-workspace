@@ -66,6 +66,19 @@ public class NotificationHandler: NSObject, NotificationHandlerProtocol {
       inputValue = inputType.userText
     }
 
+    // Payload contract note:
+    // Keep this structure aligned with Android for `actionPerformed`:
+    // - `actionId`
+    // - `inputValue` (optional)
+    // - `notification` (with at least `id`, optionally `actionTypeId`)
+    //
+    // Delivery note:
+    // This event is emitted as soon as the OS callback arrives. If the JS side has
+    // not attached `onAction` yet (for example during cold start), the event may be
+    // missed. Android currently mitigates this with a pending-action queue drained
+    // by JS after listener registration.
+    //
+    // TODO: Consider applying the same queue/drain handshake on iOS for parity.
     try? self.plugin?.trigger(
       "actionPerformed",
       data: ReceivedNotification(

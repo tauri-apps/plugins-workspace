@@ -82,6 +82,8 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   private lateinit var notificationManager: NotificationManager
   private lateinit var notificationStorage: NotificationStorage
   private var channelManager = ChannelManager(activity)
+  private val pendingActionEvents = mutableListOf<JSObject>()
+  private var isActionListenerReady = false
 
   companion object {
     var instance: NotificationPlugin? = null
@@ -96,6 +98,10 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
 
     super.load(webView)
     this.webView = webView
+    synchronized(this) {
+      pendingActionEvents.clear()
+      isActionListenerReady = false
+    }
     notificationStorage = NotificationStorage(activity, jsonMapper())
     
     val manager = TauriNotificationManager(
@@ -127,8 +133,18 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     }
     val dataJson = manager.handleNotificationActionPerformed(intent, notificationStorage)
     if (dataJson != null) {
-      trigger("actionPerformed", dataJson)
+      dispatchActionPerformed(dataJson)
     }
+  }
+
+  private fun dispatchActionPerformed(payload: JSObject) {
+    synchronized(this) {
+      if (!isActionListenerReady) {
+        pendingActionEvents.add(payload)
+        return
+      }
+    }
+    trigger("actionPerformed", payload)
   }
 
   @Command
@@ -187,6 +203,19 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     val args = invoke.parseArgs(RegisterActionTypesArgs::class.java)
     notificationStorage.writeActionGroup(args.types)
     invoke.resolve()
+  }
+
+  @Command
+  fun registerActionListenerReady(invoke: Invoke) {
+    val pending = JSArray()
+    synchronized(this) {
+      isActionListenerReady = true
+      for (event in pendingActionEvents) {
+        pending.put(event)
+      }
+      pendingActionEvents.clear()
+    }
+    invoke.resolveObject(pending)
   }
 
   @SuppressLint("ObsoleteSdkInt")

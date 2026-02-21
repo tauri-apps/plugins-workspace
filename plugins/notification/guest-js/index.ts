@@ -576,7 +576,18 @@ async function onNotificationReceived(
 async function onAction(
   cb: (notification: ActionPerformedNotification) => void
 ): Promise<PluginListener> {
-  return await addPluginListener('notification', 'actionPerformed', cb)
+  const listener = await addPluginListener('notification', 'actionPerformed', cb)
+  try {
+    const pending = await invoke<ActionPerformedNotification[]>(
+      'plugin:notification|register_action_listener_ready'
+    )
+    for (const notification of pending) {
+      cb(notification)
+    }
+  } catch {
+    // Older plugin versions and non-Android targets may not implement this command.
+  }
+  return listener
 }
 
 export type {
