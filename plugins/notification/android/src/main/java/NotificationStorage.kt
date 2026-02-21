@@ -75,7 +75,6 @@ class NotificationStorage(private val context: Context, private val jsonMapper: 
         editor.remove(id)
         editor.apply()
     }
-
     private fun getStorage(key: String): SharedPreferences {
         return context.getSharedPreferences(key, Context.MODE_PRIVATE)
     }
@@ -85,11 +84,11 @@ class NotificationStorage(private val context: Context, private val jsonMapper: 
             val editor = getStorage(ACTION_TYPES_ID + type.id).edit()
             editor.clear()
             editor.putInt("count", type.actions.size)
-            for (i in 0 until type.actions.size) {
-                val action = type.actions[i]
-                editor.putString("id$i", action.id)
-                editor.putString("title$i", action.title)
-                editor.putBoolean("input$i", action.input ?: false)
+            // Store actions by numeric index to match getActionGroup() retrieval keys.
+            for ((index, action) in type.actions.withIndex()) {
+                editor.putString("id$index", action.id)
+                editor.putString("title$index", action.title)
+                editor.putBoolean("input$index", action.input ?: false)
             }
             editor.apply()
         }
