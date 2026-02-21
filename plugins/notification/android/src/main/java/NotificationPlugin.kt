@@ -22,8 +22,13 @@ import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSArray
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
+import org.json.JSONArray
+import org.json.JSONObject
 
 const val LOCAL_NOTIFICATIONS = "permissionState"
+private const val PREFS_NAME = "tauri_notification_plugin"
+private const val PREF_KEY_PENDING_ACTION_EVENTS = "pending_action_events"
+private const val PENDING_ACTION_EVENT_TTL_MS = 24 * 60 * 60 * 1000L
 
 @InvokeArg
 class PluginConfig {
@@ -82,8 +87,125 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   private lateinit var notificationManager: NotificationManager
   private lateinit var notificationStorage: NotificationStorage
   private var channelManager = ChannelManager(activity)
-  private val pendingActionEvents = mutableListOf<JSObject>()
+  private data class PendingActionEvent(
+    val key: String,
+    val payload: JSObject,
+    val timestampMs: Long
+  )
+
+  private val pendingActionEvents = mutableListOf<PendingActionEvent>()
+  private val pendingActionEventKeys = mutableSetOf<String>()
   private var isActionListenerReady = false
+
+  private fun nowMs(): Long = System.currentTimeMillis()
+
+  private fun isEventExpired(timestampMs: Long): Boolean {
+    return nowMs() - timestampMs > PENDING_ACTION_EVENT_TTL_MS
+  }
+
+  private fun buildActionEventKey(payload: JSObject): String {
+    val notification = payload.optJSONObject("notification")
+    val notificationId = notification?.opt("id") ?: payload.opt("id")
+    val actionId = payload.optString("actionId")
+    val inputValue = payload.optString("inputValue")
+
+    if (notificationId != null && actionId.isNotEmpty()) {
+      return "$notificationId|$actionId|$inputValue"
+    }
+
+    // Fallback for malformed payloads so we can still dedupe identical events.
+    return "payload:${payload.toString()}"
+  }
+
+  private fun rebuildPendingActionEventKeysLocked() {
+    pendingActionEventKeys.clear()
+    for (event in pendingActionEvents) {
+      pendingActionEventKeys.add(event.key)
+    }
+  }
+
+  private fun persistPendingActionEventsLocked() {
+    val iterator = pendingActionEvents.iterator()
+    var droppedExpired = 0
+    while (iterator.hasNext()) {
+      val event = iterator.next()
+      if (isEventExpired(event.timestampMs)) {
+        iterator.remove()
+        droppedExpired += 1
+      }
+    }
+    if (droppedExpired > 0) {
+      rebuildPendingActionEventKeysLocked()
+      Logger.debug(
+        Logger.tags("Notification"),
+        "Dropped expired pending actionPerformed events=$droppedExpired"
+      )
+    }
+
+    val events = JSONArray()
+    for (event in pendingActionEvents) {
+      try {
+        val wrappedEvent = JSONObject()
+        wrappedEvent.put("key", event.key)
+        wrappedEvent.put("timestampMs", event.timestampMs)
+        wrappedEvent.put("payload", JSONObject(event.payload.toString()))
+        events.put(wrappedEvent)
+      } catch (_: Throwable) {
+        events.put(event.payload)
+      }
+    }
+    activity
+      .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+      .edit()
+      .putString(PREF_KEY_PENDING_ACTION_EVENTS, events.toString())
+      .apply()
+  }
+
+  private fun restorePendingActionEventsLocked() {
+    val prefs = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    val serializedEvents = prefs.getString(PREF_KEY_PENDING_ACTION_EVENTS, null) ?: return
+
+    try {
+      val events = JSONArray(serializedEvents)
+      for (index in 0 until events.length()) {
+        val event = events.optJSONObject(index) ?: continue
+        val wrappedPayload = event.optJSONObject("payload")
+        val payloadObject = wrappedPayload ?: event
+        val payload = JSObject(payloadObject.toString())
+
+        val timestampMs =
+          if (wrappedPayload != null) event.optLong("timestampMs", nowMs()) else nowMs()
+        if (isEventExpired(timestampMs)) {
+          continue
+        }
+
+        val key = event.optString("key").ifEmpty { buildActionEventKey(payload) }
+        if (pendingActionEventKeys.contains(key)) {
+          Logger.debug(
+            Logger.tags("Notification"),
+            "Skipping duplicate restored actionPerformed event key=$key"
+          )
+          continue
+        }
+
+        pendingActionEvents.add(PendingActionEvent(key, payload, timestampMs))
+        pendingActionEventKeys.add(key)
+      }
+      Logger.debug(
+        Logger.tags("Notification"),
+        "Restored pending actionPerformed events=${pendingActionEvents.size}"
+      )
+    } catch (error: Throwable) {
+      Logger.error(
+        Logger.tags("Notification"),
+        "Failed to restore pending actionPerformed events",
+        error
+      )
+      pendingActionEvents.clear()
+      pendingActionEventKeys.clear()
+      persistPendingActionEventsLocked()
+    }
+  }
 
   companion object {
     var instance: NotificationPlugin? = null
@@ -100,7 +222,9 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     this.webView = webView
     synchronized(this) {
       pendingActionEvents.clear()
+      pendingActionEventKeys.clear()
       isActionListenerReady = false
+      restorePendingActionEventsLocked()
     }
     notificationStorage = NotificationStorage(activity, jsonMapper())
     
@@ -140,7 +264,23 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   private fun dispatchActionPerformed(payload: JSObject) {
     synchronized(this) {
       if (!isActionListenerReady) {
-        pendingActionEvents.add(payload)
+        val key = buildActionEventKey(payload)
+        // `load()` restores persisted pending events before processing the current activity intent.
+        // Without this key check, the same action can be enqueued twice across reload boundaries.
+        if (pendingActionEventKeys.contains(key)) {
+          Logger.debug(
+            Logger.tags("Notification"),
+            "Skipping duplicate queued actionPerformed event key=$key"
+          )
+          return
+        }
+        pendingActionEvents.add(PendingActionEvent(key, payload, nowMs()))
+        pendingActionEventKeys.add(key)
+        persistPendingActionEventsLocked()
+        Logger.debug(
+          Logger.tags("Notification"),
+          "Queued actionPerformed event; listener not ready (pending=${pendingActionEvents.size})"
+        )
         return
       }
     }
@@ -211,9 +351,11 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     synchronized(this) {
       isActionListenerReady = true
       for (event in pendingActionEvents) {
-        pending.put(event)
+        pending.put(event.payload)
       }
       pendingActionEvents.clear()
+      pendingActionEventKeys.clear()
+      persistPendingActionEventsLocked()
     }
     invoke.resolveObject(pending)
   }
