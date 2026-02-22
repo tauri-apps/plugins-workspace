@@ -54,11 +54,11 @@ class TauriNotificationManager(
     data: Intent,
     notificationStorage: NotificationStorage
   ): JSObject? {
-    Logger.debug(Logger.tags("Notification"), "Notification received: " + data.dataString)
+    Logger.debug(NOTIFICATION_LOG_TAGS, "Notification received: " + data.dataString)
     val notificationId =
       data.getIntExtra(NOTIFICATION_INTENT_KEY, Int.MIN_VALUE)
     if (notificationId == Int.MIN_VALUE) {
-      Logger.debug(Logger.tags("Notification"), "Activity started without notification attached")
+      Logger.debug(NOTIFICATION_LOG_TAGS, "Activity started without notification attached")
       return null
     }
     val savedNotification = notificationStorage.getSavedNotification(notificationId.toString())
@@ -71,7 +71,7 @@ class TauriNotificationManager(
     dataJson.put("inputValue", input?.toString())
     val menuAction = data.getStringExtra(ACTION_INTENT_KEY)
     Logger.debug(
-      Logger.tags("Notification"),
+      NOTIFICATION_LOG_TAGS,
       "Action performed id=$notificationId actionId=$menuAction removable=$isRemovable"
     )
     dismissVisibleNotification(notificationId)
@@ -92,7 +92,7 @@ class TauriNotificationManager(
         request.put("actionTypeId", savedNotification.actionTypeId)
       }
       Logger.debug(
-        Logger.tags("Notification"),
+        NOTIFICATION_LOG_TAGS,
         "Recovered missing notification metadata from storage id=$notificationId actionTypeId=${savedNotification?.actionTypeId}"
       )
     } else if (!request.has("id")) {
@@ -145,7 +145,7 @@ class TauriNotificationManager(
   fun schedule(notification: Notification): Int {
     val notificationManager = NotificationManagerCompat.from(context)
     Logger.debug(
-      Logger.tags("Notification"),
+      NOTIFICATION_LOG_TAGS,
       "Scheduling notification id=${notification.id} actionTypeId=${notification.actionTypeId} hasSchedule=${notification.schedule != null}"
     )
     return trigger(notificationManager, notification)
@@ -154,13 +154,13 @@ class TauriNotificationManager(
   fun schedule(notifications: List<Notification>): List<Int> {
     val ids = mutableListOf<Int>()
     val notificationManager = NotificationManagerCompat.from(context)
-    Logger.debug(Logger.tags("Notification"), "Scheduling batch notifications count=${notifications.size}")
+    Logger.debug(NOTIFICATION_LOG_TAGS, "Scheduling batch notifications count=${notifications.size}")
 
     for (notification in notifications) {
       val id = trigger(notificationManager, notification)
       ids.add(id)
     }
-    Logger.debug(Logger.tags("Notification"), "Scheduled batch notification ids=$ids")
+    Logger.debug(NOTIFICATION_LOG_TAGS, "Scheduled batch notification ids=$ids")
 
     return ids
   }
@@ -339,7 +339,7 @@ class TauriNotificationManager(
     val schedule = notification.schedule
     intent.putExtra(NOTIFICATION_IS_REMOVABLE_KEY, schedule == null || schedule.isRemovable())
     Logger.debug(
-      Logger.tags("Notification"),
+      NOTIFICATION_LOG_TAGS,
       "Built action intent notificationId=${notification.id} action=$action removable=${schedule == null || schedule.isRemovable()}"
     )
     return intent
@@ -370,7 +370,7 @@ class TauriNotificationManager(
     when (schedule) {
       is NotificationSchedule.At -> {
         if (schedule.date.time < Date().time) {
-          Logger.error(Logger.tags("Notification"), "Scheduled time must be *after* current time", null)
+          Logger.error(NOTIFICATION_LOG_TAGS, "Scheduled time must be *after* current time", null)
           return
         }
         if (schedule.repeating) {
@@ -388,7 +388,7 @@ class TauriNotificationManager(
         setExactIfPossible(alarmManager, schedule, trigger, pendingIntent)
         val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
         Logger.debug(
-          Logger.tags("Notification"),
+          NOTIFICATION_LOG_TAGS,
           "notification " + request.id + " will next fire at " + sdf.format(Date(trigger))
         )
       }
@@ -494,7 +494,7 @@ class NotificationDismissReceiver : BroadcastReceiver() {
     val intExtra =
       intent.getIntExtra(NOTIFICATION_INTENT_KEY, Int.MIN_VALUE)
     if (intExtra == Int.MIN_VALUE) {
-      Logger.error(Logger.tags("Notification"), "Invalid notification dismiss operation", null)
+      Logger.error(NOTIFICATION_LOG_TAGS, "Invalid notification dismiss operation", null)
       return
     }
     val isRemovable =
@@ -524,7 +524,7 @@ class TimedNotificationPublisher : BroadcastReceiver() {
     notification?.`when` = System.currentTimeMillis()
     val id = intent.getIntExtra(NOTIFICATION_INTENT_KEY, Int.MIN_VALUE)
     if (id == Int.MIN_VALUE) {
-      Logger.error(Logger.tags("Notification"), "No valid id supplied", null)
+      Logger.error(NOTIFICATION_LOG_TAGS, "No valid id supplied", null)
     }
     val storage = NotificationStorage(context, ObjectMapper())
 
@@ -564,7 +564,7 @@ class TimedNotificationPublisher : BroadcastReceiver() {
       }
       val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
       Logger.debug(
-        Logger.tags("Notification"),
+        NOTIFICATION_LOG_TAGS,
         "notification " + id + " will next fire at " + sdf.format(Date(trigger))
       )
       return true

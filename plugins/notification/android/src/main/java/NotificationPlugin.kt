@@ -138,7 +138,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     if (droppedExpired > 0) {
       rebuildPendingActionEventKeysLocked()
       Logger.debug(
-        Logger.tags("Notification"),
+        NOTIFICATION_LOG_TAGS,
         "Dropped expired pending actionPerformed events=$droppedExpired"
       )
     }
@@ -183,7 +183,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
         val key = event.optString("key").ifEmpty { buildActionEventKey(payload) }
         if (pendingActionEventKeys.contains(key)) {
           Logger.debug(
-            Logger.tags("Notification"),
+            NOTIFICATION_LOG_TAGS,
             "Skipping duplicate restored actionPerformed event key=$key"
           )
           continue
@@ -193,12 +193,12 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
         pendingActionEventKeys.add(key)
       }
       Logger.debug(
-        Logger.tags("Notification"),
+        NOTIFICATION_LOG_TAGS,
         "Restored pending actionPerformed events=${pendingActionEvents.size}"
       )
     } catch (error: Throwable) {
       Logger.error(
-        Logger.tags("Notification"),
+        NOTIFICATION_LOG_TAGS,
         "Failed to restore pending actionPerformed events",
         error
       )
@@ -221,7 +221,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
 
     super.load(webView)
     this.webView = webView
-    Logger.debug(Logger.tags("Notification"), "Plugin load started")
+    Logger.debug(NOTIFICATION_LOG_TAGS, "Plugin load started")
     synchronized(this) {
       pendingActionEvents.clear()
       pendingActionEventKeys.clear()
@@ -241,7 +241,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     this.manager = manager
     
     notificationManager = activity.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    Logger.debug(Logger.tags("Notification"), "Plugin load complete; awaiting notification intents")
+    Logger.debug(NOTIFICATION_LOG_TAGS, "Plugin load complete; awaiting notification intents")
 
     val intent = activity.intent
     intent?.let {
@@ -251,21 +251,21 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
 
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
-    Logger.debug(Logger.tags("Notification"), "onNewIntent received action=${intent.action}")
+    Logger.debug(NOTIFICATION_LOG_TAGS, "onNewIntent received action=${intent.action}")
     onIntent(intent)
   }
 
   fun onIntent(intent: Intent) {
     if (Intent.ACTION_MAIN != intent.action) {
-      Logger.debug(Logger.tags("Notification"), "Ignoring intent action=${intent.action}")
+      Logger.debug(NOTIFICATION_LOG_TAGS, "Ignoring intent action=${intent.action}")
       return
     }
-    Logger.debug(Logger.tags("Notification"), "Processing ACTION_MAIN intent for notification action")
+    Logger.debug(NOTIFICATION_LOG_TAGS, "Processing ACTION_MAIN intent for notification action")
     val dataJson = manager.handleNotificationActionPerformed(intent, notificationStorage)
     if (dataJson != null) {
       dispatchActionPerformed(dataJson)
     } else {
-      Logger.debug(Logger.tags("Notification"), "No action payload extracted from intent")
+      Logger.debug(NOTIFICATION_LOG_TAGS, "No action payload extracted from intent")
     }
   }
 
@@ -277,7 +277,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
         // Without this key check, the same action can be enqueued twice across reload boundaries.
         if (pendingActionEventKeys.contains(key)) {
           Logger.debug(
-            Logger.tags("Notification"),
+            NOTIFICATION_LOG_TAGS,
             "Skipping duplicate queued actionPerformed event key=$key"
           )
           return
@@ -286,13 +286,13 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
         pendingActionEventKeys.add(key)
         persistPendingActionEventsLocked()
         Logger.debug(
-          Logger.tags("Notification"),
+          NOTIFICATION_LOG_TAGS,
           "Queued actionPerformed event; listener not ready (pending=${pendingActionEvents.size})"
         )
         return
       }
     }
-    Logger.debug(Logger.tags("Notification"), "Dispatching actionPerformed event immediately")
+    Logger.debug(NOTIFICATION_LOG_TAGS, "Dispatching actionPerformed event immediately")
     trigger("actionPerformed", payload)
   }
 
@@ -300,7 +300,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   fun show(invoke: Invoke) {
     val notification = invoke.parseArgs(Notification::class.java)
     Logger.debug(
-      Logger.tags("Notification"),
+      NOTIFICATION_LOG_TAGS,
       "show called id=${notification.id} title=${notification.title} actionTypeId=${notification.actionTypeId} hasSchedule=${notification.schedule != null}"
     )
     val id = manager.schedule(notification)
@@ -312,13 +312,13 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   fun batch(invoke: Invoke) {
     val args = invoke.parseArgs(BatchArgs::class.java)
     Logger.debug(
-      Logger.tags("Notification"),
+      NOTIFICATION_LOG_TAGS,
       "batch called notifications=${args.notifications.size}"
     )
 
     val ids = manager.schedule(args.notifications)
     notificationStorage.appendNotifications(args.notifications)
-    Logger.debug(Logger.tags("Notification"), "batch scheduled ids=$ids")
+    Logger.debug(NOTIFICATION_LOG_TAGS, "batch scheduled ids=$ids")
 
     invoke.resolveObject(ids)
   }
@@ -326,7 +326,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   @Command
   fun cancel(invoke: Invoke) {
     val args = invoke.parseArgs(CancelArgs::class.java)
-    Logger.debug(Logger.tags("Notification"), "cancel called notifications=${args.notifications}")
+    Logger.debug(NOTIFICATION_LOG_TAGS, "cancel called notifications=${args.notifications}")
     manager.cancel(args.notifications)
     invoke.resolve()
   }
@@ -334,7 +334,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   @Command
   fun removeActive(invoke: Invoke) {
     val args = invoke.parseArgs(RemoveActiveArgs::class.java)
-    Logger.debug(Logger.tags("Notification"), "removeActive called notifications=${args.notifications.size}")
+    Logger.debug(NOTIFICATION_LOG_TAGS, "removeActive called notifications=${args.notifications.size}")
 
     if (args.notifications.isEmpty()) {
       notificationManager.cancelAll()
@@ -354,7 +354,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   @Command
   fun getPending(invoke: Invoke) {
     val notifications= notificationStorage.getSavedNotifications()
-    Logger.debug(Logger.tags("Notification"), "getPending returning count=${notifications.size}")
+    Logger.debug(NOTIFICATION_LOG_TAGS, "getPending returning count=${notifications.size}")
     val result = Notification.buildNotificationPendingList(notifications)
     invoke.resolveObject(result)
   }
@@ -363,7 +363,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   fun registerActionTypes(invoke: Invoke) {
     val args = invoke.parseArgs(RegisterActionTypesArgs::class.java)
     Logger.debug(
-      Logger.tags("Notification"),
+      NOTIFICATION_LOG_TAGS,
       "registerActionTypes called types=${args.types.size}"
     )
     notificationStorage.writeActionGroup(args.types)
@@ -385,7 +385,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
       persistPendingActionEventsLocked()
     }
     Logger.debug(
-      Logger.tags("Notification"),
+      NOTIFICATION_LOG_TAGS,
       "Action listener marked ready; drained pending actionPerformed events=$drainedCount"
     )
     invoke.resolveObject(pending)

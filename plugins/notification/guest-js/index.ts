@@ -293,6 +293,20 @@ interface ActionPerformedNotification {
   notification?: ActiveNotification | null
 }
 
+type RawPendingRecord = Record<string, unknown> & {
+  nameValuePairs?: unknown
+  value?: unknown
+  length?: number
+}
+
+type PendingActionsRaw =
+  | ActionPerformedNotification
+  | ActionPerformedNotification[]
+  | RawPendingRecord
+  | RawPendingRecord[]
+  | null
+  | undefined
+
 enum Importance {
   None = 0,
   Min,
@@ -574,20 +588,24 @@ async function onNotificationReceived(
 }
 
 function normalisePendingActions(
-  pending: unknown
+  pending: PendingActionsRaw
 ): ActionPerformedNotification[] {
   const normalisedActions: ActionPerformedNotification[] = []
   const seenObjects = new WeakSet<object>()
   const seenActionKeys = new Set<string>()
 
-  const toRecord = (value: unknown): Record<string, unknown> | null => {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  const isRawPendingRecord = (value: unknown): value is RawPendingRecord => {
+    return !!value && typeof value === 'object' && !Array.isArray(value)
+  }
+
+  const toRecord = (value: unknown): RawPendingRecord | null => {
+    if (!isRawPendingRecord(value)) {
       return null
     }
 
-    const record = value as Record<string, unknown>
+    const record = value
     const wrapped = record.nameValuePairs
-    if (wrapped && typeof wrapped === 'object') {
+    if (isRawPendingRecord(wrapped)) {
       return toRecord(wrapped)
     }
 
@@ -639,14 +657,16 @@ function normalisePendingActions(
     }
 
     const toStringRecord = (value: unknown): Record<string, string> => {
-      if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      if (!isRawPendingRecord(value)) {
         return {}
       }
 
-      const source = value as Record<string, unknown>
       const output: Record<string, string> = {}
-      for (const [key, item] of Object.entries(source)) {
+      for (const [key, item] of Object.entries(value)) {
         if (typeof item === 'string') {
+          // Dynamic key passthrough is intentional here: this function only normalises
+          // already-received bridge payload objects into a plain string record.
+          // eslint-disable-next-line security/detect-object-injection
           output[key] = item
         }
       }
@@ -654,10 +674,10 @@ function normalisePendingActions(
     }
 
     const toUnknownRecord = (value: unknown): Record<string, unknown> => {
-      if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      if (!isRawPendingRecord(value)) {
         return {}
       }
-      return value as Record<string, unknown>
+      return value
     }
 
     const coerceActiveNotification = (
@@ -706,9 +726,10 @@ function normalisePendingActions(
       }
       if (
         notificationRecord.schedule &&
-        typeof notificationRecord.schedule === 'object'
+        isRawPendingRecord(notificationRecord.schedule)
       ) {
-        activeNotification.schedule = notificationRecord.schedule as Schedule
+        activeNotification.schedule =
+          notificationRecord.schedule as unknown as Schedule
       }
 
       return activeNotification
@@ -742,13 +763,16 @@ function normalisePendingActions(
       return
     }
 
-    const objectValue = value as object
+    const objectValue = value
     if (seenObjects.has(objectValue)) {
       return
     }
     seenObjects.add(objectValue)
 
-    const record = value as Record<string, unknown>
+    if (!isRawPendingRecord(value)) {
+      return
+    }
+    const record = value
 
     const directAction = buildAction(record)
     if (directAction) {
@@ -805,7 +829,7 @@ async function onAction(
     (notification: ActionPerformedNotification) => actionCallback(notification)
   )
   try {
-    const pendingResult = await invoke<unknown>(
+    const pendingResult = await invoke<PendingActionsRaw>(
       'plugin:notification|register_action_listener_ready'
     )
     const pending = normalisePendingActions(pendingResult)

@@ -84,7 +84,7 @@ class ChannelManager(private var context: Context) {
           notificationChannel.lightColor = Color.parseColor(lightColor)
         } catch (ex: IllegalArgumentException) {
           Logger.error(
-            Logger.tags("NotificationChannel"),
+            NOTIFICATION_CHANNEL_LOG_TAGS,
             "Invalid color provided for light color.",
             null
           )
