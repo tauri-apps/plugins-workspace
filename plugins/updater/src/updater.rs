@@ -1052,7 +1052,7 @@ impl Update {
             return Err(Error::InvalidUpdaterFormat);
         }
 
-        self.try_tmp_locations(bytes, "dpkg", "-i")
+        self.try_tmp_locations(bytes, "dpkg", "-i", "deb")
     }
 
     fn install_rpm(&self, bytes: &[u8]) -> Result<()> {
@@ -1060,10 +1060,16 @@ impl Update {
         if !infer::archive::is_rpm(bytes) {
             return Err(Error::InvalidUpdaterFormat);
         }
-        self.try_tmp_locations(bytes, "rpm", "-U")
+        self.try_tmp_locations(bytes, "rpm", "-U", "rpm")
     }
 
-    fn try_tmp_locations(&self, bytes: &[u8], install_cmd: &str, install_arg: &str) -> Result<()> {
+    fn try_tmp_locations(
+        &self,
+        bytes: &[u8],
+        install_cmd: &str,
+        install_arg: &str,
+        file_extension: &str,
+    ) -> Result<()> {
         // Try different temp directories
         let tmp_dir_locations = vec![
             Box::new(|| Some(std::env::temp_dir())) as Box<dyn FnOnce() -> Option<PathBuf>>,
@@ -1078,7 +1084,7 @@ impl Update {
                     .prefix("tauri_rpm_update")
                     .tempdir_in(path)
                 {
-                    let pkg_path = tmp_dir.path().join("package.rpm");
+                    let pkg_path = tmp_dir.path().join(format!("package.{file_extension}"));
 
                     // Try writing the .deb file
                     if std::fs::write(&pkg_path, bytes).is_ok() {
