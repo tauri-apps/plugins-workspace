@@ -468,7 +468,7 @@ async function ask(
   const okLabel = opts?.okLabel ?? 'Yes'
   return (
     (await messageCommand(message, {
-      title: opts?.title?.toString(),
+      title: opts?.title,
       kind: opts?.kind,
       buttons: customButtons
         ? { ok: okLabel, cancel: opts.cancelLabel ?? 'No' }
@@ -505,7 +505,7 @@ async function confirm(
   const okLabel = opts?.okLabel ?? 'Ok'
   return (
     (await messageCommand(message, {
-      title: opts?.title?.toString(),
+      title: opts?.title,
       kind: opts?.kind,
       buttons: customButtons
         ? { ok: okLabel, cancel: opts.cancelLabel ?? 'Cancel' }
