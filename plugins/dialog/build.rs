@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+// TODO: `ask` and `confirm` are unused now, remove them in v3
 const COMMANDS: &[&str] = &["open", "save", "message", "ask", "confirm"];
 
 fn main() {
