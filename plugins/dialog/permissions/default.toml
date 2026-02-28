@@ -11,8 +11,4 @@ All dialog types are enabled.
 
 
 """
-permissions = [
-  "allow-message",
-  "allow-save",
-  "allow-open",
-]
+permissions = ["allow-message", "allow-save", "allow-open"]
