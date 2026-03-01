@@ -9,8 +9,8 @@ use tauri::{command, Manager, Runtime, State, Window};
 use tauri_plugin_fs::FsExt;
 
 use crate::{
-    Dialog, FileAccessMode, FileDialogBuilder, FilePath, MessageDialogBuilder,
-    MessageDialogButtons, MessageDialogKind, MessageDialogResult, PickerMode, Result,
+    Dialog, FileAccessMode, FileDialogBuilder, FilePath, MessageDialogButtons, MessageDialogKind,
+    MessageDialogResult, PickerMode, Result,
 };
 
 #[derive(Serialize)]
@@ -258,17 +258,20 @@ pub(crate) async fn save<R: Runtime>(
     Ok(path.map(|p| p.simplified()))
 }
 
-fn message_dialog<R: Runtime>(
-    #[allow(unused_variables)] window: Window<R>,
+#[command]
+pub(crate) async fn message<R: Runtime>(
+    #[allow(unused)] window: Window<R>,
     dialog: State<'_, Dialog<R>>,
     title: Option<String>,
     message: String,
     kind: Option<MessageDialogKind>,
-    buttons: MessageDialogButtons,
-) -> MessageDialogBuilder<R> {
+    buttons: Option<MessageDialogButtons>,
+) -> Result<MessageDialogResult> {
     let mut builder = dialog.message(message);
 
-    builder = builder.buttons(buttons);
+    if let Some(buttons) = buttons {
+        builder = builder.buttons(buttons);
+    }
 
     if let Some(title) = title {
         builder = builder.title(title);
@@ -283,24 +286,5 @@ fn message_dialog<R: Runtime>(
         builder = builder.kind(kind);
     }
 
-    builder
-}
-
-#[command]
-pub(crate) async fn message<R: Runtime>(
-    window: Window<R>,
-    dialog: State<'_, Dialog<R>>,
-    title: Option<String>,
-    message: String,
-    kind: Option<MessageDialogKind>,
-    ok_button_label: Option<String>,
-    buttons: Option<MessageDialogButtons>,
-) -> Result<MessageDialogResult> {
-    let buttons = buttons.unwrap_or(if let Some(ok_button_label) = ok_button_label {
-        MessageDialogButtons::OkCustom(ok_button_label)
-    } else {
-        MessageDialogButtons::Ok
-    });
-
-    Ok(message_dialog(window, dialog, title, message, kind, buttons).blocking_show_with_result())
+    Ok(builder.blocking_show_with_result())
 }
