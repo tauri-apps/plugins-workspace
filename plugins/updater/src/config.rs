@@ -76,6 +76,8 @@ impl Display for WindowsUpdateInstallMode {
 #[serde(rename_all = "camelCase")]
 pub struct WindowsConfig {
     /// Additional arguments given to the NSIS or WiX installer.
+    ///
+    /// Note: this applies to both WiX and NSIS installers
     #[serde(
         default,
         alias = "installer-args",

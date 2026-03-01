@@ -283,6 +283,8 @@ impl UpdaterBuilder {
     }
 
     /// Adds an argument to pass to the Windows installer.
+    ///
+    /// Note: this applies to both WiX and NSIS installers
     #[cfg_attr(not(windows), allow(unused))]
     pub fn installer_arg<S>(mut self, #[allow(unused)] arg: S) -> Self
     where
@@ -296,6 +298,8 @@ impl UpdaterBuilder {
     }
 
     /// Adds multiple arguments to pass to the Windows installer.
+    ///
+    /// Note: this applies to both WiX and NSIS installers
     #[cfg_attr(not(windows), allow(unused))]
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
@@ -336,6 +340,16 @@ impl UpdaterBuilder {
         self
     }
 
+    /// If the Windows installer should restart the app after installed, default is `true`
+    #[cfg_attr(not(windows), allow(unused))]
+    pub fn restart_after_install(mut self, restart_after_install: bool) -> Self {
+        #[cfg(windows)]
+        {
+            self.context.restart_after_install = restart_after_install;
+        }
+        self
+    }
+
     /// Allows you to modify the `reqwest` client builder before the HTTP request is sent.
     ///
     /// Note that `reqwest` crate may be updated in minor releases of tauri-plugin-updater.
@@ -345,16 +359,6 @@ impl UpdaterBuilder {
         f: F,
     ) -> Self {
         self.context.configure_client.replace(Arc::new(f));
-        self
-    }
-
-    /// If the Windows installer should restart the app after installed, default is `true`
-    #[cfg_attr(not(windows), allow(unused))]
-    pub fn restart_after_install(mut self, restart_after_install: bool) -> Self {
-        #[cfg(windows)]
-        {
-            self.context.restart_after_install = restart_after_install;
-        }
         self
     }
 
