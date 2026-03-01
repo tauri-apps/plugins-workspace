@@ -286,7 +286,7 @@ impl UpdaterBuilder {
     ///
     /// Note: this applies to both WiX and NSIS installers
     #[cfg_attr(not(windows), allow(unused))]
-    pub fn installer_arg<S>(mut self, #[allow(unused)] arg: S) -> Self
+    pub fn installer_arg<S>(mut self, arg: S) -> Self
     where
         S: Into<OsString>,
     {
@@ -763,10 +763,8 @@ impl Update {
     }
 
     /// If the Windows installer should restart the app after installed, default is `true`
-    pub fn restart_after_install(
-        #[allow(unused_mut)] mut self,
-        #[allow(unused)] restart_after_install: bool,
-    ) -> Self {
+    #[cfg_attr(not(windows), allow(unused))]
+    pub fn restart_after_install(mut self, restart_after_install: bool) -> Self {
         #[cfg(windows)]
         {
             self.context.restart_after_install = restart_after_install;
