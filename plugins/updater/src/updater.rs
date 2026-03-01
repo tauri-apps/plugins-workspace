@@ -147,6 +147,7 @@ struct UpdaterContext {
     installer_args: Vec<OsString>,
     #[cfg(windows)]
     current_exe_args: Vec<OsString>,
+    #[cfg(windows)]
     on_before_exit: Option<OnBeforeExit>,
     configure_client: Option<OnBeforeRequest>,
     #[cfg(windows)]
@@ -187,6 +188,7 @@ impl UpdaterBuilder {
                 app_name: app.package_info().name.clone(),
                 #[cfg(windows)]
                 current_exe_args: Vec::new(),
+                #[cfg(windows)]
                 on_before_exit: None,
                 configure_client: None,
                 #[cfg(windows)]
@@ -311,8 +313,14 @@ impl UpdaterBuilder {
     }
 
     /// Function to run before we run the installer and exit the app through `std::process::exit(0)` on Windows
-    pub fn on_before_exit<F: Fn() + Send + Sync + 'static>(mut self, f: F) -> Self {
-        self.context.on_before_exit.replace(Arc::new(f));
+    pub fn on_before_exit<F: Fn() + Send + Sync + 'static>(
+        #[allow(unused_mut)] mut self,
+        #[allow(unused)] f: F,
+    ) -> Self {
+        #[cfg(windows)]
+        {
+            self.context.on_before_exit.replace(Arc::new(f));
+        }
         self
     }
 
