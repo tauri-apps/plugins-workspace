@@ -145,6 +145,7 @@ struct UpdaterContext {
     #[cfg(windows)]
     app_name: String,
     installer_args: Vec<OsString>,
+    #[cfg(windows)]
     current_exe_args: Vec<OsString>,
     on_before_exit: Option<OnBeforeExit>,
     configure_client: Option<OnBeforeRequest>,
@@ -184,6 +185,7 @@ impl UpdaterBuilder {
                 run_on_main_thread,
                 #[cfg(windows)]
                 app_name: app.package_info().name.clone(),
+                #[cfg(windows)]
                 current_exe_args: Vec::new(),
                 on_before_exit: None,
                 configure_client: None,
@@ -374,6 +376,7 @@ impl UpdaterBuilder {
     }
 }
 
+#[cfg(windows)]
 impl UpdaterBuilder {
     pub(crate) fn current_exe_args<I, S>(mut self, args: I) -> Self
     where
