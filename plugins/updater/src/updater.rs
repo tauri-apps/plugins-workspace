@@ -129,15 +129,17 @@ impl RemoteRelease {
 pub type OnBeforeExit = Arc<dyn Fn() + Send + Sync + 'static>;
 pub type OnBeforeRequest = Arc<dyn Fn(ClientBuilder) -> ClientBuilder + Send + Sync + 'static>;
 pub type VersionComparator = Arc<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>;
+#[cfg(target_os = "macos")]
 type MainThreadClosure = Box<dyn FnOnce() + Send + Sync + 'static>;
-type RunOnMainThread =
-    Arc<dyn Fn(MainThreadClosure) -> std::result::Result<(), tauri::Error> + Send + Sync + 'static>;
+#[cfg(target_os = "macos")]
+type RunOnMainThread = Arc<dyn Fn(MainThreadClosure) -> tauri::Result<()> + Send + Sync + 'static>;
 
+// TODO: Move more fields to this in v3 if we can mark those fields non `pub`
 /// Updater context shared between [`UpdaterBuilder`], [`Updater`] and [`Update`]
 #[derive(Clone)]
 struct UpdaterContext {
     config: Config,
-    #[allow(dead_code)]
+    #[cfg(target_os = "macos")]
     run_on_main_thread: RunOnMainThread,
     /// App name, used for creating named tempfiles on Windows
     #[cfg(windows)]
@@ -146,6 +148,7 @@ struct UpdaterContext {
     current_exe_args: Vec<OsString>,
     on_before_exit: Option<OnBeforeExit>,
     configure_client: Option<OnBeforeRequest>,
+    #[cfg(windows)]
     restart_after_install: bool,
 }
 
@@ -164,8 +167,11 @@ pub struct UpdaterBuilder {
 
 impl UpdaterBuilder {
     pub(crate) fn new<R: Runtime>(app: &AppHandle<R>, config: crate::Config) -> Self {
-        let app_ = app.clone();
-        let run_on_main_thread = move |f| app_.run_on_main_thread(f);
+        #[cfg(target_os = "macos")]
+        let run_on_main_thread = {
+            let app_ = app.clone();
+            Arc::new(move |f| app_.run_on_main_thread(f))
+        };
         Self {
             context: UpdaterContext {
                 installer_args: config
@@ -174,7 +180,8 @@ impl UpdaterBuilder {
                     .map(|w| w.installer_args.clone())
                     .unwrap_or_default(),
                 config,
-                run_on_main_thread: Arc::new(run_on_main_thread),
+                #[cfg(target_os = "macos")]
+                run_on_main_thread,
                 #[cfg(windows)]
                 app_name: app.package_info().name.clone(),
                 current_exe_args: Vec::new(),
@@ -718,7 +725,10 @@ impl Update {
     }
 
     /// If the Windows installer should restart the app after installed, default is `true`
-    pub fn restart_after_install(mut self, #[allow(unused)] restart_after_install: bool) -> Self {
+    pub fn restart_after_install(
+        #[allow(unused_mut)] mut self,
+        #[allow(unused)] restart_after_install: bool,
+    ) -> Self {
         #[cfg(windows)]
         {
             self.context.restart_after_install = restart_after_install;

@@ -32,6 +32,7 @@ impl WindowsUpdateInstallMode {
         }
     }
 
+    #[cfg(windows)]
     pub(crate) fn msi_restart_after_install_args(&self) -> &'static [&'static str] {
         &["AUTOLAUNCHAPP=True"]
     }
@@ -48,6 +49,7 @@ impl WindowsUpdateInstallMode {
         }
     }
 
+    #[cfg(windows)]
     pub(crate) fn nsis_restart_after_install_args(&self) -> &'static [&'static str] {
         match self {
             Self::BasicUi => &[],
