@@ -187,6 +187,7 @@ impl UpdaterBuilder {
                 current_exe_args: Vec::new(),
                 on_before_exit: None,
                 configure_client: None,
+                #[cfg(windows)]
                 restart_after_install: true,
             },
             current_version: app.package_info().version.clone(),
