@@ -10,8 +10,7 @@ use tauri_plugin_fs::FsExt;
 
 use crate::{
     Dialog, FileAccessMode, FileDialogBuilder, FilePath, MessageDialogBuilder,
-    MessageDialogButtons, MessageDialogKind, MessageDialogResult, PickerMode, Result, CANCEL, NO,
-    OK, YES,
+    MessageDialogButtons, MessageDialogKind, MessageDialogResult, PickerMode, Result,
 };
 
 #[derive(Serialize)]
@@ -304,66 +303,4 @@ pub(crate) async fn message<R: Runtime>(
     });
 
     Ok(message_dialog(window, dialog, title, message, kind, buttons).blocking_show_with_result())
-}
-
-#[command]
-pub(crate) async fn ask<R: Runtime>(
-    window: Window<R>,
-    dialog: State<'_, Dialog<R>>,
-    title: Option<String>,
-    message: String,
-    kind: Option<MessageDialogKind>,
-    yes_button_label: Option<String>,
-    no_button_label: Option<String>,
-) -> Result<bool> {
-    let dialog = message_dialog(
-        window,
-        dialog,
-        title,
-        message,
-        kind,
-        if let Some(yes_button_label) = yes_button_label {
-            MessageDialogButtons::OkCancelCustom(
-                yes_button_label,
-                no_button_label.unwrap_or(NO.to_string()),
-            )
-        } else if let Some(no_button_label) = no_button_label {
-            MessageDialogButtons::OkCancelCustom(YES.to_string(), no_button_label)
-        } else {
-            MessageDialogButtons::YesNo
-        },
-    );
-
-    Ok(dialog.blocking_show())
-}
-
-#[command]
-pub(crate) async fn confirm<R: Runtime>(
-    window: Window<R>,
-    dialog: State<'_, Dialog<R>>,
-    title: Option<String>,
-    message: String,
-    kind: Option<MessageDialogKind>,
-    ok_button_label: Option<String>,
-    cancel_button_label: Option<String>,
-) -> Result<bool> {
-    let dialog = message_dialog(
-        window,
-        dialog,
-        title,
-        message,
-        kind,
-        if let Some(ok_button_label) = ok_button_label {
-            MessageDialogButtons::OkCancelCustom(
-                ok_button_label,
-                cancel_button_label.unwrap_or(CANCEL.to_string()),
-            )
-        } else if let Some(cancel_button_label) = cancel_button_label {
-            MessageDialogButtons::OkCancelCustom(OK.to_string(), cancel_button_label)
-        } else {
-            MessageDialogButtons::OkCancel
-        },
-    );
-
-    Ok(dialog.blocking_show())
 }

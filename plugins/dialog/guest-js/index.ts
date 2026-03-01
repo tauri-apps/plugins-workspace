@@ -405,6 +405,16 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
  */
 export type MessageDialogResult = 'Yes' | 'No' | 'Ok' | 'Cancel' | (string & {})
 
+async function messageCommand(message: string, options?: MessageDialogOptions) {
+  return await invoke<MessageDialogResult>('plugin:dialog|message', {
+    message,
+    title: options?.title,
+    kind: options?.kind,
+    okButtonLabel: options?.okLabel,
+    buttons: buttonsToRust(options?.buttons)
+  })
+}
+
 /**
  * Shows a message dialog with an `Ok` button.
  * @example
@@ -427,18 +437,14 @@ async function message(
   options?: string | MessageDialogOptions
 ): Promise<MessageDialogResult> {
   const opts = typeof options === 'string' ? { title: options } : options
-
-  return invoke<MessageDialogResult>('plugin:dialog|message', {
-    message: message.toString(),
-    title: opts?.title?.toString(),
-    kind: opts?.kind,
-    okButtonLabel: opts?.okLabel?.toString(),
-    buttons: buttonsToRust(opts?.buttons)
-  })
+  return messageCommand(message, opts)
 }
 
 /**
  * Shows a question dialog with `Yes` and `No` buttons.
+ *
+ * Convenient wrapper for `await message('msg', { buttons: 'YesNo' }) === 'Yes'`
+ *
  * @example
  * ```typescript
  * import { ask } from '@tauri-apps/plugin-dialog';
@@ -458,17 +464,24 @@ async function ask(
   options?: string | ConfirmDialogOptions
 ): Promise<boolean> {
   const opts = typeof options === 'string' ? { title: options } : options
-  return await invoke('plugin:dialog|ask', {
-    message: message.toString(),
-    title: opts?.title?.toString(),
-    kind: opts?.kind,
-    yesButtonLabel: opts?.okLabel?.toString(),
-    noButtonLabel: opts?.cancelLabel?.toString()
-  })
+  const customButtons = opts?.okLabel || opts?.cancelLabel
+  const okLabel = opts?.okLabel ?? 'Yes'
+  return (
+    (await messageCommand(message, {
+      title: opts?.title,
+      kind: opts?.kind,
+      buttons: customButtons
+        ? { ok: okLabel, cancel: opts.cancelLabel ?? 'No' }
+        : 'YesNo'
+    })) === okLabel
+  )
 }
 
 /**
  * Shows a question dialog with `Ok` and `Cancel` buttons.
+ *
+ * Convenient wrapper for `await message('msg', { buttons: 'OkCancel' }) === 'Ok'`
+ *
  * @example
  * ```typescript
  * import { confirm } from '@tauri-apps/plugin-dialog';
@@ -488,13 +501,17 @@ async function confirm(
   options?: string | ConfirmDialogOptions
 ): Promise<boolean> {
   const opts = typeof options === 'string' ? { title: options } : options
-  return await invoke('plugin:dialog|confirm', {
-    message: message.toString(),
-    title: opts?.title?.toString(),
-    kind: opts?.kind,
-    okButtonLabel: opts?.okLabel?.toString(),
-    cancelButtonLabel: opts?.cancelLabel?.toString()
-  })
+  const customButtons = opts?.okLabel || opts?.cancelLabel
+  const okLabel = opts?.okLabel ?? 'Ok'
+  return (
+    (await messageCommand(message, {
+      title: opts?.title,
+      kind: opts?.kind,
+      buttons: customButtons
+        ? { ok: okLabel, cancel: opts.cancelLabel ?? 'Cancel' }
+        : 'OkCancel'
+    })) === okLabel
+  )
 }
 
 export type {
