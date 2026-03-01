@@ -869,49 +869,56 @@ impl Update {
 
         match updater_type {
             WindowsUpdaterType::Nsis { .. } => {
-                let nsis_current_exe_arg = current_args
-                    .iter()
-                    .map(escape_nsis_current_exe_arg)
-                    .collect::<Vec<_>>();
-
                 let mut installer_args: Vec<&OsStr> = Vec::new();
                 installer_args.extend(install_mode.nsis_args().iter().map(OsStr::new));
+                installer_args.push(OsStr::new("/UPDATE"));
+
+                let nsis_current_exe_arg;
                 if self.context.restart_after_install {
+                    nsis_current_exe_arg = current_args
+                        .iter()
+                        .map(escape_nsis_current_exe_arg)
+                        .collect::<Vec<_>>();
+
                     installer_args.extend(
                         install_mode
                             .nsis_restart_after_install_args()
                             .iter()
                             .map(OsStr::new),
                     );
+                    installer_args.push(OsStr::new("/ARGS"));
+                    installer_args.extend(nsis_current_exe_arg.iter().map(OsStr::new));
                 }
-                installer_args.push(OsStr::new("/UPDATE"));
-                installer_args.push(OsStr::new("/ARGS"));
-                installer_args.extend(nsis_current_exe_arg.iter().map(OsStr::new));
+
                 installer_args.extend(self.installer_args());
 
                 installer_args.join(OsStr::new(" "))
             }
             WindowsUpdaterType::Msi { path, .. } => {
-                let msi_current_exe_arg = current_args
-                    .iter()
-                    .map(escape_msi_property_arg)
-                    .collect::<Vec<_>>()
-                    .join(" ");
-                let msi_current_exe_arg = format!("LAUNCHAPPARGS=\"{msi_current_exe_arg}\"");
-
                 let mut installer_args: Vec<&OsStr> = vec![OsStr::new("/i"), path.as_os_str()];
                 installer_args.extend(install_mode.msiexec_args().iter().map(OsStr::new));
+                installer_args.push(OsStr::new("/promptrestart"));
+                installer_args.extend(self.installer_args());
+
+                let msi_current_exe_arg;
                 if self.context.restart_after_install {
+                    msi_current_exe_arg = format!(
+                        "LAUNCHAPPARGS=\"{}\"",
+                        current_args
+                            .iter()
+                            .map(escape_msi_property_arg)
+                            .collect::<Vec<_>>()
+                            .join(" ")
+                    );
+
                     installer_args.extend(
                         install_mode
                             .msi_restart_after_install_args()
                             .iter()
                             .map(OsStr::new),
                     );
+                    installer_args.push(OsStr::new(&msi_current_exe_arg));
                 }
-                installer_args.push(OsStr::new("/promptrestart"));
-                installer_args.extend(self.installer_args());
-                installer_args.push(OsStr::new(&msi_current_exe_arg));
 
                 installer_args.join(OsStr::new(" "))
             }
