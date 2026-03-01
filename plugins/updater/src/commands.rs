@@ -148,6 +148,7 @@ pub(crate) async fn install<R: Runtime>(
     let bytes = webview
         .resources_table()
         .get::<DownloadedBytes>(bytes_rid)?;
+
     if let Some(restart_after_install) = restart_after_install {
         let update = (*update).clone();
         update
@@ -156,6 +157,7 @@ pub(crate) async fn install<R: Runtime>(
     } else {
         update.install(&bytes.0)?;
     }
+
     let _ = webview.resources_table().close(bytes_rid);
     Ok(())
 }

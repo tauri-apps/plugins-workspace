@@ -325,6 +325,18 @@ impl UpdaterBuilder {
         self
     }
 
+    /// If the Windows installer should restart the app after installed, default is `true`
+    pub fn restart_after_install(
+        #[allow(unused_mut)] mut self,
+        #[allow(unused)] restart_after_install: bool,
+    ) -> Self {
+        #[cfg(windows)]
+        {
+            self.context.restart_after_install = restart_after_install;
+        }
+        self
+    }
+
     pub fn build(self) -> Result<Updater> {
         let endpoints = self
             .endpoints
