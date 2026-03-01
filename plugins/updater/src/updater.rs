@@ -144,6 +144,7 @@ struct UpdaterContext {
     /// App name, used for creating named tempfiles on Windows
     #[cfg(windows)]
     app_name: String,
+    #[cfg(windows)]
     installer_args: Vec<OsString>,
     #[cfg(windows)]
     current_exe_args: Vec<OsString>,
@@ -176,6 +177,7 @@ impl UpdaterBuilder {
         };
         Self {
             context: UpdaterContext {
+                #[cfg(windows)]
                 installer_args: config
                     .windows
                     .as_ref()
@@ -281,23 +283,31 @@ impl UpdaterBuilder {
     }
 
     /// Adds an argument to pass to the Windows installer.
-    pub fn installer_arg<S>(mut self, arg: S) -> Self
+    #[cfg_attr(not(windows), allow(unused))]
+    pub fn installer_arg<S>(mut self, #[allow(unused)] arg: S) -> Self
     where
         S: Into<OsString>,
     {
-        self.context.installer_args.push(arg.into());
+        #[cfg(windows)]
+        {
+            self.context.installer_args.push(arg.into());
+        }
         self
     }
 
     /// Adds multiple arguments to pass to the Windows installer.
+    #[cfg_attr(not(windows), allow(unused))]
     pub fn installer_args<I, S>(mut self, args: I) -> Self
     where
         I: IntoIterator<Item = S>,
         S: Into<OsString>,
     {
-        self.context
-            .installer_args
-            .extend(args.into_iter().map(Into::into));
+        #[cfg(windows)]
+        {
+            self.context
+                .installer_args
+                .extend(args.into_iter().map(Into::into));
+        }
         self
     }
 
@@ -307,16 +317,18 @@ impl UpdaterBuilder {
     /// [`Self::installer_arg`], [`crate::Builder::installer_arg`]
     /// and the `plugins > updater > windows > installerArgs` config,
     /// not the ones managed by us (e.g. `/UPDATER` flag passed to the NSIS installer)
+    #[cfg_attr(not(windows), allow(unused))]
     pub fn clear_installer_args(mut self) -> Self {
-        self.context.installer_args.clear();
+        #[cfg(windows)]
+        {
+            self.context.installer_args.clear();
+        }
         self
     }
 
     /// Function to run before we run the installer and exit the app through `std::process::exit(0)` on Windows
-    pub fn on_before_exit<F: Fn() + Send + Sync + 'static>(
-        #[allow(unused_mut)] mut self,
-        #[allow(unused)] f: F,
-    ) -> Self {
+    #[cfg_attr(not(windows), allow(unused))]
+    pub fn on_before_exit<F: Fn() + Send + Sync + 'static>(mut self, f: F) -> Self {
         #[cfg(windows)]
         {
             self.context.on_before_exit.replace(Arc::new(f));
@@ -337,10 +349,8 @@ impl UpdaterBuilder {
     }
 
     /// If the Windows installer should restart the app after installed, default is `true`
-    pub fn restart_after_install(
-        #[allow(unused_mut)] mut self,
-        #[allow(unused)] restart_after_install: bool,
-    ) -> Self {
+    #[cfg_attr(not(windows), allow(unused))]
+    pub fn restart_after_install(mut self, restart_after_install: bool) -> Self {
         #[cfg(windows)]
         {
             self.context.restart_after_install = restart_after_install;
