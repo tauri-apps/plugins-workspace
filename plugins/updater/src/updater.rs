@@ -139,9 +139,10 @@ type RunOnMainThread = Arc<dyn Fn(MainThreadClosure) -> tauri::Result<()> + Send
 #[derive(Clone)]
 struct UpdaterContext {
     config: Config,
+    configure_client: Option<OnBeforeRequest>,
     #[cfg(target_os = "macos")]
     run_on_main_thread: RunOnMainThread,
-    /// App name, used for creating named tempfiles on Windows
+    /// App name, used for creating named tempfiles
     #[cfg(windows)]
     app_name: String,
     #[cfg(windows)]
