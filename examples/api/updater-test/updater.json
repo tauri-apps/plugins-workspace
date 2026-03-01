@@ -1,11 +1,11 @@
 {
-    "version": "2.1.0",
-    "notes": "Test update!",
-    "pub_date": "2026-03-01T14:04:20+00:00",
-    "platforms": {
-        "windows-x86_64": {
-            "signature": "",
-            "url": "http://localhost:5173/updater-test/Tauri API_2.0.0_x64_en-US.msi"
-        }
+  "version": "2.1.0",
+  "notes": "Test update!",
+  "pub_date": "2026-03-01T14:04:20+00:00",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "",
+      "url": "http://localhost:5173/updater-test/Tauri API_2.0.0_x64_en-US.msi"
     }
+  }
 }

@@ -150,7 +150,6 @@ struct UpdaterContext {
     current_exe_args: Vec<OsString>,
     #[cfg(windows)]
     on_before_exit: Option<OnBeforeExit>,
-    configure_client: Option<OnBeforeRequest>,
     #[cfg(windows)]
     restart_after_install: bool,
 }
@@ -184,6 +183,7 @@ impl UpdaterBuilder {
                     .map(|w| w.installer_args.clone())
                     .unwrap_or_default(),
                 config,
+                configure_client: None,
                 #[cfg(target_os = "macos")]
                 run_on_main_thread,
                 #[cfg(windows)]
@@ -192,7 +192,6 @@ impl UpdaterBuilder {
                 current_exe_args: Vec::new(),
                 #[cfg(windows)]
                 on_before_exit: None,
-                configure_client: None,
                 #[cfg(windows)]
                 restart_after_install: true,
             },
