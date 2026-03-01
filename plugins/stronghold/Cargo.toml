@@ -26,7 +26,7 @@ rand_chacha = { version = "0.3.1", optional = true }
 rand_core = { version = "0.6.4", features = ["getrandom"], optional = true }
 
 [dev-dependencies]
-rand = "0.8"
+rand = "0.10"
 rusty-fork = "0.3"
 
 [features]
