@@ -844,9 +844,11 @@ impl Update {
                 |p| OsString::from(format!("{p}\\System32\\msiexec.exe")),
             ),
         };
-        let file = encode_wide(file);
-
         let parameters = self.updater_parameters(&updater_type);
+
+        log::debug!("Executing updater {file:?} with parameters: {parameters:?}");
+
+        let file = encode_wide(file);
         let parameters = encode_wide(parameters);
 
         unsafe {
