@@ -247,8 +247,8 @@ impl<R: Runtime> MessageDialogBuilder<R> {
             dialog,
             title: title.into(),
             message: message.into(),
-            kind: Default::default(),
-            buttons: Default::default(),
+            kind: MessageDialogKind::default(),
+            buttons: MessageDialogButtons::default(),
             #[cfg(desktop)]
             parent: None,
         }

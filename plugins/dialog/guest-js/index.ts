@@ -405,12 +405,14 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
  */
 export type MessageDialogResult = 'Yes' | 'No' | 'Ok' | 'Cancel' | (string & {})
 
-async function messageCommand(message: string, options?: MessageDialogOptions) {
+async function messageCommand(
+  message: string,
+  options?: Omit<MessageDialogOptions, 'okLabel'>
+) {
   return await invoke<MessageDialogResult>('plugin:dialog|message', {
     message,
     title: options?.title,
     kind: options?.kind,
-    okButtonLabel: options?.okLabel,
     buttons: buttonsToRust(options?.buttons)
   })
 }
@@ -437,6 +439,9 @@ async function message(
   options?: string | MessageDialogOptions
 ): Promise<MessageDialogResult> {
   const opts = typeof options === 'string' ? { title: options } : options
+  if (opts && !opts.buttons && opts.okLabel) {
+    opts.buttons = { ok: opts.okLabel }
+  }
   return messageCommand(message, opts)
 }
 
