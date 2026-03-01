@@ -1,10 +1,12 @@
-<script>
-  import { check } from '@tauri-apps/plugin-updater'
+<script lang="ts">
+  import { check, Update } from '@tauri-apps/plugin-updater'
   import { relaunch } from '@tauri-apps/plugin-process'
 
-  export let onMessage
+  let { onMessage } = $props()
 
-  let isChecking, isInstalling, newUpdate
+  let isChecking = $state(false)
+  let isInstalling = $state(false)
+  let newUpdate: Update = $state()
   let totalSize = 0,
     downloadedSize = 0
 
@@ -54,14 +56,14 @@
     }
   }
 
-  $: progress = totalSize ? Math.round((downloadedSize / totalSize) * 100) : 0
+  let progress = $derived(totalSize ? Math.round((downloadedSize / totalSize) * 100) : 0)
 </script>
 
 <div class="flex children:grow children:h10">
   {#if !isChecking && !newUpdate}
-    <button class="btn" on:click={checkUpdate}>Check update</button>
+    <button class="btn" onclick={checkUpdate}>Check update</button>
   {:else if !isInstalling && newUpdate}
-    <button class="btn" on:click={install}>Install update</button>
+    <button class="btn" onclick={install}>Install update</button>
   {:else}
     <div class="progress">
       <span>{progress}%</span>
