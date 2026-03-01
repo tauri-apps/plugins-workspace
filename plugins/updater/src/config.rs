@@ -32,15 +32,26 @@ impl WindowsUpdateInstallMode {
         }
     }
 
+    pub(crate) fn msi_restart_after_install_args(&self) -> &'static [&'static str] {
+        &["AUTOLAUNCHAPP=True"]
+    }
+
     /// Returns the associated nsis arguments.
     pub fn nsis_args(&self) -> &'static [&'static str] {
         // `/P`: Passive
         // `/S`: Silent
         // `/R`: Restart
         match self {
-            Self::Passive => &["/P", "/R"],
-            Self::Quiet => &["/S", "/R"],
+            Self::Passive => &["/P"],
+            Self::Quiet => &["/S"],
             _ => &[],
+        }
+    }
+
+    pub(crate) fn nsis_restart_after_install_args(&self) -> &'static [&'static str] {
+        match self {
+            Self::BasicUi => &[],
+            _ => &["/R"],
         }
     }
 }
