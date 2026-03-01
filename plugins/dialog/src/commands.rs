@@ -260,7 +260,7 @@ pub(crate) async fn save<R: Runtime>(
 
 #[command]
 pub(crate) async fn message<R: Runtime>(
-    #[cfg(desktop)] window: Window<R>,
+    #[allow(unused)] window: Window<R>,
     dialog: State<'_, Dialog<R>>,
     title: Option<String>,
     message: String,
