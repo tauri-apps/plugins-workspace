@@ -1,5 +1,21 @@
 # Changelog
 
+## \[2.0.41]
+
+### Dependencies
+
+- Upgraded to `updater@2.10.0`
+- Upgraded to `barcode-scanner@2.4.4`
+- Upgraded to `http@2.5.7`
+- Upgraded to `shell@2.3.5`
+
+## \[2.0.40]
+
+### Dependencies
+
+- Upgraded to `http@2.5.6`
+- Upgraded to `dialog@2.6.0`
+
 ## \[2.0.39]
 
 ### Dependencies

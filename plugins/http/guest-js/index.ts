@@ -275,7 +275,11 @@ export async function fetch(
             void dropBody()
           })
         },
-        pull: (controller) => readChunk(controller)
+        pull: (controller) => readChunk(controller),
+        cancel: () => {
+          // Ensure body resources are released on stream cancellation
+          void dropBody()
+        }
       })
 
   const res = new Response(body, {
@@ -283,14 +287,30 @@ export async function fetch(
     statusText
   })
 
-  // Set `Response` properties that are ignored by the
-  // constructor, like url and some headers
-  //
-  // Since url and headers are read only properties
-  // this is the only way to set them.
-  Object.defineProperty(res, 'url', { value: url })
+  // `Response.url` cannot be set via the constructor, so we define it manually
+  Object.defineProperty(res, 'url', { value: url, writable: false })
+
+  // Expose `set-cookie` via `response.headers` (and `getSetCookie()` where
+  // supported). This is not Fetch-spec compliant for network responses in
+  // browsers, where `set-cookie` is treated as a forbidden response
+  // header and is generally not readable from JavaScript.
   Object.defineProperty(res, 'headers', {
-    value: new Headers(responseHeaders)
+    value: new Headers(responseHeaders),
+    writable: false
+  })
+
+  // Patch clone() per-instance so cloning preserves the overridden properties
+  const originalClone = res.clone.bind(res)
+  Object.defineProperty(res, 'clone', {
+    value: () => {
+      const cloned = originalClone()
+      Object.defineProperty(cloned, 'url', { value: url, writable: false })
+      Object.defineProperty(cloned, 'headers', {
+        value: new Headers(responseHeaders),
+        writable: false
+      })
+      return cloned
+    }
   })
 
   return res

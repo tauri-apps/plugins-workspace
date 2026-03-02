@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.5.7]
+
+- [`61e9b0ab`](https://github.com/tauri-apps/plugins-workspace/commit/61e9b0ab64c56cc5f7a5cb3b92b386671da6e0a2) ([#3228](https://github.com/tauri-apps/plugins-workspace/pull/3228)) Cleanup resource when the returned `ReadableStream.cancel` is called to avoid memory leaks
+
+## \[2.5.6]
+
+- [`b1dbee2c`](https://github.com/tauri-apps/plugins-workspace/commit/b1dbee2c55c1aa7b64732c4cc9f8cb20520b8666) ([#3210](https://github.com/tauri-apps/plugins-workspace/pull/3210) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed an issue that caused the Origin header to always be `null` on macOS, iOS and Linux.
+
 ## \[2.5.5]
 
 - [`e8915f17`](https://github.com/tauri-apps/plugins-workspace/commit/e8915f17e418138f0776870353cd6ce7254b0473) ([#2562](https://github.com/tauri-apps/plugins-workspace/pull/2562) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix aborting a request in the middle of a streaming response.

@@ -736,6 +736,8 @@ async function readDir(
 interface ReadFileOptions {
   /** Base directory for `path` */
   baseDir?: BaseDirectory
+  /** Text encoding to use when reading a text file. Defaults to 'utf-8'. */
+  encoding?: string
 }
 
 /**
@@ -766,7 +768,7 @@ async function readFile(
 }
 
 /**
- * Reads and returns the entire contents of a file as UTF-8 string.
+ * Reads and returns the entire contents of a file as a string using the specified encoding (default: UTF-8).
  * @example
  * ```typescript
  * import { readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
@@ -790,11 +792,11 @@ async function readTextFile(
 
   const bytes = arr instanceof ArrayBuffer ? arr : Uint8Array.from(arr)
 
-  return new TextDecoder().decode(bytes)
+  return new TextDecoder(options?.encoding ?? 'utf-8').decode(bytes)
 }
 
 /**
- * Returns an async {@linkcode AsyncIterableIterator} over the lines of a file as UTF-8 string.
+ * Returns an async {@linkcode AsyncIterableIterator} over the lines of a file, decoded using the specified encoding (default: UTF-8).
  * @example
  * ```typescript
  * import { readTextFileLines, BaseDirectory } from '@tauri-apps/plugin-fs';
@@ -823,10 +825,15 @@ async function readTextFileLines(
     rid: null as number | null,
 
     async next(): Promise<IteratorResult<string>> {
+      const decoder = new TextDecoder(options?.encoding ?? 'utf-8')
+
       if (this.rid === null) {
+        // Use the normalized encoding label for options.
+        const encoding = decoder.encoding
+
         this.rid = await invoke<number>('plugin:fs|read_text_file_lines', {
           path: pathStr,
-          options
+          options: options != null ? { ...options, encoding } : undefined
         })
       }
 
@@ -851,9 +858,7 @@ async function readTextFileLines(
         return { value: null, done }
       }
 
-      const line = new TextDecoder().decode(
-        bytes.slice(0, bytes.byteLength - 1)
-      )
+      const line = decoder.decode(bytes.slice(0, bytes.byteLength - 1))
 
       return {
         value: line,
