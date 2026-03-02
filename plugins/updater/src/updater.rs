@@ -1503,7 +1503,7 @@ where
 }
 
 // Validate signature
-fn verify_signature(data: &[u8], release_signature: &str, pub_key: &str) -> Result<bool> {
+fn verify_signature(data: &[u8], release_signature: &str, pub_key: &str) -> Result<()> {
     // we need to convert the pub key
     let pub_key_decoded = base64_to_string(pub_key)?;
     let public_key = PublicKey::decode(&pub_key_decoded)?;
@@ -1512,7 +1512,7 @@ fn verify_signature(data: &[u8], release_signature: &str, pub_key: &str) -> Resu
 
     // Validate signature or bail out
     public_key.verify(data, &signature, true)?;
-    Ok(true)
+    Ok(())
 }
 
 fn base64_to_string(base64_string: &str) -> Result<String> {

@@ -7,8 +7,11 @@
   let isChecking = $state(false)
   let isInstalling = $state(false)
   let newUpdate: Update = $state()
-  let totalSize = 0,
-    downloadedSize = 0
+  let totalSize = $state(0)
+  let downloadedSize = $state(0)
+  let progress = $derived(
+    totalSize ? Math.round((downloadedSize / totalSize) * 100) : 0
+  )
 
   async function checkUpdate() {
     isChecking = true
@@ -55,8 +58,6 @@
       isInstalling = false
     }
   }
-
-  let progress = $derived(totalSize ? Math.round((downloadedSize / totalSize) * 100) : 0)
 </script>
 
 <div class="flex children:grow children:h10">
