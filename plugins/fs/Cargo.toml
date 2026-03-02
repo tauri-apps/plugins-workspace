@@ -37,7 +37,7 @@ notify = { version = "8", optional = true, features = [
   "serde",
   "serialization-compat-6",
 ] }
-notify-debouncer-full = { version = "0.6", optional = true }
+notify-debouncer-full = { version = "0.7", optional = true }
 dunce = { workspace = true }
 percent-encoding = "2"
 
