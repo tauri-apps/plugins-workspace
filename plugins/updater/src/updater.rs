@@ -1068,7 +1068,7 @@ impl Update {
         bytes: &[u8],
         install_cmd: &str,
         install_arg: &str,
-        file_extension: &str,
+        package_extension: &str,
     ) -> Result<()> {
         // Try different temp directories
         let tmp_dir_locations = vec![
@@ -1080,11 +1080,9 @@ impl Update {
         // Try writing to multiple temp locations until one succeeds
         for tmp_dir_location in tmp_dir_locations {
             if let Some(path) = tmp_dir_location() {
-                if let Ok(tmp_dir) = tempfile::Builder::new()
-                    .prefix("tauri_rpm_update")
-                    .tempdir_in(path)
-                {
-                    let pkg_path = tmp_dir.path().join(format!("package.{file_extension}"));
+                let prefix = format!("tauri_{package_extension}_update");
+                if let Ok(tmp_dir) = tempfile::Builder::new().prefix(&prefix).tempdir_in(path) {
+                    let pkg_path = tmp_dir.path().join(format!("package.{package_extension}"));
 
                     // Try writing the .deb file
                     if std::fs::write(&pkg_path, bytes).is_ok() {
@@ -1093,6 +1091,7 @@ impl Update {
                             &pkg_path,
                             install_cmd,
                             install_arg,
+                            package_extension,
                         );
                     }
                     // If write fails, continue to next temp location
@@ -1109,6 +1108,7 @@ impl Update {
         pkg_path: &Path,
         install_cmd: &str,
         install_arg: &str,
+        package_extension: &str,
     ) -> Result<()> {
         // 1. First try using pkexec (graphical sudo prompt)
         if let Ok(status) = std::process::Command::new("pkexec")
@@ -1118,7 +1118,7 @@ impl Update {
             .status()
         {
             if status.success() {
-                log::debug!("installed deb with pkexec");
+                log::debug!("installed {package_extension} with pkexec");
                 return Ok(());
             }
         }
@@ -1126,7 +1126,7 @@ impl Update {
         // 2. Try zenity or kdialog for a graphical sudo experience
         if let Ok(password) = self.get_password_graphically() {
             if self.install_with_sudo(pkg_path, &password, install_cmd, install_arg)? {
-                log::debug!("installed deb with GUI sudo");
+                log::debug!("installed {package_extension} with GUI sudo");
                 return Ok(());
             }
         }
@@ -1139,7 +1139,7 @@ impl Update {
             .status()?;
 
         if status.success() {
-            log::debug!("installed deb with sudo");
+            log::debug!("installed {package_extension} with sudo");
             Ok(())
         } else {
             Err(Error::PackageInstallFailed)
