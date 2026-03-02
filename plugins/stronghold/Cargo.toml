@@ -34,7 +34,7 @@ rand_chacha = { version = "0.9", optional = true }
 rand_core = { version = "0.9", features = ["os_rng"], optional = true }
 
 [dev-dependencies]
-rand = "0.9"
+rand = "0.10"
 rusty-fork = "0.3"
 
 [features]
