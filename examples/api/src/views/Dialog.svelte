@@ -43,7 +43,7 @@
   }
 
   async function msg() {
-    await message("Tauri is awesome!");
+    await message("Tauri is awesome!").then((res) => onMessage(res));
   }
 
   async function msgCustom(result) {
