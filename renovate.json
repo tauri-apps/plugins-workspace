@@ -1,6 +1,5 @@
 {
   "extends": ["config:recommended"],
-  "baseBranches": ["v2", "v1"],
   "enabledManagers": ["cargo", "npm"],
   "labels": ["dependencies"],
   "ignorePaths": [
