@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use std::fs::File;
 use serde::de::DeserializeOwned;
 use tauri::{
     plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
 };
 
-use crate::{models::*, FilePath, OpenOptions};
+use crate::{models::*, FilePath, OpenOptions, file_segment::{FileSegment, FileOrSegment}};
 
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "com.plugin.fs";
@@ -34,11 +35,23 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Fs<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Fs<R> {
+    // need deprecated
     pub fn open<P: Into<FilePath>>(
         &self,
         path: P,
         opts: OpenOptions,
     ) -> std::io::Result<std::fs::File> {
+        match self.open_segment(path, opts)? {
+            FileOrSegment::File(f) => Ok(f),
+            FileOrSegment::Segment(fs) => Ok(fs.file),
+        }
+    }
+
+    pub fn open_segment<P: Into<FilePath>>(
+        &self,
+        path: P,
+        opts: OpenOptions,
+    ) -> std::io::Result<FileOrSegment> {
         match path.into() {
             FilePath::Url(u) => self
                 .resolve_content_uri(u.to_string(), opts.android_mode())
@@ -62,7 +75,8 @@ impl<R: Runtime> Fs<R> {
                             )
                         })
                 } else {
-                    std::fs::OpenOptions::from(opts).open(p)
+                    let file = std::fs::OpenOptions::from(opts).open(p)?;
+                    Ok(FileOrSegment::File(file))
                 }
             }
         }
@@ -73,7 +87,7 @@ impl<R: Runtime> Fs<R> {
         &self,
         uri: impl Into<String>,
         mode: impl Into<String>,
-    ) -> crate::Result<std::fs::File> {
+    ) -> crate::Result<FileOrSegment> {
         #[cfg(target_os = "android")]
         {
             let result = self.0.run_mobile_plugin::<GetFileDescriptorResponse>(
@@ -86,7 +100,17 @@ impl<R: Runtime> Fs<R> {
             if let Some(fd) = result.fd {
                 Ok(unsafe {
                     use std::os::fd::FromRawFd;
-                    std::fs::File::from_raw_fd(fd)
+                    let file: File = std::fs::File::from_raw_fd(fd);
+                    match (result.offset, result.size) {
+                        (Some(offset), Some(size)) => {
+                            FileOrSegment::Segment(FileSegment {
+                                file,
+                                offset,
+                                size,
+                            })
+                        }
+                        _ => FileOrSegment::File(file),
+                    }
                 })
             } else {
                 unimplemented!()

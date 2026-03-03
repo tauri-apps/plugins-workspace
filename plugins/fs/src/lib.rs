@@ -32,6 +32,7 @@ mod models;
 mod scope;
 #[cfg(feature = "watch")]
 mod watcher;
+mod file_segment;
 
 #[cfg(not(target_os = "android"))]
 pub use desktop::Fs;
@@ -313,7 +314,7 @@ impl OpenOptions {
         mode
     }
 }
-
+#[cfg(not(target_os = "android"))]
 impl<R: Runtime> Fs<R> {
     pub fn read_to_string<P: Into<FilePath>>(&self, path: P) -> std::io::Result<String> {
         let mut s = String::new();
@@ -342,6 +343,58 @@ impl<R: Runtime> Fs<R> {
     }
 }
 
+#[cfg(target_os = "android")]
+use crate::file_segment::FileOrSegment;
+#[cfg(target_os = "android")]
+impl<R: Runtime> Fs<R> {
+    pub fn read_to_string<P: Into<FilePath>>(&self, path: P) -> std::io::Result<String> {
+        use std::io::Seek;
+        let mut s = String::new();
+        let f = self.open_segment(
+            path,
+            OpenOptions {
+                read: true,
+                ..Default::default()
+            },
+        )?;
+        match f {
+            FileOrSegment::File(mut file) => {
+                file.read_to_string(&mut s)?;
+            },
+            FileOrSegment::Segment(segment) => {
+                let mut handle = segment.file;
+                handle.seek(std::io::SeekFrom::Start(segment.offset))?;
+                let mut limited_reader = handle.take(segment.size);
+                limited_reader.read_to_string(&mut s)?;
+            }
+        }
+        Ok(s)
+    }
+
+    pub fn read<P: Into<FilePath>>(&self, path: P) -> std::io::Result<Vec<u8>> {
+        use std::io::Seek;
+        let mut buf = Vec::new();
+        let f = self.open_segment(
+            path,
+            OpenOptions {
+                read: true,
+                ..Default::default()
+            },
+        )?;
+        match f {
+            FileOrSegment::File(mut file) => {
+                file.read_to_end(&mut buf)?;
+            },
+            FileOrSegment::Segment(segment) => {
+                let mut handle = segment.file;
+                handle.seek(std::io::SeekFrom::Start(segment.offset))?;
+                let mut limited_reader = handle.take(segment.size);
+                limited_reader.read_to_end(&mut buf)?;
+            }
+        }
+        Ok(buf)
+    }
+}
 // implement ScopeObject here instead of in the scope module because it is also used on the build script
 // and we don't want to add tauri as a build dependency
 impl ScopeObject for scope::Entry {
