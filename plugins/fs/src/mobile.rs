@@ -83,14 +83,10 @@ impl<R: Runtime> Fs<R> {
                     mode: mode.into(),
                 },
             )?;
-            if let Some(fd) = result.fd {
-                Ok(unsafe {
-                    use std::os::fd::FromRawFd;
-                    std::fs::File::from_raw_fd(fd)
-                })
-            } else {
-                unimplemented!()
-            }
+            Ok(unsafe {
+                use std::os::fd::FromRawFd;
+                std::fs::File::from_raw_fd(result.fd)
+            })
         }
     }
 }

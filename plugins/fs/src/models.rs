@@ -14,5 +14,5 @@ pub struct GetFileDescriptorPayload {
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetFileDescriptorResponse {
-    pub fd: Option<i32>,
+    pub fd: i32,
 }
