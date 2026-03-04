@@ -23,11 +23,7 @@
     "core:window:allow-start-dragging",
     "notification:default",
     "os:allow-platform",
-    "dialog:allow-open",
-    "dialog:allow-ask",
-    "dialog:allow-save",
-    "dialog:allow-confirm",
-    "dialog:allow-message",
+    "dialog:default",
     {
       "identifier": "shell:allow-spawn",
       "allow": [
