@@ -4,6 +4,9 @@
 
 //! Access the file system.
 
+// TODO(v3): consider redesign the API to implement automatic stopAccessingSecurityScopedResource on iOS
+// this likely requires returning a handle to a resource so we can impl Drop for it
+
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
