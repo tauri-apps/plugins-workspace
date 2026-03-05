@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use rust_decimal::prelude::ToPrimitive;
 use serde_json::Value as JsonValue;
 use sqlx::{postgres::PgValueRef, TypeInfo, Value, ValueRef};
 use time::{Date, OffsetDateTime, PrimitiveDateTime, Time};
@@ -107,8 +108,28 @@ pub(crate) fn to_json(v: PgValueRef) -> Result<JsonValue, Error> {
                 JsonValue::Null
             }
         }
+        "NUMERIC" => {
+            if let Ok(v) = ValueRef::to_owned(&v).try_decode::<rust_decimal::Decimal>() {
+                if let Some(n) = v.to_f64().and_then(serde_json::Number::from_f64) {
+                    JsonValue::Number(n)
+                } else {
+                    JsonValue::String(v.to_string())
+                }
+            } else {
+                JsonValue::Null
+            }
+        }
         "VOID" => JsonValue::Null,
-        _ => return Err(Error::UnsupportedDatatype(v.type_info().name().to_string())),
+        // Handle custom types (enums, domains, etc.) by trying to decode as string
+        _ => {
+            let type_name = v.type_info().name().to_string();
+            if let Ok(v) = ValueRef::to_owned(&v).try_decode_unchecked::<String>() {
+                log::warn!("unsupported type {type_name} decoded as string");
+                JsonValue::String(v)
+            } else {
+                return Err(Error::UnsupportedDatatype(v.type_info().name().to_string()));
+            }
+        }
     };
 
     Ok(res)
