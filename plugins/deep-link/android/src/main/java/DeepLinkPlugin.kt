@@ -44,14 +44,12 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
     private var currentUrl: String? = null
     private var channel: Channel? = null
     private var config: PluginConfig? = null
-
     companion object {
         var instance: DeepLinkPlugin? = null
-        private const val CHROMEOS_ACTION_VIEW = "org.chromium.arc.intent.action.VIEW"
     }
 
     private fun isViewIntent(action: String?): Boolean {
-        return action == Intent.ACTION_VIEW || action == CHROMEOS_ACTION_VIEW
+        return action == Intent.ACTION_VIEW || action == "org.chromium.arc.intent.action.VIEW"
     }
 
     @Command
