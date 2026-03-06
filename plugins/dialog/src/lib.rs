@@ -61,8 +61,11 @@ pub enum FileAccessMode {
 }
 
 pub(crate) const OK: &str = "Ok";
+#[cfg(mobile)]
 pub(crate) const CANCEL: &str = "Cancel";
+#[cfg(mobile)]
 pub(crate) const YES: &str = "Yes";
+#[cfg(mobile)]
 pub(crate) const NO: &str = "No";
 
 macro_rules! blocking_fn {
@@ -197,8 +200,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::open,
             commands::save,
             commands::message,
-            commands::ask,
-            commands::confirm,
         ])
         .setup(|app, api| {
             #[cfg(mobile)]
@@ -246,8 +247,8 @@ impl<R: Runtime> MessageDialogBuilder<R> {
             dialog,
             title: title.into(),
             message: message.into(),
-            kind: Default::default(),
-            buttons: Default::default(),
+            kind: MessageDialogKind::default(),
+            buttons: MessageDialogButtons::default(),
             #[cfg(desktop)]
             parent: None,
         }

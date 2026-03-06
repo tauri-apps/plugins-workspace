@@ -295,28 +295,16 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "Enables the ask command without any pre-configured scope.",
+          "description": "Enables the ask command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `allow-message` and will be removed in v3)",
           "type": "string",
           "const": "allow-ask",
-          "markdownDescription": "Enables the ask command without any pre-configured scope."
+          "markdownDescription": "Enables the ask command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `allow-message` and will be removed in v3)"
         },
         {
-          "description": "Denies the ask command without any pre-configured scope.",
+          "description": "Denies the ask command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `deny-message` and will be removed in v3)",
           "type": "string",
           "const": "deny-ask",
-          "markdownDescription": "Denies the ask command without any pre-configured scope."
-        },
-        {
-          "description": "Enables the confirm command without any pre-configured scope.",
-          "type": "string",
-          "const": "allow-confirm",
-          "markdownDescription": "Enables the confirm command without any pre-configured scope."
-        },
-        {
-          "description": "Denies the confirm command without any pre-configured scope.",
-          "type": "string",
-          "const": "deny-confirm",
-          "markdownDescription": "Denies the confirm command without any pre-configured scope."
+          "markdownDescription": "Denies the ask command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `deny-message` and will be removed in v3)"
         },
         {
           "description": "Enables the message command without any pre-configured scope.",
@@ -355,10 +343,22 @@
           "markdownDescription": "Denies the save command without any pre-configured scope."
         },
         {
-          "description": "This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n\n#### This default permission set includes:\n\n- `allow-ask`\n- `allow-confirm`\n- `allow-message`\n- `allow-save`\n- `allow-open`",
+          "description": "Enables the confirm command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `allow-message` and will be removed in v3)",
+          "type": "string",
+          "const": "allow-confirm",
+          "markdownDescription": "Enables the confirm command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `allow-message` and will be removed in v3)"
+        },
+        {
+          "description": "Denies the confirm command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `deny-message` and will be removed in v3)",
+          "type": "string",
+          "const": "deny-confirm",
+          "markdownDescription": "Denies the confirm command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `deny-message` and will be removed in v3)"
+        },
+        {
+          "description": "This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n\n#### This default permission set includes:\n\n- `allow-message`\n- `allow-save`\n- `allow-open`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n\n#### This default permission set includes:\n\n- `allow-ask`\n- `allow-confirm`\n- `allow-message`\n- `allow-save`\n- `allow-open`"
+          "markdownDescription": "This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n\n#### This default permission set includes:\n\n- `allow-message`\n- `allow-save`\n- `allow-open`"
         }
       ]
     }
