@@ -96,6 +96,17 @@ mod imp {
         },
     };
 
+    pub(super) fn normalize_path_for_shell(path: &Path) -> std::borrow::Cow<'_, Path> {
+        if let Some(s) = path.to_str() {
+            if let Some(unc) = s.strip_prefix(r"\\?\UNC\") {
+                return std::borrow::Cow::Owned(
+                    PathBuf::from(format!(r"\\{}", unc))
+                );
+            }
+        }
+        std::borrow::Cow::Borrowed(path)
+    }
+
     pub fn reveal_items_in_dir(paths: &[PathBuf]) -> crate::Result<()> {
         if paths.is_empty() {
             return Ok(());
@@ -166,11 +177,12 @@ mod imp {
 
     impl OwnedItemIdList {
         fn new(path: &Path) -> crate::Result<Self> {
-            let path_hstring = HSTRING::from(path);
+            let path = normalize_path_for_shell(path);
+            let path_hstring = HSTRING::from(path.as_ref());
             let item_id_list = unsafe { ILCreateFromPathW(&path_hstring) };
             if item_id_list.is_null() {
                 Err(crate::Error::FailedToConvertPathToItemIdList(
-                    path.to_owned(),
+                    path.to_path_buf(),
                 ))
             } else {
                 Ok(Self {
@@ -295,5 +307,50 @@ mod imp {
         }
 
         Ok(())
+    }
+}
+
+
+#[cfg(test)]
+#[cfg(windows)]
+mod tests {
+    use super::imp::normalize_path_for_shell;
+    use std::path::{Path, PathBuf};
+
+    fn simulate_canonicalize_unc() -> PathBuf {
+        PathBuf::from(r"\\?\UNC\server\share\file.mkv")
+    }
+
+    #[test]
+    fn unc_path_should_not_have_extended_prefix() {
+        let canonicalized = simulate_canonicalize_unc();
+        let result = normalize_path_for_shell(&canonicalized);
+        let s = result.as_ref().to_str().unwrap();
+        assert!(
+            !s.starts_with(r"\\?\UNC\"),
+            "Path still has \\?\\UNC\\ prefix: {}",
+            s
+        );
+    }
+
+    #[test]
+    fn unc_path_converts_correctly() {
+        let input = Path::new(r"\\?\UNC\server\share\file.mkv");
+        let result = normalize_path_for_shell(input);
+        assert_eq!(result.as_ref(), Path::new(r"\\server\share\file.mkv"));
+    }
+
+    #[test]
+    fn local_path_unchanged() {
+        let input = Path::new(r"C:\Users\valeri\file.txt");
+        let result = normalize_path_for_shell(input);
+        assert_eq!(result.as_ref(), input);
+    }
+
+    #[test]
+    fn plain_unc_unchanged() {
+        let input = Path::new(r"\\server\share\file.mkv");
+        let result = normalize_path_for_shell(input);
+        assert_eq!(result.as_ref(), input);
     }
 }
