@@ -113,7 +113,10 @@ fn main() {
         .global_api_script_path("./api-iife.js")
         .android_path("android")
         .ios_path("ios")
-        .global_scope_schema(schemars::schema_for!(OpenerScopeEntry))
+        .global_scope_schema(
+            schemars::SchemaGenerator::new(schemars::generate::SchemaSettings::draft07())
+                .into_root_schema_for::<OpenerScopeEntry>(),
+        )
         .build();
 
     let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();

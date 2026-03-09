@@ -220,7 +220,10 @@ permissions = [
             .collect::<Vec<_>>(),
     )
     .global_api_script_path("./api-iife.js")
-    .global_scope_schema(schemars::schema_for!(FsScopeEntry))
+    .global_scope_schema(
+        schemars::SchemaGenerator::new(schemars::generate::SchemaSettings::draft07())
+            .into_root_schema_for::<FsScopeEntry>(),
+    )
     .android_path("android")
     .build();
 

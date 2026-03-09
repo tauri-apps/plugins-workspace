@@ -68,6 +68,9 @@ fn _f() {
 fn main() {
     tauri_plugin::Builder::new(COMMANDS)
         .global_api_script_path("./api-iife.js")
-        .global_scope_schema(schemars::schema_for!(HttpScopeEntry))
+        .global_scope_schema(
+            schemars::SchemaGenerator::new(schemars::generate::SchemaSettings::draft07())
+                .into_root_schema_for::<HttpScopeEntry>(),
+        )
         .build();
 }

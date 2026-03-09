@@ -168,7 +168,10 @@ const COMMANDS: &[&str] = &["execute", "spawn", "stdin_write", "kill", "open"];
 fn main() {
     tauri_plugin::Builder::new(COMMANDS)
         .global_api_script_path("./api-iife.js")
-        .global_scope_schema(schemars::schema_for!(ShellScopeEntry))
+        .global_scope_schema(
+            schemars::SchemaGenerator::new(schemars::generate::SchemaSettings::draft07())
+                .into_root_schema_for::<ShellScopeEntry>(),
+        )
         .android_path("android")
         .ios_path("ios")
         .build();
