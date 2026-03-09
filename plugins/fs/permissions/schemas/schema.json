@@ -1839,6 +1839,18 @@
           "markdownDescription": "Denies the size command without any pre-configured scope."
         },
         {
+          "description": "Enables the start_accessing_security_scoped_resource command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-start-accessing-security-scoped-resource",
+          "markdownDescription": "Enables the start_accessing_security_scoped_resource command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the start_accessing_security_scoped_resource command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-start-accessing-security-scoped-resource",
+          "markdownDescription": "Denies the start_accessing_security_scoped_resource command without any pre-configured scope."
+        },
+        {
           "description": "Enables the stat command without any pre-configured scope.",
           "type": "string",
           "const": "allow-stat",
@@ -1849,6 +1861,18 @@
           "type": "string",
           "const": "deny-stat",
           "markdownDescription": "Denies the stat command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the stop_accessing_security_scoped_resource command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-stop-accessing-security-scoped-resource",
+          "markdownDescription": "Enables the stop_accessing_security_scoped_resource command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the stop_accessing_security_scoped_resource command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-stop-accessing-security-scoped-resource",
+          "markdownDescription": "Denies the stop_accessing_security_scoped_resource command without any pre-configured scope."
         },
         {
           "description": "Enables the truncate command without any pre-configured scope.",

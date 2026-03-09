@@ -9,8 +9,6 @@ All dialog types are enabled.
 
 #### This default permission set includes the following:
 
-- `allow-ask`
-- `allow-confirm`
 - `allow-message`
 - `allow-save`
 - `allow-open`
@@ -32,7 +30,7 @@ All dialog types are enabled.
 </td>
 <td>
 
-Enables the ask command without any pre-configured scope.
+Enables the ask command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `allow-message` and will be removed in v3)
 
 </td>
 </tr>
@@ -45,33 +43,7 @@ Enables the ask command without any pre-configured scope.
 </td>
 <td>
 
-Denies the ask command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`dialog:allow-confirm`
-
-</td>
-<td>
-
-Enables the confirm command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`dialog:deny-confirm`
-
-</td>
-<td>
-
-Denies the confirm command without any pre-configured scope.
+Denies the ask command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `deny-message` and will be removed in v3)
 
 </td>
 </tr>
@@ -150,6 +122,32 @@ Enables the save command without any pre-configured scope.
 <td>
 
 Denies the save command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`dialog:allow-confirm`
+
+</td>
+<td>
+
+Enables the confirm command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `allow-message` and will be removed in v3)
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`dialog:deny-confirm`
+
+</td>
+<td>
+
+Denies the confirm command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `deny-message` and will be removed in v3)
 
 </td>
 </tr>
