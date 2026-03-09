@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-const COMMANDS: &[&str] = &["execute"];
+const COMMANDS: &[&str] = &["add_recent_document", "get_recent_documents", "clear_recent_documents"];
 
 fn main() {
     let result = tauri_plugin::Builder::new(COMMANDS)
