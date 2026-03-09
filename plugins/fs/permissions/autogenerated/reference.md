@@ -3435,6 +3435,32 @@ Denies the size command without any pre-configured scope.
 <tr>
 <td>
 
+`fs:allow-start-accessing-security-scoped-resource`
+
+</td>
+<td>
+
+Enables the start_accessing_security_scoped_resource command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fs:deny-start-accessing-security-scoped-resource`
+
+</td>
+<td>
+
+Denies the start_accessing_security_scoped_resource command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `fs:allow-stat`
 
 </td>
@@ -3454,6 +3480,32 @@ Enables the stat command without any pre-configured scope.
 <td>
 
 Denies the stat command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fs:allow-stop-accessing-security-scoped-resource`
+
+</td>
+<td>
+
+Enables the stop_accessing_security_scoped_resource command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fs:deny-stop-accessing-security-scoped-resource`
+
+</td>
+<td>
+
+Denies the stop_accessing_security_scoped_resource command without any pre-configured scope.
 
 </td>
 </tr>

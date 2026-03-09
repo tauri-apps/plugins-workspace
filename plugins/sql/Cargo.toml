@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-sql"
-version = "2.3.1"
+version = "2.3.2"
 description = "Interface with SQL databases."
 authors = { workspace = true }
 license = { workspace = true }
@@ -29,10 +29,12 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 futures-core = "0.3"
-sqlx = { version = "0.8", features = ["json", "time"] }
+sqlx = { version = "0.8", features = ["json", "time", "uuid", "rust_decimal"] }
+rust_decimal = "1"
 time = "0.3"
 tokio = { version = "1", features = ["sync"] }
 indexmap = { version = "2", features = ["serde"] }
+uuid = "1"
 
 [features]
 sqlite = ["sqlx/sqlite", "sqlx/runtime-tokio"]

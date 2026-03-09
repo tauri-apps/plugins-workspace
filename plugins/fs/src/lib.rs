@@ -4,12 +4,17 @@
 
 //! Access the file system.
 
+// TODO(v3): consider redesign the API to implement automatic stopAccessingSecurityScopedResource on iOS
+// this likely requires returning a handle to a resource so we can impl Drop for it
+
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
 use std::io::Read;
+#[cfg(target_os = "ios")]
+use std::sync::Mutex;
 
 use serde::Deserialize;
 use tauri::{
@@ -19,24 +24,28 @@ use tauri::{
     AppHandle, DragDropEvent, Manager, RunEvent, Runtime, WindowEvent,
 };
 
+#[cfg(target_os = "android")]
+mod android;
 mod commands;
 mod config;
-#[cfg(not(target_os = "android"))]
+#[cfg(desktop)]
 mod desktop;
 mod error;
 mod file_path;
-#[cfg(target_os = "android")]
-mod mobile;
+#[cfg(target_os = "ios")]
+mod ios;
 #[cfg(target_os = "android")]
 mod models;
 mod scope;
 #[cfg(feature = "watch")]
 mod watcher;
 
-#[cfg(not(target_os = "android"))]
-pub use desktop::Fs;
 #[cfg(target_os = "android")]
-pub use mobile::Fs;
+pub use android::Fs;
+#[cfg(desktop)]
+pub use desktop::Fs;
+#[cfg(target_os = "ios")]
+pub use ios::Fs;
 
 pub use error::Error;
 
@@ -369,6 +378,56 @@ pub(crate) struct Scope {
     pub(crate) require_literal_leading_dot: Option<bool>,
 }
 
+/// Tracks which paths have active security-scoped resource access on iOS.
+#[cfg(target_os = "ios")]
+pub(crate) struct SecurityScopedResources {
+    /// Set of file URLs that are currently accessing security-scoped resources.
+    /// The key is the URL string representation.
+    pub(crate) active_urls: Mutex<std::collections::HashSet<String>>,
+}
+
+#[cfg(target_os = "ios")]
+impl SecurityScopedResources {
+    pub(crate) fn new() -> Self {
+        Self {
+            active_urls: Mutex::new(std::collections::HashSet::new()),
+        }
+    }
+
+    pub(crate) fn is_tracked_manually(&self, url: &str) -> bool {
+        self.active_urls.lock().unwrap().contains(url)
+    }
+
+    pub(crate) fn track_manually(&self, url: String) {
+        self.active_urls.lock().unwrap().insert(url);
+    }
+
+    pub(crate) fn remove(&self, url: &str) {
+        self.active_urls.lock().unwrap().remove(url);
+    }
+}
+
+#[cfg(not(target_os = "ios"))]
+pub(crate) struct SecurityScopedResources;
+
+#[cfg(not(target_os = "ios"))]
+impl SecurityScopedResources {
+    pub(crate) fn new() -> Self {
+        Self
+    }
+
+    #[allow(dead_code)] // Used on iOS, but not on other platforms
+    pub(crate) fn is_tracked_manually(&self, _url: &str) -> bool {
+        false
+    }
+
+    #[allow(dead_code)] // Used on iOS, but not on other platforms
+    pub(crate) fn track_manually(&self, _url: String) {}
+
+    #[allow(dead_code)] // Used on iOS, but not on other platforms
+    pub(crate) fn remove(&self, _url: &str) {}
+}
+
 pub trait FsExt<R: Runtime> {
     fn fs_scope(&self) -> tauri::fs::Scope;
     fn try_fs_scope(&self) -> Option<tauri::fs::Scope>;
@@ -417,6 +476,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             commands::write_text_file,
             commands::exists,
             commands::size,
+            commands::start_accessing_security_scoped_resource,
+            commands::stop_accessing_security_scoped_resource,
             #[cfg(feature = "watch")]
             watcher::watch,
         ])
@@ -431,13 +492,19 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
 
             #[cfg(target_os = "android")]
             {
-                let fs = mobile::init(app, api)?;
+                let fs = android::init(app, api)?;
                 app.manage(fs);
             }
-            #[cfg(not(target_os = "android"))]
+            #[cfg(target_os = "ios")]
+            {
+                let fs = ios::init(app, api)?;
+                app.manage(fs);
+            }
+            #[cfg(desktop)]
             app.manage(Fs(app.clone()));
 
             app.manage(scope);
+            app.manage(SecurityScopedResources::new());
             Ok(())
         })
         .on_event(|app, event| {
