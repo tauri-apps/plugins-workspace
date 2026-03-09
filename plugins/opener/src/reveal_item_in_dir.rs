@@ -99,9 +99,7 @@ mod imp {
     pub(super) fn normalize_path_for_shell(path: &Path) -> std::borrow::Cow<'_, Path> {
         if let Some(s) = path.to_str() {
             if let Some(unc) = s.strip_prefix(r"\\?\UNC\") {
-                return std::borrow::Cow::Owned(
-                    PathBuf::from(format!(r"\\{}", unc))
-                );
+                return std::borrow::Cow::Owned(PathBuf::from(format!(r"\\{}", unc)));
             }
         }
         std::borrow::Cow::Borrowed(path)
@@ -309,7 +307,6 @@ mod imp {
         Ok(())
     }
 }
-
 
 #[cfg(test)]
 #[cfg(windows)]
