@@ -77,9 +77,9 @@ where
 
 fn canonicalize(path: &Path) -> crate::Result<PathBuf> {
     #[cfg(windows)]
-    let path = absolute_and_check_exists(dunce::simplified(path.as_ref()))?;
+    let path = absolute_and_check_exists(dunce::simplified(path))?;
     #[cfg(not(windows))]
-    let path = std::fs::canonicalize(path.as_ref())?;
+    let path = std::fs::canonicalize(path)?;
     Ok(path)
 }
 
