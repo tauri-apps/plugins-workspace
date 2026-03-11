@@ -6,6 +6,11 @@ mod cmd;
 #[cfg(desktop)]
 mod tray;
 
+#[cfg(feature = "cef")]
+type TauriRuntime = tauri_runtime_cef::CefRuntime<tauri::EventLoopMessage>;
+#[cfg(feature = "wry")]
+type TauriRuntime = tauri_runtime_wry::Wry<tauri::EventLoopMessage>;
+
 use serde::Serialize;
 use tauri::{
     webview::{PageLoadEvent, WebviewWindowBuilder},
@@ -17,13 +22,13 @@ struct Reply {
     data: String,
 }
 
-pub type SetupHook = Box<dyn FnOnce(&mut App) -> Result<(), Box<dyn std::error::Error>> + Send>;
-pub type OnEvent = Box<dyn FnMut(&AppHandle, RunEvent)>;
+pub type SetupHook<R> = Box<dyn FnOnce(&mut App<R>) -> Result<(), Box<dyn std::error::Error>> + Send>;
+pub type OnEvent<R> = Box<dyn FnMut(&AppHandle<R>, RunEvent)>;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[allow(unused_mut)]
-    let mut builder = tauri::Builder::default()
+    let mut builder = tauri::Builder::<TauriRuntime>::new()
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Info)

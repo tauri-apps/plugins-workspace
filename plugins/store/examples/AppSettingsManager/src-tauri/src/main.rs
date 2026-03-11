@@ -5,6 +5,11 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+#[cfg(feature = "cef")]
+type TauriRuntime = tauri_runtime_cef::CefRuntime<tauri::EventLoopMessage>;
+#[cfg(feature = "wry")]
+type TauriRuntime = tauri_runtime_wry::Wry<tauri::EventLoopMessage>;
+
 use serde_json::json;
 use tauri::Listener;
 use tauri_plugin_store::StoreExt;
@@ -13,7 +18,7 @@ mod app;
 use app::settings::AppSettings;
 
 fn main() {
-    tauri::Builder::default()
+    tauri::Builder::<TauriRuntime>::new()
         .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
             // Init store and load it from disk

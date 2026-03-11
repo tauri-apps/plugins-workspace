@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+#[cfg(feature = "cef")]
+type TauriRuntime = tauri_runtime_cef::CefRuntime<tauri::EventLoopMessage>;
+#[cfg(feature = "wry")]
+type TauriRuntime = tauri_runtime_wry::Wry<tauri::EventLoopMessage>;
+
 use tauri_plugin_deep_link::DeepLinkExt;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -13,7 +18,7 @@ fn greet(name: &str) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[allow(unused_mut)]
-    let mut builder = tauri::Builder::default();
+    let mut builder = tauri::Builder::<TauriRuntime>::new();
 
     #[cfg(desktop)]
     {

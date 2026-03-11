@@ -7,6 +7,11 @@
   windows_subsystem = "windows"
 )]
 
+#[cfg(feature = "cef")]
+type TauriRuntime = tauri_runtime_cef::CefRuntime<tauri::EventLoopMessage>;
+#[cfg(feature = "wry")]
+type TauriRuntime = tauri_runtime_wry::Wry<tauri::EventLoopMessage>;
+
 use futures_util::StreamExt;
 use tokio::net::{TcpListener, TcpStream};
 
@@ -35,7 +40,7 @@ async fn accept_connection(stream: TcpStream) {
 
 fn main() {
   tauri::async_runtime::spawn(start_server());
-  tauri::Builder::default()
+  tauri::Builder::<TauriRuntime>::new()
     .plugin(tauri_plugin_websocket::init())
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

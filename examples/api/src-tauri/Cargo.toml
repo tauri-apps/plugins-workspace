@@ -39,13 +39,14 @@ tauri-plugin-opener = { path = "../../../plugins/opener", version = "2.5.3" }
 tauri-plugin-shell = { path = "../../../plugins/shell", version = "2.3.5" }
 tauri-plugin-store = { path = "../../../plugins/store", version = "2.4.2" }
 tauri-plugin-upload = { path = "../../../plugins/upload", version = "2.3.0" }
+tauri-runtime-wry = { workspace = true, optional = true, features = [
+  "macos-private-api",
+] }
+tauri-runtime-cef = { workspace = true, optional = true }
 
 [dependencies.tauri]
 workspace = true
 features = [
-  "wry",
-  "common-controls-v6",
-  "x11",
   "image-ico",
   "image-png",
   "isolation",
@@ -68,4 +69,7 @@ tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "
 tauri-plugin-haptics = { path = "../../../plugins/haptics/", version = "2.3.2" }
 
 [features]
+default = ["wry"]
+wry = ["dep:tauri-runtime-wry"]
+cef = ["dep:tauri-runtime-cef"]
 prod = ["tauri/custom-protocol"]

@@ -13,6 +13,8 @@ serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
 log = "0.4"
 tauri = { version = "2.10", default-features = false }
+tauri-runtime-wry = "2"
+tauri-runtime-cef = { git = "https://github.com/tauri-apps/tauri.git", branch = "refactor/runtime-feature-flag" }
 tauri-build = "2.5"
 tauri-plugin = "2.5"
 tauri-utils = "2.8"
@@ -41,6 +43,7 @@ incremental = false
 opt-level = "s"
 
 [patch.crates-io]
-tauri = { git = "https://github.com/tauri-apps/tauri.git", branch = "feat/cef" }
-tauri-utils = { git = "https://github.com/tauri-apps/tauri.git", branch = "feat/cef" }
-tauri-plugin = { git = "https://github.com/tauri-apps/tauri.git", branch = "feat/cef" }
+tauri = { git = "https://github.com/tauri-apps/tauri.git", branch = "refactor/runtime-feature-flag" }
+tauri-utils = { git = "https://github.com/tauri-apps/tauri.git", branch = "refactor/runtime-feature-flag" }
+tauri-plugin = { git = "https://github.com/tauri-apps/tauri.git", branch = "refactor/runtime-feature-flag" }
+tauri-runtime-wry = { git = "https://github.com/tauri-apps/tauri.git", branch = "refactor/runtime-feature-flag" }

@@ -31,4 +31,4 @@ log = { workspace = true }
 thiserror = { workspace = true }
 
 [target.'cfg(target_os = "ios")'.dependencies]
-tauri = { workspace = true, features = ["wry"] }
+tauri = { workspace = true }

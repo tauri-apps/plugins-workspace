@@ -4,13 +4,18 @@
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+#[cfg(feature = "cef")]
+type TauriRuntime = tauri_runtime_cef::CefRuntime<tauri::EventLoopMessage>;
+#[cfg(feature = "wry")]
+type TauriRuntime = tauri_runtime_wry::Wry<tauri::EventLoopMessage>;
+
 use tauri_plugin_updater::UpdaterExt;
 
 fn main() {
     #[allow(unused_mut)]
     let mut context = tauri::generate_context!();
 
-    tauri::Builder::default()
+    tauri::Builder::<TauriRuntime>::new()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             let handle = app.handle().clone();

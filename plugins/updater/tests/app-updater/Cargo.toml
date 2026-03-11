@@ -7,7 +7,9 @@ edition = { workspace = true }
 tauri-build = { workspace = true }
 
 [dependencies]
-tauri = { workspace = true, features = ["wry", "common-controls-v6", "x11"] }
+tauri = { workspace = true }
+tauri-runtime-wry = { workspace = true, optional = true }
+tauri-runtime-cef = { workspace = true, optional = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri-plugin-updater = { path = "../.." }
@@ -15,4 +17,7 @@ tiny_http = "0.12"
 time = { version = "0.3", features = ["formatting"] }
 
 [features]
+default = ["wry"]
+wry = ["dep:tauri-runtime-wry"]
+cef = ["dep:tauri-runtime-cef"]
 prod = ["tauri/custom-protocol"]

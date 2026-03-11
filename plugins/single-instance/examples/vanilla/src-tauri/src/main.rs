@@ -7,8 +7,13 @@
     windows_subsystem = "windows"
 )]
 
+#[cfg(feature = "cef")]
+type TauriRuntime = tauri_runtime_cef::CefRuntime<tauri::EventLoopMessage>;
+#[cfg(feature = "wry")]
+type TauriRuntime = tauri_runtime_wry::Wry<tauri::EventLoopMessage>;
+
 fn main() {
-    tauri::Builder::default()
+    tauri::Builder::<TauriRuntime>::new()
         .plugin(
             tauri_plugin_single_instance::Builder::new()
                 .callback(move |app, argv, cwd| {
