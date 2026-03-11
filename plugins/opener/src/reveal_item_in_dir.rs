@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-/// Reveal a path the system's default explorer.
+/// Reveal a path in the system's default explorer.
 ///
 /// ## Platform-specific:
 ///
 /// - **Android / iOS:** Unsupported.
 pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
-    let path = dunce::canonicalize(path.as_ref())?;
+    let path = canonicalize(path.as_ref())?;
 
     #[cfg(any(
         windows,
@@ -35,7 +35,7 @@ pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
     Err(crate::Error::UnsupportedPlatform)
 }
 
-/// Reveal the paths the system's default explorer.
+/// Reveal multiple paths in the system's default explorer.
 ///
 /// ## Platform-specific:
 ///
@@ -48,7 +48,7 @@ where
     let mut canonicalized = vec![];
 
     for path in paths {
-        let path = dunce::canonicalize(path.as_ref())?;
+        let path = canonicalize(path.as_ref())?;
         canonicalized.push(path);
     }
 
@@ -75,10 +75,106 @@ where
     Err(crate::Error::UnsupportedPlatform)
 }
 
+fn canonicalize(path: &Path) -> crate::Result<PathBuf> {
+    #[cfg(windows)]
+    let path = absolute_and_check_exists(dunce::simplified(path.as_ref()))?;
+    #[cfg(not(windows))]
+    let path = std::fs::canonicalize(path.as_ref())?;
+    Ok(path)
+}
+
+#[cfg(windows)]
+fn absolute_and_check_exists(path: &Path) -> std::io::Result<PathBuf> {
+    let path = absolute(path)?;
+    if path.exists() {
+        Ok(path)
+    } else {
+        Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "path doesn't exist",
+        ))
+    }
+}
+
+// TODO: Switch to use `std::path::absolute` once MSRV > 1.79
+// Modified from https://github.com/rust-lang/rust/blob/b49ecc9eb70a51e89f32a7358e790f7b3808ccb3/library/std/src/sys/path/windows.rs#L185
+// Note: this doesn't resolve symlinks
+#[cfg(windows)]
+fn absolute(path: &Path) -> std::io::Result<PathBuf> {
+    use std::{
+        ffi::OsString,
+        io,
+        os::windows::ffi::OsStringExt,
+        path::{Component, Prefix},
+    };
+
+    use windows::{core::HSTRING, Win32::Storage::FileSystem::GetFullPathNameW};
+
+    if path.as_os_str().is_empty() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "cannot make an empty path absolute",
+        ));
+    }
+
+    let prefix = path.components().next();
+    // Verbatim paths should not be modified.
+    if prefix
+        .map(|component| {
+            let Component::Prefix(prefix) = component else {
+                return false;
+            };
+            matches!(
+                prefix.kind(),
+                Prefix::Verbatim(..) | Prefix::VerbatimDisk(..) | Prefix::VerbatimUNC(..)
+            )
+        })
+        .unwrap_or(false)
+    {
+        // NULs in verbatim paths are rejected for consistency.
+        if path.as_os_str().as_encoded_bytes().contains(&0) {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "strings passed to WinAPI cannot contain NULs",
+            ));
+        }
+        return Ok(path.to_owned().into());
+    }
+
+    // This is an additional check to make sure we don't pass in a single driver letter to GetFullPathNameW
+    // which will resolves to the current working directory
+    //
+    // > https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfullpathnamew#:~:text=If%20you%20specify%20%22U%3A%22%20the%20path%20returned%20is%20the%20current%20directory%20on%20the%20%22U%3A%5C%22%20drive
+    #[allow(clippy::collapsible_if)]
+    if let Some(Component::Prefix(last_prefix)) = path.components().next_back() {
+        if matches!(last_prefix.kind(), Prefix::Disk(..)) {
+            return Ok(PathBuf::from(last_prefix.as_os_str()));
+        }
+    }
+
+    let path_hstring = HSTRING::from(path);
+
+    let size = unsafe { GetFullPathNameW(&path_hstring, None, None) };
+    if size == 0 {
+        return Err(io::Error::last_os_error());
+    }
+    let mut buffer = vec![0; size as usize];
+    let size = unsafe { GetFullPathNameW(&path_hstring, Some(&mut buffer), None) };
+    if size == 0 {
+        return Err(io::Error::last_os_error());
+    }
+
+    Ok(PathBuf::from(OsString::from_wide(&buffer[..size as usize])))
+}
+
 #[cfg(windows)]
 mod imp {
-    use std::collections::HashMap;
-    use std::path::{Path, PathBuf};
+    use std::{
+        borrow::Cow,
+        collections::HashMap,
+        ffi::OsString,
+        path::{Component, Path, PathBuf, Prefix, PrefixComponent},
+    };
 
     use windows::Win32::UI::Shell::Common::ITEMIDLIST;
     use windows::{
@@ -96,15 +192,46 @@ mod imp {
         },
     };
 
+    /// Similar to [`Path::parent`] but resolves parent of `C:`/`C:\` to `""` and handles UNC host name (`\\wsl.localhost\Ubuntu\` to `\\wsl.localhost`)
+    fn shell_parent_path(path: &Path) -> Option<Cow<'_, Path>> {
+        fn handle_prefix(prefix: PrefixComponent<'_>) -> Option<Cow<'_, Path>> {
+            match prefix.kind() {
+                Prefix::UNC(host_name, _share_name) => {
+                    let mut path = OsString::from(r"\\");
+                    path.push(host_name);
+                    Some(PathBuf::from(path).into())
+                }
+                Prefix::Disk(_) => Some(PathBuf::from("").into()),
+                _ => None,
+            }
+        }
+
+        let mut components = path.components();
+        let component = components.next_back()?;
+        match component {
+            Component::Normal(_) | Component::CurDir | Component::ParentDir => {
+                Some(components.as_path().into())
+            }
+            Component::Prefix(prefix) => handle_prefix(prefix),
+            // Handle cases like `C:\` and `\\wsl.localhost\Ubuntu\`
+            Component::RootDir => {
+                if let Component::Prefix(prefix) = components.next_back()? {
+                    handle_prefix(prefix)
+                } else {
+                    None
+                }
+            }
+        }
+    }
+
     pub fn reveal_items_in_dir(paths: &[PathBuf]) -> crate::Result<()> {
         if paths.is_empty() {
             return Ok(());
         }
 
-        let mut grouped_paths: HashMap<&Path, Vec<&Path>> = HashMap::new();
+        let mut grouped_paths: HashMap<Cow<Path>, Vec<&Path>> = HashMap::new();
         for path in paths {
-            let parent = path
-                .parent()
+            let parent = shell_parent_path(path)
                 .ok_or_else(|| crate::Error::NoParent(path.to_path_buf()))?;
             grouped_paths.entry(parent).or_default().push(path);
         }
@@ -112,7 +239,7 @@ mod imp {
         let _ = unsafe { CoInitialize(None) };
 
         for (parent, to_reveals) in grouped_paths {
-            let parent_item_id_list = OwnedItemIdList::new(parent)?;
+            let parent_item_id_list = OwnedItemIdList::new(&parent)?;
             let to_reveals_item_id_list = to_reveals
                 .iter()
                 .map(|to_reveal| OwnedItemIdList::new(to_reveal))
