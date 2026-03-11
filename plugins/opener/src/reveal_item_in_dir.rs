@@ -339,7 +339,7 @@ mod tests {
 
     #[test]
     fn local_path_unchanged() {
-        let input = Path::new(r"C:\Users\valeri\file.txt");
+        let input = Path::new(r"C:\path\to\file.txt");
         let result = normalize_path_for_shell(input);
         assert_eq!(result.as_ref(), input);
     }
@@ -347,6 +347,20 @@ mod tests {
     #[test]
     fn plain_unc_unchanged() {
         let input = Path::new(r"\\server\share\file.mkv");
+        let result = normalize_path_for_shell(input);
+        assert_eq!(result.as_ref(), input);
+    }
+
+    #[test]
+    fn unc_path_with_spaces_converts_correctly() {
+        let input = Path::new(r"\\?\UNC\server\my share\my file.mkv");
+        let result = normalize_path_for_shell(input);
+        assert_eq!(result.as_ref(), Path::new(r"\\server\my share\my file.mkv"));
+    }
+
+    #[test]
+    fn local_verbatim_path_unchanged() {
+        let input = Path::new(r"\\?\C:\path\to\file.txt");
         let result = normalize_path_for_shell(input);
         assert_eq!(result.as_ref(), input);
     }
