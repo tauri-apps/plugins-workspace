@@ -77,7 +77,7 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
 
         val intent = activity.intent
 
-        if (isViewIntent(Intent.ACTION_VIEW) && intent.data != null) {
+        if (isViewIntent(intent.action) && intent.data != null) {
             val url = intent.data.toString()
             if (isDeepLink(url)) {
                 // TODO: check if it makes sense to split up init url and last url
@@ -90,7 +90,7 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
     }
 
     override fun onNewIntent(intent: Intent) {
-        if (isViewIntent(Intent.ACTION_VIEW) && intent.data != null) {
+        if (isViewIntent(intent.action) && intent.data != null) {
             val url = intent.data.toString()
             if (isDeepLink(url)) {
                 this.currentUrl = url
