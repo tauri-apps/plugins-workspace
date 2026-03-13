@@ -56,6 +56,10 @@ export interface Scanned {
   bounds: unknown
 }
 
+export interface TorchOptions {
+  enabled: boolean
+}
+
 /**
  * Start scanning.
  * @param options
@@ -95,3 +99,13 @@ export async function requestPermissions(): Promise<PermissionState> {
 export async function openAppSettings(): Promise<void> {
   await invoke('plugin:barcode-scanner|open_app_settings')
 }
+
+
+/**
+ * Turn flashlight on/off.
+ * @param options.enabled true = on, false = off
+ */
+export async function setTorch(options: TorchOptions): Promise<void> {
+  await invoke('plugin:barcode-scanner|set_torch', { ...options })
+}
+
