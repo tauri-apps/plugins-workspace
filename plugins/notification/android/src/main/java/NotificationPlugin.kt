@@ -12,6 +12,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.webkit.WebView
+import app.tauri.Logger
 import app.tauri.PermissionState
 import app.tauri.annotation.Command
 import app.tauri.annotation.InvokeArg
@@ -22,8 +23,13 @@ import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSArray
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
+import org.json.JSONArray
+import org.json.JSONObject
 
 const val LOCAL_NOTIFICATIONS = "permissionState"
+private const val PREFS_NAME = "tauri_notification_plugin"
+private const val PREF_KEY_PENDING_ACTION_EVENTS = "pending_action_events"
+private const val PENDING_ACTION_EVENT_TTL_MS = 24 * 60 * 60 * 1000L
 
 @InvokeArg
 class PluginConfig {
@@ -82,6 +88,125 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   private lateinit var notificationManager: NotificationManager
   private lateinit var notificationStorage: NotificationStorage
   private var channelManager = ChannelManager(activity)
+  private data class PendingActionEvent(
+    val key: String,
+    val payload: JSObject,
+    val timestampMs: Long
+  )
+
+  private val pendingActionEvents = mutableListOf<PendingActionEvent>()
+  private val pendingActionEventKeys = mutableSetOf<String>()
+  private var isActionListenerReady = false
+
+  private fun nowMs(): Long = System.currentTimeMillis()
+
+  private fun isEventExpired(timestampMs: Long): Boolean {
+    return nowMs() - timestampMs > PENDING_ACTION_EVENT_TTL_MS
+  }
+
+  private fun buildActionEventKey(payload: JSObject): String {
+    val notification = payload.optJSONObject("notification")
+    val notificationId = notification?.opt("id") ?: payload.opt("id")
+    val actionId = payload.optString("actionId")
+    val inputValue = payload.optString("inputValue")
+
+    if (notificationId != null && actionId.isNotEmpty()) {
+      return "$notificationId|$actionId|$inputValue"
+    }
+
+    // Fallback for malformed payloads so we can still dedupe identical events.
+    return "payload:${payload.toString()}"
+  }
+
+  private fun rebuildPendingActionEventKeysLocked() {
+    pendingActionEventKeys.clear()
+    for (event in pendingActionEvents) {
+      pendingActionEventKeys.add(event.key)
+    }
+  }
+
+  private fun persistPendingActionEventsLocked() {
+    val iterator = pendingActionEvents.iterator()
+    var droppedExpired = 0
+    while (iterator.hasNext()) {
+      val event = iterator.next()
+      if (isEventExpired(event.timestampMs)) {
+        iterator.remove()
+        droppedExpired += 1
+      }
+    }
+    if (droppedExpired > 0) {
+      rebuildPendingActionEventKeysLocked()
+      Logger.debug(
+        NOTIFICATION_LOG_TAGS,
+        "Dropped expired pending actionPerformed events=$droppedExpired"
+      )
+    }
+
+    val events = JSONArray()
+    for (event in pendingActionEvents) {
+      try {
+        val wrappedEvent = JSONObject()
+        wrappedEvent.put("key", event.key)
+        wrappedEvent.put("timestampMs", event.timestampMs)
+        wrappedEvent.put("payload", JSONObject(event.payload.toString()))
+        events.put(wrappedEvent)
+      } catch (_: Throwable) {
+        events.put(event.payload)
+      }
+    }
+    activity
+      .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+      .edit()
+      .putString(PREF_KEY_PENDING_ACTION_EVENTS, events.toString())
+      .apply()
+  }
+
+  private fun restorePendingActionEventsLocked() {
+    val prefs = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    val serializedEvents = prefs.getString(PREF_KEY_PENDING_ACTION_EVENTS, null) ?: return
+
+    try {
+      val events = JSONArray(serializedEvents)
+      for (index in 0 until events.length()) {
+        val event = events.optJSONObject(index) ?: continue
+        val wrappedPayload = event.optJSONObject("payload")
+        val payloadObject = wrappedPayload ?: event
+        val payload = JSObject(payloadObject.toString())
+
+        val timestampMs =
+          if (wrappedPayload != null) event.optLong("timestampMs", nowMs()) else nowMs()
+        if (isEventExpired(timestampMs)) {
+          continue
+        }
+
+        val key = event.optString("key").ifEmpty { buildActionEventKey(payload) }
+        if (pendingActionEventKeys.contains(key)) {
+          Logger.debug(
+            NOTIFICATION_LOG_TAGS,
+            "Skipping duplicate restored actionPerformed event key=$key"
+          )
+          continue
+        }
+
+        pendingActionEvents.add(PendingActionEvent(key, payload, timestampMs))
+        pendingActionEventKeys.add(key)
+      }
+      Logger.debug(
+        NOTIFICATION_LOG_TAGS,
+        "Restored pending actionPerformed events=${pendingActionEvents.size}"
+      )
+    } catch (error: Throwable) {
+      Logger.error(
+        NOTIFICATION_LOG_TAGS,
+        "Failed to restore pending actionPerformed events",
+        error
+      )
+      pendingActionEvents.clear()
+      pendingActionEventKeys.clear()
+      persistPendingActionEventsLocked()
+    }
+  }
 
   companion object {
     var instance: NotificationPlugin? = null
@@ -96,6 +221,13 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
 
     super.load(webView)
     this.webView = webView
+    Logger.debug(NOTIFICATION_LOG_TAGS, "Plugin load started")
+    synchronized(this) {
+      pendingActionEvents.clear()
+      pendingActionEventKeys.clear()
+      isActionListenerReady = false
+      restorePendingActionEventsLocked()
+    }
     notificationStorage = NotificationStorage(activity, jsonMapper())
     
     val manager = TauriNotificationManager(
@@ -109,6 +241,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     this.manager = manager
     
     notificationManager = activity.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    Logger.debug(NOTIFICATION_LOG_TAGS, "Plugin load complete; awaiting notification intents")
 
     val intent = activity.intent
     intent?.let {
@@ -118,22 +251,58 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
 
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
+    Logger.debug(NOTIFICATION_LOG_TAGS, "onNewIntent received action=${intent.action}")
     onIntent(intent)
   }
 
   fun onIntent(intent: Intent) {
     if (Intent.ACTION_MAIN != intent.action) {
+      Logger.debug(NOTIFICATION_LOG_TAGS, "Ignoring intent action=${intent.action}")
       return
     }
+    Logger.debug(NOTIFICATION_LOG_TAGS, "Processing ACTION_MAIN intent for notification action")
     val dataJson = manager.handleNotificationActionPerformed(intent, notificationStorage)
     if (dataJson != null) {
-      trigger("actionPerformed", dataJson)
+      dispatchActionPerformed(dataJson)
+    } else {
+      Logger.debug(NOTIFICATION_LOG_TAGS, "No action payload extracted from intent")
     }
+  }
+
+  private fun dispatchActionPerformed(payload: JSObject) {
+    synchronized(this) {
+      if (!isActionListenerReady) {
+        val key = buildActionEventKey(payload)
+        // `load()` restores persisted pending events before processing the current activity intent.
+        // Without this key check, the same action can be enqueued twice across reload boundaries.
+        if (pendingActionEventKeys.contains(key)) {
+          Logger.debug(
+            NOTIFICATION_LOG_TAGS,
+            "Skipping duplicate queued actionPerformed event key=$key"
+          )
+          return
+        }
+        pendingActionEvents.add(PendingActionEvent(key, payload, nowMs()))
+        pendingActionEventKeys.add(key)
+        persistPendingActionEventsLocked()
+        Logger.debug(
+          NOTIFICATION_LOG_TAGS,
+          "Queued actionPerformed event; listener not ready (pending=${pendingActionEvents.size})"
+        )
+        return
+      }
+    }
+    Logger.debug(NOTIFICATION_LOG_TAGS, "Dispatching actionPerformed event immediately")
+    trigger("actionPerformed", payload)
   }
 
   @Command
   fun show(invoke: Invoke) {
     val notification = invoke.parseArgs(Notification::class.java)
+    Logger.debug(
+      NOTIFICATION_LOG_TAGS,
+      "show called id=${notification.id} title=${notification.title} actionTypeId=${notification.actionTypeId} hasSchedule=${notification.schedule != null}"
+    )
     val id = manager.schedule(notification)
 
     invoke.resolveObject(id)
@@ -142,9 +311,14 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   @Command
   fun batch(invoke: Invoke) {
     val args = invoke.parseArgs(BatchArgs::class.java)
+    Logger.debug(
+      NOTIFICATION_LOG_TAGS,
+      "batch called notifications=${args.notifications.size}"
+    )
 
     val ids = manager.schedule(args.notifications)
     notificationStorage.appendNotifications(args.notifications)
+    Logger.debug(NOTIFICATION_LOG_TAGS, "batch scheduled ids=$ids")
 
     invoke.resolveObject(ids)
   }
@@ -152,6 +326,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   @Command
   fun cancel(invoke: Invoke) {
     val args = invoke.parseArgs(CancelArgs::class.java)
+    Logger.debug(NOTIFICATION_LOG_TAGS, "cancel called notifications=${args.notifications}")
     manager.cancel(args.notifications)
     invoke.resolve()
   }
@@ -159,6 +334,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   @Command
   fun removeActive(invoke: Invoke) {
     val args = invoke.parseArgs(RemoveActiveArgs::class.java)
+    Logger.debug(NOTIFICATION_LOG_TAGS, "removeActive called notifications=${args.notifications.size}")
 
     if (args.notifications.isEmpty()) {
       notificationManager.cancelAll()
@@ -178,6 +354,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   @Command
   fun getPending(invoke: Invoke) {
     val notifications= notificationStorage.getSavedNotifications()
+    Logger.debug(NOTIFICATION_LOG_TAGS, "getPending returning count=${notifications.size}")
     val result = Notification.buildNotificationPendingList(notifications)
     invoke.resolveObject(result)
   }
@@ -185,8 +362,33 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   @Command
   fun registerActionTypes(invoke: Invoke) {
     val args = invoke.parseArgs(RegisterActionTypesArgs::class.java)
+    Logger.debug(
+      NOTIFICATION_LOG_TAGS,
+      "registerActionTypes called types=${args.types.size}"
+    )
     notificationStorage.writeActionGroup(args.types)
     invoke.resolve()
+  }
+
+  @Command
+  fun registerActionListenerReady(invoke: Invoke) {
+    val pending = JSArray()
+    var drainedCount = 0
+    synchronized(this) {
+      isActionListenerReady = true
+      for (event in pendingActionEvents) {
+        pending.put(event.payload)
+      }
+      drainedCount = pendingActionEvents.size
+      pendingActionEvents.clear()
+      pendingActionEventKeys.clear()
+      persistPendingActionEventsLocked()
+    }
+    Logger.debug(
+      NOTIFICATION_LOG_TAGS,
+      "Action listener marked ready; drained pending actionPerformed events=$drainedCount"
+    )
+    invoke.resolveObject(pending)
   }
 
   @SuppressLint("ObsoleteSdkInt")

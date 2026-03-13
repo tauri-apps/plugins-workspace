@@ -16,6 +16,7 @@ permissions = [
   "allow-notify",
   "allow-register-action-types",
   "allow-register-listener",
+  "allow-register-action-listener-ready",
   "allow-cancel",
   "allow-get-pending",
   "allow-remove-active",

@@ -14,6 +14,7 @@ It allows all notification related features.
 - `allow-notify`
 - `allow-register-action-types`
 - `allow-register-listener`
+- `allow-register-action-listener-ready`
 - `allow-cancel`
 - `allow-get-pending`
 - `allow-remove-active`
@@ -317,6 +318,32 @@ Enables the permission_state command without any pre-configured scope.
 <td>
 
 Denies the permission_state command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`notification:allow-register-action-listener-ready`
+
+</td>
+<td>
+
+Enables the register_action_listener_ready command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`notification:deny-register-action-listener-ready`
+
+</td>
+<td>
+
+Denies the register_action_listener_ready command without any pre-configured scope.
 
 </td>
 </tr>

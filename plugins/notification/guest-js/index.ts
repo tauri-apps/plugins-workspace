@@ -286,6 +286,27 @@ interface ActiveNotification {
   sound?: string
 }
 
+interface ActionPerformedNotification {
+  actionId: string
+  id?: number
+  inputValue?: string
+  notification?: ActiveNotification | null
+}
+
+type RawPendingRecord = Record<string, unknown> & {
+  nameValuePairs?: unknown
+  value?: unknown
+  length?: number
+}
+
+type PendingActionsRaw =
+  | ActionPerformedNotification
+  | ActionPerformedNotification[]
+  | RawPendingRecord
+  | RawPendingRecord[]
+  | null
+  | undefined
+
 enum Importance {
   None = 0,
   Min,
@@ -566,10 +587,262 @@ async function onNotificationReceived(
   return await addPluginListener('notification', 'notification', cb)
 }
 
+function normalisePendingActions(
+  pending: PendingActionsRaw
+): ActionPerformedNotification[] {
+  const normalisedActions: ActionPerformedNotification[] = []
+  const seenObjects = new WeakSet<object>()
+  const seenActionKeys = new Set<string>()
+
+  const isRawPendingRecord = (value: unknown): value is RawPendingRecord => {
+    return !!value && typeof value === 'object' && !Array.isArray(value)
+  }
+
+  const toRecord = (value: unknown): RawPendingRecord | null => {
+    if (!isRawPendingRecord(value)) {
+      return null
+    }
+
+    const record = value
+    const wrapped = record.nameValuePairs
+    if (isRawPendingRecord(wrapped)) {
+      return toRecord(wrapped)
+    }
+
+    return record
+  }
+
+  const buildAction = (
+    candidate: unknown
+  ): ActionPerformedNotification | null => {
+    const record = toRecord(candidate)
+    if (!record) {
+      return null
+    }
+
+    const actionId = record.actionId
+    if (typeof actionId !== 'string' || actionId.length === 0) {
+      return null
+    }
+
+    const action: ActionPerformedNotification = {
+      actionId
+    }
+
+    const rawId = record.id
+    if (typeof rawId === 'number') {
+      action.id = rawId
+    } else if (typeof rawId === 'string') {
+      const parsedId = Number.parseInt(rawId, 10)
+      if (!Number.isNaN(parsedId)) {
+        action.id = parsedId
+      }
+    }
+
+    if (typeof record.inputValue === 'string') {
+      action.inputValue = record.inputValue
+    }
+
+    const toNumber = (value: unknown): number | null => {
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        return value
+      }
+      if (typeof value === 'string') {
+        const parsed = Number.parseInt(value, 10)
+        if (!Number.isNaN(parsed)) {
+          return parsed
+        }
+      }
+      return null
+    }
+
+    const toStringRecord = (value: unknown): Record<string, string> => {
+      if (!isRawPendingRecord(value)) {
+        return {}
+      }
+
+      const output: Record<string, string> = {}
+      for (const [key, item] of Object.entries(value)) {
+        if (typeof item === 'string') {
+          // Dynamic key passthrough is intentional here: this function only normalises
+          // already-received bridge payload objects into a plain string record.
+          // eslint-disable-next-line security/detect-object-injection
+          output[key] = item
+        }
+      }
+      return output
+    }
+
+    const toUnknownRecord = (value: unknown): Record<string, unknown> => {
+      if (!isRawPendingRecord(value)) {
+        return {}
+      }
+      return value
+    }
+
+    const coerceActiveNotification = (
+      value: unknown
+    ): ActiveNotification | null => {
+      const notificationRecord = toRecord(value)
+      if (!notificationRecord) {
+        return null
+      }
+
+      const id = toNumber(notificationRecord.id)
+      if (id === null) {
+        return null
+      }
+
+      const activeNotification: ActiveNotification = {
+        id,
+        groupSummary:
+          typeof notificationRecord.groupSummary === 'boolean'
+            ? notificationRecord.groupSummary
+            : false,
+        data: toStringRecord(notificationRecord.data),
+        extra: toUnknownRecord(notificationRecord.extra),
+        attachments: Array.isArray(notificationRecord.attachments)
+          ? (notificationRecord.attachments as Attachment[])
+          : []
+      }
+
+      if (typeof notificationRecord.tag === 'string') {
+        activeNotification.tag = notificationRecord.tag
+      }
+      if (typeof notificationRecord.title === 'string') {
+        activeNotification.title = notificationRecord.title
+      }
+      if (typeof notificationRecord.body === 'string') {
+        activeNotification.body = notificationRecord.body
+      }
+      if (typeof notificationRecord.group === 'string') {
+        activeNotification.group = notificationRecord.group
+      }
+      if (typeof notificationRecord.actionTypeId === 'string') {
+        activeNotification.actionTypeId = notificationRecord.actionTypeId
+      }
+      if (typeof notificationRecord.sound === 'string') {
+        activeNotification.sound = notificationRecord.sound
+      }
+      if (
+        notificationRecord.schedule &&
+        isRawPendingRecord(notificationRecord.schedule)
+      ) {
+        activeNotification.schedule =
+          notificationRecord.schedule as unknown as Schedule
+      }
+
+      return activeNotification
+    }
+
+    if ('notification' in record) {
+      action.notification = coerceActiveNotification(record.notification)
+    }
+
+    return action
+  }
+
+  const addAction = (action: ActionPerformedNotification): void => {
+    const key = `${action.id ?? ''}|${action.actionId}|${action.inputValue ?? ''}`
+    if (seenActionKeys.has(key)) {
+      return
+    }
+    seenActionKeys.add(key)
+    normalisedActions.push(action)
+  }
+
+  const walk = (value: unknown): void => {
+    if (!value || typeof value !== 'object') {
+      return
+    }
+
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        walk(entry)
+      }
+      return
+    }
+
+    const objectValue = value
+    if (seenObjects.has(objectValue)) {
+      return
+    }
+    seenObjects.add(objectValue)
+
+    if (!isRawPendingRecord(value)) {
+      return
+    }
+    const record = value
+
+    const directAction = buildAction(record)
+    if (directAction) {
+      addAction(directAction)
+      return
+    }
+
+    const wrappedValue = record.value
+    if (wrappedValue !== undefined) {
+      walk(wrappedValue)
+    }
+
+    // Some host bridges return array-like objects (`{ 0: ..., length: N }`).
+    if (typeof record.length === 'number') {
+      for (let index = 0; index < record.length; index += 1) {
+        walk(record[String(index)])
+      }
+    }
+
+    for (const entry of Object.values(record)) {
+      walk(entry)
+    }
+  }
+
+  walk(pending)
+
+  return normalisedActions
+}
+
+/**
+ * Registers a listener for notification action events.
+ *
+ * @since 2.0.0
+ */
+function onAction(
+  cb: (notification: ActionPerformedNotification) => void
+): Promise<PluginListener>
+/**
+ * Registers a listener for notification action events.
+ *
+ * @deprecated Use the `ActionPerformedNotification` callback type.
+ * @since 2.0.0
+ */
+function onAction(cb: (notification: Options) => void): Promise<PluginListener>
 async function onAction(
-  cb: (notification: Options) => void
+  cb:
+    | ((notification: ActionPerformedNotification) => void)
+    | ((notification: Options) => void)
 ): Promise<PluginListener> {
-  return await addPluginListener('notification', 'actionPerformed', cb)
+  const actionCallback = cb as (notification: ActionPerformedNotification) => void
+  const listener = await addPluginListener(
+    'notification',
+    'actionPerformed',
+    (notification: ActionPerformedNotification) => actionCallback(notification)
+  )
+  try {
+    const pendingResult = await invoke<PendingActionsRaw>(
+      'plugin:notification|register_action_listener_ready'
+    )
+    const pending = normalisePendingActions(pendingResult)
+    console.debug(
+      `[NotificationPlugin] register_action_listener_ready replay count=${pending.length}`
+    )
+    for (const notification of pending) {
+      actionCallback(notification)
+    }
+  } catch {
+    // Older plugin versions and non-Android targets may not implement this command.
+  }
+  return listener
 }
 
 export type {
@@ -579,6 +852,7 @@ export type {
   ActionType,
   PendingNotification,
   ActiveNotification,
+  ActionPerformedNotification,
   Channel,
   ScheduleInterval
 }
