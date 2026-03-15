@@ -123,7 +123,13 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
       }
 
       invoke?.resolve(jsObject)
-      destroy()
+      // Delay destroy so the IPC response reaches the JS layer before
+      // the webview properties (isOpaque, backgroundColor) are restored.
+      // Without this, the promise returned by scan() never resolves in
+      // windowed mode on iOS.
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+        self?.destroy()
+      }
 
     }
   }
