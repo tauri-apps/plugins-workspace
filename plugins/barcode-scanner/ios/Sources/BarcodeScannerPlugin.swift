@@ -122,17 +122,19 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
         jsObject["content"] = found.stringValue
       }
 
-      invoke?.resolve(jsObject)
-      // Stop processing further detections immediately to prevent
-      // duplicate resolve calls during the delay window below.
+      // Stop scanning and clean up camera and webview state before
+      // resolving. In windowed mode, restoring webView.isOpaque after
+      // resolve() prevents the IPC response from reaching JavaScript.
       self.isScanning = false
-      // Delay destroy so the IPC response reaches the JS layer before
-      // the webview properties (isOpaque, backgroundColor) are restored.
-      // Without this, the promise returned by scan() never resolves in
-      // windowed mode on iOS.
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-        self?.destroy()
+      dismantleCamera()
+      if windowed {
+        let backgroundColor = previousBackgroundColor ?? UIColor.white
+        webView.isOpaque = true
+        webView.backgroundColor = backgroundColor
+        webView.scrollView.backgroundColor = backgroundColor
       }
+      invoke?.resolve(jsObject)
+      invoke = nil
 
     }
   }
