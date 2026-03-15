@@ -123,6 +123,9 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
       }
 
       invoke?.resolve(jsObject)
+      // Stop processing further detections immediately to prevent
+      // duplicate resolve calls during the delay window below.
+      self.isScanning = false
       // Delay destroy so the IPC response reaches the JS layer before
       // the webview properties (isOpaque, backgroundColor) are restored.
       // Without this, the promise returned by scan() never resolves in
