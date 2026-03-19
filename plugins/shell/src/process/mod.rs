@@ -58,13 +58,77 @@ pub enum CommandEvent {
 pub struct Command {
     cmd: StdCommand,
     raw_out: bool,
+    process_group: bool,
 }
 
 /// Spawned child process.
-#[derive(Debug)]
 pub struct CommandChild {
-    inner: Arc<SharedChild>,
+    inner: ChildKind,
     stdin_writer: PipeWriter,
+}
+
+enum ChildKind {
+    Direct(Arc<SharedChild>),
+    #[cfg(any(unix, windows))]
+    ProcessGroup(GroupChild),
+}
+
+#[cfg(unix)]
+struct GroupChild {
+    shared: Arc<SharedChild>,
+    pgid: i32,
+}
+
+#[cfg(unix)]
+impl GroupChild {
+    fn id(&self) -> u32 {
+        self.shared.id()
+    }
+
+    fn kill(&self) -> std::io::Result<()> {
+        // SAFETY: killpg is a standard POSIX syscall. The pgid was obtained from
+        // the child's PID, which equals its PGID since it was spawned as a group leader.
+        let ret = unsafe { libc::killpg(self.pgid, libc::SIGKILL) };
+        if ret == 0 {
+            Ok(())
+        } else {
+            Err(std::io::Error::last_os_error())
+        }
+    }
+}
+
+#[cfg(windows)]
+struct GroupChild {
+    inner: Arc<std::sync::Mutex<Box<dyn process_wrap::std::StdChildWrapper>>>,
+    id: u32,
+}
+
+#[cfg(windows)]
+impl GroupChild {
+    fn id(&self) -> u32 {
+        self.id
+    }
+
+    fn kill(&self) -> std::io::Result<()> {
+        self.inner.lock().unwrap().kill()
+    }
+
+    fn wait(&self) -> std::io::Result<std::process::ExitStatus> {
+        loop {
+            match self.inner.lock().unwrap().try_wait()? {
+                Some(status) => return Ok(status),
+                None => {}
+            }
+            std::thread::sleep(std::time::Duration::from_millis(10));
+        }
+    }
+
+    fn clone_for_wait(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            id: self.id,
+        }
+    }
 }
 
 impl CommandChild {
@@ -75,14 +139,24 @@ impl CommandChild {
     }
 
     /// Sends a kill signal to the child.
+    /// When the child was spawned with `process_group` enabled,
+    /// this kills the entire process group (POSIX) or job object (Windows).
     pub fn kill(self) -> crate::Result<()> {
-        self.inner.kill()?;
+        match self.inner {
+            ChildKind::Direct(child) => child.kill()?,
+            #[cfg(any(unix, windows))]
+            ChildKind::ProcessGroup(group) => group.kill()?,
+        }
         Ok(())
     }
 
     /// Returns the process pid.
     pub fn pid(&self) -> u32 {
-        self.inner.id()
+        match &self.inner {
+            ChildKind::Direct(child) => child.id(),
+            #[cfg(any(unix, windows))]
+            ChildKind::ProcessGroup(group) => group.id(),
+        }
     }
 }
 
@@ -175,6 +249,7 @@ impl Command {
         Self {
             cmd: command,
             raw_out: false,
+            process_group: false,
         }
     }
 
@@ -243,6 +318,16 @@ impl Command {
         self
     }
 
+    /// Configures the command to spawn in a new process group (POSIX) or job object (Windows).
+    ///
+    /// When enabled, killing the child process will also kill all processes in the group,
+    /// which is useful for programs that spawn child processes (e.g. PyInstaller wrappers).
+    #[must_use]
+    pub fn set_process_group(mut self, process_group: bool) -> Self {
+        self.process_group = process_group;
+        self
+    }
+
     /// Spawns the command.
     ///
     /// # Examples
@@ -304,6 +389,7 @@ impl Command {
     /// ```
     pub fn spawn(self) -> crate::Result<(Receiver<CommandEvent>, CommandChild)> {
         let raw = self.raw_out;
+        let process_group = self.process_group;
         let mut command: StdCommand = self.into();
         let (stdout_reader, stdout_writer) = pipe()?;
         let (stderr_reader, stderr_writer) = pipe()?;
@@ -312,11 +398,7 @@ impl Command {
         command.stderr(stderr_writer);
         command.stdin(stdin_reader);
 
-        let shared_child = SharedChild::spawn(&mut command)?;
-        let child = Arc::new(shared_child);
-        let child_ = child.clone();
         let guard = Arc::new(RwLock::new(()));
-
         let (tx, rx) = channel(1);
 
         spawn_pipe_reader(
@@ -334,32 +416,73 @@ impl Command {
             raw,
         );
 
-        spawn(move || {
-            let _ = match child_.wait() {
-                Ok(status) => {
-                    let _l = guard.write().unwrap();
-                    block_on_task(async move {
-                        tx.send(CommandEvent::Terminated(TerminatedPayload {
-                            code: status.code(),
-                            #[cfg(windows)]
-                            signal: None,
-                            #[cfg(unix)]
-                            signal: status.signal(),
-                        }))
-                        .await
-                    })
+        let child_kind = if process_group {
+            #[cfg(any(unix, windows))]
+            {
+                let mut cmd_wrap = process_wrap::std::StdCommandWrap::from(command);
+
+                #[cfg(unix)]
+                cmd_wrap.wrap(process_wrap::std::ProcessGroup::leader());
+
+                #[cfg(windows)]
+                {
+                    cmd_wrap.wrap(process_wrap::std::CreationFlags(CREATE_NO_WINDOW));
+                    cmd_wrap.wrap(process_wrap::std::JobObject);
                 }
-                Err(e) => {
-                    let _l = guard.write().unwrap();
-                    block_on_task(async move { tx.send(CommandEvent::Error(e.to_string())).await })
-                }
-            };
-        });
+
+                let wrapped_child = cmd_wrap.spawn()?;
+                let child_id = wrapped_child.id();
+
+                #[cfg(unix)]
+                let group = {
+                    let inner_child = wrapped_child.into_inner();
+                    let shared = Arc::new(SharedChild::new(inner_child)?);
+                    let shared_clone = shared.clone();
+                    let pgid = child_id as i32;
+
+                    spawn_wait_thread(move || shared_clone.wait(), tx, guard);
+
+                    GroupChild { shared, pgid }
+                };
+
+                #[cfg(windows)]
+                let group = {
+                    let group = GroupChild {
+                        inner: Arc::new(std::sync::Mutex::new(wrapped_child)),
+                        id: child_id,
+                    };
+                    let group_wait = group.clone_for_wait();
+
+                    spawn_wait_thread(move || group_wait.wait(), tx, guard);
+
+                    group
+                };
+
+                ChildKind::ProcessGroup(group)
+            }
+
+            #[cfg(not(any(unix, windows)))]
+            {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::Unsupported,
+                    "process groups are not supported on this platform",
+                )
+                .into());
+            }
+        } else {
+            let shared_child = SharedChild::spawn(&mut command)?;
+            let child = Arc::new(shared_child);
+            let child_ = child.clone();
+
+            spawn_wait_thread(move || child_.wait(), tx, guard);
+
+            ChildKind::Direct(child)
+        };
 
         Ok((
             rx,
             CommandChild {
-                inner: child,
+                inner: child_kind,
                 stdin_writer,
             },
         ))
@@ -503,6 +626,34 @@ fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
         } else {
             read_line(reader, tx, wrapper);
         }
+    });
+}
+
+fn spawn_wait_thread(
+    wait_fn: impl FnOnce() -> std::io::Result<std::process::ExitStatus> + Send + 'static,
+    tx: Sender<CommandEvent>,
+    guard: Arc<RwLock<()>>,
+) {
+    spawn(move || {
+        let _ = match wait_fn() {
+            Ok(status) => {
+                let _l = guard.write().unwrap();
+                block_on_task(async move {
+                    tx.send(CommandEvent::Terminated(TerminatedPayload {
+                        code: status.code(),
+                        #[cfg(windows)]
+                        signal: None,
+                        #[cfg(unix)]
+                        signal: status.signal(),
+                    }))
+                    .await
+                })
+            }
+            Err(e) => {
+                let _l = guard.write().unwrap();
+                block_on_task(async move { tx.send(CommandEvent::Error(e.to_string())).await })
+            }
+        };
     });
 }
 
@@ -653,6 +804,77 @@ mod tests {
         assert_eq!(
             String::from_utf8(output.stderr).unwrap(),
             "cat: test/: Is a directory\n\n"
+        );
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_cmd_spawn_process_group_output() {
+        let cmd = Command::new("cat")
+            .args(["test/test.txt"])
+            .set_process_group(true);
+        let (mut rx, _) = cmd.spawn().unwrap();
+
+        tauri::async_runtime::block_on(async move {
+            while let Some(event) = rx.recv().await {
+                match event {
+                    CommandEvent::Terminated(payload) => {
+                        assert_eq!(payload.code, Some(0));
+                    }
+                    CommandEvent::Stdout(line) => {
+                        assert_eq!(String::from_utf8(line).unwrap(), "This is a test doc!");
+                    }
+                    _ => {}
+                }
+            }
+        });
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_cmd_process_group_kill() {
+        // Spawn a shell that runs a sleep command as a child process.
+        // With process_group enabled, killing the parent should also kill the child.
+        let cmd = Command::new("sh")
+            .args(["-c", "sleep 60"])
+            .set_process_group(true);
+        let (mut rx, child) = cmd.spawn().unwrap();
+        let pid = child.pid();
+
+        // Verify the process is running
+        let ret = unsafe { libc::kill(pid as i32, 0) };
+        assert_eq!(ret, 0, "process should be running");
+
+        // Kill the process group
+        child.kill().unwrap();
+
+        tauri::async_runtime::block_on(async move {
+            while let Some(event) = rx.recv().await {
+                if let CommandEvent::Terminated(payload) = event {
+                    // Process was killed by signal, so code is None and signal is Some
+                    assert!(payload.code.is_none() || payload.signal.is_some());
+                    break;
+                }
+            }
+        });
+
+        // Verify the process group is gone
+        let ret = unsafe { libc::killpg(pid as i32, 0) };
+        assert_ne!(ret, 0, "process group should no longer exist");
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_cmd_process_group_output() {
+        let cmd = Command::new("cat")
+            .args(["test/test.txt"])
+            .set_process_group(true);
+        let output = tauri::async_runtime::block_on(cmd.output()).unwrap();
+
+        assert_eq!(String::from_utf8(output.stderr).unwrap(), "");
+        assert_eq!(
+            String::from_utf8(output.stdout).unwrap(),
+            "This is a test doc!\n"
         );
     }
 }
