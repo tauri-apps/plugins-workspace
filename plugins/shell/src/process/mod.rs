@@ -877,4 +877,89 @@ mod tests {
             "This is a test doc!\n"
         );
     }
+
+    /// End-to-end test simulating the PyInstaller scenario from issue #1332.
+    ///
+    /// PyInstaller wraps the real application in a thin bootloader process.
+    /// Without process groups, killing the bootloader orphans the real app.
+    /// This test verifies that with `process_group` enabled, killing the
+    /// wrapper also kills the grandchild process.
+    #[cfg(not(windows))]
+    #[test]
+    fn test_pyinstaller_simulation_without_process_group() {
+        // Without process_group: killing the wrapper does NOT kill the grandchild.
+        let cmd = Command::new("sh").args(["test/pyinstaller_sim.sh"]);
+        let (mut rx, child) = cmd.spawn().unwrap();
+
+        // Collect the child PID from stdout
+        let grandchild_pid = tauri::async_runtime::block_on(async {
+            let mut pid = None;
+            while let Some(event) = rx.recv().await {
+                if let CommandEvent::Stdout(line) = &event {
+                    let line_str = String::from_utf8_lossy(line);
+                    if let Some(rest) = line_str.strip_prefix("CHILD_PID=") {
+                        pid = rest.trim().parse::<i32>().ok();
+                    }
+                }
+                if pid.is_some() {
+                    break;
+                }
+            }
+            pid.expect("should have received CHILD_PID from script")
+        });
+
+        // Verify the grandchild is running
+        let ret = unsafe { libc::kill(grandchild_pid, 0) };
+        assert_eq!(ret, 0, "grandchild should be running before kill");
+
+        // Kill just the direct child (no process group)
+        child.kill().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(100));
+
+        // The grandchild is STILL alive — this is the bug
+        let ret = unsafe { libc::kill(grandchild_pid, 0) };
+        assert_eq!(ret, 0, "grandchild should survive when process_group is off");
+
+        // Clean up the orphaned grandchild
+        unsafe { libc::kill(grandchild_pid, libc::SIGKILL) };
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_pyinstaller_simulation_with_process_group() {
+        // With process_group: killing the wrapper ALSO kills the grandchild.
+        let cmd = Command::new("sh")
+            .args(["test/pyinstaller_sim.sh"])
+            .set_process_group(true);
+        let (mut rx, child) = cmd.spawn().unwrap();
+
+        // Collect the grandchild PID from stdout
+        let grandchild_pid = tauri::async_runtime::block_on(async {
+            let mut pid = None;
+            while let Some(event) = rx.recv().await {
+                if let CommandEvent::Stdout(line) = &event {
+                    let line_str = String::from_utf8_lossy(line);
+                    if let Some(rest) = line_str.strip_prefix("CHILD_PID=") {
+                        pid = rest.trim().parse::<i32>().ok();
+                    }
+                }
+                if pid.is_some() {
+                    break;
+                }
+            }
+            pid.expect("should have received CHILD_PID from script")
+        });
+
+        // Verify the grandchild is running
+        let ret = unsafe { libc::kill(grandchild_pid, 0) };
+        assert_eq!(ret, 0, "grandchild should be running before kill");
+
+        // Kill the process group
+        child.kill().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(100));
+
+        // The grandchild should now be DEAD
+        let ret = unsafe { libc::kill(grandchild_pid, 0) };
+        assert_ne!(ret, 0, "grandchild should be killed when process_group is on");
+    }
 }
