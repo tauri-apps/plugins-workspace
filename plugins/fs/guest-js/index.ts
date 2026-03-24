@@ -280,7 +280,7 @@ function fromBytes(buffer: FixedSizeArray<number, 8>): number {
   let x = 0
   for (let i = 0; i < size; i++) {
     // eslint-disable-next-line security/detect-object-injection
-    const byte = bytes[i]
+    const byte = bytes[i] ?? 0
     x *= 0x100
     x += byte
   }
