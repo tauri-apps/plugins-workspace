@@ -21,7 +21,7 @@ tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
 toml = "0.9"
-tauri-utils = { workspace = true, features = ["build"] }
+tauri-utils = { workspace = true }
 
 [dependencies]
 serde = { workspace = true }
