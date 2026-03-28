@@ -7,26 +7,21 @@ use tauri::command;
 
 #[command]
 /// add recent
-pub(crate) fn add_recent_document(path: &str) -> Result<()> {
+pub(crate) fn add_recent_document(_path: &str) -> Result<()> {
     #[cfg(target_os = "windows")]
     {
+        use std::mem::ManuallyDrop;
         use windows::{
             core::HSTRING,
-            Win32::System::Com::GetAppUserModelId,
-            Win32::UI::Shell::{
-                SHAddToRecentDocs, SHCreateItemFromParsingName, SHARDAPPIDINFO, SHARD_APPIDINFO,
-            },
+            Win32::UI::Shell::{SHAddToRecentDocs, SHARD_PATHW},
         };
         unsafe {
-            let path_hstring = HSTRING::from(path);
-            let item = SHCreateItemFromParsingName(&path_hstring, None).ok()?;
-
-            let info: SHARDAPPIDINFO = SHARDAPPIDINFO {
-                psi: Some(item),
-                pszAppID: GetAppUserModelId()?,
-            };
-
-            SHAddToRecentDocs(SHARD_APPIDINFO, &info as *const _);
+            // Convert path to HSTRING
+            let path_hstring = HSTRING::from(_path);
+            SHAddToRecentDocs(
+                SHARD_PATHW.0 as u32,
+                Some(path_hstring.as_ptr() as *const core::ffi::c_void),
+            );
         }
     }
 
@@ -64,7 +59,7 @@ pub(crate) fn clear_recent_documents() -> Result<()> {
     {
         use windows::Win32::UI::Shell::{SHAddToRecentDocs, SHARD_APPIDINFO};
         unsafe {
-            SHAddToRecentDocs(SHARD_APPIDINFO, std::ptr::null());
+            SHAddToRecentDocs(SHARD_APPIDINFO.0 as u32, None);
         }
     }
 
@@ -96,6 +91,7 @@ pub(crate) fn clear_recent_documents() -> Result<()> {
 
 #[command]
 pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
+    #[allow(unused_mut)]
     let mut recent_docs = Vec::new();
 
     #[cfg(target_os = "windows")]
@@ -105,31 +101,32 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
         use windows::{
             core::PWSTR,
             Win32::System::Com::CoTaskMemFree,
-            Win32::UI::Shell::{FOLDERID_Recent, SHGetKnownFolderPath},
+            Win32::UI::Shell::{FOLDERID_Recent, SHGetKnownFolderPath, KNOWN_FOLDER_FLAG},
         };
         unsafe {
-            let recent_path_ptr: PWSTR = SHGetKnownFolderPath(&FOLDERID_Recent, 0, None)?;
+            let recent_path_ptr: PWSTR =
+                SHGetKnownFolderPath(&FOLDERID_Recent, KNOWN_FOLDER_FLAG(0), None)?;
 
             if !recent_path_ptr.is_null() {
                 let recent_path = PWSTR::from_raw(recent_path_ptr.0);
-                let recent_os_string = recent_path.to_string();
+                let recent_os_string = recent_path.to_string()?;
                 let recent_folder = PathBuf::from(recent_os_string);
 
                 if let Ok(entries) = fs::read_dir(recent_folder) {
                     for entry in entries.flatten() {
-                        if let Ok(entry) = entry {
-                            let path = entry.path();
+                        let path = entry.path();
 
-                            if path.extension().and_then(|s| s.to_str()) == Some("lnk") {
-                                if let Ok(resolved_path) = Self::resolve_shortcut(&path) {
-                                    recent_docs.push(resolved_path);
-                                }
+                        if path.extension().and_then(|s: &std::ffi::OsStr| s.to_str())
+                            == Some("lnk")
+                        {
+                            if let Ok(resolved_path) = resolve_shortcut(&path) {
+                                recent_docs.push(resolved_path);
                             }
                         }
                     }
                 }
 
-                CoTaskMemFree(recent_path_ptr.0 as *mut _);
+                CoTaskMemFree(Some(recent_path_ptr.0 as *mut _));
             }
         }
     }
@@ -168,10 +165,12 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
 }
 
 #[cfg(target_os = "windows")]
-fn resolve_shortcut(lnk_path: &Path) -> Result<String> {
+fn resolve_shortcut(lnk_path: &std::path::Path) -> Result<String> {
+    use std::path::{Path, PathBuf};
     use windows::{
-        core::{ComInterface, HSTRING, PWSTR},
+        core::{Interface, HSTRING, PWSTR},
         Win32::Foundation::MAX_PATH,
+        Win32::Storage::FileSystem::WIN32_FIND_DATAW,
         Win32::System::Com::{CoCreateInstance, IPersistFile, CLSCTX_INPROC_SERVER, STGM_READ},
         Win32::UI::Shell::{IShellLinkW, ShellLink},
     };
@@ -192,7 +191,7 @@ fn resolve_shortcut(lnk_path: &Path) -> Result<String> {
 
         // Resolve the target path
         let mut target_path = [0u16; MAX_PATH as usize];
-        shell_link.GetPath(&mut target_path, None, None, 0)?;
+        shell_link.GetPath(&mut target_path, std::ptr::null_mut(), 0)?;
 
         // Convert wide string to regular string
         let path_string = PWSTR::from_raw(target_path.as_mut_ptr()).to_string()?;

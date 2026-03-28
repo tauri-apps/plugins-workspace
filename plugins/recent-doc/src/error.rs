@@ -11,7 +11,15 @@ pub enum Error {
     #[error("Unsupported platform: {0}")]
     UnsupportedPlatform(String),
     #[error("Invalid path: {0}")]
+    #[allow(unused)]
     InvalidPath(String),
+    // Transform windows error into our error type
+    #[error(transparent)]
+    #[cfg(target_os = "windows")]
+    WindowsError(#[from] windows::core::Error),
+    #[error(transparent)]
+    #[cfg(target_os = "windows")]
+    Utf16(#[from] std::string::FromUtf16Error),
 }
 
 impl Serialize for Error {
