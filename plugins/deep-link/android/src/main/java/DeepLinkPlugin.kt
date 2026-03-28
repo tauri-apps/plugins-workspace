@@ -44,9 +44,12 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
     private var currentUrl: String? = null
     private var channel: Channel? = null
     private var config: PluginConfig? = null
-
     companion object {
         var instance: DeepLinkPlugin? = null
+    }
+
+    private fun isViewIntent(action: String?): Boolean {
+        return action == Intent.ACTION_VIEW || action == "org.chromium.arc.intent.action.VIEW"
     }
 
     @Command
@@ -74,7 +77,7 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
 
         val intent = activity.intent
 
-        if (intent.action == Intent.ACTION_VIEW && intent.data != null) {
+        if (isViewIntent(intent.action) && intent.data != null) {
             val url = intent.data.toString()
             if (isDeepLink(url)) {
                 // TODO: check if it makes sense to split up init url and last url
@@ -87,7 +90,7 @@ class DeepLinkPlugin(private val activity: Activity): Plugin(activity) {
     }
 
     override fun onNewIntent(intent: Intent) {
-        if (intent.action == Intent.ACTION_VIEW && intent.data != null) {
+        if (isViewIntent(intent.action) && intent.data != null) {
             val url = intent.data.toString()
             if (isDeepLink(url)) {
                 this.currentUrl = url
