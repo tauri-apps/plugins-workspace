@@ -7,10 +7,7 @@ identifier = "allow-read-text-file-lines"
 description = "Enables the read_text_file_lines command without any pre-configured scope."
 
 [permission.commands]
-allow = [
-    "read_text_file_lines",
-    "read_text_file_lines_next",
-]
+allow = ["read_text_file_lines", "read_text_file_lines_next"]
 deny = []
 
 [[permission]]
