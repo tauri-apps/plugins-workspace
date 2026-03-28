@@ -295,6 +295,30 @@
       "type": "string",
       "oneOf": [
         {
+          "description": "Enables the add_recent_document command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-add-recent-document",
+          "markdownDescription": "Enables the add_recent_document command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the add_recent_document command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-add-recent-document",
+          "markdownDescription": "Denies the add_recent_document command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the clear_recent_documents command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-clear-recent-documents",
+          "markdownDescription": "Enables the clear_recent_documents command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the clear_recent_documents command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-clear-recent-documents",
+          "markdownDescription": "Denies the clear_recent_documents command without any pre-configured scope."
+        },
+        {
           "description": "Enables the execute command without any pre-configured scope.",
           "type": "string",
           "const": "allow-execute",
@@ -305,6 +329,18 @@
           "type": "string",
           "const": "deny-execute",
           "markdownDescription": "Denies the execute command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the get_recent_documents command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-recent-documents",
+          "markdownDescription": "Enables the get_recent_documents command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_recent_documents command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-recent-documents",
+          "markdownDescription": "Denies the get_recent_documents command without any pre-configured scope."
         }
       ]
     }

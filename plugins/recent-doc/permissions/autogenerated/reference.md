@@ -10,6 +10,58 @@
 <tr>
 <td>
 
+`recent-doc:allow-add-recent-document`
+
+</td>
+<td>
+
+Enables the add_recent_document command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`recent-doc:deny-add-recent-document`
+
+</td>
+<td>
+
+Denies the add_recent_document command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`recent-doc:allow-clear-recent-documents`
+
+</td>
+<td>
+
+Enables the clear_recent_documents command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`recent-doc:deny-clear-recent-documents`
+
+</td>
+<td>
+
+Denies the clear_recent_documents command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `recent-doc:allow-execute`
 
 </td>
@@ -29,6 +81,32 @@ Enables the execute command without any pre-configured scope.
 <td>
 
 Denies the execute command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`recent-doc:allow-get-recent-documents`
+
+</td>
+<td>
+
+Enables the get_recent_documents command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`recent-doc:deny-get-recent-documents`
+
+</td>
+<td>
+
+Denies the get_recent_documents command without any pre-configured scope.
 
 </td>
 </tr>
