@@ -12,7 +12,6 @@ All operations are enabled by default.
 """
 permissions = [
   "allow-add-recent-document",
-  "allow-execute",
   "allow-get-recent-documents",
   "allow-clear-recent-documents",
 ]

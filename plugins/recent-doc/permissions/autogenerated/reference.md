@@ -10,7 +10,6 @@ All operations are enabled by default.
 #### This default permission set includes the following:
 
 - `allow-add-recent-document`
-- `allow-execute`
 - `allow-get-recent-documents`
 - `allow-clear-recent-documents`
 
