@@ -33,7 +33,7 @@ pub(crate) fn add_recent_document(_path: &str) -> Result<()> {
         use objc2_foundation::{NSString, NSURL};
 
         unsafe {
-            let ns_path = NSURL::fileURLWithPath(&NSString::from_str(path));
+            let ns_path = NSURL::fileURLWithPath(&NSString::from_str(_path));
             let mtm =
                 MainThreadMarker::new().expect("AppKit API must be called on the main thread");
             let controller: Id<NSDocumentController> =
