@@ -66,6 +66,11 @@ jobs:
               - pnpm-lock.yaml
               - plugins/opener/guest-js/**
               - plugins/opener/src/api-iife.js
+            recent-doc:
+              - .github/workflows/check-generated-files.yml
+              - pnpm-lock.yaml
+              - plugins/recent-doc/guest-js/**
+              - plugins/recent-doc/src/api-iife.js
             haptics:
               - .github/workflows/check-generated-files.yml
               - pnpm-lock.yaml

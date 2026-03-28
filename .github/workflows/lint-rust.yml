@@ -69,6 +69,9 @@ jobs:
             tauri-plugin-opener:
               - .github/workflows/lint-rust.yml
               - plugins/opener/**
+            tauri-plugin-recent-doc:
+              - .github/workflows/lint-rust.yml
+              - plugins/recent-doc/**
             tauri-plugin-haptics:
               - .github/workflows/lint-rust.yml
               - plugins/haptics/**
