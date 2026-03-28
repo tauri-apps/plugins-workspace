@@ -36,29 +36,47 @@ path = "$CONFIG"
 [[set]]
 identifier = "allow-config-read-recursive"
 description = "This allows full recursive read access to the complete `$CONFIG` folder, files and subdirectories."
-permissions = ["read-all", "scope-config-recursive"]
+permissions = [
+    "read-all",
+    "scope-config-recursive"
+]
 
 [[set]]
 identifier = "allow-config-write-recursive"
 description = "This allows full recursive write access to the complete `$CONFIG` folder, files and subdirectories."
-permissions = ["write-all", "scope-config-recursive"]
+permissions = [
+    "write-all",
+    "scope-config-recursive"
+]
 
 [[set]]
 identifier = "allow-config-read"
 description = "This allows non-recursive read access to the `$CONFIG` folder."
-permissions = ["read-all", "scope-config"]
+permissions = [
+    "read-all",
+    "scope-config"
+]
 
 [[set]]
 identifier = "allow-config-write"
 description = "This allows non-recursive write access to the `$CONFIG` folder."
-permissions = ["write-all", "scope-config"]
+permissions = [
+    "write-all",
+    "scope-config"
+]
 
 [[set]]
 identifier = "allow-config-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$CONFIG` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-config-recursive"]
+permissions = [
+    "read-meta",
+    "scope-config-recursive"
+]
 
 [[set]]
 identifier = "allow-config-meta"
 description = "This allows non-recursive read access to metadata of the `$CONFIG` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-config-index"]
+permissions = [
+    "read-meta",
+    "scope-config-index"
+]
