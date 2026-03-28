@@ -10,14 +10,16 @@ use tauri::command;
 pub(crate) fn add_recent_document(path: &str) -> Result<()> {
     #[cfg(target_os = "windows")]
     {
-        use std::os::windows::ffi::{OsStrExt, OsStringExt};
-        use windows::{core::*, Win32::Foundation::*, Win32::System::Com::*, Win32::UI::Shell::*};
+        use windows::{
+            core::HSTRING,
+            Win32::System::Com::GetAppUserModelId,
+            Win32::UI::Shell::{
+                SHAddToRecentDocs, SHCreateItemFromParsingName, SHARDAPPIDINFO, SHARD_APPIDINFO,
+            },
+        };
         unsafe {
-            let path_wide: Vec<u16> = OsStr::new(path)
-                .encode_wide()
-                .chain(iter::once(0))
-                .collect();
-            let item = SHCreateItemFromParsingName(path_wide.as_str(), None).ok()?;
+            let path_hstring = HSTRING::from(path);
+            let item = SHCreateItemFromParsingName(&path_hstring, None).ok()?;
 
             let info: SHARDAPPIDINFO = SHARDAPPIDINFO {
                 psi: Some(item),
@@ -57,7 +59,7 @@ pub(crate) fn add_recent_document(path: &str) -> Result<()> {
 pub(crate) fn clear_recent_documents() -> Result<()> {
     #[cfg(target_os = "windows")]
     {
-        use windows::Win32::UI::Shell::*;
+        use windows::Win32::UI::Shell::{SHAddToRecentDocs, SHARD_APPIDINFO};
         unsafe {
             SHAddToRecentDocs(SHARD_APPIDINFO, std::ptr::null());
         }
@@ -94,7 +96,11 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
     {
         use std::fs;
         use std::path::{Path, PathBuf};
-        use windows::{core::*, Win32::Foundation::*, Win32::System::Com::*, Win32::UI::Shell::*};
+        use windows::{
+            core::PWSTR,
+            Win32::System::Com::CoTaskMemFree,
+            Win32::UI::Shell::{FOLDERID_Recent, SHGetKnownFolderPath},
+        };
         unsafe {
             let recent_path_ptr: PWSTR = SHGetKnownFolderPath(&FOLDERID_Recent, 0, None)?;
 
@@ -154,9 +160,13 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
 
 #[cfg(target_os = "windows")]
 fn resolve_shortcut(lnk_path: &Path) -> Result<String> {
-    let path_string = String::new();
+    use windows::{
+        core::{ComInterface, HSTRING, PWSTR},
+        Win32::Foundation::MAX_PATH,
+        Win32::System::Com::{CoCreateInstance, IPersistFile, CLSCTX_INPROC_SERVER, STGM_READ},
+        Win32::UI::Shell::{IShellLinkW, ShellLink},
+    };
 
-    use windows::{core::*, Win32::Foundation::*, Win32::System::Com::*, Win32::UI::Shell::*};
     unsafe {
         // Create IShellLink instance
         let shell_link: IShellLinkW =
@@ -177,7 +187,7 @@ fn resolve_shortcut(lnk_path: &Path) -> Result<String> {
 
         // Convert wide string to regular string
         let path_string = PWSTR::from_raw(target_path.as_mut_ptr()).to_string()?;
-    }
 
-    Ok(path_string)
+        Ok(path_string)
+    }
 }
