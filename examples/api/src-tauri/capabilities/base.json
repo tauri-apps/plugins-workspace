@@ -98,6 +98,7 @@
       "identifier": "opener:allow-open-path",
       "allow": [{ "path": "$APPDATA" }, { "path": "$APPDATA/**" }]
     },
-    "upload:default"
+    "upload:default",
+    "recent-doc:default"
   ]
 }

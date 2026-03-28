@@ -230,6 +230,7 @@ dependencies = [
  "tauri-plugin-opener",
  "tauri-plugin-os",
  "tauri-plugin-process",
+ "tauri-plugin-recent-doc",
  "tauri-plugin-shell",
  "tauri-plugin-store",
  "tauri-plugin-updater",
