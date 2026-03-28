@@ -32,15 +32,18 @@ pub(crate) fn add_recent_document(path: &str) -> Result<()> {
 
     #[cfg(target_os = "macos")]
     {
-        use objc2::foundation::{NSString, NSURL};
         use objc2::rc::Id;
+        use objc2::MainThreadMarker;
         use objc2_app_kit::NSDocumentController;
+        use objc2_foundation::{NSString, NSURL};
 
         unsafe {
-            let ns_path = NSURL::file_url_with_path(&NSString::from_str(path));
+            let ns_path = NSURL::fileURLWithPath(&NSString::from_str(path));
+            let mtm =
+                MainThreadMarker::new().expect("AppKit API must be called on the main thread");
             let controller: Id<NSDocumentController> =
-                NSDocumentController::shared_document_controller();
-            controller.note_new_recent_document_url(&ns_path);
+                NSDocumentController::sharedDocumentController(mtm);
+            controller.noteNewRecentDocumentURL(&ns_path);
         }
     }
 
@@ -68,12 +71,15 @@ pub(crate) fn clear_recent_documents() -> Result<()> {
     #[cfg(target_os = "macos")]
     {
         use objc2::rc::Id;
+        use objc2::MainThreadMarker;
         use objc2_app_kit::NSDocumentController;
 
         unsafe {
+            let mtm =
+                MainThreadMarker::new().expect("AppKit API must be called on the main thread");
             let controller: Id<NSDocumentController> =
-                NSDocumentController::shared_document_controller();
-            controller.clear_recent_documents();
+                NSDocumentController::sharedDocumentController(mtm);
+            controller.clearRecentDocuments(None);
         }
     }
 
@@ -130,18 +136,21 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
 
     #[cfg(target_os = "macos")]
     {
-        use objc2::foundation::{NSArray, NSString};
         use objc2::rc::Id;
+        use objc2::MainThreadMarker;
         use objc2_app_kit::NSDocumentController;
+        use objc2_foundation::{NSArray, NSString};
 
         unsafe {
+            let mtm =
+                MainThreadMarker::new().expect("AppKit API must be called on the main thread");
             let controller: Id<NSDocumentController> =
-                NSDocumentController::shared_document_controller();
-            let urls: Id<NSArray<NSString>> = controller.recent_document_urls();
+                NSDocumentController::sharedDocumentController(mtm);
+            let urls = controller.recentDocumentURLs();
 
-            for i in 0..urls.count() {
-                if let Some(ns_string) = urls.object_at(i) {
-                    recent_docs.push(ns_string.to_string());
+            for url in &*urls {
+                if let Some(ns_path) = url.path() {
+                    recent_docs.push(ns_path.to_string());
                 }
             }
         }

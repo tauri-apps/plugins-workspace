@@ -33,10 +33,13 @@ log = { workspace = true }
 thiserror = { workspace = true }
 
 [target."cfg(target_os = \"macos\")".dependencies]
-objc2 = "0.6.0"
+objc2 = "0.6.4"
+# 必须显式开启用到类的 feature
+objc2-foundation = { version = "0.3.2", features = ["NSString", "NSURL", "NSArray"] }
+objc2-app-kit = { version = "0.3.2", features = ["NSDocumentController"] }
 
 [target."cfg(target_os = \"windows\")".dependencies]
-windows = { version = "0.61", features = [
+windows = { version = "0.62.2", features = [
   "Win32_Foundation",
   "Win32_System_Com",
   "Win32_UI_Shell",
