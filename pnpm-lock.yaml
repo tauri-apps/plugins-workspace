@@ -98,6 +98,9 @@ importers:
       '@tauri-apps/plugin-process':
         specifier: ^2.3.1
         version: link:../../plugins/process
+      '@tauri-apps/plugin-recent-doc':
+        specifier: 1.0.0
+        version: link:../../plugins/recent-doc
       '@tauri-apps/plugin-shell':
         specifier: ^2.3.5
         version: link:../../plugins/shell
