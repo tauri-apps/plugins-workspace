@@ -74,3 +74,8 @@ pub async fn open_path<R: Runtime>(
 pub async fn reveal_item_in_dir(paths: Vec<PathBuf>) -> crate::Result<()> {
     crate::reveal_items_in_dir(&paths)
 }
+
+#[tauri::command]
+pub async fn open_dir(path: PathBuf) -> crate::Result<()> {
+    crate::open_dir(path)
+}

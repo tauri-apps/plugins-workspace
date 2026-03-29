@@ -61,7 +61,12 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { openUrl, openPath, revealItemInDir } from '@tauri-apps/plugin-opener'
+import {
+  openUrl,
+  openPath,
+  openDir,
+  revealItemInDir
+} from '@tauri-apps/plugin-opener'
 
 // Opens the URL in the default browser
 await openUrl('https://example.com')
@@ -79,6 +84,9 @@ await revealItemInDir('/path/to/file')
 // Reveal multiple paths with the system's default explorer
 // Note: will be renamed to `revealItemsInDir` in the next major version
 await revealItemInDir(['/path/to/file', '/path/to/another/file'])
+
+// Open a directory with the system's default explorer
+await openDir('/path/to/dir')
 ```
 
 ### Usage from Rust
@@ -109,6 +117,9 @@ fn main() {
 
             // Reveal multiple paths with the system's default explorer
             opener.reveal_items_in_dir(["/path/to/file"])?;
+
+            // Open a directory with the system's default explorer
+            opener.open_dir("/path/to/dir")?;
             Ok(())
         })
         .run(tauri::generate_context!())

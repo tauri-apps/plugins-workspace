@@ -2,9 +2,10 @@
 
 [default]
 description = """This permission set allows opening `mailto:`, `tel:`, `https://` and `http://` urls using their default application
-as well as reveal file in directories using default file explorer"""
+as well as reveal file and open directories using default file explorer"""
 permissions = [
   "allow-open-url",
   "allow-reveal-item-in-dir",
+  "allow-open-dir",
   "allow-default-urls",
 ]

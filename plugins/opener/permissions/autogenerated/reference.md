@@ -1,12 +1,13 @@
 ## Default Permission
 
 This permission set allows opening `mailto:`, `tel:`, `https://` and `http://` urls using their default application
-as well as reveal file in directories using default file explorer
+as well as reveal file and open directories using default file explorer
 
 #### This default permission set includes the following:
 
 - `allow-open-url`
 - `allow-reveal-item-in-dir`
+- `allow-open-dir`
 - `allow-default-urls`
 
 ## Permission Table
@@ -27,6 +28,32 @@ as well as reveal file in directories using default file explorer
 <td>
 
 This enables opening `mailto:`, `tel:`, `https://` and `http://` urls using their default application.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`opener:allow-open-dir`
+
+</td>
+<td>
+
+Enables the open_dir command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`opener:deny-open-dir`
+
+</td>
+<td>
+
+Denies the open_dir command without any pre-configured scope.
 
 </td>
 </tr>

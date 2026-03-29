@@ -17,6 +17,7 @@ mod commands;
 mod config;
 mod error;
 mod open;
+mod open_dir;
 mod reveal_item_in_dir;
 mod scope;
 mod scope_entry;
@@ -25,6 +26,7 @@ pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 
 pub use open::{open_path, open_url};
+pub use open_dir::open_dir;
 pub use reveal_item_in_dir::{reveal_item_in_dir, reveal_items_in_dir};
 
 pub struct Opener<R: Runtime> {
@@ -162,6 +164,10 @@ impl<R: Runtime> Opener<R> {
     {
         reveal_items_in_dir(paths)
     }
+
+    pub fn open_dir<P: AsRef<Path>>(&self, p: P) -> Result<()> {
+        open_dir(p)
+    }
 }
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the opener APIs.
@@ -227,6 +233,7 @@ impl Builder {
             .invoke_handler(tauri::generate_handler![
                 commands::open_url,
                 commands::open_path,
+                commands::open_dir,
                 commands::reveal_item_in_dir,
             ]);
 
