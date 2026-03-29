@@ -89,37 +89,31 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
     #[cfg(target_os = "windows")]
     {
         use std::fs;
-        use std::path::PathBuf;
-        use windows::{
-            core::PWSTR,
-            Win32::System::Com::CoTaskMemFree,
-            Win32::UI::Shell::{FOLDERID_Recent, SHGetKnownFolderPath, KNOWN_FOLDER_FLAG},
+        use windows::Win32::{
+            Foundation::GetLastError,
+            System::Com::CoTaskMemFree,
+            UI::Shell::{FOLDERID_Recent, SHGetKnownFolderPath, KNOWN_FOLDER_FLAG},
         };
         unsafe {
-            let recent_path_ptr: PWSTR =
-                SHGetKnownFolderPath(&FOLDERID_Recent, KNOWN_FOLDER_FLAG(0), None)?;
+            let recent_path = SHGetKnownFolderPath(&FOLDERID_Recent, KNOWN_FOLDER_FLAG(0), None)?;
+            if recent_path.is_null() {
+                return Err(crate::error::Error::WindowsError(GetLastError().into()));
+            }
+            let recent_path_os_string = recent_path.to_hstring().to_os_string();
 
-            if !recent_path_ptr.is_null() {
-                let recent_path = PWSTR::from_raw(recent_path_ptr.0);
-                let recent_os_string = recent_path.to_string()?;
-                let recent_folder = PathBuf::from(recent_os_string);
+            if let Ok(entries) = fs::read_dir(recent_path_os_string) {
+                for entry in entries.flatten() {
+                    let path = entry.path();
 
-                if let Ok(entries) = fs::read_dir(recent_folder) {
-                    for entry in entries.flatten() {
-                        let path = entry.path();
-
-                        if path.extension().and_then(|s: &std::ffi::OsStr| s.to_str())
-                            == Some("lnk")
-                        {
-                            if let Ok(resolved_path) = resolve_shortcut(&path) {
-                                recent_docs.push(resolved_path);
-                            }
+                    if path.extension().and_then(|s: &std::ffi::OsStr| s.to_str()) == Some("lnk") {
+                        if let Ok(resolved_path) = resolve_shortcut(&path) {
+                            recent_docs.push(resolved_path);
                         }
                     }
                 }
-
-                CoTaskMemFree(Some(recent_path_ptr.0 as *mut _));
             }
+
+            CoTaskMemFree(Some(recent_path.0 as *mut _));
         }
     }
 
