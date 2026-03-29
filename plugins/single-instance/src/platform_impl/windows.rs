@@ -59,7 +59,7 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
             #[cfg(feature = "semver")]
             {
                 id.push('_');
-                id.push_str(semver_compat_string(app.package_info().version.clone()).as_str());
+                id.push_str(semver_compat_string(&app.package_info().version).as_str());
             }
 
             let class_name = encode_wide(format!("{id}-sic"));

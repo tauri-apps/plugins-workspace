@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.4.7]
+
+- [`8374e997`](https://github.com/tauri-apps/plugins-workspace/commit/8374e997b82c95516fc0c1f6d665d9fc3b52edf8) ([#3258](https://github.com/tauri-apps/plugins-workspace/pull/3258) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fix runtime deep link registration failing on Linux when the app path has spaces.
+
+## \[2.4.6]
+
+- [`28048039`](https://github.com/tauri-apps/plugins-workspace/commit/28048039496e84b46847c008416d341f1349e30e) ([#3143](https://github.com/tauri-apps/plugins-workspace/pull/3143) by [@Tunglies](https://github.com/tauri-apps/plugins-workspace/../../Tunglies)) Fix clippy warnings. No user facing changes.
+
 ## \[2.4.5]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

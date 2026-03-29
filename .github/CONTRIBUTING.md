@@ -5,6 +5,7 @@ Hi! We, the maintainers, are really excited that you are interested in contribut
 - [Issue Reporting Guidelines](#issue-reporting-guidelines)
 - [Pull Request Guidelines](#pull-request-guidelines)
 - [Development Guide](#development-guide)
+- [AI Tool Policy](#ai-tool-policy)
 
 ## Issue Reporting Guidelines
 
@@ -60,3 +61,13 @@ The easiest way to test your changes is to use the [example app](https://github.
 To test local changes against your own application simply point the plugin create to your local repository, for example:
 
 `tauri-plugin-sample = { path = "path/to/local/tauri-plugin-sample/" }`
+
+## AI Tool Policy
+
+It takes a lot of time to review a Pull Request while it's very easy to make a nonsensical but plausible looking one using AI tools.
+It is unfair for other contributors and the reviewers to spend much of the time dealing with this, hence these rules:
+
+1. Review and test all LLM-generated content before submitting, you're the one responsible for it, not the AI.
+2. Don't use AI to respond to review comments (except for translations).
+
+We will close the Pull Request with a `ai-slop` tag if you failed to do so.
