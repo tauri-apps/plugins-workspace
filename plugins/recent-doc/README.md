@@ -4,11 +4,11 @@
 
 | Platform | Supported |
 | -------- | --------- |
-| Linux    | ✓         |
+| Linux    | x         |
 | Windows  | ✓         |
 | macOS    | ✓         |
-| Android  | ✓         |
-| iOS      | ✓         |
+| Android  | x         |
+| iOS      | x         |
 
 ## Install
 
@@ -26,7 +26,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-recent-doc = "2.0.0"
+tauri-plugin-recent-doc = "1.0.0"
 # alternatively with Git:
 tauri-plugin-recent-doc = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
