@@ -219,11 +219,6 @@ impl Builder {
                 if config.pubkey.is_none() && pubkey.is_none() {
                     return Err(Box::new(Error::MissingPubKey));
                 } else if pubkey.is_some() {
-                    if config.pubkey.is_some() {
-                        log::warn!(
-                            "Updater pubkey set at runtime will overwrite the config pubkey."
-                        );
-                    };
                     config.pubkey = pubkey;
                 };
 
