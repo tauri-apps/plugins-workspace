@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use crate::error::{Error, Result};
+use crate::error::Result;
 use tauri::command;
 
 #[command]
@@ -10,7 +10,6 @@ use tauri::command;
 pub(crate) fn add_recent_document(_path: &str) -> Result<()> {
     #[cfg(target_os = "windows")]
     {
-        use std::mem::ManuallyDrop;
         use windows::{
             core::HSTRING,
             Win32::UI::Shell::{SHAddToRecentDocs, SHARD_PATHW},
@@ -27,25 +26,20 @@ pub(crate) fn add_recent_document(_path: &str) -> Result<()> {
 
     #[cfg(target_os = "macos")]
     {
-        use objc2::rc::Id;
         use objc2::MainThreadMarker;
         use objc2_app_kit::NSDocumentController;
         use objc2_foundation::{NSString, NSURL};
 
-        unsafe {
-            let ns_path = NSURL::fileURLWithPath(&NSString::from_str(_path));
-            let mtm =
-                MainThreadMarker::new().expect("AppKit API must be called on the main thread");
-            let controller: Id<NSDocumentController> =
-                NSDocumentController::sharedDocumentController(mtm);
-            controller.noteNewRecentDocumentURL(&ns_path);
-        }
+        let ns_path = NSURL::fileURLWithPath(&NSString::from_str(_path));
+        let mtm = MainThreadMarker::new().expect("AppKit API must be called on the main thread");
+        let controller = NSDocumentController::sharedDocumentController(mtm);
+        controller.noteNewRecentDocumentURL(&ns_path);
     }
 
     #[cfg(unix)]
     {
         // Recent documents are not supported on Unix-like systems.
-        Err(Error::UnsupportedPlatform(
+        Err(crate::error::Error::UnsupportedPlatform(
             "Recent documents are not supported on Unix-like systems.".to_string(),
         ))?;
     }
@@ -65,15 +59,13 @@ pub(crate) fn clear_recent_documents() -> Result<()> {
 
     #[cfg(target_os = "macos")]
     {
-        use objc2::rc::Id;
         use objc2::MainThreadMarker;
         use objc2_app_kit::NSDocumentController;
 
         unsafe {
             let mtm =
                 MainThreadMarker::new().expect("AppKit API must be called on the main thread");
-            let controller: Id<NSDocumentController> =
-                NSDocumentController::sharedDocumentController(mtm);
+            let controller = NSDocumentController::sharedDocumentController(mtm);
             controller.clearRecentDocuments(None);
         }
     }
@@ -81,7 +73,7 @@ pub(crate) fn clear_recent_documents() -> Result<()> {
     #[cfg(unix)]
     {
         // Recent documents are not supported on Unix-like systems.
-        Err(Error::UnsupportedPlatform(
+        Err(crate::error::Error::UnsupportedPlatform(
             "Recent documents are not supported on Unix-like systems.".to_string(),
         ))?;
     }
@@ -97,7 +89,7 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
     #[cfg(target_os = "windows")]
     {
         use std::fs;
-        use std::path::{Path, PathBuf};
+        use std::path::PathBuf;
         use windows::{
             core::PWSTR,
             Win32::System::Com::CoTaskMemFree,
@@ -133,22 +125,16 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
 
     #[cfg(target_os = "macos")]
     {
-        use objc2::rc::Id;
         use objc2::MainThreadMarker;
         use objc2_app_kit::NSDocumentController;
-        use objc2_foundation::{NSArray, NSString};
 
-        unsafe {
-            let mtm =
-                MainThreadMarker::new().expect("AppKit API must be called on the main thread");
-            let controller: Id<NSDocumentController> =
-                NSDocumentController::sharedDocumentController(mtm);
-            let urls = controller.recentDocumentURLs();
+        let mtm = MainThreadMarker::new().expect("AppKit API must be called on the main thread");
+        let controller = NSDocumentController::sharedDocumentController(mtm);
+        let urls = controller.recentDocumentURLs();
 
-            for url in &*urls {
-                if let Some(ns_path) = url.path() {
-                    recent_docs.push(ns_path.to_string());
-                }
+        for url in &*urls {
+            if let Some(ns_path) = url.path() {
+                recent_docs.push(ns_path.to_string());
             }
         }
     }
@@ -156,7 +142,7 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
     #[cfg(unix)]
     {
         // Recent documents are not supported on Unix-like systems.
-        Err(Error::UnsupportedPlatform(
+        Err(crate::error::Error::UnsupportedPlatform(
             "Recent documents are not supported on Unix-like systems.".to_string(),
         ))?;
     }
@@ -166,11 +152,9 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
 
 #[cfg(target_os = "windows")]
 fn resolve_shortcut(lnk_path: &std::path::Path) -> Result<String> {
-    use std::path::{Path, PathBuf};
     use windows::{
         core::{Interface, HSTRING, PWSTR},
         Win32::Foundation::MAX_PATH,
-        Win32::Storage::FileSystem::WIN32_FIND_DATAW,
         Win32::System::Com::{CoCreateInstance, IPersistFile, CLSCTX_INPROC_SERVER, STGM_READ},
         Win32::UI::Shell::{IShellLinkW, ShellLink},
     };

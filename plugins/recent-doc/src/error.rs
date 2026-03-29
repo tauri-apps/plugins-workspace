@@ -7,11 +7,11 @@ use serde::{ser::Serializer, Serialize};
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
+#[allow(unused)]
 pub enum Error {
     #[error("Unsupported platform: {0}")]
     UnsupportedPlatform(String),
     #[error("Invalid path: {0}")]
-    #[allow(unused)]
     InvalidPath(String),
     // Transform windows error into our error type
     #[error(transparent)]
