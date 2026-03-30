@@ -54,22 +54,22 @@ importers:
         specifier: ^2.10.1
         version: 2.10.1
       '@tauri-apps/plugin-barcode-scanner':
-        specifier: ^2.4.4
+        specifier: workspace:^
         version: link:../../plugins/barcode-scanner
       '@tauri-apps/plugin-biometric':
-        specifier: ^2.3.2
+        specifier: workspace:^
         version: link:../../plugins/biometric
       '@tauri-apps/plugin-cli':
         specifier: ^2.4.1
         version: link:../../plugins/cli
       '@tauri-apps/plugin-clipboard-manager':
-        specifier: ^2.3.2
+        specifier: workspace:^
         version: link:../../plugins/clipboard-manager
       '@tauri-apps/plugin-dialog':
-        specifier: ^2.6.0
+        specifier: workspace:^
         version: link:../../plugins/dialog
       '@tauri-apps/plugin-fs':
-        specifier: ^2.4.5
+        specifier: workspace:^
         version: link:../../plugins/fs
       '@tauri-apps/plugin-geolocation':
         specifier: ^2.3.2
@@ -87,22 +87,22 @@ importers:
         specifier: ^2.3.4
         version: link:../../plugins/nfc
       '@tauri-apps/plugin-notification':
-        specifier: ^2.3.3
+        specifier: workspace:^
         version: link:../../plugins/notification
       '@tauri-apps/plugin-opener':
-        specifier: ^2.5.3
+        specifier: workspace:^
         version: link:../../plugins/opener
       '@tauri-apps/plugin-os':
-        specifier: ^2.3.2
+        specifier: workspace:^
         version: link:../../plugins/os
       '@tauri-apps/plugin-process':
-        specifier: ^2.3.1
+        specifier: workspace:^
         version: link:../../plugins/process
       '@tauri-apps/plugin-recent-doc':
         specifier: 1.0.0
         version: link:../../plugins/recent-doc
       '@tauri-apps/plugin-shell':
-        specifier: ^2.3.5
+        specifier: workspace:^
         version: link:../../plugins/shell
       '@tauri-apps/plugin-store':
         specifier: ^2.4.2
