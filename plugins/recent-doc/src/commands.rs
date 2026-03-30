@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 
 use crate::error::Result;
-#[allow(unused_imports)]
 use std::fs;
 use tauri::command;
 
@@ -28,7 +27,6 @@ use {
 };
 
 #[command]
-/// add recent
 pub(crate) fn add_recent_document(_path: &str) -> Result<()> {
     #[cfg(target_os = "windows")]
     unsafe {
