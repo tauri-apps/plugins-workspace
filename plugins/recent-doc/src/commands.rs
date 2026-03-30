@@ -13,8 +13,9 @@ use windows::{
         System::Com::{CoCreateInstance, CoTaskMemFree, CLSCTX_INPROC_SERVER},
         UI::Shell::{
             ApplicationDocumentLists, GetCurrentProcessExplicitAppUserModelID,
-            IApplicationDocumentLists, IShellItem, IShellItemArray, SHAddToRecentDocs, SHCreateItemFromParsingName,
-            ADLT_RECENT, SHARDAPPIDINFO, SHARD_APPIDINFO, SIGDN_FILESYSPATH,
+            IApplicationDocumentLists, IShellItem, IShellItemArray, SHAddToRecentDocs,
+            SHCreateItemFromParsingName, ADLT_RECENT, SHARDAPPIDINFO, SHARD_APPIDINFO,
+            SIGDN_FILESYSPATH,
         },
     },
 };
