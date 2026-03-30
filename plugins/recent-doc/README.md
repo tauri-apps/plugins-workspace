@@ -59,7 +59,20 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
+import {
+  addRecentDocument,
+  clearRecentDocuments,
+  getRecentDocument
+} from '@tauri-apps/plugin-recent-doc'
 
+// Add a file to the OS recent documents list
+await addRecentDocument('/path/to/your/document.txt')
+
+// Get the recent documents list
+const recentDocs = await getRecentDocument()
+
+// Clear all recent documents from the OS list
+await clearRecentDocuments()
 ```
 
 ## Contributing
