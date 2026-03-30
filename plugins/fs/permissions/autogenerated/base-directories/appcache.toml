@@ -36,47 +36,29 @@ path = "$APPCACHE"
 [[set]]
 identifier = "allow-appcache-read-recursive"
 description = "This allows full recursive read access to the complete `$APPCACHE` folder, files and subdirectories."
-permissions = [
-    "read-all",
-    "scope-appcache-recursive"
-]
+permissions = ["read-all", "scope-appcache-recursive"]
 
 [[set]]
 identifier = "allow-appcache-write-recursive"
 description = "This allows full recursive write access to the complete `$APPCACHE` folder, files and subdirectories."
-permissions = [
-    "write-all",
-    "scope-appcache-recursive"
-]
+permissions = ["write-all", "scope-appcache-recursive"]
 
 [[set]]
 identifier = "allow-appcache-read"
 description = "This allows non-recursive read access to the `$APPCACHE` folder."
-permissions = [
-    "read-all",
-    "scope-appcache"
-]
+permissions = ["read-all", "scope-appcache"]
 
 [[set]]
 identifier = "allow-appcache-write"
 description = "This allows non-recursive write access to the `$APPCACHE` folder."
-permissions = [
-    "write-all",
-    "scope-appcache"
-]
+permissions = ["write-all", "scope-appcache"]
 
 [[set]]
 identifier = "allow-appcache-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$APPCACHE` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-appcache-recursive"
-]
+permissions = ["read-meta", "scope-appcache-recursive"]
 
 [[set]]
 identifier = "allow-appcache-meta"
 description = "This allows non-recursive read access to metadata of the `$APPCACHE` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-appcache-index"
-]
+permissions = ["read-meta", "scope-appcache-index"]
