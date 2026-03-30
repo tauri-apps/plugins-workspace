@@ -3,33 +3,45 @@
 // SPDX-License-Identifier: MIT
 
 use crate::error::Result;
+#[allow(unused_imports)]
+use std::fs;
 use tauri::command;
+
+#[cfg(target_os = "windows")]
+use windows::{
+    core::{Interface, HSTRING, PWSTR},
+    Win32::{
+        Foundation::{GetLastError, MAX_PATH},
+        System::Com::{
+            CoCreateInstance, CoTaskMemFree, IPersistFile, CLSCTX_INPROC_SERVER, STGM_READ,
+        },
+        UI::Shell::{FOLDERID_Recent, SHGetKnownFolderPath, KNOWN_FOLDER_FLAG},
+        UI::Shell::{IShellLinkW, SHAddToRecentDocs, ShellLink, SHARD_APPIDINFO, SHARD_PATHW},
+    },
+};
+
+#[cfg(target_os = "macos")]
+use {
+    objc2::MainThreadMarker,
+    objc2_app_kit::NSDocumentController,
+    objc2_foundation::{NSString, NSURL},
+};
 
 #[command]
 /// add recent
 pub(crate) fn add_recent_document(_path: &str) -> Result<()> {
     #[cfg(target_os = "windows")]
-    {
-        use windows::{
-            core::HSTRING,
-            Win32::UI::Shell::{SHAddToRecentDocs, SHARD_PATHW},
-        };
-        unsafe {
-            // Convert path to HSTRING
-            let path_hstring = HSTRING::from(_path);
-            SHAddToRecentDocs(
-                SHARD_PATHW.0 as u32,
-                Some(path_hstring.as_ptr() as *const core::ffi::c_void),
-            );
-        }
+    unsafe {
+        // Convert path to HSTRING
+        let path_hstring = HSTRING::from(_path);
+        SHAddToRecentDocs(
+            SHARD_PATHW.0 as u32,
+            Some(path_hstring.as_ptr() as *const core::ffi::c_void),
+        );
     }
 
     #[cfg(target_os = "macos")]
     {
-        use objc2::MainThreadMarker;
-        use objc2_app_kit::NSDocumentController;
-        use objc2_foundation::{NSString, NSURL};
-
         let ns_path = NSURL::fileURLWithPath(&NSString::from_str(_path));
         let mtm = MainThreadMarker::new().expect("AppKit API must be called on the main thread");
         let controller = NSDocumentController::sharedDocumentController(mtm);
@@ -50,24 +62,15 @@ pub(crate) fn add_recent_document(_path: &str) -> Result<()> {
 #[command]
 pub(crate) fn clear_recent_documents() -> Result<()> {
     #[cfg(target_os = "windows")]
-    {
-        use windows::Win32::UI::Shell::{SHAddToRecentDocs, SHARD_APPIDINFO};
-        unsafe {
-            SHAddToRecentDocs(SHARD_APPIDINFO.0 as u32, None);
-        }
+    unsafe {
+        SHAddToRecentDocs(SHARD_APPIDINFO.0 as u32, None);
     }
 
     #[cfg(target_os = "macos")]
-    {
-        use objc2::MainThreadMarker;
-        use objc2_app_kit::NSDocumentController;
-
-        unsafe {
-            let mtm =
-                MainThreadMarker::new().expect("AppKit API must be called on the main thread");
-            let controller = NSDocumentController::sharedDocumentController(mtm);
-            controller.clearRecentDocuments(None);
-        }
+    unsafe {
+        let mtm = MainThreadMarker::new().expect("AppKit API must be called on the main thread");
+        let controller = NSDocumentController::sharedDocumentController(mtm);
+        controller.clearRecentDocuments(None);
     }
 
     #[cfg(unix)]
@@ -87,41 +90,30 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
     let mut recent_docs = Vec::new();
 
     #[cfg(target_os = "windows")]
-    {
-        use std::fs;
-        use windows::Win32::{
-            Foundation::GetLastError,
-            System::Com::CoTaskMemFree,
-            UI::Shell::{FOLDERID_Recent, SHGetKnownFolderPath, KNOWN_FOLDER_FLAG},
-        };
-        unsafe {
-            let recent_path = SHGetKnownFolderPath(&FOLDERID_Recent, KNOWN_FOLDER_FLAG(0), None)?;
-            if recent_path.is_null() {
-                return Err(crate::error::Error::WindowsError(GetLastError().into()));
-            }
-            let recent_path_os_string = recent_path.to_hstring().to_os_string();
+    unsafe {
+        let recent_path = SHGetKnownFolderPath(&FOLDERID_Recent, KNOWN_FOLDER_FLAG(0), None)?;
+        if recent_path.is_null() {
+            return Err(crate::error::Error::WindowsError(GetLastError().into()));
+        }
+        let recent_path_os_string = recent_path.to_hstring().to_os_string();
 
-            if let Ok(entries) = fs::read_dir(recent_path_os_string) {
-                for entry in entries.flatten() {
-                    let path = entry.path();
+        if let Ok(entries) = fs::read_dir(recent_path_os_string) {
+            for entry in entries.flatten() {
+                let path = entry.path();
 
-                    if path.extension().and_then(|s: &std::ffi::OsStr| s.to_str()) == Some("lnk") {
-                        if let Ok(resolved_path) = resolve_shortcut(&path) {
-                            recent_docs.push(resolved_path);
-                        }
+                if path.extension().and_then(|s: &std::ffi::OsStr| s.to_str()) == Some("lnk") {
+                    if let Ok(resolved_path) = resolve_shortcut(&path) {
+                        recent_docs.push(resolved_path);
                     }
                 }
             }
-
-            CoTaskMemFree(Some(recent_path.0 as *mut _));
         }
+
+        CoTaskMemFree(Some(recent_path.0 as *mut _));
     }
 
     #[cfg(target_os = "macos")]
     {
-        use objc2::MainThreadMarker;
-        use objc2_app_kit::NSDocumentController;
-
         let mtm = MainThreadMarker::new().expect("AppKit API must be called on the main thread");
         let controller = NSDocumentController::sharedDocumentController(mtm);
         let urls = controller.recentDocumentURLs();
@@ -146,13 +138,6 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
 
 #[cfg(target_os = "windows")]
 fn resolve_shortcut(lnk_path: &std::path::Path) -> Result<String> {
-    use windows::{
-        core::{Interface, HSTRING, PWSTR},
-        Win32::Foundation::MAX_PATH,
-        Win32::System::Com::{CoCreateInstance, IPersistFile, CLSCTX_INPROC_SERVER, STGM_READ},
-        Win32::UI::Shell::{IShellLinkW, ShellLink},
-    };
-
     unsafe {
         // Create IShellLink instance
         let shell_link: IShellLinkW =
