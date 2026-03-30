@@ -7,17 +7,19 @@ use tauri::{command, AppHandle, Runtime};
 
 #[cfg(target_os = "windows")]
 use windows::{
+    core::{Interface, HSTRING, PCWSTR, PWSTR},
     // CRITICAL FIX: Changed `Interface` to `ComInterface` so `.cast()` works
     Win32::{
         Foundation::MAX_PATH,
         System::Com::{
-            CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED, CoCreateInstance,
-            CoInitializeEx, CoTaskMemFree, CoUninitialize, IPersistFile, STGM_READ,
+            CoCreateInstance, CoInitializeEx, CoTaskMemFree, CoUninitialize, IPersistFile,
+            CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED, STGM_READ,
         },
         UI::Shell::{
-            FOLDERID_Recent, IShellLinkW, KNOWN_FOLDER_FLAG, SHARD_APPIDINFO, SHARDAPPIDINFO, SHAddToRecentDocs, SHCreateItemFromParsingName, SHGetKnownFolderPath, ShellLink
+            FOLDERID_Recent, IShellLinkW, SHAddToRecentDocs, SHCreateItemFromParsingName,
+            SHGetKnownFolderPath, ShellLink, KNOWN_FOLDER_FLAG, SHARDAPPIDINFO, SHARD_APPIDINFO,
         },
-    }, core::{HSTRING, Interface, PCWSTR, PWSTR}
+    },
 };
 
 #[cfg(target_os = "macos")]
