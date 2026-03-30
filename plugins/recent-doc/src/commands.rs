@@ -9,14 +9,14 @@ use tauri::command;
 
 #[cfg(target_os = "windows")]
 use windows::{
-    core::{Interface, HSTRING, PWSTR},
+    core::{HSTRING, PCWSTR},
     Win32::{
-        Foundation::{GetLastError, MAX_PATH},
-        System::Com::{
-            CoCreateInstance, CoTaskMemFree, IPersistFile, CLSCTX_INPROC_SERVER, STGM_READ,
+        System::Com::{CoCreateInstance, CoTaskMemFree, CLSCTX_INPROC_SERVER},
+        UI::Shell::{
+            ApplicationDocumentLists, GetCurrentProcessExplicitAppUserModelID,
+            IApplicationDocumentLists, IShellItem, IShellItemArray, SHAddToRecentDocs, SHCreateItemFromParsingName,
+            ADLT_RECENT, SHARDAPPIDINFO, SHARD_APPIDINFO, SIGDN_FILESYSPATH,
         },
-        UI::Shell::{FOLDERID_Recent, SHGetKnownFolderPath, KNOWN_FOLDER_FLAG},
-        UI::Shell::{IShellLinkW, SHAddToRecentDocs, ShellLink, SHARD_APPIDINFO, SHARD_PATHW},
     },
 };
 
@@ -34,10 +34,24 @@ pub(crate) fn add_recent_document(_path: &str) -> Result<()> {
     unsafe {
         // Convert path to HSTRING
         let path_hstring = HSTRING::from(_path);
+        let item = SHCreateItemFromParsingName(&path_hstring, None)?;
+
+        // get app id pointer
+        let app_id_pwstr = GetCurrentProcessExplicitAppUserModelID()?;
+
+        // construct info
+        let info = SHARDAPPIDINFO {
+            pszAppID: PCWSTR::from_raw(app_id_pwstr.as_ptr()),
+            psi: std::mem::ManuallyDrop::new(Some(item)),
+        };
+
         SHAddToRecentDocs(
-            SHARD_PATHW.0 as u32,
-            Some(path_hstring.as_ptr() as *const core::ffi::c_void),
+            SHARD_APPIDINFO.0 as u32,
+            Some(&info as *const _ as *const core::ffi::c_void),
         );
+
+        // Free memory
+        CoTaskMemFree(Some(app_id_pwstr.as_ptr() as *mut _));
     }
 
     #[cfg(target_os = "macos")]
@@ -91,25 +105,31 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
 
     #[cfg(target_os = "windows")]
     unsafe {
-        let recent_path = SHGetKnownFolderPath(&FOLDERID_Recent, KNOWN_FOLDER_FLAG(0), None)?;
-        if recent_path.is_null() {
-            return Err(crate::error::Error::WindowsError(GetLastError().into()));
-        }
-        let recent_path_os_string = recent_path.to_hstring().to_os_string();
+        // Instantiate the IApplicationDocumentLists COM object
+        // It automatically scopes to the calling process's AppUserModelID
+        let app_docs: IApplicationDocumentLists = CoCreateInstance(
+            &ApplicationDocumentLists as *const _,
+            None,
+            CLSCTX_INPROC_SERVER,
+        )?;
 
-        if let Ok(entries) = fs::read_dir(recent_path_os_string) {
-            for entry in entries.flatten() {
-                let path = entry.path();
+        // Retrieve the recent document list specific to this application
+        let obj_array: IShellItemArray = app_docs.GetList(ADLT_RECENT, 0)?;
+        let count = obj_array.GetCount()?;
 
-                if path.extension().and_then(|s: &std::ffi::OsStr| s.to_str()) == Some("lnk") {
-                    if let Ok(resolved_path) = resolve_shortcut(&path) {
-                        recent_docs.push(resolved_path);
-                    }
-                }
+        // Iterate through the returned collection
+        for i in 0..count {
+            // Extract the generic ShellItem
+            let item: IShellItem = obj_array.GetItemAt(i)?;
+
+            // Extract the absolute file system path
+            let name_pwstr = item.GetDisplayName(SIGDN_FILESYSPATH)?;
+            if !name_pwstr.as_ptr().is_null() {
+                recent_docs.push(name_pwstr.to_string()?);
+                // Free the memory allocated by the COM subsystem
+                CoTaskMemFree(Some(name_pwstr.0 as *mut _));
             }
         }
-
-        CoTaskMemFree(Some(recent_path.0 as *mut _));
     }
 
     #[cfg(target_os = "macos")]
@@ -134,31 +154,4 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
     }
 
     Ok(recent_docs)
-}
-
-#[cfg(target_os = "windows")]
-fn resolve_shortcut(lnk_path: &std::path::Path) -> Result<String> {
-    unsafe {
-        // Create IShellLink instance
-        let shell_link: IShellLinkW =
-            CoCreateInstance(&ShellLink as *const _, None, CLSCTX_INPROC_SERVER)?;
-
-        // Get IPersistFile interface
-        let persist_file: IPersistFile = shell_link.cast()?;
-
-        // Convert path to wide string
-        let path_wide = HSTRING::from(lnk_path);
-
-        // Load the shortcut file
-        persist_file.Load(&path_wide, STGM_READ)?;
-
-        // Resolve the target path
-        let mut target_path = [0u16; MAX_PATH as usize];
-        shell_link.GetPath(&mut target_path, std::ptr::null_mut(), 0)?;
-
-        // Convert wide string to regular string
-        let path_string = PWSTR::from_raw(target_path.as_mut_ptr()).to_string()?;
-
-        Ok(path_string)
-    }
 }
