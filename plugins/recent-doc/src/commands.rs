@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 
 use crate::error::Result;
-#[allow(unused_imports)]
 use std::fs;
 use tauri::command;
 
@@ -28,7 +27,6 @@ use {
 };
 
 #[command]
-/// add recent
 pub(crate) fn add_recent_document(_path: &str) -> Result<()> {
     #[cfg(target_os = "windows")]
     unsafe {
@@ -140,8 +138,7 @@ pub(crate) fn get_recent_documents() -> Result<Vec<String>> {
 fn resolve_shortcut(lnk_path: &std::path::Path) -> Result<String> {
     unsafe {
         // Create IShellLink instance
-        let shell_link: IShellLinkW =
-            CoCreateInstance(&ShellLink as *const _, None, CLSCTX_INPROC_SERVER)?;
+        let shell_link: IShellLinkW = CoCreateInstance(&ShellLink, None, CLSCTX_INPROC_SERVER)?;
 
         // Get IPersistFile interface
         let persist_file: IPersistFile = shell_link.cast()?;
