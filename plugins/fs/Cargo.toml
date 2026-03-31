@@ -21,7 +21,7 @@ tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
 toml = "0.9"
-tauri-utils = { workspace = true, features = ["build"] }
+tauri-utils = { workspace = true }
 
 [dependencies]
 serde = { workspace = true }
@@ -30,6 +30,7 @@ serde_repr = "0.1"
 tauri = { workspace = true }
 thiserror = { workspace = true }
 url = { workspace = true }
+log = { workspace = true }
 anyhow = "1"
 glob = { workspace = true }
 # TODO: Remove `serialization-compat-6` in v3
@@ -40,6 +41,9 @@ notify = { version = "8", optional = true, features = [
 notify-debouncer-full = { version = "0.6", optional = true }
 dunce = { workspace = true }
 percent-encoding = "2"
+
+[target.'cfg(target_os = "ios")'.dependencies]
+objc2-foundation = { version = "0.3", features = ["NSURL", "NSString"] }
 
 [features]
 watch = ["notify", "notify-debouncer-full"]
