@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-http",
-  "version": "2.5.7",
+  "version": "2.5.8",
   "license": "MIT OR Apache-2.0",
   "authors": [
     "Tauri Programme within The Commons Conservancy"
