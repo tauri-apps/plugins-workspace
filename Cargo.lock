@@ -1025,16 +1025,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "color-backtrace"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2123a5984bd52ca861c66f66a9ab9883b27115c607f801f86c1bc2a84eb69f0f"
-dependencies = [
- "backtrace",
- "termcolor",
-]
-
-[[package]]
 name = "colorchoice"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3493,12 +3483,6 @@ dependencies = [
  "objc2-foundation 0.3.0",
  "time",
 ]
-
-[[package]]
-name = "maplit"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
 
 [[package]]
 name = "markup5ever"
@@ -6850,10 +6834,7 @@ dependencies = [
 name = "tauri-plugin-notification"
 version = "2.3.3"
 dependencies = [
- "color-backtrace",
- "ctor",
  "log",
- "maplit",
  "notify-rust",
  "rand 0.9.0",
  "serde",
@@ -7243,15 +7224,6 @@ dependencies = [
  "futf",
  "mac",
  "utf-8",
-]
-
-[[package]]
-name = "termcolor"
-version = "1.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755"
-dependencies = [
- "winapi-util",
 ]
 
 [[package]]
