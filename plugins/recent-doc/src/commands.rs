@@ -8,7 +8,6 @@ use tauri::{command, AppHandle, Runtime};
 #[cfg(target_os = "windows")]
 use windows::{
     core::{HSTRING, PCWSTR},
-    // CRITICAL FIX: Changed `Interface` to `ComInterface` so `.cast()` works
     Win32::{
         System::Com::{
             CoCreateInstance, CoInitializeEx, CoTaskMemFree, CoUninitialize, CLSCTX_INPROC_SERVER,
