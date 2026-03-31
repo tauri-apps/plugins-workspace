@@ -36,6 +36,13 @@
     }
   }
 
+  function writeSecret() {
+    clipboard.writeSecret(text).then(() => {
+      onMessage("Wrote secret to the clipboard")
+    })
+    .catch(onMessage)
+  }
+
   async function read() {
     try {
       const image = await clipboard.readImage()
@@ -64,6 +71,7 @@
     bind:value={text}
   />
   <button class="btn" type="button" on:click={writeText}>Write</button>
+  <button class="btn" type="button" on:click={writeSecret}>Write Secret</button>
   <button class="btn" type="button" on:click={writeImage}>Pick Image</button>
   <button class="btn" type="button" on:click={read}>Read</button>
 </div>

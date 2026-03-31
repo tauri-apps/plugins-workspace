@@ -148,4 +148,22 @@ async function clear(): Promise<void> {
   await invoke('plugin:clipboard-manager|clear')
 }
 
-export { writeText, readText, writeHtml, clear, readImage, writeImage }
+/**
+ * Writes text to clipboard and sets hints for clipboard managers to exclude it
+ * from history
+ *
+ * @returns A promise indicating the success or failure of the operation.
+ */
+async function writeSecret(text: string): Promise<void> {
+  await invoke('plugin:clipboard-manager|write_secret', { text })
+}
+
+export {
+  writeText,
+  readText,
+  writeHtml,
+  clear,
+  readImage,
+  writeImage,
+  writeSecret
+}

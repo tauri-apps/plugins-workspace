@@ -8,6 +8,9 @@ use tauri::{image::Image, plugin::PluginApi, AppHandle, Runtime};
 
 use std::{borrow::Cow, sync::Mutex};
 
+#[cfg(desktop)]
+use crate::secret::ExcludeSecret;
+
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
     _api: PluginApi<R, C>,
@@ -118,6 +121,23 @@ impl<R: Runtime> Clipboard<R> {
     pub(crate) fn cleanup(&self) {
         if let Ok(clipboard) = &self.clipboard {
             clipboard.lock().unwrap().take();
+        }
+    }
+
+    /// This is the same as write_text but it will set hints using [`arboard::SetExtLinux`], [`arboard::SetExtWindows`], or [`arboard::SetExtApple`] depending on the platform.
+    #[cfg(desktop)]
+    pub fn write_secret<'a, T: Into<Cow<'a, str>>>(&self, text: T) -> crate::Result<()> {
+        match &self.clipboard {
+            Ok(clipboard) => clipboard
+                .lock()
+                .unwrap()
+                .as_mut()
+                .unwrap()
+                .set()
+                .exclude_secret()
+                .text(text)
+                .map_err(Into::into),
+            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
         }
     }
 }
