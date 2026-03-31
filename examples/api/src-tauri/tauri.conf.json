@@ -102,7 +102,7 @@
           }
         }
       },
-      "nsis":{
+      "nsis": {
         "compression": "none"
       }
     },
