@@ -1,14 +1,18 @@
 <script>
-  import { addRecentDocument, getRecentDocuments, clearRecentDocuments } from '@tauri-apps/plugin-recent-doc'
+  import {
+    addRecentDocument,
+    getRecentDocuments,
+    clearRecentDocuments
+  } from '@tauri-apps/plugin-recent-doc'
   import { open } from '@tauri-apps/plugin-dialog'
 
-  export let onMessage
+  let { onMessage } = $props()
 </script>
 
 <div class="flex flex-col gap-2">
   <button
     class="btn"
-    on:click={async () => {
+    onclick={async () => {
       try {
         const file = await open({
           multiple: false,
@@ -27,7 +31,7 @@
   >
   <button
     class="btn"
-    on:click={async () => {
+    onclick={async () => {
       try {
         const files = await getRecentDocuments()
         onMessage(files)
@@ -38,7 +42,7 @@
   >
   <button
     class="btn"
-    on:click={async () => {
+    onclick={async () => {
       try {
         await clearRecentDocuments()
         onMessage('Cleared recent documents.')
