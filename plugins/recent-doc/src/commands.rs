@@ -52,6 +52,19 @@ impl Drop for ComGuard {
     }
 }
 
+/// Adds a document to this app's recent documents list on the host OS.
+/// You can see the added document in the Jump List on Windows or the Recent Items menu on macOS.
+///
+/// # Requirements
+///
+/// - This API is supported on Windows and macOS only.
+/// - `path` should be a local filesystem path that the operating system can resolve.
+///
+/// # Errors
+///
+/// Returns:
+/// - `Error::UnsupportedPlatform` when called on an unsupported platform.
+/// - `Error::WindowsError` on Windows when native shell APIs fail.
 #[command]
 pub fn add_recent_document<R: Runtime>(_app: AppHandle<R>, _path: &str) -> Result<()> {
     #[cfg(target_os = "windows")]
@@ -91,6 +104,18 @@ pub fn add_recent_document<R: Runtime>(_app: AppHandle<R>, _path: &str) -> Resul
     Ok(())
 }
 
+/// Clears this app's recent documents list on the host OS.
+/// After clearing, the Jump List on Windows or the Recent Items menu on macOS will be empty until new documents are added with `add_recent_document`.
+///
+/// # Requirements
+///
+/// - This API is supported on Windows and macOS only.
+///
+/// # Errors
+///
+/// Returns:
+/// - `Error::UnsupportedPlatform` when called on an unsupported platform.
+/// - `Error::WindowsError` on Windows when native shell APIs fail.
 #[command]
 pub fn clear_recent_documents<R: Runtime>(_app: AppHandle<R>) -> Result<()> {
     #[cfg(target_os = "windows")]
@@ -121,6 +146,17 @@ pub fn clear_recent_documents<R: Runtime>(_app: AppHandle<R>) -> Result<()> {
     Ok(())
 }
 
+/// Gets this app's recent documents list from the host OS.
+///
+/// # Requirements
+///
+/// - This API is supported on Windows and macOS only.
+///
+/// # Errors
+///
+/// Returns:
+/// - `Error::UnsupportedPlatform` when called on an unsupported platform.
+/// - `Error::WindowsError` on Windows when native shell APIs fail.
 #[command]
 pub fn get_recent_documents<R: Runtime>(_app: AppHandle<R>) -> Result<Vec<String>> {
     #[allow(unused_mut)]
