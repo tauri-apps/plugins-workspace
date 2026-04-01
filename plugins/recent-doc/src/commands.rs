@@ -59,6 +59,7 @@ impl Drop for ComGuard {
 ///
 /// - This API is supported on Windows and macOS only.
 /// - `path` should be a local filesystem path that the operating system can resolve.
+/// - For installer-based Windows builds, declare handled extensions in `tauri.conf.json` under `bundle.fileAssociations` so install/uninstall manages associations automatically.
 ///
 /// # Errors
 ///

@@ -13,6 +13,11 @@ import { invoke } from '@tauri-apps/api/core'
 /**
  * Adds a document to this app's recent documents list.
  *
+ * #### Requirements
+ *
+ * - `path` must be a local filesystem path.
+ * - For installer-based Windows builds, define handled extensions in `tauri.conf.json` at `bundle.fileAssociations` so associations are created on install and removed on uninstall.
+ *
  * #### Platform-specific
  *
  * - **Linux / Android / iOS:** Unsupported.
