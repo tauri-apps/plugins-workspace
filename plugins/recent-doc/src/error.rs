@@ -9,8 +9,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug, thiserror::Error)]
 #[allow(unused)]
 pub enum Error {
-    #[error("Unsupported platform: {0}")]
-    UnsupportedPlatform(String),
+    #[error("API not supported on the current platform")]
+    UnsupportedPlatform,
     #[error("Invalid path: {0}")]
     InvalidPath(String),
     // Transform windows error into our error type

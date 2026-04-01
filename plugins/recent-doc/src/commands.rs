@@ -83,12 +83,9 @@ pub(crate) fn add_recent_document<R: Runtime>(app: AppHandle<R>, _path: &str) ->
         controller.noteNewRecentDocumentURL(&ns_path);
     }
 
-    // CRITICAL FIX: Ensure this doesn't run on macOS
     #[cfg(all(unix, not(target_os = "macos")))]
     {
-        Err(crate::error::Error::UnsupportedPlatform(
-            "Recent documents are not supported on Unix-like systems.".to_string(),
-        ))?;
+        Err(crate::error::Error::UnsupportedPlatform)?;
     }
 
     Ok(())
@@ -122,9 +119,7 @@ pub(crate) fn clear_recent_documents<R: Runtime>(_app: AppHandle<R>) -> Result<(
 
     #[cfg(all(unix, not(target_os = "macos")))]
     {
-        Err(crate::error::Error::UnsupportedPlatform(
-            "Recent documents are not supported on Unix-like systems.".to_string(),
-        ))?;
+        Err(crate::error::Error::UnsupportedPlatform)?;
     }
 
     Ok(())
@@ -184,9 +179,7 @@ pub(crate) fn get_recent_documents<R: Runtime>(_app: AppHandle<R>) -> Result<Vec
 
     #[cfg(all(unix, not(target_os = "macos")))]
     {
-        Err(crate::error::Error::UnsupportedPlatform(
-            "Recent documents are not supported on Unix-like systems.".to_string(),
-        ))?;
+        Err(crate::error::Error::UnsupportedPlatform)?;
     }
 
     Ok(recent_docs)
