@@ -58,7 +58,7 @@ pub(crate) fn add_recent_document<R: Runtime>(app: AppHandle<R>, _path: &str) ->
     unsafe {
         let _com_guard = ComGuard::new();
 
-        let app_id = app.config().identifier.clone();
+        let app_id = &app.config().identifier;
         let app_id_hstring = HSTRING::from(app_id);
 
         let path_hstring = HSTRING::from(_path);
@@ -97,17 +97,13 @@ pub(crate) fn clear_recent_documents<R: Runtime>(_app: AppHandle<R>) -> Result<(
     unsafe {
         let _guard = ComGuard::new();
 
-        let app_id = _app.config().identifier.clone();
+        let app_id = &_app.config().identifier;
         let app_id_hstring = HSTRING::from(app_id);
 
-        if let Ok(dests) = CoCreateInstance::<_, IApplicationDestinations>(
-            &ApplicationDestinations as *const _,
-            None,
-            CLSCTX_INPROC_SERVER,
-        ) {
-            let _ = dests.SetAppID(PCWSTR::from_raw(app_id_hstring.as_ptr()));
-            let _ = dests.RemoveAllDestinations();
-        }
+        let dests: IApplicationDestinations =
+            CoCreateInstance(&ApplicationDestinations, None, CLSCTX_INPROC_SERVER)?;
+        let _ = dests.SetAppID(PCWSTR::from_raw(app_id_hstring.as_ptr()));
+        let _ = dests.RemoveAllDestinations();
     }
 
     #[cfg(target_os = "macos")]
@@ -134,30 +130,26 @@ pub(crate) fn get_recent_documents<R: Runtime>(_app: AppHandle<R>) -> Result<Vec
     unsafe {
         let _guard = ComGuard::new();
 
-        let app_id = _app.config().identifier.clone();
+        let app_id = &_app.config().identifier;
         let app_id_hstring = HSTRING::from(app_id);
         let app_id_pcwstr = PCWSTR::from_raw(app_id_hstring.as_ptr());
 
-        if let Ok(doc_lists) = CoCreateInstance::<_, IApplicationDocumentLists>(
-            &ApplicationDocumentLists,
-            None,
-            CLSCTX_INPROC_SERVER,
-        ) {
-            let _ = doc_lists.SetAppID(app_id_pcwstr);
-            if let Ok(obj_array) = doc_lists.GetList::<IObjectArray>(ADLT_RECENT, 30) {
-                let count = obj_array.GetCount().unwrap_or(0);
+        let doc_lists: IApplicationDocumentLists =
+            CoCreateInstance(&ApplicationDocumentLists, None, CLSCTX_INPROC_SERVER)?;
+        let _ = doc_lists.SetAppID(app_id_pcwstr);
+        if let Ok(obj_array) = doc_lists.GetList::<IObjectArray>(ADLT_RECENT, 30) {
+            let count = obj_array.GetCount().unwrap_or(0);
 
-                for i in 0..count {
-                    if let Ok(shell_item) = obj_array.GetAt::<IShellItem>(i) {
-                        if let Ok(name_pwstr) = shell_item.GetDisplayName(SIGDN_FILESYSPATH) {
-                            if let Ok(path) = name_pwstr.to_string() {
-                                if !path.is_empty() {
-                                    recent_docs.push(path);
-                                }
+            for i in 0..count {
+                if let Ok(shell_item) = obj_array.GetAt::<IShellItem>(i) {
+                    if let Ok(name_pwstr) = shell_item.GetDisplayName(SIGDN_FILESYSPATH) {
+                        if let Ok(path) = name_pwstr.to_string() {
+                            if !path.is_empty() {
+                                recent_docs.push(path);
                             }
-
-                            CoTaskMemFree(Some(name_pwstr.as_ptr() as *const core::ffi::c_void));
                         }
+
+                        CoTaskMemFree(Some(name_pwstr.as_ptr() as *const core::ffi::c_void));
                     }
                 }
             }
