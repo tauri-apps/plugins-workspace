@@ -53,12 +53,12 @@ impl Drop for ComGuard {
 }
 
 #[command]
-pub(crate) fn add_recent_document<R: Runtime>(app: AppHandle<R>, _path: &str) -> Result<()> {
+pub(crate) fn add_recent_document<R: Runtime>(_app: AppHandle<R>, _path: &str) -> Result<()> {
     #[cfg(target_os = "windows")]
     unsafe {
         let _com_guard = ComGuard::new();
 
-        let app_id = &app.config().identifier;
+        let app_id = &_app.config().identifier;
         let app_id_hstring = HSTRING::from(app_id);
 
         let path_hstring = HSTRING::from(_path);
