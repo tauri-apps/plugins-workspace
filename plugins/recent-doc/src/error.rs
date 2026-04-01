@@ -16,7 +16,7 @@ pub enum Error {
     // Transform windows error into our error type
     #[error(transparent)]
     #[cfg(target_os = "windows")]
-    WindowsError(#[from] windows::core::Error),
+    WindowsErr(#[from] windows::core::Error),
     #[error(transparent)]
     #[cfg(target_os = "windows")]
     Utf16(#[from] std::string::FromUtf16Error),
