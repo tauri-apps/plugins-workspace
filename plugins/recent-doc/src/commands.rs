@@ -53,7 +53,7 @@ impl Drop for ComGuard {
 }
 
 #[command]
-pub(crate) fn add_recent_document<R: Runtime>(_app: AppHandle<R>, _path: &str) -> Result<()> {
+pub fn add_recent_document<R: Runtime>(_app: AppHandle<R>, _path: &str) -> Result<()> {
     #[cfg(target_os = "windows")]
     unsafe {
         let _com_guard = ComGuard::new();
@@ -92,7 +92,7 @@ pub(crate) fn add_recent_document<R: Runtime>(_app: AppHandle<R>, _path: &str) -
 }
 
 #[command]
-pub(crate) fn clear_recent_documents<R: Runtime>(_app: AppHandle<R>) -> Result<()> {
+pub fn clear_recent_documents<R: Runtime>(_app: AppHandle<R>) -> Result<()> {
     #[cfg(target_os = "windows")]
     unsafe {
         let _guard = ComGuard::new();
@@ -122,7 +122,7 @@ pub(crate) fn clear_recent_documents<R: Runtime>(_app: AppHandle<R>) -> Result<(
 }
 
 #[command]
-pub(crate) fn get_recent_documents<R: Runtime>(_app: AppHandle<R>) -> Result<Vec<String>> {
+pub fn get_recent_documents<R: Runtime>(_app: AppHandle<R>) -> Result<Vec<String>> {
     #[allow(unused_mut)]
     let mut recent_docs = Vec::new();
 

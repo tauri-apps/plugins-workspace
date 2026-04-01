@@ -5,6 +5,10 @@
 mod commands;
 mod error;
 
+pub use commands::{add_recent_document, clear_recent_documents, get_recent_documents};
+
+pub use error::{Error, Result};
+
 use tauri::{
     plugin::{Builder, TauriPlugin},
     Runtime,
