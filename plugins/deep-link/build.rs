@@ -25,6 +25,8 @@ fn intent_filter(domain: &AssociatedDomain) -> String {
     format!(
         r#"<intent-filter {auto_verify}>
     <action android:name="android.intent.action.VIEW" />
+    <!-- ChromeOS ARC++ uses a different action for deep links -->
+    <action android:name="org.chromium.arc.intent.action.VIEW" />
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
     {schemes}
