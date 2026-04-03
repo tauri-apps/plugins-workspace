@@ -136,6 +136,8 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
             { error -> args.channel.sendObject(error) })
 
         watchers[args.channel.id] = Pair(invoke, args)
+
+        invoke.resolve()
     }
 
     @Command
