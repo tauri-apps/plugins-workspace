@@ -116,3 +116,138 @@ pub fn shell_parent_path(path: &Path) -> Option<Cow<'_, Path>> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    #[test]
+    fn shell_parent_path_local_path() {
+        let result = shell_parent_path(Path::new(r"C:\Users\foo"));
+        assert_eq!(result.as_deref(), Some(Path::new(r"C:\Users")));
+    }
+
+    #[test]
+    fn shell_parent_path_nested_path() {
+        let result = shell_parent_path(Path::new(r"C:\a\b\c\d"));
+        assert_eq!(result.as_deref(), Some(Path::new(r"C:\a\b\c")));
+    }
+
+    #[test]
+    fn shell_parent_path_drive_root_trailing() {
+        let result = shell_parent_path(Path::new(r"C:\"));
+        assert_eq!(result.as_deref(), Some(Path::new("")));
+    }
+
+    #[test]
+    fn shell_parent_path_bare_drive() {
+        let result = shell_parent_path(Path::new("C:"));
+        assert_eq!(result.as_deref(), Some(Path::new("")));
+    }
+
+    #[test]
+    fn shell_parent_path_unc_with_subfolder() {
+        let result = shell_parent_path(Path::new(r"\\server\share\folder"));
+        assert_eq!(result.as_deref(), Some(Path::new(r"\\server\share")));
+    }
+
+    #[test]
+    fn shell_parent_path_unc_share_trailing_slash() {
+        let result = shell_parent_path(Path::new(r"\\server.local\share\"));
+        assert_eq!(result.as_deref(), Some(Path::new(r"\\server.local")));
+    }
+
+    #[test]
+    fn shell_parent_path_unc_share_no_slash() {
+        let result = shell_parent_path(Path::new(r"\\server\share"));
+        assert_eq!(result.as_deref(), Some(Path::new(r"\\server")));
+    }
+
+    #[test]
+    fn shell_parent_path_relative() {
+        let result = shell_parent_path(Path::new(r"foo\bar"));
+        assert_eq!(result.as_deref(), Some(Path::new("foo")));
+    }
+
+    #[test]
+    fn shell_parent_path_single_component() {
+        let result = shell_parent_path(Path::new("foo"));
+        assert_eq!(result.as_deref(), Some(Path::new("")));
+    }
+
+    #[test]
+    fn shell_parent_path_empty() {
+        let result = shell_parent_path(Path::new(""));
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn shell_parent_path_verbatim() {
+        let result = shell_parent_path(Path::new(r"\\?\C:\foo"));
+        assert_eq!(result.as_deref(), Some(Path::new(r"\\?\C:\")));
+    }
+
+    // absolute() tests
+
+    #[test]
+    fn absolute_empty_error() {
+        let err = absolute(Path::new("")).unwrap_err();
+        assert_eq!(err.kind(), io::ErrorKind::InvalidInput);
+    }
+
+    #[test]
+    fn absolute_verbatim_passthrough() {
+        let path = Path::new(r"\\?\C:\foo");
+        assert_eq!(absolute(path).unwrap(), path);
+    }
+
+    #[test]
+    fn absolute_verbatim_unc_passthrough() {
+        let path = Path::new(r"\\?\UNC\server\share");
+        assert_eq!(absolute(path).unwrap(), path);
+    }
+
+    #[test]
+    fn absolute_bare_drive_letter() {
+        let result = absolute(Path::new("C:")).unwrap();
+        assert_eq!(result, Path::new("C:"));
+    }
+
+    #[test]
+    fn absolute_already_absolute() {
+        let result = absolute(Path::new(r"C:\Windows")).unwrap();
+        assert_eq!(result, Path::new(r"C:\Windows"));
+    }
+
+    #[test]
+    fn absolute_unc_path() {
+        let result = absolute(Path::new(r"\\server\share\folder")).unwrap();
+        assert_eq!(result, Path::new(r"\\server\share\folder"));
+    }
+
+    #[test]
+    fn absolute_converts_forward_slashes() {
+        let result = absolute(Path::new("C:/Windows/System32")).unwrap();
+        assert_eq!(result, Path::new(r"C:\Windows\System32"));
+    }
+
+    // absolute_and_check_exists() tests
+
+    #[test]
+    fn absolute_and_check_exists_existing_path() {
+        assert!(absolute_and_check_exists(Path::new(r"C:\Windows")).is_ok());
+    }
+
+    #[test]
+    fn absolute_and_check_exists_nonexistent_path() {
+        let err = absolute_and_check_exists(Path::new(r"C:\nonexistent_xyz_12345")).unwrap_err();
+        assert_eq!(err.kind(), io::ErrorKind::NotFound);
+    }
+
+    #[test]
+    fn absolute_and_check_exists_empty_propagates() {
+        let err = absolute_and_check_exists(Path::new("")).unwrap_err();
+        assert_eq!(err.kind(), io::ErrorKind::InvalidInput);
+    }
+}
