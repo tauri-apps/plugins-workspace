@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.3.5]
+
+- [`ab037b70`](https://github.com/tauri-apps/plugins-workspace/commit/ab037b70d6fb54f1ad07d5fe21c41bd1997b34dd) ([#3339](https://github.com/tauri-apps/plugins-workspace/pull/3339) by [@crazy-genius](https://github.com/tauri-apps/plugins-workspace/../../crazy-genius)) Fixed syntax error in kotlin files potentially causing issues when trying to write to tags when no prior session existed.
+
 ## \[2.3.4]
 
 - [`b4348cee`](https://github.com/tauri-apps/plugins-workspace/commit/b4348cee926ee3d1db151bc831cdb9049bee717f) ([#3101](https://github.com/tauri-apps/plugins-workspace/pull/3101) by [@bclarke123](https://github.com/tauri-apps/plugins-workspace/../../bclarke123)) Update return value of `isAvailable` to match TypeScript function signature
