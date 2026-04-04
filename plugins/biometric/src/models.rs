@@ -21,7 +21,7 @@ pub struct AuthOptions {
     pub confirmation_required: Option<bool>,
 }
 
-#[derive(Debug, Clone, serde_repr::Deserialize_repr)]
+#[derive(Debug, Clone, serde_repr::Deserialize_repr, serde_repr::Serialize_repr)]
 #[repr(u8)]
 pub enum BiometryType {
     None = 0,
@@ -29,7 +29,7 @@ pub enum BiometryType {
     FaceID = 2,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Status {
     pub is_available: bool,
