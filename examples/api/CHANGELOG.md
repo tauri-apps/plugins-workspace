@@ -1,5 +1,15 @@
 # Changelog
 
+## \[2.0.38]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.0`
+- Upgraded to `http-js@2.5.8`
+- Upgraded to `updater-js@2.10.1`
+- Upgraded to `nfc-js@2.3.5`
+- Upgraded to `dialog-js@2.7.0`
+
 ## \[2.0.37]
 
 ### Dependencies

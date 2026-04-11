@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.4.1]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.8`
+
 ## \[2.4.0]
 
 ### Dependencies
