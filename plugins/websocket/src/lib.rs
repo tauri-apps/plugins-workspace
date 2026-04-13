@@ -321,7 +321,7 @@ where
                     && rustls::crypto::CryptoProvider::get_default().is_none()
                 {
                     // This can only fail if there is already a default provider which we checked for already.
-                    let _ = rustls::crypto::ring::default_provider().install_default();
+                    let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
                 }
 
                 app.manage(ConnectionManager::default());
