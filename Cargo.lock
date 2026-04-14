@@ -332,7 +332,7 @@ dependencies = [
  "enumflags2",
  "futures-channel",
  "futures-util",
- "rand 0.9.0",
+ "rand 0.9.3",
  "raw-window-handle",
  "serde",
  "serde_repr",
@@ -3615,7 +3615,7 @@ dependencies = [
  "hyper",
  "hyper-util",
  "log",
- "rand 0.9.0",
+ "rand 0.9.3",
  "regex",
  "serde_json",
  "serde_urlencoded",
@@ -4791,7 +4791,7 @@ dependencies = [
  "bytes",
  "getrandom 0.3.2",
  "lru-slab",
- "rand 0.9.0",
+ "rand 0.9.3",
  "ring",
  "rustc-hash",
  "rustls",
@@ -4865,13 +4865,12 @@ dependencies = [
 
 [[package]]
 name = "rand"
-version = "0.9.0"
+version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3779b94aeb87e8bd4e834cee3650289ee9e0d5677f976ecdb6d219e5f4f6cd94"
+checksum = "7ec095654a25171c2124e9e3393a930bddbffdc939556c914957a4c3e0a87166"
 dependencies = [
  "rand_chacha 0.9.0",
  "rand_core 0.9.3",
- "zerocopy 0.8.24",
 ]
 
 [[package]]
@@ -6837,7 +6836,7 @@ version = "2.3.3"
 dependencies = [
  "log",
  "notify-rust",
- "rand 0.9.0",
+ "rand 0.9.3",
  "serde",
  "serde_json",
  "serde_repr",
@@ -6996,7 +6995,7 @@ dependencies = [
  "iota-crypto",
  "iota_stronghold",
  "log",
- "rand 0.9.0",
+ "rand 0.9.3",
  "rand_chacha 0.9.0",
  "rand_core 0.9.3",
  "rust-argon2 2.1.0",
@@ -7065,7 +7064,7 @@ dependencies = [
  "futures-util",
  "http",
  "log",
- "rand 0.9.0",
+ "rand 0.9.3",
  "rustls",
  "serde",
  "serde_json",
@@ -7686,7 +7685,7 @@ dependencies = [
  "httparse",
  "log",
  "native-tls",
- "rand 0.9.0",
+ "rand 0.9.3",
  "rustls",
  "rustls-pki-types",
  "sha1",
