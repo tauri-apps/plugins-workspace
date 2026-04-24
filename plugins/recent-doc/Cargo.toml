@@ -1,0 +1,51 @@
+[package]
+name = "tauri-plugin-recent-doc"
+version = "1.0.0"
+description = "Manage recent documents in your Tauri application."
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+rust-version = { workspace = true }
+repository = { workspace = true }
+links = "tauri-plugin-recent-doc"
+
+# Platforms supported by the plugin
+# Support levels are "full", "partial", "none", "unknown"
+# Details of the support level are left to plugin maintainer
+[package.metadata.platforms]
+windows = { level = "full", notes = "" }
+linux = { level = "none", notes = "" }
+macos = { level = "full", notes = "" }
+android = { level = "none", notes = "" }
+ios = { level = "none", notes = "" }
+
+
+[build-dependencies]
+tauri-plugin = { workspace = true, features = ["build"] }
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+
+[target."cfg(target_os = \"macos\")".dependencies]
+objc2 = "0.6.0"
+objc2-foundation = { version = "0.3.2", features = [
+  "NSString",
+  "NSURL",
+  "NSArray",
+] }
+objc2-app-kit = { version = "0.3.2", features = ["NSDocumentController"] }
+
+[target."cfg(target_os = \"windows\")".dependencies]
+windows = { version = "0.61", features = [
+  "Win32_Foundation",
+  "Win32_System_Com",
+  "Win32_UI_Shell",
+  "Win32_UI_Shell_Common",
+  "Win32_Storage_FileSystem",
+] }

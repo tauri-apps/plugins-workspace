@@ -1,0 +1,17 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = """
+This permission set configures what kind of
+operations are available from the recent-doc plugin.
+
+#### Granted Permissions
+
+All operations are enabled by default.
+
+"""
+permissions = [
+  "allow-add-recent-document",
+  "allow-get-recent-documents",
+  "allow-clear-recent-documents",
+]

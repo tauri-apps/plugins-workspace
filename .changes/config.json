@@ -73,6 +73,7 @@
         "fs",
         "global-shortcut",
         "opener",
+        "recent-doc",
         "http",
         "nfc",
         "notification",
@@ -205,6 +206,14 @@
     },
     "opener-js": {
       "path": "./plugins/opener",
+      "manager": "javascript"
+    },
+    "recent-doc": {
+      "path": "./plugins/recent-doc",
+      "manager": "rust"
+    },
+    "recent-doc-js": {
+      "path": "./plugins/recent-doc",
       "manager": "javascript"
     },
     "haptics": {

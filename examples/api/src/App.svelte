@@ -14,6 +14,7 @@
   import Shortcuts from './views/Shortcuts.svelte'
   import Shell from './views/Shell.svelte'
   import Opener from './views/Opener.svelte'
+  import RecentDoc from './views/RecentDoc.svelte'
   import Store from './views/Store.svelte'
   import Updater from './views/Updater.svelte'
   import Upload from './views/Upload.svelte'
@@ -97,6 +98,11 @@
       label: 'Opener',
       component: Opener,
       icon: 'i-codicon-link-external'
+    },
+    {
+      label: 'Recent Doc',
+      component: RecentDoc,
+      icon: 'i-codicon-history'
     },
     {
       label: 'Store',

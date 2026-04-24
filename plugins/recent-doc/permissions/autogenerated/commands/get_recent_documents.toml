@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-get-recent-documents"
+description = "Enables the get_recent_documents command without any pre-configured scope."
+commands.allow = ["get_recent_documents"]
+
+[[permission]]
+identifier = "deny-get-recent-documents"
+description = "Denies the get_recent_documents command without any pre-configured scope."
+commands.deny = ["get_recent_documents"]

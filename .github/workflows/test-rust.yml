@@ -90,6 +90,11 @@ jobs:
               - Cargo.toml
               - Cargo.lock
               - plugins/opener/**
+            tauri-plugin-recent-doc:
+              - .github/workflows/test-rust.yml
+              - Cargo.toml
+              - Cargo.lock
+              - plugins/recent-doc/**
             tauri-plugin-haptics:
               - .github/workflows/test-rust.yml
               - Cargo.toml
