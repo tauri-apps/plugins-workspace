@@ -1,5 +1,15 @@
 # Changelog
 
+## \[2.0.39]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.1`
+- Upgraded to `opener-js@2.5.4`
+- Upgraded to `store-js@2.4.3`
+- Upgraded to `dialog-js@2.7.1`
+- Upgraded to `http-js@2.5.9`
+
 ## \[2.0.38]
 
 ### Dependencies

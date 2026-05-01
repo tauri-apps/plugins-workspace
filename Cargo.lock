@@ -207,7 +207,7 @@ checksum = "e16d2d3311acee920a9eb8d33b8cbc1787ce4a264e85f964c2404b969bdcd487"
 
 [[package]]
 name = "api"
-version = "2.0.42"
+version = "2.0.43"
 dependencies = [
  "log",
  "serde",
@@ -6562,7 +6562,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.4.8"
+version = "2.4.9"
 dependencies = [
  "dunce",
  "plist",
@@ -6581,7 +6581,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.7.0"
+version = "2.7.1"
 dependencies = [
  "log",
  "raw-window-handle",
@@ -6597,7 +6597,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.5.0"
+version = "2.5.1"
 dependencies = [
  "anyhow",
  "dunce",
@@ -6660,7 +6660,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.5.8"
+version = "2.5.9"
 dependencies = [
  "bytes",
  "cookie_store",
@@ -6749,7 +6749,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-opener"
-version = "2.5.3"
+version = "2.5.4"
 dependencies = [
  "dunce",
  "glob",
@@ -6785,7 +6785,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.3.6"
+version = "2.3.7"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -6839,7 +6839,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.4.1"
+version = "2.4.2"
 dependencies = [
  "semver",
  "serde",
@@ -6873,7 +6873,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-store"
-version = "2.4.2"
+version = "2.4.3"
 dependencies = [
  "dunce",
  "serde",

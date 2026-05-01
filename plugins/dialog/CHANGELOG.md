@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.7.1]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.1`
+
 ## \[2.7.0]
 
 - [`24154472`](https://github.com/tauri-apps/plugins-workspace/commit/24154472a6710a690173df0a121125d1f1b871e8) ([#3287](https://github.com/tauri-apps/plugins-workspace/pull/3287) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Re-use `message` command in Rust side for `ask` and `confirm` commands, `allow-ask` and `allow-confirm` permissions are now aliases to `allow-message`
