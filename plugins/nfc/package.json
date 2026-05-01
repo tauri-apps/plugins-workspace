@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-nfc",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "license": "MIT OR Apache-2.0",
   "authors": [
     "Tauri Programme within The Commons Conservancy"
