@@ -128,7 +128,13 @@ fn main() {
                             .iter()
                             .filter(|d| d.is_app_link())
                             .filter_map(|d| d.host.as_ref())
-                            .map(|host| format!("applinks:{}", host).into())
+                            .flat_map(|host| {
+                                [
+                                    format!("applinks:{}", host),
+                                    format!("webcredentials:{}", host),
+                                ]
+                            })
+                            .map(Into::into)
                             .collect::<Vec<_>>()
                             .into(),
                     );
@@ -173,7 +179,8 @@ fn main() {
                                 );
                                 dict.insert(
                                     "CFBundleURLName".into(),
-                                    format!("$(PRODUCT_BUNDLE_IDENTIFIER).{}", domain.scheme[0]).into(),
+                                    format!("$(PRODUCT_BUNDLE_IDENTIFIER).{}", domain.scheme[0])
+                                        .into(),
                                 );
                                 plist::Value::Dictionary(dict)
                             })
