@@ -40,11 +40,11 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             set_default_store(android_native_keyring_store::AndroidStore::from_ndk_context()?);
 
             // TODO: (maybe) config to change used keychain.
-            #[cfg(all(target_os = "android", feature = "apple-keychain"))]
+            #[cfg(all(target_vendor = "apple", feature = "apple-keychain"))]
             set_default_store(apple_native_keyring_store::keychain::Store::new()?);
 
             // TODO: config. most notably icloud sync and biometrics
-            #[cfg(all(target_os = "android", feature = "apple-protected"))]
+            #[cfg(all(target_vendor = "apple", feature = "apple-protected"))]
             set_default_store(apple_native_keyring_store::protected::Store::new()?);
 
             #[cfg(windows)]
