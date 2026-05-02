@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.5.9]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.1`
+
 ## \[2.5.8]
 
 - [`29712892`](https://github.com/tauri-apps/plugins-workspace/commit/29712892526cfc2d35c9002e0a56925084ae1b73) ([#3252](https://github.com/tauri-apps/plugins-workspace/pull/3252) by [@NVolcz](https://github.com/tauri-apps/plugins-workspace/../../NVolcz)) Correct Response header initialization to support cloning and ensure Set-Cookie visibility.
