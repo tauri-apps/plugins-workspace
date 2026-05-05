@@ -152,7 +152,11 @@ fn calculate_position<R: Runtime>(
 ) -> Result<PhysicalPosition<i32>> {
     use Position::*;
 
-    let screen = window.current_monitor()?.unwrap();
+    let screen = window
+        .current_monitor()?
+        .or_else(|| window.primary_monitor().ok().flatten())
+        .ok_or_else(|| tauri::Error::AssetNotFound("Monitor not found".to_string()))?;
+
     // Only use the screen_position for the Tray independent positioning,
     // because a tray event may not be called on the currently active monitor.
     let screen_position = screen.position();
@@ -225,7 +229,7 @@ fn calculate_position<R: Runtime>(
 
                 PhysicalPosition { x: tray_x, y }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::AssetNotFound("Tray position not set".to_string()));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -236,7 +240,7 @@ fn calculate_position<R: Runtime>(
                     y: tray_y,
                 }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::AssetNotFound("Tray position not set".to_string()));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -257,7 +261,7 @@ fn calculate_position<R: Runtime>(
                     y,
                 }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::AssetNotFound("Tray position not set".to_string()));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -268,7 +272,7 @@ fn calculate_position<R: Runtime>(
                     y: tray_y,
                 }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::AssetNotFound("Tray position not set".to_string()));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -287,7 +291,7 @@ fn calculate_position<R: Runtime>(
 
                 PhysicalPosition { x, y }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::AssetNotFound("Tray position not set".to_string()));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -298,7 +302,7 @@ fn calculate_position<R: Runtime>(
                     y: tray_y,
                 }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::AssetNotFound("Tray position not set".to_string()));
             }
         }
     };
