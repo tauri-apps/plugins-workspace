@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.5.4]
+
+- [`c1fd33b3`](https://github.com/tauri-apps/plugins-workspace/commit/c1fd33b3a2735f2e25c1d026dc524af932db3315) ([#3343](https://github.com/tauri-apps/plugins-workspace/pull/3343) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `revealItemInDir`/`reveal_items_in_dir` can't reveal network paths like `\\wsl.localhost\Ubuntu\etc` on Windows
+
 ## \[2.5.3]
 
 - [`3d0d2e04`](https://github.com/tauri-apps/plugins-workspace/commit/3d0d2e041bbad9766aebecaeba291a28d8d7bf5c) ([#3163](https://github.com/tauri-apps/plugins-workspace/pull/3163) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Properly ignore `with: inAppBrowser` on desktop. This prevents an issue were `open_url` seamingly did nothing on desktop.

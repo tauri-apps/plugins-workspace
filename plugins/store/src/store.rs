@@ -188,7 +188,7 @@ impl<R: Runtime> StoreBuilder<R> {
 
     pub(crate) fn build_inner(mut self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
         let stores = self.app.state::<StoreState>().stores.clone();
-        let mut stores = stores.lock().unwrap();
+        let mut stores = stores.write().unwrap();
 
         self.path = resolve_store_path(&self.app, self.path)?;
 
@@ -403,7 +403,7 @@ impl<R: Runtime> StoreInner<R> {
 
     fn emit_change_event(&self, key: &str, value: Option<&JsonValue>) -> crate::Result<()> {
         let state = self.app.state::<StoreState>();
-        let stores = state.stores.lock().unwrap();
+        let stores = state.stores.read().unwrap();
         let exists = value.is_some();
         self.app.emit(
             "store://change",
@@ -438,7 +438,7 @@ impl<R: Runtime> Resource for Store<R> {
     fn close(self: Arc<Self>) {
         let store = self.store.lock().unwrap();
         let state = store.app.state::<StoreState>();
-        let mut stores = state.stores.lock().unwrap();
+        let mut stores = state.stores.write().unwrap();
         stores.remove(&store.path);
     }
 }
@@ -554,7 +554,7 @@ impl<R: Runtime> Store<R> {
         let store = self.store.lock().unwrap();
         let app = store.app.clone();
         let state = app.state::<StoreState>();
-        let stores = state.stores.lock().unwrap();
+        let stores = state.stores.read().unwrap();
         if let Some(rid) = stores.get(&store.path).copied() {
             drop(store);
             drop(stores);

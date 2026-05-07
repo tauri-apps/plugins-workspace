@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.10.1]
+
+- [`31ab6f8d`](https://github.com/tauri-apps/plugins-workspace/commit/31ab6f8d2466d86c80b1d70510c0400ce2cdcb0a) ([#3285](https://github.com/tauri-apps/plugins-workspace/pull/3285) by [@hrzlgnm](https://github.com/tauri-apps/plugins-workspace/../../hrzlgnm)) fix: preserve file extension of updater package, otherwise users may get confused when presented with a sudo dialog suggesting to install a file with the extension `.rpm` using `dpkg -i`
+
 ## \[2.10.0]
 
 - [`4375c98b`](https://github.com/tauri-apps/plugins-workspace/commit/4375c98bed1769a1fc1be26eded4db9f7c095d95) ([#3073](https://github.com/tauri-apps/plugins-workspace/pull/3073)) Add no_proxy config to disable system proxy for updater plugin.

@@ -10,7 +10,7 @@ function openLinks(): void {
     let target: HTMLElement | null = e.target as HTMLElement
     while (target) {
       if (target.matches('a')) {
-        const t = target as HTMLAnchorElement
+        const t = target
         if (
           t.href !== ''
           && ['http://', 'https://', 'mailto:', 'tel:'].some((v) =>
