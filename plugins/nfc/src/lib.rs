@@ -44,7 +44,7 @@ impl<R: Runtime> Nfc<R> {
             .map_err(Into::into)
     }
 
-    pub fn scan(&self, payload: ScanRequest) -> crate::Result<ScanResponse> {
+    pub fn scan(&self, payload: ScanRequest) -> crate::Result<NfcTag> {
         self.0
             .run_mobile_plugin("scan", payload)
             .map_err(Into::into)

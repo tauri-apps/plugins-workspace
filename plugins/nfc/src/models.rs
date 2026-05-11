@@ -43,14 +43,9 @@ pub struct NfcTagRecord {
 
 #[derive(Deserialize)]
 pub struct NfcTag {
-    pub id: String,
-    pub kind: String,
+    pub id: Vec<u8>,
+    pub kind: Vec<String>,
     pub records: Vec<NfcTagRecord>,
-}
-
-#[derive(Deserialize)]
-pub struct ScanResponse {
-    pub tag: NfcTag,
 }
 
 #[derive(Debug, Default, Serialize)]
