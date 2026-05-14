@@ -225,7 +225,7 @@ fn calculate_position<R: Runtime>(
 
                 PhysicalPosition { x: tray_x, y }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::Runtime("Tray position not set".into()));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -236,7 +236,7 @@ fn calculate_position<R: Runtime>(
                     y: tray_y,
                 }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::Runtime("Tray position not set".into()));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -257,7 +257,7 @@ fn calculate_position<R: Runtime>(
                     y,
                 }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::Runtime("Tray position not set".into()));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -268,7 +268,7 @@ fn calculate_position<R: Runtime>(
                     y: tray_y,
                 }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::Runtime("Tray position not set".into()));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -287,7 +287,7 @@ fn calculate_position<R: Runtime>(
 
                 PhysicalPosition { x, y }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::Runtime("Tray position not set".into()));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -298,7 +298,7 @@ fn calculate_position<R: Runtime>(
                     y: tray_y,
                 }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::Runtime("Tray position not set".into()));
             }
         }
     };
