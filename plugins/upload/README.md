@@ -66,7 +66,7 @@ import { upload, HttpMethod } from '@tauri-apps/plugin-upload'
 upload(
   'https://example.com/file-upload',
   './path/to/my/file.txt',
-  (progressTotal, total) =>
+  ({ progressTotal, total }) =>
     console.log(`Uploaded ${progressTotal} of ${total} bytes`), // a callback that will be called with the upload progress
   { 'Content-Type': 'text/plain' } // optional headers to send with the request
 )
