@@ -225,7 +225,9 @@ fn calculate_position<R: Runtime>(
 
                 PhysicalPosition { x: tray_x, y }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::Io(std::io::Error::other(
+                    "Tray position not set",
+                )));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -236,7 +238,9 @@ fn calculate_position<R: Runtime>(
                     y: tray_y,
                 }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::Io(std::io::Error::other(
+                    "Tray position not set",
+                )));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -257,7 +261,9 @@ fn calculate_position<R: Runtime>(
                     y,
                 }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::Io(std::io::Error::other(
+                    "Tray position not set",
+                )));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -268,7 +274,9 @@ fn calculate_position<R: Runtime>(
                     y: tray_y,
                 }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::Io(std::io::Error::other(
+                    "Tray position not set",
+                )));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -287,7 +295,9 @@ fn calculate_position<R: Runtime>(
 
                 PhysicalPosition { x, y }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::Io(std::io::Error::other(
+                    "Tray position not set",
+                )));
             }
         }
         #[cfg(feature = "tray-icon")]
@@ -298,7 +308,9 @@ fn calculate_position<R: Runtime>(
                     y: tray_y,
                 }
             } else {
-                panic!("Tray position not set");
+                return Err(tauri::Error::Io(std::io::Error::other(
+                    "Tray position not set",
+                )));
             }
         }
     };
