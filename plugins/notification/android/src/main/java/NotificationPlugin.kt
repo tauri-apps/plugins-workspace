@@ -30,6 +30,7 @@ class PluginConfig {
   var icon: String? = null
   var sound: String? = null
   var iconColor: String? = null
+  var clearNotificationsOnAppFocus: Boolean = false
 }
 
 @InvokeArg
@@ -82,6 +83,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   private lateinit var notificationManager: NotificationManager
   private lateinit var notificationStorage: NotificationStorage
   private var channelManager = ChannelManager(activity)
+  private var config: PluginConfig? = null
 
   companion object {
     var instance: NotificationPlugin? = null
@@ -97,22 +99,30 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     super.load(webView)
     this.webView = webView
     notificationStorage = NotificationStorage(activity, jsonMapper())
-    
+
+    this.config = getConfig(PluginConfig::class.java)
     val manager = TauriNotificationManager(
       notificationStorage,
       activity,
       activity,
-      getConfig(PluginConfig::class.java)
+      config
     )
     manager.createNotificationChannel()
-    
+
     this.manager = manager
-    
+
     notificationManager = activity.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     val intent = activity.intent
     intent?.let {
       onIntent(it)
+    }
+  }
+
+  override fun onResume() {
+    super.onResume()
+    if (config?.clearNotificationsOnAppFocus == true) {
+      notificationManager.cancelAll()
     }
   }
 

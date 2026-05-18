@@ -31,6 +31,9 @@ mod commands;
 mod error;
 mod models;
 
+#[cfg(test)]
+mod tests;
+
 pub use error::{Error, Result};
 
 #[cfg(desktop)]
@@ -219,8 +222,8 @@ impl<R: Runtime, T: Manager<R>> crate::NotificationExt<R> for T {
 }
 
 /// Initializes the plugin.
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("notification")
+pub fn init<R: Runtime>() -> TauriPlugin<R, PluginConfig> {
+    Builder::<R, PluginConfig>::new("notification")
         .invoke_handler(tauri::generate_handler![
             commands::notify,
             commands::request_permission,
@@ -232,7 +235,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         ))
         .setup(|app, api| {
             #[cfg(mobile)]
-            let notification = mobile::init(app, api)?;
+            let notification = mobile::init(app, api, api.config().clone())?;
             #[cfg(desktop)]
             let notification = desktop::init(app, api)?;
             app.manage(notification);

@@ -22,11 +22,16 @@ tauri::ios_plugin_binding!(init_plugin_notification);
 pub fn init<R: Runtime, C: DeserializeOwned>(
     _app: &AppHandle<R>,
     api: PluginApi<R, C>,
+    config: PluginConfig,
 ) -> crate::Result<Notification<R>> {
     #[cfg(target_os = "android")]
     let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "NotificationPlugin")?;
     #[cfg(target_os = "ios")]
-    let handle = api.register_ios_plugin(init_plugin_notification)?;
+    let handle = {
+        let handle = api.register_ios_plugin(init_plugin_notification)?;
+        handle.run_mobile_plugin("setConfig", config)?;
+        handle
+    };
     Ok(Notification(handle))
 }
 

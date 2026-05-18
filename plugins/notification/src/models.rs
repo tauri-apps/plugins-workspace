@@ -476,3 +476,10 @@ mod android {
         }
     }
 }
+
+#[derive(Debug, Default, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct PluginConfig {
+    #[serde(default)]
+    pub clear_notifications_on_app_focus: bool,
+}

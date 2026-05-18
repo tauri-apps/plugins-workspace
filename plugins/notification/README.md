@@ -73,6 +73,26 @@ Then you need to add the permissions to your capabilities file:
 
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
+## Configuration
+
+In `tauri.conf.json`:
+
+```json
+{
+  "plugins": {
+    "notification": {
+      "clearNotificationsOnAppFocus": true
+    }
+  }
+}
+```
+
+| Option                         | Type      | Default | Description                                                                                                                    |
+| ------------------------------ | --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `clearNotificationsOnAppFocus` | `boolean` | `false` | Whether the plugin should clear the notification badge and delivered notifications when the app is focused on iOS and Android. |
+
+## Usage
+
 ```javascript
 import {
   isPermissionGranted,

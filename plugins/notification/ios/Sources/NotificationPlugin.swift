@@ -153,14 +153,48 @@ struct BatchArgs: Decodable {
   let notifications: [Notification]
 }
 
+struct Config: Decodable {
+  let clearNotificationsOnAppFocus: Bool
+}
+
 class NotificationPlugin: Plugin {
   let notificationHandler = NotificationHandler()
   let notificationManager = NotificationManager()
+  var config: Config?
 
   override init() {
     super.init()
     notificationManager.notificationHandler = notificationHandler
     notificationHandler.plugin = self
+
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(didBecomeActive),
+      name: UIApplication.didBecomeActiveNotification,
+      object: nil
+    )
+  }
+
+  deinit {
+    NotificationCenter.default.removeObserver(self)
+  }
+
+  @objc func setConfig(_ invoke: Invoke) throws {
+    config = try invoke.parseArgs(Config.self)
+    invoke.resolve()
+  }
+
+  @objc func didBecomeActive() {
+    if let config = config, config.clearNotificationsOnAppFocus {
+      UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+      DispatchQueue.main.async(execute: {
+        if #available(iOS 16.0, *) {
+          UNUserNotificationCenter.current().setBadgeCount(0)
+        } else {
+          UIApplication.shared.applicationIconBadgeNumber = 0
+        }
+      })
+    }
   }
 
   @objc public func show(_ invoke: Invoke) throws {
