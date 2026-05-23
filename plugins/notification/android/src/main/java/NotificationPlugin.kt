@@ -39,7 +39,7 @@ class BatchArgs {
 
 @InvokeArg
 class CancelArgs {
-  lateinit var notifications: List<Int>
+  var notifications: List<Int> = listOf()
 }
 
 @InvokeArg
@@ -152,7 +152,11 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   @Command
   fun cancel(invoke: Invoke) {
     val args = invoke.parseArgs(CancelArgs::class.java)
-    manager.cancel(args.notifications)
+    if (args.notifications.isEmpty()) {
+      manager.cancelAll()
+    } else {
+      manager.cancel(args.notifications)
+    }
     invoke.resolve()
   }
 
