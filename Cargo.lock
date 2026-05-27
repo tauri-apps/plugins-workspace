@@ -332,7 +332,7 @@ dependencies = [
  "enumflags2",
  "futures-channel",
  "futures-util",
- "rand 0.9.3",
+ "rand 0.9.4",
  "raw-window-handle",
  "serde",
  "serde_repr",
@@ -3093,7 +3093,7 @@ dependencies = [
  "iterator-sorted",
  "k256",
  "pbkdf2",
- "rand 0.8.5",
+ "rand 0.8.6",
  "scrypt",
  "serde",
  "sha2",
@@ -3607,7 +3607,7 @@ dependencies = [
  "hyper",
  "hyper-util",
  "log",
- "rand 0.9.3",
+ "rand 0.9.4",
  "regex",
  "serde_json",
  "serde_urlencoded",
@@ -3784,7 +3784,7 @@ dependencies = [
  "num-integer",
  "num-iter",
  "num-traits",
- "rand 0.8.5",
+ "rand 0.8.6",
  "smallvec",
  "zeroize",
 ]
@@ -4708,7 +4708,7 @@ dependencies = [
  "bytes",
  "getrandom 0.3.2",
  "lru-slab",
- "rand 0.9.3",
+ "rand 0.9.4",
  "ring",
  "rustc-hash",
  "rustls",
@@ -4757,9 +4757,9 @@ checksum = "dc33ff2d4973d518d823d61aa239014831e521c75da58e3df4840d3f47749d09"
 
 [[package]]
 name = "rand"
-version = "0.8.5"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
+checksum = "5ca0ecfa931c29007047d1bc58e623ab12e5590e8c7cc53200d5202b69266d8a"
 dependencies = [
  "libc",
  "rand_chacha 0.3.1",
@@ -4768,9 +4768,9 @@ dependencies = [
 
 [[package]]
 name = "rand"
-version = "0.9.3"
+version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ec095654a25171c2124e9e3393a930bddbffdc939556c914957a4c3e0a87166"
+checksum = "44c5af06bb1b7d3216d91932aed5265164bf384dc89cd6ba05cf59a35f5f76ea"
 dependencies = [
  "rand_chacha 0.9.0",
  "rand_core 0.9.3",
@@ -5144,7 +5144,7 @@ dependencies = [
  "borsh",
  "bytes",
  "num-traits",
- "rand 0.8.5",
+ "rand 0.8.6",
  "rkyv",
  "serde",
  "serde_json",
@@ -5953,7 +5953,7 @@ dependencies = [
  "memchr",
  "once_cell",
  "percent-encoding",
- "rand 0.8.5",
+ "rand 0.8.6",
  "rsa",
  "rust_decimal",
  "serde",
@@ -5994,7 +5994,7 @@ dependencies = [
  "md-5",
  "memchr",
  "once_cell",
- "rand 0.8.5",
+ "rand 0.8.6",
  "rust_decimal",
  "serde",
  "serde_json",
@@ -6105,7 +6105,7 @@ dependencies = [
  "libsodium-sys-stable",
  "log",
  "nix 0.24.3",
- "rand 0.8.5",
+ "rand 0.8.6",
  "serde",
  "thiserror 1.0.69",
  "windows 0.36.1",
@@ -6118,7 +6118,7 @@ version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8300214898af5e153e7f66e49dbd1c6a21585f2d592d9f24f58b969792475ed6"
 dependencies = [
- "rand 0.8.5",
+ "rand 0.8.6",
  "stronghold-derive",
 ]
 
@@ -6692,7 +6692,7 @@ version = "2.3.3"
 dependencies = [
  "log",
  "notify-rust",
- "rand 0.9.3",
+ "rand 0.9.4",
  "serde",
  "serde_json",
  "serde_repr",
@@ -6851,7 +6851,7 @@ dependencies = [
  "iota-crypto",
  "iota_stronghold",
  "log",
- "rand 0.9.3",
+ "rand 0.9.4",
  "rand_chacha 0.9.0",
  "rand_core 0.9.3",
  "rust-argon2 2.1.0",
@@ -6920,7 +6920,7 @@ dependencies = [
  "futures-util",
  "http",
  "log",
- "rand 0.9.3",
+ "rand 0.9.4",
  "rustls",
  "serde",
  "serde_json",
@@ -7539,7 +7539,7 @@ dependencies = [
  "httparse",
  "log",
  "native-tls",
- "rand 0.9.3",
+ "rand 0.9.4",
  "rustls",
  "rustls-pki-types",
  "sha1",
