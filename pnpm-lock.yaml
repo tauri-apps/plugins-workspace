@@ -54,7 +54,7 @@ importers:
         specifier: ^2.11.0
         version: 2.11.0
       '@tauri-apps/plugin-barcode-scanner':
-        specifier: ^2.4.4
+        specifier: ^2.4.5
         version: link:../../plugins/barcode-scanner
       '@tauri-apps/plugin-biometric':
         specifier: ^2.3.2
@@ -75,7 +75,7 @@ importers:
         specifier: ^2.3.2
         version: link:../../plugins/geolocation
       '@tauri-apps/plugin-global-shortcut':
-        specifier: ^2.3.1
+        specifier: ^2.3.2
         version: link:../../plugins/global-shortcut
       '@tauri-apps/plugin-haptics':
         specifier: ^2.3.2
