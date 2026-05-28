@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.5]
+
+- [`d8645ab3`](https://github.com/tauri-apps/plugins-workspace/commit/d8645ab3e5b508456681eb53275c0837db25aeee) ([#3393](https://github.com/tauri-apps/plugins-workspace/pull/3393) by [@AlexisZankowitch](https://github.com/tauri-apps/plugins-workspace/../../AlexisZankowitch)) Fixed a crash on iOS when `cancel()` is invoked by running the cancel handler on the main thread.
+
 ## \[2.4.4]
 
 - [`82fbb0c7`](https://github.com/tauri-apps/plugins-workspace/commit/82fbb0c790288eca72af9ade13828ded7700ff90) ([#3221](https://github.com/tauri-apps/plugins-workspace/pull/3221)) On iOS, fixed an application crash happening when the scanner was started when user denied permission before.

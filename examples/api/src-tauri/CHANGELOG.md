@@ -1,5 +1,12 @@
 # Changelog
 
+## \[2.0.44]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.4.5`
+- Upgraded to `global-shortcut@2.3.2`
+
 ## \[2.0.43]
 
 ### Dependencies
