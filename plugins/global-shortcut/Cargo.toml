@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-global-shortcut"
-version = "2.3.1"
+version = "2.3.2"
 description = "Register global hotkeys listeners on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -27,4 +27,4 @@ log = { workspace = true }
 thiserror = { workspace = true }
 
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
-global-hotkey = { version = "0.7", features = ["serde"] }
+global-hotkey = { version = "0.8", features = ["serde"] }
