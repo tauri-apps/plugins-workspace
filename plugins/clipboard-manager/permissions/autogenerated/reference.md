@@ -70,6 +70,32 @@ Denies the read_image command without any pre-configured scope.
 <tr>
 <td>
 
+`clipboard-manager:allow-read-image-png`
+
+</td>
+<td>
+
+Enables the read_image_png command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`clipboard-manager:deny-read-image-png`
+
+</td>
+<td>
+
+Denies the read_image_png command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `clipboard-manager:allow-read-text`
 
 </td>
