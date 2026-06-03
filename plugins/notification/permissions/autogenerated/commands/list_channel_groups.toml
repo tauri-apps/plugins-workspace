@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-list-channel-groups"
+description = "Enables the list_channel_groups command without any pre-configured scope."
+commands.allow = ["list_channel_groups"]
+
+[[permission]]
+identifier = "deny-list-channel-groups"
+description = "Denies the list_channel_groups command without any pre-configured scope."
+commands.deny = ["list_channel_groups"]
