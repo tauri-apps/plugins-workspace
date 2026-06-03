@@ -5,6 +5,7 @@
 package app.tauri.notification
 
 import android.app.NotificationChannel
+import android.app.NotificationChannelGroup
 import android.app.NotificationManager
 import android.content.ContentResolver
 import android.content.Context
@@ -42,11 +43,18 @@ class Channel {
   var vibration: Boolean? = null
   var importance: Importance? = null
   var visibility: Visibility? = null
+  var groupId: String? = null
 }
 
 @InvokeArg
 class DeleteChannelArgs {
   lateinit var id: String
+}
+
+@InvokeArg
+class ChannelGroupArgs {
+  lateinit var id: String
+  lateinit var name: String
 }
 
 class ChannelManager(private var context: Context) {
@@ -103,6 +111,9 @@ class ChannelManager(private var context: Context) {
           Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + context.packageName + "/raw/" + sound)
         notificationChannel.setSound(soundUri, audioAttributes)
       }
+      if (channel.groupId != null) {
+        notificationChannel.group = channel.groupId
+      }
       notificationManager?.createNotificationChannel(notificationChannel)
     }
   }
@@ -138,6 +149,7 @@ class ChannelManager(private var context: Context) {
         channel.vibration = notificationChannel.shouldVibrate()
         channel.importance = Importance.values().firstOrNull { it.value == notificationChannel.importance }
         channel.visibility = Visibility.values().firstOrNull { it.value == notificationChannel.lockscreenVisibility }
+        channel.groupId = notificationChannel.group
 
         channels.add(channel)
       }
@@ -146,6 +158,48 @@ class ChannelManager(private var context: Context) {
 
     } else {
       invoke.reject("channel not available")
+    }
+  }
+
+  fun createChannelGroup(invoke: Invoke) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      val args = invoke.parseArgs(ChannelGroupArgs::class.java)
+      val group = NotificationChannelGroup(args.id, args.name)
+      notificationManager?.createNotificationChannelGroup(group)
+      invoke.resolve()
+    } else {
+      invoke.reject("channel group not available")
+    }
+  }
+
+  fun deleteChannelGroup(invoke: Invoke) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      val args = invoke.parseArgs(DeleteChannelArgs::class.java)
+      notificationManager?.deleteNotificationChannelGroup(args.id)
+      invoke.resolve()
+    } else {
+      invoke.reject("channel group not available")
+    }
+  }
+
+  fun listChannelGroups(invoke: Invoke) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      val groups: List<NotificationChannelGroup> =
+        notificationManager?.notificationChannelGroups ?: listOf()
+
+      val result = mutableListOf<ChannelGroupArgs>()
+
+      for (group in groups) {
+        val g = ChannelGroupArgs()
+        g.id = group.id
+        g.name = group.name.toString()
+        result.add(g)
+      }
+
+      invoke.resolveObject(result)
+
+    } else {
+      invoke.reject("channel group not available")
     }
   }
 }
