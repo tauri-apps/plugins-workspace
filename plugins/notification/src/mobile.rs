@@ -141,6 +141,29 @@ impl<R: Runtime> Notification<R> {
             .run_mobile_plugin("listChannels", ())
             .map_err(Into::into)
     }
+
+    #[cfg(target_os = "android")]
+    pub fn create_channel_group(&self, group: ChannelGroup) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin("createChannelGroup", group)
+            .map_err(Into::into)
+    }
+
+    #[cfg(target_os = "android")]
+    pub fn delete_channel_group(&self, id: impl Into<String>) -> crate::Result<()> {
+        let mut args = HashMap::new();
+        args.insert("id", id.into());
+        self.0
+            .run_mobile_plugin("deleteChannelGroup", args)
+            .map_err(Into::into)
+    }
+
+    #[cfg(target_os = "android")]
+    pub fn list_channel_groups(&self) -> crate::Result<Vec<ChannelGroup>> {
+        self.0
+            .run_mobile_plugin("listChannelGroups", ())
+            .map_err(Into::into)
+    }
 }
 
 #[derive(Deserialize)]
