@@ -27,4 +27,7 @@ permissions = [
   "allow-delete-channel",
   "allow-create-channel",
   "allow-permission-state",
+  "allow-create-channel-group",
+  "allow-delete-channel-group",
+  "allow-list-channel-groups",
 ]
