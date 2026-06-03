@@ -237,6 +237,21 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   }
 
   @Command
+  fun createChannelGroup(invoke: Invoke) {
+    channelManager.createChannelGroup(invoke)
+  }
+
+  @Command
+  fun deleteChannelGroup(invoke: Invoke) {
+    channelManager.deleteChannelGroup(invoke)
+  }
+
+  @Command
+  fun listChannelGroups(invoke: Invoke) {
+    channelManager.listChannelGroups(invoke)
+  }
+
+  @Command
   override fun checkPermissions(invoke: Invoke) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
       val permissionsResultJSON = JSObject()
