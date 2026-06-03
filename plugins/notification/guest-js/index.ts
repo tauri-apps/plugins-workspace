@@ -310,6 +310,23 @@ interface Channel {
   vibration?: boolean
   importance?: Importance
   visibility?: Visibility
+  group?: string
+}
+
+/**
+ * A notification channel group (Android only).
+ *
+ * @since 2.0.0
+ */
+interface ChannelGroup {
+  /**
+   * The group identifier.
+   */
+  id: string
+  /**
+   * The user-visible name of the group.
+   */
+  name: string
 }
 
 /**
@@ -560,6 +577,60 @@ async function channels(): Promise<Channel[]> {
   return await invoke('plugin:notification|listChannels')
 }
 
+/**
+ * Creates a notification channel group.
+ *
+ * @example
+ * ```typescript
+ * import { createChannelGroup } from '@tauri-apps/plugin-notification';
+ * await createChannelGroup({
+ *   id: 'downloads',
+ *   name: 'Downloads'
+ * });
+ * ```
+ *
+ * @returns A promise indicating the success or failure of the operation.
+ *
+ * @since 2.0.0
+ */
+async function createChannelGroup(group: ChannelGroup): Promise<void> {
+  await invoke('plugin:notification|create_channel_group', { ...group })
+}
+
+/**
+ * Removes the channel group with the given identifier.
+ *
+ * @example
+ * ```typescript
+ * import { deleteChannelGroup } from '@tauri-apps/plugin-notification';
+ * await deleteChannelGroup('downloads');
+ * ```
+ *
+ * @returns A promise indicating the success or failure of the operation.
+ *
+ * @since 2.0.0
+ */
+async function deleteChannelGroup(id: string): Promise<void> {
+  await invoke('plugin:notification|delete_channel_group', { id })
+}
+
+/**
+ * Retrieves the list of notification channel groups.
+ *
+ * @example
+ * ```typescript
+ * import { listChannelGroups } from '@tauri-apps/plugin-notification';
+ * const channelGroups = await listChannelGroups();
+ * ```
+ *
+ * @returns A promise resolving to the list of notification channel groups.
+ *
+ * @since 2.0.0
+ */
+async function listChannelGroups(): Promise<ChannelGroup[]> {
+  return await invoke('plugin:notification|list_channel_groups')
+}
+
 async function onNotificationReceived(
   cb: (notification: Options) => void
 ): Promise<PluginListener> {
@@ -580,6 +651,7 @@ export type {
   PendingNotification,
   ActiveNotification,
   Channel,
+  ChannelGroup,
   ScheduleInterval
 }
 
@@ -599,6 +671,9 @@ export {
   createChannel,
   removeChannel,
   channels,
+  createChannelGroup,
+  deleteChannelGroup,
+  listChannelGroups,
   onNotificationReceived,
   onAction,
   Schedule,
