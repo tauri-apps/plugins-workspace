@@ -25,6 +25,9 @@ It allows all notification related features.
 - `allow-delete-channel`
 - `allow-create-channel`
 - `allow-permission-state`
+- `allow-create-channel-group`
+- `allow-delete-channel-group`
+- `allow-list-channel-groups`
 
 ## Permission Table
 
@@ -142,6 +145,32 @@ Denies the create_channel command without any pre-configured scope.
 <tr>
 <td>
 
+`notification:allow-create-channel-group`
+
+</td>
+<td>
+
+Enables the create_channel_group command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`notification:deny-create-channel-group`
+
+</td>
+<td>
+
+Denies the create_channel_group command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `notification:allow-delete-channel`
 
 </td>
@@ -161,6 +190,32 @@ Enables the delete_channel command without any pre-configured scope.
 <td>
 
 Denies the delete_channel command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`notification:allow-delete-channel-group`
+
+</td>
+<td>
+
+Enables the delete_channel_group command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`notification:deny-delete-channel-group`
+
+</td>
+<td>
+
+Denies the delete_channel_group command without any pre-configured scope.
 
 </td>
 </tr>
@@ -239,6 +294,32 @@ Enables the is_permission_granted command without any pre-configured scope.
 <td>
 
 Denies the is_permission_granted command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`notification:allow-list-channel-groups`
+
+</td>
+<td>
+
+Enables the list_channel_groups command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`notification:deny-list-channel-groups`
+
+</td>
+<td>
+
+Denies the list_channel_groups command without any pre-configured scope.
 
 </td>
 </tr>
