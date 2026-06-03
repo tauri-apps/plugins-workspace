@@ -378,6 +378,14 @@ mod android {
         vibration: bool,
         importance: Importance,
         visibility: Option<Visibility>,
+        group: Option<String>,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct ChannelGroup {
+        id: String,
+        name: String,
     }
 
     #[derive(Debug)]
@@ -395,6 +403,7 @@ mod android {
                 vibration: false,
                 importance: Default::default(),
                 visibility: None,
+                group: None,
             })
         }
 
@@ -433,6 +442,10 @@ mod android {
         pub fn visibility(&self) -> Option<Visibility> {
             self.visibility
         }
+
+        pub fn group(&self) -> Option<&str> {
+            self.group.as_deref()
+        }
     }
 
     impl ChannelBuilder {
@@ -468,6 +481,11 @@ mod android {
 
         pub fn visibility(mut self, visibility: Visibility) -> Self {
             self.0.visibility.replace(visibility);
+            self
+        }
+
+        pub fn group(mut self, group: impl Into<String>) -> Self {
+            self.0.group.replace(group.into());
             self
         }
 
