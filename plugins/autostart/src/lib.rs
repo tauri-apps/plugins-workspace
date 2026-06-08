@@ -10,6 +10,8 @@
 )]
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 
+#[cfg(target_os = "macos")]
+use auto_launch::MacOSLaunchMode;
 use auto_launch::{AutoLaunch, AutoLaunchBuilder};
 use serde::{ser::Serializer, Serialize};
 use tauri::{
@@ -190,10 +192,10 @@ impl Builder {
 
                 #[cfg(target_os = "macos")]
                 {
-                    builder.set_use_launch_agent(matches!(
-                        self.macos_launcher,
-                        MacosLauncher::LaunchAgent
-                    ));
+                    builder.set_macos_launch_mode(match self.macos_launcher {
+                        MacosLauncher::LaunchAgent => MacOSLaunchMode::LaunchAgent,
+                        MacosLauncher::AppleScript => MacOSLaunchMode::AppleScript,
+                    });
                     // on macOS, current_exe gives path to /Applications/Example.app/MacOS/Example
                     // but this results in seeing a Unix Executable in macOS login items
                     // It must be: /Applications/Example.app
@@ -221,6 +223,11 @@ impl Builder {
                 } else {
                     builder.set_app_path(&current_exe.display().to_string());
                 }
+
+                // FreeBSD has no AppImage concept and tauri's `Env` has no
+                // `appimage` field under FreeBSD, so just use the current exe path.
+                #[cfg(target_os = "freebsd")]
+                builder.set_app_path(&current_exe.display().to_string());
 
                 app.manage(AutoLaunchManager(
                     builder.build().map_err(|e| e.to_string())?,
