@@ -46,7 +46,20 @@ fn main() {
 }
 ```
 
-Afterwards the plugin will automatically save and restore filesystem and asset scopes.
+Afterwards the plugin will automatically save and restore the filesystem scope (provided by the [`fs`](../fs) plugin). The scope is persisted to a `.persisted-scope` file in the app's data directory.
+
+## Persisting the asset protocol scope
+
+By default only the filesystem scope is persisted. To **also** save and restore the asset protocol scope — the scope used by Tauri's [`asset:` protocol / `convertFileSrc`](https://tauri.app/reference/javascript/api/namespacecore/#convertfilesrc), i.e. files you allow at runtime so the webview can load them — enable the `protocol-asset` feature on the plugin:
+
+`src-tauri/Cargo.toml`
+
+```toml
+[dependencies]
+tauri-plugin-persisted-scope = { version = "2.0.0", features = ["protocol-asset"] }
+```
+
+This feature enables `tauri/protocol-asset` and makes the plugin persist the asset scope to a separate `.persisted-scope-asset` file alongside the filesystem scope. No code changes are required — registering the plugin as shown above is enough.
 
 ## Contributing
 
