@@ -3,4 +3,4 @@
 "log-js": patch
 ---
 
-Removed an unused dependency.
+Removed an unused dependency `byte-unit`.
