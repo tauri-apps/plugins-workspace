@@ -152,7 +152,9 @@ fn calculate_position<R: Runtime>(
 ) -> Result<PhysicalPosition<i32>> {
     use Position::*;
 
-    let screen = window.current_monitor()?.unwrap();
+    let screen = window.current_monitor()?.ok_or_else(|| {
+        tauri::Error::Io(std::io::Error::other("No monitor found for the window"))
+    })?;
     // Only use the screen_position for the Tray independent positioning,
     // because a tray event may not be called on the currently active monitor.
     let screen_position = screen.position();
