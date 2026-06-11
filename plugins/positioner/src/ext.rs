@@ -152,7 +152,13 @@ fn calculate_position<R: Runtime>(
 ) -> Result<PhysicalPosition<i32>> {
     use Position::*;
 
-    let screen = window.current_monitor()?.unwrap();
+    let screen = window.current_monitor()?;
+    let screen = if let Some(screen) = screen {
+        screen
+    } else {
+        // falling back to primary fixes a crash on macOS when using multiple monitors but current_monitor() is None
+        window.primary_monitor()?.unwrap()
+    };
     // Only use the screen_position for the Tray independent positioning,
     // because a tray event may not be called on the currently active monitor.
     let screen_position = screen.position();
