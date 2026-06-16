@@ -7,8 +7,8 @@
 | Linux    | ✓         |
 | Windows  | ✓         |
 | macOS    | ✓         |
-| Android  | ?         |
-| iOS      | ?         |
+| Android  | ✓         |
+| iOS      | ✓         |
 
 ## Install
 

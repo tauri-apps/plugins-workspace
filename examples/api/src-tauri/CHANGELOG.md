@@ -1,5 +1,32 @@
 # Changelog
 
+## \[2.0.44]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.4.5`
+- Upgraded to `global-shortcut@2.3.2`
+
+## \[2.0.43]
+
+### Dependencies
+
+- Upgraded to `fs@2.5.1`
+- Upgraded to `opener@2.5.4`
+- Upgraded to `store@2.4.3`
+- Upgraded to `dialog@2.7.1`
+- Upgraded to `http@2.5.9`
+
+## \[2.0.42]
+
+### Dependencies
+
+- Upgraded to `fs@2.5.0`
+- Upgraded to `http@2.5.8`
+- Upgraded to `updater@2.10.1`
+- Upgraded to `nfc@2.3.5`
+- Upgraded to `dialog@2.7.0`
+
 ## \[2.0.41]
 
 ### Dependencies

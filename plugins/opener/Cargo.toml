@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-opener"
-version = "2.5.3"
+version = "2.5.4"
 description = "Open files and URLs using their default application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -41,6 +41,7 @@ features = [
   "Win32_UI_WindowsAndMessaging",
   "Win32_System_Com",
   "Win32_System_Registry",
+  "Win32_Storage_FileSystem",
 ]
 
 [target."cfg(any(target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"netbsd\", target_os = \"openbsd\"))".dependencies]

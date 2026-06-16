@@ -1,5 +1,19 @@
 # Changelog
 
+## \[2.7.1]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.1`
+
+## \[2.7.0]
+
+- [`24154472`](https://github.com/tauri-apps/plugins-workspace/commit/24154472a6710a690173df0a121125d1f1b871e8) ([#3287](https://github.com/tauri-apps/plugins-workspace/pull/3287) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Re-use `message` command in Rust side for `ask` and `confirm` commands, `allow-ask` and `allow-confirm` permissions are now aliases to `allow-message`
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.0`
+
 ## \[2.6.0]
 
 - [`d7a0bb32`](https://github.com/tauri-apps/plugins-workspace/commit/d7a0bb325dad919d6cc132eb3898c33540de77c4) ([#3136](https://github.com/tauri-apps/plugins-workspace/pull/3136) by [@onehumandev](https://github.com/tauri-apps/plugins-workspace/../../onehumandev)) Add `fileAccessMode` option to file picker.

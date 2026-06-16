@@ -139,7 +139,7 @@ fn main() {
             let deep_link_domains = config
                 .mobile
                 .iter()
-                .filter(|domain| domain.is_app_link())
+                .filter(|domain| !domain.is_app_link())
                 .collect::<Vec<_>>();
 
             if deep_link_domains.is_empty() {

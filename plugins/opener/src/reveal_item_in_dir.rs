@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-/// Reveal a path the system's default explorer.
+/// Reveal a path in the system's default explorer.
 ///
 /// ## Platform-specific:
 ///
 /// - **Android / iOS:** Unsupported.
 pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
-    let path = dunce::canonicalize(path.as_ref())?;
+    let path = canonicalize(path.as_ref())?;
 
     #[cfg(any(
         windows,
@@ -35,7 +35,7 @@ pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
     Err(crate::Error::UnsupportedPlatform)
 }
 
-/// Reveal the paths the system's default explorer.
+/// Reveal multiple paths in the system's default explorer.
 ///
 /// ## Platform-specific:
 ///
@@ -48,7 +48,7 @@ where
     let mut canonicalized = vec![];
 
     for path in paths {
-        let path = dunce::canonicalize(path.as_ref())?;
+        let path = canonicalize(path.as_ref())?;
         canonicalized.push(path);
     }
 
@@ -75,10 +75,21 @@ where
     Err(crate::Error::UnsupportedPlatform)
 }
 
+fn canonicalize(path: &Path) -> crate::Result<PathBuf> {
+    #[cfg(windows)]
+    let path = crate::windows_shell_path::absolute_and_check_exists(dunce::simplified(path))?;
+    #[cfg(not(windows))]
+    let path = std::fs::canonicalize(path)?;
+    Ok(path)
+}
+
 #[cfg(windows)]
 mod imp {
-    use std::collections::HashMap;
-    use std::path::{Path, PathBuf};
+    use std::{
+        borrow::Cow,
+        collections::HashMap,
+        path::{Path, PathBuf},
+    };
 
     use windows::Win32::UI::Shell::Common::ITEMIDLIST;
     use windows::{
@@ -101,10 +112,9 @@ mod imp {
             return Ok(());
         }
 
-        let mut grouped_paths: HashMap<&Path, Vec<&Path>> = HashMap::new();
+        let mut grouped_paths: HashMap<Cow<Path>, Vec<&Path>> = HashMap::new();
         for path in paths {
-            let parent = path
-                .parent()
+            let parent = crate::windows_shell_path::shell_parent_path(path)
                 .ok_or_else(|| crate::Error::NoParent(path.to_path_buf()))?;
             grouped_paths.entry(parent).or_default().push(path);
         }
@@ -112,7 +122,7 @@ mod imp {
         let _ = unsafe { CoInitialize(None) };
 
         for (parent, to_reveals) in grouped_paths {
-            let parent_item_id_list = OwnedItemIdList::new(parent)?;
+            let parent_item_id_list = OwnedItemIdList::new(&parent)?;
             let to_reveals_item_id_list = to_reveals
                 .iter()
                 .map(|to_reveal| OwnedItemIdList::new(to_reveal))

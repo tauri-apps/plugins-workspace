@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.0]
+
+- [`1dc36128`](https://github.com/tauri-apps/plugins-workspace/commit/1dc36128624f6954e09ea1574f68615e34e83f63) ([#3275](https://github.com/tauri-apps/plugins-workspace/pull/3275) by [@mikenikles](https://github.com/tauri-apps/plugins-workspace/../../mikenikles)) Add support for Postgres `NUMERIC` and custom data types.
+
 ## \[2.3.2]
 
 - [`2dc3f3f0`](https://github.com/tauri-apps/plugins-workspace/commit/2dc3f3f0397fa91b1f3ffbc4b42ca2b4ae55bbe0) ([#3144](https://github.com/tauri-apps/plugins-workspace/pull/3144)) Fixes issue with UUIDs returned as null in sql query results.

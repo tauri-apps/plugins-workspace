@@ -1,5 +1,19 @@
 # Changelog
 
+## \[2.5.9]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.1`
+
+## \[2.5.8]
+
+- [`29712892`](https://github.com/tauri-apps/plugins-workspace/commit/29712892526cfc2d35c9002e0a56925084ae1b73) ([#3252](https://github.com/tauri-apps/plugins-workspace/pull/3252) by [@NVolcz](https://github.com/tauri-apps/plugins-workspace/../../NVolcz)) Correct Response header initialization to support cloning and ensure Set-Cookie visibility.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.0`
+
 ## \[2.5.7]
 
 - [`61e9b0ab`](https://github.com/tauri-apps/plugins-workspace/commit/61e9b0ab64c56cc5f7a5cb3b92b386671da6e0a2) ([#3228](https://github.com/tauri-apps/plugins-workspace/pull/3228)) Cleanup resource when the returned `ReadableStream.cancel` is called to avoid memory leaks

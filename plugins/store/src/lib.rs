@@ -15,7 +15,7 @@ pub use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    sync::{Arc, RwLock},
     time::Duration,
 };
 pub use store::{resolve_store_path, DeserializeFn, SerializeFn, Store, StoreBuilder};
@@ -39,7 +39,7 @@ struct ChangePayload<'a> {
 
 #[derive(Debug)]
 struct StoreState {
-    stores: Arc<Mutex<HashMap<PathBuf, ResourceId>>>,
+    stores: Arc<RwLock<HashMap<PathBuf, ResourceId>>>,
     serialize_fns: HashMap<String, SerializeFn>,
     deserialize_fns: HashMap<String, DeserializeFn>,
     default_serialize: SerializeFn,
@@ -139,7 +139,7 @@ async fn get_store<R: Runtime>(
     store_state: State<'_, StoreState>,
     path: PathBuf,
 ) -> Result<Option<ResourceId>> {
-    let stores = store_state.stores.lock().unwrap();
+    let stores = store_state.stores.read().unwrap();
     Ok(stores.get(&resolve_store_path(&app, path)?).copied())
 }
 
@@ -317,7 +317,7 @@ impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
 
     fn get_store(&self, path: impl AsRef<Path>) -> Option<Arc<Store<R>>> {
         let collection = self.state::<StoreState>();
-        let stores = collection.stores.lock().unwrap();
+        let stores = collection.stores.read().unwrap();
         stores
             .get(&resolve_store_path(self.app_handle(), path.as_ref()).ok()?)
             .and_then(|rid| self.resources_table().get(*rid).ok())
@@ -437,7 +437,7 @@ impl Builder {
             ])
             .setup(move |app_handle, _api| {
                 app_handle.manage(StoreState {
-                    stores: Arc::new(Mutex::new(HashMap::new())),
+                    stores: Arc::new(RwLock::new(HashMap::new())),
                     serialize_fns: self.serialize_fns,
                     deserialize_fns: self.deserialize_fns,
                     default_serialize: self.default_serialize,
@@ -448,7 +448,7 @@ impl Builder {
             .on_event(|app_handle, event| {
                 if let RunEvent::Exit = event {
                     let collection = app_handle.state::<StoreState>();
-                    let stores = collection.stores.lock().unwrap();
+                    let stores = collection.stores.read().unwrap();
                     for (path, rid) in stores.iter() {
                         if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid) {
                             if let Err(err) = store.save() {
