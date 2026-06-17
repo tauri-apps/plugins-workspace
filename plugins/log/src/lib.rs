@@ -474,7 +474,7 @@ impl Builder {
 
     /// Sets the strategy to open the log file.
     ///
-    /// The default is to append to the existing log file, if any.
+    /// The default is [`FileOpenStrategy::Append`].
     pub fn file_open_strategy(mut self, file_open_strategy: FileOpenStrategy) -> Self {
         self.file_open_strategy = file_open_strategy;
         self
