@@ -46,6 +46,7 @@ mod ios {
 const DEFAULT_MAX_FILE_SIZE: u64 = 40000;
 const DEFAULT_ROTATION_STRATEGY: RotationStrategy = RotationStrategy::KeepOne;
 const DEFAULT_TIMEZONE_STRATEGY: TimezoneStrategy = TimezoneStrategy::UseUtc;
+const DEFAULT_FILE_OPEN_STRATEGY: FileOpenStrategy = FileOpenStrategy::Append;
 const DEFAULT_LOG_TARGETS: [Target; 2] = [
     Target::new(TargetKind::Stdout),
     Target::new(TargetKind::LogDir { file_name: None }),
@@ -146,6 +147,14 @@ impl TimezoneStrategy {
     }
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum FileOpenStrategy {
+    /// Open existing file from last session and append, if any.
+    Append,
+    /// Create a new file on each session start, rotating the last session if any.
+    Rotate,
+}
+
 /// A custom log writer that rotates the log file when it exceeds specified size.
 struct RotatingFile {
     dir: PathBuf,
@@ -155,6 +164,7 @@ struct RotatingFile {
     current_size: u64,
     rotation_strategy: RotationStrategy,
     timezone_strategy: TimezoneStrategy,
+    file_open_strategy: FileOpenStrategy,
     inner: Option<File>,
     buffer: Vec<u8>,
 }
@@ -166,6 +176,7 @@ impl RotatingFile {
         max_size: u64,
         rotation_strategy: RotationStrategy,
         timezone_strategy: TimezoneStrategy,
+        file_open_strategy: FileOpenStrategy,
     ) -> Result<Self, Error> {
         let dir = dir.as_ref().to_path_buf();
         let path = dir.join(&file_name).with_extension("log");
@@ -178,12 +189,15 @@ impl RotatingFile {
             current_size: 0,
             rotation_strategy,
             timezone_strategy,
+            file_open_strategy,
             inner: None,
             buffer: Vec::new(),
         };
 
         rotator.open_file()?;
-        if rotator.current_size >= rotator.max_size {
+        if rotator.current_size >= rotator.max_size
+            || (rotator.current_size > 0 && rotator.file_open_strategy == FileOpenStrategy::Rotate)
+        {
             rotator.rotate()?;
         }
         if let RotationStrategy::KeepSome(keep_count) = rotator.rotation_strategy {
@@ -396,6 +410,7 @@ pub struct Builder {
     dispatch: fern::Dispatch,
     rotation_strategy: RotationStrategy,
     timezone_strategy: TimezoneStrategy,
+    file_open_strategy: FileOpenStrategy,
     max_file_size: u128,
     targets: Vec<Target>,
     is_skip_logger: bool,
@@ -423,6 +438,7 @@ impl Default for Builder {
             dispatch,
             rotation_strategy: DEFAULT_ROTATION_STRATEGY,
             timezone_strategy: DEFAULT_TIMEZONE_STRATEGY,
+            file_open_strategy: DEFAULT_FILE_OPEN_STRATEGY,
             max_file_size: DEFAULT_MAX_FILE_SIZE as u128,
             targets: DEFAULT_LOG_TARGETS.into(),
             is_skip_logger: false,
@@ -453,6 +469,14 @@ impl Builder {
                 message
             ))
         });
+        self
+    }
+
+    /// Sets the strategy to open the log file.
+    ///
+    /// The default is [`FileOpenStrategy::Append`].
+    pub fn file_open_strategy(mut self, file_open_strategy: FileOpenStrategy) -> Self {
+        self.file_open_strategy = file_open_strategy;
         self
     }
 
@@ -569,6 +593,7 @@ impl Builder {
         mut dispatch: fern::Dispatch,
         rotation_strategy: RotationStrategy,
         timezone_strategy: TimezoneStrategy,
+        file_open_strategy: FileOpenStrategy,
         max_file_size: u64,
         targets: Vec<Target>,
     ) -> Result<(log::LevelFilter, Box<dyn log::Log>), Error> {
@@ -621,6 +646,7 @@ impl Builder {
                         max_file_size,
                         rotation_strategy.clone(),
                         timezone_strategy.clone(),
+                        file_open_strategy.clone(),
                     )?;
                     fern::Output::writer(Box::new(rotator), "\n")
                 }
@@ -636,6 +662,7 @@ impl Builder {
                         max_file_size,
                         rotation_strategy.clone(),
                         timezone_strategy.clone(),
+                        file_open_strategy.clone(),
                     )?;
                     fern::Output::writer(Box::new(rotator), "\n")
                 }
@@ -681,6 +708,7 @@ impl Builder {
             self.dispatch,
             self.rotation_strategy,
             self.timezone_strategy,
+            self.file_open_strategy,
             self.max_file_size as u64,
             self.targets,
         )?;
@@ -697,6 +725,7 @@ impl Builder {
                         self.dispatch,
                         self.rotation_strategy,
                         self.timezone_strategy,
+                        self.file_open_strategy,
                         self.max_file_size as u64,
                         self.targets,
                     )?;
