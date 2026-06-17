@@ -43,7 +43,7 @@ mod ios {
     ));
 }
 
-const DEFAULT_MAX_FILE_SIZE: u64 = 40000;
+const DEFAULT_MAX_FILE_SIZE: u64 = 40_000;
 const DEFAULT_ROTATION_STRATEGY: RotationStrategy = RotationStrategy::KeepOne;
 const DEFAULT_TIMEZONE_STRATEGY: TimezoneStrategy = TimezoneStrategy::UseUtc;
 const DEFAULT_FILE_OPEN_STRATEGY: FileOpenStrategy = FileOpenStrategy::Append;
@@ -160,7 +160,9 @@ struct RotatingFile {
     dir: PathBuf,
     file_name: String,
     path: PathBuf,
+    /// Maximum file size before rotating in bytes
     max_size: u64,
+    /// Current file size in bytes
     current_size: u64,
     rotation_strategy: RotationStrategy,
     timezone_strategy: TimezoneStrategy,
@@ -451,11 +453,18 @@ impl Builder {
         Default::default()
     }
 
+    /// Sets the [`RotationStrategy`].
+    ///
+    /// Default is [`RotationStrategy::KeepOne`]
     pub fn rotation_strategy(mut self, rotation_strategy: RotationStrategy) -> Self {
         self.rotation_strategy = rotation_strategy;
         self
     }
 
+    /// Sets the [`TimezoneStrategy`].
+    /// Calling this method overrides the format set in [`Self::format`].
+    ///
+    /// Default is [`TimezoneStrategy::UseUtc`]
     pub fn timezone_strategy(mut self, timezone_strategy: TimezoneStrategy) -> Self {
         self.timezone_strategy = timezone_strategy.clone();
 
@@ -480,15 +489,20 @@ impl Builder {
         self
     }
 
-    /// Sets the maximum file size for log rotation.
+    /// Sets the maximum file size in bytes for log rotation.
     ///
-    /// Values larger than `u64::MAX` will be clamped to `u64::MAX`.
+    /// Values larger than [`u64::MAX`] will be clamped to [`u64::MAX`].
     /// In v3, this parameter will be changed to `u64`.
+    ///
+    /// Default is `40_000`
     pub fn max_file_size(mut self, max_file_size: u128) -> Self {
         self.max_file_size = max_file_size.min(u64::MAX as u128);
         self
     }
 
+    /// Clears the format so that only the message is logged.
+    ///
+    /// e.g. `log::info!("message")` will log out `message`
     pub fn clear_format(mut self) -> Self {
         self.dispatch = self.dispatch.format(|out, message, _record| {
             out.finish(format_args!("{message}"));
@@ -496,6 +510,37 @@ impl Builder {
         self
     }
 
+    /// Sets the formatter of this dispatch. The closure should accept a
+    /// callback, a message and a log record, and write the resulting
+    /// format to the writer.
+    ///
+    /// The log record is passed for completeness, but the `args()` method of
+    /// the record should be ignored, and the [`std::fmt::Arguments`] given
+    /// should be used instead. `record.args()` may be used to retrieve the
+    /// _original_ log message, but in order to allow for true log
+    /// chaining, formatters should use the given message instead whenever
+    /// including the message in the output.
+    ///
+    /// To avoid all allocation of intermediate results, the formatter is
+    /// "completed" by calling a callback, which then calls the rest of the
+    /// logging chain with the new formatted message. The callback object keeps
+    /// track of if it was called or not via a stack boolean as well, so if
+    /// you don't use `out.finish` the log message will continue down
+    /// the logger chain unformatted.
+    ///
+    /// Example usage:
+    ///
+    /// ```
+    /// tauri_plugin_log::Builder::new()
+    ///     .format(|out, message, record| {
+    ///         out.finish(format_args!(
+    ///             "[{} {}] {}",
+    ///             record.level(),
+    ///             record.target(),
+    ///             message
+    ///         ))
+    ///     });
+    /// ```
     pub fn format<F>(mut self, formatter: F) -> Self
     where
         F: Fn(FormatCallback, &Arguments, &Record) + Sync + Send + 'static,
@@ -504,16 +549,64 @@ impl Builder {
         self
     }
 
+    /// Sets the overarching level filter for this logger.
+    /// All messages not already filtered by something set by [`Self::level_for`] will be affected.
+    ///
+    /// All messages filtered will be discarded if less severe than the given level.
+    ///
+    /// Default level is [`log::LevelFilter::Trace`].
     pub fn level(mut self, level_filter: impl Into<LevelFilter>) -> Self {
         self.dispatch = self.dispatch.level(level_filter.into());
         self
     }
 
+    /// Sets a per-target log level filter. Default target for log messages is
+    /// `crate_name::module_name` or
+    /// `crate_name` for logs in the crate root. Targets can also be set with
+    /// `info!(target: "target-name", ...)`.
+    ///
+    /// For each log record fern will first try to match the most specific
+    /// level_for, and then progressively more general ones until either a
+    /// matching level is found, or the default level is used.
+    ///
+    /// For example, a log for the target `hyper::http::h1` will first test a
+    /// level_for for `hyper::http::h1`, then for `hyper::http`, then for
+    /// `hyper`, then use the default level.
+    ///
+    /// Examples:
+    ///
+    /// A program wants to include a lot of debugging output, but the library
+    /// "hyper" is known to work well, so debug output from it should be
+    /// excluded:
+    ///
+    /// ```
+    /// # fn main() {
+    /// tauri_plugin_log::Builder::new()
+    ///     .level(log::LevelFilter::Trace)
+    ///     .level_for("hyper", log::LevelFilter::Info)
+    ///     # ;
+    /// # }
+    /// ```
     pub fn level_for(mut self, module: impl Into<Cow<'static, str>>, level: LevelFilter) -> Self {
         self.dispatch = self.dispatch.level_for(module, level);
         self
     }
 
+    /// Adds a custom filter which can reject messages passing through this logger.
+    ///
+    /// [`Self::level`] and [`Self::level_for`] are preferred if applicable.
+    ///
+    /// Example usage:
+    ///
+    /// ```
+    /// # fn main() {
+    /// tauri_plugin_log::Builder::new()
+    ///     .level(log::LevelFilter::Info)
+    ///     .filter(|metadata| {
+    ///         // Reject messages with the `Error` log level.
+    ///         metadata.level() != log::LevelFilter::Error
+    ///     })
+    /// # }
     pub fn filter<F>(mut self, filter: F) -> Self
     where
         F: Fn(&log::Metadata) -> bool + Send + Sync + 'static,
@@ -534,6 +627,19 @@ impl Builder {
     /// use tauri_plugin_log::{Target, TargetKind};
     /// tauri_plugin_log::Builder::new()
     ///     .target(Target::new(TargetKind::Webview));
+    /// ```
+    ///
+    /// The default targets are
+    ///
+    /// ```rust
+    /// # use tauri_plugin_log::{Target, TargetKind, Builder};
+    /// # Builder::new()
+    /// #     .targets(
+    /// [
+    ///     Target::new(TargetKind::Stdout),
+    ///     Target::new(TargetKind::LogDir { file_name: None }),
+    /// ]
+    /// #      );
     /// ```
     pub fn target(mut self, target: Target) -> Self {
         self.targets.push(target);
@@ -566,6 +672,19 @@ impl Builder {
     ///         Target::new(TargetKind::LogDir { file_name: Some("webview".into()) }).filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),
     ///         Target::new(TargetKind::LogDir { file_name: Some("rust".into()) }).filter(|metadata| !metadata.target().starts_with(WEBVIEW_TARGET)),
     ///     ]);
+    /// ```
+    ///
+    /// The default targets are
+    ///
+    /// ```rust
+    /// # use tauri_plugin_log::{Target, TargetKind, Builder};
+    /// # Builder::new()
+    /// #     .targets(
+    /// [
+    ///     Target::new(TargetKind::Stdout),
+    ///     Target::new(TargetKind::LogDir { file_name: None }),
+    /// ]
+    /// #      );
     /// ```
     pub fn targets(mut self, targets: impl IntoIterator<Item = Target>) -> Self {
         self.targets = Vec::from_iter(targets);
