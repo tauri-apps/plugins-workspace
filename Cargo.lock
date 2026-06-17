@@ -922,9 +922,9 @@ dependencies = [
 
 [[package]]
 name = "cef"
-version = "146.4.1+146.0.9"
+version = "148.0.0+147.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5dad6495c583fedab04a24f6fc08274c59a28b33967ca87709398e1f11c2ebe"
+checksum = "2445d2f1e820efc064c511faa3a07c3ee79e565fdae026ca62ed3c80d0459223"
 dependencies = [
  "cef-dll-sys",
  "libloading 0.9.0",
@@ -934,8 +934,9 @@ dependencies = [
 
 [[package]]
 name = "cef-dll-sys"
-version = "146.4.1+146.0.9"
-source = "git+https://github.com/tauri-apps/cef-rs?branch=fix/146-location-windows#7fc79c7aa4f1d691ed9996d440f13eb34a151f2d"
+version = "148.0.0+147.0.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d32a7c89af6c77688ad58dc75555c9398c5ded2c328a3ff83554fccc840af57"
 dependencies = [
  "anyhow",
  "cmake",
@@ -1780,11 +1781,13 @@ checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
 
 [[package]]
 name = "download-cef"
-version = "2.3.1"
-source = "git+https://github.com/tauri-apps/cef-rs?branch=fix/146-location-windows#7fc79c7aa4f1d691ed9996d440f13eb34a151f2d"
+version = "2.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c169adf067a787e1f1c58ed62906a557de85388bee4b54fb878b722ff606b113"
 dependencies = [
  "bzip2",
  "clap",
+ "fs-err",
  "indicatif",
  "regex",
  "semver",
@@ -2221,6 +2224,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e13624c2627564efccf4934284bdd98cbaa14e79b0b5a141218e507b3a823456"
 dependencies = [
  "percent-encoding",
+]
+
+[[package]]
+name = "fs-err"
+version = "3.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73fde052dbfc920003cfd2c8e2c6e6d4cc7c1091538c3a24226cec0665ab08c0"
+dependencies = [
+ "autocfg",
 ]
 
 [[package]]
@@ -6889,8 +6901,8 @@ checksum = "61c41af27dd6d1e27b1b16b489db798443478cef1f06a660c96db617ba5de3b1"
 
 [[package]]
 name = "tauri"
-version = "2.11.0"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d175c487acac135e7212a6314c61d651ea3cde27"
+version = "2.11.2"
+source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
 dependencies = [
  "anyhow",
  "bytes",
@@ -6930,7 +6942,7 @@ dependencies = [
  "tauri-runtime",
  "tauri-runtime-cef",
  "tauri-runtime-wry",
- "tauri-utils 2.9.0",
+ "tauri-utils 2.9.2",
  "thiserror 2.0.12",
  "tokio",
  "tray-icon",
@@ -6944,8 +6956,8 @@ dependencies = [
 
 [[package]]
 name = "tauri-build"
-version = "2.6.0"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d175c487acac135e7212a6314c61d651ea3cde27"
+version = "2.6.2"
+source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -6959,15 +6971,15 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri-codegen",
- "tauri-utils 2.9.0",
+ "tauri-utils 2.9.2",
  "tauri-winres",
  "walkdir",
 ]
 
 [[package]]
 name = "tauri-codegen"
-version = "2.6.0"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d175c487acac135e7212a6314c61d651ea3cde27"
+version = "2.6.2"
+source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
 dependencies = [
  "base64 0.22.1",
  "ico",
@@ -6981,7 +6993,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "syn 2.0.100",
- "tauri-utils 2.9.0",
+ "tauri-utils 2.9.2",
  "thiserror 2.0.12",
  "time",
  "url",
@@ -6991,21 +7003,21 @@ dependencies = [
 
 [[package]]
 name = "tauri-macros"
-version = "2.6.0"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d175c487acac135e7212a6314c61d651ea3cde27"
+version = "2.6.2"
+source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
  "quote",
  "syn 2.0.100",
  "tauri-codegen",
- "tauri-utils 2.9.0",
+ "tauri-utils 2.9.2",
 ]
 
 [[package]]
 name = "tauri-plugin"
-version = "2.6.0"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d175c487acac135e7212a6314c61d651ea3cde27"
+version = "2.6.2"
+source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
 dependencies = [
  "anyhow",
  "glob",
@@ -7013,7 +7025,7 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
- "tauri-utils 2.9.0",
+ "tauri-utils 2.9.2",
  "walkdir",
 ]
 
@@ -7508,8 +7520,8 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime"
-version = "2.11.0"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d175c487acac135e7212a6314c61d651ea3cde27"
+version = "2.11.2"
+source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
 dependencies = [
  "cookie",
  "dpi",
@@ -7521,7 +7533,7 @@ dependencies = [
  "raw-window-handle",
  "serde",
  "serde_json",
- "tauri-utils 2.9.0",
+ "tauri-utils 2.9.2",
  "thiserror 2.0.12",
  "url",
  "windows 0.61.1",
@@ -7530,17 +7542,20 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-cef"
 version = "0.1.0"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d175c487acac135e7212a6314c61d651ea3cde27"
+source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
 dependencies = [
  "base64 0.22.1",
  "cef",
  "cef-dll-sys",
  "dioxus-debug-cell",
  "dirs 6.0.0",
+ "dlopen2",
  "gtk",
  "html5ever 0.29.1",
  "http",
  "kuchikiki",
+ "libc",
+ "log",
  "objc2 0.6.4",
  "objc2-app-kit",
  "objc2-foundation 0.3.0",
@@ -7549,7 +7564,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "tauri-runtime",
- "tauri-utils 2.9.0",
+ "tauri-utils 2.9.2",
  "url",
  "windows 0.61.1",
  "x11-dl",
@@ -7557,8 +7572,8 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime-wry"
-version = "2.11.0"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d175c487acac135e7212a6314c61d651ea3cde27"
+version = "2.11.2"
+source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
 dependencies = [
  "gtk",
  "http",
@@ -7573,7 +7588,7 @@ dependencies = [
  "softbuffer",
  "tao",
  "tauri-runtime",
- "tauri-utils 2.9.0",
+ "tauri-utils 2.9.2",
  "url",
  "webkit2gtk",
  "webview2-com",
@@ -7583,8 +7598,38 @@ dependencies = [
 
 [[package]]
 name = "tauri-utils"
-version = "2.9.0"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d175c487acac135e7212a6314c61d651ea3cde27"
+version = "2.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d57200389a2f82b4b0a40ae29ca19b6978116e8f4d4e974c3234ce40c0ffbdec"
+dependencies = [
+ "anyhow",
+ "ctor",
+ "dunce",
+ "glob",
+ "http",
+ "infer",
+ "json-patch",
+ "log",
+ "memchr",
+ "phf 0.13.1",
+ "plist",
+ "regex",
+ "semver",
+ "serde",
+ "serde-untagged",
+ "serde_json",
+ "serde_with",
+ "thiserror 2.0.12",
+ "toml 1.0.7+spec-1.1.0",
+ "url",
+ "urlpattern",
+ "uuid",
+]
+
+[[package]]
+name = "tauri-utils"
+version = "2.9.2"
+source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
 dependencies = [
  "aes-gcm",
  "anyhow",
@@ -7620,36 +7665,6 @@ dependencies = [
  "urlpattern",
  "uuid",
  "walkdir",
-]
-
-[[package]]
-name = "tauri-utils"
-version = "2.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d57200389a2f82b4b0a40ae29ca19b6978116e8f4d4e974c3234ce40c0ffbdec"
-dependencies = [
- "anyhow",
- "ctor",
- "dunce",
- "glob",
- "http",
- "infer",
- "json-patch",
- "log",
- "memchr",
- "phf 0.13.1",
- "plist",
- "regex",
- "semver",
- "serde",
- "serde-untagged",
- "serde_json",
- "serde_with",
- "thiserror 2.0.12",
- "toml 1.0.7+spec-1.1.0",
- "url",
- "urlpattern",
- "uuid",
 ]
 
 [[package]]
@@ -8110,9 +8125,9 @@ dependencies = [
 
 [[package]]
 name = "tray-icon"
-version = "0.23.1"
+version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "15edbb0d80583e85ee8df283410038e17314df5cba30da2087a54a85216c0773"
+checksum = "65ba1e5f6b9ef9fd87e21b9c6f351554dbd717960089168fcfdef854686961dc"
 dependencies = [
  "crossbeam-channel",
  "dirs 6.0.0",

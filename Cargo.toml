@@ -45,4 +45,3 @@ tauri = { git = "https://github.com/tauri-apps/tauri.git", branch = "feat/cef" }
 tauri-utils = { git = "https://github.com/tauri-apps/tauri.git", branch = "feat/cef" }
 tauri-plugin = { git = "https://github.com/tauri-apps/tauri.git", branch = "feat/cef" }
 tauri-build = { git = "https://github.com/tauri-apps/tauri.git", branch = "feat/cef" }
-cef-dll-sys = { git = "https://github.com/tauri-apps/cef-rs", branch = "fix/146-location-windows" }
