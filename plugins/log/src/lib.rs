@@ -570,13 +570,9 @@ impl Builder {
 
     /// Adds a custom filter which can reject messages passing through this logger.
     ///
-    /// The logger will continue to process log records only if all filters return `true`.
-    ///
     /// [`Self::level`] and [`Self::level_for`] are preferred if applicable.
     ///
     /// Example usage:
-    ///
-    /// This sends error level messages to stderr and others to stdout.
     ///
     /// ```
     /// # fn main() {
