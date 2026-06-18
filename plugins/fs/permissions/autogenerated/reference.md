@@ -3279,32 +3279,6 @@ Denies the read_text_file command without any pre-configured scope.
 <tr>
 <td>
 
-`fs:allow-read-text-file-lines`
-
-</td>
-<td>
-
-Enables the read_text_file_lines command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`fs:deny-read-text-file-lines`
-
-</td>
-<td>
-
-Denies the read_text_file_lines command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
 `fs:allow-read-text-file-lines-next`
 
 </td>
@@ -3617,32 +3591,6 @@ Denies the write command without any pre-configured scope.
 <tr>
 <td>
 
-`fs:allow-write-file`
-
-</td>
-<td>
-
-Enables the write_file command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`fs:deny-write-file`
-
-</td>
-<td>
-
-Denies the write_file command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
 `fs:allow-write-text-file`
 
 </td>
@@ -3662,6 +3610,58 @@ Enables the write_text_file command without any pre-configured scope.
 <td>
 
 Denies the write_text_file command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fs:allow-read-text-file-lines`
+
+</td>
+<td>
+
+Enables the read_text_file_lines command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fs:deny-read-text-file-lines`
+
+</td>
+<td>
+
+Denies the read_text_file_lines command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fs:allow-write-file`
+
+</td>
+<td>
+
+Enables the write_file command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fs:deny-write-file`
+
+</td>
+<td>
+
+Denies the write_file command without any pre-configured scope.
 
 </td>
 </tr>

@@ -1,0 +1,5 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+commands = ["move_window","move_window_constrained","set_tray_icon_state"]

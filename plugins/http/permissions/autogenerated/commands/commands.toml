@@ -1,0 +1,5 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+commands = ["fetch","fetch_cancel","fetch_send","fetch_read_body","fetch_cancel_body"]

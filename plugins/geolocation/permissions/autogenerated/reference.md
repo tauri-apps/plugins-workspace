@@ -36,32 +36,6 @@ Denies the check_permissions command without any pre-configured scope.
 <tr>
 <td>
 
-`geolocation:allow-clear-permissions`
-
-</td>
-<td>
-
-Enables the clear_permissions command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`geolocation:deny-clear-permissions`
-
-</td>
-<td>
-
-Denies the clear_permissions command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
 `geolocation:allow-clear-watch`
 
 </td>

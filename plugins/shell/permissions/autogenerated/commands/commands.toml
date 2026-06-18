@@ -1,0 +1,5 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+commands = ["execute","spawn","stdin_write","kill","open"]

@@ -1,0 +1,5 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+commands = ["load","get_store","set","get","has","delete","clear","reset","keys","values","entries","length","reload","save"]

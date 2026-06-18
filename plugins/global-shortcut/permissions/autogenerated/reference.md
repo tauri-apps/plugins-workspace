@@ -69,32 +69,6 @@ Denies the register command without any pre-configured scope.
 <tr>
 <td>
 
-`global-shortcut:allow-register-all`
-
-</td>
-<td>
-
-Enables the register_all command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`global-shortcut:deny-register-all`
-
-</td>
-<td>
-
-Denies the register_all command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
 `global-shortcut:allow-unregister`
 
 </td>

@@ -1,0 +1,5 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+commands = ["write_text","read_text","write_image","read_image","write_html","clear"]

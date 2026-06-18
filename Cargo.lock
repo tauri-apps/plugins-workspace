@@ -6902,7 +6902,7 @@ checksum = "61c41af27dd6d1e27b1b16b489db798443478cef1f06a660c96db617ba5de3b1"
 [[package]]
 name = "tauri"
 version = "2.11.2"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
+source = "git+https://github.com/tauri-apps/tauri.git?tag=tauri-cef-v3.0.0-alpha.9#fb7bdd95be319d70a1097d285bb7b170562339f2"
 dependencies = [
  "anyhow",
  "bytes",
@@ -6957,7 +6957,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.6.2"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
+source = "git+https://github.com/tauri-apps/tauri.git?tag=tauri-cef-v3.0.0-alpha.9#fb7bdd95be319d70a1097d285bb7b170562339f2"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -6979,7 +6979,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.6.2"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
+source = "git+https://github.com/tauri-apps/tauri.git?tag=tauri-cef-v3.0.0-alpha.9#fb7bdd95be319d70a1097d285bb7b170562339f2"
 dependencies = [
  "base64 0.22.1",
  "ico",
@@ -7004,7 +7004,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.6.2"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
+source = "git+https://github.com/tauri-apps/tauri.git?tag=tauri-cef-v3.0.0-alpha.9#fb7bdd95be319d70a1097d285bb7b170562339f2"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -7017,7 +7017,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin"
 version = "2.6.2"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
+source = "git+https://github.com/tauri-apps/tauri.git?tag=tauri-cef-v3.0.0-alpha.9#fb7bdd95be319d70a1097d285bb7b170562339f2"
 dependencies = [
  "anyhow",
  "glob",
@@ -7145,9 +7145,7 @@ dependencies = [
  "serde_repr",
  "tauri",
  "tauri-plugin",
- "tauri-utils 2.9.1",
  "thiserror 2.0.12",
- "toml 1.0.7+spec-1.1.0",
  "url",
 ]
 
@@ -7521,7 +7519,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "2.11.2"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
+source = "git+https://github.com/tauri-apps/tauri.git?tag=tauri-cef-v3.0.0-alpha.9#fb7bdd95be319d70a1097d285bb7b170562339f2"
 dependencies = [
  "cookie",
  "dpi",
@@ -7542,7 +7540,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-cef"
 version = "0.1.0"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
+source = "git+https://github.com/tauri-apps/tauri.git?tag=tauri-cef-v3.0.0-alpha.9#fb7bdd95be319d70a1097d285bb7b170562339f2"
 dependencies = [
  "base64 0.22.1",
  "cef",
@@ -7573,7 +7571,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "2.11.2"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
+source = "git+https://github.com/tauri-apps/tauri.git?tag=tauri-cef-v3.0.0-alpha.9#fb7bdd95be319d70a1097d285bb7b170562339f2"
 dependencies = [
  "gtk",
  "http",
@@ -7629,7 +7627,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.9.2"
-source = "git+https://github.com/tauri-apps/tauri.git?branch=feat/cef#d4b20828b0684b05f7563d49e3a70a8661846ad3"
+source = "git+https://github.com/tauri-apps/tauri.git?tag=tauri-cef-v3.0.0-alpha.9#fb7bdd95be319d70a1097d285bb7b170562339f2"
 dependencies = [
  "aes-gcm",
  "anyhow",

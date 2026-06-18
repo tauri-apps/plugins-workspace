@@ -41,7 +41,7 @@ incremental = false
 opt-level = "s"
 
 [patch.crates-io]
-tauri = { git = "https://github.com/tauri-apps/tauri.git", branch = "feat/cef" }
-tauri-utils = { git = "https://github.com/tauri-apps/tauri.git", branch = "feat/cef" }
-tauri-plugin = { git = "https://github.com/tauri-apps/tauri.git", branch = "feat/cef" }
-tauri-build = { git = "https://github.com/tauri-apps/tauri.git", branch = "feat/cef" }
+tauri = { git = "https://github.com/tauri-apps/tauri.git", tag = "tauri-cef-v3.0.0-alpha.9" }
+tauri-utils = { git = "https://github.com/tauri-apps/tauri.git", tag = "tauri-cef-v3.0.0-alpha.9" }
+tauri-plugin = { git = "https://github.com/tauri-apps/tauri.git", tag = "tauri-cef-v3.0.0-alpha.9" }
+tauri-build = { git = "https://github.com/tauri-apps/tauri.git", tag = "tauri-cef-v3.0.0-alpha.9" }

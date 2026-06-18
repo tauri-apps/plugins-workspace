@@ -1,0 +1,5 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+commands = ["scan","cancel","request_permissions","check_permissions","open_app_settings","vibrate"]
