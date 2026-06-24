@@ -69,7 +69,6 @@ pub struct CommandChild {
 
 enum ChildKind {
     Direct(Arc<SharedChild>),
-    #[cfg(any(unix, windows))]
     ProcessGroup(GroupChild),
 }
 
@@ -144,7 +143,6 @@ impl CommandChild {
     pub fn kill(self) -> crate::Result<()> {
         match self.inner {
             ChildKind::Direct(child) => child.kill()?,
-            #[cfg(any(unix, windows))]
             ChildKind::ProcessGroup(group) => group.kill()?,
         }
         Ok(())
@@ -154,7 +152,6 @@ impl CommandChild {
     pub fn pid(&self) -> u32 {
         match &self.inner {
             ChildKind::Direct(child) => child.id(),
-            #[cfg(any(unix, windows))]
             ChildKind::ProcessGroup(group) => group.id(),
         }
     }
@@ -417,58 +414,46 @@ impl Command {
         );
 
         let child_kind = if process_group {
-            #[cfg(any(unix, windows))]
+            let mut cmd_wrap = process_wrap::std::StdCommandWrap::from(command);
+
+            #[cfg(unix)]
+            cmd_wrap.wrap(process_wrap::std::ProcessGroup::leader());
+
+            #[cfg(windows)]
             {
-                let mut cmd_wrap = process_wrap::std::StdCommandWrap::from(command);
-
-                #[cfg(unix)]
-                cmd_wrap.wrap(process_wrap::std::ProcessGroup::leader());
-
-                #[cfg(windows)]
-                {
-                    cmd_wrap.wrap(process_wrap::std::CreationFlags(CREATE_NO_WINDOW));
-                    cmd_wrap.wrap(process_wrap::std::JobObject);
-                }
-
-                let wrapped_child = cmd_wrap.spawn()?;
-                let child_id = wrapped_child.id();
-
-                #[cfg(unix)]
-                let group = {
-                    let inner_child = wrapped_child.into_inner();
-                    let shared = Arc::new(SharedChild::new(inner_child)?);
-                    let shared_clone = shared.clone();
-                    let pgid = child_id as i32;
-
-                    spawn_wait_thread(move || shared_clone.wait(), tx, guard);
-
-                    GroupChild { shared, pgid }
-                };
-
-                #[cfg(windows)]
-                let group = {
-                    let group = GroupChild {
-                        inner: Arc::new(std::sync::Mutex::new(wrapped_child)),
-                        id: child_id,
-                    };
-                    let group_wait = group.clone_for_wait();
-
-                    spawn_wait_thread(move || group_wait.wait(), tx, guard);
-
-                    group
-                };
-
-                ChildKind::ProcessGroup(group)
+                cmd_wrap.wrap(process_wrap::std::CreationFlags(CREATE_NO_WINDOW));
+                cmd_wrap.wrap(process_wrap::std::JobObject);
             }
 
-            #[cfg(not(any(unix, windows)))]
-            {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::Unsupported,
-                    "process groups are not supported on this platform",
-                )
-                .into());
-            }
+            let wrapped_child = cmd_wrap.spawn()?;
+            let child_id = wrapped_child.id();
+
+            #[cfg(unix)]
+            let group = {
+                let inner_child = wrapped_child.into_inner();
+                let shared = Arc::new(SharedChild::new(inner_child)?);
+                let shared_clone = shared.clone();
+                let pgid = child_id as i32;
+
+                spawn_wait_thread(move || shared_clone.wait(), tx, guard);
+
+                GroupChild { shared, pgid }
+            };
+
+            #[cfg(windows)]
+            let group = {
+                let group = GroupChild {
+                    inner: Arc::new(std::sync::Mutex::new(wrapped_child)),
+                    id: child_id,
+                };
+                let group_wait = group.clone_for_wait();
+
+                spawn_wait_thread(move || group_wait.wait(), tx, guard);
+
+                group
+            };
+
+            ChildKind::ProcessGroup(group)
         } else {
             let shared_child = SharedChild::spawn(&mut command)?;
             let child = Arc::new(shared_child);
