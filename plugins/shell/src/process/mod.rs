@@ -7,7 +7,7 @@ use std::{
     io::{BufRead, BufReader, Write},
     path::{Path, PathBuf},
     process::{Command as StdCommand, Stdio},
-    sync::{Arc, RwLock},
+    sync::{Arc, Mutex, RwLock},
     thread::spawn,
 };
 
@@ -25,7 +25,6 @@ use tauri::async_runtime::{block_on as block_on_task, channel, Receiver, Sender}
 pub use encoding_rs::Encoding;
 use os_pipe::{pipe, PipeReader, PipeWriter};
 use serde::Serialize;
-use shared_child::SharedChild;
 use tauri::utils::platform;
 
 /// Payload for the [`CommandEvent::Terminated`] command event.
@@ -63,71 +62,9 @@ pub struct Command {
 
 /// Spawned child process.
 pub struct CommandChild {
-    inner: ChildKind,
+    inner: Arc<Mutex<Box<dyn process_wrap::std::StdChildWrapper>>>,
+    pid: u32,
     stdin_writer: PipeWriter,
-}
-
-enum ChildKind {
-    Direct(Arc<SharedChild>),
-    ProcessGroup(GroupChild),
-}
-
-#[cfg(unix)]
-struct GroupChild {
-    shared: Arc<SharedChild>,
-    pgid: i32,
-}
-
-#[cfg(unix)]
-impl GroupChild {
-    fn id(&self) -> u32 {
-        self.shared.id()
-    }
-
-    fn kill(&self) -> std::io::Result<()> {
-        // SAFETY: killpg is a standard POSIX syscall. The pgid was obtained from
-        // the child's PID, which equals its PGID since it was spawned as a group leader.
-        let ret = unsafe { libc::killpg(self.pgid, libc::SIGKILL) };
-        if ret == 0 {
-            Ok(())
-        } else {
-            Err(std::io::Error::last_os_error())
-        }
-    }
-}
-
-#[cfg(windows)]
-struct GroupChild {
-    inner: Arc<std::sync::Mutex<Box<dyn process_wrap::std::StdChildWrapper>>>,
-    id: u32,
-}
-
-#[cfg(windows)]
-impl GroupChild {
-    fn id(&self) -> u32 {
-        self.id
-    }
-
-    fn kill(&self) -> std::io::Result<()> {
-        self.inner.lock().unwrap().kill()
-    }
-
-    fn wait(&self) -> std::io::Result<std::process::ExitStatus> {
-        loop {
-            match self.inner.lock().unwrap().try_wait()? {
-                Some(status) => return Ok(status),
-                None => {}
-            }
-            std::thread::sleep(std::time::Duration::from_millis(10));
-        }
-    }
-
-    fn clone_for_wait(&self) -> Self {
-        Self {
-            inner: self.inner.clone(),
-            id: self.id,
-        }
-    }
 }
 
 impl CommandChild {
@@ -137,23 +74,18 @@ impl CommandChild {
         Ok(())
     }
 
-    /// Sends a kill signal to the child.
-    /// When the child was spawned with `process_group` enabled,
-    /// this kills the entire process group (POSIX) or job object (Windows).
+    /// Sends a kill signal to the child, then waits for it to exit.
+    /// When the child was spawned with `process_group` enabled, this kills the
+    /// entire process group (POSIX) or job object (Windows), reaping every
+    /// member before returning.
     pub fn kill(self) -> crate::Result<()> {
-        match self.inner {
-            ChildKind::Direct(child) => child.kill()?,
-            ChildKind::ProcessGroup(group) => group.kill()?,
-        }
+        self.inner.lock().unwrap().kill()?;
         Ok(())
     }
 
     /// Returns the process pid.
     pub fn pid(&self) -> u32 {
-        match &self.inner {
-            ChildKind::Direct(child) => child.id(),
-            ChildKind::ProcessGroup(group) => group.id(),
-        }
+        self.pid
     }
 }
 
@@ -413,9 +345,12 @@ impl Command {
             raw,
         );
 
-        let child_kind = if process_group {
-            let mut cmd_wrap = process_wrap::std::StdCommandWrap::from(command);
+        // Always go through process-wrap so the spawn path is uniform across
+        // platforms; the `process_group` switch is just an optional wrapper
+        // rather than a separate child type.
+        let mut cmd_wrap = process_wrap::std::StdCommandWrap::from(command);
 
+        if process_group {
             #[cfg(unix)]
             cmd_wrap.wrap(process_wrap::std::ProcessGroup::leader());
 
@@ -424,50 +359,20 @@ impl Command {
                 cmd_wrap.wrap(process_wrap::std::CreationFlags(CREATE_NO_WINDOW));
                 cmd_wrap.wrap(process_wrap::std::JobObject);
             }
+        }
 
-            let wrapped_child = cmd_wrap.spawn()?;
-            let child_id = wrapped_child.id();
+        let wrapped_child = cmd_wrap.spawn()?;
+        let pid = wrapped_child.id();
+        let inner = Arc::new(Mutex::new(wrapped_child));
+        let inner_wait = inner.clone();
 
-            #[cfg(unix)]
-            let group = {
-                let inner_child = wrapped_child.into_inner();
-                let shared = Arc::new(SharedChild::new(inner_child)?);
-                let shared_clone = shared.clone();
-                let pgid = child_id as i32;
-
-                spawn_wait_thread(move || shared_clone.wait(), tx, guard);
-
-                GroupChild { shared, pgid }
-            };
-
-            #[cfg(windows)]
-            let group = {
-                let group = GroupChild {
-                    inner: Arc::new(std::sync::Mutex::new(wrapped_child)),
-                    id: child_id,
-                };
-                let group_wait = group.clone_for_wait();
-
-                spawn_wait_thread(move || group_wait.wait(), tx, guard);
-
-                group
-            };
-
-            ChildKind::ProcessGroup(group)
-        } else {
-            let shared_child = SharedChild::spawn(&mut command)?;
-            let child = Arc::new(shared_child);
-            let child_ = child.clone();
-
-            spawn_wait_thread(move || child_.wait(), tx, guard);
-
-            ChildKind::Direct(child)
-        };
+        spawn_wait_thread(move || wait_on_child(&inner_wait), tx, guard);
 
         Ok((
             rx,
             CommandChild {
-                inner: child_kind,
+                inner,
+                pid,
                 stdin_writer,
             },
         ))
@@ -612,6 +517,23 @@ fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
             read_line(reader, tx, wrapper);
         }
     });
+}
+
+/// Polls the child until it exits, returning its final exit status.
+///
+/// process-wrap's child wrappers only expose `&mut self` wait methods, so a
+/// background blocking wait would hold the lock and starve `kill()`. Polling
+/// `try_wait` keeps the lock free between checks; process-wrap caches the exit
+/// status, so reaping (including the rest of a process group) settles here.
+fn wait_on_child(
+    inner: &Arc<Mutex<Box<dyn process_wrap::std::StdChildWrapper>>>,
+) -> std::io::Result<std::process::ExitStatus> {
+    loop {
+        if let Some(status) = inner.lock().unwrap().try_wait()? {
+            return Ok(status);
+        }
+        std::thread::sleep(std::time::Duration::from_millis(10));
+    }
 }
 
 fn spawn_wait_thread(

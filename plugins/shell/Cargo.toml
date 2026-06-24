@@ -28,7 +28,6 @@ tauri = { workspace = true }
 tokio = { version = "1", features = ["time"] }
 log = { workspace = true }
 thiserror = { workspace = true }
-shared_child = "1"
 regex = "1"
 open = { version = "5", features = ["shellexecute-on-windows"] }
 encoding_rs = "0.8"
