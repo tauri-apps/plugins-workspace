@@ -903,7 +903,10 @@ mod tests {
 
         // The grandchild is STILL alive — this is the bug
         let ret = unsafe { libc::kill(grandchild_pid, 0) };
-        assert_eq!(ret, 0, "grandchild should survive when process_group is off");
+        assert_eq!(
+            ret, 0,
+            "grandchild should survive when process_group is off"
+        );
 
         // Clean up the orphaned grandchild
         unsafe { libc::kill(grandchild_pid, libc::SIGKILL) };
@@ -945,6 +948,9 @@ mod tests {
 
         // The grandchild should now be DEAD
         let ret = unsafe { libc::kill(grandchild_pid, 0) };
-        assert_ne!(ret, 0, "grandchild should be killed when process_group is on");
+        assert_ne!(
+            ret, 0,
+            "grandchild should be killed when process_group is on"
+        );
     }
 }

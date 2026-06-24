@@ -34,10 +34,11 @@ open = { version = "5", features = ["shellexecute-on-windows"] }
 encoding_rs = "0.8"
 os_pipe = "1"
 process-wrap = { version = "8.2", default-features = false, features = [
-    "std",
-    "process-group",
-    "creation-flags",
-    "job-object",
+  "std",
+  "process-group",
+  "creation-flags",
+  "job-object",
+  "tracing",
 ] }
 
 [target.'cfg(unix)'.dependencies]
