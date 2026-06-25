@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: MIT
 
 use std::{
-    io::{BufWriter, Error, ErrorKind, Read, Write},
-    os::unix::net::{UnixListener, UnixStream},
+    io::{BufWriter, Error, ErrorKind, Write},
+    os::unix::net::UnixStream,
     path::PathBuf,
 };
 
@@ -15,6 +15,7 @@ use tauri::{
     plugin::{self, TauriPlugin},
     AppHandle, Config, Manager, RunEvent, Runtime,
 };
+use tokio::io::AsyncReadExt;
 
 pub fn init<R: Runtime>(cb: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
@@ -96,14 +97,14 @@ fn listen_for_other_instances<A: Runtime>(
     app: AppHandle<A>,
     mut cb: Box<SingleInstanceCallback<A>>,
 ) {
-    match UnixListener::bind(socket) {
+    match tokio::net::UnixListener::bind(socket) {
         Ok(listener) => {
             tauri::async_runtime::spawn(async move {
-                for stream in listener.incoming() {
-                    match stream {
-                        Ok(mut stream) => {
+                loop {
+                    match listener.accept().await {
+                        Ok((mut stream, _addr)) => {
                             let mut s = String::new();
-                            match stream.read_to_string(&mut s) {
+                            match stream.read_to_string(&mut s).await {
                                 Ok(_) => {
                                     let (cwd, args) = s.split_once("\0\0").unwrap_or_default();
                                     let args: Vec<String> =
