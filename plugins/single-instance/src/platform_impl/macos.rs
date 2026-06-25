@@ -4,7 +4,7 @@
 
 use std::{
     io::{BufWriter, Error, ErrorKind, Write},
-    os::unix::net::UnixStream,
+    os::unix::net::{UnixListener, UnixStream},
     path::PathBuf,
 };
 
@@ -97,9 +97,12 @@ fn listen_for_other_instances<A: Runtime>(
     app: AppHandle<A>,
     mut cb: Box<SingleInstanceCallback<A>>,
 ) {
-    match tokio::net::UnixListener::bind(socket) {
-        Ok(listener) => {
+    match UnixListener::bind(socket) {
+        Ok(std_listener) => {
+            std_listener.set_nonblocking(true).ok();
             tauri::async_runtime::spawn(async move {
+                let listener = tokio::net::UnixListener::from_std(std_listener)
+                    .expect("failed to convert std UnixListener to tokio yielding UnixListener");
                 loop {
                     match listener.accept().await {
                         Ok((mut stream, _addr)) => {
