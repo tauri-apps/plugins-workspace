@@ -4,7 +4,7 @@
 
 use std::{
     io::{BufWriter, Error, ErrorKind, Write},
-    os::unix::net::{UnixListener, UnixStream},
+    os::unix::net::UnixStream,
     path::PathBuf,
 };
 
@@ -32,7 +32,7 @@ pub fn init<R: Runtime>(cb: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
                         ErrorKind::NotFound | ErrorKind::ConnectionRefused => {
                             // This process claims itself as singleton as likely none exists
                             socket_cleanup(&socket);
-                            listen_for_other_instances(&socket, app.clone(), cb);
+                            listen_for_other_instances(socket, app.clone(), cb);
                         }
                         _ => {
                             tracing::debug!(
@@ -93,45 +93,40 @@ fn notify_singleton(socket: &PathBuf) -> Result<(), Error> {
 }
 
 fn listen_for_other_instances<A: Runtime>(
-    socket: &PathBuf,
+    socket: PathBuf,
     app: AppHandle<A>,
     mut cb: Box<SingleInstanceCallback<A>>,
 ) {
-    match UnixListener::bind(socket) {
-        Ok(std_listener) => {
-            std_listener.set_nonblocking(true).ok();
-            tauri::async_runtime::spawn(async move {
-                let listener = tokio::net::UnixListener::from_std(std_listener)
-                    .expect("failed to convert std UnixListener to tokio yielding UnixListener");
-                loop {
-                    match listener.accept().await {
-                        Ok((mut stream, _addr)) => {
-                            let mut s = String::new();
-                            match stream.read_to_string(&mut s).await {
-                                Ok(_) => {
-                                    let (cwd, args) = s.split_once("\0\0").unwrap_or_default();
-                                    let args: Vec<String> =
-                                        args.split('\0').map(String::from).collect();
-                                    cb(app.app_handle(), args, cwd.to_string());
-                                }
-                                Err(e) => {
-                                    tracing::debug!("single_instance failed to be notified: {e}")
-                                }
+    tauri::async_runtime::spawn(async move {
+        match tokio::net::UnixListener::bind(socket) {
+            Ok(listener) => loop {
+                match listener.accept().await {
+                    Ok((mut stream, _addr)) => {
+                        let mut s = String::new();
+                        match stream.read_to_string(&mut s).await {
+                            Ok(_) => {
+                                let (cwd, args) = s.split_once("\0\0").unwrap_or_default();
+                                let args: Vec<String> =
+                                    args.split('\0').map(String::from).collect();
+                                cb(app.app_handle(), args, cwd.to_string());
+                            }
+                            Err(e) => {
+                                tracing::debug!("single_instance failed to be notified: {e}")
                             }
                         }
-                        Err(err) => {
-                            tracing::debug!("single_instance failed to be notified: {}", err);
-                            continue;
-                        }
+                    }
+                    Err(err) => {
+                        tracing::debug!("single_instance failed to be notified: {}", err);
+                        continue;
                     }
                 }
-            });
+            },
+            Err(err) => {
+                tracing::error!(
+                    "single_instance failed to listen to other processes - launching normally: {}",
+                    err
+                );
+            }
         }
-        Err(err) => {
-            tracing::error!(
-                "single_instance failed to listen to other processes - launching normally: {}",
-                err
-            );
-        }
-    }
+    });
 }
