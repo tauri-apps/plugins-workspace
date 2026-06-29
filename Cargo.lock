@@ -6793,6 +6793,7 @@ dependencies = [
  "tauri",
  "tauri-plugin-deep-link",
  "thiserror 2.0.12",
+ "tokio",
  "tracing",
  "windows-sys 0.60.2",
  "zbus",
