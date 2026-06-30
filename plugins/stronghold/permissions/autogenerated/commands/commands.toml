@@ -1,5 +1,0 @@
-# Automatically generated - DO NOT EDIT!
-
-"$schema" = "../../schemas/schema.json"
-
-commands = ["initialize","destroy","save","create_client","load_client","get_store_record","save_store_record","remove_store_record","save_secret","remove_secret","execute_procedure"]

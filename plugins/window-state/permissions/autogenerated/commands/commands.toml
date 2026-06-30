@@ -1,5 +1,0 @@
-# Automatically generated - DO NOT EDIT!
-
-"$schema" = "../../schemas/schema.json"
-
-commands = ["save_window_state","restore_state","filename"]

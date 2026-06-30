@@ -21,19 +21,6 @@ as well as reveal file in directories using default file explorer
 <tr>
 <td>
 
-`opener:allow-default-urls`
-
-</td>
-<td>
-
-This enables opening `mailto:`, `tel:`, `https://` and `http://` urls using their default application.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
 `opener:allow-open-path`
 
 </td>
@@ -105,6 +92,19 @@ Enables the reveal_item_in_dir command without any pre-configured scope.
 <td>
 
 Denies the reveal_item_in_dir command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`opener:allow-default-urls`
+
+</td>
+<td>
+
+This enables opening `mailto:`, `tel:`, `https://` and `http://` urls using their default application.
 
 </td>
 </tr>

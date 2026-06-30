@@ -25,32 +25,6 @@ All dialog types are enabled.
 <tr>
 <td>
 
-`dialog:allow-ask`
-
-</td>
-<td>
-
-Enables the ask command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `allow-message` and will be removed in v3)
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`dialog:deny-ask`
-
-</td>
-<td>
-
-Denies the ask command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `deny-message` and will be removed in v3)
-
-</td>
-</tr>
-
-<tr>
-<td>
-
 `dialog:allow-message`
 
 </td>
@@ -122,6 +96,32 @@ Enables the save command without any pre-configured scope.
 <td>
 
 Denies the save command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`dialog:allow-ask`
+
+</td>
+<td>
+
+Enables the ask command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `allow-message` and will be removed in v3)
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`dialog:deny-ask`
+
+</td>
+<td>
+
+Denies the ask command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `deny-message` and will be removed in v3)
 
 </td>
 </tr>

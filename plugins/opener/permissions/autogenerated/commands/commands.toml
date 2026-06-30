@@ -1,5 +1,0 @@
-# Automatically generated - DO NOT EDIT!
-
-"$schema" = "../../schemas/schema.json"
-
-commands = ["open_url","open_path","reveal_item_in_dir"]

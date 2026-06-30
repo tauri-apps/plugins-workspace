@@ -1,5 +1,0 @@
-# Automatically generated - DO NOT EDIT!
-
-"$schema" = "../../schemas/schema.json"
-
-commands = ["platform","version","os_type","family","arch","exe_extension","locale","hostname"]

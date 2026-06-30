@@ -1,5 +1,0 @@
-# Automatically generated - DO NOT EDIT!
-
-"$schema" = "../../schemas/schema.json"
-
-commands = ["get_current_position","watch_position","clear_watch","check_permissions","request_permissions"]
