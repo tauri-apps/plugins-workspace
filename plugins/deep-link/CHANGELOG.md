@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.9]
+
+- [`e6cdc9f5`](https://github.com/tauri-apps/plugins-workspace/commit/e6cdc9f52e2cd975b11b8e4c12879d597f1f76c3) ([#3396](https://github.com/tauri-apps/plugins-workspace/pull/3396) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix broken iOS custom URL schemes
+
 ## \[2.4.8]
 
 - [`024ec0c2`](https://github.com/tauri-apps/plugins-workspace/commit/024ec0c29c20cf94579dab9b79d6be0da61a8daa) ([#3214](https://github.com/tauri-apps/plugins-workspace/pull/3214) by [@joshIsCoding](https://github.com/tauri-apps/plugins-workspace/../../joshIsCoding)) Account for differing Android VIEW intent in ChromeOS, fixing deep-link behaviour on Chromium platforms.

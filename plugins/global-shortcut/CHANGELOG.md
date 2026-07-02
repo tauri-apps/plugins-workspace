@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.3.2]
+
+- [`cb863d57`](https://github.com/tauri-apps/plugins-workspace/commit/cb863d57c60790efc41b2bd77d065bd91b4ef2b1) ([#3408](https://github.com/tauri-apps/plugins-workspace/pull/3408) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update crate `global-hotkey` to 0.8 to fix cpu usage while pressing the keys on windows and to add F13-F24 mappings on Linux/X11.
+
 ## \[2.3.1]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

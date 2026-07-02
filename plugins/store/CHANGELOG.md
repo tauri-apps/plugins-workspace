@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.3]
+
+- [`964e13f1`](https://github.com/tauri-apps/plugins-workspace/commit/964e13f124ad1feeb93c10168b265dc4936f738c) ([#3395](https://github.com/tauri-apps/plugins-workspace/pull/3395) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix a deadlock when calling `Store::set` while exiting (on `RunEvent::Exit`)
+
 ## \[2.4.2]
 
 - [`eebfd2ed`](https://github.com/tauri-apps/plugins-workspace/commit/eebfd2ed3e4bae4ef195f20c992f01657a5f5121) ([#3157](https://github.com/tauri-apps/plugins-workspace/pull/3157) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Return an error instead of panic when the internally tracked resource id is invalid on creating new stores

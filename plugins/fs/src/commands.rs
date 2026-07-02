@@ -707,7 +707,7 @@ pub async fn read_text_file_lines_next<R: Runtime>(
     let lines = resource_table.get::<StdLinesResource>(rid)?;
 
     let ret = StdLinesResource::with_lock(&lines, |lines| -> CommandResult<Vec<u8>> {
-        // This is an optimization to include wether we finished iteration or not (1 or 0)
+        // This is an optimization to include whether we finished iteration or not (1 or 0)
         // at the end of returned vector so we can use `tauri::ipc::Response`
         // and avoid serialization overhead of separate values.
         match lines.next() {
