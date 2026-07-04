@@ -1236,10 +1236,7 @@ type WatchEventKindAccess =
  * @since 2.0.0
  */
 type WatchEventKindCreate =
-  | { kind: 'any' }
-  | { kind: 'file' }
-  | { kind: 'folder' }
-  | { kind: 'other' }
+  { kind: 'any' } | { kind: 'file' } | { kind: 'folder' } | { kind: 'other' }
 
 /**
  * @since 2.0.0
@@ -1265,10 +1262,7 @@ type WatchEventKindModify =
  * @since 2.0.0
  */
 type WatchEventKindRemove =
-  | { kind: 'any' }
-  | { kind: 'file' }
-  | { kind: 'folder' }
-  | { kind: 'other' }
+  { kind: 'any' } | { kind: 'file' } | { kind: 'folder' } | { kind: 'other' }
 
 // TODO: Remove this in v3, return `Watcher` instead
 /**
