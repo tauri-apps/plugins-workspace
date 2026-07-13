@@ -25,7 +25,7 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 thiserror = { workspace = true }
 serde_repr = "0.1"
-log = { workspace = true, features = ["kv_unstable"] }
+log = { workspace = true, features = ["kv"] }
 time = { version = "0.3", features = [
   "formatting",
   "local-offset",
