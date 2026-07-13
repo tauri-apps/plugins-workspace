@@ -59,6 +59,38 @@ fn main() {
 
 Note that currently, plugins run in the order they were added in to the builder, so make sure that this plugin is registered first.
 
+By default the plugin will clean itself up on exit. If you need precise control of the cleanup process, you can disable the default behavior:
+
+```rust
+use tauri::{Manager};
+
+#[derive(Clone, serde::Serialize)]
+struct Payload {
+    args: Vec<String>,
+    cwd: String,
+}
+
+fn main() {
+    tauri::Builder::default()
+        .plugin(
+            tauri_plugin_single_instance::Builder::new()
+                .callback(|app, argv, cwd| {
+                    println!("{}, {argv:?}, {cwd}", app.package_info().name);
+                    app.emit("single-instance", Payload { args: argv, cwd }).unwrap();
+                })
+                .destroy_on_exit(false)
+                .build(),
+        )
+        .run(|app, event| {
+            if let tauri::RunEvent::Exit = event {
+                // Make sure to clean up when we're done
+                tauri_plugin_single_instance::destroy(app);
+            }
+        })
+        .expect("error while running tauri application");
+}
+```
+
 ## Usage with Flatpak/Snap
 
 If you use Flatpak/Snap to publish your package and your Tauri identifier doesn't match the package id, set the `DBUS_ID` variable using the builder for the plugin, look at example.
