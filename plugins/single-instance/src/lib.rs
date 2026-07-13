@@ -80,6 +80,13 @@ impl<R: Runtime> Builder<R> {
         self
     }
 
+    /// Set whether the plugin should destroy the single instance lock on app exit.
+    /// Set to `false` if you want precise control over when the plugin is destroyed
+    /// and intend to call [`destroy`] manually. This is useful if you want to continue
+    /// to ensure only a single instance of your app is running while performing some
+    /// long-running cleanup tasks on app exit.
+    ///
+    /// Defaults to `true`.
     pub fn destroy_on_exit(mut self, val: bool) -> Self {
         self.destroy_on_exit = val;
         self
