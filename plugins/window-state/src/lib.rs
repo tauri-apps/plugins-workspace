@@ -56,6 +56,7 @@ bitflags! {
         const VISIBLE     = 1 << 3;
         const DECORATIONS = 1 << 4;
         const FULLSCREEN  = 1 << 5;
+        const MINIMIZED   = 1 << 6;
     }
 }
 
@@ -84,6 +85,7 @@ struct WindowState {
     prev_x: i32,
     prev_y: i32,
     maximized: bool,
+    minimized: bool,
     visible: bool,
     decorated: bool,
     fullscreen: bool,
@@ -99,6 +101,7 @@ impl Default for WindowState {
             prev_x: Default::default(),
             prev_y: Default::default(),
             maximized: Default::default(),
+            minimized: Default::default(),
             visible: true,
             decorated: true,
             fullscreen: Default::default(),
@@ -216,12 +219,13 @@ impl<R: Runtime> WindowExt for Window<R> {
                 })?;
             }
 
-            if flags.contains(StateFlags::MAXIMIZED) && state.maximized {
+            // fullscreen > maximized > minimized
+            if flags.contains(StateFlags::FULLSCREEN) && state.fullscreen {
+                self.set_fullscreen(true)?;
+            } else if flags.contains(StateFlags::MAXIMIZED) && state.maximized {
                 self.maximize()?;
-            }
-
-            if flags.contains(StateFlags::FULLSCREEN) {
-                self.set_fullscreen(state.fullscreen)?;
+            } else if flags.contains(StateFlags::MINIMIZED) && state.minimized {
+                self.minimize()?;
             }
 
             should_show = state.visible;
@@ -240,10 +244,6 @@ impl<R: Runtime> WindowExt for Window<R> {
                 metadata.y = pos.y;
             }
 
-            if flags.contains(StateFlags::MAXIMIZED) {
-                metadata.maximized = self.is_maximized()?;
-            }
-
             if flags.contains(StateFlags::VISIBLE) {
                 metadata.visible = self.is_visible()?;
             }
@@ -256,9 +256,23 @@ impl<R: Runtime> WindowExt for Window<R> {
                 metadata.fullscreen = self.is_fullscreen()?;
             }
 
+            if flags.contains(StateFlags::MINIMIZED) {
+                metadata.minimized = self.is_minimized()?;
+            }
+
+            if flags.contains(StateFlags::MAXIMIZED) {
+                metadata.maximized = self.is_maximized()?;
+            }
+
             c.insert(label.into(), metadata);
         }
 
+        // this actually overrides
+        // {
+        //    "visible": false
+        // }
+        // in tauri.config.json
+        // if you want to control the visibility, don't pass StateFlags::VISIBLE in.
         if flags.contains(StateFlags::VISIBLE) && should_show {
             self.show()?;
             self.set_focus()?;
@@ -280,18 +294,33 @@ impl<R: Runtime> WindowExtInternal for WebviewWindow<R> {
 
 impl<R: Runtime> WindowExtInternal for Window<R> {
     fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()> {
-        let is_maximized = flags
-            .intersects(StateFlags::MAXIMIZED | StateFlags::POSITION | StateFlags::SIZE)
-            && self.is_maximized()?;
-        let is_minimized =
-            flags.intersects(StateFlags::POSITION | StateFlags::SIZE) && self.is_minimized()?;
+        let concern_flags = StateFlags::MAXIMIZED
+            | StateFlags::MINIMIZED
+            | StateFlags::POSITION
+            | StateFlags::SIZE
+            | StateFlags::FULLSCREEN;
 
+        let is_concern = flags.intersects(concern_flags);
+
+        let is_maximized = is_concern && self.is_maximized()?;
+
+        let is_minimized = is_concern && self.is_minimized()?;
+
+        let is_fullscreen = is_concern && self.is_fullscreen()?;
+
+        // window can be maximized manually && programatically
         if flags.contains(StateFlags::MAXIMIZED) {
             state.maximized = is_maximized;
         }
 
+        // window can be minimized manually && programatically
+        if flags.contains(StateFlags::MINIMIZED) {
+            state.minimized = is_minimized;
+        }
+
+        // window can be fullscreen manually && programatically
         if flags.contains(StateFlags::FULLSCREEN) {
-            state.fullscreen = self.is_fullscreen()?;
+            state.fullscreen = is_fullscreen;
         }
 
         if flags.contains(StateFlags::DECORATIONS) {
@@ -487,12 +516,29 @@ impl Builder {
                                 window_clone.is_maximized().unwrap_or_default()
                             };
 
-                            if !window_clone.is_minimized().unwrap_or_default() && !is_maximized {
-                                let mut c = cache.lock().unwrap();
-                                if let Some(state) = c.get_mut(&label) {
+                            let is_minimized = window_clone.is_minimized().unwrap_or_default();
+                            let is_fullscreen = window_clone.is_fullscreen().unwrap_or_default();
+
+                            let mut cache_lock = cache.lock().unwrap();
+                            let state = cache_lock.get_mut(&label);
+
+                            if let Some(state) = state {
+                                // save height & width only when the window is not maximized && minimized && fullscreen
+                                // leaving their own function -> is_maximized() & is_minimized() & is_fullscreen() handle its functionality
+                                if !is_maximized && !is_minimized && !is_fullscreen {
                                     state.width = size.width;
                                     state.height = size.height;
                                 }
+
+                                // save minimized & maximized & fullscreen at any time
+                                // so we can restore them accurately
+
+                                // minimized -> window is invisible but app icon is visible in taskbar (not tray_icon)
+                                state.minimized = is_minimized;
+                                // maximized -> window is visible at the most possible scale of selected monitor, the app icon is visible as well in taskbar (not tray_icon)
+                                state.maximized = is_maximized;
+                                // fullscreen -> system taskbar & window decoration are invisible, leaving only webview is visible and it takes the whole screen of the selected monitor
+                                state.fullscreen = is_fullscreen;
                             }
                         }
                     }
