@@ -6,7 +6,7 @@
 
   let isChecking = $state(false)
   let isInstalling = $state(false)
-  let newUpdate: Update = $state()
+  let newUpdate = $state<Update | undefined>()
   let totalSize = $state(0)
   let downloadedSize = $state(0)
   let progress = $derived(
@@ -36,10 +36,10 @@
     isInstalling = true
     downloadedSize = 0
     try {
-      await newUpdate.downloadAndInstall((downloadProgress) => {
+      await newUpdate!.downloadAndInstall((downloadProgress) => {
         switch (downloadProgress.event) {
           case 'Started':
-            totalSize = downloadProgress.data.contentLength
+            totalSize = downloadProgress.data.contentLength!
             break
           case 'Progress':
             downloadedSize += downloadProgress.data.chunkLength
