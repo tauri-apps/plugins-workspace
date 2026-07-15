@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-log"
-version = "2.8.0"
+version = "2.9.0"
 description = "Configurable logging for your Tauri app."
 authors = { workspace = true }
 license = { workspace = true }
@@ -25,7 +25,7 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 thiserror = { workspace = true }
 serde_repr = "0.1"
-log = { workspace = true, features = ["kv_unstable"] }
+log = { workspace = true, features = ["kv"] }
 time = { version = "0.3", features = [
   "formatting",
   "local-offset",
