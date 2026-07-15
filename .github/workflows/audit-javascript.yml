@@ -46,7 +46,6 @@ jobs:
           node-version: 'lts/*'
       - uses: pnpm/action-setup@v6
         with:
-          version: 11
           run_install: true
       - name: audit
         run: pnpm audit
