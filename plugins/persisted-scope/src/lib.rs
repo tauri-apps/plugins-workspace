@@ -232,10 +232,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 let app_dir_ = app_dir.clone();
 
                 if let Some(fs_scope) = &fs_scope {
-                    let app_ = app.clone();
                     fs_scope.listen(move |event| {
                         if let tauri::fs::Event::PathAllowed(_) = event {
-                            save_scopes(&app_.fs_scope(), &app_dir, &fs_scope_state_path);
+                            save_scopes(&app.fs_scope(), &app_dir, &fs_scope_state_path);
                         }
                     });
                 }

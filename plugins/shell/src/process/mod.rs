@@ -479,10 +479,8 @@ fn read_line<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
                 let _ = block_on_task(async move { tx_.send(wrapper(buf)).await });
             }
             Err(e) => {
-                let tx_ = tx.clone();
-                let _ = block_on_task(
-                    async move { tx_.send(CommandEvent::Error(e.to_string())).await },
-                );
+                let _ =
+                    block_on_task(async move { tx.send(CommandEvent::Error(e.to_string())).await });
                 break;
             }
         }
