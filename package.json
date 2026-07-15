@@ -25,15 +25,5 @@
     "typescript-eslint": "8.58.2"
   },
   "minimumReleaseAge": 4320,
-  "pnpm": {
-    "overrides": {
-      "esbuild@<0.25.0": ">=0.25.0"
-    },
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
-  },
-  "engines": {
-    "pnpm": "^10.16.0"
-  }
+  "packageManager": "pnpm@11.13.0"
 }
