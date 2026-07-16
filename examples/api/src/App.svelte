@@ -186,9 +186,13 @@
 
   function applyTheme() {
     const isDark = theme === 'auto' ? preferDark.current : theme === 'dark'
-    isDark
-      ? document.documentElement.classList.add('dark')
-      : document.documentElement.classList.remove('dark')
+    if (isDark) {
+      document.documentElement.classList.add('dark')
+      document.documentElement.classList.remove('light')
+    } else {
+      document.documentElement.classList.remove('dark')
+      document.documentElement.classList.add('light')
+    }
     setTheme(theme === 'auto' ? null : theme)
     localStorage.setItem('theme', theme)
   }
@@ -331,7 +335,7 @@
   id="sidebarToggle"
   bind:this={sidebarToggle}
   class="z-2000 hidden lt-sm:flex justify-center absolute items-center w-8 h-8 rd-8
-            bg-accent dark:bg-darkAccent active:bg-accentDark dark:active:bg-darkAccentDark"
+            bg-accent dark:bg-darkAccent active:bg-accentDark dark:active:bg-darkAccentDark text-accentText dark:text-darkAccentText"
 >
   {#if isSideBarOpen}
     <span class="i-codicon-close animate-duration-300ms animate-fade-in"></span>
@@ -397,9 +401,7 @@
     <br />
     <div class="bg-white/5 h-2px"></div>
     <br />
-    <div
-      class="flex flex-col overflow-y-auto children-flex-none gap-1"
-    >
+    <div class="flex flex-col overflow-y-auto children-flex-none gap-1">
       {#each views as view}
         <a
           href="##"
