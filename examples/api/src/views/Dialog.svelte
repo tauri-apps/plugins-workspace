@@ -55,7 +55,7 @@
 
   async function openDialog() {
     try {
-      var result = await open({
+      const result = await open({
         title: "My wonderful open dialog",
         defaultPath,
         filters: filter
@@ -74,9 +74,11 @@
 
       if (Array.isArray(result)) {
         onMessage(result);
+      } else if (result === null) {
+        onMessage('user cancelled the selection')
       } else {
-        var pathToRead = result;
-        var isFile = pathToRead.match(/\S+\.\S+$/g);
+        const pathToRead = result;
+        const isFile = pathToRead.match(/\S+\.\S+$/g);
 
         await readFile(pathToRead)
           .then(function (res) {
@@ -89,7 +91,7 @@
                 arrayBufferToBase64(
                   new Uint8Array(res),
                   function (base64) {
-                    var src = "data:image/png;base64," + base64;
+                    const src = "data:image/png;base64," + base64;
                     insecureRenderHtml('<img src="' + src + '"></img>');
                   }
                 );
