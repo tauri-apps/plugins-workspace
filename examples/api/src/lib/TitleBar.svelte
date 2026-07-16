@@ -1,13 +1,14 @@
 <script lang="ts">
-  import type { Window } from '@tauri-apps/api/window'
+  import type { Theme, Window } from '@tauri-apps/api/window'
   import { ask } from '@tauri-apps/plugin-dialog'
   import { onMount } from 'svelte'
 
   let {
     appWindow,
-    toggleDark,
-    isDark
-  }: { appWindow: Window; toggleDark: () => void; isDark: boolean } = $props()
+    switchTheme,
+    theme
+  }: { appWindow: Window; switchTheme: () => void; theme: Theme | 'auto' } =
+    $props()
 
   // Window controls
   let isWindowMaximized = $state(false)
@@ -58,14 +59,16 @@
   >
     <button
       aria-label="Toggle dark mode"
-      title={isDark ? 'Switch to Light mode' : 'Switch to Dark mode'}
+      title={theme ? 'Switch to Light mode' : 'Switch to Dark mode'}
       class="border-none hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
-      onclick={toggleDark}
+      onclick={switchTheme}
     >
-      {#if isDark}
-        <div class="i-ph-sun"></div>
-      {:else}
-        <div class="i-ph-moon"></div>
+      {#if theme === 'auto'}
+        <div title="Switch to Dark mode" class="i-ph-circle-half-fill"></div>
+      {:else if theme === 'dark'}
+        <div title="Switch to Light mode" class="i-ph-moon"></div>
+      {:else if theme === 'light'}
+        <div title="Switch to Auto mode" class="i-ph-sun"></div>
       {/if}
     </button>
     <button
