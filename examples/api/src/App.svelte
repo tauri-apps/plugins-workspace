@@ -213,9 +213,9 @@
       ...r,
       {
         html:
-          `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> ` +
-          (typeof value === 'string' ? value : JSON.stringify(value, null, 1)) +
-          '</pre>'
+          `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> `
+          + (typeof value === 'string' ? value : JSON.stringify(value, null, 1))
+          + '</pre>'
       }
     ])
     await tick()
@@ -229,9 +229,9 @@
       ...r,
       {
         html:
-          `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> ` +
-          html +
-          '</pre>'
+          `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> `
+          + html
+          + '</pre>'
       }
     ])
     await tick()
@@ -341,10 +341,10 @@
 <!-- custom titlebar for Windows -->
 {#if isWindows}
   <div
-    class="w-screen select-none h-8 pl-2 flex justify-between items-center absolute text-primaryText dark:text-darkPrimaryText"
+    class="w-screen select-none h-8 flex justify-between items-center absolute text-primaryText dark:text-darkPrimaryText"
     data-tauri-drag-region
   >
-    <span class="lt-sm:pl-10 text-darkPrimaryText">Tauri API Validation</span>
+    <span class="pl-2 lt-sm:pl-10 lt-lg:text-darkPrimaryText">Tauri API Validation</span>
     <span
       class="
       h-100%
@@ -354,7 +354,7 @@
       <button
         aria-label="Toggle dark mode"
         title={isDark ? 'Switch to Light mode' : 'Switch to Dark mode'}
-        class="bg-inherit border-none hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
+        class="border-none hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
         on:click={toggleDark}
       >
         {#if isDark}
@@ -366,7 +366,7 @@
       <button
         aria-label="Minimize window"
         title="Minimize"
-        class="bg-inherit border-none hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
+        class="border-none hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
         on:click={minimize}
       >
         <div class="i-codicon-chrome-minimize"></div>
@@ -374,7 +374,7 @@
       <button
         aria-label="Maximize window"
         title={isWindowMaximized ? 'Restore' : 'Maximize'}
-        class="bg-inherit border-none hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
+        class="border-none hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
         on:click={toggleMaximize}
       >
         {#if isWindowMaximized}
@@ -386,7 +386,7 @@
       <button
         aria-label="Close window"
         title="Close"
-        class="bg-inherit border-none hover:bg-red-700 dark:hover:bg-red-700 hover:text-darkPrimaryText active:bg-red-700/90 dark:active:bg-red-700/90 active:text-darkPrimaryText"
+        class="border-none hover:bg-red-700 dark:hover:bg-red-700 hover:text-darkPrimaryText active:bg-red-700/90 dark:active:bg-red-700/90 active:text-darkPrimaryText"
         on:click={close}
       >
         <div class="i-codicon-chrome-close"></div>
@@ -398,7 +398,7 @@
 <!-- Sidebar toggle, only visible on small screens -->
 <div
   id="sidebarToggle"
-  class="z-2000 sidebar-toggle hidden lt-sm:flex justify-center absolute items-center w-8 h-8 rd-8
+  class="z-2000 hidden lt-sm:flex justify-center absolute items-center w-8 h-8 rd-8
             bg-accent dark:bg-darkAccent active:bg-accentDark dark:active:bg-darkAccentDark"
 >
   {#if isSideBarOpen}
@@ -409,7 +409,7 @@
 </div>
 
 <div
-  class="flex h-screen w-screen overflow-hidden children-pt8 children-pb-2 text-primaryText dark:text-darkPrimaryText"
+  class="flex h-screen w-screen overflow-hidden text-primaryText dark:text-darkPrimaryText"
 >
   <aside
     id="sidebar"
@@ -512,7 +512,7 @@
         <p class="font-semibold">Console</p>
         <button
           aria-label="Clear Console"
-          class="cursor-pointer h-85% rd-1 p-1 flex justify-center items-center border-none bg-inherit
+          class="cursor-pointer h-85% rd-1 p-1 flex justify-center items-center border-none
                 hover:bg-hoverOverlay dark:hover:bg-darkHoverOverlay
                 active:bg-hoverOverlay/25 dark:active:bg-darkHoverOverlay/25
           "
