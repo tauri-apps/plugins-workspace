@@ -353,7 +353,7 @@
       <img class="p-7" src="tauri_logo.png" alt="Tauri logo" />
     </a>
     {#if !isWindows}
-      <a href="##" class="nv justify-between h-8" onclick={switchTheme}>
+      <a href="##" class="nv justify-between" onclick={switchTheme}>
         {#if theme === 'auto'}
           Switch to Dark mode
           <div class="i-ph-circle-half-fill"></div>
@@ -371,7 +371,7 @@
     {/if}
 
     <a
-      class="nv justify-between h-8"
+      class="nv justify-between"
       target="_blank"
       href="https://tauri.app/v1/guides/"
     >
@@ -379,7 +379,7 @@
       <span class="i-codicon-link-external"></span>
     </a>
     <a
-      class="nv justify-between h-8"
+      class="nv justify-between"
       target="_blank"
       href="https://github.com/tauri-apps/tauri"
     >
@@ -387,7 +387,7 @@
       <span class="i-codicon-link-external"></span>
     </a>
     <a
-      class="nv justify-between h-8"
+      class="nv justify-between"
       target="_blank"
       href="https://github.com/tauri-apps/tauri/tree/dev/examples/api"
     >
@@ -398,7 +398,7 @@
     <div class="bg-white/5 h-2px"></div>
     <br />
     <div
-      class="flex flex-col overflow-y-auto children-h-10 children-flex-none gap-1"
+      class="flex flex-col overflow-y-auto children-flex-none gap-1"
     >
       {#each views as view}
         <a
