@@ -344,7 +344,10 @@
     class="w-screen select-none h-8 flex justify-between items-center absolute text-primaryText dark:text-darkPrimaryText"
     data-tauri-drag-region
   >
-    <span class="pl-2 lt-sm:pl-10 lt-lg:text-darkPrimaryText">Tauri API Validation</span>
+    <span
+      class="h-100% pl-2 flex-1 flex items-center lt-sm:pl-10 lt-lg:text-darkPrimaryText [app-region:drag]"
+      >Tauri API Validation</span
+    >
     <span
       class="
       h-100%
