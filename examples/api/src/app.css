@@ -2,6 +2,13 @@
   line-height: 1.5;
 }
 
+:root.dark {
+  color-scheme: dark;
+}
+:root.light {
+  color-scheme: light;
+}
+
 *:not(h1, h2, h3, h4, h5, h6) {
   margin: 0;
   padding: 0;
