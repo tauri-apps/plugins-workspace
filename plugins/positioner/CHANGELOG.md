@@ -1,5 +1,13 @@
 # Changelog
 
+## \[2.3.3]
+
+- [`4be76900`](https://github.com/tauri-apps/plugins-workspace/commit/4be76900854cae3dc91363dea71b54505896e928) ([#3449](https://github.com/tauri-apps/plugins-workspace/pull/3449) by [@skkap](https://github.com/tauri-apps/plugins-workspace/../../skkap)) Replaced a panic in `calculate_position` with an error return when the window has no associated monitor (e.g. during display sleep or monitor reconfiguration).
+
+## \[2.3.2]
+
+- [`c0d64bf7`](https://github.com/tauri-apps/plugins-workspace/commit/c0d64bf7d9c0f2c8ed1d2614745e15bbb3cde6a7) ([#3420](https://github.com/tauri-apps/plugins-workspace/pull/3420) by [@UrsDeSwardt](https://github.com/tauri-apps/plugins-workspace/../../UrsDeSwardt)) Removed panics and replaced them with error handling.
+
 ## \[2.3.1]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

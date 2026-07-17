@@ -62,7 +62,7 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 import { fetch } from '@tauri-apps/plugin-http'
 const response = await fetch('http://localhost:3003/users/2', {
   method: 'GET',
-  timeout: 30
+  connectTimeout: 30
 })
 ```
 

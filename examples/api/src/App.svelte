@@ -1,7 +1,16 @@
-<script>
+<script module lang="ts">
+  export type ViewProps = {
+    onMessage: (value: unknown) => void
+  }
+</script>
+
+<script lang="ts">
+  import { onMount, tick } from 'svelte'
   import { writable } from 'svelte/store'
-  import { getCurrentWindow } from '@tauri-apps/api/window'
+  import { MediaQuery } from 'svelte/reactivity'
+  import { getCurrentWindow, type Theme } from '@tauri-apps/api/window'
   import { getCurrentWebview } from '@tauri-apps/api/webview'
+  import { setTheme } from '@tauri-apps/api/app'
   import * as os from '@tauri-apps/plugin-os'
 
   import Welcome from './views/Welcome.svelte'
@@ -23,10 +32,9 @@
   import Biometric from './views/Biometric.svelte'
   import Geolocation from './views/Geolocation.svelte'
   import Haptics from './views/Haptics.svelte'
-
-  import { onMount, tick } from 'svelte'
-  import { ask } from '@tauri-apps/plugin-dialog'
   import Nfc from './views/Nfc.svelte'
+
+  import TitleBar from './lib/TitleBar.svelte'
 
   const appWindow = getCurrentWindow()
 
@@ -148,114 +156,98 @@
       component: Haptics,
       icon: 'i-ph-vibrate'
     }
-  ]
+  ].filter(Boolean) as {
+    label: string
+    component: typeof Haptics
+    icon: string
+  }[]
+  let selected = $state.raw(views[0])
 
-  let selected = views[0]
-  function select(view) {
-    selected = view
-  }
+  // dark/light themes
+  const preferDark = new MediaQuery('prefers-color-scheme: dark')
+  let theme = $state<Theme | 'auto'>(
+    (localStorage.getItem('theme') as Theme | null) || 'auto'
+  )
 
-  // Window controls
-  let isWindowMaximized
-  onMount(async () => {
-    isWindowMaximized = await appWindow.isMaximized()
-    appWindow.onResized(async () => {
-      isWindowMaximized = await appWindow.isMaximized()
-    })
-  })
-
-  function minimize() {
-    appWindow.minimize()
-  }
-
-  async function toggleMaximize() {
-    ;(await appWindow.isMaximized())
-      ? appWindow.unmaximize()
-      : appWindow.maximize()
-  }
-
-  let confirmed_close = false
-  async function close() {
-    if (!confirmed_close) {
-      confirmed_close = await ask(
-        'Are you sure that you want to close this window?',
-        {
-          title: 'Tauri API'
-        }
-      )
-      if (confirmed_close) {
-        appWindow.close()
-      }
+  async function switchTheme() {
+    switch (theme) {
+      case 'dark':
+        theme = 'light'
+        break
+      case 'light':
+        theme = 'auto'
+        break
+      case 'auto':
+        theme = 'dark'
+        break
     }
+    applyTheme()
   }
 
-  // dark/light
-  let isDark
-  onMount(() => {
-    isDark = localStorage && localStorage.getItem('theme') == 'dark'
-    applyTheme(isDark)
+  function applyTheme() {
+    const isDark = theme === 'auto' ? preferDark.current : theme === 'dark'
+    if (isDark) {
+      document.documentElement.classList.add('dark')
+      document.documentElement.classList.remove('light')
+    } else {
+      document.documentElement.classList.remove('dark')
+      document.documentElement.classList.add('light')
+    }
+    setTheme(theme === 'auto' ? null : theme)
+    localStorage.setItem('theme', theme)
+  }
+
+  $effect(() => {
+    applyTheme()
   })
-  function applyTheme(isDark) {
-    const html = document.querySelector('html')
-    isDark ? html.classList.add('dark') : html.classList.remove('dark')
-    localStorage && localStorage.setItem('theme', isDark ? 'dark' : '')
-  }
-  function toggleDark() {
-    isDark = !isDark
-    applyTheme(isDark)
-  }
 
   // Console
-  let messages = writable([])
-  let consoleTextEl
-  async function onMessage(value) {
+  const messages = writable<string[]>([])
+  let consoleTextEl: HTMLDivElement
+
+  // this function is renders HTML without sanitizing it so it's insecure
+  // we only use it with our own input data
+  async function insecureRenderHtml(html: string) {
     messages.update((r) => [
       ...r,
-      {
-        html:
-          `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> ` +
-          (typeof value === 'string' ? value : JSON.stringify(value, null, 1)) +
-          '</pre>'
-      }
+      `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> ${html}</pre>`
     ])
     await tick()
-    if (consoleTextEl) consoleTextEl.scrollTop = consoleTextEl.scrollHeight
+    consoleTextEl.scrollTop = consoleTextEl.scrollHeight
   }
 
-  // this function renders HTML without sanitizing it so it's insecure
-  // we only use it with our own input data
-  async function insecureRenderHtml(html) {
-    messages.update((r) => [
-      ...r,
-      {
-        html:
-          `<pre><strong class="text-accent dark:text-darkAccent">[${new Date().toLocaleTimeString()}]:</strong> ` +
-          html +
-          '</pre>'
-      }
-    ])
-    await tick()
-    if (consoleTextEl) consoleTextEl.scrollTop = consoleTextEl.scrollHeight
+  async function onMessage(value: unknown) {
+    const valueStr =
+      typeof value === 'string'
+        ? value
+        : JSON.stringify(
+            value instanceof ArrayBuffer
+              ? Array.from(new Uint8Array(value))
+              : value,
+            null,
+            1
+          )
+    insecureRenderHtml(valueStr)
   }
 
   function clear() {
     messages.update(() => [])
   }
 
-  let consoleEl, consoleH, cStartY
-  let minConsoleHeight = 50
-  function startResizingConsole(e) {
+  let consoleEl: HTMLDivElement
+  let consoleH = 0
+  let cStartY = 0
+  const minConsoleHeight = 50
+  function startResizingConsole(e: MouseEvent) {
     cStartY = e.clientY
 
     const styles = window.getComputedStyle(consoleEl)
     consoleH = parseInt(styles.height, 10)
 
-    const moveHandler = (e) => {
+    const moveHandler = (e: MouseEvent) => {
       const dy = e.clientY - cStartY
       const newH = consoleH - dy
-      consoleEl.style.height = `${
-        newH < minConsoleHeight ? minConsoleHeight : newH
-      }px`
+      consoleEl.style.height = `${newH < minConsoleHeight ? minConsoleHeight : newH}px`
     }
     const upHandler = () => {
       document.removeEventListener('mouseup', upHandler)
@@ -265,21 +257,19 @@
     document.addEventListener('mousemove', moveHandler)
   }
 
-  let isWindows
-  onMount(async () => {
-    isWindows = (await os.platform()) === 'windows'
-  })
+  let isWindows = os.platform() === 'windows'
 
   // mobile
-  let isSideBarOpen = false
-  let sidebar
-  let sidebarToggle
+  let isSideBarOpen = $state(false)
+  let sidebar: HTMLElement
+  let sidebarToggle: HTMLElement
   let isDraggingSideBar = false
   let draggingStartPosX = 0
   let draggingEndPosX = 0
-  const clamp = (min, num, max) => Math.min(Math.max(num, min), max)
+  const clamp = (min: number, num: number, max: number) =>
+    Math.min(Math.max(num, min), max)
 
-  function toggleSidebar(sidebar, isSideBarOpen) {
+  function toggleSidebar() {
     sidebar.style.setProperty(
       '--translate-x',
       `${isSideBarOpen ? '0' : '-18.75'}rem`
@@ -287,10 +277,9 @@
   }
 
   onMount(() => {
-    sidebar = document.querySelector('#sidebar')
-    sidebarToggle = document.querySelector('#sidebarToggle')
-
     document.addEventListener('click', (e) => {
+      if (!(e.target instanceof Node)) return
+
       if (sidebarToggle.contains(e.target)) {
         isSideBarOpen = !isSideBarOpen
       } else if (isSideBarOpen && !sidebar.contains(e.target)) {
@@ -299,6 +288,7 @@
     })
 
     document.addEventListener('touchstart', (e) => {
+      if (!(e.target instanceof Node)) return
       if (sidebarToggle.contains(e.target)) return
 
       const x = e.touches[0].clientX
@@ -330,76 +320,22 @@
     })
   })
 
-  $: {
-    const sidebar = document.querySelector('#sidebar')
-    if (sidebar) {
-      toggleSidebar(sidebar, isSideBarOpen)
-    }
-  }
+  $effect(() => {
+    toggleSidebar()
+  })
 </script>
 
 <!-- custom titlebar for Windows -->
 {#if isWindows}
-  <div
-    class="w-screen select-none h-8 pl-2 flex justify-between items-center absolute text-primaryText dark:text-darkPrimaryText"
-    data-tauri-drag-region
-  >
-    <span class="lt-sm:pl-10 text-darkPrimaryText">Tauri API Validation</span>
-    <span
-      class="
-      h-100%
-      children:h-100% children:w-12 children:inline-flex
-      children:items-center children:justify-center"
-    >
-      <button
-        aria-label="Toggle dark mode"
-        title={isDark ? 'Switch to Light mode' : 'Switch to Dark mode'}
-        class="bg-inherit border-none hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
-        on:click={toggleDark}
-      >
-        {#if isDark}
-          <div class="i-ph-sun"></div>
-        {:else}
-          <div class="i-ph-moon"></div>
-        {/if}
-      </button>
-      <button
-        aria-label="Minimize window"
-        title="Minimize"
-        class="bg-inherit border-none hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
-        on:click={minimize}
-      >
-        <div class="i-codicon-chrome-minimize"></div>
-      </button>
-      <button
-        aria-label="Maximize window"
-        title={isWindowMaximized ? 'Restore' : 'Maximize'}
-        class="bg-inherit border-none hover:bg-hoverOverlay active:bg-hoverOverlayDarker dark:hover:bg-darkHoverOverlay dark:active:bg-darkHoverOverlayDarker"
-        on:click={toggleMaximize}
-      >
-        {#if isWindowMaximized}
-          <div class="i-codicon-chrome-restore"></div>
-        {:else}
-          <div class="i-codicon-chrome-maximize"></div>
-        {/if}
-      </button>
-      <button
-        aria-label="Close window"
-        title="Close"
-        class="bg-inherit border-none hover:bg-red-700 dark:hover:bg-red-700 hover:text-darkPrimaryText active:bg-red-700/90 dark:active:bg-red-700/90 active:text-darkPrimaryText"
-        on:click={close}
-      >
-        <div class="i-codicon-chrome-close"></div>
-      </button>
-    </span>
-  </div>
+  <TitleBar {appWindow} {theme} {switchTheme} />
 {/if}
 
 <!-- Sidebar toggle, only visible on small screens -->
 <div
   id="sidebarToggle"
-  class="z-2000 sidebar-toggle hidden lt-sm:flex justify-center absolute items-center w-8 h-8 rd-8
-            bg-accent dark:bg-darkAccent active:bg-accentDark dark:active:bg-darkAccentDark"
+  bind:this={sidebarToggle}
+  class="z-2000 hidden lt-sm:flex justify-center absolute items-center w-8 h-8 rd-8
+            bg-accent dark:bg-darkAccent active:bg-accentDark dark:active:bg-darkAccentDark text-accentText dark:text-darkAccentText"
 >
   {#if isSideBarOpen}
     <span class="i-codicon-close animate-duration-300ms animate-fade-in"></span>
@@ -409,10 +345,11 @@
 </div>
 
 <div
-  class="flex h-screen w-screen overflow-hidden children-pt8 children-pb-2 text-primaryText dark:text-darkPrimaryText"
+  class="flex h-screen w-screen overflow-hidden text-primaryText dark:text-darkPrimaryText"
 >
   <aside
     id="sidebar"
+    bind:this={sidebar}
     class="lt-sm:h-screen lt-sm:shadow-lg lt-sm:shadow lt-sm:transition-transform lt-sm:absolute lt-sm:z-1999
       bg-darkPrimaryLighter transition-colors-250 overflow-hidden grid select-none px-2"
   >
@@ -420,13 +357,16 @@
       <img class="p-7" src="tauri_logo.png" alt="Tauri logo" />
     </a>
     {#if !isWindows}
-      <a href="##" class="nv justify-between h-8" on:click={toggleDark}>
-        {#if isDark}
-          Switch to Light mode
-          <div class="i-ph-sun"></div>
-        {:else}
+      <a href="##" class="nv justify-between" onclick={switchTheme}>
+        {#if theme === 'auto'}
           Switch to Dark mode
+          <div class="i-ph-circle-half-fill"></div>
+        {:else if theme === 'dark'}
+          Switch to Light mode
           <div class="i-ph-moon"></div>
+        {:else if theme === 'light'}
+          Switch to Auto mode
+          <div class="i-ph-sun"></div>
         {/if}
       </a>
       <br />
@@ -435,7 +375,7 @@
     {/if}
 
     <a
-      class="nv justify-between h-8"
+      class="nv justify-between"
       target="_blank"
       href="https://tauri.app/v1/guides/"
     >
@@ -443,7 +383,7 @@
       <span class="i-codicon-link-external"></span>
     </a>
     <a
-      class="nv justify-between h-8"
+      class="nv justify-between"
       target="_blank"
       href="https://github.com/tauri-apps/tauri"
     >
@@ -451,7 +391,7 @@
       <span class="i-codicon-link-external"></span>
     </a>
     <a
-      class="nv justify-between h-8"
+      class="nv justify-between"
       target="_blank"
       href="https://github.com/tauri-apps/tauri/tree/dev/examples/api"
     >
@@ -461,23 +401,19 @@
     <br />
     <div class="bg-white/5 h-2px"></div>
     <br />
-    <div
-      class="flex flex-col overflow-y-auto children-h-10 children-flex-none gap-1"
-    >
+    <div class="flex flex-col overflow-y-auto children-flex-none gap-1">
       {#each views as view}
-        {#if view}
-          <a
-            href="##"
-            class="nv {selected === view ? 'nv_selected' : ''}"
-            on:click={() => {
-              select(view)
-              isSideBarOpen = false
-            }}
-          >
-            <div class="{view.icon} mr-2"></div>
-            <p>{view.label}</p></a
-          >
-        {/if}
+        <a
+          href="##"
+          class="nv {selected === view ? 'nv_selected' : ''}"
+          onclick={() => {
+            selected = view
+            isSideBarOpen = false
+          }}
+        >
+          <div class="{view.icon} mr-2"></div>
+          <p>{view.label}</p></a
+        >
       {/each}
     </div>
   </aside>
@@ -489,11 +425,7 @@
       <h1>{selected.label}</h1>
       <div class="overflow-y-auto">
         <div class="mr-2">
-          <svelte:component
-            this={selected.component}
-            {onMessage}
-            {insecureRenderHtml}
-          />
+          <selected.component {onMessage} />
         </div>
       </div>
     </div>
@@ -503,20 +435,21 @@
       id="console"
       class="select-none h-15rem grid grid-rows-[2px_2rem_1fr] gap-1 overflow-hidden"
     >
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
-        on:mousedown={startResizingConsole}
+        role="button"
+        tabindex="0"
+        onmousedown={startResizingConsole}
         class="bg-black/20 h-2px cursor-ns-resize"
       ></div>
       <div class="flex justify-between items-center px-2">
         <p class="font-semibold">Console</p>
         <button
           aria-label="Clear Console"
-          class="cursor-pointer h-85% rd-1 p-1 flex justify-center items-center border-none bg-inherit
+          class="cursor-pointer h-85% rd-1 p-1 flex justify-center items-center border-none
                 hover:bg-hoverOverlay dark:hover:bg-darkHoverOverlay
                 active:bg-hoverOverlay/25 dark:active:bg-darkHoverOverlay/25
           "
-          on:click={clear}
+          onclick={clear}
         >
           <div class="i-codicon-clear-all"></div>
         </button>
@@ -525,8 +458,8 @@
         bind:this={consoleTextEl}
         class="px-2 overflow-y-auto all:font-mono code-block all:text-xs select-text mr-2"
       >
-        {#each $messages as r}
-          {@html r.html}
+        {#each $messages as messageHtml}
+          {@html messageHtml}
         {/each}
       </div>
     </div>

@@ -1,5 +1,18 @@
 # Changelog
 
+## \[2.0.41]
+
+### Dependencies
+
+- Upgraded to `log-js@2.9.0`
+
+## \[2.0.40]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@2.4.5`
+- Upgraded to `global-shortcut-js@2.3.2`
+
 ## \[2.0.39]
 
 ### Dependencies

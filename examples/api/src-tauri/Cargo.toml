@@ -1,7 +1,7 @@
 [package]
 name = "api"
 publish = false
-version = "2.0.43"
+version = "2.0.45"
 description = "An example Tauri Application showcasing the api"
 edition = "2021"
 rust-version = { workspace = true }
@@ -20,7 +20,7 @@ serde = { workspace = true }
 tiny_http = "0.12"
 time = "0.3"
 log = { workspace = true }
-tauri-plugin-log = { path = "../../../plugins/log", version = "2.8.0" }
+tauri-plugin-log = { path = "../../../plugins/log", version = "2.9.0" }
 tauri-plugin-fs = { path = "../../../plugins/fs", version = "2.5.1", features = [
   "watch",
 ] }
@@ -56,12 +56,12 @@ features = [
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 tauri-plugin-cli = { path = "../../../plugins/cli", version = "2.4.1" }
-tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", version = "2.3.1" }
+tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", version = "2.3.2" }
 tauri-plugin-updater = { path = "../../../plugins/updater", version = "2.10.1" }
 tauri-plugin-window-state = { path = "../../../plugins/window-state", version = "2.2.0" }
 
 [target."cfg(any(target_os = \"android\", target_os = \"ios\"))".dependencies]
-tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", version = "2.4.4" }
+tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", version = "2.4.5" }
 tauri-plugin-nfc = { path = "../../../plugins/nfc", version = "2.3.5" }
 tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "2.3.2" }
 tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "2.3.2" }

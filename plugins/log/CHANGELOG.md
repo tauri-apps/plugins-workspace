@@ -1,5 +1,11 @@
 # Changelog
 
+## \[2.9.0]
+
+- [`f08980f1`](https://github.com/tauri-apps/plugins-workspace/commit/f08980f123f191b9505bd290acd8fff0fdefeed9) ([#3445](https://github.com/tauri-apps/plugins-workspace/pull/3445) by [@bajoca05](https://github.com/tauri-apps/plugins-workspace/../../bajoca05)) Added the `FileOpenStrategy` for log rotation. It defaults to append into existing file if any (previous behaviour), and brings a new feature to create a new file per session: `FileOpenStrategy::Rotate`.
+- [`254f222e`](https://github.com/tauri-apps/plugins-workspace/commit/254f222e0e2bc79370f977855b6b39d956d3b568) ([#3477](https://github.com/tauri-apps/plugins-workspace/pull/3477) by [@bajoca05](https://github.com/tauri-apps/plugins-workspace/../../bajoca05)) Migrated from the `log` crate's `kv_unstable` feature flag to the `kv` feature flag stabilized in `0.4.21`.
+- [`0c23b8ec`](https://github.com/tauri-apps/plugins-workspace/commit/0c23b8ecfe7c2aca582a81ab7339b11e350b3cac) ([#3446](https://github.com/tauri-apps/plugins-workspace/pull/3446) by [@fee1-dead](https://github.com/tauri-apps/plugins-workspace/../../fee1-dead)) Removed an unused dependency `byte-unit`.
+
 ## \[2.8.0]
 
 - [`2a625adf`](https://github.com/tauri-apps/plugins-workspace/commit/2a625adff30238904035b86b6e2db7595597e857) ([#3065](https://github.com/tauri-apps/plugins-workspace/pull/3065) by [@BinaryMuse](https://github.com/tauri-apps/plugins-workspace/../../BinaryMuse)) Allow specifying a log formatter per target using the `format` method on `Target`.
