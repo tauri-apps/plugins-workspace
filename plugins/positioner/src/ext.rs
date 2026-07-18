@@ -87,7 +87,25 @@ impl<R: Runtime> WindowExt for Window<R> {
         if let Some(monitor) = monitor {
             let monitor_size = monitor.size();
             let monitor_position = monitor.position();
-            let window_size = self.outer_size()?;
+            // Constrain with the size the window will have on the tray's
+            // monitor: a cross-monitor move rescales it, so the current
+            // physical size is only valid where the window sits now.
+            let window_size = {
+                let size = self.outer_size()?;
+                let current_scale = self
+                    .current_monitor()?
+                    .map(|m| m.scale_factor())
+                    .unwrap_or(1.0);
+                let target_scale = monitor.scale_factor();
+                if current_scale > 0.0 && current_scale != target_scale {
+                    PhysicalSize::<u32> {
+                        width: (size.width as f64 / current_scale * target_scale) as u32,
+                        height: (size.height as f64 / current_scale * target_scale) as u32,
+                    }
+                } else {
+                    size
+                }
+            };
 
             let right_border_monitor = monitor_position.x as f64 + monitor_size.width as f64;
             let left_border_monitor = monitor_position.x as f64;
@@ -179,6 +197,38 @@ fn calculate_position<R: Runtime>(
         .unwrap_or_default();
     #[cfg(not(feature = "tray-icon"))]
     let (tray_position, tray_size) = (None, None);
+
+    // A move to another monitor rescales the window, so its current physical
+    // size is only valid on the monitor it occupies right now. For the
+    // tray-relative positions, express the size at the tray's monitor scale so
+    // the window lands centered with the size it will actually have there.
+    #[cfg(feature = "tray-icon")]
+    let window_size = match (&pos, tray_position) {
+        (
+            Position::TrayLeft
+            | Position::TrayBottomLeft
+            | Position::TrayRight
+            | Position::TrayBottomRight
+            | Position::TrayCenter
+            | Position::TrayBottomCenter,
+            Some((tray_x, tray_y)),
+        ) => match window.monitor_from_point(tray_x as f64, tray_y as f64)? {
+            Some(tray_monitor) => {
+                let current_scale = screen.scale_factor();
+                let target_scale = tray_monitor.scale_factor();
+                if current_scale > 0.0 && current_scale != target_scale {
+                    PhysicalSize::<i32> {
+                        width: (window_size.width as f64 / current_scale * target_scale) as i32,
+                        height: (window_size.height as f64 / current_scale * target_scale) as i32,
+                    }
+                } else {
+                    window_size
+                }
+            }
+            None => window_size,
+        },
+        _ => window_size,
+    };
 
     compute_position(
         *screen_position,
