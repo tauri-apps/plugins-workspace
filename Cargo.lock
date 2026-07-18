@@ -207,7 +207,7 @@ checksum = "2a4385e2e34eb35d6b3efe798b9eb88096925d87726c0798709bf56d9ed84af3"
 
 [[package]]
 name = "api"
-version = "2.0.45"
+version = "2.0.46"
 dependencies = [
  "log",
  "serde",
@@ -6525,7 +6525,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.7.1"
+version = "2.7.2"
 dependencies = [
  "log",
  "raw-window-handle",
@@ -6817,7 +6817,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-store"
-version = "2.4.3"
+version = "2.4.4"
 dependencies = [
  "dunce",
  "serde",
