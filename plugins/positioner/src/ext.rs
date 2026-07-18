@@ -150,8 +150,6 @@ fn calculate_position<R: Runtime>(
     window: &Window<R>,
     pos: Position,
 ) -> Result<PhysicalPosition<i32>> {
-    use Position::*;
-
     let screen = window.current_monitor()?.ok_or_else(|| {
         tauri::Error::Io(std::io::Error::other("No monitor found for the window"))
     })?;
@@ -179,6 +177,34 @@ fn calculate_position<R: Runtime>(
             )
         })
         .unwrap_or_default();
+    #[cfg(not(feature = "tray-icon"))]
+    let (tray_position, tray_size) = (None, None);
+
+    compute_position(
+        *screen_position,
+        screen_size,
+        window_size,
+        tray_position,
+        tray_size,
+        pos,
+    )
+}
+
+/// The pure positioning math: computes the window's top-left corner from the
+/// screen, window, and tray geometry alone, with no window-system access.
+fn compute_position(
+    screen_position: PhysicalPosition<i32>,
+    screen_size: PhysicalSize<i32>,
+    window_size: PhysicalSize<i32>,
+    tray_position: Option<(i32, i32)>,
+    tray_size: Option<(i32, i32)>,
+    pos: Position,
+) -> Result<PhysicalPosition<i32>> {
+    use Position::*;
+
+    #[cfg(not(feature = "tray-icon"))]
+    let _ = (tray_position, tray_size);
+    let screen_position = &screen_position;
 
     let physical_pos = match pos {
         TopLeft => *screen_position,
@@ -318,4 +344,124 @@ fn calculate_position<R: Runtime>(
     };
 
     Ok(physical_pos)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Synthetic mixed-DPI fixture mirroring a real arrangement: a 4K external
+    // at scale 1 as primary, a Retina laptop panel at scale 2 below-left of
+    // it. Physical (pixel) coordinates throughout, like the plugin uses.
+    const EXTERNAL_POS: PhysicalPosition<i32> = PhysicalPosition { x: 0, y: 0 };
+    const EXTERNAL_SIZE: PhysicalSize<i32> = PhysicalSize {
+        width: 3840,
+        height: 2160,
+    };
+    const RETINA_POS: PhysicalPosition<i32> = PhysicalPosition { x: -4112, y: 1042 };
+    const RETINA_SIZE: PhysicalSize<i32> = PhysicalSize {
+        width: 4112,
+        height: 2658,
+    };
+    const WINDOW: PhysicalSize<i32> = PhysicalSize {
+        width: 400,
+        height: 300,
+    };
+
+    fn on_retina(pos: Position) -> PhysicalPosition<i32> {
+        compute_position(RETINA_POS, RETINA_SIZE, WINDOW, None, None, pos).unwrap()
+    }
+
+    #[test]
+    fn corners_and_centers_on_a_negative_origin_monitor() {
+        assert_eq!(on_retina(Position::TopLeft), RETINA_POS);
+        assert_eq!(
+            on_retina(Position::TopRight),
+            PhysicalPosition { x: -400, y: 1042 }
+        );
+        assert_eq!(
+            on_retina(Position::Center),
+            PhysicalPosition { x: -2256, y: 2221 }
+        );
+        // The bottom-edge form `H - (h - S.y)` is algebraically the monitor's
+        // bottom edge minus the window height: 2658 - (300 - 1042) = 3400,
+        // and 1042 + 2658 - 300 = 3400. Keep it; it is correct.
+        assert_eq!(
+            on_retina(Position::BottomLeft),
+            PhysicalPosition { x: -4112, y: 3400 }
+        );
+        assert_eq!(
+            on_retina(Position::BottomRight),
+            PhysicalPosition { x: -400, y: 3400 }
+        );
+    }
+
+    #[test]
+    fn corners_and_centers_on_the_primary() {
+        let on_primary =
+            |pos| compute_position(EXTERNAL_POS, EXTERNAL_SIZE, WINDOW, None, None, pos).unwrap();
+        assert_eq!(on_primary(Position::TopLeft), EXTERNAL_POS);
+        assert_eq!(
+            on_primary(Position::BottomRight),
+            PhysicalPosition { x: 3440, y: 1860 }
+        );
+        assert_eq!(
+            on_primary(Position::Center),
+            PhysicalPosition { x: 1720, y: 930 }
+        );
+        assert_eq!(
+            on_primary(Position::LeftCenter),
+            PhysicalPosition { x: 0, y: 930 }
+        );
+    }
+
+    #[cfg(feature = "tray-icon")]
+    fn with_tray(
+        tray_position: (i32, i32),
+        tray_size: (i32, i32),
+        pos: Position,
+    ) -> PhysicalPosition<i32> {
+        compute_position(
+            EXTERNAL_POS,
+            EXTERNAL_SIZE,
+            WINDOW,
+            Some(tray_position),
+            Some(tray_size),
+            pos,
+        )
+        .unwrap()
+    }
+
+    #[cfg(feature = "tray-icon")]
+    #[test]
+    fn tray_positions_follow_the_tray_rect() {
+        // Tray icon in a menu bar: y = 0, window cannot fit above it.
+        let at_top = with_tray((1000, 0), (44, 44), Position::TrayCenter);
+        assert_eq!(at_top.x, 1000 + 22 - 200);
+        #[cfg(target_os = "macos")]
+        assert_eq!(at_top.y, 0);
+        #[cfg(target_os = "windows")]
+        assert_eq!(at_top.y, 44);
+
+        // Tray rect below the window's height: no clamping on any platform.
+        let mid = with_tray((1000, 800), (44, 44), Position::TrayLeft);
+        assert_eq!(mid, PhysicalPosition { x: 1000, y: 500 });
+
+        let bottom = with_tray((1000, 800), (44, 44), Position::TrayBottomCenter);
+        assert_eq!(bottom, PhysicalPosition { x: 822, y: 800 });
+    }
+
+    #[cfg(feature = "tray-icon")]
+    #[test]
+    fn tray_positions_error_without_a_tray_rect() {
+        let result = compute_position(
+            EXTERNAL_POS,
+            EXTERNAL_SIZE,
+            WINDOW,
+            None,
+            None,
+            Position::TrayCenter,
+        );
+        assert!(result.is_err());
+    }
 }
