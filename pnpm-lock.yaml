@@ -182,8 +182,8 @@ importers:
         specifier: ^2.11.0
         version: 2.11.0
       '@tauri-apps/plugin-deep-link':
-        specifier: 2.4.9
-        version: 2.4.9
+        specifier: workspace:*
+        version: link:../..
     devDependencies:
       '@tauri-apps/cli':
         specifier: 2.11.4
@@ -1122,9 +1122,6 @@ packages:
     resolution: {integrity: sha512-R8xGtMpwyetawSqm9kYOuMmEqkhUbvcUy8n0aNXIxollKBLESUu5f4Fx+64hgASYm1H+jSWq6jCW6zqTnH6hqQ==}
     engines: {node: '>= 10'}
     hasBin: true
-
-  '@tauri-apps/plugin-deep-link@2.4.9':
-    resolution: {integrity: sha512-u0SKOUHnJ1wqeqXsDFq2+kASCBj9xxbG0g9XZWPy9SOmU4wXtp6b/wiYpm6oH6/5fBTQsLqnLhIvqLBRpgHJlA==}
 
   '@tybys/wasm-util@0.10.2':
     resolution: {integrity: sha512-RoBvJ2X0wuKlWFIjrwffGw1IqZHKQqzIchKaadZZfnNpsAYp2mM0h36JtPCjNDAHGgYez/15uMBpfGwchhiMgg==}
@@ -2471,10 +2468,6 @@ snapshots:
       '@tauri-apps/cli-win32-arm64-msvc': 2.11.4
       '@tauri-apps/cli-win32-ia32-msvc': 2.11.4
       '@tauri-apps/cli-win32-x64-msvc': 2.11.4
-
-  '@tauri-apps/plugin-deep-link@2.4.9':
-    dependencies:
-      '@tauri-apps/api': 2.11.0
 
   '@tybys/wasm-util@0.10.2':
     dependencies:
