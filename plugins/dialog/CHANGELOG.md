@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.7.2]
+
+- [`40ae0a7f`](https://github.com/tauri-apps/plugins-workspace/commit/40ae0a7fa0ecc9b0cdbd952297f7a17f37308229) ([#3491](https://github.com/tauri-apps/plugins-workspace/pull/3491) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Use `com.google.android.material.dialog.MaterialAlertDialogBuilder` instead of `AlertDialog` so the dialog follows the app's theme
+
 ## \[2.7.1]
 
 ### Dependencies
