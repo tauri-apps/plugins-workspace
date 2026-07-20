@@ -204,7 +204,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
       val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
       intent.addCategory(Intent.CATEGORY_OPENABLE)
       intent.putExtra(Intent.EXTRA_TITLE, args.fileName ?: "")
-      intent.type = "*/*"
+      intent.type = parsedTypes.firstOrNull() ?: "*/*"
 
       if (parsedTypes.isNotEmpty()) {
         intent.putExtra(Intent.EXTRA_MIME_TYPES, parsedTypes)
