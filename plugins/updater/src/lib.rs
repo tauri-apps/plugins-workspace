@@ -215,9 +215,13 @@ impl Builder {
         PluginBuilder::<R, Config>::new("updater")
             .setup(move |app, api| {
                 let mut config = api.config().clone();
-                if let Some(pubkey) = pubkey {
+
+                if config.pubkey.is_none() && pubkey.is_none() {
+                    return Err(Box::new(Error::MissingPubKey));
+                } else if pubkey.is_some() {
                     config.pubkey = pubkey;
-                }
+                };
+
                 if let Some(windows) = &mut config.windows {
                     windows.installer_args.extend(installer_args);
                 }

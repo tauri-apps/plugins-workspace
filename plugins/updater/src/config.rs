@@ -98,7 +98,7 @@ pub struct Config {
     /// Updater endpoints.
     pub endpoints: Vec<Url>,
     /// Signature public key.
-    pub pubkey: String,
+    pub pubkey: Option<String>,
     /// The Windows configuration for the updater.
     pub windows: Option<WindowsConfig>,
 }
@@ -119,7 +119,7 @@ impl<'de> Deserialize<'de> for Config {
             pub dangerous_accept_invalid_hostnames: bool,
             #[serde(default)]
             pub endpoints: Vec<Url>,
-            pub pubkey: String,
+            pub pubkey: Option<String>,
             pub windows: Option<WindowsConfig>,
         }
 
