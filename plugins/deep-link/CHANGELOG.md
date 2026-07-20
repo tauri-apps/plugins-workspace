@@ -1,5 +1,14 @@
 # Changelog
 
+## \[2.4.9]
+
+- [`e6cdc9f5`](https://github.com/tauri-apps/plugins-workspace/commit/e6cdc9f52e2cd975b11b8e4c12879d597f1f76c3) ([#3396](https://github.com/tauri-apps/plugins-workspace/pull/3396) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix broken iOS custom URL schemes
+
+## \[2.4.8]
+
+- [`024ec0c2`](https://github.com/tauri-apps/plugins-workspace/commit/024ec0c29c20cf94579dab9b79d6be0da61a8daa) ([#3214](https://github.com/tauri-apps/plugins-workspace/pull/3214) by [@joshIsCoding](https://github.com/tauri-apps/plugins-workspace/../../joshIsCoding)) Account for differing Android VIEW intent in ChromeOS, fixing deep-link behaviour on Chromium platforms.
+- [`015e817c`](https://github.com/tauri-apps/plugins-workspace/commit/015e817cf2d7f66c1b9268606af8318dfe0bc4ee) ([#3186](https://github.com/tauri-apps/plugins-workspace/pull/3186) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Validate Android new intent is actually a deep link before triggering the onOpenUrl event.
+
 ## \[2.4.7]
 
 - [`8374e997`](https://github.com/tauri-apps/plugins-workspace/commit/8374e997b82c95516fc0c1f6d665d9fc3b52edf8) ([#3258](https://github.com/tauri-apps/plugins-workspace/pull/3258) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fix runtime deep link registration failing on Linux when the app path has spaces.

@@ -1,5 +1,15 @@
 # Changelog
 
+## \[2.5.1]
+
+- [`ec054013`](https://github.com/tauri-apps/plugins-workspace/commit/ec0540138bece081e9a87982091947360e61987a) ([#3323](https://github.com/tauri-apps/plugins-workspace/pull/3323) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated dependency `toml` from 0.9 to 1
+
+## \[2.5.0]
+
+- [`e97a4ded`](https://github.com/tauri-apps/plugins-workspace/commit/e97a4dedab8608d9d57029784ee8a2607ca3a996) ([#3244](https://github.com/tauri-apps/plugins-workspace/pull/3244) by [@SeijiOkuda](https://github.com/tauri-apps/plugins-workspace/../../SeijiOkuda)) Add `encoding` option for `readTextFile` and `readTextFileLines`
+- [`f75d21db`](https://github.com/tauri-apps/plugins-workspace/commit/f75d21db3351d6f12adf585c2c797c20ece94f7f) ([#3360](https://github.com/tauri-apps/plugins-workspace/pull/3360) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Removed the dependency on `tauri-utils`'s `build` feature
+- [`f5f68063`](https://github.com/tauri-apps/plugins-workspace/commit/f5f68063e459c33522f44a04df3120d9d039ec13) ([#3185](https://github.com/tauri-apps/plugins-workspace/pull/3185) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Enable access for security-scoped resources on iOS by automatically calling `NSURL::startAccessingSecurityScopedResource` on resource access and adding the `stopAccessingSecurityScopedResource` API.
+
 ## \[2.4.5]
 
 - [`521cd8b3`](https://github.com/tauri-apps/plugins-workspace/commit/521cd8b372c862d96b1637775710e4d7cf2443e2) ([#3155](https://github.com/tauri-apps/plugins-workspace/pull/3155) by [@EliasStar](https://github.com/tauri-apps/plugins-workspace/../../EliasStar)) Fix off by one error in the implementation of readTextFileLines causing all lines to end with an (additional) null byte.
