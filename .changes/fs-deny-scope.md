@@ -3,4 +3,4 @@
 "fs-js": patch
 ---
 
-documented `scope.deny` now is correctly under `permissions`
+Fixed `deny-webview-data` has no effect
