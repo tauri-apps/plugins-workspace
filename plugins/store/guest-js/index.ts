@@ -21,7 +21,7 @@ export type StoreOptions = {
   /**
    * Default value of the store
    */
-  defaults: { [key: string]: unknown }
+  defaults?: { [key: string]: unknown }
   /**
    * Auto save on modification with debounce duration in milliseconds, it's 100ms by default, pass in `false` to disable it
    */

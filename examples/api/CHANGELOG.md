@@ -1,5 +1,12 @@
 # Changelog
 
+## \[2.0.42]
+
+### Dependencies
+
+- Upgraded to `dialog-js@2.7.2`
+- Upgraded to `store-js@2.4.4`
+
 ## \[2.0.41]
 
 ### Dependencies
