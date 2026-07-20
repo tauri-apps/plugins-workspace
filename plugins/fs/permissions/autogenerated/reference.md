@@ -22,7 +22,9 @@ the `mkdir` command.
 
 This default permission set prevents access to critical components
 of the Tauri application by default.
-On Windows the webview data folder access is denied.
+
+- On Windows the webview data folder `$APPLOCALDATA/EBWebView` access is denied.
+- On Linux the webview data folder `$APPLOCALDATA` access is denied.
 
 #### This default permission set includes the following:
 
@@ -3745,7 +3747,7 @@ This enables all read related commands without any pre-configured accessible pat
 <td>
 
 This permission allows recursive read functionality on the application
-specific base directories. 
+specific base directories.
 
 
 </td>
