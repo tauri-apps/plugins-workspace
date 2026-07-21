@@ -5,25 +5,13 @@
 import { invoke } from '@tauri-apps/api/core'
 
 export type ClientPath =
-  | string
-  | Iterable<number>
-  | ArrayLike<number>
-  | ArrayBuffer
+  string | Iterable<number> | ArrayLike<number> | ArrayBuffer
 export type VaultPath =
-  | string
-  | Iterable<number>
-  | ArrayLike<number>
-  | ArrayBuffer
+  string | Iterable<number> | ArrayLike<number> | ArrayBuffer
 export type RecordPath =
-  | string
-  | Iterable<number>
-  | ArrayLike<number>
-  | ArrayBuffer
+  string | Iterable<number> | ArrayLike<number> | ArrayBuffer
 export type StoreKey =
-  | string
-  | Iterable<number>
-  | ArrayLike<number>
-  | ArrayBuffer
+  string | Iterable<number> | ArrayLike<number> | ArrayBuffer
 
 export interface ConnectionLimits {
   maxPendingIncoming?: number

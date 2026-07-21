@@ -22,8 +22,7 @@ window.addEventListener('click', function (evt) {
   const a = evt
     .composedPath()
     .find((el) => el instanceof Node && el.nodeName.toUpperCase() === 'A') as
-    | HTMLAnchorElement
-    | undefined
+    HTMLAnchorElement | undefined
 
   // return early if
   if (

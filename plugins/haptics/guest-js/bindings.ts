@@ -74,11 +74,7 @@ export const commands = {
 
 export type Error = never
 export type ImpactFeedbackStyle =
-  | 'light'
-  | 'medium'
-  | 'heavy'
-  | 'soft'
-  | 'rigid'
+  'light' | 'medium' | 'heavy' | 'soft' | 'rigid'
 export type NotificationFeedbackType = 'success' | 'warning' | 'error'
 //export type RandomNumber = number;
 
@@ -101,8 +97,7 @@ type __EventObj__<T> = {
 }
 
 export type Result<T, E> =
-  | { status: 'ok'; data: T }
-  | { status: 'error'; error: E }
+  { status: 'ok'; data: T } | { status: 'error'; error: E }
 
 function __makeEvents__<T extends Record<string, any>>(
   mappings: Record<keyof T, string>

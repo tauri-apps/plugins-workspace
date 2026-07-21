@@ -152,10 +152,7 @@ export type FileAccessMode = 'copy' | 'scoped'
  * @since 2.4.0
  */
 export type MessageDialogDefaultButtons =
-  | 'Ok'
-  | 'OkCancel'
-  | 'YesNo'
-  | 'YesNoCancel'
+  'Ok' | 'OkCancel' | 'YesNo' | 'YesNoCancel'
 
 /** All possible button keys. */
 type ButtonKey = 'ok' | 'cancel' | 'yes' | 'no'
@@ -217,8 +214,7 @@ export type MessageDialogCustomButtons =
  * @since 2.4.0
  */
 export type MessageDialogButtons =
-  | MessageDialogDefaultButtons
-  | MessageDialogCustomButtons
+  MessageDialogDefaultButtons | MessageDialogCustomButtons
 
 /**
  * @since 2.0.0
