@@ -452,47 +452,47 @@ impl Builder {
                         }
                     }
 
-                    WindowEvent::Moved(position) if state_flags.contains(StateFlags::POSITION) => {
-                        if window_clone
-                            .state::<RestoringWindowState>()
-                            .0
-                            .try_lock()
-                            .is_ok()
-                            && !window_clone.is_minimized().unwrap_or_default()
-                        {
-                            let mut c = cache.lock().unwrap();
-                            if let Some(state) = c.get_mut(&label) {
-                                state.prev_x = state.x;
-                                state.prev_y = state.y;
+                    WindowEvent::Moved(position)
+                        if state_flags.contains(StateFlags::POSITION)
+                            && window_clone
+                                .state::<RestoringWindowState>()
+                                .0
+                                .try_lock()
+                                .is_ok()
+                            && !window_clone.is_minimized().unwrap_or_default() =>
+                    {
+                        let mut c = cache.lock().unwrap();
+                        if let Some(state) = c.get_mut(&label) {
+                            state.prev_x = state.x;
+                            state.prev_y = state.y;
 
-                                state.x = position.x;
-                                state.y = position.y;
-                            }
+                            state.x = position.x;
+                            state.y = position.y;
                         }
                     }
-                    WindowEvent::Resized(size) if state_flags.contains(StateFlags::SIZE) => {
-                        if window_clone
-                            .state::<RestoringWindowState>()
-                            .0
-                            .try_lock()
-                            .is_ok()
+                    WindowEvent::Resized(size)
+                        if state_flags.contains(StateFlags::SIZE)
+                            && window_clone
+                                .state::<RestoringWindowState>()
+                                .0
+                                .try_lock()
+                                .is_ok() =>
+                    {
+                        // TODO: Remove once https://github.com/tauri-apps/tauri/issues/5812 is resolved.
+                        let is_maximized = if cfg!(target_os = "macos")
+                            && (!window_clone.is_decorated().unwrap_or_default()
+                                || !window_clone.is_resizable().unwrap_or_default())
                         {
-                            // TODO: Remove once https://github.com/tauri-apps/tauri/issues/5812 is resolved.
-                            let is_maximized = if cfg!(target_os = "macos")
-                                && (!window_clone.is_decorated().unwrap_or_default()
-                                    || !window_clone.is_resizable().unwrap_or_default())
-                            {
-                                false
-                            } else {
-                                window_clone.is_maximized().unwrap_or_default()
-                            };
+                            false
+                        } else {
+                            window_clone.is_maximized().unwrap_or_default()
+                        };
 
-                            if !window_clone.is_minimized().unwrap_or_default() && !is_maximized {
-                                let mut c = cache.lock().unwrap();
-                                if let Some(state) = c.get_mut(&label) {
-                                    state.width = size.width;
-                                    state.height = size.height;
-                                }
+                        if !window_clone.is_minimized().unwrap_or_default() && !is_maximized {
+                            let mut c = cache.lock().unwrap();
+                            if let Some(state) = c.get_mut(&label) {
+                                state.width = size.width;
+                                state.height = size.height;
                             }
                         }
                     }

@@ -1,5 +1,18 @@
 # Changelog
 
+## \[2.0.46]
+
+### Dependencies
+
+- Upgraded to `dialog@2.7.2`
+- Upgraded to `store@2.4.4`
+
+## \[2.0.45]
+
+### Dependencies
+
+- Upgraded to `log@2.9.0`
+
 ## \[2.0.44]
 
 ### Dependencies
