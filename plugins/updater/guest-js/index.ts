@@ -40,6 +40,14 @@ interface DownloadOptions {
   timeout?: number
 }
 
+/** Options used when installing an update */
+interface InstallOptions {
+  /**
+   * If the Windows installer should restart the app after installed, default is `true`
+   */
+  restartAfterInstall?: boolean
+}
+
 interface UpdateMetadata {
   rid: number
   currentVersion: string
@@ -95,14 +103,15 @@ class Update extends Resource {
   }
 
   /** Install downloaded updater package */
-  async install(): Promise<void> {
+  async install(options?: InstallOptions): Promise<void> {
     if (!this.downloadedBytes) {
       throw new Error('Update.install called before Update.download')
     }
 
     await invoke('plugin:updater|install', {
       updateRid: this.rid,
-      bytesRid: this.downloadedBytes.rid
+      bytesRid: this.downloadedBytes.rid,
+      ...options
     })
 
     // Don't need to call close, we did it in rust side already
@@ -112,7 +121,7 @@ class Update extends Resource {
   /** Downloads the updater package and installs it */
   async downloadAndInstall(
     onEvent?: (progress: DownloadEvent) => void,
-    options?: DownloadOptions
+    options?: DownloadOptions & InstallOptions
   ): Promise<void> {
     convertToRustHeaders(options)
     const channel = new Channel<DownloadEvent>()

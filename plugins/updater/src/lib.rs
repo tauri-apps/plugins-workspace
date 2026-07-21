@@ -83,9 +83,9 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
             builder = builder.target(target);
         }
 
-        let args = self.env().args_os;
-        if !args.is_empty() {
-            builder = builder.current_exe_args(args);
+        #[cfg(windows)]
+        {
+            builder = builder.current_exe_args(self.env().args_os);
         }
 
         builder.version_comparator = version_comparator.clone();
