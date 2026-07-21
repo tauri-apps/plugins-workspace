@@ -762,7 +762,7 @@ impl Update {
         Ok(())
     }
 
-    /// If the Windows installer should restart the app after installed, default is `true`
+    /// Whether the Windows installer should restart the app after installed, default is `true`
     #[cfg_attr(not(windows), allow(unused))]
     pub fn restart_after_install(mut self, restart_after_install: bool) -> Self {
         #[cfg(windows)]
