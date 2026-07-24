@@ -22,6 +22,7 @@ use std::{
     collections::{HashMap, HashSet},
     fs::create_dir_all,
     io::BufReader,
+    path::PathBuf,
     sync::{Arc, Mutex},
 };
 
@@ -70,6 +71,7 @@ struct PluginState {
     pub(crate) state_flags: StateFlags,
     filename: String,
     map_label: Option<Box<LabelMapperFn>>,
+    state_dir: Option<PathBuf>,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
@@ -119,8 +121,12 @@ pub trait AppHandleExt {
 
 impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
     fn save_window_state(&self, flags: StateFlags) -> Result<()> {
-        let app_dir = self.path().app_config_dir()?;
         let plugin_state = self.state::<PluginState>();
+        let app_dir = if let Some(ref state_dir) = plugin_state.state_dir {
+            state_dir.clone()
+        } else {
+            self.path().app_config_dir()?
+        };
         let state_path = app_dir.join(&plugin_state.filename);
         let windows = self.webview_windows();
         let cache = self.state::<WindowStateCache>();
@@ -329,6 +335,7 @@ pub struct Builder {
     state_flags: StateFlags,
     map_label: Option<Box<LabelMapperFn>>,
     filename: Option<String>,
+    state_dir: Option<PathBuf>,
 }
 
 impl Builder {
@@ -345,6 +352,12 @@ impl Builder {
     /// Sets a custom filename to use when saving and restoring window states from disk.
     pub fn with_filename(mut self, filename: impl Into<String>) -> Self {
         self.filename.replace(filename.into());
+        self
+    }
+
+    /// Sets a custom directory to use when saving and restoring window states from disk.
+    pub fn with_state_dir(mut self, state_dir: impl Into<PathBuf>) -> Self {
+        self.state_dir.replace(state_dir.into());
         self
     }
 
@@ -386,6 +399,7 @@ impl Builder {
         let state_flags = self.state_flags;
         let filename = self.filename.unwrap_or_else(|| DEFAULT_FILENAME.into());
         let map_label = self.map_label;
+        let state_dir = self.state_dir;
 
         PluginBuilder::new("window-state")
             .invoke_handler(tauri::generate_handler![
@@ -394,13 +408,15 @@ impl Builder {
                 cmd::filename
             ])
             .setup(move |app, _api| {
-                let cache = load_saved_window_states(app, &filename).unwrap_or_default();
+                let cache = load_saved_window_states(app, &filename, state_dir.as_ref())
+                    .unwrap_or_default();
                 app.manage(WindowStateCache(Arc::new(Mutex::new(cache))));
                 app.manage(RestoringWindowState(Mutex::new(())));
                 app.manage(PluginState {
                     state_flags,
                     filename,
                     map_label,
+                    state_dir,
                 });
                 Ok(())
             })
@@ -511,8 +527,13 @@ impl Builder {
 fn load_saved_window_states<R: Runtime>(
     app: &AppHandle<R>,
     filename: &String,
+    state_dir: Option<&PathBuf>,
 ) -> Result<HashMap<String, WindowState>> {
-    let app_dir = app.path().app_config_dir()?;
+    let app_dir = if let Some(state_dir) = state_dir {
+        state_dir.clone()
+    } else {
+        app.path().app_config_dir()?
+    };
     let state_path = app_dir.join(filename);
     let file = std::fs::File::open(state_path)?;
     let reader = BufReader::new(file);
