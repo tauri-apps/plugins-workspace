@@ -41,7 +41,7 @@ url = { workspace = true }
 http = "1"
 minisign-verify = "0.2"
 time = { version = "0.3", features = ["parsing", "formatting"] }
-base64 = "0.22"
+base64 = "0.23"
 semver = { version = "1", features = ["serde"] }
 futures-util = "0.3"
 tempfile = "3.20"
