@@ -849,7 +849,7 @@ impl Update {
         let file = encode_wide(file);
         let parameters = encode_wide(parameters);
 
-        unsafe {
+        let result = unsafe {
             ShellExecuteW(
                 std::ptr::null_mut(),
                 w!("open"),
@@ -859,6 +859,9 @@ impl Update {
                 SW_SHOW,
             )
         };
+        if result as isize <= 32 {
+            return Err(crate::Error::Io(std::io::Error::last_os_error()));
+        }
 
         std::process::exit(0);
     }
