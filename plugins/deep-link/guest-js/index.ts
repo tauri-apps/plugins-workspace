@@ -14,9 +14,11 @@ import { type UnlistenFn, listen } from '@tauri-apps/api/event'
  * const urls = await getCurrent();
  * ```
  *
- * #### - **Windows / Linux**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
- * Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
- * Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect..
+ * #### Platform-specific
+ *
+ * - **Windows / Linux:** This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
+ *   Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
+ *   Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
  *
  * @since 2.0.0
  */
@@ -35,7 +37,9 @@ export async function getCurrent(): Promise<string[] | null> {
  * await register("my-scheme");
  * ```
  *
- * #### - **macOS / Android / iOS**: Unsupported.
+ * #### Platform-specific
+ *
+ * - **macOS / Android / iOS:** Unsupported.
  *
  * @since 2.0.0
  */
@@ -54,7 +58,9 @@ export async function register(protocol: string): Promise<null> {
  * await unregister("my-scheme");
  * ```
  *
- * #### - **macOS / Linux / Android / iOS**: Unsupported.
+ * #### Platform-specific
+ *
+ * - **macOS / Linux / Android / iOS:** Unsupported.
  *
  * @since 2.0.0
  */
@@ -73,7 +79,9 @@ export async function unregister(protocol: string): Promise<null> {
  * await isRegistered("my-scheme");
  * ```
  *
- * #### - **macOS / Android / iOS**: Unsupported.
+ * #### Platform-specific
+ *
+ * - **macOS / Android / iOS:** Unsupported.
  *
  * @since 2.0.0
  */
@@ -92,7 +100,9 @@ export async function isRegistered(protocol: string): Promise<boolean> {
  * await onOpenUrl((urls) => { console.log(urls) });
  * ```
  *
- * #### - **Windows / Linux**: Unsupported without the single-instance plugin. The OS will spawn a new app instance passing the URL as a CLI argument.
+ * #### Platform-specific
+ *
+ * - **Windows / Linux:** Unsupported without the single-instance plugin. The OS will spawn a new app instance passing the URL as a CLI argument.
  *
  * @since 2.0.0
  */

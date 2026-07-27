@@ -27,7 +27,7 @@ export default defineConfig(async () => {
       port: 5173,
       strictPort: true,
       fs: {
-        allow: ['.', '../../tooling/api/dist']
+        allow: ['.']
       }
     }
   }

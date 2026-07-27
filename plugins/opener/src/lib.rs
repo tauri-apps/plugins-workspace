@@ -20,6 +20,8 @@ mod open;
 mod reveal_item_in_dir;
 mod scope;
 mod scope_entry;
+#[cfg(windows)]
+mod windows_shell_path;
 
 pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;

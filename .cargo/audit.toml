@@ -1,5 +1,17 @@
 [advisories]
 ignore = [
+  # rsa Marvin Attack
+  "RUSTSEC-2023-0071",
   # time crate can't be updated in the repo because of MSRV, users are unaffected
   "RUSTSEC-2026-0009",
+  # libflate crates can't be updated in the repo because of MSRV, users are unaffected
+  "RUSTSEC-2026-0105",
+  # quick-xml, need an update in plist, can't be updated in the repo because of MSRV, users are unaffected
+  # Also needs on update in wayland-scanner > arboard > tauri-plugin-clipboard-manager
+  "RUSTSEC-2026-0194",
+  # quick-xml, need an update in plist, can't be updated in the repo because of MSRV, users are unaffected
+  # Also needs on update in wayland-scanner > arboard > tauri-plugin-clipboard-manager
+  "RUSTSEC-2026-0195",
+  # quinn-proto, can't be updated in the repo because of MSRV, users are unaffected
+  "RUSTSEC-2026-0185",
 ]

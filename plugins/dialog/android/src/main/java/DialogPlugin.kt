@@ -5,7 +5,6 @@
 package app.tauri.dialog
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Handler
@@ -21,6 +20,7 @@ import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSArray
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 @InvokeArg
 class Filter {
@@ -158,7 +158,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
 
     Handler(Looper.getMainLooper())
       .post {
-        val builder = AlertDialog.Builder(activity)
+        val builder = MaterialAlertDialogBuilder(activity)
 
         if (args.title != null) {
           builder.setTitle(args.title)
@@ -191,8 +191,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
           }
         }
 
-        val dialog = builder.create()
-        dialog.show()
+        builder.show()
       }
   }
 
