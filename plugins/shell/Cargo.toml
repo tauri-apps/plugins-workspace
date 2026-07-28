@@ -43,5 +43,10 @@ process-wrap = { version = "8.2", default-features = false, features = [
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
 
+[target.'cfg(windows)'.dependencies]
+# Must stay semver-compatible with the `windows` version `process-wrap` links
+# against, otherwise `process_wrap::std::CreationFlags` takes a distinct type.
+windows = { version = "0.61", features = ["Win32_System_Threading"] }
+
 [target.'cfg(target_os = "ios")'.dependencies]
 tauri = { workspace = true, features = ["wry"] }

@@ -17,7 +17,8 @@ use std::os::unix::process::ExitStatusExt;
 use std::os::windows::process::CommandExt;
 
 #[cfg(windows)]
-const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+use windows::Win32::System::Threading::CREATE_NO_WINDOW;
+
 const NEWLINE_BYTE: u8 = b'\n';
 
 use tauri::async_runtime::{block_on as block_on_task, channel, Receiver, Sender};
@@ -173,7 +174,7 @@ impl Command {
         command.stdin(Stdio::piped());
         command.stderr(Stdio::piped());
         #[cfg(windows)]
-        command.creation_flags(CREATE_NO_WINDOW);
+        command.creation_flags(CREATE_NO_WINDOW.0);
 
         Self {
             cmd: command,
