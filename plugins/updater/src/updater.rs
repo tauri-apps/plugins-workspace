@@ -743,11 +743,21 @@ impl Update {
     }
 
     /// Installs the updater package downloaded by [`Update::download`]
+    ///
+    /// ## Platform-specific:
+    ///
+    /// - **Windows:** This function exits the app after launching the updater installer successfully
+    /// - **macOS / Linux:** You need to relaunch the app to run the newly install version
     pub fn install(&self, bytes: impl AsRef<[u8]>) -> Result<()> {
         self.install_inner(bytes.as_ref())
     }
 
     /// Downloads and installs the updater package
+    ///
+    /// ## Platform-specific:
+    ///
+    /// - **Windows:** This function exits the app after launching the updater installer successfully
+    /// - **macOS / Linux:** You need to relaunch the app to run the newly install version
     pub async fn download_and_install<C: FnMut(usize, Option<u64>), D: FnOnce()>(
         &self,
         on_chunk: C,
@@ -849,7 +859,7 @@ impl Update {
         let file = encode_wide(file);
         let parameters = encode_wide(parameters);
 
-        unsafe {
+        let result = unsafe {
             ShellExecuteW(
                 std::ptr::null_mut(),
                 w!("open"),
@@ -859,6 +869,9 @@ impl Update {
                 SW_SHOW,
             )
         };
+        if result as isize <= 32 {
+            return Err(crate::Error::Io(std::io::Error::last_os_error()));
+        }
 
         std::process::exit(0);
     }
