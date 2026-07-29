@@ -8,7 +8,14 @@ edition = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-store"
-exclude = ["/banner.png", "/examples", "/guest-js", "/package.json", "/rollup.config.js", "/tsconfig.json"]
+exclude = [
+  "/banner.png",
+  "/examples",
+  "/guest-js",
+  "/package.json",
+  "/rollup.config.js",
+  "/tsconfig.json",
+]
 
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }
