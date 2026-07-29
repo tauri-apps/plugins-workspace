@@ -8,7 +8,13 @@ license = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-barcode-scanner"
-
+exclude = [
+  "/banner.png",
+  "/guest-js",
+  "/package.json",
+  "/rollup.config.js",
+  "/tsconfig.json",
+]
 [package.metadata.docs.rs]
 targets = ["x86_64-linux-android"]
 
