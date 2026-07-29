@@ -7,6 +7,7 @@ authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-nfc"
+exclude = ["/guest-js", "/package.json", "/rollup.config.js", "/tsconfig.json"]
 
 [package.metadata.docs.rs]
 targets = ["x86_64-linux-android"]
