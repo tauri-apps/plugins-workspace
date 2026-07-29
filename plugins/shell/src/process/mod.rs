@@ -367,7 +367,7 @@ impl Command {
         let inner = Arc::new(Mutex::new(wrapped_child));
         let inner_wait = inner.clone();
 
-        spawn_wait_thread(move || wait_on_child(&inner_wait), tx, guard);
+        spawn_wait_thread(move || wait_on_child(&inner_wait, pid), tx, guard);
 
         Ok((
             rx,
@@ -520,20 +520,81 @@ fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
     });
 }
 
-/// Polls the child until it exits, returning its final exit status.
+/// Waits for the child to exit, returning its final exit status.
 ///
 /// process-wrap's child wrappers only expose `&mut self` wait methods, so a
-/// background blocking wait would hold the lock and starve `kill()`. Polling
-/// `try_wait` keeps the lock free between checks; process-wrap caches the exit
-/// status, so reaping (including the rest of a process group) settles here.
+/// blocking wait taken through the lock would hold it for the child's whole
+/// lifetime and starve `kill()`. Instead we block on the raw process *outside*
+/// the lock, leaving it unreaped, and only then take the lock to collect the
+/// status.
+///
+/// By the time the blocking wait returns, the child is either waitable or was
+/// already reaped by a concurrent `kill()` (which caches the exit status), so
+/// the first `try_wait` succeeds immediately; the loop is a defensive fallback.
 fn wait_on_child(
     inner: &Arc<Mutex<Box<dyn process_wrap::std::StdChildWrapper>>>,
+    pid: u32,
 ) -> std::io::Result<std::process::ExitStatus> {
+    wait_for_exit_without_reaping(pid)?;
     loop {
         if let Some(status) = inner.lock().unwrap().try_wait()? {
             return Ok(status);
         }
         std::thread::sleep(std::time::Duration::from_millis(10));
+    }
+}
+
+/// Blocks until `pid` has exited, leaving it in a waitable state so that the
+/// owning wrapper can still collect the exit status.
+#[cfg(unix)]
+fn wait_for_exit_without_reaping(pid: u32) -> std::io::Result<()> {
+    let mut info = std::mem::MaybeUninit::<libc::siginfo_t>::zeroed();
+    loop {
+        // SAFETY: `info` is a valid, writable `siginfo_t`. `WNOWAIT` leaves the
+        // child reapable, so this never steals the status from `try_wait`.
+        let ret = unsafe {
+            libc::waitid(
+                libc::P_PID,
+                pid as libc::id_t,
+                info.as_mut_ptr(),
+                libc::WEXITED | libc::WNOWAIT,
+            )
+        };
+        if ret == 0 {
+            return Ok(());
+        }
+        let err = std::io::Error::last_os_error();
+        // ECHILD: a concurrent `kill()` reaped the child first; the wrapper
+        // holds the cached exit status, so let `try_wait` return it.
+        if err.raw_os_error() == Some(libc::ECHILD) {
+            return Ok(());
+        }
+        if err.kind() != std::io::ErrorKind::Interrupted {
+            return Err(err);
+        }
+    }
+}
+
+/// Blocks until `pid` has exited. The child is still owned (and unreaped) by
+/// the caller, so the process object — and therefore the PID — stays valid.
+#[cfg(windows)]
+fn wait_for_exit_without_reaping(pid: u32) -> std::io::Result<()> {
+    use windows::Win32::{
+        Foundation::{CloseHandle, WAIT_OBJECT_0},
+        System::Threading::{OpenProcess, WaitForSingleObject, INFINITE, PROCESS_SYNCHRONIZE},
+    };
+
+    // SAFETY: `pid` refers to a live handle-owned process, and the returned
+    // handle is closed exactly once below.
+    let handle = unsafe { OpenProcess(PROCESS_SYNCHRONIZE, false, pid) }
+        .map_err(|e| std::io::Error::other(e.to_string()))?;
+    let result = unsafe { WaitForSingleObject(handle, INFINITE) };
+    unsafe { CloseHandle(handle) }.ok();
+
+    if result == WAIT_OBJECT_0 {
+        Ok(())
+    } else {
+        Err(std::io::Error::last_os_error())
     }
 }
 
