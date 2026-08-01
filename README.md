@@ -34,7 +34,7 @@ This repo and all plugins require a Rust version of at least **1.77.2**
 | [stronghold](plugins/stronghold)               | Encrypted, secure database.                                                                                                                                    | ✅  | ✅  | ✅  | ?   | ?   |
 | [updater](plugins/updater)                     | In-app updates for Tauri applications.                                                                                                                         | ✅  | ✅  | ✅  | ❌  | ❌  |
 | [upload](plugins/upload)                       | Tauri plugin for file uploads through HTTP.                                                                                                                    | ✅  | ✅  | ✅  | ✅  | ✅  |
-| [websocket](plugins/websocket)                 | Open a WebSocket connection using a Rust client in JS.                                                                                                         | ✅  | ✅  | ✅  | ?   | ?   |
+| [websocket](plugins/websocket)                 | Open a WebSocket connection using a Rust client in JS.                                                                                                         | ✅  | ✅  | ✅  | ✅  | ✅  |
 | [window-state](plugins/window-state)           | Persist window sizes and positions.                                                                                                                            | ✅  | ✅  | ✅  | ❌  | ❌  |
 
 - ✅: (Partially) Supported
