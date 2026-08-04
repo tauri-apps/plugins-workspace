@@ -6,7 +6,7 @@
 //!
 //! ## Cargo features
 //!
-//! - **protocol-asset**: Enables `tauri`'s `protocol-asset` feature and adds support for persisting `asset` protocol scopes.
+//! - **protocol-asset**: Enables `tauri`'s `protocol-asset` feature and adds support for persisting `asset://` protocol scopes.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
