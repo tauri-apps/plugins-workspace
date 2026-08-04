@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: MIT
 
 //! Access the file system.
+//!
+//! ## Cargo features
+//!
+//! - **watch**: Enables the `watch` command backed by [`notify`](http://crates.io/crates/notify).
 
 // TODO(v3): consider redesign the API to implement automatic stopAccessingSecurityScopedResource on iOS
 // this likely requires returning a handle to a resource so we can impl Drop for it
