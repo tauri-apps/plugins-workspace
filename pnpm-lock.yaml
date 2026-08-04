@@ -108,8 +108,8 @@ importers:
         specifier: workspace:*
         version: link:../../plugins/upload
       '@zerodevx/svelte-json-view':
-        specifier: 1.0.11
-        version: 1.0.11(svelte@5.55.7(@typescript-eslint/types@8.58.2))
+        specifier: 2.0.0
+        version: 2.0.0(svelte@5.55.7(@typescript-eslint/types@8.58.2))
     devDependencies:
       '@iconify-json/codicon':
         specifier: ^1.2.49
@@ -1272,10 +1272,13 @@ packages:
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0 || ^6.0.0-0 || ^7.0.0-0 || ^8.0.0-0
 
-  '@zerodevx/svelte-json-view@1.0.11':
-    resolution: {integrity: sha512-mIjj0H1al/P4FPlbeDoiey93lNEUqBEAe5LIdD5GttZfEYt3awexD2lHwKNfUeY4jHizOJkoWTPN/2iO0GBqpw==}
+  '@zerodevx/svelte-json-view@2.0.0':
+    resolution: {integrity: sha512-bzkyssGxz0Z6Utv80vxBBkfkTzW1ZkkJ28cAmURc2+ytMPd6zTH7LRiUJgJf14gIzdeRRYNkD7CZ/MHPlP7LVQ==}
     peerDependencies:
-      svelte: ^3.57.0 || ^4.0.0 || ^5.0.0
+      svelte: ^5.0.0
+    peerDependenciesMeta:
+      svelte:
+        optional: true
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -1302,8 +1305,8 @@ packages:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
 
-  brace-expansion@5.0.8:
-    resolution: {integrity: sha512-JZyDyq3D4AUifKTPOB7DELf6XsB3WdPuNxCtob1vFXPsSXhdAiHBWJ/tJ8HAc9aH84BK+5JFZLNkJKx3G9kzQg==}
+  brace-expansion@5.0.9:
+    resolution: {integrity: sha512-ScQ4IuvIEF1TMlP7Zt+vjJ//9zlPb2SDcxWxM3bk8s6t6GGdJ7KO1dCcTidOPJKePW30LE/2cT7wCyPho9/Wxg==}
     engines: {node: 20 || >=22}
 
   buffer-from@1.1.2:
@@ -2706,8 +2709,8 @@ snapshots:
       unplugin-utils: 0.3.1
       vite: 8.0.16(esbuild@0.28.1)(jiti@2.6.1)(terser@5.46.1)(tsx@4.23.1)
 
-  '@zerodevx/svelte-json-view@1.0.11(svelte@5.55.7(@typescript-eslint/types@8.58.2))':
-    dependencies:
+  '@zerodevx/svelte-json-view@2.0.0(svelte@5.55.7(@typescript-eslint/types@8.58.2))':
+    optionalDependencies:
       svelte: 5.55.7(@typescript-eslint/types@8.58.2)
 
   acorn-jsx@5.3.2(acorn@8.16.0):
@@ -2729,7 +2732,7 @@ snapshots:
 
   balanced-match@4.0.4: {}
 
-  brace-expansion@5.0.8:
+  brace-expansion@5.0.9:
     dependencies:
       balanced-match: 4.0.4
 
@@ -3057,7 +3060,7 @@ snapshots:
 
   minimatch@10.2.4:
     dependencies:
-      brace-expansion: 5.0.8
+      brace-expansion: 5.0.9
 
   mlly@1.8.2:
     dependencies:

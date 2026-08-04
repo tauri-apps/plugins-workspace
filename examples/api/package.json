@@ -30,7 +30,7 @@
     "@tauri-apps/plugin-store": "workspace:*",
     "@tauri-apps/plugin-updater": "workspace:*",
     "@tauri-apps/plugin-upload": "workspace:*",
-    "@zerodevx/svelte-json-view": "1.0.11"
+    "@zerodevx/svelte-json-view": "2.0.0"
   },
   "devDependencies": {
     "@iconify-json/codicon": "^1.2.49",
