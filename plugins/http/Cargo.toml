@@ -49,13 +49,7 @@ bytes = { version = "1.9", optional = true }
 tracing = { workspace = true, optional = true }
 
 [features]
-default = [
-  "rustls-tls",
-  "http2",
-  "charset",
-  "macos-system-configuration",
-  "cookies",
-]
+default = ["rustls-tls", "http2", "charset", "system-proxy", "cookies"]
 multipart = ["reqwest/multipart"]
 json = ["reqwest/json"]
 stream = ["reqwest/stream"]
@@ -76,7 +70,9 @@ trust-dns = ["reqwest/trust-dns"]
 socks = ["reqwest/socks"]
 http2 = ["reqwest/http2"]
 charset = ["reqwest/charset"]
+# Deprecated, switch to system-proxy
 macos-system-configuration = ["reqwest/macos-system-configuration"]
+system-proxy = ["reqwest/system-proxy"]
 unsafe-headers = []
 tracing = ["dep:tracing"]
 dangerous-settings = []
