@@ -14,7 +14,6 @@
 "notification": patch
 "notification-js": patch
 "persisted-scope": patch
-"persisted-scope-js": patch
 "positioner": patch
 "positioner-js": patch
 "single-instance": patch
