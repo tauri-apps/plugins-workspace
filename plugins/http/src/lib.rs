@@ -3,6 +3,39 @@
 // SPDX-License-Identifier: MIT
 
 //! Access the HTTP client written in Rust.
+//!
+//! ## Cargo features
+//!
+//! - **multipart**: Adds support for multipart form bodies.
+//! - **json**: Adds support for JSON request and response helpers.
+//! - **stream**: Adds support for streaming bodies.
+//! - **blocking**: Adds support for the blocking `reqwest` client API; plugin commands remain async.
+//! - **cookies** *(enabled by default)*: Adds support for cookie handling and a persistent cookie store.
+//! - **http2** *(enabled by default)*: Adds support for HTTP/2.
+//! - **charset** *(enabled by default)*: Adds support for decoding non-UTF-8 response character sets.
+//! - **rustls-tls** *(enabled by default)*: Adds TLS support through Rustls with its standard root configuration.
+//! - **rustls-tls-manual-roots**: Adds TLS support through Rustls without an automatically installed root
+//!   source.
+//! - **rustls-tls-webpki-roots**: Adds TLS support through Rustls with Mozilla/WebPKI roots.
+//! - **rustls-tls-native-roots**: Adds TLS support through Rustls with the platform's native root store.
+//! - **native-tls**: Adds TLS support through the platform-native TLS backend.
+//! - **native-tls-vendored**: Adds native TLS support with vendored OpenSSL where applicable.
+//! - **native-tls-alpn**: Adds ALPN support to the native TLS backend.
+//! - **trust-dns**: Adds support for the trust-dns/Hickory DNS resolver.
+//! - **socks**: Adds support for SOCKS proxies.
+//! - **macos-system-configuration** *(enabled by default)*: Adds macOS System Configuration proxy
+//!   discovery.
+//! - **gzip**: Adds support for automatic gzip response decompression.
+//! - **brotli**: Adds support for automatic Brotli response decompression.
+//! - **deflate**: Adds support for automatic deflate response decompression.
+//! - **zstd**: Adds support for automatic Zstandard response decompression.
+//! - **tracing**: Adds request, response, and cookie-store diagnostics through `tracing`.
+//! - **unsafe-headers**: Allows frontend requests to retain headers normally
+//!   stripped or controlled by the plugin.
+//! - **dangerous-settings**: Allows dangerous client settings such as accepting
+//!   invalid certificates or hostnames.
+//!
+//! Most features forward to the same-named `reqwest` feature.
 
 pub use reqwest;
 use tauri::{
