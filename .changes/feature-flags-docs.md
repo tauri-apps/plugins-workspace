@@ -11,8 +11,6 @@
 "http-js": patch
 "log": patch
 "log-js": patch
-"notification": patch
-"notification-js": patch
 "persisted-scope": patch
 "positioner": patch
 "positioner-js": patch
