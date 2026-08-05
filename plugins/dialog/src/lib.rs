@@ -3,6 +3,11 @@
 // SPDX-License-Identifier: MIT
 
 //! Native system dialogs for opening and saving files along with message dialogs.
+//!
+//! ## Cargo features
+//!
+//! - **gtk3** *(enabled by default)*: Uses GTK for dialogs on Linux & BSDs; has no effect on Windows and macOS
+//! - **xdg-portal**:  Uses XDG Desktop Portal instead of GTK on Linux & BSDs
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",

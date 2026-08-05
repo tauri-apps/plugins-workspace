@@ -4,7 +4,15 @@
 
 //! In-app updates for Tauri applications.
 //!
-//! - Supported platforms: Windows, Linux and macOS.crypted database and secure runtime.
+//! Supported platforms: Windows, Linux and macOS.
+//!
+//! ## Cargo features
+//!
+//! - **zip** *(enabled by default)*: Adds support for compressed updater bundles from Tauri v1.
+//! - **rustls-tls** *(enabled by default)*: Enables TLS functionality provided by `rustls`.
+//! - **native-tls**: Enables TLS functionality provided by `native-tls`.
+//! - **native-tls-vendored**: Enables the `vendored` feature of `native-tls`.
+//! - **system-proxy** *(enabled by default)*: Use Windows and macOS system proxy settings automatically.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",

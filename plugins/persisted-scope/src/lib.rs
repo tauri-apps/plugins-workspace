@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: MIT
 
 //! Save filesystem and asset scopes and restore them when the app is reopened.
+//!
+//! ## Cargo features
+//!
+//! - **protocol-asset**: Enables `tauri`'s `protocol-asset` feature and adds support for persisting `asset://` protocol scopes.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
@@ -188,25 +192,25 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
                 if let Some(fs_scope) = &fs_scope {
                     if fs_scope_state_path.exists() {
-                    let scope: Scope = std::fs::read(&fs_scope_state_path)
-                        .map_err(Error::from)
-                        .and_then(|scope| bincode::deserialize(&scope).map_err(Into::into))
-                        .unwrap_or_default();
+                        let scope: Scope = std::fs::read(&fs_scope_state_path)
+                            .map_err(Error::from)
+                            .and_then(|scope| bincode::deserialize(&scope).map_err(Into::into))
+                            .unwrap_or_default();
 
-                    for allowed in &scope.allowed_paths {
-                        let allowed = fix_pattern(&ac, allowed);
-                        allow_path(fs_scope, &allowed);
-                    }
-                    for forbidden in &scope.forbidden_patterns {
-                        let forbidden = fix_pattern(&ac, forbidden);
-                        forbid_path(fs_scope, &forbidden);
-                    }
+                        for allowed in &scope.allowed_paths {
+                            let allowed = fix_pattern(&ac, allowed);
+                            allow_path(fs_scope, &allowed);
+                        }
+                        for forbidden in &scope.forbidden_patterns {
+                            let forbidden = fix_pattern(&ac, forbidden);
+                            forbid_path(fs_scope, &forbidden);
+                        }
 
-                    // Manually save the fixed scopes to disk once.
-                    // This is needed to fix broken .peristed-scope files in case the app doesn't update the scope itself.
-                    save_scopes(fs_scope, &app_dir, &fs_scope_state_path);
+                        // Manually save the fixed scopes to disk once.
+                        // This is needed to fix broken .peristed-scope files in case the app doesn't update the scope itself.
+                        save_scopes(fs_scope, &app_dir, &fs_scope_state_path);
+                    }
                 }
-            }
 
                 #[cfg(feature = "protocol-asset")]
                 if asset_scope_state_path.exists() {
