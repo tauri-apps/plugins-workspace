@@ -23,8 +23,8 @@
 //! - **native-tls-alpn**: Adds ALPN support to the native TLS backend.
 //! - **trust-dns**: Adds support for the trust-dns/Hickory DNS resolver.
 //! - **socks**: Adds support for SOCKS proxies.
-//! - **macos-system-configuration** *(enabled by default)*: Adds macOS System Configuration proxy
-//!   discovery.
+//! - **macos-system-configuration** *(deprecated, use `system-proxy` instead)*: Use Windows and macOS system proxy settings automatically.
+//! - **system-proxy** *(enabled by default)*: Use Windows and macOS system proxy settings automatically.
 //! - **gzip**: Adds support for automatic gzip response decompression.
 //! - **brotli**: Adds support for automatic Brotli response decompression.
 //! - **deflate**: Adds support for automatic deflate response decompression.
