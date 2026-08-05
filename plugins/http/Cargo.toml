@@ -74,6 +74,7 @@ charset = ["reqwest/charset"]
 # Deprecated, switch to system-proxy
 macos-system-configuration = ["reqwest/macos-system-configuration"]
 system-proxy = ["reqwest/system-proxy"]
+
 unsafe-headers = []
 tracing = ["dep:tracing"]
 dangerous-settings = []
