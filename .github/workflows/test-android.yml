@@ -64,6 +64,9 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - name: build API
+        run: pnpm build
+
       - name: build APK
         working-directory: ./examples/api
         run: pnpm tauri android build
