@@ -40,14 +40,14 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 25
+          java-version: 21
           cache: gradle
 
       - name: Setup NDK
         uses: nttld/setup-ndk@v1
         id: setup-ndk
         with:
-          ndk-version: r29
+          ndk-version: r25
           local-cache: true
 
       # TODO check after https://github.com/nttld/setup-ndk/issues/518 is fixed
