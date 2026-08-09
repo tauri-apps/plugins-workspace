@@ -11,6 +11,7 @@
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister-all",
     { "identifier": "fs:allow-watch", "allow": ["*", "**/*"] },
-    "fs:allow-unwatch"
+    "fs:allow-unwatch",
+    "clipboard-manager:allow-write-secret"
   ]
 }
