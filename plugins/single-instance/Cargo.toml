@@ -7,7 +7,7 @@ license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
-exclude = ["/examples"]
+exclude = ["/banner.png", "/examples"]
 
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }

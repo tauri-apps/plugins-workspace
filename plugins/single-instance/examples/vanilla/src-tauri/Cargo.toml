@@ -16,6 +16,3 @@ tauri-plugin-cli = { path = "../../../../cli" }
 
 [build-dependencies]
 tauri-build = { workspace = true }
-
-[features]
-prod = ["tauri/custom-protocol"]

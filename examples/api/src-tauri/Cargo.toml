@@ -66,6 +66,3 @@ tauri-plugin-nfc = { path = "../../../plugins/nfc", version = "2.3.5" }
 tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "2.3.2" }
 tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "2.3.2" }
 tauri-plugin-haptics = { path = "../../../plugins/haptics/", version = "2.3.2" }
-
-[features]
-prod = ["tauri/custom-protocol"]

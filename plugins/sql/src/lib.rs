@@ -2,7 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx). It supports the `sqlite`, `mysql` and `postgres` drivers, enabled by a Cargo feature.
+//! Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx).
+//!
+//! ## Cargo features
+//!
+//! No database driver is enabled by default. Enable at least one driver;
+//! multiple drivers may be enabled together.
+//!
+//! - **sqlite**: Adds support for SQLite.
+//! - **mysql**: Adds support for MySQL.
+//! - **postgres**: Adds support for PostgreSQL.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",

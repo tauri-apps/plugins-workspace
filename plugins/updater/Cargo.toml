@@ -8,6 +8,14 @@ license = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-updater"
+exclude = [
+  "/banner.png",
+  "/guest-js",
+  "/package.json",
+  "/rollup.config.js",
+  "/tests",
+  "/tsconfig.json",
+]
 
 [package.metadata.docs.rs]
 no-default-features = true
@@ -67,8 +75,9 @@ flate2 = "1"
 osakit = { version = "0.3", features = ["full"] }
 
 [features]
-default = ["rustls-tls", "zip"]
+default = ["rustls-tls", "system-proxy", "zip"]
 zip = ["dep:zip", "dep:tar", "dep:flate2"]
 native-tls = ["reqwest/native-tls"]
 native-tls-vendored = ["reqwest/native-tls-vendored"]
 rustls-tls = ["reqwest/rustls-no-provider", "dep:rustls"]
+system-proxy = ["reqwest/system-proxy"]

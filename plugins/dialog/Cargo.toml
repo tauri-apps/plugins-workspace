@@ -8,6 +8,14 @@ license = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-dialog"
+exclude = [
+  "/banner.png",
+  "/guest-js",
+  "/package.json",
+  "/rollup.config.js",
+  "/test",
+  "/tsconfig.json",
+]
 
 [features]
 default = ["gtk3"]
