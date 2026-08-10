@@ -23,8 +23,8 @@ the `mkdir` command.
 This default permission set prevents access to critical components
 of the Tauri application by default.
 
-- On Windows the webview data folder `$APPLOCALDATA/EBWebView` access is denied.
-- On Linux the webview data folder `$APPLOCALDATA` access is denied.
+- On Windows the access to webview data folder `$APPLOCALDATA/EBWebView` is denied.
+- On Linux the access to webview data paths inside `$APPLOCALDATA` are denied.
 
 #### This default permission set includes the following:
 
@@ -3703,8 +3703,19 @@ This denies access to dangerous Tauri relevant files and folders by default.
 </td>
 <td>
 
-This denies read access to the
-`$APPLOCALDATA` folder on linux as the webview data and configuration values are stored here.
+This denies access to the following paths
+
+- `$APPLOCALDATA/CacheStorage/**`
+- `$APPLOCALDATA/cookies`
+- `$APPLOCALDATA/hsts-storage.sqlite`
+- `$APPLOCALDATA/serviceworkers/**`
+- `$APPLOCALDATA/WebKitCache/**`
+- `$APPLOCALDATA/databases/**`
+- `$APPLOCALDATA/localstorage/**`
+- `$APPLOCALDATA/mediakeys/**`
+- `$APPLOCALDATA/storage/**`
+
+on linux as the webview data and configuration values are stored here.
 Allowing access can lead to sensitive information disclosure and should be well considered.
 
 </td>
@@ -3718,7 +3729,7 @@ Allowing access can lead to sensitive information disclosure and should be well 
 </td>
 <td>
 
-This denies read access to the
+This denies access to the
 `$APPLOCALDATA/EBWebView` folder on windows as the webview data and configuration values are stored here.
 Allowing access can lead to sensitive information disclosure and should be well considered.
 
