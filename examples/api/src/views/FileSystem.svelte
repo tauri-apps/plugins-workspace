@@ -1,34 +1,33 @@
-<script>
+<script lang="ts">
   import * as fs from '@tauri-apps/plugin-fs'
   import * as os from '@tauri-apps/plugin-os'
   import { convertFileSrc } from '@tauri-apps/api/core'
   import { arrayBufferToBase64 } from '../lib/utils'
   import { onDestroy, onMount } from 'svelte'
+  import type { ViewProps } from '../App.svelte'
 
-  const { onMessage } = $props()
+  const { onMessage }: ViewProps = $props()
 
   let path = $state('')
-  let img
-  /** @type {fs.FileHandle} */
-  let file = $state()
-  let renameTo = $state()
+  let img: HTMLImageElement
+  let file: fs.FileHandle | undefined = $state()
+  let renameTo = $state('')
   let watchPath = $state('')
   let watchDebounceDelay = $state(0)
   let watchRecursive = $state(false)
-  /** @type {fs.BaseDirectory | undefined} */
-  let baseDir = $state()
-  let unwatchFn
+  let baseDir: fs.BaseDirectory | undefined = $state()
+  let unwatchFn: (() => void) | undefined
   let unwatchPath = ''
   let isMobile = $state(false)
+
+  const dirOptions = Object.entries(fs.BaseDirectory).filter(([key]) =>
+    isNaN(parseInt(key))
+  )
 
   onMount(() => {
     let platform = os.platform()
     isMobile = platform === 'android' || platform === 'ios'
   })
-
-  const dirOptions = Object.keys(fs.BaseDirectory).filter((key) =>
-    isNaN(parseInt(key))
-  )
 
   function open() {
     fs.open(path, {
@@ -62,8 +61,8 @@
 
   function rename() {
     fs.rename(path, renameTo, {
-      oldPathBaseDir,
-      newPathBaseDir
+      oldPathBaseDir: baseDir
+      // newPathBaseDir
     })
       .then(() => {
         onMessage(`Renamed ${path} to ${renameTo}`)
@@ -71,7 +70,7 @@
       .catch(onMessage)
   }
 
-  function truncate() {
+  function truncate(file: fs.FileHandle) {
     file
       .truncate(0)
       .then(() => {
@@ -80,7 +79,7 @@
       .catch(onMessage)
   }
 
-  function write() {
+  function write(file: fs.FileHandle) {
     const encoder = new TextEncoder()
     file
       .write(encoder.encode('Hello from Tauri :)'))
@@ -90,7 +89,7 @@
       .catch(onMessage)
   }
 
-  function stat() {
+  function stat(file: fs.FileHandle) {
     file
       .stat()
       .then((stat) => {
@@ -99,52 +98,47 @@
       .catch(onMessage)
   }
 
-  function read() {
-    const opts = {
-      baseDir
-    }
-    fs.stat(path, opts)
-      .then((stat) => {
-        const isFile = stat.isFile
+  async function read() {
+    try {
+      const opts = { baseDir }
+      const pathStat = await fs.stat(path, opts)
 
-        const promise = isFile
-          ? fs.readFile(path, opts)
-          : fs.readDir(path, opts)
-        promise
-          .then(function (response) {
-            if (isFile) {
-              if (path.includes('.png') || path.includes('.jpg')) {
-                arrayBufferToBase64(
-                  new Uint8Array(response),
-                  function (base64) {
-                    const src = 'data:image/png;base64,' + base64
-                    onMessage('<img src="' + src + '"></img>')
-                  }
-                )
-              } else {
-                const value = String.fromCharCode.apply(null, response)
-                onMessage(
-                  '<textarea id="file-response"></textarea><button id="file-save">Save</button>'
-                )
-                setTimeout(() => {
-                  const fileInput = document.getElementById('file-response')
-                  fileInput.value = value
-                  document
-                    .getElementById('file-save')
-                    .addEventListener('click', function () {
-                      fs.writeTextFile(path, fileInput.value, {
-                        baseDir
-                      }).catch(onMessage)
-                    })
-                })
-              }
-            } else {
-              onMessage(response)
-            }
+      if (!pathStat.isFile) {
+        onMessage(await fs.readDir(path, opts))
+        return
+      }
+
+      const response = await fs.readFile(path, opts)
+      if (path.includes('.png') || path.includes('.jpg')) {
+        arrayBufferToBase64(response, function (base64: string) {
+          const src = 'data:image/png;base64,' + base64
+          onMessage('<img src="' + src + '"></img>')
+        })
+        return
+      }
+
+      const value = new TextDecoder().decode(response)
+      onMessage(
+        '<textarea id="file-response"></textarea><button id="file-save">Save</button>'
+      )
+      setTimeout(() => {
+        const fileInput = document.getElementById(
+          'file-response'
+        ) as HTMLTextAreaElement | null
+        if (!fileInput) return
+
+        fileInput.value = value
+        document
+          .getElementById('file-save')
+          ?.addEventListener('click', function () {
+            fs.writeTextFile(path, fileInput.value, { baseDir }).catch(
+              onMessage
+            )
           })
-          .catch(onMessage)
       })
-      .catch(onMessage)
+    } catch (error) {
+      onMessage(error)
+    }
   }
 
   function setSrc() {
@@ -155,7 +149,7 @@
     unwatch()
     if (watchPath) {
       onMessage(`Watching ${watchPath} for changes`)
-      let options = {
+      const options = {
         recursive: watchRecursive,
         delayMs: watchDebounceDelay
       }
@@ -183,16 +177,12 @@
       unwatchFn()
     }
     unwatchFn = undefined
-    unwatchPath = undefined
+    unwatchPath = ''
   }
 
   onDestroy(() => {
-    if (file) {
-      file.close()
-    }
-    if (unwatchFn) {
-      unwatchFn()
-    }
+    file?.close()
+    unwatchFn?.()
   })
 </script>
 
@@ -207,8 +197,8 @@
   <div class="flex gap-1">
     <select class="input" bind:value={baseDir}>
       <option value={undefined} selected>None</option>
-      {#each dirOptions as dir}
-        <option value={fs.BaseDirectory[dir]}>{dir}</option>
+      {#each dirOptions as [dirName, dirValue]}
+        <option value={dirValue}>{dirName}</option>
       {/each}
     </select>
     <input
@@ -218,22 +208,26 @@
     />
   </div>
   <br />
-  <div>
-    <button class="btn" onclick={open}>Open</button>
-    <button class="btn" onclick={read}>Read</button>
-    <button class="btn" onclick={mkdir}>Mkdir</button>
-    <button class="btn" onclick={remove}>Remove</button>
-    <div class="flex flex-row">
-      <button class="btn" onclick={rename}>Rename</button>
+
+  <div class="grid gap-2 justify-start">
+    <div class="flex gap-2">
+      <button class="btn" onclick={open}>Open</button>
+      <button class="btn" onclick={read}>Read</button>
+      <button class="btn" onclick={mkdir}>Mkdir</button>
+      <button class="btn" onclick={remove}>Remove</button>
+    </div>
+    <div class="flex gap-1">
       <input class="input" bind:value={renameTo} placeholder="To" />
+      <button class="btn" onclick={rename}>Rename</button>
     </div>
     <button class="btn" type="button" onclick={setSrc}>Use as img src</button>
   </div>
+
   {#if file}
     <div>
-      <button class="btn" onclick={write}>Write</button>
-      <button class="btn" onclick={truncate}>Truncate</button>
-      <button class="btn" onclick={stat}>Stat</button>
+      <button class="btn" onclick={() => write(file!)}>Write</button>
+      <button class="btn" onclick={() => truncate(file!)}>Truncate</button>
+      <button class="btn" onclick={() => stat(file!)}>Stat</button>
     </div>
   {/if}
 
@@ -245,23 +239,25 @@
     bind:value={watchPath}
   />
   <br />
-  <div>
-    <label for="watch-debounce-delay"
-      >Debounce delay in milliseconds (`0` disables the debouncer)</label
+  <div class="grid grid-cols-2 gap-2 items-center">
+    <label for="watch-debounce-delay" class="col-span-2">Debounce delay in milliseconds (<code>0</code> disables the debouncer)</label
     >
     <input
       class="input"
       id="watch-debounce-delay"
       bind:value={watchDebounceDelay}
     />
+    <div>
+      <input
+        type="checkbox"
+        id="watch-recursive"
+        bind:checked={watchRecursive}
+      />
+      <label for="watch-recursive">Recursive</label>
+    </div>
   </div>
   <br />
-  <div>
-    <input type="checkbox" id="watch-recursive" bind:checked={watchRecursive} />
-    <label for="watch-recursive">Recursive</label>
-  </div>
-  <br />
-  <div>
+  <div class="flex gap-2">
     <button class="btn" onclick={watch}>Watch</button>
     <button class="btn" onclick={unwatch}>Unwatch</button>
   </div>
