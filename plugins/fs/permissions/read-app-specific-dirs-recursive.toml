@@ -7,11 +7,10 @@ This permission allows recursive read functionality on the application
 specific base directories.
 """
 permissions = [
-  "allow-read-dir",
+  "read-meta",
   "allow-read-file",
   "allow-read-text-file",
   "allow-read-text-file-lines",
   "allow-read-text-file-lines-next",
-  "allow-exists",
   "scope-app-recursive",
 ]
