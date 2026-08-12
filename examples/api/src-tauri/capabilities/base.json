@@ -58,7 +58,7 @@
     "clipboard-manager:allow-read-image",
     "clipboard-manager:allow-write-image",
     "fs:default",
-    "fs:write-all",
+    "fs:allow-app-write-recursive",
     "fs:scope-download-recursive",
     "fs:scope-resource-recursive",
     {
