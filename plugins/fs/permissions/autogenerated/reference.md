@@ -29,7 +29,7 @@ of the Tauri application by default.
 #### This default permission set includes the following:
 
 - `create-app-specific-dirs`
-- `read-app-specific-dirs-recursive`
+- `allow-app-read-recursive`
 - `deny-default`
 
 ## Permission Table
