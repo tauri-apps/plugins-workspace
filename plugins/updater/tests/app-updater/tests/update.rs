@@ -46,7 +46,7 @@ struct Update {
     platforms: HashMap<String, PlatformUpdate>,
 }
 
-fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTarget) {
+fn build_app(cwd: &Path, config: &Config, target: Option<BundleTarget>) {
     let mut command = Command::new("cargo");
     command
         .args(["tauri", "build", "--verbose"])
@@ -56,17 +56,10 @@ fn build_app(cwd: &Path, config: &Config, bundle_updater: bool, target: BundleTa
         .env("TAURI_SIGNING_PRIVATE_KEY_PASSWORD", "")
         .current_dir(cwd);
 
-    #[cfg(target_os = "linux")]
-    command.args(["--bundles", target.name()]);
-    #[cfg(target_os = "macos")]
-    command.args(["--bundles", target.name()]);
-
-    if bundle_updater {
-        #[cfg(windows)]
-        command.args(["--bundles", "msi", "nsis"]);
+    if let Some(target) = target {
+        command.arg("--bundles").arg(target.name());
     } else {
-        #[cfg(windows)]
-        command.args(["--bundles", target.name()]);
+        command.arg("--no-bundle");
     }
 
     let status = command
@@ -318,7 +311,7 @@ fn update_app() {
         {
             // bundle app update
             config.version = "1.0.0";
-            build_app(&manifest_dir, &config, true, BundleTarget::default());
+            build_app(&manifest_dir, &config, Some(bundle_target));
 
             let bundle_updater_ext = if v1_compatible {
                 out_bundle_path
@@ -401,7 +394,7 @@ fn update_app() {
             config.version = "0.1.0";
 
             // bundle initial app version
-            build_app(&manifest_dir, &config, false, bundle_target);
+            build_app(&manifest_dir, &config, None);
 
             for expected_exit_code in status_checks {
                 let mut binary_cmd = if cfg!(windows) {

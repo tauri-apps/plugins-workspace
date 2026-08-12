@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-dialog"
-version = "2.7.1"
+version = "2.7.2"
 description = "Native system dialogs for opening and saving files along with message dialogs on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -8,6 +8,14 @@ license = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-dialog"
+exclude = [
+  "/banner.png",
+  "/guest-js",
+  "/package.json",
+  "/rollup.config.js",
+  "/test",
+  "/tsconfig.json",
+]
 
 [features]
 default = ["gtk3"]

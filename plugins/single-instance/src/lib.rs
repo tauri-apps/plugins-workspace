@@ -3,6 +3,11 @@
 // SPDX-License-Identifier: MIT
 
 //! Ensure a single instance of your tauri app is running.
+//!
+//! ## Cargo features
+//!
+//! - **semver**: Allows the app with SemVer incompatible versions to run alongside each other.
+//! - **deep-link**: Trigger [`tauri-plugin-deep-link`](https://crates.io/crates/tauri-plugin-deep-link) event before invoking the single-instance callback.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
