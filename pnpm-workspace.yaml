@@ -5,3 +5,6 @@ packages:
 
 allowBuilds:
   esbuild: true
+
+minimumReleaseAgeExclude:
+  - '@iconify-json/codicon@1.2.69'
