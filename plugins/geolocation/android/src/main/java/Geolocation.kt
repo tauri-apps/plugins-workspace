@@ -21,6 +21,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import android.location.LocationRequest
 import android.location.LocationListener
+import android.os.Build
 
 
 public class Geolocation(private val context: Context) {
@@ -65,7 +66,7 @@ public class Geolocation(private val context: Context) {
             } else {
                 errorCallback("Location disabled.")
             }
-        } else {
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
             val provider = locationManager.getProviderProperties(LocationManager.GPS_PROVIDER)
             if (provider == null) {
@@ -87,6 +88,8 @@ public class Geolocation(private val context: Context) {
                     successCallback(location)
                 }
             }
+        } else {
+            errorCallback("No Location Services available.")
         }
     }
 
@@ -133,7 +136,7 @@ public class Geolocation(private val context: Context) {
             } else {
                 errorCallback("Location disabled.")
             }
-        } else {
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
             val provider = locationManager.getProviderProperties(LocationManager.GPS_PROVIDER)
             if (provider == null) {
@@ -154,6 +157,8 @@ public class Geolocation(private val context: Context) {
             }
             locationListener = listener
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, req, context.mainExecutor, listener)
+        } else {
+            errorCallback("No Location Services available.")
         }
     }
 
