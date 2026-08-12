@@ -3,14 +3,15 @@
 [[set]]
 identifier = "read-app-specific-dirs-recursive"
 description = """
-This permission allows recursive read functionality on the application
-specific base directories.
+This permission allows recursive read functionality on the application specific base directories.
+(**DEPRECATED**: use `allow-app-read-recursive` instead)
 """
 permissions = [
-  "read-meta",
+  "allow-read-dir",
   "allow-read-file",
   "allow-read-text-file",
   "allow-read-text-file-lines",
   "allow-read-text-file-lines-next",
+  "allow-exists",
   "scope-app-recursive",
 ]

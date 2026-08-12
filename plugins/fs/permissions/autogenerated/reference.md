@@ -3757,8 +3757,8 @@ This enables all read related commands without any pre-configured accessible pat
 </td>
 <td>
 
-This permission allows recursive read functionality on the application
-specific base directories.
+This permission allows recursive read functionality on the application specific base directories.
+(**DEPRECATED**: use `allow-app-read-recursive` instead)
 
 
 </td>

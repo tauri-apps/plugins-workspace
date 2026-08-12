@@ -2005,10 +2005,10 @@
           "markdownDescription": "This enables all read related commands without any pre-configured accessible paths."
         },
         {
-          "description": "This permission allows recursive read functionality on the application\nspecific base directories.\n\n#### This permission set includes:\n\n- `read-meta`\n- `allow-read-file`\n- `allow-read-text-file`\n- `allow-read-text-file-lines`\n- `allow-read-text-file-lines-next`\n- `scope-app-recursive`",
+          "description": "This permission allows recursive read functionality on the application specific base directories.\n(**DEPRECATED**: use `allow-app-read-recursive` instead)\n\n#### This permission set includes:\n\n- `allow-read-dir`\n- `allow-read-file`\n- `allow-read-text-file`\n- `allow-read-text-file-lines`\n- `allow-read-text-file-lines-next`\n- `allow-exists`\n- `scope-app-recursive`",
           "type": "string",
           "const": "read-app-specific-dirs-recursive",
-          "markdownDescription": "This permission allows recursive read functionality on the application\nspecific base directories.\n\n#### This permission set includes:\n\n- `read-meta`\n- `allow-read-file`\n- `allow-read-text-file`\n- `allow-read-text-file-lines`\n- `allow-read-text-file-lines-next`\n- `scope-app-recursive`"
+          "markdownDescription": "This permission allows recursive read functionality on the application specific base directories.\n(**DEPRECATED**: use `allow-app-read-recursive` instead)\n\n#### This permission set includes:\n\n- `allow-read-dir`\n- `allow-read-file`\n- `allow-read-text-file`\n- `allow-read-text-file-lines`\n- `allow-read-text-file-lines-next`\n- `allow-exists`\n- `scope-app-recursive`"
         },
         {
           "description": "This enables directory read and file metadata related commands without any pre-configured accessible paths.",
