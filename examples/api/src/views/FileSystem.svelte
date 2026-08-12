@@ -18,16 +18,13 @@
   let baseDir: fs.BaseDirectory | undefined = $state()
   let unwatchFn: (() => void) | undefined
   let unwatchPath = ''
-  let isMobile = $state(false)
+
+  const platform = os.platform()
+  const isMobile = platform === 'android' || platform === 'ios'
 
   const dirOptions = Object.entries(fs.BaseDirectory).filter(([key]) =>
     isNaN(parseInt(key))
   )
-
-  onMount(() => {
-    let platform = os.platform()
-    isMobile = platform === 'android' || platform === 'ios'
-  })
 
   function open() {
     fs.open(path, {
@@ -240,7 +237,8 @@
   />
   <br />
   <div class="grid grid-cols-2 gap-2 items-center">
-    <label for="watch-debounce-delay" class="col-span-2">Debounce delay in milliseconds (<code>0</code> disables the debouncer)</label
+    <label for="watch-debounce-delay" class="col-span-2"
+      >Debounce delay in milliseconds (<code>0</code> disables the debouncer)</label
     >
     <input
       class="input"
