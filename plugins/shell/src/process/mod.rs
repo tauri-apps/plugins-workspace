@@ -850,19 +850,114 @@ mod tests {
         assert_ne!(ret, 0, "process group should no longer exist");
     }
 
-    #[cfg(not(windows))]
     #[test]
     fn test_cmd_process_group_output() {
-        let cmd = Command::new("cat")
-            .args(["test/test.txt"])
-            .set_process_group(true);
-        let output = tauri::async_runtime::block_on(cmd.output()).unwrap();
+        // Runs on Windows too, where it doubles as the regression tripwire
+        // for the CREATE_SUSPENDED handling in `spawn`: if a process-wrap
+        // update ever stops resuming job-object children, this hangs instead
+        // of passing.
+        #[cfg(not(windows))]
+        let cmd = Command::new("cat").args(["test/test.txt"]);
+        #[cfg(windows)]
+        let cmd = Command::new("cmd").args(["/C", "type test\\test.txt"]);
 
+        let output = tauri::async_runtime::block_on(cmd.set_process_group(true).output()).unwrap();
+
+        assert!(output.status.success());
         assert_eq!(String::from_utf8(output.stderr).unwrap(), "");
         assert_eq!(
-            String::from_utf8(output.stdout).unwrap(),
-            "This is a test doc!\n"
+            String::from_utf8(output.stdout).unwrap().trim(),
+            "This is a test doc!"
         );
+    }
+
+    /// The PyInstaller-style wrapper script for the current platform: spawns
+    /// a long-running grandchild, prints its PID, then waits on it.
+    fn sim_command() -> Command {
+        if cfg!(windows) {
+            Command::new("powershell").args([
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "test/pyinstaller_sim.ps1",
+            ])
+        } else {
+            Command::new("sh").args(["test/pyinstaller_sim.sh"])
+        }
+    }
+
+    /// Reads command output until the wrapper script reports the grandchild pid.
+    fn read_grandchild_pid(rx: &mut Receiver<CommandEvent>) -> u32 {
+        tauri::async_runtime::block_on(async {
+            let mut pid = None;
+            while let Some(event) = rx.recv().await {
+                if let CommandEvent::Stdout(line) = &event {
+                    let line_str = String::from_utf8_lossy(line);
+                    if let Some(rest) = line_str.strip_prefix("CHILD_PID=") {
+                        pid = rest.trim().parse::<u32>().ok();
+                    }
+                }
+                if pid.is_some() {
+                    break;
+                }
+            }
+            pid.expect("should have received CHILD_PID from script")
+        })
+    }
+
+    /// Asserts that the killed child still produces a `Terminated` event.
+    fn wait_for_terminated(mut rx: Receiver<CommandEvent>) {
+        let got = tauri::async_runtime::block_on(async move {
+            while let Some(event) = rx.recv().await {
+                if let CommandEvent::Terminated(_) = event {
+                    return true;
+                }
+            }
+            false
+        });
+        assert!(got, "expected a Terminated event after kill");
+    }
+
+    #[cfg(not(windows))]
+    fn pid_alive(pid: u32) -> bool {
+        unsafe { libc::kill(pid as i32, 0) == 0 }
+    }
+
+    #[cfg(windows)]
+    fn pid_alive(pid: u32) -> bool {
+        use windows::Win32::{
+            Foundation::{CloseHandle, STILL_ACTIVE},
+            System::Threading::{
+                GetExitCodeProcess, OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION,
+            },
+        };
+        let handle = match unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid) } {
+            Ok(handle) => handle,
+            Err(_) => return false,
+        };
+        let mut code = 0u32;
+        let alive = unsafe { GetExitCodeProcess(handle, &mut code) }.is_ok()
+            && code == STILL_ACTIVE.0 as u32;
+        unsafe { CloseHandle(handle) }.ok();
+        alive
+    }
+
+    #[cfg(not(windows))]
+    fn force_kill(pid: u32) {
+        unsafe { libc::kill(pid as i32, libc::SIGKILL) };
+    }
+
+    #[cfg(windows)]
+    fn force_kill(pid: u32) {
+        use windows::Win32::{
+            Foundation::CloseHandle,
+            System::Threading::{OpenProcess, TerminateProcess, PROCESS_TERMINATE},
+        };
+        if let Ok(handle) = unsafe { OpenProcess(PROCESS_TERMINATE, false, pid) } {
+            unsafe { TerminateProcess(handle, 1) }.ok();
+            unsafe { CloseHandle(handle) }.ok();
+        }
     }
 
     /// End-to-end test simulating the PyInstaller scenario from issue #1332.
@@ -871,88 +966,54 @@ mod tests {
     /// Without process groups, killing the bootloader orphans the real app.
     /// This test verifies that with `process_group` enabled, killing the
     /// wrapper also kills the grandchild process.
-    #[cfg(not(windows))]
     #[test]
     fn test_pyinstaller_simulation_without_process_group() {
         // Without process_group: killing the wrapper does NOT kill the grandchild.
-        let cmd = Command::new("sh").args(["test/pyinstaller_sim.sh"]);
-        let (mut rx, child) = cmd.spawn().unwrap();
+        let (mut rx, child) = sim_command().spawn().unwrap();
 
-        // Collect the child PID from stdout
-        let grandchild_pid = tauri::async_runtime::block_on(async {
-            let mut pid = None;
-            while let Some(event) = rx.recv().await {
-                if let CommandEvent::Stdout(line) = &event {
-                    let line_str = String::from_utf8_lossy(line);
-                    if let Some(rest) = line_str.strip_prefix("CHILD_PID=") {
-                        pid = rest.trim().parse::<i32>().ok();
-                    }
-                }
-                if pid.is_some() {
-                    break;
-                }
-            }
-            pid.expect("should have received CHILD_PID from script")
-        });
-
-        // Verify the grandchild is running
-        let ret = unsafe { libc::kill(grandchild_pid, 0) };
-        assert_eq!(ret, 0, "grandchild should be running before kill");
+        let grandchild_pid = read_grandchild_pid(&mut rx);
+        assert!(
+            pid_alive(grandchild_pid),
+            "grandchild should be running before kill"
+        );
 
         // Kill just the direct child (no process group)
         child.kill().unwrap();
         std::thread::sleep(std::time::Duration::from_millis(100));
 
         // The grandchild is STILL alive — this is the bug
-        let ret = unsafe { libc::kill(grandchild_pid, 0) };
-        assert_eq!(
-            ret, 0,
+        assert!(
+            pid_alive(grandchild_pid),
             "grandchild should survive when process_group is off"
         );
 
-        // Clean up the orphaned grandchild
-        unsafe { libc::kill(grandchild_pid, libc::SIGKILL) };
+        // Clean up the orphaned grandchild. This also closes the inherited
+        // stdout pipe, which the Terminated event is gated on.
+        force_kill(grandchild_pid);
+        wait_for_terminated(rx);
     }
 
-    #[cfg(not(windows))]
     #[test]
     fn test_pyinstaller_simulation_with_process_group() {
         // With process_group: killing the wrapper ALSO kills the grandchild.
-        let cmd = Command::new("sh")
-            .args(["test/pyinstaller_sim.sh"])
-            .set_process_group(true);
-        let (mut rx, child) = cmd.spawn().unwrap();
+        let (mut rx, child) = sim_command().set_process_group(true).spawn().unwrap();
 
-        // Collect the grandchild PID from stdout
-        let grandchild_pid = tauri::async_runtime::block_on(async {
-            let mut pid = None;
-            while let Some(event) = rx.recv().await {
-                if let CommandEvent::Stdout(line) = &event {
-                    let line_str = String::from_utf8_lossy(line);
-                    if let Some(rest) = line_str.strip_prefix("CHILD_PID=") {
-                        pid = rest.trim().parse::<i32>().ok();
-                    }
-                }
-                if pid.is_some() {
-                    break;
-                }
-            }
-            pid.expect("should have received CHILD_PID from script")
-        });
-
-        // Verify the grandchild is running
-        let ret = unsafe { libc::kill(grandchild_pid, 0) };
-        assert_eq!(ret, 0, "grandchild should be running before kill");
+        let grandchild_pid = read_grandchild_pid(&mut rx);
+        assert!(
+            pid_alive(grandchild_pid),
+            "grandchild should be running before kill"
+        );
 
         // Kill the process group
         child.kill().unwrap();
         std::thread::sleep(std::time::Duration::from_millis(100));
 
         // The grandchild should now be DEAD
-        let ret = unsafe { libc::kill(grandchild_pid, 0) };
-        assert_ne!(
-            ret, 0,
+        assert!(
+            !pid_alive(grandchild_pid),
             "grandchild should be killed when process_group is on"
         );
+
+        wait_for_terminated(rx);
     }
 }
