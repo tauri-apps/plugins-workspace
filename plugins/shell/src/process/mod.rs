@@ -357,8 +357,26 @@ impl Command {
 
             #[cfg(windows)]
             {
-                cmd_wrap.wrap(process_wrap::std::CreationFlags(CREATE_NO_WINDOW));
+                use windows::Win32::System::Threading::CREATE_SUSPENDED;
+                // `CreationFlags` must be registered *after* `JobObject` even
+                // though upstream documents the opposite order: `get_wrap`
+                // sees an empty wrapper map during spawn
+                // (watchexec/process-wrap#35), so `JobObject::pre_spawn`
+                // cannot merge our flags and would overwrite them with just
+                // CREATE_SUSPENDED, dropping CREATE_NO_WINDOW and flashing a
+                // console window. Registered last, our `pre_spawn` wins.
+                // CREATE_SUSPENDED must be kept: the child may only start
+                // running once `JobObject::wrap_child` has assigned it to the
+                // job, otherwise early grandchildren escape the job. The same
+                // bug makes `wrap_child`'s "user asked for CREATE_SUSPENDED"
+                // check miss this flag, so it still resumes the child. If
+                // process-wrap ever fixes #35, that check will start seeing
+                // our CREATE_SUSPENDED and leave the child suspended forever;
+                // `test_cmd_process_group_output` catches that on a bump.
                 cmd_wrap.wrap(process_wrap::std::JobObject);
+                cmd_wrap.wrap(process_wrap::std::CreationFlags(
+                    CREATE_SUSPENDED | CREATE_NO_WINDOW,
+                ));
             }
         }
 
