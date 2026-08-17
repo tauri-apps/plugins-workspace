@@ -43,6 +43,7 @@
 //! - **tracing**: Adds request, response, and cookie-store diagnostics through `tracing`.
 //! - **unsafe-headers**: Allows webview requests to send any headers.
 //! - **dangerous-settings**: Allows dangerous client settings such as accepting invalid certificates or hostnames.
+//! - **spki-pinning**: Adds the native [`SpkiPinning`] transport extension for exact-host leaf SPKI pinning with Rustls.
 
 pub use reqwest;
 
@@ -62,6 +63,11 @@ mod extension;
 #[cfg(feature = "cookies")]
 mod reqwest_cookie_store;
 mod scope;
+#[cfg(feature = "spki-pinning")]
+mod spki_pinning;
+
+#[cfg(feature = "spki-pinning")]
+pub use spki_pinning::{SpkiPinError, SpkiPinning};
 
 #[cfg(feature = "cookies")]
 const COOKIES_FILENAME: &str = ".cookies";

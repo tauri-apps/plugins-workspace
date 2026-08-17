@@ -105,6 +105,39 @@ fn main() {
 Extensions run in registration order and are trusted to replace transport
 settings. Request bodies are not exposed through `RequestContext`.
 
+### SPKI pinning
+
+Enable the `spki-pinning` Cargo feature to configure exact-host leaf public-key
+pins entirely in native Rust:
+
+```toml
+[dependencies]
+tauri-plugin-http = { version = "2", features = ["spki-pinning"] }
+```
+
+```rust
+let pinning = tauri_plugin_http::SpkiPinning::new()
+    .pin(
+        "api.example.com",
+        "sha256/BASE64_ENCODED_SHA256_OF_SUBJECT_PUBLIC_KEY_INFO",
+    )?
+    .pin("api.example.com", "sha256/BACKUP_PIN_FOR_KEY_ROTATION")?;
+
+tauri::Builder::default()
+    .plugin(
+        tauri_plugin_http::Builder::new()
+            .extension(pinning)
+            .build(),
+    );
+```
+
+Normal WebPKI chain and hostname validation runs before the leaf SPKI digest is
+checked. By default every HTTPS host, including redirect targets, requires
+configured pins. `allow_unpinned_hosts()` explicitly keeps normal WebPKI
+validation for hosts without pins. The client is HTTPS-only by default so
+redirects cannot downgrade to plain HTTP; `allow_http()` is an explicit native
+opt-in. Dangerous certificate and hostname settings are rejected.
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
