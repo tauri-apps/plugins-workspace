@@ -298,10 +298,15 @@ fn calculate_position<R: Runtime>(
         }
         #[cfg(feature = "tray-icon")]
         TrayBottomCenter => {
-            if let (Some((tray_x, tray_y)), Some((tray_width, _))) = (tray_position, tray_size) {
+            if let (Some((tray_x, tray_y)), Some((tray_width, tray_height))) =
+                (tray_position, tray_size)
+            {
                 PhysicalPosition {
                     x: tray_x + (tray_width / 2) - (window_size.width / 2),
-                    y: tray_y,
+                    // Bottom edge of the tray icon. Using tray_y placed the window's
+                    // top edge at the icon's *top*, which on a top menu bar puts it
+                    // flush with the screen edge rather than below the bar.
+                    y: tray_y + tray_height,
                 }
             } else {
                 panic!("Tray position not set");
