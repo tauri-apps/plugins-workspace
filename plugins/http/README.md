@@ -66,6 +66,45 @@ const response = await fetch('http://localhost:3003/users/2', {
 })
 ```
 
+## Native transport extensions
+
+Trusted native code can extend the request transport while preserving the
+existing JavaScript API. Extensions can validate request metadata, configure
+the final `reqwest::ClientBuilder`, and map transport failures to structured
+errors:
+
+```rust
+use tauri_plugin_http::{
+    ExtensionError, HttpTransportExtension, RequestContext,
+};
+
+struct CustomTransport;
+
+impl<R: tauri::Runtime> HttpTransportExtension<R> for CustomTransport {
+    fn configure(
+        &self,
+        builder: reqwest::ClientBuilder,
+        _request: &RequestContext,
+    ) -> Result<reqwest::ClientBuilder, ExtensionError> {
+        Ok(builder.https_only(true))
+    }
+}
+
+fn main() {
+    tauri::Builder::default()
+        .plugin(
+            tauri_plugin_http::Builder::new()
+                .extension(CustomTransport)
+                .build(),
+        )
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+```
+
+Extensions run in registration order and are trusted to replace transport
+settings. Request bodies are not exposed through `RequestContext`.
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
