@@ -9,10 +9,9 @@ import type { Options } from './index'
   let permissionSettable = false
   let permissionValue = 'default'
 
-  async function isPermissionGranted(): Promise<boolean> {
-    // @ts-expect-error __TEMPLATE_windows__ will be replaced in rust before it's injected.
-    if (window.Notification.permission !== 'default' || __TEMPLATE_windows__) {
-      return await Promise.resolve(window.Notification.permission === 'granted')
+  async function isPermissionGranted(): Promise<boolean | null> {
+    if (window.Notification.permission !== 'default') {
+      return window.Notification.permission === 'granted'
     }
     return await invoke('plugin:notification|is_permission_granted')
   }
@@ -80,11 +79,16 @@ import type { Options } from './index'
     }
   })
 
-  void isPermissionGranted().then(function (response) {
-    if (response === null) {
-      setNotificationPermission('default')
-    } else {
-      setNotificationPermission(response ? 'granted' : 'denied')
-    }
-  })
+  // @ts-expect-error __TEMPLATE_desktop__ will be replaced in rust before it's injected.
+  if (__TEMPLATE_desktop__) {
+    setNotificationPermission('granted')
+  } else {
+    void isPermissionGranted().then(function (response) {
+      if (response === null) {
+        setNotificationPermission('default')
+      } else {
+        setNotificationPermission(response ? 'granted' : 'denied')
+      }
+    })
+  }
 })()
