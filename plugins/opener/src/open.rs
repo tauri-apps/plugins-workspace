@@ -68,9 +68,16 @@ pub fn open_path<P: AsRef<Path>, S: AsRef<str>>(path: P, with: Option<S>) -> cra
 
 #[cfg(test)]
 mod tests {
+    // These imports are only used by the macOS-only zombie test below.
+    // Without cfg-gating them, clippy fails on other targets because the test
+    // helpers are compiled out.
+    #[cfg(target_os = "macos")]
     use super::*;
+    #[cfg(target_os = "macos")]
     use std::process::Command as SysCommand;
+    #[cfg(target_os = "macos")]
     use std::thread;
+    #[cfg(target_os = "macos")]
     use std::time::Duration;
 
     #[cfg(target_os = "macos")]
@@ -94,9 +101,7 @@ mod tests {
                 let stat = it.next()?;
                 Some((child_ppid, stat))
             })
-            .filter(|(child_ppid, stat)| {
-                *child_ppid == ppid_str.as_str() && stat.starts_with('Z')
-            })
+            .filter(|(child_ppid, stat)| *child_ppid == ppid_str.as_str() && stat.starts_with('Z'))
             .count()
     }
 
