@@ -44,7 +44,7 @@ impl<R: Runtime> Opener<R> {
     ///
     /// # Examples
     ///
-    /// ```rust,no_run
+    /// ```rust,ignore
     /// use tauri_plugin_opener::OpenerExt;
     ///
     /// tauri::Builder::default()
@@ -70,7 +70,7 @@ impl<R: Runtime> Opener<R> {
     ///
     /// # Examples
     ///
-    /// ```rust,no_run
+    /// ```rust,ignore
     /// use tauri_plugin_opener::OpenerExt;
     ///
     /// tauri::Builder::default()
@@ -98,7 +98,7 @@ impl<R: Runtime> Opener<R> {
     ///
     /// # Examples
     ///
-    /// ```rust,no_run
+    /// ```rust,ignore
     /// use tauri_plugin_opener::OpenerExt;
     ///
     /// tauri::Builder::default()
@@ -128,7 +128,7 @@ impl<R: Runtime> Opener<R> {
     ///
     /// # Examples
     ///
-    /// ```rust,no_run
+    /// ```rust,ignore
     /// use tauri_plugin_opener::OpenerExt;
     ///
     /// tauri::Builder::default()
