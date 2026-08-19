@@ -10,9 +10,12 @@ pub(crate) fn open<P: AsRef<OsStr>, S: AsRef<str>>(path: P, with: Option<S>) -> 
     match with {
         Some(program) => ::open::with_detached(path, program.as_ref()),
         // `open::that_detached()` uses a detached process which can leave a short-lived
-        // zombie ("Z") child process on macOS. We only need the launch to be non-blocking,
-        // and `open::that()` waits for `/usr/bin/open` itself to finish, which avoids zombies.
+        // zombie ("Z") child process on macOS. On other platforms we keep the previous
+        // detached behavior to avoid re-introducing tauri#6849 semantics.
+        #[cfg(target_os = "macos")]
         None => ::open::that(path),
+        #[cfg(not(target_os = "macos"))]
+        None => ::open::that_detached(path),
     }
     .map_err(Into::into)
 }
