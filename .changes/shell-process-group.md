@@ -1,5 +1,5 @@
 ---
-"shell": minor:feat
+"shell": minor
 "shell-js": minor
 ---
 
