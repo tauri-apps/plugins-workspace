@@ -346,9 +346,6 @@ impl Command {
             raw,
         );
 
-        // Always go through process-wrap so the spawn path is uniform across
-        // platforms; the `process_group` switch is just an optional wrapper
-        // rather than a separate child type.
         let mut cmd_wrap = process_wrap::std::StdCommandWrap::from(command);
 
         if process_group {
