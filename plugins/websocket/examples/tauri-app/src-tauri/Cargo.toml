@@ -15,6 +15,3 @@ tokio-tungstenite = "0.29"
 
 [build-dependencies]
 tauri-build = { workspace = true }
-
-[features]
-prod = ["tauri/custom-protocol"]

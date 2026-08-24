@@ -1,0 +1,76 @@
+# Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT
+
+name: test android
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/test-android.yml'
+      - '**/android/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ${{ matrix.platform }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@1.77.2
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 'lts/*'
+
+      - uses: pnpm/action-setup@v6
+        with:
+          run_install: true
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r25
+          local-cache: true
+
+      # TODO check after https://github.com/nttld/setup-ndk/issues/518 is fixed
+      - name: Restore Android Symlinks
+        if: matrix.platform == 'ubuntu-latest' || matrix.platform == 'macos-latest'
+        env:
+          NDK_HOST: ${{ matrix.platform == 'ubuntu-latest' && 'linux-x86_64' || 'darwin-x86_64' }}
+        run: |
+          directory="${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/$NDK_HOST/bin"
+          find "$directory" -type l | while read link; do
+              current_target=$(readlink "$link")
+              new_target="$directory/$(basename "$current_target")"
+              ln -sf "$new_target" "$link"
+              echo "Changed $(basename "$link") from $current_target to $new_target"
+          done
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: build API
+        run: pnpm build
+
+      - name: build APK
+        working-directory: ./examples/api
+        run: pnpm tauri android build
+        env:
+          NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
