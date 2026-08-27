@@ -29,6 +29,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permisisons:
+  contents: read
+
 jobs:
   audit-rust:
     runs-on: ubuntu-latest
