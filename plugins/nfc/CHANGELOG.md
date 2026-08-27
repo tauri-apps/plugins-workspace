@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.6]
+
+- [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
+- [`52672616`](https://github.com/tauri-apps/plugins-workspace/commit/526726162f8ddddf9469797436123704a261df87) ([#3419](https://github.com/tauri-apps/plugins-workspace/pull/3419) by [@pascalauroboa](https://github.com/tauri-apps/plugins-workspace/../../pascalauroboa)) Expect a `NFCTag` as input and return a `ScanResponse` in the `scan` function.
+
 ## \[2.3.5]
 
 - [`ab037b70`](https://github.com/tauri-apps/plugins-workspace/commit/ab037b70d6fb54f1ad07d5fe21c41bd1997b34dd) ([#3339](https://github.com/tauri-apps/plugins-workspace/pull/3339) by [@crazy-genius](https://github.com/tauri-apps/plugins-workspace/../../crazy-genius)) Fixed syntax error in kotlin files potentially causing issues when trying to write to tags when no prior session existed.

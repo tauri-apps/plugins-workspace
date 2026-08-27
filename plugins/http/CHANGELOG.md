@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.6.0]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+- [`19fb3926`](https://github.com/tauri-apps/plugins-workspace/commit/19fb3926fd24d95371bc3a7593256861df406436) ([#3528](https://github.com/tauri-apps/plugins-workspace/pull/3528) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Added `system-proxy` feature to replace the old `macos-system-configuration` feature flag to match the new reqwest API.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.2`
+
 ## \[2.5.9]
 
 ### Dependencies
