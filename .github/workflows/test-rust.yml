@@ -30,7 +30,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permisisons:
+permissions:
   contents: read
 
 jobs:

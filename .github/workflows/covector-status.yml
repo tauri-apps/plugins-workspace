@@ -5,7 +5,7 @@
 name: covector status
 on: [pull_request]
 
-permisisons:
+permissions:
   contents: read
 
 jobs:

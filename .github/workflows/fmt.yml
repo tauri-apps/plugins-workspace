@@ -7,7 +7,7 @@ name: check formatting
 on:
   pull_request:
 
-permisisons:
+permissions:
   contents: read
 
 jobs:

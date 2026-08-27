@@ -21,7 +21,7 @@ on:
       - '.github/workflows/integration-tests.yml'
       - 'plugins/updater/src/**'
 
-permisisons:
+permissions:
   contents: read
 
 jobs:
