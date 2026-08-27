@@ -31,6 +31,7 @@ concurrency:
 
 permissions:
   contents: read
+  checks: write
 
 jobs:
   audit-js:
