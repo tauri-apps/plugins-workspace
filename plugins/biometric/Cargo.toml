@@ -1,7 +1,7 @@
 [package]
 name = "tauri-plugin-biometric"
 version = "2.3.2"
-description = "Prompt the user for biometric authentication on Android and iOS."
+description = "Prompt the user for biometric authentication on Android, iOS and macOS."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
@@ -15,7 +15,7 @@ targets = ["x86_64-linux-android"]
 [package.metadata.platforms.support]
 windows = { level = "none", notes = "" }
 linux = { level = "none", notes = "" }
-macos = { level = "none", notes = "" }
+macos = { level = "partial", notes = "Touch ID via LocalAuthentication. Android-only and iOS-only options are ignored." }
 android = { level = "full", notes = "" }
 ios = { level = "full", notes = "" }
 
@@ -30,3 +30,15 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 serde_repr = "0.1"
+
+[target."cfg(target_os = \"macos\")".dependencies]
+objc2 = "0.6"
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSError", "NSString"] }
+objc2-local-authentication = { version = "0.3", default-features = false, features = [
+  "std",
+  "block2",
+  "LAContext",
+  "LABiometryType",
+  "LAPublicDefines",
+] }
+block2 = "0.6"

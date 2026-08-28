@@ -13,6 +13,10 @@ pub enum Error {
     #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
+    /// The platform refused or failed the authentication, with its own wording.
+    #[cfg(target_os = "macos")]
+    #[error("{0}")]
+    Biometric(String),
 }
 
 impl Serialize for Error {
