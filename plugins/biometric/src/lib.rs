@@ -2,17 +2,29 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-#![cfg(mobile)]
+//! Biometric authentication: Touch ID and Face ID on iOS, fingerprint, face and
+//! iris on Android, and Touch ID on macOS.
 
+#![cfg(any(mobile, target_os = "macos"))]
+
+#[cfg(mobile)]
 use serde::Serialize;
+#[cfg(mobile)]
+use tauri::plugin::PluginHandle;
 use tauri::{
-    plugin::{Builder, PluginHandle, TauriPlugin},
-    Manager, Runtime,
+    plugin::{Builder, TauriPlugin},
+    Runtime,
 };
+#[cfg(mobile)]
+use tauri::Manager;
 
 pub use models::*;
 
+#[cfg(target_os = "macos")]
+mod commands;
 mod error;
+#[cfg(target_os = "macos")]
+mod macos;
 mod models;
 
 pub use error::{Error, Result};
@@ -24,8 +36,10 @@ const PLUGIN_IDENTIFIER: &str = "app.tauri.biometric";
 tauri::ios_plugin_binding!(init_plugin_biometric);
 
 /// Access to the biometric APIs.
+#[cfg(mobile)]
 pub struct Biometric<R: Runtime>(PluginHandle<R>);
 
+#[cfg(mobile)]
 #[derive(Serialize)]
 struct AuthenticatePayload {
     reason: String,
@@ -33,6 +47,7 @@ struct AuthenticatePayload {
     options: AuthOptions,
 }
 
+#[cfg(mobile)]
 impl<R: Runtime> Biometric<R> {
     pub fn status(&self) -> crate::Result<Status> {
         self.0.run_mobile_plugin("status", ()).map_err(Into::into)
@@ -46,10 +61,12 @@ impl<R: Runtime> Biometric<R> {
 }
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the biometric APIs.
+#[cfg(mobile)]
 pub trait BiometricExt<R: Runtime> {
     fn biometric(&self) -> &Biometric<R>;
 }
 
+#[cfg(mobile)]
 impl<R: Runtime, T: Manager<R>> crate::BiometricExt<R> for T {
     fn biometric(&self) -> &Biometric<R> {
         self.state::<Biometric<R>>().inner()
@@ -58,13 +75,24 @@ impl<R: Runtime, T: Manager<R>> crate::BiometricExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("biometric")
-        .setup(|app, api| {
+    let builder = Builder::new("biometric");
+
+    // On macOS there is no native plugin to register: the commands below talk
+    // to LocalAuthentication in-process.
+    #[cfg(target_os = "macos")]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        commands::status,
+        commands::authenticate
+    ]);
+
+    builder
+        .setup(|_app, _api| {
             #[cfg(target_os = "android")]
-            let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "BiometricPlugin")?;
+            let handle = _api.register_android_plugin(PLUGIN_IDENTIFIER, "BiometricPlugin")?;
             #[cfg(target_os = "ios")]
-            let handle = api.register_ios_plugin(init_plugin_biometric)?;
-            app.manage(Biometric(handle));
+            let handle = _api.register_ios_plugin(init_plugin_biometric)?;
+            #[cfg(mobile)]
+            _app.manage(Biometric(handle));
             Ok(())
         })
         .build()
