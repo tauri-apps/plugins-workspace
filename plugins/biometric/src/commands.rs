@@ -18,12 +18,30 @@ pub(crate) async fn status<R: Runtime>(_app: AppHandle<R>) -> Status {
     crate::macos::status()
 }
 
+/// The JS API sends `{ reason, ...options }` — the options are flattened into
+/// the payload rather than nested — so the fields are taken individually here.
+/// Matching that shape is what lets one frontend target mobile and macOS
+/// without branching.
 #[command]
+#[allow(clippy::too_many_arguments)]
 pub(crate) async fn authenticate<R: Runtime>(
     _app: AppHandle<R>,
     reason: String,
-    #[allow(clippy::used_underscore_binding)] options: AuthOptions,
+    allow_device_credential: Option<bool>,
+    fallback_title: Option<String>,
+    cancel_title: Option<String>,
+    title: Option<String>,
+    subtitle: Option<String>,
+    confirmation_required: Option<bool>,
 ) -> crate::Result<()> {
+    let options = AuthOptions {
+        allow_device_credential: allow_device_credential.unwrap_or(false),
+        fallback_title,
+        cancel_title,
+        title,
+        subtitle,
+        confirmation_required,
+    };
     // The prompt blocks until the user answers, so it cannot run on the async
     // runtime — and it must not run on the main thread either, which is the one
     // presenting the sheet.
