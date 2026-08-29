@@ -44,6 +44,10 @@ export type StoreOptions = {
   overrideDefaults?: boolean
 }
 
+interface StoreEntries {
+  [key: string]: unknown
+}
+
 /**
  * Create a new Store or load the existing store with the path.
  *
@@ -56,10 +60,10 @@ export type StoreOptions = {
  * @param path Path to save the store in `app_data_dir`
  * @param options Store configuration options
  */
-export async function load(
+export async function load<S extends StoreEntries>(
   path: string,
   options?: StoreOptions
-): Promise<Store> {
+): Promise<Store<S>> {
   return await Store.load(path, options)
 }
 
@@ -79,19 +83,19 @@ export async function load(
  *
  * @param path Path of the store.
  */
-export async function getStore(path: string): Promise<Store | null> {
-  return await Store.get(path)
+export async function getStore<S extends StoreEntries>(path: string): Promise<Store<S> | null> {
+  return await Store.get<S>(path)
 }
 
 /**
  * A lazy loaded key-value store persisted by the backend layer.
  */
-export class LazyStore implements IStore {
-  private _store?: Promise<Store>
+export class LazyStore <S extends StoreEntries>implements IStore {
+  private _store?: Promise<Store<S>>
 
-  private get store(): Promise<Store> {
+  private get store(): Promise<Store<S>> {
     if (!this._store) {
-      this._store = load(this.path, this.options)
+      this._store = load<S>(this.path, this.options)
     }
     return this._store
   }
@@ -113,20 +117,20 @@ export class LazyStore implements IStore {
     await this.store
   }
 
-  async set(key: string, value: unknown): Promise<void> {
+  async set<K extends keyof S>(key: K, value: S[K]): Promise<void> {
     return (await this.store).set(key, value)
   }
 
-  async get<T>(key: string): Promise<T | undefined> {
-    return (await this.store).get<T>(key)
+  async get<K extends keyof S>(key: K): Promise<S[K] | undefined> {
+    return (await this.store).get<K>(key)
   }
 
-  async has(key: string): Promise<boolean> {
-    return (await this.store).has(key)
+  async has<K extends keyof S>(key: K): Promise<boolean> {
+    return (await this.store).has<K>(key)
   }
 
-  async delete(key: string): Promise<boolean> {
-    return (await this.store).delete(key)
+  async delete<K extends keyof S>(key: K): Promise<boolean> {
+    return (await this.store).delete<K>(key)
   }
 
   async clear(): Promise<void> {
@@ -137,16 +141,16 @@ export class LazyStore implements IStore {
     await (await this.store).reset()
   }
 
-  async keys(): Promise<string[]> {
-    return (await this.store).keys()
+  async keys<K extends keyof S>(): Promise<K[]> {
+    return (await this.store).keys<K>()
   }
 
-  async values<T>(): Promise<T[]> {
+  async values<T extends S>(): Promise<T[keyof T][]> {
     return (await this.store).values<T>()
   }
 
-  async entries<T>(): Promise<Array<[key: string, value: T]>> {
-    return (await this.store).entries<T>()
+  async entries<K extends keyof S>(): Promise<Array<[key: K, value: S[K]]>> {
+    return (await this.store).entries<K>()
   }
 
   async length(): Promise<number> {
@@ -161,17 +165,17 @@ export class LazyStore implements IStore {
     await (await this.store).save()
   }
 
-  async onKeyChange<T>(
-    key: string,
-    cb: (value: T | undefined) => void
+  async onKeyChange<K extends keyof S>(
+    key: K,
+    cb: (value: S[K] | undefined) => void
   ): Promise<UnlistenFn> {
-    return (await this.store).onKeyChange<T>(key, cb)
+    return (await this.store).onKeyChange<K>(key, cb)
   }
 
-  async onChange<T>(
-    cb: (key: string, value: T | undefined) => void
+  async onChange<K extends keyof S>(
+    cb: (key: K, value: S[K] | undefined) => void
   ): Promise<UnlistenFn> {
-    return (await this.store).onChange<T>(cb)
+    return (await this.store).onChange<K>(cb)
   }
 
   async close(): Promise<void> {
@@ -184,7 +188,7 @@ export class LazyStore implements IStore {
 /**
  * A key-value store persisted by the backend layer.
  */
-export class Store extends Resource implements IStore {
+export class Store <S extends StoreEntries>extends Resource implements IStore {
   private constructor(rid: number) {
     super(rid)
   }
@@ -201,7 +205,7 @@ export class Store extends Resource implements IStore {
    * @param path Path to save the store in `app_data_dir`
    * @param options Store configuration options
    */
-  static async load(path: string, options?: StoreOptions): Promise<Store> {
+  static async load<S extends StoreEntries>(path: string, options?: StoreOptions): Promise<Store<S>> {
     const rid = await invoke<number>('plugin:store|load', {
       path,
       options
@@ -228,13 +232,13 @@ export class Store extends Resource implements IStore {
    *
    * @param path Path of the store.
    */
-  static async get(path: string): Promise<Store | null> {
+  static async get<S extends StoreEntries>(path: string): Promise<Store<S> | null> {
     return await invoke<number | null>('plugin:store|get_store', { path }).then(
       (rid) => (rid ? new Store(rid) : null)
     )
   }
 
-  async set(key: string, value: unknown): Promise<void> {
+  async set<K extends keyof S>(key: K, value: S[K]): Promise<void> {
     await invoke('plugin:store|set', {
       rid: this.rid,
       key,
@@ -242,22 +246,22 @@ export class Store extends Resource implements IStore {
     })
   }
 
-  async get<T>(key: string): Promise<T | undefined> {
-    const [value, exists] = await invoke<[T, boolean]>('plugin:store|get', {
+  async get<K extends keyof S>(key: K): Promise<S[K] | undefined> {
+    const [value, exists] = await invoke<[S[K], boolean]>('plugin:store|get', {
       rid: this.rid,
       key
     })
     return exists ? value : undefined
   }
 
-  async has(key: string): Promise<boolean> {
+  async has<K extends keyof S>(key: K): Promise<boolean> {
     return await invoke('plugin:store|has', {
       rid: this.rid,
       key
     })
   }
 
-  async delete(key: string): Promise<boolean> {
+  async delete<K extends keyof S>(key: K): Promise<boolean> {
     return await invoke('plugin:store|delete', {
       rid: this.rid,
       key
@@ -272,15 +276,15 @@ export class Store extends Resource implements IStore {
     await invoke('plugin:store|reset', { rid: this.rid })
   }
 
-  async keys(): Promise<string[]> {
+  async keys<K extends keyof S>(): Promise<K[]> {
     return await invoke('plugin:store|keys', { rid: this.rid })
   }
 
-  async values<T>(): Promise<T[]> {
+  async values<T extends S>(): Promise<T[keyof T][]> {
     return await invoke('plugin:store|values', { rid: this.rid })
   }
 
-  async entries<T>(): Promise<Array<[key: string, value: T]>> {
+  async entries<K extends keyof S>(): Promise<Array<[key: K, value: S[K]]>> {
     return await invoke('plugin:store|entries', { rid: this.rid })
   }
 
@@ -296,23 +300,24 @@ export class Store extends Resource implements IStore {
     await invoke('plugin:store|save', { rid: this.rid })
   }
 
-  async onKeyChange<T>(
-    key: string,
-    cb: (value: T | undefined) => void
+  async onKeyChange<K extends keyof S>(
+    key: K,
+    cb: (value: S[K] | undefined) => void
   ): Promise<UnlistenFn> {
-    return await listen<ChangePayload<T>>('store://change', (event) => {
+    return await listen<ChangePayload<S[K]>>('store://change', (event) => {
       if (event.payload.resourceId === this.rid && event.payload.key === key) {
         cb(event.payload.exists ? event.payload.value : undefined)
       }
     })
   }
 
-  async onChange<T>(
-    cb: (key: string, value: T | undefined) => void
+  async onChange<K extends keyof S>(
+    cb: (key: K, value: S[K] | undefined) => void
   ): Promise<UnlistenFn> {
-    return await listen<ChangePayload<T>>('store://change', (event) => {
+    return await listen<ChangePayload<S[K]>>('store://change', (event) => {
       if (event.payload.resourceId === this.rid) {
         cb(
+          // @ts-ignore Typescript complains that `key` can be of type `string | number | symbol`. Doesn't affect end-user.
           event.payload.key,
           event.payload.exists ? event.payload.value : undefined
         )
@@ -329,7 +334,7 @@ interface IStore {
    * @param value
    * @returns
    */
-  set(key: string, value: unknown): Promise<void>
+  set<K extends keyof StoreEntries>(key: K, value: StoreEntries[K]): Promise<void>
 
   /**
    * Returns the value for the given `key` or `undefined` if the key does not exist.
@@ -337,7 +342,7 @@ interface IStore {
    * @param key
    * @returns
    */
-  get<T>(key: string): Promise<T | undefined>
+  get<K extends keyof StoreEntries>(key: K): Promise<StoreEntries[K] | undefined>
 
   /**
    * Returns `true` if the given `key` exists in the store.
@@ -345,7 +350,7 @@ interface IStore {
    * @param key
    * @returns
    */
-  has(key: string): Promise<boolean>
+  has<K extends keyof StoreEntries>(key: K): Promise<boolean>
 
   /**
    * Removes a key-value pair from the store.
@@ -353,7 +358,7 @@ interface IStore {
    * @param key
    * @returns
    */
-  delete(key: string): Promise<boolean>
+  delete<K extends keyof StoreEntries>(key: K): Promise<boolean>
 
   /**
    * Clears the store, removing all key-value pairs.
@@ -376,21 +381,21 @@ interface IStore {
    *
    * @returns
    */
-  keys(): Promise<string[]>
+  keys<K extends keyof StoreEntries>(): Promise<K[]>
 
   /**
    * Returns a list of all values in the store.
    *
    * @returns
    */
-  values<T>(): Promise<T[]>
+  values(): Promise<StoreEntries[keyof StoreEntries][]>
 
   /**
    * Returns a list of all entries in the store.
    *
    * @returns
    */
-  entries<T>(): Promise<Array<[key: string, value: T]>>
+  entries<K extends keyof StoreEntries>(): Promise<Array<[K, StoreEntries[K]]>>
 
   /**
    * Returns the number of key-value pairs in the store.
@@ -428,9 +433,9 @@ interface IStore {
    *
    * @since 2.0.0
    */
-  onKeyChange<T>(
-    key: string,
-    cb: (value: T | undefined) => void
+  onKeyChange<K extends keyof StoreEntries>(
+    key: K,
+    cb: (value: StoreEntries[K] | undefined) => void
   ): Promise<UnlistenFn>
 
   /**
@@ -440,8 +445,8 @@ interface IStore {
    *
    * @since 2.0.0
    */
-  onChange<T>(
-    cb: (key: string, value: T | undefined) => void
+  onChange(
+    cb: (key: keyof StoreEntries, value: StoreEntries[keyof StoreEntries] | undefined) => void
   ): Promise<UnlistenFn>
 
   /**
