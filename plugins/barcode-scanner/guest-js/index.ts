@@ -95,3 +95,11 @@ export async function requestPermissions(): Promise<PermissionState> {
 export async function openAppSettings(): Promise<void> {
   await invoke('plugin:barcode-scanner|open_app_settings')
 }
+
+/**
+ * Toggle the flashlight/torch while scanning is active.
+ * @param enabled
+ */
+export async function toggleTorch(enabled: boolean): Promise<void> {
+  await invoke('plugin:barcode-scanner|toggle_torch', { enabled })
+}
