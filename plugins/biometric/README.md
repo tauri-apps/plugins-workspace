@@ -1,6 +1,6 @@
 ![biometric](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/biometric/banner.png)
 
-Prompt the user for biometric authentication on Android and iOS.
+Prompt the user for biometric authentication on Android and iOS. Also allows to use assymetric cryptography with the keys protected by biometric authentication.
 
 | Platform | Supported |
 | -------- | --------- |
@@ -8,7 +8,7 @@ Prompt the user for biometric authentication on Android and iOS.
 | Windows  | x         |
 | macOS    | x         |
 | Android  | ✓         |
-| iOS      | ✓         |
+| iOS      | ✓ (except biometric cryptography ) |
 
 ## Install
 
@@ -61,8 +61,27 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { authenticate } from '@tauri-apps/plugin-biometric'
-await authenticate('Open your wallet')
+import { checkStatus, authenticate, biometricCipher } from '@tauri-apps/plugin-biometric'
+
+const status = await checkStatus();
+if (status.isAvailble) {
+  await authenticate('Open your wallet')
+}
+
+// ... or using biometric-protected cryptography:
+if (status.isAvailable) {
+  const encryptOptions = {
+    dataToEncrypt: getData(),
+  };
+  const encrypted = await biometricCipher('Login without typing password', encryptOptions);
+
+  const decryptOptions = {
+    dataToDecrypt: encrypted.data,
+  };
+  const originalData = await biometricCipher('Login without typing password', decryptOptions);
+}
+
+
 ```
 
 ## Contributing
