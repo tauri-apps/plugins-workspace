@@ -293,7 +293,7 @@ mod imp {
                     .unwrap_or_else(|| bin.into_os_string())
                     .to_string_lossy()
                     .to_string();
-                let qualified_exec = format!("\"{}\" %u", exec);
+                let qualified_exec = format!("{} %u", exec);
 
                 let target = self.app.path().data_dir()?.join("applications");
 
