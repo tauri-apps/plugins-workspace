@@ -543,7 +543,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "auto-launch"
 version = "0.6.0"
-source = "git+https://github.com/Legend-Master/auto-launch.git?branch=relax-windows-registry-versions#d48759bc10308b5521a12954d1b7ee0c0ad3c60b"
+source = "git+https://github.com/zzzgydi/auto-launch.git#5a77b66cfb745e2ead928fe37aedee828cb993ea"
 dependencies = [
  "dirs 6.0.0",
  "os_info",

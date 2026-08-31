@@ -32,4 +32,4 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 thiserror = { workspace = true }
 # auto-launch = "0.6"
-auto-launch = { git = "https://github.com/Legend-Master/auto-launch.git", branch = "relax-windows-registry-versions" }
+auto-launch = { git = "https://github.com/zzzgydi/auto-launch.git" }
