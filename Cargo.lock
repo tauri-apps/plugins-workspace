@@ -4606,18 +4606,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "process-wrap"
-version = "8.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a3ef4f2f0422f23a82ec9f628ea2acd12871c81a9362b02c43c1aa86acfc3ba1"
-dependencies = [
- "indexmap 2.11.4",
- "nix 0.30.1",
- "tracing",
- "windows 0.61.1",
-]
-
-[[package]]
 name = "psl-types"
 version = "2.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5640,6 +5628,16 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest",
+]
+
+[[package]]
+name = "shared_child"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e362d9935bc50f019969e2f9ecd66786612daae13e8f277be7bfb66e8bed3f7"
+dependencies = [
+ "libc",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -6772,16 +6770,16 @@ dependencies = [
  "log",
  "open",
  "os_pipe",
- "process-wrap",
  "regex",
  "schemars",
  "serde",
  "serde_json",
+ "shared_child",
  "tauri",
  "tauri-plugin",
  "thiserror 2.0.12",
  "tokio",
- "windows 0.61.1",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]

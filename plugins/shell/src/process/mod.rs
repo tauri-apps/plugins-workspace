@@ -7,17 +7,17 @@ use std::{
     io::{BufRead, BufReader, Write},
     path::{Path, PathBuf},
     process::{Command as StdCommand, Stdio},
-    sync::{Arc, Mutex, RwLock},
+    sync::{Arc, RwLock},
     thread::spawn,
 };
 
 #[cfg(unix)]
-use std::os::unix::process::ExitStatusExt;
+use std::os::unix::process::{CommandExt, ExitStatusExt};
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
 
 #[cfg(windows)]
-use windows::Win32::System::Threading::CREATE_NO_WINDOW;
+use windows_sys::Win32::System::Threading::{CREATE_NO_WINDOW, CREATE_SUSPENDED};
 
 const NEWLINE_BYTE: u8 = b'\n';
 
@@ -26,7 +26,11 @@ use tauri::async_runtime::{block_on as block_on_task, channel, Receiver, Sender}
 pub use encoding_rs::Encoding;
 use os_pipe::{pipe, PipeReader, PipeWriter};
 use serde::Serialize;
+use shared_child::SharedChild;
 use tauri::utils::platform;
+
+#[cfg(windows)]
+mod job_object;
 
 /// Payload for the [`CommandEvent::Terminated`] command event.
 #[derive(Debug, Clone, Serialize)]
@@ -63,9 +67,12 @@ pub struct Command {
 
 /// Spawned child process.
 pub struct CommandChild {
-    inner: Arc<Mutex<Box<dyn process_wrap::std::StdChildWrapper>>>,
-    pid: u32,
+    inner: Arc<SharedChild>,
     stdin_writer: PipeWriter,
+    #[cfg(unix)]
+    process_group: bool,
+    #[cfg(windows)]
+    job: Option<job_object::JobObject>,
 }
 
 impl CommandChild {
@@ -75,18 +82,40 @@ impl CommandChild {
         Ok(())
     }
 
-    /// Sends a kill signal to the child, then waits for it to exit.
-    /// When the child was spawned with `process_group` enabled, this kills the
-    /// entire process group (POSIX) or job object (Windows), reaping every
-    /// member before returning.
+    /// Sends a kill signal to the child and waits for it to exit.
+    /// With `process_group` enabled this kills the whole process group (POSIX) or job object (Windows).
     pub fn kill(self) -> crate::Result<()> {
-        self.inner.lock().unwrap().kill()?;
+        if self.inner.try_wait()?.is_some() {
+            return Ok(());
+        }
+
+        #[cfg(unix)]
+        if self.process_group {
+            let pgid = self.inner.id() as libc::pid_t;
+            if unsafe { libc::killpg(pgid, libc::SIGKILL) } != 0 {
+                let err = std::io::Error::last_os_error();
+                // ESRCH: the group emptied out between `try_wait` and `killpg`.
+                if err.raw_os_error() != Some(libc::ESRCH) {
+                    return Err(err.into());
+                }
+            }
+        } else {
+            self.inner.kill()?;
+        }
+
+        #[cfg(windows)]
+        match &self.job {
+            Some(job) => job.terminate()?,
+            None => self.inner.kill()?,
+        }
+
+        self.inner.wait()?;
         Ok(())
     }
 
     /// Returns the process pid.
     pub fn pid(&self) -> u32 {
-        self.pid
+        self.inner.id()
     }
 }
 
@@ -174,7 +203,7 @@ impl Command {
         command.stdin(Stdio::piped());
         command.stderr(Stdio::piped());
         #[cfg(windows)]
-        command.creation_flags(CREATE_NO_WINDOW.0);
+        command.creation_flags(CREATE_NO_WINDOW);
 
         Self {
             cmd: command,
@@ -328,7 +357,38 @@ impl Command {
         command.stderr(stderr_writer);
         command.stdin(stdin_reader);
 
+        #[cfg(unix)]
+        if process_group {
+            command.process_group(0);
+        }
+        #[cfg(windows)]
+        if process_group {
+            // Start suspended so nothing can be spawned before the child is in the job.
+            command.creation_flags(CREATE_NO_WINDOW | CREATE_SUSPENDED);
+        }
+
+        let child = command.spawn()?;
+
+        #[cfg(windows)]
+        let job = if process_group {
+            match job_object::JobObject::assign(&child) {
+                Ok(job) => Some(job),
+                Err(e) => {
+                    // Don't leave the suspended child behind.
+                    let mut child = child;
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    return Err(e.into());
+                }
+            }
+        } else {
+            None
+        };
+
+        let child = Arc::new(SharedChild::new(child)?);
+        let child_ = child.clone();
         let guard = Arc::new(RwLock::new(()));
+
         let (tx, rx) = channel(1);
 
         spawn_pipe_reader(
@@ -346,36 +406,37 @@ impl Command {
             raw,
         );
 
-        let mut cmd_wrap = process_wrap::std::StdCommandWrap::from(command);
-
-        if process_group {
-            #[cfg(unix)]
-            cmd_wrap.wrap(process_wrap::std::ProcessGroup::leader());
-
-            #[cfg(windows)]
-            {
-                use windows::Win32::System::Threading::CREATE_SUSPENDED;
-                // Intentionally using the wrong order as a workaround for <https://github.com/watchexec/process-wrap/issues/35>.
-                cmd_wrap.wrap(process_wrap::std::JobObject);
-                cmd_wrap.wrap(process_wrap::std::CreationFlags(
-                    CREATE_SUSPENDED | CREATE_NO_WINDOW,
-                ));
-            }
-        }
-
-        let wrapped_child = cmd_wrap.spawn()?;
-        let pid = wrapped_child.id();
-        let inner = Arc::new(Mutex::new(wrapped_child));
-        let inner_wait = inner.clone();
-
-        spawn_wait_thread(move || wait_on_child(&inner_wait, pid), tx, guard);
+        spawn(move || {
+            let _ = match child_.wait() {
+                Ok(status) => {
+                    let _l = guard.write().unwrap();
+                    block_on_task(async move {
+                        tx.send(CommandEvent::Terminated(TerminatedPayload {
+                            code: status.code(),
+                            #[cfg(windows)]
+                            signal: None,
+                            #[cfg(unix)]
+                            signal: status.signal(),
+                        }))
+                        .await
+                    })
+                }
+                Err(e) => {
+                    let _l = guard.write().unwrap();
+                    block_on_task(async move { tx.send(CommandEvent::Error(e.to_string())).await })
+                }
+            };
+        });
 
         Ok((
             rx,
             CommandChild {
-                inner,
-                pid,
+                inner: child,
                 stdin_writer,
+                #[cfg(unix)]
+                process_group,
+                #[cfg(windows)]
+                job,
             },
         ))
     }
@@ -518,112 +579,6 @@ fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
         } else {
             read_line(reader, tx, wrapper);
         }
-    });
-}
-
-/// Waits for the child to exit, returning its final exit status.
-///
-/// process-wrap's child wrappers only expose `&mut self` wait methods, so a
-/// blocking wait taken through the lock would hold it for the child's whole
-/// lifetime and starve `kill()`. Instead we block on the raw process *outside*
-/// the lock, leaving it unreaped, and only then take the lock to collect the
-/// status.
-///
-/// By the time the blocking wait returns, the child is either waitable or was
-/// already reaped by a concurrent `kill()` (which caches the exit status), so
-/// the first `try_wait` succeeds immediately; the loop is a defensive fallback.
-fn wait_on_child(
-    inner: &Arc<Mutex<Box<dyn process_wrap::std::StdChildWrapper>>>,
-    pid: u32,
-) -> std::io::Result<std::process::ExitStatus> {
-    wait_for_exit_without_reaping(pid)?;
-    loop {
-        if let Some(status) = inner.lock().unwrap().try_wait()? {
-            return Ok(status);
-        }
-        std::thread::sleep(std::time::Duration::from_millis(10));
-    }
-}
-
-/// Blocks until `pid` has exited, leaving it in a waitable state so that the
-/// owning wrapper can still collect the exit status.
-#[cfg(unix)]
-fn wait_for_exit_without_reaping(pid: u32) -> std::io::Result<()> {
-    let mut info = std::mem::MaybeUninit::<libc::siginfo_t>::zeroed();
-    loop {
-        // SAFETY: `info` is a valid, writable `siginfo_t`. `WNOWAIT` leaves the
-        // child reapable, so this never steals the status from `try_wait`.
-        let ret = unsafe {
-            libc::waitid(
-                libc::P_PID,
-                pid as libc::id_t,
-                info.as_mut_ptr(),
-                libc::WEXITED | libc::WNOWAIT,
-            )
-        };
-        if ret == 0 {
-            return Ok(());
-        }
-        let err = std::io::Error::last_os_error();
-        // ECHILD: a concurrent `kill()` reaped the child first; the wrapper
-        // holds the cached exit status, so let `try_wait` return it.
-        if err.raw_os_error() == Some(libc::ECHILD) {
-            return Ok(());
-        }
-        if err.kind() != std::io::ErrorKind::Interrupted {
-            return Err(err);
-        }
-    }
-}
-
-/// Blocks until `pid` has exited. The child is still owned (and unreaped) by
-/// the caller, so the process object — and therefore the PID — stays valid.
-#[cfg(windows)]
-fn wait_for_exit_without_reaping(pid: u32) -> std::io::Result<()> {
-    use windows::Win32::{
-        Foundation::{CloseHandle, WAIT_OBJECT_0},
-        System::Threading::{OpenProcess, WaitForSingleObject, INFINITE, PROCESS_SYNCHRONIZE},
-    };
-
-    // SAFETY: `pid` refers to a live handle-owned process, and the returned
-    // handle is closed exactly once below.
-    let handle = unsafe { OpenProcess(PROCESS_SYNCHRONIZE, false, pid) }
-        .map_err(|e| std::io::Error::other(e.to_string()))?;
-    let result = unsafe { WaitForSingleObject(handle, INFINITE) };
-    unsafe { CloseHandle(handle) }.ok();
-
-    if result == WAIT_OBJECT_0 {
-        Ok(())
-    } else {
-        Err(std::io::Error::last_os_error())
-    }
-}
-
-fn spawn_wait_thread(
-    wait_fn: impl FnOnce() -> std::io::Result<std::process::ExitStatus> + Send + 'static,
-    tx: Sender<CommandEvent>,
-    guard: Arc<RwLock<()>>,
-) {
-    spawn(move || {
-        let _ = match wait_fn() {
-            Ok(status) => {
-                let _l = guard.write().unwrap();
-                block_on_task(async move {
-                    tx.send(CommandEvent::Terminated(TerminatedPayload {
-                        code: status.code(),
-                        #[cfg(windows)]
-                        signal: None,
-                        #[cfg(unix)]
-                        signal: status.signal(),
-                    }))
-                    .await
-                })
-            }
-            Err(e) => {
-                let _l = guard.write().unwrap();
-                block_on_task(async move { tx.send(CommandEvent::Error(e.to_string())).await })
-            }
-        };
     });
 }
 
@@ -835,10 +790,7 @@ mod tests {
 
     #[test]
     fn test_cmd_process_group_output() {
-        // Runs on Windows too, where it doubles as the regression tripwire
-        // for the CREATE_SUSPENDED handling in `spawn`: if a process-wrap
-        // update ever stops resuming job-object children, this hangs instead
-        // of passing.
+        // Hangs on Windows if the suspended child is never resumed.
         #[cfg(not(windows))]
         let cmd = Command::new("cat").args(["test/test.txt"]);
         #[cfg(windows)]
@@ -852,6 +804,19 @@ mod tests {
             String::from_utf8(output.stdout).unwrap().trim(),
             "This is a test doc!"
         );
+    }
+
+    #[test]
+    fn test_cmd_kill_after_exit() {
+        for process_group in [false, true] {
+            #[cfg(not(windows))]
+            let cmd = Command::new("true");
+            #[cfg(windows)]
+            let cmd = Command::new("cmd").args(["/C", "exit 0"]);
+            let (rx, child) = cmd.set_process_group(process_group).spawn().unwrap();
+            wait_for_terminated(rx);
+            child.kill().unwrap();
+        }
     }
 
     /// The PyInstaller-style wrapper script for the current platform: spawns
@@ -889,7 +854,7 @@ mod tests {
         })
     }
 
-    /// Asserts that the killed child still produces a `Terminated` event.
+    /// Asserts that the child produces a `Terminated` event.
     fn wait_for_terminated(mut rx: Receiver<CommandEvent>) {
         let got = tauri::async_runtime::block_on(async move {
             while let Some(event) = rx.recv().await {
@@ -899,7 +864,7 @@ mod tests {
             }
             false
         });
-        assert!(got, "expected a Terminated event after kill");
+        assert!(got, "expected a Terminated event");
     }
 
     #[cfg(not(windows))]
@@ -909,20 +874,20 @@ mod tests {
 
     #[cfg(windows)]
     fn pid_alive(pid: u32) -> bool {
-        use windows::Win32::{
+        use windows_sys::Win32::{
             Foundation::{CloseHandle, STILL_ACTIVE},
             System::Threading::{
                 GetExitCodeProcess, OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION,
             },
         };
-        let handle = match unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid) } {
-            Ok(handle) => handle,
-            Err(_) => return false,
-        };
+        let handle = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
+        if handle.is_null() {
+            return false;
+        }
         let mut code = 0u32;
-        let alive = unsafe { GetExitCodeProcess(handle, &mut code) }.is_ok()
-            && code == STILL_ACTIVE.0 as u32;
-        unsafe { CloseHandle(handle) }.ok();
+        let alive =
+            unsafe { GetExitCodeProcess(handle, &mut code) } != 0 && code == STILL_ACTIVE as u32;
+        unsafe { CloseHandle(handle) };
         alive
     }
 
@@ -933,13 +898,14 @@ mod tests {
 
     #[cfg(windows)]
     fn force_kill(pid: u32) {
-        use windows::Win32::{
+        use windows_sys::Win32::{
             Foundation::CloseHandle,
             System::Threading::{OpenProcess, TerminateProcess, PROCESS_TERMINATE},
         };
-        if let Ok(handle) = unsafe { OpenProcess(PROCESS_TERMINATE, false, pid) } {
-            unsafe { TerminateProcess(handle, 1) }.ok();
-            unsafe { CloseHandle(handle) }.ok();
+        let handle = unsafe { OpenProcess(PROCESS_TERMINATE, 0, pid) };
+        if !handle.is_null() {
+            unsafe { TerminateProcess(handle, 1) };
+            unsafe { CloseHandle(handle) };
         }
     }
 
