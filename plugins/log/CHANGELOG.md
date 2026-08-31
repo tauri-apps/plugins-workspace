@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.9.1]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+
 ## \[2.9.0]
 
 - [`f08980f1`](https://github.com/tauri-apps/plugins-workspace/commit/f08980f123f191b9505bd290acd8fff0fdefeed9) ([#3445](https://github.com/tauri-apps/plugins-workspace/pull/3445) by [@bajoca05](https://github.com/tauri-apps/plugins-workspace/../../bajoca05)) Added the `FileOpenStrategy` for log rotation. It defaults to append into existing file if any (previous behaviour), and brings a new feature to create a new file per session: `FileOpenStrategy::Rotate`.

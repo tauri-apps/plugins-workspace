@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.4.10]
+
+- [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
+- [`3fb27bf1`](https://github.com/tauri-apps/plugins-workspace/commit/3fb27bf13a88dd1e5aa2cc933408be02b0eafc91) ([#3504](https://github.com/tauri-apps/plugins-workspace/pull/3504) by [@vasfvitor](https://github.com/tauri-apps/plugins-workspace/../../vasfvitor)) adds proper Platform-specific sections to the docs for `register`, `unregister`, `isRegistered`, and `onOpenUrl`
+
 ## \[2.4.9]
 
 - [`e6cdc9f5`](https://github.com/tauri-apps/plugins-workspace/commit/e6cdc9f52e2cd975b11b8e4c12879d597f1f76c3) ([#3396](https://github.com/tauri-apps/plugins-workspace/pull/3396) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix broken iOS custom URL schemes

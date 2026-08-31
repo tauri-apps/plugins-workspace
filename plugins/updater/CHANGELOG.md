@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.11.0]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+- [`622f02bf`](https://github.com/tauri-apps/plugins-workspace/commit/622f02bf21858f0cff95419fc042ce02b8c6b18b) ([#3516](https://github.com/tauri-apps/plugins-workspace/pull/3516) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) On Windows, returns an error if failed to spawn the installer in `install` through `ShellExecuteW`
+- [`ab7489c9`](https://github.com/tauri-apps/plugins-workspace/commit/ab7489c964977c2cc19cdc303bd8f7142d5f5a2c) ([#3299](https://github.com/tauri-apps/plugins-workspace/pull/3299) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) On Windows, add a new option `restartAfterInstall`/`restart_after_install` to install an update without the installer re-launching the app
+- [`2371be83`](https://github.com/tauri-apps/plugins-workspace/commit/2371be839f9ae46dd2b0529a2d1598f2b6270ab1) ([#3526](https://github.com/tauri-apps/plugins-workspace/pull/3526) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Added `system-proxy` (enabled by default) feature flag to control `reqwest/system-proxy` feature (Use Windows and macOS system proxy settings automatically)
+
 ## \[2.10.1]
 
 - [`31ab6f8d`](https://github.com/tauri-apps/plugins-workspace/commit/31ab6f8d2466d86c80b1d70510c0400ce2cdcb0a) ([#3285](https://github.com/tauri-apps/plugins-workspace/pull/3285) by [@hrzlgnm](https://github.com/tauri-apps/plugins-workspace/../../hrzlgnm)) fix: preserve file extension of updater package, otherwise users may get confused when presented with a sudo dialog suggesting to install a file with the extension `.rpm` using `dpkg -i`

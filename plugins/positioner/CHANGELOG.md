@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.4]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+
 ## \[2.3.3]
 
 - [`4be76900`](https://github.com/tauri-apps/plugins-workspace/commit/4be76900854cae3dc91363dea71b54505896e928) ([#3449](https://github.com/tauri-apps/plugins-workspace/pull/3449) by [@skkap](https://github.com/tauri-apps/plugins-workspace/../../skkap)) Replaced a panic in `calculate_position` with an error return when the window has no associated monitor (e.g. during display sleep or monitor reconfiguration).
