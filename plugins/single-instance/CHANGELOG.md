@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.4.4]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.10`
+
 ## \[2.4.3]
 
 - [`d1573877`](https://github.com/tauri-apps/plugins-workspace/commit/d1573877226e609461761aa538cd0ca4f24d22be) ([#3466](https://github.com/tauri-apps/plugins-workspace/pull/3466) by [@bajoca05](https://github.com/tauri-apps/plugins-workspace/../../bajoca05)) Fix blocked thread on the single-instance plugin for MacOS: replace standard `UnixListener` with `tokio::net::UnixListener`, so the task can yield.

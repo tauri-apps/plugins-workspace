@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.5]
+
+- [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
+
 ## \[2.5.4]
 
 - [`c1fd33b3`](https://github.com/tauri-apps/plugins-workspace/commit/c1fd33b3a2735f2e25c1d026dc524af932db3315) ([#3343](https://github.com/tauri-apps/plugins-workspace/pull/3343) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `revealItemInDir`/`reveal_items_in_dir` can't reveal network paths like `\\wsl.localhost\Ubuntu\etc` on Windows
