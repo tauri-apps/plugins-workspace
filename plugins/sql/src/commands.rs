@@ -15,12 +15,15 @@ pub(crate) async fn load<R: Runtime>(
     db_instances: State<'_, DbInstances>,
     migrations: State<'_, Migrations>,
     db: String,
+    apply_migrations: bool,
 ) -> Result<String, crate::Error> {
     let pool = DbPool::connect(&db, &app).await?;
 
-    if let Some(migrations) = migrations.0.lock().await.remove(&db) {
-        let migrator = Migrator::new(migrations).await?;
-        pool.migrate(&migrator).await?;
+    if apply_migrations {
+        if let Some(migrations) = migrations.0.lock().await.remove(&db) {
+            let migrator = Migrator::new(migrations).await?;
+            pool.migrate(&migrator).await?;
+        }
     }
 
     db_instances.0.write().await.insert(db.clone(), pool);

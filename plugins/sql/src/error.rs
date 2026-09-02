@@ -4,7 +4,7 @@
 
 use serde::{Serialize, Serializer};
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, strum::AsRefStr)]
 pub enum Error {
     #[error(transparent)]
     Sql(#[from] sqlx::Error),
@@ -18,11 +18,23 @@ pub enum Error {
     UnsupportedDatatype(String),
 }
 
+#[derive(serde::Serialize)]
+pub struct ErrorInfo {
+    kind: String,
+    message: String,
+}
+
 impl Serialize for Error {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        serializer.serialize_str(self.to_string().as_ref())
+        let error_kind = self.as_ref().to_string();
+        let error_message = self.to_string();
+        let error_info = ErrorInfo {
+            kind: error_kind,
+            message: error_message,
+        };
+        error_info.serialize(serializer)
     }
 }

@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { invoke } from '@tauri-apps/api/core'
+import { invoke } from '@tauri-apps/api/core';
 
 export interface QueryResult {
   /** The number of rows affected by the query. */
-  rowsAffected: number
+  rowsAffected: number;
   /**
    * The last inserted `id`.
    *
@@ -15,7 +15,12 @@ export interface QueryResult {
    * must be used, with a `RETURNING` clause
    * (`INSERT INTO todos (title) VALUES ($1) RETURNING id`).
    */
-  lastInsertId?: number
+  lastInsertId?: number;
+}
+
+export interface ErrorInfo {
+  kind: 'Sql' | 'Migration' | 'InvalidDbUrl' | 'DatabaseNotLoaded' | 'UnsupportedDatatype' | (string & {});
+  message: string;
 }
 
 /**
@@ -25,9 +30,9 @@ export interface QueryResult {
  * communicating with the rust side of the sql plugin.
  */
 export default class Database {
-  path: string
+  path: string;
   constructor(path: string) {
-    this.path = path
+    this.path = path;
   }
 
   /**
@@ -45,12 +50,19 @@ export default class Database {
    * const db = await Database.load("sqlite:test.db");
    * ```
    */
-  static async load(path: string): Promise<Database> {
-    const _path = await invoke<string>('plugin:sql|load', {
-      db: path
-    })
+  static async load(path: string, applyMigrations = true): Promise<Database | ErrorInfo> {
+    try {
+      const _path = await invoke<string>('plugin:sql|load', {
+        db: path,
+        applyMigrations: applyMigrations,
+      });
 
-    return new Database(_path)
+      return new Database(_path);
+    }
+    catch (err) {
+      return err as ErrorInfo;
+    }
+
   }
 
   /**
@@ -70,7 +82,7 @@ export default class Database {
    * ```
    */
   static get(path: string): Database {
-    return new Database(path)
+    return new Database(path);
   }
 
   /**
@@ -105,18 +117,23 @@ export default class Database {
    * );
    * ```
    */
-  async execute(query: string, bindValues?: unknown[]): Promise<QueryResult> {
-    const [rowsAffected, lastInsertId] = await invoke<[number, number]>(
-      'plugin:sql|execute',
-      {
-        db: this.path,
-        query,
-        values: bindValues ?? []
-      }
-    )
-    return {
-      lastInsertId,
-      rowsAffected
+  async execute(query: string, bindValues?: unknown[]): Promise<QueryResult | ErrorInfo> {
+    try {
+      const [rowsAffected, lastInsertId] = await invoke<[number, number]>(
+        'plugin:sql|execute',
+        {
+          db: this.path,
+          query,
+          values: bindValues ?? []
+        }
+      );
+      return {
+        lastInsertId,
+        rowsAffected
+      };
+    }
+    catch (err) {
+      return err as ErrorInfo;
     }
   }
 
@@ -138,14 +155,19 @@ export default class Database {
    * );
    * ```
    */
-  async select<T>(query: string, bindValues?: unknown[]): Promise<T> {
-    const result = await invoke<T>('plugin:sql|select', {
-      db: this.path,
-      query,
-      values: bindValues ?? []
-    })
+  async select<T>(query: string, bindValues?: unknown[]): Promise<T | ErrorInfo> {
+    try {
+      const result = await invoke<T>('plugin:sql|select', {
+        db: this.path,
+        query,
+        values: bindValues ?? []
+      });
 
-    return result
+      return result;
+    }
+    catch (err) {
+      return err as ErrorInfo;
+    }
   }
 
   /**
@@ -159,10 +181,15 @@ export default class Database {
    * ```
    * @param db - Optionally state the name of a database if you are managing more than one. Otherwise, all database pools will be in scope.
    */
-  async close(db?: string): Promise<boolean> {
-    const success = await invoke<boolean>('plugin:sql|close', {
-      db
-    })
-    return success
+  async close(db?: string): Promise<boolean | ErrorInfo> {
+    try {
+      const success = await invoke<boolean>('plugin:sql|close', {
+        db
+      });
+      return success;
+    }
+    catch (err) {
+      return err as ErrorInfo;
+    }
   }
 }
