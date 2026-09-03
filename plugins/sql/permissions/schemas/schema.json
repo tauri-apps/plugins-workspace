@@ -331,6 +331,18 @@
           "markdownDescription": "Denies the load command without any pre-configured scope."
         },
         {
+          "description": "Enables the remove_update_hook command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-remove-update-hook",
+          "markdownDescription": "Enables the remove_update_hook command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the remove_update_hook command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-remove-update-hook",
+          "markdownDescription": "Denies the remove_update_hook command without any pre-configured scope."
+        },
+        {
           "description": "Enables the select command without any pre-configured scope.",
           "type": "string",
           "const": "allow-select",
@@ -341,6 +353,18 @@
           "type": "string",
           "const": "deny-select",
           "markdownDescription": "Denies the select command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the setup_update_hook command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-setup-update-hook",
+          "markdownDescription": "Enables the setup_update_hook command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the setup_update_hook command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-setup-update-hook",
+          "markdownDescription": "Denies the setup_update_hook command without any pre-configured scope."
         },
         {
           "description": "### Default Permissions\n\nThis permission set configures what kind of\ndatabase operations are available from the sql plugin.\n\n### Granted Permissions\n\nAll reading related operations are enabled.\nAlso allows to load or close a connection.\n\n\n#### This default permission set includes:\n\n- `allow-close`\n- `allow-load`\n- `allow-select`",
