@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.1]
+
+- [`a21555dd`](https://github.com/tauri-apps/plugins-workspace/commit/a21555ddd2eaadfed23848912fe2802c2ba7579e) ([#3566](https://github.com/tauri-apps/plugins-workspace/pull/3566) by [@followdarko](https://github.com/tauri-apps/plugins-workspace/../../followdarko)) Fix unhandled promise rejections on every `fetch` teardown: the request/body cleanup commands were fired as floating promises, and releasing an already-released resource rejects with `The resource id N is invalid.`. `dropBody` is now idempotent and both cleanup calls handle their own rejection.
+
 ## [2.6.0]
 
 - [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
