@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-upload",
-  "version": "2.3.2",
+  "version": "2.4.1",
   "description": "Upload files from disk to a remote server over HTTP.",
   "license": "MIT OR Apache-2.0",
   "authors": [
@@ -25,6 +25,6 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@tauri-apps/api": "^2.8.0"
+    "@tauri-apps/api": "^2.11.0"
   }
 }

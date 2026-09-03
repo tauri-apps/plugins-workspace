@@ -24,6 +24,12 @@ fn path_or_err<P: Into<FilePath>>(p: P) -> std::io::Result<PathBuf> {
 }
 
 impl<R: Runtime> Fs<R> {
+    /// Open a file.
+    ///
+    /// # Platform-specific
+    ///
+    /// - **iOS**: This method will automatically start accessing a security-scoped resource if the path is a file URL.
+    ///   You must call `stop_accessing_security_scoped_resource` when you're done accessing the file.
     pub fn open<P: Into<FilePath>>(
         &self,
         path: P,

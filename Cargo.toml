@@ -11,11 +11,11 @@ resolver = "2"
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
-log = "0.4"
-tauri = { version = "2.9.3", default-features = false }
-tauri-build = "2.4"
-tauri-plugin = "2.4"
-tauri-utils = "2.7"
+log = "0.4.21"
+tauri = { version = "2.10", default-features = false }
+tauri-build = "2.5"
+tauri-plugin = "2.5"
+tauri-utils = "2.8"
 serde_json = "1"
 thiserror = "2"
 url = "2"

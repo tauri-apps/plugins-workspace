@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-barcode-scanner"
-version = "2.4.2"
+version = "2.4.6"
 description = "Scan QR codes, EAN-13 and other kinds of barcodes on Android and iOS"
 edition = { workspace = true }
 authors = { workspace = true }
@@ -8,7 +8,13 @@ license = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-barcode-scanner"
-
+exclude = [
+  "/banner.png",
+  "/guest-js",
+  "/package.json",
+  "/rollup.config.js",
+  "/tsconfig.json",
+]
 [package.metadata.docs.rs]
 targets = ["x86_64-linux-android"]
 

@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.3.8]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+
+### Dependencies
+
+- Upgraded to `fs@2.5.2`
+
+## \[2.3.7]
+
+### Dependencies
+
+- Upgraded to `fs@2.5.1`
+
+## \[2.3.6]
+
+### Dependencies
+
+- Upgraded to `fs@2.5.0`
+
+## \[2.3.5]
+
+### Dependencies
+
+- Upgraded to `fs@2.4.5`
+
 ## \[2.3.4]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

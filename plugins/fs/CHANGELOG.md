@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.5.2]
+
+- [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+- [`685610ae`](https://github.com/tauri-apps/plugins-workspace/commit/685610ae782b668770d412f42a5d52d2cc9e497e) ([#3507](https://github.com/tauri-apps/plugins-workspace/pull/3507) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `fs:default` and `fs:read-app-specific-dirs-recursive` not giving any command scopes
+- [`3fb27bf1`](https://github.com/tauri-apps/plugins-workspace/commit/3fb27bf13a88dd1e5aa2cc933408be02b0eafc91) ([#3504](https://github.com/tauri-apps/plugins-workspace/pull/3504) by [@vasfvitor](https://github.com/tauri-apps/plugins-workspace/../../vasfvitor)) Fixed `deny-webview-data` has no effect, and on Linux, only deny access to the webview data paths instead of the entire `$APPLOCALDATA`
+
+## \[2.5.1]
+
+- [`ec054013`](https://github.com/tauri-apps/plugins-workspace/commit/ec0540138bece081e9a87982091947360e61987a) ([#3323](https://github.com/tauri-apps/plugins-workspace/pull/3323) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated dependency `toml` from 0.9 to 1
+
+## \[2.5.0]
+
+- [`e97a4ded`](https://github.com/tauri-apps/plugins-workspace/commit/e97a4dedab8608d9d57029784ee8a2607ca3a996) ([#3244](https://github.com/tauri-apps/plugins-workspace/pull/3244) by [@SeijiOkuda](https://github.com/tauri-apps/plugins-workspace/../../SeijiOkuda)) Add `encoding` option for `readTextFile` and `readTextFileLines`
+- [`f75d21db`](https://github.com/tauri-apps/plugins-workspace/commit/f75d21db3351d6f12adf585c2c797c20ece94f7f) ([#3360](https://github.com/tauri-apps/plugins-workspace/pull/3360) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Removed the dependency on `tauri-utils`'s `build` feature
+- [`f5f68063`](https://github.com/tauri-apps/plugins-workspace/commit/f5f68063e459c33522f44a04df3120d9d039ec13) ([#3185](https://github.com/tauri-apps/plugins-workspace/pull/3185) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Enable access for security-scoped resources on iOS by automatically calling `NSURL::startAccessingSecurityScopedResource` on resource access and adding the `stopAccessingSecurityScopedResource` API.
+
+## \[2.4.5]
+
+- [`521cd8b3`](https://github.com/tauri-apps/plugins-workspace/commit/521cd8b372c862d96b1637775710e4d7cf2443e2) ([#3155](https://github.com/tauri-apps/plugins-workspace/pull/3155) by [@EliasStar](https://github.com/tauri-apps/plugins-workspace/../../EliasStar)) Fix off by one error in the implementation of readTextFileLines causing all lines to end with an (additional) null byte.
+  Issue: [#3154](https://github.com/tauri-apps/plugins-workspace/issues/3154)
+  PR: [#3155](https://github.com/tauri-apps/plugins-workspace/pull/3155)
+
 ## \[2.4.4]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

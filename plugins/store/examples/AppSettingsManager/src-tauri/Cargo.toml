@@ -17,8 +17,3 @@ tauri = { workspace = true, features = ["wry", "common-controls-v6", "x11"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri-plugin-store = { path = "../../../" }
-
-[features]
-# this feature is used for production builds or when `devPath` points to the filesystem
-# DO NOT REMOVE!!
-prod = ["tauri/custom-protocol"]

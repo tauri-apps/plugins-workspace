@@ -5,6 +5,7 @@
 name: integration tests
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - v1
@@ -20,6 +21,9 @@ on:
       - '.github/workflows/integration-tests.yml'
       - 'plugins/updater/src/**'
 
+permissions:
+  contents: read
+
 jobs:
   run-integration-tests:
     runs-on: ${{ matrix.platform }}
@@ -30,7 +34,7 @@ jobs:
         platform: [ubuntu-22.04, macos-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 

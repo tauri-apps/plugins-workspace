@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-upload"
-version = "2.3.2"
+version = "2.4.1"
 description = "Upload files from disk to a remote server over HTTP."
 authors = { workspace = true }
 license = { workspace = true }
@@ -8,6 +8,14 @@ edition = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-upload"
+exclude = [
+  "/banner.png",
+  "/guest-js",
+  "/package.json",
+  "/rollup.config.js",
+  "/test",
+  "/tsconfig.json",
+]
 
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }

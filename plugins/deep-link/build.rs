@@ -25,6 +25,8 @@ fn intent_filter(domain: &AssociatedDomain) -> String {
     format!(
         r#"<intent-filter {auto_verify}>
     <action android:name="android.intent.action.VIEW" />
+    <!-- ChromeOS ARC++ uses a different action for deep links -->
+    <action android:name="org.chromium.arc.intent.action.VIEW" />
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
     {schemes}
@@ -137,7 +139,7 @@ fn main() {
             let deep_link_domains = config
                 .mobile
                 .iter()
-                .filter(|domain| domain.is_app_link())
+                .filter(|domain| !domain.is_app_link())
                 .collect::<Vec<_>>();
 
             if deep_link_domains.is_empty() {

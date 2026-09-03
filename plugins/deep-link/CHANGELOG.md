@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.4.10]
+
+- [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
+- [`3fb27bf1`](https://github.com/tauri-apps/plugins-workspace/commit/3fb27bf13a88dd1e5aa2cc933408be02b0eafc91) ([#3504](https://github.com/tauri-apps/plugins-workspace/pull/3504) by [@vasfvitor](https://github.com/tauri-apps/plugins-workspace/../../vasfvitor)) adds proper Platform-specific sections to the docs for `register`, `unregister`, `isRegistered`, and `onOpenUrl`
+
+## \[2.4.9]
+
+- [`e6cdc9f5`](https://github.com/tauri-apps/plugins-workspace/commit/e6cdc9f52e2cd975b11b8e4c12879d597f1f76c3) ([#3396](https://github.com/tauri-apps/plugins-workspace/pull/3396) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix broken iOS custom URL schemes
+
+## \[2.4.8]
+
+- [`024ec0c2`](https://github.com/tauri-apps/plugins-workspace/commit/024ec0c29c20cf94579dab9b79d6be0da61a8daa) ([#3214](https://github.com/tauri-apps/plugins-workspace/pull/3214) by [@joshIsCoding](https://github.com/tauri-apps/plugins-workspace/../../joshIsCoding)) Account for differing Android VIEW intent in ChromeOS, fixing deep-link behaviour on Chromium platforms.
+- [`015e817c`](https://github.com/tauri-apps/plugins-workspace/commit/015e817cf2d7f66c1b9268606af8318dfe0bc4ee) ([#3186](https://github.com/tauri-apps/plugins-workspace/pull/3186) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Validate Android new intent is actually a deep link before triggering the onOpenUrl event.
+
+## \[2.4.7]
+
+- [`8374e997`](https://github.com/tauri-apps/plugins-workspace/commit/8374e997b82c95516fc0c1f6d665d9fc3b52edf8) ([#3258](https://github.com/tauri-apps/plugins-workspace/pull/3258) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fix runtime deep link registration failing on Linux when the app path has spaces.
+
+## \[2.4.6]
+
+- [`28048039`](https://github.com/tauri-apps/plugins-workspace/commit/28048039496e84b46847c008416d341f1349e30e) ([#3143](https://github.com/tauri-apps/plugins-workspace/pull/3143) by [@Tunglies](https://github.com/tauri-apps/plugins-workspace/../../Tunglies)) Fix clippy warnings. No user facing changes.
+
 ## \[2.4.5]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

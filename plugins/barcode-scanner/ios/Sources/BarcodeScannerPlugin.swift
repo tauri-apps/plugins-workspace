@@ -261,27 +261,34 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
   }
 
   private func runScanner(_ invoke: Invoke, args: ScanOptions) {
+    if getPermissionState() != "granted" {
+      invoke.reject("Camera permission denied or not yet requested")
+      return
+    }
+
     scanFormats = [AVMetadataObject.ObjectType]()
 
     (args.formats ?? []).forEach { format in
-        if let formatValue = format.value {
-            scanFormats.append(formatValue)
-        } else {
-            invoke.reject("Unsupported barcode format on this iOS version: \(format)")
-            return
-        }
+      if let formatValue = format.value {
+        scanFormats.append(formatValue)
+      } else {
+        invoke.reject("Unsupported barcode format on this iOS version: \(format)")
+        return
+      }
     }
 
     if scanFormats.isEmpty {
-        for supportedFormat in SupportedFormat.allCases {
-            if let formatValue = supportedFormat.value {
-                scanFormats.append(formatValue)
-            }
+      for supportedFormat in SupportedFormat.allCases {
+        if let formatValue = supportedFormat.value {
+          scanFormats.append(formatValue)
         }
+      }
     }
 
     self.metaOutput!.metadataObjectTypes = self.scanFormats
-    self.captureSession!.startRunning()
+    DispatchQueue.main.async {
+      self.captureSession!.startRunning()
+    }
 
     self.isScanning = true
   }
@@ -295,6 +302,13 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
 
     if entry == nil || entry?.count == 0 {
       invoke.reject("NSCameraUsageDescription is not in the app Info.plist")
+      return
+    }
+
+    // Check if camera is available on this platform (iOS simulator doesn't have cameras)
+    let availableVideoDevices = discoverCaptureDevices()
+    if availableVideoDevices.isEmpty {
+      invoke.reject("No camera available on this device (e.g., iOS Simulator)")
       return
     }
 
@@ -323,10 +337,11 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
   }
 
   @objc private func cancel(_ invoke: Invoke) {
-    self.invoke?.reject("cancelled")
-
-    destroy()
-    invoke.resolve()
+    DispatchQueue.main.async { [self] in
+      self.invoke?.reject("cancelled")
+      self.destroy()
+      invoke.resolve()
+    }
   }
 }
 

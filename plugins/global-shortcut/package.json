@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-global-shortcut",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "license": "MIT OR Apache-2.0",
   "authors": [
     "Tauri Programme within The Commons Conservancy"
@@ -24,6 +24,6 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@tauri-apps/api": "^2.8.0"
+    "@tauri-apps/api": "^2.11.0"
   }
 }

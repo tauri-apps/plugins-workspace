@@ -1,5 +1,44 @@
 # Changelog
 
+## [2.6.0]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+- [`19fb3926`](https://github.com/tauri-apps/plugins-workspace/commit/19fb3926fd24d95371bc3a7593256861df406436) ([#3528](https://github.com/tauri-apps/plugins-workspace/pull/3528) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Added `system-proxy` feature to replace the old `macos-system-configuration` feature flag to match the new reqwest API.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.2`
+
+## \[2.5.9]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.1`
+
+## \[2.5.8]
+
+- [`29712892`](https://github.com/tauri-apps/plugins-workspace/commit/29712892526cfc2d35c9002e0a56925084ae1b73) ([#3252](https://github.com/tauri-apps/plugins-workspace/pull/3252) by [@NVolcz](https://github.com/tauri-apps/plugins-workspace/../../NVolcz)) Correct Response header initialization to support cloning and ensure Set-Cookie visibility.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.0`
+
+## \[2.5.7]
+
+- [`61e9b0ab`](https://github.com/tauri-apps/plugins-workspace/commit/61e9b0ab64c56cc5f7a5cb3b92b386671da6e0a2) ([#3228](https://github.com/tauri-apps/plugins-workspace/pull/3228)) Cleanup resource when the returned `ReadableStream.cancel` is called to avoid memory leaks
+
+## \[2.5.6]
+
+- [`b1dbee2c`](https://github.com/tauri-apps/plugins-workspace/commit/b1dbee2c55c1aa7b64732c4cc9f8cb20520b8666) ([#3210](https://github.com/tauri-apps/plugins-workspace/pull/3210) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed an issue that caused the Origin header to always be `null` on macOS, iOS and Linux.
+
+## \[2.5.5]
+
+- [`e8915f17`](https://github.com/tauri-apps/plugins-workspace/commit/e8915f17e418138f0776870353cd6ce7254b0473) ([#2562](https://github.com/tauri-apps/plugins-workspace/pull/2562) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix aborting a request in the middle of a streaming response.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.5`
+
 ## \[2.5.4]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

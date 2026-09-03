@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-notification"
-version = "2.3.3"
+version = "2.4.0"
 description = "Send desktop and mobile notifications on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -8,6 +8,14 @@ license = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-notification"
+exclude = [
+  "/banner.png",
+  "/guest-js",
+  "/package.json",
+  "/rollup.config.js",
+  "/test",
+  "/tsconfig.json",
+]
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu", "x86_64-linux-android"]
@@ -42,11 +50,6 @@ windows-version = { version = "0.1", optional = true }
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 notify-rust = "4.11"
-
-[dev-dependencies]
-color-backtrace = "0.7"
-ctor = "0.2"
-maplit = "1"
 
 [features]
 windows7-compat = ["win7-notifications", "windows-version"]

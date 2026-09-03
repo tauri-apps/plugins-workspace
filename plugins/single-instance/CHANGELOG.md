@@ -1,5 +1,49 @@
 # Changelog
 
+## [2.4.4]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.10`
+
+## \[2.4.3]
+
+- [`d1573877`](https://github.com/tauri-apps/plugins-workspace/commit/d1573877226e609461761aa538cd0ca4f24d22be) ([#3466](https://github.com/tauri-apps/plugins-workspace/pull/3466) by [@bajoca05](https://github.com/tauri-apps/plugins-workspace/../../bajoca05)) Fix blocked thread on the single-instance plugin for MacOS: replace standard `UnixListener` with `tokio::net::UnixListener`, so the task can yield.
+
+## \[2.4.2]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.9`
+
+## \[2.4.1]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.8`
+
+## \[2.4.0]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.7`
+
+### fix
+
+- [`98e2c11e`](https://github.com/tauri-apps/plugins-workspace/commit/98e2c11eefc3ee562f1ed280efe7e8ea6ff0f3b0) ([#3194](https://github.com/tauri-apps/plugins-workspace/pull/3194) by [@mrquantumoff](https://github.com/tauri-apps/plugins-workspace/../../mrquantumoff)) **Breaking Change:** On Linux, the DBus ID/name will now be `<bundle-id>.SingleInstance` instead of `org.<bundle_id_underscores>.SingleInstance` to follow DBus specifications.
+
+  This will break the single-instance mechanism across different app versions if the app was installed multiple times.
+
+  Added `dbus_id` builder method, which can be used to restore previous behavior. For a bundle identifier of `com.tauri.my-example` this would be `dbus_id("org.com_tauri_my_example")`.
+
+## \[2.3.7]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.6`
+
 ## \[2.3.6]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
