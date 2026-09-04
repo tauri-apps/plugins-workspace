@@ -62,11 +62,13 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 import {
   writeText,
   readText,
+  readImagePNG,
   writeHtml,
   clear
 } from '@tauri-apps/plugin-clipboard-manager'
 await writeText('Tauri is awesome!')
 assert(await readText(), 'Tauri is awesome!')
+const pngBytes = await readImagePNG()
 ```
 
 ## Contributing

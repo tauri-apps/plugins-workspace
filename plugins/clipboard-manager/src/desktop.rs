@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use arboard::ImageData;
+use image::ImageEncoder;
 use serde::de::DeserializeOwned;
 use tauri::{image::Image, plugin::PluginApi, AppHandle, Runtime};
 
@@ -110,6 +111,34 @@ impl<R: Runtime> Clipboard<R> {
                     image.height as u32,
                 );
                 Ok(image)
+            }
+            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
+        }
+    }
+
+    /// Warning: This method should not be used on the main thread! Otherwise the underlying libraries may deadlock on Linux, freezing the whole app, when trying to copy data copied from this app, for example if the user copies text from the WebView.
+    pub fn read_image_png(&self) -> crate::Result<Vec<u8>> {
+        match &self.clipboard {
+            Ok(clipboard) => {
+                let image = clipboard.lock().unwrap().as_mut().unwrap().get_image()?;
+                let expected_len = image
+                    .width
+                    .checked_mul(image.height)
+                    .and_then(|len| len.checked_mul(4))
+                    .ok_or_else(|| crate::Error::Clipboard("invalid image size".into()))?;
+
+                if image.bytes.len() != expected_len {
+                    return Err(crate::Error::Clipboard("invalid image data length".into()));
+                }
+
+                let mut buffer = Vec::new();
+                image::codecs::png::PngEncoder::new(&mut buffer).write_image(
+                    &image.bytes,
+                    image.width as u32,
+                    image.height as u32,
+                    image::ExtendedColorType::Rgba8,
+                )?;
+                Ok(buffer)
             }
             Err(e) => Err(crate::Error::Clipboard(e.to_string())),
         }
