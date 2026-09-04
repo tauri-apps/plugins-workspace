@@ -12,11 +12,14 @@ use tauri::{
     AppHandle, Manager, RunEvent, Runtime,
 };
 use windows_sys::Win32::{
-    Foundation::{CloseHandle, GetLastError, ERROR_ALREADY_EXISTS, HWND, LPARAM, LRESULT, WPARAM},
+    Foundation::{
+        CloseHandle, GetLastError, ERROR_ALREADY_EXISTS, HWND, LPARAM, LRESULT, WAIT_ABANDONED,
+        WAIT_OBJECT_0, WAIT_TIMEOUT, WPARAM,
+    },
     System::{
         DataExchange::COPYDATASTRUCT,
         LibraryLoader::GetModuleHandleW,
-        Threading::{CreateMutexW, ReleaseMutex},
+        Threading::{CreateMutexW, ReleaseMutex, WaitForSingleObject},
     },
     UI::WindowsAndMessaging::{
         self as w32wm, CreateWindowExW, DefWindowProcW, DestroyWindow, FindWindowW,
@@ -70,41 +73,75 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                 unsafe { CreateMutexW(std::ptr::null(), true.into(), mutex_name.as_ptr()) };
 
             if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
-                unsafe {
-                    let hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
+                // Another instance holds the mutex, but its event target window may not
+                // exist yet: the first instance creates the mutex before the window, and a
+                // second launch inside that gap used to see the mutex without a window and
+                // silently continue as an unguarded extra instance (the gap is normally
+                // microseconds, but heavy system load stretches it to hundreds of
+                // milliseconds). Poll for the window while waiting on the mutex, so this
+                // process either forwards its args to the primary once the window is up,
+                // or inherits the primary role when the holder releases the mutex or dies
+                // (WAIT_ABANDONED — e.g. an updater respawning the app while the old
+                // process is still exiting).
+                let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+                loop {
+                    unsafe {
+                        let hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
 
-                    if !hwnd.is_null() {
-                        let cwd = std::env::current_dir().unwrap_or_default();
-                        let cwd = cwd.to_str().unwrap_or_default();
+                        if !hwnd.is_null() {
+                            let cwd = std::env::current_dir().unwrap_or_default();
+                            let cwd = cwd.to_str().unwrap_or_default();
 
-                        let args = std::env::args().collect::<Vec<String>>().join("|");
+                            let args = std::env::args().collect::<Vec<String>>().join("|");
 
-                        let data = format!("{cwd}|{args}\0",);
+                            let data = format!("{cwd}|{args}\0",);
 
-                        let bytes = data.as_bytes();
-                        let cds = COPYDATASTRUCT {
-                            dwData: WMCOPYDATA_SINGLE_INSTANCE_DATA,
-                            cbData: bytes.len() as _,
-                            lpData: bytes.as_ptr() as _,
-                        };
+                            let bytes = data.as_bytes();
+                            let cds = COPYDATASTRUCT {
+                                dwData: WMCOPYDATA_SINGLE_INSTANCE_DATA,
+                                cbData: bytes.len() as _,
+                                lpData: bytes.as_ptr() as _,
+                            };
 
-                        SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
+                            SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
 
-                        app.cleanup_before_exit();
-                        std::process::exit(0);
+                            app.cleanup_before_exit();
+                            std::process::exit(0);
+                        }
+                    }
+
+                    if std::time::Instant::now() >= deadline {
+                        // No primary window appeared and nobody released the mutex
+                        // (e.g. the holder is wedged before creating its window).
+                        // Fail open rather than block startup forever.
+                        break;
+                    }
+
+                    match unsafe { WaitForSingleObject(hmutex, 50) } {
+                        // Ownership acquired: the previous holder released the mutex or
+                        // died holding it. Proceed as the primary instance.
+                        WAIT_OBJECT_0 | WAIT_ABANDONED => break,
+                        WAIT_TIMEOUT => {}
+                        // WAIT_FAILED: fail open.
+                        _ => break,
                     }
                 }
-            } else {
-                app.manage(MutexHandle(hmutex as _));
-
-                let userdata = UserData {
-                    app: app.clone(),
-                    callback,
-                };
-                let userdata = Box::into_raw(Box::new(userdata));
-                let hwnd = create_event_target_window::<R>(&class_name, &window_name, userdata);
-                app.manage(TargetWindowHandle(hwnd as _));
             }
+
+            // Reached as the primary instance (mutex created new, or ownership inherited
+            // from a dying holder) or via the fail-open paths above. Register the event
+            // target window in all cases so later launches can forward to this process;
+            // previously a fail-open instance created no window and leaked the mutex
+            // handle silently.
+            app.manage(MutexHandle(hmutex as _));
+
+            let userdata = UserData {
+                app: app.clone(),
+                callback,
+            };
+            let userdata = Box::into_raw(Box::new(userdata));
+            let hwnd = create_event_target_window::<R>(&class_name, &window_name, userdata);
+            app.manage(TargetWindowHandle(hwnd as _));
 
             Ok(())
         })
