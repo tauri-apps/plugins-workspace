@@ -79,6 +79,16 @@ interface SpawnOptions {
    * @since 2.0.0
    *  */
   encoding?: string
+  /**
+   * When enabled, spawns the child process in its own process group (POSIX)
+   * or job object (Windows). This allows killing the entire process tree
+   * when calling `kill()` on the child process.
+   *
+   * Useful for programs that spawn child processes, such as PyInstaller wrappers.
+   *
+   * Defaults to `false`.
+   */
+  processGroup?: boolean
 }
 
 /** @ignore */

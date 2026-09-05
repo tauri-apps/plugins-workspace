@@ -36,11 +36,23 @@ tauri = { workspace = true }
 tokio = { version = "1", features = ["time"] }
 log = { workspace = true }
 thiserror = { workspace = true }
-shared_child = "1"
 regex = "1"
 open = { version = "5", features = ["shellexecute-on-windows"] }
 encoding_rs = "0.8"
 os_pipe = "1"
+shared_child = { version = "1", default-features = false }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.60", features = [
+  "Win32_Foundation",
+  "Win32_Security",
+  "Win32_System_Threading",
+  "Win32_System_JobObjects",
+  "Win32_System_Diagnostics_ToolHelp",
+] }
 
 [target.'cfg(target_os = "ios")'.dependencies]
 tauri = { workspace = true, features = ["wry"] }
