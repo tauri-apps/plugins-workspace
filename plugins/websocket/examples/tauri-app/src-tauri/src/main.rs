@@ -36,6 +36,7 @@ async fn accept_connection(stream: TcpStream) {
 fn main() {
   tauri::async_runtime::spawn(start_server());
   tauri::Builder::default()
+    .runtime(tauri_runtime_wry::Wry::default())
     .plugin(tauri_plugin_websocket::init())
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

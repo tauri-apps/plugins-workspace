@@ -11,6 +11,7 @@ fn main() {
     let mut context = tauri::generate_context!();
 
     tauri::Builder::default()
+        .runtime(tauri_runtime_wry::Wry::default())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             let handle = app.handle().clone();

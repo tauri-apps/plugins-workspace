@@ -29,8 +29,5 @@ log = { workspace = true }
 thiserror = { workspace = true }
 specta = { workspace = true, optional = true }
 
-[target.'cfg(target_os = "ios")'.dependencies]
-tauri = { workspace = true, features = ["wry"] }
-
 [features]
 specta = ["dep:specta", "tauri/specta"]

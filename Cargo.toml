@@ -13,6 +13,7 @@ serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
 log = "0.4"
 tauri = { version = "2.10", default-features = false }
+tauri-runtime-wry = { version = "2", default-features = false, features = ["common-controls-v6", "x11"] }
 tauri-build = "2.5"
 tauri-plugin = "2.5"
 tauri-utils = "2.8"
@@ -41,7 +42,8 @@ incremental = false
 opt-level = "s"
 
 [patch.crates-io]
-tauri = { git = "https://github.com/tauri-apps/tauri.git", tag = "tauri-cef-v3.0.0-alpha.13" }
-tauri-utils = { git = "https://github.com/tauri-apps/tauri.git", tag = "tauri-cef-v3.0.0-alpha.13" }
-tauri-plugin = { git = "https://github.com/tauri-apps/tauri.git", tag = "tauri-cef-v3.0.0-alpha.13" }
-tauri-build = { git = "https://github.com/tauri-apps/tauri.git", tag = "tauri-cef-v3.0.0-alpha.13" }
+tauri = { git = "https://github.com/tauri-apps/tauri.git", rev = "bec69544b4fdefee8f86e040432d46a53fbc80d7" }
+tauri-utils = { git = "https://github.com/tauri-apps/tauri.git", rev = "bec69544b4fdefee8f86e040432d46a53fbc80d7" }
+tauri-plugin = { git = "https://github.com/tauri-apps/tauri.git", rev = "bec69544b4fdefee8f86e040432d46a53fbc80d7" }
+tauri-build = { git = "https://github.com/tauri-apps/tauri.git", rev = "bec69544b4fdefee8f86e040432d46a53fbc80d7" }
+tauri-runtime-wry = { git = "https://github.com/tauri-apps/tauri.git", rev = "bec69544b4fdefee8f86e040432d46a53fbc80d7" }

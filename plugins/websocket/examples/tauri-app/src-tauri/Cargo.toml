@@ -7,7 +7,8 @@ edition = "2021"
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
-tauri = { workspace = true, features = ["wry", "common-controls-v6", "x11"] }
+tauri = { workspace = true, features = ["common-controls-v6"] }
+tauri-runtime-wry = { workspace = true }
 tokio = { version = "1", features = ["net"] }
 futures-util = "0.3"
 tauri-plugin-websocket = { path = "../../../" }

@@ -9,6 +9,7 @@
 
 fn main() {
     tauri::Builder::default()
+        .runtime(tauri_runtime_wry::Wry::default())
         .plugin(
             tauri_plugin_single_instance::Builder::new()
                 .callback(move |app, argv, cwd| {

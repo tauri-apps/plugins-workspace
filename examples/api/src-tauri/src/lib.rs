@@ -23,7 +23,7 @@ pub type OnEvent = Box<dyn FnMut(&AppHandle, RunEvent)>;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[allow(unused_mut)]
-    let mut builder = tauri::Builder::default()
+    let mut builder = tauri::Builder::default().runtime(tauri_runtime_wry::Wry::default())
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Info)

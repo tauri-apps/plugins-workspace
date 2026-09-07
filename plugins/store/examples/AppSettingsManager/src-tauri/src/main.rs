@@ -14,6 +14,7 @@ use app::settings::AppSettings;
 
 fn main() {
     tauri::Builder::default()
+        .runtime(tauri_runtime_wry::Wry::default())
         .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
             // Init store and load it from disk
