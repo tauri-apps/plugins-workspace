@@ -26,3 +26,20 @@ $ pnpm tauri dev
 $ pnpm tauri build
 $ ./src-tauri/target/release/app
 ```
+
+## Running on the CEF runtime
+
+The webview runtime is selected at build time by the `wry` (default) and `cef`
+features of the example, which pick the `tauri-runtime-wry` or
+`tauri-runtime-cef` dependency handed to `tauri::Builder::runtime`. Depending on
+`tauri-runtime-cef` is also how the Tauri CLI detects a CEF app, which is what
+makes it ship the CEF binary distribution and, on macOS, run the app from inside
+an `.app` bundle in `tauri dev`:
+
+```bash
+$ pnpm tauri dev --no-default-features --features cef
+```
+
+The first build downloads the CEF binary distribution (about 1 GB) into
+`{user cache}/tauri-cef`, or into `$CEF_PATH` when that is set. The tray icon is
+not set up on CEF, which has no tray integration.

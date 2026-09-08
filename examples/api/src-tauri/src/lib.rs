@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: MIT
 
 mod cmd;
-#[cfg(desktop)]
+// The CEF runtime has no tray icon integration, so the tray is only set up on
+// the wry runtime.
+#[cfg(all(desktop, not(feature = "cef")))]
 mod tray;
 
 use serde::Serialize;
@@ -20,10 +22,19 @@ struct Reply {
 pub type SetupHook = Box<dyn FnOnce(&mut App) -> Result<(), Box<dyn std::error::Error>> + Send>;
 pub type OnEvent = Box<dyn FnMut(&AppHandle, RunEvent)>;
 
+// Every CEF application is also its own renderer, GPU, network and utility
+// process. This attribute runs the helper side of that and returns before the
+// Tauri application is built, for any process Chromium launched with `--type=`.
+#[cfg_attr(feature = "cef", tauri_runtime_cef::cef_entry_point)]
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[cfg(feature = "cef")]
+    let builder = tauri::Builder::default().runtime(tauri_runtime_cef::Cef::default());
+    #[cfg(not(feature = "cef"))]
+    let builder = tauri::Builder::default().runtime(tauri_runtime_wry::Wry::default());
+
     #[allow(unused_mut)]
-    let mut builder = tauri::Builder::default()
+    let mut builder = builder
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Info)
@@ -43,6 +54,7 @@ pub fn run() {
         .setup(move |app| {
             #[cfg(desktop)]
             {
+                #[cfg(not(feature = "cef"))]
                 tray::create_tray(app.handle())?;
                 app.handle().plugin(tauri_plugin_cli::init())?;
                 app.handle()
@@ -170,7 +182,9 @@ pub fn run() {
     app.set_activation_policy(tauri::ActivationPolicy::Regular);
 
     app.run(move |_app_handle, _event| {
-        #[cfg(desktop)]
+        // Only the tray icon keeps this app useful without windows, and there is
+        // no tray on CEF.
+        #[cfg(all(desktop, not(feature = "cef")))]
         if let RunEvent::ExitRequested { code, api, .. } = &_event {
             if code.is_none() {
                 // Keep the event loop running even if all windows are closed

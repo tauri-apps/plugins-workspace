@@ -10,10 +10,19 @@ fn greet(name: &str) -> String {
     format!("Hello, {name}! You've been greeted from Rust!")
 }
 
+// Every CEF application is also its own renderer, GPU, network and utility
+// process. This attribute runs the helper side of that and returns before the
+// Tauri application is built, for any process Chromium launched with `--type=`.
+#[cfg_attr(feature = "cef", tauri_runtime_cef::cef_entry_point)]
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[cfg(feature = "cef")]
+    let builder = tauri::Builder::default().runtime(tauri_runtime_cef::Cef::default());
+    #[cfg(not(feature = "cef"))]
+    let builder = tauri::Builder::default().runtime(tauri_runtime_wry::Wry::default());
+
     #[allow(unused_mut)]
-    let mut builder = tauri::Builder::default();
+    let mut builder = builder;
 
     #[cfg(desktop)]
     {

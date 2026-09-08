@@ -10,7 +10,13 @@ rust-version = "1.77.2"
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
-tauri = { workspace = true, features = ["wry", "common-controls-v6", "x11"] }
+tauri = { workspace = true, features = ["common-controls-v6"] }
+# The webview runtime is picked by depending on its crate and handing its
+# attributes to `tauri::Builder::runtime`.
+tauri-runtime-wry = { workspace = true, optional = true, features = [
+  "common-controls-v6",
+] }
+tauri-runtime-cef = { workspace = true, optional = true }
 tauri-plugin-single-instance = { path = "../../../" }
 tauri-plugin-cli = { path = "../../../../cli" }
 
@@ -18,4 +24,7 @@ tauri-plugin-cli = { path = "../../../../cli" }
 tauri-build = { workspace = true }
 
 [features]
+default = ["wry"]
+wry = ["dep:tauri-runtime-wry"]
+cef = ["dep:tauri-runtime-cef"]
 prod = ["tauri/custom-protocol"]

@@ -43,9 +43,7 @@ tauri-plugin-upload = { path = "../../../plugins/upload", version = "2.3.0" }
 [dependencies.tauri]
 workspace = true
 features = [
-  "wry",
   "common-controls-v6",
-  "x11",
   "image-ico",
   "image-png",
   "isolation",
@@ -53,6 +51,19 @@ features = [
   "tray-icon",
   "protocol-asset",
 ]
+
+# The webview runtime is picked by depending on its crate and handing its
+# attributes to `tauri::Builder::runtime`. `macos-private-api` only reaches the
+# runtime when it is enabled on the runtime crate as well.
+[dependencies.tauri-runtime-wry]
+workspace = true
+optional = true
+features = ["common-controls-v6", "macos-private-api"]
+
+[dependencies.tauri-runtime-cef]
+workspace = true
+optional = true
+features = ["macos-private-api"]
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
 tauri-plugin-cli = { path = "../../../plugins/cli", version = "2.4.1" }
@@ -68,4 +79,7 @@ tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "
 tauri-plugin-haptics = { path = "../../../plugins/haptics/", version = "2.3.2" }
 
 [features]
+default = ["wry"]
+wry = ["dep:tauri-runtime-wry"]
+cef = ["dep:tauri-runtime-cef"]
 prod = ["tauri/custom-protocol"]

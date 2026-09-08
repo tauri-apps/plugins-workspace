@@ -57,6 +57,3 @@ features = ["std", "NSWorkspace"]
 version = "0.3"
 default-features = false
 features = ["std", "NSURL", "NSArray", "NSString"]
-
-[target.'cfg(target_os = "ios")'.dependencies]
-tauri = { workspace = true, features = ["wry"] }

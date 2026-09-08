@@ -7,8 +7,17 @@
     windows_subsystem = "windows"
 )]
 
+// Every CEF application is also its own renderer, GPU, network and utility
+// process. This attribute runs the helper side of that and returns before the
+// Tauri application is built, for any process Chromium launched with `--type=`.
+#[cfg_attr(feature = "cef", tauri_runtime_cef::cef_entry_point)]
 fn main() {
-    tauri::Builder::default()
+    #[cfg(feature = "cef")]
+    let builder = tauri::Builder::default().runtime(tauri_runtime_cef::Cef::default());
+    #[cfg(not(feature = "cef"))]
+    let builder = tauri::Builder::default().runtime(tauri_runtime_wry::Wry::default());
+
+    builder
         .plugin(
             tauri_plugin_single_instance::Builder::new()
                 .callback(move |app, argv, cwd| {
