@@ -600,7 +600,8 @@ impl<R: Runtime> Store<R> {
 
     fn apply_pending_auto_save(&self) {
         // Cancel and save if auto save is pending
-        if let Some(sender) = self.auto_save_debounce_sender.lock().unwrap().take() {
+        let auto_save_debounce_sender = self.auto_save_debounce_sender.lock().unwrap().take();
+        if let Some(sender) = auto_save_debounce_sender {
             let _ = sender.send(AutoSaveMessage::Cancel);
             let _ = self.save();
         };
