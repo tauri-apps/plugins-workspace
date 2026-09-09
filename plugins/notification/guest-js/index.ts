@@ -325,7 +325,7 @@ interface Channel {
  */
 async function isPermissionGranted(): Promise<boolean> {
   if (window.Notification.permission !== 'default') {
-    return await Promise.resolve(window.Notification.permission === 'granted')
+    return window.Notification.permission === 'granted'
   }
   return await invoke('plugin:notification|is_permission_granted')
 }

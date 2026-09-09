@@ -231,8 +231,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::is_permission_granted
         ])
         .js_init_script(include_str!("init-iife.js").replace(
-            "__TEMPLATE_windows__",
-            if cfg!(windows) { "true" } else { "false" },
+            "__TEMPLATE_desktop__",
+            if cfg!(desktop) { "true" } else { "false" },
         ))
         .setup(|app, api| {
             #[cfg(mobile)]
