@@ -207,7 +207,7 @@ checksum = "2a4385e2e34eb35d6b3efe798b9eb88096925d87726c0798709bf56d9ed84af3"
 
 [[package]]
 name = "api"
-version = "2.0.47"
+version = "2.0.48"
 dependencies = [
  "log",
  "serde",
@@ -6605,7 +6605,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.6.0"
+version = "2.6.1"
 dependencies = [
  "bytes",
  "cookie_store",
