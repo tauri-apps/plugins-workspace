@@ -1337,18 +1337,28 @@ impl Update {
             std::fs::Permissions::from_mode(0o755),
         )?;
 
-        // Move the current app to backup and the new one into place. The current app
-        // is put back if the second move fails.
+        // Exchange the current app and the new one in a single step where the file
+        // system supports it, so the install path is never empty; the previous app
+        // then sits in the extraction temp dir, which is removed on drop. Where the
+        // swap is not supported, fall back to two renames with a restore on failure.
         let backup = tmp_backup_dir.path().join("current_app");
-        let need_authorization =
-            match replace_bundle(&self.extract_path, tmp_extract_dir.path(), &backup) {
-                Ok(()) => false,
-                Err(err) if err.kind() == std::io::ErrorKind::PermissionDenied => true,
-                Err(err) => {
-                    std::fs::remove_dir_all(tmp_extract_dir.path()).ok();
-                    return Err(err.into());
-                }
-            };
+        let moved = match swap_bundle(&self.extract_path, tmp_extract_dir.path()) {
+            Err(err)
+                if err.raw_os_error() == Some(libc::ENOTSUP)
+                    || err.raw_os_error() == Some(libc::EINVAL) =>
+            {
+                replace_bundle(&self.extract_path, tmp_extract_dir.path(), &backup)
+            }
+            other => other,
+        };
+        let need_authorization = match moved {
+            Ok(()) => false,
+            Err(err) if err.kind() == std::io::ErrorKind::PermissionDenied => true,
+            Err(err) => {
+                std::fs::remove_dir_all(tmp_extract_dir.path()).ok();
+                return Err(err.into());
+            }
+        };
 
         if need_authorization {
             log::debug!("app installation needs admin privileges");
@@ -1385,6 +1395,26 @@ impl Update {
             .status();
 
         Ok(())
+    }
+}
+
+/// Exchange `target` and `staged` atomically, so there is no instant at which
+/// `target` does not exist. APFS supports the swap; other file systems return
+/// `ENOTSUP`, and the caller falls back to [`replace_bundle`].
+#[cfg(target_os = "macos")]
+fn swap_bundle(target: &Path, staged: &Path) -> std::io::Result<()> {
+    use std::ffi::CString;
+    use std::os::unix::ffi::OsStrExt;
+
+    let from = CString::new(staged.as_os_str().as_bytes())?;
+    let to = CString::new(target.as_os_str().as_bytes())?;
+    // SAFETY: both pointers are valid NUL-terminated strings that outlive the call,
+    // and `renamex_np` only reads them.
+    let result = unsafe { libc::renamex_np(from.as_ptr(), to.as_ptr(), libc::RENAME_SWAP) };
+    if result == 0 {
+        Ok(())
+    } else {
+        Err(std::io::Error::last_os_error())
     }
 }
 
@@ -1680,6 +1710,33 @@ mod tests {
             "old"
         );
         assert!(!staged.exists());
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn swap_bundle_exchanges_the_two_bundles_in_place() {
+        let dir = tempfile::tempdir().unwrap();
+        let target = dir.path().join("App.app");
+        let staged = dir.path().join("staged");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("version"), "old").unwrap();
+        std::fs::create_dir(&staged).unwrap();
+        std::fs::write(staged.join("version"), "new").unwrap();
+
+        match super::swap_bundle(&target, &staged) {
+            // A temp dir on a file system without swap support proves nothing here.
+            Err(err) if err.raw_os_error() == Some(libc::ENOTSUP) => return,
+            other => other.unwrap(),
+        }
+
+        assert_eq!(
+            std::fs::read_to_string(target.join("version")).unwrap(),
+            "new"
+        );
+        assert_eq!(
+            std::fs::read_to_string(staged.join("version")).unwrap(),
+            "old"
+        );
     }
 
     #[test]
