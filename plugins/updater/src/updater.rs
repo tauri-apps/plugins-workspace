@@ -1287,6 +1287,7 @@ impl Update {
     /// └── ...
     fn install_inner(&self, bytes: &[u8]) -> Result<()> {
         use flate2::read::GzDecoder;
+        use std::os::unix::fs::{MetadataExt, PermissionsExt};
 
         let cursor = Cursor::new(bytes);
         let mut extracted_files: Vec<PathBuf> = Vec::new();
@@ -1299,6 +1300,12 @@ impl Update {
         let tmp_extract_dir = tempfile::Builder::new()
             .prefix("tauri_updated_app")
             .tempdir()?;
+
+        // The app is moved with renames, which only work within one file system.
+        // Refuse now rather than fail after the current app has been moved away.
+        if self.extract_path.metadata()?.dev() != tmp_extract_dir.path().metadata()?.dev() {
+            return Err(Error::TempDirNotOnSameMountPoint);
+        }
 
         let decoder = GzDecoder::new(cursor);
         let mut archive = tar::Archive::new(decoder);
@@ -1322,29 +1329,36 @@ impl Update {
             extracted_files.push(extraction_path);
         }
 
-        // Try to move the current app to backup
-        let move_result = std::fs::rename(
-            &self.extract_path,
-            tmp_backup_dir.path().join("current_app"),
-        );
-        let need_authorization = if let Err(err) = move_result {
-            if err.kind() == std::io::ErrorKind::PermissionDenied {
-                true
-            } else {
-                std::fs::remove_dir_all(tmp_extract_dir.path()).ok();
-                return Err(err.into());
-            }
-        } else {
-            false
-        };
+        // The temp dir becomes the installed bundle's root, and tempfile creates it
+        // with mode 0700, which stops every other user of the machine from launching
+        // the updated app.
+        std::fs::set_permissions(
+            tmp_extract_dir.path(),
+            std::fs::Permissions::from_mode(0o755),
+        )?;
+
+        // Move the current app to backup and the new one into place. The current app
+        // is put back if the second move fails.
+        let backup = tmp_backup_dir.path().join("current_app");
+        let need_authorization =
+            match replace_bundle(&self.extract_path, tmp_extract_dir.path(), &backup) {
+                Ok(()) => false,
+                Err(err) if err.kind() == std::io::ErrorKind::PermissionDenied => true,
+                Err(err) => {
+                    std::fs::remove_dir_all(tmp_extract_dir.path()).ok();
+                    return Err(err.into());
+                }
+            };
 
         if need_authorization {
             log::debug!("app installation needs admin privileges");
-            // Use AppleScript to perform moves with admin privileges
+            // Use AppleScript to perform the same moves with admin privileges: the
+            // current app is only deleted once the new one is in place.
             let apple_script = format!(
-                "do shell script \"rm -rf '{src}' && mv -f '{new}' '{src}'\" with administrator privileges",
+                "do shell script \"mv -f '{src}' '{backup}' && {{ mv -f '{new}' '{src}' || {{ mv -f '{backup}' '{src}'; exit 1; }}; }} && rm -rf '{backup}'\" with administrator privileges",
                 src = self.extract_path.display(),
-                new = tmp_extract_dir.path().display()
+                new = tmp_extract_dir.path().display(),
+                backup = backup.display()
             );
 
             let (tx, rx) = std::sync::mpsc::channel();
@@ -1364,13 +1378,6 @@ impl Update {
                     "Failed to move the new app into place",
                 )));
             }
-        } else {
-            // Remove existing directory if it exists
-            if self.extract_path.exists() {
-                std::fs::remove_dir_all(&self.extract_path)?;
-            }
-            // Move the new app to the target path
-            std::fs::rename(tmp_extract_dir.path(), &self.extract_path)?;
         }
 
         let _ = std::process::Command::new("touch")
@@ -1379,6 +1386,20 @@ impl Update {
 
         Ok(())
     }
+}
+
+/// Move `staged` into `target`, keeping what was at `target` in `backup` until the
+/// move has succeeded. If the second rename fails, the first is undone so `target`
+/// is left exactly as it was. Both renames must be within one file system.
+#[cfg(any(target_os = "macos", test))]
+fn replace_bundle(target: &Path, staged: &Path, backup: &Path) -> std::io::Result<()> {
+    std::fs::rename(target, backup)?;
+    if let Err(err) = std::fs::rename(staged, target) {
+        // Best effort: the error worth reporting is the one from the failed move.
+        let _ = std::fs::rename(backup, target);
+        return Err(err);
+    }
+    Ok(())
 }
 
 /// Gets the base target string used by the updater. If bundle type is available it
@@ -1636,6 +1657,49 @@ fn escape_msi_property_arg(arg: impl AsRef<OsStr>) -> String {
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn replace_bundle_moves_the_staged_bundle_into_place() {
+        let dir = tempfile::tempdir().unwrap();
+        let target = dir.path().join("App.app");
+        let staged = dir.path().join("staged");
+        let backup = dir.path().join("backup");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("version"), "old").unwrap();
+        std::fs::create_dir(&staged).unwrap();
+        std::fs::write(staged.join("version"), "new").unwrap();
+
+        super::replace_bundle(&target, &staged, &backup).unwrap();
+
+        assert_eq!(
+            std::fs::read_to_string(target.join("version")).unwrap(),
+            "new"
+        );
+        assert_eq!(
+            std::fs::read_to_string(backup.join("version")).unwrap(),
+            "old"
+        );
+        assert!(!staged.exists());
+    }
+
+    #[test]
+    fn replace_bundle_restores_the_current_bundle_when_the_move_fails() {
+        let dir = tempfile::tempdir().unwrap();
+        let target = dir.path().join("App.app");
+        let backup = dir.path().join("backup");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("version"), "old").unwrap();
+        let missing = dir.path().join("missing");
+
+        let err = super::replace_bundle(&target, &missing, &backup).unwrap_err();
+
+        assert_eq!(err.kind(), std::io::ErrorKind::NotFound);
+        assert_eq!(
+            std::fs::read_to_string(target.join("version")).unwrap(),
+            "old"
+        );
+        assert!(!backup.exists());
+    }
 
     #[test]
     #[cfg(windows)]
