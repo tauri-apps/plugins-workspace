@@ -86,7 +86,7 @@ pub(crate) fn to_json(v: MySqlValueRef) -> Result<JsonValue, Error> {
             }
         }
         "JSON" => ValueRef::to_owned(&v).try_decode().unwrap_or_default(),
-        "TINIYBLOB" | "MEDIUMBLOB" | "BLOB" | "LONGBLOB" => {
+        "BINARY" | "VARBINARY" | "TINYBLOB" | "MEDIUMBLOB" | "BLOB" | "LONGBLOB" => {
             if let Ok(v) = ValueRef::to_owned(&v).try_decode::<Vec<u8>>() {
                 JsonValue::Array(v.into_iter().map(|n| JsonValue::Number(n.into())).collect())
             } else {
