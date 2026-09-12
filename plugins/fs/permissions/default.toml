@@ -30,6 +30,6 @@ of the Tauri application by default.
 """
 permissions = [
   "create-app-specific-dirs",
-  "read-app-specific-dirs-recursive",
+  "allow-app-read-recursive",
   "deny-default",
 ]

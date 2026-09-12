@@ -10,7 +10,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.11.0",
+    "@tauri-apps/api": "^2.11.1",
     "@tauri-apps/plugin-barcode-scanner": "workspace:*",
     "@tauri-apps/plugin-biometric": "workspace:*",
     "@tauri-apps/plugin-cli": "workspace:*",
@@ -33,13 +33,13 @@
     "@zerodevx/svelte-json-view": "2.0.0"
   },
   "devDependencies": {
-    "@iconify-json/codicon": "^1.2.49",
+    "@iconify-json/codicon": "^1.2.69",
     "@iconify-json/ph": "^1.2.2",
-    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@tauri-apps/cli": "2.11.4",
-    "@unocss/extractor-svelte": "^66.6.7",
-    "svelte": "^5.55.7",
-    "unocss": "^66.6.7",
-    "vite": "^8.0.16"
+    "@unocss/extractor-svelte": "^66.7.5",
+    "svelte": "^5.56.8",
+    "unocss": "^66.7.5",
+    "vite": "^8.2.1"
   }
 }
