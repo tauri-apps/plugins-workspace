@@ -3,6 +3,11 @@
 // SPDX-License-Identifier: MIT
 
 //! Logging for Tauri applications.
+//!
+//! ## Cargo features
+//!
+//! - **colored**: Enables [`Builder::with_colors`] `fern`'s `colored` feature for ANSI-colored outputs.
+//! - **tracing**: Emit both log and tracing for the JavaScript log commands.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
@@ -648,7 +653,13 @@ impl Builder {
 
     /// Skip the creation and global registration of a logger
     ///
-    /// If you wish to use your own global logger, you must call `skip_logger` so that the plugin does not attempt to set a second global logger. In this configuration, no logger will be created and the plugin's `log` command will rely on the result of `log::logger()`. You will be responsible for configuring the logger yourself and any included targets will be ignored. If ever initializing the plugin multiple times, such as if registering the plugin while testing, call this method to avoid panicking when registering multiple loggers. For interacting with `tracing`, you can leverage the `tracing-log` logger to forward logs to `tracing` or enable the `tracing` feature for this plugin to emit events directly to the tracing system. Both scenarios require calling this method.
+    /// If you wish to use your own global logger, you must call `skip_logger` so that the plugin does not attempt to set a second global logger.
+    /// In this configuration, no logger will be created and the plugin's `log` command will rely on the result of `log::logger()`.
+    /// You will be responsible for configuring the logger yourself and any included targets will be ignored.
+    /// If ever initializing the plugin multiple times, such as if registering the plugin while testing, call this method to avoid panicking when registering multiple loggers.
+    /// For interacting with `tracing`, you can leverage the `tracing-log` logger to forward logs to `tracing` or enable the `tracing` feature for this plugin to emit events directly to the tracing system.
+    /// Both scenarios require calling this method.
+    ///
     /// ```rust
     /// static LOGGER: SimpleLogger = SimpleLogger;
     ///

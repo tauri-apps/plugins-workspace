@@ -5,7 +5,6 @@
   import { readFile } from '@tauri-apps/plugin-fs'
 
   export let onMessage
-  export let insecureRenderHtml
   let text = 'clipboard message'
 
   function writeText() {
@@ -41,7 +40,7 @@
       const image = await clipboard.readImage()
       arrayBufferToBase64(await image.rgba(), function (base64) {
         const src = 'data:image/png;base64,' + base64
-        insecureRenderHtml('<img src="' + src + '"></img>')
+        onMessage('<img src="' + src + '"></img>')
       })
       return
     } catch (_) {}

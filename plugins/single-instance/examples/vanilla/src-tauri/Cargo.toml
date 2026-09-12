@@ -27,4 +27,3 @@ tauri-build = { workspace = true }
 default = ["wry"]
 wry = ["dep:tauri-runtime-wry"]
 cef = ["dep:tauri-runtime-cef"]
-prod = ["tauri/custom-protocol"]

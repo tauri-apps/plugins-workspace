@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.4.0]
+
+- [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
+- [`304292d7`](https://github.com/tauri-apps/plugins-workspace/commit/304292d740a666d3903ab58329860fc0fdde2818) ([#2805](https://github.com/tauri-apps/plugins-workspace/pull/2805) by [@Innominus](https://github.com/tauri-apps/plugins-workspace/../../Innominus)) - Add Rust builders for mobile notification action types.
+    - Fix Android action-group entries being stored under the action type ID instead of sequential indices, causing later actions to overwrite earlier ones.
+
 ## \[2.3.3]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

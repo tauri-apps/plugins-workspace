@@ -2,6 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! Trigger haptic feedback on supported devices.
+//!
+//! ## Cargo features
+//!
+//! - **specta**: Add support for [`specta::specta`](https://docs.rs/specta/2.0.0-rc.25/specta/attr.specta.html) on structs like [`ImpactFeedbackStyle`], [`NotificationFeedbackType`].
+
 use tauri::{
     plugin::{Builder, TauriPlugin},
     Manager, Runtime,

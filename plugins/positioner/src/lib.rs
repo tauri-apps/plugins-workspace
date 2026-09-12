@@ -5,7 +5,7 @@
 
 //! A plugin for Tauri that helps position your windows at well-known locations.
 //!
-//! # Cargo features
+//! ## Cargo features
 //!
 //! - **tray-icon**: Enables tray-icon-relative positions.
 //!

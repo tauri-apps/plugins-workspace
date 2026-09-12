@@ -161,7 +161,7 @@ impl Builder {
     ///
     /// ```no_run
     /// Builder::new()
-    ///     .app_name("My Custom Name"))
+    ///     .app_name("My Custom Name")
     ///     .build();
     /// ```
     pub fn app_name<S: Into<String>>(mut self, app_name: S) -> Self {

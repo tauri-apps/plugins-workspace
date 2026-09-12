@@ -69,6 +69,7 @@ import { relaunch } from '@tauri-apps/plugin-process'
 const update = await check()
 if (update) {
   await update.downloadAndInstall()
+  // Relaunch the app on macOS and Linux to run the newly install version
   await relaunch()
 }
 ```

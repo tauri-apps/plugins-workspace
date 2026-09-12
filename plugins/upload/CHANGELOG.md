@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.1]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+
 ## \[2.4.0]
 
 - [`ad910b11`](https://github.com/tauri-apps/plugins-workspace/commit/ad910b1135d5cb57a67ca022ae6beb0dca460f9c) ([#2991](https://github.com/tauri-apps/plugins-workspace/pull/2991) by [@velocitysystems](https://github.com/tauri-apps/plugins-workspace/../../velocitysystems)) Upload plugin now supports specifying an HTTP method i.e. POST, PUT etc.

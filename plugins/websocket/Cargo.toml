@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-websocket"
-version = "2.4.2"
+version = "2.4.3"
 description = "Expose a WebSocket server to your Tauri frontend."
 authors = { workspace = true }
 license = { workspace = true }
@@ -8,7 +8,14 @@ edition = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-websocket"
-exclude = ["/examples"]
+exclude = [
+  "/banner.png",
+  "/examples",
+  "/guest-js",
+  "/package.json",
+  "/rollup.config.js",
+  "/tsconfig.json",
+]
 
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }

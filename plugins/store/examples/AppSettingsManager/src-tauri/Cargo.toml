@@ -28,6 +28,3 @@ tauri-plugin-store = { path = "../../../" }
 default = ["wry"]
 wry = ["dep:tauri-runtime-wry"]
 cef = ["dep:tauri-runtime-cef"]
-# this feature is used for production builds or when `devPath` points to the filesystem
-# DO NOT REMOVE!!
-prod = ["tauri/custom-protocol"]

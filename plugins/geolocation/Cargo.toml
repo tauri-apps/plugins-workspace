@@ -1,12 +1,13 @@
 [package]
 name = "tauri-plugin-geolocation"
 description = "Get and track the device's current position"
-version = "2.3.2"
+version = "2.3.3"
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-geolocation"
+exclude = ["/guest-js", "/package.json", "/rollup.config.js", "/tsconfig.json"]
 
 [package.metadata.docs.rs]
 targets = ["x86_64-linux-android"]

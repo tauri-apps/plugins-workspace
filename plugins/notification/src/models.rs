@@ -321,6 +321,95 @@ pub struct ActionType {
 }
 
 #[cfg(mobile)]
+#[derive(Debug)]
+pub struct ActionTypeBuilder(ActionType);
+
+#[cfg(mobile)]
+impl ActionType {
+    pub fn builder(id: impl Into<String>) -> ActionTypeBuilder {
+        ActionTypeBuilder(Self {
+            id: id.into(),
+            actions: Vec::new(),
+            hidden_previews_body_placeholder: None,
+            custom_dismiss_action: false,
+            allow_in_car_play: false,
+            hidden_previews_show_title: false,
+            hidden_previews_show_subtitle: false,
+        })
+    }
+
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    pub fn actions(&self) -> &[Action] {
+        &self.actions
+    }
+
+    pub fn hidden_previews_body_placeholder(&self) -> Option<&str> {
+        self.hidden_previews_body_placeholder.as_deref()
+    }
+
+    pub fn custom_dismiss_action(&self) -> bool {
+        self.custom_dismiss_action
+    }
+
+    pub fn allow_in_car_play(&self) -> bool {
+        self.allow_in_car_play
+    }
+
+    pub fn hidden_previews_show_title(&self) -> bool {
+        self.hidden_previews_show_title
+    }
+
+    pub fn hidden_previews_show_subtitle(&self) -> bool {
+        self.hidden_previews_show_subtitle
+    }
+}
+
+#[cfg(mobile)]
+impl ActionTypeBuilder {
+    pub fn actions(mut self, actions: Vec<Action>) -> Self {
+        self.0.actions = actions;
+        self
+    }
+
+    pub fn hidden_previews_body_placeholder(
+        mut self,
+        hidden_previews_body_placeholder: impl Into<String>,
+    ) -> Self {
+        self.0
+            .hidden_previews_body_placeholder
+            .replace(hidden_previews_body_placeholder.into());
+        self
+    }
+
+    pub fn custom_dismiss_action(mut self, custom_dismiss_action: bool) -> Self {
+        self.0.custom_dismiss_action = custom_dismiss_action;
+        self
+    }
+
+    pub fn allow_in_car_play(mut self, allow_in_car_play: bool) -> Self {
+        self.0.allow_in_car_play = allow_in_car_play;
+        self
+    }
+
+    pub fn hidden_previews_show_title(mut self, hidden_previews_show_title: bool) -> Self {
+        self.0.hidden_previews_show_title = hidden_previews_show_title;
+        self
+    }
+
+    pub fn hidden_previews_show_subtitle(mut self, hidden_previews_show_subtitle: bool) -> Self {
+        self.0.hidden_previews_show_subtitle = hidden_previews_show_subtitle;
+        self
+    }
+
+    pub fn build(self) -> ActionType {
+        self.0
+    }
+}
+
+#[cfg(mobile)]
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Action {
@@ -332,6 +421,95 @@ pub struct Action {
     input: bool,
     input_button_title: Option<String>,
     input_placeholder: Option<String>,
+}
+
+#[cfg(mobile)]
+#[derive(Debug)]
+pub struct ActionBuilder(Action);
+
+#[cfg(mobile)]
+impl Action {
+    pub fn builder(id: impl Into<String>, title: impl Into<String>) -> ActionBuilder {
+        ActionBuilder(Self {
+            id: id.into(),
+            title: title.into(),
+            requires_authentication: false,
+            foreground: false,
+            destructive: false,
+            input: false,
+            input_button_title: None,
+            input_placeholder: None,
+        })
+    }
+
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    pub fn title(&self) -> &str {
+        &self.title
+    }
+
+    pub fn requires_authentication(&self) -> bool {
+        self.requires_authentication
+    }
+
+    pub fn foreground(&self) -> bool {
+        self.foreground
+    }
+
+    pub fn destructive(&self) -> bool {
+        self.destructive
+    }
+
+    pub fn input(&self) -> bool {
+        self.input
+    }
+
+    pub fn input_button_title(&self) -> Option<&str> {
+        self.input_button_title.as_deref()
+    }
+
+    pub fn input_placeholder(&self) -> Option<&str> {
+        self.input_placeholder.as_deref()
+    }
+}
+
+#[cfg(mobile)]
+impl ActionBuilder {
+    pub fn requires_authentication(mut self, requires_authentication: bool) -> Self {
+        self.0.requires_authentication = requires_authentication;
+        self
+    }
+
+    pub fn foreground(mut self, foreground: bool) -> Self {
+        self.0.foreground = foreground;
+        self
+    }
+
+    pub fn destructive(mut self, destructive: bool) -> Self {
+        self.0.destructive = destructive;
+        self
+    }
+
+    pub fn input(mut self, input: bool) -> Self {
+        self.0.input = input;
+        self
+    }
+
+    pub fn input_button_title(mut self, input_button_title: impl Into<String>) -> Self {
+        self.0.input_button_title.replace(input_button_title.into());
+        self
+    }
+
+    pub fn input_placeholder(mut self, input_placeholder: impl Into<String>) -> Self {
+        self.0.input_placeholder.replace(input_placeholder.into());
+        self
+    }
+
+    pub fn build(self) -> Action {
+        self.0
+    }
 }
 
 #[cfg(target_os = "android")]

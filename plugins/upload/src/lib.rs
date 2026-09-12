@@ -5,6 +5,12 @@
 //! Upload files from disk to a remote server over HTTP.
 //!
 //! Download files from a remote HTTP server to disk.
+//!
+//! ## Cargo features
+//!
+//! - **rustls-tls** *(enabled by default)*: Enables TLS functionality provided by `rustls`.
+//! - **native-tls**: Enables TLS functionality provided by `native-tls`.
+//! - **native-tls-vendored**: Enables the `vendored` feature of `native-tls`.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",

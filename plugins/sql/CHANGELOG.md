@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.1]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+
 ## \[2.4.0]
 
 - [`1dc36128`](https://github.com/tauri-apps/plugins-workspace/commit/1dc36128624f6954e09ea1574f68615e34e83f63) ([#3275](https://github.com/tauri-apps/plugins-workspace/pull/3275) by [@mikenikles](https://github.com/tauri-apps/plugins-workspace/../../mikenikles)) Add support for Postgres `NUMERIC` and custom data types.

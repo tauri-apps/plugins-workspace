@@ -32,15 +32,28 @@ impl WindowsUpdateInstallMode {
         }
     }
 
+    #[cfg(windows)]
+    pub(crate) fn msi_restart_after_install_args(&self) -> &'static [&'static str] {
+        &["AUTOLAUNCHAPP=True"]
+    }
+
     /// Returns the associated nsis arguments.
     pub fn nsis_args(&self) -> &'static [&'static str] {
         // `/P`: Passive
         // `/S`: Silent
         // `/R`: Restart
         match self {
-            Self::Passive => &["/P", "/R"],
-            Self::Quiet => &["/S", "/R"],
+            Self::Passive => &["/P"],
+            Self::Quiet => &["/S"],
             _ => &[],
+        }
+    }
+
+    #[cfg(windows)]
+    pub(crate) fn nsis_restart_after_install_args(&self) -> &'static [&'static str] {
+        match self {
+            Self::BasicUi => &[],
+            _ => &["/R"],
         }
     }
 }
@@ -63,6 +76,8 @@ impl Display for WindowsUpdateInstallMode {
 #[serde(rename_all = "camelCase")]
 pub struct WindowsConfig {
     /// Additional arguments given to the NSIS or WiX installer.
+    ///
+    /// Note: this applies to both WiX and NSIS installers
     #[serde(
         default,
         alias = "installer-args",

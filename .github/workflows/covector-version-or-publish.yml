@@ -28,18 +28,17 @@ jobs:
       successfulPublish: ${{ steps.covector.outputs.successfulPublish }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # required for use of git history
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
           registry-url: 'https://registry.npmjs.org'
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
-          version: 10.x.x
           run_install: true
 
       - name: cargo login
@@ -74,7 +73,7 @@ jobs:
 
       - name: Create Pull Request With Versions Bumped
         id: cpr
-        uses: peter-evans/create-pull-request@dd2324fc52d5d43c699a5636bcf19fceaa70c284 # 7.0.7
+        uses: peter-evans/create-pull-request@v8.1.1
         if: steps.covector.outputs.commandRan == 'version'
         with:
           title: 'Publish New Versions (${{ github.ref_name }})'

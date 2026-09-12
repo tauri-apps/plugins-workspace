@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: MIT
 
 //! Store secrets and keys using the [IOTA Stronghold](https://github.com/iotaledger/stronghold.rs) encrypted database and secure runtime.
+//!
+//! ## Cargo features
+//!
+//! - **kdf** *(enabled by default)*: Exposes the key-derivation module and provides the default Argon2-based password-to-key derivation.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",

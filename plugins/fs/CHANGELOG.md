@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.2]
+
+- [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+- [`685610ae`](https://github.com/tauri-apps/plugins-workspace/commit/685610ae782b668770d412f42a5d52d2cc9e497e) ([#3507](https://github.com/tauri-apps/plugins-workspace/pull/3507) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `fs:default` and `fs:read-app-specific-dirs-recursive` not giving any command scopes
+- [`3fb27bf1`](https://github.com/tauri-apps/plugins-workspace/commit/3fb27bf13a88dd1e5aa2cc933408be02b0eafc91) ([#3504](https://github.com/tauri-apps/plugins-workspace/pull/3504) by [@vasfvitor](https://github.com/tauri-apps/plugins-workspace/../../vasfvitor)) Fixed `deny-webview-data` has no effect, and on Linux, only deny access to the webview data paths instead of the entire `$APPLOCALDATA`
+
 ## \[2.5.1]
 
 - [`ec054013`](https://github.com/tauri-apps/plugins-workspace/commit/ec0540138bece081e9a87982091947360e61987a) ([#3323](https://github.com/tauri-apps/plugins-workspace/pull/3323) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated dependency `toml` from 0.9 to 1

@@ -3,6 +3,15 @@
 // SPDX-License-Identifier: MIT
 
 //! Open a WebSocket connection using a Rust client in JS.
+//!
+//! ## Cargo features
+//!
+//! - **rustls-tls** *(enabled by default)*: Enables TLS functionality provided by `rustls` with WebPKI roots.
+//! - **rustls-tls-native-roots**: Enables TLS functionality provided by `rustls` with the platform's native certificate roots.
+//! - **native-tls**: Enables TLS functionality provided by `native-tls`.
+//! - **native-tls-vendored**: Enables the `vendored` feature of `native-tls`.
+//!
+//! At least one TLS feature is required for `wss://`; plain `ws://` works without one.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",

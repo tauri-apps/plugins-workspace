@@ -1,5 +1,9 @@
 # Changelog
 
+## \[2.4.4]
+
+- [`2ed6d6c1`](https://github.com/tauri-apps/plugins-workspace/commit/2ed6d6c1de4f5051b87cb6a2c5ac45320c444989) ([#3499](https://github.com/tauri-apps/plugins-workspace/pull/3499) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `StoreOptions` requires `defaults` field
+
 ## \[2.4.3]
 
 - [`964e13f1`](https://github.com/tauri-apps/plugins-workspace/commit/964e13f124ad1feeb93c10168b265dc4936f738c) ([#3395](https://github.com/tauri-apps/plugins-workspace/pull/3395) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix a deadlock when calling `Store::set` while exiting (on `RunEvent::Exit`)

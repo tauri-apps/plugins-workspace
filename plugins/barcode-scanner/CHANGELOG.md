@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.6]
+
+- [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
+
 ## \[2.4.5]
 
 - [`d8645ab3`](https://github.com/tauri-apps/plugins-workspace/commit/d8645ab3e5b508456681eb53275c0837db25aeee) ([#3393](https://github.com/tauri-apps/plugins-workspace/pull/3393) by [@AlexisZankowitch](https://github.com/tauri-apps/plugins-workspace/../../AlexisZankowitch)) Fixed a crash on iOS when `cancel()` is invoked by running the cancel handler on the main thread.
