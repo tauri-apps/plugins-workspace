@@ -160,9 +160,10 @@ fn exercise_registration() {
     );
 
     // An app must not remove another handler that became the user's default.
-    fs::copy(
-        data.join("applications").join(&file_name),
+    // Keep the other handler independent of xdg-utils' quoted-Exec lookup bug.
+    fs::write(
         data.join("applications/other.desktop"),
+        "[Desktop Entry]\nType=Application\nName=Other handler\nExec=/bin/sh\nMimeType=x-scheme-handler/tauri-test-second;\n",
     )
     .unwrap();
     mimeapps.with_section(Some("Default Applications")).set(

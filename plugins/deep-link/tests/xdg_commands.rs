@@ -183,9 +183,10 @@ fn exercise_commands(mode: &str) {
     let file_name = desktop_file_name();
     let other_file = format!("other-{file_name}");
     let applications = PathBuf::from(env::var_os("XDG_DATA_HOME").unwrap()).join("applications");
-    fs::copy(
-        applications.join(&file_name),
+    // Use an independent handler: older xdg-utils cannot resolve a quoted Exec token.
+    fs::write(
         applications.join(&other_file),
+        format!("[Desktop Entry]\nType=Application\nName=Other handler\nExec=/bin/sh\nMimeType=x-scheme-handler/{scheme};\n"),
     )
     .unwrap();
     let mimeapps_path =
