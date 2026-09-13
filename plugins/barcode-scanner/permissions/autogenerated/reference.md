@@ -15,6 +15,7 @@ It allows all barcode related features.
 - `allow-request-permissions`
 - `allow-scan`
 - `allow-vibrate`
+- `allow-toggle-torch`
 
 ## Permission Table
 
@@ -151,6 +152,32 @@ Enables the scan command without any pre-configured scope.
 <td>
 
 Denies the scan command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`barcode-scanner:allow-toggle-torch`
+
+</td>
+<td>
+
+Enables the toggle_torch command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`barcode-scanner:deny-toggle-torch`
+
+</td>
+<td>
+
+Denies the toggle_torch command without any pre-configured scope.
 
 </td>
 </tr>
