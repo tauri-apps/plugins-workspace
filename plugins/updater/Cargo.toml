@@ -81,3 +81,6 @@ native-tls = ["reqwest/native-tls"]
 native-tls-vendored = ["reqwest/native-tls-vendored"]
 rustls-tls = ["reqwest/rustls-no-provider", "dep:rustls"]
 system-proxy = ["reqwest/system-proxy"]
+
+[dev-dependencies]
+tauri = { workspace = true, features = ["test"] }
