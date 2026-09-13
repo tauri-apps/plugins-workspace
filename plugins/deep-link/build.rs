@@ -128,7 +128,13 @@ fn main() {
                             .iter()
                             .filter(|d| d.is_app_link())
                             .filter_map(|d| d.host.as_ref())
-                            .map(|host| format!("applinks:{}", host).into())
+                            .flat_map(|host| {
+                                [
+                                    format!("applinks:{}", host),
+                                    format!("webcredentials:{}", host),
+                                ]
+                            })
+                            .map(Into::into)
                             .collect::<Vec<_>>()
                             .into(),
                     );
@@ -139,7 +145,7 @@ fn main() {
             let deep_link_domains = config
                 .mobile
                 .iter()
-                .filter(|domain| !domain.is_app_link())
+                .filter(|domain| !domain.is_web_link())
                 .collect::<Vec<_>>();
 
             if deep_link_domains.is_empty() {
@@ -173,7 +179,8 @@ fn main() {
                                 );
                                 dict.insert(
                                     "CFBundleURLName".into(),
-                                    domain.scheme[0].clone().into(),
+                                    format!("$(PRODUCT_BUNDLE_IDENTIFIER).{}", domain.scheme[0])
+                                        .into(),
                                 );
                                 plist::Value::Dictionary(dict)
                             })
