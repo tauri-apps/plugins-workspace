@@ -113,12 +113,14 @@ fn exercise_registration() {
         "{}-handler.desktop",
         executable.file_name().unwrap().to_string_lossy()
     );
-    let desktop = ini::Ini::load_from_file(data.join("applications").join(&file_name)).unwrap();
-    let section = desktop.section(Some("Desktop Entry")).unwrap();
+    let desktop_text = fs::read_to_string(data.join("applications").join(&file_name)).unwrap();
+    // INI parsing consumes quotes; verify the desktop command's quoting in the file itself.
     assert_eq!(
-        section.get("Exec"),
-        Some(format!("\"{}\" %u", executable.display()).as_str())
+        desktop_text.lines().find(|line| line.starts_with("Exec=")),
+        Some(format!("Exec=\"{}\" %u", executable.display()).as_str())
     );
+    let desktop = ini::Ini::load_from_str(&desktop_text).unwrap();
+    let section = desktop.section(Some("Desktop Entry")).unwrap();
     let mimes: Vec<_> = section
         .get("MimeType")
         .unwrap()
