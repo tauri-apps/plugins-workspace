@@ -46,3 +46,8 @@ pub async fn restore_state<R: Runtime>(
 pub fn filename<R: Runtime>(app: AppHandle<R>) -> String {
     app.filename()
 }
+
+#[command]
+pub fn directory<R: Runtime>(app: AppHandle<R>) -> Option<String> {
+    app.directory()
+}

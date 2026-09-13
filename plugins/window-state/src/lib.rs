@@ -22,6 +22,7 @@ use std::{
     collections::{HashMap, HashSet},
     fs::create_dir_all,
     io::BufReader,
+    path::PathBuf,
     sync::{Arc, Mutex},
 };
 
@@ -69,6 +70,7 @@ impl Default for StateFlags {
 struct PluginState {
     pub(crate) state_flags: StateFlags,
     filename: String,
+    dir: Option<PathBuf>,
     map_label: Option<Box<LabelMapperFn>>,
 }
 
@@ -115,12 +117,18 @@ pub trait AppHandleExt {
     fn save_window_state(&self, flags: StateFlags) -> Result<()>;
     /// Get the name of the file used to store window state.
     fn filename(&self) -> String;
+    /// Get the directory used to store window state.
+    fn directory(&self) -> Option<String>;
 }
 
 impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
     fn save_window_state(&self, flags: StateFlags) -> Result<()> {
-        let app_dir = self.path().app_config_dir()?;
         let plugin_state = self.state::<PluginState>();
+        let app_dir = plugin_state
+            .dir
+            .as_ref()
+            .map(|dir| dir.clone())
+            .unwrap_or_else(|| self.path().app_config_dir().unwrap_or_default());
         let state_path = app_dir.join(&plugin_state.filename);
         let windows = self.webview_windows();
         let cache = self.state::<WindowStateCache>();
@@ -148,6 +156,13 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
 
     fn filename(&self) -> String {
         self.state::<PluginState>().filename.clone()
+    }
+
+    fn directory(&self) -> Option<String> {
+        self.state::<PluginState>()
+            .dir
+            .as_ref()
+            .map(|dir| dir.to_string_lossy().to_string())
     }
 }
 
@@ -329,6 +344,7 @@ pub struct Builder {
     state_flags: StateFlags,
     map_label: Option<Box<LabelMapperFn>>,
     filename: Option<String>,
+    dir: Option<PathBuf>,
 }
 
 impl Builder {
@@ -345,6 +361,13 @@ impl Builder {
     /// Sets a custom filename to use when saving and restoring window states from disk.
     pub fn with_filename(mut self, filename: impl Into<String>) -> Self {
         self.filename.replace(filename.into());
+        self
+    }
+
+    /// Sets a custom directory to use when saving and restoring window states from disk.
+    /// If not set, defaults to the application's config directory.
+    pub fn with_dir<P: AsRef<std::path::Path>>(mut self, dir: P) -> Self {
+        self.dir.replace(dir.as_ref().to_path_buf());
         self
     }
 
@@ -385,21 +408,25 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let state_flags = self.state_flags;
         let filename = self.filename.unwrap_or_else(|| DEFAULT_FILENAME.into());
+        let dir = self.dir;
         let map_label = self.map_label;
 
         PluginBuilder::new("window-state")
             .invoke_handler(tauri::generate_handler![
                 cmd::save_window_state,
                 cmd::restore_state,
-                cmd::filename
+                cmd::filename,
+                cmd::directory
             ])
             .setup(move |app, _api| {
-                let cache = load_saved_window_states(app, &filename).unwrap_or_default();
+                let cache =
+                    load_saved_window_states(app, &filename, dir.as_ref()).unwrap_or_default();
                 app.manage(WindowStateCache(Arc::new(Mutex::new(cache))));
                 app.manage(RestoringWindowState(Mutex::new(())));
                 app.manage(PluginState {
                     state_flags,
                     filename,
+                    dir,
                     map_label,
                 });
                 Ok(())
@@ -511,8 +538,11 @@ impl Builder {
 fn load_saved_window_states<R: Runtime>(
     app: &AppHandle<R>,
     filename: &String,
+    dir: Option<&PathBuf>,
 ) -> Result<HashMap<String, WindowState>> {
-    let app_dir = app.path().app_config_dir()?;
+    let app_dir = dir
+        .map(|dir| dir.clone())
+        .unwrap_or_else(|| app.path().app_config_dir().unwrap_or_default());
     let state_path = app_dir.join(filename);
     let file = std::fs::File::open(state_path)?;
     let reader = BufReader::new(file);
