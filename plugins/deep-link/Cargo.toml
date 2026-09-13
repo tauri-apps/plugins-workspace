@@ -45,6 +45,9 @@ tracing = { workspace = true }
 thiserror = { workspace = true }
 url = { workspace = true }
 
+[dev-dependencies]
+tauri = { workspace = true, features = ["test"] }
+
 [target."cfg(windows)".dependencies]
 dunce = "1"
 windows-registry = "0.5"

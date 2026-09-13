@@ -16,7 +16,7 @@ import { type UnlistenFn, listen } from '@tauri-apps/api/event'
  *
  * #### Platform-specific
  *
- * - **Windows / Linux:** This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
+ * - **Windows / Linux / FreeBSD:** This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
  *   Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
  *   Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
  *
@@ -102,7 +102,7 @@ export async function isRegistered(protocol: string): Promise<boolean> {
  *
  * #### Platform-specific
  *
- * - **Windows / Linux:** Unsupported without the single-instance plugin. The OS will spawn a new app instance passing the URL as a CLI argument.
+ * - **Windows / Linux / FreeBSD:** Unsupported without the single-instance plugin. The OS will spawn a new app instance passing the URL as a CLI argument.
  *
  * @since 2.0.0
  */
