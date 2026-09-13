@@ -12,6 +12,8 @@ use std::{
 };
 
 #[cfg(unix)]
+use std::os::unix::process::CommandExt;
+#[cfg(unix)]
 use std::os::unix::process::ExitStatusExt;
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -240,6 +242,46 @@ impl Command {
     /// Configures the reader to output bytes from the child process exactly as received
     pub fn set_raw_out(mut self, raw_out: bool) -> Self {
         self.raw_out = raw_out;
+        self
+    }
+
+    /// Sets a pre-exec closure for the command.
+    ///
+    /// # Safety
+    ///  
+    ///  Unsafe block needed as the stdlib requires it.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,no_run
+    /// use tauri_plugin_shell::ShellExt;
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let handle = app.handle().clone();
+    ///     tauri::async_runtime::spawn(async move {
+    ///       unsafe {
+    ///         let (mut rx, mut child) = handle
+    ///           .shell()
+    ///           .command("some-command")
+    ///           .pre_exec(|| {
+    ///             // Some unsafe operations before executing the command
+    ///             libc::umask(0o007);
+    ///             Ok(())
+    ///           })
+    ///           .spawn()
+    ///           .expect("Failed to spawn shell command");
+    ///       }
+    ///     });
+    ///     Ok(())
+    ///   })
+    /// ```
+    #[cfg(unix)]
+    #[must_use]
+    pub unsafe fn pre_exec<F>(mut self, f: F) -> Self
+    where
+        F: FnMut() -> std::io::Result<()> + Send + Sync + 'static,
+    {
+        self.cmd.pre_exec(f);
         self
     }
 
