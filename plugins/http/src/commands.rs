@@ -398,7 +398,9 @@ pub async fn fetch_send<R: Runtime>(
     for (key, val) in res.headers().iter() {
         headers.push((
             key.as_str().into(),
-            String::from_utf8(val.as_bytes().to_vec())?,
+            // header values are byte strings; decode as ISO-8859-1 so the raw
+            // bytes survive as a valid ByteString for `new Headers()` on the JS side
+            val.as_bytes().iter().map(|&b| b as char).collect(),
         ));
     }
 
