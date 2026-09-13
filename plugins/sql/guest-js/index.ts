@@ -18,6 +18,15 @@ export interface QueryResult {
   lastInsertId?: number
 }
 
+export interface ConnectionOptions {
+  sqlite?: {
+    pool?: {
+      max_connections?: number
+      min_connections?: number
+    }
+  }
+}
+
 /**
  * **Database**
  *
@@ -45,8 +54,12 @@ export default class Database {
    * const db = await Database.load("sqlite:test.db");
    * ```
    */
-  static async load(path: string): Promise<Database> {
+  static async load(
+    path: string,
+    options?: ConnectionOptions
+  ): Promise<Database> {
     const _path = await invoke<string>('plugin:sql|load', {
+      options,
       db: path
     })
 
