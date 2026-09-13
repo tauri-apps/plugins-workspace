@@ -10,6 +10,7 @@ on:
     branches:
       - v1
       - v2
+      - v3
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

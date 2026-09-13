@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.0-alpha.0]
+
+- [`363438b5`](https://github.com/tauri-apps/plugins-workspace/commit/363438b50a09162379d57c7c7bfc132520c1e5d4) Update to tauri 3.0 alpha.
+
 ## \[2.3.2]
 
 - [`cb863d57`](https://github.com/tauri-apps/plugins-workspace/commit/cb863d57c60790efc41b2bd77d065bd91b4ef2b1) ([#3408](https://github.com/tauri-apps/plugins-workspace/pull/3408) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update crate `global-hotkey` to 0.8 to fix cpu usage while pressing the keys on windows and to add F13-F24 mappings on Linux/X11.

@@ -12,6 +12,7 @@ on:
     branches:
       - v1
       - v2
+      - v3
     paths:
       - '.github/workflows/audit-rust.yml'
       - '**/Cargo.lock'
@@ -20,6 +21,7 @@ on:
     branches:
       - v1
       - v2
+      - v3
     paths:
       - '.github/workflows/audit-rust.yml'
       - '**/Cargo.lock'

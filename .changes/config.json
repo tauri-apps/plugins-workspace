@@ -20,7 +20,7 @@
           "pipe": true
         },
         {
-          "command": "npm publish --provenance --access public",
+          "command": "npm publish --provenance --access public --tag next",
           "dryRunCommand": "npm publish --provenance --access public --dry-run",
           "pipe": true
         },
@@ -81,8 +81,10 @@
         "shell",
         "store",
         "updater",
+        "upload",
         "geolocation",
-        "haptics"
+        "haptics",
+        "window-state"
       ]
     },
     "api-example-js": {

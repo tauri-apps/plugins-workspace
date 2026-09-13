@@ -1,0 +1,6 @@
+{
+  "tag": "alpha",
+  "changes": [
+    ".changes/3.0-alpha.md"
+  ]
+}

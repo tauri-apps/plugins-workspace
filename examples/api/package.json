@@ -1,7 +1,7 @@
 {
   "name": "api",
   "private": true,
-  "version": "2.0.43",
+  "version": "2.0.44-alpha.0",
   "type": "module",
   "scripts": {
     "dev": "vite --clearScreen false",
@@ -36,7 +36,7 @@
     "@iconify-json/codicon": "^1.2.49",
     "@iconify-json/ph": "^1.2.2",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
-    "@tauri-apps/cli-cef": "3.0.0-alpha.26",
+    "@tauri-apps/cli": "3.0.0-alpha.0",
     "@unocss/extractor-svelte": "^66.6.7",
     "svelte": "^5.55.7",
     "unocss": "^66.6.7",

@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.0-alpha.0]
+
+- [`363438b5`](https://github.com/tauri-apps/plugins-workspace/commit/363438b50a09162379d57c7c7bfc132520c1e5d4) Update to tauri 3.0 alpha.
+
 ## \[2.4.1]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.

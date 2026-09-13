@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-deep-link",
-  "version": "2.4.10",
+  "version": "3.0.0-alpha.0",
   "description": "Set your Tauri application as the default handler for an URL",
   "license": "MIT OR Apache-2.0",
   "authors": [
@@ -28,6 +28,6 @@
     "@tauri-apps/api": "^2.11.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli-cef": "3.0.0-alpha.26"
+    "@tauri-apps/cli": "3.0.0-alpha.0"
   }
 }

@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.0.44-alpha.0]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@3.0.0-alpha.0`
+- Upgraded to `biometric-js@3.0.0-alpha.0`
+- Upgraded to `cli-js@3.0.0-alpha.0`
+- Upgraded to `clipboard-manager-js@3.0.0-alpha.0`
+- Upgraded to `dialog-js@3.0.0-alpha.0`
+- Upgraded to `fs-js@3.0.0-alpha.0`
+- Upgraded to `global-shortcut-js@3.0.0-alpha.0`
+- Upgraded to `http-js@3.0.0-alpha.0`
+- Upgraded to `log-js@3.0.0-alpha.0`
+- Upgraded to `nfc-js@3.0.0-alpha.0`
+- Upgraded to `notification-js@3.0.0-alpha.0`
+- Upgraded to `opener-js@3.0.0-alpha.0`
+- Upgraded to `os-js@3.0.0-alpha.0`
+- Upgraded to `process-js@3.0.0-alpha.0`
+- Upgraded to `shell-js@3.0.0-alpha.0`
+- Upgraded to `store-js@3.0.0-alpha.0`
+- Upgraded to `updater-js@3.0.0-alpha.0`
+
 ## [2.0.43]
 
 ### Dependencies

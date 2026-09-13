@@ -9,6 +9,7 @@ on:
     branches:
       - v1
       - v2
+      - v3
     paths:
       - '.github/workflows/test-rust.yml'
       - 'plugins/*/src/**'
@@ -19,6 +20,7 @@ on:
     branches:
       - v1
       - v2
+      - v3
     paths:
       - '.github/workflows/test-rust.yml'
       - 'plugins/*/src/**'

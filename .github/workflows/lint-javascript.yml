@@ -9,6 +9,7 @@ on:
     branches:
       - v1
       - v2
+      - v3
     paths:
       - '.github/workflows/lint-javascript.yml'
       - 'plugins/*/guest-js/**'
@@ -20,6 +21,7 @@ on:
     branches:
       - v1
       - v2
+      - v3
     paths:
       - '.github/workflows/lint-javascript.yml'
       - 'plugins/*/guest-js/**'
