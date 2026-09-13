@@ -18,13 +18,63 @@ use sqlx::MySql;
 #[cfg(feature = "postgres")]
 use sqlx::Postgres;
 #[cfg(feature = "sqlite")]
-use sqlx::Sqlite;
+use sqlx::{pool::PoolOptions, sqlite::SqliteConnection, Sqlite};
+#[cfg(feature = "sqlite")]
+use std::sync::Arc;
+#[cfg(feature = "sqlite")]
+use tokio::sync::RwLock;
 
 use crate::LastInsertId;
 
+#[cfg(feature = "sqlite")]
+pub struct SqlitePoolWithHook {
+    pool: Arc<RwLock<Pool<Sqlite>>>,
+    db_url: String,
+}
+
+#[cfg(feature = "sqlite")]
+impl SqlitePoolWithHook {
+    pub fn pool(&self) -> Arc<RwLock<Pool<Sqlite>>> {
+        Arc::clone(&self.pool)
+    }
+
+    pub fn db_url(&self) -> &str {
+        &self.db_url
+    }
+
+    pub async fn rebuild_pool<F>(&self, hook_fn: Option<F>) -> Result<(), sqlx::Error>
+    where
+        F: Fn(sqlx::sqlite::UpdateHookResult) + Send + Sync + 'static,
+    {
+        let new_pool = if let Some(hook_fn) = hook_fn {
+            let hook_fn = Arc::new(hook_fn);
+            PoolOptions::new()
+                .after_connect(move |conn: &mut SqliteConnection, _meta| {
+                    let hook_fn = Arc::clone(&hook_fn);
+                    Box::pin(async move {
+                        conn.lock_handle().await?.set_update_hook(move |result| {
+                            hook_fn(result);
+                        });
+                        Ok(())
+                    })
+                })
+                .connect(&self.db_url)
+                .await?
+        } else {
+            Pool::connect(&self.db_url).await?
+        };
+
+        let mut pool_guard = self.pool.write().await;
+        pool_guard.close().await;
+        *pool_guard = new_pool;
+
+        Ok(())
+    }
+}
+
 pub enum DbPool {
     #[cfg(feature = "sqlite")]
-    Sqlite(Pool<Sqlite>),
+    Sqlite(SqlitePoolWithHook),
     #[cfg(feature = "mysql")]
     MySql(Pool<MySql>),
     #[cfg(feature = "postgres")]
@@ -88,7 +138,11 @@ impl DbPool {
                 if !Sqlite::database_exists(conn_url).await.unwrap_or(false) {
                     Sqlite::create_database(conn_url).await?;
                 }
-                Ok(Self::Sqlite(Pool::connect(conn_url).await?))
+                let pool = Pool::connect(conn_url).await?;
+                Ok(Self::Sqlite(SqlitePoolWithHook {
+                    pool: Arc::new(RwLock::new(pool)),
+                    db_url: conn_url.to_string(),
+                }))
             }
             #[cfg(feature = "mysql")]
             "mysql" => {
@@ -119,7 +173,10 @@ impl DbPool {
     ) -> Result<(), crate::Error> {
         match self {
             #[cfg(feature = "sqlite")]
-            DbPool::Sqlite(pool) => _migrator.run(pool).await?,
+            DbPool::Sqlite(sqlite_pool) => {
+                let pool = sqlite_pool.pool.read().await;
+                _migrator.run(&*pool).await?
+            }
             #[cfg(feature = "mysql")]
             DbPool::MySql(pool) => _migrator.run(pool).await?,
             #[cfg(feature = "postgres")]
@@ -133,7 +190,7 @@ impl DbPool {
     pub(crate) async fn close(&self) {
         match self {
             #[cfg(feature = "sqlite")]
-            DbPool::Sqlite(pool) => pool.close().await,
+            DbPool::Sqlite(sqlite_pool) => sqlite_pool.pool.read().await.close().await,
             #[cfg(feature = "mysql")]
             DbPool::MySql(pool) => pool.close().await,
             #[cfg(feature = "postgres")]
@@ -150,7 +207,8 @@ impl DbPool {
     ) -> Result<(u64, LastInsertId), crate::Error> {
         Ok(match self {
             #[cfg(feature = "sqlite")]
-            DbPool::Sqlite(pool) => {
+            DbPool::Sqlite(sqlite_pool) => {
+                let pool = sqlite_pool.pool.read().await;
                 let mut query = sqlx::query(&_query);
                 for value in _values {
                     if value.is_null() {
@@ -218,7 +276,8 @@ impl DbPool {
     ) -> Result<Vec<IndexMap<String, JsonValue>>, crate::Error> {
         Ok(match self {
             #[cfg(feature = "sqlite")]
-            DbPool::Sqlite(pool) => {
+            DbPool::Sqlite(sqlite_pool) => {
+                let pool = sqlite_pool.pool.read().await;
                 let mut query = sqlx::query(&_query);
                 for value in _values {
                     if value.is_null() {
