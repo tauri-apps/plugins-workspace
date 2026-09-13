@@ -14,7 +14,7 @@ use std::{
 };
 use tauri::{
     test::{mock_builder, mock_context, noop_assets},
-    RunEvent, WindowBuilder,
+    RunEvent, WebviewWindowBuilder,
 };
 
 const TEST_NAME: &str = "dbus_handoff_and_release";
@@ -139,7 +139,9 @@ fn dbus_handoff_and_release() {
     // Keep managed state alive so reacquisition proves the Exit hook released the
     // name, rather than merely observing the original connection being dropped.
     let retained_handle = app.handle().clone();
-    let window = WindowBuilder::new(&app, "main").build().unwrap();
+    let window = WebviewWindowBuilder::new(&app, "main", Default::default())
+        .build()
+        .unwrap();
     assert_eq!(
         app.run_return(move |_, event| {
             if let RunEvent::Ready = event {
