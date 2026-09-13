@@ -47,7 +47,7 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y webkit2gtk-4.0 libwebkit2gtk-4.1-dev libayatana-appindicator3-dev libfuse2
+          sudo apt-get install -y webkit2gtk-4.0 libwebkit2gtk-4.1-dev libgtk-4-dev libayatana-appindicator3-dev libfuse2
 
       - uses: Swatinem/rust-cache@v2
 

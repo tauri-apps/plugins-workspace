@@ -236,7 +236,7 @@ jobs:
         if: contains(matrix.platform.target, 'unknown-linux')
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libgtk-4-dev
 
       - uses: dtolnay/rust-toolchain@1.77.2
         with:
