@@ -4,6 +4,24 @@
 
 import { invoke } from '@tauri-apps/api/core'
 
+const DatabaseConnections = new Map<string, number>()
+
+const incrementConnectionCount = (path: string) => {
+  DatabaseConnections.set(path, (DatabaseConnections.get(path) ?? 0) + 1)
+}
+
+const decrementConnectionCount = (path: string) => {
+  const count = DatabaseConnections.get(path) ?? 0
+
+  if (count > 0) {
+    DatabaseConnections.set(path, count - 1)
+  }
+}
+
+const shouldCloseActualConnection = (path: string) => {
+  return DatabaseConnections.get(path) === 0
+}
+
 export interface QueryResult {
   /** The number of rows affected by the query. */
   rowsAffected: number
@@ -28,6 +46,7 @@ export default class Database {
   path: string
   constructor(path: string) {
     this.path = path
+    incrementConnectionCount(path)
   }
 
   /**
@@ -160,6 +179,12 @@ export default class Database {
    * @param db - Optionally state the name of a database if you are managing more than one. Otherwise, all database pools will be in scope.
    */
   async close(db?: string): Promise<boolean> {
+    decrementConnectionCount(this.path)
+
+    if (!shouldCloseActualConnection(this.path)) {
+      return true
+    }
+
     const success = await invoke<boolean>('plugin:sql|close', {
       db
     })
