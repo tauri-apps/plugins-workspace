@@ -103,6 +103,33 @@ async function readImage(): Promise<Image> {
 }
 
 /**
+ * Gets the clipboard content as a PNG-encoded byte array, instead of the raw
+ * decoded RGBA buffer `readImage` returns. Useful when you just need to
+ * transfer or persist the image, since a PNG is typically far smaller than
+ * the equivalent uncompressed bitmap.
+ *
+ * #### Platform-specific
+ *
+ * - **Android / iOS:** Not supported.
+ *
+ * @example
+ * ```typescript
+ * import { readImagePNG } from '@tauri-apps/plugin-clipboard-manager';
+ *
+ * const pngBytes = await readImagePNG();
+ * const blob = new Blob([pngBytes], { type: 'image/png' })
+ * const url = URL.createObjectURL(blob)
+ * ```
+ * @since 2.4.0
+ */
+async function readImagePNG(): Promise<Uint8Array> {
+  const arr = await invoke<ArrayBuffer | number[]>(
+    'plugin:clipboard-manager|read_image_png'
+  )
+  return arr instanceof ArrayBuffer ? new Uint8Array(arr) : Uint8Array.from(arr)
+}
+
+/**
  * * Writes HTML or fallbacks to write provided plain text to the clipboard.
  *
  * #### Platform-specific
@@ -148,4 +175,12 @@ async function clear(): Promise<void> {
   await invoke('plugin:clipboard-manager|clear')
 }
 
-export { writeText, readText, writeHtml, clear, readImage, writeImage }
+export {
+  writeText,
+  readText,
+  writeHtml,
+  clear,
+  readImage,
+  readImagePNG,
+  writeImage
+}
