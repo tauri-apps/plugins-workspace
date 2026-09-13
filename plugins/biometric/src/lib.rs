@@ -23,6 +23,7 @@ const PLUGIN_IDENTIFIER: &str = "app.tauri.biometric";
 #[cfg(target_os = "ios")]
 tauri::ios_plugin_binding!(init_plugin_biometric);
 
+
 /// Access to the biometric APIs.
 pub struct Biometric<R: Runtime>(PluginHandle<R>);
 
@@ -41,6 +42,12 @@ impl<R: Runtime> Biometric<R> {
     pub fn authenticate(&self, reason: String, options: AuthOptions) -> crate::Result<()> {
         self.0
             .run_mobile_plugin("authenticate", AuthenticatePayload { reason, options })
+            .map_err(Into::into)
+    }
+
+    pub fn biometric_cipher(&self, reason: String, options: AuthOptions) -> crate::Result<CipherResult> {
+        self.0
+            .run_mobile_plugin("biometricCipher", AuthenticatePayload { reason, options })
             .map_err(Into::into)
     }
 }

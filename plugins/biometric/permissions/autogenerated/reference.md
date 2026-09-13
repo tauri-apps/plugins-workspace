@@ -50,6 +50,32 @@ Denies the authenticate command without any pre-configured scope.
 <tr>
 <td>
 
+`biometric:allow-biometric-cipher`
+
+</td>
+<td>
+
+Enables the biometric_cipher command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`biometric:deny-biometric-cipher`
+
+</td>
+<td>
+
+Denies the biometric_cipher command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `biometric:allow-status`
 
 </td>

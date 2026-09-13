@@ -28,6 +28,10 @@ enum class BiometryResultType {
     SUCCESS, FAILURE, ERROR
 }
 
+enum class CipherType {
+    ENCRYPT, DECRYPT
+}
+
 private const val MAX_ATTEMPTS = "maxAttemps"
 private const val BIOMETRIC_FAILURE = "authenticationFailed"
 private const val INVALID_CONTEXT_ERROR = "invalidContext"
@@ -41,6 +45,8 @@ class AuthOptions {
     var cancelTitle: String? = null
     var confirmationRequired: Boolean? = null
     var maxAttemps: Int = 3
+    var dataToEncrypt: String? = null
+    var dataToDecrypt: String? = null
 }
 
 @TauriPlugin
@@ -58,32 +64,36 @@ class BiometricPlugin(private val activity: Activity): Plugin(activity) {
         const val RESULT_ERROR_MESSAGE = "errorMessage"
         const val DEVICE_CREDENTIAL = "allowDeviceCredential"
         const val CONFIRMATION_REQUIRED = "confirmationRequired"
+        const val ENCRYPT_DECRYPT_OPERATION = "cipherOperation"
+        const val ENCRYPT_DECRYPT_DATA = "encryptDecryptData"
+        const val CIPHER_OPERATION_TYPE = "cipherOperationType"
+        const val RESULT_ENCRYPT_DECRYPT_DATA = "resultEncryptDecryptData"
 
         // Maps biometry error numbers to string error codes
         private var biometryErrorCodeMap: MutableMap<Int, String> = HashMap()
         private var biometryNameMap: MutableMap<BiometryType, String> = EnumMap(BiometryType::class.java)
 
-       init {
-           biometryErrorCodeMap[BiometricManager.BIOMETRIC_SUCCESS] = ""
-           biometryErrorCodeMap[BiometricManager.BIOMETRIC_SUCCESS] = ""
-           biometryErrorCodeMap[BiometricPrompt.ERROR_CANCELED] = "systemCancel"
-           biometryErrorCodeMap[BiometricPrompt.ERROR_HW_NOT_PRESENT] = "biometryNotAvailable"
-           biometryErrorCodeMap[BiometricPrompt.ERROR_HW_UNAVAILABLE] = "biometryNotAvailable"
-           biometryErrorCodeMap[BiometricPrompt.ERROR_LOCKOUT] = "biometryLockout"
-           biometryErrorCodeMap[BiometricPrompt.ERROR_LOCKOUT_PERMANENT] = "biometryLockout"
-           biometryErrorCodeMap[BiometricPrompt.ERROR_NEGATIVE_BUTTON] = "userCancel"
-           biometryErrorCodeMap[BiometricPrompt.ERROR_NO_BIOMETRICS] = "biometryNotEnrolled"
-           biometryErrorCodeMap[BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL] = "noDeviceCredential"
-           biometryErrorCodeMap[BiometricPrompt.ERROR_NO_SPACE] = "systemCancel"
-           biometryErrorCodeMap[BiometricPrompt.ERROR_TIMEOUT] = "systemCancel"
-           biometryErrorCodeMap[BiometricPrompt.ERROR_UNABLE_TO_PROCESS] = "systemCancel"
-           biometryErrorCodeMap[BiometricPrompt.ERROR_USER_CANCELED] = "userCancel"
-           biometryErrorCodeMap[BiometricPrompt.ERROR_VENDOR] = "systemCancel"
+        init {
+            biometryErrorCodeMap[BiometricManager.BIOMETRIC_SUCCESS] = ""
+            biometryErrorCodeMap[BiometricManager.BIOMETRIC_SUCCESS] = ""
+            biometryErrorCodeMap[BiometricPrompt.ERROR_CANCELED] = "systemCancel"
+            biometryErrorCodeMap[BiometricPrompt.ERROR_HW_NOT_PRESENT] = "biometryNotAvailable"
+            biometryErrorCodeMap[BiometricPrompt.ERROR_HW_UNAVAILABLE] = "biometryNotAvailable"
+            biometryErrorCodeMap[BiometricPrompt.ERROR_LOCKOUT] = "biometryLockout"
+            biometryErrorCodeMap[BiometricPrompt.ERROR_LOCKOUT_PERMANENT] = "biometryLockout"
+            biometryErrorCodeMap[BiometricPrompt.ERROR_NEGATIVE_BUTTON] = "userCancel"
+            biometryErrorCodeMap[BiometricPrompt.ERROR_NO_BIOMETRICS] = "biometryNotEnrolled"
+            biometryErrorCodeMap[BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL] = "noDeviceCredential"
+            biometryErrorCodeMap[BiometricPrompt.ERROR_NO_SPACE] = "systemCancel"
+            biometryErrorCodeMap[BiometricPrompt.ERROR_TIMEOUT] = "systemCancel"
+            biometryErrorCodeMap[BiometricPrompt.ERROR_UNABLE_TO_PROCESS] = "systemCancel"
+            biometryErrorCodeMap[BiometricPrompt.ERROR_USER_CANCELED] = "userCancel"
+            biometryErrorCodeMap[BiometricPrompt.ERROR_VENDOR] = "systemCancel"
 
-           biometryNameMap[BiometryType.NONE] = "No Authentication"
-           biometryNameMap[BiometryType.FINGERPRINT] = "Fingerprint Authentication"
-           biometryNameMap[BiometryType.FACE] = "Face Authentication"
-           biometryNameMap[BiometryType.IRIS] = "Iris Authentication"
+            biometryNameMap[BiometryType.NONE] = "No Authentication"
+            biometryNameMap[BiometryType.FINGERPRINT] = "Fingerprint Authentication"
+            biometryNameMap[BiometryType.FACE] = "Face Authentication"
+            biometryNameMap[BiometryType.IRIS] = "Iris Authentication"
        }
     }
 
@@ -157,18 +167,15 @@ class BiometricPlugin(private val activity: Activity): Plugin(activity) {
     }
 
     /**
-     * Prompt the user for biometric authentication.
+     * sets up the options for BiometricPrompt.
      */
-    @Command
-    fun authenticate(invoke: Invoke) {
+    private fun configBiometricPrompt(args: AuthOptions): Intent {
         // The result of an intent is supposed to have the package name as a prefix
         RESULT_EXTRA_PREFIX = activity.packageName + "."
         val intent = Intent(
             activity,
             BiometricActivity::class.java
         )
-        
-        val args = invoke.parseArgs(AuthOptions::class.java)
 
         // Pass the options to the activity
         intent.putExtra(
@@ -186,9 +193,47 @@ class BiometricPlugin(private val activity: Activity): Plugin(activity) {
         val maxAttemptsConfig = args.maxAttemps
         val maxAttempts = max(maxAttemptsConfig, 1)
         intent.putExtra(MAX_ATTEMPTS, maxAttempts)
+
+        return intent
+    }
+
+    /**
+     * Prompt the user for biometric authentication.
+     */
+    @Command
+    fun authenticate(invoke: Invoke) {
+        val args: AuthOptions = invoke.parseArgs(AuthOptions::class.java)
+        
+        val intent = configBiometricPrompt(args)
         startActivityForResult(invoke, intent, "authenticateResult")
     }
 
+    
+    /**
+     * Prompt the user for biometric authentication to encrypt/decrypt some provided data]
+     */
+    @Command
+    fun biometricCipher(invoke: Invoke) {
+        val args: AuthOptions = invoke.parseArgs(AuthOptions::class.java)
+        
+        val intent = configBiometricPrompt(args)
+        var operationType: CipherType
+
+        val data = if (args.dataToEncrypt != null) {
+            operationType = CipherType.ENCRYPT
+            args.dataToEncrypt
+        } else {
+            operationType = CipherType.DECRYPT
+            args.dataToDecrypt
+        }
+        intent.putExtra(ENCRYPT_DECRYPT_DATA, data)
+        intent.putExtra(ENCRYPT_DECRYPT_OPERATION, true)
+        intent.putExtra(CIPHER_OPERATION_TYPE, operationType.ordinal)
+        
+        startActivityForResult(invoke, intent, "authenticateResult")
+    }
+
+    
     @ActivityCallback
     private fun authenticateResult(invoke: Invoke, result: ActivityResult) {
         val resultCode = result.resultCode
@@ -231,8 +276,29 @@ class BiometricPlugin(private val activity: Activity): Plugin(activity) {
         var errorMessage = data.getStringExtra(
             RESULT_EXTRA_PREFIX + RESULT_ERROR_MESSAGE
         )
+
+        val cipherOperation = data.getBooleanExtra(RESULT_EXTRA_PREFIX + ENCRYPT_DECRYPT_OPERATION, false)
+        var resolvedData = JSObject()
+
+        if (cipherOperation) {
+            val processedData = data.getStringExtra(
+                RESULT_EXTRA_PREFIX + RESULT_ENCRYPT_DECRYPT_DATA
+            )
+
+            resolvedData.put(
+                "data", 
+                processedData
+            )
+        }
+
         when (resultType) {
-            BiometryResultType.SUCCESS -> invoke.resolve()
+            BiometryResultType.SUCCESS -> {
+                if (cipherOperation) {
+                    invoke.resolve(resolvedData)
+                } else {
+                    invoke.resolve()
+                }
+            }
             BiometryResultType.FAILURE ->         // Biometry was successfully presented but was not recognized
                 invoke.reject(errorMessage, BIOMETRIC_FAILURE)
 
