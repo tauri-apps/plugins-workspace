@@ -14,6 +14,8 @@ pub enum Error {
     #[error(transparent)]
     Network(#[from] reqwest::Error),
     #[error(transparent)]
+    Extension(#[from] crate::ExtensionError),
+    #[error(transparent)]
     Http(#[from] http::Error),
     #[error(transparent)]
     HttpInvalidHeaderName(#[from] http::header::InvalidHeaderName),
@@ -50,8 +52,41 @@ impl Serialize for Error {
     where
         S: Serializer,
     {
-        serializer.serialize_str(self.to_string().as_ref())
+        match self {
+            Self::Extension(error) => error.value().serialize(serializer),
+            _ => serializer.serialize_str(self.to_string().as_ref()),
+        }
     }
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extension_errors_keep_their_json_shape() {
+        let error = Error::Extension(crate::ExtensionError::from_value(serde_json::json!({
+            "code": "POLICY_REJECTED",
+            "host": "example.test"
+        })));
+
+        assert_eq!(
+            serde_json::to_value(error).unwrap(),
+            serde_json::json!({
+                "code": "POLICY_REJECTED",
+                "host": "example.test"
+            })
+        );
+    }
+
+    #[test]
+    fn existing_errors_remain_strings() {
+        let error = Error::RequestCanceled;
+        assert_eq!(
+            serde_json::to_value(error).unwrap(),
+            serde_json::Value::String("Request canceled".into())
+        );
+    }
+}
