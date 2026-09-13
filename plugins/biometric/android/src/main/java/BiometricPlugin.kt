@@ -73,7 +73,7 @@ class BiometricPlugin(private val activity: Activity): Plugin(activity) {
            biometryErrorCodeMap[BiometricPrompt.ERROR_LOCKOUT_PERMANENT] = "biometryLockout"
            biometryErrorCodeMap[BiometricPrompt.ERROR_NEGATIVE_BUTTON] = "userCancel"
            biometryErrorCodeMap[BiometricPrompt.ERROR_NO_BIOMETRICS] = "biometryNotEnrolled"
-           biometryErrorCodeMap[BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL] = "noDeviceCredential"
+           biometryErrorCodeMap[BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL] = "passcodeNotSet"
            biometryErrorCodeMap[BiometricPrompt.ERROR_NO_SPACE] = "systemCancel"
            biometryErrorCodeMap[BiometricPrompt.ERROR_TIMEOUT] = "systemCancel"
            biometryErrorCodeMap[BiometricPrompt.ERROR_UNABLE_TO_PROCESS] = "systemCancel"
