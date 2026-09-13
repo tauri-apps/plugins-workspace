@@ -5633,12 +5633,12 @@ dependencies = [
 
 [[package]]
 name = "shared_child"
-version = "1.0.1"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09fa9338aed9a1df411814a5b2252f7cd206c55ae9bf2fa763f8de84603aa60c"
+checksum = "1e362d9935bc50f019969e2f9ecd66786612daae13e8f277be7bfb66e8bed3f7"
 dependencies = [
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -6767,6 +6767,7 @@ name = "tauri-plugin-shell"
 version = "2.3.6"
 dependencies = [
  "encoding_rs",
+ "libc",
  "log",
  "open",
  "os_pipe",
@@ -6779,6 +6780,7 @@ dependencies = [
  "tauri-plugin",
  "thiserror 2.0.12",
  "tokio",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
