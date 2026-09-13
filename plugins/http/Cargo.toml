@@ -47,7 +47,15 @@ url = { workspace = true }
 data-url = "0.3"
 cookie_store = { version = "0.22", optional = true, features = ["serde"] }
 bytes = { version = "1.9", optional = true }
+base64 = { version = "0.22", optional = true }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"], optional = true }
+sha2 = { version = "0.10", optional = true }
+webpki-roots = { version = "1", optional = true }
+x509-parser = { version = "0.18", optional = true }
 tracing = { workspace = true, optional = true }
+
+[dev-dependencies]
+rcgen = "0.13.2"
 
 [features]
 default = ["rustls-tls", "http2", "charset", "system-proxy", "cookies"]
@@ -74,6 +82,14 @@ charset = ["reqwest/charset"]
 # Deprecated, switch to system-proxy
 macos-system-configuration = ["reqwest/macos-system-configuration"]
 system-proxy = ["reqwest/system-proxy"]
+spki-pinning = [
+  "reqwest/rustls-tls-manual-roots",
+  "dep:base64",
+  "dep:rustls",
+  "dep:sha2",
+  "dep:webpki-roots",
+  "dep:x509-parser",
+]
 
 unsafe-headers = []
 tracing = ["dep:tracing"]
