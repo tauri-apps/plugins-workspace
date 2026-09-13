@@ -29,6 +29,16 @@ pub enum MacosLauncher {
     AppleScript,
 }
 
+#[cfg(target_os = "macos")]
+impl MacosLauncher {
+    fn to_auto_launch(&self) -> auto_launch::MacOSLaunchMode {
+        match self {
+            MacosLauncher::LaunchAgent => auto_launch::MacOSLaunchMode::LaunchAgent,
+            MacosLauncher::AppleScript => auto_launch::MacOSLaunchMode::AppleScript,
+        }
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error(transparent)]
@@ -190,10 +200,7 @@ impl Builder {
 
                 #[cfg(target_os = "macos")]
                 {
-                    builder.set_use_launch_agent(matches!(
-                        self.macos_launcher,
-                        MacosLauncher::LaunchAgent
-                    ));
+                    builder.set_macos_launch_mode(self.macos_launcher.to_auto_launch());
                     // on macOS, current_exe gives path to /Applications/Example.app/MacOS/Example
                     // but this results in seeing a Unix Executable in macOS login items
                     // It must be: /Applications/Example.app
