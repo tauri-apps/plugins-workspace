@@ -14,6 +14,8 @@
 )]
 
 use serde::Serialize;
+#[cfg(target_os = "linux")]
+use std::fmt;
 #[cfg(mobile)]
 use tauri::plugin::PluginHandle;
 #[cfg(desktop)]
@@ -50,6 +52,18 @@ pub struct NotificationBuilder<R: Runtime> {
     #[cfg(mobile)]
     handle: PluginHandle<R>,
     pub(crate) data: NotificationData,
+    #[cfg(target_os = "linux")]
+    on_close: Option<OnClose>,
+}
+
+#[cfg(target_os = "linux")]
+pub(crate) struct OnClose(Box<dyn Fn() + Send + 'static>);
+
+#[cfg(target_os = "linux")]
+impl fmt::Debug for OnClose {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("OnClose")
+    }
 }
 
 impl<R: Runtime> NotificationBuilder<R> {
@@ -58,6 +72,8 @@ impl<R: Runtime> NotificationBuilder<R> {
         Self {
             app,
             data: Default::default(),
+            #[cfg(target_os = "linux")]
+            on_close: None,
         }
     }
 
@@ -207,6 +223,13 @@ impl<R: Runtime> NotificationBuilder<R> {
     /// Changes the notification presentation to be silent on iOS (no badge, no sound, not listed).
     pub fn silent(mut self) -> Self {
         self.data.silent = true;
+        self
+    }
+
+    /// Sets a callback to run when the notification closes.
+    #[cfg(target_os = "linux")]
+    pub fn on_close<F: Fn() + Send + 'static>(mut self, handler: F) -> Self {
+        self.on_close = Some(OnClose(Box::new(handler)));
         self
     }
 }

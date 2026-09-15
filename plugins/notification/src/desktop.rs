@@ -9,6 +9,8 @@ use tauri::{
 };
 
 use crate::NotificationBuilder;
+#[cfg(target_os = "linux")]
+use crate::OnClose;
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
@@ -44,10 +46,17 @@ impl<R: Runtime> crate::NotificationBuilder<R> {
         }
         #[cfg(feature = "windows7-compat")]
         {
-            notification.notify(&self.app)?;
+            notification.notify(
+                &self.app,
+                #[cfg(target_os = "linux")]
+                self.on_close.unwrap_or_else(|| OnClose(Box::new(|| {}))),
+            )?;
         }
         #[cfg(not(feature = "windows7-compat"))]
-        notification.show()?;
+        notification.show(
+            #[cfg(target_os = "linux")]
+            self.on_close.unwrap_or_else(|| OnClose(Box::new(|| {}))),
+        )?;
 
         Ok(())
     }
@@ -176,7 +185,10 @@ mod imp {
             all(not(docsrs), feature = "windows7-compat"),
             deprecated = "This function does not work on Windows 7. Use `Self::notify` instead."
         )]
-        pub fn show(self) -> crate::Result<()> {
+        pub fn show(
+            self,
+            #[cfg(target_os = "linux")] on_close: crate::OnClose,
+        ) -> crate::Result<()> {
             let mut notification = notify_rust::Notification::new();
             if let Some(body) = self.body {
                 notification.body(&body);
@@ -214,6 +226,11 @@ mod imp {
             }
 
             tauri::async_runtime::spawn(async move {
+                #[cfg(target_os = "linux")]
+                if let Ok(handle) = notification.show() {
+                    handle.on_close(on_close.0);
+                }
+                #[cfg(not(target_os = "linux"))]
                 let _ = notification.show();
             });
 
@@ -242,7 +259,11 @@ mod imp {
         #[cfg(feature = "windows7-compat")]
         #[cfg_attr(docsrs, doc(cfg(feature = "windows7-compat")))]
         #[allow(unused_variables)]
-        pub fn notify<R: tauri::Runtime>(self, app: &tauri::AppHandle<R>) -> crate::Result<()> {
+        pub fn notify<R: tauri::Runtime>(
+            self,
+            app: &tauri::AppHandle<R>,
+            #[cfg(target_os = "linux")] on_close: crate::OnClose,
+        ) -> crate::Result<()> {
             #[cfg(windows)]
             {
                 fn is_windows_7() -> bool {
@@ -261,7 +282,10 @@ mod imp {
             #[cfg(not(windows))]
             {
                 #[allow(deprecated)]
-                self.show()
+                self.show(
+                    #[cfg(target_os = "linux")]
+                    on_close,
+                )
             }
         }
 
