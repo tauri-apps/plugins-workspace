@@ -210,7 +210,7 @@ importers:
         version: link:../../plugins/upload
       '@zerodevx/svelte-json-view':
         specifier: 2.0.0
-        version: 2.0.0(svelte@5.55.7(@typescript-eslint/types@8.66.0))
+        version: 2.0.0(svelte@5.55.7)
     devDependencies:
       '@iconify-json/codicon':
         specifier: ^1.2.49
@@ -220,7 +220,7 @@ importers:
         version: 1.2.2
       '@sveltejs/vite-plugin-svelte':
         specifier: ^7.0.0
-        version: 7.0.0(svelte@5.55.7(@typescript-eslint/types@8.66.0))(vite@8.0.16(esbuild@0.28.1)(jiti@2.6.1)(terser@5.46.1)(tsx@4.23.1))
+        version: 7.0.0(svelte@5.55.7)(vite@8.0.16(esbuild@0.28.1)(jiti@2.6.1)(terser@5.46.1)(tsx@4.23.1))
       '@tauri-apps/cli':
         specifier: 2.11.4
         version: 2.11.4
@@ -229,7 +229,7 @@ importers:
         version: 66.6.7
       svelte:
         specifier: ^5.55.7
-        version: 5.55.7(@typescript-eslint/types@8.66.0)
+        version: 5.55.7
       unocss:
         specifier: ^66.6.7
         version: 66.6.7(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(vite@8.0.16(esbuild@0.28.1)(jiti@2.6.1)(terser@5.46.1)(tsx@4.23.1))
@@ -1290,10 +1290,6 @@ packages:
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
       typescript: '>=4.8.4 <6.1.0'
-
-  '@typescript-eslint/types@8.66.0':
-    resolution: {integrity: sha512-H6gcYaSDOyvL3AD/jHUtUFo2jqGgn/F6nuyuZSu0QTesxL+cP4dQoIMrODRofuJC09g64+WgZ6tE19Y1N2YIFQ==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@typescript-eslint/types@8.70.0':
     resolution: {integrity: sha512-asTOIYhDg4zdzOScCyaytrsV3cR6B4ecPQlXw/dJIm7J/MZTtCtfVII9JD8Geh4jTCrK/Xe6cg5UevoleMcoJQ==}
@@ -2535,12 +2531,12 @@ snapshots:
     dependencies:
       acorn: 8.16.0
 
-  '@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.7(@typescript-eslint/types@8.66.0))(vite@8.0.16(esbuild@0.28.1)(jiti@2.6.1)(terser@5.46.1)(tsx@4.23.1))':
+  '@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.7)(vite@8.0.16(esbuild@0.28.1)(jiti@2.6.1)(terser@5.46.1)(tsx@4.23.1))':
     dependencies:
       deepmerge: 4.3.1
       magic-string: 0.30.21
       obug: 2.1.1
-      svelte: 5.55.7(@typescript-eslint/types@8.66.0)
+      svelte: 5.55.7
       vite: 8.0.16(esbuild@0.28.1)(jiti@2.6.1)(terser@5.46.1)(tsx@4.23.1)
       vitefu: 1.1.2(vite@8.0.16(esbuild@0.28.1)(jiti@2.6.1)(terser@5.46.1)(tsx@4.23.1))
 
@@ -2665,9 +2661,6 @@ snapshots:
       typescript: 6.0.3
     transitivePeerDependencies:
       - supports-color
-
-  '@typescript-eslint/types@8.66.0':
-    optional: true
 
   '@typescript-eslint/types@8.70.0': {}
 
@@ -2836,9 +2829,9 @@ snapshots:
       unplugin-utils: 0.3.1
       vite: 8.0.16(esbuild@0.28.1)(jiti@2.6.1)(terser@5.46.1)(tsx@4.23.1)
 
-  '@zerodevx/svelte-json-view@2.0.0(svelte@5.55.7(@typescript-eslint/types@8.66.0))':
+  '@zerodevx/svelte-json-view@2.0.0(svelte@5.55.7)':
     optionalDependencies:
-      svelte: 5.55.7(@typescript-eslint/types@8.66.0)
+      svelte: 5.55.7
 
   acorn-jsx@5.3.2(acorn@8.16.0):
     dependencies:
@@ -3010,11 +3003,9 @@ snapshots:
     dependencies:
       estraverse: 5.3.0
 
-  esrap@2.2.8(@typescript-eslint/types@8.66.0):
+  esrap@2.2.8:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
-    optionalDependencies:
-      '@typescript-eslint/types': 8.66.0
 
   esrecurse@4.3.0:
     dependencies:
@@ -3396,7 +3387,7 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  svelte@5.55.7(@typescript-eslint/types@8.66.0):
+  svelte@5.55.7:
     dependencies:
       '@jridgewell/remapping': 2.3.5
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -3409,7 +3400,7 @@ snapshots:
       clsx: 2.1.1
       devalue: 5.8.1
       esm-env: 1.2.2
-      esrap: 2.2.8(@typescript-eslint/types@8.66.0)
+      esrap: 2.2.8
       is-reference: 3.0.3
       locate-character: 3.0.0
       magic-string: 0.30.21
