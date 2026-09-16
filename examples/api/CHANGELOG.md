@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.44]
+
+### Dependencies
+
+- Upgraded to `http-js@2.6.1`
+- Upgraded to `store-js@2.4.5`
+
 ## [2.0.43]
 
 ### Dependencies
