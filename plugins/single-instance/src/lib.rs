@@ -45,6 +45,7 @@ pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
 
 pub struct Builder<R: Runtime> {
     callback: Box<SingleInstanceCallback<R>>,
+    destroy_on_exit: bool,
     dbus_id: Option<String>,
 }
 
@@ -57,6 +58,7 @@ impl<R: Runtime> Default for Builder<R> {
                     deep_link.handle_cli_arguments(_args.iter());
                 }
             }),
+            destroy_on_exit: true,
             dbus_id: None,
         }
     }
@@ -83,6 +85,18 @@ impl<R: Runtime> Builder<R> {
         self
     }
 
+    /// Set whether the plugin should destroy the single instance lock on app exit.
+    /// Set to `false` if you want precise control over when the plugin is destroyed
+    /// and intend to call [`destroy`] manually. This is useful if you want to continue
+    /// to ensure only a single instance of your app is running while performing some
+    /// long-running cleanup tasks on app exit.
+    ///
+    /// Defaults to `true`.
+    pub fn destroy_on_exit(mut self, val: bool) -> Self {
+        self.destroy_on_exit = val;
+        self
+    }
+
     /// Set a custom D-Bus ID, used on Linux. The plugin will append a `.SingleInstance` subname.
     /// For example `com.mycompany.myapp` will result in the plugin registering its D-Bus service on `com.mycompany.myapp.SingleInstance`.
     /// Usually you want the same base ID across all components in your app.
@@ -96,6 +110,7 @@ impl<R: Runtime> Builder<R> {
     pub fn build(self) -> TauriPlugin<R> {
         platform_impl::init(
             self.callback,
+            self.destroy_on_exit,
             #[cfg(target_os = "linux")]
             self.dbus_id,
         )

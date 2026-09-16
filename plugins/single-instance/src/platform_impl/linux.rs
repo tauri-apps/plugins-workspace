@@ -30,74 +30,78 @@ struct DBusName(String);
 
 pub fn init<R: Runtime>(
     callback: Box<SingleInstanceCallback<R>>,
+    destroy_on_exit: bool,
     dbus_id: Option<String>,
 ) -> TauriPlugin<R> {
-    plugin::Builder::new("single-instance")
-        .setup(move |app, _api| {
-            let mut dbus_name = dbus_id.unwrap_or_else(|| app.config().identifier.clone());
-            dbus_name.push_str(".SingleInstance");
+    let mut builder = plugin::Builder::new("single-instance").setup(move |app, _api| {
+        let mut dbus_name = dbus_id.unwrap_or_else(|| app.config().identifier.clone());
+        dbus_name.push_str(".SingleInstance");
 
-            #[cfg(feature = "semver")]
-            {
-                dbus_name.push('_');
-                dbus_name.push_str(semver_compat_string(&app.package_info().version).as_str());
+        #[cfg(feature = "semver")]
+        {
+            dbus_name.push('_');
+            dbus_name.push_str(semver_compat_string(&app.package_info().version).as_str());
+        }
+
+        let mut dbus_path = dbus_name.replace('.', "/").replace('-', "_");
+        if !dbus_path.starts_with('/') {
+            dbus_path = format!("/{dbus_path}");
+        }
+
+        let single_instance_dbus = SingleInstanceDBus {
+            callback,
+            app_handle: app.clone(),
+        };
+
+        match zbus::blocking::connection::Builder::session()
+            .unwrap()
+            .name(dbus_name.as_str())
+            .unwrap()
+            .replace_existing_names(false)
+            .allow_name_replacements(false)
+            .serve_at(dbus_path.as_str(), single_instance_dbus)
+            .unwrap()
+            .build()
+        {
+            Ok(connection) => {
+                app.manage(ConnectionHandle(connection));
             }
-
-            let mut dbus_path = dbus_name.replace('.', "/").replace('-', "_");
-            if !dbus_path.starts_with('/') {
-                dbus_path = format!("/{dbus_path}");
-            }
-
-            let single_instance_dbus = SingleInstanceDBus {
-                callback,
-                app_handle: app.clone(),
-            };
-
-            match zbus::blocking::connection::Builder::session()
-                .unwrap()
-                .name(dbus_name.as_str())
-                .unwrap()
-                .replace_existing_names(false)
-                .allow_name_replacements(false)
-                .serve_at(dbus_path.as_str(), single_instance_dbus)
-                .unwrap()
-                .build()
-            {
-                Ok(connection) => {
-                    app.manage(ConnectionHandle(connection));
+            Err(zbus::Error::NameTaken) => {
+                if let Ok(connection) = Connection::session() {
+                    let _ = connection.call_method(
+                        Some(dbus_name.as_str()),
+                        dbus_path.as_str(),
+                        Some("org.SingleInstance.DBus"),
+                        "ExecuteCallback",
+                        &(
+                            std::env::args().collect::<Vec<String>>(),
+                            std::env::current_dir()
+                                .unwrap_or_default()
+                                .to_str()
+                                .unwrap_or_default(),
+                        ),
+                    );
                 }
-                Err(zbus::Error::NameTaken) => {
-                    if let Ok(connection) = Connection::session() {
-                        let _ = connection.call_method(
-                            Some(dbus_name.as_str()),
-                            dbus_path.as_str(),
-                            Some("org.SingleInstance.DBus"),
-                            "ExecuteCallback",
-                            &(
-                                std::env::args().collect::<Vec<String>>(),
-                                std::env::current_dir()
-                                    .unwrap_or_default()
-                                    .to_str()
-                                    .unwrap_or_default(),
-                            ),
-                        );
-                    }
-                    app.cleanup_before_exit();
-                    std::process::exit(0);
-                }
-                _ => {}
+                app.cleanup_before_exit();
+                std::process::exit(0);
             }
+            _ => {}
+        }
 
-            app.manage(DBusName(dbus_name));
+        app.manage(DBusName(dbus_name));
 
-            Ok(())
-        })
-        .on_event(move |app, event| {
+        Ok(())
+    });
+
+    if destroy_on_exit {
+        builder = builder.on_event(move |app, event| {
             if let RunEvent::Exit = event {
                 destroy(app);
             }
-        })
-        .build()
+        });
+    }
+
+    builder.build()
 }
 
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
