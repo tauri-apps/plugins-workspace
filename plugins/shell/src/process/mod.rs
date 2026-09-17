@@ -12,12 +12,13 @@ use std::{
 };
 
 #[cfg(unix)]
-use std::os::unix::process::ExitStatusExt;
+use std::os::unix::process::{CommandExt, ExitStatusExt};
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
 
 #[cfg(windows)]
-const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+use windows_sys::Win32::System::Threading::{CREATE_NO_WINDOW, CREATE_SUSPENDED};
+
 const NEWLINE_BYTE: u8 = b'\n';
 
 use tauri::async_runtime::{block_on as block_on_task, channel, Receiver, Sender};
@@ -27,6 +28,9 @@ use os_pipe::{pipe, PipeReader, PipeWriter};
 use serde::Serialize;
 use shared_child::SharedChild;
 use tauri::utils::platform;
+
+#[cfg(windows)]
+mod job_object;
 
 /// Payload for the [`CommandEvent::Terminated`] command event.
 #[derive(Debug, Clone, Serialize)]
@@ -58,13 +62,17 @@ pub enum CommandEvent {
 pub struct Command {
     cmd: StdCommand,
     raw_out: bool,
+    process_group: bool,
 }
 
 /// Spawned child process.
-#[derive(Debug)]
 pub struct CommandChild {
     inner: Arc<SharedChild>,
     stdin_writer: PipeWriter,
+    #[cfg(unix)]
+    process_group: bool,
+    #[cfg(windows)]
+    job: Option<job_object::JobObject>,
 }
 
 impl CommandChild {
@@ -74,9 +82,34 @@ impl CommandChild {
         Ok(())
     }
 
-    /// Sends a kill signal to the child.
+    /// Sends a kill signal to the child and waits for it to exit.
+    /// With `process_group` enabled this kills the whole process group (POSIX) or job object (Windows).
     pub fn kill(self) -> crate::Result<()> {
-        self.inner.kill()?;
+        if self.inner.try_wait()?.is_some() {
+            return Ok(());
+        }
+
+        #[cfg(unix)]
+        if self.process_group {
+            let pgid = self.inner.id() as libc::pid_t;
+            if unsafe { libc::killpg(pgid, libc::SIGKILL) } != 0 {
+                let err = std::io::Error::last_os_error();
+                // ESRCH: the group emptied out between `try_wait` and `killpg`.
+                if err.raw_os_error() != Some(libc::ESRCH) {
+                    return Err(err.into());
+                }
+            }
+        } else {
+            self.inner.kill()?;
+        }
+
+        #[cfg(windows)]
+        match &self.job {
+            Some(job) => job.terminate()?,
+            None => self.inner.kill()?,
+        }
+
+        self.inner.wait()?;
         Ok(())
     }
 
@@ -175,6 +208,7 @@ impl Command {
         Self {
             cmd: command,
             raw_out: false,
+            process_group: false,
         }
     }
 
@@ -243,6 +277,16 @@ impl Command {
         self
     }
 
+    /// Configures the command to spawn in a new process group (POSIX) or job object (Windows).
+    ///
+    /// When enabled, killing the child process will also kill all processes in the group,
+    /// which is useful for programs that spawn child processes (e.g. PyInstaller wrappers).
+    #[must_use]
+    pub fn set_process_group(mut self, process_group: bool) -> Self {
+        self.process_group = process_group;
+        self
+    }
+
     /// Spawns the command.
     ///
     /// # Examples
@@ -304,6 +348,7 @@ impl Command {
     /// ```
     pub fn spawn(self) -> crate::Result<(Receiver<CommandEvent>, CommandChild)> {
         let raw = self.raw_out;
+        let process_group = self.process_group;
         let mut command: StdCommand = self.into();
         let (stdout_reader, stdout_writer) = pipe()?;
         let (stderr_reader, stderr_writer) = pipe()?;
@@ -312,8 +357,35 @@ impl Command {
         command.stderr(stderr_writer);
         command.stdin(stdin_reader);
 
-        let shared_child = SharedChild::spawn(&mut command)?;
-        let child = Arc::new(shared_child);
+        #[cfg(unix)]
+        if process_group {
+            command.process_group(0);
+        }
+        #[cfg(windows)]
+        if process_group {
+            // Start suspended so nothing can be spawned before the child is in the job.
+            command.creation_flags(CREATE_NO_WINDOW | CREATE_SUSPENDED);
+        }
+
+        let child = command.spawn()?;
+
+        #[cfg(windows)]
+        let job = if process_group {
+            match job_object::JobObject::assign(&child) {
+                Ok(job) => Some(job),
+                Err(e) => {
+                    // Don't leave the suspended child behind.
+                    let mut child = child;
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    return Err(e.into());
+                }
+            }
+        } else {
+            None
+        };
+
+        let child = Arc::new(SharedChild::new(child)?);
         let child_ = child.clone();
         let guard = Arc::new(RwLock::new(()));
 
@@ -361,6 +433,10 @@ impl Command {
             CommandChild {
                 inner: child,
                 stdin_writer,
+                #[cfg(unix)]
+                process_group,
+                #[cfg(windows)]
+                job,
             },
         ))
     }
@@ -654,5 +730,239 @@ mod tests {
             String::from_utf8(output.stderr).unwrap(),
             "cat: test/: Is a directory\n\n"
         );
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_cmd_spawn_process_group_output() {
+        let cmd = Command::new("cat")
+            .args(["test/test.txt"])
+            .set_process_group(true);
+        let (mut rx, _) = cmd.spawn().unwrap();
+
+        tauri::async_runtime::block_on(async move {
+            while let Some(event) = rx.recv().await {
+                match event {
+                    CommandEvent::Terminated(payload) => {
+                        assert_eq!(payload.code, Some(0));
+                    }
+                    CommandEvent::Stdout(line) => {
+                        assert_eq!(String::from_utf8(line).unwrap(), "This is a test doc!");
+                    }
+                    _ => {}
+                }
+            }
+        });
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_cmd_process_group_kill() {
+        // Spawn a shell that runs a sleep command as a child process.
+        // With process_group enabled, killing the parent should also kill the child.
+        let cmd = Command::new("sh")
+            .args(["-c", "sleep 60"])
+            .set_process_group(true);
+        let (mut rx, child) = cmd.spawn().unwrap();
+        let pid = child.pid();
+
+        // Verify the process is running
+        let ret = unsafe { libc::kill(pid as i32, 0) };
+        assert_eq!(ret, 0, "process should be running");
+
+        // Kill the process group
+        child.kill().unwrap();
+
+        tauri::async_runtime::block_on(async move {
+            while let Some(event) = rx.recv().await {
+                if let CommandEvent::Terminated(payload) = event {
+                    // Process was killed by signal, so code is None and signal is Some
+                    assert!(payload.code.is_none() || payload.signal.is_some());
+                    break;
+                }
+            }
+        });
+
+        // Verify the process group is gone
+        let ret = unsafe { libc::killpg(pid as i32, 0) };
+        assert_ne!(ret, 0, "process group should no longer exist");
+    }
+
+    #[test]
+    fn test_cmd_process_group_output() {
+        // Hangs on Windows if the suspended child is never resumed.
+        #[cfg(not(windows))]
+        let cmd = Command::new("cat").args(["test/test.txt"]);
+        #[cfg(windows)]
+        let cmd = Command::new("cmd").args(["/C", "type test\\test.txt"]);
+
+        let output = tauri::async_runtime::block_on(cmd.set_process_group(true).output()).unwrap();
+
+        assert!(output.status.success());
+        assert_eq!(String::from_utf8(output.stderr).unwrap(), "");
+        assert_eq!(
+            String::from_utf8(output.stdout).unwrap().trim(),
+            "This is a test doc!"
+        );
+    }
+
+    #[test]
+    fn test_cmd_kill_after_exit() {
+        for process_group in [false, true] {
+            #[cfg(not(windows))]
+            let cmd = Command::new("true");
+            #[cfg(windows)]
+            let cmd = Command::new("cmd").args(["/C", "exit 0"]);
+            let (rx, child) = cmd.set_process_group(process_group).spawn().unwrap();
+            wait_for_terminated(rx);
+            child.kill().unwrap();
+        }
+    }
+
+    /// The PyInstaller-style wrapper script for the current platform: spawns
+    /// a long-running grandchild, prints its PID, then waits on it.
+    fn sim_command() -> Command {
+        if cfg!(windows) {
+            Command::new("powershell").args([
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "test/pyinstaller_sim.ps1",
+            ])
+        } else {
+            Command::new("sh").args(["test/pyinstaller_sim.sh"])
+        }
+    }
+
+    /// Reads command output until the wrapper script reports the grandchild pid.
+    fn read_grandchild_pid(rx: &mut Receiver<CommandEvent>) -> u32 {
+        tauri::async_runtime::block_on(async {
+            let mut pid = None;
+            while let Some(event) = rx.recv().await {
+                if let CommandEvent::Stdout(line) = &event {
+                    let line_str = String::from_utf8_lossy(line);
+                    if let Some(rest) = line_str.strip_prefix("CHILD_PID=") {
+                        pid = rest.trim().parse::<u32>().ok();
+                    }
+                }
+                if pid.is_some() {
+                    break;
+                }
+            }
+            pid.expect("should have received CHILD_PID from script")
+        })
+    }
+
+    /// Asserts that the child produces a `Terminated` event.
+    fn wait_for_terminated(mut rx: Receiver<CommandEvent>) {
+        let got = tauri::async_runtime::block_on(async move {
+            while let Some(event) = rx.recv().await {
+                if let CommandEvent::Terminated(_) = event {
+                    return true;
+                }
+            }
+            false
+        });
+        assert!(got, "expected a Terminated event");
+    }
+
+    #[cfg(not(windows))]
+    fn pid_alive(pid: u32) -> bool {
+        unsafe { libc::kill(pid as i32, 0) == 0 }
+    }
+
+    #[cfg(windows)]
+    fn pid_alive(pid: u32) -> bool {
+        use windows_sys::Win32::{
+            Foundation::{CloseHandle, STILL_ACTIVE},
+            System::Threading::{
+                GetExitCodeProcess, OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION,
+            },
+        };
+        let handle = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
+        if handle.is_null() {
+            return false;
+        }
+        let mut code = 0u32;
+        let alive =
+            unsafe { GetExitCodeProcess(handle, &mut code) } != 0 && code == STILL_ACTIVE as u32;
+        unsafe { CloseHandle(handle) };
+        alive
+    }
+
+    #[cfg(not(windows))]
+    fn force_kill(pid: u32) {
+        unsafe { libc::kill(pid as i32, libc::SIGKILL) };
+    }
+
+    #[cfg(windows)]
+    fn force_kill(pid: u32) {
+        use windows_sys::Win32::{
+            Foundation::CloseHandle,
+            System::Threading::{OpenProcess, TerminateProcess, PROCESS_TERMINATE},
+        };
+        let handle = unsafe { OpenProcess(PROCESS_TERMINATE, 0, pid) };
+        if !handle.is_null() {
+            unsafe { TerminateProcess(handle, 1) };
+            unsafe { CloseHandle(handle) };
+        }
+    }
+
+    /// End-to-end test simulating the PyInstaller scenario from issue #1332.
+    ///
+    /// PyInstaller wraps the real application in a thin bootloader process.
+    /// Without process groups, killing the bootloader orphans the real app.
+    /// This test verifies that with `process_group` enabled, killing the
+    /// wrapper also kills the grandchild process.
+    #[test]
+    fn test_pyinstaller_simulation_without_process_group() {
+        // Without process_group: killing the wrapper does NOT kill the grandchild.
+        let (mut rx, child) = sim_command().spawn().unwrap();
+
+        let grandchild_pid = read_grandchild_pid(&mut rx);
+        assert!(
+            pid_alive(grandchild_pid),
+            "grandchild should be running before kill"
+        );
+
+        // Kill just the direct child (no process group)
+        child.kill().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(100));
+
+        // The grandchild is STILL alive — this is the bug
+        assert!(
+            pid_alive(grandchild_pid),
+            "grandchild should survive when process_group is off"
+        );
+
+        // Clean up the orphaned grandchild. This also closes the inherited
+        // stdout pipe, which the Terminated event is gated on.
+        force_kill(grandchild_pid);
+        wait_for_terminated(rx);
+    }
+
+    #[test]
+    fn test_pyinstaller_simulation_with_process_group() {
+        // With process_group: killing the wrapper ALSO kills the grandchild.
+        let (mut rx, child) = sim_command().set_process_group(true).spawn().unwrap();
+
+        let grandchild_pid = read_grandchild_pid(&mut rx);
+        assert!(
+            pid_alive(grandchild_pid),
+            "grandchild should be running before kill"
+        );
+
+        // Kill the process group
+        child.kill().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(100));
+
+        // The grandchild should now be DEAD
+        assert!(
+            !pid_alive(grandchild_pid),
+            "grandchild should be killed when process_group is on"
+        );
+
+        wait_for_terminated(rx);
     }
 }
