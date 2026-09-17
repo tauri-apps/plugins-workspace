@@ -9,14 +9,6 @@ import type { Options } from './index'
   let permissionSettable = false
   let permissionValue = 'default'
 
-  async function isPermissionGranted(): Promise<boolean> {
-    // @ts-expect-error __TEMPLATE_windows__ will be replaced in rust before it's injected.
-    if (window.Notification.permission !== 'default' || __TEMPLATE_windows__) {
-      return await Promise.resolve(window.Notification.permission === 'granted')
-    }
-    return await invoke('plugin:notification|is_permission_granted')
-  }
-
   function setNotificationPermission(value: NotificationPermission): void {
     permissionSettable = true
     // @ts-expect-error we can actually set this value on the webview
@@ -25,16 +17,15 @@ import type { Options } from './index'
   }
 
   async function requestPermission(): Promise<PermissionState> {
-    return await invoke<PermissionState>(
+    const permission = await invoke<PermissionState>(
       'plugin:notification|request_permission'
-    ).then((permission) => {
-      setNotificationPermission(
-        permission === 'prompt' || permission === 'prompt-with-rationale'
-          ? 'default'
-          : permission
-      )
-      return permission
-    })
+    )
+    setNotificationPermission(
+      permission === 'prompt' || permission === 'prompt-with-rationale'
+        ? 'default'
+        : permission
+    )
+    return permission
   }
 
   async function sendNotification(options: string | Options): Promise<void> {
@@ -80,11 +71,18 @@ import type { Options } from './index'
     }
   })
 
-  void isPermissionGranted().then(function (response) {
-    if (response === null) {
-      setNotificationPermission('default')
-    } else {
-      setNotificationPermission(response ? 'granted' : 'denied')
-    }
-  })
+  // @ts-expect-error __TEMPLATE_desktop__ will be replaced in rust before it's injected.
+  if (__TEMPLATE_desktop__) {
+    setNotificationPermission('granted')
+  } else {
+    void invoke<boolean | null>(
+      'plugin:notification|is_permission_granted'
+    ).then(function (response) {
+      if (response === null) {
+        setNotificationPermission('default')
+      } else {
+        setNotificationPermission(response ? 'granted' : 'denied')
+      }
+    })
+  }
 })()
