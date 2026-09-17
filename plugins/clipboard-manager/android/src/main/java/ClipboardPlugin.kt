@@ -10,6 +10,7 @@ import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
+import android.text.Html
 import app.tauri.annotation.Command
 import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.TauriPlugin
@@ -107,25 +108,58 @@ class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
     invoke.resolve()
   }
 
+
   @Command
   fun readText(invoke: Invoke) {
-    val data = if (manager.hasPrimaryClip()) {
-      if (manager.primaryClipDescription?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) == true) {
-        val item: ClipData.Item = manager.primaryClip!!.getItemAt(0)
-        val data = ReadClipData.PlainText()
-        data.text = item.text.toString()
-        data
-      } else {
-        // TODO
-        invoke.reject("Clipboard content reader not implemented")
+    // Use .let for safely handling nullable primaryClip
+    val data = manager.primaryClip?.let { clip ->
+      // Ensure the clipboard actually has something
+      if (clip.itemCount == 0) {
+        invoke.reject("Clipboard is empty")
         return
       }
-    } else {
-      invoke.reject("Clipboard is empty")
-        return
+
+      val item = clip.getItemAt(0)
+      val description = clip.description
+
+      // Use a when statement to gracefully handle different MIME types.
+      // HTML is prioritized as it often contains richer information.
+      when {
+        // Case 1: Clipboard contains HTML text
+        description.hasMimeType(ClipDescription.MIMETYPE_TEXT_HTML) -> {
+          val htmlText = item.htmlText
+          // Convert HTML to plain text, also handling the case where htmlText might be null
+          val plainText = if (htmlText != null) {
+            // Use different fromHtml methods depending on the Android version, which is a best practice
+            Html.fromHtml(htmlText, Html.FROM_HTML_MODE_COMPACT).toString()
+          } else {
+            // If htmlText is null, fall back to plain text
+            item.text?.toString() ?: ""
+          }
+          ReadClipData.PlainText().apply { text = plainText }
+        }
+
+        // Case 2: Clipboard contains only plain text
+        description.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) -> {
+          val plainText = item.text?.toString() ?: ""
+          ReadClipData.PlainText().apply { text = plainText }
+        }
+
+        // Case 3: The content is not a text type we can handle (e.g., an image or a URI)
+        else -> {
+          invoke.reject("Clipboard content is not plain text or HTML")
+          return
+        }
+      }
     }
 
-    invoke.resolveObject(data)
+    // The final call is determined by whether data is null or not
+    if (data != null) {
+      invoke.resolveObject(data)
+    } else {
+      // if manager.primaryClip is null, data will be null as well
+      invoke.reject("Clipboard is empty")
+    }
   }
 
   @Command
