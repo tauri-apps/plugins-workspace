@@ -60,7 +60,7 @@ impl<R: Runtime> Opener<R> {
     /// - **Android / iOS**: Always opens using default program, unless `with` is provided as "inAppBrowser".
     #[cfg(desktop)]
     pub fn open_url(&self, url: impl Into<String>, with: Option<impl Into<String>>) -> Result<()> {
-        crate::open::open(
+        crate::open::open_path(
             url.into(),
             with.map(Into::into).filter(|with| with != "inAppBrowser"),
         )
@@ -118,7 +118,7 @@ impl<R: Runtime> Opener<R> {
         path: impl Into<String>,
         with: Option<impl Into<String>>,
     ) -> Result<()> {
-        crate::open::open(
+        crate::open::open_path(
             path.into(),
             with.map(Into::into).filter(|with| with != "inAppBrowser"),
         )
