@@ -5,6 +5,7 @@
 use indexmap::IndexMap;
 use serde_json::Value as JsonValue;
 use sqlx::migrate::Migrator;
+use std::collections::HashMap;
 use tauri::{command, AppHandle, Runtime, State};
 
 use crate::{DbInstances, DbPool, Error, LastInsertId, Migrations};
@@ -59,11 +60,12 @@ pub(crate) async fn execute(
     db: String,
     query: String,
     values: Vec<JsonValue>,
+    bind_types: HashMap<usize, String>,
 ) -> Result<(u64, LastInsertId), crate::Error> {
     let instances = db_instances.0.read().await;
 
     let db = instances.get(&db).ok_or(Error::DatabaseNotLoaded(db))?;
-    db.execute(query, values).await
+    db.execute(query, values, bind_types).await
 }
 
 #[command]
@@ -72,9 +74,10 @@ pub(crate) async fn select(
     db: String,
     query: String,
     values: Vec<JsonValue>,
+    bind_types: HashMap<usize, String>,
 ) -> Result<Vec<IndexMap<String, JsonValue>>, crate::Error> {
     let instances = db_instances.0.read().await;
 
     let db = instances.get(&db).ok_or(Error::DatabaseNotLoaded(db))?;
-    db.select(query, values).await
+    db.select(query, values, bind_types).await
 }
