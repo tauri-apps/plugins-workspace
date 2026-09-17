@@ -348,12 +348,28 @@ mod imp {
                     )?;
                 }
 
-                Command::new("update-desktop-database")
+                match Command::new("update-desktop-database")
                     .arg(target)
                     .status()
-                    .inspect_err(crate::error::inspect_command_error(
-                        "update-desktop-database",
-                    ))?;
+                {
+                    Ok(status) => {
+                        if !status.success() {
+                            tracing::warn!(
+                                "`update-desktop-database` exited with status {status}"
+                            );
+                        }
+                    }
+                    Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                        tracing::warn!(
+                            "`update-desktop-database` not found, skipping MIME database update. \
+                             Install `desktop-file-utils` to silence this warning."
+                        );
+                    }
+                    Err(e) => {
+                        tracing::error!("Failed to run `update-desktop-database`: {e}");
+                        return Err(e.into());
+                    }
+                }
 
                 Command::new("xdg-mime")
                     .args(["default", &file_name, mime_type.as_str()])
