@@ -58,6 +58,7 @@ pub enum CommandEvent {
 pub struct Command {
     cmd: StdCommand,
     raw_out: bool,
+    kill_on_drop: bool,
 }
 
 /// Spawned child process.
@@ -65,6 +66,7 @@ pub struct Command {
 pub struct CommandChild {
     inner: Arc<SharedChild>,
     stdin_writer: PipeWriter,
+    kill_on_drop: bool,
 }
 
 impl CommandChild {
@@ -83,6 +85,22 @@ impl CommandChild {
     /// Returns the process pid.
     pub fn pid(&self) -> u32 {
         self.inner.id()
+    }
+}
+
+impl Drop for CommandChild {
+    /// Kill the child process when the CommandChild is dropped.
+    fn drop(&mut self) {
+        // Only kill the process if kill_on_drop is true.
+        if !self.kill_on_drop {
+            return;
+        }
+        #[cfg(not(debug_assertions))]
+        let _ = self.inner.kill();
+        #[cfg(debug_assertions)]
+        if let Err(e) = self.inner.kill() {
+            log::error!("Failed to kill child process {}: {}", self.inner.id(), e);
+        }
     }
 }
 
@@ -175,6 +193,7 @@ impl Command {
         Self {
             cmd: command,
             raw_out: false,
+            kill_on_drop: false,
         }
     }
 
@@ -243,6 +262,12 @@ impl Command {
         self
     }
 
+    /// Configures whether the child process should be killed when the CommandChild is dropped.
+    pub fn set_kill_on_drop(mut self, kill_on_drop: bool) -> Self {
+        self.kill_on_drop = kill_on_drop;
+        self
+    }
+
     /// Spawns the command.
     ///
     /// # Examples
@@ -304,6 +329,7 @@ impl Command {
     /// ```
     pub fn spawn(self) -> crate::Result<(Receiver<CommandEvent>, CommandChild)> {
         let raw = self.raw_out;
+        let kill_on_drop = self.kill_on_drop;
         let mut command: StdCommand = self.into();
         let (stdout_reader, stdout_writer) = pipe()?;
         let (stderr_reader, stderr_writer) = pipe()?;
@@ -361,6 +387,7 @@ impl Command {
             CommandChild {
                 inner: child,
                 stdin_writer,
+                kill_on_drop,
             },
         ))
     }
