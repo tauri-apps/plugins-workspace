@@ -19,10 +19,11 @@ use windows_sys::Win32::{
         Threading::{CreateMutexW, ReleaseMutex},
     },
     UI::WindowsAndMessaging::{
-        self as w32wm, CreateWindowExW, DefWindowProcW, DestroyWindow, FindWindowW,
-        RegisterClassExW, SendMessageW, CREATESTRUCTW, GWLP_USERDATA, GWL_STYLE,
-        WINDOW_LONG_PTR_INDEX, WM_COPYDATA, WM_CREATE, WM_DESTROY, WNDCLASSEXW, WS_EX_LAYERED,
-        WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT, WS_OVERLAPPED, WS_POPUP, WS_VISIBLE,
+        self as w32wm, AllowSetForegroundWindow, CreateWindowExW, DefWindowProcW, DestroyWindow,
+        FindWindowW, GetWindowThreadProcessId, RegisterClassExW, SendMessageW, CREATESTRUCTW,
+        GWLP_USERDATA, GWL_STYLE, WINDOW_LONG_PTR_INDEX, WM_COPYDATA, WM_CREATE, WM_DESTROY,
+        WNDCLASSEXW, WS_EX_LAYERED, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT,
+        WS_OVERLAPPED, WS_POPUP, WS_VISIBLE,
     },
 };
 
@@ -87,6 +88,16 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                             cbData: bytes.len() as _,
                             lpData: bytes.as_ptr() as _,
                         };
+
+                        // Windows lets us bring a window to the front, but not the first
+                        // instance. Hand that right over before we exit, so focusing a window
+                        // from the callback works. Windows takes it back if the user switches
+                        // to another app in the meantime.
+                        let mut pid = 0;
+                        GetWindowThreadProcessId(hwnd, &mut pid);
+                        if pid != 0 {
+                            AllowSetForegroundWindow(pid);
+                        }
 
                         SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
 
