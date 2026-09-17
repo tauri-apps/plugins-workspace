@@ -362,6 +362,12 @@ pub fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::
     Ok(())
 }
 
+// Header values are byte strings. Decode as ISO-8859-1 so the raw bytes survive
+// as a valid ByteString for `new Headers()` on the JS side.
+fn header_value_to_byte_string(value: &HeaderValue) -> String {
+    value.as_bytes().iter().map(|&b| b as char).collect()
+}
+
 #[command]
 pub async fn fetch_send<R: Runtime>(
     webview: Webview<R>,
@@ -396,10 +402,7 @@ pub async fn fetch_send<R: Runtime>(
     let url = res.url().to_string();
     let mut headers = Vec::new();
     for (key, val) in res.headers().iter() {
-        headers.push((
-            key.as_str().into(),
-            String::from_utf8(val.as_bytes().to_vec())?,
-        ));
+        headers.push((key.as_str().into(), header_value_to_byte_string(val)));
     }
 
     let mut resources_table = webview.resources_table();
@@ -484,5 +487,42 @@ fn is_unsafe_header(header: &HeaderName) -> bool {
     ) || {
         let lower = header.as_str().to_lowercase();
         lower.starts_with("proxy-") || lower.starts_with("sec-")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::header_value_to_byte_string;
+    use http::HeaderValue;
+
+    fn assert_byte_string(value: &HeaderValue) {
+        let decoded = header_value_to_byte_string(value);
+        assert!(
+            decoded.chars().all(|c| u32::from(c) <= 255),
+            "header value must be a JS ByteString (every code point <= 255)"
+        );
+        assert_eq!(
+            decoded.chars().map(|c| c as u8).collect::<Vec<_>>(),
+            value.as_bytes(),
+            "ISO-8859-1 decode must preserve the wire bytes"
+        );
+        let json = serde_json::to_string(&decoded).unwrap();
+        let roundtrip: String = serde_json::from_str(&json).unwrap();
+        assert_eq!(roundtrip, decoded);
+    }
+
+    #[test]
+    fn utf8_content_disposition_filename_is_byte_string() {
+        // Issue #2898: `filename="中文-EN.pdf"` sent as raw UTF-8 on the wire.
+        let value =
+            HeaderValue::from_bytes(b"attachment; filename=\"\xe4\xb8\xad\xe6\x96\x87-EN.pdf\"")
+                .unwrap();
+        assert_byte_string(&value);
+    }
+
+    #[test]
+    fn non_utf8_header_bytes_are_preserved() {
+        let value = HeaderValue::from_bytes(b"x\xff").unwrap();
+        assert_byte_string(&value);
     }
 }
