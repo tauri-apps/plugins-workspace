@@ -35,11 +35,14 @@ log = { workspace = true }
 thiserror = { workspace = true }
 tokio = { version = "1", features = ["fs"] }
 tokio-util = { version = "0.7", features = ["codec"] }
-reqwest = { version = "0.12", default-features = false, features = [
-  "macos-system-configuration",
+reqwest = { version = "0.13", default-features = false, features = [
+  "system-proxy",
   "json",
   "stream",
 ] }
+rustls = { version = "0.23", default-features = false, features = [
+  "ring",
+], optional = true }
 futures-util = "0.3"
 read-progress-stream = "1.0.0"
 
@@ -47,7 +50,7 @@ read-progress-stream = "1.0.0"
 default = ["rustls-tls"]
 native-tls = ["reqwest/native-tls"]
 native-tls-vendored = ["reqwest/native-tls-vendored"]
-rustls-tls = ["reqwest/rustls-tls"]
+rustls-tls = ["reqwest/rustls-no-provider", "dep:rustls"]
 
 [dev-dependencies]
 mockito = "1.6.1"
