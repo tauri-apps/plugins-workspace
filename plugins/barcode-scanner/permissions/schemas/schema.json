@@ -355,6 +355,18 @@
           "markdownDescription": "Denies the scan command without any pre-configured scope."
         },
         {
+          "description": "Enables the toggle_torch command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-toggle-torch",
+          "markdownDescription": "Enables the toggle_torch command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the toggle_torch command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-toggle-torch",
+          "markdownDescription": "Denies the toggle_torch command without any pre-configured scope."
+        },
+        {
           "description": "Enables the vibrate command without any pre-configured scope.",
           "type": "string",
           "const": "allow-vibrate",
@@ -367,10 +379,10 @@
           "markdownDescription": "Denies the vibrate command without any pre-configured scope."
         },
         {
-          "description": "This permission set configures which\nbarcode scanning features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all barcode related features.\n\n\n#### This default permission set includes:\n\n- `allow-cancel`\n- `allow-check-permissions`\n- `allow-open-app-settings`\n- `allow-request-permissions`\n- `allow-scan`\n- `allow-vibrate`",
+          "description": "This permission set configures which\nbarcode scanning features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all barcode related features.\n\n\n#### This default permission set includes:\n\n- `allow-cancel`\n- `allow-check-permissions`\n- `allow-open-app-settings`\n- `allow-request-permissions`\n- `allow-scan`\n- `allow-vibrate`\n- `allow-toggle-torch`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "This permission set configures which\nbarcode scanning features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all barcode related features.\n\n\n#### This default permission set includes:\n\n- `allow-cancel`\n- `allow-check-permissions`\n- `allow-open-app-settings`\n- `allow-request-permissions`\n- `allow-scan`\n- `allow-vibrate`"
+          "markdownDescription": "This permission set configures which\nbarcode scanning features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all barcode related features.\n\n\n#### This default permission set includes:\n\n- `allow-cancel`\n- `allow-check-permissions`\n- `allow-open-app-settings`\n- `allow-request-permissions`\n- `allow-scan`\n- `allow-vibrate`\n- `allow-toggle-torch`"
         }
       ]
     }
