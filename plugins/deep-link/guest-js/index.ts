@@ -60,7 +60,8 @@ export async function register(protocol: string): Promise<null> {
  *
  * #### Platform-specific
  *
- * - **macOS / Linux / Android / iOS:** Unsupported.
+ * - **Linux / FreeBSD:** Can only unregister schemes registered with `register`.
+ * - **macOS / Android / iOS:** Unsupported.
  *
  * @since 2.0.0
  */

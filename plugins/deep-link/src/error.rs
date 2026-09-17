@@ -17,10 +17,10 @@ pub enum Error {
     #[cfg(target_os = "windows")]
     #[error(transparent)]
     Windows(#[from] windows_result::Error),
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     #[error(transparent)]
     Ini(#[from] ini::Error),
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     #[error(transparent)]
     ParseIni(#[from] ini::ParseError),
     #[cfg(mobile)]
@@ -31,7 +31,7 @@ pub enum Error {
 // TODO(v3): change this into an error in v3,
 // see <https://github.com/tauri-apps/plugins-workspace/pull/2970#issuecomment-3244660138>.
 #[inline]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 pub(crate) fn inspect_command_error<'a>(command: &'a str) -> impl Fn(&std::io::Error) + 'a {
     move |e| {
         tracing::error!("Failed to run OS command `{command}`: {e}");
