@@ -391,6 +391,10 @@ class TauriNotificationManager(
     }
   }
 
+  fun cancelAll() {
+    cancel(storage.getSavedNotificationIds().mapNotNull { it.toIntOrNull() })
+  }
+
   private fun cancelTimerForNotification(notificationId: Int) {
     val intent = Intent(context, TimedNotificationPublisher::class.java)
     var flags = 0
