@@ -75,6 +75,16 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                     let hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
 
                     if !hwnd.is_null() {
+                        // Windows lets us bring a window to the front, but not the first
+                        // instance. Hand that right over before we exit, so focusing a window
+                        // from the callback works. Windows takes it back if the user switches
+                        // to another app in the meantime.
+                        let mut pid = 0;
+                        GetWindowThreadProcessId(hwnd, &mut pid);
+                        if pid != 0 {
+                            AllowSetForegroundWindow(pid);
+                        }
+
                         let cwd = std::env::current_dir().unwrap_or_default();
                         let cwd = cwd.to_str().unwrap_or_default();
 
@@ -88,16 +98,6 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                             cbData: bytes.len() as _,
                             lpData: bytes.as_ptr() as _,
                         };
-
-                        // Windows lets us bring a window to the front, but not the first
-                        // instance. Hand that right over before we exit, so focusing a window
-                        // from the callback works. Windows takes it back if the user switches
-                        // to another app in the meantime.
-                        let mut pid = 0;
-                        GetWindowThreadProcessId(hwnd, &mut pid);
-                        if pid != 0 {
-                            AllowSetForegroundWindow(pid);
-                        }
 
                         SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
 
