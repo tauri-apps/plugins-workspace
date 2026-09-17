@@ -348,12 +348,24 @@ mod imp {
                     )?;
                 }
 
-                Command::new("update-desktop-database")
-                    .arg(target)
-                    .status()
-                    .inspect_err(crate::error::inspect_command_error(
-                        "update-desktop-database",
-                    ))?;
+                // `update-desktop-database` is provided by the `desktop-file-utils`
+                // package, which isn't necessarily installed (e.g. some KDE setups
+                // don't need it). Skip it when the command is missing instead of
+                // failing registration; any other error is still logged and
+                // propagated. See #2265.
+                match Command::new("update-desktop-database").arg(target).status() {
+                    Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                        tracing::warn!(
+                            "`update-desktop-database` not found, skipping desktop database update \
+                             (this is expected on systems without `desktop-file-utils`, e.g. some KDE setups)"
+                        );
+                    }
+                    result => {
+                        result.inspect_err(crate::error::inspect_command_error(
+                            "update-desktop-database",
+                        ))?;
+                    }
+                }
 
                 Command::new("xdg-mime")
                     .args(["default", &file_name, mime_type.as_str()])
