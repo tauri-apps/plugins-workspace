@@ -98,13 +98,7 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
 
         builder.version_comparator = version_comparator.clone();
 
-        #[cfg(any(
-            target_os = "linux",
-            target_os = "dragonfly",
-            target_os = "freebsd",
-            target_os = "netbsd",
-            target_os = "openbsd"
-        ))]
+        #[cfg(target_os = "linux")]
         {
             let env = app.env();
             if let Some(appimage) = env.appimage {
