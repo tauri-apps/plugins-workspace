@@ -297,7 +297,7 @@ dependencies = [
  "objc2-app-kit",
  "objc2-core-foundation",
  "objc2-core-graphics",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
  "parking_lot",
  "percent-encoding",
  "windows-sys 0.59.0",
@@ -542,13 +542,14 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
 name = "auto-launch"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1f012b8cc0c850f34117ec8252a44418f2e34a2cf501de89e29b241ae5f79471"
+version = "0.6.0"
+source = "git+https://github.com/zzzgydi/auto-launch.git#5a77b66cfb745e2ead928fe37aedee828cb993ea"
 dependencies = [
- "dirs 4.0.0",
- "thiserror 1.0.69",
- "winreg 0.10.1",
+ "dirs 6.0.0",
+ "os_info",
+ "smappservice-rs",
+ "thiserror 2.0.12",
+ "windows-registry",
 ]
 
 [[package]]
@@ -1784,7 +1785,7 @@ dependencies = [
  "rustc_version",
  "toml 0.8.20",
  "vswhom",
- "winreg 0.52.0",
+ "winreg",
 ]
 
 [[package]]
@@ -3478,7 +3479,7 @@ checksum = "0b95dfb34071d1592b45622bf93e315e3a72d414b6782aca9a015c12bec367ef"
 dependencies = [
  "cc",
  "objc2 0.6.4",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
  "time",
 ]
 
@@ -3614,7 +3615,7 @@ dependencies = [
  "objc2 0.6.4",
  "objc2-app-kit",
  "objc2-core-foundation",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
  "once_cell",
  "png 0.18.1",
  "serde",
@@ -3878,7 +3879,7 @@ dependencies = [
  "objc2 0.6.4",
  "objc2-core-foundation",
  "objc2-core-graphics",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
 ]
 
 [[package]]
@@ -3889,7 +3890,7 @@ checksum = "6c1948a9be5f469deadbd6bcb86ad7ff9e47b4f632380139722f7d9840c0d42c"
 dependencies = [
  "bitflags 2.9.0",
  "objc2 0.6.4",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
 ]
 
 [[package]]
@@ -3899,16 +3900,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f860f8e841f6d32f754836f51e6bc7777cd7e7053cf18528233f6811d3eceb4"
 dependencies = [
  "objc2 0.6.4",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
 ]
 
 [[package]]
 name = "objc2-core-foundation"
-version = "0.3.0"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "daeaf60f25471d26948a1c2f840e3f7d86f4109e3af4e8e4b5cd70c39690d925"
+checksum = "2a180dd8642fa45cdb7dd721cd4c11b1cadd4929ce112ebd8b9f5803cc79d536"
 dependencies = [
  "bitflags 2.9.0",
+ "dispatch2",
  "objc2 0.6.4",
 ]
 
@@ -3931,7 +3933,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ffa6bea72bf42c78b0b34e89c0bafac877d5f80bf91e159a5d96ea7f693ca56"
 dependencies = [
  "objc2 0.6.4",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
 ]
 
 [[package]]
@@ -3941,7 +3943,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d31f4c5b5192304996badc466aeadffe1411d73a9bbd3b18b6b2ee9d048b07bd"
 dependencies = [
  "objc2 0.6.4",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
 ]
 
 [[package]]
@@ -3973,9 +3975,9 @@ dependencies = [
 
 [[package]]
 name = "objc2-foundation"
-version = "0.3.0"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a21c6c9014b82c39515db5b396f91645182611c97d24637cf56ac01e5f8d998"
+checksum = "e3e0adef53c21f888deb4fa59fc59f7eb17404926ee8a6f59f5df0fd7f9f3272"
 dependencies = [
  "bitflags 2.9.0",
  "block2 0.6.2",
@@ -4016,7 +4018,7 @@ dependencies = [
  "bitflags 2.9.0",
  "objc2 0.6.4",
  "objc2-app-kit",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
 ]
 
 [[package]]
@@ -4041,7 +4043,31 @@ dependencies = [
  "bitflags 2.9.0",
  "objc2 0.6.4",
  "objc2-core-foundation",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
+]
+
+[[package]]
+name = "objc2-security"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "709fe137109bd1e8b5a99390f77a7d8b2961dafc1a1c5db8f2e60329ad6d895a"
+dependencies = [
+ "bitflags 2.9.0",
+ "objc2 0.6.4",
+ "objc2-core-foundation",
+]
+
+[[package]]
+name = "objc2-service-management"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b213642d6959cc6023ceb1217aa595eaaf09b8094ce95127c103cab611fe65e8"
+dependencies = [
+ "block2 0.6.2",
+ "objc2 0.6.4",
+ "objc2-core-foundation",
+ "objc2-foundation 0.3.2",
+ "objc2-security",
 ]
 
 [[package]]
@@ -4059,7 +4085,7 @@ dependencies = [
  "objc2-core-graphics",
  "objc2-core-image",
  "objc2-core-location",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
  "objc2-quartz-core 0.3.0",
  "objc2-user-notifications",
 ]
@@ -4071,7 +4097,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "670fe793adbf3b5e93686d48a05a7ed7ee53dfa65d106ced4805fae8969059b2"
 dependencies = [
  "objc2 0.6.4",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
 ]
 
 [[package]]
@@ -4085,7 +4111,7 @@ dependencies = [
  "objc2 0.6.4",
  "objc2-app-kit",
  "objc2-core-foundation",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
 ]
 
 [[package]]
@@ -4229,7 +4255,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "732c71caeaa72c065bb69d7ea08717bd3f4863a4f451402fc9513e29dbd5261b"
 dependencies = [
  "objc2 0.6.4",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
  "objc2-osa-kit",
  "serde",
  "serde_json",
@@ -5007,7 +5033,7 @@ dependencies = [
  "objc2 0.6.4",
  "objc2-app-kit",
  "objc2-core-foundation",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
  "pollster",
  "raw-window-handle",
  "urlencoding",
@@ -5721,6 +5747,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "smappservice-rs"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52703b97a53101cf5d4580e0737aaa634ce1fdcfc123c16b2a9658e358013488"
+dependencies = [
+ "objc2 0.6.4",
+ "objc2-foundation 0.3.2",
+ "objc2-service-management",
+ "thiserror 2.0.12",
+]
+
+[[package]]
 name = "socket2"
 version = "0.5.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6259,7 +6297,7 @@ dependencies = [
  "ndk-sys",
  "objc2 0.6.4",
  "objc2-app-kit",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
  "objc2-ui-kit",
  "once_cell",
  "parking_lot",
@@ -6334,7 +6372,7 @@ dependencies = [
  "muda",
  "objc2 0.6.4",
  "objc2-app-kit",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
  "objc2-ui-kit",
  "objc2-web-kit",
  "percent-encoding",
@@ -6550,7 +6588,7 @@ dependencies = [
  "log",
  "notify",
  "notify-debouncer-full",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
  "percent-encoding",
  "schemars",
  "serde",
@@ -6647,7 +6685,7 @@ dependencies = [
  "fern",
  "log",
  "objc2 0.6.4",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
  "serde",
  "serde_json",
  "serde_repr",
@@ -6698,7 +6736,7 @@ dependencies = [
  "dunce",
  "glob",
  "objc2-app-kit",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
  "open",
  "schemars",
  "serde",
@@ -7480,7 +7518,7 @@ dependencies = [
  "objc2-app-kit",
  "objc2-core-foundation",
  "objc2-core-graphics",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
  "once_cell",
  "png 0.18.1",
  "serde",
@@ -8206,7 +8244,7 @@ dependencies = [
  "objc2 0.6.4",
  "objc2-app-kit",
  "objc2-core-foundation",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
  "raw-window-handle",
  "windows-sys 0.59.0",
  "windows-version",
@@ -8689,15 +8727,6 @@ checksum = "2ee1708bef14716a11bae175f579062d4554d95be2c6829f518df847b7b3fdd0"
 
 [[package]]
 name = "winreg"
-version = "0.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80d0f4e272c85def139476380b12f9ac60926689dd2e01d4923222f40580869d"
-dependencies = [
- "winapi",
-]
-
-[[package]]
-name = "winreg"
 version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a277a57398d4bfa075df44f501a17cfdf8542d224f0d36095a2adc7aee4ef0a5"
@@ -8770,7 +8799,7 @@ dependencies = [
  "objc2 0.6.4",
  "objc2-app-kit",
  "objc2-core-foundation",
- "objc2-foundation 0.3.0",
+ "objc2-foundation 0.3.2",
  "objc2-ui-kit",
  "objc2-web-kit",
  "once_cell",
