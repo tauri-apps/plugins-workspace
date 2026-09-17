@@ -228,6 +228,12 @@ pub async fn fetch<R: Runtime>(
             )
             .is_allowed(&url)
             {
+                #[cfg(feature = "rustls-tls")]
+                if rustls::crypto::CryptoProvider::get_default().is_none() {
+                    // This can only fail if there is already a default provider which we checked for already.
+                    let _ = rustls::crypto::ring::default_provider().install_default();
+                }
+
                 let mut builder = reqwest::ClientBuilder::new();
 
                 if let Some(danger_config) = danger {

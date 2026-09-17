@@ -78,6 +78,16 @@ struct ProgressPayload {
     transfer_speed: u64,
 }
 
+fn http_client() -> reqwest::Client {
+    #[cfg(feature = "rustls-tls")]
+    if rustls::crypto::CryptoProvider::get_default().is_none() {
+        // This can only fail if there is already a default provider which we checked for already.
+        let _ = rustls::crypto::ring::default_provider().install_default();
+    }
+
+    reqwest::Client::new()
+}
+
 #[command]
 async fn download(
     url: String,
@@ -87,7 +97,7 @@ async fn download(
     on_progress: Channel<ProgressPayload>,
 ) -> Result<()> {
     tokio::spawn(async move {
-        let client = reqwest::Client::new();
+        let client = http_client();
         let mut request = if let Some(body) = body {
             client.post(&url).body(body)
         } else {
@@ -146,7 +156,7 @@ async fn upload(
         let http_method = method.unwrap_or(HttpMethod::Post);
 
         // Create the request and attach the file to the body
-        let client = reqwest::Client::new();
+        let client = http_client();
         let mut request = match http_method {
             HttpMethod::Put => client.put(&url),
             HttpMethod::Patch => client.patch(&url),

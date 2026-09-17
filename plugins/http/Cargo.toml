@@ -41,8 +41,10 @@ tauri-plugin-fs = { path = "../fs", version = "3.0.0-alpha.0" }
 urlpattern = "0.3"
 regex = "1"
 http = "1"
-# 0.12.16 is when `system-proxy` was added
-reqwest = { version = "0.12.16", default-features = false }
+reqwest = { version = "0.13", default-features = false }
+rustls = { version = "0.23", default-features = false, features = [
+  "ring",
+], optional = true }
 url = { workspace = true }
 data-url = "0.3"
 cookie_store = { version = "0.22", optional = true, features = ["serde"] }
@@ -56,23 +58,17 @@ json = ["reqwest/json"]
 stream = ["reqwest/stream"]
 native-tls = ["reqwest/native-tls"]
 native-tls-vendored = ["reqwest/native-tls-vendored"]
-native-tls-alpn = ["reqwest/native-tls-alpn"]
-rustls-tls = ["reqwest/rustls-tls"]
-rustls-tls-manual-roots = ["reqwest/rustls-tls-manual-roots"]
-rustls-tls-webpki-roots = ["reqwest/rustls-tls-webpki-roots"]
-rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
+rustls-tls = ["reqwest/rustls-no-provider", "dep:rustls"]
 blocking = ["reqwest/blocking"]
 cookies = ["reqwest/cookies", "dep:cookie_store", "dep:bytes"]
 gzip = ["reqwest/gzip"]
 brotli = ["reqwest/brotli"]
 deflate = ["reqwest/deflate"]
 zstd = ["reqwest/zstd"]
-trust-dns = ["reqwest/trust-dns"]
+hickory-dns = ["reqwest/hickory-dns"]
 socks = ["reqwest/socks"]
 http2 = ["reqwest/http2"]
 charset = ["reqwest/charset"]
-# Deprecated, switch to system-proxy
-macos-system-configuration = ["reqwest/macos-system-configuration"]
 system-proxy = ["reqwest/system-proxy"]
 
 unsafe-headers = []
