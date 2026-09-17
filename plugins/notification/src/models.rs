@@ -176,6 +176,19 @@ pub struct NotificationData {
     pub(crate) auto_cancel: bool,
     #[serde(default)]
     pub(crate) silent: bool,
+    /// Set the time that the event occurred (milliseconds since epoch).
+    /// Notifications in the panel are sorted by this time.
+    /// Android only.
+    pub(crate) when: Option<i64>,
+    /// Show the `when` field as a stopwatch (elapsed time).
+    /// Android only.
+    #[serde(default)]
+    pub(crate) uses_chronometer: bool,
+    /// Sets the Chronometer to count down instead of counting up.
+    /// Only relevant if `uses_chronometer` is true.
+    /// Android only (API 24+).
+    #[serde(default)]
+    pub(crate) chronometer_count_down: bool,
 }
 
 fn default_id() -> i32 {
@@ -205,6 +218,9 @@ impl Default for NotificationData {
             ongoing: false,
             auto_cancel: false,
             silent: false,
+            when: None,
+            uses_chronometer: false,
+            chronometer_count_down: false,
         }
     }
 }
