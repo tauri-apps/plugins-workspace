@@ -80,6 +80,12 @@ impl<R: Runtime> Clipboard<R> {
         ))
     }
 
+    pub fn read_image_png(&self) -> crate::Result<Vec<u8>> {
+        Err(crate::Error::Clipboard(
+            "Unsupported on this platform".to_string(),
+        ))
+    }
+
     // Treat HTML as unsupported on mobile until tested
     pub fn write_html<'a, T: Into<Cow<'a, str>>>(
         &self,

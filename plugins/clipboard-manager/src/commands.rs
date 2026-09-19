@@ -62,6 +62,14 @@ pub(crate) async fn read_image<R: Runtime>(
 }
 
 #[command]
+pub(crate) async fn read_image_png<R: Runtime>(
+    _app: AppHandle<R>,
+    clipboard: State<'_, Clipboard<R>>,
+) -> Result<tauri::ipc::Response> {
+    clipboard.read_image_png().map(tauri::ipc::Response::new)
+}
+
+#[command]
 pub(crate) async fn write_html<R: Runtime>(
     _app: AppHandle<R>,
     clipboard: State<'_, Clipboard<R>>,
