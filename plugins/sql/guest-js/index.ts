@@ -111,7 +111,8 @@ export default class Database {
       {
         db: this.path,
         query,
-        values: bindValues ?? []
+        values: bindValues ?? [],
+        bindTypes: buildBindTypes(bindValues)
       }
     )
     return {
@@ -142,7 +143,8 @@ export default class Database {
     const result = await invoke<T>('plugin:sql|select', {
       db: this.path,
       query,
-      values: bindValues ?? []
+      values: bindValues ?? [],
+      bindTypes: buildBindTypes(bindValues)
     })
 
     return result
@@ -165,4 +167,15 @@ export default class Database {
     })
     return success
   }
+}
+
+const buildBindTypes = (values?: unknown[]): Map<number, string> => {
+  const bindTypes: Map<number, string> = new Map()
+  if (!values) return bindTypes
+  for (const [index, v] of values.entries()) {
+    if (v instanceof Uint8Array || v instanceof ArrayBuffer) {
+      bindTypes.set(index, 'bytearray')
+    }
+  }
+  return bindTypes
 }

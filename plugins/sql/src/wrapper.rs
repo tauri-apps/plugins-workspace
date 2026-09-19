@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use std::collections::HashMap;
 #[cfg(feature = "sqlite")]
 use std::fs::create_dir_all;
 
@@ -147,13 +148,22 @@ impl DbPool {
         &self,
         _query: String,
         _values: Vec<JsonValue>,
+        _bind_types: HashMap<usize, String>,
     ) -> Result<(u64, LastInsertId), crate::Error> {
         Ok(match self {
             #[cfg(feature = "sqlite")]
             DbPool::Sqlite(pool) => {
                 let mut query = sqlx::query(&_query);
-                for value in _values {
-                    if value.is_null() {
+                for (i, value) in _values.iter().enumerate() {
+                    if _bind_types.get(&i) == Some(&"bytearray".to_string()) {
+                        let bytes = value
+                            .as_array()
+                            .unwrap()
+                            .iter()
+                            .map(|v| v.as_u64().unwrap() as u8)
+                            .collect::<Vec<u8>>();
+                        query = query.bind(bytes);
+                    } else if value.is_null() {
                         query = query.bind(None::<JsonValue>);
                     } else if value.is_string() {
                         query = query.bind(value.as_str().unwrap().to_owned())
@@ -215,13 +225,22 @@ impl DbPool {
         &self,
         _query: String,
         _values: Vec<JsonValue>,
+        _bind_types: HashMap<usize, String>,
     ) -> Result<Vec<IndexMap<String, JsonValue>>, crate::Error> {
         Ok(match self {
             #[cfg(feature = "sqlite")]
             DbPool::Sqlite(pool) => {
                 let mut query = sqlx::query(&_query);
-                for value in _values {
-                    if value.is_null() {
+                for (i, value) in _values.iter().enumerate() {
+                    if _bind_types.get(&i) == Some(&"bytearray".to_string()) {
+                        let bytes = value
+                            .as_array()
+                            .unwrap()
+                            .iter()
+                            .map(|v| v.as_u64().unwrap() as u8)
+                            .collect::<Vec<u8>>();
+                        query = query.bind(bytes);
+                    } else if value.is_null() {
                         query = query.bind(None::<JsonValue>);
                     } else if value.is_string() {
                         query = query.bind(value.as_str().unwrap().to_owned())
