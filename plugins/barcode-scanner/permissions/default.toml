@@ -17,4 +17,5 @@ permissions = [
   "allow-request-permissions",
   "allow-scan",
   "allow-vibrate",
+  "allow-toggle-torch",
 ]
