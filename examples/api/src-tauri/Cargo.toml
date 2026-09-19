@@ -40,6 +40,12 @@ tauri-plugin-shell = { path = "../../../plugins/shell", version = "2.3.6" }
 tauri-plugin-store = { path = "../../../plugins/store", version = "2.4.5" }
 tauri-plugin-upload = { path = "../../../plugins/upload", version = "2.3.0" }
 
+# WebDriver automation bridge, used by the plugins e2e suite (packages/api-e2e).
+# Desktop-only and behind the off-by-default `automation` feature so it never ships in a
+# regular build.
+[target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
+tauri-plugin-automation = { version = "0.1.4", optional = true }
+
 [dependencies.tauri]
 workspace = true
 features = [
@@ -66,3 +72,7 @@ tauri-plugin-nfc = { path = "../../../plugins/nfc", version = "2.3.6" }
 tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "2.3.3" }
 tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "2.3.3" }
 tauri-plugin-haptics = { path = "../../../plugins/haptics/", version = "2.3.3" }
+
+[features]
+# Enables the WebDriver automation bridge; set by the e2e suite's build (packages/api-e2e).
+automation = ["dep:tauri-plugin-automation"]

@@ -12,6 +12,7 @@ on:
     paths:
       - '.github/workflows/lint-javascript.yml'
       - 'plugins/*/guest-js/**'
+      - 'packages/**'
       - '.eslintignore'
       - '.eslintrc.json'
       - '.prettierignore'
@@ -23,6 +24,7 @@ on:
     paths:
       - '.github/workflows/lint-javascript.yml'
       - 'plugins/*/guest-js/**'
+      - 'packages/**'
       - '.eslintignore'
       - '.eslintrc.json'
       - '.prettierignore'
@@ -53,5 +55,11 @@ jobs:
       - uses: pnpm/action-setup@v6
         with:
           run_install: true
+      # the type-checked lint rules (and packages/api-e2e) resolve the plugins'
+      # types from their dist-js build output
+      - name: build
+        run: pnpm build
       - name: eslint
         run: pnpm lint
+      - name: ts:check
+        run: pnpm ts:check

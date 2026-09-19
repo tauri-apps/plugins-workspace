@@ -10,6 +10,8 @@
     "global-shortcut:allow-unregister",
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister-all",
+    "global-shortcut:allow-is-registered",
+    "window-state:default",
     { "identifier": "fs:allow-watch", "allow": ["*", "**/*"] }
   ]
 }

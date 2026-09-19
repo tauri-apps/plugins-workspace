@@ -8,6 +8,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "ts:check": "pnpm run -r ts:check",
+    "test:api-e2e": "pnpm run --filter \"api-e2e\" e2e",
     "example:api:dev": "pnpm run --filter \"api\" tauri dev"
   },
   "devDependencies": {
