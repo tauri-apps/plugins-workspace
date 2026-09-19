@@ -114,6 +114,25 @@ pub struct Config {
     pub endpoints: Vec<Url>,
     /// Signature public key.
     pub pubkey: String,
+    /// Require the update signature to carry the version it was signed for, and reject the
+    /// update when that version differs from the one announced by the update endpoint.
+    ///
+    /// The endpoint response is fetched over TLS but is not itself signed, and the signature
+    /// only covers the downloaded artifact. Without this flag, anyone able to serve a crafted
+    /// response can pair an inflated `version` field with the `url` and `signature` of an
+    /// older release and force a downgrade to a genuine but outdated build, since that older
+    /// artifact carries a valid signature.
+    ///
+    /// The signed version is read from the signature's trusted comment, which is covered by
+    /// the signature. Releases signed before the Tauri CLI started recording it carry no
+    /// version, so enabling this rejects them. Re-sign and re-publish every release your users
+    /// can still update from before turning this on.
+    ///
+    /// This is checked independently of the version comparison: it constrains which artifact a
+    /// given version number may resolve to, not whether that version is newer.
+    ///
+    /// The default value of this flag is `false`.
+    pub require_signed_version: bool,
     /// The Windows configuration for the updater.
     pub windows: Option<WindowsConfig>,
 }
@@ -135,6 +154,8 @@ impl<'de> Deserialize<'de> for Config {
             #[serde(default)]
             pub endpoints: Vec<Url>,
             pub pubkey: String,
+            #[serde(default, alias = "require-signed-version")]
+            pub require_signed_version: bool,
             pub windows: Option<WindowsConfig>,
         }
 
@@ -152,6 +173,7 @@ impl<'de> Deserialize<'de> for Config {
             dangerous_accept_invalid_hostnames: config.dangerous_accept_invalid_hostnames,
             endpoints: config.endpoints,
             pubkey: config.pubkey,
+            require_signed_version: config.require_signed_version,
             windows: config.windows,
         })
     }
