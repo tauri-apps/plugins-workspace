@@ -46,7 +46,6 @@ pub(crate) async fn check<R: Runtime>(
     timeout: Option<u64>,
     proxy: Option<String>,
     target: Option<String>,
-    allow_downgrades: Option<bool>,
 ) -> Result<Option<Metadata>> {
     let mut builder = webview.updater_builder();
     if let Some(headers) = headers {
@@ -63,9 +62,6 @@ pub(crate) async fn check<R: Runtime>(
     }
     if let Some(target) = target {
         builder = builder.target(target);
-    }
-    if allow_downgrades.unwrap_or(false) {
-        builder = builder.version_comparator(|current, update| update.version != current);
     }
 
     let updater = builder.build()?;

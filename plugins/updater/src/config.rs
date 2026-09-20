@@ -133,6 +133,19 @@ pub struct Config {
     ///
     /// The default value of this flag is `false`.
     pub require_signed_version: bool,
+    /// Allow the updater to install a release whose version is not newer than the
+    /// currently running one, changing the version check from "must be newer" to
+    /// "must be different".
+    ///
+    /// Note that the updater only verifies the signature of the downloaded artifact,
+    /// not the version advertised by the update endpoint, so enabling this removes the
+    /// only guard against installing a previously released (and validly signed) version.
+    ///
+    /// Ignored when the application sets a custom
+    /// [`Builder::default_version_comparator`](crate::Builder::default_version_comparator).
+    ///
+    /// The default value of this flag is `false`.
+    pub allow_downgrades: bool,
     /// The Windows configuration for the updater.
     pub windows: Option<WindowsConfig>,
 }
@@ -156,6 +169,8 @@ impl<'de> Deserialize<'de> for Config {
             pub pubkey: String,
             #[serde(default, alias = "require-signed-version")]
             pub require_signed_version: bool,
+            #[serde(default, alias = "allow-downgrades")]
+            pub allow_downgrades: bool,
             pub windows: Option<WindowsConfig>,
         }
 
@@ -174,6 +189,7 @@ impl<'de> Deserialize<'de> for Config {
             endpoints: config.endpoints,
             pubkey: config.pubkey,
             require_signed_version: config.require_signed_version,
+            allow_downgrades: config.allow_downgrades,
             windows: config.windows,
         })
     }
