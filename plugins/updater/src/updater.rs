@@ -737,7 +737,13 @@ impl Update {
         }
         on_download_finish();
 
-        verify_signature(&buffer, &self.signature, &self.context.config.pubkey)?;
+        verify_signature(
+            &buffer,
+            &self.signature,
+            &self.context.config.pubkey,
+            &self.version,
+            self.context.config.require_signed_version,
+        )?;
 
         Ok(buffer)
     }
@@ -1572,7 +1578,13 @@ where
 }
 
 // Validate signature
-fn verify_signature(data: &[u8], release_signature: &str, pub_key: &str) -> Result<()> {
+fn verify_signature(
+    data: &[u8],
+    release_signature: &str,
+    pub_key: &str,
+    announced_version: &str,
+    require_signed_version: bool,
+) -> Result<()> {
     // we need to convert the pub key
     let pub_key_decoded = base64_to_string(pub_key)?;
     let public_key = PublicKey::decode(&pub_key_decoded)?;
@@ -1581,7 +1593,65 @@ fn verify_signature(data: &[u8], release_signature: &str, pub_key: &str) -> Resu
 
     // Validate signature or bail out
     public_key.verify(data, &signature, true)?;
-    Ok(())
+
+    // Only now is the trusted comment usable: minisign's global signature covers it, and
+    // `verify` above is what checks that global signature. Reading it before this point would
+    // be trusting attacker controlled data.
+    verify_signed_version(
+        signature.trusted_comment(),
+        announced_version,
+        require_signed_version,
+    )
+}
+
+/// Checks the version the artifact was signed for against the version the update endpoint
+/// announced.
+///
+/// The endpoint response is not signed, so its `version` field on its own does not prove which
+/// release the `url` and `signature` actually point at. Comparing it against the signed version
+/// is what stops a tampered response from pairing a new version number with an older release.
+fn verify_signed_version(
+    trusted_comment: &str,
+    announced_version: &str,
+    require_signed_version: bool,
+) -> Result<()> {
+    let Some(signed_version) = signed_version(trusted_comment) else {
+        // Signatures produced before the Tauri CLI started recording the version carry none, so
+        // this can only be enforced when the app opts in. Note that leaving it off means an
+        // attacker can bypass the check outright by serving one of those older signatures.
+        return if require_signed_version {
+            Err(Error::MissingSignedVersion)
+        } else {
+            Ok(())
+        };
+    };
+
+    // compare as semver so that equivalent spellings like `1.2.3` and `v1.2.3` match, falling
+    // back to a literal comparison for versions that are not valid semver
+    let matches = match (
+        Version::from_str(signed_version.trim_start_matches('v')),
+        Version::from_str(announced_version.trim_start_matches('v')),
+    ) {
+        (Ok(signed), Ok(announced)) => signed == announced,
+        _ => signed_version == announced_version,
+    };
+
+    if matches {
+        Ok(())
+    } else {
+        Err(Error::SignedVersionMismatch {
+            signed: signed_version.to_string(),
+            announced: announced_version.to_string(),
+        })
+    }
+}
+
+/// Reads the `version` field out of a signature's trusted comment, which the Tauri CLI writes as
+/// tab separated `key:value` pairs, e.g. `timestamp:1700000000\tfile:app.tar.gz\tversion:1.2.3`.
+fn signed_version(trusted_comment: &str) -> Option<&str> {
+    trusted_comment
+        .split('\t')
+        .find_map(|field| field.strip_prefix("version:"))
 }
 
 fn base64_to_string(base64_string: &str) -> Result<String> {
@@ -1687,6 +1757,59 @@ fn escape_msi_property_arg(arg: impl AsRef<OsStr>) -> String {
 
 #[cfg(test)]
 mod tests {
+    use super::{signed_version, verify_signed_version};
+    use crate::error::Error;
+
+    const CURRENT: &str = "timestamp:1700000000\tfile:app_1.2.3_x64.msi.zip\tversion:1.2.3";
+    // signatures produced before the CLI started embedding the version
+    const LEGACY: &str = "timestamp:1600000000\tfile:app_1.0.0_x64.msi.zip";
+
+    #[test]
+    fn reads_the_signed_version() {
+        assert_eq!(signed_version(CURRENT), Some("1.2.3"));
+        assert_eq!(signed_version(LEGACY), None);
+        // must not match on a field that merely ends in `version:`
+        assert_eq!(signed_version("timestamp:1\tfile:app-version:2.zip"), None);
+    }
+
+    #[test]
+    fn accepts_a_matching_version() {
+        assert!(verify_signed_version(CURRENT, "1.2.3", true).is_ok());
+        assert!(verify_signed_version(CURRENT, "1.2.3", false).is_ok());
+        // the endpoint and the CLI may spell the same version differently
+        assert!(verify_signed_version(CURRENT, "v1.2.3", true).is_ok());
+    }
+
+    #[test]
+    fn rejects_a_version_the_artifact_was_not_signed_for() {
+        // the rollback the flag exists to stop: an old artifact announced as a new version
+        let err = verify_signed_version(CURRENT, "9.9.9", false).unwrap_err();
+        assert!(
+            matches!(err, Error::SignedVersionMismatch { ref signed, ref announced }
+                if signed == "1.2.3" && announced == "9.9.9"),
+            "unexpected error: {err}"
+        );
+        // rejected regardless of whether the app opted in, since the signature does say
+        // which version it covers
+        assert!(verify_signed_version(CURRENT, "9.9.9", true).is_err());
+        assert!(verify_signed_version(CURRENT, "1.2.4", true).is_err());
+    }
+
+    #[test]
+    fn only_requires_a_signed_version_when_configured() {
+        assert!(verify_signed_version(LEGACY, "9.9.9", false).is_ok());
+        assert!(matches!(
+            verify_signed_version(LEGACY, "9.9.9", true).unwrap_err(),
+            Error::MissingSignedVersion
+        ));
+    }
+
+    #[test]
+    fn compares_non_semver_versions_literally() {
+        let comment = "timestamp:1700000000\tfile:app.zip\tversion:2024-01-01";
+        assert!(verify_signed_version(comment, "2024-01-01", true).is_ok());
+        assert!(verify_signed_version(comment, "2024-01-02", true).is_err());
+    }
 
     #[test]
     fn replace_bundle_moves_the_staged_bundle_into_place() {

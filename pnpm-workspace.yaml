@@ -5,3 +5,6 @@ packages:
 
 allowBuilds:
   esbuild: true
+
+overrides:
+  devalue@<5.9.1: ^5.9.1
