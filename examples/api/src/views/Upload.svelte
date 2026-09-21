@@ -162,9 +162,7 @@
             percentage: progress.total > 0 ? Math.round((progress.progressTotal / progress.total) * 100) : 0
           }
         },
-        new Map([
-          ['User-Agent', 'Tauri Upload Plugin Demo']
-        ])
+        { headers: { 'User-Agent': 'Tauri Upload Plugin Demo' } }
       )
 
       downloadResult = {
@@ -211,10 +209,10 @@
             percentage: progress.total > 0 ? Math.round((progress.progressTotal / progress.total) * 100) : 0
           }
         },
-        new Map([
-          ['User-Agent', 'Tauri Upload Plugin Demo']
-        ]),
-        uploadMethod
+        {
+          headers: { 'User-Agent': 'Tauri Upload Plugin Demo' },
+          method: uploadMethod
+        }
       )
 
       uploadResult = {
