@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.49]
+
+### Dependencies
+
+- Upgraded to `http@2.7.0`
+- Upgraded to `log@2.9.2`
+- Upgraded to `updater@2.12.0`
+
 ## [2.0.48]
 
 ### Dependencies
