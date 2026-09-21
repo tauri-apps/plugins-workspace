@@ -17,5 +17,4 @@ commands.allow = [
   "fstat",
   "exists",
   "watch",
-  "unwatch",
 ]
