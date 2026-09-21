@@ -405,9 +405,9 @@ interface IStore {
    * This method is useful if the on-disk state was edited by the user and you want to synchronize the changes.
    *
    * Note:
-   *   - This method loads the data and merges it with the current store,
-   *     this behavior will be changed to resetting to default first and then merging with the on-disk state in v3,
-   *     to fully match the store with the on-disk state, set {@linkcode ReloadOptions | ignoreDefaults} to `true`
+   *   - This method resets the store to its defaults and then merges the on-disk state into it,
+   *     so keys that are neither in the defaults nor on disk are dropped.
+   *     To fully match the store with the on-disk state (ignoring defaults), set {@linkcode ReloadOptions | ignoreDefaults} to `true`
    *   - This method does not emit change events.
    *
    * @returns

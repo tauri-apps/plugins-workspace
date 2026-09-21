@@ -300,12 +300,13 @@ impl<R: Runtime> StoreInner<R> {
 
     /// Update the store from the on-disk state
     ///
-    /// Note: This method loads the data and merges it with the current store
+    /// Note: This method resets the store to its defaults and then merges the on-disk state into it
     pub fn load(&mut self) -> crate::Result<()> {
         let bytes = fs::read(&self.path)?;
+        let entries = (self.deserialize_fn)(&bytes).map_err(crate::Error::Deserialize)?;
 
-        self.cache
-            .extend((self.deserialize_fn)(&bytes).map_err(crate::Error::Deserialize)?);
+        self.cache = self.defaults.clone().unwrap_or_default();
+        self.cache.extend(entries);
 
         Ok(())
     }
@@ -525,9 +526,9 @@ impl<R: Runtime> Store<R> {
     /// Update the store from the on-disk state
     ///
     /// Note:
-    ///   - This method loads the data and merges it with the current store,
-    ///     this behavior will be changed to resetting to default first and then merging with the on-disk state in v3,
-    ///     to fully match the store with the on-disk state,
+    ///   - This method resets the store to its defaults and then merges the on-disk state into it,
+    ///     so keys that are neither in the defaults nor on disk are dropped.
+    ///     To fully match the store with the on-disk state (ignoring defaults),
     ///     use [`reload_ignore_defaults`](Self::reload_ignore_defaults) instead
     ///   - This method does not emit change events
     pub fn reload(&self) -> crate::Result<()> {
