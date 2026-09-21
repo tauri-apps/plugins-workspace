@@ -44,20 +44,12 @@
 //! - **unsafe-headers**: Allows webview requests to send any headers.
 //! - **dangerous-settings**: Allows dangerous client settings such as accepting invalid certificates or hostnames.
 //!
-//! ## Configuration
+//! ## Security
 //!
-//! See [`Config`] for the options that can be set on the `plugins > http` object of your
-//! `tauri.conf.json`:
-//!
-//! ```json
-//! {
-//!   "plugins": {
-//!     "http": {
-//!       "scopeRedirects": true
-//!     }
-//!   }
-//! }
-//! ```
+//! The URL scope is checked on every hop of a redirect chain, not only on the URL requested by
+//! the frontend, so every redirect target must also be allowed by the scope. Otherwise a server on
+//! an allowed origin could redirect the request to any other origin - a `localhost` service, an
+//! internal host or a cloud metadata endpoint - and hand its response to the webview.
 
 pub use reqwest;
 use tauri::{
@@ -65,11 +57,9 @@ use tauri::{
     Manager, Runtime,
 };
 
-pub use config::Config;
 pub use error::{Error, Result};
 
 mod commands;
-mod config;
 mod error;
 #[cfg(feature = "cookies")]
 mod reqwest_cookie_store;
@@ -79,14 +69,13 @@ mod scope;
 const COOKIES_FILENAME: &str = ".cookies";
 
 pub(crate) struct Http {
-    pub(crate) config: Config,
     #[cfg(feature = "cookies")]
     cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
 }
 
-pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
-    Builder::<R, Option<Config>>::new("http")
-        .setup(|app, api| {
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    Builder::new("http")
+        .setup(|app, _api| {
             #[cfg(feature = "cookies")]
             let cookies_jar = {
                 use crate::reqwest_cookie_store::*;
@@ -114,7 +103,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
             };
 
             let state = Http {
-                config: api.config().clone().unwrap_or_default(),
                 #[cfg(feature = "cookies")]
                 cookies_jar: std::sync::Arc::new(cookies_jar),
             };
