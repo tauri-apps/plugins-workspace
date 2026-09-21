@@ -89,6 +89,22 @@ pub enum Error {
     /// The configured updater endpoint must use a secure protocol like `https`
     #[error("The configured updater endpoint must use a secure protocol like `https`.")]
     InsecureTransportProtocol,
+    /// The version the artifact was signed for does not match the version announced by the
+    /// update endpoint.
+    #[error(
+        "The update was signed for version {signed} but the update endpoint announced version {announced}. The endpoint response may have been tampered with to force installing a different release."
+    )]
+    SignedVersionMismatch {
+        /// The version read from the signature's trusted comment.
+        signed: String,
+        /// The version announced by the update endpoint.
+        announced: String,
+    },
+    /// `requireSignedVersion` is enabled but the signature does not carry a version.
+    #[error(
+        "The update signature does not specify the version it was signed for, which `requireSignedVersion` requires. Re-sign and re-publish this release, or disable `requireSignedVersion`."
+    )]
+    MissingSignedVersion,
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
 }

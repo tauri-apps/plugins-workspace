@@ -98,6 +98,11 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
 
         builder.version_comparator = version_comparator.clone();
 
+        // a comparator set by the application takes precedence over the configuration
+        if builder.version_comparator.is_none() && config.allow_downgrades {
+            builder = builder.version_comparator(|current, update| update.version != current);
+        }
+
         #[cfg(any(
             target_os = "linux",
             target_os = "dragonfly",

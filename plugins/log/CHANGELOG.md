@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.9.2]
+
+- [`2df3d936`](https://github.com/tauri-apps/plugins-workspace/commit/2df3d9368187e1d2ce736d3e0b2d4bdcae35b011) ([#3574](https://github.com/tauri-apps/plugins-workspace/pull/3574)) Log webview log target locations after 2 colons instead of 1. (e.g. `webview:myFunction@http://localhost:5173/src/myFile.ts?t=1787480723620:47:4` to `webview::myFunction@http://localhost:5173/src/myFile.ts?t=1787480723620:47:4`)
+
 ## [2.9.1]
 
 - [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
