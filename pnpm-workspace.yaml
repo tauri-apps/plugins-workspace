@@ -19,3 +19,4 @@ minimumReleaseAgeExclude:
   - '@tauri-apps/cli-win32-ia32-msvc@3.0.0-alpha.0'
   - '@tauri-apps/cli-win32-x64-msvc@3.0.0-alpha.0'
   - '@tauri-apps/cli@3.0.0-alpha.0'
+  - '@tauri-apps/api@3.0.0-alpha.1'

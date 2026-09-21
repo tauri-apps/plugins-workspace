@@ -230,7 +230,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::request_permission,
             commands::is_permission_granted
         ])
-        .js_init_script(include_str!("init-iife.js").replace(
+        .initialization_script(include_str!("init-iife.js").replace(
             "__TEMPLATE_windows__",
             if cfg!(windows) { "true" } else { "false" },
         ))

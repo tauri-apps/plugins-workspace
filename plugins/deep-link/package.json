@@ -25,9 +25,9 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@tauri-apps/api": "^2.11.0"
+    "@tauri-apps/api": "^3.0.0-alpha.1"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "3.0.0-alpha.0"
+    "@tauri-apps/cli": "3.0.0-alpha.1"
   }
 }

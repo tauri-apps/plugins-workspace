@@ -9,6 +9,6 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@tauri-apps/cli": "3.0.0-alpha.0"
+    "@tauri-apps/cli": "3.0.0-alpha.1"
   }
 }

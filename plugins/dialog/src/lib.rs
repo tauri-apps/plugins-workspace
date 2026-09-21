@@ -197,7 +197,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     // Dialogs are implemented natively on Android
     #[cfg(not(target_os = "android"))]
     {
-        builder = builder.js_init_script(include_str!("init-iife.js").to_string());
+        builder = builder.initialization_script(include_str!("init-iife.js").to_string());
     }
 
     builder

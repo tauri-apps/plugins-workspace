@@ -12,12 +12,12 @@ resolver = "2"
 serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
 log = "0.4.21"
-tauri = { version = "3.0.0-alpha.0", default-features = false }
-tauri-runtime-wry = "3.0.0-alpha.0"
-tauri-runtime-cef = "3.0.0-alpha.0"
-tauri-build = "3.0.0-alpha.0"
-tauri-plugin = "3.0.0-alpha.0"
-tauri-utils = "3.0.0-alpha.0"
+tauri = { version = "3.0.0-alpha.2", default-features = false }
+tauri-runtime-wry = "3.0.0-alpha.1"
+tauri-runtime-cef = "3.0.0-alpha.1"
+tauri-build = "3.0.0-alpha.1"
+tauri-plugin = "3.0.0-alpha.1"
+tauri-utils = "3.0.0-alpha.1"
 serde_json = "1"
 thiserror = "2"
 url = "2"

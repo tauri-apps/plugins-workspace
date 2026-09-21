@@ -233,7 +233,7 @@ impl Builder {
             ]);
 
         if self.open_js_links_on_click {
-            builder = builder.js_init_script(include_str!("init-iife.js").to_string());
+            builder = builder.initialization_script(include_str!("init-iife.js").to_string());
         }
 
         builder.build()

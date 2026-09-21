@@ -134,7 +134,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .unwrap();
 
     Builder::new("os")
-        .js_init_script(init_js.to_string())
+        .initialization_script(init_js.to_string())
         .invoke_handler(tauri::generate_handler![
             commands::locale,
             commands::hostname
