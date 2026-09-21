@@ -1,6 +1,8 @@
 {
   "tag": "alpha",
   "changes": [
-    ".changes/3.0-alpha.md"
+    ".changes/3.0-alpha.md",
+    ".changes/api-bump.md",
+    ".changes/tauri-bump-alpha.2.md"
   ]
 }
