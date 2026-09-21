@@ -220,6 +220,8 @@ fn map_request_error(error: reqwest::Error) -> Error {
     Error::Network(error)
 }
 
+// `state` is only read when the `cookies` feature is enabled
+#[cfg_attr(not(feature = "cookies"), allow(unused_variables))]
 #[command]
 pub async fn fetch<R: Runtime>(
     webview: Webview<R>,

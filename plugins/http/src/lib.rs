@@ -126,6 +126,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     }
                 }
             }
+
+            #[cfg(not(feature = "cookies"))]
+            let _ = (app, event);
         })
         .invoke_handler(tauri::generate_handler![
             commands::fetch,
