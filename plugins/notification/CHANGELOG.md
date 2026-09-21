@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.0-alpha.1]
+
+- [`15bf611d`](https://github.com/tauri-apps/plugins-workspace/commit/15bf611d68b15f343c0e8f6834a64d0cf2cc1637) Update to tauri v3.0.0-alpha.2.
+
 ## [3.0.0-alpha.0]
 
 - [`363438b5`](https://github.com/tauri-apps/plugins-workspace/commit/363438b50a09162379d57c7c7bfc132520c1e5d4) Update to tauri 3.0 alpha.
@@ -167,3 +171,4 @@
 ## \[2.0.0-alpha.0]
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+elease!
