@@ -605,26 +605,6 @@ pub struct ReadTextFileOptions {
     encoding: Option<String>,
 }
 
-// TODO, remove in v3, rely on `read_file` command instead
-#[tauri::command]
-pub async fn read_text_file<R: Runtime>(
-    webview: Webview<R>,
-    global_scope: GlobalScope<Entry>,
-    command_scope: CommandScope<Entry>,
-    path: SafeFilePath,
-    options: Option<BaseOptions>,
-) -> CommandResult<tauri::ipc::Response> {
-    read_file_inner(
-        "read-text-file",
-        webview,
-        global_scope,
-        command_scope,
-        path,
-        options,
-    )
-    .await
-}
-
 #[tauri::command]
 pub fn read_text_file_lines<R: Runtime>(
     webview: Webview<R>,
@@ -1165,24 +1145,6 @@ pub async fn write_file<R: Runtime>(
     request: tauri::ipc::Request<'_>,
 ) -> CommandResult<()> {
     write_file_inner("write-file", webview, global_scope, command_scope, request).await
-}
-
-// TODO, remove in v3, rely on `write_file` command instead
-#[tauri::command]
-pub async fn write_text_file<R: Runtime>(
-    webview: Webview<R>,
-    global_scope: GlobalScope<Entry>,
-    command_scope: CommandScope<Entry>,
-    request: tauri::ipc::Request<'_>,
-) -> CommandResult<()> {
-    write_file_inner(
-        "write-text-file",
-        webview,
-        global_scope,
-        command_scope,
-        request,
-    )
-    .await
 }
 
 #[tauri::command]
