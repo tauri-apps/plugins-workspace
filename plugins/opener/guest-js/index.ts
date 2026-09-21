@@ -95,5 +95,5 @@ export async function openPath(path: string, openWith?: string): Promise<void> {
  */
 export async function revealItemInDir(path: string | string[]): Promise<void> {
   const paths = typeof path === 'string' ? [path] : path
-  return invoke('plugin:opener|reveal_item_in_dir', { paths })
+  return invoke('plugin:opener|reveal_items_in_dir', { paths })
 }

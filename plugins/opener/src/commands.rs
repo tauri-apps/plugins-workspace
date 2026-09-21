@@ -69,8 +69,7 @@ pub async fn open_path<R: Runtime>(
     }
 }
 
-/// TODO: in the next major version, rename to `reveal_items_in_dir`
 #[tauri::command]
-pub async fn reveal_item_in_dir(paths: Vec<PathBuf>) -> crate::Result<()> {
+pub async fn reveal_items_in_dir(paths: Vec<PathBuf>) -> crate::Result<()> {
     crate::reveal_items_in_dir(&paths)
 }
