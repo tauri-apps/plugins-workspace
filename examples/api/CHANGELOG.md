@@ -22,6 +22,20 @@
 - Upgraded to `store-js@3.0.0-alpha.0`
 - Upgraded to `updater-js@3.0.0-alpha.0`
 
+## [2.0.45]
+
+### Dependencies
+
+- Upgraded to `log-js@2.9.2`
+- Upgraded to `updater-js@2.12.0`
+
+## [2.0.44]
+
+### Dependencies
+
+- Upgraded to `http-js@2.6.1`
+- Upgraded to `store-js@2.4.5`
+
 ## [2.0.43]
 
 ### Dependencies

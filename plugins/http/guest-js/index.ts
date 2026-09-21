@@ -76,6 +76,10 @@ export interface ClientOptions {
   /**
    * Defines the maximum number of redirects the client should follow.
    * If set to 0, no redirects will be followed.
+   *
+   * When the `scopeRedirects` plugin configuration is enabled, every redirect must
+   * also be allowed by the configured scope, otherwise the request fails
+   * instead of being followed.
    */
   maxRedirections?: number
   /** Timeout in milliseconds */

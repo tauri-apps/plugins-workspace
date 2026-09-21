@@ -24,6 +24,21 @@
 - Upgraded to `haptics@3.0.0-alpha.0`
 - Upgraded to `geolocation@3.0.0-alpha.0`
 
+## [2.0.49]
+
+### Dependencies
+
+- Upgraded to `http@2.7.0`
+- Upgraded to `log@2.9.2`
+- Upgraded to `updater@2.12.0`
+
+## [2.0.48]
+
+### Dependencies
+
+- Upgraded to `http@2.6.1`
+- Upgraded to `store@2.4.5`
+
 ## [2.0.47]
 
 ### Dependencies

@@ -20,9 +20,9 @@ pub fn log(
     let level = log::Level::from(level);
 
     let target = if let Some(location) = location {
-        format!("{WEBVIEW_TARGET}:{location}")
+        format!("{WEBVIEW_TARGET}::{location}")
     } else {
-        WEBVIEW_TARGET.to_string()
+        WEBVIEW_TARGET.to_owned()
     };
 
     let mut builder = RecordBuilder::new();
