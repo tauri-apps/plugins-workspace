@@ -8020,7 +8020,6 @@ version = "3.0.0-alpha.0"
 dependencies = [
  "encoding_rs",
  "log",
- "open",
  "os_pipe",
  "regex",
  "schemars 1.2.2",
