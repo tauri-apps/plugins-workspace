@@ -24,6 +24,54 @@ const UPDATED_EXIT_CODE: i32 = 0;
 const ERROR_EXIT_CODE: i32 = 1;
 const UP_TO_DATE_EXIT_CODE: i32 = 2;
 
+/// The port the endpoint in the app's `tauri.conf.json` points at.
+const UPDATE_PORT: u16 = 3007;
+
+/// The server a test serves its update manifest and bundle from, shut down when it goes out of
+/// scope.
+///
+/// Every test binds the same port and `BUILD_LOCK` keeps them from overlapping, so each one has to
+/// leave the port free. Shutting the server down by hand at the end of the test does not: a panic
+/// anywhere above it leaves the server listening, and because `localhost` resolves to both loopback
+/// addresses the next test binds the other one instead of failing. It then answers with the
+/// previous test's manifest and serves the previous test's bundle, so one broken test fails the
+/// ones after it with an error about the wrong package.
+struct UpdaterServer {
+    server: Arc<tiny_http::Server>,
+    requests: Option<std::thread::JoinHandle<()>>,
+}
+
+impl UpdaterServer {
+    /// Serves `localhost:port`, answering every request with `handler`.
+    fn spawn(port: u16, handler: impl Fn(tiny_http::Request) + Send + 'static) -> Self {
+        let server = Arc::new(
+            tiny_http::Server::http(format!("localhost:{port}"))
+                .unwrap_or_else(|e| panic!("failed to start updater server on {port}: {e}")),
+        );
+
+        let server_ = server.clone();
+        Self {
+            requests: Some(std::thread::spawn(move || {
+                for request in server_.incoming_requests() {
+                    handler(request);
+                }
+            })),
+            server,
+        }
+    }
+}
+
+impl Drop for UpdaterServer {
+    fn drop(&mut self) {
+        // `unblock` only ends `incoming_requests`; the port is released when the last `Arc` to the
+        // server is dropped, so the request thread has to be gone before the next test binds it
+        self.server.unblock();
+        if let Some(requests) = self.requests.take() {
+            let _ = requests.join();
+        }
+    }
+}
+
 #[derive(Serialize)]
 struct Config {
     version: &'static str,
@@ -38,6 +86,10 @@ struct Config {
 #[serde(rename_all = "camelCase")]
 struct BundleConfig {
     create_updater_artifacts: Updater,
+    /// Merged into `bundle.linux` of the app's `tauri.conf.json`. Only set by the RPM test, for
+    /// `rpm.provides` (see `rpm_self_provides`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    linux: Option<serde_json::Value>,
 }
 
 #[derive(Serialize)]
@@ -144,9 +196,8 @@ impl BundleTarget {
         };
         // listing the installed packages tells both that the manager is there and that its database
         // works. `rpm` passes this on a Debian host too, against the empty database `apt install
-        // rpm` leaves behind, and that is all the install needs: the bundler only declares the
-        // dependencies the config asks for and this app asks for none, so neither package resolves
-        // anything.
+        // rpm` leaves behind; `rpm_self_provides` is what keeps the install from resolving the
+        // app's dependencies against it.
         let list_packages: &[&str] = match self {
             Self::Deb => &["-l"],
             _ => &["-qa"],
@@ -191,6 +242,40 @@ fn command_stdout_contains(program: &str, args: &[&str], needle: &str) -> bool {
         .output()
         .map(|output| String::from_utf8_lossy(&output.stdout).contains(needle))
         .unwrap_or(false)
+}
+
+/// The libraries the Tauri CLI declares as RPM `Requires` of an app using wry, as
+/// `Runtime::linux_dependencies` names them, with the suffix it appends on a 64 bit target.
+#[cfg(target_os = "linux")]
+const RPM_RUNTIME_LIBRARIES: &[&str] =
+    &["libwebkit2gtk-4.1.so.0()(64bit)", "libgtk-3.so.0()(64bit)"];
+
+/// `bundle.linux` declaring the RPM `Requires` of `RPM_RUNTIME_LIBRARIES` the host's RPM database
+/// cannot resolve as `Provides` of the package itself, or `None` when it resolves all of them (and
+/// for a bundle that is not an RPM).
+///
+/// `rpm` resolves `Requires` against its own database, and on a Debian host that database is the
+/// empty one `apt install rpm` leaves behind: the libraries are there, installed by `apt` - which
+/// is what `installable` checks with `ldconfig` - but nothing in the RPM database provides them, so
+/// both the `rpm -i` that installs the app under test and the `rpm -U` the updater runs fail on
+/// them. A package's own `Provides` satisfy its own `Requires`, so declaring them is what tells
+/// `rpm` what the dynamic linker already knows. On an RPM distro the real packages provide them and
+/// nothing is declared.
+#[cfg(target_os = "linux")]
+fn rpm_self_provides(bundle_target: BundleTarget) -> Option<serde_json::Value> {
+    if !matches!(bundle_target, BundleTarget::Rpm) {
+        return None;
+    }
+
+    let unresolved = RPM_RUNTIME_LIBRARIES
+        .iter()
+        .filter(|library| !command_succeeds("rpm", &["-q", "--whatprovides", library]))
+        .collect::<Vec<_>>();
+    if unresolved.is_empty() {
+        return None;
+    }
+
+    Some(serde_json::json!({ "rpm": { "provides": unresolved } }))
 }
 
 /// Installs the package system wide, which is where the updater will later install the update over
@@ -312,7 +397,7 @@ fn target_to_platforms(
             platform,
             PlatformUpdate {
                 signature,
-                url: "http://localhost:3007/download".into(),
+                url: format!("http://localhost:{UPDATE_PORT}/download"),
                 with_elevated_task: false,
             },
         );
@@ -493,6 +578,7 @@ fn update_app() {
             version: "1.0.0",
             bundle: BundleConfig {
                 create_updater_artifacts: Updater::Bool(true),
+                linux: None,
             },
             plugins: None,
         },
@@ -500,6 +586,7 @@ fn update_app() {
             version: "1.0.0",
             bundle: BundleConfig {
                 create_updater_artifacts: Updater::String(V1Compatible::V1Compatible),
+                linux: None,
             },
             plugins: None,
         },
@@ -556,6 +643,7 @@ fn update_linux_package(bundle_target: BundleTarget) {
         version: "1.0.0",
         bundle: BundleConfig {
             create_updater_artifacts: Updater::Bool(true),
+            linux: rpm_self_provides(bundle_target),
         },
         plugins: None,
     };
@@ -626,47 +714,37 @@ fn run_update_cases(
         ));
         std::fs::rename(&out_updater_path, &updater_path).expect("failed to rename bundle");
 
-        // start the updater server
-        let server = Arc::new(
-            tiny_http::Server::http("localhost:3007").expect("failed to start updater server"),
-        );
+        // start the updater server, shut down at the end of the iteration even if a case panics
+        let _server = UpdaterServer::spawn(UPDATE_PORT, move |request| match request.url() {
+            "/" => {
+                let platforms = target_to_platforms(update_platform.clone(), signature.clone());
 
-        let server_ = server.clone();
-        std::thread::spawn(move || {
-            for request in server_.incoming_requests() {
-                match request.url() {
-                    "/" => {
-                        let platforms =
-                            target_to_platforms(update_platform.clone(), signature.clone());
-
-                        let body = serde_json::to_vec(&Update {
-                            version: "1.0.0".into(),
-                            date: time::OffsetDateTime::now_utc()
-                                .format(&time::format_description::well_known::Rfc3339)
-                                .unwrap(),
-                            platforms,
-                        })
-                        .unwrap();
-                        let len = body.len();
-                        let response = tiny_http::Response::new(
-                            tiny_http::StatusCode(200),
-                            Vec::new(),
-                            std::io::Cursor::new(body),
-                            Some(len),
-                            None,
-                        );
-                        let _ = request.respond(response);
-                    }
-                    "/download" => {
-                        let _ = request.respond(tiny_http::Response::from_file(
-                            File::open(&updater_path).unwrap_or_else(|_| {
-                                panic!("failed to open updater bundle {}", updater_path.display())
-                            }),
-                        ));
-                    }
-                    _ => (),
-                }
+                let body = serde_json::to_vec(&Update {
+                    version: "1.0.0".into(),
+                    date: time::OffsetDateTime::now_utc()
+                        .format(&time::format_description::well_known::Rfc3339)
+                        .unwrap(),
+                    platforms,
+                })
+                .unwrap();
+                let len = body.len();
+                let response = tiny_http::Response::new(
+                    tiny_http::StatusCode(200),
+                    Vec::new(),
+                    std::io::Cursor::new(body),
+                    Some(len),
+                    None,
+                );
+                let _ = request.respond(response);
             }
+            "/download" => {
+                let _ = request.respond(tiny_http::Response::from_file(
+                    File::open(&updater_path).unwrap_or_else(|_| {
+                        panic!("failed to open updater bundle {}", updater_path.display())
+                    }),
+                ));
+            }
+            _ => (),
         });
 
         config.version = "0.1.0";
@@ -721,9 +799,6 @@ fn run_update_cases(
         {
             remove_package(bundle_target);
         }
-
-        // graceful shutdown
-        server.unblock();
     }
 }
 
@@ -845,6 +920,7 @@ fn update_validates_signed_version() {
             version: "1.0.0",
             bundle: BundleConfig {
                 create_updater_artifacts: Updater::Bool(true),
+                linux: None,
             },
             plugins: None,
         },
@@ -885,57 +961,48 @@ fn update_validates_signed_version() {
         version: "1.0.0".into(),
     }));
 
-    let server = Arc::new(
-        tiny_http::Server::http(format!("localhost:{SIGNED_VERSION_PORT}"))
-            .expect("failed to start updater server"),
-    );
-
-    let server_ = server.clone();
     let served_ = served.clone();
     let target_ = target.clone();
     let updater_path_ = updater_path.clone();
-    std::thread::spawn(move || {
-        for request in server_.incoming_requests() {
-            match request.url() {
-                "/" => {
-                    let mut platforms = HashMap::new();
-                    platforms.insert(
-                        target_.clone(),
-                        PlatformUpdate {
-                            // always the genuine 1.0.0 signature; only the version above it moves
-                            signature: signature.clone(),
-                            url: format!("http://localhost:{SIGNED_VERSION_PORT}/download"),
-                            with_elevated_task: false,
-                        },
-                    );
+    // shut down at the end of the test even if a check below panics
+    let _server = UpdaterServer::spawn(SIGNED_VERSION_PORT, move |request| match request.url() {
+        "/" => {
+            let mut platforms = HashMap::new();
+            platforms.insert(
+                target_.clone(),
+                PlatformUpdate {
+                    // always the genuine 1.0.0 signature; only the version above it moves
+                    signature: signature.clone(),
+                    url: format!("http://localhost:{SIGNED_VERSION_PORT}/download"),
+                    with_elevated_task: false,
+                },
+            );
 
-                    let body = serde_json::to_vec(&Update {
-                        version: served_.lock().unwrap().version.clone(),
-                        date: time::OffsetDateTime::now_utc()
-                            .format(&time::format_description::well_known::Rfc3339)
-                            .unwrap(),
-                        platforms,
-                    })
-                    .unwrap();
-                    let len = body.len();
-                    let _ = request.respond(tiny_http::Response::new(
-                        tiny_http::StatusCode(200),
-                        Vec::new(),
-                        std::io::Cursor::new(body),
-                        Some(len),
-                        None,
-                    ));
-                }
-                "/download" => {
-                    let _ = request.respond(tiny_http::Response::from_file(
-                        File::open(&updater_path_).unwrap_or_else(|_| {
-                            panic!("failed to open updater bundle {}", updater_path_.display())
-                        }),
-                    ));
-                }
-                _ => (),
-            }
+            let body = serde_json::to_vec(&Update {
+                version: served_.lock().unwrap().version.clone(),
+                date: time::OffsetDateTime::now_utc()
+                    .format(&time::format_description::well_known::Rfc3339)
+                    .unwrap(),
+                platforms,
+            })
+            .unwrap();
+            let len = body.len();
+            let _ = request.respond(tiny_http::Response::new(
+                tiny_http::StatusCode(200),
+                Vec::new(),
+                std::io::Cursor::new(body),
+                Some(len),
+                None,
+            ));
         }
+        "/download" => {
+            let _ = request.respond(tiny_http::Response::from_file(
+                File::open(&updater_path_).unwrap_or_else(|_| {
+                    panic!("failed to open updater bundle {}", updater_path_.display())
+                }),
+            ));
+        }
+        _ => (),
     });
 
     // `requireSignedVersion` is baked in by `generate_context!`, so each value needs its own build
@@ -947,6 +1014,7 @@ fn update_validates_signed_version() {
                 version: "0.1.0",
                 bundle: BundleConfig {
                     create_updater_artifacts: Updater::Bool(true),
+                    linux: None,
                 },
                 plugins: Some(serde_json::json!({
                     "updater": {
@@ -992,8 +1060,6 @@ fn update_validates_signed_version() {
 
     // a signature that names a version is held to it whether or not the option is on
     check("1.5.0", Some(MISMATCH_ERROR), None);
-
-    server.unblock();
 
     // leave the 0.1.0 app behind rather than whichever update was installed last
     restore_app(&root_dir, &pristine);
