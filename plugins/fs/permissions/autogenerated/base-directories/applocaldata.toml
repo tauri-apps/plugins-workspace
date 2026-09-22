@@ -36,47 +36,29 @@ path = "$APPLOCALDATA"
 [[set]]
 identifier = "allow-applocaldata-read-recursive"
 description = "This allows full recursive read access to the complete `$APPLOCALDATA` folder, files and subdirectories."
-permissions = [
-    "read-all",
-    "scope-applocaldata-recursive"
-]
+permissions = ["read-all", "scope-applocaldata-recursive"]
 
 [[set]]
 identifier = "allow-applocaldata-write-recursive"
 description = "This allows full recursive write access to the complete `$APPLOCALDATA` folder, files and subdirectories."
-permissions = [
-    "write-all",
-    "scope-applocaldata-recursive"
-]
+permissions = ["write-all", "scope-applocaldata-recursive"]
 
 [[set]]
 identifier = "allow-applocaldata-read"
 description = "This allows non-recursive read access to the `$APPLOCALDATA` folder."
-permissions = [
-    "read-all",
-    "scope-applocaldata"
-]
+permissions = ["read-all", "scope-applocaldata"]
 
 [[set]]
 identifier = "allow-applocaldata-write"
 description = "This allows non-recursive write access to the `$APPLOCALDATA` folder."
-permissions = [
-    "write-all",
-    "scope-applocaldata"
-]
+permissions = ["write-all", "scope-applocaldata"]
 
 [[set]]
 identifier = "allow-applocaldata-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$APPLOCALDATA` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-applocaldata-recursive"
-]
+permissions = ["read-meta", "scope-applocaldata-recursive"]
 
 [[set]]
 identifier = "allow-applocaldata-meta"
 description = "This allows non-recursive read access to metadata of the `$APPLOCALDATA` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-applocaldata-index"
-]
+permissions = ["read-meta", "scope-applocaldata-index"]
