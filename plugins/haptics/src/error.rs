@@ -4,13 +4,18 @@
 
 use serde::{ser::Serializer, Serialize};
 
+/// Alias for a [`std::result::Result`] with the error type [`Error`].
 pub type Result<T> = std::result::Result<T, Error>;
 
 // TODO: Improve Error handling (different typed errors instead of one (stringified) PluginInvokeError for all mobile errors)
 
+/// Errors returned by the haptics APIs.
 #[derive(Debug, thiserror::Error)]
 #[cfg_attr(feature = "specta", derive(specta::Type))]
 pub enum Error {
+    /// The call to the Android or iOS plugin implementation failed, either because the
+    /// arguments could not be serialized, the response could not be deserialized, or the
+    /// native side rejected the call. Only produced on Android and iOS.
     #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(

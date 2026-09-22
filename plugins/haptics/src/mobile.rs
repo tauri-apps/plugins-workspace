@@ -32,18 +32,40 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Haptics<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Haptics<R> {
+    /// Triggers a vibration for `duration` milliseconds.
+    ///
+    /// On iOS this plays a continuous [Core Haptics](https://developer.apple.com/documentation/corehaptics)
+    /// pattern when the device supports it, falling back to the system alert vibration
+    /// otherwise. On Android it uses [`Vibrator`](https://developer.android.com/reference/android/os/Vibrator).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::PluginInvoke`](crate::Error::PluginInvoke) if the underlying Android or
+    /// iOS plugin invocation fails.
     pub fn vibrate(&self, duration: u32) -> crate::Result<()> {
         self.0
             .run_mobile_plugin("vibrate", VibratePayload { duration })
             .map_err(Into::into)
     }
 
+    /// Triggers an impact-feedback haptic with the given [`ImpactFeedbackStyle`].
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::PluginInvoke`](crate::Error::PluginInvoke) if the underlying Android or
+    /// iOS plugin invocation fails.
     pub fn impact_feedback(&self, style: ImpactFeedbackStyle) -> crate::Result<()> {
         self.0
             .run_mobile_plugin("impactFeedback", ImpactFeedbackPayload { style })
             .map_err(Into::into)
     }
 
+    /// Triggers a notification-feedback haptic for the given [`NotificationFeedbackType`].
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::PluginInvoke`](crate::Error::PluginInvoke) if the underlying Android or
+    /// iOS plugin invocation fails.
     pub fn notification_feedback(&self, r#type: NotificationFeedbackType) -> crate::Result<()> {
         self.0
             .run_mobile_plugin(
@@ -53,6 +75,13 @@ impl<R: Runtime> Haptics<R> {
             .map_err(Into::into)
     }
 
+    /// Triggers a haptic indicating that a selection changed, e.g. when the value of a picker
+    /// control changes.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::PluginInvoke`](crate::Error::PluginInvoke) if the underlying Android or
+    /// iOS plugin invocation fails.
     pub fn selection_feedback(&self) -> crate::Result<()> {
         self.0
             .run_mobile_plugin("selectionFeedback", ())

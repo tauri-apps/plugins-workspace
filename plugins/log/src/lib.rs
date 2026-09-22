@@ -6,7 +6,7 @@
 //!
 //! ## Cargo features
 //!
-//! - **colored**: Enables [`Builder::with_colors`] `fern`'s `colored` feature for ANSI-colored outputs.
+//! - **colored**: Enables `Builder::with_colors`, which uses `fern`'s `colored` feature for ANSI-colored outputs.
 //! - **tracing**: Emit both log and tracing for the JavaScript log commands.
 
 #![doc(
@@ -39,6 +39,8 @@ pub use log;
 
 mod commands;
 
+/// The log target prefix used for log records emitted through the JavaScript `trace`/`debug`/`info`/`warn`/`error`
+/// bindings, optionally followed by `::{location}` when the caller's source location could be determined.
 pub const WEBVIEW_TARGET: &str = "webview";
 
 #[cfg(target_os = "ios")]
@@ -59,16 +61,23 @@ const DEFAULT_LOG_TARGETS: [Target; 2] = [
 const LOG_DATE_FORMAT: &[time::format_description::FormatItem<'_>] =
     format_description!("[year]-[month]-[day]_[hour]-[minute]-[second]");
 
+/// The error type returned by this plugin's fallible operations.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// Forwarded from a call into the Tauri API, e.g. resolving the app log directory.
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+    /// Forwarded from a filesystem operation performed while creating, writing to or rotating a log file.
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    /// Forwarded from formatting a timestamp with the configured [`TimezoneStrategy`].
     #[error(transparent)]
     TimeFormat(#[from] time::error::Format),
+    /// Forwarded from parsing an invalid `time` format description.
     #[error(transparent)]
     InvalidFormatDescription(#[from] time::error::InvalidFormatDescription),
+    /// Returned by [`Builder::split`] when [`Builder::skip_logger`] was called on the builder, since no logger was
+    /// created for it to return.
     #[error("Internal logger disabled and cannot be acquired or attached")]
     LoggerNotInitialized,
 }
@@ -125,6 +134,7 @@ impl From<log::Level> for LogLevel {
     }
 }
 
+/// The strategy applied to a log file when it exceeds [`Builder::max_file_size`].
 #[derive(Debug, Clone)]
 pub enum RotationStrategy {
     /// Will keep all the logs, renaming them to include the date.
@@ -135,13 +145,17 @@ pub enum RotationStrategy {
     KeepSome(usize),
 }
 
+/// The timezone used to compute the current time for log message timestamps and rotated log file names.
 #[derive(Debug, Clone)]
 pub enum TimezoneStrategy {
+    /// Use UTC time.
     UseUtc,
+    /// Use the local timezone. Falls back to UTC if the local offset cannot be determined.
     UseLocal,
 }
 
 impl TimezoneStrategy {
+    /// Returns the current time according to this strategy.
     pub fn get_now(&self) -> OffsetDateTime {
         match self {
             TimezoneStrategy::UseUtc => OffsetDateTime::now_utc(),
@@ -152,6 +166,7 @@ impl TimezoneStrategy {
     }
 }
 
+/// The strategy used to open a log file when a [`TargetKind::Folder`] or [`TargetKind::LogDir`] target is set up.
 #[derive(Debug, Clone, PartialEq)]
 pub enum FileOpenStrategy {
     /// Open existing file from last session and append, if any.
@@ -351,7 +366,9 @@ pub enum TargetKind {
     ///
     /// The plugin will ensure the directory exists before writing logs.
     Folder {
+        /// Path of the directory to write the log file to.
         path: PathBuf,
+        /// Name of the log file, without extension. Defaults to the app's package name when `None`.
         file_name: Option<String>,
     },
     /// Write logs to the OS specific logs directory.
@@ -364,7 +381,10 @@ pub enum TargetKind {
     /// | macOS/iOS | `{homeDir}/Library/Logs/{bundleIdentifier}`                                               | `/Users/Alice/Library/Logs/com.tauri.dev`                   |
     /// | Windows   | `{FOLDERID_LocalAppData}/{bundleIdentifier}/logs`                                         | `C:\Users\Alice\AppData\Local\com.tauri.dev\logs`           |
     /// | Android   | `{ConfigDir}/logs`                                                                        | `/data/data/com.tauri.dev/files/logs`                       |
-    LogDir { file_name: Option<String> },
+    LogDir {
+        /// Name of the log file, without extension. Defaults to the app's package name when `None`.
+        file_name: Option<String>,
+    },
     /// Forward logs to the webview (via the `log://log` event).
     ///
     /// This requires the webview to subscribe to log events, via this plugins `attachConsole` function.
@@ -385,6 +405,7 @@ pub struct Target {
 }
 
 impl Target {
+    /// Creates a new [`Target`] of the given [`TargetKind`], with no filters and the [`Builder`]'s formatter.
     #[inline]
     pub const fn new(kind: TargetKind) -> Self {
         Self {
@@ -394,6 +415,8 @@ impl Target {
         }
     }
 
+    /// Adds a filter that can reject log records from being sent to this target. Multiple filters may be added by
+    /// calling this method more than once.
     #[inline]
     pub fn filter<F>(mut self, filter: F) -> Self
     where
@@ -403,6 +426,8 @@ impl Target {
         self
     }
 
+    /// Sets a formatter for log records sent to this target, overriding the [`Builder`]'s formatter for this
+    /// target only.
     #[inline]
     pub fn format<F>(mut self, formatter: F) -> Self
     where
@@ -413,6 +438,8 @@ impl Target {
     }
 }
 
+/// Builds the log plugin, configuring targets, rotation, formatting and level filters before attaching the
+/// resulting logger as the global logger for the [`log`] crate.
 pub struct Builder {
     dispatch: fern::Dispatch,
     rotation_strategy: RotationStrategy,
@@ -454,6 +481,10 @@ impl Default for Builder {
 }
 
 impl Builder {
+    /// Creates a new [`Builder`] with the default configuration: targets [`TargetKind::Stdout`] and
+    /// [`TargetKind::LogDir`] (using the app's package name as the file name), [`RotationStrategy::KeepOne`],
+    /// [`TimezoneStrategy::UseUtc`], [`FileOpenStrategy::Append`], a maximum log file size of `40_000` bytes
+    /// (see [`Self::max_file_size`]) and the default `fern` formatter.
     pub fn new() -> Self {
         Default::default()
     }
@@ -604,14 +635,13 @@ impl Builder {
     /// Example usage:
     ///
     /// ```
-    /// # fn main() {
     /// tauri_plugin_log::Builder::new()
     ///     .level(log::LevelFilter::Info)
     ///     .filter(|metadata| {
     ///         // Reject messages with the `Error` log level.
-    ///         metadata.level() != log::LevelFilter::Error
-    ///     })
-    /// # }
+    ///         metadata.level() != log::Level::Error
+    ///     });
+    /// ```
     pub fn filter<F>(mut self, filter: F) -> Self
     where
         F: Fn(&log::Metadata) -> bool + Send + Sync + 'static,
@@ -661,10 +691,16 @@ impl Builder {
     /// Both scenarios require calling this method.
     ///
     /// ```rust
+    /// # struct SimpleLogger;
+    /// # impl log::Log for SimpleLogger {
+    /// #     fn enabled(&self, _metadata: &log::Metadata) -> bool { true }
+    /// #     fn log(&self, _record: &log::Record) {}
+    /// #     fn flush(&self) {}
+    /// # }
     /// static LOGGER: SimpleLogger = SimpleLogger;
     ///
-    /// log::set_logger(&SimpleLogger)?;
-    /// log::set_max_level(LevelFilter::Info);
+    /// log::set_logger(&LOGGER).expect("a logger was already set");
+    /// log::set_max_level(log::LevelFilter::Info);
     /// tauri_plugin_log::Builder::new()
     ///     .skip_logger();
     /// ```
@@ -824,6 +860,15 @@ impl Builder {
         plugin::Builder::new("log").invoke_handler(tauri::generate_handler![commands::log])
     }
 
+    /// Builds the [`TauriPlugin`] and returns it together with the configured [`log::LevelFilter`] and [`log::Log`]
+    /// implementation, instead of registering them as the global logger.
+    ///
+    /// Use this instead of [`Self::build`] when this logger needs to be combined with another one, e.g. when
+    /// forwarding logs to `tracing` via `tracing-log`, since only a single global logger can be installed.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::LoggerNotInitialized`] if [`Self::skip_logger`] was called on this builder.
     #[allow(clippy::type_complexity)]
     pub fn split<R: Runtime>(
         self,
@@ -846,6 +891,8 @@ impl Builder {
         Ok((plugin.build(), max_level, log))
     }
 
+    /// Builds the [`TauriPlugin`], attaching the configured logger as the global logger for the [`log`] crate on
+    /// setup, unless [`Self::skip_logger`] was called on this builder.
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         Self::plugin_builder()
             .setup(move |app_handle, _api| {

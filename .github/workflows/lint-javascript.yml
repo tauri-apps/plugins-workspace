@@ -42,19 +42,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Cache pnpm modules
-        uses: actions/cache@v6
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
       - uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
       - uses: pnpm/action-setup@v6
         with:
           run_install: true
+          cache: true # the pnpm store, keyed by OS and lockfile hash and shared by every workflow
       # the type-checked lint rules (and packages/api-e2e) resolve the plugins'
       # types from their dist-js build output
       - name: build

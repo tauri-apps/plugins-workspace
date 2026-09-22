@@ -84,6 +84,16 @@ pub(crate) struct Http {
     cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
 }
 
+/// Initializes the plugin.
+///
+/// The plugin reads its [`Config`] from the `plugins > http` object of the `tauri.conf.json` file;
+/// when that object is missing, [`Config::default`] is used.
+///
+/// With the `cookies` Cargo feature (enabled by default), a cookie jar is loaded from a `.cookies`
+/// file in the application cache directory on setup and written back to it when the application
+/// exits. A jar that cannot be read is replaced by an empty one.
+///
+/// Register it on the Tauri builder with `.plugin(tauri_plugin_http::init())`.
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
     Builder::<R, Option<Config>>::new("http")
         .setup(|app, api| {

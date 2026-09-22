@@ -2,6 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+/**
+ * Webview script injected by the notification plugin.
+ *
+ * It replaces `window.Notification` with an implementation backed by the plugin, so the
+ * standard Notification Web API sends OS notifications, and keeps
+ * `window.Notification.permission` and `window.Notification.requestPermission` in sync
+ * with the permission state reported by the plugin.
+ *
+ * @module
+ */
+
 import { invoke } from '@tauri-apps/api/core'
 import type { PermissionState } from '@tauri-apps/api/core'
 import type { Options } from './index'

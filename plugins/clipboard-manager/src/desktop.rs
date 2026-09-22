@@ -28,6 +28,12 @@ pub struct Clipboard<R: Runtime> {
 }
 
 impl<R: Runtime> Clipboard<R> {
+    /// Writes plain text to the system clipboard.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::Clipboard`] if the clipboard could not be initialized or the
+    /// underlying [`arboard`] operation fails.
     pub fn write_text<'a, T: Into<Cow<'a, str>>>(&self, text: T) -> crate::Result<()> {
         match &self.clipboard {
             Ok(clipboard) => clipboard
@@ -41,6 +47,12 @@ impl<R: Runtime> Clipboard<R> {
         }
     }
 
+    /// Writes an image to the system clipboard as RGBA data.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::Clipboard`] if the clipboard could not be initialized or the
+    /// underlying [`arboard`] operation fails.
     pub fn write_image(&self, image: &Image<'_>) -> crate::Result<()> {
         match &self.clipboard {
             Ok(clipboard) => clipboard
@@ -69,6 +81,13 @@ impl<R: Runtime> Clipboard<R> {
         }
     }
 
+    /// Writes HTML to the system clipboard, with an optional plain text fallback for targets
+    /// that cannot render it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::Clipboard`] if the clipboard could not be initialized or the
+    /// underlying [`arboard`] operation fails.
     pub fn write_html<'a, T: Into<Cow<'a, str>>>(
         &self,
         html: T,
@@ -86,6 +105,12 @@ impl<R: Runtime> Clipboard<R> {
         }
     }
 
+    /// Clears the system clipboard.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::Clipboard`] if the clipboard could not be initialized or the
+    /// underlying [`arboard`] operation fails.
     pub fn clear(&self) -> crate::Result<()> {
         match &self.clipboard {
             Ok(clipboard) => clipboard
