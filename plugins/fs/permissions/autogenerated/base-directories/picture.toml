@@ -36,47 +36,29 @@ path = "$PICTURE"
 [[set]]
 identifier = "allow-picture-read-recursive"
 description = "This allows full recursive read access to the complete `$PICTURE` folder, files and subdirectories."
-permissions = [
-    "read-all",
-    "scope-picture-recursive"
-]
+permissions = ["read-all", "scope-picture-recursive"]
 
 [[set]]
 identifier = "allow-picture-write-recursive"
 description = "This allows full recursive write access to the complete `$PICTURE` folder, files and subdirectories."
-permissions = [
-    "write-all",
-    "scope-picture-recursive"
-]
+permissions = ["write-all", "scope-picture-recursive"]
 
 [[set]]
 identifier = "allow-picture-read"
 description = "This allows non-recursive read access to the `$PICTURE` folder."
-permissions = [
-    "read-all",
-    "scope-picture"
-]
+permissions = ["read-all", "scope-picture"]
 
 [[set]]
 identifier = "allow-picture-write"
 description = "This allows non-recursive write access to the `$PICTURE` folder."
-permissions = [
-    "write-all",
-    "scope-picture"
-]
+permissions = ["write-all", "scope-picture"]
 
 [[set]]
 identifier = "allow-picture-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$PICTURE` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-picture-recursive"
-]
+permissions = ["read-meta", "scope-picture-recursive"]
 
 [[set]]
 identifier = "allow-picture-meta"
 description = "This allows non-recursive read access to metadata of the `$PICTURE` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-picture-index"
-]
+permissions = ["read-meta", "scope-picture-index"]
