@@ -93,7 +93,10 @@ describePlugin('os', () => {
 
   it('locale is null or a language tag', async () => {
     const locale = await tauri((api) => api.os.locale())
-    if (locale !== null) {
+    // The plugin forwards the environment's POSIX locale as-is, so a host with
+    // no locale configured (CI runners default to `LANG=C.UTF-8`) reports the
+    // POSIX default instead of a language tag.
+    if (locale !== null && locale !== 'C' && locale !== 'POSIX') {
       // e.g. `en-US`
       const [language, ...subtags] = locale.split(/[-_]/)
       expect(language).toMatch(/^[A-Za-z]{2,3}$/)

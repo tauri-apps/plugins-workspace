@@ -181,7 +181,12 @@ describePlugin('shell', () => {
         ),
       shell.program,
       shell.flag,
-      platform === 'win32' ? 'ping -n 30 127.0.0.1 > NUL' : 'sleep 30'
+      // The script has to keep the shell itself busy rather than start another
+      // process: `kill` only signals the direct child, and a surviving
+      // grandchild holds the stdout/stderr pipes open, which withholds the
+      // `close` event until it exits on its own. Both shells block on their
+      // built-in stdin read, and the test never writes to stdin.
+      platform === 'win32' ? 'set /p killme=' : 'read killme'
     )
     if (platform === 'win32') {
       // TerminateProcess sets an exit code of 1
