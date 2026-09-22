@@ -1,4 +1,5 @@
 ---
+"fs": major
 "fs-js": major
 ---
 
