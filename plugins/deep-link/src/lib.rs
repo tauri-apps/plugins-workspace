@@ -351,14 +351,12 @@ mod imp {
                 Command::new("update-desktop-database")
                     .arg(target)
                     .status()
-                    .inspect_err(crate::error::inspect_command_error(
-                        "update-desktop-database",
-                    ))?;
+                    .map_err(|error| crate::Error::Execute("update-desktop-database", error))?;
 
                 Command::new("xdg-mime")
                     .args(["default", &file_name, mime_type.as_str()])
                     .status()
-                    .inspect_err(crate::error::inspect_command_error("xdg-mime"))?;
+                    .map_err(|error| crate::Error::Execute("xdg-mime", error))?;
 
                 Ok(())
             }
@@ -463,7 +461,7 @@ mod imp {
                         &format!("x-scheme-handler/{}", _protocol.as_ref()),
                     ])
                     .output()
-                    .inspect_err(crate::error::inspect_command_error("xdg-mime"))?;
+                    .map_err(|error| crate::Error::Execute("xdg-mime", error))?;
 
                 Ok(String::from_utf8_lossy(&output.stdout).contains(&file_name))
             }
