@@ -4,11 +4,39 @@
 
 use std::path::{Path, PathBuf};
 
-/// Reveal one or more paths in the system's default explorer.
+/// Reveal a path in the system's default explorer.
 ///
 /// ## Platform-specific:
 ///
 /// - **Android / iOS:** Unsupported.
+pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
+    #[cfg(any(
+        windows,
+        target_os = "macos",
+        target_os = "linux",
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "openbsd"
+    ))]
+    return imp::reveal_items_in_dir(&[canonicalize(path.as_ref())?]);
+
+    #[cfg(not(any(
+        windows,
+        target_os = "macos",
+        target_os = "linux",
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "openbsd"
+    )))]
+    {
+        let _path = path;
+        Err(crate::Error::UnsupportedPlatform)
+    }
+}
+
+/// Reveal multiple paths in the system's default explorer.
 pub fn reveal_items_in_dir<I, P>(paths: I) -> crate::Result<()>
 where
     I: IntoIterator<Item = P>,

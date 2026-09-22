@@ -76,7 +76,7 @@ export async function openPath(path: string, openWith?: string): Promise<void> {
 }
 
 /**
- * Reveal a path with the system's default explorer.
+ * Reveal one or more paths with the system's default explorer.
  *
  * #### Platform-specific:
  *
@@ -84,16 +84,16 @@ export async function openPath(path: string, openWith?: string): Promise<void> {
  *
  * @example
  * ```typescript
- * import { revealItemInDir } from '@tauri-apps/plugin-opener';
- * await revealItemInDir('/path/to/file');
- * await revealItemInDir([ '/path/to/file', '/path/to/another/file' ]);
+ * import { revealItemsInDir } from '@tauri-apps/plugin-opener';
+ * await revealItemsInDir('/path/to/file');
+ * await revealItemsInDir([ '/path/to/file', '/path/to/another/file' ]);
  * ```
  *
  * @param path The path to reveal.
  *
  * @since 2.0.0
  */
-export async function revealItemInDir(path: string | string[]): Promise<void> {
+export async function revealItemsInDir(path: string | string[]): Promise<void> {
   const paths = typeof path === 'string' ? [path] : path
   return invoke('plugin:opener|reveal_items_in_dir', { paths })
 }
