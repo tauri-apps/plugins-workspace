@@ -33,6 +33,7 @@ pub use mobile::Geolocation;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the geolocation APIs.
 pub trait GeolocationExt<R: Runtime> {
+    /// Returns the handle to the geolocation APIs.
     fn geolocation(&self) -> &Geolocation<R>;
 }
 

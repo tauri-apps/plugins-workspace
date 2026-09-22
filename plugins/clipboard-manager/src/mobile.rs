@@ -34,6 +34,11 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Clipboard<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Clipboard<R> {
+    /// Writes plain text to the system clipboard, without a label.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::PluginInvoke`] if the underlying mobile plugin call fails.
     pub fn write_text<'a, T: Into<Cow<'a, str>>>(&self, text: T) -> crate::Result<()> {
         let text = text.into().to_string();
         self.0
@@ -41,6 +46,13 @@ impl<R: Runtime> Clipboard<R> {
             .map_err(Into::into)
     }
 
+    /// Writes plain text to the system clipboard along with a label describing the content.
+    ///
+    /// The label is only used on Android (it becomes the `ClipData` label); iOS ignores it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::PluginInvoke`] if the underlying mobile plugin call fails.
     pub fn write_text_with_label<'a, T: Into<Cow<'a, str>>>(
         &self,
         text: T,
@@ -59,12 +71,22 @@ impl<R: Runtime> Clipboard<R> {
             .map_err(Into::into)
     }
 
+    /// Not supported on mobile.
+    ///
+    /// # Errors
+    ///
+    /// Always returns [`crate::Error::Clipboard`].
     pub fn write_image(&self, _image: &Image<'_>) -> crate::Result<()> {
         Err(crate::Error::Clipboard(
             "Unsupported on this platform".to_string(),
         ))
     }
 
+    /// Reads the system clipboard as plain text.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::PluginInvoke`] if the underlying mobile plugin call fails.
     pub fn read_text(&self) -> crate::Result<String> {
         self.0
             .run_mobile_plugin("readText", ())
@@ -74,6 +96,11 @@ impl<R: Runtime> Clipboard<R> {
             .map_err(Into::into)
     }
 
+    /// Not supported on mobile.
+    ///
+    /// # Errors
+    ///
+    /// Always returns [`crate::Error::Clipboard`].
     pub fn read_image(&self) -> crate::Result<Image<'_>> {
         Err(crate::Error::Clipboard(
             "Unsupported on this platform".to_string(),
@@ -81,6 +108,11 @@ impl<R: Runtime> Clipboard<R> {
     }
 
     // Treat HTML as unsupported on mobile until tested
+    /// Not supported on mobile.
+    ///
+    /// # Errors
+    ///
+    /// Always returns [`crate::Error::Clipboard`].
     pub fn write_html<'a, T: Into<Cow<'a, str>>>(
         &self,
         _html: T,
@@ -91,6 +123,14 @@ impl<R: Runtime> Clipboard<R> {
         ))
     }
 
+    /// Clears the system clipboard.
+    ///
+    /// On Android this only works on SDK 28 and above; on older versions the clipboard is
+    /// instead overwritten with an empty string.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::PluginInvoke`] if the underlying mobile plugin call fails.
     pub fn clear(&self) -> crate::Result<()> {
         self.0.run_mobile_plugin("clear", ()).map_err(Into::into)
     }

@@ -24,6 +24,9 @@ on:
 permissions:
   contents: read
 
+env:
+  CARGO_PROFILE_DEV_DEBUG: 0 # no debuginfo: faster builds and a much smaller target dir to cache
+
 jobs:
   run-integration-tests:
     runs-on: ${{ matrix.platform }}
@@ -48,9 +51,18 @@ jobs:
           sudo apt-get install -y webkit2gtk-4.0 libwebkit2gtk-4.1-dev libayatana-appindicator3-dev libfuse2
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          # Only `v2`/`v3` write to the cache: an entry saved from a pull request lives on its
+          # merge ref, where nothing else can restore it, and every write evicts an entry
+          # that other runs would have hit (10 GB repository limit, LRU eviction).
+          save-if: ${{ github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3' }}
 
       - name: install Tauri CLI
-        run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch dev
+        # `--debug --target-dir target`: a dev-profile build in the workspace target dir reuses
+        # the cached dependencies (shared with the test build below) instead of a from-scratch
+        # release build in a temporary dir. `--locked` keeps the dependency versions stable
+        # between runs, so the cached artifacts stay valid.
+        run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch dev --locked --debug --target-dir target
 
       - name: run integration tests
         run: cargo test --test '*' -- --ignored

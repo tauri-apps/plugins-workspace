@@ -33,6 +33,7 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Geolocation<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Geolocation<R> {
+    /// Returns the device's current [`Position`]. On Android this returns the last known location immediately if it is still within `maximum_age`, otherwise it requests a fresh reading. Errors if location services are disabled or the required permission was not granted.
     pub fn get_current_position(
         &self,
         options: Option<PositionOptions>,
@@ -81,18 +82,21 @@ impl<R: Runtime> Geolocation<R> {
             .map_err(Into::into)
     }
 
+    /// Removes the position watcher registered with the given `channel_id`, as returned by [`Self::watch_position`]. Stops the platform location updates once no watcher remains.
     pub fn clear_watch(&self, channel_id: u32) -> crate::Result<()> {
         self.0
             .run_mobile_plugin("clearWatch", ClearWatchPayload { channel_id })
             .map_err(Into::into)
     }
 
+    /// Returns the current [`PermissionStatus`] for the geolocation APIs. Errors if location services are disabled on the device.
     pub fn check_permissions(&self) -> crate::Result<PermissionStatus> {
         self.0
             .run_mobile_plugin("checkPermissions", ())
             .map_err(Into::into)
     }
 
+    /// Requests the given `permissions` (or all of them when `None`) and returns the resulting [`PermissionStatus`]. Errors if location services are disabled on the device.
     pub fn request_permissions(
         &self,
         permissions: Option<Vec<PermissionType>>,

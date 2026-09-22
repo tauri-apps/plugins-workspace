@@ -43,6 +43,21 @@
 //! - **tracing**: Adds request, response, and cookie-store diagnostics through `tracing`.
 //! - **unsafe-headers**: Allows webview requests to send any headers.
 //! - **dangerous-settings**: Allows dangerous client settings such as accepting invalid certificates or hostnames.
+//!
+//! ## Configuration
+//!
+//! See [`Config`] for the options that can be set on the `plugins > http` object of your
+//! `tauri.conf.json`:
+//!
+//! ```json
+//! {
+//!   "plugins": {
+//!     "http": {
+//!       "scopeRedirects": true
+//!     }
+//!   }
+//! }
+//! ```
 
 pub use reqwest;
 use tauri::{
@@ -50,9 +65,11 @@ use tauri::{
     Manager, Runtime,
 };
 
+pub use config::Config;
 pub use error::{Error, Result};
 
 mod commands;
+mod config;
 mod error;
 #[cfg(feature = "cookies")]
 mod reqwest_cookie_store;
@@ -62,13 +79,24 @@ mod scope;
 const COOKIES_FILENAME: &str = ".cookies";
 
 pub(crate) struct Http {
+    pub(crate) config: Config,
     #[cfg(feature = "cookies")]
     cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
 }
 
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::<R>::new("http")
-        .setup(|app, _| {
+/// Initializes the plugin.
+///
+/// The plugin reads its [`Config`] from the `plugins > http` object of the `tauri.conf.json` file;
+/// when that object is missing, [`Config::default`] is used.
+///
+/// With the `cookies` Cargo feature (enabled by default), a cookie jar is loaded from a `.cookies`
+/// file in the application cache directory on setup and written back to it when the application
+/// exits. A jar that cannot be read is replaced by an empty one.
+///
+/// Register it on the Tauri builder with `.plugin(tauri_plugin_http::init())`.
+pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
+    Builder::<R, Option<Config>>::new("http")
+        .setup(|app, api| {
             #[cfg(feature = "cookies")]
             let cookies_jar = {
                 use crate::reqwest_cookie_store::*;
@@ -96,6 +124,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             };
 
             let state = Http {
+                config: api.config().clone().unwrap_or_default(),
                 #[cfg(feature = "cookies")]
                 cookies_jar: std::sync::Arc::new(cookies_jar),
             };

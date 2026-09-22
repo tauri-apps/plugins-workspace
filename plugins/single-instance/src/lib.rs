@@ -33,16 +33,39 @@ mod semver_compat;
 pub(crate) type SingleInstanceCallback<R> =
     dyn FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static;
 
+/// Initializes the plugin, calling `f` whenever a second instance of the app is started.
+///
+/// This is a shortcut for [`Builder::new`] with [`Builder::callback`] set to `f`, then
+/// [`Builder::build`]. Use [`Builder`] directly if you need to set a custom [`Builder::dbus_id`].
+///
+/// `f` is called with the app handle, the second instance's command line arguments
+/// (as collected by [`std::env::args`], so the first element is the executable path) and its
+/// current working directory. If the `deep-link` feature is enabled, the arguments are first
+/// forwarded to [`tauri-plugin-deep-link`](https://crates.io/crates/tauri-plugin-deep-link)
+/// before `f` runs.
+///
+/// The second instance never reaches [`tauri::Builder::run`]: it hands its arguments and working
+/// directory off to the first instance and exits immediately.
 pub fn init<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static>(
     f: F,
 ) -> TauriPlugin<R> {
     Builder::new().callback(f).build()
 }
 
+/// Releases the resources this plugin uses to detect other instances (the named mutex on
+/// Windows, the D-Bus name on Linux or the Unix socket on macOS).
+///
+/// The plugin calls this automatically on [`tauri::RunEvent::Exit`], so you normally don't need
+/// to call it yourself. Call it manually before terminating the process through means that skip
+/// that event, such as [`std::process::exit`], so a future instance of the app isn't mistaken
+/// for a still-running one.
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
     platform_impl::destroy(manager)
 }
 
+/// Builds the single-instance plugin.
+///
+/// Created with [`Builder::new`] and consumed by [`Builder::build`].
 pub struct Builder<R: Runtime> {
     callback: Box<SingleInstanceCallback<R>>,
     dbus_id: Option<String>,
@@ -63,6 +86,10 @@ impl<R: Runtime> Default for Builder<R> {
 }
 
 impl<R: Runtime> Builder<R> {
+    /// Creates a new builder with a no-op callback (or, when the `deep-link` feature is enabled,
+    /// a callback that only forwards the arguments to the deep-link plugin) and no custom D-Bus
+    /// ID. Use [`Builder::callback`] and [`Builder::dbus_id`] to configure it, then
+    /// [`Builder::build`] to create the plugin.
     pub fn new() -> Self {
         Default::default()
     }
@@ -93,6 +120,10 @@ impl<R: Runtime> Builder<R> {
         self
     }
 
+    /// Builds the single-instance [`TauriPlugin`].
+    ///
+    /// Register it first among your app's plugins, since the plugins run in the order they were
+    /// added and a second instance must be detected before the rest of your setup runs.
     pub fn build(self) -> TauriPlugin<R> {
         platform_impl::init(
             self.callback,

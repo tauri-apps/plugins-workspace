@@ -2,6 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! Open files and URLs using their default application, and reveal files in the system's file explorer.
+//!
+//! Use the [`OpenerExt`] trait to access [`Opener::open_url`] and [`Opener::open_path`] from a
+//! running Tauri app; the plugin's `open_url` and `open_path` commands enforce the scope
+//! configured for the plugin before delegating to them. The [`open_url`] and [`open_path`] free
+//! functions and the [`Opener`] methods themselves do not perform any scope check.
+//! [`reveal_item_in_dir`] and [`reveal_items_in_dir`] return [`Error::UnsupportedPlatform`] on
+//! Android and iOS.
+
 use std::path::Path;
 
 use tauri::{plugin::TauriPlugin, Manager, Runtime};
@@ -29,6 +38,9 @@ type Result<T> = std::result::Result<T, Error>;
 pub use open::{open_path, open_url};
 pub use reveal_item_in_dir::{reveal_item_in_dir, reveal_items_in_dir};
 
+/// Access to the opener APIs, managed by the plugin as app state.
+///
+/// Obtain an instance via [`OpenerExt::opener`].
 pub struct Opener<R: Runtime> {
     // we use `fn() -> R` to silence the unused generic error
     // while keeping this struct `Send + Sync` without requiring `R` to be
@@ -153,10 +165,20 @@ impl<R: Runtime> Opener<R> {
             .map_err(Into::into)
     }
 
+    /// Reveal a path in the system's default explorer. See [`reveal_item_in_dir`] for details.
+    ///
+    /// ## Platform-specific:
+    ///
+    /// - **Android / iOS:** Unsupported, returns [`Error::UnsupportedPlatform`].
     pub fn reveal_item_in_dir<P: AsRef<Path>>(&self, p: P) -> Result<()> {
         reveal_item_in_dir(p)
     }
 
+    /// Reveal multiple paths in the system's default explorer. See [`reveal_items_in_dir`] for details.
+    ///
+    /// ## Platform-specific:
+    ///
+    /// - **Android / iOS:** Unsupported, returns [`Error::UnsupportedPlatform`].
     pub fn reveal_items_in_dir<I, P>(&self, paths: I) -> Result<()>
     where
         I: IntoIterator<Item = P>,
@@ -168,6 +190,7 @@ impl<R: Runtime> Opener<R> {
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the opener APIs.
 pub trait OpenerExt<R: Runtime> {
+    /// Returns the [`Opener`] instance managed by the plugin.
     fn opener(&self) -> &Opener<R>;
 }
 
