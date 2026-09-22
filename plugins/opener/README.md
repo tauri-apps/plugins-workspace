@@ -104,11 +104,9 @@ fn main() {
             // Or with a specific app
             opener.open_path("/path/to/file", Some("firefox"))?;
 
-            // Reveal a path with the system's default explorer
-            opener.reveal_item_in_dir("/path/to/file")?;
-
-            // Reveal multiple paths with the system's default explorer
+            // Reveal one or more paths with the system's default explorer
             opener.reveal_items_in_dir(["/path/to/file"])?;
+            opener.reveal_items_in_dir(["/path/to/file", "/path/to/another/file"])?;
             Ok(())
         })
         .run(tauri::generate_context!())
