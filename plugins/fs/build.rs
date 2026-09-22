@@ -97,8 +97,6 @@ const COMMANDS: &[&str] = &[
     "fstat",
     "exists",
     "watch",
-    // TODO: Remove this in v3
-    "unwatch",
     "size",
     "start_accessing_security_scoped_resource",
     "stop_accessing_security_scoped_resource",

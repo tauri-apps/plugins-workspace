@@ -564,32 +564,6 @@ Denies the truncate command without any pre-configured scope.
 <tr>
 <td>
 
-`fs:allow-unwatch`
-
-</td>
-<td>
-
-Enables the unwatch command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`fs:deny-unwatch`
-
-</td>
-<td>
-
-Denies the unwatch command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
 `fs:allow-watch`
 
 </td>
