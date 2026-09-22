@@ -1,4 +1,5 @@
 ---
+"upload": major
 "upload-js": major
 ---
 
