@@ -35,7 +35,6 @@
 //! - **socks**: Provides SOCKS5 proxy support.
 //! - **trust-dns**: Enables a trust-dns/Hickory DNS async resolver instead of the default threadpool using
 //!   getaddrinfo.
-//! - **macos-system-configuration** *(deprecated, use `system-proxy` instead)*: Use Windows and macOS system proxy settings automatically.
 //! - **system-proxy** *(enabled by default)*: Use Windows and macOS system proxy settings automatically.
 //!
 //! ### tauri-plugin-http features
