@@ -4,13 +4,20 @@
 
 use serde::{Serialize, Serializer};
 
+/// Errors that can happen while registering, unregistering or parsing global shortcuts.
 #[derive(Debug, thiserror::Error)]
 #[non_exhaustive]
 pub enum Error {
+    /// An error returned by the underlying `global_hotkey` crate, for example when the OS
+    /// refuses to register or unregister a shortcut, or when a shortcut string fails to parse.
     #[error("{0}")]
     GlobalHotkey(String),
+    /// Failed to receive the result of an operation dispatched to the main thread because the
+    /// sending end of the channel was dropped before it could reply.
     #[error(transparent)]
     RecvError(#[from] std::sync::mpsc::RecvError),
+    /// An error returned by the Tauri runtime, for example when dispatching a closure to run on
+    /// the main thread fails.
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
 }

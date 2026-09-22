@@ -10,6 +10,7 @@ use tauri::{
 
 use crate::NotificationBuilder;
 
+/// Initializes the desktop implementation of the notification APIs.
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
     _api: PluginApi<R, C>,
@@ -23,6 +24,22 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Notification<R: Runtime>(AppHandle<R>);
 
 impl<R: Runtime> crate::NotificationBuilder<R> {
+    /// Shows the notification.
+    ///
+    /// When no title was set with [`Self::title`], the `productName` from the Tauri configuration is used instead.
+    /// Only the title, body, icon and sound of the notification are used on desktop;
+    /// the scheduling, grouping and action related options are ignored.
+    ///
+    /// The notification is dispatched on a background task, so this returns as soon as the payload is prepared.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the notification could not be prepared,
+    /// e.g. when the path of the running executable cannot be resolved on Windows.
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **Windows**: Not supported on Windows 7 unless the `windows7-compat` Cargo feature is enabled.
     pub fn show(self) -> crate::Result<()> {
         let mut notification = imp::Notification::new(self.app.config().identifier.clone());
 
@@ -54,14 +71,38 @@ impl<R: Runtime> crate::NotificationBuilder<R> {
 }
 
 impl<R: Runtime> Notification<R> {
+    /// Creates a new builder for a notification.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use tauri_plugin_notification::NotificationExt;
+    ///
+    /// fn notify<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
+    ///   app.notification()
+    ///     .builder()
+    ///     .title("Tauri")
+    ///     .body("Tauri is awesome!")
+    ///     .show()
+    ///     .unwrap();
+    /// }
+    /// ```
     pub fn builder(&self) -> NotificationBuilder<R> {
         NotificationBuilder::new(self.0.clone())
     }
 
+    /// Requests the permission to send notifications.
+    ///
+    /// Desktop applications do not need to ask for this permission,
+    /// so this always resolves to [`PermissionState::Granted`] without prompting the user.
     pub fn request_permission(&self) -> crate::Result<PermissionState> {
         Ok(PermissionState::Granted)
     }
 
+    /// Checks whether the permission to send notifications was granted.
+    ///
+    /// Desktop applications do not need to ask for this permission,
+    /// so this always resolves to [`PermissionState::Granted`].
     pub fn permission_state(&self) -> crate::Result<PermissionState> {
         Ok(PermissionState::Granted)
     }

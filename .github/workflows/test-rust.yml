@@ -26,6 +26,10 @@ on:
       - '**/Cargo.toml'
       - '**/Cargo.lock'
 
+env:
+  CARGO_PROFILE_DEV_DEBUG: 0 # no debuginfo: faster builds and a much smaller target dir to cache
+  CROSS_REV: 51f46f296253d8122c927c5bb933e3c4f27cc317
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -40,6 +44,7 @@ jobs:
       pull-requests: read
     outputs:
       packages: ${{ steps.filter.outputs.changes }}
+      saver: ${{ steps.saver.outputs.saver }}
     steps:
       - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v2
@@ -186,6 +191,22 @@ jobs:
               - Cargo.lock
               - plugins/window-state/**
 
+      # Every package job for a platform restores the same rust-cache entry, and exactly one
+      # of them saves it (see the `save-if` of the rust-cache step). Prefer the packages whose
+      # dependency tree covers most of the other plugins' dependencies, so the entry is as
+      # useful as possible for the packages that did not save it.
+      - name: pick the package that saves the cache
+        id: saver
+        env:
+          PACKAGES: ${{ steps.filter.outputs.changes }}
+        run: |
+          saver="$(jq -rn --argjson packages "${PACKAGES:-[]}" '
+            ["tauri-plugin-upload", "tauri-plugin-sql", "tauri-plugin-updater", "tauri-plugin-single-instance"]
+            | map(select(. as $p | $packages | index($p) != null))
+            | first // $packages[0] // empty
+          ')"
+          echo "saver=$saver" >> "$GITHUB_OUTPUT"
+
   test:
     needs: changes
     if: ${{ needs.changes.outputs.packages != '[]' && needs.changes.outputs.packages != '' }}
@@ -242,11 +263,34 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          key: cache-${{ matrix.package }}-${{ matrix.platform.target }}
+          # One entry per platform, shared by every package job: the plugins share most of
+          # their dependency tree (tauri, wry, tao...), and an entry per package and platform
+          # (26 × 5 entries of 500-800 MB each) never fits the repository's 10 GB cache limit.
+          key: ${{ matrix.platform.target }}
+          # Only `v2`/`v3` write to the cache: an entry saved from a pull request lives on its
+          # merge ref, where nothing else can restore it, and every write evicts an entry
+          # that other runs would have hit (10 GB repository limit, LRU eviction).
+          # A single package job saves the shared entry, so the jobs don't race for the key.
+          save-if: ${{ (github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3') && matrix.package == needs.changes.outputs.saver }}
+
+      # `cross` is built from a pinned git revision (its latest release predates the Android
+      # targets we need). Keep the binary in its own small cache entry (accessed by every run,
+      # so it stays hot) instead of rebuilding it from source on every run.
+      - name: restore cross
+        if: ${{ matrix.platform.runner == 'cross' }}
+        id: cross-cache
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.tool_cache }}/cross
+          key: cross-${{ runner.os }}-${{ env.CROSS_REV }}
 
       - name: install cross
+        if: ${{ matrix.platform.runner == 'cross' && steps.cross-cache.outputs.cache-hit != 'true' }}
+        run: cargo +stable install cross --git https://github.com/cross-rs/cross --rev ${{ env.CROSS_REV }} --locked --root ${{ runner.tool_cache }}/cross
+
+      - name: add cross to PATH
         if: ${{ matrix.platform.runner == 'cross' }}
-        run: cargo +stable install cross --git https://github.com/cross-rs/cross
+        run: echo "${{ runner.tool_cache }}/cross/bin" >> $GITHUB_PATH
 
       - name: test ${{ matrix.package }}
         if: ${{ matrix.package != 'tauri-plugin-http' && matrix.package != 'tauri-plugin-dialog' }}
@@ -255,3 +299,13 @@ jobs:
       - name: test ${{ matrix.package }}
         if: ${{ matrix.package == 'tauri-plugin-http' || matrix.package == 'tauri-plugin-dialog' }}
         run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets
+
+      # `--all-targets` above does not include doc tests, so they are run separately.
+      # Only on the platforms we actually test on, since cargo skips doc tests when cross compiling.
+      - name: doc test ${{ matrix.package }}
+        if: ${{ matrix.platform.command == 'test' && matrix.package != 'tauri-plugin-http' && matrix.package != 'tauri-plugin-dialog' }}
+        run: ${{ matrix.platform.runner }} test --doc --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-features
+
+      - name: doc test ${{ matrix.package }}
+        if: ${{ matrix.platform.command == 'test' && (matrix.package == 'tauri-plugin-http' || matrix.package == 'tauri-plugin-dialog') }}
+        run: ${{ matrix.platform.runner }} test --doc --package ${{ matrix.package }} --target ${{ matrix.platform.target }}

@@ -2,6 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+/**
+ * Native system dialogs for opening and saving files, along with message, ask and confirm dialogs.
+ *
+ * @module
+ */
+
 import { invoke } from '@tauri-apps/api/core'
 
 /**
@@ -10,7 +16,7 @@ import { invoke } from '@tauri-apps/api/core'
  * @since 2.0.0
  */
 interface DialogFilter {
-  /** Filter name. */
+  /** The name of the filter, shown to the user in the dialog's filter selector. */
   name: string
   /**
    * Extensions to filter, without a `.` prefix.
@@ -171,11 +177,11 @@ type BanExcept<Allowed extends ButtonKey> = Partial<
  * @since 2.4.0
  */
 export type MessageDialogButtonsYesNoCancel = {
-  /** The Yes button. */
+  /** The label of the Yes button. */
   yes: string
-  /** The No button. */
+  /** The label of the No button. */
   no: string
-  /** The Cancel button. */
+  /** The label of the Cancel button. */
   cancel: string
 } & BanExcept<'yes' | 'no' | 'cancel'>
 
@@ -185,9 +191,9 @@ export type MessageDialogButtonsYesNoCancel = {
  * @since 2.4.0
  */
 export type MessageDialogButtonsOkCancel = {
-  /** The Ok button. */
+  /** The label of the Ok button. */
   ok: string
-  /** The Cancel button. */
+  /** The label of the Cancel button. */
   cancel: string
 } & BanExcept<'ok' | 'cancel'>
 
@@ -197,7 +203,7 @@ export type MessageDialogButtonsOkCancel = {
  * @since 2.4.0
  */
 export type MessageDialogButtonsOk = {
-  /** The Ok button. */
+  /** The label of the Ok button. */
   ok: string
 } & BanExcept<'ok'>
 
@@ -221,6 +227,8 @@ export type MessageDialogButtons =
   | MessageDialogCustomButtons
 
 /**
+ * Options for the message dialog.
+ *
  * @since 2.0.0
  */
 interface MessageDialogOptions {
@@ -282,6 +290,11 @@ function buttonsToRust(buttons: MessageDialogButtons | undefined) {
   return undefined
 }
 
+/**
+ * Options for the {@linkcode ask} and {@linkcode confirm} dialogs.
+ *
+ * @since 2.0.0
+ */
 interface ConfirmDialogOptions {
   /** The title of the dialog. Defaults to the app name. */
   title?: string
@@ -293,6 +306,12 @@ interface ConfirmDialogOptions {
   cancelLabel?: string
 }
 
+/**
+ * The return type of {@linkcode open}, derived from its options: a single path, an array of
+ * paths when {@linkcode OpenDialogOptions.multiple} is `true`, or `null` when the user cancels.
+ *
+ * @since 2.0.0
+ */
 type OpenDialogReturn<T extends OpenDialogOptions> = T['directory'] extends true
   ? T['multiple'] extends true
     ? string[] | null
@@ -349,6 +368,8 @@ type OpenDialogReturn<T extends OpenDialogOptions> = T['directory'] extends true
  * }
  * ```
  *
+ * @param options The dialog's options.
+ *
  * @returns A promise resolving to the selected path(s)
  *
  * @since 2.0.0
@@ -382,6 +403,8 @@ async function open<T extends OpenDialogOptions>(
  *   }]
  * });
  * ```
+ *
+ * @param options The dialog's options.
  *
  * @returns A promise resolving to the selected path.
  *

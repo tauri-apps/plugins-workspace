@@ -30,6 +30,9 @@ serde = { workspace = true }
 toml = "1.0"
 tauri-utils = { workspace = true }
 
+[dev-dependencies]
+tauri = { workspace = true, features = ["wry"] }
+
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
