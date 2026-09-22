@@ -7,9 +7,8 @@ shell functionality is exposed by default.
 
 #### Granted Permissions
 
-It allows to use the `open` functionality with a reasonable
-scope pre-configured. It will allow opening `http(s)://`,
-`tel:` and `mailto:` links.
+Nothing is granted by default. Spawning processes must be explicitly
+allowed with a scope, see `allow-execute` and `allow-spawn`.
 """
 
-permissions = ["allow-open"]
+permissions = []

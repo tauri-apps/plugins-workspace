@@ -1,7 +1,7 @@
 [package]
 name = "tauri-plugin-shell"
 version = "3.0.0-alpha.1"
-description = "Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application."
+description = "Access the system shell. Allows you to spawn child processes."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
@@ -21,8 +21,8 @@ exclude = [
 windows = { level = "full", notes = "" }
 linux = { level = "full", notes = "" }
 macos = { level = "full", notes = "" }
-android = { level = "partial", notes = "Only allows to open URLs via `open`" }
-ios = { level = "partial", notes = "Only allows to open URLs via `open`" }
+android = { level = "none", notes = "" }
+ios = { level = "none", notes = "" }
 
 [build-dependencies]
 tauri-plugin = { workspace = true, features = ["build"] }
@@ -38,6 +38,5 @@ log = { workspace = true }
 thiserror = { workspace = true }
 shared_child = "1"
 regex = "1"
-open = { version = "5", features = ["shellexecute-on-windows"] }
 encoding_rs = "0.8"
 os_pipe = "1"
