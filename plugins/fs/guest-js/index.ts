@@ -781,16 +781,7 @@ async function readTextFile(
   path: string | URL,
   options?: ReadFileOptions
 ): Promise<string> {
-  if (path instanceof URL && path.protocol !== 'file:') {
-    throw new TypeError('Must be a file URL.')
-  }
-
-  const arr = await invoke<ArrayBuffer | number[]>('plugin:fs|read_text_file', {
-    path: path instanceof URL ? path.toString() : path,
-    options
-  })
-
-  const bytes = arr instanceof ArrayBuffer ? arr : Uint8Array.from(arr)
+  const bytes = await readFile(path, options)
 
   return new TextDecoder(options?.encoding ?? 'utf-8').decode(bytes)
 }
@@ -1138,18 +1129,7 @@ async function writeTextFile(
   data: string,
   options?: WriteFileOptions
 ): Promise<void> {
-  if (path instanceof URL && path.protocol !== 'file:') {
-    throw new TypeError('Must be a file URL.')
-  }
-
-  const encoder = new TextEncoder()
-
-  await invoke('plugin:fs|write_text_file', encoder.encode(data), {
-    headers: {
-      path: encodeURIComponent(path instanceof URL ? path.toString() : path),
-      options: JSON.stringify(options)
-    }
-  })
+  await writeFile(path, new TextEncoder().encode(data), options)
 }
 
 /**
@@ -1204,24 +1184,57 @@ interface DebouncedWatchOptions extends WatchOptions {
 }
 
 /**
+ * Additional attributes of a {@linkcode WatchEvent}.
+ *
+ * @since 3.0.0
+ */
+interface WatchEventAttributes {
+  /** Tracker ID that groups related events, e.g. both sides of a rename. */
+  tracker?: number
+  /**
+   * `rescan` means some events may have been missed, so any file or folder might have been modified.
+   */
+  flag?: 'rescan'
+  /** Short string identifying the details of an `other` event. */
+  info?: string
+  /** Short string identifying the backend that generated the event. */
+  source?: string
+}
+
+/**
+ * A file system event.
+ *
+ * The event kind is flattened into the event: `type` is the top-level kind and,
+ * for `access`, `create`, `modify` and `remove` events, `kind` (and `mode` when available)
+ * refines it.
+ *
+ * @example
+ * ```typescript
+ * import { watch } from '@tauri-apps/plugin-fs';
+ * await watch('/path/to/file', (event) => {
+ *   if (event.type === 'modify' && event.kind === 'data') {
+ *     console.log('data changed', event.paths, event.mode);
+ *   }
+ * });
+ * ```
+ *
  * @since 2.0.0
  */
-interface WatchEvent {
-  type: WatchEventKind
+type WatchEvent = WatchEventKind & {
   paths: string[]
-  attrs: unknown
+  attrs: WatchEventAttributes
 }
 
 /**
  * @since 2.0.0
  */
 type WatchEventKind =
-  | 'any'
-  | { access: WatchEventKindAccess }
-  | { create: WatchEventKindCreate }
-  | { modify: WatchEventKindModify }
-  | { remove: WatchEventKindRemove }
-  | 'other'
+  | { type: 'any' }
+  | ({ type: 'access' } & WatchEventKindAccess)
+  | ({ type: 'create' } & WatchEventKindCreate)
+  | ({ type: 'modify' } & WatchEventKindModify)
+  | ({ type: 'remove' } & WatchEventKindRemove)
+  | { type: 'other' }
 
 /**
  * @since 2.0.0
@@ -1466,6 +1479,7 @@ export type {
   WatchOptions,
   DebouncedWatchOptions,
   WatchEvent,
+  WatchEventAttributes,
   WatchEventKind,
   WatchEventKindAccess,
   WatchEventKindCreate,

@@ -8,7 +8,6 @@ commands.allow = [
   "read_file",
   "read",
   "open",
-  "read_text_file",
   "read_text_file_lines",
   "read_text_file_lines_next",
   "seek",
@@ -17,5 +16,4 @@ commands.allow = [
   "fstat",
   "exists",
   "watch",
-  "unwatch",
 ]

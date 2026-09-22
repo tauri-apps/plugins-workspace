@@ -180,24 +180,16 @@ fn attach_proxy(
 
 /// Builds the redirect policy for the request.
 ///
-/// When `scope` is [`Some`], **every** hop is checked against it. Validating only the URL the
-/// frontend asked for is not enough: a server on an allowed origin can answer with a redirect to
-/// any other origin (an open redirect, or a server the attacker controls), and following it would
-/// give the webview access to a URL the scope denies.
-///
-/// That check is opt-in through the `scopeRedirects` configuration because it breaks applications
-/// that rely on being redirected outside of their scope.
-// TODO(v3): always check the scope and take it by value instead of `Option`
-fn redirect_policy(scope: Option<Scope>, max_redirections: Option<usize>) -> Policy {
+/// **Every** hop is checked against the scope. Validating only the URL the frontend asked for is
+/// not enough: a server on an allowed origin can answer with a redirect to any other origin (an
+/// open redirect, or a server the attacker controls), and following it would give the webview
+/// access to a URL the scope denies.
+fn redirect_policy(scope: Scope, max_redirections: Option<usize>) -> Policy {
     if max_redirections == Some(0) {
         return Policy::none();
     }
 
     let max_redirections = max_redirections.unwrap_or(DEFAULT_MAX_REDIRECTIONS);
-
-    let Some(scope) = scope else {
-        return Policy::limited(max_redirections);
-    };
 
     Policy::custom(move |attempt| {
         // the first URL in `previous` is the initial request, so it must be excluded
@@ -228,6 +220,8 @@ fn map_request_error(error: reqwest::Error) -> Error {
     Error::Network(error)
 }
 
+// `state` is only read when the `cookies` feature is enabled
+#[cfg_attr(not(feature = "cookies"), allow(unused_variables))]
 #[command]
 pub async fn fetch<R: Runtime>(
     webview: Webview<R>,
@@ -311,7 +305,6 @@ pub async fn fetch<R: Runtime>(
                 builder = builder.connect_timeout(Duration::from_millis(timeout));
             }
 
-            let scope = state.config.scope_redirects.then_some(scope);
             builder = builder.redirect(redirect_policy(scope, max_redirections));
 
             if let Some(proxy_config) = proxy {
@@ -605,11 +598,7 @@ mod tests {
         port
     }
 
-    fn get(
-        url: &str,
-        scope: Option<Scope>,
-        max_redirections: Option<usize>,
-    ) -> Result<reqwest::Response> {
+    fn get(url: &str, scope: Scope, max_redirections: Option<usize>) -> Result<reqwest::Response> {
         let client = reqwest::ClientBuilder::new()
             .redirect(redirect_policy(scope, max_redirections))
             .build()
@@ -620,9 +609,9 @@ mod tests {
         )
     }
 
-    fn localhost_scope(port: u16) -> Option<Scope> {
+    fn localhost_scope(port: u16) -> Scope {
         let entry = Arc::new(format!("http://localhost:{port}/*").parse().unwrap());
-        Some(Scope::new(vec![entry], Vec::new()))
+        Scope::new(vec![entry], Vec::new())
     }
 
     #[test]
@@ -645,26 +634,11 @@ mod tests {
     }
 
     #[test]
-    fn redirect_outside_of_scope_is_followed_when_not_configured() {
-        let port = spawn_server();
-
-        // `scopeRedirects` is disabled, so only the URL requested by the frontend is checked
-        let response = get(
-            &format!("http://localhost:{port}/redirect-external"),
-            None,
-            None,
-        )
-        .unwrap();
-
-        assert_eq!(response.status(), StatusCode::OK);
-    }
-
-    #[test]
     fn redirect_denied_by_the_scope_is_denied() {
         let port = spawn_server();
         let allow = Arc::new(format!("http://localhost:{port}/*").parse().unwrap());
         let deny = Arc::new(format!("http://localhost:{port}/target").parse().unwrap());
-        let scope = Some(Scope::new(vec![allow], vec![deny]));
+        let scope = Scope::new(vec![allow], vec![deny]);
 
         let err = get(&format!("http://localhost:{port}/redirect/0"), scope, None).unwrap_err();
 
@@ -690,16 +664,14 @@ mod tests {
     fn max_redirections_is_enforced() {
         let port = spawn_server();
 
-        for scope in [localhost_scope(port), None] {
-            let err = get(
-                &format!("http://localhost:{port}/redirect/5"),
-                scope,
-                Some(2),
-            )
-            .unwrap_err();
+        let err = get(
+            &format!("http://localhost:{port}/redirect/5"),
+            localhost_scope(port),
+            Some(2),
+        )
+        .unwrap_err();
 
-            assert!(matches!(err, Error::Network(e) if e.is_redirect()));
-        }
+        assert!(matches!(err, Error::Network(e) if e.is_redirect()));
     }
 
     #[test]

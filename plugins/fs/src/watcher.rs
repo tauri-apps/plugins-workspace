@@ -102,3 +102,34 @@ pub fn watch<R: Runtime>(
 
     Ok(rid)
 }
+
+#[cfg(test)]
+mod tests {
+    use notify::{
+        event::{DataChange, ModifyKind},
+        Event, EventKind,
+    };
+
+    // the `WatchEvent` type of the JavaScript API relies on this format
+    #[test]
+    fn event_kind_is_flattened_into_the_event() {
+        let event = Event::new(EventKind::Modify(ModifyKind::Data(DataChange::Content)))
+            .add_path("/tmp/file".into());
+        assert_eq!(
+            serde_json::to_value(event).unwrap(),
+            serde_json::json!({
+                "type": "modify",
+                "kind": "data",
+                "mode": "content",
+                "paths": ["/tmp/file"],
+                "attrs": {}
+            })
+        );
+
+        let event = Event::new(EventKind::Any);
+        assert_eq!(
+            serde_json::to_value(event).unwrap(),
+            serde_json::json!({ "type": "any", "paths": [], "attrs": {} })
+        );
+    }
+}

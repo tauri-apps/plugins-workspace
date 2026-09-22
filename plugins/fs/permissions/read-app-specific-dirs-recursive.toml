@@ -9,7 +9,6 @@ specific base directories.
 permissions = [
   "allow-read-dir",
   "allow-read-file",
-  "allow-read-text-file",
   "allow-read-text-file-lines",
   "allow-read-text-file-lines-next",
   "allow-exists",
