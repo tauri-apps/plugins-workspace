@@ -153,6 +153,15 @@ impl<R: Runtime> Opener<R> {
             .map_err(Into::into)
     }
 
+    /// Reveal the given path in the system's default explorer.
+    ///
+    /// ## Platform-specific:
+    ///
+    /// - **Android / iOS:** Unsupported.
+    pub fn reveal_item_in_dir<P: AsRef<Path>>(&self, p: P) -> Result<()> {
+        reveal_item_in_dir(p)
+    }
+
     /// Reveal one or more paths in the system's default explorer.
     ///
     /// ## Platform-specific:
