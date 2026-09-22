@@ -7,7 +7,6 @@ import { tauri, describePlugin } from '../helpers/index.js'
 import {
   UPDATER_FIXTURE_VERSION,
   UPDATER_FIXTURE_NOTES,
-  UPDATER_FIXTURE_OLDER_VERSION,
   UPDATER_TARGET_NO_UPDATE,
   UPDATER_TARGET_OLDER
 } from '../helpers/server.js'
@@ -15,8 +14,10 @@ import {
 // The e2e build points the updater endpoint at the fixture server (see
 // `tauri.e2e.conf.json`), which answers based on the `{{target}}` placeholder.
 // Only `check` is exercised: installing would replace the binary under test.
+// The plugin is desktop-only, so the whole suite is skipped on mobile (the
+// mobile builds are not built with the override config either).
 
-describePlugin('updater', () => {
+describePlugin('updater', { desktopOnly: true }, () => {
   it('check finds a newer release on the endpoint', async () => {
     const update = await tauri(async (api) => {
       const update = await api.updater.check()
@@ -49,19 +50,15 @@ describePlugin('updater', () => {
     expect(update).toBeNull()
   })
 
-  it('check ignores older releases unless downgrades are allowed', async () => {
-    const result = await tauri(async (api, target) => {
-      const ignored = await api.updater.check({ target })
-      const downgrade = await api.updater.check({
-        target,
-        allowDowngrades: true
-      })
-      const version = downgrade?.version ?? null
-      await downgrade?.close()
-      return { ignored, version }
-    }, UPDATER_TARGET_OLDER)
-    expect(result.ignored).toBeNull()
-    expect(result.version).toBe(UPDATER_FIXTURE_OLDER_VERSION)
+  it('check ignores a release older than the current version', async () => {
+    // Downgrades are a build-time decision (the plugin's `allowDowngrades`
+    // config), not something `check` can be asked for, so the older manifest
+    // can only be checked for the update being ignored.
+    const update = await tauri(
+      (api, target) => api.updater.check({ target }),
+      UPDATER_TARGET_OLDER
+    )
+    expect(update).toBeNull()
   })
 
   it('check forwards custom headers and honors the timeout option', async () => {

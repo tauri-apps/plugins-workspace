@@ -5,7 +5,9 @@
 import { expect } from '@wdio/globals'
 import { tauri, eventually, describePlugin, itWm } from '../helpers/index.js'
 
-describePlugin('window-state', () => {
+// The plugin is desktop-only: a mobile window is the whole screen and has no
+// state to persist, so the whole suite is skipped there.
+describePlugin('window-state', { desktopOnly: true }, () => {
   it('filename reports the state file name', async () => {
     expect(await tauri((api) => api.windowState.filename())).toBe(
       '.window-state.json'

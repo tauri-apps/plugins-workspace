@@ -6,9 +6,11 @@ import { expect } from '@wdio/globals'
 import { tauri, describePlugin } from '../helpers/index.js'
 
 // The driver launches the app without arguments, so the matches reflect the
-// CLI definition in the example's `tauri.conf.json` with nothing set.
+// CLI definition in the example's `tauri.conf.json` with nothing set. The
+// example only registers the plugin on desktop, so the suite is skipped on
+// mobile (which has no command line to begin with).
 
-describePlugin('cli', () => {
+describePlugin('cli', { desktopOnly: true }, () => {
   it('getMatches reports every defined argument as unset', async () => {
     const matches = await tauri((api) => api.cli.getMatches())
     expect(Object.keys(matches.args).sort()).toEqual([

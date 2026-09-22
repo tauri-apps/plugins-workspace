@@ -3,8 +3,15 @@
 // SPDX-License-Identifier: MIT
 
 import { expect } from '@wdio/globals'
-import { tauri, tauriError, describePlugin } from '../helpers/index.js'
+import {
+  tauri,
+  tauriError,
+  describePlugin,
+  itDesktop
+} from '../helpers/index.js'
 
+// The mobile implementation only carries plain text: `write_html`, `write_image`
+// and `read_image` answer "Unsupported on this platform" there.
 describePlugin('clipboard-manager', () => {
   it('writeText and readText round-trip', async () => {
     const text = 'clipboard text from e2e — ✓'
@@ -26,7 +33,7 @@ describePlugin('clipboard-manager', () => {
     ).toBe('second')
   })
 
-  it('writeHtml exposes the alt text as plain text', async () => {
+  itDesktop('writeHtml exposes the alt text as plain text', async () => {
     expect(
       await tauri(async (api) => {
         await api.clipboardManager.writeHtml(
@@ -38,7 +45,7 @@ describePlugin('clipboard-manager', () => {
     ).toBe('bold from e2e (alt)')
   })
 
-  it('writeImage and readImage round-trip pixels', async () => {
+  itDesktop('writeImage and readImage round-trip pixels', async () => {
     // a 2x2 PNG: red, green / blue, white
     const png = [
       137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 2,
@@ -62,42 +69,48 @@ describePlugin('clipboard-manager', () => {
     expect(result.bytes).toEqual(rgba)
   })
 
-  it('writeImage accepts an Image built with the core image API', async () => {
-    // `window.__TAURI__.image.Image` and the class the plugin's global script
-    // sees must be the same one for `transformImage`'s `instanceof` to hold.
-    const rgba = [
-      255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 255, 255
-    ]
-    const result = await tauri(async (api, rgba) => {
-      const image = await api.image.Image.new(rgba, 2, 2)
-      await api.clipboardManager.writeImage(image)
-      const read = await api.clipboardManager.readImage()
-      const size = await read.size()
-      const bytes = Array.from(await read.rgba())
-      await image.close()
-      await read.close()
-      return { size, bytes }
-    }, rgba)
-    expect(result.size).toEqual({ width: 2, height: 2 })
-    expect(result.bytes).toEqual(rgba)
-  })
+  itDesktop(
+    'writeImage accepts an Image built with the core image API',
+    async () => {
+      // `window.__TAURI__.image.Image` and the class the plugin's global script
+      // sees must be the same one for `transformImage`'s `instanceof` to hold.
+      const rgba = [
+        255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 255, 255
+      ]
+      const result = await tauri(async (api, rgba) => {
+        const image = await api.image.Image.new(rgba, 2, 2)
+        await api.clipboardManager.writeImage(image)
+        const read = await api.clipboardManager.readImage()
+        const size = await read.size()
+        const bytes = Array.from(await read.rgba())
+        await image.close()
+        await read.close()
+        return { size, bytes }
+      }, rgba)
+      expect(result.size).toEqual({ width: 2, height: 2 })
+      expect(result.bytes).toEqual(rgba)
+    }
+  )
 
-  it('an Image read from the clipboard can be written back', async () => {
-    const result = await tauri(async (api) => {
-      const read = await api.clipboardManager.readImage()
-      await api.clipboardManager.writeText('replaced by text')
-      // `Image` instances are passed by resource id
-      await api.clipboardManager.writeImage(read)
-      const again = await api.clipboardManager.readImage()
-      const size = await again.size()
-      await read.close()
-      await again.close()
-      return size
-    })
-    expect(result).toEqual({ width: 2, height: 2 })
-  })
+  itDesktop(
+    'an Image read from the clipboard can be written back',
+    async () => {
+      const result = await tauri(async (api) => {
+        const read = await api.clipboardManager.readImage()
+        await api.clipboardManager.writeText('replaced by text')
+        // `Image` instances are passed by resource id
+        await api.clipboardManager.writeImage(read)
+        const again = await api.clipboardManager.readImage()
+        const size = await again.size()
+        await read.close()
+        await again.close()
+        return size
+      })
+      expect(result).toEqual({ width: 2, height: 2 })
+    }
+  )
 
-  it('writeImage accepts a 1x1 image', async () => {
+  itDesktop('writeImage accepts a 1x1 image', async () => {
     // a 1x1 transparent PNG
     const png = [
       137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1,

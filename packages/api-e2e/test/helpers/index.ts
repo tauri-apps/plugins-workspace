@@ -4,13 +4,18 @@
 
 import { browser } from '@wdio/globals'
 import type * as TauriApi from '@tauri-apps/api'
+import type * as BarcodeScanner from '@tauri-apps/plugin-barcode-scanner'
+import type * as Biometric from '@tauri-apps/plugin-biometric'
 import type * as Cli from '@tauri-apps/plugin-cli'
 import type * as ClipboardManager from '@tauri-apps/plugin-clipboard-manager'
 import type * as Dialog from '@tauri-apps/plugin-dialog'
 import type * as Fs from '@tauri-apps/plugin-fs'
+import type * as Geolocation from '@tauri-apps/plugin-geolocation'
 import type * as GlobalShortcut from '@tauri-apps/plugin-global-shortcut'
+import type * as Haptics from '@tauri-apps/plugin-haptics'
 import type * as Http from '@tauri-apps/plugin-http'
 import type * as Log from '@tauri-apps/plugin-log'
+import type * as Nfc from '@tauri-apps/plugin-nfc'
 import type * as Notification from '@tauri-apps/plugin-notification'
 import type * as Opener from '@tauri-apps/plugin-opener'
 import type * as Os from '@tauri-apps/plugin-os'
@@ -22,16 +27,14 @@ import type * as Upload from '@tauri-apps/plugin-upload'
 import type * as WindowState from '@tauri-apps/plugin-window-state'
 
 /**
- * The plugin APIs the example registers on desktop, keyed by the name each
- * plugin's `api-iife.js` defines on `window.__TAURI__` (the package name
+ * The plugin APIs the example registers on every platform, keyed by the name
+ * each plugin's `api-iife.js` defines on `window.__TAURI__` (the package name
  * without the `@tauri-apps/plugin-` prefix, camel-cased).
  */
-export interface PluginApi {
-  cli: typeof Cli
+export interface CommonPluginApi {
   clipboardManager: typeof ClipboardManager
   dialog: typeof Dialog
   fs: typeof Fs
-  globalShortcut: typeof GlobalShortcut
   http: typeof Http
   log: typeof Log
   notification: typeof Notification
@@ -40,13 +43,49 @@ export interface PluginApi {
   process: typeof Process
   shell: typeof Shell
   store: typeof Store
-  updater: typeof Updater
   upload: typeof Upload
+}
+
+/** The plugin APIs the example only registers on desktop (`#[cfg(desktop)]`). */
+export interface DesktopPluginApi {
+  cli: typeof Cli
+  globalShortcut: typeof GlobalShortcut
+  updater: typeof Updater
   windowState: typeof WindowState
 }
 
+/** The plugin APIs the example only registers on mobile (`#[cfg(mobile)]`). */
+export interface MobilePluginApi {
+  barcodeScanner: typeof BarcodeScanner
+  biometric: typeof Biometric
+  geolocation: typeof Geolocation
+  haptics: typeof Haptics
+  nfc: typeof Nfc
+}
+
+/**
+ * Every plugin API the example can register. Only the platform-appropriate
+ * half is actually on `window.__TAURI__` at runtime — see `describePlugin`'s
+ * `desktopOnly`/`mobileOnly` options and `plugins.spec.ts`.
+ */
+export type PluginApi = CommonPluginApi & DesktopPluginApi & MobilePluginApi
+
 /** The `@tauri-apps/api` surface plus every plugin, as exposed on `window.__TAURI__`. */
 export type Api = typeof TauriApi & PluginApi
+
+/** OS the app under test runs on. */
+export type Platform = NodeJS.Platform | 'android' | 'ios'
+
+/**
+ * The platform of the app under test. The desktop suite drives an app on the
+ * host, so it is `process.platform`; the mobile configs (`wdio.android.conf.ts`,
+ * `wdio.ios.conf.ts`) drive an emulator/simulator and set `E2E_PLATFORM` for
+ * the spec workers instead.
+ */
+export const platform: Platform =
+  (process.env.E2E_PLATFORM as Platform | undefined) ?? process.platform
+
+export const isMobile = platform === 'android' || platform === 'ios'
 
 type PageOutcome<T> =
   | { ok: true; value: T }
@@ -83,7 +122,12 @@ export async function tauri<R, A extends unknown[]>(
   // both the classic and bidi WebDriver protocols and avoids any in-page eval of
   // our own — the driver injects this script itself, which is exempt from the
   // app's CSP. `executeAsync` is used because promise support in `execute` is not
-  // uniform across the platform drivers tauri-driver proxies to.
+  // uniform across the platform drivers tauri-driver and Appium proxy to.
+  //
+  // The outcome crosses the driver as a JSON string rather than an object so no
+  // driver gets to interpret its shape: the Selenium atoms that Appium runs
+  // scripts through on iOS turn any object with a numeric `length` property
+  // into an array.
   const script = `
     var done = arguments[arguments.length - 1];
     var args = Array.prototype.slice.call(arguments, 0, arguments.length - 1);
@@ -91,18 +135,27 @@ export async function tauri<R, A extends unknown[]>(
     Promise.resolve()
       .then(function () { return fn.apply(null, [window.__TAURI__].concat(args)); })
       .then(
-        function (value) { done({ ok: true, value: value === undefined ? null : value }); },
+        function (value) { return { ok: true, value: value === undefined ? null : value }; },
         function (error) {
-          done({
+          return {
             ok: false,
             error: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined
-          });
+          };
         }
-      );
+      )
+      .then(function (outcome) {
+        try {
+          done(JSON.stringify(outcome));
+        } catch (error) {
+          done(JSON.stringify({ ok: false, error: 'result is not JSON-serializable: ' + error }));
+        }
+      });
   `
   const raw: unknown = await browser.executeAsync(script, ...args)
-  const outcome = raw as PageOutcome<Awaited<R>> | null
+  const outcome = (
+    typeof raw === 'string' ? JSON.parse(raw) : raw
+  ) as PageOutcome<Awaited<R>> | null
   if (!outcome || typeof outcome !== 'object' || !('ok' in outcome)) {
     throw new Error(
       `tauri() bridge returned an unexpected value: ${JSON.stringify(outcome)}`
@@ -176,14 +229,46 @@ const skippedModules = (process.env.E2E_SKIP ?? '')
   .map((entry) => entry.trim())
   .filter(Boolean)
 
+export interface DescribePluginOptions {
+  /**
+   * The example only registers the plugin on desktop (`cli`, `global-shortcut`,
+   * `updater`, `window-state`), so the whole suite is skipped on mobile.
+   */
+  desktopOnly?: boolean
+  /**
+   * The example only registers the plugin on mobile (`barcode-scanner`,
+   * `biometric`, `geolocation`, `haptics`, `nfc`), so the whole suite is
+   * skipped on desktop.
+   */
+  mobileOnly?: boolean
+}
+
 /**
  * `describe` wrapper keyed by plugin name (the `@tauri-apps/plugin-*` suffix).
  * Any plugin listed in the comma-separated `E2E_SKIP` env var
  * (e.g. `E2E_SKIP=clipboard-manager,global-shortcut`) is skipped.
  */
-export function describePlugin(plugin: string, fn: () => void): void {
+export function describePlugin(plugin: string, fn: () => void): void
+export function describePlugin(
+  plugin: string,
+  options: DescribePluginOptions,
+  fn: () => void
+): void
+export function describePlugin(
+  plugin: string,
+  optionsOrFn: DescribePluginOptions | (() => void),
+  maybeFn?: () => void
+): void {
+  const [options, fn] =
+    typeof optionsOrFn === 'function'
+      ? [{} as DescribePluginOptions, optionsOrFn]
+      : [optionsOrFn, maybeFn!]
   const title = `@tauri-apps/plugin-${plugin}`
-  if (skippedModules.includes(plugin)) {
+  if (
+    skippedModules.includes(plugin)
+    || (options.desktopOnly && isMobile)
+    || (options.mobileOnly && !isMobile)
+  ) {
     describe.skip(title, fn)
   } else {
     describe(title, fn)
@@ -191,12 +276,43 @@ export function describePlugin(plugin: string, fn: () => void): void {
 }
 
 /**
+ * `it` restricted to the given platform(s); skipped (as pending) elsewhere.
+ * Use for behavior that only exists on one OS.
+ */
+export function itOn(
+  platforms: Platform | Platform[],
+  title: string,
+  fn: () => void | Promise<void>
+): void {
+  const list = Array.isArray(platforms) ? platforms : [platforms]
+  if (list.includes(platform)) {
+    it(title, fn)
+  } else {
+    it.skip(title, fn)
+  }
+}
+
+/**
+ * `it` for desktop-only behavior of a plugin that *is* registered on mobile:
+ * a command the mobile build does not expose (`#[cfg(desktop)]`), a mobile
+ * implementation that answers "Unsupported on this platform", or a permission
+ * the example only grants in its desktop capability.
+ */
+export function itDesktop(title: string, fn: () => void | Promise<void>): void {
+  if (isMobile) {
+    it.skip(title, fn)
+  } else {
+    it(title, fn)
+  }
+}
+
+/**
  * `it` for assertions that depend on a real window manager (window size and
  * position restore, ...). Skipped entirely when `E2E_SKIP_WM` is set (e.g.
- * bare headless CI).
+ * bare headless CI), and on mobile, which has no window manager.
  */
 export function itWm(title: string, fn: () => void | Promise<void>): void {
-  if (process.env.E2E_SKIP_WM) {
+  if (process.env.E2E_SKIP_WM || isMobile) {
     it.skip(title, fn)
   } else {
     it(title, fn)

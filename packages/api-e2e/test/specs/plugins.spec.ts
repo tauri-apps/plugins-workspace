@@ -3,17 +3,26 @@
 // SPDX-License-Identifier: MIT
 
 import { expect } from '@wdio/globals'
-import { tauri, type PluginApi } from '../helpers/index.js'
+import {
+  tauri,
+  isMobile,
+  type CommonPluginApi,
+  type DesktopPluginApi,
+  type MobilePluginApi
+} from '../helpers/index.js'
 
 /**
  * The members each plugin's `api-iife.js` is expected to define on
  * `window.__TAURI__.<plugin>`. This is the one place the suite covers the
  * plugins whose commands cannot be driven from a WebDriver session (dialog
- * blocks on native UI, process terminates the app), and it catches a plugin
- * whose global API script is missing from its `build.rs`.
+ * blocks on native UI, process terminates the app, the mobile plugins need
+ * hardware or native UI), and it catches a plugin whose global API script is
+ * missing from its `build.rs`.
  */
-const surface: { [P in keyof PluginApi]: (keyof PluginApi[P])[] } = {
-  cli: ['getMatches'],
+type Surface<T> = { [P in keyof T]: (keyof T[P])[] }
+
+/** Plugins the example registers on every platform. */
+const commonSurface: Surface<CommonPluginApi> = {
   clipboardManager: [
     'writeText',
     'readText',
@@ -47,7 +56,6 @@ const surface: { [P in keyof PluginApi]: (keyof PluginApi[P])[] } = {
     'watchImmediate',
     'size'
   ],
-  globalShortcut: ['register', 'unregister', 'unregisterAll', 'isRegistered'],
   http: ['fetch'],
   log: [
     'LogLevel',
@@ -91,8 +99,14 @@ const surface: { [P in keyof PluginApi]: (keyof PluginApi[P])[] } = {
   process: ['exit', 'relaunch'],
   shell: ['Command', 'Child', 'EventEmitter', 'open'],
   store: ['load', 'getStore', 'LazyStore', 'Store'],
+  upload: ['download', 'upload', 'HttpMethod']
+}
+
+/** Plugins the example only registers on desktop. */
+const desktopSurface: Surface<DesktopPluginApi> = {
+  cli: ['getMatches'],
+  globalShortcut: ['register', 'unregister', 'unregisterAll', 'isRegistered'],
   updater: ['check', 'Update'],
-  upload: ['download', 'upload', 'HttpMethod'],
   windowState: [
     'StateFlags',
     'restoreState',
@@ -102,8 +116,56 @@ const surface: { [P in keyof PluginApi]: (keyof PluginApi[P])[] } = {
   ]
 }
 
+/** Plugins the example only registers on mobile. */
+const mobileSurface: Surface<MobilePluginApi> = {
+  barcodeScanner: [
+    'Format',
+    'scan',
+    'cancel',
+    'checkPermissions',
+    'requestPermissions',
+    'openAppSettings'
+  ],
+  biometric: ['BiometryType', 'checkStatus', 'authenticate'],
+  geolocation: [
+    'watchPosition',
+    'getCurrentPosition',
+    'clearWatch',
+    'checkPermissions',
+    'requestPermissions'
+  ],
+  // `ImpactFeedbackStyle` and `NotificationFeedbackType` are type aliases, so
+  // they are not part of the runtime namespace.
+  haptics: [
+    'vibrate',
+    'impactFeedback',
+    'notificationFeedback',
+    'selectionFeedback'
+  ],
+  nfc: [
+    'NFCTypeNameFormat',
+    'TechKind',
+    'RTD_TEXT',
+    'RTD_URI',
+    'record',
+    'textRecord',
+    'uriRecord',
+    'scan',
+    'write',
+    'isAvailable'
+  ]
+}
+
+const surface = {
+  ...commonSurface,
+  ...(isMobile ? mobileSurface : desktopSurface)
+} as Record<string, string[]>
+
+/** The other platform's plugins, which must *not* be in this build. */
+const foreign = Object.keys(isMobile ? desktopSurface : mobileSurface)
+
 describe('plugin globals', () => {
-  it('every desktop plugin registers its API on window.__TAURI__', async () => {
+  it('every plugin this platform registers exposes its API on window.__TAURI__', async () => {
     const missing = await tauri(
       (api, plugins) =>
         plugins.filter(
@@ -115,6 +177,21 @@ describe('plugin globals', () => {
       Object.keys(surface)
     )
     expect(missing).toEqual([])
+  })
+
+  it('the other platform’s plugins are not in the build', async () => {
+    // Their Rust crates are target-gated in the example's Cargo.toml, so their
+    // `global_api_script_path` is never injected either.
+    const present = await tauri(
+      (api, plugins) =>
+        plugins.filter(
+          (plugin) =>
+            // eslint-disable-next-line security/detect-object-injection
+            (api as unknown as Record<string, unknown>)[plugin] !== undefined
+        ),
+      foreign
+    )
+    expect(present).toEqual([])
   })
 
   for (const [plugin, members] of Object.entries(surface)) {
@@ -130,7 +207,7 @@ describe('plugin globals', () => {
           return members.filter((member) => !(member in namespace))
         },
         plugin,
-        members as string[]
+        members
       )
       expect(missing).toEqual([])
     })

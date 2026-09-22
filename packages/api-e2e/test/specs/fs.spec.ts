@@ -7,6 +7,7 @@ import {
   tauri,
   tauriError,
   describePlugin,
+  itDesktop,
   scratchDir
 } from '../helpers/index.js'
 
@@ -298,47 +299,52 @@ describePlugin('fs', () => {
     expect(message).toMatch(/cannot traverse directory|forbidden path/)
   })
 
-  it('watchImmediate reports changes in a watched directory', async () => {
-    const result = await tauri(async (api, watched) => {
-      const baseDir = api.fs.BaseDirectory.AppData
-      await api.fs.mkdir(watched, { baseDir, recursive: true })
-      const events: { kind: string; paths: string[] }[] = []
-      const unwatch = await api.fs.watchImmediate(
-        watched,
-        (event) => {
-          events.push({
-            kind:
-              typeof event.type === 'string'
-                ? event.type
-                : Object.keys(event.type)[0],
-            paths: event.paths
-          })
-        },
-        { baseDir, recursive: true }
-      )
-      await api.fs.writeTextFile(`${watched}/touched.txt`, 'watched', {
-        baseDir
-      })
-      // give the notifier a moment to deliver
-      const deadline = Date.now() + 10_000
-      while (
-        !events.some((e) => e.paths.some((p) => p.endsWith('touched.txt')))
-      ) {
-        if (Date.now() > deadline) {
-          throw new Error(
-            `no watch event for touched.txt, got ${JSON.stringify(events)}`
-          )
+  // The watch specs are desktop-only: `fs:allow-watch` is granted in the
+  // example's desktop capability only.
+  itDesktop(
+    'watchImmediate reports changes in a watched directory',
+    async () => {
+      const result = await tauri(async (api, watched) => {
+        const baseDir = api.fs.BaseDirectory.AppData
+        await api.fs.mkdir(watched, { baseDir, recursive: true })
+        const events: { kind: string; paths: string[] }[] = []
+        const unwatch = await api.fs.watchImmediate(
+          watched,
+          (event) => {
+            events.push({
+              kind:
+                typeof event.type === 'string'
+                  ? event.type
+                  : Object.keys(event.type)[0],
+              paths: event.paths
+            })
+          },
+          { baseDir, recursive: true }
+        )
+        await api.fs.writeTextFile(`${watched}/touched.txt`, 'watched', {
+          baseDir
+        })
+        // give the notifier a moment to deliver
+        const deadline = Date.now() + 10_000
+        while (
+          !events.some((e) => e.paths.some((p) => p.endsWith('touched.txt')))
+        ) {
+          if (Date.now() > deadline) {
+            throw new Error(
+              `no watch event for touched.txt, got ${JSON.stringify(events)}`
+            )
+          }
+          await new Promise((resolve) => setTimeout(resolve, 100))
         }
-        await new Promise((resolve) => setTimeout(resolve, 100))
-      }
-      unwatch()
-      return events
-    }, `${dir}/watched`)
-    expect(result.length).toBeGreaterThan(0)
-    expect(result.every((e) => typeof e.kind === 'string')).toBe(true)
-  })
+        unwatch()
+        return events
+      }, `${dir}/watched`)
+      expect(result.length).toBeGreaterThan(0)
+      expect(result.every((e) => typeof e.kind === 'string')).toBe(true)
+    }
+  )
 
-  it('watch debounces and unwatch stops delivery', async () => {
+  itDesktop('watch debounces and unwatch stops delivery', async () => {
     const result = await tauri(async (api, watched) => {
       const baseDir = api.fs.BaseDirectory.AppData
       await api.fs.mkdir(watched, { baseDir, recursive: true })

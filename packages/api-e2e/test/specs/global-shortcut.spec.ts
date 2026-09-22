@@ -7,9 +7,10 @@ import { tauri, tauriError, describePlugin } from '../helpers/index.js'
 
 // Triggering a shortcut needs OS-level synthetic input the WebDriver session
 // cannot produce, so the specs cover the registry (register / isRegistered /
-// unregister / unregisterAll) and the error paths.
+// unregister / unregisterAll) and the error paths. The plugin is desktop-only,
+// so the whole suite is skipped on mobile.
 
-describePlugin('global-shortcut', () => {
+describePlugin('global-shortcut', { desktopOnly: true }, () => {
   afterEach(async () => {
     await tauri((api) => api.globalShortcut.unregisterAll())
   })
