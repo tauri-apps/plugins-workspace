@@ -14,6 +14,7 @@ allowBuilds:
 overrides:
   # mocha (via @wdio/mocha-framework) pins a vulnerable range
   serialize-javascript@<7.0.5: ^7.0.5
+  devalue@<5.9.1: ^5.9.1
 
 auditConfig:
   ignoreGhsas:
