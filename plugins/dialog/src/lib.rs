@@ -113,7 +113,7 @@ impl<R: Runtime> Dialog<R> {
     ///
     /// - Message dialog:
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     ///
     /// tauri::Builder::default()
@@ -130,14 +130,14 @@ impl<R: Runtime> Dialog<R> {
     ///
     /// - Ask dialog:
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
     ///
     /// tauri::Builder::default()
     ///   .setup(|app| {
     ///     app.dialog()
     ///       .message("Are you sure?")
-    ///       .buttons(MessageDialogButtons::OkCancelCustom("Yes", "No"))
+    ///       .buttons(MessageDialogButtons::OkCancelCustom("Yes".to_string(), "No".to_string()))
     ///       .show(|yes| {
     ///         println!("user said {}", if yes { "yes" } else { "no" });
     ///       });
@@ -147,7 +147,7 @@ impl<R: Runtime> Dialog<R> {
     ///
     /// - Message dialog with OK button:
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
     ///
     /// tauri::Builder::default()
@@ -169,7 +169,7 @@ impl<R: Runtime> Dialog<R> {
     /// To block the current thread until the user acted on the dialog, you can use `blocking_show`,
     /// but note that it cannot be executed on the main thread as it will freeze your application.
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
     ///
     /// tauri::Builder::default()
@@ -178,7 +178,7 @@ impl<R: Runtime> Dialog<R> {
     ///     std::thread::spawn(move || {
     ///       let yes = handle.dialog()
     ///         .message("Are you sure?")
-    ///         .buttons(MessageDialogButtons::OkCancelCustom("Yes", "No"))
+    ///         .buttons(MessageDialogButtons::OkCancelCustom("Yes".to_string(), "No".to_string()))
     ///         .blocking_show();
     ///     });
     ///
@@ -532,7 +532,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -559,7 +559,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// The file paths cannot be read directly on Android as they are behind a content URI.
     /// The recommended way to read the files is using the [`fs`](https://v2.tauri.app/plugin/file-system/) plugin:
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// use tauri_plugin_fs::FsExt;
     /// tauri::Builder::default()
@@ -580,7 +580,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -604,7 +604,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -629,7 +629,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -654,7 +654,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -681,7 +681,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {
@@ -703,7 +703,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {
@@ -725,7 +725,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {
@@ -748,7 +748,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {
@@ -771,7 +771,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {

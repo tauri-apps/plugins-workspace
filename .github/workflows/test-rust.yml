@@ -299,3 +299,13 @@ jobs:
       - name: test ${{ matrix.package }}
         if: ${{ matrix.package == 'tauri-plugin-http' || matrix.package == 'tauri-plugin-dialog' }}
         run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets
+
+      # `--all-targets` above does not include doc tests, so they are run separately.
+      # Only on the platforms we actually test on, since cargo skips doc tests when cross compiling.
+      - name: doc test ${{ matrix.package }}
+        if: ${{ matrix.platform.command == 'test' && matrix.package != 'tauri-plugin-http' && matrix.package != 'tauri-plugin-dialog' }}
+        run: ${{ matrix.platform.runner }} test --doc --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-features
+
+      - name: doc test ${{ matrix.package }}
+        if: ${{ matrix.platform.command == 'test' && (matrix.package == 'tauri-plugin-http' || matrix.package == 'tauri-plugin-dialog') }}
+        run: ${{ matrix.platform.runner }} test --doc --package ${{ matrix.package }} --target ${{ matrix.platform.target }}
