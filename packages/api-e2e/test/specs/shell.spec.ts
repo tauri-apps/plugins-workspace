@@ -86,7 +86,12 @@ describePlugin('shell', () => {
         cwd
       )
       expect(output.code).toBe(0)
-      const [value, reportedCwd] = output.stdout.split(/\r?\n/)
+      // `cmd` echoes everything between `echo ` and `&&`, the space before the
+      // separator included, so every line is trimmed and not just the ends of
+      // the output as a whole.
+      const [value, reportedCwd] = output.stdout
+        .split(/\r?\n/)
+        .map((line) => line.trim())
       expect(value).toBe('from-e2e')
       expect(normalizeDir(reportedCwd ?? '')).toBe(normalizeDir(cwd))
     }
