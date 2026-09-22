@@ -36,47 +36,29 @@ path = "$DESKTOP"
 [[set]]
 identifier = "allow-desktop-read-recursive"
 description = "This allows full recursive read access to the complete `$DESKTOP` folder, files and subdirectories."
-permissions = [
-    "read-all",
-    "scope-desktop-recursive"
-]
+permissions = ["read-all", "scope-desktop-recursive"]
 
 [[set]]
 identifier = "allow-desktop-write-recursive"
 description = "This allows full recursive write access to the complete `$DESKTOP` folder, files and subdirectories."
-permissions = [
-    "write-all",
-    "scope-desktop-recursive"
-]
+permissions = ["write-all", "scope-desktop-recursive"]
 
 [[set]]
 identifier = "allow-desktop-read"
 description = "This allows non-recursive read access to the `$DESKTOP` folder."
-permissions = [
-    "read-all",
-    "scope-desktop"
-]
+permissions = ["read-all", "scope-desktop"]
 
 [[set]]
 identifier = "allow-desktop-write"
 description = "This allows non-recursive write access to the `$DESKTOP` folder."
-permissions = [
-    "write-all",
-    "scope-desktop"
-]
+permissions = ["write-all", "scope-desktop"]
 
 [[set]]
 identifier = "allow-desktop-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$DESKTOP` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-desktop-recursive"
-]
+permissions = ["read-meta", "scope-desktop-recursive"]
 
 [[set]]
 identifier = "allow-desktop-meta"
 description = "This allows non-recursive read access to metadata of the `$DESKTOP` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-desktop-index"
-]
+permissions = ["read-meta", "scope-desktop-index"]
