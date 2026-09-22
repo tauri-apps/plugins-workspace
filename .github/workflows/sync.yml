@@ -27,14 +27,6 @@ jobs:
       - name: Fetch git tags
         run: git fetch origin 'refs/tags/*:refs/tags/*'
 
-      - name: Cache pnpm modules
-        uses: actions/cache@v6
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
-
       - uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
@@ -42,6 +34,7 @@ jobs:
       - uses: pnpm/action-setup@v6
         with:
           run_install: true
+          cache: true # the pnpm store, keyed by OS and lockfile hash and shared by every workflow
 
       - name: Build packages
         run: pnpm build

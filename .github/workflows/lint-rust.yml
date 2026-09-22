@@ -38,6 +38,7 @@ jobs:
       pull-requests: read
     outputs:
       packages: ${{ steps.filter.outputs.changes }}
+      saver: ${{ steps.saver.outputs.saver }}
     steps:
       - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v2
@@ -129,6 +130,22 @@ jobs:
               - .github/workflows/lint-rust.yml
               - plugins/window-state/**
 
+      # Every package job for a platform restores the same rust-cache entry, and exactly one
+      # of them saves it (see the `save-if` of the rust-cache step). Prefer the packages whose
+      # dependency tree covers most of the other plugins' dependencies, so the entry is as
+      # useful as possible for the packages that did not save it.
+      - name: pick the package that saves the cache
+        id: saver
+        env:
+          PACKAGES: ${{ steps.filter.outputs.changes }}
+        run: |
+          saver="$(jq -rn --argjson packages "${PACKAGES:-[]}" '
+            ["tauri-plugin-upload", "tauri-plugin-sql", "tauri-plugin-updater", "tauri-plugin-single-instance"]
+            | map(select(. as $p | $packages | index($p) != null))
+            | first // $packages[0] // empty
+          ')"
+          echo "saver=$saver" >> "$GITHUB_OUTPUT"
+
   clippy:
     needs: changes
     if: ${{ needs.changes.outputs.packages != '[]' && needs.changes.outputs.packages != '' }}
@@ -152,6 +169,11 @@ jobs:
           components: clippy
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          # One entry shared by every package job (the default key is per job, not per
+          # matrix entry), only written from `v2`/`v3` and by a single package job; see
+          # test-rust.yml for the reasoning.
+          save-if: ${{ (github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3') && matrix.package == needs.changes.outputs.saver }}
 
       - name: clippy ${{ matrix.package }}
         run: cargo clippy --package ${{ matrix.package }} --all-targets -- -D warnings
