@@ -59,18 +59,31 @@ jobs:
         with:
           targets: x86_64-linux-android
 
-      - uses: pnpm/action-setup@v6
       - name: setup node
         uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
-          cache: 'pnpm'
+      - uses: pnpm/action-setup@v6
+        with:
+          cache: true # the pnpm store, keyed by OS and lockfile hash and shared by every workflow
 
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
-          cache: gradle
+
+      # Same rule as the rust-cache step below: every run restores the Gradle cache and only
+      # `v2`/`v3` save it. setup-java's own `cache: gradle` has no such switch, so the restore
+      # and save steps are spelled out here (same paths and key inputs as setup-java uses).
+      - name: restore gradle cache
+        id: gradle-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
 
       - name: Setup NDK
         uses: nttld/setup-ndk@v1
@@ -100,6 +113,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: android
+          # Only `v2`/`v3` write to the cache: an entry saved from a pull request lives on its
+          # merge ref, where nothing else can restore it, and every write evicts an entry
+          # that other runs would have hit (10 GB repository limit, LRU eviction).
+          save-if: ${{ github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3' }}
 
       - name: install dependencies
         run: pnpm i --frozen-lockfile
@@ -114,6 +131,15 @@ jobs:
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
         run: pnpm tauri android build --debug --apk --target $E2E_ANDROID_TARGET
+
+      - name: save gradle cache
+        if: ${{ (github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3') && steps.gradle-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ steps.gradle-cache.outputs.cache-primary-key }}
 
       - name: run e2e tests
         uses: reactivecircus/android-emulator-runner@v2
@@ -147,16 +173,21 @@ jobs:
         with:
           targets: aarch64-apple-ios-sim
 
-      - uses: pnpm/action-setup@v6
       - name: setup node
         uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
-          cache: 'pnpm'
+      - uses: pnpm/action-setup@v6
+        with:
+          cache: true # the pnpm store, keyed by OS and lockfile hash and shared by every workflow
 
       - uses: Swatinem/rust-cache@v2
         with:
           key: ios
+          # Only `v2`/`v3` write to the cache: an entry saved from a pull request lives on its
+          # merge ref, where nothing else can restore it, and every write evicts an entry
+          # that other runs would have hit (10 GB repository limit, LRU eviction).
+          save-if: ${{ github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3' }}
 
       - name: install dependencies
         run: pnpm i --frozen-lockfile

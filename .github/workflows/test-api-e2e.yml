@@ -32,6 +32,7 @@ on:
 env:
   RUST_BACKTRACE: 1
   CARGO_PROFILE_DEV_DEBUG: 0 # keeps the target folder small for better cache efficiency
+  MSEDGEDRIVER_TOOL_REV: 8c4b34f51b45f5cf08013366d703de464ab871d1
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -58,12 +59,13 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
-      - uses: pnpm/action-setup@v6
       - name: setup node
         uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
-          cache: 'pnpm'
+      - uses: pnpm/action-setup@v6
+        with:
+          cache: true # the pnpm store, keyed by OS and lockfile hash and shared by every workflow
 
       - name: install Linux dependencies
         if: runner.os == 'Linux'
@@ -79,17 +81,35 @@ jobs:
             xvfb \
             fluxbox
 
-      # install a matching Microsoft Edge Driver version using msedgedriver-tool
+      # msedgedriver has to match the installed WebView2 runtime, so msedgedriver-tool
+      # downloads the right version at run time. The tool itself is built from a pinned git
+      # revision and kept in its own small cache entry (accessed by every Windows run, so it
+      # stays hot) instead of being rebuilt from source on every run.
+      - name: restore msedgedriver-tool (Windows)
+        if: runner.os == 'Windows'
+        id: msedgedriver-tool-cache
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.tool_cache }}/msedgedriver-tool
+          key: msedgedriver-tool-${{ runner.os }}-${{ env.MSEDGEDRIVER_TOOL_REV }}
+
+      - name: install msedgedriver-tool (Windows)
+        if: runner.os == 'Windows' && steps.msedgedriver-tool-cache.outputs.cache-hit != 'true'
+        run: cargo install --git https://github.com/chippers/msedgedriver-tool --rev ${{ env.MSEDGEDRIVER_TOOL_REV }} --locked --root ${{ runner.tool_cache }}/msedgedriver-tool
+
       - name: install msedgedriver (Windows)
         if: runner.os == 'Windows'
         run: |
-          cargo install --git https://github.com/chippers/msedgedriver-tool
-          & "$HOME/.cargo/bin/msedgedriver-tool.exe"
+          & "${{ runner.tool_cache }}/msedgedriver-tool/bin/msedgedriver-tool.exe"
           $PWD.Path >> $env:GITHUB_PATH
 
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.platform.os }}
+          # Only `v2`/`v3` write to the cache: an entry saved from a pull request lives on its
+          # merge ref, where nothing else can restore it, and every write evicts an entry
+          # that other runs would have hit (10 GB repository limit, LRU eviction).
+          save-if: ${{ github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3' }}
 
       - name: install dependencies
         run: pnpm i --frozen-lockfile
