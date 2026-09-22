@@ -36,47 +36,29 @@ path = "$EXE"
 [[set]]
 identifier = "allow-exe-read-recursive"
 description = "This allows full recursive read access to the complete `$EXE` folder, files and subdirectories."
-permissions = [
-    "read-all",
-    "scope-exe-recursive"
-]
+permissions = ["read-all", "scope-exe-recursive"]
 
 [[set]]
 identifier = "allow-exe-write-recursive"
 description = "This allows full recursive write access to the complete `$EXE` folder, files and subdirectories."
-permissions = [
-    "write-all",
-    "scope-exe-recursive"
-]
+permissions = ["write-all", "scope-exe-recursive"]
 
 [[set]]
 identifier = "allow-exe-read"
 description = "This allows non-recursive read access to the `$EXE` folder."
-permissions = [
-    "read-all",
-    "scope-exe"
-]
+permissions = ["read-all", "scope-exe"]
 
 [[set]]
 identifier = "allow-exe-write"
 description = "This allows non-recursive write access to the `$EXE` folder."
-permissions = [
-    "write-all",
-    "scope-exe"
-]
+permissions = ["write-all", "scope-exe"]
 
 [[set]]
 identifier = "allow-exe-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$EXE` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-exe-recursive"
-]
+permissions = ["read-meta", "scope-exe-recursive"]
 
 [[set]]
 identifier = "allow-exe-meta"
 description = "This allows non-recursive read access to metadata of the `$EXE` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-exe-index"
-]
+permissions = ["read-meta", "scope-exe-index"]
