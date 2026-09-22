@@ -1,14 +1,16 @@
 ![plugin-shell](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/shell/banner.png)
 
-Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application.
+Access the system shell. Allows you to spawn child processes.
+
+To open files and URLs with their default application, use [tauri-plugin-opener](../opener).
 
 | Platform | Supported |
 | -------- | --------- |
 | Linux    | ✓         |
 | Windows  | ✓         |
 | macOS    | ✓         |
-| Android  | ✓         |
-| iOS      | ✓         |
+| Android  | x         |
+| iOS      | x         |
 
 ## Install
 

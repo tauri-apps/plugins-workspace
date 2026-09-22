@@ -48,7 +48,6 @@
         }
       ]
     },
-    "shell:default",
     "shell:allow-kill",
     "shell:allow-stdin-write",
     "process:allow-exit",
@@ -65,7 +64,7 @@
     "fs:allow-rename",
     "fs:allow-mkdir",
     "fs:allow-remove",
-    "fs:allow-write-text-file",
+    "fs:allow-write-file",
     "fs:scope-download-recursive",
     "fs:scope-resource-recursive",
     {

@@ -5,13 +5,8 @@ shell functionality is exposed by default.
 
 #### Granted Permissions
 
-It allows to use the `open` functionality with a reasonable
-scope pre-configured. It will allow opening `http(s)://`,
-`tel:` and `mailto:` links.
-
-#### This default permission set includes the following:
-
-- `allow-open`
+Nothing is granted by default. Spawning processes must be explicitly
+allowed with a scope, see `allow-execute` and `allow-spawn`.
 
 ## Permission Table
 
@@ -70,32 +65,6 @@ Enables the kill command without any pre-configured scope.
 <td>
 
 Denies the kill command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`shell:allow-open`
-
-</td>
-<td>
-
-Enables the open command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`shell:deny-open`
-
-</td>
-<td>
-
-Denies the open command without any pre-configured scope.
 
 </td>
 </tr>

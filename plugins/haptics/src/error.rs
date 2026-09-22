@@ -14,7 +14,7 @@ pub enum Error {
     #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(
-        #[cfg_attr(feature = "specta", serde(skip))]
+        #[cfg_attr(feature = "specta", specta(skip))]
         #[from]
         tauri::plugin::mobile::PluginInvokeError,
     ),

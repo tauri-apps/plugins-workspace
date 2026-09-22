@@ -418,7 +418,7 @@ pub struct Builder {
     rotation_strategy: RotationStrategy,
     timezone_strategy: TimezoneStrategy,
     file_open_strategy: FileOpenStrategy,
-    max_file_size: u128,
+    max_file_size: u64,
     targets: Vec<Target>,
     is_skip_logger: bool,
 }
@@ -446,7 +446,7 @@ impl Default for Builder {
             rotation_strategy: DEFAULT_ROTATION_STRATEGY,
             timezone_strategy: DEFAULT_TIMEZONE_STRATEGY,
             file_open_strategy: DEFAULT_FILE_OPEN_STRATEGY,
-            max_file_size: DEFAULT_MAX_FILE_SIZE as u128,
+            max_file_size: DEFAULT_MAX_FILE_SIZE,
             targets: DEFAULT_LOG_TARGETS.into(),
             is_skip_logger: false,
         }
@@ -496,12 +496,9 @@ impl Builder {
 
     /// Sets the maximum file size in bytes for log rotation.
     ///
-    /// Values larger than [`u64::MAX`] will be clamped to [`u64::MAX`].
-    /// In v3, this parameter will be changed to `u64`.
-    ///
     /// Default is `40_000`
-    pub fn max_file_size(mut self, max_file_size: u128) -> Self {
-        self.max_file_size = max_file_size.min(u64::MAX as u128);
+    pub fn max_file_size(mut self, max_file_size: u64) -> Self {
+        self.max_file_size = max_file_size;
         self
     }
 
@@ -839,7 +836,7 @@ impl Builder {
             self.rotation_strategy,
             self.timezone_strategy,
             self.file_open_strategy,
-            self.max_file_size as u64,
+            self.max_file_size,
             self.targets,
         )?;
 
@@ -856,7 +853,7 @@ impl Builder {
                         self.rotation_strategy,
                         self.timezone_strategy,
                         self.file_open_strategy,
-                        self.max_file_size as u64,
+                        self.max_file_size,
                         self.targets,
                     )?;
                     attach_logger(max_level, log)?;

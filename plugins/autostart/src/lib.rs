@@ -72,13 +72,11 @@ impl AutoLaunchManager {
 }
 
 pub trait ManagerExt<R: Runtime> {
-    /// TODO: Rename these to `autostart` or `auto_start` in v3
-    fn autolaunch(&self) -> State<'_, AutoLaunchManager>;
+    fn autostart(&self) -> State<'_, AutoLaunchManager>;
 }
 
 impl<R: Runtime, T: Manager<R>> ManagerExt<R> for T {
-    /// TODO: Rename these to `autostart` or `auto_start` in v3
-    fn autolaunch(&self) -> State<'_, AutoLaunchManager> {
+    fn autostart(&self) -> State<'_, AutoLaunchManager> {
         self.state::<AutoLaunchManager>()
     }
 }

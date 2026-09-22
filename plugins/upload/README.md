@@ -68,7 +68,7 @@ upload(
   './path/to/my/file.txt',
   ({ progressTotal, total }) =>
     console.log(`Uploaded ${progressTotal} of ${total} bytes`), // a callback that will be called with the upload progress
-  { 'Content-Type': 'text/plain' } // optional headers to send with the request
+  { headers: { 'Content-Type': 'text/plain' } } // optional headers to send with the request
 )
 
 // Upload with specific HTTP method
@@ -77,8 +77,10 @@ upload(
   './path/to/my/file.txt',
   ({ progressTotal, total }) =>
     console.log(`Uploaded ${progressTotal} of ${total} bytes`),
-  { 'Content-Type': 'text/plain' },
-  HttpMethod.Put // Use HttpMethod enum - supports POST, PUT, PATCH
+  {
+    headers: { 'Content-Type': 'text/plain' },
+    method: HttpMethod.Put // Use HttpMethod enum - supports POST, PUT, PATCH
+  }
 )
 ```
 
@@ -90,7 +92,7 @@ download(
   './path/to/save/my/file.txt',
   ({ progressTotal, total }) =>
     console.log(`Downloaded ${progressTotal} of ${total} bytes`), // a callback that will be called with the download progress
-  { 'Content-Type': 'text/plain' } // optional headers to send with the request
+  { headers: { 'Content-Type': 'text/plain' } } // optional headers to send with the request
 )
 ```
 

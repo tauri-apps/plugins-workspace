@@ -60,9 +60,6 @@ type DownloadEvent =
   | { event: 'Finished' }
 
 class Update extends Resource {
-  // TODO: remove this field in v3
-  /** @deprecated This is always true, check if the return value is `null` instead when using {@linkcode check} */
-  available: boolean
   currentVersion: string
   version: string
   date?: string
@@ -72,7 +69,6 @@ class Update extends Resource {
 
   constructor(metadata: UpdateMetadata) {
     super(metadata.rid)
-    this.available = true
     this.currentVersion = metadata.currentVersion
     this.version = metadata.version
     this.date = metadata.date

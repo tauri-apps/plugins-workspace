@@ -11,8 +11,6 @@ use tauri::{
     Manager, Runtime, State, Window,
 };
 
-#[allow(deprecated)]
-use crate::open::Program;
 use crate::{
     process::{CommandEvent, TerminatedPayload},
     scope::ExecuteArgs,
@@ -306,15 +304,4 @@ pub fn kill<R: Runtime>(
         child.kill()?;
     }
     Ok(())
-}
-
-#[allow(deprecated)]
-#[tauri::command]
-pub async fn open<R: Runtime>(
-    _window: Window<R>,
-    shell: State<'_, Shell<R>>,
-    path: String,
-    with: Option<Program>,
-) -> crate::Result<()> {
-    crate::open::open(Some(&shell.open_scope), path, with)
 }
