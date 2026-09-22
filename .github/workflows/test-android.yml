@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: dtolnay/rust-toolchain@1.77.2
+      - uses: dtolnay/rust-toolchain@1.95
 
       - uses: actions/setup-node@v7
         with:
