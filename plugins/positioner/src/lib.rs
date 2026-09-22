@@ -31,6 +31,16 @@ use tauri::{tray::TrayIconEvent, AppHandle, Manager, PhysicalPosition, PhysicalS
 #[cfg(feature = "tray-icon")]
 struct Tray(std::sync::Mutex<Option<(PhysicalPosition<f64>, PhysicalSize<f64>)>>);
 
+/// Records the tray icon's latest position and size so that the `Tray*` [`Position`] variants
+/// (e.g. [`Position::TrayLeft`]) can be resolved by [`WindowExt::move_window`] and
+/// [`WindowExt::move_window_constrained`].
+///
+/// Call this from your tray icon's event handler. Only [`TrayIconEvent::Click`],
+/// [`TrayIconEvent::Enter`], [`TrayIconEvent::Leave`] and [`TrayIconEvent::Move`] carry the
+/// icon's position and update the tracked value; other events are ignored. Until this has been
+/// called at least once, moving a window to a `Tray*` position fails.
+///
+/// Requires the `tray-icon` feature.
 #[cfg(feature = "tray-icon")]
 pub fn on_tray_event<R: Runtime>(app: &AppHandle<R>, event: &TrayIconEvent) {
     let (position, size) = {

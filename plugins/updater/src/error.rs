@@ -66,29 +66,57 @@ pub enum Error {
     /// Temp dir is not on same mount mount. This prevents our updater to rename the AppImage to a temp file.
     #[error("temp directory is not on the same mount point as the AppImage")]
     TempDirNotOnSameMountPoint,
+    /// The downloaded archive does not contain a binary for the current target.
     #[error("binary for the current target not found in the archive")]
     BinaryNotFoundInArchive,
+    /// Could not create a temporary directory to store the downloaded update.
     #[error("failed to create temporary directory")]
     TempDirNotFound,
+    /// The privilege escalation prompt shown before installing a Linux package
+    /// failed or was dismissed by the user.
     #[error("Authentication failed or was cancelled")]
     AuthenticationFailed,
+    /// Installing the downloaded `.deb` package failed.
     #[error("Failed to install .deb package")]
     DebInstallFailed,
+    /// The package manager could not install the downloaded Linux package.
     #[error("Failed to install package")]
     PackageInstallFailed,
+    /// The downloaded update is not in a format the updater can install on the current platform.
     #[error("invalid updater binary format")]
     InvalidUpdaterFormat,
+    /// `http` crate errors.
     #[error(transparent)]
     Http(#[from] http::Error),
+    /// A request header value is not valid.
     #[error(transparent)]
     InvalidHeaderValue(#[from] http::header::InvalidHeaderValue),
+    /// A request header name is not valid.
     #[error(transparent)]
     InvalidHeaderName(#[from] http::header::InvalidHeaderName),
+    /// The release publish date could not be formatted as an RFC 3339 string.
     #[error("Failed to format date")]
     FormatDate,
     /// The configured updater endpoint must use a secure protocol like `https`
     #[error("The configured updater endpoint must use a secure protocol like `https`.")]
     InsecureTransportProtocol,
+    /// The version the artifact was signed for does not match the version announced by the
+    /// update endpoint.
+    #[error(
+        "The update was signed for version {signed} but the update endpoint announced version {announced}. The endpoint response may have been tampered with to force installing a different release."
+    )]
+    SignedVersionMismatch {
+        /// The version read from the signature's trusted comment.
+        signed: String,
+        /// The version announced by the update endpoint.
+        announced: String,
+    },
+    /// `requireSignedVersion` is enabled but the signature does not carry a version.
+    #[error(
+        "The update signature does not specify the version it was signed for, which `requireSignedVersion` requires. Re-sign and re-publish this release, or disable `requireSignedVersion`."
+    )]
+    MissingSignedVersion,
+    /// Tauri errors.
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
 }
@@ -102,4 +130,5 @@ impl Serialize for Error {
     }
 }
 
+/// A [`Result`](std::result::Result) alias whose error type is the updater [`Error`](enum@Error).
 pub type Result<T> = std::result::Result<T, Error>;

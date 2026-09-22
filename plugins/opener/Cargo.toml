@@ -26,6 +26,9 @@ tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
 
+[dev-dependencies]
+tauri = { workspace = true, features = ["wry"] }
+
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }

@@ -33,6 +33,7 @@ pub use mobile::Haptics;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the haptics APIs.
 pub trait HapticsExt<R: Runtime> {
+    /// Returns a handle to the [`Haptics`] APIs.
     fn haptics(&self) -> &Haptics<R>;
 }
 

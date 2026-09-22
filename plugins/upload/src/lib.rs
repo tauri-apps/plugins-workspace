@@ -38,24 +38,39 @@ use read_progress_stream::ReadProgressStream;
 
 use std::collections::HashMap;
 
+/// The HTTP method used to send the file in the `upload` command.
+///
+/// Serialized as an uppercase string (`"POST"`, `"PUT"` or `"PATCH"`) to match the JavaScript
+/// guest bindings.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum HttpMethod {
+    /// Send the file with an HTTP `POST` request. This is the default when no method is given.
     Post,
+    /// Send the file with an HTTP `PUT` request.
     Put,
+    /// Send the file with an HTTP `PATCH` request.
     Patch,
 }
 
 type Result<T> = std::result::Result<T, Error>;
 
+/// The error type returned by this plugin's `upload` and `download` commands.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// An I/O error, for example failing to open, read or write the file at the given path, or
+    /// the background task that performs the transfer panicking.
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    /// An error returned by the underlying [`reqwest`] HTTP client while sending the request or
+    /// reading the response.
     #[error(transparent)]
     Request(#[from] reqwest::Error),
+    /// The content length of the request or response could not be determined.
     #[error("{0}")]
     ContentLength(String),
+    /// The HTTP response did not indicate success. Contains the status code and the response
+    /// body text.
     #[error("request failed with status code {0}: {1}")]
     HttpErrorCode(u16, String),
 }
@@ -193,6 +208,7 @@ fn file_to_body(channel: Channel<ProgressPayload>, file: File, file_len: u64) ->
     ))
 }
 
+/// Initializes the upload plugin, registering the `upload` and `download` commands.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     PluginBuilder::new("upload")
         .invoke_handler(tauri::generate_handler![download, upload])

@@ -7,6 +7,11 @@ use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
 use crate::{FilePath, OpenOptions};
 
+/// Access to the file system APIs on iOS.
+///
+/// Opening a `file://` URL automatically starts accessing the matching security-scoped resource.
+///
+/// Retrieved with [`crate::FsExt::fs`].
 pub struct Fs<R: Runtime> {
     _phantom: std::marker::PhantomData<fn() -> R>,
 }

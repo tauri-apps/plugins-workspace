@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-updater"
-version = "2.11.0"
+version = "2.12.0"
 description = "In-app updates for Tauri applications."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -30,6 +30,9 @@ ios = { level = "none", notes = "" }
 
 [build-dependencies]
 tauri-plugin = { workspace = true, features = ["build"] }
+
+[dev-dependencies]
+tauri = { workspace = true, features = ["wry"] }
 
 [dependencies]
 tauri = { workspace = true }

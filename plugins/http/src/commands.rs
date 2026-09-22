@@ -22,6 +22,10 @@ use crate::{
 
 const HTTP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
+/// Matches the default [`reqwest`] redirect policy, used when the frontend does not
+/// configure `maxRedirections`.
+const DEFAULT_MAX_REDIRECTIONS: usize = 10;
+
 struct ReqwestResponse(reqwest::Response);
 impl tauri::Resource for ReqwestResponse {}
 
@@ -174,6 +178,56 @@ fn attach_proxy(
     Ok(builder)
 }
 
+/// Builds the redirect policy for the request.
+///
+/// When `scope` is [`Some`], **every** hop is checked against it. Validating only the URL the
+/// frontend asked for is not enough: a server on an allowed origin can answer with a redirect to
+/// any other origin (an open redirect, or a server the attacker controls), and following it would
+/// give the webview access to a URL the scope denies.
+///
+/// That check is opt-in through the `scopeRedirects` configuration because it breaks applications
+/// that rely on being redirected outside of their scope.
+// TODO(v3): always check the scope and take it by value instead of `Option`
+fn redirect_policy(scope: Option<Scope>, max_redirections: Option<usize>) -> Policy {
+    if max_redirections == Some(0) {
+        return Policy::none();
+    }
+
+    let max_redirections = max_redirections.unwrap_or(DEFAULT_MAX_REDIRECTIONS);
+
+    let Some(scope) = scope else {
+        return Policy::limited(max_redirections);
+    };
+
+    Policy::custom(move |attempt| {
+        // the first URL in `previous` is the initial request, so it must be excluded
+        if attempt.previous().len() > max_redirections {
+            attempt.error("too many redirects")
+        } else if scope.is_allowed(attempt.url()) {
+            attempt.follow()
+        } else {
+            let url = attempt.url().clone();
+            attempt.error(Error::UrlNotAllowed(url))
+        }
+    })
+}
+
+/// [`reqwest`] wraps the error returned by the redirect policy, and its `Display` impl does not
+/// include the source, so we unwrap our own scope error to keep the reason visible to the frontend.
+fn map_request_error(error: reqwest::Error) -> Error {
+    if error.is_redirect() {
+        let mut source = std::error::Error::source(&error);
+        while let Some(err) = source {
+            if let Some(Error::UrlNotAllowed(url)) = err.downcast_ref::<Error>() {
+                return Error::UrlNotAllowed(url.clone());
+            }
+            source = err.source();
+        }
+    }
+
+    Error::Network(error)
+}
+
 #[command]
 pub async fn fetch<R: Runtime>(
     webview: Webview<R>,
@@ -214,118 +268,115 @@ pub async fn fetch<R: Runtime>(
 
     match scheme {
         "http" | "https" => {
-            if Scope::new(
+            let scope = Scope::new(
                 command_scope
                     .allows()
                     .iter()
                     .chain(global_scope.allows())
+                    .cloned()
                     .collect(),
                 command_scope
                     .denies()
                     .iter()
                     .chain(global_scope.denies())
+                    .cloned()
                     .collect(),
-            )
-            .is_allowed(&url)
-            {
-                let mut builder = reqwest::ClientBuilder::new();
+            );
 
-                if let Some(danger_config) = danger {
-                    #[cfg(not(feature = "dangerous-settings"))]
-                    {
-                        #[cfg(debug_assertions)]
-                        {
-                            eprintln!("[\x1b[33mWARNING\x1b[0m] using dangerous settings requires `dangerous-settings` feature flag in your Cargo.toml");
-                        }
-                        let _ = danger_config;
-                        return Err(Error::DangerousSettings);
-                    }
-                    #[cfg(feature = "dangerous-settings")]
-                    {
-                        builder = builder
-                            .danger_accept_invalid_certs(danger_config.accept_invalid_certs)
-                            .danger_accept_invalid_hostnames(danger_config.accept_invalid_hostnames)
-                    }
-                }
-
-                if let Some(timeout) = connect_timeout {
-                    builder = builder.connect_timeout(Duration::from_millis(timeout));
-                }
-
-                if let Some(max_redirections) = max_redirections {
-                    builder = builder.redirect(if max_redirections == 0 {
-                        Policy::none()
-                    } else {
-                        Policy::limited(max_redirections)
-                    });
-                }
-
-                if let Some(proxy_config) = proxy {
-                    builder = attach_proxy(proxy_config, builder)?;
-                }
-
-                #[cfg(feature = "cookies")]
-                {
-                    builder = builder.cookie_provider(state.cookies_jar.clone());
-                }
-
-                let mut request = builder.build()?.request(method.clone(), url);
-
-                // POST and PUT requests should always have a 0 length content-length,
-                // if there is no body. https://fetch.spec.whatwg.org/#http-network-or-cache-fetch
-                if data.is_none() && matches!(method, Method::POST | Method::PUT) {
-                    headers.append(header::CONTENT_LENGTH, HeaderValue::from_str("0")?);
-                }
-
-                if headers.contains_key(header::RANGE) {
-                    // https://fetch.spec.whatwg.org/#http-network-or-cache-fetch step 18
-                    // If httpRequest's header list contains `Range`, then append (`Accept-Encoding`, `identity`)
-                    headers.append(header::ACCEPT_ENCODING, HeaderValue::from_str("identity")?);
-                }
-
-                if !headers.contains_key(header::USER_AGENT) {
-                    headers.append(header::USER_AGENT, HeaderValue::from_str(HTTP_USER_AGENT)?);
-                }
-
-                // ensure we have an Origin header set
-                if cfg!(not(feature = "unsafe-headers")) || !headers.contains_key(header::ORIGIN) {
-                    if let Ok(url) = webview.url() {
-                        // The url crate returns OpaqueOrigin for tauri://localhost which serializes to "null"
-                        let origin = if url.scheme() == "tauri" {
-                            "tauri://localhost".to_string()
-                        } else {
-                            url.origin().ascii_serialization()
-                        };
-                        headers.append(header::ORIGIN, HeaderValue::from_str(&origin)?);
-                    }
-                }
-
-                // In case empty origin is passed, remove it. Some services do not like Origin header
-                // so this way we can remove it in explicit way. The default behaviour is still to set it
-                if cfg!(feature = "unsafe-headers")
-                    && headers.get(header::ORIGIN) == Some(&HeaderValue::from_static(""))
-                {
-                    headers.remove(header::ORIGIN);
-                };
-
-                if let Some(data) = data {
-                    request = request.body(data);
-                }
-
-                request = request.headers(headers);
-
-                #[cfg(feature = "tracing")]
-                tracing::trace!("{:?}", request);
-
-                let fut = async move { request.send().await.map_err(Into::into) };
-
-                let mut resources_table = webview.resources_table();
-                let rid = resources_table.add_request(Box::pin(fut));
-
-                Ok(rid)
-            } else {
-                Err(Error::UrlNotAllowed(url))
+            if !scope.is_allowed(&url) {
+                return Err(Error::UrlNotAllowed(url));
             }
+
+            let mut builder = reqwest::ClientBuilder::new();
+
+            if let Some(danger_config) = danger {
+                #[cfg(not(feature = "dangerous-settings"))]
+                {
+                    #[cfg(debug_assertions)]
+                    {
+                        eprintln!("[\x1b[33mWARNING\x1b[0m] using dangerous settings requires `dangerous-settings` feature flag in your Cargo.toml");
+                    }
+                    let _ = danger_config;
+                    return Err(Error::DangerousSettings);
+                }
+                #[cfg(feature = "dangerous-settings")]
+                {
+                    builder = builder
+                        .danger_accept_invalid_certs(danger_config.accept_invalid_certs)
+                        .danger_accept_invalid_hostnames(danger_config.accept_invalid_hostnames)
+                }
+            }
+
+            if let Some(timeout) = connect_timeout {
+                builder = builder.connect_timeout(Duration::from_millis(timeout));
+            }
+
+            let scope = state.config.scope_redirects.then_some(scope);
+            builder = builder.redirect(redirect_policy(scope, max_redirections));
+
+            if let Some(proxy_config) = proxy {
+                builder = attach_proxy(proxy_config, builder)?;
+            }
+
+            #[cfg(feature = "cookies")]
+            {
+                builder = builder.cookie_provider(state.cookies_jar.clone());
+            }
+
+            let mut request = builder.build()?.request(method.clone(), url);
+
+            // POST and PUT requests should always have a 0 length content-length,
+            // if there is no body. https://fetch.spec.whatwg.org/#http-network-or-cache-fetch
+            if data.is_none() && matches!(method, Method::POST | Method::PUT) {
+                headers.append(header::CONTENT_LENGTH, HeaderValue::from_str("0")?);
+            }
+
+            if headers.contains_key(header::RANGE) {
+                // https://fetch.spec.whatwg.org/#http-network-or-cache-fetch step 18
+                // If httpRequest's header list contains `Range`, then append (`Accept-Encoding`, `identity`)
+                headers.append(header::ACCEPT_ENCODING, HeaderValue::from_str("identity")?);
+            }
+
+            if !headers.contains_key(header::USER_AGENT) {
+                headers.append(header::USER_AGENT, HeaderValue::from_str(HTTP_USER_AGENT)?);
+            }
+
+            // ensure we have an Origin header set
+            if cfg!(not(feature = "unsafe-headers")) || !headers.contains_key(header::ORIGIN) {
+                if let Ok(url) = webview.url() {
+                    // The url crate returns OpaqueOrigin for tauri://localhost which serializes to "null"
+                    let origin = if url.scheme() == "tauri" {
+                        "tauri://localhost".to_string()
+                    } else {
+                        url.origin().ascii_serialization()
+                    };
+                    headers.append(header::ORIGIN, HeaderValue::from_str(&origin)?);
+                }
+            }
+
+            // In case empty origin is passed, remove it. Some services do not like Origin header
+            // so this way we can remove it in explicit way. The default behaviour is still to set it
+            if cfg!(feature = "unsafe-headers")
+                && headers.get(header::ORIGIN) == Some(&HeaderValue::from_static(""))
+            {
+                headers.remove(header::ORIGIN);
+            };
+
+            if let Some(data) = data {
+                request = request.body(data);
+            }
+
+            request = request.headers(headers);
+
+            #[cfg(feature = "tracing")]
+            tracing::trace!("{:?}", request);
+
+            let fut = async move { request.send().await.map_err(map_request_error) };
+
+            let mut resources_table = webview.resources_table();
+            let rid = resources_table.add_request(Box::pin(fut));
+
+            Ok(rid)
         }
         "data" => {
             let data_url =
@@ -484,5 +535,184 @@ fn is_unsafe_header(header: &HeaderName) -> bool {
     ) || {
         let lower = header.as_str().to_lowercase();
         lower.starts_with("proxy-") || lower.starts_with("sec-")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        io::{BufRead, BufReader, Write},
+        net::TcpListener,
+        sync::Arc,
+    };
+
+    use super::*;
+
+    /// Test server with an open redirect:
+    ///
+    /// - `/redirect-external` answers a 302 to `http://127.0.0.1:{port}/secret`, which is a
+    ///   different origin as far as the scope is concerned - the tests allow `localhost`;
+    /// - `/redirect/{n}` answers a 302 to `/redirect/{n-1}` on `localhost`, and `/redirect/0`
+    ///   answers a 302 to `/target`, so the whole chain stays in scope;
+    /// - anything else answers a 200, so a bypass shows up as a successful response.
+    fn spawn_server() -> u16 {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        std::thread::spawn(move || {
+            for stream in listener.incoming() {
+                let mut stream = stream.unwrap();
+
+                // the whole request must be consumed, otherwise closing the connection
+                // with unread data queued resets it before the client reads the response
+                let mut reader = BufReader::new(stream.try_clone().unwrap());
+                let mut request_line = String::new();
+                reader.read_line(&mut request_line).unwrap();
+                loop {
+                    let mut header = String::new();
+                    reader.read_line(&mut header).unwrap();
+                    if matches!(header.as_str(), "" | "\r\n" | "\n") {
+                        break;
+                    }
+                }
+
+                let path = request_line.split(' ').nth(1).unwrap_or("/");
+                let location = match path.strip_prefix("/redirect/") {
+                    Some("0") => Some(format!("http://localhost:{port}/target")),
+                    Some(remaining) => Some(format!(
+                        "http://localhost:{port}/redirect/{}",
+                        remaining.parse::<usize>().unwrap() - 1
+                    )),
+                    None if path == "/redirect-external" => {
+                        Some(format!("http://127.0.0.1:{port}/secret"))
+                    }
+                    None => None,
+                };
+
+                let response = match location {
+                    Some(location) => format!(
+                        "HTTP/1.1 302 Found\r\nLocation: {location}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+                    ),
+                    None => "HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\nsecret"
+                        .to_string(),
+                };
+
+                let _ = stream.write_all(response.as_bytes());
+                let _ = stream.flush();
+            }
+        });
+
+        port
+    }
+
+    fn get(
+        url: &str,
+        scope: Option<Scope>,
+        max_redirections: Option<usize>,
+    ) -> Result<reqwest::Response> {
+        let client = reqwest::ClientBuilder::new()
+            .redirect(redirect_policy(scope, max_redirections))
+            .build()
+            .unwrap();
+        let request = client.get(url);
+        tauri::async_runtime::block_on(
+            async move { request.send().await.map_err(map_request_error) },
+        )
+    }
+
+    fn localhost_scope(port: u16) -> Option<Scope> {
+        let entry = Arc::new(format!("http://localhost:{port}/*").parse().unwrap());
+        Some(Scope::new(vec![entry], Vec::new()))
+    }
+
+    #[test]
+    fn redirect_outside_of_scope_is_denied() {
+        let port = spawn_server();
+
+        let err = get(
+            &format!("http://localhost:{port}/redirect-external"),
+            localhost_scope(port),
+            None,
+        )
+        .unwrap_err();
+
+        match err {
+            Error::UrlNotAllowed(url) => {
+                assert_eq!(url.as_str(), format!("http://127.0.0.1:{port}/secret"))
+            }
+            e => panic!("expected the redirect to be denied by the scope, got {e:?}"),
+        }
+    }
+
+    #[test]
+    fn redirect_outside_of_scope_is_followed_when_not_configured() {
+        let port = spawn_server();
+
+        // `scopeRedirects` is disabled, so only the URL requested by the frontend is checked
+        let response = get(
+            &format!("http://localhost:{port}/redirect-external"),
+            None,
+            None,
+        )
+        .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[test]
+    fn redirect_denied_by_the_scope_is_denied() {
+        let port = spawn_server();
+        let allow = Arc::new(format!("http://localhost:{port}/*").parse().unwrap());
+        let deny = Arc::new(format!("http://localhost:{port}/target").parse().unwrap());
+        let scope = Some(Scope::new(vec![allow], vec![deny]));
+
+        let err = get(&format!("http://localhost:{port}/redirect/0"), scope, None).unwrap_err();
+
+        assert!(matches!(err, Error::UrlNotAllowed(_)));
+    }
+
+    #[test]
+    fn redirect_inside_of_scope_is_followed() {
+        let port = spawn_server();
+
+        let response = get(
+            &format!("http://localhost:{port}/redirect/2"),
+            localhost_scope(port),
+            None,
+        )
+        .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(response.url().path(), "/target");
+    }
+
+    #[test]
+    fn max_redirections_is_enforced() {
+        let port = spawn_server();
+
+        for scope in [localhost_scope(port), None] {
+            let err = get(
+                &format!("http://localhost:{port}/redirect/5"),
+                scope,
+                Some(2),
+            )
+            .unwrap_err();
+
+            assert!(matches!(err, Error::Network(e) if e.is_redirect()));
+        }
+    }
+
+    #[test]
+    fn zero_max_redirections_does_not_follow() {
+        let port = spawn_server();
+
+        let response = get(
+            &format!("http://localhost:{port}/redirect/0"),
+            localhost_scope(port),
+            Some(0),
+        )
+        .unwrap();
+
+        assert_eq!(response.status(), StatusCode::FOUND);
     }
 }

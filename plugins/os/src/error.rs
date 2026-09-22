@@ -4,6 +4,9 @@
 
 use serde::{Serialize, Serializer};
 
+/// All errors that can occur while running the os plugin.
+///
+/// This enum currently has no variants: none of the plugin's commands can fail.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {}
 
