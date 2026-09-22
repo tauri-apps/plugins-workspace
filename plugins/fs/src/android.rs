@@ -9,6 +9,12 @@ use crate::{models::*, FilePath, OpenOptions};
 
 const PLUGIN_IDENTIFIER: &str = "com.plugin.fs";
 
+/// Access to the file system APIs on Android.
+///
+/// In addition to regular file system paths, it can read `content://` URIs
+/// and Android asset paths by resolving them with the Android plugin implementation.
+///
+/// Retrieved with [`crate::FsExt::fs`].
 pub struct Fs<R: Runtime>(tauri::plugin::PluginHandle<R>);
 
 pub fn init<R: Runtime, C: DeserializeOwned>(

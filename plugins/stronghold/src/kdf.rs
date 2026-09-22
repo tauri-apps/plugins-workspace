@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! Key derivation used to turn the user password into the key that encrypts a snapshot.
+//!
+//! Only available when the **kdf** Cargo feature is enabled, which is the case by default.
+
 use rand_chacha::ChaCha20Rng;
 use rand_core::{RngCore, SeedableRng};
 use std::path::Path;
@@ -10,12 +14,21 @@ use std::path::Path;
 /// This is a current limitation of Stronghold.
 const HASH_LENGTH: usize = 32;
 
+/// Password hashing functions that can be used as the key derivation function of
+/// [`Builder::new`](crate::Builder::new).
 pub struct KeyDerivation {}
 
 impl KeyDerivation {
-    /// Will create a key from [`password`] and a generated salt.
-    /// Salt will be generated to file [`salt_path`] or taken from it
-    /// if file already exists
+    /// Hashes `password` with Argon2 using the salt stored in `salt_path`, returning the
+    /// 32 bytes key used to encrypt a snapshot.
+    ///
+    /// The salt is read from `salt_path` when that file already exists, otherwise a new
+    /// random salt is generated and written to it.
+    ///
+    /// # Panics
+    ///
+    /// Panics when the salt file cannot be read or written, when its contents are not
+    /// 32 bytes long, or when hashing the password fails.
     pub fn argon2(password: &str, salt_path: &Path) -> Vec<u8> {
         let mut salt = [0u8; HASH_LENGTH];
         create_or_get_salt(&mut salt, salt_path);

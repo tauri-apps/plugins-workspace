@@ -22,6 +22,7 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Geolocation<R: Runtime>(AppHandle<R>);
 
 impl<R: Runtime> Geolocation<R> {
+    /// Not implemented on desktop platforms; always resolves to a default, zeroed [`Position`] without reading any real location.
     pub fn get_current_position(
         &self,
         _options: Option<PositionOptions>,
@@ -29,6 +30,7 @@ impl<R: Runtime> Geolocation<R> {
         Ok(Position::default())
     }
 
+    /// Not implemented on desktop platforms. Registers a channel for `channel_id` bookkeeping, but `callback` is never invoked with a real [`WatchEvent`].
     pub fn watch_position<F: Fn(WatchEvent) + Send + Sync + 'static>(
         &self,
         options: PositionOptions,
@@ -64,14 +66,17 @@ impl<R: Runtime> Geolocation<R> {
         Ok(())
     }
 
+    /// Not implemented on desktop platforms; always succeeds without doing anything.
     pub fn clear_watch(&self, _channel_id: u32) -> crate::Result<()> {
         Ok(())
     }
 
+    /// Not implemented on desktop platforms; always resolves to the default [`PermissionStatus`] (both permissions in the [`Prompt`](tauri::plugin::PermissionState::Prompt) state).
     pub fn check_permissions(&self) -> crate::Result<PermissionStatus> {
         Ok(PermissionStatus::default())
     }
 
+    /// Not implemented on desktop platforms; always resolves to the default [`PermissionStatus`] without prompting the user.
     pub fn request_permissions(
         &self,
         _permissions: Option<Vec<PermissionType>>,

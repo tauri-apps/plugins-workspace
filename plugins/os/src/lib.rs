@@ -23,11 +23,17 @@ mod error;
 
 pub use error::Error;
 
+/// The type of the current operating system, as returned by [`type_`].
 pub enum OsType {
+    /// Linux and Linux-based systems such as FreeBSD, DragonFly BSD, NetBSD and OpenBSD.
     Linux,
+    /// Windows.
     Windows,
+    /// macOS.
     Macos,
+    /// iOS.
     IOS,
+    /// Android.
     Android,
 }
 
@@ -127,6 +133,7 @@ impl InitJavascript<'_> {
     }
 }
 
+/// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     let init_js = InitJavascript::new()
         .render_default(&Default::default())

@@ -43,15 +43,26 @@ use crate::{
 
 const UPDATER_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
+/// The kind of bundle the running application was installed from.
+///
+/// Its name is appended to the updater target string (`{os}-{arch}-{bundle_type}`) when looking
+/// up the release in the update manifest and replaces the `{{bundle_type}}` variable in the
+/// endpoint URLs.
 #[derive(Copy, Clone)]
 pub enum Installer {
+    /// Linux AppImage bundle, named `appimage`.
     AppImage,
+    /// Debian package, named `deb`.
     Deb,
+    /// RPM package, named `rpm`.
     Rpm,
 
+    /// macOS application bundle, named `app`. Also used for applications distributed as DMG.
     App,
 
+    /// Windows WiX (MSI) installer, named `msi`.
     Msi,
+    /// Windows NSIS installer, named `nsis`.
     Nsis,
 }
 
@@ -68,6 +79,7 @@ impl Installer {
     }
 }
 
+/// The update information of a single platform in the update manifest.
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ReleaseManifestPlatform {
     /// Download URL for the platform
@@ -76,11 +88,18 @@ pub struct ReleaseManifestPlatform {
     pub signature: String,
 }
 
+/// The platform specific data of a [`RemoteRelease`], in either of the two supported shapes.
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(untagged)]
 pub enum RemoteReleaseInner {
+    /// Server Format: the endpoint resolved the platform itself and returned a single
+    /// download URL and signature.
     Dynamic(ReleaseManifestPlatform),
+    /// Static Format: the manifest describes every platform it supports and the updater
+    /// picks the entry matching the current target.
     Static {
+        /// Update information for each platform, keyed by the updater target string
+        /// (e.g. `darwin-aarch64`).
         platforms: HashMap<String, ReleaseManifestPlatform>,
     },
 }
@@ -126,8 +145,16 @@ impl RemoteRelease {
     }
 }
 
+/// Function executed right before the Windows installer is spawned and the app exits.
+/// See [`UpdaterBuilder::on_before_exit`].
 pub type OnBeforeExit = Arc<dyn Fn() + Send + Sync + 'static>;
+/// Function that customizes the `reqwest` client builder used for the updater requests.
+/// See [`UpdaterBuilder::configure_client`].
 pub type OnBeforeRequest = Arc<dyn Fn(ClientBuilder) -> ClientBuilder + Send + Sync + 'static>;
+/// Function that decides whether a remote release must be installed.
+///
+/// It receives the current application version and the remote release,
+/// and returns `true` when the release should be treated as an update.
 pub type VersionComparator = Arc<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>;
 #[cfg(target_os = "macos")]
 type MainThreadClosure = Box<dyn FnOnce() + Send + Sync + 'static>;
@@ -155,6 +182,10 @@ struct UpdaterContext {
     restart_after_install: bool,
 }
 
+/// Builder for an [`Updater`] instance.
+///
+/// Get one from [`crate::UpdaterExt::updater_builder`], which pre-fills it with the plugin
+/// configuration, then call [`UpdaterBuilder::build`].
 pub struct UpdaterBuilder {
     current_version: Version,
     pub(crate) version_comparator: Option<VersionComparator>,
@@ -208,6 +239,12 @@ impl UpdaterBuilder {
         }
     }
 
+    /// Sets the function used to decide whether the remote release must be installed,
+    /// replacing the comparator set with [`crate::Builder::default_version_comparator`]
+    /// and the behavior of the `allowDowngrades` configuration value.
+    ///
+    /// When no comparator is set, a release is only installed if its version is greater
+    /// than the current application version.
     pub fn version_comparator<F: Fn(Version, RemoteRelease) -> bool + Send + Sync + 'static>(
         mut self,
         f: F,
@@ -216,11 +253,29 @@ impl UpdaterBuilder {
         self
     }
 
+    /// Sets the target name used when checking for updates.
+    ///
+    /// It replaces the `{{target}}` variable in the endpoint URLs and is used as the key to look
+    /// up the release in the `platforms` object of a static update manifest.
+    ///
+    /// When it is not set, the updater uses the current operating system name (`linux`, `darwin`
+    /// or `windows`) in the endpoint URLs and looks for `{os}-{arch}-{bundle_type}` then
+    /// `{os}-{arch}` in the manifest.
     pub fn target(mut self, target: impl Into<String>) -> Self {
         self.target.replace(target.into());
         self
     }
 
+    /// Sets the endpoints to fetch the update manifest from,
+    /// overriding the `endpoints` configuration value.
+    ///
+    /// They are checked in order and the first one that returns a valid release wins.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::InsecureTransportProtocol`] on release builds if an endpoint does not use
+    /// the `https` protocol and the `dangerousInsecureTransportProtocol` configuration value is
+    /// not enabled. On debug builds a warning is printed instead.
     pub fn endpoints(mut self, endpoints: Vec<Url>) -> Result<Self> {
         crate::config::validate_endpoints(
             &endpoints,
@@ -231,11 +286,19 @@ impl UpdaterBuilder {
         Ok(self)
     }
 
+    /// Sets the path of the application executable, which is used to determine where the update
+    /// must be installed. Defaults to the path of the current executable, or to the AppImage path
+    /// when the application runs as an AppImage.
     pub fn executable_path<P: AsRef<Path>>(mut self, p: P) -> Self {
         self.executable_path.replace(p.as_ref().into());
         self
     }
 
+    /// Adds a header to be sent on the update check and download requests.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the header name or the header value is not valid.
     pub fn header<K, V>(mut self, key: K, value: V) -> Result<Self>
     where
         HeaderName: TryFrom<K>,
@@ -251,21 +314,28 @@ impl UpdaterBuilder {
         Ok(self)
     }
 
+    /// Replaces all the headers sent on the update check and download requests with the given map,
+    /// discarding the ones previously added with [`Self::header`].
     pub fn headers(mut self, headers: HeaderMap) -> Self {
         self.headers = headers;
         self
     }
 
+    /// Removes all the headers previously set on this builder.
     pub fn clear_headers(mut self) -> Self {
         self.headers.clear();
         self
     }
 
+    /// Sets the timeout of the update check and download requests.
+    /// When it is not set, the requests do not time out.
     pub fn timeout(mut self, timeout: Duration) -> Self {
         self.timeout = Some(timeout);
         self
     }
 
+    /// Sets the proxy used for the update check and download requests.
+    /// It is ignored when [`Self::no_proxy`] was called.
     pub fn proxy(mut self, proxy: Url) -> Self {
         self.proxy.replace(proxy);
         self
@@ -277,6 +347,8 @@ impl UpdaterBuilder {
         self
     }
 
+    /// Sets the public key used to verify the update signature,
+    /// overriding the `pubkey` value of the plugin configuration.
     pub fn pubkey<S: Into<String>>(mut self, pubkey: S) -> Self {
         self.context.config.pubkey = pubkey.into();
         self
@@ -362,6 +434,15 @@ impl UpdaterBuilder {
         self
     }
 
+    /// Builds the [`Updater`].
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::EmptyEndpoints`]: neither [`Self::endpoints`] nor the `endpoints`
+    ///   configuration value provided an endpoint to check.
+    /// - [`Error::UnsupportedArch`]: the updater does not support the current architecture.
+    /// - [`Error::FailedToDetermineExtractPath`]: the install directory could not be resolved
+    ///   from the executable path.
     pub fn build(self) -> Result<Updater> {
         let endpoints = self
             .endpoints
@@ -412,6 +493,9 @@ impl UpdaterBuilder {
     }
 }
 
+/// Checks the configured endpoints for an application update.
+///
+/// Get one from [`crate::UpdaterExt::updater`] or by calling [`UpdaterBuilder::build`].
 pub struct Updater {
     current_version: Version,
     version_comparator: Option<VersionComparator>,
@@ -429,6 +513,25 @@ pub struct Updater {
 }
 
 impl Updater {
+    /// Checks the endpoints for an update, returning the first release that the version
+    /// comparator accepts.
+    ///
+    /// Each endpoint is requested in order, with the `{{current_version}}`, `{{target}}`,
+    /// `{{arch}}` and `{{bundle_type}}` variables replaced in its URL, until one of them
+    /// answers with a release manifest the updater can parse.
+    ///
+    /// Resolves to `None` when an endpoint replies with `204 No Content` or when the release it
+    /// announced is not considered an update - by default when its version is not greater than the
+    /// current application version.
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::UnsupportedOs`]: no target was set and the updater does not support the
+    ///   current operating system.
+    /// - [`Error::ReleaseNotFound`]: no endpoint returned a release manifest.
+    /// - The last request or deserialization error when every endpoint failed.
+    /// - [`Error::TargetNotFound`] or [`Error::TargetsNotFound`]: the manifest has no entry
+    ///   for the current target.
     pub async fn check(&self) -> Result<Option<Update>> {
         // we want JSON only
         let mut headers = self.headers.clone();
@@ -638,6 +741,10 @@ impl Updater {
     }
 }
 
+/// An update announced by the remote server, returned by [`Updater::check`].
+///
+/// Use [`Update::download`] followed by [`Update::install`], or [`Update::download_and_install`],
+/// to apply it.
 #[derive(Clone)]
 pub struct Update {
     /// Update description
@@ -1427,6 +1534,14 @@ fn updater_arch() -> Option<&'static str> {
     }
 }
 
+/// Resolves the path the update must be installed to from the path of the application executable.
+///
+/// This is the directory holding the executable, except on macOS where the `.app` bundle path is
+/// returned for executables living in `Contents/MacOS`.
+///
+/// # Errors
+///
+/// Returns [`Error::FailedToDetermineExtractPath`] when the path has no parent directory.
 pub fn extract_path_from_executable(executable_path: &Path) -> Result<PathBuf> {
     // Return the path of the current executable by default
     // Example C:\Program Files\My App\

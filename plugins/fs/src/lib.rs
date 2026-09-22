@@ -58,6 +58,13 @@ pub use file_path::SafeFilePath;
 
 type Result<T> = std::result::Result<T, Error>;
 
+/// Options and flags which can be used to configure how a file is opened.
+///
+/// This builder exposes the ability to configure how a [`std::fs::File`] is opened and
+/// what operations are permitted on the open file. Build it with [`OpenOptions::new`],
+/// chain calls to the setter methods and pass it to [`Fs::open`].
+///
+/// The `read` option defaults to `true`, every other option defaults to `false`.
 #[derive(Debug, Default, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OpenOptions {
@@ -199,12 +206,14 @@ impl OpenOptions {
     /// This function doesn't create the file if it doesn't exist. Use the
     /// [`OpenOptions::create`] method to do so.
     ///
-    /// [`write()`]: Write::write "io::Write::write"
-    /// [`flush()`]: Write::flush "io::Write::flush"
-    /// [stream_position]: Seek::stream_position "io::Seek::stream_position"
-    /// [seek]: Seek::seek "io::Seek::seek"
-    /// [Current]: SeekFrom::Current "io::SeekFrom::Current"
-    /// [End]: SeekFrom::End "io::SeekFrom::End"
+    /// [`write()`]: std::io::Write::write "io::Write::write"
+    /// [`flush()`]: std::io::Write::flush "io::Write::flush"
+    /// [Seek]: std::io::Seek "io::Seek"
+    /// [stream_position]: std::io::Seek::stream_position "io::Seek::stream_position"
+    /// [seek]: std::io::Seek::seek "io::Seek::seek"
+    /// [SeekFrom]: std::io::SeekFrom "io::SeekFrom"
+    /// [Current]: std::io::SeekFrom::Current "io::SeekFrom::Current"
+    /// [End]: std::io::SeekFrom::End "io::SeekFrom::End"
     ///
     /// # Examples
     ///
@@ -260,7 +269,7 @@ impl OpenOptions {
     /// No file is allowed to exist at the target location, also no (dangling) symlink. In this
     /// way, if the call succeeds, the file returned is guaranteed to be new.
     /// If a file exists at the target location, creating a new file will fail with [`AlreadyExists`]
-    /// or another error based on the situation. See [`OpenOptions::open`] for a
+    /// or another error based on the situation. See [`std::fs::OpenOptions::open`] for a
     /// non-exhaustive list of likely errors.
     ///
     /// This option is useful because it is atomic. Otherwise between checking
@@ -275,7 +284,7 @@ impl OpenOptions {
     ///
     /// [`.create()`]: OpenOptions::create
     /// [`.truncate()`]: OpenOptions::truncate
-    /// [`AlreadyExists`]: io::ErrorKind::AlreadyExists
+    /// [`AlreadyExists`]: std::io::ErrorKind::AlreadyExists
     ///
     /// # Examples
     ///
@@ -328,6 +337,14 @@ impl OpenOptions {
 }
 
 impl<R: Runtime> Fs<R> {
+    /// Reads the entire contents of a file into a string.
+    ///
+    /// The file is opened in read-only mode with [`Fs::open`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `path` cannot be opened for reading or if its
+    /// contents are not valid UTF-8.
     pub fn read_to_string<P: Into<FilePath>>(&self, path: P) -> std::io::Result<String> {
         let mut s = String::new();
         self.open(
@@ -341,6 +358,13 @@ impl<R: Runtime> Fs<R> {
         Ok(s)
     }
 
+    /// Reads the entire contents of a file into a bytes vector.
+    ///
+    /// The file is opened in read-only mode with [`Fs::open`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `path` cannot be opened for reading.
     pub fn read<P: Into<FilePath>>(&self, path: P) -> std::io::Result<Vec<u8>> {
         let mut buf = Vec::new();
         self.open(
@@ -432,8 +456,37 @@ impl SecurityScopedResources {
     pub(crate) fn remove(&self, _url: &str) {}
 }
 
+/// Extension trait implemented by every [`Manager`] (the app handle, windows, webviews, ...)
+/// to access the file system plugin APIs.
+///
+/// # Examples
+///
+/// ```rust,no_run
+/// use std::path::Path;
+/// use tauri::Runtime;
+/// use tauri_plugin_fs::FsExt;
+///
+/// fn setup<R: Runtime>(app: &tauri::App<R>) -> Result<(), Box<dyn std::error::Error>> {
+///     // allow the app to access a directory that is not part of the static scope
+///     app.fs_scope().allow_directory(Path::new("/path/to/directory"), true)?;
+///
+///     let contents = app.fs().read_to_string(Path::new("/path/to/directory/file.txt"))?;
+///     println!("{contents}");
+///
+///     Ok(())
+/// }
+/// ```
 pub trait FsExt<R: Runtime> {
+    /// Returns the file system scope, which can be used to dynamically
+    /// allow or deny paths at runtime.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the plugin is not registered in the app.
+    /// Use [`FsExt::try_fs_scope`] if the plugin might not be registered.
     fn fs_scope(&self) -> tauri::fs::Scope;
+
+    /// Returns the file system scope, or `None` if the plugin is not registered in the app.
     fn try_fs_scope(&self) -> Option<tauri::fs::Scope>;
 
     /// Cross platform file system APIs that also support manipulating Android files.
@@ -454,6 +507,7 @@ impl<R: Runtime, T: Manager<R>> FsExt<R> for T {
     }
 }
 
+/// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
     PluginBuilder::<R, Option<config::Config>>::new("fs")
         .invoke_handler(tauri::generate_handler![

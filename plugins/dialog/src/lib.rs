@@ -49,19 +49,28 @@ pub use desktop::Dialog;
 #[cfg(mobile)]
 pub use mobile::Dialog;
 
+/// The preferred mode of the file picker on mobile platforms (iOS and Android), which have
+/// distinct file and media pickers. On desktop, this option is ignored.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum PickerMode {
+    /// Show the generic document picker.
     Document,
+    /// Show the media picker, allowing both images and videos to be selected.
     Media,
+    /// Show the media picker restricted to images.
     Image,
+    /// Show the media picker restricted to videos.
     Video,
 }
 
+/// The file access mode of the dialog, used to control how a picked file is exposed to the app on iOS.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum FileAccessMode {
+    /// Copy the picked file into the app's sandbox so it can be freely read, edited or deleted.
     Copy,
+    /// Keep the file at its original location and let the system manage security-scoped access to it.
     Scoped,
 }
 
@@ -86,6 +95,7 @@ macro_rules! blocking_fn {
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the dialog APIs.
 pub trait DialogExt<R: Runtime> {
+    /// Returns the [`Dialog`] instance associated with this app/window.
     fn dialog(&self) -> &Dialog<R>;
 }
 

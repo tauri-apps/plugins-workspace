@@ -5,6 +5,8 @@
 //! Register global shortcuts.
 //!
 //! - Supported platforms: Windows, Linux and macOS.
+//! - On macOS, registering and unregistering shortcuts must happen on the main thread, so every
+//!   [`GlobalShortcut`] operation dispatches to it and blocks until it completes.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
@@ -38,6 +40,9 @@ type Result<T> = std::result::Result<T, Error>;
 type HotKeyId = u32;
 type HandlerFn<R> = Box<dyn Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static>;
 
+/// Internal wrapper around a [`Shortcut`] that lets the shortcut-accepting APIs on
+/// [`GlobalShortcut`] and [`Builder`] be generic over an already-parsed [`Shortcut`] or a
+/// string accelerator such as `"CmdOrControl+Q"`.
 pub struct ShortcutWrapper(Shortcut);
 
 impl From<Shortcut> for ShortcutWrapper {
@@ -65,6 +70,11 @@ unsafe impl Send for GlobalHotKeyManager {}
 /// SAFETY: we ensure it is run on main thread only
 unsafe impl Sync for GlobalHotKeyManager {}
 
+/// The global shortcut APIs, accessible through [`GlobalShortcutExt::global_shortcut`].
+///
+/// Registering, unregistering and checking a shortcut all dispatch the underlying
+/// `global_hotkey` call to the app's main thread and block until it finishes, since macOS
+/// requires the hotkey manager to run on the main thread.
 pub struct GlobalShortcut<R: Runtime> {
     #[allow(dead_code)]
     app: AppHandle<R>,
@@ -127,7 +137,8 @@ impl<R: Runtime> GlobalShortcut<R> {
 }
 
 impl<R: Runtime> GlobalShortcut<R> {
-    /// Register a shortcut.
+    /// Register a shortcut. Returns an error if the shortcut is invalid or already registered
+    /// by this [`GlobalShortcut`] instance.
     pub fn register<S>(&self, shortcut: S) -> Result<()>
     where
         S: TryInto<ShortcutWrapper>,
@@ -139,7 +150,10 @@ impl<R: Runtime> GlobalShortcut<R> {
         )
     }
 
-    /// Register a shortcut with a handler.
+    /// Register a shortcut with a handler that is called with the app handle, the triggered
+    /// [`Shortcut`] and the [`ShortcutEvent`] (whose `state` is [`ShortcutState::Pressed`] or
+    /// [`ShortcutState::Released`]) whenever the shortcut's key combination is pressed or
+    /// released.
     pub fn on_shortcut<S, F>(&self, shortcut: S, handler: F) -> Result<()>
     where
         S: TryInto<ShortcutWrapper>,
@@ -241,7 +255,28 @@ impl<R: Runtime> GlobalShortcut<R> {
     }
 }
 
+/// Extension trait for [`Manager`] implementors (e.g. [`AppHandle`]) that exposes access to the
+/// global shortcut APIs.
+///
+/// # Examples
+///
+/// ```rust,no_run
+/// use tauri::Runtime;
+/// use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
+///
+/// fn setup<R: Runtime>(app: &tauri::App<R>) -> Result<(), Box<dyn std::error::Error>> {
+///     app.global_shortcut()
+///         .on_shortcut("CommandOrControl+Shift+C", |_app, shortcut, event| {
+///             if event.state == ShortcutState::Pressed {
+///                 println!("{shortcut:?} pressed");
+///             }
+///         })?;
+///
+///     Ok(())
+/// }
+/// ```
 pub trait GlobalShortcutExt<R: Runtime> {
+    /// Returns the [`GlobalShortcut`] instance managed by this plugin.
     fn global_shortcut(&self) -> &GlobalShortcut<R>;
 }
 
@@ -333,6 +368,26 @@ fn is_registered<R: Runtime>(
     Ok(global_shortcut.is_registered(parse_shortcut(shortcut)?))
 }
 
+/// Builder for the global shortcut plugin, letting you configure shortcuts and a handler that
+/// are registered as soon as the plugin is set up, before [`Builder::build`] is called.
+///
+/// # Examples
+///
+/// ```rust,no_run
+/// use tauri::Runtime;
+///
+/// fn setup<R: Runtime>(builder: tauri::Builder<R>) -> tauri::Builder<R> {
+///     builder.plugin(
+///         tauri_plugin_global_shortcut::Builder::new()
+///             .with_shortcut("CommandOrControl+Shift+C")
+///             .unwrap()
+///             .with_handler(|_app, shortcut, event| {
+///                 println!("{shortcut:?}: {event:?}");
+///             })
+///             .build(),
+///     )
+/// }
+/// ```
 pub struct Builder<R: Runtime> {
     shortcuts: Vec<Shortcut>,
     handler: Option<HandlerFn<R>>,
@@ -348,6 +403,7 @@ impl<R: Runtime> Default for Builder<R> {
 }
 
 impl<R: Runtime> Builder<R> {
+    /// Creates a new [`Builder`] with no shortcuts or handler configured.
     pub fn new() -> Self {
         Self::default()
     }
@@ -385,6 +441,11 @@ impl<R: Runtime> Builder<R> {
         self
     }
 
+    /// Builds the plugin. Shortcuts configured with [`Builder::with_shortcut`] /
+    /// [`Builder::with_shortcuts`] are registered when the plugin is set up, and the handler
+    /// configured with [`Builder::with_handler`] (if any) is called for every hotkey event, in
+    /// addition to any handler passed to [`GlobalShortcut::on_shortcut`] /
+    /// [`GlobalShortcut::on_shortcuts`] for that specific shortcut.
     pub fn build(self) -> TauriPlugin<R> {
         let handler = self.handler;
         let shortcuts = self.shortcuts;

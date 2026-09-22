@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! Prompt the user for biometric authentication.
+//!
+//! - Supported platforms: Android and iOS.
+
 #![cfg(mobile)]
 
 use serde::Serialize;
@@ -34,10 +38,16 @@ struct AuthenticatePayload {
 }
 
 impl<R: Runtime> Biometric<R> {
+    /// Checks the device's availability and type of biometric authentication, as reported by the
+    /// operating system. Errors if the underlying mobile plugin invocation fails.
     pub fn status(&self) -> crate::Result<Status> {
         self.0.run_mobile_plugin("status", ()).map_err(Into::into)
     }
 
+    /// Prompts the user for biometric authentication using the system UI (Android
+    /// `BiometricPrompt` or iOS `LocalAuthentication`), showing `reason` as the purpose of the
+    /// request. Resolves once the user is authenticated and errors if authentication fails, is
+    /// canceled, or the underlying mobile plugin invocation fails.
     pub fn authenticate(&self, reason: String, options: AuthOptions) -> crate::Result<()> {
         self.0
             .run_mobile_plugin("authenticate", AuthenticatePayload { reason, options })
@@ -47,6 +57,7 @@ impl<R: Runtime> Biometric<R> {
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the biometric APIs.
 pub trait BiometricExt<R: Runtime> {
+    /// Returns the [`Biometric`] instance managed by the app.
     fn biometric(&self) -> &Biometric<R>;
 }
 
