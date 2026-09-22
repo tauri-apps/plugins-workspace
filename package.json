@@ -8,6 +8,10 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "ts:check": "pnpm run -r ts:check",
+    "test:api-e2e": "pnpm run --filter \"api-e2e\" e2e",
+    "test:api-e2e:android": "pnpm run --filter \"api-e2e\" e2e:android",
+    "test:api-e2e:ios": "pnpm run --filter \"api-e2e\" e2e:ios",
     "example:api:dev": "pnpm run --filter \"api\" tauri dev"
   },
   "devDependencies": {

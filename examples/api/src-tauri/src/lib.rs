@@ -23,10 +23,25 @@ pub type OnEvent = Box<dyn FnMut(&AppHandle, RunEvent)>;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[allow(unused_mut)]
-    let mut builder = tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+
+    // WebDriver automation bridge for the plugins e2e suite (packages/api-e2e).
+    // Registered as early as possible per the plugin's docs, behind the
+    // off-by-default `automation` feature.
+    #[cfg(all(desktop, feature = "automation"))]
+    {
+        builder = builder.plugin(tauri_plugin_automation::init());
+    }
+
+    #[allow(unused_mut)]
+    let mut builder = builder
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Info)
+                // forward records to the webview so `attachLogger`/`attachConsole` work
+                .target(tauri_plugin_log::Target::new(
+                    tauri_plugin_log::TargetKind::Webview,
+                ))
                 .build(),
         )
         .plugin(tauri_plugin_fs::init())
@@ -86,10 +101,7 @@ pub fn run() {
                 webview_window_builder = webview_window_builder.transparent(true);
             }
 
-            let webview = webview_window_builder.build().unwrap();
-
-            #[cfg(debug_assertions)]
-            webview.open_devtools();
+            let _webview = webview_window_builder.build().unwrap();
 
             std::thread::spawn(|| {
                 let server = match tiny_http::Server::http("localhost:3003") {

@@ -1,0 +1,232 @@
+# Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT
+
+name: test plugins e2e (mobile)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - v2
+    paths:
+      - '.github/workflows/test-api-e2e-mobile.yml'
+      - 'packages/api-e2e/**'
+      - 'examples/api/**'
+      - 'plugins/*/guest-js/**'
+      - 'plugins/*/src/**'
+      - 'plugins/*/android/**'
+      - 'plugins/*/ios/**'
+      - 'plugins/*/permissions/**'
+      - 'plugins/*/build.rs'
+  pull_request:
+    branches:
+      - v2
+    paths:
+      - '.github/workflows/test-api-e2e-mobile.yml'
+      - 'packages/api-e2e/**'
+      - 'examples/api/**'
+      - 'plugins/*/guest-js/**'
+      - 'plugins/*/src/**'
+      - 'plugins/*/android/**'
+      - 'plugins/*/ios/**'
+      - 'plugins/*/permissions/**'
+      - 'plugins/*/build.rs'
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_PROFILE_DEV_DEBUG: 0 # keeps the target folder small for better cache efficiency
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    env:
+      # The emulator runs the host architecture, so only that target is built.
+      E2E_ANDROID_TARGET: x86_64
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-linux-android
+
+      - name: setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 'lts/*'
+      - uses: pnpm/action-setup@v6
+        with:
+          cache: true # the pnpm store, keyed by OS and lockfile hash and shared by every workflow
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # Same rule as the rust-cache step below: every run restores the Gradle cache and only
+      # `v2`/`v3` save it. setup-java's own `cache: gradle` has no such switch, so the restore
+      # and save steps are spelled out here (same paths and key inputs as setup-java uses).
+      - name: restore gradle cache
+        id: gradle-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r25
+          local-cache: true
+
+      # TODO check after https://github.com/nttld/setup-ndk/issues/518 is fixed
+      - name: Restore Android Symlinks
+        run: |
+          directory="${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          find "$directory" -type l | while read link; do
+              current_target=$(readlink "$link")
+              new_target="$directory/$(basename "$current_target")"
+              ln -sf "$new_target" "$link"
+              echo "Changed $(basename "$link") from $current_target to $new_target"
+          done
+
+      # Hardware acceleration for the emulator.
+      - name: enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: android
+          # Only `v2`/`v3` write to the cache: an entry saved from a pull request lives on its
+          # merge ref, where nothing else can restore it, and every write evicts an entry
+          # that other runs would have hit (10 GB repository limit, LRU eviction).
+          save-if: ${{ github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3' }}
+
+      - name: install dependencies
+        run: pnpm i --frozen-lockfile
+
+      - name: build plugins
+        run: pnpm build
+
+      # Built before the emulator is up so it does not sit idle (and time out)
+      # during the Rust and Gradle builds; the suite then reuses the APK.
+      - name: build the APK
+        working-directory: ./examples/api
+        env:
+          NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: pnpm tauri android build --debug --apk --target $E2E_ANDROID_TARGET
+
+      - name: save gradle cache
+        if: ${{ (github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3') && steps.gradle-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ steps.gradle-cache.outputs.cache-primary-key }}
+
+      - name: run e2e tests
+        uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 60
+        with:
+          api-level: 35
+          arch: x86_64
+          # google_apis images ship an up-to-date Android System WebView.
+          target: google_apis
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: E2E_SKIP_BUILD=1 E2E_SPEC_RETRIES=1 pnpm test:api-e2e:android
+
+      - name: upload appium logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-appium-logs
+          path: packages/api-e2e/logs
+          if-no-files-found: ignore
+
+  ios:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios-sim
+
+      - name: setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 'lts/*'
+      - uses: pnpm/action-setup@v6
+        with:
+          cache: true # the pnpm store, keyed by OS and lockfile hash and shared by every workflow
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ios
+          # Only `v2`/`v3` write to the cache: an entry saved from a pull request lives on its
+          # merge ref, where nothing else can restore it, and every write evicts an entry
+          # that other runs would have hit (10 GB repository limit, LRU eviction).
+          save-if: ${{ github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3' }}
+
+      - name: install dependencies
+        run: pnpm i --frozen-lockfile
+
+      - name: build plugins
+        run: pnpm build
+
+      # Simulator build (`aarch64-sim` on the Apple Silicon runners), unsigned.
+      # Built ahead of the suite for symmetry with the Android job.
+      - name: build the simulator app
+        working-directory: ./examples/api
+        run: pnpm tauri ios build --debug --target aarch64-sim --no-sign
+
+      # wdio.ios.conf picks the iPhone simulator on the newest installed runtime
+      # (no device name is hardcoded) and Appium boots it; the XCUITest driver
+      # compiles WebDriverAgent on the first session.
+      - name: run e2e tests
+        timeout-minutes: 60
+        env:
+          E2E_SKIP_BUILD: '1'
+          E2E_SPEC_RETRIES: '1'
+        run: pnpm test:api-e2e:ios
+
+      - name: upload appium logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-appium-logs
+          path: packages/api-e2e/logs
+          if-no-files-found: ignore
+
+      - name: collect app crash reports
+        if: failure()
+        run: .scripts/ci/collect-macos-crash-reports.sh "$RUNNER_TEMP/crash-reports"
+
+      - name: upload app crash reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-crash-reports
+          path: ${{ runner.temp }}/crash-reports
+          if-no-files-found: ignore

@@ -1,0 +1,13 @@
+{
+  "$schema": "../../examples/api/node_modules/@tauri-apps/cli/config.schema.json",
+  "build": {
+    "features": ["automation"]
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "http://127.0.0.1:3004/updater/{{target}}/{{arch}}/{{current_version}}"
+      ]
+    }
+  }
+}

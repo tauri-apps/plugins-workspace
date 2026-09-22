@@ -18,13 +18,41 @@
     "core:app:allow-set-app-theme",
     "core:window:allow-minimize",
     "core:window:allow-toggle-maximize",
+    "core:window:allow-set-size",
     "core:window:allow-close",
+    "core:webview:allow-create-webview-window",
     "core:window:allow-start-dragging",
     "notification:default",
-    "os:allow-platform",
+    "os:default",
+    "os:allow-hostname",
     "dialog:default",
     {
       "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "sh",
+          "cmd": "sh",
+          "args": [
+            "-c",
+            {
+              "validator": ".+"
+            }
+          ]
+        },
+        {
+          "name": "cmd",
+          "cmd": "cmd",
+          "args": [
+            "/C",
+            {
+              "validator": ".+"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-execute",
       "allow": [
         {
           "name": "sh",
@@ -57,6 +85,8 @@
     "clipboard-manager:allow-write-text",
     "clipboard-manager:allow-read-image",
     "clipboard-manager:allow-write-image",
+    "clipboard-manager:allow-write-html",
+    "clipboard-manager:allow-clear",
     "fs:default",
     "fs:read-meta",
     "fs:allow-open",
@@ -66,6 +96,13 @@
     "fs:allow-mkdir",
     "fs:allow-remove",
     "fs:allow-write-text-file",
+    "fs:allow-write-file",
+    "fs:allow-create",
+    "fs:allow-copy-file",
+    "fs:allow-seek",
+    "fs:allow-truncate",
+    "fs:allow-ftruncate",
+    "fs:allow-unwatch",
     "fs:scope-download-recursive",
     "fs:scope-resource-recursive",
     {

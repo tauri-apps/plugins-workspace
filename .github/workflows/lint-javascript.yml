@@ -12,6 +12,7 @@ on:
     paths:
       - '.github/workflows/lint-javascript.yml'
       - 'plugins/*/guest-js/**'
+      - 'packages/**'
       - '.eslintignore'
       - '.eslintrc.json'
       - '.prettierignore'
@@ -23,6 +24,7 @@ on:
     paths:
       - '.github/workflows/lint-javascript.yml'
       - 'plugins/*/guest-js/**'
+      - 'packages/**'
       - '.eslintignore'
       - '.eslintrc.json'
       - '.prettierignore'
@@ -47,5 +49,11 @@ jobs:
         with:
           run_install: true
           cache: true # the pnpm store, keyed by OS and lockfile hash and shared by every workflow
+      # the type-checked lint rules (and packages/api-e2e) resolve the plugins'
+      # types from their dist-js build output
+      - name: build
+        run: pnpm build
       - name: eslint
         run: pnpm lint
+      - name: ts:check
+        run: pnpm ts:check
