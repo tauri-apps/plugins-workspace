@@ -21,6 +21,20 @@ const shell =
 // every platform: `prepare_cmd` rejects before anything is executed.
 const itSpawns = platform === 'ios' ? it.skip : it
 
+/**
+ * Puts a directory in the form the two sides of the working directory
+ * assertion can be compared in: the shell may print it with a different path
+ * style, and on Android `/data/user/<n>/<pkg>` (which `appDataDir` reports) is
+ * a symlink to `/data/data/<pkg>` (which `pwd` resolves it to).
+ */
+function normalizeDir(dir: string): string {
+  return dir
+    .replace(/[\\/]+$/, '')
+    .replace(/\\/g, '/')
+    .replace(/^\/data\/user\/\d+\//, '/data/data/')
+    .toLowerCase()
+}
+
 describePlugin('shell', () => {
   itSpawns('execute collects stdout, stderr and the exit code', async () => {
     const output = await tauri(
@@ -74,13 +88,7 @@ describePlugin('shell', () => {
       expect(output.code).toBe(0)
       const [value, reportedCwd] = output.stdout.split(/\r?\n/)
       expect(value).toBe('from-e2e')
-      // the shell may print the directory with a different path style
-      expect(reportedCwd?.replace(/\\/g, '/').toLowerCase()).toBe(
-        cwd
-          .replace(/[\\/]+$/, '')
-          .replace(/\\/g, '/')
-          .toLowerCase()
-      )
+      expect(normalizeDir(reportedCwd ?? '')).toBe(normalizeDir(cwd))
     }
   )
 

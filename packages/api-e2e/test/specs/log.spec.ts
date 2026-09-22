@@ -3,10 +3,14 @@
 // SPDX-License-Identifier: MIT
 
 import { expect } from '@wdio/globals'
-import { tauri, describePlugin } from '../helpers/index.js'
+import { tauri, describePlugin, isMobile } from '../helpers/index.js'
 
 // The example registers the plugin with a `Webview` target, so records logged
 // from the page (and from Rust) are forwarded back to `attachLogger`.
+//
+// The plugin's default format differs per platform: `[date][time][target][level]
+// message` on desktop, and just `[target] message` on mobile, where the platform
+// logger (logcat / os_log) already stamps the time and level.
 
 interface Record {
   level: number
@@ -47,9 +51,10 @@ describePlugin('log', () => {
     const records = await logAndCollect('info', 'info record from e2e')
     expect(records).toHaveLength(1)
     expect(records[0].level).toBe(3) // LogLevel.Info
-    // the default format is `[date][time][target][level] message`
     expect(records[0].message).toMatch(
-      /\[webview[^\]]*\]\[INFO\] info record from e2e$/
+      isMobile
+        ? /\[webview[^\]]*\] info record from e2e$/
+        : /\[webview[^\]]*\]\[INFO\] info record from e2e$/
     )
   })
 
@@ -57,9 +62,12 @@ describePlugin('log', () => {
     const error = await logAndCollect('error', 'error record from e2e')
     const warn = await logAndCollect('warn', 'warn record from e2e')
     expect(error[0].level).toBe(5) // LogLevel.Error
-    expect(error[0].message).toContain('[ERROR]')
     expect(warn[0].level).toBe(4) // LogLevel.Warn
-    expect(warn[0].message).toContain('[WARN]')
+    if (!isMobile) {
+      // the level is only part of the formatted message on desktop
+      expect(error[0].message).toContain('[ERROR]')
+      expect(warn[0].message).toContain('[WARN]')
+    }
   })
 
   it('records below the configured level are dropped', async () => {
@@ -171,7 +179,9 @@ describePlugin('log', () => {
         }),
       'rust log from e2e'
     )
-    expect(message).toContain('[INFO] tauri-click')
+    expect(message).toContain(
+      isMobile ? '[api_lib::cmd] tauri-click' : '[INFO] tauri-click'
+    )
     expect(message).toContain('rust log from e2e')
     expect(message).not.toContain('[webview')
   })

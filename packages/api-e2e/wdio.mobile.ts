@@ -130,6 +130,13 @@ export function mobileConfig(platform: MobilePlatform): WebdriverIO.Config {
         if (!projectGenerated) {
           tauriCli([platform, 'init', '--ci', '--skip-targets-install'])
         }
+        // `tauri ios build` exports the simulator app with `fs::rename`, which
+        // fails with "Directory not empty" when a previous build is still
+        // there, so clear it out first.
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        if (ios && fs.existsSync(application)) {
+          fs.rmSync(application, { recursive: true, force: true })
+        }
         // A debug build, so wry turns on webview debugging (Android
         // `setWebContentsDebuggingEnabled`, iOS `isInspectable`), which is what
         // lets Appium reach the page. Only the target that the device/emulator
