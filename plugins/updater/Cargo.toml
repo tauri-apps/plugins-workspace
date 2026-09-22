@@ -31,6 +31,9 @@ ios = { level = "none", notes = "" }
 [build-dependencies]
 tauri-plugin = { workspace = true, features = ["build"] }
 
+[dev-dependencies]
+tauri = { workspace = true, features = ["wry"] }
+
 [dependencies]
 tauri = { workspace = true }
 serde = { workspace = true }

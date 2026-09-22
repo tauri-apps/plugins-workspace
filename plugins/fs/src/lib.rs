@@ -125,11 +125,17 @@ impl OpenOptions {
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use tauri_plugin_fs::OpenOptions;
+    /// ```rust,no_run
+    /// use std::path::Path;
+    /// use tauri_plugin_fs::{FsExt, OpenOptions};
     ///
-    /// let mut options = OpenOptions::new();
-    /// let file = options.read(true).open("foo.txt");
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let mut options = OpenOptions::new();
+    ///     options.read(true);
+    ///     let file = app.fs().open(Path::new("foo.txt"), options)?;
+    ///     Ok(())
+    ///   });
     /// ```
     #[must_use]
     pub fn new() -> Self {
@@ -143,10 +149,17 @@ impl OpenOptions {
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use tauri_plugin_fs::OpenOptions;
+    /// ```rust,no_run
+    /// use std::path::Path;
+    /// use tauri_plugin_fs::{FsExt, OpenOptions};
     ///
-    /// let file = OpenOptions::new().read(true).open("foo.txt");
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let mut options = OpenOptions::new();
+    ///     options.read(true);
+    ///     let file = app.fs().open(Path::new("foo.txt"), options)?;
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn read(&mut self, read: bool) -> &mut Self {
         self.read = read;
@@ -163,10 +176,17 @@ impl OpenOptions {
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use tauri_plugin_fs::OpenOptions;
+    /// ```rust,no_run
+    /// use std::path::Path;
+    /// use tauri_plugin_fs::{FsExt, OpenOptions};
     ///
-    /// let file = OpenOptions::new().write(true).open("foo.txt");
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let mut options = OpenOptions::new();
+    ///     options.write(true);
+    ///     let file = app.fs().open(Path::new("foo.txt"), options)?;
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn write(&mut self, write: bool) -> &mut Self {
         self.write = write;
@@ -217,10 +237,17 @@ impl OpenOptions {
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use tauri_plugin_fs::OpenOptions;
+    /// ```rust,no_run
+    /// use std::path::Path;
+    /// use tauri_plugin_fs::{FsExt, OpenOptions};
     ///
-    /// let file = OpenOptions::new().append(true).open("foo.txt");
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let mut options = OpenOptions::new();
+    ///     options.append(true);
+    ///     let file = app.fs().open(Path::new("foo.txt"), options)?;
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn append(&mut self, append: bool) -> &mut Self {
         self.append = append;
@@ -236,10 +263,17 @@ impl OpenOptions {
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use tauri_plugin_fs::OpenOptions;
+    /// ```rust,no_run
+    /// use std::path::Path;
+    /// use tauri_plugin_fs::{FsExt, OpenOptions};
     ///
-    /// let file = OpenOptions::new().write(true).truncate(true).open("foo.txt");
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let mut options = OpenOptions::new();
+    ///     options.write(true).truncate(true);
+    ///     let file = app.fs().open(Path::new("foo.txt"), options)?;
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn truncate(&mut self, truncate: bool) -> &mut Self {
         self.truncate = truncate;
@@ -254,10 +288,17 @@ impl OpenOptions {
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use tauri_plugin_fs::OpenOptions;
+    /// ```rust,no_run
+    /// use std::path::Path;
+    /// use tauri_plugin_fs::{FsExt, OpenOptions};
     ///
-    /// let file = OpenOptions::new().write(true).create(true).open("foo.txt");
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let mut options = OpenOptions::new();
+    ///     options.write(true).create(true);
+    ///     let file = app.fs().open(Path::new("foo.txt"), options)?;
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn create(&mut self, create: bool) -> &mut Self {
         self.create = create;
@@ -288,12 +329,17 @@ impl OpenOptions {
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use tauri_plugin_fs::OpenOptions;
+    /// ```rust,no_run
+    /// use std::path::Path;
+    /// use tauri_plugin_fs::{FsExt, OpenOptions};
     ///
-    /// let file = OpenOptions::new().write(true)
-    ///                              .create_new(true)
-    ///                              .open("foo.txt");
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let mut options = OpenOptions::new();
+    ///     options.write(true).create_new(true);
+    ///     let file = app.fs().open(Path::new("foo.txt"), options)?;
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn create_new(&mut self, create_new: bool) -> &mut Self {
         self.create_new = create_new;
