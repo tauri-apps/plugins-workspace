@@ -36,47 +36,29 @@ path = "$DATA"
 [[set]]
 identifier = "allow-data-read-recursive"
 description = "This allows full recursive read access to the complete `$DATA` folder, files and subdirectories."
-permissions = [
-    "read-all",
-    "scope-data-recursive"
-]
+permissions = ["read-all", "scope-data-recursive"]
 
 [[set]]
 identifier = "allow-data-write-recursive"
 description = "This allows full recursive write access to the complete `$DATA` folder, files and subdirectories."
-permissions = [
-    "write-all",
-    "scope-data-recursive"
-]
+permissions = ["write-all", "scope-data-recursive"]
 
 [[set]]
 identifier = "allow-data-read"
 description = "This allows non-recursive read access to the `$DATA` folder."
-permissions = [
-    "read-all",
-    "scope-data"
-]
+permissions = ["read-all", "scope-data"]
 
 [[set]]
 identifier = "allow-data-write"
 description = "This allows non-recursive write access to the `$DATA` folder."
-permissions = [
-    "write-all",
-    "scope-data"
-]
+permissions = ["write-all", "scope-data"]
 
 [[set]]
 identifier = "allow-data-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$DATA` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-data-recursive"
-]
+permissions = ["read-meta", "scope-data-recursive"]
 
 [[set]]
 identifier = "allow-data-meta"
 description = "This allows non-recursive read access to metadata of the `$DATA` folder, including file listing and statistics."
-permissions = [
-    "read-meta",
-    "scope-data-index"
-]
+permissions = ["read-meta", "scope-data-index"]
