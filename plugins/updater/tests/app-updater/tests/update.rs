@@ -328,16 +328,23 @@ impl Default for BundleTarget {
 /// until the next `build_app` call. On Linux and macOS the update is also installed over the very
 /// bundle being run, which would otherwise leave a 1.0.0 app behind in the bundler output.
 ///
-/// Windows drives the executable `cargo build` leaves in `target/release`, which no bundler
-/// touches, so there is nothing to copy there.
+/// Windows runs a copy of the executable `cargo build` leaves in `target/release`, patched with the
+/// bundle type (see `patch_bundle_type`). The NSIS update installs into the directory of the
+/// running executable, so the copy also keeps the install out of `target/release`.
 ///
 /// A Linux package is not copied but installed: the updater hands the downloaded package to the
 /// package manager, which installs it over the one the app runs from.
 fn stage_app_under_test(root_dir: &Path, target: &str, bundle_target: BundleTarget) -> PathBuf {
     #[cfg(windows)]
     {
-        let _ = (target, bundle_target);
-        return root_dir.join("target/release/app-updater.exe");
+        let _ = target;
+        let staging_dir = root_dir.join("target/release/app-under-test");
+        let _ = std::fs::remove_dir_all(&staging_dir);
+        std::fs::create_dir_all(&staging_dir).expect("failed to create the staging directory");
+
+        let staged = staging_dir.join("app-updater.exe");
+        patch_bundle_type(&app_binary(root_dir), &staged, bundle_target);
+        return staged;
     }
 
     #[cfg(target_os = "linux")]
@@ -371,6 +378,32 @@ fn stage_app_under_test(root_dir: &Path, target: &str, bundle_target: BundleTarg
 
         return staged;
     }
+}
+
+/// Copies `from` to `to` with the bundle type the updater reads through `bundle_type()` set to
+/// `bundle_target`, the way the Tauri CLI does it: by overwriting the first
+/// `__TAURI_BUNDLE_TYPE_VAR_UNK` in the executable.
+///
+/// The executable in `target/release` never carries it. The CLI patches it only for the time it
+/// takes to put it in the installer, then restores the unpatched one, so without this the app
+/// cannot resolve the `{target}-{bundle_type}` platform key and only finds `{target}`.
+#[cfg(windows)]
+fn patch_bundle_type(from: &Path, to: &Path, bundle_target: BundleTarget) {
+    const PLACEHOLDER: &[u8] = b"__TAURI_BUNDLE_TYPE_VAR_UNK";
+    let bundle_type: &[u8] = match bundle_target {
+        BundleTarget::Nsis => b"__TAURI_BUNDLE_TYPE_VAR_NSS",
+        BundleTarget::Msi => b"__TAURI_BUNDLE_TYPE_VAR_MSI",
+        _ => unreachable!("{} is not a Windows bundle", bundle_target.name()),
+    };
+
+    let mut binary = std::fs::read(from)
+        .unwrap_or_else(|e| panic!("failed to read {}: {e}", from.display()));
+    let index = binary
+        .windows(PLACEHOLDER.len())
+        .position(|window| window == PLACEHOLDER)
+        .unwrap_or_else(|| panic!("no bundle type placeholder in {}", from.display()));
+    binary[index..index + PLACEHOLDER.len()].copy_from_slice(bundle_type);
+    std::fs::write(to, binary).unwrap_or_else(|e| panic!("failed to write {}: {e}", to.display()));
 }
 
 /// Copies a file, or a directory such as a macOS `.app`, preserving permissions.
