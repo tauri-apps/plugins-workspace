@@ -715,14 +715,65 @@ fn app_binary(root_dir: &Path) -> PathBuf {
     })
 }
 
-/// Runs the app against the update server, restoring the binary from `pristine` first.
+/// How the app under test has to be built for an install to stay contained.
 ///
-/// A case that clears the version check goes on to actually install, and on Linux installing means
-/// writing the downloaded bytes over the running executable. Every case therefore has to start
-/// from an untouched binary, or the first one that passes leaves the update behind as the app.
+/// Windows and Linux install over the executable itself, so a bare `cargo build` is enough there.
+/// macOS replaces the whole `.app` the running executable sits in, and for an executable that is
+/// not in one the updater falls back to the directory merely holding it — `target/release`, which
+/// is also where the bundle being served and the build cache live. So macOS bundles the app and
+/// runs it out of a staged copy of that `.app`, which the install is welcome to replace.
+#[cfg(target_os = "macos")]
+const APP_UNDER_TEST_BUNDLE: Option<BundleTarget> = Some(BundleTarget::App);
+#[cfg(not(target_os = "macos"))]
+const APP_UNDER_TEST_BUNDLE: Option<BundleTarget> = None;
+
+/// Where `build_app` leaves the app under test.
+fn built_app(root_dir: &Path) -> PathBuf {
+    #[cfg(target_os = "macos")]
+    return root_dir.join("target/release/bundle/macos/app-updater.app");
+    #[cfg(not(target_os = "macos"))]
+    return app_binary(root_dir);
+}
+
+/// The copy the test runs, kept out of the way of both the bundler and the build cache.
+fn staged_app(root_dir: &Path) -> PathBuf {
+    #[cfg(target_os = "macos")]
+    return root_dir.join("target/release/app-under-test-signed/app-updater.app");
+    #[cfg(not(target_os = "macos"))]
+    return app_binary(root_dir);
+}
+
+/// The executable to launch inside the staged app.
+fn staged_binary(root_dir: &Path) -> PathBuf {
+    #[cfg(target_os = "macos")]
+    return staged_app(root_dir).join("Contents/MacOS/app-updater");
+    #[cfg(not(target_os = "macos"))]
+    return staged_app(root_dir);
+}
+
+/// Puts the pristine 0.1.0 app back where the test runs it, replacing whatever an install left.
+fn restore_app(root_dir: &Path, pristine: &Path) {
+    let app = staged_app(root_dir);
+    let _ = std::fs::remove_dir_all(&app);
+    let _ = std::fs::remove_file(&app);
+    std::fs::create_dir_all(app.parent().unwrap()).expect("failed to create the staging directory");
+    copy_recursively(pristine, &app).unwrap_or_else(|e| {
+        panic!(
+            "failed to restore {} from {}: {e}",
+            app.display(),
+            pristine.display()
+        )
+    });
+}
+
+/// Runs the app against the update server, restoring it from `pristine` first.
+///
+/// A case that clears the version check goes on to actually install, and installing means writing
+/// over what the app runs from. Every case therefore has to start from an untouched copy, or the
+/// first one that passes leaves the update behind as the app.
 fn run_app(root_dir: &Path, pristine: &Path) -> String {
-    let binary = app_binary(root_dir);
-    std::fs::copy(pristine, &binary).expect("failed to restore the app binary");
+    restore_app(root_dir, pristine);
+    let binary = staged_binary(root_dir);
 
     let mut command = if cfg!(target_os = "linux")
         && std::env::var("CI").map(|v| v == "true").unwrap_or_default()
@@ -874,10 +925,12 @@ fn update_validates_signed_version() {
                     }
                 })),
             },
-            None,
+            APP_UNDER_TEST_BUNDLE,
         );
-        std::fs::copy(app_binary(&root_dir), &pristine)
-            .expect("failed to keep a pristine copy of the app binary");
+        let _ = std::fs::remove_dir_all(&pristine);
+        let _ = std::fs::remove_file(&pristine);
+        copy_recursively(&built_app(&root_dir), &pristine)
+            .expect("failed to keep a pristine copy of the app");
     };
 
     let check = |announced: &str, expected: Option<&str>, unexpected: Option<&str>| {
@@ -912,7 +965,8 @@ fn update_validates_signed_version() {
 
     server.unblock();
 
-    // leave a runnable binary behind rather than whichever update was installed last
-    let _ = std::fs::copy(&pristine, app_binary(&root_dir));
+    // leave the 0.1.0 app behind rather than whichever update was installed last
+    restore_app(&root_dir, &pristine);
+    let _ = std::fs::remove_dir_all(&pristine);
     let _ = std::fs::remove_file(&pristine);
 }
