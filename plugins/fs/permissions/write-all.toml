@@ -13,5 +13,4 @@ commands.allow = [
   "ftruncate",
   "write",
   "write_file",
-  "write_text_file",
 ]

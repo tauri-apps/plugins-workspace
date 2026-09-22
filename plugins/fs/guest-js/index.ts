@@ -781,16 +781,7 @@ async function readTextFile(
   path: string | URL,
   options?: ReadFileOptions
 ): Promise<string> {
-  if (path instanceof URL && path.protocol !== 'file:') {
-    throw new TypeError('Must be a file URL.')
-  }
-
-  const arr = await invoke<ArrayBuffer | number[]>('plugin:fs|read_text_file', {
-    path: path instanceof URL ? path.toString() : path,
-    options
-  })
-
-  const bytes = arr instanceof ArrayBuffer ? arr : Uint8Array.from(arr)
+  const bytes = await readFile(path, options)
 
   return new TextDecoder(options?.encoding ?? 'utf-8').decode(bytes)
 }
@@ -1138,18 +1129,7 @@ async function writeTextFile(
   data: string,
   options?: WriteFileOptions
 ): Promise<void> {
-  if (path instanceof URL && path.protocol !== 'file:') {
-    throw new TypeError('Must be a file URL.')
-  }
-
-  const encoder = new TextEncoder()
-
-  await invoke('plugin:fs|write_text_file', encoder.encode(data), {
-    headers: {
-      path: encodeURIComponent(path instanceof URL ? path.toString() : path),
-      options: JSON.stringify(options)
-    }
-  })
+  await writeFile(path, new TextEncoder().encode(data), options)
 }
 
 /**
