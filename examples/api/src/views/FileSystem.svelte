@@ -17,7 +17,7 @@
   let watchRecursive = $state(false)
   /** @type {fs.BaseDirectory | undefined} */
   let baseDir = $state()
-  let unwatchFn
+  let watcher
   let unwatchPath = ''
   let isMobile = $state(false)
 
@@ -161,15 +161,15 @@
       }
       if (options.delayMs === 0) {
         fs.watchImmediate(watchPath, onMessage, options)
-          .then((fn) => {
-            unwatchFn = fn
+          .then((w) => {
+            watcher = w
             unwatchPath = watchPath
           })
           .catch(onMessage)
       } else {
         fs.watch(watchPath, onMessage, options)
-          .then((fn) => {
-            unwatchFn = fn
+          .then((w) => {
+            watcher = w
             unwatchPath = watchPath
           })
           .catch(onMessage)
@@ -178,11 +178,11 @@
   }
 
   function unwatch() {
-    if (unwatchFn) {
+    if (watcher) {
       onMessage(`Stopped watching ${unwatchPath} for changes`)
-      unwatchFn()
+      watcher.close()
     }
-    unwatchFn = undefined
+    watcher = undefined
     unwatchPath = undefined
   }
 
@@ -190,8 +190,8 @@
     if (file) {
       file.close()
     }
-    if (unwatchFn) {
-      unwatchFn()
+    if (watcher) {
+      watcher.close()
     }
   })
 </script>

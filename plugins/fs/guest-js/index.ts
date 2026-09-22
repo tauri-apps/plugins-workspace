@@ -1283,19 +1283,18 @@ type WatchEventKindRemove =
   | { kind: 'folder' }
   | { kind: 'other' }
 
-// TODO: Remove this in v3, return `Watcher` instead
 /**
- * @since 2.0.0
+ * A file system watcher. Call {@linkcode Watcher.close} to stop watching.
+ *
+ * @since 3.0.0
  */
-type UnwatchFn = () => void
-
 class Watcher extends Resource {}
 
 async function watchInternal(
   paths: string | string[] | URL | URL[],
   cb: (event: WatchEvent) => void,
   options: DebouncedWatchOptions
-): Promise<UnwatchFn> {
+): Promise<Watcher> {
   const watchPaths = Array.isArray(paths) ? paths : [paths]
 
   for (const path of watchPaths) {
@@ -1313,16 +1312,19 @@ async function watchInternal(
     onEvent
   })
 
-  const watcher = new Watcher(rid)
-
-  return () => {
-    void watcher.close()
-  }
+  return new Watcher(rid)
 }
 
-// TODO: Return `Watcher` instead in v3
 /**
  * Watch changes (after a delay) on files or directories.
+ *
+ * @example
+ * ```typescript
+ * import { watch, BaseDirectory } from '@tauri-apps/plugin-fs';
+ * const watcher = await watch('app.conf', (event) => console.log(event), { baseDir: BaseDirectory.AppConfig });
+ * // when you're done watching:
+ * await watcher.close();
+ * ```
  *
  * @since 2.0.0
  */
@@ -1330,16 +1332,23 @@ async function watch(
   paths: string | string[] | URL | URL[],
   cb: (event: WatchEvent) => void,
   options?: DebouncedWatchOptions
-): Promise<UnwatchFn> {
+): Promise<Watcher> {
   return await watchInternal(paths, cb, {
     delayMs: 2000,
     ...options
   })
 }
 
-// TODO: Return `Watcher` instead in v3
 /**
  * Watch changes on files or directories.
+ *
+ * @example
+ * ```typescript
+ * import { watchImmediate, BaseDirectory } from '@tauri-apps/plugin-fs';
+ * const watcher = await watchImmediate('app.conf', (event) => console.log(event), { baseDir: BaseDirectory.AppConfig });
+ * // when you're done watching:
+ * await watcher.close();
+ * ```
  *
  * @since 2.0.0
  */
@@ -1347,7 +1356,7 @@ async function watchImmediate(
   paths: string | string[] | URL | URL[],
   cb: (event: WatchEvent) => void,
   options?: WatchOptions
-): Promise<UnwatchFn> {
+): Promise<Watcher> {
   return await watchInternal(paths, cb, {
     ...options,
     delayMs: undefined
@@ -1475,13 +1484,13 @@ export type {
   WatchEventKindAccess,
   WatchEventKindCreate,
   WatchEventKindModify,
-  WatchEventKindRemove,
-  UnwatchFn
+  WatchEventKindRemove
 }
 
 export {
   BaseDirectory,
   FileHandle,
+  Watcher,
   create,
   open,
   copyFile,
