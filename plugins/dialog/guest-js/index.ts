@@ -229,12 +229,6 @@ interface MessageDialogOptions {
   /** The kind of the dialog. Defaults to `info`. */
   kind?: 'info' | 'warning' | 'error'
   /**
-   * The label of the Ok button.
-   *
-   * @deprecated Use {@linkcode MessageDialogOptions.buttons} instead.
-   */
-  okLabel?: string
-  /**
    * The buttons of the dialog.
    *
    * @example
@@ -405,10 +399,7 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
  */
 export type MessageDialogResult = 'Yes' | 'No' | 'Ok' | 'Cancel' | (string & {})
 
-async function messageCommand(
-  message: string,
-  options?: Omit<MessageDialogOptions, 'okLabel'>
-) {
+async function messageCommand(message: string, options?: MessageDialogOptions) {
   return await invoke<MessageDialogResult>('plugin:dialog|message', {
     message,
     title: options?.title,
@@ -439,9 +430,6 @@ async function message(
   options?: string | MessageDialogOptions
 ): Promise<MessageDialogResult> {
   const opts = typeof options === 'string' ? { title: options } : options
-  if (opts && !opts.buttons && opts.okLabel) {
-    opts.buttons = { ok: opts.okLabel }
-  }
   return messageCommand(message, opts)
 }
 
