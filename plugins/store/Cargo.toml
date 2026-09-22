@@ -35,3 +35,6 @@ tracing = { workspace = true }
 thiserror = { workspace = true }
 dunce = { workspace = true }
 tokio = { version = "1", features = ["sync", "time", "macros"] }
+
+[dev-dependencies]
+tauri = { workspace = true, features = ["test"] }
