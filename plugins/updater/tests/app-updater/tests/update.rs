@@ -134,23 +134,36 @@ impl BundleTarget {
     }
 
     /// Whether this host can install the package without asking anything: the package manager must
-    /// be present and know the app's runtime dependencies, and `sudo` must not need a password. The
-    /// update itself escalates through `pkexec`, then a graphical password prompt, then `sudo`, and
-    /// in a non-interactive run only the last one can succeed.
+    /// be there with a database it can read, the runtime the app links against must be installed,
+    /// and `sudo` must not need a password. The update itself escalates through `pkexec`, then a
+    /// graphical password prompt, then `sudo`, and in a non-interactive run only the last one can
+    /// succeed.
     fn installable(self) -> Result<(), String> {
         let Some(manager) = self.package_manager() else {
             return Ok(());
         };
-        // the bundler declares webkit2gtk as a dependency of every app, so an install is checked
-        // against it
-        let dependency_query: &[&str] = match self {
-            Self::Deb => &["-s", "libwebkit2gtk-4.1-0"],
-            _ => &["-q", "--whatprovides", "libwebkit2gtk-4.1.so.0()(64bit)"],
+        // listing the installed packages tells both that the manager is there and that its database
+        // works. `rpm` passes this on a Debian host too, against the empty database `apt install
+        // rpm` leaves behind, and that is all the install needs: the bundler only declares the
+        // dependencies the config asks for and this app asks for none, so neither package resolves
+        // anything.
+        let list_packages: &[&str] = match self {
+            Self::Deb => &["-l"],
+            _ => &["-qa"],
         };
-        if !command_succeeds(manager, dependency_query) {
+        if !command_succeeds(manager, list_packages) {
             return Err(format!(
-                "{manager} is not installed or its database does not have the webkit2gtk runtime"
+                "{manager} is not installed or its database is not readable"
             ));
+        }
+        // so nothing checks webkit2gtk at install time, but the installed app still needs it to
+        // run. `ldconfig` lists it whichever manager put it there, and lives in an `sbin` that is
+        // not always on `PATH`
+        let webkit_installed = ["ldconfig", "/usr/sbin/ldconfig", "/sbin/ldconfig"]
+            .iter()
+            .any(|ldconfig| command_stdout_contains(ldconfig, &["-p"], "libwebkit2gtk-4.1.so.0"));
+        if !webkit_installed {
+            return Err("the webkit2gtk 4.1 runtime is not installed".into());
         }
         if !command_succeeds("sudo", &["-n", "true"]) {
             return Err("sudo needs a password".into());
@@ -167,6 +180,16 @@ fn command_succeeds(program: &str, args: &[&str]) -> bool {
         .stderr(Stdio::null())
         .status()
         .map(|status| status.success())
+        .unwrap_or(false)
+}
+
+#[cfg(target_os = "linux")]
+fn command_stdout_contains(program: &str, args: &[&str], needle: &str) -> bool {
+    Command::new(program)
+        .args(args)
+        .stderr(Stdio::null())
+        .output()
+        .map(|output| String::from_utf8_lossy(&output.stdout).contains(needle))
         .unwrap_or(false)
 }
 
@@ -509,6 +532,13 @@ fn update_linux_package(bundle_target: BundleTarget) {
     let _lock = BUILD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
 
     if let Err(reason) = bundle_target.installable() {
+        // the integration tests workflow installs everything this needs, so a skip there means the
+        // test quietly stopped covering the package - libtest swallows the message on a pass
+        assert!(
+            std::env::var_os("CI").is_none(),
+            "cannot run the {} update test: {reason}",
+            bundle_target.name()
+        );
         eprintln!(
             "skipping the {} update test: {reason}",
             bundle_target.name()
