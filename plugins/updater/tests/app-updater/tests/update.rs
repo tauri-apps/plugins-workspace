@@ -8,7 +8,7 @@ use std::{
     collections::HashMap,
     fs::File,
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, Stdio},
     sync::{Arc, Mutex},
 };
 
@@ -24,6 +24,54 @@ const UPDATED_EXIT_CODE: i32 = 0;
 const ERROR_EXIT_CODE: i32 = 1;
 const UP_TO_DATE_EXIT_CODE: i32 = 2;
 
+/// The port the endpoint in the app's `tauri.conf.json` points at.
+const UPDATE_PORT: u16 = 3007;
+
+/// The server a test serves its update manifest and bundle from, shut down when it goes out of
+/// scope.
+///
+/// Every test binds the same port and `BUILD_LOCK` keeps them from overlapping, so each one has to
+/// leave the port free. Shutting the server down by hand at the end of the test does not: a panic
+/// anywhere above it leaves the server listening, and because `localhost` resolves to both loopback
+/// addresses the next test binds the other one instead of failing. It then answers with the
+/// previous test's manifest and serves the previous test's bundle, so one broken test fails the
+/// ones after it with an error about the wrong package.
+struct UpdaterServer {
+    server: Arc<tiny_http::Server>,
+    requests: Option<std::thread::JoinHandle<()>>,
+}
+
+impl UpdaterServer {
+    /// Serves `localhost:port`, answering every request with `handler`.
+    fn spawn(port: u16, handler: impl Fn(tiny_http::Request) + Send + 'static) -> Self {
+        let server = Arc::new(
+            tiny_http::Server::http(format!("localhost:{port}"))
+                .unwrap_or_else(|e| panic!("failed to start updater server on {port}: {e}")),
+        );
+
+        let server_ = server.clone();
+        Self {
+            requests: Some(std::thread::spawn(move || {
+                for request in server_.incoming_requests() {
+                    handler(request);
+                }
+            })),
+            server,
+        }
+    }
+}
+
+impl Drop for UpdaterServer {
+    fn drop(&mut self) {
+        // `unblock` only ends `incoming_requests`; the port is released when the last `Arc` to the
+        // server is dropped, so the request thread has to be gone before the next test binds it
+        self.server.unblock();
+        if let Some(requests) = self.requests.take() {
+            let _ = requests.join();
+        }
+    }
+}
+
 #[derive(Serialize)]
 struct Config {
     version: &'static str,
@@ -38,6 +86,10 @@ struct Config {
 #[serde(rename_all = "camelCase")]
 struct BundleConfig {
     create_updater_artifacts: Updater,
+    /// Merged into `bundle.linux` of the app's `tauri.conf.json`. Only set by the RPM test, for
+    /// `rpm.provides` (see `rpm_self_provides`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    linux: Option<serde_json::Value>,
 }
 
 #[derive(Serialize)]
@@ -110,6 +162,154 @@ impl BundleTarget {
     }
 }
 
+#[cfg(target_os = "linux")]
+impl BundleTarget {
+    /// Where `cargo tauri build --bundles <name>` leaves the bundle of the given app version.
+    fn bundle_path(self, root_dir: &Path, version: &str) -> PathBuf {
+        root_dir.join(match self {
+            Self::AppImage => {
+                format!("target/release/bundle/appimage/app-updater_{version}_amd64.AppImage")
+            }
+            Self::Deb => format!("target/release/bundle/deb/app-updater_{version}_amd64.deb"),
+            Self::Rpm => format!("target/release/bundle/rpm/app-updater-{version}-1.x86_64.rpm"),
+            _ => unreachable!("{} is not a Linux bundle", self.name()),
+        })
+    }
+
+    /// The package manager the updater hands this bundle to, for the Linux packages.
+    fn package_manager(self) -> Option<&'static str> {
+        match self {
+            Self::Deb => Some("dpkg"),
+            Self::Rpm => Some("rpm"),
+            _ => None,
+        }
+    }
+
+    /// Whether this host can install the package without asking anything: the package manager must
+    /// be there with a database it can read, the runtime the app links against must be installed,
+    /// and `sudo` must not need a password. The update itself escalates through `pkexec`, then a
+    /// graphical password prompt, then `sudo`, and in a non-interactive run only the last one can
+    /// succeed.
+    fn installable(self) -> Result<(), String> {
+        let Some(manager) = self.package_manager() else {
+            return Ok(());
+        };
+        // listing the installed packages tells both that the manager is there and that its database
+        // works. `rpm` passes this on a Debian host too, against the empty database `apt install
+        // rpm` leaves behind; `rpm_self_provides` is what keeps the install from resolving the
+        // app's dependencies against it.
+        let list_packages: &[&str] = match self {
+            Self::Deb => &["-l"],
+            _ => &["-qa"],
+        };
+        if !command_succeeds(manager, list_packages) {
+            return Err(format!(
+                "{manager} is not installed or its database is not readable"
+            ));
+        }
+        // so nothing checks webkit2gtk at install time, but the installed app still needs it to
+        // run. `ldconfig` lists it whichever manager put it there, and lives in an `sbin` that is
+        // not always on `PATH`
+        let webkit_installed = ["ldconfig", "/usr/sbin/ldconfig", "/sbin/ldconfig"]
+            .iter()
+            .any(|ldconfig| command_stdout_contains(ldconfig, &["-p"], "libwebkit2gtk-4.1.so.0"));
+        if !webkit_installed {
+            return Err("the webkit2gtk 4.1 runtime is not installed".into());
+        }
+        if !command_succeeds("sudo", &["-n", "true"]) {
+            return Err("sudo needs a password".into());
+        }
+        Ok(())
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn command_succeeds(program: &str, args: &[&str]) -> bool {
+    Command::new(program)
+        .args(args)
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .map(|status| status.success())
+        .unwrap_or(false)
+}
+
+#[cfg(target_os = "linux")]
+fn command_stdout_contains(program: &str, args: &[&str], needle: &str) -> bool {
+    Command::new(program)
+        .args(args)
+        .stderr(Stdio::null())
+        .output()
+        .map(|output| String::from_utf8_lossy(&output.stdout).contains(needle))
+        .unwrap_or(false)
+}
+
+/// The libraries the Tauri CLI declares as RPM `Requires` of an app using wry, as
+/// `Runtime::linux_dependencies` names them, with the suffix it appends on a 64 bit target.
+#[cfg(target_os = "linux")]
+const RPM_RUNTIME_LIBRARIES: &[&str] =
+    &["libwebkit2gtk-4.1.so.0()(64bit)", "libgtk-3.so.0()(64bit)"];
+
+/// `bundle.linux` declaring the RPM `Requires` of `RPM_RUNTIME_LIBRARIES` the host's RPM database
+/// cannot resolve as `Provides` of the package itself, or `None` when it resolves all of them (and
+/// for a bundle that is not an RPM).
+///
+/// `rpm` resolves `Requires` against its own database, and on a Debian host that database is the
+/// empty one `apt install rpm` leaves behind: the libraries are there, installed by `apt` - which
+/// is what `installable` checks with `ldconfig` - but nothing in the RPM database provides them, so
+/// both the `rpm -i` that installs the app under test and the `rpm -U` the updater runs fail on
+/// them. A package's own `Provides` satisfy its own `Requires`, so declaring them is what tells
+/// `rpm` what the dynamic linker already knows. On an RPM distro the real packages provide them and
+/// nothing is declared.
+#[cfg(target_os = "linux")]
+fn rpm_self_provides(bundle_target: BundleTarget) -> Option<serde_json::Value> {
+    if !matches!(bundle_target, BundleTarget::Rpm) {
+        return None;
+    }
+
+    let unresolved = RPM_RUNTIME_LIBRARIES
+        .iter()
+        .filter(|library| !command_succeeds("rpm", &["-q", "--whatprovides", library]))
+        .collect::<Vec<_>>();
+    if unresolved.is_empty() {
+        return None;
+    }
+
+    Some(serde_json::json!({ "rpm": { "provides": unresolved } }))
+}
+
+/// Installs the package system wide, which is where the updater will later install the update over
+/// it, and returns the path of the installed executable.
+#[cfg(target_os = "linux")]
+fn install_package(bundle_target: BundleTarget, package: &Path) -> PathBuf {
+    let manager = bundle_target
+        .package_manager()
+        .expect("not a Linux package");
+    // whatever an earlier run left behind
+    remove_package(bundle_target);
+    let status = Command::new("sudo")
+        .args(["-n", manager, "-i"])
+        .arg(package)
+        .status()
+        .expect("failed to run sudo");
+    assert!(status.success(), "failed to install {}", package.display());
+    PathBuf::from("/usr/bin/app-updater")
+}
+
+#[cfg(target_os = "linux")]
+fn remove_package(bundle_target: BundleTarget) {
+    let (manager, remove) = match bundle_target {
+        BundleTarget::Deb => ("dpkg", "-r"),
+        BundleTarget::Rpm => ("rpm", "-e"),
+        _ => return,
+    };
+    let _ = Command::new("sudo")
+        .args(["-n", manager, remove, "app-updater"])
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status();
+}
+
 impl Default for BundleTarget {
     fn default() -> Self {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
@@ -128,17 +328,35 @@ impl Default for BundleTarget {
 /// until the next `build_app` call. On Linux and macOS the update is also installed over the very
 /// bundle being run, which would otherwise leave a 1.0.0 app behind in the bundler output.
 ///
-/// Windows drives the executable `cargo build` leaves in `target/release`, which no bundler
-/// touches, so there is nothing to copy there.
-fn stage_app_under_test(root_dir: &Path, target: &str) -> PathBuf {
+/// Windows runs a copy of the executable `cargo build` leaves in `target/release`, patched with the
+/// bundle type (see `patch_bundle_type`). The NSIS update installs into the directory of the
+/// running executable, so the copy also keeps the install out of `target/release`.
+///
+/// A Linux package is not copied but installed: the updater hands the downloaded package to the
+/// package manager, which installs it over the one the app runs from.
+fn stage_app_under_test(root_dir: &Path, target: &str, bundle_target: BundleTarget) -> PathBuf {
     #[cfg(windows)]
     {
         let _ = target;
-        return root_dir.join("target/release/app-updater.exe");
+        let staging_dir = root_dir.join("target/release/app-under-test");
+        let _ = std::fs::remove_dir_all(&staging_dir);
+        std::fs::create_dir_all(&staging_dir).expect("failed to create the staging directory");
+
+        let staged = staging_dir.join("app-updater.exe");
+        patch_bundle_type(&app_binary(root_dir), &staged, bundle_target);
+        return staged;
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        if bundle_target.package_manager().is_some() {
+            return install_package(bundle_target, &bundle_target.bundle_path(root_dir, "0.1.0"));
+        }
     }
 
     #[cfg(not(windows))]
     {
+        let _ = bundle_target;
         let bundle_path = test_cases(root_dir, "0.1.0", target.to_string())
             .first()
             .unwrap()
@@ -160,6 +378,32 @@ fn stage_app_under_test(root_dir: &Path, target: &str) -> PathBuf {
 
         return staged;
     }
+}
+
+/// Copies `from` to `to` with the bundle type the updater reads through `bundle_type()` set to
+/// `bundle_target`, the way the Tauri CLI does it: by overwriting the first
+/// `__TAURI_BUNDLE_TYPE_VAR_UNK` in the executable.
+///
+/// The executable in `target/release` never carries it. The CLI patches it only for the time it
+/// takes to put it in the installer, then restores the unpatched one, so without this the app
+/// cannot resolve the `{target}-{bundle_type}` platform key and only finds `{target}`.
+#[cfg(windows)]
+fn patch_bundle_type(from: &Path, to: &Path, bundle_target: BundleTarget) {
+    const PLACEHOLDER: &[u8] = b"__TAURI_BUNDLE_TYPE_VAR_UNK";
+    let bundle_type: &[u8] = match bundle_target {
+        BundleTarget::Nsis => b"__TAURI_BUNDLE_TYPE_VAR_NSS",
+        BundleTarget::Msi => b"__TAURI_BUNDLE_TYPE_VAR_MSI",
+        _ => unreachable!("{} is not a Windows bundle", bundle_target.name()),
+    };
+
+    let mut binary = std::fs::read(from)
+        .unwrap_or_else(|e| panic!("failed to read {}: {e}", from.display()));
+    let index = binary
+        .windows(PLACEHOLDER.len())
+        .position(|window| window == PLACEHOLDER)
+        .unwrap_or_else(|| panic!("no bundle type placeholder in {}", from.display()));
+    binary[index..index + PLACEHOLDER.len()].copy_from_slice(bundle_type);
+    std::fs::write(to, binary).unwrap_or_else(|e| panic!("failed to write {}: {e}", to.display()));
 }
 
 /// Copies a file, or a directory such as a macOS `.app`, preserving permissions.
@@ -186,7 +430,7 @@ fn target_to_platforms(
             platform,
             PlatformUpdate {
                 signature,
-                url: "http://localhost:3007/download".into(),
+                url: format!("http://localhost:{UPDATE_PORT}/download"),
                 with_elevated_task: false,
             },
         );
@@ -195,49 +439,68 @@ fn target_to_platforms(
     platforms
 }
 
+/// A bundle to build, the update platform key the server announces it under (none for a manifest
+/// without an update) and the exit codes expected from running the app once per entry.
+type TestCase = (BundleTarget, PathBuf, Option<String>, Vec<i32>);
+
 #[cfg(target_os = "linux")]
-fn test_cases(
-    root_dir: &Path,
-    version: &str,
-    target: String,
-) -> Vec<(BundleTarget, PathBuf, Option<String>, Vec<i32>)> {
+fn test_cases(root_dir: &Path, version: &str, target: String) -> Vec<TestCase> {
+    let appimage = BundleTarget::AppImage.bundle_path(root_dir, version);
     vec![
         // update using fallback
         (
             BundleTarget::AppImage,
-            root_dir.join(format!(
-                "target/release/bundle/appimage/app-updater_{version}_amd64.AppImage"
-            )),
+            appimage.clone(),
             Some(target.clone()),
             vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE],
         ),
         // update using full name
         (
             BundleTarget::AppImage,
-            root_dir.join(format!(
-                "target/release/bundle/appimage/app-updater_{version}_amd64.AppImage"
-            )),
+            appimage.clone(),
             Some(format!("{target}-{}", BundleTarget::AppImage.name())),
             vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE],
         ),
         // no update
         (
             BundleTarget::AppImage,
-            root_dir.join(format!(
-                "target/release/bundle/appimage/app-updater_{version}_amd64.AppImage"
-            )),
+            appimage,
             None,
             vec![ERROR_EXIT_CODE],
         ),
     ]
 }
 
-#[cfg(target_os = "macos")]
-fn test_cases(
+/// The cases of a Linux package: an update announced under the generic target and one under the
+/// package specific target. There is no "no update" case, the AppImage one covers that path.
+#[cfg(target_os = "linux")]
+fn package_test_cases(
     root_dir: &Path,
-    _version: &str,
+    version: &str,
     target: String,
-) -> Vec<(BundleTarget, PathBuf, Option<String>, Vec<i32>)> {
+    bundle_target: BundleTarget,
+) -> Vec<TestCase> {
+    let package = bundle_target.bundle_path(root_dir, version);
+    vec![
+        // update using fallback
+        (
+            bundle_target,
+            package.clone(),
+            Some(target.clone()),
+            vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE],
+        ),
+        // update using full name
+        (
+            bundle_target,
+            package,
+            Some(format!("{target}-{}", bundle_target.name())),
+            vec![UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE],
+        ),
+    ]
+}
+
+#[cfg(target_os = "macos")]
+fn test_cases(root_dir: &Path, _version: &str, target: String) -> Vec<TestCase> {
     vec![
         (
             BundleTarget::App,
@@ -280,11 +543,7 @@ fn bundle_path(root_dir: &Path, _version: &str, v1compatible: bool) -> PathBuf {
 }
 
 #[cfg(windows)]
-fn test_cases(
-    root_dir: &Path,
-    version: &str,
-    target: String,
-) -> Vec<(BundleTarget, PathBuf, Option<String>, Vec<i32>)> {
+fn test_cases(root_dir: &Path, version: &str, target: String) -> Vec<TestCase> {
     vec![
         (
             BundleTarget::Nsis,
@@ -338,6 +597,7 @@ fn test_cases(
 }
 
 #[test]
+#[ignore = "needs the tauri CLI, a display and minutes of build time; the integration tests workflow runs it with --ignored"]
 fn update_app() {
     let _lock = BUILD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
 
@@ -346,11 +606,12 @@ fn update_app() {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let root_dir = manifest_dir.join("../../../..");
 
-    for mut config in [
+    for config in [
         Config {
             version: "1.0.0",
             bundle: BundleConfig {
                 create_updater_artifacts: Updater::Bool(true),
+                linux: None,
             },
             plugins: None,
         },
@@ -358,162 +619,218 @@ fn update_app() {
             version: "1.0.0",
             bundle: BundleConfig {
                 create_updater_artifacts: Updater::String(V1Compatible::V1Compatible),
+                linux: None,
             },
             plugins: None,
         },
     ] {
-        let v1_compatible = matches!(
-            config.bundle.create_updater_artifacts,
-            Updater::String(V1Compatible::V1Compatible)
+        let cases = test_cases(&root_dir, "1.0.0", target.clone());
+        run_update_cases(&manifest_dir, &root_dir, &target, config, cases);
+    }
+}
+
+/// The updater installs a deb through `dpkg` and an rpm through `rpm`, so this runs the installed
+/// app and lets the update replace it system wide. It only runs where that can happen without any
+/// prompt (see `BundleTarget::installable`) and removes the package when done.
+#[cfg(target_os = "linux")]
+#[test]
+#[ignore = "needs the tauri CLI, a display and minutes of build time; the integration tests workflow runs it with --ignored"]
+fn update_app_deb() {
+    update_linux_package(BundleTarget::Deb);
+}
+
+/// See `update_app_deb`.
+#[cfg(target_os = "linux")]
+#[test]
+#[ignore = "needs the tauri CLI, a display and minutes of build time; the integration tests workflow runs it with --ignored"]
+fn update_app_rpm() {
+    update_linux_package(BundleTarget::Rpm);
+}
+
+#[cfg(target_os = "linux")]
+fn update_linux_package(bundle_target: BundleTarget) {
+    let _lock = BUILD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+
+    if let Err(reason) = bundle_target.installable() {
+        // the integration tests workflow installs everything this needs, so a skip there means the
+        // test quietly stopped covering the package - libtest swallows the message on a pass
+        assert!(
+            std::env::var_os("CI").is_none(),
+            "cannot run the {} update test: {reason}",
+            bundle_target.name()
+        );
+        eprintln!(
+            "skipping the {} update test: {reason}",
+            bundle_target.name()
+        );
+        return;
+    }
+
+    let target =
+        tauri_plugin_updater::target().expect("running updater test in an unsupported platform");
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let root_dir = manifest_dir.join("../../../..");
+
+    // the legacy v1 updater never supported these packages, so only the v2 artifacts are tested
+    let config = Config {
+        version: "1.0.0",
+        bundle: BundleConfig {
+            create_updater_artifacts: Updater::Bool(true),
+            linux: rpm_self_provides(bundle_target),
+        },
+        plugins: None,
+    };
+    let cases = package_test_cases(&root_dir, "1.0.0", target.clone(), bundle_target);
+    run_update_cases(&manifest_dir, &root_dir, &target, config, cases);
+}
+
+/// Bundles 1.0.0 as each case's target and serves it, then bundles 0.1.0, runs it once per expected
+/// exit code and checks what it reports.
+fn run_update_cases(
+    manifest_dir: &Path,
+    root_dir: &Path,
+    target: &str,
+    mut config: Config,
+    cases: Vec<TestCase>,
+) {
+    let v1_compatible = matches!(
+        config.bundle.create_updater_artifacts,
+        Updater::String(V1Compatible::V1Compatible)
+    );
+
+    let updater_zip_ext = if v1_compatible {
+        if cfg!(windows) {
+            Some("zip")
+        } else {
+            Some("tar.gz")
+        }
+    } else if cfg!(target_os = "macos") {
+        Some("tar.gz")
+    } else {
+        None
+    };
+
+    for (bundle_target, out_bundle_path, update_platform, status_checks) in cases {
+        // bundle app update
+        config.version = "1.0.0";
+        build_app(manifest_dir, &config, Some(bundle_target));
+
+        let bundle_updater_ext = if v1_compatible {
+            out_bundle_path
+                .extension()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .replace("exe", "nsis")
+        } else {
+            out_bundle_path
+                .extension()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string()
+        };
+        let updater_extension = if let Some(updater_zip_ext) = updater_zip_ext {
+            format!("{bundle_updater_ext}.{updater_zip_ext}")
+        } else {
+            bundle_updater_ext
+        };
+        let signature_extension = format!("{updater_extension}.sig");
+        let signature_path = out_bundle_path.with_extension(signature_extension);
+        let signature = std::fs::read_to_string(&signature_path).unwrap_or_else(|_| {
+            panic!("failed to read signature file {}", signature_path.display())
+        });
+        let out_updater_path = out_bundle_path.with_extension(updater_extension);
+        let updater_path = root_dir.join(format!(
+            "target/release/{}",
+            out_updater_path.file_name().unwrap().to_str().unwrap()
+        ));
+        std::fs::rename(&out_updater_path, &updater_path).expect("failed to rename bundle");
+
+        // start the updater server, shut down at the end of the iteration even if a case panics
+        let _server = UpdaterServer::spawn(UPDATE_PORT, move |request| match request.url() {
+            "/" => {
+                let platforms = target_to_platforms(update_platform.clone(), signature.clone());
+
+                let body = serde_json::to_vec(&Update {
+                    version: "1.0.0".into(),
+                    date: time::OffsetDateTime::now_utc()
+                        .format(&time::format_description::well_known::Rfc3339)
+                        .unwrap(),
+                    platforms,
+                })
+                .unwrap();
+                let len = body.len();
+                let response = tiny_http::Response::new(
+                    tiny_http::StatusCode(200),
+                    Vec::new(),
+                    std::io::Cursor::new(body),
+                    Some(len),
+                    None,
+                );
+                let _ = request.respond(response);
+            }
+            "/download" => {
+                let _ = request.respond(tiny_http::Response::from_file(
+                    File::open(&updater_path).unwrap_or_else(|_| {
+                        panic!("failed to open updater bundle {}", updater_path.display())
+                    }),
+                ));
+            }
+            _ => (),
+        });
+
+        config.version = "0.1.0";
+
+        // bundle initial app version; Linux and macOS run the bundle itself, so it cannot be
+        // skipped there
+        build_app(
+            manifest_dir,
+            &config,
+            if cfg!(windows) {
+                None
+            } else {
+                Some(bundle_target)
+            },
         );
 
-        let updater_zip_ext = if v1_compatible {
-            if cfg!(windows) {
-                Some("zip")
-            } else {
-                Some("tar.gz")
-            }
-        } else if cfg!(target_os = "macos") {
-            Some("tar.gz")
-        } else {
-            None
-        };
+        let app_path = stage_app_under_test(root_dir, target, bundle_target);
 
-        for (bundle_target, out_bundle_path, update_platform, status_checks) in
-            test_cases(&root_dir, "1.0.0", target.clone())
+        for expected_exit_code in status_checks {
+            let mut binary_cmd = if cfg!(target_os = "macos") {
+                Command::new(app_path.join("Contents/MacOS/app-updater"))
+            } else if cfg!(target_os = "linux")
+                && std::env::var("CI").map(|v| v == "true").unwrap_or_default()
+            {
+                let mut c = Command::new("xvfb-run");
+                c.arg("--auto-servernum").arg(&app_path);
+                c
+            } else {
+                Command::new(&app_path)
+            };
+
+            binary_cmd.env("TARGET", bundle_target.name());
+
+            let status = binary_cmd
+                .status()
+                .unwrap_or_else(|e| panic!("failed to run {}: {e}", app_path.display()));
+            let code = status.code().unwrap_or(-1);
+
+            if code != expected_exit_code {
+                panic!(
+                    "failed to run app bundled as {}, expected exit code {expected_exit_code}, got {code}", bundle_target.name()
+                );
+            }
+            #[cfg(windows)]
+            if code == UPDATED_EXIT_CODE {
+                // wait for the update to finish
+                std::thread::sleep(std::time::Duration::from_secs(5));
+            }
+        }
+
+        #[cfg(target_os = "linux")]
         {
-            // bundle app update
-            config.version = "1.0.0";
-            build_app(&manifest_dir, &config, Some(bundle_target));
-
-            let bundle_updater_ext = if v1_compatible {
-                out_bundle_path
-                    .extension()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .replace("exe", "nsis")
-            } else {
-                out_bundle_path
-                    .extension()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .to_string()
-            };
-            let updater_extension = if let Some(updater_zip_ext) = updater_zip_ext {
-                format!("{bundle_updater_ext}.{updater_zip_ext}")
-            } else {
-                bundle_updater_ext
-            };
-            let signature_extension = format!("{updater_extension}.sig");
-            let signature_path = out_bundle_path.with_extension(signature_extension);
-            let signature = std::fs::read_to_string(&signature_path).unwrap_or_else(|_| {
-                panic!("failed to read signature file {}", signature_path.display())
-            });
-            let out_updater_path = out_bundle_path.with_extension(updater_extension);
-            let updater_path = root_dir.join(format!(
-                "target/release/{}",
-                out_updater_path.file_name().unwrap().to_str().unwrap()
-            ));
-            std::fs::rename(&out_updater_path, &updater_path).expect("failed to rename bundle");
-
-            // start the updater server
-            let server = Arc::new(
-                tiny_http::Server::http("localhost:3007").expect("failed to start updater server"),
-            );
-
-            let server_ = server.clone();
-            std::thread::spawn(move || {
-                for request in server_.incoming_requests() {
-                    match request.url() {
-                        "/" => {
-                            let platforms =
-                                target_to_platforms(update_platform.clone(), signature.clone());
-
-                            let body = serde_json::to_vec(&Update {
-                                version: "1.0.0".into(),
-                                date: time::OffsetDateTime::now_utc()
-                                    .format(&time::format_description::well_known::Rfc3339)
-                                    .unwrap(),
-                                platforms,
-                            })
-                            .unwrap();
-                            let len = body.len();
-                            let response = tiny_http::Response::new(
-                                tiny_http::StatusCode(200),
-                                Vec::new(),
-                                std::io::Cursor::new(body),
-                                Some(len),
-                                None,
-                            );
-                            let _ = request.respond(response);
-                        }
-                        "/download" => {
-                            let _ = request.respond(tiny_http::Response::from_file(
-                                File::open(&updater_path).unwrap_or_else(|_| {
-                                    panic!(
-                                        "failed to open updater bundle {}",
-                                        updater_path.display()
-                                    )
-                                }),
-                            ));
-                        }
-                        _ => (),
-                    }
-                }
-            });
-
-            config.version = "0.1.0";
-
-            // bundle initial app version; Linux and macOS run the bundle itself, so it cannot be
-            // skipped there
-            build_app(
-                &manifest_dir,
-                &config,
-                if cfg!(windows) {
-                    None
-                } else {
-                    Some(bundle_target)
-                },
-            );
-
-            let app_path = stage_app_under_test(&root_dir, &target);
-
-            for expected_exit_code in status_checks {
-                let mut binary_cmd = if cfg!(target_os = "macos") {
-                    Command::new(app_path.join("Contents/MacOS/app-updater"))
-                } else if cfg!(target_os = "linux")
-                    && std::env::var("CI").map(|v| v == "true").unwrap_or_default()
-                {
-                    let mut c = Command::new("xvfb-run");
-                    c.arg("--auto-servernum").arg(&app_path);
-                    c
-                } else {
-                    Command::new(&app_path)
-                };
-
-                binary_cmd.env("TARGET", bundle_target.name());
-
-                let status = binary_cmd
-                    .status()
-                    .unwrap_or_else(|e| panic!("failed to run {}: {e}", app_path.display()));
-                let code = status.code().unwrap_or(-1);
-
-                if code != expected_exit_code {
-                    panic!(
-                        "failed to run app bundled as {}, expected exit code {expected_exit_code}, got {code}", bundle_target.name()
-                    );
-                }
-                #[cfg(windows)]
-                if code == UPDATED_EXIT_CODE {
-                    // wait for the update to finish
-                    std::thread::sleep(std::time::Duration::from_secs(5));
-                }
-            }
-
-            // graceful shutdown
-            server.unblock();
+            remove_package(bundle_target);
         }
     }
 }
@@ -536,14 +853,65 @@ fn app_binary(root_dir: &Path) -> PathBuf {
     })
 }
 
-/// Runs the app against the update server, restoring the binary from `pristine` first.
+/// How the app under test has to be built for an install to stay contained.
 ///
-/// A case that clears the version check goes on to actually install, and on Linux installing means
-/// writing the downloaded bytes over the running executable. Every case therefore has to start
-/// from an untouched binary, or the first one that passes leaves the update behind as the app.
+/// Windows and Linux install over the executable itself, so a bare `cargo build` is enough there.
+/// macOS replaces the whole `.app` the running executable sits in, and for an executable that is
+/// not in one the updater falls back to the directory merely holding it — `target/release`, which
+/// is also where the bundle being served and the build cache live. So macOS bundles the app and
+/// runs it out of a staged copy of that `.app`, which the install is welcome to replace.
+#[cfg(target_os = "macos")]
+const APP_UNDER_TEST_BUNDLE: Option<BundleTarget> = Some(BundleTarget::App);
+#[cfg(not(target_os = "macos"))]
+const APP_UNDER_TEST_BUNDLE: Option<BundleTarget> = None;
+
+/// Where `build_app` leaves the app under test.
+fn built_app(root_dir: &Path) -> PathBuf {
+    #[cfg(target_os = "macos")]
+    return root_dir.join("target/release/bundle/macos/app-updater.app");
+    #[cfg(not(target_os = "macos"))]
+    return app_binary(root_dir);
+}
+
+/// The copy the test runs, kept out of the way of both the bundler and the build cache.
+fn staged_app(root_dir: &Path) -> PathBuf {
+    #[cfg(target_os = "macos")]
+    return root_dir.join("target/release/app-under-test-signed/app-updater.app");
+    #[cfg(not(target_os = "macos"))]
+    return app_binary(root_dir);
+}
+
+/// The executable to launch inside the staged app.
+fn staged_binary(root_dir: &Path) -> PathBuf {
+    #[cfg(target_os = "macos")]
+    return staged_app(root_dir).join("Contents/MacOS/app-updater");
+    #[cfg(not(target_os = "macos"))]
+    return staged_app(root_dir);
+}
+
+/// Puts the pristine 0.1.0 app back where the test runs it, replacing whatever an install left.
+fn restore_app(root_dir: &Path, pristine: &Path) {
+    let app = staged_app(root_dir);
+    let _ = std::fs::remove_dir_all(&app);
+    let _ = std::fs::remove_file(&app);
+    std::fs::create_dir_all(app.parent().unwrap()).expect("failed to create the staging directory");
+    copy_recursively(pristine, &app).unwrap_or_else(|e| {
+        panic!(
+            "failed to restore {} from {}: {e}",
+            app.display(),
+            pristine.display()
+        )
+    });
+}
+
+/// Runs the app against the update server, restoring it from `pristine` first.
+///
+/// A case that clears the version check goes on to actually install, and installing means writing
+/// over what the app runs from. Every case therefore has to start from an untouched copy, or the
+/// first one that passes leaves the update behind as the app.
 fn run_app(root_dir: &Path, pristine: &Path) -> String {
-    let binary = app_binary(root_dir);
-    std::fs::copy(pristine, &binary).expect("failed to restore the app binary");
+    restore_app(root_dir, pristine);
+    let binary = staged_binary(root_dir);
 
     let mut command = if cfg!(target_os = "linux")
         && std::env::var("CI").map(|v| v == "true").unwrap_or_default()
@@ -568,6 +936,7 @@ fn run_app(root_dir: &Path, pristine: &Path) -> String {
 /// reaches the installer while an accepted one does. Both exit non-zero, which is why these assert
 /// on the error message rather than the exit code.
 #[test]
+#[ignore = "needs the tauri CLI, a display and minutes of build time; the integration tests workflow runs it with --ignored"]
 fn update_validates_signed_version() {
     let _lock = BUILD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
 
@@ -584,6 +953,7 @@ fn update_validates_signed_version() {
             version: "1.0.0",
             bundle: BundleConfig {
                 create_updater_artifacts: Updater::Bool(true),
+                linux: None,
             },
             plugins: None,
         },
@@ -624,57 +994,48 @@ fn update_validates_signed_version() {
         version: "1.0.0".into(),
     }));
 
-    let server = Arc::new(
-        tiny_http::Server::http(format!("localhost:{SIGNED_VERSION_PORT}"))
-            .expect("failed to start updater server"),
-    );
-
-    let server_ = server.clone();
     let served_ = served.clone();
     let target_ = target.clone();
     let updater_path_ = updater_path.clone();
-    std::thread::spawn(move || {
-        for request in server_.incoming_requests() {
-            match request.url() {
-                "/" => {
-                    let mut platforms = HashMap::new();
-                    platforms.insert(
-                        target_.clone(),
-                        PlatformUpdate {
-                            // always the genuine 1.0.0 signature; only the version above it moves
-                            signature: signature.clone(),
-                            url: format!("http://localhost:{SIGNED_VERSION_PORT}/download"),
-                            with_elevated_task: false,
-                        },
-                    );
+    // shut down at the end of the test even if a check below panics
+    let _server = UpdaterServer::spawn(SIGNED_VERSION_PORT, move |request| match request.url() {
+        "/" => {
+            let mut platforms = HashMap::new();
+            platforms.insert(
+                target_.clone(),
+                PlatformUpdate {
+                    // always the genuine 1.0.0 signature; only the version above it moves
+                    signature: signature.clone(),
+                    url: format!("http://localhost:{SIGNED_VERSION_PORT}/download"),
+                    with_elevated_task: false,
+                },
+            );
 
-                    let body = serde_json::to_vec(&Update {
-                        version: served_.lock().unwrap().version.clone(),
-                        date: time::OffsetDateTime::now_utc()
-                            .format(&time::format_description::well_known::Rfc3339)
-                            .unwrap(),
-                        platforms,
-                    })
-                    .unwrap();
-                    let len = body.len();
-                    let _ = request.respond(tiny_http::Response::new(
-                        tiny_http::StatusCode(200),
-                        Vec::new(),
-                        std::io::Cursor::new(body),
-                        Some(len),
-                        None,
-                    ));
-                }
-                "/download" => {
-                    let _ = request.respond(tiny_http::Response::from_file(
-                        File::open(&updater_path_).unwrap_or_else(|_| {
-                            panic!("failed to open updater bundle {}", updater_path_.display())
-                        }),
-                    ));
-                }
-                _ => (),
-            }
+            let body = serde_json::to_vec(&Update {
+                version: served_.lock().unwrap().version.clone(),
+                date: time::OffsetDateTime::now_utc()
+                    .format(&time::format_description::well_known::Rfc3339)
+                    .unwrap(),
+                platforms,
+            })
+            .unwrap();
+            let len = body.len();
+            let _ = request.respond(tiny_http::Response::new(
+                tiny_http::StatusCode(200),
+                Vec::new(),
+                std::io::Cursor::new(body),
+                Some(len),
+                None,
+            ));
         }
+        "/download" => {
+            let _ = request.respond(tiny_http::Response::from_file(
+                File::open(&updater_path_).unwrap_or_else(|_| {
+                    panic!("failed to open updater bundle {}", updater_path_.display())
+                }),
+            ));
+        }
+        _ => (),
     });
 
     // `requireSignedVersion` is baked in by `generate_context!`, so each value needs its own build
@@ -686,6 +1047,7 @@ fn update_validates_signed_version() {
                 version: "0.1.0",
                 bundle: BundleConfig {
                     create_updater_artifacts: Updater::Bool(true),
+                    linux: None,
                 },
                 plugins: Some(serde_json::json!({
                     "updater": {
@@ -694,10 +1056,12 @@ fn update_validates_signed_version() {
                     }
                 })),
             },
-            None,
+            APP_UNDER_TEST_BUNDLE,
         );
-        std::fs::copy(app_binary(&root_dir), &pristine)
-            .expect("failed to keep a pristine copy of the app binary");
+        let _ = std::fs::remove_dir_all(&pristine);
+        let _ = std::fs::remove_file(&pristine);
+        copy_recursively(&built_app(&root_dir), &pristine)
+            .expect("failed to keep a pristine copy of the app");
     };
 
     let check = |announced: &str, expected: Option<&str>, unexpected: Option<&str>| {
@@ -730,9 +1094,8 @@ fn update_validates_signed_version() {
     // a signature that names a version is held to it whether or not the option is on
     check("1.5.0", Some(MISMATCH_ERROR), None);
 
-    server.unblock();
-
-    // leave a runnable binary behind rather than whichever update was installed last
-    let _ = std::fs::copy(&pristine, app_binary(&root_dir));
+    // leave the 0.1.0 app behind rather than whichever update was installed last
+    restore_app(&root_dir, &pristine);
+    let _ = std::fs::remove_dir_all(&pristine);
     let _ = std::fs::remove_file(&pristine);
 }
