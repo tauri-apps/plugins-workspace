@@ -159,7 +159,7 @@ impl<R: Runtime> Opener<R> {
     ///
     /// - **Android / iOS:** Unsupported.
     pub fn reveal_item_in_dir<P: AsRef<Path>>(&self, p: P) -> Result<()> {
-        reveal_item_in_dir(p)
+        self.reveal_items_in_dir(&[p])
     }
 
     /// Reveal one or more paths in the system's default explorer.
