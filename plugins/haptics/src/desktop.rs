@@ -18,18 +18,26 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Haptics<R: Runtime>(AppHandle<R>);
 
 impl<R: Runtime> Haptics<R> {
+    /// No-op on desktop; haptic feedback is not supported on Linux, macOS or Windows. Always
+    /// returns `Ok`.
     pub fn vibrate(&self, _duration: u32) -> crate::Result<()> {
         Ok(())
     }
 
+    /// No-op on desktop; haptic feedback is not supported on Linux, macOS or Windows. Always
+    /// returns `Ok`.
     pub fn impact_feedback(&self, _style: ImpactFeedbackStyle) -> crate::Result<()> {
         Ok(())
     }
 
+    /// No-op on desktop; haptic feedback is not supported on Linux, macOS or Windows. Always
+    /// returns `Ok`.
     pub fn notification_feedback(&self, _type: NotificationFeedbackType) -> crate::Result<()> {
         Ok(())
     }
 
+    /// No-op on desktop; haptic feedback is not supported on Linux, macOS or Windows. Always
+    /// returns `Ok`.
     pub fn selection_feedback(&self) -> crate::Result<()> {
         Ok(())
     }

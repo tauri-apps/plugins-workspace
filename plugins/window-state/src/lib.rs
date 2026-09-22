@@ -35,26 +35,41 @@ type FilterCallbackFn = dyn Fn(&str) -> bool + Send + Sync;
 /// If using a custom filename, you should probably use [`AppHandleExt::filename`] instead.
 pub const DEFAULT_FILENAME: &str = ".window-state.json";
 
+/// The error type returned by this plugin's fallible functions.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// An I/O error occurred while reading or writing the window state file.
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    /// An error occurred while calling into Tauri, e.g. while resolving the app config directory
+    /// or manipulating a window.
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+    /// An error occurred while serializing or deserializing the window state file.
     #[error(transparent)]
     SerdeJson(#[from] serde_json::Error),
 }
 
+/// Alias for a [`Result`](std::result::Result) with the error type [`Error`].
 pub type Result<T> = std::result::Result<T, Error>;
 
 bitflags! {
+    /// Flags controlling which parts of a window's state are saved and restored.
+    ///
+    /// Flags can be combined with the bitwise OR operator (`|`), e.g. `StateFlags::SIZE | StateFlags::POSITION`.
     #[derive(Clone, Copy, Debug)]
     pub struct StateFlags: u32 {
+        /// Save and restore the window size.
         const SIZE        = 1 << 0;
+        /// Save and restore the window position.
         const POSITION    = 1 << 1;
+        /// Save and restore whether the window is maximized.
         const MAXIMIZED   = 1 << 2;
+        /// Save and restore whether the window is visible.
         const VISIBLE     = 1 << 3;
+        /// Save and restore whether the window has decorations.
         const DECORATIONS = 1 << 4;
+        /// Save and restore whether the window is fullscreen.
         const FULLSCREEN  = 1 << 5;
     }
 }
@@ -110,6 +125,7 @@ struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
 /// Used to prevent deadlocks from resize and position event listeners setting the cached state on restoring states
 struct RestoringWindowState(Mutex<()>);
 
+/// Extension trait for [`AppHandle`] exposing window state APIs.
 pub trait AppHandleExt {
     /// Saves all open windows state to disk
     fn save_window_state(&self, flags: StateFlags) -> Result<()>;
@@ -151,6 +167,7 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
     }
 }
 
+/// Extension trait for [`Window`] and [`WebviewWindow`] exposing window state APIs.
 pub trait WindowExt {
     /// Restores this window state from disk
     fn restore_state(&self, flags: StateFlags) -> tauri::Result<()>;
@@ -321,6 +338,7 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
     }
 }
 
+/// Builder for the window-state [plugin](TauriPlugin).
 #[derive(Default)]
 pub struct Builder {
     denylist: HashSet<String>,
@@ -332,6 +350,8 @@ pub struct Builder {
 }
 
 impl Builder {
+    /// Creates a new [`Builder`] with the default configuration:
+    /// all [`StateFlags`] enabled, no denylist, no filter, and the [`DEFAULT_FILENAME`].
     pub fn new() -> Self {
         Self::default()
     }
@@ -382,6 +402,12 @@ impl Builder {
         self
     }
 
+    /// Builds the [`TauriPlugin`].
+    ///
+    /// The plugin loads the previously saved window state on setup, restores each window's
+    /// state when it becomes ready (unless denylisted, filtered out, or opted out with
+    /// [`Builder::skip_initial_state`]), tracks move/resize events to keep the state up to date,
+    /// and saves the state of all windows to disk when the app exits.
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let state_flags = self.state_flags;
         let filename = self.filename.unwrap_or_else(|| DEFAULT_FILENAME.into());

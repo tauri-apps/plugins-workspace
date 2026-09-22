@@ -27,6 +27,9 @@ jobs:
       matrix:
         platform: [ubuntu-latest, macos-latest, windows-latest]
 
+    # No caches on purpose: this workflow only runs on pull requests, so anything it saved
+    # would live on the merge ref where no other run can restore it, while still counting
+    # against the repository's 10 GB cache limit and evicting entries that `v2`/`v3` saved.
     steps:
       - uses: actions/checkout@v7
 
@@ -44,14 +47,12 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-          cache: gradle
 
       - name: Setup NDK
         uses: nttld/setup-ndk@v1
         id: setup-ndk
         with:
           ndk-version: r25
-          local-cache: true
 
       # TODO check after https://github.com/nttld/setup-ndk/issues/518 is fixed
       - name: Restore Android Symlinks
@@ -66,8 +67,6 @@ jobs:
               ln -sf "$new_target" "$link"
               echo "Changed $(basename "$link") from $current_target to $new_target"
           done
-
-      - uses: Swatinem/rust-cache@v2
 
       - name: build API
         run: pnpm build

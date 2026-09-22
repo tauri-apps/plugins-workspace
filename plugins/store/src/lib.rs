@@ -240,6 +240,11 @@ async fn save<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
     store.save()
 }
 
+/// Extension trait to access the store APIs on a [`Manager`] such as `App`, `AppHandle`,
+/// `WebviewWindow` or `Window`.
+///
+/// The plugin must be registered with [`Builder::build`] for these methods to work,
+/// as they rely on the state it manages.
 pub trait StoreExt<R: Runtime> {
     /// Create a store or load an existing store with default settings at the given path.
     ///
@@ -336,6 +341,17 @@ fn default_deserialize(
     serde_json::from_slice(bytes).map_err(Into::into)
 }
 
+/// Builder for the store plugin.
+///
+/// It is used to register custom serialize and deserialize functions the frontend can select by
+/// name when loading a store, and to change the functions used by default (pretty printed JSON).
+///
+/// # Examples
+///
+/// ```
+/// tauri::Builder::default()
+///   .plugin(tauri_plugin_store::Builder::default().build());
+/// ```
 pub struct Builder {
     serialize_fns: HashMap<String, SerializeFn>,
     deserialize_fns: HashMap<String, DeserializeFn>,
@@ -355,6 +371,10 @@ impl Default for Builder {
 }
 
 impl Builder {
+    /// Creates a new builder using the default serialize and deserialize functions,
+    /// which read and write pretty printed JSON.
+    ///
+    /// This is the same as [`Builder::default`].
     pub fn new() -> Self {
         Self::default()
     }

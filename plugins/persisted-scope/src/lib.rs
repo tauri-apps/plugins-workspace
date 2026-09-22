@@ -163,6 +163,14 @@ fn save_scopes(scope: &tauri::fs::Scope, app_dir: &Path, scope_state_path: &Path
         });
 }
 
+/// Initializes the plugin.
+///
+/// On setup, this restores the filesystem scope, and the `asset://` protocol scope when the
+/// `protocol-asset` feature is enabled, from the state persisted during a previous run, then
+/// listens for further scope changes to persist them again. Scopes are stored under the app's
+/// data directory; nothing is restored or persisted if that directory cannot be resolved. The
+/// `fs` plugin must be registered before this plugin, otherwise the filesystem scope is not
+/// restored or persisted (a warning is printed in debug builds).
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("persisted-scope")
         .setup(|app, _api| {

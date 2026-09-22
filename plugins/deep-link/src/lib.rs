@@ -2,6 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! Set your Tauri application as the default handler for a URL, or check which URL(s) it was
+//! opened with.
+//!
+//! On Windows and Linux, protocol schemes can additionally be registered and unregistered at
+//! runtime with [`DeepLink::register`] and [`DeepLink::unregister`]. On macOS, Android and iOS
+//! the schemes declared in the Tauri configuration are registered at build time instead, so
+//! calling those methods returns [`Error::UnsupportedPlatform`].
+
 use tauri::{
     plugin::{Builder, PluginApi, TauriPlugin},
     AppHandle, EventId, Listener, Manager, Runtime,
@@ -556,6 +564,7 @@ use url::Url;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the deep-link APIs.
 pub trait DeepLinkExt<R: Runtime> {
+    /// Returns a reference to the [`DeepLink`] API.
     fn deep_link(&self) -> &DeepLink<R>;
 }
 
