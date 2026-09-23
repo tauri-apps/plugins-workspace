@@ -887,10 +887,17 @@ async function readTextFileLines(
         })
       }
 
-      const arr = await invoke<ArrayBuffer | number[]>(
-        'plugin:fs|read_text_file_lines_next',
-        { rid: this.rid }
-      )
+      let arr: ArrayBuffer | number[]
+      try {
+        arr = await invoke<ArrayBuffer | number[]>(
+          'plugin:fs|read_text_file_lines_next',
+          { rid: this.rid }
+        )
+      } catch (error) {
+        // the resource is closed on errors, the next iteration starts over
+        this.rid = null
+        throw error
+      }
 
       const bytes =
         arr instanceof ArrayBuffer ? new Uint8Array(arr) : Uint8Array.from(arr)
@@ -914,6 +921,17 @@ async function readTextFileLines(
         value: line,
         done
       }
+    },
+
+    // called when a `for await` loop exits early (`break`, `return` or `throw`)
+    async return(): Promise<IteratorResult<string>> {
+      if (this.rid !== null) {
+        const rid = this.rid
+        this.rid = null
+        // close the file, otherwise it stays open until the webview is destroyed
+        await new Resource(rid).close()
+      }
+      return { value: null, done: true }
     },
 
     [Symbol.asyncIterator](): AsyncIterableIterator<string> {

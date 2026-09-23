@@ -703,7 +703,12 @@ pub async fn read_text_file_lines_next<R: Runtime>(
                 bytes.push(false as u8);
                 Ok(bytes)
             }
-            Some(Err(_)) => Ok(vec![false as u8]),
+            Some(Err(e)) => {
+                // the error may be persistent (e.g. reading a directory), do not report
+                // an empty line and let the caller loop forever
+                resource_table.close(rid)?;
+                Err(format!("failed to read line with error: {e}").into())
+            }
             None => {
                 resource_table.close(rid)?;
                 Ok(vec![true as u8])
