@@ -363,24 +363,23 @@ impl std::os::unix::fs::OpenOptionsExt for OpenOptions {
 }
 
 impl OpenOptions {
-    #[cfg(target_os = "android")]
-    fn android_mode(&self) -> String {
-        let mut mode = String::new();
-
-        if self.read {
-            mode.push('r');
+    /// The mode passed to `ContentResolver.openAssetFileDescriptor` / `ParcelFileDescriptor.parseMode`,
+    /// which only accept `r`, `w`, `wt`, `wa`, `rw` and `rwt`.
+    ///
+    /// `create` and `create_new` have no equivalent: whether a missing file is created
+    /// depends on the content provider.
+    #[cfg(any(target_os = "android", test))]
+    fn android_mode(&self) -> &'static str {
+        match (self.read, self.write || self.append) {
+            (_, false) => "r",
+            // there is no read + append mode, and `read` defaults to `true` from JavaScript:
+            // honor the explicit append
+            (_, true) if self.append => "wa",
+            (true, true) if self.truncate => "rwt",
+            (true, true) => "rw",
+            (false, true) if self.truncate => "wt",
+            (false, true) => "w",
         }
-        if self.write {
-            mode.push('w');
-        }
-        if self.truncate {
-            mode.push('t');
-        }
-        if self.append {
-            mode.push('a');
-        }
-
-        mode
     }
 }
 
@@ -636,6 +635,36 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
 #[cfg(test)]
 mod tests {
     use super::OpenOptions;
+
+    #[test]
+    fn android_modes_are_valid() {
+        let mode = |json: &str| {
+            serde_json::from_str::<OpenOptions>(json)
+                .unwrap()
+                .android_mode()
+        };
+
+        // `read` defaults to true when deserialized
+        assert_eq!(mode(r#"{}"#), "r");
+        assert_eq!(mode(r#"{ "read": false }"#), "r");
+        assert_eq!(mode(r#"{ "write": true }"#), "rw");
+        assert_eq!(mode(r#"{ "write": true, "truncate": true }"#), "rwt");
+        assert_eq!(mode(r#"{ "append": true }"#), "wa");
+        assert_eq!(mode(r#"{ "read": false, "write": true }"#), "w");
+        assert_eq!(
+            mode(r#"{ "read": false, "write": true, "truncate": true }"#),
+            "wt"
+        );
+        assert_eq!(mode(r#"{ "read": false, "append": true }"#), "wa");
+        assert_eq!(
+            mode(r#"{ "read": false, "write": true, "truncate": true, "append": true }"#),
+            "wa"
+        );
+        assert_eq!(
+            mode(r#"{ "read": false, "write": true, "create": true }"#),
+            "w"
+        );
+    }
 
     #[test]
     fn open_options_ignore_custom_flags_from_ipc() {
