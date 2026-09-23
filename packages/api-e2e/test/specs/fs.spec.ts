@@ -8,6 +8,7 @@ import {
   tauriError,
   describePlugin,
   itDesktop,
+  itOn,
   scratchDir
 } from '../helpers/index.js'
 
@@ -278,6 +279,25 @@ describePlugin('fs', () => {
     }, `${dir}/closed.txt`)
     expect(message).toMatch(/resource id \d+ is invalid/)
   })
+
+  // `:` is not allowed in Windows file names
+  itOn(
+    ['linux', 'darwin', 'android', 'ios'],
+    'relative paths that look like a URL scheme are paths',
+    async () => {
+      const result = await tauri(async (api) => {
+        const baseDir = api.fs.BaseDirectory.AppData
+        const path = 'e2e-notes:2024.txt'
+        await api.fs.writeTextFile(path, 'notes', { baseDir })
+        try {
+          return await api.fs.readTextFile(path, { baseDir })
+        } finally {
+          await api.fs.remove(path, { baseDir })
+        }
+      })
+      expect(result).toBe('notes')
+    }
+  )
 
   it('rejects paths outside the configured scope', async () => {
     // `$HOME` itself is not in the example's fs scope (only the app dirs,

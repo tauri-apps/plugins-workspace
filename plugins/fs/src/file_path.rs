@@ -203,7 +203,9 @@ impl FromStr for SafeFilePath {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self> {
         if let Ok(url) = url::Url::from_str(s) {
-            if url.scheme().len() != 1 {
+            // single letter schemes are Windows drive letters, and URLs that cannot be a base
+            // (no `//` nor `/` after the scheme) are relative paths such as `notes:2024.txt`
+            if url.scheme().len() != 1 && !url.cannot_be_a_base() {
                 return Ok(Self::Url(url));
             }
         }
@@ -303,6 +305,42 @@ impl TryFrom<FilePath> for SafeFilePath {
             FilePath::Path(p) => SafePathBuf::new(p)
                 .map(SafeFilePath::Path)
                 .map_err(Error::UnsafePathBuf),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use super::SafeFilePath;
+
+    #[test]
+    fn safe_file_path_from_str() {
+        for url in [
+            "file:///C:/Users",
+            "file:///home/user/file.txt",
+            "content://com.android.providers/document/1",
+            "asset://localhost/file.txt",
+        ] {
+            assert!(
+                matches!(SafeFilePath::from_str(url), Ok(SafeFilePath::Url(_))),
+                "{url}"
+            );
+        }
+
+        for path in [
+            "C:/Users",
+            "C:\\Users",
+            "notes:2024.txt",
+            "ab:c",
+            "dir/file.txt",
+            "/home/user/file.txt",
+        ] {
+            assert!(
+                matches!(SafeFilePath::from_str(path), Ok(SafeFilePath::Path(_))),
+                "{path}"
+            );
         }
     }
 }
