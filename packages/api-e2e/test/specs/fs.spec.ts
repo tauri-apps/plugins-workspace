@@ -70,6 +70,21 @@ describePlugin('fs', () => {
     expect(read).toBe('first second')
   })
 
+  it('writeFile and writeTextFile work without options', async () => {
+    const result = await tauri(async (api, dir) => {
+      const path = await api.path.join(
+        await api.path.appDataDir(),
+        dir,
+        'no-options.txt'
+      )
+      await api.fs.writeTextFile(path, 'text')
+      const text = await api.fs.readTextFile(path)
+      await api.fs.writeFile(path, new Uint8Array([98, 121, 116, 101, 115]))
+      return { text, bytes: await api.fs.readTextFile(path) }
+    }, dir)
+    expect(result).toEqual({ text: 'text', bytes: 'bytes' })
+  })
+
   it('writeFile and readFile round-trip binary data', async () => {
     const bytes = [0, 1, 2, 3, 250, 251, 252, 253, 254, 255]
     const read = await tauri(
@@ -101,10 +116,11 @@ describePlugin('fs', () => {
           hasMtime: fileStat.mtime instanceof Date
         },
         lstatSize: fileLstat.size,
-        // `size` only takes absolute paths
-        size: await api.fs.size(
+        size: await api.fs.size(file, { baseDir }),
+        absoluteSize: await api.fs.size(
           await api.path.join(await api.path.appDataDir(), file)
         ),
+        dirSize: await api.fs.size(dir, { baseDir }),
         dir: { isFile: dirStat.isFile, isDirectory: dirStat.isDirectory }
       }
     }, dir)
@@ -117,6 +133,8 @@ describePlugin('fs', () => {
     })
     expect(result.lstatSize).toBe(10)
     expect(result.size).toBe(10)
+    expect(result.absoluteSize).toBe(10)
+    expect(result.dirSize).toBeGreaterThanOrEqual(10)
     expect(result.dir).toEqual({ isFile: false, isDirectory: true })
   })
 

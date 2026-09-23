@@ -1098,11 +1098,12 @@ async fn write_file_inner<R: Runtime>(
         })
         .and_then(|p| SafeFilePath::from_str(&p).map_err(CommandError::from))?;
 
-    let options: Option<WriteFileOptions> = request
+    let options = request
         .headers()
         .get("options")
-        .and_then(|p| p.to_str().ok())
-        .and_then(|opts| serde_json::from_str(opts).ok());
+        .map(|options| parse_write_file_options(options.as_bytes()))
+        .transpose()?
+        .flatten();
 
     let mut file_handle = resolve_file(
         permission,
@@ -1145,8 +1146,12 @@ async fn write_file_inner<R: Runtime>(
         tauri::ipc::InvokeBody::Raw(data) => Cow::Borrowed(data),
         tauri::ipc::InvokeBody::Json(serde_json::Value::Array(data)) => Cow::Owned(
             data.iter()
-                .flat_map(|v| v.as_number().and_then(|v| v.as_u64().map(|v| v as u8)))
-                .collect(),
+                .map(|v| {
+                    v.as_u64()
+                        .and_then(|v| u8::try_from(v).ok())
+                        .ok_or_else(|| anyhow::anyhow!("invalid byte in the data to write: {v}"))
+                })
+                .collect::<Result<Vec<u8>, _>>()?,
         ),
         _ => return Err(anyhow::anyhow!("unexpected invoke body").into()),
     };
@@ -1160,6 +1165,20 @@ async fn write_file_inner<R: Runtime>(
             )
         })
         .map_err(Into::into)
+}
+
+/// Parses the `options` header of the `write_file` command.
+///
+/// Fails instead of silently falling back to the defaults, which would e.g. ignore `baseDir`.
+fn parse_write_file_options(header: &[u8]) -> CommandResult<Option<WriteFileOptions>> {
+    let header = String::from_utf8_lossy(header);
+    match header.trim() {
+        // `JSON.stringify(undefined)` is sent as `undefined` by `fetch`
+        "" | "undefined" | "null" => Ok(None),
+        options => serde_json::from_str(options)
+            .map(Some)
+            .map_err(|e| anyhow::anyhow!("invalid write file options {options}: {e}").into()),
+    }
 }
 
 #[tauri::command]
@@ -1814,6 +1833,25 @@ mod test {
     use std::io::{BufRead, BufReader};
 
     use super::LinesBytes;
+
+    #[test]
+    fn write_file_options_header() {
+        use super::parse_write_file_options;
+
+        assert!(parse_write_file_options(b"undefined").unwrap().is_none());
+        assert!(parse_write_file_options(b"null").unwrap().is_none());
+        assert!(parse_write_file_options(b"").unwrap().is_none());
+
+        let options = parse_write_file_options(br#"{"baseDir":14,"append":true}"#)
+            .unwrap()
+            .unwrap();
+        assert!(options.append);
+        assert!(options.create);
+        assert!(options.base.base_dir.is_some());
+
+        assert!(parse_write_file_options(b"{not json").is_err());
+        assert!(parse_write_file_options(br#"{"append":"yes"}"#).is_err());
+    }
 
     #[test]
     fn safe_file_path_parse() {
