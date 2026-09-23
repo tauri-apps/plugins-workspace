@@ -83,7 +83,9 @@ pub struct OpenOptions {
     #[serde(default)]
     #[allow(unused)]
     mode: Option<u32>,
-    #[serde(default)]
+    // Never deserialized: the webview must not be able to pass arbitrary `open(2)` flags
+    // (e.g. `O_TRUNC`), it can only be set from Rust with `OpenOptionsExt::custom_flags`.
+    #[serde(skip)]
     #[allow(unused)]
     custom_flags: Option<i32>,
 }
@@ -629,4 +631,17 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             }
         })
         .build()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::OpenOptions;
+
+    #[test]
+    fn open_options_ignore_custom_flags_from_ipc() {
+        let options: OpenOptions =
+            serde_json::from_str(r#"{ "read": true, "customFlags": 512 }"#).unwrap();
+        assert!(options.read);
+        assert_eq!(options.custom_flags, None);
+    }
 }
