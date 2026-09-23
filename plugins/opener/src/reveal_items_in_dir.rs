@@ -37,6 +37,10 @@ pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
 }
 
 /// Reveal multiple paths in the system's default explorer.
+///
+/// ## Platform-specific:
+///
+/// - **Android / iOS:** Unsupported.
 pub fn reveal_items_in_dir<I, P>(paths: I) -> crate::Result<()>
 where
     I: IntoIterator<Item = P>,
