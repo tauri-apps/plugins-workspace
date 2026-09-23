@@ -1660,9 +1660,9 @@ impl<B: BufRead> Iterator for LinesBytes<B> {
             Ok(0) => None,
             Ok(_n) => {
                 // Remove '\n' or '\r\n'
-                if buf.ends_with(&self.lf_bytes) {
+                if ends_with_aligned(&buf, &self.lf_bytes) {
                     buf.truncate(buf.len() - self.lf_bytes.len());
-                    if buf.ends_with(&self.cr_bytes) {
+                    if ends_with_aligned(&buf, &self.cr_bytes) {
                         buf.truncate(buf.len() - self.cr_bytes.len());
                     }
                 }
@@ -1687,15 +1687,23 @@ fn read_until_bytes(
         return r.read_until(last_byte, buf);
     }
 
+    let start = buf.len();
     let mut total_n = 0;
     loop {
         let n = r.read_until(last_byte, buf)?;
         total_n += n;
 
-        if n == 0 || buf.ends_with(bytes) {
+        // for multi-byte code units (UTF-16), only a sequence aligned on a code unit boundary
+        // is a line feed: `0x0A 0x00` can also be the end of `U+xx0A` followed by `U+00xx`
+        if n == 0 || ends_with_aligned(&buf[start..], bytes) {
             return Ok(total_n);
         }
     }
+}
+
+/// Whether `buf` ends with `bytes`, starting on a multiple of `bytes.len()`.
+fn ends_with_aligned(buf: &[u8], bytes: &[u8]) -> bool {
+    buf.ends_with(bytes) && buf.len() % bytes.len() == 0
 }
 
 struct StdLinesResource(Mutex<LinesBytes<BufReader<File>>>);
@@ -1879,6 +1887,33 @@ mod test {
             assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line2ਗ")));
             assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 3")));
             assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 4")));
+            assert!(lines.next().is_none());
+        }
+
+        // UTF-16 with a line feed byte sequence at an odd offset
+        {
+            fn utf16le(text: &str) -> Vec<u8> {
+                text.encode_utf16().flat_map(|u| u.to_le_bytes()).collect()
+            }
+            fn utf16be(text: &str) -> Vec<u8> {
+                text.encode_utf16().flat_map(|u| u.to_be_bytes()).collect()
+            }
+
+            // "ਗĀ" is `17 0a 00 01` in UTF-16LE
+            let bytes = utf16le("ਗĀ\nnext\r\nlast\n");
+            let mut lines =
+                LinesBytes::new(BufReader::new(&bytes[..]), utf16le("\n"), utf16le("\r"));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16le("ਗĀ")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16le("next")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16le("last")));
+            assert!(lines.next().is_none());
+
+            // "Āਗ" is `01 00 0a 17` in UTF-16BE
+            let bytes = utf16be("Āਗ\nnext");
+            let mut lines =
+                LinesBytes::new(BufReader::new(&bytes[..]), utf16be("\n"), utf16be("\r"));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16be("Āਗ")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16be("next")));
             assert!(lines.next().is_none());
         }
     }
