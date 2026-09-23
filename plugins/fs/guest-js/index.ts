@@ -887,10 +887,17 @@ async function readTextFileLines(
         })
       }
 
-      const arr = await invoke<ArrayBuffer | number[]>(
-        'plugin:fs|read_text_file_lines_next',
-        { rid: this.rid }
-      )
+      let arr: ArrayBuffer | number[]
+      try {
+        arr = await invoke<ArrayBuffer | number[]>(
+          'plugin:fs|read_text_file_lines_next',
+          { rid: this.rid }
+        )
+      } catch (error) {
+        // the resource is closed on errors, the next iteration starts over
+        this.rid = null
+        throw error
+      }
 
       const bytes =
         arr instanceof ArrayBuffer ? new Uint8Array(arr) : Uint8Array.from(arr)
@@ -914,6 +921,17 @@ async function readTextFileLines(
         value: line,
         done
       }
+    },
+
+    // called when a `for await` loop exits early (`break`, `return` or `throw`)
+    async return(): Promise<IteratorResult<string>> {
+      if (this.rid !== null) {
+        const rid = this.rid
+        this.rid = null
+        // close the file, otherwise it stays open until the webview is destroyed
+        await new Resource(rid).close()
+      }
+      return { value: null, done: true }
     },
 
     [Symbol.asyncIterator](): AsyncIterableIterator<string> {
@@ -1496,6 +1514,16 @@ async function watchImmediate(
 }
 
 /**
+ * Options for the `size` function.
+ *
+ * @since 2.6.0
+ */
+interface SizeOptions {
+  /** Base directory for `path`. */
+  baseDir?: BaseDirectory
+}
+
+/**
  * Get the size of a file or directory. For files, the `stat` functions can be used as well.
  *
  * If `path` is a directory, this function will recursively iterate over every file and every directory inside of `path` and therefore will be very time consuming if used on larger directories.
@@ -1509,16 +1537,21 @@ async function watchImmediate(
  * ```
  *
  * @param path The path of the file or directory to measure.
+ * @param options Options defining the base directory of `path` (since 2.6.0).
  * @returns A promise resolving to the size in bytes.
  * @since 2.1.0
  */
-async function size(path: string | URL): Promise<number> {
+async function size(
+  path: string | URL,
+  options?: SizeOptions
+): Promise<number> {
   if (path instanceof URL && path.protocol !== 'file:') {
     throw new TypeError('Must be a file URL.')
   }
 
   return await invoke('plugin:fs|size', {
-    path: path instanceof URL ? path.toString() : path
+    path: path instanceof URL ? path.toString() : path,
+    options
   })
 }
 
@@ -1611,6 +1644,7 @@ export type {
   TruncateOptions,
   WriteFileOptions,
   ExistsOptions,
+  SizeOptions,
   FileInfo,
   WatchOptions,
   DebouncedWatchOptions,
