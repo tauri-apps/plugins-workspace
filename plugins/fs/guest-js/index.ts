@@ -923,6 +923,17 @@ async function readTextFileLines(
       }
     },
 
+    // called when a `for await` loop exits early (`break`, `return` or `throw`)
+    async return(): Promise<IteratorResult<string>> {
+      if (this.rid !== null) {
+        const rid = this.rid
+        this.rid = null
+        // close the file, otherwise it stays open until the webview is destroyed
+        await new Resource(rid).close()
+      }
+      return { value: null, done: true }
+    },
+
     [Symbol.asyncIterator](): AsyncIterableIterator<string> {
       return this
     }

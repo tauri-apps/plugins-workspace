@@ -216,6 +216,40 @@ describePlugin('fs', () => {
     expect(lines).toEqual(['one', 'two', 'three'])
   })
 
+  it('readTextFileLines closes the file when a loop exits early', async () => {
+    const result = await tauri(async (api, path) => {
+      const baseDir = api.fs.BaseDirectory.AppData
+      await api.fs.writeTextFile(path, 'one\ntwo\nthree', { baseDir })
+      const lines = await api.fs.readTextFileLines(path, { baseDir })
+      // the iterator keeps the id of the open file in `rid`
+      const state = lines as unknown as { rid: number | null }
+      let rid: number | null = null
+      let first: string | null = null
+      for await (const line of lines) {
+        first = line
+        rid = state.rid
+        break
+      }
+      let closeError: string | null = null
+      try {
+        await api.core.invoke('plugin:resources|close', { rid })
+      } catch (error) {
+        closeError = String(error)
+      }
+      // iterating again starts over
+      const all: string[] = []
+      for await (const line of lines) {
+        all.push(line)
+      }
+      return { first, ridAfter: state.rid, closeError, all }
+    }, `${dir}/lines-break.txt`)
+    expect(result.first).toBe('one')
+    expect(result.ridAfter).toBeNull()
+    // the resource was already closed by the iterator
+    expect(result.closeError).toMatch(/resource id \d+ is invalid/)
+    expect(result.all).toEqual(['one', 'two', 'three'])
+  })
+
   it('readTextFileLines rejects when the file cannot be read', async () => {
     // a directory: opening it fails on Windows, reading it fails elsewhere,
     // which used to yield empty lines forever
