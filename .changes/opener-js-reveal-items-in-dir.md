@@ -1,4 +1,5 @@
 ---
+"opener": major
 "opener-js": major
 ---
 
