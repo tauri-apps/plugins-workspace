@@ -1,5 +1,31 @@
 # Changelog
 
+## [3.0.0-alpha.2]
+
+### Dependencies
+
+- Upgraded to `dialog@3.0.0-alpha.2`
+- Upgraded to `haptics@3.0.0-alpha.2`
+- Upgraded to `geolocation@3.0.0-alpha.2`
+- Upgraded to `fs@3.0.0-alpha.2`
+- Upgraded to `barcode-scanner@3.0.0-alpha.2`
+- Upgraded to `biometric@3.0.0-alpha.2`
+- Upgraded to `cli@3.0.0-alpha.2`
+- Upgraded to `clipboard-manager@3.0.0-alpha.2`
+- Upgraded to `global-shortcut@3.0.0-alpha.2`
+- Upgraded to `http@3.0.0-alpha.2`
+- Upgraded to `log@3.0.0-alpha.2`
+- Upgraded to `nfc@3.0.0-alpha.2`
+- Upgraded to `notification@3.0.0-alpha.2`
+- Upgraded to `opener@3.0.0-alpha.2`
+- Upgraded to `os@3.0.0-alpha.2`
+- Upgraded to `process@3.0.0-alpha.2`
+- Upgraded to `shell@3.0.0-alpha.2`
+- Upgraded to `store@3.0.0-alpha.2`
+- Upgraded to `updater@3.0.0-alpha.2`
+- Upgraded to `upload@3.0.0-alpha.2`
+- Upgraded to `window-state@3.0.0-alpha.2`
+
 ## [3.0.0-alpha.1]
 
 ### Dependencies

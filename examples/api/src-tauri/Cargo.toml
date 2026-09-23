@@ -1,7 +1,7 @@
 [package]
 name = "api"
 publish = false
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 description = "An example Tauri Application showcasing the api"
 edition = "2021"
 rust-version = { workspace = true }
@@ -20,28 +20,28 @@ serde = { workspace = true }
 tiny_http = "0.12"
 time = "0.3"
 log = { workspace = true }
-tauri-plugin-log = { path = "../../../plugins/log", version = "3.0.0-alpha.1" }
-tauri-plugin-fs = { path = "../../../plugins/fs", version = "3.0.0-alpha.1", features = [
+tauri-plugin-log = { path = "../../../plugins/log", version = "3.0.0-alpha.2" }
+tauri-plugin-fs = { path = "../../../plugins/fs", version = "3.0.0-alpha.2", features = [
   "watch",
 ] }
-tauri-plugin-clipboard-manager = { path = "../../../plugins/clipboard-manager", version = "3.0.0-alpha.1" }
+tauri-plugin-clipboard-manager = { path = "../../../plugins/clipboard-manager", version = "3.0.0-alpha.2" }
 # The dialog backend is chosen by the runtime features below: the plugin's
 # default `gtk3` backend links GTK 3, which cannot share a process with the GTK 4
 # application the CEF runtime is on Linux.
-tauri-plugin-dialog = { path = "../../../plugins/dialog", version = "3.0.0-alpha.1", default-features = false }
+tauri-plugin-dialog = { path = "../../../plugins/dialog", version = "3.0.0-alpha.2", default-features = false }
 tauri-plugin-http = { path = "../../../plugins/http", features = [
   "multipart",
   "cookies",
-], version = "3.0.0-alpha.1" }
-tauri-plugin-notification = { path = "../../../plugins/notification", version = "3.0.0-alpha.1", features = [
+], version = "3.0.0-alpha.2" }
+tauri-plugin-notification = { path = "../../../plugins/notification", version = "3.0.0-alpha.2", features = [
   "windows7-compat",
 ] }
-tauri-plugin-os = { path = "../../../plugins/os", version = "3.0.0-alpha.1" }
-tauri-plugin-process = { path = "../../../plugins/process", version = "3.0.0-alpha.1" }
-tauri-plugin-opener = { path = "../../../plugins/opener", version = "3.0.0-alpha.1" }
-tauri-plugin-shell = { path = "../../../plugins/shell", version = "3.0.0-alpha.1" }
-tauri-plugin-store = { path = "../../../plugins/store", version = "3.0.0-alpha.1" }
-tauri-plugin-upload = { path = "../../../plugins/upload", version = "3.0.0-alpha.1" }
+tauri-plugin-os = { path = "../../../plugins/os", version = "3.0.0-alpha.2" }
+tauri-plugin-process = { path = "../../../plugins/process", version = "3.0.0-alpha.2" }
+tauri-plugin-opener = { path = "../../../plugins/opener", version = "3.0.0-alpha.2" }
+tauri-plugin-shell = { path = "../../../plugins/shell", version = "3.0.0-alpha.2" }
+tauri-plugin-store = { path = "../../../plugins/store", version = "3.0.0-alpha.2" }
+tauri-plugin-upload = { path = "../../../plugins/upload", version = "3.0.0-alpha.2" }
 
 [dependencies.tauri]
 workspace = true
@@ -69,17 +69,17 @@ optional = true
 features = ["macos-private-api"]
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
-tauri-plugin-cli = { path = "../../../plugins/cli", version = "3.0.0-alpha.1" }
-tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", version = "3.0.0-alpha.1" }
-tauri-plugin-updater = { path = "../../../plugins/updater", version = "3.0.0-alpha.1" }
-tauri-plugin-window-state = { path = "../../../plugins/window-state", version = "3.0.0-alpha.1" }
+tauri-plugin-cli = { path = "../../../plugins/cli", version = "3.0.0-alpha.2" }
+tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", version = "3.0.0-alpha.2" }
+tauri-plugin-updater = { path = "../../../plugins/updater", version = "3.0.0-alpha.2" }
+tauri-plugin-window-state = { path = "../../../plugins/window-state", version = "3.0.0-alpha.2" }
 
 [target."cfg(any(target_os = \"android\", target_os = \"ios\"))".dependencies]
-tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", version = "3.0.0-alpha.1" }
-tauri-plugin-nfc = { path = "../../../plugins/nfc", version = "3.0.0-alpha.1" }
-tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "3.0.0-alpha.1" }
-tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "3.0.0-alpha.1" }
-tauri-plugin-haptics = { path = "../../../plugins/haptics/", version = "3.0.0-alpha.1" }
+tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", version = "3.0.0-alpha.2" }
+tauri-plugin-nfc = { path = "../../../plugins/nfc", version = "3.0.0-alpha.2" }
+tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "3.0.0-alpha.2" }
+tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "3.0.0-alpha.2" }
+tauri-plugin-haptics = { path = "../../../plugins/haptics/", version = "3.0.0-alpha.2" }
 
 [features]
 default = ["wry"]

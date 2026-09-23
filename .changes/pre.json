@@ -3,6 +3,26 @@
   "changes": [
     ".changes/3.0-alpha.md",
     ".changes/api-bump.md",
-    ".changes/tauri-bump-alpha.2.md"
+    ".changes/autostart-manager-ext-rename.md",
+    ".changes/deep-link-execute-error.md",
+    ".changes/dialog-remove-ok-label.md",
+    ".changes/fix-geo-haptics-specta-skip.md",
+    ".changes/fs-remove-text-file-commands.md",
+    ".changes/fs-remove-unwatch.md",
+    ".changes/fs-watch-event-format.md",
+    ".changes/fs-watcher.md",
+    ".changes/global-api-script-reuse-core.md",
+    ".changes/http-remove-macos-system-configuration.md",
+    ".changes/http-scope-redirects-default.md",
+    ".changes/log-max-file-size-u64.md",
+    ".changes/msrv-1.95.md",
+    ".changes/opener-js-reveal-items-in-dir.md",
+    ".changes/opener-reveal-items-in-dir.md",
+    ".changes/shell-remove-open.md",
+    ".changes/store-reload-defaults.md",
+    ".changes/tauri-bump-alpha.2.md",
+    ".changes/updater-remove-available.md",
+    ".changes/upload-options.md",
+    ".changes/upload-system-proxy.md"
   ]
 }

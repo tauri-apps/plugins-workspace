@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.0-alpha.2]
+
+- [`2fd27c2d`](https://github.com/tauri-apps/plugins-workspace/commit/2fd27c2d43966a86e436ecd538e133e1812cc641) Update MSRV to 1.95 to match tauri.
+
+### Dependencies
+
+- Upgraded to `deep-link@3.0.0-alpha.2`
+
 ## [3.0.0-alpha.1]
 
 - [`15bf611d`](https://github.com/tauri-apps/plugins-workspace/commit/15bf611d68b15f343c0e8f6834a64d0cf2cc1637) Update to tauri v3.0.0-alpha.2.

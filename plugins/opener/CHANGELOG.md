@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.0-alpha.2]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`2fd27c2d`](https://github.com/tauri-apps/plugins-workspace/commit/2fd27c2d43966a86e436ecd538e133e1812cc641) Update MSRV to 1.95 to match tauri.
+- [`f2c77194`](https://github.com/tauri-apps/plugins-workspace/commit/f2c77194d6fc35fdc24ea4db86c583c27cb6db4e) ([#3608](https://github.com/tauri-apps/plugins-workspace/pull/3608)) **Breaking:** Renamed the `revealItemInDir` function to `revealItemsInDir`, which accepts a single path or an array of paths.
+- [`f2c77194`](https://github.com/tauri-apps/plugins-workspace/commit/f2c77194d6fc35fdc24ea4db86c583c27cb6db4e) ([#3608](https://github.com/tauri-apps/plugins-workspace/pull/3608)) **Breaking:** Renamed the `reveal_item_in_dir` command to `reveal_items_in_dir`, so the `allow-reveal-item-in-dir` and `deny-reveal-item-in-dir` permissions are now `allow-reveal-items-in-dir` and `deny-reveal-items-in-dir`.
+
 ## [3.0.0-alpha.1]
 
 - [`15bf611d`](https://github.com/tauri-apps/plugins-workspace/commit/15bf611d68b15f343c0e8f6834a64d0cf2cc1637) Update to @tauri-apps/api v3.0.0-alpha.
