@@ -69,7 +69,7 @@ export async function register(protocol: string): Promise<null> {
  * #### Platform-specific
  *
  * - **Windows:** Requires admin rights if the protocol is registered on the local machine (this can happen when registered from the NSIS installer when the install mode is set to both or per machine).
- * - **Linux:** Can only unregister the scheme if it was initially registered with {@link register}. May not work on older distros.
+ * - **Linux / FreeBSD:** Can only unregister the scheme if it was initially registered with {@link register}. May not work on older distros.
  * - **macOS / Android / iOS:** Unsupported.
  *
  * @returns A promise that resolves once the protocol has been unregistered.

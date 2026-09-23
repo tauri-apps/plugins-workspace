@@ -5,8 +5,8 @@
 //! Set your Tauri application as the default handler for a URL, or check which URL(s) it was
 //! opened with.
 //!
-//! On Windows and Linux, protocol schemes can additionally be registered and unregistered at
-//! runtime with [`DeepLink::register`] and [`DeepLink::unregister`]. On macOS, Android and iOS
+//! On Windows, Linux and FreeBSD, protocol schemes can additionally be registered and unregistered
+//! at runtime with [`DeepLink::register`] and [`DeepLink::unregister`]. On macOS, Android and iOS
 //! the schemes declared in the Tauri configuration are registered at build time instead, so
 //! calling those methods returns [`Error::UnsupportedPlatform`].
 
@@ -148,7 +148,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
+        /// - **Linux / FreeBSD**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             Err(crate::Error::UnsupportedPlatform)
@@ -170,13 +170,13 @@ mod imp {
 #[cfg(not(target_os = "android"))]
 mod imp {
     use std::sync::Mutex;
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     use std::{
         fs::{create_dir_all, File},
         io::Write,
         process::Command,
     };
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     use tauri::Manager;
     use tauri::{AppHandle, Runtime};
     #[cfg(windows)]
@@ -262,7 +262,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Linux**: Needs the `xdg-mime` and `update-desktop-database` commands available on the system.
+        /// - **Linux / FreeBSD**: Needs the `xdg-mime` and `update-desktop-database` commands available on the system.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn register<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
@@ -288,19 +288,23 @@ mod imp {
                 Ok(())
             }
 
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             {
                 let bin = tauri::utils::platform::current_exe()?;
                 let file_name = format!(
                     "{}-handler.desktop",
                     bin.file_name().unwrap().to_string_lossy()
                 );
+                #[cfg(target_os = "linux")]
                 let appimage = self.app.env().appimage;
+                #[cfg(target_os = "linux")]
                 let exec = appimage
                     .clone()
                     .unwrap_or_else(|| bin.into_os_string())
                     .to_string_lossy()
                     .to_string();
+                #[cfg(target_os = "freebsd")]
+                let exec = bin.to_string_lossy().to_string();
                 let qualified_exec = format!("\"{}\" %u", exec);
 
                 let target = self.app.path().data_dir()?.join("applications");
@@ -371,7 +375,7 @@ mod imp {
                 Ok(())
             }
 
-            #[cfg(not(any(windows, target_os = "linux")))]
+            #[cfg(not(any(windows, target_os = "linux", target_os = "freebsd")))]
             Err(crate::Error::UnsupportedPlatform)
         }
 
@@ -383,7 +387,7 @@ mod imp {
         ///
         /// - **Windows**: Requires admin rights if the protocol is registered on local machine
         ///   (this can happen when registered from the NSIS installer when the install mode is set to both or per machine)
-        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
+        /// - **Linux / FreeBSD**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
@@ -399,7 +403,7 @@ mod imp {
                 Ok(())
             }
 
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             {
                 let mimeapps_path = self.app.path().config_dir()?.join("mimeapps.list");
                 let mut mimeapps = ini::Ini::load_from_file(&mimeapps_path)?;
@@ -425,7 +429,7 @@ mod imp {
                 Ok(())
             }
 
-            #[cfg(not(any(windows, target_os = "linux")))]
+            #[cfg(not(any(windows, target_os = "linux", target_os = "freebsd")))]
             Err(crate::Error::UnsupportedPlatform)
         }
 
@@ -435,7 +439,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Linux**: Needs the `xdg-mime` command available on the system.
+        /// - **Linux / FreeBSD**: Needs the `xdg-mime` command available on the system.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn is_registered<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<bool> {
             #[cfg(windows)]
@@ -454,7 +458,7 @@ mod imp {
 
                 Ok(registered_cmd == format!("\"{exe}\" \"%1\""))
             }
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             {
                 let file_name = format!(
                     "{}-handler.desktop",
@@ -476,7 +480,7 @@ mod imp {
                 Ok(String::from_utf8_lossy(&output.stdout).contains(&file_name))
             }
 
-            #[cfg(not(any(windows, target_os = "linux")))]
+            #[cfg(not(any(windows, target_os = "linux", target_os = "freebsd")))]
             Err(crate::Error::UnsupportedPlatform)
         }
     }
