@@ -156,6 +156,9 @@ importers:
       '@tauri-apps/api':
         specifier: ^2.11.0
         version: 2.11.0
+      '@tauri-apps/plugin-autostart':
+        specifier: workspace:*
+        version: link:../../plugins/autostart
       '@tauri-apps/plugin-barcode-scanner':
         specifier: workspace:*
         version: link:../../plugins/barcode-scanner
@@ -168,6 +171,9 @@ importers:
       '@tauri-apps/plugin-clipboard-manager':
         specifier: workspace:*
         version: link:../../plugins/clipboard-manager
+      '@tauri-apps/plugin-deep-link':
+        specifier: workspace:*
+        version: link:../../plugins/deep-link
       '@tauri-apps/plugin-dialog':
         specifier: workspace:*
         version: link:../../plugins/dialog
@@ -198,21 +204,33 @@ importers:
       '@tauri-apps/plugin-os':
         specifier: workspace:*
         version: link:../../plugins/os
+      '@tauri-apps/plugin-positioner':
+        specifier: workspace:*
+        version: link:../../plugins/positioner
       '@tauri-apps/plugin-process':
         specifier: workspace:*
         version: link:../../plugins/process
       '@tauri-apps/plugin-shell':
         specifier: workspace:*
         version: link:../../plugins/shell
+      '@tauri-apps/plugin-sql':
+        specifier: workspace:*
+        version: link:../../plugins/sql
       '@tauri-apps/plugin-store':
         specifier: workspace:*
         version: link:../../plugins/store
+      '@tauri-apps/plugin-stronghold':
+        specifier: workspace:*
+        version: link:../../plugins/stronghold
       '@tauri-apps/plugin-updater':
         specifier: workspace:*
         version: link:../../plugins/updater
       '@tauri-apps/plugin-upload':
         specifier: workspace:*
         version: link:../../plugins/upload
+      '@tauri-apps/plugin-websocket':
+        specifier: workspace:*
+        version: link:../../plugins/websocket
       '@zerodevx/svelte-json-view':
         specifier: 2.0.0
         version: 2.0.0(svelte@5.55.7(@typescript-eslint/types@8.70.0))
@@ -248,11 +266,14 @@ importers:
         specifier: ^2.0.9
         version: 2.0.9
       '@crabnebula/test-runner-backend':
-        specifier: ^0.2.9
-        version: 0.2.9
+        specifier: ^0.3.0
+        version: 0.3.0
       '@tauri-apps/api':
         specifier: ^2.11.0
         version: 2.11.0
+      '@tauri-apps/plugin-autostart':
+        specifier: workspace:*
+        version: link:../../plugins/autostart
       '@tauri-apps/plugin-barcode-scanner':
         specifier: workspace:*
         version: link:../../plugins/barcode-scanner
@@ -265,6 +286,9 @@ importers:
       '@tauri-apps/plugin-clipboard-manager':
         specifier: workspace:*
         version: link:../../plugins/clipboard-manager
+      '@tauri-apps/plugin-deep-link':
+        specifier: workspace:*
+        version: link:../../plugins/deep-link
       '@tauri-apps/plugin-dialog':
         specifier: workspace:*
         version: link:../../plugins/dialog
@@ -298,27 +322,42 @@ importers:
       '@tauri-apps/plugin-os':
         specifier: workspace:*
         version: link:../../plugins/os
+      '@tauri-apps/plugin-positioner':
+        specifier: workspace:*
+        version: link:../../plugins/positioner
       '@tauri-apps/plugin-process':
         specifier: workspace:*
         version: link:../../plugins/process
       '@tauri-apps/plugin-shell':
         specifier: workspace:*
         version: link:../../plugins/shell
+      '@tauri-apps/plugin-sql':
+        specifier: workspace:*
+        version: link:../../plugins/sql
       '@tauri-apps/plugin-store':
         specifier: workspace:*
         version: link:../../plugins/store
+      '@tauri-apps/plugin-stronghold':
+        specifier: workspace:*
+        version: link:../../plugins/stronghold
       '@tauri-apps/plugin-updater':
         specifier: workspace:*
         version: link:../../plugins/updater
       '@tauri-apps/plugin-upload':
         specifier: workspace:*
         version: link:../../plugins/upload
+      '@tauri-apps/plugin-websocket':
+        specifier: workspace:*
+        version: link:../../plugins/websocket
       '@tauri-apps/plugin-window-state':
         specifier: workspace:*
         version: link:../../plugins/window-state
       '@types/node':
         specifier: ^22.10.0
         version: 22.20.3
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
       '@wdio/appium-service':
         specifier: ^9.31.9
         version: 9.32.0(supports-color@8.1.1)
@@ -355,6 +394,9 @@ importers:
       webdriverio:
         specifier: ^9.31.9
         version: 9.32.0(supports-color@8.1.1)
+      ws:
+        specifier: ^8.18.0
+        version: 8.21.3
 
   plugins/autostart:
     dependencies:
@@ -657,33 +699,33 @@ packages:
     engines: {node: '>= 10'}
     hasBin: true
 
-  '@crabnebula/test-runner-backend-darwin-arm64@0.2.9':
-    resolution: {integrity: sha512-UAlL8VA23y/fp+MigNYFwGvtE9vJ518f846c0k2vgT/bLIpt+d3UXndjZCMYbEVFTmaq00wHoRPSPbyzHEMWlQ==}
+  '@crabnebula/test-runner-backend-darwin-arm64@0.3.0':
+    resolution: {integrity: sha512-XnZdSeew2ew/Eix+z1BwKt5PcrJSjL+VQ7dlrV1fvRj4WUTQtluzE1VhiVV0j2EIFJsRH2IExNj5OdCWxKSPiQ==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  '@crabnebula/test-runner-backend-darwin-x64@0.2.9':
-    resolution: {integrity: sha512-RUP9L4Lk8KsT4A64U4QFVy5rj99Y6iIichPLpZgTvpRybYKZBVXjUiU31aGUIlWnd4VHsWKLM2vNl90rKZm3lA==}
+  '@crabnebula/test-runner-backend-darwin-x64@0.3.0':
+    resolution: {integrity: sha512-dpogk8TxKd2CZb8BZ2Ni1mpbogD8KSoB8J92aw+9R24S8xBeTu8I+t4w9PVNIBvFaNAhEQelYhFffxH0FDs5+Q==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  '@crabnebula/test-runner-backend-linux-x64-gnu@0.2.9':
-    resolution: {integrity: sha512-js/haLE9OUsa0oDHNuVps5DY7av3iWG7PpAKjr9nMnIEXiLACDmvyUL/IplHMmu1lr6S0fztoudRf4JfTR+mfA==}
+  '@crabnebula/test-runner-backend-linux-x64-gnu@0.3.0':
+    resolution: {integrity: sha512-ZzDVKdY1ydv+lqfRYs6PAdmIc8AlfOciH3ntuUxyRJ8aSq0v8y+pow6b3/CRqmumkj9riVWsUriJr7Xw2YZFTg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@crabnebula/test-runner-backend-win32-x64-msvc@0.2.9':
-    resolution: {integrity: sha512-p4pc/GQ0bj3vVLuUyTHDnhaXO52EQNkaCUPhWXwEkG00loW93pvCBRrOWoYpJH9me/n2zMFv61meW9mQyvbByw==}
+  '@crabnebula/test-runner-backend-win32-x64-msvc@0.3.0':
+    resolution: {integrity: sha512-xzE5bZx6QpqCkGFTpOYGxMfYidfsvYQgp3yQ1hXwuxeC5vsabOngRtE6X2DxQU6U8JzzNaooN0afG/khzoaihQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
 
-  '@crabnebula/test-runner-backend@0.2.9':
-    resolution: {integrity: sha512-3z6qZbJtVyA1JymQU5hFqcxG6nFD5INgqBc3OxTbYXVzMpihlRGOcHWyPK72ndHK88YmfwQWPcEFN1R/H/Lvhw==}
+  '@crabnebula/test-runner-backend@0.3.0':
+    resolution: {integrity: sha512-72aldFCPV0Sflv8KGLeaNoUY4Vz8eRl7AvUsJXFwqJ7KKNDAfPKwovXjmZoqIWn6Icv01sEsd1b2w0O66Y3WEQ==}
     engines: {node: '>= 10'}
     hasBin: true
 
@@ -4911,24 +4953,24 @@ snapshots:
       '@crabnebula/tauri-driver-linux-x64-gnu': 2.0.9
       '@crabnebula/tauri-driver-win32-x64-msvc': 2.0.9
 
-  '@crabnebula/test-runner-backend-darwin-arm64@0.2.9':
+  '@crabnebula/test-runner-backend-darwin-arm64@0.3.0':
     optional: true
 
-  '@crabnebula/test-runner-backend-darwin-x64@0.2.9':
+  '@crabnebula/test-runner-backend-darwin-x64@0.3.0':
     optional: true
 
-  '@crabnebula/test-runner-backend-linux-x64-gnu@0.2.9':
+  '@crabnebula/test-runner-backend-linux-x64-gnu@0.3.0':
     optional: true
 
-  '@crabnebula/test-runner-backend-win32-x64-msvc@0.2.9':
+  '@crabnebula/test-runner-backend-win32-x64-msvc@0.3.0':
     optional: true
 
-  '@crabnebula/test-runner-backend@0.2.9':
+  '@crabnebula/test-runner-backend@0.3.0':
     optionalDependencies:
-      '@crabnebula/test-runner-backend-darwin-arm64': 0.2.9
-      '@crabnebula/test-runner-backend-darwin-x64': 0.2.9
-      '@crabnebula/test-runner-backend-linux-x64-gnu': 0.2.9
-      '@crabnebula/test-runner-backend-win32-x64-msvc': 0.2.9
+      '@crabnebula/test-runner-backend-darwin-arm64': 0.3.0
+      '@crabnebula/test-runner-backend-darwin-x64': 0.3.0
+      '@crabnebula/test-runner-backend-linux-x64-gnu': 0.3.0
+      '@crabnebula/test-runner-backend-win32-x64-msvc': 0.3.0
 
   '@dabh/diagnostics@2.0.9':
     dependencies:

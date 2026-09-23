@@ -287,6 +287,8 @@ mod imp {
     use std::path::PathBuf;
 
     pub fn reveal_items_in_dir(paths: &[PathBuf]) -> crate::Result<()> {
+        // these AppKit calls are only `unsafe` before objc2-app-kit 0.3.2
+        #[allow(unused_unsafe)]
         unsafe {
             let mut urls = Vec::new();
 

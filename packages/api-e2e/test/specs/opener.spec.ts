@@ -41,6 +41,6 @@ describePlugin('opener', () => {
         await api.path.join(await api.path.appDataDir(), 'does-not-exist-e2e')
       )
     )
-    expect(message.length).toBeGreaterThan(0)
+    expect(message).toMatch(/os error 2/)
   })
 })

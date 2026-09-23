@@ -276,7 +276,7 @@ describePlugin('fs', () => {
       await file.close()
       await file.stat()
     }, `${dir}/closed.txt`)
-    expect(message.length).toBeGreaterThan(0)
+    expect(message).toMatch(/resource id \d+ is invalid/)
   })
 
   it('rejects paths outside the configured scope', async () => {
@@ -339,8 +339,9 @@ describePlugin('fs', () => {
         unwatch()
         return events
       }, `${dir}/watched`)
-      expect(result.length).toBeGreaterThan(0)
-      expect(result.every((e) => typeof e.kind === 'string')).toBe(true)
+      expect(
+        result.some((e) => e.paths.some((p) => p.endsWith('touched.txt')))
+      ).toBe(true)
     }
   )
 

@@ -39,7 +39,8 @@ class BatchArgs {
 
 @InvokeArg
 class CancelArgs {
-  lateinit var notifications: List<Int>
+  // `cancelAll()` sends no list: cancel every pending notification
+  var notifications: List<Int>? = null
 }
 
 @InvokeArg
@@ -152,7 +153,9 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   @Command
   fun cancel(invoke: Invoke) {
     val args = invoke.parseArgs(CancelArgs::class.java)
-    manager.cancel(args.notifications)
+    manager.cancel(
+      args.notifications ?: notificationStorage.getSavedNotificationIds().mapNotNull { it.toIntOrNull() }
+    )
     invoke.resolve()
   }
 
@@ -192,32 +195,33 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   @SuppressLint("ObsoleteSdkInt")
   @Command
   fun getActive(invoke: Invoke) {
-    val notifications = JSArray()
+    // plain lists and maps: until tauri serializes org.json values natively,
+    // `resolveObject` turns a `JSArray` into `{ "values": [...] }`
+    val notifications = mutableListOf<Map<String, Any?>>()
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       val activeNotifications = notificationManager.activeNotifications
       for (activeNotification in activeNotifications) {
-        val jsNotification = JSObject()
-        jsNotification.put("id", activeNotification.id)
-        jsNotification.put("tag", activeNotification.tag)
+        val jsNotification = mutableMapOf<String, Any?>(
+          "id" to activeNotification.id,
+          "tag" to activeNotification.tag
+        )
         val notification = activeNotification.notification
         if (notification != null) {
-          jsNotification.put("title", notification.extras.getCharSequence(android.app.Notification.EXTRA_TITLE))
-          jsNotification.put("body", notification.extras.getCharSequence(android.app.Notification.EXTRA_TEXT))
-          jsNotification.put("group", notification.group)
-          jsNotification.put(
-            "groupSummary",
+          jsNotification["title"] = notification.extras.getCharSequence(android.app.Notification.EXTRA_TITLE)?.toString()
+          jsNotification["body"] = notification.extras.getCharSequence(android.app.Notification.EXTRA_TEXT)?.toString()
+          jsNotification["group"] = notification.group
+          jsNotification["groupSummary"] =
             0 != notification.flags and android.app.Notification.FLAG_GROUP_SUMMARY
-          )
-          val extras = JSObject()
+          val extras = mutableMapOf<String, String?>()
           for (key in notification.extras.keySet()) {
-            extras.put(key!!, notification.extras.getString(key))
+            extras[key] = notification.extras.getString(key)
           }
-          jsNotification.put("data", extras)
+          jsNotification["data"] = extras
         }
-        notifications.put(jsNotification)
+        notifications.add(jsNotification)
       }
     }
-    
+
     invoke.resolveObject(notifications)
   }
 

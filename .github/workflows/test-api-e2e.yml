@@ -79,7 +79,9 @@ jobs:
             librsvg2-dev \
             dbus \
             xvfb \
-            fluxbox
+            fluxbox \
+            desktop-file-utils \
+            xdg-utils
 
       # msedgedriver has to match the installed WebView2 runtime, so msedgedriver-tool
       # downloads the right version at run time. The tool itself is built from a pinned git

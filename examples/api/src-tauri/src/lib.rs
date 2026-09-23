@@ -9,7 +9,7 @@ mod tray;
 use serde::Serialize;
 use tauri::{
     webview::{PageLoadEvent, WebviewWindowBuilder},
-    App, AppHandle, Emitter, Listener, RunEvent, WebviewUrl,
+    App, AppHandle, Emitter, Listener, Manager, RunEvent, WebviewUrl,
 };
 
 #[derive(Clone, Serialize)]
@@ -55,11 +55,40 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_upload::init())
+        .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_websocket::init())
+        .plugin(
+            tauri_plugin_sql::Builder::new()
+                .add_migrations(
+                    "sqlite:api.db",
+                    vec![tauri_plugin_sql::Migration {
+                        version: 1,
+                        description: "create_todos_table",
+                        sql: "CREATE TABLE todos (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, done INTEGER NOT NULL DEFAULT 0);",
+                        kind: tauri_plugin_sql::MigrationKind::Up,
+                    }],
+                )
+                .build(),
+        )
         .setup(move |app| {
+            // the argon2 salt lives next to the snapshots the frontend creates
+            let local_data_dir = app.path().app_local_data_dir()?;
+            std::fs::create_dir_all(&local_data_dir)?;
+            app.handle().plugin(
+                tauri_plugin_stronghold::Builder::with_argon2(&local_data_dir.join("salt.txt"))
+                    .build(),
+            )?;
+
             #[cfg(desktop)]
             {
+                // registered before the tray, whose events it tracks
+                app.handle().plugin(tauri_plugin_positioner::init())?;
                 tray::create_tray(app.handle())?;
                 app.handle().plugin(tauri_plugin_cli::init())?;
+                app.handle().plugin(tauri_plugin_autostart::init(
+                    tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+                    None,
+                ))?;
                 app.handle()
                     .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
                 app.handle()

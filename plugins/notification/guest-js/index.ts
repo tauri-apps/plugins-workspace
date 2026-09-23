@@ -879,7 +879,7 @@ async function removeChannel(id: string): Promise<void> {
  * @since 2.0.0
  */
 async function channels(): Promise<Channel[]> {
-  return await invoke('plugin:notification|listChannels')
+  return await invoke('plugin:notification|list_channels')
 }
 
 /**

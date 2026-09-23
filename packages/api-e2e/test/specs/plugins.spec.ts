@@ -31,6 +31,13 @@ const commonSurface: Surface<CommonPluginApi> = {
     'readImage',
     'writeImage'
   ],
+  deepLink: [
+    'getCurrent',
+    'register',
+    'unregister',
+    'isRegistered',
+    'onOpenUrl'
+  ],
   dialog: ['open', 'save', 'message', 'ask', 'confirm'],
   fs: [
     'BaseDirectory',
@@ -98,14 +105,26 @@ const commonSurface: Surface<CommonPluginApi> = {
   ],
   process: ['exit', 'relaunch'],
   shell: ['Command', 'Child', 'EventEmitter', 'open'],
+  // the `Database` class itself
+  sql: ['load', 'get'],
   store: ['load', 'getStore', 'LazyStore', 'Store'],
-  upload: ['download', 'upload', 'HttpMethod']
+  stronghold: ['Location', 'Client', 'Store', 'Vault', 'Stronghold'],
+  upload: ['download', 'upload', 'HttpMethod'],
+  // the `WebSocket` class itself
+  websocket: ['connect']
 }
 
 /** Plugins the example only registers on desktop. */
 const desktopSurface: Surface<DesktopPluginApi> = {
+  autostart: ['enable', 'disable', 'isEnabled'],
   cli: ['getMatches'],
   globalShortcut: ['register', 'unregister', 'unregisterAll', 'isRegistered'],
+  positioner: [
+    'Position',
+    'moveWindow',
+    'moveWindowConstrained',
+    'handleIconState'
+  ],
   updater: ['check', 'Update'],
   windowState: [
     'StateFlags',
@@ -168,12 +187,12 @@ describe('plugin globals', () => {
   it('every plugin this platform registers exposes its API on window.__TAURI__', async () => {
     const missing = await tauri(
       (api, plugins) =>
-        plugins.filter(
-          (plugin) =>
-            // eslint-disable-next-line security/detect-object-injection
-            typeof (api as unknown as Record<string, unknown>)[plugin]
-            !== 'object'
-        ),
+        plugins.filter((plugin) => {
+          // eslint-disable-next-line security/detect-object-injection
+          const global = (api as unknown as Record<string, unknown>)[plugin]
+          // a module namespace, or the class a default-export-only module (sql, websocket) defines
+          return typeof global !== 'object' && typeof global !== 'function'
+        }),
       Object.keys(surface)
     )
     expect(missing).toEqual([])

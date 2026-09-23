@@ -39,12 +39,18 @@ tauri-plugin-opener = { path = "../../../plugins/opener", version = "2.5.5" }
 tauri-plugin-shell = { path = "../../../plugins/shell", version = "2.3.6" }
 tauri-plugin-store = { path = "../../../plugins/store", version = "2.4.5" }
 tauri-plugin-upload = { path = "../../../plugins/upload", version = "2.3.0" }
+tauri-plugin-deep-link = { path = "../../../plugins/deep-link", version = "2.4.10" }
+tauri-plugin-sql = { path = "../../../plugins/sql", version = "2.4.1", features = [
+  "sqlite",
+] }
+tauri-plugin-stronghold = { path = "../../../plugins/stronghold", version = "2.3.2" }
+tauri-plugin-websocket = { path = "../../../plugins/websocket", version = "2.4.3" }
 
 # WebDriver automation bridge, used by the plugins e2e suite (packages/api-e2e).
 # Desktop-only and behind the off-by-default `automation` feature so it never ships in a
 # regular build.
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
-tauri-plugin-automation = { version = "0.1.4", optional = true }
+tauri-plugin-automation = { version = "0.2.0", optional = true }
 
 [dependencies.tauri]
 workspace = true
@@ -61,8 +67,12 @@ features = [
 ]
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
+tauri-plugin-autostart = { path = "../../../plugins/autostart", version = "2.5.1" }
 tauri-plugin-cli = { path = "../../../plugins/cli", version = "2.4.1" }
 tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", version = "2.3.2" }
+tauri-plugin-positioner = { path = "../../../plugins/positioner", version = "2.3.4", features = [
+  "tray-icon",
+] }
 tauri-plugin-updater = { path = "../../../plugins/updater", version = "2.12.0" }
 tauri-plugin-window-state = { path = "../../../plugins/window-state", version = "2.2.0" }
 

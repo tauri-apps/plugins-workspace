@@ -164,7 +164,8 @@ export function mobileConfig(platform: MobilePlatform): WebdriverIO.Config {
                 '--apk',
                 '--target',
                 androidTarget()
-              ]
+              ],
+          ios ? {} : androidBuildEnv()
         )
       }
 
@@ -282,11 +283,12 @@ for (const signal of [
 }
 
 /** Runs `pnpm tauri <args>` in examples/api, failing loudly. */
-function tauriCli(args: string[]): void {
+function tauriCli(args: string[], env: NodeJS.ProcessEnv = {}): void {
   const result = spawnSync('pnpm', ['tauri', ...args], {
     cwd: appDir,
     stdio: 'inherit',
-    shell: true
+    shell: true,
+    env: { ...process.env, ...env }
   })
   if (result.status !== 0) {
     throw new Error(
@@ -296,6 +298,39 @@ function tauriCli(args: string[]): void {
 }
 
 // --- Android -----------------------------------------------------------------
+
+/**
+ * Environment for the Android build.
+ *
+ * - No debug info: the suite needs a debug build (webview debugging follows
+ *   `debug_assertions`), but with the stronghold, sql and websocket plugins the
+ *   debug info alone grows the APK past what a default emulator can install
+ *   ("not enough space").
+ * - On a macOS host, `AR`/`RANLIB` point at the NDK's LLVM tools. Autotools-built
+ *   C dependencies (libsodium, through the stronghold plugin) otherwise fall back
+ *   to Apple's `ar`/`ranlib`, which silently produce an empty archive from the
+ *   Android (ELF) objects, and the app then fails to load its library with an
+ *   unresolved symbol. Linux hosts' GNU `ar` is fine.
+ */
+function androidBuildEnv(): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = { CARGO_PROFILE_DEV_DEBUG: '0' }
+  const ndk = process.env.NDK_HOME ?? process.env.ANDROID_NDK_HOME
+  if (process.platform !== 'darwin' || !ndk) return env
+  // the NDK only ships an x86_64 (Rosetta-compatible) macOS toolchain
+  const bin = path.join(
+    ndk,
+    'toolchains',
+    'llvm',
+    'prebuilt',
+    'darwin-x86_64',
+    'bin'
+  )
+  return {
+    ...env,
+    AR: path.join(bin, 'llvm-ar'),
+    RANLIB: path.join(bin, 'llvm-ranlib')
+  }
+}
 
 /** `adb` from the Android SDK, else whatever is on `PATH`. */
 function adb(args: string[]): SpawnSyncReturns<string> {
@@ -329,6 +364,10 @@ function androidCapabilities(app: string): WebdriverIO.Capabilities {
     'appium:app': app,
     'appium:appPackage': appId,
     'appium:appActivity': '.MainActivity',
+    // Every build has the same version code, and Appium otherwise skips
+    // installing an APK whose version is already on the device, so a rebuilt
+    // app would never replace the installed one.
+    'appium:enforceAppInstall': true,
     // Which device/emulator to use; Appium picks the first connected one
     // otherwise. E2E_ANDROID_AVD instead boots that AVD.
     ...(process.env.E2E_ANDROID_DEVICE

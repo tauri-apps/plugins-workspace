@@ -233,6 +233,6 @@ describePlugin('shell', () => {
     const message = await tauriError((api) =>
       api.shell.open('ftp://example.com')
     )
-    expect(message.length).toBeGreaterThan(0)
+    expect(message).toMatch(/failed regex validation/)
   })
 })

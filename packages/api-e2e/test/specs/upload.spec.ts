@@ -156,6 +156,6 @@ describePlugin('upload', () => {
       `${FIXTURE_SERVER_URL}/echo`,
       `${dir}/does-not-exist.txt`
     )
-    expect(message.length).toBeGreaterThan(0)
+    expect(message).toMatch(/os error 2/)
   })
 })

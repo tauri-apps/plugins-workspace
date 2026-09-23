@@ -3,7 +3,12 @@
 // SPDX-License-Identifier: MIT
 
 import { expect } from '@wdio/globals'
-import { tauri, tauriError, describePlugin } from '../helpers/index.js'
+import {
+  tauri,
+  tauriError,
+  describePlugin,
+  platform
+} from '../helpers/index.js'
 
 // Triggering a shortcut needs OS-level synthetic input the WebDriver session
 // cannot produce, so the specs cover the registry (register / isRegistered /
@@ -74,9 +79,19 @@ describePlugin('global-shortcut', { desktopOnly: true }, () => {
   it('registering the same shortcut twice rejects', async () => {
     const message = await tauriError(async (api) => {
       await api.globalShortcut.register('Alt+Shift+F11', () => {})
-      await api.globalShortcut.register('Alt+Shift+F11', () => {})
+      try {
+        await api.globalShortcut.register('Alt+Shift+F11', () => {})
+      } finally {
+        await api.globalShortcut.unregister('Alt+Shift+F11')
+      }
     })
-    expect(message).toMatch(/already registered/i)
+    // macOS does not check for duplicates itself: the OS rejects the second
+    // `RegisterEventHotKey` call and the error is the generic one
+    expect(message).toMatch(
+      platform === 'darwin'
+        ? /RegisterEventHotKey failed for F11/
+        : /already registered/i
+    )
   })
 
   it('rejects shortcuts that cannot be parsed', async () => {

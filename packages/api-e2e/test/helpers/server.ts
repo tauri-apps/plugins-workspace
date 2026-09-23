@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import http from 'node:http'
+import { WebSocketServer } from 'ws'
 
 /**
  * Where the fixture server listens. The port is fixed because the updater
@@ -23,6 +24,13 @@ export const UPDATER_FIXTURE_OLDER_VERSION = '1.0.0'
 export const DOWNLOAD_FIXTURE_BODY =
   'hello from the plugins e2e fixture server\n'.repeat(64)
 
+/** WebSocket endpoint of the fixture server (the `ws://` twin of {@link FIXTURE_SERVER_URL}). */
+export const WEBSOCKET_FIXTURE_URL = `ws://127.0.0.1:${FIXTURE_SERVER_PORT}/ws`
+/** Text message that makes the `/ws` endpoint close the connection with {@link WEBSOCKET_CLOSE_CODE}. */
+export const WEBSOCKET_CLOSE_REQUEST = 'close-me'
+export const WEBSOCKET_CLOSE_CODE = 4000
+export const WEBSOCKET_CLOSE_REASON = 'closed by the fixture server'
+
 export interface FixtureServer {
   close(): void
 }
@@ -38,6 +46,10 @@ export interface FixtureServer {
  * - `GET /download` — {@link DOWNLOAD_FIXTURE_BODY} with a `Content-Length`.
  * - `* /echo` — a JSON description of the request (`method`, `url`, `headers`
  *   and the utf-8 `body`).
+ * - `ws /ws` — a WebSocket echo endpoint: text and binary messages are sent
+ *   back as-is, and {@link WEBSOCKET_CLOSE_REQUEST} makes the server close the
+ *   connection with {@link WEBSOCKET_CLOSE_CODE}. On `/ws/headers` the server
+ *   first sends the upgrade request's headers as a JSON text message.
  */
 export function startFixtureServer(): Promise<FixtureServer> {
   const server = http.createServer((req, res) => {
@@ -91,12 +103,39 @@ export function startFixtureServer(): Promise<FixtureServer> {
     })
   })
 
+  const wss = new WebSocketServer({ noServer: true })
+  server.on('upgrade', (req, socket, head) => {
+    const { pathname } = new URL(req.url ?? '/', FIXTURE_SERVER_URL)
+    if (pathname !== '/ws' && pathname !== '/ws/headers') {
+      socket.destroy()
+      return
+    }
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      if (pathname === '/ws/headers') {
+        ws.send(JSON.stringify(req.headers))
+      }
+      ws.on('message', (data, isBinary) => {
+        if (
+          !isBinary
+          && Buffer.isBuffer(data)
+          && data.toString('utf8') === WEBSOCKET_CLOSE_REQUEST
+        ) {
+          ws.close(WEBSOCKET_CLOSE_CODE, WEBSOCKET_CLOSE_REASON)
+        } else {
+          ws.send(data, { binary: isBinary })
+        }
+      })
+    })
+  })
+
   return new Promise((resolve, reject) => {
     server.once('error', reject)
     server.listen(FIXTURE_SERVER_PORT, '127.0.0.1', () => {
       server.off('error', reject)
       resolve({
         close: () => {
+          for (const client of wss.clients) client.terminate()
+          wss.close()
           server.closeAllConnections()
           server.close()
         }

@@ -144,6 +144,6 @@ describePlugin('http', () => {
         api.http.fetch(url, { proxy: { all: 'http://127.0.0.1:1' } }),
       echoServer
     )
-    expect(message.length).toBeGreaterThan(0)
+    expect(message).toMatch(/error sending request/)
   })
 })

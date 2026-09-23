@@ -8,6 +8,7 @@ const COMMANDS: &[&str] = &[
     "is_permission_granted",
     "register_action_types",
     "register_listener",
+    "remove_listener",
     "cancel",
     "get_pending",
     "remove_active",

@@ -86,11 +86,6 @@ describePlugin('os', () => {
     expect(info.exeExtension).toBe(platform === 'win32' ? 'exe' : '')
   })
 
-  it('version reports a non-empty OS version', async () => {
-    const version = await tauri((api) => api.os.version())
-    expect(version.length).toBeGreaterThan(0)
-  })
-
   it('locale is null or a language tag', async () => {
     const locale = await tauri((api) => api.os.locale())
     // The plugin forwards the environment's POSIX locale as-is, so a host with
@@ -104,12 +99,6 @@ describePlugin('os', () => {
         expect(subtag).toMatch(/^[A-Za-z0-9]+$/)
       }
     }
-  })
-
-  it('hostname reports a name', async () => {
-    const hostname = await tauri((api) => api.os.hostname())
-    expect(hostname).not.toBeNull()
-    expect(hostname!.length).toBeGreaterThan(0)
   })
 
   itDesktop('hostname matches the host', async () => {

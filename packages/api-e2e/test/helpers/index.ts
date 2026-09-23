@@ -4,10 +4,12 @@
 
 import { browser } from '@wdio/globals'
 import type * as TauriApi from '@tauri-apps/api'
+import type * as Autostart from '@tauri-apps/plugin-autostart'
 import type * as BarcodeScanner from '@tauri-apps/plugin-barcode-scanner'
 import type * as Biometric from '@tauri-apps/plugin-biometric'
 import type * as Cli from '@tauri-apps/plugin-cli'
 import type * as ClipboardManager from '@tauri-apps/plugin-clipboard-manager'
+import type * as DeepLink from '@tauri-apps/plugin-deep-link'
 import type * as Dialog from '@tauri-apps/plugin-dialog'
 import type * as Fs from '@tauri-apps/plugin-fs'
 import type * as Geolocation from '@tauri-apps/plugin-geolocation'
@@ -19,20 +21,26 @@ import type * as Nfc from '@tauri-apps/plugin-nfc'
 import type * as Notification from '@tauri-apps/plugin-notification'
 import type * as Opener from '@tauri-apps/plugin-opener'
 import type * as Os from '@tauri-apps/plugin-os'
+import type * as Positioner from '@tauri-apps/plugin-positioner'
 import type * as Process from '@tauri-apps/plugin-process'
 import type * as Shell from '@tauri-apps/plugin-shell'
+import type * as Sql from '@tauri-apps/plugin-sql'
 import type * as Store from '@tauri-apps/plugin-store'
+import type * as Stronghold from '@tauri-apps/plugin-stronghold'
 import type * as Updater from '@tauri-apps/plugin-updater'
 import type * as Upload from '@tauri-apps/plugin-upload'
+import type * as WebSocket from '@tauri-apps/plugin-websocket'
 import type * as WindowState from '@tauri-apps/plugin-window-state'
 
 /**
  * The plugin APIs the example registers on every platform, keyed by the name
  * each plugin's `api-iife.js` defines on `window.__TAURI__` (the package name
- * without the `@tauri-apps/plugin-` prefix, camel-cased).
+ * without the `@tauri-apps/plugin-` prefix, camel-cased). `sql` and `websocket`
+ * only have a default export, so their global is that class itself.
  */
 export interface CommonPluginApi {
   clipboardManager: typeof ClipboardManager
+  deepLink: typeof DeepLink
   dialog: typeof Dialog
   fs: typeof Fs
   http: typeof Http
@@ -42,14 +50,19 @@ export interface CommonPluginApi {
   os: typeof Os
   process: typeof Process
   shell: typeof Shell
+  sql: typeof Sql.default
   store: typeof Store
+  stronghold: typeof Stronghold
   upload: typeof Upload
+  websocket: typeof WebSocket.default
 }
 
 /** The plugin APIs the example only registers on desktop (`#[cfg(desktop)]`). */
 export interface DesktopPluginApi {
+  autostart: typeof Autostart
   cli: typeof Cli
   globalShortcut: typeof GlobalShortcut
+  positioner: typeof Positioner
   updater: typeof Updater
   windowState: typeof WindowState
 }
@@ -231,8 +244,9 @@ const skippedModules = (process.env.E2E_SKIP ?? '')
 
 export interface DescribePluginOptions {
   /**
-   * The example only registers the plugin on desktop (`cli`, `global-shortcut`,
-   * `updater`, `window-state`), so the whole suite is skipped on mobile.
+   * The example only registers the plugin on desktop (`autostart`, `cli`,
+   * `global-shortcut`, `positioner`, `updater`, `window-state`), so the whole
+   * suite is skipped on mobile.
    */
   desktopOnly?: boolean
   /**

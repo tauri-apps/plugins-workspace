@@ -14,12 +14,14 @@
   },
   "devDependencies": {
     "@crabnebula/tauri-driver": "^2.0.9",
-    "@crabnebula/test-runner-backend": "^0.2.9",
+    "@crabnebula/test-runner-backend": "^0.3.0",
     "@tauri-apps/api": "^2.11.0",
+    "@tauri-apps/plugin-autostart": "workspace:*",
     "@tauri-apps/plugin-barcode-scanner": "workspace:*",
     "@tauri-apps/plugin-biometric": "workspace:*",
     "@tauri-apps/plugin-cli": "workspace:*",
     "@tauri-apps/plugin-clipboard-manager": "workspace:*",
+    "@tauri-apps/plugin-deep-link": "workspace:*",
     "@tauri-apps/plugin-dialog": "workspace:*",
     "@tauri-apps/plugin-fs": "workspace:*",
     "@tauri-apps/plugin-geolocation": "workspace:*",
@@ -31,13 +33,18 @@
     "@tauri-apps/plugin-notification": "workspace:*",
     "@tauri-apps/plugin-opener": "workspace:*",
     "@tauri-apps/plugin-os": "workspace:*",
+    "@tauri-apps/plugin-positioner": "workspace:*",
     "@tauri-apps/plugin-process": "workspace:*",
     "@tauri-apps/plugin-shell": "workspace:*",
+    "@tauri-apps/plugin-sql": "workspace:*",
     "@tauri-apps/plugin-store": "workspace:*",
+    "@tauri-apps/plugin-stronghold": "workspace:*",
     "@tauri-apps/plugin-updater": "workspace:*",
     "@tauri-apps/plugin-upload": "workspace:*",
+    "@tauri-apps/plugin-websocket": "workspace:*",
     "@tauri-apps/plugin-window-state": "workspace:*",
     "@types/node": "^22.10.0",
+    "@types/ws": "^8.18.1",
     "@wdio/appium-service": "^9.31.9",
     "@wdio/cli": "^9.31.9",
     "@wdio/globals": "^9.31.3",
@@ -49,6 +56,7 @@
     "appium-xcuitest-driver": "^12.12.4",
     "cross-env": "^10.1.0",
     "typescript": "6.0.3",
-    "webdriverio": "^9.31.9"
+    "webdriverio": "^9.31.9",
+    "ws": "^8.18.0"
   }
 }

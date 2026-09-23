@@ -7,7 +7,8 @@ import {
   tauri,
   tauriError,
   describePlugin,
-  itDesktop
+  itDesktop,
+  isMobile
 } from '../helpers/index.js'
 
 // The mobile implementation only carries plain text: `write_html`, `write_image`
@@ -133,7 +134,11 @@ describePlugin('clipboard-manager', () => {
       await api.clipboardManager.writeText('not an image')
       await api.clipboardManager.readImage()
     })
-    expect(message.length).toBeGreaterThan(0)
+    expect(message).toMatch(
+      isMobile
+        ? /Unsupported on this platform/
+        : /not available in the requested format/
+    )
   })
 
   it('clear empties the clipboard', async () => {

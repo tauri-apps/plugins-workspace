@@ -107,6 +107,8 @@ pub fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<()> {
             _ => {}
         })
         .on_tray_icon_event(|tray, event| {
+            // lets the positioner plugin place windows relative to the tray icon
+            tauri_plugin_positioner::on_tray_event(tray.app_handle(), &event);
             if let TrayIconEvent::Click {
                 button_state: MouseButtonState::Down,
                 button: MouseButton::Left,

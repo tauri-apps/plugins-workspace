@@ -130,6 +130,9 @@ jobs:
         working-directory: ./examples/api
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          # a debug build without debug info, which would otherwise grow the APK
+          # past what the emulator can install (see androidBuildEnv in wdio.mobile.ts)
+          CARGO_PROFILE_DEV_DEBUG: '0'
         run: pnpm tauri android build --debug --apk --target $E2E_ANDROID_TARGET
 
       - name: save gradle cache
