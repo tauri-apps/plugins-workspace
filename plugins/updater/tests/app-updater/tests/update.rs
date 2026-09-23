@@ -396,8 +396,8 @@ fn patch_bundle_type(from: &Path, to: &Path, bundle_target: BundleTarget) {
         _ => unreachable!("{} is not a Windows bundle", bundle_target.name()),
     };
 
-    let mut binary = std::fs::read(from)
-        .unwrap_or_else(|e| panic!("failed to read {}: {e}", from.display()));
+    let mut binary =
+        std::fs::read(from).unwrap_or_else(|e| panic!("failed to read {}: {e}", from.display()));
     let index = binary
         .windows(PLACEHOLDER.len())
         .position(|window| window == PLACEHOLDER)
