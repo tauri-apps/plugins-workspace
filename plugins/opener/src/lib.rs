@@ -17,7 +17,7 @@ mod commands;
 mod config;
 mod error;
 mod open;
-mod reveal_item_in_dir;
+mod reveal_items_in_dir;
 mod scope;
 mod scope_entry;
 #[cfg(windows)]
@@ -27,7 +27,7 @@ pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 
 pub use open::{open_path, open_url};
-pub use reveal_item_in_dir::{reveal_item_in_dir, reveal_items_in_dir};
+pub use reveal_items_in_dir::{reveal_item_in_dir, reveal_items_in_dir};
 
 pub struct Opener<R: Runtime> {
     // we use `fn() -> R` to silence the unused generic error
@@ -153,10 +153,20 @@ impl<R: Runtime> Opener<R> {
             .map_err(Into::into)
     }
 
+    /// Reveal the given path in the system's default explorer.
+    ///
+    /// ## Platform-specific:
+    ///
+    /// - **Android / iOS:** Unsupported.
     pub fn reveal_item_in_dir<P: AsRef<Path>>(&self, p: P) -> Result<()> {
         reveal_item_in_dir(p)
     }
 
+    /// Reveal one or more paths in the system's default explorer.
+    ///
+    /// ## Platform-specific:
+    ///
+    /// - **Android / iOS:** Unsupported.
     pub fn reveal_items_in_dir<I, P>(&self, paths: I) -> Result<()>
     where
         I: IntoIterator<Item = P>,
@@ -229,7 +239,7 @@ impl Builder {
             .invoke_handler(tauri::generate_handler![
                 commands::open_url,
                 commands::open_path,
-                commands::reveal_item_in_dir,
+                commands::reveal_items_in_dir,
             ]);
 
         if self.open_js_links_on_click {

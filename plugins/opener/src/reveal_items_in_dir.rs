@@ -10,8 +10,6 @@ use std::path::{Path, PathBuf};
 ///
 /// - **Android / iOS:** Unsupported.
 pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
-    let path = canonicalize(path.as_ref())?;
-
     #[cfg(any(
         windows,
         target_os = "macos",
@@ -21,7 +19,7 @@ pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
         target_os = "netbsd",
         target_os = "openbsd"
     ))]
-    return imp::reveal_items_in_dir(&[path]);
+    return imp::reveal_items_in_dir(&[canonicalize(path.as_ref())?]);
 
     #[cfg(not(any(
         windows,
@@ -32,7 +30,10 @@ pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
         target_os = "netbsd",
         target_os = "openbsd"
     )))]
-    Err(crate::Error::UnsupportedPlatform)
+    {
+        let _path = path;
+        Err(crate::Error::UnsupportedPlatform)
+    }
 }
 
 /// Reveal multiple paths in the system's default explorer.
