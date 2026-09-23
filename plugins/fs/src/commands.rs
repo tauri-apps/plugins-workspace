@@ -1245,10 +1245,13 @@ pub fn start_accessing_security_scoped_resource<R: Runtime>(
     #[cfg(target_os = "ios")]
     {
         use crate::FilePath;
-        // Convert SafeFilePath to FilePath
+        // Convert SafeFilePath to FilePath, handling absolute paths as `file://` URLs
         let file_path: FilePath = match &path {
             SafeFilePath::Url(url) => FilePath::Url(url.clone()),
-            SafeFilePath::Path(safe_path) => FilePath::Path(safe_path.as_ref().to_owned()),
+            SafeFilePath::Path(safe_path) => match url::Url::from_file_path(safe_path.as_ref()) {
+                Ok(url) => FilePath::Url(url),
+                Err(()) => FilePath::Path(safe_path.as_ref().to_owned()),
+            },
         };
 
         // Only handle file URLs
@@ -1317,10 +1320,13 @@ pub fn stop_accessing_security_scoped_resource<R: Runtime>(
     #[cfg(target_os = "ios")]
     {
         use crate::{FilePath, FsExt};
-        // Convert SafeFilePath to FilePath
+        // Convert SafeFilePath to FilePath, handling absolute paths as `file://` URLs
         let file_path: FilePath = match &path {
             SafeFilePath::Url(url) => FilePath::Url(url.clone()),
-            SafeFilePath::Path(safe_path) => FilePath::Path(safe_path.as_ref().to_owned()),
+            SafeFilePath::Path(safe_path) => match url::Url::from_file_path(safe_path.as_ref()) {
+                Ok(url) => FilePath::Url(url),
+                Err(()) => FilePath::Path(safe_path.as_ref().to_owned()),
+            },
         };
 
         // Only handle file URLs
