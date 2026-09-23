@@ -51,6 +51,20 @@ pub(crate) fn inspect_command_error<'a>(command: &'a str) -> impl Fn(&std::io::E
     }
 }
 
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
+pub(crate) fn check_command_status(
+    command: &str,
+    status: std::process::ExitStatus,
+) -> std::io::Result<()> {
+    if status.success() {
+        Ok(())
+    } else {
+        Err(std::io::Error::other(format!(
+            "OS command `{command}` failed: {status}"
+        )))
+    }
+}
+
 impl Serialize for Error {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where

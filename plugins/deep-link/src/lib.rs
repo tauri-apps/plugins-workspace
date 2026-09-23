@@ -148,7 +148,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
+        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). Requires `update-desktop-database`. May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             Err(crate::Error::UnsupportedPlatform)
@@ -359,6 +359,9 @@ mod imp {
                 Command::new("update-desktop-database")
                     .arg(target)
                     .status()
+                    .and_then(|status| {
+                        crate::error::check_command_status("update-desktop-database", status)
+                    })
                     .inspect_err(crate::error::inspect_command_error(
                         "update-desktop-database",
                     ))?;
@@ -366,6 +369,7 @@ mod imp {
                 Command::new("xdg-mime")
                     .args(["default", &file_name, mime_type.as_str()])
                     .status()
+                    .and_then(|status| crate::error::check_command_status("xdg-mime", status))
                     .inspect_err(crate::error::inspect_command_error("xdg-mime"))?;
 
                 Ok(())
@@ -383,7 +387,7 @@ mod imp {
         ///
         /// - **Windows**: Requires admin rights if the protocol is registered on local machine
         ///   (this can happen when registered from the NSIS installer when the install mode is set to both or per machine)
-        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
+        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). Requires `update-desktop-database`. May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
@@ -401,9 +405,6 @@ mod imp {
 
             #[cfg(target_os = "linux")]
             {
-                let mimeapps_path = self.app.path().config_dir()?.join("mimeapps.list");
-                let mut mimeapps = ini::Ini::load_from_file(&mimeapps_path)?;
-
                 let file_name = format!(
                     "{}-handler.desktop",
                     tauri::utils::platform::current_exe()?
@@ -411,16 +412,91 @@ mod imp {
                         .unwrap()
                         .to_string_lossy()
                 );
-
-                if let Some(section) = mimeapps.section_mut(Some("Default Applications")) {
-                    let scheme = format!("x-scheme-handler/{}", _protocol.as_ref());
-
-                    if section.get(&scheme).unwrap_or_default() == file_name {
-                        section.remove(scheme);
+                let scheme = format!("x-scheme-handler/{}", _protocol.as_ref());
+                let remove_entry = |section: &mut ini::Properties, key: &str, item: &str| {
+                    let Some(value) = section.get(key) else {
+                        return false;
+                    };
+                    let mut removed = false;
+                    let remaining = value
+                        .split(';')
+                        .filter(|entry| {
+                            if *entry == item {
+                                removed = true;
+                                false
+                            } else {
+                                !entry.is_empty()
+                            }
+                        })
+                        .collect::<Vec<_>>()
+                        .join(";");
+                    if removed {
+                        if remaining.is_empty() {
+                            section.remove(key);
+                        } else {
+                            section.insert(key.to_string(), format!("{remaining};"));
+                        }
                     }
+                    removed
+                };
+                // Values are already desktop-file syntax. Preserve Exec quotes and escapes
+                // while removing only this app's scheme associations.
+                let load_ini = |path: &std::path::Path| {
+                    ini::Ini::load_from_file_opt(
+                        path,
+                        ini::ParseOption {
+                            enabled_quote: false,
+                            enabled_escape: false,
+                        },
+                    )
+                };
+                let target = self.app.path().data_dir()?.join("applications");
+                let desktop_path = target.join(&file_name);
+                match load_ini(&desktop_path) {
+                    Ok(mut desktop) => {
+                        if let Some(section) = desktop.section_mut(Some("Desktop Entry")) {
+                            if remove_entry(section, "MimeType", &scheme) {
+                                desktop.write_to_file_policy(
+                                    &desktop_path,
+                                    ini::EscapePolicy::Nothing,
+                                )?;
+                            }
+                        }
+                    }
+                    Err(ini::Error::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {}
+                    Err(error) => return Err(error.into()),
                 }
 
-                mimeapps.write_to_file(mimeapps_path)?;
+                // Clear stale cache entries even after a failed update or a removed desktop file.
+                if target.try_exists()? {
+                    Command::new("update-desktop-database")
+                        .arg(&target)
+                        .status()
+                        .and_then(|status| {
+                            crate::error::check_command_status("update-desktop-database", status)
+                        })
+                        .inspect_err(crate::error::inspect_command_error(
+                            "update-desktop-database",
+                        ))?;
+                }
+
+                let mimeapps_path = self.app.path().config_dir()?.join("mimeapps.list");
+                match load_ini(&mimeapps_path) {
+                    Ok(mut mimeapps) => {
+                        let mut changed = false;
+                        for group in ["Default Applications", "Added Associations"] {
+                            if let Some(section) = mimeapps.section_mut(Some(group)) {
+                                changed |= remove_entry(section, &scheme, &file_name);
+                            }
+                        }
+                        if changed {
+                            mimeapps
+                                .write_to_file_policy(mimeapps_path, ini::EscapePolicy::Nothing)?;
+                        }
+                    }
+                    Err(ini::Error::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {}
+                    Err(error) => return Err(error.into()),
+                }
 
                 Ok(())
             }
@@ -473,7 +549,8 @@ mod imp {
                     .output()
                     .inspect_err(crate::error::inspect_command_error("xdg-mime"))?;
 
-                Ok(String::from_utf8_lossy(&output.stdout).contains(&file_name))
+                crate::error::check_command_status("xdg-mime", output.status)?;
+                Ok(String::from_utf8_lossy(&output.stdout).trim_end_matches('\n') == file_name)
             }
 
             #[cfg(not(any(windows, target_os = "linux")))]
