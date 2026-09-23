@@ -842,16 +842,17 @@ pub async fn seek<R: Runtime>(
     whence: SeekMode,
 ) -> CommandResult<u64> {
     use std::io::{Seek, SeekFrom};
+    let position = match whence {
+        SeekMode::Start => SeekFrom::Start(u64::try_from(offset).map_err(|_| {
+            format!("invalid seek offset {offset}: it must not be negative with SeekMode.Start")
+        })?),
+        SeekMode::Current => SeekFrom::Current(offset),
+        SeekMode::End => SeekFrom::End(offset),
+    };
     let file: std::sync::Arc<StdFileResource<R>> = webview.resources_table().get(rid)?;
-    StdFileResource::with_lock(&file, |file| {
-        file.seek(match whence {
-            SeekMode::Start => SeekFrom::Start(offset as u64),
-            SeekMode::Current => SeekFrom::Current(offset),
-            SeekMode::End => SeekFrom::End(offset),
-        })
-    })
-    .map_err(|e| format!("failed to seek file with error: {e}"))
-    .map_err(Into::into)
+    StdFileResource::with_lock(&file, |file| file.seek(position))
+        .map_err(|e| format!("failed to seek file with error: {e}"))
+        .map_err(Into::into)
 }
 
 #[cfg(target_os = "android")]
