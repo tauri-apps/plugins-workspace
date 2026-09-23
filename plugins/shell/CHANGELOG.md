@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.0-alpha.2]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`2fd27c2d`](https://github.com/tauri-apps/plugins-workspace/commit/2fd27c2d43966a86e436ecd538e133e1812cc641) Update MSRV to 1.95 to match tauri.
+- [`152ff5bb`](https://github.com/tauri-apps/plugins-workspace/commit/152ff5bb6d87ee0cf6935654ac8a280e78dcb6c2) ([#3604](https://github.com/tauri-apps/plugins-workspace/pull/3604)) **Breaking:** Removed the `open` API, which had been deprecated since v2.1.0 in favor of `tauri-plugin-opener`. This removes the `open` command and its `allow-open`/`deny-open` permissions, the `plugins > shell > open` configuration (`tauri_plugin_shell::init()` now returns `TauriPlugin<R>`), the `Shell::open` method and the `tauri_plugin_shell::open` module, the `Error::UnknownProgramName` variant, and the `open` JavaScript function. The `shell:default` permission set now grants nothing. Since `open` was the only mobile functionality, the Android and iOS plugins were removed as well.
+
 ## [3.0.0-alpha.1]
 
 - [`15bf611d`](https://github.com/tauri-apps/plugins-workspace/commit/15bf611d68b15f343c0e8f6834a64d0cf2cc1637) Update to @tauri-apps/api v3.0.0-alpha.

@@ -194,7 +194,7 @@ checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
 name = "api"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "log",
  "serde",
@@ -7698,7 +7698,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-autostart"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "auto-launch",
  "serde",
@@ -7710,7 +7710,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-barcode-scanner"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "log",
  "serde",
@@ -7722,7 +7722,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-biometric"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "log",
  "serde",
@@ -7735,7 +7735,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-cli"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "clap",
  "log",
@@ -7748,7 +7748,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-clipboard-manager"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "arboard",
  "log",
@@ -7761,7 +7761,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "dunce",
  "plist",
@@ -7780,7 +7780,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "log",
  "raw-window-handle",
@@ -7796,7 +7796,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "anyhow",
  "dunce",
@@ -7818,7 +7818,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-geolocation"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "log",
  "serde",
@@ -7831,7 +7831,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-global-shortcut"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "global-hotkey",
  "log",
@@ -7844,7 +7844,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-haptics"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "log",
  "serde",
@@ -7857,7 +7857,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "bytes",
  "cookie_store",
@@ -7880,7 +7880,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-localhost"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "http",
  "log",
@@ -7893,7 +7893,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-log"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "android_logger",
  "fern",
@@ -7913,7 +7913,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-nfc"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "log",
  "serde",
@@ -7926,7 +7926,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "log",
  "notify-rust",
@@ -7945,7 +7945,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-opener"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "dunce",
  "glob",
@@ -7965,7 +7965,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-os"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "gethostname",
  "log",
@@ -7981,7 +7981,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -7995,7 +7995,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-positioner"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "log",
  "serde",
@@ -8008,7 +8008,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-process"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "tauri",
  "tauri-plugin",
@@ -8016,7 +8016,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-shell"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "encoding_rs",
  "log",
@@ -8034,7 +8034,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "semver",
  "serde",
@@ -8050,7 +8050,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-sql"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "futures-core",
  "indexmap 2.14.2",
@@ -8069,7 +8069,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-store"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "dunce",
  "serde",
@@ -8083,7 +8083,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-stronghold"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "hex",
  "iota-crypto",
@@ -8104,7 +8104,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "base64 0.22.1",
  "dirs 6.0.0",
@@ -8135,7 +8135,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-upload"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "futures-util",
  "log",
@@ -8153,7 +8153,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-websocket"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "futures-util",
  "http",
@@ -8171,7 +8171,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 dependencies = [
  "bitflags 2.13.2",
  "log",

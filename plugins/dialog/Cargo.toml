@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-dialog"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 description = "Native system dialogs for opening and saving files along with message dialogs on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -43,7 +43,7 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 url = { workspace = true }
-tauri-plugin-fs = { path = "../fs", version = "3.0.0-alpha.1" }
+tauri-plugin-fs = { path = "../fs", version = "3.0.0-alpha.2" }
 
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
