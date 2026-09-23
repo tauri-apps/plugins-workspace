@@ -148,7 +148,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
+        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). Needs the `update-desktop-database` command available on the system. May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             Err(crate::Error::UnsupportedPlatform)
@@ -383,7 +383,7 @@ mod imp {
         ///
         /// - **Windows**: Requires admin rights if the protocol is registered on local machine
         ///   (this can happen when registered from the NSIS installer when the install mode is set to both or per machine)
-        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
+        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). Refreshes the desktop database with the `update-desktop-database` command; without it, [`is_registered`](`Self::is_registered`) may keep returning `true`. May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
@@ -401,9 +401,6 @@ mod imp {
 
             #[cfg(target_os = "linux")]
             {
-                let mimeapps_path = self.app.path().config_dir()?.join("mimeapps.list");
-                let mut mimeapps = ini::Ini::load_from_file(&mimeapps_path)?;
-
                 let file_name = format!(
                     "{}-handler.desktop",
                     tauri::utils::platform::current_exe()?
@@ -411,16 +408,55 @@ mod imp {
                         .unwrap()
                         .to_string_lossy()
                 );
+                let mime_type = format!("x-scheme-handler/{}", _protocol.as_ref());
 
-                if let Some(section) = mimeapps.section_mut(Some("Default Applications")) {
-                    let scheme = format!("x-scheme-handler/{}", _protocol.as_ref());
-
-                    if section.get(&scheme).unwrap_or_default() == file_name {
-                        section.remove(scheme);
+                // stop being the default handler
+                let mimeapps_path = self.app.path().config_dir()?.join("mimeapps.list");
+                if mimeapps_path.exists() {
+                    let mut mimeapps = ini::Ini::load_from_file(&mimeapps_path)?;
+                    if let Some(section) = mimeapps.section_mut(Some("Default Applications")) {
+                        if section.get(&mime_type).unwrap_or_default() == file_name {
+                            section.remove(&mime_type);
+                        }
                     }
+                    mimeapps.write_to_file(&mimeapps_path)?;
                 }
 
-                mimeapps.write_to_file(mimeapps_path)?;
+                // Stop declaring the scheme in the handler's `.desktop` file too: the desktop
+                // database indexes it, and with no default set `xdg-mime` falls back to that
+                // index, so the app would otherwise still be the handler.
+                let applications = self.app.path().data_dir()?.join("applications");
+                let desktop_file_path = applications.join(&file_name);
+                // Only the `MimeType` key is touched: the file may carry other changes.
+                if let Ok(mut desktop_file) = ini::Ini::load_from_file(&desktop_file_path) {
+                    if let Some(section) = desktop_file.section_mut(Some("Desktop Entry")) {
+                        let mime_types = section
+                            .get("MimeType")
+                            .unwrap_or_default()
+                            .split(';')
+                            .filter(|mime| !mime.is_empty() && *mime != mime_type)
+                            .map(ToString::to_string)
+                            .collect::<Vec<_>>();
+                        if mime_types.is_empty() {
+                            section.remove("MimeType");
+                        } else {
+                            section.insert("MimeType", mime_types.join(";"));
+                        }
+                    }
+                    desktop_file.write_to_file(&desktop_file_path)?;
+
+                    // Without the refreshed index `xdg-mime` may keep reporting the app as the
+                    // handler, but the scheme is unregistered as far as the app can tell, so a
+                    // missing command is not an error.
+                    if let Err(e) = Command::new("update-desktop-database")
+                        .arg(&applications)
+                        .status()
+                    {
+                        tracing::warn!(
+                            "Failed to run OS command `update-desktop-database`, the desktop database may still list the app as the `{mime_type}` handler: {e}"
+                        );
+                    }
+                }
 
                 Ok(())
             }

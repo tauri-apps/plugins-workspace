@@ -3,13 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import { expect } from '@wdio/globals'
-import {
-  tauri,
-  tauriError,
-  describePlugin,
-  itOn,
-  platform
-} from '../helpers/index.js'
+import { tauri, tauriError, describePlugin, itOn } from '../helpers/index.js'
 
 // The suite launches the app without a URL, so there is no current deep link,
 // and it cannot open one through the OS either. `onOpenUrl` is exercised by
@@ -48,7 +42,7 @@ describePlugin('deep-link', () => {
 
   itOn(
     ['linux', 'win32'],
-    'register makes the app the scheme handler',
+    'register and unregister toggle the scheme handler',
     async () => {
       const result = await tauri(async (api, scheme) => {
         await api.deepLink.register(scheme)
@@ -59,23 +53,22 @@ describePlugin('deep-link', () => {
           afterUnregister: await api.deepLink.isRegistered(scheme)
         }
       }, scheme)
-      expect(result.registered).toBe(true)
-      // On Linux `xdg-mime` falls back to the desktop database, which still lists
-      // the handler after its `mimeapps.list` default is removed.
-      if (platform === 'win32') {
-        expect(result.afterUnregister).toBe(false)
-      }
+      expect(result).toEqual({ registered: true, afterUnregister: false })
     }
   )
 
-  itOn('win32', 'isRegistered is false for an unknown scheme', async () => {
-    expect(
-      await tauri(
-        (api, scheme) => api.deepLink.isRegistered(scheme),
-        `${scheme}-unknown`
-      )
-    ).toBe(false)
-  })
+  itOn(
+    ['linux', 'win32'],
+    'isRegistered is false for an unknown scheme',
+    async () => {
+      expect(
+        await tauri(
+          (api, scheme) => api.deepLink.isRegistered(scheme),
+          `${scheme}-unknown`
+        )
+      ).toBe(false)
+    }
+  )
 
   itOn(
     ['darwin', 'android', 'ios'],
