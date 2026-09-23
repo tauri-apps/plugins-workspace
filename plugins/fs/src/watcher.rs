@@ -69,11 +69,16 @@ pub fn watch<R: Runtime>(
         let mut debouncer = new_debouncer(
             Duration::from_millis(delay),
             None,
-            move |events: Result<Vec<DebouncedEvent>, Vec<notify::Error>>| {
-                if let Ok(events) = events {
+            move |events: Result<Vec<DebouncedEvent>, Vec<notify::Error>>| match events {
+                Ok(events) => {
                     for event in events {
-                        // TODO: Should errors be emitted too?
                         let _ = on_event.send(event.event);
+                    }
+                }
+                // TODO(v3): report the errors to the webview
+                Err(errors) => {
+                    for error in errors {
+                        log::error!("file watcher error: {error}");
                     }
                 }
             },
@@ -84,11 +89,12 @@ pub fn watch<R: Runtime>(
         WatcherKind::Debouncer(debouncer)
     } else {
         let mut watcher = RecommendedWatcher::new(
-            move |event| {
-                if let Ok(event) = event {
-                    // TODO: Should errors be emitted too?
+            move |event: notify::Result<notify::Event>| match event {
+                Ok(event) => {
                     let _ = on_event.send(event);
                 }
+                // TODO(v3): report the errors to the webview
+                Err(error) => log::error!("file watcher error: {error}"),
             },
             Config::default(),
         )?;

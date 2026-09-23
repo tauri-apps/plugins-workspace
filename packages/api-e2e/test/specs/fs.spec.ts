@@ -70,6 +70,21 @@ describePlugin('fs', () => {
     expect(read).toBe('first second')
   })
 
+  it('writeFile and writeTextFile work without options', async () => {
+    const result = await tauri(async (api, dir) => {
+      const path = await api.path.join(
+        await api.path.appDataDir(),
+        dir,
+        'no-options.txt'
+      )
+      await api.fs.writeTextFile(path, 'text')
+      const text = await api.fs.readTextFile(path)
+      await api.fs.writeFile(path, new Uint8Array([98, 121, 116, 101, 115]))
+      return { text, bytes: await api.fs.readTextFile(path) }
+    }, dir)
+    expect(result).toEqual({ text: 'text', bytes: 'bytes' })
+  })
+
   it('writeFile and readFile round-trip binary data', async () => {
     const bytes = [0, 1, 2, 3, 250, 251, 252, 253, 254, 255]
     const read = await tauri(
@@ -101,10 +116,11 @@ describePlugin('fs', () => {
           hasMtime: fileStat.mtime instanceof Date
         },
         lstatSize: fileLstat.size,
-        // `size` only takes absolute paths
-        size: await api.fs.size(
+        size: await api.fs.size(file, { baseDir }),
+        absoluteSize: await api.fs.size(
           await api.path.join(await api.path.appDataDir(), file)
         ),
+        dirSize: await api.fs.size(dir, { baseDir }),
         dir: { isFile: dirStat.isFile, isDirectory: dirStat.isDirectory }
       }
     }, dir)
@@ -117,6 +133,8 @@ describePlugin('fs', () => {
     })
     expect(result.lstatSize).toBe(10)
     expect(result.size).toBe(10)
+    expect(result.absoluteSize).toBe(10)
+    expect(result.dirSize).toBeGreaterThanOrEqual(10)
     expect(result.dir).toEqual({ isFile: false, isDirectory: true })
   })
 
@@ -214,6 +232,57 @@ describePlugin('fs', () => {
       return result
     }, `${dir}/lines.txt`)
     expect(lines).toEqual(['one', 'two', 'three'])
+  })
+
+  it('readTextFileLines closes the file when a loop exits early', async () => {
+    const result = await tauri(async (api, path) => {
+      const baseDir = api.fs.BaseDirectory.AppData
+      await api.fs.writeTextFile(path, 'one\ntwo\nthree', { baseDir })
+      const lines = await api.fs.readTextFileLines(path, { baseDir })
+      // the iterator keeps the id of the open file in `rid`
+      const state = lines as unknown as { rid: number | null }
+      let rid: number | null = null
+      let first: string | null = null
+      for await (const line of lines) {
+        first = line
+        rid = state.rid
+        break
+      }
+      let closeError: string | null = null
+      try {
+        await api.core.invoke('plugin:resources|close', { rid })
+      } catch (error) {
+        closeError = String(error)
+      }
+      // iterating again starts over
+      const all: string[] = []
+      for await (const line of lines) {
+        all.push(line)
+      }
+      return { first, ridAfter: state.rid, closeError, all }
+    }, `${dir}/lines-break.txt`)
+    expect(result.first).toBe('one')
+    expect(result.ridAfter).toBeNull()
+    // the resource was already closed by the iterator
+    expect(result.closeError).toMatch(/resource id \d+ is invalid/)
+    expect(result.all).toEqual(['one', 'two', 'three'])
+  })
+
+  it('readTextFileLines rejects when the file cannot be read', async () => {
+    // a directory: opening it fails on Windows, reading it fails elsewhere,
+    // which used to yield empty lines forever
+    const message = await tauriError(async (api, path) => {
+      const baseDir = api.fs.BaseDirectory.AppData
+      await api.fs.mkdir(path, { baseDir, recursive: true })
+      const lines = await api.fs.readTextFileLines(path, { baseDir })
+      for (let i = 0; i < 1000; i++) {
+        const { done } = await lines.next()
+        if (done) return
+      }
+      throw new Error('readTextFileLines kept yielding lines for a directory')
+    }, `${dir}/lines-dir`)
+    expect(message).not.toMatch(/kept yielding/)
+    expect(message).toMatch(/failed to (read line|open file)/)
   })
 
   it('FileHandle supports write, seek, read, stat and truncate', async () => {
