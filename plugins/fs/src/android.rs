@@ -42,12 +42,7 @@ impl<R: Runtime> Fs<R> {
         match path.into() {
             FilePath::Url(u) => self
                 .resolve_content_uri(u.to_string(), opts.android_mode())
-                .map_err(|e| {
-                    std::io::Error::new(
-                        std::io::ErrorKind::Other,
-                        format!("failed to open file: {e}"),
-                    )
-                }),
+                .map_err(|e| std::io::Error::other(format!("failed to open file: {e}"))),
             FilePath::Path(p) => {
                 // tauri::utils::platform::resources_dir() returns a PathBuf with the Android asset URI prefix
                 // we must resolve that file with the Android API
@@ -55,12 +50,7 @@ impl<R: Runtime> Fs<R> {
                     .is_ok()
                 {
                     self.resolve_content_uri(p.to_string_lossy(), opts.android_mode())
-                        .map_err(|e| {
-                            std::io::Error::new(
-                                std::io::ErrorKind::Other,
-                                format!("failed to open file: {e}"),
-                            )
-                        })
+                        .map_err(|e| std::io::Error::other(format!("failed to open file: {e}")))
                 } else {
                     std::fs::OpenOptions::from(opts).open(p)
                 }
@@ -73,10 +63,11 @@ impl<R: Runtime> Fs<R> {
         uri: impl Into<String>,
         mode: impl Into<String>,
     ) -> crate::Result<std::fs::File> {
+        let uri = uri.into();
         let result = self.0.run_mobile_plugin::<GetFileDescriptorResponse>(
             "getFileDescriptor",
             GetFileDescriptorPayload {
-                uri: uri.into(),
+                uri: uri.clone(),
                 mode: mode.into(),
             },
         )?;
@@ -86,7 +77,11 @@ impl<R: Runtime> Fs<R> {
                 std::fs::File::from_raw_fd(fd)
             })
         } else {
-            unimplemented!()
+            // the content provider did not return a file descriptor, e.g. for virtual files
+            Err(crate::Error::Io(std::io::Error::new(
+                std::io::ErrorKind::Unsupported,
+                format!("no file descriptor available for {uri}"),
+            )))
         }
     }
 }
