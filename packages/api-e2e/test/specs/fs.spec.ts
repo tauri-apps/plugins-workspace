@@ -101,10 +101,11 @@ describePlugin('fs', () => {
           hasMtime: fileStat.mtime instanceof Date
         },
         lstatSize: fileLstat.size,
-        // `size` only takes absolute paths
-        size: await api.fs.size(
+        size: await api.fs.size(file, { baseDir }),
+        absoluteSize: await api.fs.size(
           await api.path.join(await api.path.appDataDir(), file)
         ),
+        dirSize: await api.fs.size(dir, { baseDir }),
         dir: { isFile: dirStat.isFile, isDirectory: dirStat.isDirectory }
       }
     }, dir)
@@ -117,6 +118,8 @@ describePlugin('fs', () => {
     })
     expect(result.lstatSize).toBe(10)
     expect(result.size).toBe(10)
+    expect(result.absoluteSize).toBe(10)
+    expect(result.dirSize).toBeGreaterThanOrEqual(10)
     expect(result.dir).toEqual({ isFile: false, isDirectory: true })
   })
 
