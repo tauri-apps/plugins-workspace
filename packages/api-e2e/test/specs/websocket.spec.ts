@@ -26,11 +26,13 @@ describePlugin('websocket', () => {
     const messages = await tauri(async (api, url) => {
       const ws = await api.websocket.connect(url)
       const received: Message[] = []
-      await new Promise<void>((resolve, reject) => {
+      // a copy taken once the echoes are in: the close acknowledgement that
+      // `disconnect` triggers may arrive before this function returns
+      const echoes = await new Promise<Message[]>((resolve, reject) => {
         setTimeout(() => reject(new Error('echo not received')), 5000)
         ws.addListener((message) => {
           received.push(message)
-          if (received.length === 3) resolve()
+          if (received.length === 3) resolve(received.slice())
         })
         ws.send('hello')
           .then(() => ws.send([1, 2, 3]))
@@ -38,7 +40,7 @@ describePlugin('websocket', () => {
           .catch(reject)
       })
       await ws.disconnect()
-      return received
+      return echoes
     }, WEBSOCKET_FIXTURE_URL)
     expect(messages).toEqual([
       { type: 'Text', data: 'hello' },
@@ -84,21 +86,25 @@ describePlugin('websocket', () => {
       let removed = 0
       let kept = 0
       const remove = ws.addListener(() => removed++)
-      await new Promise<void>((resolve, reject) => {
-        setTimeout(() => reject(new Error('echoes not received')), 5000)
-        ws.addListener(() => {
-          kept++
-          if (kept === 1) {
-            remove()
-            ws.send('second').catch(reject)
-          } else {
-            resolve()
-          }
-        })
-        ws.send('first').catch(reject)
-      })
+      // counted once both echoes are in, before `disconnect`'s close
+      // acknowledgement can reach the listener still attached
+      const counts = await new Promise<{ removed: number; kept: number }>(
+        (resolve, reject) => {
+          setTimeout(() => reject(new Error('echoes not received')), 5000)
+          ws.addListener(() => {
+            kept++
+            if (kept === 1) {
+              remove()
+              ws.send('second').catch(reject)
+            } else {
+              resolve({ removed, kept })
+            }
+          })
+          ws.send('first').catch(reject)
+        }
+      )
       await ws.disconnect()
-      return { removed, kept }
+      return counts
     }, WEBSOCKET_FIXTURE_URL)
     expect(counts).toEqual({ removed: 1, kept: 2 })
   })
