@@ -887,10 +887,17 @@ async function readTextFileLines(
         })
       }
 
-      const arr = await invoke<ArrayBuffer | number[]>(
-        'plugin:fs|read_text_file_lines_next',
-        { rid: this.rid }
-      )
+      let arr: ArrayBuffer | number[]
+      try {
+        arr = await invoke<ArrayBuffer | number[]>(
+          'plugin:fs|read_text_file_lines_next',
+          { rid: this.rid }
+        )
+      } catch (error) {
+        // the resource is closed on errors, the next iteration starts over
+        this.rid = null
+        throw error
+      }
 
       const bytes =
         arr instanceof ArrayBuffer ? new Uint8Array(arr) : Uint8Array.from(arr)

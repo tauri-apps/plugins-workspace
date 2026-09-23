@@ -216,6 +216,23 @@ describePlugin('fs', () => {
     expect(lines).toEqual(['one', 'two', 'three'])
   })
 
+  it('readTextFileLines rejects when the file cannot be read', async () => {
+    // a directory: opening it fails on Windows, reading it fails elsewhere,
+    // which used to yield empty lines forever
+    const message = await tauriError(async (api, path) => {
+      const baseDir = api.fs.BaseDirectory.AppData
+      await api.fs.mkdir(path, { baseDir, recursive: true })
+      const lines = await api.fs.readTextFileLines(path, { baseDir })
+      for (let i = 0; i < 1000; i++) {
+        const { done } = await lines.next()
+        if (done) return
+      }
+      throw new Error('readTextFileLines kept yielding lines for a directory')
+    }, `${dir}/lines-dir`)
+    expect(message).not.toMatch(/kept yielding/)
+    expect(message).toMatch(/failed to (read line|open file)/)
+  })
+
   it('FileHandle supports write, seek, read, stat and truncate', async () => {
     const result = await tauri(async (api, path) => {
       const baseDir = api.fs.BaseDirectory.AppData
