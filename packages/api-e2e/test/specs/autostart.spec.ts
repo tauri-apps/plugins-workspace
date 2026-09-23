@@ -8,9 +8,6 @@ import { tauri, describePlugin } from '../helpers/index.js'
 // Enabling autostart registers the app with the host for real (a Launch Agent
 // on macOS, an XDG autostart entry on Linux, a `Run` registry value on
 // Windows), so the spec puts back whatever state it found.
-//
-// `disable` is only called while autostart is enabled: on Windows it fails
-// when there is no `Run` value to delete.
 
 describePlugin('autostart', { desktopOnly: true }, () => {
   let initiallyEnabled = false
@@ -20,10 +17,11 @@ describePlugin('autostart', { desktopOnly: true }, () => {
   })
 
   after(async () => {
-    await tauri(async (api, enabled) => {
-      if ((await api.autostart.isEnabled()) === enabled) return
-      await (enabled ? api.autostart.enable() : api.autostart.disable())
-    }, initiallyEnabled)
+    await tauri(
+      (api, enabled) =>
+        enabled ? api.autostart.enable() : api.autostart.disable(),
+      initiallyEnabled
+    )
   })
 
   it('enable and disable toggle isEnabled', async () => {
@@ -37,13 +35,24 @@ describePlugin('autostart', { desktopOnly: true }, () => {
   })
 
   it('enabling twice keeps it enabled', async () => {
-    const states = await tauri(async (api) => {
+    const enabled = await tauri(async (api) => {
       await api.autostart.enable()
       await api.autostart.enable()
       const enabled = await api.autostart.isEnabled()
       await api.autostart.disable()
-      return { enabled, disabled: await api.autostart.isEnabled() }
+      return enabled
     })
-    expect(states).toEqual({ enabled: true, disabled: false })
+    expect(enabled).toBe(true)
+  })
+
+  it('disable resolves when autostart is already disabled', async () => {
+    // Windows used to fail here, having no `Run` registry value to delete
+    const disabled = await tauri(async (api) => {
+      await api.autostart.enable()
+      await api.autostart.disable()
+      await api.autostart.disable()
+      return !(await api.autostart.isEnabled())
+    })
+    expect(disabled).toBe(true)
   })
 })

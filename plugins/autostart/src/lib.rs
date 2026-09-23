@@ -83,10 +83,13 @@ impl AutoLaunchManager {
     ///
     /// Returns [`Error::Anyhow`] if the platform-specific removal fails.
     pub fn disable(&self) -> Result<()> {
-        self.0
-            .disable()
-            .map_err(|e| e.to_string())
-            .map_err(Error::Anyhow)
+        match self.0.disable() {
+            // On Windows, disabling deletes the app's `Run` registry value, which fails with
+            // "not found" when autostart is already disabled. macOS and Linux treat that as a
+            // no-op, so do the same here.
+            Err(auto_launch::Error::Io(e)) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            result => result.map_err(|e| e.to_string()).map_err(Error::Anyhow),
+        }
     }
 
     /// Returns whether auto start is currently enabled for the application.
