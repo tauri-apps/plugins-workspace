@@ -666,6 +666,39 @@ impl Updater {
         // Extracted remote metadata
         let release = remote_release.ok_or(Error::ReleaseNotFound)?;
 
+        self.update_from_release(release, raw_json.unwrap(), target)
+    }
+
+    /// Restores an update from a previously saved [`Update::raw_json`] without making a request.
+    ///
+    /// Applies the same target selection and version comparator as [`Self::check`]. Runtime
+    /// configuration, including the public key and installation path, comes from this updater,
+    /// not from the cached metadata. Returns `None` if the release is no longer an update.
+    ///
+    /// This does not authenticate the metadata or any cached package. Call [`Update::verify`]
+    /// on cached bytes before passing those same bytes to [`Update::install`]. Enable
+    /// [`Config::require_signed_version`] to require the signature to bind the package to the
+    /// announced version, including when cached metadata might have been modified.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the metadata cannot be parsed or does not contain a compatible target.
+    pub fn restore_update(&self, raw_json: serde_json::Value) -> Result<Option<Update>> {
+        let target = if let Some(target) = &self.target {
+            target
+        } else {
+            updater_os().ok_or(Error::UnsupportedOs)?
+        };
+        let release = serde_json::from_value(raw_json.clone())?;
+        self.update_from_release(release, raw_json, target)
+    }
+
+    fn update_from_release(
+        &self,
+        release: RemoteRelease,
+        raw_json: serde_json::Value,
+        target: &str,
+    ) -> Result<Option<Update>> {
         let should_update = match self.version_comparator.as_ref() {
             Some(comparator) => comparator(self.current_version.clone(), release.clone()),
             None => release.version > self.current_version,
@@ -684,7 +717,7 @@ impl Updater {
                 download_url: download_url.clone(),
                 signature: signature.to_owned(),
                 body: release.notes,
-                raw_json: raw_json.unwrap(),
+                raw_json,
                 timeout: None,
                 proxy: self.proxy.clone(),
                 no_proxy: self.no_proxy,
@@ -834,18 +867,31 @@ impl Update {
         }
         on_download_finish();
 
-        verify_signature(
-            &buffer,
-            &self.signature,
-            &self.context.config.pubkey,
-            &self.version,
-            self.context.config.require_signed_version,
-        )?;
+        self.verify(&buffer)?;
 
         Ok(buffer)
     }
 
+    /// Verifies package bytes using this update's signature and the configured public key.
+    ///
+    /// This performs the same checks as [`Self::download`], including signed-version validation,
+    /// without making a request or installing anything. Use this for cached packages, then pass
+    /// the same verified bytes to [`Self::install`]. A successful call does not mark this update
+    /// or a file on disk as verified; modified bytes must be verified again.
+    pub fn verify(&self, bytes: &[u8]) -> Result<()> {
+        verify_signature(
+            bytes,
+            &self.signature,
+            &self.context.config.pubkey,
+            &self.version,
+            self.context.config.require_signed_version,
+        )
+    }
+
     /// Installs the updater package downloaded by [`Update::download`]
+    ///
+    /// This does not verify the bytes. For packages not obtained from [`Self::download`],
+    /// call [`Self::verify`] before installing them.
     ///
     /// ## Platform-specific:
     ///
@@ -1808,6 +1854,9 @@ fn escape_msi_property_arg(arg: impl AsRef<OsStr>) -> String {
         format!("\"\"{arg}\"\"")
     }
 }
+
+#[cfg(test)]
+mod offline_tests;
 
 #[cfg(test)]
 mod tests {
