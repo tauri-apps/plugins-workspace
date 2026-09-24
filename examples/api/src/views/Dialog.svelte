@@ -38,6 +38,10 @@
     confirm('Do you want to do something?')
       .then((res) => onMessage(res ? 'Yes' : 'No'))
       .catch(onMessage)
+    await new Promise((r) => setTimeout(r, 2000))
+    confirm('Do you want to do something else?')
+      .then((res) => onMessage(res ? 'Yes' : 'No'))
+      .catch(onMessage)
   }
 
   async function promptCustom() {

@@ -237,7 +237,6 @@ dependencies = [
  "tauri-plugin-shell",
  "tauri-plugin-sql",
  "tauri-plugin-store",
- "tauri-plugin-stronghold",
  "tauri-plugin-updater",
  "tauri-plugin-upload",
  "tauri-plugin-websocket",

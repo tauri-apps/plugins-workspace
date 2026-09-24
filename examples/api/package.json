@@ -32,7 +32,6 @@
     "@tauri-apps/plugin-shell": "workspace:*",
     "@tauri-apps/plugin-sql": "workspace:*",
     "@tauri-apps/plugin-store": "workspace:*",
-    "@tauri-apps/plugin-stronghold": "workspace:*",
     "@tauri-apps/plugin-updater": "workspace:*",
     "@tauri-apps/plugin-upload": "workspace:*",
     "@tauri-apps/plugin-websocket": "workspace:*",

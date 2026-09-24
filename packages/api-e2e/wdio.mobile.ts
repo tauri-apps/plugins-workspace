@@ -303,33 +303,12 @@ function tauriCli(args: string[], env: NodeJS.ProcessEnv = {}): void {
  * Environment for the Android build.
  *
  * - No debug info: the suite needs a debug build (webview debugging follows
- *   `debug_assertions`), but with the stronghold, sql and websocket plugins the
+ *   `debug_assertions`), but with the sql and websocket plugins the
  *   debug info alone grows the APK past what a default emulator can install
  *   ("not enough space").
- * - On a macOS host, `AR`/`RANLIB` point at the NDK's LLVM tools. Autotools-built
- *   C dependencies (libsodium, through the stronghold plugin) otherwise fall back
- *   to Apple's `ar`/`ranlib`, which silently produce an empty archive from the
- *   Android (ELF) objects, and the app then fails to load its library with an
- *   unresolved symbol. Linux hosts' GNU `ar` is fine.
  */
 function androidBuildEnv(): NodeJS.ProcessEnv {
-  const env: NodeJS.ProcessEnv = { CARGO_PROFILE_DEV_DEBUG: '0' }
-  const ndk = process.env.NDK_HOME ?? process.env.ANDROID_NDK_HOME
-  if (process.platform !== 'darwin' || !ndk) return env
-  // the NDK only ships an x86_64 (Rosetta-compatible) macOS toolchain
-  const bin = path.join(
-    ndk,
-    'toolchains',
-    'llvm',
-    'prebuilt',
-    'darwin-x86_64',
-    'bin'
-  )
-  return {
-    ...env,
-    AR: path.join(bin, 'llvm-ar'),
-    RANLIB: path.join(bin, 'llvm-ranlib')
-  }
+  return { CARGO_PROFILE_DEV_DEBUG: '0' }
 }
 
 /** `adb` from the Android SDK, else whatever is on `PATH`. */
