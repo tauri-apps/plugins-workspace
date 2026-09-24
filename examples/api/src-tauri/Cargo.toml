@@ -43,7 +43,6 @@ tauri-plugin-deep-link = { path = "../../../plugins/deep-link", version = "2.4.1
 tauri-plugin-sql = { path = "../../../plugins/sql", version = "2.4.1", features = [
   "sqlite",
 ] }
-tauri-plugin-stronghold = { path = "../../../plugins/stronghold", version = "2.3.2" }
 tauri-plugin-websocket = { path = "../../../plugins/websocket", version = "2.4.3" }
 
 # WebDriver automation bridge, used by the plugins e2e suite (packages/api-e2e).

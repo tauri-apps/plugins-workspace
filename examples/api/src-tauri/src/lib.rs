@@ -9,7 +9,7 @@ mod tray;
 use serde::Serialize;
 use tauri::{
     webview::{PageLoadEvent, WebviewWindowBuilder},
-    App, AppHandle, Emitter, Listener, Manager, RunEvent, WebviewUrl,
+    App, AppHandle, Emitter, Listener, RunEvent, WebviewUrl,
 };
 
 #[derive(Clone, Serialize)]
@@ -71,14 +71,6 @@ pub fn run() {
                 .build(),
         )
         .setup(move |app| {
-            // the argon2 salt lives next to the snapshots the frontend creates
-            let local_data_dir = app.path().app_local_data_dir()?;
-            std::fs::create_dir_all(&local_data_dir)?;
-            app.handle().plugin(
-                tauri_plugin_stronghold::Builder::with_argon2(&local_data_dir.join("salt.txt"))
-                    .build(),
-            )?;
-
             #[cfg(desktop)]
             {
                 // registered before the tray, whose events it tracks

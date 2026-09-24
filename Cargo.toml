@@ -32,23 +32,6 @@ license = "Apache-2.0 OR MIT"
 rust-version = "1.77.2"
 repository = "https://github.com/tauri-apps/plugins-workspace"
 
-# Stronghold encrypts its snapshots with scrypt: unoptimized, saving or loading one
-# takes ~45s instead of ~1s, which stalls the (debug) example app and its e2e suite.
-[profile.dev.package.scrypt]
-opt-level = 3
-[profile.dev.package.salsa20]
-opt-level = 3
-[profile.dev.package.pbkdf2]
-opt-level = 3
-[profile.dev.package.sha2]
-opt-level = 3
-[profile.dev.package.hmac]
-opt-level = 3
-[profile.dev.package.iota-crypto]
-opt-level = 3
-[profile.dev.package.rust-argon2]
-opt-level = 3
-
 # default to small, optimized release binaries
 [profile.release]
 panic = "abort"

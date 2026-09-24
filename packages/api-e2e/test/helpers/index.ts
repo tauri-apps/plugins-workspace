@@ -26,7 +26,6 @@ import type * as Process from '@tauri-apps/plugin-process'
 import type * as Shell from '@tauri-apps/plugin-shell'
 import type * as Sql from '@tauri-apps/plugin-sql'
 import type * as Store from '@tauri-apps/plugin-store'
-import type * as Stronghold from '@tauri-apps/plugin-stronghold'
 import type * as Updater from '@tauri-apps/plugin-updater'
 import type * as Upload from '@tauri-apps/plugin-upload'
 import type * as WebSocket from '@tauri-apps/plugin-websocket'
@@ -52,7 +51,6 @@ export interface CommonPluginApi {
   shell: typeof Shell
   sql: typeof Sql.default
   store: typeof Store
-  stronghold: typeof Stronghold
   upload: typeof Upload
   websocket: typeof WebSocket.default
 }
