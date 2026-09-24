@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use crate::{Result, Update, UpdaterExt};
+use crate::{cache::CacheMode, Result, Update, UpdaterExt};
 
 use http::{HeaderMap, HeaderName, HeaderValue};
 use serde::Serialize;
@@ -46,6 +46,7 @@ pub(crate) async fn check<R: Runtime>(
     timeout: Option<u64>,
     proxy: Option<String>,
     target: Option<String>,
+    cache_mode: Option<CacheMode>,
 ) -> Result<Option<Metadata>> {
     let mut builder = webview.updater_builder();
     if let Some(headers) = headers {
@@ -62,6 +63,9 @@ pub(crate) async fn check<R: Runtime>(
     }
     if let Some(target) = target {
         builder = builder.target(target);
+    }
+    if let Some(cache_mode) = cache_mode {
+        builder = builder.cache_mode_override(cache_mode);
     }
 
     let updater = builder.build()?;

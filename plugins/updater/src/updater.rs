@@ -37,7 +37,7 @@ use time::OffsetDateTime;
 use url::Url;
 
 use crate::{
-    cache::CacheManager,
+    cache::{CacheManager, CacheMode},
     error::{Error, Result},
     Config,
 };
@@ -199,6 +199,7 @@ pub struct UpdaterBuilder {
     no_proxy: bool,
     context: UpdaterContext,
     cache: CacheManager,
+    cache_mode_override: Option<CacheMode>,
 }
 
 impl UpdaterBuilder {
@@ -239,6 +240,7 @@ impl UpdaterBuilder {
             proxy: None,
             no_proxy: false,
             cache: Default::default(),
+            cache_mode_override: None,
         }
     }
 
@@ -275,6 +277,22 @@ impl UpdaterBuilder {
     /// based on the config from `tauri.conf.json`.
     pub fn cache_manager(mut self, cache: CacheManager) -> Self {
         self.cache = cache;
+        self
+    }
+
+    /// Sets a per-request override for `check` requests by this [`Updater`].
+    ///
+    /// Note: the [`CacheManager`] determines the default behavior when no override is set.
+    pub fn cache_mode_override(mut self, cache_mode: CacheMode) -> Self {
+        self.cache_mode_override.replace(cache_mode);
+        self
+    }
+
+    /// Clears the per-request override for `check` requests by this [`Updater`].
+    ///
+    /// The [`CacheManager`] determines the default behavior when no override is set.
+    pub fn no_cache_mode_override(mut self) -> Self {
+        self.cache_mode_override = None;
         self
     }
 
@@ -488,6 +506,7 @@ impl UpdaterBuilder {
             extract_path,
             context: self.context.clone(),
             cache: self.cache,
+            cache_mode_override: self.cache_mode_override,
         })
     }
 }
@@ -524,6 +543,7 @@ pub struct Updater {
     extract_path: PathBuf,
     context: UpdaterContext,
     cache: CacheManager,
+    cache_mode_override: Option<CacheMode>,
 }
 
 impl Updater {
@@ -625,7 +645,7 @@ impl Updater {
             }
 
             let mut client = reqwest_middleware::ClientBuilder::new(client.build()?);
-            if let Some(cache) = self.cache.maybe_middleware(None) {
+            if let Some(cache) = self.cache.maybe_middleware(self.cache_mode_override) {
                 client = client.with(cache);
             }
             let client = client.build();
