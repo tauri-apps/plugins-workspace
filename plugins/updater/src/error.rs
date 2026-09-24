@@ -39,6 +39,9 @@ pub enum Error {
     /// `reqwest` crate errors.
     #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
+    /// `reqwest_middleware` crate errors.
+    #[error(transparent)]
+    ReqwestMiddleware(#[from] reqwest_middleware::Error),
     /// The platform was not found in the updater JSON response.
     #[error("the platform `{0}` was not found in the response `platforms` object")]
     TargetNotFound(String),
