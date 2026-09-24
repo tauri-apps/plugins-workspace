@@ -9,6 +9,9 @@ use http_cache_reqwest::{
 };
 use serde::{Deserialize, Serialize};
 
+/// Represents a caching behavior for update checks.
+///
+/// See the individual variants for more details on which to use.
 #[derive(Debug, Default, Clone, Copy, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum CacheMode {
@@ -44,6 +47,9 @@ impl From<CacheMode> for http_cache_reqwest::CacheMode {
     }
 }
 
+/// Cache configuration for the updater.
+///
+/// Generally should be set through your `tauri.conf.json` settings.
 #[derive(Debug, Default, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CacheConfig {
@@ -80,10 +86,13 @@ const DEFAULT_TTL: Duration = Duration::from_secs(60 * 60);
 /// Leaves some overhead for changing inputs.
 const CACHE_CAPACITY: u64 = 6;
 
+/// A cache manager for the updater.
+///
+/// Uses an internal `Arc` so cloning means we use a shared cache.
+/// Use `from_config` to create a new instance with separate cache storage.
 #[derive(Debug, Default, Clone)]
 pub struct CacheManager {
     // None here implies cache is fully disabled.
-    // Uses an internal `Arc` so cloning means we use a shared cache.
     http_cache: Option<MokaManager>,
 
     // Supplied as-is to `HttpCacheOptions`.
@@ -95,6 +104,10 @@ pub struct CacheManager {
 }
 
 impl CacheManager {
+    /// Creates a new [`CacheManager`] from config.
+    ///
+    /// This will also create a new cache storage (if caching is enabled).
+    /// For a shared cache storage, you should clone an existing [`CacheManager`].
     pub fn from_config(config: CacheConfig) -> Self {
         Self {
             http_cache: if !config.disabled {
@@ -114,10 +127,13 @@ impl CacheManager {
         }
     }
 
+    /// Shorthand to check if caching is enabled.
     pub(crate) fn enabled(&self) -> bool {
         self.http_cache.is_some()
     }
 
+    /// Provides a caching middleware for use with `reqwest-middleware` if caching is enabled.
+    /// `None` when caching is disabled.
     pub(crate) fn maybe_middleware(
         &self,
         mode_override: Option<CacheMode>,
