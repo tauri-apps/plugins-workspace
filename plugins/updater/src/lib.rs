@@ -28,11 +28,13 @@ use tauri::{
     Manager, Runtime,
 };
 
+mod cache;
 mod commands;
 mod config;
 mod error;
 mod updater;
 
+pub use cache::*;
 pub use config::Config;
 pub use error::{Error, Result};
 pub use updater::*;
@@ -83,9 +85,12 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
             target,
             version_comparator,
             headers,
+            cache,
         } = self.state::<UpdaterState>().inner();
 
-        let mut builder = UpdaterBuilder::new(app, config.clone()).headers(headers.clone());
+        let mut builder = UpdaterBuilder::new(app, config.clone())
+            .headers(headers.clone())
+            .cache_manager(cache.clone());
 
         if let Some(target) = target {
             builder = builder.target(target);
@@ -135,6 +140,7 @@ struct UpdaterState {
     config: Config,
     version_comparator: Option<VersionComparator>,
     headers: HeaderMap,
+    cache: CacheManager,
 }
 
 /// Builder for the updater plugin.
@@ -280,7 +286,9 @@ impl Builder {
                 if let Some(windows) = &mut config.windows {
                     windows.installer_args.extend(installer_args);
                 }
+
                 app.manage(UpdaterState {
+                    cache: CacheManager::from_config(config.cache.clone().unwrap_or_default()),
                     target,
                     config,
                     version_comparator,

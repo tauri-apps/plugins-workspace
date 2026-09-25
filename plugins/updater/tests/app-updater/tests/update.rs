@@ -72,6 +72,23 @@ impl Drop for UpdaterServer {
     }
 }
 
+/// Responds with the update manifest, cacheable so the update checks run through the updater's
+/// HTTP cache the way they would against a server sending caching headers.
+fn manifest_response(update: &Update) -> tiny_http::Response<std::io::Cursor<Vec<u8>>> {
+    let body = serde_json::to_vec(update).unwrap();
+    let len = body.len();
+    tiny_http::Response::new(
+        tiny_http::StatusCode(200),
+        vec![
+            tiny_http::Header::from_bytes("Cache-Control", "max-age=60").unwrap(),
+            tiny_http::Header::from_bytes("ETag", "\"manifest\"").unwrap(),
+        ],
+        std::io::Cursor::new(body),
+        Some(len),
+        None,
+    )
+}
+
 #[derive(Serialize)]
 struct Config {
     version: &'static str,
@@ -752,23 +769,13 @@ fn run_update_cases(
             "/" => {
                 let platforms = target_to_platforms(update_platform.clone(), signature.clone());
 
-                let body = serde_json::to_vec(&Update {
+                let _ = request.respond(manifest_response(&Update {
                     version: "1.0.0".into(),
                     date: time::OffsetDateTime::now_utc()
                         .format(&time::format_description::well_known::Rfc3339)
                         .unwrap(),
                     platforms,
-                })
-                .unwrap();
-                let len = body.len();
-                let response = tiny_http::Response::new(
-                    tiny_http::StatusCode(200),
-                    Vec::new(),
-                    std::io::Cursor::new(body),
-                    Some(len),
-                    None,
-                );
-                let _ = request.respond(response);
+                }));
             }
             "/download" => {
                 let _ = request.respond(tiny_http::Response::from_file(
@@ -1011,22 +1018,13 @@ fn update_validates_signed_version() {
                 },
             );
 
-            let body = serde_json::to_vec(&Update {
+            let _ = request.respond(manifest_response(&Update {
                 version: served_.lock().unwrap().version.clone(),
                 date: time::OffsetDateTime::now_utc()
                     .format(&time::format_description::well_known::Rfc3339)
                     .unwrap(),
                 platforms,
-            })
-            .unwrap();
-            let len = body.len();
-            let _ = request.respond(tiny_http::Response::new(
-                tiny_http::StatusCode(200),
-                Vec::new(),
-                std::io::Cursor::new(body),
-                Some(len),
-                None,
-            ));
+            }));
         }
         "/download" => {
             let _ = request.respond(tiny_http::Response::from_file(

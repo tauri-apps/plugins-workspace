@@ -37,6 +37,7 @@ use time::OffsetDateTime;
 use url::Url;
 
 use crate::{
+    cache::{CacheManager, CacheMode},
     error::{Error, Result},
     Config,
 };
@@ -197,6 +198,8 @@ pub struct UpdaterBuilder {
     proxy: Option<Url>,
     no_proxy: bool,
     context: UpdaterContext,
+    cache: CacheManager,
+    cache_mode_override: Option<CacheMode>,
 }
 
 impl UpdaterBuilder {
@@ -236,6 +239,8 @@ impl UpdaterBuilder {
             timeout: None,
             proxy: None,
             no_proxy: false,
+            cache: Default::default(),
+            cache_mode_override: None,
         }
     }
 
@@ -263,6 +268,31 @@ impl UpdaterBuilder {
     /// `{os}-{arch}` in the manifest.
     pub fn target(mut self, target: impl Into<String>) -> Self {
         self.target.replace(target.into());
+        self
+    }
+
+    /// Sets the [`CacheManager`] to use for `check` requests by this [`Updater`].
+    ///
+    /// Typically you want to use one shared [`CacheManager`] for the entire application
+    /// based on the config from `tauri.conf.json`.
+    pub fn cache_manager(mut self, cache: CacheManager) -> Self {
+        self.cache = cache;
+        self
+    }
+
+    /// Sets a per-request override for `check` requests by this [`Updater`].
+    ///
+    /// Note: the [`CacheManager`] determines the default behavior when no override is set.
+    pub fn cache_mode_override(mut self, cache_mode: CacheMode) -> Self {
+        self.cache_mode_override.replace(cache_mode);
+        self
+    }
+
+    /// Clears the per-request override for `check` requests by this [`Updater`].
+    ///
+    /// The [`CacheManager`] determines the default behavior when no override is set.
+    pub fn no_cache_mode_override(mut self) -> Self {
+        self.cache_mode_override = None;
         self
     }
 
@@ -475,6 +505,8 @@ impl UpdaterBuilder {
             headers: self.headers,
             extract_path,
             context: self.context.clone(),
+            cache: self.cache,
+            cache_mode_override: self.cache_mode_override,
         })
     }
 }
@@ -504,12 +536,14 @@ pub struct Updater {
     no_proxy: bool,
     endpoints: Vec<Url>,
     arch: &'static str,
-    // The `{{target}}` variable we replace in the endpoint and serach for in the JSON,
+    // The `{{target}}` variable we replace in the endpoint and search for in the JSON,
     // this is either the user provided target or the current operating system by default
     target: Option<String>,
     headers: HeaderMap,
     extract_path: PathBuf,
     context: UpdaterContext,
+    cache: CacheManager,
+    cache_mode_override: Option<CacheMode>,
 }
 
 impl Updater {
@@ -587,38 +621,50 @@ impl Updater {
                 let _ = rustls::crypto::ring::default_provider().install_default();
             }
 
-            let mut request = ClientBuilder::new().user_agent(UPDATER_USER_AGENT);
+            let mut client = ClientBuilder::new().user_agent(UPDATER_USER_AGENT);
             if self.context.config.dangerous_accept_invalid_certs {
-                request = request.danger_accept_invalid_certs(true);
+                client = client.danger_accept_invalid_certs(true);
             }
             if self.context.config.dangerous_accept_invalid_hostnames {
-                request = request.danger_accept_invalid_hostnames(true);
+                client = client.danger_accept_invalid_hostnames(true);
             }
             if let Some(timeout) = self.timeout {
-                request = request.timeout(timeout);
+                client = client.timeout(timeout);
             }
             if self.no_proxy {
                 log::debug!("disabling proxy");
-                request = request.no_proxy();
+                client = client.no_proxy();
             } else if let Some(ref proxy) = self.proxy {
                 log::debug!("using proxy {proxy}");
                 let proxy = reqwest::Proxy::all(proxy.as_str())?;
-                request = request.proxy(proxy);
+                client = client.proxy(proxy);
             }
 
             if let Some(ref configure_client) = self.context.configure_client {
-                request = configure_client(request);
+                client = configure_client(client);
             }
 
-            let response = request
-                .build()?
-                .get(url)
-                .headers(headers.clone())
-                .send()
-                .await;
+            let mut client = reqwest_middleware::ClientBuilder::new(client.build()?);
+            if let Some(cache) = self.cache.maybe_middleware(self.cache_mode_override) {
+                client = client.with(cache);
+            }
+            let client = client.build();
+
+            let response = client.get(url).headers(headers.clone()).send().await;
 
             match response {
                 Ok(res) => {
+                    if self.cache.enabled() {
+                        // Cache headers are useful information, but other headers may be sensitive.
+                        // Apply simple filter and log as Debug output.
+                        let cache_headers: Vec<_> = res
+                            .headers()
+                            .iter()
+                            .filter(|(name, _)| name.as_str().starts_with("x-cache"))
+                            .collect();
+                        log::debug!("update response cache headers: {cache_headers:?}");
+                    }
+
                     if res.status().is_success() {
                         // no updates found!
                         if StatusCode::NO_CONTENT == res.status() {
@@ -658,7 +704,7 @@ impl Updater {
         }
 
         // Last error is cleaned on success.
-        // Shouldn't be triggered if we had a successfull call
+        // Shouldn't be triggered if we had a successful call
         if let Some(error) = last_error {
             return Err(error);
         }

@@ -5,7 +5,7 @@ description = "In-app updates for Tauri applications."
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
-rust-version = { workspace = true }
+rust-version = "1.89.0"
 repository = { workspace = true }
 links = "tauri-plugin-updater"
 exclude = [
@@ -33,6 +33,8 @@ tauri-plugin = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["wry"] }
+tokio = { version = "1", features = ["rt", "macros", "time"] }
+mockito = "1.7"
 
 [dependencies]
 tauri = { workspace = true }
@@ -44,6 +46,13 @@ tokio = "1"
 reqwest = { version = "0.13", default-features = false, features = [
   "json",
   "stream",
+] }
+reqwest-middleware = "0.5.2"
+# TODO: use a release once https://github.com/06chaynes/http-cache/issues/175 is settled
+http-cache-reqwest = { git = "https://github.com/beanow-at-crabnebula/http-cache.git", branch = "dev", default-features = false, features = [
+  "manager-moka",
+  "reqwest-middleware",
+  "url-standard",
 ] }
 rustls = { version = "0.23", default-features = false, features = [
   "ring",
