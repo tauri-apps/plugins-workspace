@@ -73,6 +73,7 @@ describePlugin('websocket', () => {
       const message = await new Promise<Message>((resolve, reject) => {
         setTimeout(() => reject(new Error('headers not received')), 5000)
         ws.addListener(resolve)
+        ws.send('headers').catch(reject)
       })
       await ws.disconnect()
       return JSON.parse(message.data as string) as Record<string, string>

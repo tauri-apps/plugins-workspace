@@ -101,13 +101,21 @@ describePlugin('positioner', { desktopOnly: true }, () => {
   )
 
   itWm('tray positions are relative to the reported tray rect', async () => {
-    // a tray "icon" in the middle of the window's monitor, far from any edge,
-    // so neither the OS-specific flips nor the constraint kick in
+    // The example's 1000x800 window barely fits the CI screens (1024x768 on
+    // Windows, 1280x1024 on Xvfb), so wherever the tray "icon" is it sticks out
+    // of the monitor and `moveWindowConstrained` clamps it back on both axes.
+    // The window is shrunk and the tray placed near the monitor's top left
+    // corner, far enough from the edges that both positions keep the window on
+    // screen and neither the OS-specific flips nor the constraint kick in.
     const tray = await tauri(async (api) => {
+      const win = api.window.getCurrentWindow()
+      await win.setSize(new api.dpi.LogicalSize(600, 400))
+      await new Promise((resolve) => setTimeout(resolve, 500))
       const monitor = await api.window.currentMonitor()
+      const size = await win.outerSize()
       const rect = {
-        x: monitor!.position.x + Math.trunc(monitor!.size.width / 2),
-        y: monitor!.position.y + Math.trunc(monitor!.size.height / 2),
+        x: monitor!.position.x + Math.trunc(size.width / 2) + 50,
+        y: monitor!.position.y + 50,
         width: 20,
         height: 20
       }
