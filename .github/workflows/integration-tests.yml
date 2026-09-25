@@ -6,6 +6,8 @@ name: integration tests
 
 on:
   workflow_dispatch:
+  # run before publishing, see covector-version-or-publish.yml
+  workflow_call:
   push:
     branches:
       - v1

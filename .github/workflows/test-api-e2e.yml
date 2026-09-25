@@ -6,6 +6,8 @@ name: test plugins e2e
 
 on:
   workflow_dispatch:
+  # run before publishing, see covector-version-or-publish.yml
+  workflow_call:
   push:
     branches:
       - v2
@@ -35,7 +37,9 @@ env:
   MSEDGEDRIVER_TOOL_REV: 8c4b34f51b45f5cf08013366d703de464ab871d1
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # `github.workflow` is the caller's name in a `workflow_call` run, so the suffix keeps the
+  # desktop and mobile suites from sharing (and cancelling) one group there.
+  group: ${{ github.workflow }}-api-e2e-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
