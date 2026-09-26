@@ -36,29 +36,47 @@ path = "$LOG"
 [[set]]
 identifier = "allow-log-read-recursive"
 description = "This allows full recursive read access to the complete `$LOG` folder, files and subdirectories."
-permissions = ["read-all", "scope-log-recursive"]
+permissions = [
+    "read-all",
+    "scope-log-recursive"
+]
 
 [[set]]
 identifier = "allow-log-write-recursive"
 description = "This allows full recursive write access to the complete `$LOG` folder, files and subdirectories."
-permissions = ["write-all", "scope-log-recursive"]
+permissions = [
+    "write-all",
+    "scope-log-recursive"
+]
 
 [[set]]
 identifier = "allow-log-read"
 description = "This allows non-recursive read access to the `$LOG` folder."
-permissions = ["read-all", "scope-log"]
+permissions = [
+    "read-all",
+    "scope-log"
+]
 
 [[set]]
 identifier = "allow-log-write"
 description = "This allows non-recursive write access to the `$LOG` folder."
-permissions = ["write-all", "scope-log"]
+permissions = [
+    "write-all",
+    "scope-log"
+]
 
 [[set]]
 identifier = "allow-log-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$LOG` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-log-recursive"]
+permissions = [
+    "read-meta",
+    "scope-log-recursive"
+]
 
 [[set]]
 identifier = "allow-log-meta"
 description = "This allows non-recursive read access to metadata of the `$LOG` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-log-index"]
+permissions = [
+    "read-meta",
+    "scope-log-index"
+]

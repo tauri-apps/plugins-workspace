@@ -36,29 +36,47 @@ path = "$TEMPLATE"
 [[set]]
 identifier = "allow-template-read-recursive"
 description = "This allows full recursive read access to the complete `$TEMPLATE` folder, files and subdirectories."
-permissions = ["read-all", "scope-template-recursive"]
+permissions = [
+    "read-all",
+    "scope-template-recursive"
+]
 
 [[set]]
 identifier = "allow-template-write-recursive"
 description = "This allows full recursive write access to the complete `$TEMPLATE` folder, files and subdirectories."
-permissions = ["write-all", "scope-template-recursive"]
+permissions = [
+    "write-all",
+    "scope-template-recursive"
+]
 
 [[set]]
 identifier = "allow-template-read"
 description = "This allows non-recursive read access to the `$TEMPLATE` folder."
-permissions = ["read-all", "scope-template"]
+permissions = [
+    "read-all",
+    "scope-template"
+]
 
 [[set]]
 identifier = "allow-template-write"
 description = "This allows non-recursive write access to the `$TEMPLATE` folder."
-permissions = ["write-all", "scope-template"]
+permissions = [
+    "write-all",
+    "scope-template"
+]
 
 [[set]]
 identifier = "allow-template-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$TEMPLATE` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-template-recursive"]
+permissions = [
+    "read-meta",
+    "scope-template-recursive"
+]
 
 [[set]]
 identifier = "allow-template-meta"
 description = "This allows non-recursive read access to metadata of the `$TEMPLATE` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-template-index"]
+permissions = [
+    "read-meta",
+    "scope-template-index"
+]

@@ -4,20 +4,20 @@
 
 use std::{future::Future, pin::Pin, str::FromStr, sync::Arc, time::Duration};
 
-use http::{header, HeaderMap, HeaderName, HeaderValue, Method, StatusCode};
-use reqwest::{redirect::Policy, NoProxy};
+use http::{HeaderMap, HeaderName, HeaderValue, Method, StatusCode, header};
+use reqwest::{NoProxy, redirect::Policy};
 use serde::{Deserialize, Serialize};
 use tauri::{
+    Manager, ResourceId, ResourceTable, Runtime, State, Webview,
     async_runtime::Mutex,
     command,
     ipc::{CommandScope, GlobalScope},
-    Manager, ResourceId, ResourceTable, Runtime, State, Webview,
 };
-use tokio::sync::oneshot::{channel, Receiver, Sender};
+use tokio::sync::oneshot::{Receiver, Sender, channel};
 
 use crate::{
-    scope::{Entry, Scope},
     Error, Http, Result,
+    scope::{Entry, Scope},
 };
 
 const HTTP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
@@ -251,8 +251,12 @@ pub async fn fetch<R: Runtime>(
         if is_unsafe_header(&name) {
             #[cfg(debug_assertions)]
             {
-                eprintln!("[\x1b[33mWARNING\x1b[0m] Skipping {name} header as it is a forbidden header per fetch spec https://fetch.spec.whatwg.org/#terminology-headers");
-                eprintln!("[\x1b[33mWARNING\x1b[0m] if keeping the header is a desired behavior, you can enable `unsafe-headers` feature flag in your Cargo.toml");
+                eprintln!(
+                    "[\x1b[33mWARNING\x1b[0m] Skipping {name} header as it is a forbidden header per fetch spec https://fetch.spec.whatwg.org/#terminology-headers"
+                );
+                eprintln!(
+                    "[\x1b[33mWARNING\x1b[0m] if keeping the header is a desired behavior, you can enable `unsafe-headers` feature flag in your Cargo.toml"
+                );
             }
             continue;
         }
@@ -288,7 +292,9 @@ pub async fn fetch<R: Runtime>(
                 {
                     #[cfg(debug_assertions)]
                     {
-                        eprintln!("[\x1b[33mWARNING\x1b[0m] using dangerous settings requires `dangerous-settings` feature flag in your Cargo.toml");
+                        eprintln!(
+                            "[\x1b[33mWARNING\x1b[0m] using dangerous settings requires `dangerous-settings` feature flag in your Cargo.toml"
+                        );
                     }
                     let _ = danger_config;
                     return Err(Error::DangerousSettings);
@@ -335,16 +341,16 @@ pub async fn fetch<R: Runtime>(
             }
 
             // ensure we have an Origin header set
-            if cfg!(not(feature = "unsafe-headers")) || !headers.contains_key(header::ORIGIN) {
-                if let Ok(url) = webview.url() {
-                    // The url crate returns OpaqueOrigin for tauri://localhost which serializes to "null"
-                    let origin = if url.scheme() == "tauri" {
-                        "tauri://localhost".to_string()
-                    } else {
-                        url.origin().ascii_serialization()
-                    };
-                    headers.append(header::ORIGIN, HeaderValue::from_str(&origin)?);
-                }
+            if (cfg!(not(feature = "unsafe-headers")) || !headers.contains_key(header::ORIGIN))
+                && let Ok(url) = webview.url()
+            {
+                // The url crate returns OpaqueOrigin for tauri://localhost which serializes to "null"
+                let origin = if url.scheme() == "tauri" {
+                    "tauri://localhost".to_string()
+                } else {
+                    url.origin().ascii_serialization()
+                };
+                headers.append(header::ORIGIN, HeaderValue::from_str(&origin)?);
             }
 
             // In case empty origin is passed, remove it. Some services do not like Origin header
@@ -586,8 +592,10 @@ mod tests {
                     Some(location) => format!(
                         "HTTP/1.1 302 Found\r\nLocation: {location}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
                     ),
-                    None => "HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\nsecret"
-                        .to_string(),
+                    None => {
+                        "HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\nsecret"
+                            .to_string()
+                    }
                 };
 
                 let _ = stream.write_all(response.as_bytes());

@@ -7,14 +7,14 @@ use std::{collections::HashMap, future::Future, path::PathBuf, pin::Pin, string:
 use encoding_rs::Encoding;
 use serde::{Deserialize, Serialize};
 use tauri::{
-    ipc::{Channel, CommandScope, GlobalScope},
     Manager, Runtime, State, Window,
+    ipc::{Channel, CommandScope, GlobalScope},
 };
 
 use crate::{
+    Shell,
     process::{CommandEvent, TerminatedPayload},
     scope::ExecuteArgs,
-    Shell,
 };
 
 type ChildId = u32;

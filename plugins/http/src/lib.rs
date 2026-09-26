@@ -52,8 +52,8 @@
 
 pub use reqwest;
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 pub use error::{Error, Result};

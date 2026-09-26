@@ -3,12 +3,18 @@
 // SPDX-License-Identifier: MIT
 
 use serde::de::DeserializeOwned;
-use tauri::{plugin::PluginApi, AppHandle, Runtime};
+use tauri::{AppHandle, Runtime, plugin::PluginApi};
 
-use crate::{models::*, FilePath, OpenOptions};
+use crate::{FilePath, OpenOptions, models::*};
 
 const PLUGIN_IDENTIFIER: &str = "com.plugin.fs";
 
+/// Access to the file system APIs on Android.
+///
+/// In addition to regular file system paths, it can read `content://` URIs
+/// and Android asset paths by resolving them with the Android plugin implementation.
+///
+/// Retrieved with [`crate::FsExt::fs`].
 pub struct Fs<R: Runtime>(tauri::plugin::PluginHandle<R>);
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
@@ -36,12 +42,7 @@ impl<R: Runtime> Fs<R> {
         match path.into() {
             FilePath::Url(u) => self
                 .resolve_content_uri(u.to_string(), opts.android_mode())
-                .map_err(|e| {
-                    std::io::Error::new(
-                        std::io::ErrorKind::Other,
-                        format!("failed to open file: {e}"),
-                    )
-                }),
+                .map_err(|e| std::io::Error::other(format!("failed to open file: {e}"))),
             FilePath::Path(p) => {
                 // tauri::utils::platform::resources_dir() returns a PathBuf with the Android asset URI prefix
                 // we must resolve that file with the Android API
@@ -49,12 +50,7 @@ impl<R: Runtime> Fs<R> {
                     .is_ok()
                 {
                     self.resolve_content_uri(p.to_string_lossy(), opts.android_mode())
-                        .map_err(|e| {
-                            std::io::Error::new(
-                                std::io::ErrorKind::Other,
-                                format!("failed to open file: {e}"),
-                            )
-                        })
+                        .map_err(|e| std::io::Error::other(format!("failed to open file: {e}")))
                 } else {
                     std::fs::OpenOptions::from(opts).open(p)
                 }

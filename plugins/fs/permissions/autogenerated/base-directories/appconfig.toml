@@ -36,29 +36,47 @@ path = "$APPCONFIG"
 [[set]]
 identifier = "allow-appconfig-read-recursive"
 description = "This allows full recursive read access to the complete `$APPCONFIG` folder, files and subdirectories."
-permissions = ["read-all", "scope-appconfig-recursive"]
+permissions = [
+    "read-all",
+    "scope-appconfig-recursive"
+]
 
 [[set]]
 identifier = "allow-appconfig-write-recursive"
 description = "This allows full recursive write access to the complete `$APPCONFIG` folder, files and subdirectories."
-permissions = ["write-all", "scope-appconfig-recursive"]
+permissions = [
+    "write-all",
+    "scope-appconfig-recursive"
+]
 
 [[set]]
 identifier = "allow-appconfig-read"
 description = "This allows non-recursive read access to the `$APPCONFIG` folder."
-permissions = ["read-all", "scope-appconfig"]
+permissions = [
+    "read-all",
+    "scope-appconfig"
+]
 
 [[set]]
 identifier = "allow-appconfig-write"
 description = "This allows non-recursive write access to the `$APPCONFIG` folder."
-permissions = ["write-all", "scope-appconfig"]
+permissions = [
+    "write-all",
+    "scope-appconfig"
+]
 
 [[set]]
 identifier = "allow-appconfig-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$APPCONFIG` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-appconfig-recursive"]
+permissions = [
+    "read-meta",
+    "scope-appconfig-recursive"
+]
 
 [[set]]
 identifier = "allow-appconfig-meta"
 description = "This allows non-recursive read access to metadata of the `$APPCONFIG` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-appconfig-index"]
+permissions = [
+    "read-meta",
+    "scope-appconfig-index"
+]

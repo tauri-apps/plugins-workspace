@@ -7,8 +7,8 @@ use std::sync::Arc;
 use crate::process::Command;
 
 use regex::Regex;
-use tauri::ipc::ScopeObject;
 use tauri::Manager;
+use tauri::ipc::ScopeObject;
 
 /// Allowed representation of `Execute` command arguments.
 #[derive(Debug, Clone, serde::Deserialize)]
@@ -153,8 +153,8 @@ pub enum Error {
 
     /// The sidecar program validated but failed to find the sidecar path.
     #[error(
-    "The scoped sidecar command was validated, but failed to create the path to the command: {0}"
-  )]
+        "The scoped sidecar command was validated, but failed to create the path to the command: {0}"
+    )]
     Sidecar(String),
 
     /// The named command was not found in the scoped config.
@@ -163,12 +163,14 @@ pub enum Error {
 
     /// A command variable has no value set in the arguments.
     #[error(
-    "Scoped command argument at position {0} must match regex validation {1} but it was not found"
-  )]
+        "Scoped command argument at position {0} must match regex validation {1} but it was not found"
+    )]
     MissingVar(usize, String),
 
     /// At least one argument did not pass input validation.
-    #[error("Scoped command argument at position {index} was found, but failed regex validation {validation}")]
+    #[error(
+        "Scoped command argument at position {index} was found, but failed regex validation {validation}"
+    )]
     Validation {
         /// Index of the variable.
         index: usize,

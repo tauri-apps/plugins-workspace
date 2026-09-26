@@ -36,29 +36,47 @@ path = "$RUNTIME"
 [[set]]
 identifier = "allow-runtime-read-recursive"
 description = "This allows full recursive read access to the complete `$RUNTIME` folder, files and subdirectories."
-permissions = ["read-all", "scope-runtime-recursive"]
+permissions = [
+    "read-all",
+    "scope-runtime-recursive"
+]
 
 [[set]]
 identifier = "allow-runtime-write-recursive"
 description = "This allows full recursive write access to the complete `$RUNTIME` folder, files and subdirectories."
-permissions = ["write-all", "scope-runtime-recursive"]
+permissions = [
+    "write-all",
+    "scope-runtime-recursive"
+]
 
 [[set]]
 identifier = "allow-runtime-read"
 description = "This allows non-recursive read access to the `$RUNTIME` folder."
-permissions = ["read-all", "scope-runtime"]
+permissions = [
+    "read-all",
+    "scope-runtime"
+]
 
 [[set]]
 identifier = "allow-runtime-write"
 description = "This allows non-recursive write access to the `$RUNTIME` folder."
-permissions = ["write-all", "scope-runtime"]
+permissions = [
+    "write-all",
+    "scope-runtime"
+]
 
 [[set]]
 identifier = "allow-runtime-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$RUNTIME` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-runtime-recursive"]
+permissions = [
+    "read-meta",
+    "scope-runtime-recursive"
+]
 
 [[set]]
 identifier = "allow-runtime-meta"
 description = "This allows non-recursive read access to metadata of the `$RUNTIME` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-runtime-index"]
+permissions = [
+    "read-meta",
+    "scope-runtime-index"
+]

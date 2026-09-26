@@ -11,18 +11,32 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
-use tauri::{path::BaseDirectory, AppHandle, Emitter, Manager, Resource, ResourceId, Runtime};
+use tauri::{AppHandle, Emitter, Manager, Resource, ResourceId, Runtime, path::BaseDirectory};
 use tokio::{
     select,
-    sync::mpsc::{unbounded_channel, UnboundedSender},
+    sync::mpsc::{UnboundedSender, unbounded_channel},
     time::sleep,
 };
 
+/// Function used to serialize the store cache to the bytes written to the store file.
+///
+/// The default implementation writes pretty printed JSON.
 pub type SerializeFn =
     fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>>;
+/// Function used to deserialize the bytes read from the store file into the store cache.
+///
+/// The default implementation parses JSON.
 pub type DeserializeFn =
     fn(&[u8]) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>>;
 
+/// Resolves the path of a store file, relative to the app data directory
+/// ([`BaseDirectory::AppData`]).
+///
+/// This is the path the [`Store`] created with the given `path` reads from and writes to.
+///
+/// # Errors
+///
+/// Returns an error if the app data directory cannot be resolved.
 pub fn resolve_store_path<R: Runtime>(
     app: &AppHandle<R>,
     path: impl AsRef<Path>,
@@ -429,6 +443,15 @@ impl<R: Runtime> std::fmt::Debug for StoreInner<R> {
     }
 }
 
+/// A key-value store, persisted to a file resolved with [`resolve_store_path`].
+///
+/// The values are kept in memory and written to disk on [`Store::save`], and also automatically
+/// after each modification unless auto save has been disabled with
+/// [`StoreBuilder::disable_auto_save`]. Any pending auto save is applied when the store is dropped.
+///
+/// Create or load one with [`StoreExt::store`](crate::StoreExt::store) or [`StoreBuilder`].
+/// It is a [`Resource`], so it is also reachable from the frontend by its [`ResourceId`];
+/// closing that resource unregisters the store, meaning the next load creates a new instance.
 pub struct Store<R: Runtime> {
     auto_save: Option<Duration>,
     auto_save_debounce_sender: Arc<Mutex<Option<UnboundedSender<AutoSaveMessage>>>>,
@@ -620,8 +643,8 @@ mod tests {
     use super::*;
     use serde_json::json;
     use tauri::{
-        test::{mock_app, MockRuntime},
         App,
+        test::{MockRuntime, mock_app},
     };
 
     fn temp_store_path(name: &str) -> PathBuf {

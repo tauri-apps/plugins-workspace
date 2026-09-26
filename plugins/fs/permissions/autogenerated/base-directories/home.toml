@@ -36,29 +36,47 @@ path = "$HOME"
 [[set]]
 identifier = "allow-home-read-recursive"
 description = "This allows full recursive read access to the complete `$HOME` folder, files and subdirectories."
-permissions = ["read-all", "scope-home-recursive"]
+permissions = [
+    "read-all",
+    "scope-home-recursive"
+]
 
 [[set]]
 identifier = "allow-home-write-recursive"
 description = "This allows full recursive write access to the complete `$HOME` folder, files and subdirectories."
-permissions = ["write-all", "scope-home-recursive"]
+permissions = [
+    "write-all",
+    "scope-home-recursive"
+]
 
 [[set]]
 identifier = "allow-home-read"
 description = "This allows non-recursive read access to the `$HOME` folder."
-permissions = ["read-all", "scope-home"]
+permissions = [
+    "read-all",
+    "scope-home"
+]
 
 [[set]]
 identifier = "allow-home-write"
 description = "This allows non-recursive write access to the `$HOME` folder."
-permissions = ["write-all", "scope-home"]
+permissions = [
+    "write-all",
+    "scope-home"
+]
 
 [[set]]
 identifier = "allow-home-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$HOME` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-home-recursive"]
+permissions = [
+    "read-meta",
+    "scope-home-recursive"
+]
 
 [[set]]
 identifier = "allow-home-meta"
 description = "This allows non-recursive read access to metadata of the `$HOME` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-home-index"]
+permissions = [
+    "read-meta",
+    "scope-home-index"
+]

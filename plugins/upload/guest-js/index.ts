@@ -2,20 +2,62 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+/**
+ * Upload files from disk to a remote server over HTTP, and download files from a remote HTTP
+ * server to disk.
+ *
+ * @module
+ */
+
 import { invoke, Channel } from '@tauri-apps/api/core'
 
+/**
+ * The payload sent to a {@link ProgressHandler} while an upload or download is in progress.
+ */
 interface ProgressPayload {
+  /**
+   * The number of bytes transferred since the previous progress event (i.e. the size of the
+   * last chunk), not the cumulative total.
+   */
   progress: number
+  /**
+   * The cumulative number of bytes transferred so far.
+   */
   progressTotal: number
+  /**
+   * The total size of the transfer in bytes. For a download this is the value of the response's
+   * `Content-Length` header, and is `0` if the server did not send it or the response body is
+   * compressed. For an upload this is the size of the file being uploaded.
+   */
   total: number
+  /**
+   * The current transfer speed, approximately in bytes per second. It is recalculated about
+   * every 500 milliseconds and stays at `0` until then.
+   */
   transferSpeed: number
 }
 
+/**
+ * A callback invoked with a {@link ProgressPayload} every time a chunk of data is
+ * uploaded or downloaded.
+ */
 type ProgressHandler = (progress: ProgressPayload) => void
 
+/**
+ * The HTTP method used to send the file to the server in {@link upload}.
+ */
 enum HttpMethod {
+  /**
+   * Send the file using an HTTP `POST` request. This is the default when no method is given.
+   */
   Post = 'POST',
+  /**
+   * Send the file using an HTTP `PUT` request.
+   */
   Put = 'PUT',
+  /**
+   * Send the file using an HTTP `PATCH` request.
+   */
   Patch = 'PATCH'
 }
 

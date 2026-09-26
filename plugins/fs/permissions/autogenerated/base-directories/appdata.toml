@@ -36,29 +36,47 @@ path = "$APPDATA"
 [[set]]
 identifier = "allow-appdata-read-recursive"
 description = "This allows full recursive read access to the complete `$APPDATA` folder, files and subdirectories."
-permissions = ["read-all", "scope-appdata-recursive"]
+permissions = [
+    "read-all",
+    "scope-appdata-recursive"
+]
 
 [[set]]
 identifier = "allow-appdata-write-recursive"
 description = "This allows full recursive write access to the complete `$APPDATA` folder, files and subdirectories."
-permissions = ["write-all", "scope-appdata-recursive"]
+permissions = [
+    "write-all",
+    "scope-appdata-recursive"
+]
 
 [[set]]
 identifier = "allow-appdata-read"
 description = "This allows non-recursive read access to the `$APPDATA` folder."
-permissions = ["read-all", "scope-appdata"]
+permissions = [
+    "read-all",
+    "scope-appdata"
+]
 
 [[set]]
 identifier = "allow-appdata-write"
 description = "This allows non-recursive write access to the `$APPDATA` folder."
-permissions = ["write-all", "scope-appdata"]
+permissions = [
+    "write-all",
+    "scope-appdata"
+]
 
 [[set]]
 identifier = "allow-appdata-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$APPDATA` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-appdata-recursive"]
+permissions = [
+    "read-meta",
+    "scope-appdata-recursive"
+]
 
 [[set]]
 identifier = "allow-appdata-meta"
 description = "This allows non-recursive read access to metadata of the `$APPDATA` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-appdata-index"]
+permissions = [
+    "read-meta",
+    "scope-appdata-index"
+]

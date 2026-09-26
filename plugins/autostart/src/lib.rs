@@ -11,28 +11,38 @@
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 
 use auto_launch::{AutoLaunch, AutoLaunchBuilder};
-use serde::{ser::Serializer, Serialize};
+use serde::{Serialize, ser::Serializer};
 use tauri::{
-    command,
+    Manager, Runtime, State, command,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Manager, Runtime, State,
 };
 
 use std::env::current_exe;
 
 type Result<T> = std::result::Result<T, Error>;
 
+/// The strategy used to register the application for auto start on macOS.
+///
+/// The builder's default is [`MacosLauncher::LaunchAgent`].
 #[derive(Debug, Default, Copy, Clone)]
 pub enum MacosLauncher {
+    /// Auto start by installing a Launch Agent plist under `~/Library/LaunchAgents`,
+    /// which macOS starts automatically at login.
     #[default]
     LaunchAgent,
+    /// Auto start by adding a login item through an AppleScript command sent to the
+    /// "System Events" application.
     AppleScript,
 }
 
+/// The error type of this plugin.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// An I/O error, for example while resolving the current executable's path.
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    /// An error forwarded from the underlying `auto_launch` operation, converted to its
+    /// string representation.
     #[error("{0}")]
     Anyhow(String),
 }
@@ -46,9 +56,19 @@ impl Serialize for Error {
     }
 }
 
+/// Manages the auto start (launch at login) state of the application.
+///
+/// An instance is created and managed as Tauri state when the plugin is built; access it
+/// through [`ManagerExt::autolaunch`].
 pub struct AutoLaunchManager(AutoLaunch);
 
 impl AutoLaunchManager {
+    /// Enables auto start, registering the application to launch at login.
+    ///
+    /// ## Errors
+    ///
+    /// Returns [`Error::Anyhow`] if the platform-specific registration fails, for example
+    /// when the application path does not exist or is not absolute.
     pub fn enable(&self) -> Result<()> {
         self.0
             .enable()
@@ -56,13 +76,26 @@ impl AutoLaunchManager {
             .map_err(Error::Anyhow)
     }
 
+    /// Disables auto start, removing the application from the list of programs launched at login.
+    ///
+    /// ## Errors
+    ///
+    /// Returns [`Error::Anyhow`] if the platform-specific removal fails.
     pub fn disable(&self) -> Result<()> {
-        self.0
-            .disable()
-            .map_err(|e| e.to_string())
-            .map_err(Error::Anyhow)
+        match self.0.disable() {
+            // On Windows, disabling deletes the app's `Run` registry value, which fails with
+            // "not found" when autostart is already disabled. macOS and Linux treat that as a
+            // no-op, so do the same here.
+            Err(auto_launch::Error::Io(e)) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            result => result.map_err(|e| e.to_string()).map_err(Error::Anyhow),
+        }
     }
 
+    /// Returns whether auto start is currently enabled for the application.
+    ///
+    /// ## Errors
+    ///
+    /// Returns [`Error::Anyhow`] if the platform-specific check fails.
     pub fn is_enabled(&self) -> Result<bool> {
         self.0
             .is_enabled()
@@ -71,6 +104,8 @@ impl AutoLaunchManager {
     }
 }
 
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`]
+/// and [`tauri::Window`] to access the autostart APIs.
 pub trait ManagerExt<R: Runtime> {
     fn autostart(&self) -> State<'_, AutoLaunchManager>;
 }
@@ -96,6 +131,8 @@ async fn is_enabled(manager: State<'_, AutoLaunchManager>) -> Result<bool> {
     manager.is_enabled()
 }
 
+/// Builder for the autostart plugin, used to configure the startup arguments, application
+/// name, and — on macOS — the launch strategy before calling [`Builder::build`].
 #[derive(Default)]
 pub struct Builder {
     #[cfg(target_os = "macos")]
@@ -114,11 +151,10 @@ impl Builder {
     ///
     /// ## Examples
     ///
-    /// ```no_run
-    /// Builder::new()
+    /// ```
+    /// tauri_plugin_autostart::Builder::new()
     ///     .arg("--from-autostart")
-    ///     .arg("--hey")
-    ///     .build();
+    ///     .arg("--hey");
     /// ```
     pub fn arg<S: Into<String>>(mut self, arg: S) -> Self {
         self.args.push(arg.into());
@@ -129,10 +165,8 @@ impl Builder {
     ///
     /// ## Examples
     ///
-    /// ```no_run
-    /// Builder::new()
-    ///     .args(["--from-autostart", "--hey"])
-    ///     .build();
+    /// ```
+    /// tauri_plugin_autostart::Builder::new().args(["--from-autostart", "--hey"]);
     /// ```
     pub fn args<I, S>(mut self, args: I) -> Self
     where
@@ -157,16 +191,19 @@ impl Builder {
     ///
     /// ## Examples
     ///
-    /// ```no_run
-    /// Builder::new()
-    ///     .app_name("My Custom Name")
-    ///     .build();
+    /// ```
+    /// tauri_plugin_autostart::Builder::new().app_name("My Custom Name");
     /// ```
     pub fn app_name<S: Into<String>>(mut self, app_name: S) -> Self {
         self.app_name = Some(app_name.into());
         self
     }
 
+    /// Builds the autostart [`TauriPlugin`] with the configured options.
+    ///
+    /// On setup, it resolves the current executable's path (or the AppImage path on Linux,
+    /// when available) and manages an [`AutoLaunchManager`] built from it, so that
+    /// [`ManagerExt::autolaunch`] can be used from anywhere in the application.
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         PluginBuilder::new("autostart")
             .invoke_handler(tauri::generate_handler![enable, disable, is_enabled])

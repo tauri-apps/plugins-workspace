@@ -94,18 +94,18 @@ mod imp {
 
     use windows::Win32::UI::Shell::Common::ITEMIDLIST;
     use windows::{
-        core::{w, HSTRING, PCWSTR},
         Win32::{
             Foundation::ERROR_FILE_NOT_FOUND,
             System::Com::CoInitialize,
             UI::{
                 Shell::{
-                    ILCreateFromPathW, ILFree, SHOpenFolderAndSelectItems, ShellExecuteExW,
-                    SHELLEXECUTEINFOW,
+                    ILCreateFromPathW, ILFree, SHELLEXECUTEINFOW, SHOpenFolderAndSelectItems,
+                    ShellExecuteExW,
                 },
                 WindowsAndMessaging::SW_SHOWNORMAL,
             },
         },
+        core::{HSTRING, PCWSTR, w},
     };
 
     pub fn reveal_items_in_dir(paths: &[PathBuf]) -> crate::Result<()> {
@@ -288,6 +288,8 @@ mod imp {
     use std::path::PathBuf;
 
     pub fn reveal_items_in_dir(paths: &[PathBuf]) -> crate::Result<()> {
+        // these AppKit calls are only `unsafe` before objc2-app-kit 0.3.2
+        #[allow(unused_unsafe)]
         unsafe {
             let mut urls = Vec::new();
 

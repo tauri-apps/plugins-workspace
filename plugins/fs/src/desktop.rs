@@ -8,6 +8,9 @@ use tauri::{AppHandle, Runtime};
 
 use crate::{FilePath, OpenOptions};
 
+/// Access to the file system APIs on desktop.
+///
+/// Retrieved with [`crate::FsExt::fs`].
 pub struct Fs<R: Runtime>(pub(crate) AppHandle<R>);
 
 fn path_or_err<P: Into<FilePath>>(p: P) -> std::io::Result<PathBuf> {

@@ -8,7 +8,7 @@ use std::fs::create_dir_all;
 use indexmap::IndexMap;
 use serde_json::Value as JsonValue;
 #[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
-use sqlx::{migrate::MigrateDatabase, Column, Executor, Pool, Row};
+use sqlx::{Column, Executor, Pool, Row, migrate::MigrateDatabase};
 #[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
 use tauri::Manager;
 use tauri::{AppHandle, Runtime};
@@ -22,13 +22,23 @@ use sqlx::Sqlite;
 
 use crate::LastInsertId;
 
+/// A connection pool for one of the supported database drivers.
+///
+/// The variant is picked from the scheme of the connection string
+/// (`sqlite:`, `mysql:` or `postgres:`) and only the variants whose Cargo
+/// feature is enabled exist.
 pub enum DbPool {
+    /// A SQLite connection pool. Only available with the `sqlite` Cargo feature.
     #[cfg(feature = "sqlite")]
     Sqlite(Pool<Sqlite>),
+    /// A MySQL connection pool. Only available with the `mysql` Cargo feature.
     #[cfg(feature = "mysql")]
     MySql(Pool<MySql>),
+    /// A PostgreSQL connection pool. Only available with the `postgres` Cargo feature.
     #[cfg(feature = "postgres")]
     Postgres(Pool<Postgres>),
+    /// Placeholder used when none of the `sqlite`, `mysql` and `postgres` Cargo
+    /// features is enabled. Connecting always fails and every other operation is a no-op.
     #[cfg(not(any(feature = "sqlite", feature = "mysql", feature = "postgres")))]
     None,
 }

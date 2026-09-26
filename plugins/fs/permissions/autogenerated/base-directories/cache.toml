@@ -36,29 +36,47 @@ path = "$CACHE"
 [[set]]
 identifier = "allow-cache-read-recursive"
 description = "This allows full recursive read access to the complete `$CACHE` folder, files and subdirectories."
-permissions = ["read-all", "scope-cache-recursive"]
+permissions = [
+    "read-all",
+    "scope-cache-recursive"
+]
 
 [[set]]
 identifier = "allow-cache-write-recursive"
 description = "This allows full recursive write access to the complete `$CACHE` folder, files and subdirectories."
-permissions = ["write-all", "scope-cache-recursive"]
+permissions = [
+    "write-all",
+    "scope-cache-recursive"
+]
 
 [[set]]
 identifier = "allow-cache-read"
 description = "This allows non-recursive read access to the `$CACHE` folder."
-permissions = ["read-all", "scope-cache"]
+permissions = [
+    "read-all",
+    "scope-cache"
+]
 
 [[set]]
 identifier = "allow-cache-write"
 description = "This allows non-recursive write access to the `$CACHE` folder."
-permissions = ["write-all", "scope-cache"]
+permissions = [
+    "write-all",
+    "scope-cache"
+]
 
 [[set]]
 identifier = "allow-cache-meta-recursive"
 description = "This allows full recursive read access to metadata of the `$CACHE` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-cache-recursive"]
+permissions = [
+    "read-meta",
+    "scope-cache-recursive"
+]
 
 [[set]]
 identifier = "allow-cache-meta"
 description = "This allows non-recursive read access to metadata of the `$CACHE` folder, including file listing and statistics."
-permissions = ["read-meta", "scope-cache-index"]
+permissions = [
+    "read-meta",
+    "scope-cache-index"
+]

@@ -3,6 +3,7 @@ name = "tauri-plugin-biometric"
 version = "3.0.0-alpha.1"
 description = "Prompt the user for biometric authentication on Android and iOS."
 edition = { workspace = true }
+rust-version = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }

@@ -3,6 +3,7 @@ name = "tauri-plugin-haptics"
 description = "Haptic feedback and vibrations on Android and iOS"
 version = "3.0.0-alpha.1"
 edition = { workspace = true }
+rust-version = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }

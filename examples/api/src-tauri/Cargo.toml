@@ -3,7 +3,7 @@ name = "api"
 publish = false
 version = "3.0.0-alpha.1"
 description = "An example Tauri Application showcasing the api"
-edition = "2021"
+edition = "2024"
 rust-version = { workspace = true }
 license = "Apache-2.0 OR MIT"
 
@@ -42,6 +42,17 @@ tauri-plugin-opener = { path = "../../../plugins/opener", version = "3.0.0-alpha
 tauri-plugin-shell = { path = "../../../plugins/shell", version = "3.0.0-alpha.1" }
 tauri-plugin-store = { path = "../../../plugins/store", version = "3.0.0-alpha.1" }
 tauri-plugin-upload = { path = "../../../plugins/upload", version = "3.0.0-alpha.1" }
+tauri-plugin-deep-link = { path = "../../../plugins/deep-link", version = "3.0.0-alpha.1" }
+tauri-plugin-sql = { path = "../../../plugins/sql", version = "3.0.0-alpha.1", features = [
+  "sqlite",
+] }
+tauri-plugin-websocket = { path = "../../../plugins/websocket", version = "3.0.0-alpha.1" }
+
+# WebDriver automation bridge, used by the plugins e2e suite (packages/api-e2e).
+# Desktop-only and behind the off-by-default `automation` feature so it never ships in a
+# regular build.
+[target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
+tauri-plugin-automation = { version = "3.0.0-alpha.2", optional = true }
 
 [dependencies.tauri]
 workspace = true
@@ -69,8 +80,12 @@ optional = true
 features = ["macos-private-api"]
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
+tauri-plugin-autostart = { path = "../../../plugins/autostart", version = "3.0.0-alpha.1" }
 tauri-plugin-cli = { path = "../../../plugins/cli", version = "3.0.0-alpha.1" }
 tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", version = "3.0.0-alpha.1" }
+tauri-plugin-positioner = { path = "../../../plugins/positioner", version = "3.0.0-alpha.1", features = [
+  "tray-icon",
+] }
 tauri-plugin-updater = { path = "../../../plugins/updater", version = "3.0.0-alpha.1" }
 tauri-plugin-window-state = { path = "../../../plugins/window-state", version = "3.0.0-alpha.1" }
 
@@ -82,6 +97,8 @@ tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "
 tauri-plugin-haptics = { path = "../../../plugins/haptics/", version = "3.0.0-alpha.1" }
 
 [features]
+# Enables the WebDriver automation bridge; set by the e2e suite's build (packages/api-e2e).
+automation = ["dep:tauri-plugin-automation"]
 default = ["wry"]
 # wry is a GTK 3 application on Linux, so it can use the plugin's GTK 3 dialogs.
 wry = ["dep:tauri-runtime-wry", "tauri-plugin-dialog/gtk3"]

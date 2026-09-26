@@ -28,7 +28,7 @@ glob = "0.3"
 zbus = "5.9"
 
 [workspace.package]
-edition = "2021"
+edition = "2024"
 authors = ["Tauri Programme within The Commons Conservancy"]
 license = "Apache-2.0 OR MIT"
 rust-version = "1.95"

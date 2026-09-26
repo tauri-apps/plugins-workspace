@@ -10,8 +10,8 @@ mod tray;
 
 use serde::Serialize;
 use tauri::{
-    webview::{PageLoadEvent, WebviewWindowBuilder},
     App, AppHandle, Emitter, Listener, RunEvent, WebviewUrl,
+    webview::{PageLoadEvent, WebviewWindowBuilder},
 };
 
 #[derive(Clone, Serialize)]
@@ -33,11 +33,21 @@ pub fn run() {
     #[cfg(not(feature = "cef"))]
     let builder = tauri::Builder::default().runtime(tauri_runtime_wry::Wry::default());
 
+    // WebDriver automation bridge for the plugins e2e suite (packages/api-e2e).
+    // Registered as early as possible per the plugin's docs, behind the
+    // off-by-default `automation` feature.
+    #[cfg(all(desktop, feature = "automation"))]
+    let builder = builder.plugin(tauri_plugin_automation::init());
+
     #[allow(unused_mut)]
     let mut builder = builder
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Info)
+                // forward records to the webview so `attachLogger`/`attachConsole` work
+                .target(tauri_plugin_log::Target::new(
+                    tauri_plugin_log::TargetKind::Webview,
+                ))
                 .build(),
         )
         .plugin(tauri_plugin_fs::init())
@@ -51,12 +61,33 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_upload::init())
+        .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_websocket::init())
+        .plugin(
+            tauri_plugin_sql::Builder::new()
+                .add_migrations(
+                    "sqlite:api.db",
+                    vec![tauri_plugin_sql::Migration {
+                        version: 1,
+                        description: "create_todos_table",
+                        sql: "CREATE TABLE todos (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, done INTEGER NOT NULL DEFAULT 0);",
+                        kind: tauri_plugin_sql::MigrationKind::Up,
+                    }],
+                )
+                .build(),
+        )
         .setup(move |app| {
             #[cfg(desktop)]
             {
+                // registered before the tray, whose events it tracks
+                app.handle().plugin(tauri_plugin_positioner::init())?;
                 #[cfg(not(feature = "cef"))]
                 tray::create_tray(app.handle())?;
                 app.handle().plugin(tauri_plugin_cli::init())?;
+                app.handle().plugin(tauri_plugin_autostart::init(
+                    tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+                    None,
+                ))?;
                 app.handle()
                     .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
                 app.handle()
@@ -98,10 +129,7 @@ pub fn run() {
                 webview_window_builder = webview_window_builder.transparent(true);
             }
 
-            let webview = webview_window_builder.build().unwrap();
-
-            #[cfg(debug_assertions)]
-            webview.open_devtools();
+            let _webview = webview_window_builder.build().unwrap();
 
             std::thread::spawn(|| {
                 let server = match tiny_http::Server::http("localhost:3003") {
@@ -185,12 +213,12 @@ pub fn run() {
         // Only the tray icon keeps this app useful without windows, and there is
         // no tray on CEF.
         #[cfg(all(desktop, not(feature = "cef")))]
-        if let RunEvent::ExitRequested { code, api, .. } = &_event {
-            if code.is_none() {
-                // Keep the event loop running even if all windows are closed
-                // This allow us to catch system tray events when there is no window
-                api.prevent_exit();
-            }
+        if let RunEvent::ExitRequested { code, api, .. } = &_event
+            && code.is_none()
+        {
+            // Keep the event loop running even if all windows are closed
+            // This allow us to catch system tray events when there is no window
+            api.prevent_exit();
         }
     })
 }

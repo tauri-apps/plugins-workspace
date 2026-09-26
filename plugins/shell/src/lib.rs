@@ -20,8 +20,8 @@ use std::{
 
 use process::{Command, CommandChild};
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 mod commands;
@@ -35,6 +35,9 @@ type Result<T> = std::result::Result<T, Error>;
 
 type ChildStore = Arc<Mutex<HashMap<u32, CommandChild>>>;
 
+/// Access to the shell APIs.
+///
+/// Get an instance of this type with [`ShellExt::shell`].
 pub struct Shell<R: Runtime> {
     #[allow(dead_code)]
     app: AppHandle<R>,
@@ -56,7 +59,21 @@ impl<R: Runtime> Shell<R> {
     }
 }
 
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`],
+/// [`tauri::Webview`] and [`tauri::Window`] to access the shell APIs.
 pub trait ShellExt<R: Runtime> {
+    /// Gets the shell APIs.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use tauri_plugin_shell::ShellExt;
+    ///
+    /// async fn run_echo<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
+    ///     let output = app.shell().command("echo").args(["hello"]).output().await.unwrap();
+    ///     println!("{}", String::from_utf8_lossy(&output.stdout));
+    /// }
+    /// ```
     fn shell(&self) -> &Shell<R>;
 }
 
