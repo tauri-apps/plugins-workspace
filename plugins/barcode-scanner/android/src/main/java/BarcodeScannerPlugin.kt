@@ -332,8 +332,10 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
 
     @Command
     fun cancel(invoke: Invoke) {
-        destroy()
+        // Reject the pending scan before destroy() clears savedInvoke, otherwise the
+        // scan() promise is never settled. Mirrors the iOS implementation.
         savedInvoke?.reject("cancelled")
+        destroy()
         invoke.resolve()
     }
 
