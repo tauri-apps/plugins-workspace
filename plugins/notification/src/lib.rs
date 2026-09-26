@@ -6,7 +6,7 @@
 //!
 //! ## Cargo features
 //!
-//! - **windows7-compat**: Adds support for the legacy Windows 7 notification implementation and Windows-version detection.
+//! - **windows7-compat**: Deprecated and does nothing, since Tauri no longer supports Windows 7.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",

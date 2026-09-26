@@ -3,6 +3,7 @@ name = "tauri-plugin-geolocation"
 description = "Get and track the device's current position"
 version = "2.3.3"
 edition = { workspace = true }
+rust-version = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
