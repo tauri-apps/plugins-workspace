@@ -26,6 +26,9 @@ tauri-plugin-deep-link = { path = "../deep-link", version = "2.4.10", optional =
 semver = { version = "1", optional = true }
 tokio = { version = "1", features = ["net"] }
 
+[dev-dependencies]
+tauri = { workspace = true, features = ["test"] }
+
 [target."cfg(target_os = \"windows\")".dependencies.windows-sys]
 version = "0.60"
 features = [
