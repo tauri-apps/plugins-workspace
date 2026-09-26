@@ -246,6 +246,7 @@ mod imp {
 
         /// Shows the notification. Same as [`Self::show`].
         #[cfg(feature = "windows7-compat")]
+        #[allow(dead_code)]
         #[cfg_attr(docsrs, doc(cfg(feature = "windows7-compat")))]
         #[deprecated = "Tauri no longer supports Windows 7, use `Self::show` instead."]
         pub fn notify<R: tauri::Runtime>(self, _app: &tauri::AppHandle<R>) -> crate::Result<()> {

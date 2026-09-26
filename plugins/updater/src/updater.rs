@@ -22,7 +22,7 @@ use reqwest::{
 };
 use semver::Version;
 use serde::{Deserialize, Deserializer, Serialize, de::Error as DeError};
-#[cfg(windows)]
+#[cfg(any(windows, target_os = "linux"))]
 use std::ffi::OsStr;
 #[cfg(desktop)]
 use std::io::Cursor;
