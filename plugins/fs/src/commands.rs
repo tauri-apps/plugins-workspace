@@ -1579,13 +1579,24 @@ pub fn resolve_path<R: Runtime>(
 
     let require_literal_leading_dot = fs_scope.require_literal_leading_dot.unwrap_or(cfg!(unix));
 
-    if is_forbidden(&fs_scope.scope, &resolved_path, require_literal_leading_dot)
-        || is_forbidden(&scope, &resolved_path, require_literal_leading_dot)
-    {
+    // The path the OS actually operates on, with every symlink resolved,
+    // including the ones in the ancestors of a path that does not exist yet.
+    // If it cannot be determined (e.g. a symlink loop), fail closed.
+    let Ok(real_path) = resolve_real_path(&resolved_path) else {
+        return Err(CommandError::Plugin(Error::PathForbidden(resolved_path)));
+    };
+
+    // Deny patterns apply to both the path as given (so a pattern naming a symlink denies it)
+    // and to the path it resolves to.
+    let is_forbidden = |scope: &tauri::fs::Scope| {
+        matches_forbidden_pattern(scope, &resolved_path, require_literal_leading_dot)
+            || matches_forbidden_pattern(scope, &real_path, require_literal_leading_dot)
+    };
+    if is_forbidden(&fs_scope.scope) || is_forbidden(&scope) {
         return Err(CommandError::Plugin(Error::PathForbidden(resolved_path)));
     }
 
-    if fs_scope.scope.is_allowed(&resolved_path) || scope.is_allowed(&resolved_path) {
+    if fs_scope.scope.is_allowed(&real_path) || scope.is_allowed(&real_path) {
         let app_handle = webview.app_handle().clone();
         Ok(PathHandle::new(resolved_path, path_, app_handle))
     } else {
@@ -1603,43 +1614,79 @@ pub fn resolve_path<R: Runtime>(
     }
 }
 
-fn is_forbidden<P: AsRef<Path>>(
+/// Maximum number of symlinks followed by [`resolve_real_path`], like `MAXSYMLINKS` / `ELOOP`.
+const MAX_SYMLINK_FOLLOWS: usize = 40;
+
+/// Resolves `path` to the path the OS operates on: the canonical path if it exists, otherwise
+/// the canonical path of its nearest existing ancestor joined with the remaining components.
+///
+/// Dangling symlinks are followed, with relative targets resolved against the link's parent
+/// directory, so that creating a file through a symlinked directory or a dangling symlink is
+/// checked against the location that is actually written.
+fn resolve_real_path(path: &Path) -> std::io::Result<PathBuf> {
+    resolve_real_path_inner(path, 0)
+}
+
+fn resolve_real_path_inner(path: &Path, symlinks_followed: usize) -> std::io::Result<PathBuf> {
+    use std::path::Component;
+
+    if let Ok(canonical) = std::fs::canonicalize(path) {
+        return Ok(canonical);
+    }
+
+    // a dangling symlink: resolve its target instead
+    if std::fs::symlink_metadata(path).is_ok_and(|m| m.file_type().is_symlink()) {
+        if symlinks_followed >= MAX_SYMLINK_FOLLOWS {
+            return Err(std::io::Error::other("too many levels of symbolic links"));
+        }
+        let target = std::fs::read_link(path)?;
+        let target = match path.parent() {
+            Some(parent) if target.is_relative() => parent.join(target),
+            _ => target,
+        };
+        return resolve_real_path_inner(&target, symlinks_followed + 1);
+    }
+
+    let mut components = path.components();
+    let last = components.next_back();
+    let parent = components.as_path();
+    if parent.as_os_str().is_empty() {
+        return Ok(path.to_path_buf());
+    }
+    match last {
+        Some(Component::Normal(name)) => {
+            Ok(resolve_real_path_inner(parent, symlinks_followed)?.join(name))
+        }
+        Some(Component::ParentDir) => {
+            let mut resolved = resolve_real_path_inner(parent, symlinks_followed)?;
+            resolved.pop();
+            Ok(resolved)
+        }
+        Some(Component::CurDir) => resolve_real_path_inner(parent, symlinks_followed),
+        // root or prefix, nothing left to resolve
+        _ => Ok(path.to_path_buf()),
+    }
+}
+
+/// Whether `path` matches one of the forbidden patterns of `scope`, as is (no path resolution).
+fn matches_forbidden_pattern(
     scope: &tauri::fs::Scope,
-    path: P,
+    path: &Path,
     require_literal_leading_dot: bool,
 ) -> bool {
-    let path = path.as_ref();
-    let path = if path.is_symlink() {
-        match std::fs::read_link(path) {
-            Ok(p) => p,
-            Err(_) => return false,
-        }
-    } else {
-        path.to_path_buf()
-    };
-    let path = if !path.exists() {
-        crate::Result::Ok(path)
-    } else {
-        std::fs::canonicalize(path).map_err(Into::into)
-    };
-
-    if let Ok(path) = path {
-        let path: PathBuf = path.components().collect();
-        scope.forbidden_patterns().iter().any(|p| {
-            p.matches_path_with(
-                &path,
-                glob::MatchOptions {
-                    // this is needed so `/dir/*` doesn't match files within subdirectories such as `/dir/subdir/file.txt`
-                    // see: <https://github.com/tauri-apps/tauri/security/advisories/GHSA-6mv3-wm7j-h4w5>
-                    require_literal_separator: true,
-                    require_literal_leading_dot,
-                    ..Default::default()
-                },
-            )
-        })
-    } else {
-        false
-    }
+    let path: PathBuf = path.components().collect();
+    scope.forbidden_patterns().iter().any(|p| {
+        p.matches_path_with(
+            &path,
+            glob::MatchOptions {
+                // this is needed so `/dir/*` doesn't match files within subdirectories such as `/dir/subdir/file.txt`
+                // see: <https://github.com/tauri-apps/tauri/security/advisories/GHSA-6mv3-wm7j-h4w5>
+                require_literal_separator: true,
+                require_literal_leading_dot,
+                ..Default::default()
+            },
+        )
+    })
 }
 
 struct StdFileResource<R: Runtime>(Mutex<FileHandle<R>>);
@@ -1833,6 +1880,79 @@ mod test {
     use std::io::{BufRead, BufReader};
 
     use super::LinesBytes;
+
+    #[cfg(unix)]
+    struct TempDir(std::path::PathBuf);
+
+    #[cfg(unix)]
+    impl TempDir {
+        fn new(name: &str) -> Self {
+            let dir = std::env::temp_dir().join(format!(
+                "tauri-plugin-fs-test-{name}-{}",
+                std::process::id()
+            ));
+            let _ = std::fs::remove_dir_all(&dir);
+            std::fs::create_dir_all(&dir).unwrap();
+            // canonicalize so assertions don't depend on e.g. /var -> /private/var on macOS
+            Self(std::fs::canonicalize(dir).unwrap())
+        }
+    }
+
+    #[cfg(unix)]
+    impl Drop for TempDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn resolve_real_path_follows_symlinks_of_missing_paths() {
+        use super::resolve_real_path;
+        use std::os::unix::fs::symlink;
+
+        let tmp = TempDir::new("real-path");
+        let allowed = tmp.0.join("allowed");
+        let outside = tmp.0.join("outside");
+        std::fs::create_dir_all(&allowed).unwrap();
+        std::fs::create_dir_all(&outside).unwrap();
+
+        // existing paths are canonicalized
+        assert_eq!(resolve_real_path(&allowed).unwrap(), allowed);
+
+        // a file that does not exist yet, below a symlinked directory
+        symlink(&outside, allowed.join("link")).unwrap();
+        assert_eq!(
+            resolve_real_path(&allowed.join("link/new/file.txt")).unwrap(),
+            outside.join("new/file.txt")
+        );
+
+        // a dangling symlink with a relative target, resolved against the link's directory
+        symlink("../outside/missing.txt", allowed.join("dangling")).unwrap();
+        assert_eq!(
+            resolve_real_path(&allowed.join("dangling")).unwrap(),
+            outside.join("missing.txt")
+        );
+
+        // an existing symlink with a relative target
+        std::fs::write(outside.join("existing.txt"), "").unwrap();
+        symlink("../outside/existing.txt", allowed.join("relative")).unwrap();
+        assert_eq!(
+            resolve_real_path(&allowed.join("relative")).unwrap(),
+            outside.join("existing.txt")
+        );
+
+        // a symlink loop fails
+        symlink("loop-b", allowed.join("loop-a")).unwrap();
+        symlink("loop-a", allowed.join("loop-b")).unwrap();
+        assert!(resolve_real_path(&allowed.join("loop-a/file.txt")).is_err());
+
+        // missing paths without symlinks are kept as is
+        assert_eq!(
+            resolve_real_path(&allowed.join("missing/file.txt")).unwrap(),
+            allowed.join("missing/file.txt")
+        );
+    }
 
     #[test]
     fn write_file_options_header() {
