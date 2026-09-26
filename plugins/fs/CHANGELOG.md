@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.0-alpha.2]
+
+- [`5c077a38`](https://github.com/tauri-apps/plugins-workspace/commit/5c077a3812e8661004845ba59d91ae4005155ec2) ([#3605](https://github.com/tauri-apps/plugins-workspace/pull/3605) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** Removed the `read_text_file` and `write_text_file` commands and their `allow-read-text-file`, `deny-read-text-file`, `allow-write-text-file` and `deny-write-text-file` permissions. `readTextFile` and `writeTextFile` now use the `read_file` and `write_file` commands, so grant `fs:allow-read-file` and `fs:allow-write-file` instead.
+- [`a315a07f`](https://github.com/tauri-apps/plugins-workspace/commit/a315a07f3665a3d07173cc438d292141b791b9b3) ([#3606](https://github.com/tauri-apps/plugins-workspace/pull/3606) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** Removed the `allow-unwatch` and `deny-unwatch` permissions. There has been no `unwatch` command since v2.0 (`Watcher.close()` releases the resource instead), so they never granted anything.
+- [`8083107a`](https://github.com/tauri-apps/plugins-workspace/commit/8083107a0ae002131d6c59a09a521d2c373fffb9) ([#3609](https://github.com/tauri-apps/plugins-workspace/pull/3609) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** The `notify` crate's `serialization-compat-6` feature is no longer enabled, so `WatchEvent` now follows notify v8's format: the event kind is flattened into the event, with `type` holding the top-level kind (`any`, `access`, `create`, `modify`, `remove` or `other`) and `kind`/`mode` refining it. For instance `{ type: { modify: { kind: 'data', mode: 'content' } } }` is now `{ type: 'modify', kind: 'data', mode: 'content' }`, and `attrs.flag` is `rescan` instead of `Rescan`. `WatchEvent.attrs` is now typed as `WatchEventAttributes`.
+- [`fdfb35e5`](https://github.com/tauri-apps/plugins-workspace/commit/fdfb35e5317f85d378b54429f6669b13339b1951) ([#3610](https://github.com/tauri-apps/plugins-workspace/pull/3610) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** `watch` and `watchImmediate` now resolve to a `Watcher` resource instead of an `UnwatchFn` callback. Call `await watcher.close()` to stop watching. The `UnwatchFn` type has been removed and `Watcher` is now exported.
+- [`2fd27c2d`](https://github.com/tauri-apps/plugins-workspace/commit/2fd27c2d43966a86e436ecd538e133e1812cc641) Update MSRV to 1.95 to match tauri.
+
 ## [3.0.0-alpha.1]
 
 - [`15bf611d`](https://github.com/tauri-apps/plugins-workspace/commit/15bf611d68b15f343c0e8f6834a64d0cf2cc1637) Update to @tauri-apps/api v3.0.0-alpha.

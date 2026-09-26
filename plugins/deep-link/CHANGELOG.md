@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.0.0-alpha.2]
+
+- [`120d0055`](https://github.com/tauri-apps/plugins-workspace/commit/120d00558ebecd4a5fb25c68603d46f6e7b22d2b) ([#3603](https://github.com/tauri-apps/plugins-workspace/pull/3603) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** On Linux, failing to run `xdg-mime` or `update-desktop-database` in `register` and `is_registered` now returns the new `Error::Execute(command, io_error)` variant instead of logging the failure and returning the raw `Error::Io`.
+- [`2fd27c2d`](https://github.com/tauri-apps/plugins-workspace/commit/2fd27c2d43966a86e436ecd538e133e1812cc641) Update MSRV to 1.95 to match tauri.
+
 ## [3.0.0-alpha.1]
 
 - [`15bf611d`](https://github.com/tauri-apps/plugins-workspace/commit/15bf611d68b15f343c0e8f6834a64d0cf2cc1637) Update to @tauri-apps/api v3.0.0-alpha.

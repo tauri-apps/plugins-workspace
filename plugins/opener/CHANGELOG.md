@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.0-alpha.2]
+
+- [`2fd27c2d`](https://github.com/tauri-apps/plugins-workspace/commit/2fd27c2d43966a86e436ecd538e133e1812cc641) Update MSRV to 1.95 to match tauri.
+- [`f2c77194`](https://github.com/tauri-apps/plugins-workspace/commit/f2c77194d6fc35fdc24ea4db86c583c27cb6db4e) ([#3608](https://github.com/tauri-apps/plugins-workspace/pull/3608) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** Renamed the `revealItemInDir` function to `revealItemsInDir`, which accepts a single path or an array of paths.
+- [`f2c77194`](https://github.com/tauri-apps/plugins-workspace/commit/f2c77194d6fc35fdc24ea4db86c583c27cb6db4e) ([#3608](https://github.com/tauri-apps/plugins-workspace/pull/3608) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** Renamed the `reveal_item_in_dir` command to `reveal_items_in_dir`, so the `allow-reveal-item-in-dir` and `deny-reveal-item-in-dir` permissions are now `allow-reveal-items-in-dir` and `deny-reveal-items-in-dir`.
+
 ## [3.0.0-alpha.1]
 
 - [`15bf611d`](https://github.com/tauri-apps/plugins-workspace/commit/15bf611d68b15f343c0e8f6834a64d0cf2cc1637) Update to @tauri-apps/api v3.0.0-alpha.

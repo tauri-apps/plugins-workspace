@@ -1,5 +1,18 @@
 # Changelog
 
+## [3.0.0-alpha.2]
+
+- [`2fd27c2d`](https://github.com/tauri-apps/plugins-workspace/commit/2fd27c2d43966a86e436ecd538e133e1812cc641) Update MSRV to 1.95 to match tauri.
+- [`0ecb30e3`](https://github.com/tauri-apps/plugins-workspace/commit/0ecb30e3cb89f4fea6ea14674c35504489599377) ([#3613](https://github.com/tauri-apps/plugins-workspace/pull/3613) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** `upload` and `download` now take an `options` object as their last argument instead of positional `headers`, `method` and `body` arguments:
+    
+    ```ts
+    await upload(url, filePath, onProgress, { headers, method: HttpMethod.Put })
+    await download(url, filePath, onProgress, { headers, body })
+    ```
+    
+    `headers` accepts both a `Map` and a plain object. Previously a `Map` was silently serialized as an empty object.
+- [`c7416a1a`](https://github.com/tauri-apps/plugins-workspace/commit/c7416a1a2c87f578883402bc023b8d5ef7111752) ([#3601](https://github.com/tauri-apps/plugins-workspace/pull/3601) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Enable reqwest's `system-proxy` feature instead of the deprecated `macos-system-configuration` alias.
+
 ## [3.0.0-alpha.1]
 
 - [`15bf611d`](https://github.com/tauri-apps/plugins-workspace/commit/15bf611d68b15f343c0e8f6834a64d0cf2cc1637) Update to @tauri-apps/api v3.0.0-alpha.
