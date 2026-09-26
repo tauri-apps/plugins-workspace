@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.13.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+### bug
+
+- [`101e1b06`](https://github.com/tauri-apps/plugins-workspace/commit/101e1b068a62aeece725362c38f8fe4179b5fe5f) ([#3615](https://github.com/tauri-apps/plugins-workspace/pull/3615)) On Linux, `check()` no longer sets `SSL_CERT_FILE` and `SSL_CERT_DIR` to Debian paths. The override pointed rustls to files that do not exist on distros with a different layout, such as ALT Linux, and left every TLS client in the app without root certificates.
+
 ## [2.12.0]
 
 - [`1308bfa3`](https://github.com/tauri-apps/plugins-workspace/commit/1308bfa399b962b3977c767100a6339d1cbfdd20) **Breaking change:** the `allowDowngrades` option was removed from the `check` command and is now read from the plugin configuration instead.

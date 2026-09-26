@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0]
+
+- [`d869c162`](https://github.com/tauri-apps/plugins-workspace/commit/d869c162a7d1e95629a3acbf0084bbeac3e10f77) Fixed a build failure when the `specta` feature is enabled: the `Error` type used the `#[serde(skip)]` helper attribute, which recent `specta` versions no longer register. It now uses `#[specta(skip)]`.
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
 ## [2.3.3]
 
 - [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
@@ -75,5 +82,8 @@
 ## \[2.0.0-rc.0]
 
 - [`9606089b`](https://github.com/tauri-apps/plugins-workspace/commit/9606089b2add4a17f80ed5a09d59ce94824bd672) ([#1599](https://github.com/tauri-apps/plugins-workspace/pull/1599)) Initial release.
+- [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
+  tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
+ttps://github.com/tauri-apps/plugins-workspace/pull/1599)) Initial release.
 - [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
   tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
