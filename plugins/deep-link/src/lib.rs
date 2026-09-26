@@ -121,7 +121,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Windows / Linux**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
+        /// - **Windows / Linux / FreeBSD**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
         ///   Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
         ///   Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
@@ -191,9 +191,9 @@ mod imp {
 
     impl<R: Runtime> DeepLink<R> {
         /// Checks if the provided list of arguments (which should match [`std::env::args`])
-        /// contains a deep link argument (for Linux and Windows).
+        /// contains a deep link argument (for Linux, FreeBSD and Windows).
         ///
-        /// On Linux and Windows the deep links trigger a new app instance with the deep link URL as its only argument.
+        /// On Linux, FreeBSD and Windows the deep links trigger a new app instance with the deep link URL as its only argument.
         ///
         /// This function does what it can to verify if the argument is actually a deep link, though it could also be a regular CLI argument.
         /// To enhance its checks, we only match deep links against the schemes defined in the Tauri configuration
@@ -208,7 +208,7 @@ mod imp {
                 return;
             };
 
-            if cfg!(windows) || cfg!(target_os = "linux") {
+            if cfg!(any(windows, target_os = "linux", target_os = "freebsd")) {
                 args.next(); // bin name
                 let arg = args.next();
 
@@ -233,7 +233,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Windows / Linux**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
+        /// - **Windows / Linux / FreeBSD**: This function reads the command line arguments and checks if there's only one value, which must be an URL with scheme matching one of the configured values.
         ///   Note that you must manually check the arguments when registering deep link schemes dynamically with [`Self::register`].
         ///   Additionally, the deep link might have been provided as a CLI argument so you should check if its format matches what you expect.
         pub fn get_current(&self) -> crate::Result<Option<Vec<url::Url>>> {
