@@ -511,10 +511,21 @@ pub async fn read<R: Runtime>(
     rid: ResourceId,
     len: usize,
 ) -> CommandResult<tauri::ipc::Response> {
-    let mut data = vec![0; len];
     let file: std::sync::Arc<StdFileResource<R>> = webview.resources_table().get(rid)?;
-    let nread = StdFileResource::with_lock(&file, |file| file.read(&mut data))
-        .map_err(|e| format!("faied to read bytes from file with error: {e}"))?;
+    let (nread, mut data) = StdFileResource::with_lock(&file, |file| {
+        // `len` comes from the webview: do not blindly allocate it
+        let len = capped_read_len(file, len);
+        let mut data = Vec::new();
+        // room for the bytes read and the trailing `nread` below
+        data.try_reserve_exact(len.saturating_add(8))
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::OutOfMemory, e))?;
+        data.resize(len, 0);
+        let nread = file.read(&mut data)?;
+        // only send the bytes that were read
+        data.truncate(nread);
+        std::io::Result::Ok((nread, data))
+    })
+    .map_err(|e| format!("failed to read bytes from file with error: {e}"))?;
 
     // This is an optimization to include the number of read bytes (as bigendian bytes)
     // at the end of returned vector so we can use `tauri::ipc::Response`
@@ -539,6 +550,34 @@ pub async fn read<R: Runtime>(
     data.extend(nread);
 
     Ok(tauri::ipc::Response::new(data))
+}
+
+/// Size of the buffer allocated by the `read` command when the size of the file is unknown.
+const MAX_READ_LEN_UNKNOWN_SIZE: usize = 64 * 1024 * 1024;
+/// Minimum size of the buffer allocated by the `read` command for regular files,
+/// so a file that grows while it is read is not reported as ended.
+const MIN_READ_LEN: usize = 64 * 1024;
+
+/// Caps the length requested by the `read` command to what can be read from `file`:
+/// the rest of the file for regular files, [`MAX_READ_LEN_UNKNOWN_SIZE`] otherwise.
+fn capped_read_len(file: &mut File, len: usize) -> usize {
+    use std::io::Seek;
+
+    let remaining = file
+        .metadata()
+        .ok()
+        .filter(|metadata| metadata.is_file())
+        .and_then(|metadata| {
+            let position = file.stream_position().ok()?;
+            Some(metadata.len().saturating_sub(position))
+        });
+    let max = match remaining {
+        Some(remaining) => usize::try_from(remaining)
+            .unwrap_or(usize::MAX)
+            .max(MIN_READ_LEN),
+        None => MAX_READ_LEN_UNKNOWN_SIZE,
+    };
+    len.min(max)
 }
 
 async fn read_file_inner<R: Runtime>(
@@ -1851,6 +1890,27 @@ mod test {
 
         assert!(parse_write_file_options(b"{not json").is_err());
         assert!(parse_write_file_options(br#"{"append":"yes"}"#).is_err());
+    }
+
+    #[test]
+    fn read_len_is_capped_to_the_file() {
+        use super::{capped_read_len, MIN_READ_LEN};
+        use std::io::{Seek, SeekFrom};
+
+        let path = std::env::temp_dir().join(format!(
+            "tauri-plugin-fs-test-read-len-{}",
+            std::process::id()
+        ));
+        std::fs::write(&path, vec![1u8; MIN_READ_LEN * 2]).unwrap();
+        let mut file = std::fs::File::open(&path).unwrap();
+
+        assert_eq!(capped_read_len(&mut file, 10), 10);
+        assert_eq!(capped_read_len(&mut file, usize::MAX), MIN_READ_LEN * 2);
+        file.seek(SeekFrom::End(0)).unwrap();
+        assert_eq!(capped_read_len(&mut file, usize::MAX), MIN_READ_LEN);
+
+        drop(file);
+        let _ = std::fs::remove_file(path);
     }
 
     #[test]
