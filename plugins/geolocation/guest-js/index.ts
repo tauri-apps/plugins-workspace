@@ -144,7 +144,7 @@ export type PositionOptions = {
  * @since 2.0.0
  */
 export async function watchPosition(
-  options: PositionOptions,
+  options: PositionOptions & {requestUpdatesInBackground?: boolean},
   cb: (location: Position | null, error?: string) => void
 ): Promise<number> {
   const channel = new Channel<Position | string>()
@@ -157,6 +157,7 @@ export async function watchPosition(
   }
   await invoke('plugin:geolocation|watch_position', {
     options,
+    requestUpdatesInBackground: options.requestUpdatesInBackground ?? false,
     channel
   })
   return channel.id
@@ -231,9 +232,11 @@ export async function checkPermissions(): Promise<PermissionStatus> {
  * @since 2.0.0
  */
 export async function requestPermissions(
-  permissions: PermissionType[] | null
+  permissions: PermissionType[] | null,
+  requestUpdatesInBackground: boolean = false
 ): Promise<PermissionStatus> {
   return await invoke('plugin:geolocation|request_permissions', {
-    permissions
+    permissions,
+    requestUpdatesInBackground
   })
 }
