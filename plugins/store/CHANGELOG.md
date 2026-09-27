@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.0.0-alpha.2]
+
+- [`2fd27c2d`](https://github.com/tauri-apps/plugins-workspace/commit/2fd27c2d43966a86e436ecd538e133e1812cc641) Update MSRV to 1.95 to match tauri.
+- [`b566f091`](https://github.com/tauri-apps/plugins-workspace/commit/b566f09124ff8de42ae5287c340035c085a69ec9) ([#3599](https://github.com/tauri-apps/plugins-workspace/pull/3599) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** `Store::reload` (and `reload()` in JavaScript) now resets the store to its defaults before merging the on-disk state into it, so in-memory keys that are neither in the defaults nor on disk are dropped. Previously the on-disk state was merged into the current in-memory store. Use `reload_ignore_defaults` / `reload({ ignoreDefaults: true })` to fully match the on-disk state.
+
 ## [3.0.0-alpha.1]
 
 - [`15bf611d`](https://github.com/tauri-apps/plugins-workspace/commit/15bf611d68b15f343c0e8f6834a64d0cf2cc1637) Update to @tauri-apps/api v3.0.0-alpha.
