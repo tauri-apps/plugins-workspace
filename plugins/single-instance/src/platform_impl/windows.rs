@@ -157,7 +157,7 @@ fn already_running(hmutex: HANDLE, error: WIN32_ERROR) -> bool {
         error == ERROR_ALREADY_EXISTS
     }
 }
-    
+
 unsafe extern "system" fn single_instance_window_proc<R: Runtime>(
     hwnd: HWND,
     msg: u32,
