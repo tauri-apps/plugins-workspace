@@ -10,7 +10,7 @@ use std::{
     path::{Component, Path, PathBuf, Prefix, PrefixComponent},
 };
 
-use windows::{core::HSTRING, Win32::Storage::FileSystem::GetFullPathNameW};
+use windows::{Win32::Storage::FileSystem::GetFullPathNameW, core::HSTRING};
 
 pub fn absolute_and_check_exists(path: &Path) -> io::Result<PathBuf> {
     let path = absolute(path)?;

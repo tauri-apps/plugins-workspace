@@ -1,8 +1,9 @@
 [package]
 name = "tauri-plugin-opener"
-version = "2.5.4"
+version = "2.6.0"
 description = "Open files and URLs using their default application."
 edition = { workspace = true }
+rust-version = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
@@ -25,6 +26,9 @@ ios = { level = "partial", notes = "Only allows to open URLs via `open`" }
 tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
+
+[dev-dependencies]
+tauri = { workspace = true, features = ["wry"] }
 
 [dependencies]
 serde = { workspace = true }

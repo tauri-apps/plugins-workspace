@@ -11,9 +11,9 @@
 use raw_window_handle::{HasDisplayHandle, HasWindowHandle, RawDisplayHandle, RawWindowHandle};
 use rfd::{AsyncFileDialog, AsyncMessageDialog};
 use serde::de::DeserializeOwned;
-use tauri::{plugin::PluginApi, AppHandle, Runtime};
+use tauri::{AppHandle, Runtime, plugin::PluginApi};
 
-use crate::{models::*, FileDialogBuilder, FilePath, MessageDialogBuilder};
+use crate::{FileDialogBuilder, FilePath, MessageDialogBuilder, models::*};
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,

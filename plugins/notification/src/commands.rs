@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use tauri::{command, plugin::PermissionState, AppHandle, Runtime, State};
+use tauri::{AppHandle, Runtime, State, command, plugin::PermissionState};
 
 use crate::{Notification, NotificationData, Result};
 

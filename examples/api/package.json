@@ -1,7 +1,7 @@
 {
   "name": "api",
   "private": true,
-  "version": "2.0.42",
+  "version": "2.0.46",
   "type": "module",
   "scripts": {
     "dev": "vite --clearScreen false",
@@ -10,11 +10,13 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.11.0",
+    "@tauri-apps/api": "^2.12.0",
+    "@tauri-apps/plugin-autostart": "workspace:*",
     "@tauri-apps/plugin-barcode-scanner": "workspace:*",
     "@tauri-apps/plugin-biometric": "workspace:*",
     "@tauri-apps/plugin-cli": "workspace:*",
     "@tauri-apps/plugin-clipboard-manager": "workspace:*",
+    "@tauri-apps/plugin-deep-link": "workspace:*",
     "@tauri-apps/plugin-dialog": "workspace:*",
     "@tauri-apps/plugin-fs": "workspace:*",
     "@tauri-apps/plugin-geolocation": "workspace:*",
@@ -25,18 +27,21 @@
     "@tauri-apps/plugin-notification": "workspace:*",
     "@tauri-apps/plugin-opener": "workspace:*",
     "@tauri-apps/plugin-os": "workspace:*",
+    "@tauri-apps/plugin-positioner": "workspace:*",
     "@tauri-apps/plugin-process": "workspace:*",
     "@tauri-apps/plugin-shell": "workspace:*",
+    "@tauri-apps/plugin-sql": "workspace:*",
     "@tauri-apps/plugin-store": "workspace:*",
     "@tauri-apps/plugin-updater": "workspace:*",
     "@tauri-apps/plugin-upload": "workspace:*",
+    "@tauri-apps/plugin-websocket": "workspace:*",
     "@zerodevx/svelte-json-view": "2.0.0"
   },
   "devDependencies": {
     "@iconify-json/codicon": "^1.2.49",
     "@iconify-json/ph": "^1.2.2",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
-    "@tauri-apps/cli": "2.11.4",
+    "@tauri-apps/cli": "2.12.0",
     "@unocss/extractor-svelte": "^66.6.7",
     "svelte": "^5.55.7",
     "unocss": "^66.6.7",

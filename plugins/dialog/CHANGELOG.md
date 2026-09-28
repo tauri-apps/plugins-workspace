@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.8.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.6.0`
+
+## [2.7.3]
+
+- [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
+- [`cc9ec9b4`](https://github.com/tauri-apps/plugins-workspace/commit/cc9ec9b4ad2f9ec9bd57c3503ded1bd94d092c48) ([#3519](https://github.com/tauri-apps/plugins-workspace/pull/3519) by [@purvsinojiya-inventyv](https://github.com/tauri-apps/plugins-workspace/../../purvsinojiya-inventyv)) Fix Android save dialog MIME type when a single MIME type is provided.
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+
+### Dependencies
+
+- Upgraded to `fs@2.5.2`
+
 ## \[2.7.2]
 
 - [`40ae0a7f`](https://github.com/tauri-apps/plugins-workspace/commit/40ae0a7fa0ecc9b0cdbd952297f7a17f37308229) ([#3491](https://github.com/tauri-apps/plugins-workspace/pull/3491) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Use `com.google.android.material.dialog.MaterialAlertDialogBuilder` instead of `AlertDialog` so the dialog follows the app's theme
@@ -328,3 +348,7 @@
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
   d6e80b)([#545](https://github.com/tauri-apps/plugins-workspace/pull/545)) Fixes docs.rs build by enabling the `tauri/dox` feature flag.
+g.
+apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+  d6e80b)([#545](https://github.com/tauri-apps/plugins-workspace/pull/545)) Fixes docs.rs build by enabling the `tauri/dox` feature flag.
+g.

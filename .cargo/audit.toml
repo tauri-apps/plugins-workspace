@@ -14,4 +14,7 @@ ignore = [
   "RUSTSEC-2026-0195",
   # quinn-proto, can't be updated in the repo because of MSRV, users are unaffected
   "RUSTSEC-2026-0185",
+  # rkyv is not used, it's brought in by `rust_decimal`'s `rkyv` feature to the lockfile,
+  # but that feature is not enabled by anything
+  "RUSTSEC-2026-0235",
 ]

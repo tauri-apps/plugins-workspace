@@ -48,6 +48,11 @@ export interface Proxy {
   https?: string | ProxyConfig
 }
 
+/**
+ * Detailed configuration of a single proxy server, used when a plain URL string is not enough.
+ *
+ * @since 2.0.0
+ */
 export interface ProxyConfig {
   /**
    * The URL of the proxy server.
@@ -57,7 +62,13 @@ export interface ProxyConfig {
    * Set the `Proxy-Authorization` header using Basic auth.
    */
   basicAuth?: {
+    /**
+     * The user name sent to the proxy server.
+     */
     username: string
+    /**
+     * The password sent to the proxy server.
+     */
     password: string
   }
   /**
@@ -76,6 +87,10 @@ export interface ClientOptions {
   /**
    * Defines the maximum number of redirects the client should follow.
    * If set to 0, no redirects will be followed.
+   *
+   * When the `scopeRedirects` plugin configuration is enabled, every redirect must
+   * also be allowed by the configured scope, otherwise the request fails
+   * instead of being followed.
    */
   maxRedirections?: number
   /** Timeout in milliseconds */
@@ -112,13 +127,23 @@ const ERROR_REQUEST_CANCELLED = 'Request cancelled'
  * Fetch a resource from the network. It returns a `Promise` that resolves to the
  * `Response` to that `Request`, whether it is successful or not.
  *
+ * The request is performed by the Rust backend instead of the webview, so it is not subject to
+ * CORS, but the URL must be allowed by the plugin scope.
+ *
  * @example
  * ```typescript
+ * import { fetch } from '@tauri-apps/plugin-http';
  * const response = await fetch("http://my.json.host/data.json");
  * console.log(response.status);  // e.g. 200
  * console.log(response.statusText); // e.g. "OK"
  * const jsonData = await response.json();
  * ```
+ *
+ * @param input The resource to fetch, as a URL, a string or a `Request` object.
+ * @param init The standard `fetch` request options, extended with the Rust client options from
+ * {@linkcode ClientOptions}: `maxRedirections`, `connectTimeout`, `proxy` and `danger`. The
+ * `signal` option can be used to abort the request.
+ * @returns A promise resolving to the `Response` of the request.
  *
  * @since 2.0.0
  */
@@ -199,14 +224,14 @@ export async function fetch(
     }
   })
 
-  const abort = () => invoke('plugin:http|fetch_cancel', { rid })
+  const abort = () =>
+    invoke('plugin:http|fetch_cancel', { rid }).catch(() => {})
 
   // Optimistically check for abort signal
   // and avoid doing any work after doing intial work on the Rust side
   if (signal?.aborted) {
-    // we don't care about the result of this proimse
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    abort()
+    // we don't care about the result of this promise
+    void abort()
     throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
@@ -230,8 +255,13 @@ export async function fetch(
     rid
   })
 
+  let bodyDropped = false
   const dropBody = () => {
-    return invoke('plugin:http|fetch_cancel_body', { rid: responseRid })
+    if (bodyDropped) return Promise.resolve()
+    bodyDropped = true
+    return invoke('plugin:http|fetch_cancel_body', { rid: responseRid }).catch(
+      () => {}
+    )
   }
 
   const readChunk = async (

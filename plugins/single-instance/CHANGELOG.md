@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.5.0]
+
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.5.0`
+
+## [2.4.5]
+
+- [`67cd25a1`](https://github.com/tauri-apps/plugins-workspace/commit/67cd25a10ce3deb1b935e725228e528766f24ad7) ([#3592](https://github.com/tauri-apps/plugins-workspace/pull/3592)) On Windows, the second instance now allows the first instance to bring its window to the front before exiting, so focusing a window from the callback no longer gets refused by Windows.
+
+## [2.4.4]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.10`
+
 ## \[2.4.3]
 
 - [`d1573877`](https://github.com/tauri-apps/plugins-workspace/commit/d1573877226e609461761aa538cd0ca4f24d22be) ([#3466](https://github.com/tauri-apps/plugins-workspace/pull/3466) by [@bajoca05](https://github.com/tauri-apps/plugins-workspace/../../bajoca05)) Fix blocked thread on the single-instance plugin for MacOS: replace standard `UnixListener` with `tokio::net::UnixListener`, so the task can yield.

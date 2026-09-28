@@ -1,5 +1,46 @@
 # Changelog
 
+## [2.7.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.6.0`
+
+## [2.7.0]
+
+- [`1198a524`](https://github.com/tauri-apps/plugins-workspace/commit/1198a524b710abf2abeb1d9bd7b252402d26ca6d) **Security:** Added the `scopeRedirects` plugin configuration option, which checks the URL scope on every hop of a redirect chain instead of only on the URL requested by the frontend. Without it, a server on an allowed origin can redirect the request to any other origin - including `localhost` services, internal hosts and cloud metadata endpoints - and the plugin follows it, returning the response to the webview.
+    
+    ```json
+    {
+      "plugins": {
+        "http": {
+          "scopeRedirects": true
+        }
+      }
+    }
+    ```
+    
+    It is opt-in because a redirect to a URL that is not allowed by the scope now fails with `url not allowed on the configured scope` instead of being followed, so applications that rely on being redirected outside of their scope must add the redirect target to the scope. **This will become the default in v3.**
+    
+    Note that `tauri_plugin_http::init()` now returns `TauriPlugin<R, Option<Config>>` instead of `TauriPlugin<R>`.
+
+## [2.6.1]
+
+- [`a21555dd`](https://github.com/tauri-apps/plugins-workspace/commit/a21555ddd2eaadfed23848912fe2802c2ba7579e) ([#3566](https://github.com/tauri-apps/plugins-workspace/pull/3566) by [@followdarko](https://github.com/tauri-apps/plugins-workspace/../../followdarko)) Fix unhandled promise rejections on every `fetch` teardown: the request/body cleanup commands were fired as floating promises, and releasing an already-released resource rejects with `The resource id N is invalid.`. `dropBody` is now idempotent and both cleanup calls handle their own rejection.
+
+## [2.6.0]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+- [`19fb3926`](https://github.com/tauri-apps/plugins-workspace/commit/19fb3926fd24d95371bc3a7593256861df406436) ([#3528](https://github.com/tauri-apps/plugins-workspace/pull/3528) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Added `system-proxy` feature to replace the old `macos-system-configuration` feature flag to match the new reqwest API.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.2`
+
 ## \[2.5.9]
 
 ### Dependencies
