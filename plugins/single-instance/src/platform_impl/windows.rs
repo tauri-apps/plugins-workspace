@@ -8,21 +8,22 @@ use crate::semver_compat::semver_compat_string;
 use crate::SingleInstanceCallback;
 use std::ffi::CStr;
 use tauri::{
-    plugin::{self, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime,
+    plugin::{self, TauriPlugin},
 };
 use windows_sys::Win32::{
-    Foundation::{CloseHandle, GetLastError, ERROR_ALREADY_EXISTS, HWND, LPARAM, LRESULT, WPARAM},
+    Foundation::{CloseHandle, ERROR_ALREADY_EXISTS, GetLastError, HWND, LPARAM, LRESULT, WPARAM},
     System::{
         DataExchange::COPYDATASTRUCT,
         LibraryLoader::GetModuleHandleW,
         Threading::{CreateMutexW, ReleaseMutex},
     },
     UI::WindowsAndMessaging::{
-        self as w32wm, CreateWindowExW, DefWindowProcW, DestroyWindow, FindWindowW,
-        RegisterClassExW, SendMessageW, CREATESTRUCTW, GWLP_USERDATA, GWL_STYLE,
-        WINDOW_LONG_PTR_INDEX, WM_COPYDATA, WM_CREATE, WM_DESTROY, WNDCLASSEXW, WS_EX_LAYERED,
-        WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT, WS_OVERLAPPED, WS_POPUP, WS_VISIBLE,
+        self as w32wm, AllowSetForegroundWindow, CREATESTRUCTW, CreateWindowExW, DefWindowProcW,
+        DestroyWindow, FindWindowW, GWL_STYLE, GWLP_USERDATA, GetWindowThreadProcessId,
+        RegisterClassExW, SendMessageW, WINDOW_LONG_PTR_INDEX, WM_COPYDATA, WM_CREATE, WM_DESTROY,
+        WNDCLASSEXW, WS_EX_LAYERED, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT,
+        WS_OVERLAPPED, WS_POPUP, WS_VISIBLE,
     },
 };
 
@@ -74,6 +75,16 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                     let hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
 
                     if !hwnd.is_null() {
+                        // Windows lets us bring a window to the front, but not the first
+                        // instance. Hand that right over before we exit, so focusing a window
+                        // from the callback works. Windows takes it back if the user switches
+                        // to another app in the meantime.
+                        let mut pid = 0;
+                        GetWindowThreadProcessId(hwnd, &mut pid);
+                        if pid != 0 {
+                            AllowSetForegroundWindow(pid);
+                        }
+
                         let cwd = std::env::current_dir().unwrap_or_default();
                         let cwd = cwd.to_str().unwrap_or_default();
 

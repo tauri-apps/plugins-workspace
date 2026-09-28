@@ -32,15 +32,28 @@ impl WindowsUpdateInstallMode {
         }
     }
 
+    #[cfg(windows)]
+    pub(crate) fn msi_restart_after_install_args(&self) -> &'static [&'static str] {
+        &["AUTOLAUNCHAPP=True"]
+    }
+
     /// Returns the associated nsis arguments.
     pub fn nsis_args(&self) -> &'static [&'static str] {
         // `/P`: Passive
         // `/S`: Silent
         // `/R`: Restart
         match self {
-            Self::Passive => &["/P", "/R"],
-            Self::Quiet => &["/S", "/R"],
+            Self::Passive => &["/P"],
+            Self::Quiet => &["/S"],
             _ => &[],
+        }
+    }
+
+    #[cfg(windows)]
+    pub(crate) fn nsis_restart_after_install_args(&self) -> &'static [&'static str] {
+        match self {
+            Self::BasicUi => &[],
+            _ => &["/R"],
         }
     }
 }
@@ -63,6 +76,8 @@ impl Display for WindowsUpdateInstallMode {
 #[serde(rename_all = "camelCase")]
 pub struct WindowsConfig {
     /// Additional arguments given to the NSIS or WiX installer.
+    ///
+    /// Note: this applies to both WiX and NSIS installers
     #[serde(
         default,
         alias = "installer-args",
@@ -99,6 +114,38 @@ pub struct Config {
     pub endpoints: Vec<Url>,
     /// Signature public key.
     pub pubkey: String,
+    /// Require the update signature to carry the version it was signed for, and reject the
+    /// update when that version differs from the one announced by the update endpoint.
+    ///
+    /// The endpoint response is fetched over TLS but is not itself signed, and the signature
+    /// only covers the downloaded artifact. Without this flag, anyone able to serve a crafted
+    /// response can pair an inflated `version` field with the `url` and `signature` of an
+    /// older release and force a downgrade to a genuine but outdated build, since that older
+    /// artifact carries a valid signature.
+    ///
+    /// The signed version is read from the signature's trusted comment, which is covered by
+    /// the signature. Releases signed before the Tauri CLI started recording it carry no
+    /// version, so enabling this rejects them. Re-sign and re-publish every release your users
+    /// can still update from before turning this on.
+    ///
+    /// This is checked independently of the version comparison: it constrains which artifact a
+    /// given version number may resolve to, not whether that version is newer.
+    ///
+    /// The default value of this flag is `false`.
+    pub require_signed_version: bool,
+    /// Allow the updater to install a release whose version is not newer than the
+    /// currently running one, changing the version check from "must be newer" to
+    /// "must be different".
+    ///
+    /// Note that the updater only verifies the signature of the downloaded artifact,
+    /// not the version advertised by the update endpoint, so enabling this removes the
+    /// only guard against installing a previously released (and validly signed) version.
+    ///
+    /// Ignored when the application sets a custom
+    /// [`Builder::default_version_comparator`](crate::Builder::default_version_comparator).
+    ///
+    /// The default value of this flag is `false`.
+    pub allow_downgrades: bool,
     /// The Windows configuration for the updater.
     pub windows: Option<WindowsConfig>,
 }
@@ -120,6 +167,10 @@ impl<'de> Deserialize<'de> for Config {
             #[serde(default)]
             pub endpoints: Vec<Url>,
             pub pubkey: String,
+            #[serde(default, alias = "require-signed-version")]
+            pub require_signed_version: bool,
+            #[serde(default, alias = "allow-downgrades")]
+            pub allow_downgrades: bool,
             pub windows: Option<WindowsConfig>,
         }
 
@@ -137,6 +188,8 @@ impl<'de> Deserialize<'de> for Config {
             dangerous_accept_invalid_hostnames: config.dangerous_accept_invalid_hostnames,
             endpoints: config.endpoints,
             pubkey: config.pubkey,
+            require_signed_version: config.require_signed_version,
+            allow_downgrades: config.allow_downgrades,
             windows: config.windows,
         })
     }
@@ -151,8 +204,12 @@ pub(crate) fn validate_endpoints(
             if url.scheme() != "https" {
                 #[cfg(debug_assertions)]
                 {
-                    eprintln!("[\x1b[33mWARNING\x1b[0m] The updater endpoint \"{url}\" doesn't use `https` protocol. This is allowed in development but will fail in release builds.");
-                    eprintln!("[\x1b[33mWARNING\x1b[0m] if this is a desired behavior, you can enable `dangerousInsecureTransportProtocol` in the plugin configuration");
+                    eprintln!(
+                        "[\x1b[33mWARNING\x1b[0m] The updater endpoint \"{url}\" doesn't use `https` protocol. This is allowed in development but will fail in release builds."
+                    );
+                    eprintln!(
+                        "[\x1b[33mWARNING\x1b[0m] if this is a desired behavior, you can enable `dangerousInsecureTransportProtocol` in the plugin configuration"
+                    );
                 }
                 #[cfg(not(debug_assertions))]
                 return Err(crate::Error::InsecureTransportProtocol);

@@ -69,11 +69,16 @@ pub enum MessageDialogButtons {
 /// Result of a message dialog
 #[derive(Debug, Default, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub enum MessageDialogResult {
+    /// The user pressed the `Yes` button.
     Yes,
+    /// The user pressed the `No` button.
     No,
+    /// The user pressed the `Ok` button.
     Ok,
+    /// The user pressed the `Cancel` button, or closed the dialog without pressing a button.
     #[default]
     Cancel,
+    /// The user pressed a button with a custom label, holding that label's text.
     #[serde(untagged)]
     Custom(String),
 }

@@ -5,7 +5,7 @@
   import { arrayBufferToBase64 } from '../lib/utils'
   import { onDestroy, onMount } from 'svelte'
 
-  const { onMessage, insecureRenderHtml } = $props()
+  const { onMessage } = $props()
 
   let path = $state('')
   let img
@@ -118,12 +118,12 @@
                   new Uint8Array(response),
                   function (base64) {
                     const src = 'data:image/png;base64,' + base64
-                    insecureRenderHtml('<img src="' + src + '"></img>')
+                    onMessage('<img src="' + src + '"></img>')
                   }
                 )
               } else {
                 const value = String.fromCharCode.apply(null, response)
-                insecureRenderHtml(
+                onMessage(
                   '<textarea id="file-response"></textarea><button id="file-save">Save</button>'
                 )
                 setTimeout(() => {

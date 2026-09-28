@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.10.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+## [2.9.2]
+
+- [`2df3d936`](https://github.com/tauri-apps/plugins-workspace/commit/2df3d9368187e1d2ce736d3e0b2d4bdcae35b011) ([#3574](https://github.com/tauri-apps/plugins-workspace/pull/3574)) Log webview log target locations after 2 colons instead of 1. (e.g. `webview:myFunction@http://localhost:5173/src/myFile.ts?t=1787480723620:47:4` to `webview::myFunction@http://localhost:5173/src/myFile.ts?t=1787480723620:47:4`)
+
+## [2.9.1]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+
+## \[2.9.0]
+
+- [`f08980f1`](https://github.com/tauri-apps/plugins-workspace/commit/f08980f123f191b9505bd290acd8fff0fdefeed9) ([#3445](https://github.com/tauri-apps/plugins-workspace/pull/3445) by [@bajoca05](https://github.com/tauri-apps/plugins-workspace/../../bajoca05)) Added the `FileOpenStrategy` for log rotation. It defaults to append into existing file if any (previous behaviour), and brings a new feature to create a new file per session: `FileOpenStrategy::Rotate`.
+- [`254f222e`](https://github.com/tauri-apps/plugins-workspace/commit/254f222e0e2bc79370f977855b6b39d956d3b568) ([#3477](https://github.com/tauri-apps/plugins-workspace/pull/3477) by [@bajoca05](https://github.com/tauri-apps/plugins-workspace/../../bajoca05)) Migrated from the `log` crate's `kv_unstable` feature flag to the `kv` feature flag stabilized in `0.4.21`.
+- [`0c23b8ec`](https://github.com/tauri-apps/plugins-workspace/commit/0c23b8ecfe7c2aca582a81ab7339b11e350b3cac) ([#3446](https://github.com/tauri-apps/plugins-workspace/pull/3446) by [@fee1-dead](https://github.com/tauri-apps/plugins-workspace/../../fee1-dead)) Removed an unused dependency `byte-unit`.
+
 ## \[2.8.0]
 
 - [`2a625adf`](https://github.com/tauri-apps/plugins-workspace/commit/2a625adff30238904035b86b6e2db7595597e857) ([#3065](https://github.com/tauri-apps/plugins-workspace/pull/3065) by [@BinaryMuse](https://github.com/tauri-apps/plugins-workspace/../../BinaryMuse)) Allow specifying a log formatter per target using the `format` method on `Target`.

@@ -1,12 +1,14 @@
 [package]
 name = "tauri-plugin-haptics"
 description = "Haptic feedback and vibrations on Android and iOS"
-version = "2.3.2"
+version = "2.4.0"
 edition = { workspace = true }
+rust-version = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-haptics"
+exclude = ["/guest-js", "/package.json", "/rollup.config.js", "/tsconfig.json"]
 
 [package.metadata.docs.rs]
 targets = ["x86_64-linux-android"]

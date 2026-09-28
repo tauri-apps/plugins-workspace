@@ -6,10 +6,10 @@
 use serde::{Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use tauri::{
+    Manager, Resource, ResourceId, Runtime, Webview,
     ipc::{CommandScope, GlobalScope},
     path::BaseDirectory,
     utils::config::FsScope,
-    Manager, Resource, ResourceId, Runtime, Webview,
 };
 
 use std::{
@@ -23,7 +23,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{scope::Entry, Error, SafeFilePath};
+use crate::{Error, SafeFilePath, scope::Entry};
 
 #[derive(Debug, thiserror::Error)]
 pub enum CommandError {
@@ -74,7 +74,7 @@ pub type CommandResult<T> = std::result::Result<T, CommandError>;
 /// Represents either a plain PathBuf or a PathHandle that manages security-scoped resources.
 pub enum PathKind<R: Runtime> {
     /// A plain path that doesn't manage security-scoped resources.
-    #[allow(dead_code)] // only used on mobile
+    #[cfg(mobile)] // only used on mobile
     Path(PathBuf),
     /// A path handle that manages security-scoped resources and will clean them up on drop.
     Handle(PathHandle<R>),
@@ -84,6 +84,7 @@ impl<R: Runtime> PathKind<R> {
     /// Get a reference to the underlying path.
     pub fn as_path(&self) -> &Path {
         match self {
+            #[cfg(mobile)]
             PathKind::Path(p) => p.as_ref(),
             PathKind::Handle(h) => h.as_ref(),
         }
@@ -92,6 +93,7 @@ impl<R: Runtime> PathKind<R> {
     /// Get a reference to the underlying PathBuf.
     pub fn as_path_buf(&self) -> &PathBuf {
         match self {
+            #[cfg(mobile)]
             PathKind::Path(p) => p,
             PathKind::Handle(h) => h,
         }
@@ -114,27 +116,13 @@ impl<R: Runtime> AsRef<PathBuf> for PathKind<R> {
 pub struct FileHandle<R: Runtime> {
     file: File,
     path: PathKind<R>,
-    #[allow(dead_code)] // Used in Drop implementation
+    #[cfg(target_os = "ios")]
     path_: SafeFilePath,
-    #[allow(dead_code)] // Used in Drop implementation
+    #[cfg(target_os = "ios")]
     app_handle: tauri::AppHandle<R>,
 }
 
 impl<R: Runtime> FileHandle<R> {
-    fn new(
-        file: File,
-        path: PathKind<R>,
-        path_: SafeFilePath,
-        app_handle: tauri::AppHandle<R>,
-    ) -> Self {
-        Self {
-            file,
-            path,
-            path_,
-            app_handle,
-        }
-    }
-
     /// Get the resolved path.
     pub fn path(&self) -> &Path {
         self.path.as_path()
@@ -155,42 +143,42 @@ impl<R: Runtime> DerefMut for FileHandle<R> {
     }
 }
 
+#[cfg(target_os = "ios")]
 impl<R: Runtime> Drop for FileHandle<R> {
     fn drop(&mut self) {
-        #[cfg(target_os = "ios")]
-        {
-            // Only clean up if we have a plain PathBuf, not a PathHandle
-            // PathHandle will handle its own cleanup when it's dropped
-            if let PathKind::Path(_) = &self.path {
-                use crate::{FilePath, FsExt};
-                // Convert SafeFilePath to FilePath
-                let file_path: FilePath = match &self.path_ {
-                    SafeFilePath::Url(url) => FilePath::Url(url.clone()),
-                    SafeFilePath::Path(safe_path) => FilePath::Path(safe_path.as_ref().to_owned()),
-                };
+        // Only clean up if we have a plain PathBuf, not a PathHandle
+        // PathHandle will handle its own cleanup when it's dropped
+        if let PathKind::Path(_) = &self.path {
+            use crate::{FilePath, FsExt};
+            // Convert SafeFilePath to FilePath
+            let file_path: FilePath = match &self.path_ {
+                SafeFilePath::Url(url) => FilePath::Url(url.clone()),
+                SafeFilePath::Path(safe_path) => FilePath::Path(safe_path.as_ref().to_owned()),
+            };
 
-                // Only clean up if we're tracking this resource
-                // If start_accessing_security_scoped_resource was used, it won't be in our tracking
-                // and we shouldn't interfere
-                if let FilePath::Url(url) = file_path {
-                    if url.scheme() == "file" {
-                        let security_scoped_resources =
-                            self.app_handle.state::<crate::SecurityScopedResources>();
+            // Only clean up if we're tracking this resource
+            // If start_accessing_security_scoped_resource was used, it won't be in our tracking
+            // and we shouldn't interfere
+            if let FilePath::Url(url) = file_path
+                && url.scheme() == "file"
+            {
+                let security_scoped_resources =
+                    self.app_handle.state::<crate::SecurityScopedResources>();
 
-                        // Only clean up if it's not tracked manually
-                        if !security_scoped_resources.is_tracked_manually(url.as_str()) {
-                            log::debug!("Stopping accessing security-scoped resource for URL: {url} on drop");
-                            let _ = self
-                                .app_handle
-                                .fs()
-                                .stop_accessing_security_scoped_resource(FilePath::Url(
-                                    url.clone(),
-                                ));
-                            security_scoped_resources.remove(url.as_str());
-                        } else {
-                            log::debug!("Not cleaning up security-scoped resource for URL: {url} on drop (manually tracked via start_accessing_security_scoped_resource)");
-                        }
-                    }
+                // Only clean up if it's not tracked manually
+                if !security_scoped_resources.is_tracked_manually(url.as_str()) {
+                    log::debug!(
+                        "Stopping accessing security-scoped resource for URL: {url} on drop"
+                    );
+                    let _ = self
+                        .app_handle
+                        .fs()
+                        .stop_accessing_security_scoped_resource(FilePath::Url(url.clone()));
+                    security_scoped_resources.remove(url.as_str());
+                } else {
+                    log::debug!(
+                        "Not cleaning up security-scoped resource for URL: {url} on drop (manually tracked via start_accessing_security_scoped_resource)"
+                    );
                 }
             }
         }
@@ -236,39 +224,37 @@ impl<R: Runtime> AsRef<PathBuf> for PathHandle<R> {
     }
 }
 
+#[cfg(target_os = "ios")]
 impl<R: Runtime> Drop for PathHandle<R> {
     fn drop(&mut self) {
-        #[cfg(target_os = "ios")]
+        use crate::{FilePath, FsExt};
+        // Convert SafeFilePath to FilePath
+        let file_path: FilePath = match &self.path_ {
+            SafeFilePath::Url(url) => FilePath::Url(url.clone()),
+            SafeFilePath::Path(safe_path) => FilePath::Path(safe_path.as_ref().to_owned()),
+        };
+
+        // Only clean up if we're tracking this resource (i.e., resolve_path started it)
+        // If start_accessing_security_scoped_resource was used, it won't be in our tracking
+        // and we shouldn't interfere
+        if let FilePath::Url(url) = file_path
+            && url.scheme() == "file"
         {
-            use crate::{FilePath, FsExt};
-            // Convert SafeFilePath to FilePath
-            let file_path: FilePath = match &self.path_ {
-                SafeFilePath::Url(url) => FilePath::Url(url.clone()),
-                SafeFilePath::Path(safe_path) => FilePath::Path(safe_path.as_ref().to_owned()),
-            };
+            let security_scoped_resources =
+                self.app_handle.state::<crate::SecurityScopedResources>();
 
-            // Only clean up if we're tracking this resource (i.e., resolve_path started it)
-            // If start_accessing_security_scoped_resource was used, it won't be in our tracking
-            // and we shouldn't interfere
-            if let FilePath::Url(url) = file_path {
-                if url.scheme() == "file" {
-                    let security_scoped_resources =
-                        self.app_handle.state::<crate::SecurityScopedResources>();
-
-                    // Only clean up if it's not tracked manually
-                    if !security_scoped_resources.is_tracked_manually(url.as_str()) {
-                        log::debug!(
-                            "Stopping accessing security-scoped resource for URL: {url} on drop"
-                        );
-                        let _ = self
-                            .app_handle
-                            .fs()
-                            .stop_accessing_security_scoped_resource(FilePath::Url(url.clone()));
-                        security_scoped_resources.remove(url.as_str());
-                    } else {
-                        log::debug!("Not cleaning up security-scoped resource for URL: {url} on drop (manually tracked via start_accessing_security_scoped_resource)");
-                    }
-                }
+            // Only clean up if it's not tracked manually
+            if !security_scoped_resources.is_tracked_manually(url.as_str()) {
+                log::debug!("Stopping accessing security-scoped resource for URL: {url} on drop");
+                let _ = self
+                    .app_handle
+                    .fs()
+                    .stop_accessing_security_scoped_resource(FilePath::Url(url.clone()));
+                security_scoped_resources.remove(url.as_str());
+            } else {
+                log::debug!(
+                    "Not cleaning up security-scoped resource for URL: {url} on drop (manually tracked via start_accessing_security_scoped_resource)"
+                );
             }
         }
     }
@@ -288,6 +274,7 @@ pub fn create<R: Runtime>(
     path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
+    #[cfg(target_os = "ios")]
     let path_ = path.clone();
     let resolved_path_handle = resolve_path(
         "create",
@@ -303,13 +290,16 @@ pub fn create<R: Runtime>(
             resolved_path_handle.display()
         )
     })?;
+    #[cfg(target_os = "ios")]
     let app_handle = webview.app_handle().clone();
-    let file_handle = FileHandle::new(
+    let file_handle = FileHandle {
         file,
-        PathKind::Handle(resolved_path_handle),
+        path: PathKind::Handle(resolved_path_handle),
+        #[cfg(target_os = "ios")]
         path_,
+        #[cfg(target_os = "ios")]
         app_handle,
-    );
+    };
     let rid = webview
         .resources_table()
         .add(StdFileResource::new(file_handle));
@@ -715,7 +705,12 @@ pub async fn read_text_file_lines_next<R: Runtime>(
                 bytes.push(false as u8);
                 Ok(bytes)
             }
-            Some(Err(_)) => Ok(vec![false as u8]),
+            Some(Err(e)) => {
+                // the error may be persistent (e.g. reading a directory), do not report
+                // an empty line and let the caller loop forever
+                resource_table.close(rid)?;
+                Err(format!("failed to read line with error: {e}").into())
+            }
             None => {
                 resource_table.close(rid)?;
                 Ok(vec![true as u8])
@@ -1105,11 +1100,12 @@ async fn write_file_inner<R: Runtime>(
         })
         .and_then(|p| SafeFilePath::from_str(&p).map_err(CommandError::from))?;
 
-    let options: Option<WriteFileOptions> = request
+    let options = request
         .headers()
         .get("options")
-        .and_then(|p| p.to_str().ok())
-        .and_then(|opts| serde_json::from_str(opts).ok());
+        .map(|options| parse_write_file_options(options.as_bytes()))
+        .transpose()?
+        .flatten();
 
     let mut file_handle = resolve_file(
         permission,
@@ -1152,8 +1148,12 @@ async fn write_file_inner<R: Runtime>(
         tauri::ipc::InvokeBody::Raw(data) => Cow::Borrowed(data),
         tauri::ipc::InvokeBody::Json(serde_json::Value::Array(data)) => Cow::Owned(
             data.iter()
-                .flat_map(|v| v.as_number().and_then(|v| v.as_u64().map(|v| v as u8)))
-                .collect(),
+                .map(|v| {
+                    v.as_u64()
+                        .and_then(|v| u8::try_from(v).ok())
+                        .ok_or_else(|| anyhow::anyhow!("invalid byte in the data to write: {v}"))
+                })
+                .collect::<Result<Vec<u8>, _>>()?,
         ),
         _ => return Err(anyhow::anyhow!("unexpected invoke body").into()),
     };
@@ -1167,6 +1167,20 @@ async fn write_file_inner<R: Runtime>(
             )
         })
         .map_err(Into::into)
+}
+
+/// Parses the `options` header of the `write_file` command.
+///
+/// Fails instead of silently falling back to the defaults, which would e.g. ignore `baseDir`.
+fn parse_write_file_options(header: &[u8]) -> CommandResult<Option<WriteFileOptions>> {
+    let header = String::from_utf8_lossy(header);
+    match header.trim() {
+        // `JSON.stringify(undefined)` is sent as `undefined` by `fetch`
+        "" | "undefined" | "null" => Ok(None),
+        options => serde_json::from_str(options)
+            .map(Some)
+            .map_err(|e| anyhow::anyhow!("invalid write file options {options}: {e}").into()),
+    }
 }
 
 #[tauri::command]
@@ -1264,50 +1278,49 @@ pub fn start_accessing_security_scoped_resource<R: Runtime>(
         };
 
         // Only handle file URLs
-        if let FilePath::Url(url) = &file_path {
-            if url.scheme() == "file" {
-                use objc2_foundation::{NSString, NSURL};
+        if let FilePath::Url(url) = &file_path
+            && url.scheme() == "file"
+        {
+            use objc2_foundation::{NSString, NSURL};
 
-                let url_nsstring = NSString::from_str(url.as_str());
-                let ns_url = unsafe { NSURL::URLWithString(&url_nsstring) };
-                if let Some(ns_url) = ns_url {
-                    // Check if already active
-                    let security_scoped_resources =
-                        webview.state::<crate::SecurityScopedResources>();
-                    if security_scoped_resources.is_tracked_manually(url.as_str()) {
+            let url_nsstring = NSString::from_str(url.as_str());
+            let ns_url = NSURL::URLWithString(&url_nsstring);
+            if let Some(ns_url) = ns_url {
+                // Check if already active
+                let security_scoped_resources = webview.state::<crate::SecurityScopedResources>();
+                if security_scoped_resources.is_tracked_manually(url.as_str()) {
+                    log::debug!(
+                        "Security-scoped resource already active for URL: {}",
+                        url.as_str()
+                    );
+                    return Ok(());
+                }
+
+                // Start accessing the security-scoped resource
+                unsafe {
+                    let success = ns_url.startAccessingSecurityScopedResource();
+                    if success {
                         log::debug!(
-                            "Security-scoped resource already active for URL: {}",
+                            "Started accessing security-scoped resource for URL: {}",
                             url.as_str()
                         );
-                        return Ok(());
+                        security_scoped_resources.track_manually(url.as_str().to_string());
+                    } else {
+                        log::warn!(
+                            "Failed to start accessing security-scoped resource for URL: {}",
+                            url.as_str()
+                        );
+                        return Err(CommandError::from(format!(
+                            "Failed to start accessing security-scoped resource for URL: {}",
+                            url.as_str()
+                        )));
                     }
-
-                    // Start accessing the security-scoped resource
-                    unsafe {
-                        let success = ns_url.startAccessingSecurityScopedResource();
-                        if success {
-                            log::debug!(
-                                "Started accessing security-scoped resource for URL: {}",
-                                url.as_str()
-                            );
-                            security_scoped_resources.track_manually(url.as_str().to_string());
-                        } else {
-                            log::warn!(
-                                "Failed to start accessing security-scoped resource for URL: {}",
-                                url.as_str()
-                            );
-                            return Err(CommandError::from(format!(
-                                "Failed to start accessing security-scoped resource for URL: {}",
-                                url.as_str()
-                            )));
-                        }
-                    }
-                } else {
-                    return Err(CommandError::from(format!(
-                        "Failed to create NSURL from URL: {}",
-                        url.as_str()
-                    )));
                 }
+            } else {
+                return Err(CommandError::from(format!(
+                    "Failed to create NSURL from URL: {}",
+                    url.as_str()
+                )));
             }
         }
         Ok(())
@@ -1336,31 +1349,31 @@ pub fn stop_accessing_security_scoped_resource<R: Runtime>(
         };
 
         // Only handle file URLs
-        if let FilePath::Url(url) = file_path {
-            if url.scheme() == "file" {
-                let security_scoped_resources = webview.state::<crate::SecurityScopedResources>();
+        if let FilePath::Url(url) = file_path
+            && url.scheme() == "file"
+        {
+            let security_scoped_resources = webview.state::<crate::SecurityScopedResources>();
 
-                // Check if it's tracked
-                if !security_scoped_resources.is_tracked_manually(url.as_str()) {
-                    log::debug!(
-                        "Security-scoped resource not tracked as active for URL: {}",
-                        url.as_str()
-                    );
-                    return Ok(());
-                }
-
-                // Stop accessing the security-scoped resource
-                webview
-                    .fs()
-                    .stop_accessing_security_scoped_resource(FilePath::Url(url.clone()))?;
-
-                // Remove from tracking
-                security_scoped_resources.remove(url.as_str());
+            // Check if it's tracked
+            if !security_scoped_resources.is_tracked_manually(url.as_str()) {
                 log::debug!(
-                    "Stopped accessing security-scoped resource for URL: {}",
+                    "Security-scoped resource not tracked as active for URL: {}",
                     url.as_str()
                 );
+                return Ok(());
             }
+
+            // Stop accessing the security-scoped resource
+            webview
+                .fs()
+                .stop_accessing_security_scoped_resource(FilePath::Url(url.clone()))?;
+
+            // Remove from tracking
+            security_scoped_resources.remove(url.as_str());
+            log::debug!(
+                "Stopped accessing security-scoped resource for URL: {}",
+                url.as_str()
+            );
         }
         Ok(())
     }
@@ -1417,6 +1430,7 @@ fn resolve_file_in_fs<R: Runtime>(
     path: SafeFilePath,
     open_options: OpenOptions,
 ) -> CommandResult<FileHandle<R>> {
+    #[cfg(target_os = "ios")]
     let path_ = path.clone();
     let resolved_path_handle = resolve_path(
         permission,
@@ -1436,13 +1450,16 @@ fn resolve_file_in_fs<R: Runtime>(
             )
         })?;
 
+    #[cfg(target_os = "ios")]
     let app_handle = webview.app_handle().clone();
-    Ok(FileHandle::new(
+    Ok(FileHandle {
         file,
-        PathKind::Handle(resolved_path_handle),
+        path: PathKind::Handle(resolved_path_handle),
+        #[cfg(target_os = "ios")]
         path_,
+        #[cfg(target_os = "ios")]
         app_handle,
-    ))
+    })
 }
 
 #[cfg(mobile)]
@@ -1456,6 +1473,7 @@ pub fn resolve_file<R: Runtime>(
 ) -> CommandResult<FileHandle<R>> {
     use crate::FsExt;
 
+    #[cfg(target_os = "ios")]
     let path_ = path.clone();
     match path {
         SafeFilePath::Url(url) => {
@@ -1463,13 +1481,16 @@ pub fn resolve_file<R: Runtime>(
             let file = webview
                 .fs()
                 .open(SafeFilePath::Url(url.clone()), open_options.options)?;
+            #[cfg(target_os = "ios")]
             let app_handle = webview.app_handle().clone();
-            Ok(FileHandle::new(
+            Ok(FileHandle {
                 file,
-                PathKind::Path(resolved_path),
+                path: PathKind::Path(resolved_path),
+                #[cfg(target_os = "ios")]
                 path_,
+                #[cfg(target_os = "ios")]
                 app_handle,
-            ))
+            })
         }
         SafeFilePath::Path(path) => resolve_file_in_fs(
             permission,
@@ -1494,37 +1515,47 @@ pub fn resolve_path<R: Runtime>(
     // On iOS, start accessing security-scoped resource if the path is a file URL
     // Only if it hasn't been started already via start_accessing_security_scoped_resource
     #[cfg(target_os = "ios")]
+    if let SafeFilePath::Url(url) = &path
+        && url.scheme() == "file"
     {
-        if let SafeFilePath::Url(url) = &path {
-            if url.scheme() == "file" {
-                use objc2_foundation::{NSString, NSURL};
+        use objc2_foundation::{NSString, NSURL};
 
-                let security_scoped_resources = webview.state::<crate::SecurityScopedResources>();
+        let security_scoped_resources = webview.state::<crate::SecurityScopedResources>();
 
-                // Check if already active (started via start_accessing_security_scoped_resource)
-                if !security_scoped_resources.is_tracked_manually(url.as_str()) {
-                    let url_nsstring = NSString::from_str(url.as_str());
-                    let ns_url = unsafe { NSURL::URLWithString(&url_nsstring) };
-                    if let Some(ns_url) = ns_url {
-                        // Start accessing the security-scoped resource
-                        // This is required for files outside the app's sandbox (e.g., from file picker)
-                        unsafe {
-                            let success = ns_url.startAccessingSecurityScopedResource();
-                            if success {
-                                log::debug!("Started accessing security-scoped resource for URL: {} (via resolve_path)", url.as_str());
-                                // Track it so we know to clean it up
-                                security_scoped_resources.track_manually(url.as_str().to_string());
-                            } else {
-                                log::warn!("Failed to start accessing security-scoped resource for URL: {}", url.as_str());
-                            }
-                        }
+        // Check if already active (started via start_accessing_security_scoped_resource)
+        if !security_scoped_resources.is_tracked_manually(url.as_str()) {
+            let url_nsstring = NSString::from_str(url.as_str());
+            let ns_url = NSURL::URLWithString(&url_nsstring);
+            if let Some(ns_url) = ns_url {
+                // Start accessing the security-scoped resource
+                // This is required for files outside the app's sandbox (e.g., from file picker)
+                unsafe {
+                    let success = ns_url.startAccessingSecurityScopedResource();
+                    if success {
+                        log::debug!(
+                            "Started accessing security-scoped resource for URL: {} (via resolve_path)",
+                            url.as_str()
+                        );
+                        // Track it so we know to clean it up
+                        security_scoped_resources.track_manually(url.as_str().to_string());
                     } else {
-                        log::debug!("Failed to create NSURL from URL: {}, ignoring security-scoped resource access request", url.as_str());
+                        log::warn!(
+                            "Failed to start accessing security-scoped resource for URL: {}",
+                            url.as_str()
+                        );
                     }
-                } else {
-                    log::debug!("Security-scoped resource already active for URL: {} (started via start_accessing_security_scoped_resource), skipping", url.as_str());
                 }
+            } else {
+                log::debug!(
+                    "Failed to create NSURL from URL: {}, ignoring security-scoped resource access request",
+                    url.as_str()
+                );
             }
+        } else {
+            log::debug!(
+                "Security-scoped resource already active for URL: {} (started via start_accessing_security_scoped_resource), skipping",
+                url.as_str()
+            );
         }
     }
 
@@ -1812,6 +1843,25 @@ mod test {
     use std::io::{BufRead, BufReader};
 
     use super::LinesBytes;
+
+    #[test]
+    fn write_file_options_header() {
+        use super::parse_write_file_options;
+
+        assert!(parse_write_file_options(b"undefined").unwrap().is_none());
+        assert!(parse_write_file_options(b"null").unwrap().is_none());
+        assert!(parse_write_file_options(b"").unwrap().is_none());
+
+        let options = parse_write_file_options(br#"{"baseDir":14,"append":true}"#)
+            .unwrap()
+            .unwrap();
+        assert!(options.append);
+        assert!(options.create);
+        assert!(options.base.base_dir.is_some());
+
+        assert!(parse_write_file_options(b"{not json").is_err());
+        assert!(parse_write_file_options(br#"{"append":"yes"}"#).is_err());
+    }
 
     #[test]
     fn safe_file_path_parse() {
