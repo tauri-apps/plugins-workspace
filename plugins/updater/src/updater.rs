@@ -26,6 +26,8 @@ use serde::{Deserialize, Deserializer, Serialize, de::Error as DeError};
 use std::ffi::OsStr;
 #[cfg(desktop)]
 use std::io::Cursor;
+#[cfg(target_os = "macos")]
+use tauri::Manager as _;
 use tauri::{
     AppHandle, Resource, Runtime,
     utils::{
