@@ -42,7 +42,7 @@
     "@tauri-apps/plugin-upload": "workspace:*",
     "@tauri-apps/plugin-websocket": "workspace:*",
     "@tauri-apps/plugin-window-state": "workspace:*",
-    "@types/node": "^22.10.0",
+    "@types/node": "^24.0.0",
     "@types/ws": "^8.18.1",
     "@wdio/appium-service": "^9.31.9",
     "@wdio/cli": "^9.31.9",

@@ -347,8 +347,8 @@ importers:
         specifier: workspace:*
         version: link:../../plugins/window-state
       '@types/node':
-        specifier: ^22.10.0
-        version: 22.20.3
+        specifier: ^24.0.0
+        version: 24.19.0
       '@types/ws':
         specifier: ^8.18.1
         version: 8.18.1
@@ -357,7 +357,7 @@ importers:
         version: 9.32.0(supports-color@8.1.1)
       '@wdio/cli':
         specifier: ^9.31.9
-        version: 9.32.0(@types/node@22.20.3)(expect-webdriverio@6.0.10)(supports-color@8.1.1)
+        version: 9.32.0(@types/node@24.19.0)(expect-webdriverio@6.0.10)(supports-color@8.1.1)
       '@wdio/globals':
         specifier: ^9.31.3
         version: 9.31.3(expect-webdriverio@6.0.10)(webdriverio@9.32.0(supports-color@8.1.1))
@@ -372,13 +372,13 @@ importers:
         version: 9.32.0
       appium:
         specifier: ^3.7.0
-        version: 3.7.0(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+        version: 3.7.0(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       appium-uiautomator2-driver:
         specifier: ^8.7.0
-        version: 8.7.0(@types/node@22.20.3)(appium@3.7.0(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1))
+        version: 8.7.0(@types/node@24.19.0)(appium@3.7.0(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1))
       appium-xcuitest-driver:
         specifier: ^12.12.4
-        version: 12.13.1(@types/node@22.20.3)(appium@3.7.0(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1))
+        version: 12.13.1(@types/node@24.19.0)(appium@3.7.0(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1))
       cross-env:
         specifier: ^10.1.0
         version: 10.1.0
@@ -1894,6 +1894,9 @@ packages:
   '@types/node@22.20.3':
     resolution: {integrity: sha512-DZmzkmwHzXrLPAXPyKNDzlIwMMUZCVacoD25ywdy5YTKGbOx/2ld+Q38Im2zJ0vBuZP5Prd3VZutKZyXwkOS8A==}
 
+  '@types/node@24.19.0':
+    resolution: {integrity: sha512-zY+5tKxXdhGh1PYI0ac+7juvEu4OI6vWtVVoj5i2m42jxAY1U+zHGt6QCyOFwykdP62sM3MJ9stoYYUw5aCWew==}
+
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
 
@@ -3209,10 +3212,6 @@ packages:
     resolution: {integrity: sha512-NqADB8VjPFLM2V0VvHUewwwsw0ZWBaIdgo+ieHtK3hasLz4qeCRjYcqfB6AQrBggRKppKF8L52/VqdVsO47Dlw==}
     engines: {node: '>= 0.4'}
 
-  hasown@2.0.2:
-    resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
-    engines: {node: '>= 0.4'}
-
   hasown@2.0.4:
     resolution: {integrity: sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==}
     engines: {node: '>= 0.4'}
@@ -4151,11 +4150,6 @@ packages:
   select-hose@2.0.0:
     resolution: {integrity: sha512-mEugaLK+YfkijB4fx0e6kImuJdCIt2LxCRcbEYPqRGCs4F2ogyfZU5IAZRdjCP8JPq2AtdNoC/Dux63d9Kiryg==}
 
-  semver@7.7.4:
-    resolution: {integrity: sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==}
-    engines: {node: '>=10'}
-    hasBin: true
-
   semver@7.8.5:
     resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
     engines: {node: '>=10'}
@@ -4509,6 +4503,9 @@ packages:
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
+  undici-types@7.24.6:
+    resolution: {integrity: sha512-WRNW+sJgj5OBN4/0JpHFqtqzhpbnV0GuB+OozA9gCL7a993SmU+1JBZCzLNxYsbMfIeDL+lTsphD5jN5N+n0zg==}
+
   undici@6.28.1:
     resolution: {integrity: sha512-zWpdTVD54H48CIybL0rWQ3ukpb9d23wM7eH5RtfdmeP70cWHNjtfo7P4vZX+5CoDcO53J4Pu5uXp7lNfjc6DRA==}
     engines: {node: '>=18.17'}
@@ -4804,9 +4801,9 @@ snapshots:
       package-manager-detector: 1.6.0
       tinyexec: 1.0.4
 
-  '@appium/base-driver@10.8.0(@appium/logger@2.0.11)(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)':
+  '@appium/base-driver@10.8.0(@appium/logger@2.0.11)(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:
-      '@appium/support': 7.2.7(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+      '@appium/support': 7.2.7(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       '@appium/types': 1.7.0(@appium/logger@2.0.11)
       async-lock: 1.4.1
       asyncbox: 6.4.2
@@ -4832,10 +4829,10 @@ snapshots:
       - react-native-b4a
       - supports-color
 
-  '@appium/base-plugin@3.3.4(@appium/logger@2.0.11)(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)':
+  '@appium/base-plugin@3.3.4(@appium/logger@2.0.11)(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:
-      '@appium/base-driver': 10.8.0(@appium/logger@2.0.11)(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
-      '@appium/support': 7.2.7(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+      '@appium/base-driver': 10.8.0(@appium/logger@2.0.11)(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+      '@appium/support': 7.2.7(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       '@appium/types': 1.7.0(@appium/logger@2.0.11)
     transitivePeerDependencies:
       - '@appium/logger'
@@ -4846,9 +4843,9 @@ snapshots:
       - react-native-b4a
       - supports-color
 
-  '@appium/docutils@3.0.0(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)':
+  '@appium/docutils@3.0.0(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:
-      '@appium/support': 7.2.7(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+      '@appium/support': 7.2.7(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       consola: 3.4.2
       diff: 9.0.0
       lilconfig: 3.1.3
@@ -4874,7 +4871,7 @@ snapshots:
     dependencies:
       json-schema: 0.4.0
 
-  '@appium/support@7.2.7(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)':
+  '@appium/support@7.2.7(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:
       '@appium/logger': 2.0.11
       '@appium/types': 1.7.0(@appium/logger@2.0.11)
@@ -4901,7 +4898,7 @@ snapshots:
       which: 6.0.1
       yauzl: 3.4.0
     optionalDependencies:
-      sharp: 0.35.4(@types/node@22.20.3)
+      sharp: 0.35.4(@types/node@24.19.0)
     transitivePeerDependencies:
       - '@types/node'
       - bare-abort-controller
@@ -5248,128 +5245,128 @@ snapshots:
 
   '@inquirer/ansi@1.0.2': {}
 
-  '@inquirer/checkbox@4.3.2(@types/node@22.20.3)':
+  '@inquirer/checkbox@4.3.2(@types/node@24.19.0)':
     dependencies:
       '@inquirer/ansi': 1.0.2
-      '@inquirer/core': 10.3.2(@types/node@22.20.3)
+      '@inquirer/core': 10.3.2(@types/node@24.19.0)
       '@inquirer/figures': 1.0.15
-      '@inquirer/type': 3.0.10(@types/node@22.20.3)
+      '@inquirer/type': 3.0.10(@types/node@24.19.0)
       yoctocolors-cjs: 2.1.3
     optionalDependencies:
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
 
-  '@inquirer/confirm@5.1.21(@types/node@22.20.3)':
+  '@inquirer/confirm@5.1.21(@types/node@24.19.0)':
     dependencies:
-      '@inquirer/core': 10.3.2(@types/node@22.20.3)
-      '@inquirer/type': 3.0.10(@types/node@22.20.3)
+      '@inquirer/core': 10.3.2(@types/node@24.19.0)
+      '@inquirer/type': 3.0.10(@types/node@24.19.0)
     optionalDependencies:
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
 
-  '@inquirer/core@10.3.2(@types/node@22.20.3)':
+  '@inquirer/core@10.3.2(@types/node@24.19.0)':
     dependencies:
       '@inquirer/ansi': 1.0.2
       '@inquirer/figures': 1.0.15
-      '@inquirer/type': 3.0.10(@types/node@22.20.3)
+      '@inquirer/type': 3.0.10(@types/node@24.19.0)
       cli-width: 4.1.0
       mute-stream: 2.0.0
       signal-exit: 4.1.0
       wrap-ansi: 6.2.0
       yoctocolors-cjs: 2.1.3
     optionalDependencies:
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
 
-  '@inquirer/editor@4.2.23(@types/node@22.20.3)':
+  '@inquirer/editor@4.2.23(@types/node@24.19.0)':
     dependencies:
-      '@inquirer/core': 10.3.2(@types/node@22.20.3)
-      '@inquirer/external-editor': 1.0.3(@types/node@22.20.3)
-      '@inquirer/type': 3.0.10(@types/node@22.20.3)
+      '@inquirer/core': 10.3.2(@types/node@24.19.0)
+      '@inquirer/external-editor': 1.0.3(@types/node@24.19.0)
+      '@inquirer/type': 3.0.10(@types/node@24.19.0)
     optionalDependencies:
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
 
-  '@inquirer/expand@4.0.23(@types/node@22.20.3)':
+  '@inquirer/expand@4.0.23(@types/node@24.19.0)':
     dependencies:
-      '@inquirer/core': 10.3.2(@types/node@22.20.3)
-      '@inquirer/type': 3.0.10(@types/node@22.20.3)
+      '@inquirer/core': 10.3.2(@types/node@24.19.0)
+      '@inquirer/type': 3.0.10(@types/node@24.19.0)
       yoctocolors-cjs: 2.1.3
     optionalDependencies:
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
 
-  '@inquirer/external-editor@1.0.3(@types/node@22.20.3)':
+  '@inquirer/external-editor@1.0.3(@types/node@24.19.0)':
     dependencies:
       chardet: 2.2.0
       iconv-lite: 0.7.3
     optionalDependencies:
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
 
   '@inquirer/figures@1.0.15': {}
 
-  '@inquirer/input@4.3.1(@types/node@22.20.3)':
+  '@inquirer/input@4.3.1(@types/node@24.19.0)':
     dependencies:
-      '@inquirer/core': 10.3.2(@types/node@22.20.3)
-      '@inquirer/type': 3.0.10(@types/node@22.20.3)
+      '@inquirer/core': 10.3.2(@types/node@24.19.0)
+      '@inquirer/type': 3.0.10(@types/node@24.19.0)
     optionalDependencies:
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
 
-  '@inquirer/number@3.0.23(@types/node@22.20.3)':
+  '@inquirer/number@3.0.23(@types/node@24.19.0)':
     dependencies:
-      '@inquirer/core': 10.3.2(@types/node@22.20.3)
-      '@inquirer/type': 3.0.10(@types/node@22.20.3)
+      '@inquirer/core': 10.3.2(@types/node@24.19.0)
+      '@inquirer/type': 3.0.10(@types/node@24.19.0)
     optionalDependencies:
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
 
-  '@inquirer/password@4.0.23(@types/node@22.20.3)':
-    dependencies:
-      '@inquirer/ansi': 1.0.2
-      '@inquirer/core': 10.3.2(@types/node@22.20.3)
-      '@inquirer/type': 3.0.10(@types/node@22.20.3)
-    optionalDependencies:
-      '@types/node': 22.20.3
-
-  '@inquirer/prompts@7.10.1(@types/node@22.20.3)':
-    dependencies:
-      '@inquirer/checkbox': 4.3.2(@types/node@22.20.3)
-      '@inquirer/confirm': 5.1.21(@types/node@22.20.3)
-      '@inquirer/editor': 4.2.23(@types/node@22.20.3)
-      '@inquirer/expand': 4.0.23(@types/node@22.20.3)
-      '@inquirer/input': 4.3.1(@types/node@22.20.3)
-      '@inquirer/number': 3.0.23(@types/node@22.20.3)
-      '@inquirer/password': 4.0.23(@types/node@22.20.3)
-      '@inquirer/rawlist': 4.1.11(@types/node@22.20.3)
-      '@inquirer/search': 3.2.2(@types/node@22.20.3)
-      '@inquirer/select': 4.4.2(@types/node@22.20.3)
-    optionalDependencies:
-      '@types/node': 22.20.3
-
-  '@inquirer/rawlist@4.1.11(@types/node@22.20.3)':
-    dependencies:
-      '@inquirer/core': 10.3.2(@types/node@22.20.3)
-      '@inquirer/type': 3.0.10(@types/node@22.20.3)
-      yoctocolors-cjs: 2.1.3
-    optionalDependencies:
-      '@types/node': 22.20.3
-
-  '@inquirer/search@3.2.2(@types/node@22.20.3)':
-    dependencies:
-      '@inquirer/core': 10.3.2(@types/node@22.20.3)
-      '@inquirer/figures': 1.0.15
-      '@inquirer/type': 3.0.10(@types/node@22.20.3)
-      yoctocolors-cjs: 2.1.3
-    optionalDependencies:
-      '@types/node': 22.20.3
-
-  '@inquirer/select@4.4.2(@types/node@22.20.3)':
+  '@inquirer/password@4.0.23(@types/node@24.19.0)':
     dependencies:
       '@inquirer/ansi': 1.0.2
-      '@inquirer/core': 10.3.2(@types/node@22.20.3)
-      '@inquirer/figures': 1.0.15
-      '@inquirer/type': 3.0.10(@types/node@22.20.3)
+      '@inquirer/core': 10.3.2(@types/node@24.19.0)
+      '@inquirer/type': 3.0.10(@types/node@24.19.0)
+    optionalDependencies:
+      '@types/node': 24.19.0
+
+  '@inquirer/prompts@7.10.1(@types/node@24.19.0)':
+    dependencies:
+      '@inquirer/checkbox': 4.3.2(@types/node@24.19.0)
+      '@inquirer/confirm': 5.1.21(@types/node@24.19.0)
+      '@inquirer/editor': 4.2.23(@types/node@24.19.0)
+      '@inquirer/expand': 4.0.23(@types/node@24.19.0)
+      '@inquirer/input': 4.3.1(@types/node@24.19.0)
+      '@inquirer/number': 3.0.23(@types/node@24.19.0)
+      '@inquirer/password': 4.0.23(@types/node@24.19.0)
+      '@inquirer/rawlist': 4.1.11(@types/node@24.19.0)
+      '@inquirer/search': 3.2.2(@types/node@24.19.0)
+      '@inquirer/select': 4.4.2(@types/node@24.19.0)
+    optionalDependencies:
+      '@types/node': 24.19.0
+
+  '@inquirer/rawlist@4.1.11(@types/node@24.19.0)':
+    dependencies:
+      '@inquirer/core': 10.3.2(@types/node@24.19.0)
+      '@inquirer/type': 3.0.10(@types/node@24.19.0)
       yoctocolors-cjs: 2.1.3
     optionalDependencies:
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
 
-  '@inquirer/type@3.0.10(@types/node@22.20.3)':
+  '@inquirer/search@3.2.2(@types/node@24.19.0)':
+    dependencies:
+      '@inquirer/core': 10.3.2(@types/node@24.19.0)
+      '@inquirer/figures': 1.0.15
+      '@inquirer/type': 3.0.10(@types/node@24.19.0)
+      yoctocolors-cjs: 2.1.3
     optionalDependencies:
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
+
+  '@inquirer/select@4.4.2(@types/node@24.19.0)':
+    dependencies:
+      '@inquirer/ansi': 1.0.2
+      '@inquirer/core': 10.3.2(@types/node@24.19.0)
+      '@inquirer/figures': 1.0.15
+      '@inquirer/type': 3.0.10(@types/node@24.19.0)
+      yoctocolors-cjs: 2.1.3
+    optionalDependencies:
+      '@types/node': 24.19.0
+
+  '@inquirer/type@3.0.10(@types/node@24.19.0)':
+    optionalDependencies:
+      '@types/node': 24.19.0
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -5390,7 +5387,7 @@ snapshots:
 
   '@jest/pattern@30.5.0':
     dependencies:
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
       jest-regex-util: 30.5.0
 
   '@jest/schemas@30.5.0':
@@ -5403,7 +5400,7 @@ snapshots:
       '@jest/schemas': 30.5.0
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
       '@types/yargs': 17.0.35
       chalk: 4.1.2
 
@@ -5532,7 +5529,7 @@ snapshots:
       extract-zip: 2.0.1(supports-color@8.1.1)
       progress: 2.0.3
       proxy-agent: 6.5.0(supports-color@8.1.1)
-      semver: 7.7.4
+      semver: 7.8.5
       tar-fs: 3.1.3
       yargs: 17.7.3
     transitivePeerDependencies:
@@ -5816,6 +5813,11 @@ snapshots:
   '@types/node@22.20.3':
     dependencies:
       undici-types: 6.21.0
+    optional: true
+
+  '@types/node@24.19.0':
+    dependencies:
+      undici-types: 7.24.6
 
   '@types/normalize-package-data@2.4.4': {}
 
@@ -5833,7 +5835,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -5843,7 +5845,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.70.0(@typescript-eslint/parser@8.70.0(eslint@10.4.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.4.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)':
@@ -5914,7 +5916,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.70.0
       debug: 4.4.3(supports-color@8.1.1)
       minimatch: 10.2.4
-      semver: 7.7.4
+      semver: 7.8.5
       tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(typescript@6.0.3)
       typescript: 6.0.3
@@ -6121,7 +6123,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@wdio/cli@9.32.0(@types/node@22.20.3)(expect-webdriverio@6.0.10)(supports-color@8.1.1)':
+  '@wdio/cli@9.32.0(@types/node@24.19.0)(expect-webdriverio@6.0.10)(supports-color@8.1.1)':
     dependencies:
       '@vitest/snapshot': 3.2.7
       '@wdio/config': 9.32.0(supports-color@8.1.1)
@@ -6133,7 +6135,7 @@ snapshots:
       async-exit-hook: 2.0.1
       chalk: 5.6.2
       chokidar: 4.0.3
-      create-wdio: 9.32.0(@types/node@22.20.3)
+      create-wdio: 9.32.0(@types/node@24.19.0)
       dotenv: 17.4.2
       import-meta-resolve: 4.2.0
       lodash.flattendeep: 4.4.0
@@ -6365,30 +6367,30 @@ snapshots:
       normalize-path: 3.0.0
       picomatch: 2.3.2
 
-  appium-uiautomator2-driver@8.7.0(@types/node@22.20.3)(appium@3.7.0(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)):
+  appium-uiautomator2-driver@8.7.0(@types/node@24.19.0)(appium@3.7.0(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)):
     dependencies:
-      appium: 3.7.0(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+      appium: 3.7.0(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
     optionalDependencies:
-      sharp: 0.35.4(@types/node@22.20.3)
+      sharp: 0.35.4(@types/node@24.19.0)
     transitivePeerDependencies:
       - '@types/node'
 
-  appium-xcuitest-driver@12.13.1(@types/node@22.20.3)(appium@3.7.0(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)):
+  appium-xcuitest-driver@12.13.1(@types/node@24.19.0)(appium@3.7.0(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)):
     dependencies:
-      appium: 3.7.0(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+      appium: 3.7.0(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
     optionalDependencies:
-      sharp: 0.35.4(@types/node@22.20.3)
+      sharp: 0.35.4(@types/node@24.19.0)
     transitivePeerDependencies:
       - '@types/node'
 
-  appium@3.7.0(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1):
+  appium@3.7.0(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
-      '@appium/base-driver': 10.8.0(@appium/logger@2.0.11)(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
-      '@appium/base-plugin': 3.3.4(@appium/logger@2.0.11)(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
-      '@appium/docutils': 3.0.0(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+      '@appium/base-driver': 10.8.0(@appium/logger@2.0.11)(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+      '@appium/base-plugin': 3.3.4(@appium/logger@2.0.11)(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+      '@appium/docutils': 3.0.0(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       '@appium/logger': 2.0.11
       '@appium/schema': 1.3.0
-      '@appium/support': 7.2.7(@types/node@22.20.3)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+      '@appium/support': 7.2.7(@types/node@24.19.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       '@appium/types': 1.7.0(@appium/logger@2.0.11)
       '@sidvind/better-ajv-errors': 5.0.0(ajv@8.20.0)
       ajv: 8.20.0
@@ -6749,7 +6751,7 @@ snapshots:
       crc-32: 1.2.2
       readable-stream: 4.7.0
 
-  create-wdio@9.32.0(@types/node@22.20.3):
+  create-wdio@9.32.0(@types/node@24.19.0):
     dependencies:
       chalk: 5.6.2
       commander: 14.0.3
@@ -6757,11 +6759,11 @@ snapshots:
       ejs: 3.1.10
       execa: 9.6.1
       import-meta-resolve: 4.2.0
-      inquirer: 12.11.1(@types/node@22.20.3)
+      inquirer: 12.11.1(@types/node@24.19.0)
       normalize-package-data: 7.0.1
       read-pkg-up: 10.1.0
       recursive-readdir: 2.2.3
-      semver: 7.7.4
+      semver: 7.8.5
       type-fest: 4.41.0
       yargs: 17.7.3
     transitivePeerDependencies:
@@ -6967,7 +6969,7 @@ snapshots:
       es-errors: 1.3.0
       get-intrinsic: 1.3.0
       has-tostringtag: 1.0.2
-      hasown: 2.0.2
+      hasown: 2.0.4
 
   esbuild@0.28.1:
     optionalDependencies:
@@ -7326,7 +7328,7 @@ snapshots:
       get-proto: 1.0.1
       gopd: 1.2.0
       has-symbols: 1.1.0
-      hasown: 2.0.2
+      hasown: 2.0.4
       math-intrinsics: 1.1.0
 
   get-port@7.2.0: {}
@@ -7404,10 +7406,6 @@ snapshots:
   has-tostringtag@1.0.2:
     dependencies:
       has-symbols: 1.1.0
-
-  hasown@2.0.2:
-    dependencies:
-      function-bind: 1.1.2
 
   hasown@2.0.4:
     dependencies:
@@ -7507,17 +7505,17 @@ snapshots:
 
   inherits@2.0.4: {}
 
-  inquirer@12.11.1(@types/node@22.20.3):
+  inquirer@12.11.1(@types/node@24.19.0):
     dependencies:
       '@inquirer/ansi': 1.0.2
-      '@inquirer/core': 10.3.2(@types/node@22.20.3)
-      '@inquirer/prompts': 7.10.1(@types/node@22.20.3)
-      '@inquirer/type': 3.0.10(@types/node@22.20.3)
+      '@inquirer/core': 10.3.2(@types/node@24.19.0)
+      '@inquirer/prompts': 7.10.1(@types/node@24.19.0)
+      '@inquirer/type': 3.0.10(@types/node@24.19.0)
       mute-stream: 2.0.0
       run-async: 4.0.6
       rxjs: 7.8.2
     optionalDependencies:
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
 
   ip-address@10.7.2: {}
 
@@ -7531,7 +7529,7 @@ snapshots:
 
   is-core-module@2.16.1:
     dependencies:
-      hasown: 2.0.2
+      hasown: 2.0.4
 
   is-extglob@2.1.1: {}
 
@@ -7616,7 +7614,7 @@ snapshots:
     dependencies:
       '@jest/expect-utils': 30.5.1
       '@jest/types': 30.5.1
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
       jest-util: 30.5.1
 
   jest-regex-util@30.5.0: {}
@@ -7624,7 +7622,7 @@ snapshots:
   jest-util@30.5.1:
     dependencies:
       '@jest/types': 30.5.1
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
       chalk: 4.1.2
       ci-info: 4.4.0
       graceful-fs: 4.2.11
@@ -7933,19 +7931,19 @@ snapshots:
   normalize-package-data@6.0.2:
     dependencies:
       hosted-git-info: 7.0.2
-      semver: 7.7.4
+      semver: 7.8.5
       validate-npm-package-license: 3.0.4
 
   normalize-package-data@7.0.1:
     dependencies:
       hosted-git-info: 8.1.0
-      semver: 7.7.4
+      semver: 7.8.5
       validate-npm-package-license: 3.0.4
 
   normalize-package-data@8.0.0:
     dependencies:
       hosted-git-info: 9.0.3
-      semver: 7.7.4
+      semver: 7.8.5
       validate-npm-package-license: 3.0.4
 
   normalize-path@3.0.0: {}
@@ -8419,8 +8417,6 @@ snapshots:
   select-hose@2.0.0:
     optional: true
 
-  semver@7.7.4: {}
-
   semver@7.8.5: {}
 
   send@1.2.1(supports-color@8.1.1):
@@ -8466,7 +8462,7 @@ snapshots:
 
   setprototypeof@1.2.0: {}
 
-  sharp@0.35.4(@types/node@22.20.3):
+  sharp@0.35.4(@types/node@24.19.0):
     dependencies:
       '@img/colour': 1.1.0
       detect-libc: 2.1.2
@@ -8497,7 +8493,7 @@ snapshots:
       '@img/sharp-win32-arm64': 0.35.4
       '@img/sharp-win32-ia32': 0.35.4
       '@img/sharp-win32-x64': 0.35.4
-      '@types/node': 22.20.3
+      '@types/node': 24.19.0
     optional: true
 
   shebang-command@2.0.0:
@@ -8860,6 +8856,8 @@ snapshots:
       unconfig-core: 7.5.0
 
   undici-types@6.21.0: {}
+
+  undici-types@7.24.6: {}
 
   undici@6.28.1: {}
 
