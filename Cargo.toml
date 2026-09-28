@@ -6,7 +6,7 @@ members = [
   "plugins/*/examples/*/src-tauri",
   "examples/*/src-tauri",
 ]
-resolver = "2"
+resolver = "3"
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
