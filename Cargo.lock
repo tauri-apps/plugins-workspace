@@ -2856,7 +2856,7 @@ dependencies = [
  "tokio",
  "tower-service",
  "tracing",
- "windows-registry",
+ "windows-registry 0.5.1",
 ]
 
 [[package]]
@@ -6772,8 +6772,8 @@ dependencies = [
  "thiserror 2.0.12",
  "tracing",
  "url",
- "windows-registry",
- "windows-result 0.3.2",
+ "windows-registry 0.6.1",
+ "windows-result 0.4.1",
 ]
 
 [[package]]
@@ -6957,7 +6957,7 @@ dependencies = [
  "tauri-plugin",
  "thiserror 2.0.12",
  "url",
- "windows 0.61.1",
+ "windows 0.62.2",
  "zbus",
 ]
 
@@ -7043,7 +7043,7 @@ dependencies = [
  "thiserror 2.0.12",
  "tokio",
  "tracing",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
  "zbus",
 ]
 
@@ -7128,7 +7128,7 @@ dependencies = [
  "time",
  "tokio",
  "url",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
  "zip 4.0.0",
 ]
 
@@ -8641,6 +8641,17 @@ dependencies = [
  "windows-link 0.1.1",
  "windows-result 0.3.2",
  "windows-strings 0.4.0",
+]
+
+[[package]]
+name = "windows-registry"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "02752bf7fbdcce7f2a27a742f798510f3e5ad88dbe84871e5168e2120c3d5720"
+dependencies = [
+ "windows-link 0.2.1",
+ "windows-result 0.4.1",
+ "windows-strings 0.5.1",
 ]
 
 [[package]]
