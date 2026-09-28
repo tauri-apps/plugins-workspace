@@ -564,13 +564,15 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "auto-launch"
 version = "0.6.0"
-source = "git+https://github.com/zzzgydi/auto-launch.git#5a77b66cfb745e2ead928fe37aedee828cb993ea"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "17918dba7ecf78b9a14507ec9f984e7977d13fad87dc86d61038980a45d128cf"
 dependencies = [
  "dirs 6.0.0",
  "os_info",
  "smappservice-rs",
  "thiserror 2.0.12",
- "windows-registry",
+ "windows-registry 0.6.1",
+ "windows-result 0.4.1",
 ]
 
 [[package]]
@@ -2857,7 +2859,7 @@ dependencies = [
  "tokio",
  "tower-service",
  "tracing",
- "windows-registry",
+ "windows-registry 0.5.1",
 ]
 
 [[package]]
@@ -6808,7 +6810,7 @@ dependencies = [
  "thiserror 2.0.12",
  "tracing",
  "url",
- "windows-registry",
+ "windows-registry 0.5.1",
  "windows-result 0.3.2",
 ]
 
@@ -8676,6 +8678,17 @@ dependencies = [
  "windows-link 0.1.1",
  "windows-result 0.3.2",
  "windows-strings 0.4.0",
+]
+
+[[package]]
+name = "windows-registry"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "02752bf7fbdcce7f2a27a742f798510f3e5ad88dbe84871e5168e2120c3d5720"
+dependencies = [
+ "windows-link 0.2.1",
+ "windows-result 0.4.1",
+ "windows-strings 0.5.1",
 ]
 
 [[package]]
