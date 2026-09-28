@@ -2,6 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+/**
+ * Get and track the device's current position, mirroring the W3C Geolocation API.
+ *
+ * @module
+ */
+
 import {
   Channel,
   invoke,
@@ -9,6 +15,9 @@ import {
   checkPermissions as checkPluginPermissions
 } from '@tauri-apps/api/core'
 
+/**
+ * The GPS coordinates of a {@link Position}, along with the accuracy of each reading.
+ */
 export type Coordinates = {
   /**
    * Latitude in decimal degrees.
@@ -31,6 +40,9 @@ export type Coordinates = {
    * The altitude the user is at, if available.
    */
   altitude: number | null
+  /**
+   * The speed the user is traveling, in meters per second, if available.
+   */
   speed: number | null
   /**
    * The heading the user is facing, if available.
@@ -38,6 +50,9 @@ export type Coordinates = {
   heading: number | null
 }
 
+/**
+ * The current permission state for the geolocation APIs.
+ */
 export type PermissionStatus = {
   /**
    * Permission state for the location alias.
@@ -59,19 +74,32 @@ export type PermissionStatus = {
   coarseLocation: PermissionState
 }
 
+/**
+ * The individual permission aliases that can be requested with {@link requestPermissions}.
+ *
+ * `location` maps to both the coarse and fine location permissions on Android and to the standard
+ * location permission on iOS. `coarseLocation` maps to the coarse location permission only on
+ * Android, and behaves the same as `location` on iOS.
+ */
 export type PermissionType = 'location' | 'coarseLocation'
 
+/**
+ * A geolocation reading, as returned by {@link getCurrentPosition} and passed to the callback of {@link watchPosition}.
+ */
 export type Position = {
   /**
-   * Creation time for these coordinates.
+   * Creation time for these coordinates, in milliseconds since the Unix epoch.
    */
   timestamp: number
   /**
-   * The GPD coordinates along with the accuracy of the data.
+   * The GPS coordinates along with the accuracy of the data.
    */
   coords: Coordinates
 }
 
+/**
+ * Options used to configure a {@link getCurrentPosition} or {@link watchPosition} request.
+ */
 export type PositionOptions = {
   /**
    * High accuracy mode (such as GPS, if available)
@@ -92,6 +120,29 @@ export type PositionOptions = {
   maximumAge: number
 }
 
+/**
+ * Registers a callback that is invoked with the device's position whenever it changes, similar to the W3C `navigator.geolocation.watchPosition` API. Pass the returned id to {@link clearWatch} to stop watching.
+ *
+ * @example
+ * ```typescript
+ * import { watchPosition } from '@tauri-apps/plugin-geolocation';
+ * const watchId = await watchPosition(
+ *   { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+ *   (position, error) => {
+ *     if (error) {
+ *       console.error(error)
+ *     } else {
+ *       console.log(position)
+ *     }
+ *   }
+ * );
+ * ```
+ *
+ * @param options Configuration for the position watcher.
+ * @param cb Callback invoked with the new {@link Position} on success, or `null` and an error message when a read fails.
+ * @returns A promise resolving to the id of the registered watcher.
+ * @since 2.0.0
+ */
 export async function watchPosition(
   options: PositionOptions,
   cb: (location: Position | null, error?: string) => void
@@ -111,6 +162,19 @@ export async function watchPosition(
   return channel.id
 }
 
+/**
+ * Returns the device's current position, similar to the W3C `navigator.geolocation.getCurrentPosition` API.
+ *
+ * @example
+ * ```typescript
+ * import { getCurrentPosition } from '@tauri-apps/plugin-geolocation';
+ * const position = await getCurrentPosition();
+ * ```
+ *
+ * @param options Configuration for the position request.
+ * @returns A promise resolving to the current {@link Position}.
+ * @since 2.0.0
+ */
 export async function getCurrentPosition(
   options?: PositionOptions
 ): Promise<Position> {
@@ -119,16 +183,53 @@ export async function getCurrentPosition(
   })
 }
 
+/**
+ * Stops the position watcher registered with {@link watchPosition}.
+ *
+ * @example
+ * ```typescript
+ * import { clearWatch } from '@tauri-apps/plugin-geolocation';
+ * await clearWatch(watchId);
+ * ```
+ *
+ * @param channelId The id returned by {@link watchPosition}.
+ * @since 2.0.0
+ */
 export async function clearWatch(channelId: number): Promise<void> {
   await invoke('plugin:geolocation|clear_watch', {
     channelId
   })
 }
 
+/**
+ * Returns the current state of the geolocation permissions. Rejects if location services are disabled on the device.
+ *
+ * @example
+ * ```typescript
+ * import { checkPermissions } from '@tauri-apps/plugin-geolocation';
+ * const permission = await checkPermissions();
+ * ```
+ *
+ * @returns A promise resolving to the current {@link PermissionStatus}.
+ * @since 2.0.0
+ */
 export async function checkPermissions(): Promise<PermissionStatus> {
   return await checkPluginPermissions('geolocation')
 }
 
+/**
+ * Requests the given geolocation permissions, prompting the user if needed. Rejects if location services are disabled on the device.
+ *
+ * @example
+ * ```typescript
+ * import { requestPermissions } from '@tauri-apps/plugin-geolocation';
+ * const permission = await requestPermissions(['location']);
+ * ```
+ *
+ * @param permissions The permissions to request, or `null` to request all of them.
+ * @returns A promise resolving to the resulting {@link PermissionStatus}.
+ * @since 2.0.0
+ */
 export async function requestPermissions(
   permissions: PermissionType[] | null
 ): Promise<PermissionStatus> {

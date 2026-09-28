@@ -2,7 +2,7 @@
 name = "websocket-example"
 version = "0.1.0"
 description = "A Tauri App"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 serde = { workspace = true }

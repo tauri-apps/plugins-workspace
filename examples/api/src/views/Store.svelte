@@ -61,7 +61,7 @@
 
   async function reload() {
     try {
-      await store.reload({ overrideDefaults: true })
+      await store.reload({ ignoreDefaults: true })
     } catch (error) {
       onMessage(error)
     }

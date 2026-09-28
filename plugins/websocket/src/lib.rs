@@ -18,13 +18,13 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use futures_util::{stream::SplitSink, SinkExt, StreamExt};
+use futures_util::{SinkExt, StreamExt, stream::SplitSink};
 use http::header::{HeaderName, HeaderValue};
-use serde::{ser::Serializer, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, ser::Serializer};
 use tauri::{
+    Manager, Runtime, State, Window,
     ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Manager, Runtime, State, Window,
 };
 use tokio::{net::TcpStream, sync::Mutex};
 #[cfg(any(
@@ -40,12 +40,12 @@ use tokio_tungstenite::connect_async_tls_with_config;
 )))]
 use tokio_tungstenite::connect_async_with_config;
 use tokio_tungstenite::{
+    Connector, MaybeTlsStream, WebSocketStream,
     tungstenite::{
+        Message,
         client::IntoClientRequest,
         protocol::{CloseFrame as ProtocolCloseFrame, WebSocketConfig},
-        Message,
     },
-    Connector, MaybeTlsStream, WebSocketStream,
 };
 
 use std::collections::HashMap;
@@ -274,27 +274,36 @@ async fn send(
     }
 }
 
+/// Initializes the plugin with the default [`Builder`], i.e. without a custom TLS [`Connector`].
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::default().build()
 }
 
+/// Builder for the WebSocket plugin, used to configure a custom TLS [`Connector`] before calling [`Builder::build`].
 #[derive(Default)]
 pub struct Builder {
     tls_connector: Option<Connector>,
 }
 
 impl Builder {
+    /// Creates a new [`Builder`] with no custom TLS [`Connector`] configured.
     pub fn new() -> Self {
         Self {
             tls_connector: None,
         }
     }
 
+    /// Sets the TLS [`Connector`] used to establish `wss://` connections.
+    ///
+    /// When this is not called (or is called with [`Connector::Plain`]) and a `rustls-tls` or
+    /// `rustls-tls-native-roots` feature is enabled, [`Builder::build`] installs `rustls`'s `ring`
+    /// crypto provider as the process default if none is installed yet.
     pub fn tls_connector(mut self, connector: Connector) -> Self {
         self.tls_connector.replace(connector);
         self
     }
 
+    /// Builds the plugin, registering the `connect` and `send` commands and the shared connection state.
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         PluginBuilder::new("websocket")
             .invoke_handler(tauri::generate_handler![connect, send])
