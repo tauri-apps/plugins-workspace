@@ -149,11 +149,27 @@ jobs:
   clippy:
     needs: changes
     if: ${{ needs.changes.outputs.packages != '[]' && needs.changes.outputs.packages != '' }}
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.platform.os }}
     strategy:
       fail-fast: false
       matrix:
         package: ${{ fromJSON(needs.changes.outputs.packages) }}
+        platform:
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            cargo: 'cargo'
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            cargo: 'cargo'
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            cargo: 'cargo'
+          - target: aarch64-apple-ios
+            os: macos-latest
+            cargo: 'cargo'
+          - target: aarch64-linux-android
+            os: ubuntu-latest
+            cargo: 'cross'
 
     steps:
       - uses: actions/checkout@v7
@@ -176,8 +192,7 @@ jobs:
           save-if: ${{ (github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3') && matrix.package == needs.changes.outputs.saver }}
 
       - name: clippy ${{ matrix.package }}
-        run: cargo clippy --package ${{ matrix.package }} --all-targets -- -D warnings
+        run: ${{ matrix.platform.cargo }} clippy --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets -- -D warnings
 
       - name: clippy ${{ matrix.package }} --all-features
-        if: matrix.package != 'tauri-plugin-dialog'
-        run: cargo clippy --package ${{ matrix.package }} --all-targets --all-features -- -D warnings
+        run: ${{ matrix.platform.cargo }} clippy --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features -- -D warnings
