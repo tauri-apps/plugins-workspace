@@ -1963,7 +1963,7 @@ mod tests {
         assert_eq!(cases.len(), cases_escaped.len());
 
         for (orig, escaped) in cases.iter().zip(cases_escaped) {
-            assert_eq!(escape_nsis_current_exe_arg(&OsStr::new(orig)), escaped);
+            assert_eq!(escape_nsis_current_exe_arg(OsStr::new(orig)), escaped);
         }
     }
 }
