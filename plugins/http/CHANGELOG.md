@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.0]
+
+- [`43538190`](https://github.com/tauri-apps/plugins-workspace/commit/43538190b6110e2005c899b2f2a4c85c7fde74db) ([#3656](https://github.com/tauri-apps/plugins-workspace/pull/3656) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Re-release `@tauri-apps/plugin-http@2.7.0` as `2.8.0`.
+
 ## [2.7.0]
 
 - [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
