@@ -1,0 +1,23 @@
+[package]
+name = "tauri-ohos-plugins-demo"
+version = "0.1.0"
+edition = "2021"
+[workspace]
+[lib]
+name = "tauri_ohos_plugins_demo"
+crate-type = ["cdylib", "rlib"]
+[build-dependencies]
+tauri-build = "2"
+[dependencies]
+tauri = "2"
+tauri-plugin-clipboard-manager = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-notification = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-barcode-scanner = "2"
+napi-ohos = "=1.2.0"
+napi-derive-ohos = "=1.2.0"
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

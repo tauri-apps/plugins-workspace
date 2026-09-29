@@ -6681,6 +6681,7 @@ dependencies = [
  "anyhow",
  "dunce",
  "glob",
+ "libc",
  "log",
  "notify",
  "notify-debouncer-full",
