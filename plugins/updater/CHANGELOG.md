@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.0-alpha.3]
+
+- [`0163bbac`](https://github.com/tauri-apps/plugins-workspace/commit/0163bbaca5d42de292e11cfbdd6464220be9051b) ([#3653](https://github.com/tauri-apps/plugins-workspace/pull/3653) by [@mayocream](https://github.com/tauri-apps/plugins-workspace/../../mayocream)) Fixed an issue that caused the updater plugin to fail to build on macOS with an `no method named run_on_main_thread found` error.
+
 ## [3.0.0-alpha.2]
 
 - [`2fd27c2d`](https://github.com/tauri-apps/plugins-workspace/commit/2fd27c2d43966a86e436ecd538e133e1812cc641) Update MSRV to 1.95 to match tauri.

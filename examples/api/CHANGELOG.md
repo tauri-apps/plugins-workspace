@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.44-alpha.3]
+
+### Dependencies
+
+- Upgraded to `updater-js@3.0.0-alpha.3`
+
 ## [2.0.44-alpha.2]
 
 ### Dependencies

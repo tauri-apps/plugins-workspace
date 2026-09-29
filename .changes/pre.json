@@ -19,6 +19,7 @@
     ".changes/shell-remove-open.md",
     ".changes/store-reload-defaults.md",
     ".changes/tauri-bump-alpha.2.md",
+    ".changes/updater-macos-manager.md",
     ".changes/updater-remove-available.md",
     ".changes/upload-options.md",
     ".changes/upload-system-proxy.md"
