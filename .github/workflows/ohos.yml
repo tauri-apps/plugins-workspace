@@ -1,0 +1,48 @@
+name: OHOS plugins
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/ohos-plugins]
+permissions:
+  contents: read
+concurrency:
+  group: ohos-plugins-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  hap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    container:
+      image: ghcr.io/leenhawk/tauri-harmony@sha256:01cfb6a9fa7fa35f1cf756fb89d4333d272820b66fe8dcf032375911eebddfdd
+    defaults:
+      run:
+        shell: bash
+    env:
+      TARGET_TRIPLE: aarch64-unknown-linux-ohos
+      CARGO_PROFILE_RELEASE_LTO: thin
+      CARGO_PROFILE_RELEASE_CODEGEN_UNITS: '8'
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - run: git config --global --add safe.directory "$PWD"
+      - name: Check URI grants and file lifetime boundaries
+        run: |
+          npm exec --yes --package=esbuild@0.25.10 -- esbuild shared/ohos/plugins/Files.ets --loader:.ets=ts --format=esm --platform=node --outfile=/tmp/ohos-files.mjs
+          OHOS_FILES_TEST_MODULE=/tmp/ohos-files.mjs node --test tests/ohos/files.test.mjs
+      - run: python3 shared/ohos/prepare.py /tmp/ohos-plugins-core examples/ohos/src-tauri examples/ohos/src-tauri
+      - uses: Swatinem/rust-cache@v2.9.2
+        with:
+          workspaces: examples/ohos/src-tauri
+          cache-on-failure: true
+      - name: Build Rust plugins and native ArkTS implementation
+        run: |
+          source /opt/tauri-harmony/env.sh
+          export PATH="$HARMONY_TOOLS_DIR/command-line-tools/tool/node/bin:$PATH"
+          (cd examples/ohos/src-tauri && cargo tauri ohos init --ci --skip-targets-install)
+          python3 shared/ohos/configure-demo.py
+          python3 shared/ohos/install.py examples/ohos/src-tauri
+          (cd examples/ohos/src-tauri && cargo tauri ohos build --ci --target aarch64 --ignore-version-mismatches -- --lib)
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: ohos-plugins-demo-unsigned
+          path: examples/ohos/src-tauri/gen/ohos/entry/build/default/outputs/default/*.hap
+          if-no-files-found: error

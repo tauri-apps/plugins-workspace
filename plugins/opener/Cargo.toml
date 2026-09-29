@@ -50,7 +50,7 @@ features = [
   "Win32_Storage_FileSystem",
 ]
 
-[target."cfg(any(target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"netbsd\", target_os = \"openbsd\"))".dependencies]
+[target."cfg(any(all(target_os = \"linux\", not(target_env = \"ohos\")), target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"netbsd\", target_os = \"openbsd\"))".dependencies]
 zbus = { workspace = true }
 url = { workspace = true }
 
