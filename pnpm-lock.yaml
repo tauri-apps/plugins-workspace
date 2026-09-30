@@ -107,7 +107,7 @@ settings:
 
 overrides:
   serialize-javascript@<7.0.5: ^7.0.5
-  devalue@<5.9.1: ^5.9.1
+  devalue@<5.9.1: ^6.0.0
   morgan@<1.12.0: ^1.12.0
 
 importers:
@@ -2744,8 +2744,9 @@ packages:
   detect-node@2.1.0:
     resolution: {integrity: sha512-T0NIuQpnTvFDATNuHN5roPwSBG83rFsuO+MXXH9/3N1eFbn4wcPjttvjMLEPWJ0RGUYgQE7cGgS3tNxbqCGM7g==}
 
-  devalue@5.9.4:
-    resolution: {integrity: sha512-sPAT4pztbu6586/hrhOnMKS17IJrvg12mXiSPSS3W5qDeN2RGgvZ0diZCm31dBbnevfVmujNO3IM2wrS4Y2Rhg==}
+  devalue@6.0.2:
+    resolution: {integrity: sha512-6V1HzU4to74skg//ScZR2mp9bdz+rESC9jQzVIIG/ha0HYgymHcXIQQCjH0+ivRaSuY82fa9fZ7Ro6QZT4s4uw==}
+    engines: {node: '>=22.17'}
 
   diff@5.2.2:
     resolution: {integrity: sha512-vtcDfH3TOjP8UekytvnHH1o1P4FcUdt4eQ1Y+Abap1tk/OB2MWQvcwS2ClCd1zuIhc3JKOx6p3kod8Vfys3E+A==}
@@ -6860,7 +6861,7 @@ snapshots:
   detect-node@2.1.0:
     optional: true
 
-  devalue@5.9.4: {}
+  devalue@6.0.2: {}
 
   diff@5.2.2: {}
 
@@ -8703,7 +8704,7 @@ snapshots:
       aria-query: 5.3.1
       axobject-query: 4.1.0
       clsx: 2.1.1
-      devalue: 5.9.4
+      devalue: 6.0.2
       esm-env: 1.2.2
       esrap: 2.2.8(@typescript-eslint/types@8.70.0)
       is-reference: 3.0.3
