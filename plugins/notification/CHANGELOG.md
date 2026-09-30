@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.1]
+
+- [`569ee82c`](https://github.com/tauri-apps/plugins-workspace/commit/569ee82cf61a358b4c73ba52f2e99f3317ec05d0) Fix the docs.rs build for Android: the build script now detects docs.rs through the `DOCS_RS` environment variable, since `cfg(docsrs)` is never set for build scripts.
+
 ## [2.5.0]
 
 - [`c8c373b4`](https://github.com/tauri-apps/plugins-workspace/commit/c8c373b48bbf06b57c481dad4cf0a68638c68478) Fixed broken mobile APIs:

@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.52]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.5.1`
+- Upgraded to `biometric@2.4.1`
+- Upgraded to `clipboard-manager@2.4.1`
+- Upgraded to `dialog@2.8.1`
+- Upgraded to `geolocation@2.4.1`
+- Upgraded to `haptics@2.4.1`
+- Upgraded to `nfc@2.4.1`
+- Upgraded to `notification@2.5.1`
+
 ## [2.0.51]
 
 ### Dependencies

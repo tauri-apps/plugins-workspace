@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.5.2]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.6.1`
+
 ## [2.5.1]
 
 - [`ecd3273e`](https://github.com/tauri-apps/plugins-workspace/commit/ecd3273e8e4c6e9b123bf9861bf7b925cad1c679) ([#3480](https://github.com/tauri-apps/plugins-workspace/pull/3480) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `windows-rs` dependencies:

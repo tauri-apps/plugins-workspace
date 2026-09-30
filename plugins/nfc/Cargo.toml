@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-nfc"
-version = "2.4.0"
+version = "2.4.1"
 description = "Read and write NFC tags on Android and iOS."
 edition = { workspace = true }
 rust-version = { workspace = true }
