@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.1]
+
+- [`569ee82c`](https://github.com/tauri-apps/plugins-workspace/commit/569ee82cf61a358b4c73ba52f2e99f3317ec05d0) Fix the docs.rs build for Android: the build script now detects docs.rs through the `DOCS_RS` environment variable, since `cfg(docsrs)` is never set for build scripts.
+
 ## [2.4.0]
 
 - [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Migrate the Android Gradle scripts from the deprecated `kotlinOptions` DSL to `compilerOptions`, which Kotlin Gradle Plugin 2.3+ requires, to match the Tauri 2.12 Android library and templates.
