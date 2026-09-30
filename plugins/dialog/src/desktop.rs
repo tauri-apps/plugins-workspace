@@ -11,6 +11,10 @@
 use raw_window_handle::{HasDisplayHandle, HasWindowHandle, RawDisplayHandle, RawWindowHandle};
 use rfd::{AsyncFileDialog, AsyncMessageDialog};
 use serde::de::DeserializeOwned;
+// `run_on_main_thread` became a `Manager` method in Tauri 3.0.0-alpha.3, so building against it
+// requires this import. The workspace still pins alpha.2, where the method is inherent on
+// `AppHandle` and the import is unused; drop the attribute when the pin moves to alpha.3.
+#[allow(unused_imports)]
 use tauri::{AppHandle, Manager, Runtime, plugin::PluginApi};
 
 use crate::{FileDialogBuilder, FilePath, MessageDialogBuilder, models::*};
